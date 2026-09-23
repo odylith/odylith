@@ -23,6 +23,17 @@ visibility and delivery fallback passes `104`, and Codex/Claude hook parity
 passes `40`; these are fallback/source-local proofs and do not claim native hook
 activation.
 
+The pushed release-proof correction at `c1f5d8d3a` aligns the clean hosted-style
+smoke harness with the runtime's explicit environment outcome
+`MODEL_UNAVAILABLE_NO_WRITE`. The harness now rejects legacy or mismatched
+refusal payloads while preserving the no-write boundary. Focused runtime and
+admission proof passes `110` tests, the full local-release-smoke unit file passes
+`37`, and a clean archive build plus hosted asset generation passes fresh
+install, upgrade, stale-residue, and unavailable-author no-write cycles for
+`0.1.15`. This is a release-proof contract correction, not semantic
+qualification; native intervention activation/chat visibility, complete browser
+coverage, independent strong review, and the untouched holdout remain open.
+
 The integrated standard profile keeps participant-first ownership and uses Astra
 medium for remaining authoring. The exact 162cf2507 installed campaign completes
 eleven packages and one material clarification, then stops on a rescue-profile

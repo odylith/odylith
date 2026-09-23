@@ -2040,3 +2040,19 @@
   also correctly refuses this non-main development branch. Build success is
   retained as evidence, but clean-install, managed runtime, and release
   preflight proof remain open.
+
+- Bounded release-smoke correction (2026-09-23, commit `c1f5d8d3a`): The
+  installed CLI already emitted the explicit environment outcome
+  `MODEL_UNAVAILABLE_NO_WRITE`, but the release smoke harness still required
+  the superseded two-key refusal payload and stopped before the lifecycle gate.
+  The harness now requires the exact bounded `{mode, error, outcome}` payload,
+  the fixed environment code, and a string refusal message; wrong outcomes and
+  legacy payloads are regression controls. The focused runtime/admission set
+  passes `110` tests and the complete local-release-smoke unit file passes
+  `37`. A clean archive of the pushed source then built the wheel/sdist,
+  generated hosted-style assets, and passed fresh install, upgrade,
+  stale-residue, and unavailable-author no-write cycles for `0.1.15`; the
+  disposable proof root was removed. This closes the harness contract mismatch
+  only. Native hook activation/chat delivery, complete browser coverage,
+  independent strong/Astra adjudication, and the untouched final holdout remain
+  open. Status stays Open.

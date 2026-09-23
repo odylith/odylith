@@ -7,6 +7,16 @@ Backlog: B-145
 
 ## Current bounded checkpoint (2026-09-23)
 
+Commit `c1f5d8d3a` is the latest pushed checkpoint. It corrects the local
+release-smoke contract to require the explicit bounded
+`MODEL_UNAVAILABLE_NO_WRITE` environment outcome already emitted by the
+installed CLI. The focused runtime/admission set passes `110` tests and the
+complete local-release-smoke unit file passes `37`. A clean archive of the
+source checkpoint builds the `0.1.15` wheel and sdist, generates hosted-style
+assets, and passes fresh install, upgrade, stale-residue, and unavailable-author
+no-write cycles; the disposable proof root is removed. This closes one
+release-proof mismatch, not release readiness.
+
 Commit `d2bbbad82` integrates the Greenfield completion seam across the typed
 Execution Engine handoff, staged Delivery Intelligence v4 validation, and the
 host-neutral post-confirm `Odylith Assist` fallback. The current authored
