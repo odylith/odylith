@@ -24,7 +24,10 @@ this plan can close. The bounded Greenfield publication/dashboard/carrier/
 selection/surface-health browser slice passes `121` tests in `4m04s`, the
 intervention visibility/delivery/fallback slice passes `104`, and Codex/Claude
 hook parity plus launcher ownership passes `40`; these do not promote native
-activation or installed release proof.
+activation or installed release proof. Isolated Hatch wheel and sdist builds
+for commit `c1ff88ee8` also pass for `0.1.15`; the supported hosted-style asset
+and clean-install path remains blocked by stale `release/FORENSICS.v1.json` and
+the fail-closed managed-file drift, so build success is not release proof.
 
 ## Current bounded checkpoint (2026-09-10)
 

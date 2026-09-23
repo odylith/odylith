@@ -2030,3 +2030,13 @@
   prove the available source-local and assistant-visible fallback paths, not
   native hook activation or final installed release behavior. The open gates
   above remain unchanged.
+
+- Distribution gate follow-up (2026-09-23): Isolated Hatch builds for source
+  commit `c1ff88ee8` produced the `0.1.15` wheel and sdist successfully; the
+  temporary build directories were removed. The supported local hosted-release
+  asset path still stops before installer generation because current component
+  forensics report stale `release/FORENSICS.v1.json` while the repository start
+  contract is fail-closed on managed-file drift. The canonical release wrapper
+  also correctly refuses this non-main development branch. Build success is
+  retained as evidence, but clean-install, managed runtime, and release
+  preflight proof remain open.
