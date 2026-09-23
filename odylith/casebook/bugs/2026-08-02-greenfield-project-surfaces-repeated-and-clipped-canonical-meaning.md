@@ -2021,3 +2021,12 @@
   distribution proof, the complete browser matrix, native automatic intervention
   activation and chat delivery, independent strong/Astra semantic adjudication,
   and the untouched final holdout remain open. Status stays Open.
+
+- Browser and host-delivery follow-up (2026-09-23): The bounded Greenfield
+  publication/dashboard/carrier/selection/surface-health browser slice passes
+  `121` tests in `4m04s`; intervention visibility, delivery-status, host-visible
+  fallback, Assist closeout and Greenfield handoff/delivery checks pass `104`
+  tests; Codex/Claude hook parity and launcher ownership pass `40` tests. These
+  prove the available source-local and assistant-visible fallback paths, not
+  native hook activation or final installed release behavior. The open gates
+  above remain unchanged.

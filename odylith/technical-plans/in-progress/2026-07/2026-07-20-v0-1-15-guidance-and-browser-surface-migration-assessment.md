@@ -20,7 +20,11 @@ browser coverage, native intervention activation plus chat visibility, an
 independent strong/Astra semantic review, and the untouched final holdout remain
 required. The generated refresh lane is currently fail-closed by known managed
 file drift (`RECOVERY_REQUIRED`); generated surfaces must be refreshed before
-this plan can close.
+this plan can close. The bounded Greenfield publication/dashboard/carrier/
+selection/surface-health browser slice passes `121` tests in `4m04s`, the
+intervention visibility/delivery/fallback slice passes `104`, and Codex/Claude
+hook parity plus launcher ownership passes `40`; these do not promote native
+activation or installed release proof.
 
 ## Current bounded checkpoint (2026-09-10)
 

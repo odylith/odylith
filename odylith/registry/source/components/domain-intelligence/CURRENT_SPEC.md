@@ -17,7 +17,11 @@ passes `2,097` tests. These are bounded source-local results, not release
 qualification. Clean install/full distribution, browser state coverage, native
 intervention activation/chat visibility, independent strong review and untouched
 holdout adjudication remain open. The active timing contract is advisory
-`90/120/150` with existing model and operational windows unchanged.
+`90/120/150` with existing model and operational windows unchanged. The bounded
+publication/dashboard/carrier browser slice passes `121` tests, intervention
+visibility and delivery fallback passes `104`, and Codex/Claude hook parity
+passes `40`; these are fallback/source-local proofs and do not claim native hook
+activation.
 
 The integrated standard profile keeps participant-first ownership and uses Astra
 medium for remaining authoring. The exact 162cf2507 installed campaign completes
