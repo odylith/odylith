@@ -41,10 +41,15 @@ fallback observations, not native activation proof. The claim gate remains
 `Activation: ready` plus chat visibility in a reloaded trusted host session.
 
 The fresh selected non-holdout browser/intervention matrix passes `131` tests
-in `4m12s` across dashboard publication, publication carrier, intervention
-visibility, browser proof summaries/selection/surface health, and
-Codex/Claude parity. This is source-level UX evidence and does not promote
-native activation or the untouched holdout.
+  in `4m12s` across dashboard publication, publication carrier, intervention
+  visibility, browser proof summaries/selection/surface health, and
+  Codex/Claude parity. This is source-level UX evidence and does not promote
+  native activation or the untouched holdout.
+
+The product engine-integrity validator passes `22/22` engine areas and `22/22`
+handshakes with zero findings. This is structural wiring evidence, not native
+host activation, installed positive semantic qualification, independent strong
+review, or final holdout proof.
 
 The integrated standard profile keeps participant-first ownership and uses Astra
 medium for remaining authoring. The exact 162cf2507 installed campaign completes

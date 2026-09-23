@@ -64,3 +64,9 @@
   full intervention claim gate therefore remains closed until a reloaded,
   trusted host session reports `Activation: ready` plus chat visibility. No
   second intervention channel or post-confirm write was added.
+
+- Engine integration posture (2026-09-23): `odylith validate engine-integrity`
+  passes `22/22` engine areas, `22/22` handshakes, and `0` findings. This
+  proves the product-level inventory and source/command anchors are wired; it
+  does not substitute for native host activation, installed positive semantic
+  qualification, strong review, or final holdout evidence.

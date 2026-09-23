@@ -25,10 +25,15 @@ is not qualified; a reloaded trusted host session must reach `Activation: ready`
 before the intervention gate can close.
 
 The fresh selected non-holdout browser/intervention matrix passes `131` tests
-in `4m12s` across dashboard publication, publication carrier, intervention
-visibility, browser proof summaries/selection/surface health, and
-Codex/Claude parity. This is source-level UX proof, not native activation or
-final holdout qualification.
+  in `4m12s` across dashboard publication, publication carrier, intervention
+  visibility, browser proof summaries/selection/surface health, and
+  Codex/Claude parity. This is source-level UX proof, not native activation or
+  final holdout qualification.
+
+The product engine-integrity validator passes `22/22` areas and `22/22`
+handshakes with zero findings. This confirms structural engine wiring only;
+native host activation, installed positive semantic qualification, independent
+strong review, and the final holdout remain separate gates.
 
 Commit `d2bbbad82` integrates the Greenfield completion seam across the typed
 Execution Engine handoff, staged Delivery Intelligence v4 validation, and the
