@@ -17,6 +17,13 @@ assets, and passes fresh install, upgrade, stale-residue, and unavailable-author
 no-write cycles; the disposable proof root is removed. This closes one
 release-proof mismatch, not release readiness.
 
+The latest clean-source intervention status remains partial: Codex reports
+`Activation: degraded` with `12` chat-confirmed Odylith events in the current
+session, while Claude reports `Activation: degraded` with no recorded events.
+The visible fallback is therefore proven, but native activation/chat delivery
+is not qualified; a reloaded trusted host session must reach `Activation: ready`
+before the intervention gate can close.
+
 Commit `d2bbbad82` integrates the Greenfield completion seam across the typed
 Execution Engine handoff, staged Delivery Intelligence v4 validation, and the
 host-neutral post-confirm `Odylith Assist` fallback. The current authored

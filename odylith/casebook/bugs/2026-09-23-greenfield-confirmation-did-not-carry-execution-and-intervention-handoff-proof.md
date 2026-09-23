@@ -55,3 +55,12 @@
 - Version/Build: 0.1.15 source-local checkpoint 9d01b7aa3
 
 - Config/Flags: No new flags; 90/120/150 remain timing guidance
+
+- Current intervention qualification (2026-09-23): The clean-source Codex
+  status probe reports `Activation: degraded` even though the current session
+  has `12` confirmed-in-chat Odylith events; this proves assistant-visible
+  fallback delivery, not native activation. The clean-source Claude probe also
+  reports `Activation: degraded` with zero recorded or confirmed events. The
+  full intervention claim gate therefore remains closed until a reloaded,
+  trusted host session reports `Activation: ready` plus chat visibility. No
+  second intervention channel or post-confirm write was added.

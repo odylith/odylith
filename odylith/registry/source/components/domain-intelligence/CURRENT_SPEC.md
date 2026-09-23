@@ -34,6 +34,12 @@ install, upgrade, stale-residue, and unavailable-author no-write cycles for
 qualification; native intervention activation/chat visibility, complete browser
 coverage, independent strong review, and the untouched holdout remain open.
 
+The latest intervention status preserves that boundary: Codex has `12`
+chat-confirmed events but reports `Activation: degraded`, and Claude reports
+`Activation: degraded` with no session events. These are valid assistant-visible
+fallback observations, not native activation proof. The claim gate remains
+`Activation: ready` plus chat visibility in a reloaded trusted host session.
+
 The integrated standard profile keeps participant-first ownership and uses Astra
 medium for remaining authoring. The exact 162cf2507 installed campaign completes
 eleven packages and one material clarification, then stops on a rescue-profile
