@@ -70,3 +70,14 @@
   proves the product-level inventory and source/command anchors are wired; it
   does not substitute for native host activation, installed positive semantic
   qualification, strong review, or final holdout evidence.
+
+- Mechanism cleanup checkpoint (2026-09-23): The Greenfield text helper layer
+  no longer carries its unreachable regex-based visible-result, proof-boundary,
+  action-target, punctuation, and related grammar-repair family. The Atlas
+  description path now preserves the source action relation instead of
+  rewriting `to` into `for`; no replacement prose cascade was introduced.
+  The focused Atlas/render/browser-adjacent checks pass `89`, and the complete
+  Greenfield unit frontier passes `2,068`. This is a bounded removal of stale
+  mechanism surface, not a release claim; native activation, installed
+  positive semantic qualification, strong review, and the protected holdout
+  remain open.

@@ -7,6 +7,17 @@ Backlog: B-145
 
 ## Current bounded checkpoint (2026-09-23)
 
+The latest mechanism-cleanup wave removes `383` lines of unreachable
+regex-driven visible-result, proof-boundary, action-target, punctuation, and
+related grammar-repair code from the Greenfield text layer. Atlas now carries
+the source action relation through unchanged instead of applying a prose
+rewrite. No replacement cascade was added. Focused Atlas/render/browser-
+adjacent checks pass `89`, and the complete Greenfield unit frontier passes
+`2,068`. This reduces mechanism surface without changing the typed custody
+contract; native intervention activation, installed positive semantic
+qualification, independent strong review, and the protected final holdout
+remain open.
+
 Commit `c1f5d8d3a` is the latest pushed checkpoint. It corrects the local
 release-smoke contract to require the explicit bounded
 `MODEL_UNAVAILABLE_NO_WRITE` environment outcome already emitted by the

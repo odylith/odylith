@@ -17,7 +17,6 @@ from odylith.runtime.domain_intelligence import greenfield_authored_atlas_view
 from odylith.runtime.domain_intelligence.greenfield_authored_atlas_design_views import mermaid_label
 from odylith.runtime.domain_intelligence import greenfield_confirmed_text
 from odylith.runtime.domain_intelligence import greenfield_deferral_predicates
-from odylith.runtime.domain_intelligence import greenfield_text
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
 )
@@ -1021,7 +1020,6 @@ def test_public_authored_propose_never_calls_legacy_semantic_rule_families(
         "terminal_deferral": 0,
         "source_casing": 0,
         "connector": 0,
-        "action_target": 0,
     }
     def trap(family: str, module: object, name: str) -> None:
         original = getattr(module, name)
@@ -1043,7 +1041,6 @@ def test_public_authored_propose_never_calls_legacy_semantic_rule_families(
         "capitalize_sentence_start_preserving_source_terms",
     )
     trap("connector", greenfield_confirmed_text, "normalize_connector_sequence")
-    trap("action_target", greenfield_text, "normalize_action_target_language")
 
     rc, payload, provider = _public_propose(
         tmp_path=tmp_path,
@@ -1057,7 +1054,6 @@ def test_public_authored_propose_never_calls_legacy_semantic_rule_families(
     assert family_calls["terminal_deferral"] == 0
     assert family_calls["source_casing"] == 0
     assert family_calls["connector"] == 0
-    assert family_calls["action_target"] == 0
 
     transaction = json.loads(
         (tmp_path / payload["transaction_file"]).read_text(encoding="utf-8")

@@ -4,6 +4,18 @@ Last updated: 2026-09-23
 
 ## Overview
 
+### Greenfield mechanism cleanup (2026-09-23)
+
+The Greenfield text layer removed its unreachable regex-driven visible-result,
+proof-boundary, action-target, punctuation, and related grammar-repair family.
+Atlas descriptions preserve the source action relation rather than rewriting
+`to` into `for`; no replacement prose cascade was introduced. Focused
+Atlas/render/browser-adjacent checks pass `89`, and the complete Greenfield
+unit frontier passes `2,068`. This is mechanism-surface reduction, not a
+release qualification: native intervention activation, installed positive
+semantic qualification, independent strong review, and the protected final
+holdout remain open.
+
 ### Integrated Greenfield handoff (2026-09-23)
 
 The current Greenfield path preserves one typed canonical package while exposing

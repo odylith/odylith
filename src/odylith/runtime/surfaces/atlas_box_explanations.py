@@ -12,7 +12,6 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import (
 )
 from odylith.runtime.common.display_text import present_verb
 from odylith.runtime.domain_intelligence.greenfield_deferral_predicates import terminal_deferral_subject
-from odylith.runtime.domain_intelligence.greenfield_text import normalize_action_target_language
 from odylith.runtime.surfaces import atlas_diagram_intelligence
 from odylith.runtime.surfaces import atlas_box_terms
 from odylith.runtime.surfaces import display_text
@@ -223,7 +222,6 @@ def clean_component_description(*, name: str, description: str) -> str:
         text,
         flags=re.IGNORECASE,
     ).strip(" ;,")
-    text = normalize_action_target_language(text)
     text = re.sub(r";\s*serve\s+as\b", "; serves as", text, flags=re.IGNORECASE)
     text = _OWNED_ACTION_RE.sub(lambda match: str(match.group(1)), text).strip()
     text = re.sub(r"^owns?\s+owns?\s+", "owns ", text, flags=re.IGNORECASE).strip()
