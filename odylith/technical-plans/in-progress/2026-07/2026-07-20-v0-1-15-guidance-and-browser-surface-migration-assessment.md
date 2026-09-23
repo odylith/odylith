@@ -7,7 +7,7 @@ Backlog: B-145
 
 ## Current bounded checkpoint (2026-09-23)
 
-The latest mechanism-cleanup wave removes `383` lines of unreachable
+The latest mechanism-cleanup wave removes `442` lines of unreachable
 regex-driven visible-result, proof-boundary, action-target, punctuation, and
 related grammar-repair code from the Greenfield text layer. Atlas now carries
 the source action relation through unchanged instead of applying a prose
