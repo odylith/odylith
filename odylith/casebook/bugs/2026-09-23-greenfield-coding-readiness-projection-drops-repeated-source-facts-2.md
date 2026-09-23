@@ -54,8 +54,8 @@
 
 - Preflight Checks: Search Casebook and current handoff tests; confirm project handoff already preserves repeated source bytes; keep final holdout untouched
 
-- Regression Tests Added: Existing test_greenfield_handoff_contract.py proves repeated project-handoff bytes and exact Unicode/whitespace; add the coding-readiness duplicate regression in the forward fix before closure
+- Regression Tests Added: test_coding_readiness_contract_preserves_repeated_source_facts in tests/unit/runtime/test_greenfield_handoff_contract.py; focused handoff suite 34 passed, full non-holdout Greenfield suite 2,066 passed, browser/UX matrix 261 passed.
 
-- Version/Build: 0.1.15 source-local detached posture; branch 2026/freedom/pending-work-checkpoint-20260906 at 61bf8409
+- Version/Build: 0.1.15 source-local detached posture; branch 2026/freedom/pending-work-checkpoint-20260906 at pushed commit 88b88222b.
 
 - Related Incidents/Bugs: 2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning
