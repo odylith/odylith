@@ -223,7 +223,10 @@ def test_run_reports_timeout_with_command_and_cwd(monkeypatch, tmp_path: Path) -
     assert "err" in message
 
 
-@pytest.mark.parametrize("defect", ["", "success", "wrong_error", "write", "staged", "attempt", "missing_audit"])
+@pytest.mark.parametrize(
+    "defect",
+    ["", "success", "wrong_error", "wrong_outcome", "legacy_payload", "write", "staged", "attempt", "missing_audit"],
+)
 def test_greenfield_install_smoke_requires_author_unavailable_without_writes(
     monkeypatch, tmp_path: Path, defect: str,
 ) -> None:
@@ -267,9 +270,20 @@ def test_greenfield_install_smoke_requires_author_unavailable_without_writes(
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text("{}\n", encoding="utf-8")
         time.sleep(0.002)
-        payload = {"mode": "error", "error": "model authoring is unavailable; no records were created"}
+        payload = {
+            "mode": "error",
+            "error": "model authoring is unavailable; no records were created",
+            "outcome": {
+                "kind": "environment",
+                "code": "MODEL_UNAVAILABLE_NO_WRITE",
+            },
+        }
         if defect == "wrong_error":
             payload["error"] = "unrelated installation error"
+        elif defect == "wrong_outcome":
+            payload["outcome"] = {"kind": "environment", "code": "MODEL_TIMEOUT_NO_WRITE"}
+        elif defect == "legacy_payload":
+            payload.pop("outcome")
         return SimpleNamespace(returncode=0 if defect == "success" else 2, stdout=json.dumps(payload), stderr="")
 
     monkeypatch.setattr(module, "_run", fake_run)

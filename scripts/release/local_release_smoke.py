@@ -31,6 +31,10 @@ _TEMP_ROOT_CLEANUP_RETRYABLE_ERRNOS = {errno.EACCES, errno.EBUSY, errno.ENOTEMPT
 _TEMP_ROOT_CLEANUP_SETTLE_COUNT = 3
 _TEMP_ROOT_CLEANUP_SETTLE_DELAY_SECONDS = 0.05
 _COMMAND_TIMEOUT_SECONDS = 300
+_UNAVAILABLE_PROVIDER_OUTCOME = {
+    "kind": "environment",
+    "code": "MODEL_UNAVAILABLE_NO_WRITE",
+}
 
 
 def _run(*, cwd: Path, env: dict[str, str], command: list[str]) -> subprocess.CompletedProcess[str]:
@@ -576,7 +580,13 @@ def _greenfield_unavailable_author_smoke(*, repo_root: Path, odylith: Path, env:
     finally:
         observed = audit.finish()
     payload = execution.payload
-    if not isinstance(payload, dict) or payload.get("mode") != "error" or set(payload) != {"mode", "error"}:
+    if (
+        not isinstance(payload, dict)
+        or payload.get("mode") != "error"
+        or set(payload) != {"mode", "error", "outcome"}
+        or payload.get("outcome") != _UNAVAILABLE_PROVIDER_OUTCOME
+        or not isinstance(payload.get("error"), str)
+    ):
         raise RuntimeError("unavailable-author smoke did not return the bounded refusal payload")
     issues = unavailable_provider_proof_issues(
         returncode=execution.returncode,
