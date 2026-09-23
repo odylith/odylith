@@ -43,7 +43,8 @@ mechanism-level learning.
    After an explicit terminal decision or create invocation, relay its returned
    outcome without reinterpretation. Relay the returned post-confirm navigation
    block exactly once; do not regenerate artifacts, rebuild projections, or
-   substitute a model-authored success message.
+   substitute a model-authored success message. Never expose parser/schema
+   retries or internal repair chatter to the operator.
 6. Preserve the evidence boundary: observed source, user intent, and Odylith
    assumptions must stay distinct. For consumer apps, include proportional
    security, privacy, abuse, accessibility, data-retention, compliance, and
