@@ -402,6 +402,12 @@ def surface_refresh_preview_fixture() -> dict[str, Any]:
         "surfaces": list(greenfield_surface_refresh_proof.GREENFIELD_VISIBLE_SURFACES),
         "artifact_paths": list(greenfield_surface_refresh_proof.GREENFIELD_REQUIRED_SURFACE_ARTIFACTS),
         "view": "odylith/index.html?tab=project",
+        "delivery_intelligence": {
+            "status": "passed",
+            "artifact_path": greenfield_surface_refresh_proof.GREENFIELD_DELIVERY_INTELLIGENCE_ARTIFACT,
+            "version": "v4",
+            "scope_count": 1,
+        },
     }
 
 

@@ -76,6 +76,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.as_json:
         response = dict(result)
         response["post_confirm_navigation"] = navigation
+        response["post_confirm_intervention"] = {
+            "status": "rendered_fallback",
+            "text": greenfield_post_confirm_handoff.completion_assist_text(
+                navigation=navigation,
+                opened=False,
+            ),
+        }
         response["post_confirm_browser"] = {
             "status": "not_attempted",
             "reason": "machine_readable_output",
@@ -91,6 +98,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"- validation gate: {summary['validation_status']}")
         print(f"- sealed writes: {summary['repository_write_count']}")
         print("- readback: passed")
+        print(greenfield_post_confirm_handoff.completion_assist_text(
+            navigation=navigation,
+            opened=browser_result.get("status") == "opened",
+        ))
         _print_post_confirm_navigation(navigation, browser_result=browser_result)
     return 0
 

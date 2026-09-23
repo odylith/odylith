@@ -43,6 +43,11 @@ def test_authored_handoff_preserves_verified_fields_without_legacy_reconstructio
     assert readiness["source_facts"]["evidence_requirements"] == tuple(intent["evidence_requirements"])
     assert handoff["coding_readiness_gates"] == render_coding_readiness_gates(readiness)
     assert handoff["coding_readiness_gates"]
+    execution = handoff["execution_engine_handoff"]
+    assert execution["schema_version"] == "odylith.greenfield.execution-handoff.v1"
+    assert execution["handshake"]["canonical_component_id"] == "execution-engine"
+    assert execution["snapshot"]["outcome"] == "admit"
+    assert execution["snapshot"]["target_component_status"] == "execution_engine_plus_related"
     for evidence in intent["evidence_requirements"]:
         assert evidence in brief_text
         assert evidence in proposal["project_intelligence"]["evidence"]

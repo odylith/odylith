@@ -6,12 +6,15 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
+from odylith.common.json_objects import load_json_object
+from odylith.runtime.governance import delivery_intelligence_engine
 from odylith.runtime.governance import owned_surface_refresh
 
 
 GREENFIELD_SURFACE_REFRESH_PROOF_VERSION = "greenfield.prewrite_surface_refresh.v1"
 GREENFIELD_SURFACE_REFRESH_PROOF_PHASE = "pre_confirm_compile"
 GREENFIELD_SURFACE_REFRESH_PROOF_KIND = "staged_owned_surface_refresh"
+GREENFIELD_DELIVERY_INTELLIGENCE_ARTIFACT = "odylith/runtime/delivery_intelligence.v4.json"
 GREENFIELD_VISIBLE_SURFACES = ("radar", "registry", "atlas", "compass", "tooling_shell")
 GREENFIELD_REQUIRED_SURFACE_ARTIFACTS = (
     "odylith/radar/radar.html",
@@ -24,6 +27,7 @@ GREENFIELD_REQUIRED_SURFACE_ARTIFACTS = (
     "odylith/compass/compass-payload.v1.js",
     "odylith/index.html",
     "odylith/tooling-payload.v1.js",
+    GREENFIELD_DELIVERY_INTELLIGENCE_ARTIFACT,
 )
 
 
@@ -42,6 +46,15 @@ def build_prewrite_surface_refresh_preview(*, repo_root: Path) -> dict[str, Any]
             "Greenfield pre-confirm staged surface refresh did not render required artifacts: "
             + ", ".join(missing)
         )
+    delivery_payload = load_json_object(root / GREENFIELD_DELIVERY_INTELLIGENCE_ARTIFACT)
+    delivery_issues = delivery_intelligence_engine.validate_delivery_intelligence_artifact(
+        delivery_payload
+    )
+    if delivery_issues:
+        raise RuntimeError(
+            "Greenfield pre-confirm staged surface refresh produced an invalid Delivery Intelligence artifact: "
+            + "; ".join(delivery_issues)
+        )
     preview = {
         "version": GREENFIELD_SURFACE_REFRESH_PROOF_VERSION,
         "status": "passed",
@@ -50,6 +63,14 @@ def build_prewrite_surface_refresh_preview(*, repo_root: Path) -> dict[str, Any]
         "surfaces": list(GREENFIELD_VISIBLE_SURFACES),
         "artifact_paths": list(GREENFIELD_REQUIRED_SURFACE_ARTIFACTS),
         "view": owned_surface_refresh.dashboard_handoff(surface="project"),
+        "delivery_intelligence": {
+            "status": "passed",
+            "artifact_path": GREENFIELD_DELIVERY_INTELLIGENCE_ARTIFACT,
+            "version": str(delivery_payload.get("version", "")).strip(),
+            "scope_count": len(delivery_payload.get("scopes", []))
+            if isinstance(delivery_payload.get("scopes"), list)
+            else 0,
+        },
     }
     issues = surface_refresh_preview_issues(preview)
     if issues:
@@ -112,6 +133,18 @@ def surface_refresh_preview_issues(value: Mapping[str, Any] | None) -> list[str]
     view = str(value.get("view", "")).strip()
     if not view.startswith("odylith/index.html"):
         issues.append("compiled surface refresh proof missing dashboard handoff view")
+    delivery = value.get("delivery_intelligence")
+    if not isinstance(delivery, Mapping):
+        issues.append("compiled surface refresh proof missing Delivery Intelligence evidence")
+    else:
+        if str(delivery.get("status", "")).strip() != "passed":
+            issues.append("compiled surface refresh proof Delivery Intelligence evidence did not pass")
+        if str(delivery.get("artifact_path", "")).strip() != GREENFIELD_DELIVERY_INTELLIGENCE_ARTIFACT:
+            issues.append("compiled surface refresh proof Delivery Intelligence artifact path drifted")
+        if not str(delivery.get("version", "")).strip():
+            issues.append("compiled surface refresh proof Delivery Intelligence evidence is missing its version")
+        if int(delivery.get("scope_count", 0) or 0) <= 0:
+            issues.append("compiled surface refresh proof Delivery Intelligence evidence is empty")
     return issues
 
 
@@ -127,6 +160,7 @@ def _string_tuple(value: Any) -> tuple[str, ...]:
 
 __all__ = [
     "GREENFIELD_REQUIRED_SURFACE_ARTIFACTS",
+    "GREENFIELD_DELIVERY_INTELLIGENCE_ARTIFACT",
     "GREENFIELD_SURFACE_REFRESH_PROOF_KIND",
     "GREENFIELD_SURFACE_REFRESH_PROOF_PHASE",
     "GREENFIELD_SURFACE_REFRESH_PROOF_VERSION",

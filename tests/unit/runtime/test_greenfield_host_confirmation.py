@@ -277,6 +277,7 @@ def test_codex_and_claude_hooks_short_circuit_to_identical_confirmation_payload(
 
     assert codex_payload == claude_payload
     assert codex_payload["systemMessage"].startswith("**Odylith Greenfield published**")
+    assert "**Odylith Assist:**" in codex_payload["systemMessage"]
     assert codex_payload["decision"] == "block"
     assert codex_payload["reason"] == codex_payload["systemMessage"]
     assert "hookSpecificOutput" not in codex_payload

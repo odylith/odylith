@@ -27,6 +27,17 @@ class GreenfieldCanonicalViewUnavailableError(RuntimeError):
     """The current governed view cannot be resolved without exposing uncertain bytes."""
 
 
+def completion_assist_text(*, navigation: Mapping[str, str], opened: bool) -> str:
+    """Return one explicit chat-visible fallback for the committed result."""
+
+    destination = (
+        "The committed Project dashboard is open."
+        if opened
+        else f"Review the committed Project dashboard at {navigation.get('project_url', '')}."
+    )
+    return f"**Odylith Assist:** Greenfield is committed from the reviewed bytes. {destination}"
+
+
 def canonical_current_project_root(repo_root: Path) -> tuple[Path, str]:
     """Resolve one coherent current view through the active-generation state."""
 
@@ -138,6 +149,8 @@ def completion_markdown(
             f"- Quality gate: `{str(summary.get('quality_status') or 'passed')}`",
             f"- Validation gate: `{str(summary.get('validation_status') or 'passed')}`",
             "",
+            completion_assist_text(navigation=navigation, opened=opened),
+            "",
             "Next: Review Product Story and the first workstream before beginning implementation. No application code was generated.",
         )
     )
@@ -147,6 +160,7 @@ __all__ = [
     "POST_CONFIRM_NAVIGATION",
     "GreenfieldCanonicalViewUnavailableError",
     "canonical_current_project_root",
+    "completion_assist_text",
     "completion_markdown",
     "open_committed_dashboard",
     "post_confirm_navigation",

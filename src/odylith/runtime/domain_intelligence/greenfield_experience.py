@@ -21,6 +21,76 @@ from odylith.runtime.domain_intelligence.greenfield_handoff_contract import (
 )
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_traceability import first_executable_workstream
+from odylith.runtime.context_engine import execution_engine_handshake
+
+
+GREENFIELD_EXECUTION_HANDOFF_SCHEMA_VERSION = "odylith.greenfield.execution-handoff.v1"
+
+
+def build_execution_handoff(
+    *, target: Mapping[str, Any], verification_commands: Sequence[str],
+    proof_boundary: str, operational_constraints: Sequence[str],
+) -> dict[str, Any]:
+    """Bind the selected typed slice to the real Execution Engine contract.
+
+    Greenfield is an authoring path, so it must not invent execution meaning
+    from prose. The existing Execution Engine snapshot is invoked with the
+    selected typed target and its proof commands, then projected into a small
+    host-neutral handoff carried into the sealed package.
+    """
+
+    component_refs = tuple(row_text_tuple(target, "component_refs"))
+    payload = {
+        "component_id": execution_engine_handshake.CANONICAL_EXECUTION_ENGINE_COMPONENT_ID,
+        "target_component_ids": [
+            execution_engine_handshake.CANONICAL_EXECUTION_ENGINE_COMPONENT_ID,
+            *component_refs,
+        ],
+        "workstream_context": {
+            "workstream_id": str(target.get("workstream_id", "")).strip(),
+            "component_ids": list(component_refs),
+        },
+        "validation_bundle": {
+            "strict_gate_commands": list(verification_commands),
+            "strict_gate_command_count": len(tuple(verification_commands)),
+            "plan_binding_required": True,
+            "governed_surface_sync_required": True,
+        },
+        "turn_context": {
+            "proof_boundary": str(proof_boundary or "").strip(),
+            "operational_constraints": list(operational_constraints),
+        },
+    }
+    handshake = execution_engine_handshake.normalize_execution_engine_handshake(
+        payload=payload,
+        routing_handoff={"route_ready": True, "narrowing_required": False},
+    )
+    snapshot = execution_engine_handshake.compact_execution_engine_snapshot_for_packet(
+        payload=payload,
+        routing_handoff={"route_ready": True, "narrowing_required": False},
+        reuse_existing=False,
+    )
+    snapshot_fields = (
+        "present", "objective", "outcome", "rationale", "mode", "next_move",
+        "current_phase", "last_successful_phase", "closure", "resume_token",
+        "validation_archetype", "validation_minimum_pass_count", "blocker",
+        "requires_reanchor", "component_id", "canonical_component_id",
+        "identity_status", "target_component_id", "target_component_ids",
+        "target_component_status", "handshake_version",
+    )
+    compact_snapshot = {
+        key: snapshot[key]
+        for key in snapshot_fields
+        if key in snapshot and snapshot[key] not in ("", [], {}, None)
+    }
+    return {
+        "schema_version": GREENFIELD_EXECUTION_HANDOFF_SCHEMA_VERSION,
+        "semantic_authority": "typed_canonical_intent",
+        "projection_policy": "execution_engine_snapshot_projection",
+        "target": dict(target),
+        "handshake": handshake,
+        "snapshot": compact_snapshot,
+    }
 
 
 def row_text_tuple(row: Mapping[str, Any], *keys: str) -> tuple[str, ...]:
@@ -74,6 +144,12 @@ def build_next_steps(
         operational_constraints=row_text_tuple(intent, "operational_constraints"),
         non_goals=row_text_tuple(intent, "non_goals"),
     )
+    execution_handoff = build_execution_handoff(
+        target=target,
+        verification_commands=verification_commands(selected.idea_id),
+        proof_boundary=proof_boundary,
+        operational_constraints=row_text_tuple(intent, "operational_constraints"),
+    )
     return {
         "project_title": intent["title"],
         "first_release_workstream_ids": list(first_release_workstreams),
@@ -93,6 +169,7 @@ def build_next_steps(
         "customization_options": list(row_text_tuple(project_brief, "customization_options")),
         "coding_readiness_gates": render_coding_readiness_gates(readiness_contract),
         "coding_readiness_contract": readiness_contract,
+        "execution_engine_handoff": execution_handoff,
         "validation_gates": list(dict.fromkeys([
             design["verification"], *row_text_tuple(selected.row, "validation"),
             *row_text_tuple(selected.row, "success_metrics"),
