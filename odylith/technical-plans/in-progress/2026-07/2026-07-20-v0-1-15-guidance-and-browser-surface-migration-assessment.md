@@ -1,9 +1,26 @@
 Status: In progress
 Created: 2026-07-20
-Updated: 2026-09-09
+Updated: 2026-09-23
 Backlog: B-145
 
 # v0.1.15 Guidance And Browser Surface Migration Assessment
+
+## Current bounded checkpoint (2026-09-23)
+
+Commit `d2bbbad82` integrates the Greenfield completion seam across the typed
+Execution Engine handoff, staged Delivery Intelligence v4 validation, and the
+host-neutral post-confirm `Odylith Assist` fallback. The current authored
+first-path equivalent passes `105` focused custody/order/completion checks; the
+fresh non-holdout Greenfield frontier passes `2,097` tests in `6m54s`. The
+active performance contract is the advisory `90/120/150` profile set, with the
+existing model window and operational safety timeout unchanged. This checkpoint
+improves end-to-end evidence flow but does not claim release readiness: full
+distribution and clean-install proof, normal/empty/fallback/degraded/error
+browser coverage, native intervention activation plus chat visibility, an
+independent strong/Astra semantic review, and the untouched final holdout remain
+required. The generated refresh lane is currently fail-closed by known managed
+file drift (`RECOVERY_REQUIRED`); generated surfaces must be refreshed before
+this plan can close.
 
 ## Current bounded checkpoint (2026-09-10)
 

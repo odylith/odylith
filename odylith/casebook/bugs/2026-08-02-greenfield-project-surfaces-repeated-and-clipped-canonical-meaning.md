@@ -2007,3 +2007,17 @@
   Focused Greenfield/Compass proof passes `1,525/1,525`. V30 is a qualified
   source candidate, not a winner, until one immutable build passes the unchanged
   public `14/14`, `60/90/120`, browser, recovery, and independent-review gate.
+
+- Integrated handoff checkpoint (2026-09-23, commit `d2bbbad82`): The current
+  authored first-path equivalent passes `105` focused event-ordering, custody,
+  authored-semantics and completion-handoff tests. The fresh non-holdout
+  Greenfield frontier passes `2,097` tests in `6m54s`. The staged package now
+  carries a typed Execution Engine handoff (canonical handshake, snapshot and
+  validation bundle), validates the staged Delivery Intelligence v4 artifact
+  before sealing, and emits an explicit host-neutral `Odylith Assist` fallback
+  in post-confirm completion output. The production performance profiles remain
+  the advisory `90/120/150` tiers with the existing model and operational windows.
+  This is a bounded integration checkpoint, not closure: clean-install/full-
+  distribution proof, the complete browser matrix, native automatic intervention
+  activation and chat delivery, independent strong/Astra semantic adjudication,
+  and the untouched final holdout remain open. Status stays Open.

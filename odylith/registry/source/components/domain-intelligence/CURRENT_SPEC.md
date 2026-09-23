@@ -4,6 +4,21 @@ Last updated: 2026-09-23
 
 ## Overview
 
+### Integrated Greenfield handoff (2026-09-23)
+
+The current Greenfield path preserves one typed canonical package while exposing
+three explicit downstream proof seams: `execution_engine_handoff` carries the
+validated Execution Engine handshake, canonical snapshot and validation bundle;
+the staged Delivery Intelligence v4 artifact is validated before sealing; and
+post-confirm completion includes a host-neutral `Odylith Assist` fallback that
+keeps Observation, Proposal and Assist distinct. The current authored first-path
+equivalent passes `105` focused checks and the non-holdout Greenfield frontier
+passes `2,097` tests. These are bounded source-local results, not release
+qualification. Clean install/full distribution, browser state coverage, native
+intervention activation/chat visibility, independent strong review and untouched
+holdout adjudication remain open. The active timing contract is advisory
+`90/120/150` with existing model and operational windows unchanged.
+
 The integrated standard profile keeps participant-first ownership and uses Astra
 medium for remaining authoring. The exact 162cf2507 installed campaign completes
 eleven packages and one material clarification, then stops on a rescue-profile

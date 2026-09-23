@@ -22,10 +22,13 @@ flowchart TB
       denied["No admitted package<br/>No retry, repair cascade or governed write"]
       projections["Deterministic source and design projections<br/>4–5 Radar, 4–5 Registry, five Atlas views<br/>Exact release membership and dependency-ready task"]
       staged_surfaces["Temporary-root surface rendering<br/>Shared read lock holds the validated baseline<br/>No detached narration queue or worker"]
+      delivery_proof["Staged Delivery Intelligence proof<br/>v4 artifact validated before sealing"]
       quality["Pre-confirm complete-package gates<br/>Three-role receipt bound to source and intent<br/>Independent release qualification remains open"]
+      execution_handoff["Typed Execution Engine handoff<br/>Canonical handshake, snapshot and validation bundle"]
+      intervention_fallback["Host-neutral intervention fallback<br/>Observation / Proposal / Assist remain distinct"]
       timing["Proposal timing gate<br/>90 / 120 / 150-second advisory targets<br/>165-second model window; below 180 seconds overall"]
       custody --> review
-      review -- "admitted unchanged" --> projections --> staged_surfaces --> quality --> timing
+      review -- "admitted unchanged" --> projections --> staged_surfaces --> delivery_proof --> quality --> execution_handoff --> intervention_fallback --> timing
       review -- "denied, unavailable or late" --> denied
     end
 
@@ -96,7 +99,7 @@ flowchart TB
     classDef constraint fill:#FFF8E6,stroke:#F6D98B,color:#132033,stroke-width:1px;
     classDef invalid fill:#FFF1F0,stroke:#F7B4AE,color:#132033,stroke-width:1px;
     class request,baseline,select_people,people,model_pass,typed_graph primary;
-    class custody,review,projections,staged_surfaces,quality,timing,bundle_scope,live_telemetry,direct_live execution;
+    class custody,review,projections,staged_surfaces,delivery_proof,quality,execution_handoff,intervention_fallback,timing,bundle_scope,live_telemetry,direct_live execution;
     class write_set,generation_manifest,entry,sealed,decision,edit,reject,confirm,publish,observed,navigate,captured_status,later,recovery,owners,evaluator,acceptance,confidence,retained governance;
     class ambiguity,drift constraint;
     class clarify,denied,replace invalid;
