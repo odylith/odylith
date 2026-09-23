@@ -54,6 +54,11 @@ review, or final holdout proof.
 The existing release floors also remain green: Discipline validation passes,
 and guidance-behavior validation checks `6` cases across `11` guidance checks.
 
+The formal self-host release contract passes for `v0.1.15`. The active
+maintainer worktree is deliberately `detached_source_local` with a
+`source_checkout` runtime, so local-runtime posture is not release eligible and
+must not be presented as shipped-release proof.
+
 The integrated standard profile keeps participant-first ownership and uses Astra
 medium for remaining authoring. The exact 162cf2507 installed campaign completes
 eleven packages and one material clarification, then stops on a rescue-profile

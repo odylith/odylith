@@ -39,6 +39,11 @@ Existing release floors remain green at this checkpoint: Discipline validation
 passes, and guidance-behavior validation checks `6` cases across `11` guidance
 checks.
 
+The formal self-host release contract passes for `v0.1.15`. The active
+maintainer worktree remains deliberately `detached_source_local` with a
+`source_checkout` runtime, so local-runtime posture is not release eligible and
+must not be presented as shipped-release proof.
+
 Commit `d2bbbad82` integrates the Greenfield completion seam across the typed
 Execution Engine handoff, staged Delivery Intelligence v4 validation, and the
 host-neutral post-confirm `Odylith Assist` fallback. The current authored
