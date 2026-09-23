@@ -964,6 +964,33 @@ def test_duplicate_aware_lookup_prefers_existing_records_over_new_duplicates(tmp
     assert bundle["proposal"]["apply_supported"] is False
 
 
+def test_current_prompt_workstream_anchor_precedes_inherited_session_anchor(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+    _seed_workstream(tmp_path, workstream_id="B-001", title="Older active lane")
+    _seed_workstream(tmp_path, workstream_id="B-142", title="Universal greenfield domain intelligence")
+
+    bundle = engine.build_intervention_bundle(
+        repo_root=tmp_path,
+        observation=surface_runtime.observation_envelope(
+            host_family="codex",
+            turn_phase="post_bash_checkpoint",
+            session_id="session-current-anchor",
+            prompt_excerpt="Continue Greenfield B-142 integration with topology and governance proof.",
+            changed_paths=["src/odylith/runtime/domain_intelligence/greenfield_handoff_contract.py"],
+            active_target_refs=[
+                {"kind": "workstream", "id": "B-001", "path": "", "label": "B-001"},
+            ],
+        ),
+    )
+
+    radar_action = next(
+        row for row in bundle["proposal"]["actions"] if row["surface"] == "radar"
+    )
+    assert radar_action["target_id"] == "B-142"
+    governance_fact = next(row for row in bundle["facts"] if row["kind"] == "governance_truth")
+    assert governance_fact["headline"].startswith("B-142 is an active Radar lane")
+
+
 def test_context_packet_summary_feeds_engine_without_legacy_packet_summary(tmp_path: Path) -> None:
     _seed_repo(tmp_path)
     observation = surface_runtime.observation_envelope(

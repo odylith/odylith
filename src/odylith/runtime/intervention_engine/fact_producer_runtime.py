@@ -308,12 +308,20 @@ def collect_facts(
         )
         if capture_opportunity_fact is not None:
             facts.append(capture_opportunity_fact)
-    if lookup.get("workstream_ids") and _allow_repo_fact(
+    prompt_workstream_ids = _normalize_string_list(
+        signal_profile.get("prompt_explicit_workstream_ids")
+    )
+    fact_workstream_ids = (
+        prompt_workstream_ids
+        if prompt_workstream_ids
+        else _normalize_string_list(lookup.get("workstream_ids"))
+    )
+    if fact_workstream_ids and _allow_repo_fact(
         observation=observation,
         signal_profile=signal_profile,
         kind="workstream",
     ):
-        ws_id = lookup["workstream_ids"][0]
+        ws_id = fact_workstream_ids[0]
         facts.append(
             _fact(
                 "governance_truth",
