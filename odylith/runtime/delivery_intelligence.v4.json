@@ -8445,7 +8445,7 @@
       ]
     }
   ],
-  "generated_utc": "2026-09-23 19:44:11Z",
+  "generated_utc": "2026-09-23 20:05:38Z",
   "indexes": {
     "cases": {
       "case-component-atlas": "component:atlas",
@@ -11976,7 +11976,7 @@
         "cross_surface_convergence": 98,
         "decision_debt": 24,
         "governance_lag": 19,
-        "workstream_concentration": 35
+        "workstream_concentration": 34
       },
       "surface_contributions": [
         {
@@ -19717,7 +19717,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-008 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Dashboard is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -20612,7 +20612,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-009 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Benchmark is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -21521,7 +21521,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-010 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Dashboard is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -22476,7 +22476,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-011 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Dashboard is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -29944,7 +29944,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-019 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Benchmark is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -30828,7 +30828,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-020 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Benchmark is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -37304,7 +37304,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-027 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Dashboard is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -38237,7 +38237,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-028 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Dashboard is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -41038,7 +41038,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-031 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Governance Intervention Engine is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Benchmark is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -59302,7 +59302,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-051 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Dashboard is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -62753,7 +62753,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-055 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Dashboard is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -65467,7 +65467,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-058 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Governance Intervention Engine is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Benchmark is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -68292,7 +68292,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-061 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Benchmark is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -69239,7 +69239,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-062 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Compass is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Casebook is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -75613,7 +75613,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-069 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Compass is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Benchmark is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -78342,7 +78342,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-072 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Compass is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Benchmark is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -83301,7 +83301,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-078 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Compass is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Casebook is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -84129,7 +84129,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-079 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Radar is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Execution Engine is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -99739,7 +99739,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-096 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Compass is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Benchmark is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -101640,7 +101640,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-098 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Dashboard is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -102578,7 +102578,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-099 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Governance Intervention Engine is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Benchmark is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -103471,7 +103471,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-100 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Execution Engine is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -104353,7 +104353,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-101 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Execution Engine is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -105246,7 +105246,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-102 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Execution Engine is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -106128,7 +106128,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-103 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Execution Engine is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -107027,7 +107027,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-104 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Execution Engine is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -108783,7 +108783,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-106 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Governance Intervention Engine is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Execution Engine is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -110485,7 +110485,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-108 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Governance Intervention Engine is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Benchmark is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -127370,7 +127370,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-127 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Migration Runtime is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -144039,9 +144039,9 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-09-23T12:36:39-07:00",
+        "latest_event_ts_iso": "2026-09-23T19:57:44Z",
         "latest_explicit_ts_iso": "2026-09-23T12:36:39-07:00",
-        "latest_signal_kind": "implementation",
+        "latest_signal_kind": "intervention_card",
         "linked_components": [
           "atlas"
         ],
@@ -144455,9 +144455,9 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-09-17T06:39:19-07:00",
+        "latest_event_ts_iso": "2026-09-23T19:57:44Z",
         "latest_explicit_ts_iso": "2026-09-17T06:39:19-07:00",
-        "latest_signal_kind": "implementation",
+        "latest_signal_kind": "intervention_card",
         "linked_components": [
           "benchmark"
         ],
@@ -144834,7 +144834,7 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-09-08T21:40:03Z",
+        "latest_event_ts_iso": "2026-09-23T19:57:44Z",
         "latest_explicit_ts_iso": "2026-06-25T21:21:10-07:00",
         "latest_signal_kind": "intervention_card",
         "linked_components": [
@@ -145155,9 +145155,9 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-09-19T17:24:23-07:00",
+        "latest_event_ts_iso": "2026-09-23T19:57:44Z",
         "latest_explicit_ts_iso": "2026-09-19T17:24:23-07:00",
-        "latest_signal_kind": "statement",
+        "latest_signal_kind": "intervention_card",
         "linked_components": [
           "casebook"
         ],
@@ -145578,9 +145578,9 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-09-23T12:36:39-07:00",
+        "latest_event_ts_iso": "2026-09-23T19:57:44Z",
         "latest_explicit_ts_iso": "2026-09-23T12:36:39-07:00",
-        "latest_signal_kind": "implementation",
+        "latest_signal_kind": "intervention_card",
         "linked_components": [
           "compass"
         ],
@@ -146040,9 +146040,9 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-09-19T17:43:37-07:00",
+        "latest_event_ts_iso": "2026-09-23T19:57:44Z",
         "latest_explicit_ts_iso": "2026-09-19T17:43:37-07:00",
-        "latest_signal_kind": "decision",
+        "latest_signal_kind": "intervention_card",
         "linked_components": [
           "dashboard"
         ],
@@ -146508,9 +146508,9 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-09-17T06:39:19-07:00",
+        "latest_event_ts_iso": "2026-09-23T19:57:44Z",
         "latest_explicit_ts_iso": "2026-09-17T06:39:19-07:00",
-        "latest_signal_kind": "implementation",
+        "latest_signal_kind": "intervention_card",
         "linked_components": [
           "delivery-intelligence"
         ],
@@ -146888,9 +146888,9 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-09-23T12:36:39-07:00",
+        "latest_event_ts_iso": "2026-09-23T19:57:44Z",
         "latest_explicit_ts_iso": "2026-09-23T12:36:39-07:00",
-        "latest_signal_kind": "implementation",
+        "latest_signal_kind": "intervention_card",
         "linked_components": [
           "domain-intelligence"
         ],
@@ -147108,7 +147108,7 @@
         "cross_surface_convergence": 100,
         "decision_debt": 16,
         "governance_lag": 18,
-        "workstream_concentration": 74
+        "workstream_concentration": 56
       },
       "surface_contributions": [
         {
@@ -147233,9 +147233,9 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-09-17T06:39:19-07:00",
+        "latest_event_ts_iso": "2026-09-23T19:57:44Z",
         "latest_explicit_ts_iso": "2026-09-17T06:39:19-07:00",
-        "latest_signal_kind": "implementation",
+        "latest_signal_kind": "intervention_card",
         "linked_components": [
           "execution-engine"
         ],
@@ -147796,9 +147796,9 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-09-23T12:36:39-07:00",
+        "latest_event_ts_iso": "2026-09-23T19:57:44Z",
         "latest_explicit_ts_iso": "2026-09-23T12:36:39-07:00",
-        "latest_signal_kind": "implementation",
+        "latest_signal_kind": "intervention_card",
         "linked_components": [
           "governance-intervention-engine"
         ],
@@ -148456,7 +148456,7 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-09-08T21:40:03Z",
+        "latest_event_ts_iso": "2026-09-23T19:57:44Z",
         "latest_explicit_ts_iso": "2026-07-18T12:46:04-07:00",
         "latest_signal_kind": "intervention_card",
         "linked_components": [
@@ -148782,9 +148782,9 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-09-23T12:36:39-07:00",
+        "latest_event_ts_iso": "2026-09-23T19:57:44Z",
         "latest_explicit_ts_iso": "2026-09-23T12:36:39-07:00",
-        "latest_signal_kind": "implementation",
+        "latest_signal_kind": "intervention_card",
         "linked_components": [
           "odylith"
         ],
@@ -149313,7 +149313,7 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-09-08T21:40:03Z",
+        "latest_event_ts_iso": "2026-09-23T19:57:44Z",
         "latest_explicit_ts_iso": "2026-08-03T15:23:31-07:00",
         "latest_signal_kind": "intervention_card",
         "linked_components": [
@@ -149708,7 +149708,7 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-09-08T21:40:03Z",
+        "latest_event_ts_iso": "2026-09-23T19:57:44Z",
         "latest_explicit_ts_iso": "2026-08-02T07:32:56-07:00",
         "latest_signal_kind": "intervention_card",
         "linked_components": [
@@ -150162,7 +150162,7 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-09-08T21:40:03Z",
+        "latest_event_ts_iso": "2026-09-23T19:57:44Z",
         "latest_explicit_ts_iso": "2026-07-10T21:36:13-07:00",
         "latest_signal_kind": "intervention_card",
         "linked_components": [
@@ -150494,7 +150494,7 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-09-08T21:40:03Z",
+        "latest_event_ts_iso": "2026-09-23T19:57:44Z",
         "latest_explicit_ts_iso": "2026-07-10T21:36:13-07:00",
         "latest_signal_kind": "intervention_card",
         "linked_components": [
@@ -150818,7 +150818,7 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-09-08T21:40:03Z",
+        "latest_event_ts_iso": "2026-09-23T19:57:44Z",
         "latest_explicit_ts_iso": "2026-07-10T21:36:13-07:00",
         "latest_signal_kind": "intervention_card",
         "linked_components": [
@@ -151163,7 +151163,7 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-09-08T21:40:03Z",
+        "latest_event_ts_iso": "2026-09-23T19:57:44Z",
         "latest_explicit_ts_iso": "2026-07-10T21:36:13-07:00",
         "latest_signal_kind": "intervention_card",
         "linked_components": [
@@ -151508,7 +151508,7 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-09-08T21:40:03Z",
+        "latest_event_ts_iso": "2026-09-23T19:57:44Z",
         "latest_explicit_ts_iso": "2026-07-10T21:36:13-07:00",
         "latest_signal_kind": "intervention_card",
         "linked_components": [
@@ -151876,7 +151876,7 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-09-08T21:40:03Z",
+        "latest_event_ts_iso": "2026-09-23T19:57:44Z",
         "latest_explicit_ts_iso": "2026-07-10T21:36:13-07:00",
         "latest_signal_kind": "intervention_card",
         "linked_components": [
@@ -152243,9 +152243,9 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-09-23T12:36:39-07:00",
+        "latest_event_ts_iso": "2026-09-23T19:57:44Z",
         "latest_explicit_ts_iso": "2026-09-23T12:36:39-07:00",
-        "latest_signal_kind": "implementation",
+        "latest_signal_kind": "intervention_card",
         "linked_components": [
           "radar"
         ],
@@ -152666,9 +152666,9 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-09-23T12:36:39-07:00",
+        "latest_event_ts_iso": "2026-09-23T19:57:44Z",
         "latest_explicit_ts_iso": "2026-09-23T12:36:39-07:00",
-        "latest_signal_kind": "implementation",
+        "latest_signal_kind": "intervention_card",
         "linked_components": [
           "registry"
         ],
@@ -153080,9 +153080,9 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-09-23T12:36:39-07:00",
+        "latest_event_ts_iso": "2026-09-23T19:57:44Z",
         "latest_explicit_ts_iso": "2026-09-23T12:36:39-07:00",
-        "latest_signal_kind": "implementation",
+        "latest_signal_kind": "intervention_card",
         "linked_components": [
           "release"
         ],
@@ -153475,7 +153475,7 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-09-08T21:40:03Z",
+        "latest_event_ts_iso": "2026-09-23T19:57:44Z",
         "latest_explicit_ts_iso": "2026-04-16T16:13:46-07:00",
         "latest_signal_kind": "intervention_card",
         "linked_components": [
@@ -154080,7 +154080,7 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-09-08T21:40:03Z",
+        "latest_event_ts_iso": "2026-09-23T19:57:44Z",
         "latest_explicit_ts_iso": "2026-07-18T01:57:49-07:00",
         "latest_signal_kind": "intervention_card",
         "linked_components": [
@@ -154455,9 +154455,9 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-09-15T19:15:04-07:00",
+        "latest_event_ts_iso": "2026-09-23T19:57:44Z",
         "latest_explicit_ts_iso": "2026-09-15T19:15:04-07:00",
-        "latest_signal_kind": "implementation",
+        "latest_signal_kind": "intervention_card",
         "linked_components": [
           "subagent-router"
         ],
@@ -154848,7 +154848,7 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-09-08T21:40:03Z",
+        "latest_event_ts_iso": "2026-09-23T19:57:44Z",
         "latest_explicit_ts_iso": "2026-08-28T17:40:37-07:00",
         "latest_signal_kind": "intervention_card",
         "linked_components": [
