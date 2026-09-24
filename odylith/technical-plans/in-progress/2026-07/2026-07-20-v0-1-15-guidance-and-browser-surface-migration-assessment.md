@@ -57,6 +57,18 @@ matrix with retained evidence and browser proof next; do not change product
 semantics from this diagnostic. Evidence:
 `/tmp/odylith-greenfield-clean.PxI0Kb/installed-positive-rerun.json`.
 
+The source-provenanced release corpus itself passes its policy preflight on
+the pushed clean archive: `200` cases, `10` source families, `180` artifacts,
+all five input styles, `20` complete metamorphic groups, and `40/40` approved
+audits. An installed release-tier invocation then stopped before case
+execution because the release-intent contract requires a sealed semantic
+annotation/evaluation root plus a one-shot final-holdout ledger. Those inputs
+were deliberately withheld; no final-holdout bytes were read or claimed.
+Treat this as a correct custody boundary, not a product failure. The next
+gate is the separately governed final semantic lane after installed positive,
+browser, and strong-review prerequisites are green. Evidence:
+`/private/tmp/odylith-greenfield-release-proof.AQNLvW/output/release-campaign.json`.
+
 The latest clean-source intervention status remains partial: Codex reports
 `Activation: degraded` with `12` chat-confirmed Odylith events in the current
 session, while Claude reports `Activation: degraded` with no recorded events.

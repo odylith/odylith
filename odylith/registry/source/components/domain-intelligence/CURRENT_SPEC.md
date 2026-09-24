@@ -32,6 +32,19 @@ release quality. The next gate is a single bounded full-install `proof-tier
 release` run with retained evidence and browser proof; no product mechanism
 change follows from this diagnostic.
 
+### Release corpus / semantic-lane preflight (2026-09-24)
+
+The clean pushed archive passes source-corpus release policy with `200` cases,
+`10` source families, `180` artifacts, all five input styles, `20` complete
+metamorphic groups, and `40/40` approved hash-bound audits. A full-install
+release-tier invocation then stopped before any case ran because the
+release-intent contract requires a sealed semantic annotation/evaluation root
+and one-shot final-holdout ledger. Those inputs were intentionally withheld;
+no final-holdout bytes were read or claimed. This is a custody boundary, not a
+semantic product failure. Do not enter the final semantic lane until the
+installed positive/browser and independent strong-review prerequisites are
+green.
+
 ### Greenfield mechanism cleanup (2026-09-23)
 
 The Greenfield text layer removed its unreachable regex-driven visible-result,

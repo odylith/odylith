@@ -111,3 +111,17 @@
   bounded full-install `proof-tier release` run with retained evidence and
   browser proof; no product mechanism change is justified by this diagnostic.
   Evidence: `/tmp/odylith-greenfield-clean.PxI0Kb/installed-positive-rerun.json`.
+
+- Release-corpus and semantic-lane preflight (2026-09-24): The clean pushed
+  archive's source-provenanced corpus passes its independent release policy:
+  `200` cases, `10` source families, `180` artifacts, all five input styles,
+  `20` complete metamorphic groups, and `40/40` approved hash-bound audits.
+  A full-install release-tier campaign was then invoked against that corpus
+  with retained evidence and browser proof. It stopped before any case ran
+  because the release-intent contract correctly requires a sealed semantic
+  annotation/evaluation input root and a one-shot final-holdout ledger. Those
+  inputs were intentionally not supplied, so no final-holdout bytes were read
+  or claimed. This is a release-lane custody boundary, not a Greenfield
+  semantic failure; the next step is the separately governed final semantic
+  gate after installed positive/browser/strong-review prerequisites are green.
+  Evidence: `/private/tmp/odylith-greenfield-release-proof.AQNLvW/output/release-campaign.json`.
