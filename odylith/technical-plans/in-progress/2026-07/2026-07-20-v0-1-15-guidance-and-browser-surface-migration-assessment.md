@@ -32,6 +32,18 @@ The implementation checkpoint is `6bf5efa7c`; follow-up governance evidence
 correction `86700d308` records the final `442`-line count. Both leave the
 release gates unchanged.
 
+The clean installed-positive qualification attempt against the current `HEAD`
+archive generated hosted-style `0.1.15` assets and exercised all `14` selected
+cases across the advisory `90/120/150` profiles. The matrix completed `14/14`
+cases but passed `0/14`: thirteen were stopped by the provider's invalid
+authoring response with no records created, and one stopped at the
+clarification-required contract. Direct probes reproduced the external
+`credits_exhausted` condition for `gpt-5.6-sol` high and `gpt-5.6-luna` high.
+This is an environment-capacity blocker, not evidence of a new semantic
+regression; the proof namespace cleaned, no governed writes or final-holdout
+reads occurred, and installed positive qualification must be rerun when model
+capacity is available. The release claim remains closed.
+
 The latest clean-source intervention status remains partial: Codex reports
 `Activation: degraded` with `12` chat-confirmed Odylith events in the current
 session, while Claude reports `Activation: degraded` with no recorded events.

@@ -4,6 +4,19 @@ Last updated: 2026-09-23
 
 ## Overview
 
+### Installed positive qualification boundary (2026-09-23)
+
+A clean full-install `0.1.15` discovery matrix exercised all `14` non-holdout
+cases across the advisory `90/120/150` profiles. All `14/14` cases completed
+with `0/14` passes because the external Codex provider exhausted credits before
+semantic authoring: thirteen returned the invalid-authoring/no-records outcome
+and one stopped at the clarification-required contract. Direct probes
+reproduced `credits_exhausted` for the `gpt-5.6-sol` high and `gpt-5.6-luna`
+high profiles. Temporary proof roots cleaned and the protected holdout was not
+read. This evidence does not qualify or disqualify Greenfield semantics; the
+installed positive gate, strong review, and final holdout remain pending a
+capacity-restored rerun.
+
 ### Greenfield mechanism cleanup (2026-09-23)
 
 The Greenfield text layer removed its unreachable regex-driven visible-result,

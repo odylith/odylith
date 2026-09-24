@@ -81,3 +81,17 @@
   mechanism surface, not a release claim; native activation, installed
   positive semantic qualification, strong review, and the protected holdout
   remain open.
+
+- Installed positive qualification attempt (2026-09-23): A clean `HEAD`
+  archive of `0.1.15` was built, hosted-style assets were generated, and the
+  fourteen-case full-install discovery matrix ran with the standard, rescue,
+  and deep `90/120/150` profiles. All `14/14` cases completed but `14/14`
+  were provider-gated before semantic authoring: thirteen returned
+  `greenfield.model.authoring.returned.invalid.response.no.records.were.created`
+  and one exercised the clarification contract without a successful write.
+  Direct provider probes independently reproduced `credits_exhausted` for
+  `gpt-5.6-sol` high and `gpt-5.6-luna` high. The temporary proof namespace
+  cleaned successfully, no governed writes or holdout reads occurred, and no
+  product-semantic conclusion is drawn from this run. Installed positive
+  qualification, strong review, and final holdout gates remain open until
+  model capacity is available.
