@@ -192,6 +192,8 @@ class GreenfieldModelAuthoredIntent:
     remaining_candidate_authoring: dict[str, Any] = field(default_factory=dict)
     semantic_model_call_count: int = 0
     candidate_review: dict[str, Any] = field(default_factory=dict)
+    candidate_revision: dict[str, Any] = field(default_factory=dict)
+    rejected_candidate_review: dict[str, Any] = field(default_factory=dict)
 
 
 def authoring_tier(profile_id: str) -> str:

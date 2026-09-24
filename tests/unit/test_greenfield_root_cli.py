@@ -55,10 +55,20 @@ def test_greenfield_propose_command_returns_one_model_authored_clarification(
             evidence_quotes=(),
         )
     )
+    participant_provider = provider.participant_provider()
+
+    def provider_for_role(**kwargs: object) -> tuple[object, str, str]:
+        selected = (
+            participant_provider
+            if kwargs.get("request_role") == "participant_selection"
+            else provider
+        )
+        return selected, "test-model", "low"
+
     monkeypatch.setattr(
         greenfield_proposals_cli,
         "_greenfield_authoring_provider",
-        lambda **_kwargs: (provider, "test-model", "low"),
+        provider_for_role,
     )
     rc = cli.main(
         [
@@ -83,6 +93,7 @@ def test_greenfield_propose_command_returns_one_model_authored_clarification(
     )
     assert clarification["required_fields"] == ["first_path"]
     assert clarification["consistency_assessment"]["status"] == "material_ambiguity"
+    assert participant_provider.calls == 1
     assert provider.calls == 1
     assert (tmp_path / "odylith/index.html").read_bytes() == publication
     assert greenfield_repository_write_set.greenfield_managed_fingerprints(tmp_path) == baseline

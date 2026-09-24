@@ -18,6 +18,9 @@ from odylith.runtime.domain_intelligence.greenfield_model_outcomes import (
     GreenfieldModelAuthoringError,
     GreenfieldModelRuntimeError,
 )
+from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
+    materialize_model_authored_intent,
+)
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     STANDARD_PROFILE_ID,
 )
@@ -129,6 +132,42 @@ class _InvalidResponseProvider:
         return ["untrusted raw output"]
 
 
+class _SequenceProvider(StructuredAuthoringProvider):
+    def __init__(self, responses: list[dict[str, Any]], *, clock=None, durations=None) -> None:
+        super().__init__(responses[0])
+        self.responses = deepcopy(responses)
+        self.clock = clock
+        self.durations = list(durations or [0.0] * len(responses))
+
+    def generate_structured(self, *, request: object) -> dict[str, Any] | None:
+        index = self.calls
+        self.response = self.responses[index]
+        response = super().generate_structured(request=request)
+        if self.clock is not None:
+            self.clock.value += self.durations[index]
+        return response
+
+
+class _RevisionAuthorProvider(_SequenceProvider):
+    def generate_structured(self, *, request: object) -> dict[str, Any] | None:
+        assert getattr(request, "schema_name", "") in {
+            "greenfield_remaining_candidate_authoring",
+            "greenfield_candidate_revision",
+        }
+        response = super().generate_structured(request=request)
+        if isinstance(response, dict):
+            result = response.get("result")
+            if isinstance(result, dict) and isinstance(result.get("facts"), dict):
+                result["facts"].pop("human_actors", None)
+        return response
+
+
+class _SequenceReviewProvider(_SequenceProvider):
+    def generate_structured(self, *, request: object) -> dict[str, Any] | None:
+        assert getattr(request, "schema_name", "") == "greenfield_candidate_review"
+        return super().generate_structured(request=request)
+
+
 @pytest.mark.parametrize(
     ("source", "response", "expected_citation", "expected_span"),
     [
@@ -207,7 +246,7 @@ def test_join_rejects_non_mapping_result_as_canonical_authoring_error():
         )
 
 
-def test_success_uses_three_roles_and_emits_recomputable_v3_proof(monkeypatch, tmp_path):
+def test_success_uses_three_roles_and_emits_recomputable_v4_proof(monkeypatch, tmp_path):
     complete = _complete_response()
     selector = ParticipantSelectionProvider(complete)
     remaining = RemainingCandidateProvider(complete)
@@ -227,7 +266,8 @@ def test_success_uses_three_roles_and_emits_recomputable_v3_proof(monkeypatch, t
         retained = json.loads(proof.read())
 
     assert isinstance(result, GreenfieldModelAuthoredIntent)
-    assert result.semantic_model_call_count == MAX_GREENFIELD_SEMANTIC_CALLS == 3
+    assert result.semantic_model_call_count == 3
+    assert MAX_GREENFIELD_SEMANTIC_CALLS == 5
     assert selector.calls == remaining.calls == reviewer.calls == 1
     assert selector.requests[0].schema_name == "greenfield_participant_selection"
     assert remaining.requests[0].schema_name == "greenfield_remaining_candidate_authoring"
@@ -420,6 +460,154 @@ def test_three_calls_receive_only_the_shared_deadlines_remaining_time():
     assert result.effective_model_window_seconds == 10.0
 
 
+def test_denial_gets_one_revision_and_fresh_review_within_shared_deadline(
+    monkeypatch, tmp_path
+):
+    clock = _Clock()
+    complete = _complete_response()
+    revised = _complete_response()
+    revised["result"]["facts"]["opportunity"] = None
+    revised["result"]["assumptions"].append(
+        {
+            "applies_to": "opportunity",
+            "statement": "One reviewable berth record can improve berth coordination.",
+        }
+    )
+    selector = _TimedProvider(
+        ParticipantSelectionProvider(complete).response, clock=clock, duration=1.0
+    )
+    author = _RevisionAuthorProvider(
+        [complete, revised], clock=clock, durations=[2.0, 4.0]
+    )
+    reviewer = _SequenceReviewProvider(
+        [
+            {
+                "admissible": False,
+                "issues": [
+                    {
+                        "path": "candidate.accepted_source.facts.opportunity",
+                        "reason": "The selected action is not a complete improvement.",
+                    }
+                ],
+            },
+            {"admissible": True, "issues": []},
+        ],
+        clock=clock,
+        durations=[3.0, 5.0],
+    )
+    proof_path = tmp_path / "proof.json"
+    with proof_path.open("w+b") as proof:
+        monkeypatch.setenv(GREENFIELD_MODEL_PROOF_FD_ENV, str(proof.fileno()))
+        result = author_greenfield_intent(
+            evidence_text=_source(),
+            provider=author,
+            participant_provider_factory=lambda: selector,
+            review_provider_factory=lambda: reviewer,
+            timeout_seconds=30.0,
+            clock=clock,
+        )
+        proof.flush()
+        proof.seek(0)
+        retained = json.loads(proof.read())
+
+    assert isinstance(result, GreenfieldModelAuthoredIntent)
+    assert result.semantic_model_call_count == 5
+    assert result.intent["opportunity"] == ""
+    assert result.rejected_candidate_review["status"] == "denied"
+    assert result.candidate_revision["elapsed_seconds"] == 4.0
+    assert result.candidate_review["status"] == "admitted"
+    assert selector.calls == 1
+    assert author.calls == reviewer.calls == 2
+    assert [request.timeout_seconds for request in author.requests] == [29.0, 24.0]
+    assert [request.timeout_seconds for request in reviewer.requests] == [27.0, 20.0]
+    revision_request = author.requests[1]
+    assert revision_request.prompt_payload["review_issue"]["path"].endswith(
+        ".opportunity"
+    )
+    assert revision_request.prompt_payload["rejected_candidate"]["result"]["facts"][
+        "opportunity"
+    ] is not None
+    assert "only revision attempt" in revision_request.system_prompt
+    assert set(retained) == {
+        "version", "authoring_version", "request", "semantic_model_call_count",
+        "participant_selection", "remaining_candidate_authoring",
+        "rejected_candidate", "rejected_candidate_review", "candidate_revision",
+        "joined_candidate", "candidate_review",
+    }
+    assert retained["semantic_model_call_count"] == 5
+    assert retained["rejected_candidate_review"]["response"]["admissible"] is False
+    assert retained["candidate_review"]["response"] == {
+        "admissible": True,
+        "issues": [],
+    }
+
+
+def test_revision_receipts_reach_the_staged_candidate_without_expanding_sealed_roles(
+    tmp_path,
+):
+    complete = _complete_response()
+    selector = ParticipantSelectionProvider(complete)
+    author = _RevisionAuthorProvider([complete, complete])
+    reviewer = _SequenceReviewProvider([
+        {
+            "admissible": False,
+            "issues": [{
+                "path": "candidate.accepted_source.facts.opportunity",
+                "reason": "The selected action is not a complete improvement.",
+            }],
+        },
+        {"admissible": True, "issues": []},
+    ])
+    receipt: dict[str, Any] = {}
+
+    candidate = materialize_model_authored_intent(
+        prompt=_source(),
+        repo_root=tmp_path,
+        authoring_provider=author,
+        participant_provider_factory=lambda: selector,
+        review_provider_factory=lambda: reviewer,
+        authoring_receipt=receipt,
+        clock=lambda: 0.0,
+    )
+
+    assert receipt["semantic_model_call_count"] == 5
+    assert receipt["rejected_candidate_review"]["status"] == "denied"
+    assert receipt["candidate_revision"]["model_profile"]["model"] == "gpt-6-astra"
+    assert receipt["candidate_review"]["status"] == "admitted"
+    observed = candidate["product_intent_authority"]["operating_envelope"][
+        "model_contract"
+    ]["observed"]
+    assert set(observed) == {"participant_selection", "remaining_candidate_authoring"}
+
+
+def test_repeated_review_denial_fails_closed_without_a_second_revision():
+    complete = _complete_response()
+    selector = ParticipantSelectionProvider(complete)
+    author = _RevisionAuthorProvider([complete, complete])
+    reviewer = _SequenceReviewProvider(
+        [
+            {
+                "admissible": False,
+                "issues": [{"path": "candidate.accepted_source.facts.opportunity", "reason": "Invalid."}],
+            },
+            {
+                "admissible": False,
+                "issues": [{"path": "candidate.accepted_source.source_precedence", "reason": "Still invalid."}],
+            },
+        ]
+    )
+    with pytest.raises(GreenfieldModelAuthoringError, match="could not be verified"):
+        author_greenfield_intent(
+            evidence_text=_source(),
+            provider=author,
+            participant_provider_factory=lambda: selector,
+            review_provider_factory=lambda: reviewer,
+            clock=lambda: 0.0,
+        )
+    assert selector.calls == 1
+    assert author.calls == reviewer.calls == 2
+
+
 def test_request_mutation_fails_closed_without_later_calls():
     complete = _complete_response()
 
@@ -488,5 +676,5 @@ def test_missing_remaining_provider_fails_before_participant_selection(
 def test_old_two_call_orchestration_is_not_exported():
     assert not hasattr(greenfield_model_intent_authoring, "author_greenfield_intent")
     assert not hasattr(greenfield_model_intent_authoring, "GREENFIELD_MODEL_PROOF_FD_ENV")
-    assert MAX_GREENFIELD_SEMANTIC_CALLS == 3
+    assert MAX_GREENFIELD_SEMANTIC_CALLS == 5
     assert GREENFIELD_INTENT_AUTHORING_VERSION.endswith(".v68")

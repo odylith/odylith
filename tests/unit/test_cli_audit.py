@@ -591,7 +591,7 @@ def test_greenfield_propose_dispatches_the_public_cli_adapter(monkeypatch, tmp_p
     rc = cli._cmd_greenfield(args)  # noqa: SLF001
 
     assert rc == 92
-    assert captured["module"] == "odylith.runtime.domain_intelligence.greenfield_proposals_cli"
+    assert captured["module"] == "odylith.runtime.domain_intelligence.greenfield_cli"
     assert captured["argv"] == [
         "propose",
         "--repo-root",

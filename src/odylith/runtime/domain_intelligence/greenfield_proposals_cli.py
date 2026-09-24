@@ -502,7 +502,7 @@ def _greenfield_authoring_provider(
     profile = get_greenfield_model_profile(profile_id)
     if request_role == "participant_selection":
         model, effort = profile.participant_model, profile.participant_reasoning_effort
-    elif request_role == "remaining_candidate_authoring":
+    elif request_role in {"remaining_candidate_authoring", "candidate_revision"}:
         model, effort = profile.model, profile.reasoning_effort
     elif request_role == "candidate_review":
         model, effort = profile.review_model, profile.review_reasoning_effort

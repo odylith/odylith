@@ -11,6 +11,9 @@ from typing import Any
 from greenfield_model_profiles import MODEL_PROFILES
 from greenfield_model_profiles import UNAVAILABLE_PROVIDER_PROFILE
 from greenfield_model_profiles import model_stage_observation_issues
+from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
+    CANDIDATE_REVIEW_VERSION,
+)
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     get_greenfield_model_profile,
     greenfield_model_profile_observation_issues,
@@ -60,7 +63,7 @@ def authored_model_result_binding_issues(
         issues.append("sealed candidate-review receipt is missing")
         return tuple(issues)
     if (
-        receipt.get("version") != "odylith.greenfield.candidate-review.v2"
+        receipt.get("version") != CANDIDATE_REVIEW_VERSION
         or receipt.get("status") != "admitted"
     ):
         issues.append("sealed candidate-review receipt is not admitted")
@@ -234,7 +237,7 @@ def model_profile_release_proof(
             "remaining_candidate_authoring_reasoning_effort": contract.reasoning_effort,
             "candidate_review_model": contract.review_model,
             "candidate_review_reasoning_effort": contract.review_reasoning_effort,
-            "maximum_semantic_model_calls": 3,
+            "maximum_semantic_model_calls": 5,
             "performance_target_seconds": contract.performance_target_seconds,
             "operational_timeout_seconds": contract.operational_timeout_seconds,
             "performance_target_met": (

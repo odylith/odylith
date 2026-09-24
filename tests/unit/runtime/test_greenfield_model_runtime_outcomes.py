@@ -80,7 +80,11 @@ def _run(tmp_path, monkeypatch, capsys, *, role, failure, command, output_format
         "participant": participant,
         "reviewer": reviewer,
     }
-    setup_order = ("author", "participant", "reviewer")
+    setup_order = (
+        ("author", "participant", "reviewer", "reviewer")
+        if failure == "denied"
+        else ("author", "participant", "reviewer")
+    )
     setup_roles = []
 
     def resolve(*_args, **_kwargs):
@@ -105,8 +109,8 @@ def _run(tmp_path, monkeypatch, capsys, *, role, failure, command, output_format
     no_dispatch = failure in {"absent", "setup_timeout"}
     expected_calls = {
         "participant": 0 if no_dispatch else 1,
-        "author": 0 if no_dispatch or role == "participant" else 1,
-        "reviewer": 0 if no_dispatch or role != "reviewer" else 1,
+        "author": 0 if no_dispatch or role == "participant" else 2 if failure == "denied" else 1,
+        "reviewer": 0 if no_dispatch or role != "reviewer" else 2 if failure == "denied" else 1,
     }
     if no_dispatch and role == "reviewer":
         expected_calls.update(participant=1, author=1)

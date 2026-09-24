@@ -1,5 +1,31 @@
 - Bug ID: CB-303
 
+- Installed V68 Review-Rejection Reopen (2026-09-24): Exact clean distribution
+  `64e02fa19cedcd6e1c1513ef025b9398746049b7` passes checksums, provenance,
+  fresh install, upgrade and unavailable-author no-write smoke. Its full-install
+  14-case discovery matrix with retained private evidence, per-case browser proof
+  and commit-recovery proof passes 12 cases at 10/10 and fails closed on two
+  independently useful requests before transaction staging. Film archive rights
+  clearance selects the isolated action `publish screening readiness` as an
+  accepted Opportunity; immutable review rejects it because the role requires a
+  complete improvement or benefit. Quantum communication preserves the three
+  source events but cites only observe-before-compare precedence; immutable review
+  rejects the missing configure/launch-before-compare edge. No governed record is
+  written for either failure, all successful packages contain 4–5 Radar
+  workstreams, 4–5 Registry specs and five Atlas diagrams, successful browser
+  cases pass, and the independent commit-recovery campaign passes SIGKILL,
+  operator-conflict, fsync rollback and same-hash retry. This is one recurring
+  ownership defect: the reviewer can produce a precise typed-path witness but the
+  pre-confirm pipeline can only stop, not revise and re-adjudicate the candidate.
+  Do not add vocabulary rules, regex, fixture exceptions, post-confirm repair or
+  a tier cascade. Compare one bounded reviewer-guided full-candidate revision on
+  denial, followed by independent re-review under the existing 180-second
+  operational safety envelope; retain the failed candidate and both verdicts,
+  invoke no revision on admitted candidates, and reject the alternative if either
+  retained failure remains invalid, a valid control changes, or latency/receipt
+  custody becomes unbounded. Evidence:
+  `/private/tmp/odylith-greenfield-installed-current.Zeyi14/`.
+
 - Cache-Import Candidate Rejected And Removed (2026-09-10): The bounded invalidation-owner candidate improves its focused controls from nine passes/four failures to eleven passes/two failures, preserving the characterized global and repo-scoped cache behavior. Both cold actual-refresh controls still fail: Compass refresh reaches workspace-daemon/runtime-artifacts and the memory backend independently of the invalidation call. Reject the declared search/store/memory-free cold-refresh prediction rather than chasing another dependency cone. The agent restores exactly its seven source-file changes and removes its newly created test; all seven sources match pre-edit 9786fd05 bytes/modes, scoped diff is empty, and the rejected patch/test remain privately recoverable. No new compiler/model call or measured savings follows. This supersedes only the proposed cache optimization in the following checkpoint, not the successful fresh package/publication/browser evidence or the external 63.56-second failure. Preserve the raw profile's attribution limits: the failed import predicate does not prove every import unavoidable or quantify its cost. Evidence: /private/tmp/odylith-cache-invalidation-proof.uEDfkM/OUTCOME.md and restoration.json. Net retained source/test complexity change is zero.
 
 - Fresh Installed Package And Latency Boundary (2026-09-10): A complete distribution derived from 9786fd05 installs with pinned runtime and full local memory. One unchanged maintained development request produces five distinct workstreams, five components and five useful diagrams through the current complete-author/binary-review mechanism. Independent full-package adjudication finds no supported P0/P1; incomplete participant inventory, repetitive detailed prose and weak local verification remain P2/advisory. All requested actions and complete first-path proof obligations survive. Exact-hash confirmation completes in 2.491 seconds with no model observations, and canonical sealed-byte, active-generation and governed-surface readback checks report no issues. The unchanged per-case desktop/mobile browser state matrix passes, retaining 48 screenshots across normal, invalid-route recovery, Casebook empty and Atlas degraded/error states. Root visual inspection covers Project, Radar, Registry, Atlas, Compass and Casebook; passing this matrix does not close the separate full-suite history failure or prove perfect prose quality. External startup-plus-proposal time is 63.56 seconds: the sixty-second gate fails despite the internal 59.483-second manifest. Author and review use 52.939 seconds within the shared fifty-five-second window. One provider-free compiler profile preserves that elapsed receipt and all original inputs; it takes 8.220 seconds under instrumentation and is correctly rejected at diagnostic total 61.154 seconds. Profile import attribution motivates one bounded candidate: move complete cache invalidation to its existing lightweight process-state owner, retaining every cache, read-session and surface check. Savings are unproved; reject the candidate if it only defers imports, changes artifacts or weakens invalidation. No prompt/schema/profile/deadline change, identical live retry or broader architecture rewrite is warranted. Evidence: /private/tmp/odylith-current-distribution.LLibTP/ and /private/tmp/odylith-compiler-profile.4SyP2l/OUTCOME.md. Successful internal repair, all-profile latency/generalization, populated-predecessor upgrade and current desktop automatic intervention remain open.

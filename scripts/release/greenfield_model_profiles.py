@@ -37,6 +37,9 @@ from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring 
 from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
     candidate_review_payload,
 )
+from odylith.runtime.domain_intelligence.greenfield_candidate_revision import (
+    candidate_revision_payload,
+)
 
 
 MODEL_PROFILE_ASSIGNMENT_VERSION = "case-id-balanced-sha256-v1"
@@ -232,7 +235,7 @@ def model_profile_evidence(
         "lower_capability_scope": (
             "remaining_candidate_authoring" if contract.lower_capability else "not_applicable"
         ),
-        "maximum_semantic_model_calls": 3,
+        "maximum_semantic_model_calls": 5,
         "configured": configured,
         "observed": observation,
         "stage_observation": (
@@ -314,21 +317,26 @@ def _model_stage_observation_evidence(
     if response_kind not in {"authored", "clarification_required"}:
         issues.append("retained model response kind is invalid")
 
-    expected_fields = {
-        "version", "authoring_version", "request", "semantic_model_call_count",
-        "participant_selection", "remaining_candidate_authoring",
-    }
-    if response_kind == "authored":
-        expected_fields.update({"joined_candidate", "candidate_review"})
-    if set(retained) != expected_fields:
-        issues.append("retained model observation has missing or unsupported fields")
-
     call_count = retained.get("semantic_model_call_count")
     if type(call_count) is not int:
         issues.append("retained semantic model call count is invalid")
         normalized_call_count = 0
     else:
         normalized_call_count = call_count
+
+    revised = response_kind == "authored" and normalized_call_count == 5
+    expected_fields = {
+        "version", "authoring_version", "request", "semantic_model_call_count",
+        "participant_selection", "remaining_candidate_authoring",
+    }
+    if response_kind == "authored":
+        expected_fields.update({"joined_candidate", "candidate_review"})
+    if revised:
+        expected_fields.update({
+            "rejected_candidate", "rejected_candidate_review", "candidate_revision",
+        })
+    if set(retained) != expected_fields:
+        issues.append("retained model observation has missing or unsupported fields")
 
     sealed_roles = {
         role: _mapping(sealed_observation.get(role))
@@ -410,6 +418,8 @@ def _model_stage_observation_evidence(
         issues.append("retained authoring stages exceed the shared model window")
 
     authored = None
+    rejected_authored = None
+    expected_remainder_request: dict[str, Any] = {}
     if source:
         try:
             if _mapping(participant.get("request")) != {"source": source}:
@@ -427,15 +437,18 @@ def _model_stage_observation_evidence(
                 joined = join_frozen_greenfield_participants(
                     remainder_response, participant_citations,
                 )
-                if retained.get("joined_candidate") != joined:
+                retained_candidate_key = "rejected_candidate" if revised else "joined_candidate"
+                if retained.get(retained_candidate_key) != joined:
                     raise ValueError("joined candidate mismatch")
-                authored = validate_greenfield_authoring_response(
+                rejected_authored = validate_greenfield_authoring_response(
                     joined, evidence_text=source,
                     elapsed_seconds=_float_value(remainder.get("elapsed_seconds")),
                     provider=_mapping(remainder.get("provider")), profile_id=profile,
                     effective_timeout_seconds=_float_value(remainder.get("timeout_seconds")),
                     semantic_model_call_count=2,
                 )
+                if not revised:
+                    authored = rejected_authored
             elif response_kind == "clarification_required":
                 validate_greenfield_authoring_response(
                     remainder_response, evidence_text=source,
@@ -448,8 +461,93 @@ def _model_stage_observation_evidence(
             issues.append("retained participant-first response fails canonical source-bound validation")
 
     if response_kind == "authored":
-        if normalized_call_count != 3:
-            issues.append("authored response must record exactly three semantic calls")
+        if normalized_call_count not in {3, 5}:
+            issues.append("authored response must record exactly three or five semantic calls")
+        if revised:
+            rejected_review = _mapping(retained.get("rejected_candidate_review"))
+            request_roles["rejected_candidate_review"] = _request_role_summary(
+                rejected_review
+            )
+            issues.extend(_candidate_review_observation_issues(
+                profile, review=rejected_review, request=request,
+                candidate=_mapping(_mapping(retained.get("rejected_candidate")).get("result")),
+                shared_timeout=shared_timeout, prior_elapsed=prior_elapsed,
+                source_spans=(
+                    rejected_authored.source_spans
+                    if isinstance(rejected_authored, GreenfieldModelAuthoredIntent)
+                    else ()
+                ),
+                admissible=False,
+            ))
+            prior_elapsed += _float_value(rejected_review.get("elapsed_seconds"))
+
+            revision = _mapping(retained.get("candidate_revision"))
+            request_roles["candidate_revision"] = _request_role_summary(revision)
+            expected_revision_fields = {
+                "dispatched", "request_role", "profile_id", "timeout_seconds",
+                "elapsed_seconds", "model", "reasoning_effort", "request", "response",
+                "provider",
+            }
+            if set(revision) != expected_revision_fields:
+                issues.append("retained candidate revision has missing or unsupported fields")
+            if revision.get("dispatched") is not True:
+                issues.append("retained candidate revision was not dispatched")
+            try:
+                issues.extend(_request_role_issues(
+                    profile, request_role="candidate_revision", observation=revision,
+                ))
+            except (TypeError, ValueError, OverflowError):
+                issues.append("retained candidate revision request metadata is invalid")
+            revision_timeout = _positive_float(revision.get("timeout_seconds"))
+            revision_elapsed = _positive_float(revision.get("elapsed_seconds"))
+            remaining_window = (
+                shared_timeout - prior_elapsed if shared_timeout is not None else None
+            )
+            if revision_timeout is None:
+                issues.append("retained candidate revision timeout is invalid")
+            elif remaining_window is None or revision_timeout > remaining_window:
+                issues.append("retained candidate revision timeout exceeds the remaining model window")
+            if revision_elapsed is None:
+                issues.append("retained candidate revision elapsed time is invalid")
+            elif revision_timeout is not None and revision_elapsed > revision_timeout:
+                issues.append("retained candidate revision elapsed time exceeds its timeout")
+            elif remaining_window is None or revision_elapsed > remaining_window:
+                issues.append("retained candidate revision elapsed time exceeds the remaining model window")
+
+            rejected_verdict = _mapping(rejected_review.get("response"))
+            review_issues = rejected_verdict.get("issues")
+            revision_response = _mapping(revision.get("response"))
+            try:
+                if not isinstance(review_issues, list) or len(review_issues) != 1:
+                    raise ValueError("missing denial witness")
+                expected_revision_request = candidate_revision_payload(
+                    authoring_payload=expected_remainder_request,
+                    rejected_candidate=remainder_response,
+                    review_issue=_mapping(review_issues[0]),
+                )
+                if revision.get("request") != expected_revision_request:
+                    raise ValueError("revision request mismatch")
+                if (
+                    revision_response.get("version") != GREENFIELD_INTENT_AUTHORING_VERSION
+                    or _mapping(revision_response.get("result")).get("status") != "authored"
+                ):
+                    raise ValueError("revision response mismatch")
+                revised_joined = join_frozen_greenfield_participants(
+                    revision_response, participant_citations,
+                )
+                if retained.get("joined_candidate") != revised_joined:
+                    raise ValueError("revised joined candidate mismatch")
+                authored = validate_greenfield_authoring_response(
+                    revised_joined, evidence_text=source,
+                    elapsed_seconds=_float_value(revision.get("elapsed_seconds")),
+                    provider=_mapping(revision.get("provider")), profile_id=profile,
+                    effective_timeout_seconds=_float_value(revision.get("timeout_seconds")),
+                    semantic_model_call_count=4,
+                )
+            except (GreenfieldModelAuthoringError, ValueError, TypeError, KeyError):
+                issues.append("retained candidate revision fails source-bound replacement validation")
+            prior_elapsed += _float_value(revision.get("elapsed_seconds"))
+
         review = _mapping(retained.get("candidate_review"))
         request_roles["candidate_review"] = _request_role_summary(review)
         issues.extend(_candidate_review_observation_issues(
@@ -457,6 +555,7 @@ def _model_stage_observation_evidence(
             candidate=_mapping(_mapping(retained.get("joined_candidate")).get("result")),
             shared_timeout=shared_timeout, prior_elapsed=prior_elapsed,
             source_spans=authored.source_spans if isinstance(authored, GreenfieldModelAuthoredIntent) else (),
+            admissible=True,
         ))
     elif normalized_call_count != 2:
         issues.append("clarification response must record exactly two semantic calls")
@@ -481,6 +580,7 @@ def _candidate_review_observation_issues(
     profile: str, *, review: Mapping[str, Any], request: Mapping[str, Any],
     candidate: Mapping[str, Any], shared_timeout: float | None,
     prior_elapsed: float, source_spans: Sequence[Mapping[str, Any]],
+    admissible: bool,
 ) -> tuple[str, ...]:
     """Check the current binary observation, not a historical repair protocol.
 
@@ -500,10 +600,19 @@ def _candidate_review_observation_issues(
     if review.get("dispatched") is not True:
         issues.append("retained candidate review was not dispatched")
     verdict = _mapping(review.get("response"))
+    expected_issue_count = 0 if admissible else 1
     if (set(verdict) != {"admissible", "issues"}
-            or verdict.get("admissible") is not True
-            or type(verdict.get("issues")) is not list or verdict["issues"]):
-        issues.append("retained candidate review lacks an admitted binary verdict")
+            or verdict.get("admissible") is not admissible
+            or type(verdict.get("issues")) is not list
+            or len(verdict["issues"]) != expected_issue_count
+            or any(
+                not isinstance(issue, Mapping)
+                or set(issue) != {"path", "reason"}
+                or any(not isinstance(issue[key], str) or not issue[key].strip() for key in issue)
+                for issue in verdict.get("issues", ())
+            )):
+        outcome = "admitted" if admissible else "denied"
+        issues.append(f"retained candidate review lacks a valid {outcome} binary verdict")
     source = request.get("evidence")
     try:
         if not isinstance(source, str) or not source.strip():

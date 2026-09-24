@@ -270,14 +270,18 @@ def test_unavailable_or_retired_review_response_is_fail_closed(tmp_path, respons
 
 
 def test_model_observation_is_checked_before_and_after_both_author_calls(monkeypatch):
+    from odylith.runtime.domain_intelligence import greenfield_model_stage
+
     observed = []
-    require = author.require_greenfield_model_profile_observation
+    require = greenfield_model_stage.require_greenfield_model_profile_observation
 
     def record(**values):
         observed.append(values)
         return require(**values)
 
-    monkeypatch.setattr(author, "require_greenfield_model_profile_observation", record)
+    monkeypatch.setattr(
+        greenfield_model_stage, "require_greenfield_model_profile_observation", record,
+    )
     provider = RemainingCandidateProvider(_response(_source()))
     author.author_greenfield_intent(
         review_provider_factory=AdmittingReviewProvider, evidence_text=_source(),

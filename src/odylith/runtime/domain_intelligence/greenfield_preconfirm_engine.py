@@ -300,7 +300,12 @@ def build_greenfield_preconfirm_manifest(
             "version": "odylith.greenfield.authored-semantic-validation.v4",
             "status": "passed",
             "semantic_owner": "validated_model_authored_intent",
-            "post_authoring_interpretation_calls": 1,
+            "post_authoring_interpretation_calls": (
+                2
+                if isinstance(model_authoring_receipt, Mapping)
+                and isinstance(model_authoring_receipt.get("candidate_revision"), Mapping)
+                else 1
+            ),
         },
         "write_transaction": {
             "status": write_transaction_status,
@@ -325,7 +330,14 @@ def _model_authoring_manifest(receipt: Mapping[str, Any]) -> dict[str, Any]:
         for role in ("participant_selection", "remaining_candidate_authoring")
     } | {
         "candidate_review": deepcopy(receipt.get("candidate_review")),
-    }
+    } | ({
+        "candidate_revision": _model_authoring_role_manifest(
+            receipt.get("candidate_revision")
+        ),
+        "rejected_candidate_review": deepcopy(
+            receipt.get("rejected_candidate_review")
+        ),
+    } if isinstance(receipt.get("candidate_revision"), Mapping) else {})
 
 
 def _model_authoring_role_manifest(value: Any) -> dict[str, Any]:

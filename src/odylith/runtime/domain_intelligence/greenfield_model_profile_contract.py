@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from types import MappingProxyType
 
 
-GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION = "odylith.greenfield.model-profile-contract.v19"
+GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION = "odylith.greenfield.model-profile-contract.v20"
 GREENFIELD_NORMAL_CASE_TARGET_SECONDS = 60.0
 GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS = 180.0
 # The shared model window leaves finite headroom for compilation, sealing and staging.
@@ -175,7 +175,7 @@ def greenfield_model_profile_observation_issues(
         expected_model = profile.participant_model
         expected_effort = profile.participant_reasoning_effort
         role_cap = profile.model_timeout_seconds
-    elif request_role == "remaining_candidate_authoring":
+    elif request_role in {"remaining_candidate_authoring", "candidate_revision"}:
         expected_model = profile.model
         expected_effort = profile.reasoning_effort
         role_cap = profile.model_timeout_seconds

@@ -50,12 +50,11 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
     require_relation_authority_parity,
 )
-from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
-    GREENFIELD_INTENT_AUTHORING_VERSION,
+from odylith.runtime.domain_intelligence.greenfield_model_receipt_approval import (
+    greenfield_model_authoring_receipt_approved,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     get_greenfield_model_profile,
-    greenfield_model_profile_observation_issues,
     model_profile_id_for_repair_tier,
 )
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
@@ -316,161 +315,6 @@ def require_product_create_transaction_quality_approved(
     raise ValueError(
         "pre-confirm ProductCreateTransaction quality manifest is not approved; "
         "repair or clarify before showing CONFIRM"
-    )
-
-
-def greenfield_model_authoring_receipt_approved(
-    *, model_authoring: Mapping[str, Any], semantic_compiler: Mapping[str, Any],
-    requested_repair_tier: str,
-) -> bool:
-    """Validate observed author/reviewer metadata, not source authority or product quality."""
-
-    return (
-        set(model_authoring) == {
-            "authoring_version",
-            "semantic_model_call_count",
-            "tier",
-            "elapsed_seconds",
-            "effective_model_window_seconds",
-            "participant_selection",
-            "remaining_candidate_authoring",
-            "candidate_review",
-        }
-        and str(semantic_compiler.get("version", "")).strip()
-        == "odylith.greenfield.authored-semantic-validation.v4"
-        and str(semantic_compiler.get("status", "")).strip() == "passed"
-        and str(semantic_compiler.get("semantic_owner", "")).strip() == "validated_model_authored_intent"
-        and str(model_authoring.get("authoring_version", "")).strip()
-        == GREENFIELD_INTENT_AUTHORING_VERSION
-        and _semantic_model_call_count_approved(
-            model_authoring.get("semantic_model_call_count")
-        )
-        and _authoring_role_approved(
-            model_authoring, request_role="participant_selection",
-            requested_repair_tier=requested_repair_tier,
-        )
-        and _authoring_role_approved(
-            model_authoring, request_role="remaining_candidate_authoring",
-            requested_repair_tier=requested_repair_tier,
-        )
-        and _candidate_review_approved(
-            model_authoring,
-            requested_repair_tier=requested_repair_tier,
-        )
-        and type(semantic_compiler.get("post_authoring_interpretation_calls")) is int
-        and semantic_compiler.get("post_authoring_interpretation_calls") == 1
-    )
-
-
-def _semantic_model_call_count_approved(value: Any) -> bool:
-    return type(value) is int and value == 3
-
-
-def _authoring_role_approved(
-    model_authoring: Mapping[str, Any],
-    *,
-    requested_repair_tier: str,
-    request_role: str,
-) -> bool:
-    receipt = model_authoring.get(request_role)
-    if request_role != "candidate_review" and (
-        not isinstance(receipt, Mapping)
-        or set(receipt) != {"elapsed_seconds", "model_profile"}
-    ):
-        return False
-    if not isinstance(receipt, Mapping):
-        return False
-    raw_observation = receipt.get("model_profile")
-    observation = raw_observation if isinstance(raw_observation, Mapping) else {}
-    if set(observation) != {
-        "profile_id",
-        "provider",
-        "model",
-        "reasoning_effort",
-        "effective_timeout_seconds",
-        "authoring_tier",
-    }:
-        return False
-    timeout = observation.get("effective_timeout_seconds")
-    if type(timeout) not in (int, float) or (isinstance(timeout, float) and not math.isfinite(timeout)) or timeout <= 0:
-        return False
-    profile_id = str(observation.get("profile_id") or "").strip()
-    authoring_tier = str(model_authoring.get("tier") or "").strip().casefold()
-    if str(observation.get("authoring_tier") or "").strip().casefold() != authoring_tier:
-        return False
-    try:
-        profile = get_greenfield_model_profile(profile_id)
-        expected_profile_id = model_profile_id_for_repair_tier(requested_repair_tier)
-        observation_issues = greenfield_model_profile_observation_issues(
-            profile_id=profile_id,
-            provider=str(observation.get("provider") or ""),
-            model=str(observation.get("model") or ""),
-            reasoning_effort=str(observation.get("reasoning_effort") or ""),
-            effective_timeout_seconds=observation.get("effective_timeout_seconds"),
-            authoring_tier=str(observation.get("authoring_tier") or ""),
-            request_role=request_role,
-        )
-    except (TypeError, ValueError, OverflowError):
-        return False
-    return (
-        profile_id == expected_profile_id
-        and authoring_tier == profile.repair_tier
-        and not observation_issues
-    )
-
-
-def _candidate_review_approved(
-    model_authoring: Mapping[str, Any], *, requested_repair_tier: str,
-) -> bool:
-    review = model_authoring.get("candidate_review")
-    if not isinstance(review, Mapping) or set(review) != {
-        "version", "status", "source_sha256", "candidate_sha256", "product_facts_sha256",
-        "elapsed_seconds", "model_profile",
-    }:
-        return False
-    if review.get("version") != "odylith.greenfield.candidate-review.v2" or review.get("status") != "admitted":
-        return False
-    for key in ("source_sha256", "candidate_sha256", "product_facts_sha256"):
-        digest = review.get(key)
-        if not isinstance(digest, str) or len(digest) != 64 or set(digest) - set("0123456789abcdef"):
-            return False
-    if not _authoring_role_approved(
-        model_authoring, requested_repair_tier=requested_repair_tier, request_role="candidate_review",
-    ):
-        return False
-    participant = model_authoring.get("participant_selection")
-    remainder = model_authoring.get("remaining_candidate_authoring")
-    if not isinstance(participant, Mapping) or not isinstance(remainder, Mapping):
-        return False
-    participant_elapsed = participant.get("elapsed_seconds")
-    remainder_elapsed = remainder.get("elapsed_seconds")
-    reviewed = review.get("elapsed_seconds")
-    total = model_authoring.get("elapsed_seconds")
-    shared_effective = model_authoring.get("effective_model_window_seconds")
-    if any(
-        type(value) not in (int, float)
-        or (isinstance(value, float) and not math.isfinite(value)) or value < 0
-        for value in (
-            participant_elapsed,
-            remainder_elapsed,
-            reviewed,
-            total,
-            shared_effective,
-        )
-    ):
-        return False
-    participant_timeout = participant["model_profile"]["effective_timeout_seconds"]
-    remainder_timeout = remainder["model_profile"]["effective_timeout_seconds"]
-    review_effective = review["model_profile"]["effective_timeout_seconds"]
-    profile = get_greenfield_model_profile(participant["model_profile"]["profile_id"])
-    return (
-        total <= shared_effective <= profile.model_timeout_seconds
-        and participant_elapsed <= participant_timeout <= shared_effective
-        and remainder_elapsed <= remainder_timeout <= shared_effective - participant_elapsed
-        and reviewed <= review_effective <= (
-            shared_effective - participant_elapsed - remainder_elapsed
-        )
-        and participant_elapsed + remainder_elapsed + reviewed <= total
     )
 
 

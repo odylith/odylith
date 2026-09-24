@@ -211,7 +211,7 @@ def test_profile_evidence_requires_sealed_observation_parity() -> None:
     assert "expected_source_review" not in evidence
     assert evidence["stage_observation"] == stage_observation
     assert evidence["stage_observation_summary"]["response_kind"] == "authored"
-    assert evidence["maximum_semantic_model_calls"] == 3
+    assert evidence["maximum_semantic_model_calls"] == 5
     assert evidence["stage_observation_summary"]["semantic_model_call_count"] == 3
     assert set(evidence["stage_observation_summary"]["request_roles"]) == {
         "participant_selection", "remaining_candidate_authoring", "candidate_review",
@@ -419,7 +419,7 @@ def test_profile_evidence_fails_closed_without_retained_stage_observation() -> N
         ("response_version", "retained model response version is invalid"),
         ("response_kind", "retained model response kind is invalid"),
         ("bool_count", "retained semantic model call count is invalid"),
-        ("two_calls", "authored response must record exactly three semantic calls"),
+        ("two_calls", "authored response must record exactly three or five semantic calls"),
         ("forged_participant_role", "retained participant_selection request role is invalid"),
         ("forged_participant_model", "observed model does not match pinned Greenfield model profile"),
         ("participant_failure", "retained participant_selection provider metadata records a failure"),
@@ -462,7 +462,7 @@ def test_outcomes_require_their_exact_role_count(response_kind, count):
     issues = model_stage_observation_issues(
         RESCUE_PROFILE_ID, observed=_sealed_observation(RESCUE_PROFILE_ID), stage_observation=stage,
     )
-    expected = ("authored response must record exactly three semantic calls"
+    expected = ("authored response must record exactly three or five semantic calls"
                 if response_kind == "authored"
                 else "clarification response must record exactly two semantic calls")
     assert expected in issues
@@ -477,6 +477,46 @@ def test_current_production_observations_qualify_without_mutation(profile_id, re
         profile_id, observed=_sealed_observation(profile_id), stage_observation=stage,
     ) == ()
     assert stage == original
+
+
+@pytest.mark.parametrize("profile_id", MODEL_PROFILES)
+def test_one_review_guided_revision_qualifies_as_a_five_call_observation(profile_id):
+    stage = _stage_observation(profile_id, revised=True)
+
+    assert stage["semantic_model_call_count"] == 5
+    assert model_stage_observation_issues(
+        profile_id,
+        observed=_sealed_observation(profile_id),
+        stage_observation=stage,
+    ) == ()
+    evidence = model_profile_evidence(
+        profile_id,
+        model_profile_environment(profile_id, {}),
+        observed=_sealed_observation(profile_id),
+        stage_observation=stage,
+    )
+    assert evidence["status"] == "passed", evidence["issues"]
+    assert set(evidence["stage_observation_summary"]["request_roles"]) == {
+        "participant_selection",
+        "remaining_candidate_authoring",
+        "rejected_candidate_review",
+        "candidate_revision",
+        "candidate_review",
+    }
+
+
+def test_revision_observation_rejects_a_witness_not_bound_to_the_revision_request():
+    stage = _stage_observation(STANDARD_PROFILE_ID, revised=True)
+    stage["candidate_revision"]["request"]["review_issue"]["reason"] = "Different issue."
+
+    assert (
+        "retained candidate revision fails source-bound replacement validation"
+        in model_stage_observation_issues(
+            STANDARD_PROFILE_ID,
+            observed=_sealed_observation(STANDARD_PROFILE_ID),
+            stage_observation=stage,
+        )
+    )
 
 
 @pytest.mark.parametrize(("path", "value"), [
@@ -635,7 +675,7 @@ def test_profile_aggregate_rejects_non_numeric_missing_or_expired_consumer_time(
     assert proof["status"] == "failed"
     assert any("operational-timeout proof" in issue for issue in proof["issues"])
     assert proof["profiles"][profile_id]["committed_positive_case_count"] == 0
-    assert proof["profiles"][profile_id]["maximum_semantic_model_calls"] == 3
+    assert proof["profiles"][profile_id]["maximum_semantic_model_calls"] == 5
 
 
 @pytest.mark.parametrize("profile_id", MODEL_PROFILES)
@@ -729,7 +769,7 @@ def _create_payload_for_stage(stage: dict[str, object], *, source: str) -> dict[
         "commit_manifest": {
             "model_authoring": {
                 "candidate_review": {
-                    "version": "odylith.greenfield.candidate-review.v2",
+                    "version": "odylith.greenfield.candidate-review.v3",
                     "status": "admitted",
                     "source_sha256": hashlib.sha256(source.encode("utf-8")).hexdigest(),
                     "candidate_sha256": hashlib.sha256(encoded).hexdigest(),

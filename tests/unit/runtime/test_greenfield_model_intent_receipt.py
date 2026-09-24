@@ -178,6 +178,84 @@ def test_quality_approval_accepts_two_author_calls_and_one_candidate_review() ->
     )
 
 
+def _approved_revised_model_authoring(profile_id: str) -> dict[str, Any]:
+    profile = get_greenfield_model_profile(profile_id)
+    receipt = _approved_model_authoring(
+        profile_id, elapsed_seconds=15.0, semantic_model_call_count=5
+    )
+    receipt["remaining_candidate_authoring"].update(elapsed_seconds=4.0)
+    receipt["remaining_candidate_authoring"]["model_profile"][
+        "effective_timeout_seconds"
+    ] = profile.model_timeout_seconds - 1.0
+    receipt["rejected_candidate_review"] = {
+        "version": "odylith.greenfield.candidate-review.v3",
+        "status": "denied",
+        "source_sha256": "0" * 64,
+        "candidate_sha256": "3" * 64,
+        "elapsed_seconds": 2.0,
+        "model_profile": {
+            "profile_id": profile.profile_id,
+            "provider": profile.provider,
+            "model": profile.review_model,
+            "reasoning_effort": profile.review_reasoning_effort,
+            "effective_timeout_seconds": profile.model_timeout_seconds - 5.0,
+            "authoring_tier": profile.repair_tier,
+        },
+        "issue": {
+            "path": "candidate.accepted_source.facts.opportunity",
+            "reason": "The cited action is not a complete improvement.",
+        },
+    }
+    receipt["candidate_revision"] = {
+        "elapsed_seconds": 5.0,
+        "model_profile": {
+            "profile_id": profile.profile_id,
+            "provider": profile.provider,
+            "model": profile.model,
+            "reasoning_effort": profile.reasoning_effort,
+            "effective_timeout_seconds": profile.model_timeout_seconds - 7.0,
+            "authoring_tier": profile.repair_tier,
+        },
+    }
+    receipt["candidate_review"].update(
+        elapsed_seconds=3.0,
+        model_profile={
+            "profile_id": profile.profile_id,
+            "provider": profile.provider,
+            "model": profile.review_model,
+            "reasoning_effort": profile.review_reasoning_effort,
+            "effective_timeout_seconds": profile.model_timeout_seconds - 12.0,
+            "authoring_tier": profile.repair_tier,
+        },
+    )
+    return receipt
+
+
+def test_quality_approval_accepts_one_denial_revision_and_re_review() -> None:
+    profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
+    manifest = approved_authored_quality_manifest_fixture(
+        model_authoring=_approved_revised_model_authoring(STANDARD_PROFILE_ID),
+        semantic_compiler={
+            "version": "odylith.greenfield.authored-semantic-validation.v4",
+            "status": "passed",
+            "semantic_owner": "validated_model_authored_intent",
+            "post_authoring_interpretation_calls": 2,
+        },
+        elapsed_seconds=16.0,
+        target_seconds=profile.performance_target_seconds,
+        operational_timeout_seconds=profile.operational_timeout_seconds,
+    )
+    greenfield_create_transaction.require_product_create_transaction_quality_approved(
+        manifest
+    )
+
+    manifest["model_authoring"]["rejected_candidate_review"]["issue"] = {}
+    with pytest.raises(ValueError, match="quality manifest is not approved"):
+        greenfield_create_transaction.require_product_create_transaction_quality_approved(
+            manifest
+        )
+
+
 @pytest.mark.parametrize("call_count", [1, 2, 3])
 def test_call_count_claim_without_review_never_approves_a_transaction(call_count: int) -> None:
     receipt = _approved_model_authoring(
@@ -225,7 +303,7 @@ def test_native_receipt_must_bind_both_source_and_product_facts(
         assert persisted["quality_manifest"]["model_authoring"]["semantic_model_call_count"] == 3
 
 
-@pytest.mark.parametrize("invalid_count", (True, False, 0, 1, 2, 4, 3.0, "3"))
+@pytest.mark.parametrize("invalid_count", (True, False, 0, 1, 2, 4, 5, 6, 3.0, "3"))
 def test_quality_approval_rejects_invalid_semantic_model_call_counts(
     invalid_count: object,
 ) -> None:

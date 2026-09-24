@@ -247,6 +247,10 @@ def _authoring_receipt(
         "remaining_candidate_authoring": deepcopy(authored.remaining_candidate_authoring),
         **({
             "candidate_review": deepcopy(authored.candidate_review),
+            **({
+                "candidate_revision": deepcopy(authored.candidate_revision),
+                "rejected_candidate_review": deepcopy(authored.rejected_candidate_review),
+            } if authored.candidate_revision else {}),
         } if isinstance(authored, GreenfieldModelAuthoredIntent) else {}),
         "consistency_assessment": {
             "status": authored.consistency_status,

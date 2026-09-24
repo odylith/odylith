@@ -8,7 +8,10 @@ from odylith.runtime.domain_intelligence import greenfield_model_profile_contrac
 
 
 PROFILE_IDS = profiles.supported_greenfield_model_profile_ids()
-ROLES = ("participant_selection", "remaining_candidate_authoring", "candidate_review")
+ROLES = (
+    "participant_selection", "remaining_candidate_authoring", "candidate_revision",
+    "candidate_review",
+)
 
 
 def _observation(profile_id, role):
@@ -16,6 +19,7 @@ def _observation(profile_id, role):
     identities = {
         "participant_selection": (profile.participant_model, profile.participant_reasoning_effort),
         "remaining_candidate_authoring": (profile.model, profile.reasoning_effort),
+        "candidate_revision": (profile.model, profile.reasoning_effort),
         "candidate_review": (profile.review_model, profile.review_reasoning_effort),
     }
     model, effort = identities[role]
@@ -30,8 +34,8 @@ def _observation(profile_id, role):
     }
 
 
-def test_v19_profiles_separate_performance_targets_from_operational_timeouts():
-    assert profiles.GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION == "odylith.greenfield.model-profile-contract.v19"
+def test_v20_profiles_separate_performance_targets_from_operational_timeouts():
+    assert profiles.GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION == "odylith.greenfield.model-profile-contract.v20"
     assert profiles.GREENFIELD_NORMAL_CASE_TARGET_SECONDS == 60.0
     assert profiles.GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS == 180.0
     assert PROFILE_IDS == (

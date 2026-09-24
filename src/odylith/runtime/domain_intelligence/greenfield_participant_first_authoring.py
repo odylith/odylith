@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
 from copy import deepcopy
-from dataclasses import asdict, dataclass, replace
+from dataclasses import replace
 import json
 import math
 import os
@@ -15,8 +15,16 @@ from time import monotonic
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
+    GreenfieldCandidateRejected,
     HUMAN_ACTOR_ROLE_DEFINITION,
     review_greenfield_candidate,
+)
+from odylith.runtime.domain_intelligence.greenfield_candidate_revision import (
+    candidate_revision_payload,
+    candidate_revision_prompt,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_json import (
+    encode_greenfield_model_value,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
@@ -35,7 +43,9 @@ from odylith.runtime.domain_intelligence.greenfield_model_outcomes import (
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     STANDARD_PROFILE_ID,
     get_greenfield_model_profile,
-    require_greenfield_model_profile_observation,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_stage import (
+    dispatch_greenfield_model_stage,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_source_citations import (
     resolve_source_citation,
@@ -48,8 +58,8 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 from odylith.runtime.reasoning import odylith_reasoning
 
 GREENFIELD_MODEL_PROOF_FD_ENV = "ODYLITH_GREENFIELD_MODEL_PROOF_FD"
-GREENFIELD_MODEL_PROOF_OBSERVATION_VERSION = "odylith.greenfield.model-proof-observation.v3"
-MAX_GREENFIELD_SEMANTIC_CALLS = 3
+GREENFIELD_MODEL_PROOF_OBSERVATION_VERSION = "odylith.greenfield.model-proof-observation.v4"
+MAX_GREENFIELD_SEMANTIC_CALLS = 5
 _PARTICIPANT_SELECTION_SCHEMA: dict[str, Any] = {
     "type": "object",
     "additionalProperties": False,
@@ -213,13 +223,6 @@ usefulness of all four product decisions. Return only the closed JSON response.
 """.strip()
 
 
-@dataclass(frozen=True)
-class _StageResult:
-    response: dict[str, Any]
-    observation: dict[str, Any]
-    receipt: dict[str, Any]
-
-
 def resolve_greenfield_participant_selection(
     evidence_text: str,
     response: Mapping[str, Any],
@@ -306,13 +309,13 @@ def join_frozen_greenfield_participants(
         raise GreenfieldModelAuthoringError(
             "Greenfield remaining authoring attempted to replace frozen participants; no records were created."
         )
-    frozen_remainder = _encoded(remaining_response)
+    frozen_remainder = encode_greenfield_model_value(remaining_response)
     frozen_participants = _closed_compiler_participants(participant_citations)
     joined = deepcopy(dict(remaining_response))
     joined["result"]["facts"]["human_actors"] = deepcopy(frozen_participants)
     remainder = deepcopy(joined)
     del remainder["result"]["facts"]["human_actors"]
-    if _encoded(remainder) != frozen_remainder:
+    if encode_greenfield_model_value(remainder) != frozen_remainder:
         raise GreenfieldModelAuthoringError(
             "Greenfield participant join changed the remaining candidate; no records were created."
         )
@@ -348,7 +351,8 @@ def author_greenfield_intent(
         _emit_release_proof_observation(
             evidence_text=text, semantic_model_call_count=0,
             participant_selection=None, remaining_candidate_authoring=None,
-            joined_candidate=None, candidate_review=None,
+            rejected_candidate=None, rejected_candidate_review=None,
+            candidate_revision=None, joined_candidate=None, candidate_review=None,
             failure={"stage": "provider_discovery", "code": "unavailable"},
         )
         raise GreenfieldModelRuntimeError("unavailable")
@@ -371,14 +375,17 @@ def author_greenfield_intent(
 
     participant_observation: dict[str, Any] = {}
     remaining_observation: dict[str, Any] = {}
+    rejected_review_observation: dict[str, Any] = {}
+    revision_observation: dict[str, Any] = {}
     review_observation: dict[str, Any] = {}
+    rejected_candidate: dict[str, Any] | None = None
     joined_candidate: dict[str, Any] | None = None
     failure: dict[str, Any] | None = None
     completed = False
     clarification = False
     current_stage = "participant_selection"
     try:
-        participant_stage = _dispatch_stage(
+        participant_stage = dispatch_greenfield_model_stage(
             role="participant_selection",
             schema_name="greenfield_participant_selection",
             system_prompt=_PARTICIPANT_SELECTION_PROMPT,
@@ -399,7 +406,7 @@ def author_greenfield_intent(
             )
         )
         participant_observation["resolved"] = deepcopy(resolved_participants)
-        frozen_participants = _encoded(participant_citations)
+        frozen_participants = encode_greenfield_model_value(participant_citations)
 
         current_stage = "remaining_candidate_authoring"
         remaining_schema, remaining_prompt = _remaining_authoring_contract()
@@ -409,7 +416,7 @@ def author_greenfield_intent(
         request_effort = str(
             reasoning_effort or profile.reasoning_effort
         ).strip().casefold()
-        remaining_stage = _dispatch_stage(
+        remaining_stage = dispatch_greenfield_model_stage(
             role="remaining_candidate_authoring",
             schema_name="greenfield_remaining_candidate_authoring",
             system_prompt=remaining_prompt,
@@ -423,7 +430,7 @@ def author_greenfield_intent(
             clock=clock,
             observation=remaining_observation,
         )
-        if _encoded(participant_citations) != frozen_participants:
+        if encode_greenfield_model_value(participant_citations) != frozen_participants:
             raise GreenfieldModelAuthoringError(
                 "Greenfield remaining authoring changed frozen participants; no records were created."
             )
@@ -462,7 +469,7 @@ def author_greenfield_intent(
             remaining_stage.response,
             participant_citations,
         )
-        frozen_joined = _encoded(joined_candidate)
+        frozen_joined = encode_greenfield_model_value(joined_candidate)
         authored = validate_greenfield_authoring_response(
             joined_candidate,
             evidence_text=text,
@@ -478,7 +485,7 @@ def author_greenfield_intent(
             raise GreenfieldModelAuthoringError(
                 "Greenfield remaining authoring returned an invalid result; no records were created."
             )
-        if _encoded(joined_candidate) != frozen_joined:
+        if encode_greenfield_model_value(joined_candidate) != frozen_joined:
             raise GreenfieldModelAuthoringError(
                 "Greenfield author validation changed its candidate; no records were created."
             )
@@ -495,8 +502,76 @@ def author_greenfield_intent(
                 provider_factory=review_provider_factory,
                 deadline=model_deadline,
                 clock=clock,
-                observation=review_observation,
+                observation=rejected_review_observation,
             )
+            review_observation = rejected_review_observation
+            rejected_review_observation = {}
+        except GreenfieldCandidateRejected as rejection:
+            rejected_candidate = deepcopy(joined_candidate)
+            rejected_review_receipt = deepcopy(dict(rejection.receipt))
+            current_stage = "candidate_revision"
+            revision_stage = dispatch_greenfield_model_stage(
+                role="candidate_revision",
+                schema_name="greenfield_candidate_revision",
+                system_prompt=candidate_revision_prompt(remaining_prompt),
+                output_schema=remaining_schema,
+                prompt_payload=candidate_revision_payload(
+                    authoring_payload=remaining_payload,
+                    rejected_candidate=remaining_stage.response,
+                    review_issue=rejected_review_receipt["issue"],
+                ),
+                provider_factory=(lambda: provider),
+                profile_id=profile.profile_id,
+                model=request_model,
+                reasoning_effort=request_effort,
+                deadline=model_deadline,
+                clock=clock,
+                observation=revision_observation,
+            )
+            if encode_greenfield_model_value(participant_citations) != frozen_participants:
+                raise GreenfieldModelAuthoringError(
+                    "Greenfield candidate revision changed frozen participants; no records were created."
+                )
+            joined_candidate = join_frozen_greenfield_participants(
+                revision_stage.response,
+                participant_citations,
+            )
+            frozen_joined = encode_greenfield_model_value(joined_candidate)
+            authored = validate_greenfield_authoring_response(
+                joined_candidate,
+                evidence_text=text,
+                elapsed_seconds=revision_stage.receipt["elapsed_seconds"],
+                provider=revision_observation["provider"],
+                profile_id=profile.profile_id,
+                effective_timeout_seconds=revision_stage.receipt["model_profile"][
+                    "effective_timeout_seconds"
+                ],
+                semantic_model_call_count=4,
+            )
+            if not isinstance(authored, GreenfieldModelAuthoredIntent):
+                raise GreenfieldModelAuthoringError(
+                    "Greenfield candidate revision returned an invalid result; no records were created."
+                )
+            if encode_greenfield_model_value(joined_candidate) != frozen_joined:
+                raise GreenfieldModelAuthoringError(
+                    "Greenfield revision validation changed its candidate; no records were created."
+            )
+            current_stage = "candidate_re_review"
+            try:
+                review = review_greenfield_candidate(
+                    evidence_text=text,
+                    candidate=joined_candidate["result"],
+                    profile_id=profile.profile_id,
+                    source_spans=authored.source_spans,
+                    provider_factory=review_provider_factory,
+                    deadline=model_deadline,
+                    clock=clock,
+                    observation=review_observation,
+                )
+            except GreenfieldCandidateRejected as exc:
+                raise GreenfieldModelAuthoringError(
+                    "A source-faithful Greenfield package could not be verified; no records were created."
+                ) from exc
         except GreenfieldModelRuntimeError:
             raise
         except TimeoutError as exc:
@@ -505,19 +580,27 @@ def author_greenfield_intent(
             raise GreenfieldModelAuthoringError(
                 "A source-faithful Greenfield package could not be verified; no records were created."
             ) from exc
-        if _encoded(joined_candidate) != frozen_joined:
+        if encode_greenfield_model_value(joined_candidate) != frozen_joined:
             raise GreenfieldModelAuthoringError(
                 "Greenfield review changed its authored candidate; no records were created."
             )
-        if _encoded(participant_citations) != frozen_participants:
+        if encode_greenfield_model_value(participant_citations) != frozen_participants:
             raise GreenfieldModelAuthoringError(
                 "Greenfield review changed frozen participants; no records were created."
             )
         completed = True
         return replace(
             authored,
-            semantic_model_call_count=3,
+            semantic_model_call_count=(5 if rejected_candidate is not None else 3),
             candidate_review=review,
+            candidate_revision=(
+                deepcopy(revision_stage.receipt)
+                if rejected_candidate is not None
+                else {}
+            ),
+            rejected_candidate_review=(
+                rejected_review_receipt if rejected_candidate is not None else {}
+            ),
             effective_model_window_seconds=effective_model_window_seconds,
             participant_selection=deepcopy(participant_stage.receipt),
             remaining_candidate_authoring=deepcopy(remaining_stage.receipt),
@@ -537,129 +620,24 @@ def author_greenfield_intent(
                 for observation in (
                     participant_observation,
                     remaining_observation,
+                    rejected_review_observation,
+                    revision_observation,
                     review_observation,
                 )
             ),
             participant_selection=participant_observation or None,
             remaining_candidate_authoring=remaining_observation or None,
+            rejected_candidate=(
+                rejected_candidate if rejected_candidate is not None else None
+            ),
+            rejected_candidate_review=(
+                rejected_review_observation if rejected_candidate is not None else None
+            ),
+            candidate_revision=revision_observation or None,
             joined_candidate=joined_candidate if completed else None,
             candidate_review=review_observation or None,
             failure=None if completed or clarification else failure,
         )
-
-
-def _dispatch_stage(
-    *,
-    role: str,
-    schema_name: str,
-    system_prompt: str,
-    output_schema: Mapping[str, Any],
-    prompt_payload: Mapping[str, Any],
-    provider_factory: Callable[[], odylith_reasoning.ReasoningProvider | None] | None,
-    profile_id: str,
-    model: str,
-    reasoning_effort: str,
-    deadline: float,
-    clock: Callable[[], float],
-    observation: dict[str, Any],
-) -> _StageResult:
-    if deadline - clock() < 1.0:
-        raise GreenfieldModelRuntimeError("timeout")
-    if provider_factory is None:
-        raise GreenfieldModelRuntimeError("unavailable")
-    try:
-        provider = provider_factory()
-    except GreenfieldModelRuntimeError:
-        raise
-    except TimeoutError as exc:
-        raise GreenfieldModelRuntimeError("timeout") from exc
-    except Exception as exc:
-        raise GreenfieldModelAuthoringError(
-            "Greenfield model authoring is unavailable; no records were created."
-        ) from exc
-    if provider is None:
-        raise GreenfieldModelRuntimeError("unavailable")
-    timeout_seconds = deadline - clock()
-    if timeout_seconds < 1.0:
-        raise GreenfieldModelRuntimeError("timeout")
-    before = odylith_reasoning.provider_failure_metadata(provider)
-    require_greenfield_model_profile_observation(
-        profile_id=profile_id,
-        provider=before.get("provider", ""),
-        model=model,
-        reasoning_effort=reasoning_effort,
-        effective_timeout_seconds=timeout_seconds,
-        request_role=role,
-    )
-    request = odylith_reasoning.StructuredReasoningRequest(
-        system_prompt=system_prompt,
-        schema_name=schema_name,
-        output_schema=deepcopy(dict(output_schema)),
-        prompt_payload=deepcopy(dict(prompt_payload)),
-        model=model,
-        reasoning_effort=reasoning_effort,
-        timeout_seconds=timeout_seconds,
-    )
-    frozen_request = _encoded(asdict(request))
-    observation.update(
-        dispatched=True,
-        request_role=role,
-        profile_id=profile_id,
-        timeout_seconds=timeout_seconds,
-        model=model,
-        reasoning_effort=reasoning_effort,
-        request=deepcopy(dict(prompt_payload)),
-    )
-    started = clock()
-    try:
-        response = provider.generate_structured(request=request)
-    except TimeoutError as exc:
-        observation["provider"] = _categorical_provider_metadata(provider)
-        raise GreenfieldModelRuntimeError("timeout") from exc
-    except Exception as exc:
-        observation["provider"] = _categorical_provider_metadata(provider)
-        raise GreenfieldModelAuthoringError(
-            "Greenfield model authoring is unavailable; no records were created."
-        ) from exc
-    finally:
-        observation["elapsed_seconds"] = max(0.0, clock() - started)
-    metadata = odylith_reasoning.provider_failure_metadata(provider)
-    observation["provider"] = metadata if isinstance(response, Mapping) else _categorical_provider_metadata(provider)
-    if _encoded(asdict(request)) != frozen_request:
-        raise GreenfieldModelAuthoringError(
-            "Greenfield model provider changed its request; no records were created."
-        )
-    if clock() > deadline:
-        raise GreenfieldModelRuntimeError("timeout")
-    model_profile = {
-        "profile_id": profile_id,
-        "provider": metadata.get("provider", ""),
-        "model": metadata.get("model") or model,
-        "reasoning_effort": metadata.get("reasoning_effort") or reasoning_effort,
-        "effective_timeout_seconds": timeout_seconds,
-        "authoring_tier": get_greenfield_model_profile(profile_id).repair_tier,
-    }
-    require_greenfield_model_profile_observation(
-        **model_profile,
-        request_role=role,
-    )
-    if response is None and metadata.get("code") in {"timeout", "unavailable"}:
-        raise GreenfieldModelRuntimeError(str(metadata["code"]))
-    if not isinstance(response, Mapping):
-        observation["response_shape"] = type(response).__name__
-        raise GreenfieldModelAuthoringError(
-            "Greenfield model authoring returned an invalid response; no records were created."
-        )
-    observation["response"] = deepcopy(response)
-    receipt = {
-        "elapsed_seconds": observation["elapsed_seconds"],
-        "model_profile": model_profile,
-    }
-    return _StageResult(
-        response=deepcopy(dict(response)),
-        observation=deepcopy(observation),
-        receipt=receipt,
-    )
 
 
 def _remaining_authoring_contract() -> tuple[dict[str, Any], str]:
@@ -723,18 +701,15 @@ def _global_occurrence_for_start(evidence: bytes, quote: str, start: int) -> int
     )
 
 
-def _categorical_provider_metadata(provider: Any) -> dict[str, str]:
-    """Retain non-sensitive failure identity without provider diagnostics."""
-    value = odylith_reasoning.provider_failure_metadata(provider)
-    return {key: value[key] for key in ("provider", "model", "reasoning_effort", "code")}
-
-
 def _emit_release_proof_observation(
     *,
     evidence_text: str,
     semantic_model_call_count: int,
     participant_selection: Mapping[str, Any] | None,
     remaining_candidate_authoring: Mapping[str, Any] | None,
+    rejected_candidate: Mapping[str, Any] | None,
+    rejected_candidate_review: Mapping[str, Any] | None,
+    candidate_revision: Mapping[str, Any] | None,
     joined_candidate: Mapping[str, Any] | None,
     candidate_review: Mapping[str, Any] | None,
     failure: Mapping[str, Any] | None,
@@ -766,6 +741,14 @@ def _emit_release_proof_observation(
         payload["remaining_candidate_authoring"] = deepcopy(
             dict(remaining_candidate_authoring)
         )
+    if rejected_candidate is not None:
+        payload["rejected_candidate"] = deepcopy(dict(rejected_candidate))
+    if rejected_candidate_review is not None:
+        payload["rejected_candidate_review"] = deepcopy(
+            dict(rejected_candidate_review)
+        )
+    if candidate_revision is not None:
+        payload["candidate_revision"] = deepcopy(dict(candidate_revision))
     if candidate_review is not None:
         payload["candidate_review"] = deepcopy(dict(candidate_review))
     if joined_candidate is not None:
@@ -789,16 +772,6 @@ def _emit_release_proof_observation(
         raise GreenfieldModelAuthoringError(
             "Greenfield release-proof evidence capture failed; no records were created."
         ) from exc
-
-
-def _encoded(value: Any) -> bytes:
-    return json.dumps(
-        value,
-        sort_keys=True,
-        ensure_ascii=False,
-        separators=(",", ":"),
-        allow_nan=False,
-    ).encode("utf-8")
 
 
 __all__ = [
