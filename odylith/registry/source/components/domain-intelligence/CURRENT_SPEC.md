@@ -1,8 +1,33 @@
 # Domain Intelligence
-Last updated: 2026-09-23
+Last updated: 2026-09-24
 
 
 ## Overview
+
+### Bounded candidate review recovery (2026-09-24)
+
+Greenfield candidate admission has one finite recovery edge. The ordinary path
+remains participant selection, remaining-candidate authoring, and immutable
+complete-candidate review: exactly three model calls. If and only if that review
+denies the complete candidate with one validated typed issue, the same author
+receives the original admitted source, the rejected candidate, and that exact
+issue. One revised complete candidate then receives one fresh independent
+review. That exceptional path has exactly five calls; a second denial fails
+closed. Both candidates and both verdicts remain in the sealed proof receipt.
+No loop, profile promotion, regex/vocabulary repair, extra projection owner, or
+post-confirm interpretation is permitted.
+
+Checkpoint `548ff926d` proves the mechanism on the two retained denial cases and
+the complete 14-case maintained non-holdout matrix. All fourteen cases pass at
+10/10 with zero findings; thirteen commit exact sealed packages and one returns
+the correct material clarification without writes. Created packages contain
+4–5 Radar workstreams, 4–5 Registry components and five Atlas diagrams. Browser,
+retained-evidence, SIGKILL, conflict, fsync rollback, recovery-journal and
+same-hash retry proofs pass. Three advisory timing targets are exceeded, while
+all cases remain below the 180-second operational safety bound. This qualifies
+the bounded discovery mechanism, not the final semantic release: native host
+intervention visibility, independent strong adjudication, release-corpus
+qualification and the untouched holdout remain required.
 
 ### Installed positive qualification boundary (2026-09-23)
 

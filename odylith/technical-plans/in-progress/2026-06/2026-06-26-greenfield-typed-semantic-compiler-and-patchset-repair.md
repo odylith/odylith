@@ -1,5 +1,36 @@
 Status: In progress
 
+## Latest live outcome: bounded semantic recovery wins discovery (2026-09-24)
+
+Checkpoint `548ff926d` is committed, pushed, and frozen for qualification. The
+normal pre-confirm path remains three model calls. Only an immutable-review
+denial opens one author revision over the original sealed source plus the exact
+typed review issue, followed by one fresh independent review; the exceptional
+path is exactly five calls and a second denial fails closed. This replaces the
+review dead end without a retry loop, regex/vocabulary rule, tier cascade,
+post-confirm repair, schema fork, or alternate transaction path.
+
+The two retained failing requests now pass at 10/10 with zero findings and
+produce useful 5/5/5 and 4/4/5 governance packages. The exact clean installed
+14-case maintained matrix passes 14/14 at 10/10: thirteen commit-only
+publications, one correct material clarification/no-write result, 4–5 Radar,
+4–5 Registry and five Atlas diagrams per created package, zero browser issues,
+retained-evidence acceptance, and green SIGKILL/conflict/fsync/same-hash
+recovery proof. Eleven cases meet their advisory target. Three target overruns
+remain explicit—154.378 seconds for flood shelter intake, 98.999 seconds for
+security embargo and 97.702 seconds for package supply chain—while every case
+stays inside the 180-second operational safety bound.
+
+Freeze the mechanism. Do not add another semantic role or tune against these
+examples. The remaining release sequence is narrow: refresh this governed
+checkpoint, prove native automatic intervention plus visible chat delivery,
+obtain independent strong/Astra semantic adjudication, enter the sealed release
+semantic lane, verify the frozen hashes and absent ledger, then run the untouched
+final holdout exactly once. Discovery quality, artifact counts, and Odylith's own
+score do not waive any of those gates. Evidence:
+`/private/tmp/odylith-greenfield-revision-failed-subset-retained.v1.json` and
+`/private/tmp/odylith-greenfield-full14-retained-548ff926d.v1.json`.
+
 ## Latest live outcome: campaign stopped, not qualified (2026-09-19)
 
 Checkpoint 162cf2507 is committed and pushed. Corrected frozen runtime proof

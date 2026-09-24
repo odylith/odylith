@@ -1,5 +1,34 @@
 - Bug ID: CB-303
 
+- Bounded Review-Recovery Winner (2026-09-24): Checkpoint `548ff926d`
+  replaces the review-denial dead end with one bounded semantic recovery branch.
+  Admitted candidates retain the existing three calls. A first immutable-review
+  denial supplies one typed issue to the original author, then exactly one fresh
+  independent review decides the revised complete candidate; that exceptional
+  path has exactly five calls. A second denial fails closed. There is no loop,
+  tier cascade, vocabulary rule, regex repair, post-confirm interpretation, or
+  alternate publication path. The two retained failures that motivated the
+  change now pass at 10/10 with zero findings: film archive rights clearance
+  produces 5 Radar / 5 Registry / 5 Atlas in 115.402 seconds, and quantum
+  communication produces 4 / 4 / 5 in 102.777 seconds. A clean installed
+  14-case non-holdout matrix then passes 14/14 at 10/10: thirteen packages are
+  committed, the material assay ambiguity correctly remains no-write, every
+  created package contains 4–5 Radar workstreams, 4–5 Registry components and
+  five Atlas diagrams, and retained evidence plus per-case browser proof report
+  zero issues. Independent commit-recovery proof passes SIGKILL, operator
+  conflict, fsync rollback, same-hash retry and recovery-journal closure. Eleven
+  cases meet their advisory target; flood shelter intake exceeds 150 seconds by
+  4.378 seconds, and the security-embargo and package-supply-chain cases exceed
+  the 90-second target by 8.999 and 7.702 seconds. All remain below the
+  180-second operational safety bound, so these are explicit timing evidence,
+  not hidden failures. This establishes the bounded mechanism and maintained
+  discovery corpus, not release completion: native automatic intervention/chat
+  visibility, independent strong semantic adjudication, the sealed release
+  semantic lane, and the untouched final holdout remain open. Evidence:
+  `/private/tmp/odylith-greenfield-revision-failed-subset-retained.v1.json`,
+  `/private/tmp/odylith-greenfield-full14-retained-548ff926d.v1.json`, and
+  `/private/tmp/odylith-greenfield-full14-evidence-548ff926d/`.
+
 - Installed V68 Review-Rejection Reopen (2026-09-24): Exact clean distribution
   `64e02fa19cedcd6e1c1513ef025b9398746049b7` passes checksums, provenance,
   fresh install, upgrade and unavailable-author no-write smoke. Its full-install
