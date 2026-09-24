@@ -17,6 +17,21 @@ read. This evidence does not qualify or disqualify Greenfield semantics; the
 installed positive gate, strong review, and final holdout remain pending a
 capacity-restored rerun.
 
+### Capacity-restored installed discovery (2026-09-24)
+
+After the external provider capacity reset, the same clean full-install
+archive completed all `14/14` maintained non-holdout cases across the
+advisory `90/120/150` profiles. Thirteen cases reached commit-only
+publication with return code `0`; the clarification and quantum cases stayed
+no-write by contract. The matrix reported `0/14` quality passes because this
+was explicitly `proof-tier discovery`: private model evidence and browser
+proof were not requested, so release-quality scoring remained correctly
+withheld. Temporary roots cleaned and the protected holdout was untouched.
+This confirms live provider capacity and transaction settlement, not semantic
+release quality. The next gate is a single bounded full-install `proof-tier
+release` run with retained evidence and browser proof; no product mechanism
+change follows from this diagnostic.
+
 ### Greenfield mechanism cleanup (2026-09-23)
 
 The Greenfield text layer removed its unreachable regex-driven visible-result,

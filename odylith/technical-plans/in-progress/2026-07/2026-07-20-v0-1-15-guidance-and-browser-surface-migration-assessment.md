@@ -44,6 +44,19 @@ regression; the proof namespace cleaned, no governed writes or final-holdout
 reads occurred, and installed positive qualification must be rerun when model
 capacity is available. The release claim remains closed.
 
+The capacity-restored discovery rerun on 2026-09-24 completed all `14/14`
+clean full-install cases across the advisory `90/120/150` profiles. Thirteen
+cases reached commit-only publication with return code `0`; the clarification
+and quantum cases remained no-write by contract. It still scored `0/14`
+release-quality cases because the invocation deliberately used
+`proof-tier discovery`, which does not retain private model evidence or run
+browser proof. Temporary simulation roots cleaned and the protected holdout
+was untouched. This closes the provider-capacity uncertainty for the
+transaction path, not the release gate. Run one bounded full-install release
+matrix with retained evidence and browser proof next; do not change product
+semantics from this diagnostic. Evidence:
+`/tmp/odylith-greenfield-clean.PxI0Kb/installed-positive-rerun.json`.
+
 The latest clean-source intervention status remains partial: Codex reports
 `Activation: degraded` with `12` chat-confirmed Odylith events in the current
 session, while Claude reports `Activation: degraded` with no recorded events.

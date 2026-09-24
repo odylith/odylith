@@ -95,3 +95,19 @@
   product-semantic conclusion is drawn from this run. Installed positive
   qualification, strong review, and final holdout gates remain open until
   model capacity is available.
+
+- Installed capacity-restored discovery rerun (2026-09-24): The same clean
+  `0.1.15` full-install archive was rerun after provider capacity recovered,
+  covering all `14/14` non-holdout cases across the advisory `90/120/150`
+  profiles. Thirteen cases reached commit-only publication with return code
+  `0` and twelve carried a passed commit manifest; one clarification case and
+  one quantum case remained no-write by contract. The matrix still reported
+  `0/14` release-quality passes because this invocation was explicitly
+  `proof-tier discovery`: retained private author/review evidence and browser
+  proof were not requested, so the evaluator correctly withheld semantic
+  scores. Temporary simulation roots cleaned, and the protected holdout was
+  neither read nor run. This is evidence that provider capacity and the
+  transaction path are live, not release qualification. The next gate is one
+  bounded full-install `proof-tier release` run with retained evidence and
+  browser proof; no product mechanism change is justified by this diagnostic.
+  Evidence: `/tmp/odylith-greenfield-clean.PxI0Kb/installed-positive-rerun.json`.
