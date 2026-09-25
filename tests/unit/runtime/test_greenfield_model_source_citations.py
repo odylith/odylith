@@ -6,6 +6,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_outcomes import (
     GreenfieldModelAuthoringError,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_source_citations import (
+    canonical_citation_from_unique_context,
     exact_occurrence_start,
     exact_quote,
     resolve_source_citation,
@@ -60,6 +61,60 @@ def test_legacy_source_citation_preserves_closed_shape_and_normalization() -> No
     ):
         with pytest.raises(GreenfieldModelAuthoringError):
             resolve_source_citation(evidence, citation)
+
+
+def test_unique_context_projects_repeated_quote_to_exact_legacy_address() -> None:
+    evidence = "α result before. β result after.".encode("utf-8")
+
+    canonical = canonical_citation_from_unique_context(
+        evidence,
+        {"quote": "result", "context": "β result after"},
+    )
+
+    assert canonical == {"quote": "result", "occurrence": 2}
+    assert resolve_source_citation(evidence, canonical) == (
+        "result",
+        evidence.rindex(b"result"),
+    )
+
+
+def test_unique_context_projects_state_without_enlarging_its_meaning() -> None:
+    evidence = "first state; selected state remains".encode("utf-8")
+
+    canonical = canonical_citation_from_unique_context(
+        evidence,
+        {"quote": "state", "context": "selected state remains"},
+        state_object=True,
+    )
+
+    assert canonical == {
+        "quote": "state",
+        "prefix": "selected ",
+        "anchor_occurrence": 1,
+    }
+    assert resolve_source_citation(evidence, canonical, state_object=True) == (
+        "state",
+        evidence.rindex(b"state"),
+    )
+
+
+@pytest.mark.parametrize(
+    "citation",
+    (
+        {"quote": "result", "context": "result"},
+        {"quote": "result", "context": "missing result"},
+        {"quote": "result", "context": "result and result"},
+        {"quote": "result", "context": "first result", "occurrence": 1},
+    ),
+)
+def test_unique_context_fails_closed_when_address_is_not_unique(
+    citation: dict[str, object],
+) -> None:
+    with pytest.raises(GreenfieldModelAuthoringError):
+        canonical_citation_from_unique_context(
+            b"first result; second result",
+            citation,
+        )
 
 
 @pytest.mark.parametrize(

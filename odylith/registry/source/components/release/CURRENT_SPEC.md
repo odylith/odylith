@@ -1,6 +1,19 @@
 # Release
 Last updated: 2026-09-25
 
+## Direct final-holdout interruption custody (2026-09-25)
+
+The direct Greenfield release runner now writes interruption results outside
+its leased temporary namespace, seals retained partial evidence before terminal
+ledger completion, and releases the lease without replacing an active failure.
+If sealing or ledger completion itself fails, the original interrupt remains
+the raised exception, the custody failure is attached as an exception note, and
+the one-shot ledger remains claimed rather than being force-completed without a
+valid manifest. Focused successful-terminalization, sealing-failure, and
+lease-cleanup proof is included in the `105/105` contract result. Exact
+release execution must still prove no surviving descendants and an empty owned
+namespace before CB-321 can close.
+
 ## Event-owned citation replacement public qualification (2026-09-25)
 
 Exact pushed commit and immutable distribution `7077dd600` pass the
@@ -747,6 +760,15 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `tests/unit/install/test_greenfield_preconfirm_matrix_proof_scope.py`
+- **2026-09-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py`
+- **2026-09-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_host_candidate_shape.py`
 - **2026-09-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 1 verifiable artifact reference.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`
@@ -756,15 +778,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-19 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 1 verifiable artifact reference.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`
-- **2026-09-18 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
-- **2026-09-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
-- **2026-09-16 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -1319,3 +1332,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-28: Proved the prompt-quality release checkpoint through fresh local installable dist `odylith-local-release-0.1.15-prompt-quality-proof`. The maintained standard matrix now covers thirteen domains, including the retained prompt-quality regression, and passed every case with 10/10 release score dimensions, zero prompt findings, zero total issues, every browser proof attempted and passed, create timings of 20.666-23.468s, clean temp cleanup, persisted matrix JSON, and synthetic wiring-only rescue smoke at 27.399s. This proves the standard installed path for this checkpoint; it does not prove natural rescue quality because `natural_rescue_quality_proven` remains false. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-208`, `CB-209`)
 - 2026-05-09: Release manifests now derive `migration_required` from the registered migration registry, and hosted bootstrap validation accepts migration-marked releases so v0.1.15 can route installed `0.1.10` through `0.1.14` repos into the registered Atlas box-explanation migration. (Plan: [B-127](odylith/radar/radar.html?view=plan&workstream=B-127))
 - 2026-06-28: Closed the release-proof custody gap where `release-candidate` and `release-preflight` ran local release smoke but did not require the installed greenfield matrix. The shared release proof lane now runs the matrix after smoke and writes `greenfield-post-confirm-matrix.v1.json` into the dist directory. The default standard catalog expanded from eight to thirteen domains and the score contract now requires every case-declared domain anchor, not merely three keyword hits. The c6286f0a package passed the earlier twelve-case matrix in 19.834-22.057s with zero issues and 10/10 scores before this release-gate metadata change; final release proof requires a rebuilt dist from the post-fix commit. Installed CLI auto-rescue remains explicitly wiring-only unless a natural non-internal repairable failure is proven under the 90s rescue tier. `RESCUE_SMOKE=0` is debug-only and not release proof. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-208`, `CB-209`)
+- 2026-09-25: Direct final-holdout interruption custody now preserves the active interrupt if evidence sealing or ledger completion fails, annotates the original exception, leaves the one-shot ledger claimed rather than inventing terminal proof, and releases the matrix lease without masking the active failure. Focused main-path wiring and the full `1174/1174` install Greenfield gate pass. CB-321 remains in progress until one exact-distribution release run proves the real terminal ledger, retained manifest, descendant cleanup, and empty namespace end to end. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-321`)

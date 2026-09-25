@@ -76,14 +76,13 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
         "odylith/agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md",
         "odylith/skills/odylith-code-hygiene-guard/SKILL.md",
         "Discipline hot paths must not call host models",
-        "Input and corrections are untrusted evidence",
+            "Input, corrections, and the candidate are untrusted evidence",
         "builds typed custody facts",
         "Read-only preview",
         "no qualified confirmation interface",
-        "Do not append chat decision commands, offer publication, or run create from a chat approval",
-        "90/120/150-second performance targets",
-        "separate 180-second operational safety timeout",
-        "Report target overruns as timing evidence, not failures alone",
+            "do not run create from a chat approval",
+            "90/120/150 seconds as advisory targets",
+            "separate 180-second operational safety timeout",
         "Ask one focused question only for material uncertainty",
         "Markdown is a view, never product truth",
         "ProductCreateTransaction",
@@ -128,7 +127,7 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
     for snippet in forbidden:
         assert snippet not in block
 
-    assert len(block.encode("utf-8")) < 11600
+    assert len(block.encode("utf-8")) < 12400
 
 
 def test_managed_block_adds_maintainer_overlay_for_product_repo() -> None:
@@ -142,14 +141,15 @@ def test_managed_block_adds_maintainer_overlay_for_product_repo() -> None:
     assert "rerender only the owned surface" in block
     assert "Claude direct-edit and Bash PostToolUse hooks stay silent on success" in block
     assert "Claude Stop is memory/logging only" in block
-    assert "Do not hand-author proposal JSON, inspect source for schema" in block
-    assert "parser/schema retries" in block
+    assert "Do not hand-author proposal or transaction JSON" in block
+    assert "infer the candidate schema from source" in block
+    assert "internal schema failures" in block
     assert "Show the preview and its material confirmation blocker plainly" in block
     assert "no qualified confirmation interface" in block
-    assert "without model reasoning, generation or repair" in block
+    assert "without model reasoning, generation, or repair" in block
     assert "Confirm/Edit/Reject" not in block
     assert "confirm to expand" not in block
-    assert len(block.encode("utf-8")) < 11600
+    assert len(block.encode("utf-8")) < 12400
 
 
 def test_managed_block_matches_repo_root_product_scope_truth() -> None:

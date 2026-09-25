@@ -14,6 +14,7 @@ from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
     RemainingCandidateProvider,
     authored_response,
+    write_host_candidate_fixture,
 )
 from tests.unit.runtime.greenfield_proposal_fixtures import HIIT_CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
@@ -36,34 +37,38 @@ def test_hiit_structured_fixture_preserves_path_and_sealed_package_under_sixty_s
 
     prompt = "Draft a greenfield proposal for a guided HIIT interval training app"
     provider = _hiit_authoring_provider(prompt)
-    participant = provider.participant_provider()
+    evidence = combined_prompt_evidence_source(
+        prompt=prompt,
+        edit_evidence=HIIT_CONFIRMED_INTENT_TEXT,
+    )
+    candidate_path = write_host_candidate_fixture(
+        tmp_path.parent / f"{tmp_path.name}-host-candidate.json",
+        provider.response,
+        evidence_text=evidence,
+    )
     reviewer = AdmittingReviewProvider()
 
-    def authoring_provider(*, request_role="remaining_candidate_authoring", **_kwargs):
-        if request_role == "participant_selection":
-            return participant, "gpt-6-astra", "medium"
-        if request_role == "remaining_candidate_authoring":
-            return provider, "test-model", "low"
+    def authoring_provider(*, request_role="candidate_review", **_kwargs):
         if request_role == "candidate_review":
             return reviewer, "gpt-6-astra", "medium"
         raise AssertionError(f"Unexpected Greenfield request role: {request_role}")
 
     monkeypatch.setattr(
         greenfield_proposals_cli,
-        "_greenfield_authoring_provider",
+        "_greenfield_review_provider",
         authoring_provider,
     )
 
     started, rc, payload, transaction_payload = _run_proposed_transaction_create(
         tmp_path,
         prompt=prompt,
+        candidate_path=candidate_path,
         capsys=capsys,
     )
     elapsed = time.perf_counter() - started
 
     assert rc == 0
-    assert provider.calls == 1
-    assert participant.calls == 1
+    assert provider.calls == 0
     assert reviewer.calls == 1
     accepted = json.loads((tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8"))
     proposal = accepted["proposal"]
@@ -259,7 +264,13 @@ def _hiit_authoring_provider(prompt: str) -> RemainingCandidateProvider:
     )
 
 
-def _run_proposed_transaction_create(tmp_path: Path, *, prompt: str, capsys) -> tuple[float, int, dict, dict]:
+def _run_proposed_transaction_create(
+    tmp_path: Path,
+    *,
+    prompt: str,
+    candidate_path: Path,
+    capsys,
+) -> tuple[float, int, dict, dict]:
     started = time.perf_counter()
     propose_rc = greenfield_proposals_cli.main(
         [
@@ -270,6 +281,8 @@ def _run_proposed_transaction_create(tmp_path: Path, *, prompt: str, capsys) -> 
             prompt,
             "--edit-evidence",
             ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--candidate-file",
+            str(candidate_path),
             "--format",
             "json",
         ]

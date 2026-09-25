@@ -1,16 +1,18 @@
 """Public runtime failures remain distinct from rejected product meaning."""
 
-from copy import deepcopy
 import json
 from types import SimpleNamespace
 
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_proposals_cli as cli
+from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
+    combined_prompt_evidence_source,
+)
 from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
-    ParticipantSelectionProvider,
     StructuredAuthoringProvider,
+    write_host_candidate_fixture,
 )
 from tests.unit.runtime.test_greenfield_model_path_custody import _response, _source
 
@@ -48,57 +50,35 @@ def _snapshot(root):
     }
 
 
-def _remaining_candidate_response(response):
-    remaining = deepcopy(response)
-    remaining["result"]["facts"].pop("human_actors")
-    return remaining
-
-
-def _run(tmp_path, monkeypatch, capsys, *, role, failure, command, output_format):
+def _run(tmp_path, monkeypatch, capsys, *, failure, command, output_format):
     activate_greenfield_baseline_fixture(tmp_path)
     before = _snapshot(tmp_path)
     clock = SimpleNamespace(value=0.0)
     monkeypatch.setattr(cli, "time", SimpleNamespace(perf_counter=lambda: clock.value))
-    complete = _response(_source())
-    participant = FailureProvider(
-        ParticipantSelectionProvider(complete).response,
-        failure if role == "participant" else "",
-        clock,
+    evidence = combined_prompt_evidence_source(prompt=_source(), edit_evidence="")
+    candidate_path = write_host_candidate_fixture(
+        tmp_path.parent / f"{tmp_path.name}-host-candidate.json",
+        _response(evidence),
+        evidence_text=evidence,
     )
-    author = FailureProvider(
-        _remaining_candidate_response(complete),
-        failure if role == "author" else "",
-        clock,
-    )
-    reviewer = FailureProvider({"admissible": True, "issues": []}, failure if role == "reviewer" else "", clock)
+    reviewer = FailureProvider({"admissible": True, "issues": []}, failure, clock)
     if failure == "malformed":
-        {"participant": participant, "author": author, "reviewer": reviewer}[role].response = None
+        reviewer.response = None
     if failure == "denied":
         reviewer.response = {"admissible": False, "issues": [{"path": "facts", "reason": "Unsupported meaning"}]}
-    providers = {
-        "author": author,
-        "participant": participant,
-        "reviewer": reviewer,
-    }
-    setup_order = (
-        ("author", "participant", "reviewer", "reviewer")
-        if failure == "denied"
-        else ("author", "participant", "reviewer")
-    )
-    setup_roles = []
 
     def resolve(*_args, **_kwargs):
-        setup_role = setup_order[len(setup_roles)]
-        setup_roles.append(setup_role)
-        if setup_role == role:
-            if failure == "absent":
-                return None
-            if failure == "setup_timeout":
-                raise TimeoutError("PRIVATE_DIAGNOSTIC /private/provider-key")
-        return providers[setup_role]
+        if failure == "absent":
+            return None
+        if failure == "setup_timeout":
+            raise TimeoutError("PRIVATE_DIAGNOSTIC /private/provider-key")
+        return reviewer
 
     monkeypatch.setattr(cli.odylith_reasoning, "provider_from_config", resolve)
-    code = cli.main([command, "--repo-root", str(tmp_path), "--prompt", _source(), "--format", output_format])
+    code = cli.main([
+        command, "--repo-root", str(tmp_path), "--prompt", _source(),
+        "--candidate-file", str(candidate_path), "--format", output_format,
+    ])
     output = capsys.readouterr()
     assert code == 2
     assert output.err == ""
@@ -107,25 +87,15 @@ def _run(tmp_path, monkeypatch, capsys, *, role, failure, command, output_format
     assert "CONFIRM" not in output.out
     assert _snapshot(tmp_path) == before
     no_dispatch = failure in {"absent", "setup_timeout"}
-    expected_calls = {
-        "participant": 0 if no_dispatch else 1,
-        "author": 0 if no_dispatch or role == "participant" else 2 if failure == "denied" else 1,
-        "reviewer": 0 if no_dispatch or role != "reviewer" else 2 if failure == "denied" else 1,
-    }
-    if no_dispatch and role == "reviewer":
-        expected_calls.update(participant=1, author=1)
-    assert participant.calls == expected_calls["participant"]
-    assert author.calls == expected_calls["author"]
-    assert reviewer.calls == expected_calls["reviewer"]
+    assert reviewer.calls == (0 if no_dispatch else 1)
     return output.out
 
 
 @pytest.mark.parametrize("command", ["propose", "compile-transaction"])
 @pytest.mark.parametrize("output_format", ["text", "json"])
-@pytest.mark.parametrize("role", ["participant", "author", "reviewer"])
 @pytest.mark.parametrize("failure", ["timeout", "exception_timeout", "late", "unavailable", "absent", "setup_timeout"])
-def test_public_model_runtime_outcome(tmp_path, monkeypatch, capsys, command, output_format, role, failure):
-    output = _run(tmp_path, monkeypatch, capsys, role=role, failure=failure, command=command, output_format=output_format)
+def test_public_model_runtime_outcome(tmp_path, monkeypatch, capsys, command, output_format, failure):
+    output = _run(tmp_path, monkeypatch, capsys, failure=failure, command=command, output_format=output_format)
     expected = "MODEL_UNAVAILABLE_NO_WRITE" if failure in {"unavailable", "absent"} else "MODEL_TIMEOUT_NO_WRITE"
     if output_format == "json":
         payload = json.loads(output)
@@ -137,21 +107,15 @@ def test_public_model_runtime_outcome(tmp_path, monkeypatch, capsys, command, ou
     assert ("unavailable" if failure in {"unavailable", "absent"} else "time window") in output
 
 
-@pytest.mark.parametrize("role,failure", [
-    ("participant", "malformed"),
-    ("author", "malformed"),
-    ("reviewer", "malformed"),
-    ("reviewer", "denied"),
-])
-def test_semantic_failure_is_not_reported_as_environment(tmp_path, monkeypatch, capsys, role, failure):
-    output = _run(tmp_path, monkeypatch, capsys, role=role, failure=failure, command="propose", output_format="json")
+@pytest.mark.parametrize("failure", ["malformed", "denied"])
+def test_semantic_failure_is_not_reported_as_environment(tmp_path, monkeypatch, capsys, failure):
+    output = _run(tmp_path, monkeypatch, capsys, failure=failure, command="propose", output_format="json")
     payload = json.loads(output)
     assert payload["mode"] == "error"
     assert "outcome" not in payload
 
 
-@pytest.mark.parametrize("role", ["participant", "author", "reviewer"])
 @pytest.mark.parametrize("failure", ["misleading_timeout", "stale_timeout"])
-def test_diagnostics_and_stale_codes_do_not_classify_candidate_meaning(tmp_path, monkeypatch, capsys, role, failure):
-    output = _run(tmp_path, monkeypatch, capsys, role=role, failure=failure, command="propose", output_format="json")
+def test_diagnostics_and_stale_codes_do_not_classify_candidate_meaning(tmp_path, monkeypatch, capsys, failure):
+    output = _run(tmp_path, monkeypatch, capsys, failure=failure, command="propose", output_format="json")
     assert "outcome" not in json.loads(output)

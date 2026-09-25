@@ -222,6 +222,8 @@ def test_greenfield_completion_respects_automated_browser_opt_out(tmp_path, monk
 
 
 def test_greenfield_confirm_intent_flag_is_retired(tmp_path, capsys) -> None:
+    candidate_path = tmp_path.parent / f"{tmp_path.name}-host-candidate.json"
+    candidate_path.write_text("{}\n", encoding="utf-8")
     rc = greenfield_proposals_cli.main(
         [
             "propose",
@@ -229,6 +231,8 @@ def test_greenfield_confirm_intent_flag_is_retired(tmp_path, capsys) -> None:
             str(tmp_path),
             "--prompt",
             "Draft a greenfield proposal for a municipal permit review workspace",
+            "--candidate-file",
+            str(candidate_path),
             "--confirm-intent",
         ]
     )

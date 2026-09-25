@@ -4,6 +4,28 @@ Last updated: 2026-09-25
 
 ## Overview
 
+### Context-owned host citations and complete responsibility custody (2026-09-25)
+
+Host candidate contract v9 / compact format v3 removes model-authored numeric
+source occurrences from the host boundary. Every accepted source citation now
+contains an exact semantic `quote` plus exact contiguous locator `context` that
+must occur once and contain the quote once. Deterministic custody derives the
+legacy canonical occurrence and byte address after hashing the immutable raw
+candidate. Context contributes no meaning. Absent, repeated, or internally
+ambiguous context fails closed; there is no first-match rebinding, regex,
+vocabulary rule, retry, repair, or fallback candidate.
+
+Accepted component custody now requires every explicit source-stated product or
+component responsibility, including clauses also represented as typed workflow
+events. The component fact owns responsibility; the event owns workflow order;
+provisional design may reference but cannot replace either accepted fact. This
+corrects the prior schema instruction that excluded responsibilities already
+represented by typed events without creating a new fact category or semantic
+owner. Focused contract proof passes `105/105`; the widened host/profile slice
+passes `363/363`.
+Immutable installed, browser, independent semantic, and fresh blind holdout
+qualification remain open.
+
 ### Runner-native outcome authority (2026-09-25)
 
 Final-holdout v7 and evaluation-splits v6 add one release-evidence boundary,
@@ -1100,6 +1122,12 @@ semantic/design findings.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py`
+- **2026-09-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_host_candidate_shape.py`
 - **2026-09-24 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_profile_contract.py`
@@ -1112,12 +1140,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-23 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-09-23-greenfield-coding-readiness-projection-drops-repeated-source-facts-2.md`, `src/odylith/runtime/domain_intelligence/greenfield_handoff_contract.py`, `tests/unit/runtime/test_greenfield_handoff_contract.py`
-- **2026-09-19 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 1 verifiable artifact reference.
-  - Scope: B-142
-  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_candidate_review.py`
-- **2026-09-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 1 verifiable artifact reference.
-  - Scope: B-142
-  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_model_source_citations.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -4659,3 +4681,23 @@ projection coherence, confirmation, and readback.
 - `tests/unit/install/test_greenfield_commit_recovery_proof.py`
 - `tests/unit/install/test_greenfield_relation_fidelity.py`
 - `tests/unit/install/test_greenfield_semantic_release_score.py`
+
+## Greenfield Host-Owned Meaning Boundary (2026-09-25)
+
+- `odylith greenfield candidate-contract` exposes the complete evidence and
+  compact host-candidate schema. The host returns one immutable v3 hypothesis;
+  public PROPOSE, controlled compilation, and EDIT reject a missing candidate
+  before any provider dispatch.
+- The runtime owns deterministic custody validation and one independent semantic
+  review only. It does not select participants, author a remaining candidate,
+  parse domain prose, repair a candidate, retry, or fall back to another model
+  path.
+- Host citations are exact `{quote, context}` pairs. The context is a unique
+  locator, not semantic evidence; canonical byte spans and ordinals are derived
+  after hashing the raw candidate. Every explicit source-stated component
+  responsibility remains accepted source custody even when the same clause is
+  also a typed event.
+- The public-path migration is proven by the focused `141/141`, full runtime
+  `2183/2183`, and full install `1174/1174` Greenfield gates. Release
+  qualification still requires the exact rebuilt distribution, corrected
+  disclosed corpus, independent strong review, and one new blind holdout.

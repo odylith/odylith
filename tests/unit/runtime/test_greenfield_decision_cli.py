@@ -81,6 +81,12 @@ def _tree_digest(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _write_candidate_stub(tmp_path: Path) -> Path:
+    path = tmp_path.parent / f"{tmp_path.name}-host-candidate.json"
+    path.write_text("{}\n", encoding="utf-8")
+    return path
+
+
 def test_terminal_decision_prints_human_completion_without_json_wrapper(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -231,10 +237,12 @@ def test_terminal_edit_rebuilds_once_from_verified_retained_source_and_correctio
         lambda **kwargs: review_calls.append(dict(kwargs)),
     )
     governed_before = _tree_digest(tmp_path / "odylith")
+    candidate_path = _write_candidate_stub(tmp_path)
 
     assert greenfield_cli.main([
         "decide", "EDIT", previous.transaction_hash,
         "--repo-root", str(tmp_path), "--edit", correction,
+        "--candidate-file", str(candidate_path),
     ]) == 0
 
     assert len(compile_calls) == 1
@@ -245,6 +253,7 @@ def test_terminal_edit_rebuilds_once_from_verified_retained_source_and_correctio
     assert call["release_selector"] == previous.release_selector
     assert call["repair_tier"] == previous.quality_manifest["requested_repair_tier"]
     assert call["source_language"] == "en"
+    assert call["host_candidate"] == {}
     assert isinstance(call["started_at"], float)
     assert len(review_calls) == 1
     assert review_calls[0]["candidate_intent"] == {"title": "Rebuilt"}
@@ -320,6 +329,7 @@ def test_terminal_edit_non_success_preserves_the_original_reviewed_package(
     )
     governed_before = _tree_digest(tmp_path / "odylith")
     compile_calls: list[dict[str, object]] = []
+    candidate_path = _write_candidate_stub(tmp_path)
 
     def compile_once(**kwargs: object) -> tuple[dict[str, str], object, Path]:
         compile_calls.append(dict(kwargs))
@@ -343,6 +353,7 @@ def test_terminal_edit_non_success_preserves_the_original_reviewed_package(
     assert greenfield_cli.main([
         "decide", "EDIT", previous.transaction_hash,
         "--repo-root", str(tmp_path), "--edit", "Clarify the owner.",
+        "--candidate-file", str(candidate_path),
     ]) == expected_result
 
     assert expected_text in capsys.readouterr().out

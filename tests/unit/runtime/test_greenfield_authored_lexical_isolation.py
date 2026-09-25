@@ -17,8 +17,8 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
-    RemainingCandidateProvider,
     authored_response,
+    write_host_candidate_fixture,
 )
 from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
 
@@ -100,42 +100,42 @@ def _public_propose(
     capsys: Any,
     intent: Mapping[str, Any],
     repair_tier: str = "",
-) -> tuple[int, dict[str, Any], RemainingCandidateProvider]:
+) -> tuple[int, dict[str, Any], AdmittingReviewProvider]:
     activate_greenfield_baseline_fixture(tmp_path)
     source = _evidence_source(intent)
     staged_evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
-    provider = RemainingCandidateProvider(
-        authored_response(
-            intent,
-            evidence_text=staged_evidence,
-            first_path_relations=_first_path_relations(),
-            component_responsibility_owners=["Berth map"],
-        )
+    canonical = authored_response(
+        intent,
+        evidence_text=staged_evidence,
+        first_path_relations=_first_path_relations(),
+        component_responsibility_owners=["Berth map"],
     )
-    participant_provider = provider.participant_provider()
+    candidate_path = write_host_candidate_fixture(
+        tmp_path.parent / f"{tmp_path.name}-host-candidate.json",
+        canonical,
+        evidence_text=staged_evidence,
+    )
+    reviewer = AdmittingReviewProvider()
     assert staged_evidence
 
     def provider_for_role(**kwargs: object) -> tuple[object, str, str]:
-        role = kwargs.get("request_role") or "remaining_candidate_authoring"
-        providers = {
-            "participant_selection": participant_provider,
-            "remaining_candidate_authoring": provider,
-            "candidate_review": AdmittingReviewProvider(),
-        }
-        assert role in providers
-        return providers[str(role)], "test-model", "low"
+        assert kwargs.get("request_role") == "candidate_review"
+        return reviewer, "gpt-6-astra", "medium"
 
     monkeypatch.setattr(
         greenfield_proposals_cli,
-        "_greenfield_authoring_provider",
+        "_greenfield_review_provider",
         provider_for_role,
     )
 
-    arguments = ["propose", "--repo-root", str(tmp_path), "--prompt", source, "--format", "json"]
+    arguments = [
+        "propose", "--repo-root", str(tmp_path), "--prompt", source,
+        "--candidate-file", str(candidate_path), "--format", "json",
+    ]
     if repair_tier:
         arguments.extend(("--repair-tier", repair_tier))
     rc = greenfield_proposals_cli.main(arguments)
-    return rc, json.loads(capsys.readouterr().out), provider
+    return rc, json.loads(capsys.readouterr().out), reviewer
 
 
 def test_public_authored_propose_seals_exact_non_latin_customer(
@@ -145,7 +145,7 @@ def test_public_authored_propose_seals_exact_non_latin_customer(
 ) -> None:
     intent = _authored_intent(customer="港務員")
 
-    rc, payload, provider = _public_propose(
+    rc, payload, reviewer = _public_propose(
         tmp_path=tmp_path,
         monkeypatch=monkeypatch,
         capsys=capsys,
@@ -153,7 +153,7 @@ def test_public_authored_propose_seals_exact_non_latin_customer(
     )
 
     assert rc == 0, payload
-    assert provider.calls == 1
+    assert reviewer.calls == 1
     assert payload["intent_hypothesis"]["customer"] == "港務員"
     assert payload["mode"] == "product_create_transaction"
     transaction_path = tmp_path / payload["transaction_file"]
@@ -173,23 +173,12 @@ def test_public_authored_rescue_tier_seals_the_120_second_target(
     capsys: Any,
 ) -> None:
     now = {"time": 0.0}
-    generate = RemainingCandidateProvider.generate_structured
-
-    def author_after_standard_window(self, *, request):
-        if request.schema_name == "greenfield_remaining_candidate_authoring":
-            now["time"] = 70.0
-        return generate(self, request=request)
-    monkeypatch.setattr(
-        RemainingCandidateProvider,
-        "generate_structured",
-        author_after_standard_window,
-    )
     monkeypatch.setattr(
         greenfield_proposals_cli,
         "time",
         SimpleNamespace(perf_counter=lambda: now["time"]),
     )
-    rc, payload, provider = _public_propose(
+    rc, payload, reviewer = _public_propose(
         tmp_path=tmp_path,
         monkeypatch=monkeypatch,
         capsys=capsys,
@@ -198,7 +187,7 @@ def test_public_authored_rescue_tier_seals_the_120_second_target(
     )
 
     assert rc == 0, payload
-    assert provider.calls == 1
+    assert reviewer.calls == 1
     transaction = json.loads((tmp_path / payload["transaction_file"]).read_text(encoding="utf-8"))
     manifest = transaction["quality_manifest"]
     assert manifest["requested_repair_tier"] == "rescue"
@@ -207,15 +196,10 @@ def test_public_authored_rescue_tier_seals_the_120_second_target(
     assert manifest["operational_timeout_seconds"] == 180.0
     assert manifest["rescue_activated"] is True
     assert manifest["model_authoring"]["tier"] == "rescue"
-    assert manifest["model_authoring"]["semantic_model_call_count"] == 3
-    assert provider.requests[0].timeout_seconds == 165.0
+    assert manifest["model_authoring"]["runtime_semantic_model_call_count"] == 1
+    assert reviewer.requests[0].timeout_seconds == 165.0
     assert manifest["model_authoring"]["effective_model_window_seconds"] == 165.0
-    assert (
-        manifest["model_authoring"]["remaining_candidate_authoring"]["model_profile"][
-            "effective_timeout_seconds"
-        ]
-        == 165.0
-    )
+    assert "remaining_candidate_authoring" not in manifest["model_authoring"]
 
 
 def test_public_authored_propose_seals_exact_non_latin_product_title(
@@ -229,7 +213,7 @@ def test_public_authored_propose_seals_exact_non_latin_product_title(
         product_view="港務台 gives dock attendants a berth workflow",
     )
 
-    rc, payload, provider = _public_propose(
+    rc, payload, reviewer = _public_propose(
         tmp_path=tmp_path,
         monkeypatch=monkeypatch,
         capsys=capsys,
@@ -237,7 +221,7 @@ def test_public_authored_propose_seals_exact_non_latin_product_title(
     )
 
     assert rc == 0, payload
-    assert provider.calls == 1
+    assert reviewer.calls == 1
     assert payload["intent_hypothesis"]["title"] == "港務台"
     transaction_path = tmp_path / payload["transaction_file"]
     transaction = json.loads(transaction_path.read_text(encoding="utf-8"))
@@ -265,7 +249,7 @@ def test_public_authored_propose_seals_exact_repeated_brand_without_rewriting(
         product_view="Miu Miu gives dock attendants a berth workflow",
     )
 
-    rc, payload, provider = _public_propose(
+    rc, payload, reviewer = _public_propose(
         tmp_path=tmp_path,
         monkeypatch=monkeypatch,
         capsys=capsys,
@@ -273,7 +257,7 @@ def test_public_authored_propose_seals_exact_repeated_brand_without_rewriting(
     )
 
     assert rc == 0, payload
-    assert provider.calls == 1
+    assert reviewer.calls == 1
     assert payload["intent_hypothesis"]["title"] == "Miu Miu"
     transaction_path = tmp_path / payload["transaction_file"]
     transaction = json.loads(transaction_path.read_text(encoding="utf-8"))
@@ -289,7 +273,7 @@ def test_public_authored_deep_tier_stays_structural_and_seals_exact_unicode_cust
     intent = _authored_intent(customer="港務員")
     source = _evidence_source(intent)
     staged_evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
-    rc, payload, provider = _public_propose(
+    rc, payload, reviewer = _public_propose(
         tmp_path=tmp_path,
         monkeypatch=monkeypatch,
         capsys=capsys,
@@ -298,14 +282,14 @@ def test_public_authored_deep_tier_stays_structural_and_seals_exact_unicode_cust
     )
 
     assert rc == 0, payload
-    assert provider.calls == 1
+    assert reviewer.calls == 1
     transaction = json.loads((tmp_path / payload["transaction_file"]).read_text(encoding="utf-8"))
     manifest = transaction["quality_manifest"]
     assert manifest["requested_repair_tier"] == "deep"
     assert manifest["repair_tier"] == "deep"
     assert manifest["target_seconds"] == 150.0
     assert manifest["operational_timeout_seconds"] == 180.0
-    assert provider.requests[0].timeout_seconds == 165.0
+    assert reviewer.requests[0].timeout_seconds == 165.0
     assert manifest["rescue_activated"] is True
     assert manifest["semantic_compiler"] == {
         "version": "odylith.greenfield.authored-semantic-validation.v4",

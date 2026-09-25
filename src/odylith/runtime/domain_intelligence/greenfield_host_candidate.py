@@ -40,7 +40,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v1"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v8"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v9"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
 
 
@@ -58,7 +58,15 @@ def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
         ),
         "requirements": [
             "Preserve every source-stated participant, action, visible result, constraint, and non-goal.",
-            "Use exact contiguous source quotes and one-based occurrences; do not reconstruct source prose.",
+            (
+                "For every accepted source fact, supply its exact quote plus exact contiguous "
+                "context that occurs once and contains the quote once; context locates the quote "
+                "but contributes no additional meaning."
+            ),
+            (
+                "Preserve every explicit source-stated product or component responsibility in "
+                "accepted source components, even when the same clause also appears as a typed event."
+            ),
             "Keep accepted source facts separate from assumptions and provisional design decisions.",
             (
                 "Use exactly one proof authority: when the source identifies both a visible result and "
@@ -122,7 +130,10 @@ def admit_greenfield_host_candidate(
 
     frozen = _canonical_candidate_bytes(response)
     candidate_sha256 = hashlib.sha256(frozen).hexdigest()
-    canonical_response = canonical_greenfield_host_candidate(response)
+    canonical_response = canonical_greenfield_host_candidate(
+        response,
+        evidence_text=evidence_text,
+    )
     canonical_frozen = _canonical_candidate_bytes(canonical_response)
     authored = validate_greenfield_authoring_response(
         canonical_response,

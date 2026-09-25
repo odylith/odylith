@@ -52,6 +52,229 @@ def _write(path: Path, text: str) -> None:
     path.write_text(text, encoding="utf-8")
 
 
+def test_direct_runner_interrupt_terminalizes_before_empty_lease_release(tmp_path: Path) -> None:
+    module = _module()
+    holdout = tmp_path / "holdout.json"
+    manifest = tmp_path / "manifest.json"
+    _write(holdout, '{"cases": []}\n')
+    _write(manifest, '{}\n')
+    run = module._FinalHoldoutRun(
+        ledger_path=tmp_path / "run-ledger.json",
+        holdout_path=holdout,
+        evaluation_manifest_path=manifest,
+        case_paths=(holdout,),
+        implementation_revision="a" * 40,
+        distribution_provenance_sha256="b" * 64,
+    )
+    run.claim()
+    temp_parent = tmp_path / "work"
+    output_path = tmp_path / "partial-result.json"
+    evidence_output_dir = tmp_path / "evidence"
+    _write(output_path, '{"status": "running"}\n')
+    lease = module.acquire_matrix_run_lease(
+        temp_parent=temp_parent,
+        output_path=tmp_path / "terminal-result.json",
+    )
+
+    interrupted = module._terminalize_interrupted_final_holdout(
+        run=run,
+        error=KeyboardInterrupt(),
+        output_path=output_path,
+        evidence_output_dir=evidence_output_dir,
+        temp_parent=temp_parent,
+    )
+
+    terminal = json.loads(run.ledger_path.read_text(encoding="utf-8"))
+    assert terminal["status"] == "interrupted"
+    assert terminal["retained_evidence"]["manifest_path"] == str(
+        evidence_output_dir / "retained-evidence-manifest.v1.json"
+    )
+    assert interrupted.parent == run.ledger_path.parent
+    assert not interrupted.is_relative_to(lease.temp_namespace)
+    module._release_matrix_lease_without_masking(lease=lease, active_error=None)
+    assert not lease.temp_namespace.exists()
+
+
+@pytest.mark.parametrize("cleanup_error_type", [RuntimeError, OSError])
+def test_lease_cleanup_error_is_not_allowed_to_mask_active_interrupt(
+    cleanup_error_type: type[BaseException],
+) -> None:
+    module = _module()
+
+    class BrokenLease:
+        def release(self) -> None:
+            raise cleanup_error_type("namespace remained non-empty")
+
+    active = KeyboardInterrupt()
+    module._release_matrix_lease_without_masking(
+        lease=BrokenLease(),
+        active_error=active,
+    )
+
+    assert active.__notes__ == [
+        "matrix lease cleanup also failed: namespace remained non-empty"
+    ]
+
+
+@pytest.mark.parametrize("cleanup_error_type", [RuntimeError, OSError])
+def test_lease_cleanup_error_is_raised_without_an_active_error(
+    cleanup_error_type: type[BaseException],
+) -> None:
+    module = _module()
+
+    class BrokenLease:
+        def release(self) -> None:
+            raise cleanup_error_type("namespace remained non-empty")
+
+    with pytest.raises(cleanup_error_type, match="namespace remained non-empty"):
+        module._release_matrix_lease_without_masking(
+            lease=BrokenLease(),
+            active_error=None,
+        )
+
+
+def test_interruption_sealing_failure_preserves_interrupt_and_claimed_ledger(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    module = _module()
+    run = module._FinalHoldoutRun(
+        ledger_path=tmp_path / "run-ledger.json",
+        holdout_path=tmp_path / "holdout.json",
+        evaluation_manifest_path=tmp_path / "manifest.json",
+        case_paths=(tmp_path / "holdout.json",),
+        implementation_revision="a" * 40,
+        distribution_provenance_sha256="b" * 64,
+        claimed=True,
+        run_id="c" * 64,
+    )
+    active = KeyboardInterrupt()
+    monkeypatch.setattr(
+        module,
+        "seal_interrupted_retained_evidence",
+        lambda **_kwargs: (_ for _ in ()).throw(RuntimeError("forced seal failure")),
+    )
+
+    module._terminalize_interrupted_final_holdout_without_masking(
+        run=run,
+        error=active,
+        output_path=None,
+        evidence_output_dir=tmp_path / "evidence",
+        temp_parent=tmp_path / "work",
+    )
+
+    assert run.claimed is True
+    assert active.__notes__ == [
+        "final holdout interruption evidence could not be terminalized; "
+        "the ledger remains claimed: forced seal failure"
+    ]
+
+
+def test_main_preserves_interrupt_through_claim_terminalization_and_finally(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    evidence_dir = tmp_path / "evidence"
+    sealed_root = tmp_path / "sealed"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
+
+    args = module.argparse.Namespace(
+        include_default_cases=False,
+        evidence_output_dir=str(evidence_dir),
+        release_audit_repo_root="",
+        required_stressor=(),
+        require_high_variance_stressors=False,
+        campaign_phase="gate",
+        proof_tier="release",
+        telemetry_jsonl="",
+        stop_after_failures=0,
+        stop_after_cluster_failures=0,
+        sealed_release_input_root=str(sealed_root),
+        install_mode="full",
+        include_browser_proof=False,
+        include_commit_recovery_proof=False,
+        allow_skipped_browser_proof=False,
+        allow_partial_stressor_coverage=False,
+        semantic_annotations_file=str(sealed_root / "qualification.json"),
+        evaluation_split_manifest=str(sealed_root / "splits.json"),
+        final_holdout_run_ledger=str(tmp_path / "run-ledger.json"),
+        implementation_revision="a" * 40,
+        distribution_provenance_file=str(sealed_root / "provenance.json"),
+        case_file=(str(sealed_root / "cases.json"),),
+        release_audit_file="",
+        temp_parent=str(tmp_path / "work"),
+        dist_dir=str(dist_dir),
+        output_json=str(tmp_path / "partial-result.json"),
+    )
+
+    class ClaimedRun:
+        ledger_path = tmp_path / "run-ledger.json"
+        run_id = "c" * 64
+        claimed = False
+
+        def claim(self) -> None:
+            self.claimed = True
+
+    run = ClaimedRun()
+
+    class Lease:
+        released = False
+        temp_namespace = tmp_path / "lease"
+
+        def release(self) -> None:
+            self.released = True
+            raise OSError("forced lease cleanup failure")
+
+    lease = Lease()
+    child = {"alive": False}
+
+    def interrupted_campaign(**_kwargs):
+        child["alive"] = True
+        try:
+            raise KeyboardInterrupt()
+        finally:
+            child["alive"] = False
+
+    monkeypatch.setattr(module, "_parse_args", lambda _argv: args)
+    monkeypatch.setattr(module, "_require_sealed_release_input_root", lambda **_kwargs: None)
+    monkeypatch.setattr(module, "_raise_for_invalid_campaign_policy", lambda **_kwargs: None)
+    monkeypatch.setattr(module, "validate_retained_evidence_output_dir", lambda **_kwargs: None)
+    monkeypatch.setattr(module, "_final_holdout_run_from_args", lambda *_args, **_kwargs: run)
+    monkeypatch.setattr(module, "acquire_matrix_run_lease", lambda **_kwargs: lease)
+    monkeypatch.setattr(
+        module,
+        "_load_cli_case_files",
+        lambda *_args, **_kwargs: (
+            module.GreenfieldMatrixCase(
+                name="interrupt",
+                prompt="Create one product.",
+                required_terms=(),
+            ),
+        ),
+    )
+    monkeypatch.setattr(module, "evaluate_frozen_evaluation_contract", lambda **_kwargs: {"issues": []})
+    monkeypatch.setattr(module, "_execute_matrix_campaign", interrupted_campaign)
+    monkeypatch.setattr(
+        module,
+        "seal_interrupted_retained_evidence",
+        lambda **_kwargs: (_ for _ in ()).throw(RuntimeError("forced seal failure")),
+    )
+
+    with pytest.raises(KeyboardInterrupt) as raised:
+        module.main([])
+
+    assert run.claimed is True
+    assert lease.released is True
+    assert child["alive"] is False
+    assert raised.value.__notes__ == [
+        "final holdout interruption evidence could not be terminalized; "
+        "the ledger remains claimed: forced seal failure",
+        "matrix lease cleanup also failed: forced lease cleanup failure",
+    ]
+
+
 def _write_supplement(
     path: Path,
     *,

@@ -14,6 +14,9 @@ from odylith.runtime.domain_intelligence.greenfield_authored_relation_validation
 from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
     HOST_CANDIDATE_CONTRACT_VERSION,
 )
+from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
+    REVIEW_PROMPT,
+)
 from odylith.runtime.domain_intelligence.greenfield_host_candidate_materialization import (
     materialize_host_authored_intent,
 )
@@ -27,6 +30,9 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization
 )
 from odylith.runtime.domain_intelligence.greenfield_model_outcomes import (
     GreenfieldModelAuthoringError,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_source_citations import (
+    resolve_source_citation,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_receipt_approval import (
     greenfield_model_authoring_receipt_approved,
@@ -47,11 +53,53 @@ def _host_response(evidence: str) -> dict[str, object]:
     response = deepcopy(_response(evidence))
     result = response["result"]
     facts = result["facts"]
+    for field, value in tuple(facts.items()):
+        if isinstance(value, list):
+            facts[field] = [
+                _context_citation(evidence, citation)
+                for citation in value
+            ]
+        elif isinstance(value, dict):
+            facts[field] = _context_citation(
+                evidence,
+                value,
+                state_object=field == "state_object",
+            )
+    for component in result["components"]:
+        component["responsibilities"] = [
+            _context_citation(evidence, citation)
+            for citation in component["responsibilities"]
+        ]
     path_citations = facts.pop("first_path")
     for event, citation in zip(result["events"], path_citations, strict=True):
         event["source_citation"] = citation
     response["version"] = HOST_CANDIDATE_FORMAT_VERSION
     return response
+
+
+def _context_citation(
+    evidence: str,
+    citation: dict[str, object],
+    *,
+    state_object: bool = False,
+) -> dict[str, str]:
+    evidence_bytes = evidence.encode("utf-8")
+    quote, start = resolve_source_citation(
+        evidence_bytes,
+        citation,
+        state_object=state_object,
+    )
+    start_character = len(evidence_bytes[:start].decode("utf-8"))
+    end_character = start_character + len(quote)
+    for added in range(len(evidence) + 1):
+        for before in range(added + 1):
+            after = added - before
+            left = max(0, start_character - before)
+            right = min(len(evidence), end_character + after)
+            context = evidence[left:right]
+            if evidence.count(context) == 1 and context.count(quote) == 1:
+                return {"quote": quote, "context": context}
+    raise AssertionError("fixture could not derive unique citation context")
 
 
 def _host_clarification(response: dict[str, object]) -> dict[str, object]:
@@ -197,7 +245,7 @@ def test_host_candidate_compiles_the_existing_transaction_without_runtime_author
 
     monkeypatch.setattr(
         greenfield_proposals_cli,
-        "_greenfield_authoring_provider",
+        "_greenfield_review_provider",
         provider_factory,
     )
     candidate, transaction, transaction_path = (
@@ -225,7 +273,7 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
 ) -> None:  # type: ignore[no-untyped-def]
     monkeypatch.setattr(
         greenfield_proposals_cli,
-        "_greenfield_authoring_provider",
+        "_greenfield_review_provider",
         lambda **_kwargs: (_ for _ in ()).throw(
             AssertionError("candidate contract must not discover a provider")
         ),
@@ -246,6 +294,16 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
     authored = payload["candidate_schema"]["properties"]["result"]["anyOf"][0]
     assert "first_path" not in authored["properties"]["facts"]["properties"]
     assert "source_citation" in authored["properties"]["events"]["items"]["required"]
+    source_citation = authored["properties"]["events"]["items"]["properties"][
+        "source_citation"
+    ]
+    assert source_citation["required"] == ["quote", "context"]
+    assert "occurrence" not in source_citation["properties"]
+    responsibility = authored["properties"]["components"]["items"]["properties"][
+        "responsibilities"
+    ]["items"]
+    assert responsibility["required"] == ["quote", "context"]
+    assert "occurrence" not in responsibility["properties"]
     source_precedence = authored["properties"]["source_precedence"]
     assert "every explicit source-stated ordering requirement" in source_precedence["description"]
     assert "proposed first-run walkthrough" in source_precedence["description"]
@@ -254,9 +312,49 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
         and "facts.proof_boundary and terminal to null" in requirement
         for requirement in payload["requirements"]
     )
+    assert any(
+        "exact quote plus exact contiguous context" in requirement
+        for requirement in payload["requirements"]
+    )
     assert payload["request"]["evidence"].endswith(
         "Create one reviewable harbor plan.\n"
     )
+
+
+@pytest.mark.parametrize("command", ("propose", "compile-transaction"))
+def test_public_authoring_help_requires_the_returned_candidate_schema(
+    command: str,
+    capsys,
+) -> None:  # type: ignore[no-untyped-def]
+    with pytest.raises(SystemExit) as raised:
+        greenfield_proposals_cli.main([command, "--help"])
+
+    output = " ".join(capsys.readouterr().out.split())
+    assert raised.value.code == 0
+    assert "--candidate-file CANDIDATE_FILE" in output
+    assert "matching the returned candidate-contract schema" in output
+    assert "v68 typed candidate" not in output
+
+
+@pytest.mark.parametrize("command", ("propose", "compile-transaction"))
+def test_public_authoring_rejects_missing_candidate_before_provider_dispatch(
+    command: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        greenfield_proposals_cli,
+        "_greenfield_review_provider",
+        lambda **_kwargs: (_ for _ in ()).throw(
+            AssertionError("missing candidate reached provider dispatch")
+        ),
+    )
+
+    with pytest.raises(SystemExit) as raised:
+        greenfield_proposals_cli.main(
+            [command, "--repo-root", ".", "--prompt", "Create one product."]
+        )
+
+    assert raised.value.code == 2
 
 
 def test_host_candidate_preserves_canonical_source_precedence() -> None:
@@ -264,7 +362,7 @@ def test_host_candidate_preserves_canonical_source_precedence() -> None:
     response = _host_response(evidence)
     expected = deepcopy(response["result"]["source_precedence"])
 
-    canonical = canonical_greenfield_host_candidate(response)
+    canonical = canonical_greenfield_host_candidate(response, evidence_text=evidence)
 
     assert canonical["result"]["source_precedence"] == expected
 
@@ -281,7 +379,7 @@ def test_host_candidate_preserves_multiple_events_on_one_exact_source_fact(
     )
     shared_citation = {
         "quote": shared_event,
-        "occurrence": 1,
+        "context": shared_event,
     }
     for event in response["result"]["events"]:
         event["source_citation"] = deepcopy(shared_citation)
@@ -303,9 +401,38 @@ def test_host_candidate_preserves_multiple_events_on_one_exact_source_fact(
     assert len(
         {(row["source_start_byte"], row["source_end_byte"]) for row in relations}
     ) == 1
-    assert len(
-        {(row["event_start_byte"], row["event_end_byte"]) for row in relations}
-    ) == 1
+
+
+def test_host_candidate_preserves_responsibility_that_is_also_a_typed_event(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    source = _source()
+    evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
+    response = _host_response(evidence)
+    shared = {
+        "quote": "the product records berth occupancy",
+        "context": "the product records berth occupancy",
+    }
+    response["result"]["events"][1]["source_citation"] = deepcopy(shared)
+    response["result"]["components"][0]["responsibilities"] = [deepcopy(shared)]
+
+    candidate = materialize_host_authored_intent(
+        prompt=source,
+        repo_root=tmp_path,
+        host_candidate=response,
+        review_provider_factory=AdmittingReviewProvider,
+    )
+
+    relation, = candidate["authored_semantics"]["component_responsibility_relations"]
+    assert candidate["component_responsibilities"] == [shared["quote"]]
+    assert relation["responsibility_quote"] == shared["quote"]
+    assert relation["first_path_event_order"] == 2
+
+
+def test_candidate_review_requires_complete_accepted_component_custody() -> None:
+    assert "Preserve every explicit source-stated" in REVIEW_PROMPT
+    assert "accepted_source.components" in REVIEW_PROMPT
+    assert "cannot substitute for accepted custody" in REVIEW_PROMPT
 
 
 def test_host_candidate_rejects_partially_overlapping_event_citations(
@@ -319,7 +446,10 @@ def test_host_candidate_rejects_partially_overlapping_event_citations(
             "Dock attendant Ivo enters a vessel tag and the product records berth "
             "occupancy before the berth map shows the placement"
         ),
-        "occurrence": 1,
+        "context": (
+            "Dock attendant Ivo enters a vessel tag and the product records berth "
+            "occupancy before the berth map shows the placement"
+        ),
     }
 
     with pytest.raises(
@@ -371,13 +501,16 @@ def test_host_candidate_rejects_shared_human_event_as_component_responsibility(
             "Dock attendant Ivo enters a vessel tag and the product records berth "
             "occupancy before the berth map shows the placement"
         ),
-        "occurrence": 1,
+        "context": (
+            "Dock attendant Ivo enters a vessel tag and the product records berth "
+            "occupancy before the berth map shows the placement"
+        ),
     }
     for event in response["result"]["events"]:
         event["source_citation"] = deepcopy(shared_citation)
     response["result"]["components"][0]["responsibilities"][0] = {
         "quote": "Dock attendant Ivo enters a vessel tag",
-        "occurrence": 1,
+        "context": "Dock attendant Ivo enters a vessel tag",
     }
 
     with pytest.raises(
@@ -411,7 +544,7 @@ def test_public_propose_accepts_a_host_candidate_file(
 
     monkeypatch.setattr(
         greenfield_proposals_cli,
-        "_greenfield_authoring_provider",
+        "_greenfield_review_provider",
         provider_factory,
     )
     rc = greenfield_proposals_cli.main([
@@ -454,7 +587,7 @@ def test_public_propose_exposes_one_typed_candidate_review_denial(
 
     monkeypatch.setattr(
         greenfield_proposals_cli,
-        "_greenfield_authoring_provider",
+        "_greenfield_review_provider",
         lambda **_kwargs: (reviewer, "test-reviewer", "medium"),
     )
     rc = greenfield_proposals_cli.main([
@@ -496,7 +629,7 @@ def test_edit_rebuild_accepts_a_new_host_candidate_and_preserves_old_seal(
 
     monkeypatch.setattr(
         greenfield_proposals_cli,
-        "_greenfield_authoring_provider",
+        "_greenfield_review_provider",
         provider_factory,
     )
     _candidate, original, original_path = (
@@ -518,6 +651,19 @@ def test_edit_rebuild_accepts_a_new_host_candidate_and_preserves_old_seal(
         json.dumps(_host_response(edited_evidence)),
         encoding="utf-8",
     )
+
+    missing_rc = greenfield_proposals_cli.rebuild_pending_transaction(
+        repo_root=tmp_path,
+        transaction_hash=original.transaction_hash,
+        edit_evidence=correction,
+        edit_evidence_file="",
+        as_json=True,
+    )
+    missing_payload = json.loads(capsys.readouterr().out)
+
+    assert missing_rc == 2
+    assert "requires one host-authored candidate matching" in missing_payload["error"]
+    assert requested_roles == ["candidate_review"]
 
     rc = greenfield_proposals_cli.rebuild_pending_transaction(
         repo_root=tmp_path,
@@ -543,13 +689,14 @@ def test_host_candidate_projection_moves_event_citations_without_rewriting() -> 
     host = _host_response(evidence)
     frozen = deepcopy(host)
 
-    canonical = canonical_greenfield_host_candidate(host)
+    canonical = canonical_greenfield_host_candidate(host, evidence_text=evidence)
 
     assert host == frozen
     assert canonical["version"] != host["version"]
-    assert canonical["result"]["facts"]["first_path"] == [
-        event["source_citation"] for event in host["result"]["events"]
-    ]
+    assert [
+        citation["quote"]
+        for citation in canonical["result"]["facts"]["first_path"]
+    ] == [event["source_citation"]["quote"] for event in host["result"]["events"]]
     assert all(
         "source_citation" not in event for event in canonical["result"]["events"]
     )

@@ -70,7 +70,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument(
         "--candidate-file",
         default="",
-        help="Host-authored v68 candidate for a full EDIT rebuild.",
+        help=(
+            "Host-authored candidate matching the returned candidate-contract schema "
+            "for a full EDIT rebuild."
+        ),
     )
     parser.add_argument("--json", action="store_true", dest="as_json")
     args = parser.parse_args(tokens[1:])

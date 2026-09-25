@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import copy
+import json
 from collections.abc import Mapping, Sequence
+from pathlib import Path
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
@@ -13,6 +15,12 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring impor
     GREENFIELD_INTENT_AUTHORING_VERSION,
     _REPEATED_SOURCE_FIELDS,
     _SINGULAR_SOURCE_FIELDS,
+)
+from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import (
+    HOST_CANDIDATE_FORMAT_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_source_citations import (
+    resolve_source_citation,
 )
 
 
@@ -94,6 +102,89 @@ class AdmittingReviewProvider(StructuredAuthoringProvider):
         assert getattr(request, "model", "") == "gpt-6-astra"
         assert getattr(request, "reasoning_effort", "") == "medium"
         return super().generate_structured(request=request)
+
+
+def host_candidate_response(
+    response: Mapping[str, Any], *, evidence_text: str,
+) -> dict[str, Any]:
+    """Project a canonical test response into the public host-candidate shape."""
+
+    candidate = copy.deepcopy(dict(response))
+    candidate["version"] = HOST_CANDIDATE_FORMAT_VERSION
+    result = candidate.get("result")
+    if not isinstance(result, dict) or result.get("status") == "clarification_required":
+        return candidate
+    facts = result.get("facts")
+    events = result.get("events")
+    components = result.get("components")
+    if not isinstance(facts, dict) or not isinstance(events, list) or not isinstance(components, list):
+        raise TypeError("canonical fixture cannot be projected to a host candidate")
+    first_path = facts.pop("first_path")
+    if not isinstance(first_path, list) or len(first_path) != len(events):
+        raise ValueError("canonical fixture event citations are incomplete")
+    for field, value in tuple(facts.items()):
+        if isinstance(value, list):
+            facts[field] = [
+                _unique_context_citation(evidence_text, row)
+                for row in value
+            ]
+        elif isinstance(value, Mapping):
+            facts[field] = _unique_context_citation(
+                evidence_text,
+                value,
+                state_object=field == "state_object",
+            )
+    for event, citation in zip(events, first_path, strict=True):
+        event["source_citation"] = _unique_context_citation(evidence_text, citation)
+    for component in components:
+        responsibilities = component.get("responsibilities")
+        if not isinstance(responsibilities, list):
+            raise TypeError("canonical fixture component responsibilities are invalid")
+        component["responsibilities"] = [
+            _unique_context_citation(evidence_text, row)
+            for row in responsibilities
+        ]
+    return candidate
+
+
+def write_host_candidate_fixture(
+    path: Path,
+    response: Mapping[str, Any],
+    *,
+    evidence_text: str,
+) -> Path:
+    """Write one public host candidate fixture and return its path."""
+
+    path.write_text(
+        json.dumps(host_candidate_response(response, evidence_text=evidence_text)),
+        encoding="utf-8",
+    )
+    return path
+
+
+def _unique_context_citation(
+    evidence_text: str,
+    citation: Mapping[str, Any],
+    *,
+    state_object: bool = False,
+) -> dict[str, str]:
+    evidence = evidence_text.encode("utf-8")
+    quote, start = resolve_source_citation(
+        evidence,
+        citation,
+        state_object=state_object,
+    )
+    start_character = len(evidence[:start].decode("utf-8"))
+    end_character = start_character + len(quote)
+    for added in range(len(evidence_text) + 1):
+        for before in range(added + 1):
+            after = added - before
+            left = max(0, start_character - before)
+            right = min(len(evidence_text), end_character + after)
+            context = evidence_text[left:right]
+            if evidence_text.count(context) == 1 and context.count(quote) == 1:
+                return {"quote": quote, "context": context}
+    raise AssertionError("fixture could not derive unique citation context")
 
 
 def authored_response(

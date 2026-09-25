@@ -89,6 +89,7 @@ from greenfield_matrix_release_artifacts import record_retained_case_text  # noq
 from greenfield_matrix_release_artifacts import retained_case_evidence_fd  # noqa: E402
 from greenfield_matrix_release_artifacts import retained_evidence_manifest_path  # noqa: E402
 from greenfield_matrix_release_artifacts import retained_evidence_manifest_issues  # noqa: E402
+from greenfield_matrix_release_artifacts import seal_interrupted_retained_evidence  # noqa: E402
 from greenfield_matrix_release_artifacts import validate_retained_evidence_output_dir  # noqa: E402
 from greenfield_matrix_release_artifacts import write_retained_evidence_manifest  # noqa: E402
 from greenfield_matrix_run_lease import acquire_matrix_run_lease  # noqa: E402
@@ -202,6 +203,90 @@ class _FinalHoldoutRun:
                 retained_evidence_manifest=retained_evidence_manifest,
             )
             self.claimed = False
+
+
+def _terminalize_interrupted_final_holdout(
+    *,
+    run: _FinalHoldoutRun,
+    error: BaseException,
+    output_path: Path | None,
+    evidence_output_dir: Path,
+    temp_parent: Path,
+) -> Path:
+    """Seal partial evidence and terminalize one claimed direct-runner holdout."""
+
+    interrupted = run.ledger_path.with_name(
+        f"{run.ledger_path.name}.interrupted-{run.run_id}.json"
+    )
+    partial_result = (
+        {
+            "path": str(output_path),
+            "sha256": _sha256_file(output_path),
+        }
+        if output_path is not None and output_path.is_file()
+        else {}
+    )
+    write_matrix_payload(
+        output_path=interrupted,
+        payload={
+            "version": "odylith.greenfield.final-holdout-direct-interruption.v1",
+            "status": "interrupted",
+            "error_type": type(error).__name__,
+            "partial_result": partial_result,
+        },
+    )
+    manifest = seal_interrupted_retained_evidence(
+        output_dir=evidence_output_dir,
+        temp_parent=temp_parent,
+        result_path=interrupted,
+        run_id=run.run_id,
+    )
+    run.complete(
+        result_path=interrupted,
+        outcome="interrupted",
+        retained_evidence_manifest=manifest,
+    )
+    return interrupted
+
+
+def _release_matrix_lease_without_masking(
+    *,
+    lease: Any,
+    active_error: BaseException | None,
+) -> None:
+    """Release the lease while preserving the exception that caused cleanup."""
+
+    try:
+        lease.release()
+    except BaseException as cleanup_error:
+        if active_error is None:
+            raise
+        active_error.add_note(f"matrix lease cleanup also failed: {cleanup_error}")
+
+
+def _terminalize_interrupted_final_holdout_without_masking(
+    *,
+    run: _FinalHoldoutRun,
+    error: BaseException,
+    output_path: Path | None,
+    evidence_output_dir: Path,
+    temp_parent: Path,
+) -> None:
+    """Attempt interruption custody while preserving the active exception."""
+
+    try:
+        _terminalize_interrupted_final_holdout(
+            run=run,
+            error=error,
+            output_path=output_path,
+            evidence_output_dir=evidence_output_dir,
+            temp_parent=temp_parent,
+        )
+    except BaseException as terminalization_error:
+        error.add_note(
+            "final holdout interruption evidence could not be terminalized; "
+            f"the ledger remains claimed: {terminalization_error}"
+        )
 
 
 def run_matrix(
@@ -2642,26 +2727,20 @@ def main(argv: Sequence[str] | None = None) -> int:
             return return_code
         except BaseException as error:
             if final_holdout_run is not None and final_holdout_run.claimed:
-                interrupted = lease.temp_namespace / "final-holdout-interrupted-result.v2.json"
-                write_matrix_payload(
-                    output_path=interrupted,
-                    payload={
-                        "version": QUALITY_MATRIX_VERSION,
-                        "status": "interrupted",
-                        "error_type": type(error).__name__,
-                    },
+                _terminalize_interrupted_final_holdout_without_masking(
+                    run=final_holdout_run,
+                    error=error,
+                    output_path=output_path,
+                    evidence_output_dir=Path(evidence_output_token),
+                    temp_parent=Path(args.temp_parent),
                 )
-                retained_manifest = retained_evidence_manifest_path(Path(evidence_output_token))
-                if retained_manifest.is_file():
-                    final_holdout_run.complete(
-                        result_path=interrupted,
-                        outcome="interrupted",
-                        retained_evidence_manifest=retained_manifest,
-                    )
             raise
     finally:
         if not lease.released:
-            lease.release()
+            _release_matrix_lease_without_masking(
+                lease=lease,
+                active_error=sys.exc_info()[1],
+            )
 
 
 def _execute_matrix_campaign(

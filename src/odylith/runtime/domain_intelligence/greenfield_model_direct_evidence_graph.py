@@ -803,9 +803,11 @@ MODEL_COMPONENT_SCHEMA: dict[str, Any] = {
                     ),
                     "minItems": 1,
                     "description": (
-                        "Exact complete source clauses expressing the selected product owner's own "
-                        "capability or result, without duplicating the product story or product events. "
-                        "Human-action spans remain human-owned workflow events."
+                        "Every exact complete source clause that explicitly states the selected "
+                        "product owner's own responsibility, capability, or result. Preserve it here "
+                        "even when the same clause is also a typed product event; the accepted component "
+                        "fact owns the responsibility while the event owns workflow order. Human-action "
+                        "spans remain human-owned workflow events."
                     ),
                 },
             },
@@ -814,9 +816,11 @@ MODEL_COMPONENT_SCHEMA: dict[str, Any] = {
     ),
     "minItems": 0,
     "description": (
-        "Source-stated capabilities not already represented by the product story or typed "
-        "product events. Return [] when none remain; proposed design owns implementation "
-        "depth. Never assign an output to a product merely because it ends the workflow."
+        "All explicitly source-stated product or component responsibilities, each cited once "
+        "and bound to its source-stated product owner. Preserve responsibilities repeated in "
+        "typed product events; proposed design may reference but never replace accepted source "
+        "custody. Return [] only when the source states no such responsibility. Never assign an "
+        "output to a product merely because it ends the workflow."
     ),
 }
 

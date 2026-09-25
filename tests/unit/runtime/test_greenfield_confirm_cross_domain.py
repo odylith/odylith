@@ -15,8 +15,8 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
-    RemainingCandidateProvider,
     authored_response,
+    write_host_candidate_fixture,
 )
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
@@ -309,10 +309,14 @@ def _run_confirmed_transaction_create(
     *,
     repo_root: Path,
     prompt: str,
+    candidate_path: Path,
     capsys: Any,
 ) -> tuple[int, str]:
     compile_rc = greenfield_proposals_cli.main(
-        ["propose", "--repo-root", str(repo_root), "--prompt", prompt, "--format", "json"]
+        [
+            "propose", "--repo-root", str(repo_root), "--prompt", prompt,
+            "--candidate-file", str(candidate_path), "--format", "json",
+        ]
     )
     compile_output = capsys.readouterr().out
     assert compile_rc == 0, compile_output
@@ -371,18 +375,21 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
         ],
         component_responsibility_owners=intent["internal_systems"],
     )
-    provider = RemainingCandidateProvider(response)
-    participant = provider.participant_provider()
+    candidate_path = write_host_candidate_fixture(
+        tmp_path.parent / f"{tmp_path.name}-host-candidate.json",
+        response,
+        evidence_text=staged_evidence,
+    )
     reviewer = AdmittingReviewProvider()
     monkeypatch.setattr(
         greenfield_proposals_cli,
-        "_greenfield_authoring_provider",
+        "_greenfield_review_provider",
         lambda **kwargs: (
             (reviewer, "gpt-6-astra", "medium")
             if kwargs.get("request_role") == "candidate_review"
-            else (participant, "gpt-6-astra", "medium")
-            if kwargs.get("request_role") == "participant_selection"
-            else (provider, "test-model", "low")
+            else (_ for _ in ()).throw(
+                AssertionError("retired runtime authoring provider requested")
+            )
         ),
     )
 
@@ -417,12 +424,11 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
     rc, output = _run_confirmed_transaction_create(
         repo_root=tmp_path,
         prompt=source,
+        candidate_path=candidate_path,
         capsys=capsys,
     )
 
     assert rc == 0, output
-    assert participant.calls == 1
-    assert provider.calls == 1
     assert reviewer.calls == 1
     assert "- validation gate: passed" in output
     accepted = json.loads(

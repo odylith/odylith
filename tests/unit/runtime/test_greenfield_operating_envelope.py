@@ -261,7 +261,7 @@ def test_public_compile_rejects_oversize_before_provider_discovery(monkeypatch, 
 
     monkeypatch.setattr(
         greenfield_proposals_cli,
-        "_greenfield_authoring_provider",
+        "_greenfield_review_provider",
         forbidden_provider_discovery,
     )
 
@@ -271,6 +271,7 @@ def test_public_compile_rejects_oversize_before_provider_discovery(monkeypatch, 
             prompt="x" * (MAX_EVIDENCE_BYTES + 1),
             edit_evidence="",
             release_selector="",
+            host_candidate={},
         )
 
     assert provider_discovery_calls == 0
@@ -286,7 +287,7 @@ def test_edit_read_time_reduces_the_provider_window_before_discovery(monkeypatch
 
     monkeypatch.setattr(
         greenfield_proposals_cli,
-        "_greenfield_authoring_provider",
+        "_greenfield_review_provider",
         forbidden_provider_discovery,
     )
     monkeypatch.setattr(greenfield_proposals_cli.time, "perf_counter", lambda: 165.0)
@@ -299,6 +300,7 @@ def test_edit_read_time_reduces_the_provider_window_before_discovery(monkeypatch
             release_selector="",
             repair_tier="rescue",
             started_at=0.0,
+            host_candidate={},
         )
 
     assert provider_discovery_calls == 0

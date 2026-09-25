@@ -1,6 +1,6 @@
 - Bug ID: CB-321
 
-- Status: FixedPendingRelease
+- Status: InProgress
 
 - Created: 2026-08-04
 
@@ -58,7 +58,7 @@
 
 - Version/Build: 0.1.15 candidate at 76ed69c95d6fe09c0c67b0e0031be949a9eefd55
 
-- Fixed: 2026-08-04
+- Fixed: Pending
 
 - Fixed In: pending 0.1.15
 
@@ -90,3 +90,44 @@
   `/private/tmp/odylith-greenfield-final-holdout-20260924-v4-run-ledger.json`
   and
   `/private/tmp/odylith-greenfield-final-holdout-20260924-v4-evidence/retained-evidence-manifest.v1.json`.
+
+- Public release interrupt reproduced (2026-09-25): Exact clean distribution
+  `f87596b4d` entered a disclosed 36-case release-tier run after the v6/v7
+  structural contract passed. The first three completed cases were already
+  release-decisive (`1` pass, `2` fail-closed semantic outcomes), so the
+  operator interrupted case four rather than spend the rest of the corpus on
+  a mathematically failed gate. The direct runner again wrote
+  `final-holdout-interrupted-result.v2.json` inside its lease namespace, did
+  not seal the partial retained-evidence root, left the one-shot ledger
+  `claimed`, and then replaced the original interrupt with `Directory not
+  empty`. No child process survived. The existing interruption sealer
+  successfully preserved the three completed cases and partial fourth-case
+  bytes, terminalized ledger run
+  `96af72eda095f340253fcc0a599c5a0f9bc618959df244458908da4875d529e5`
+  as `interrupted`, and allowed exact namespace cleanup. The fix remains the
+  existing owning abstraction: the direct runner must write its interruption
+  result outside the lease, seal partial evidence before ledger completion,
+  complete the ledger exactly once, and only then release the empty namespace.
+  Do not weaken one-shot custody or hide cleanup errors.
+
+- Direct-runner correction implemented (2026-09-25): The direct BaseException
+  path now persists its interruption result beside the ledger, seals partial
+  retained evidence, terminalizes only with that manifest, and preserves the
+  active interrupt across lease-release failure. Independent strong review
+  found one remaining masking edge: a sealer or ledger-completion exception
+  could replace the original KeyboardInterrupt. The final correction catches
+  that custody failure, annotates the original exception, and deliberately
+  leaves the ledger claimed rather than force-completing it. Successful
+  terminalization, sealer-failure, and lease-cleanup tests are green. CB-321
+  remains `InProgress` until a rebuilt exact release run proves descendant
+  reaping, sealed terminal evidence, and empty namespace end to end.
+
+- Direct-runner source gate (2026-09-25): Main-path claim-to-interrupt wiring
+  now has a regression that forces a live campaign `KeyboardInterrupt`, an
+  interruption-sealer failure, and the final lease release. The original
+  interrupt survives with a custody note, the ledger remains claimed rather
+  than being falsely terminalized, the child is no longer live, and the lease
+  releases. The focused gate and full install Greenfield suite pass. Keep this
+  record `InProgress` until the next exact-distribution release run supplies
+  real terminal ledger, retained-manifest, descendant, and empty-namespace
+  evidence.

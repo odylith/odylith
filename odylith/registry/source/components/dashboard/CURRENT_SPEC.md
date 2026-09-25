@@ -521,6 +521,15 @@ artifacts to that header.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `tests/unit/install/test_greenfield_preconfirm_matrix_proof_scope.py`
+- **2026-09-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py`
+- **2026-09-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_host_candidate_shape.py`
 - **2026-09-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 1 verifiable artifact reference.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`
@@ -530,15 +539,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-19 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 1 verifiable artifact reference.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`
-- **2026-09-18 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
-- **2026-09-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
-- **2026-09-16 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
 <!-- registry-requirements:end -->
 
 ## Feature History

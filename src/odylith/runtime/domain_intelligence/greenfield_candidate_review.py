@@ -87,8 +87,11 @@ resolved_source_custody is the authoritative resolution of each accepted citatio
 actor/action ownership, all required actions and constraints, source precedence,
 the actual result producer, external dependencies and non-goals. Do not infer a
 system or performer from a name or downstream output purpose. Assumptions remain
-proposed choices, not accepted source facts. source_precedence must preserve all
-explicit ordering requirements using the packet's existing event IDs and cited
+proposed choices, not accepted source facts. Preserve every explicit source-stated
+product or component responsibility in accepted_source.components,
+even when the same clause is also represented as a typed workflow event; provisional
+design may reference those responsibilities but cannot substitute for accepted custody.
+source_precedence must preserve all explicit ordering requirements using the packet's existing event IDs and cited
 operational constraints; event array order alone is not source temporal authority.
 Require a precedence edge only when both ordered sides are source-supported
 accepted events with actor/action ownership. Preserve timing, approval, or

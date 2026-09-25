@@ -1,5 +1,22 @@
 - Bug ID: CB-303
 
+- Public Astra discriminator and corpus correction (2026-09-25): The exact
+  `f87596b4d` installed build reran only disclosed public controls 002 and 003
+  with one external Astra-medium author per case. Stem Harbour compiled and
+  committed successfully with five Radar workstreams, five Registry components,
+  five Atlas sources, ten renders, and sixteen trace nodes in `127.194s` plus
+  `2.713s` commit time. This disproves the earlier Luna-authored numeric-
+  occurrence failure as a universal product-semantic defect. Facet Path failed
+  for a different reason: the public prompt's repeated generic `specialist` and
+  `release controller` approval sentence conflicts with its later exclusive
+  named owners. That redundant sentence exists in public cases 001-024 and is
+  a qualification-corpus authoring defect, not permission to weaken candidate
+  review. Correct and freshly review/reseal those disclosed prompts. Product
+  hardening remains bounded to replacing host numeric source locators with
+  unique exact context and preserving all explicit component responsibilities
+  in accepted source custody. Add no regex, vocabulary rules, retry, repair,
+  fallback, or second author.
+
 - Final V6 Holdout Product Verdict (2026-09-25): Exact pushed implementation
   `74f23f1bb65565a16ace78072093d3b4f903acab` remains the frozen public winner,
   but it is not release-qualified. The legitimately claimed 36-case v6
@@ -2612,3 +2629,37 @@
   evidence to compare at most one bounded alternative for each recurring owner;
   retain an alternative only if it reduces the failure class without weakening
   the `180s` boundary, focused proof, or browser gate.
+
+- Disclosed release-tier falsification (2026-09-25): Exact immutable
+  distribution `f87596b4d` passed the one-case public semantic, transaction,
+  recovery, and browser journey, then entered a new disclosed 36-case v6/v7
+  qualification package with 12 cases per Astra/Luna/Sol profile and
+  independently adjudicated outcomes. The first case passed at hard `10/10`
+  with full browser proof; proposal time was `135.004s`, above the `90s`
+  advisory target but below the `180s` safety boundary. Cases two and three
+  failed closed before any governed write. Luna authored a citation occurrence
+  that does not exist in the source. Sol produced a structurally valid
+  candidate, but independent Astra review denied it because the source-stated
+  import obligation appeared only in provisional design rather than accepted
+  source facts. The operator stopped case four because a 100% release floor was
+  already impossible. These are public, inspectable failures consistent with
+  the earlier protected failure owners; they do not authorize inspecting or
+  replaying retired holdouts. Compare at most one ownership replacement for
+  exact citation occurrence and one for source-fact versus provisional-design
+  custody. Add no regex, vocabulary rule, prompt stack, retry, fallback, or
+  repair cascade. The losing mechanism must be removed before another release
+  corpus is commissioned.
+
+- Host-owned authoring consolidation (2026-09-25): The public `propose`,
+  controlled `compile-transaction`, and EDIT rebuild paths now require one
+  candidate matching the returned `candidate-contract` schema. The runtime
+  participant selector, remaining-candidate author, and their public fallback
+  branch are absent; Odylith validates exact `{quote, context}` custody and
+  dispatches only the independent candidate reviewer. Guidance, bundled
+  guidance, and public tests use the same contract. Fresh proof passes the
+  focused migration slice (`141/141`), the full Greenfield runtime gate
+  (`2183/2183`), and the full Greenfield install gate (`1174/1174`). Compileall
+  and diff hygiene pass. This establishes a single public meaning owner but is
+  not release closure: the rebuilt exact distribution, corrected disclosed
+  release corpus, independent strong semantic PASS, and one new blind holdout
+  remain mandatory.

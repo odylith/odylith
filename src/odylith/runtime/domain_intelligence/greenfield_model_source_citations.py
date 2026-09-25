@@ -18,6 +18,9 @@ _INVALID_CITATION = (
 _MISSING_OCCURRENCE = (
     "Greenfield authoring cited a quote occurrence that is not present; no records were created."
 )
+_AMBIGUOUS_CONTEXT = (
+    "Greenfield authoring cited source context that is absent or ambiguous; no records were created."
+)
 
 
 def exact_quote(value: Any) -> str:
@@ -90,6 +93,62 @@ def resolve_source_citation(
     return quote, start
 
 
+def canonical_citation_from_unique_context(
+    evidence: bytes,
+    citation: Mapping[str, Any],
+    *,
+    state_object: bool = False,
+) -> dict[str, Any]:
+    """Project one host context locator into the legacy canonical address.
+
+    The host selects exact source text, never a numeric address.  Context is
+    locator-only: the quote remains the complete semantic fact.  Requiring one
+    exact context match and one quote match inside it makes the projection
+    deterministic without vocabulary rules, regexes, retries, or first-match
+    rebinding.
+    """
+
+    if not isinstance(citation, Mapping) or set(citation) != {"quote", "context"}:
+        raise GreenfieldModelAuthoringError(_INVALID_CITATION)
+    quote = exact_quote(citation.get("quote"))
+    context = exact_quote(citation.get("context"))
+    if not quote or not context:
+        raise GreenfieldModelAuthoringError(_INVALID_CITATION)
+
+    quote_bytes = quote.encode("utf-8")
+    context_bytes = context.encode("utf-8")
+    context_starts = _overlapping_match_starts(evidence, context_bytes)
+    quote_offsets = _overlapping_match_starts(context_bytes, quote_bytes)
+    if len(context_starts) != 1 or len(quote_offsets) != 1:
+        raise GreenfieldModelAuthoringError(_AMBIGUOUS_CONTEXT)
+
+    context_start = context_starts[0]
+    quote_start = context_start + quote_offsets[0]
+    if evidence[quote_start : quote_start + len(quote_bytes)] != quote_bytes:
+        raise GreenfieldModelAuthoringError(_INVALID_CITATION)
+
+    if state_object:
+        prefix_bytes = context_bytes[: quote_offsets[0]]
+        anchor_bytes = prefix_bytes + quote_bytes
+        anchor_starts = _overlapping_match_starts(evidence, anchor_bytes)
+        try:
+            anchor_occurrence = anchor_starts.index(context_start) + 1
+        except ValueError as exc:
+            raise GreenfieldModelAuthoringError(_INVALID_CITATION) from exc
+        return {
+            "prefix": prefix_bytes.decode("utf-8"),
+            "quote": quote,
+            "anchor_occurrence": anchor_occurrence,
+        }
+
+    quote_starts = _overlapping_match_starts(evidence, quote_bytes)
+    try:
+        occurrence = quote_starts.index(quote_start) + 1
+    except ValueError as exc:
+        raise GreenfieldModelAuthoringError(_INVALID_CITATION) from exc
+    return {"quote": quote, "occurrence": occurrence}
+
+
 def _positive_occurrence(value: Any) -> int:
     return value if isinstance(value, int) and not isinstance(value, bool) and value >= 1 else 0
 
@@ -115,4 +174,9 @@ def _strict_occurrence_start(haystack: bytes, needle: bytes, occurrence: Any) ->
     raise GreenfieldModelAuthoringError(_MISSING_OCCURRENCE)
 
 
-__all__ = ["exact_occurrence_start", "exact_quote", "resolve_source_citation"]
+__all__ = [
+    "canonical_citation_from_unique_context",
+    "exact_occurrence_start",
+    "exact_quote",
+    "resolve_source_citation",
+]

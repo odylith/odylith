@@ -10,7 +10,6 @@ from odylith.runtime.domain_intelligence import greenfield_proposals_cli
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
-    StructuredAuthoringProvider,
     clarification_response,
 )
 
@@ -40,7 +39,7 @@ def test_greenfield_create_help_exposes_precompiled_transaction_contract(capsys)
     assert "--confirm-intent" not in output
 
 
-def test_greenfield_propose_command_returns_one_model_authored_clarification(
+def test_greenfield_propose_command_returns_one_host_authored_clarification(
     tmp_path: Path,
     monkeypatch,
     capsys,
@@ -48,27 +47,24 @@ def test_greenfield_propose_command_returns_one_model_authored_clarification(
     activate_greenfield_baseline_fixture(tmp_path)
     publication = (tmp_path / "odylith/index.html").read_bytes()
     baseline = greenfield_repository_write_set.greenfield_managed_fingerprints(tmp_path)
-    provider = StructuredAuthoringProvider(
-        clarification_response(
+    from tests.unit.runtime.test_greenfield_host_candidate import _host_clarification
+
+    candidate_path = tmp_path / "host-candidate.json"
+    candidate_path.write_text(
+        json.dumps(_host_clarification(clarification_response(
             question="unused test metadata",
             material_dimension="first_path",
             evidence_quotes=(),
-        )
+        ))),
+        encoding="utf-8",
     )
-    participant_provider = provider.participant_provider()
-
-    def provider_for_role(**kwargs: object) -> tuple[object, str, str]:
-        selected = (
-            participant_provider
-            if kwargs.get("request_role") == "participant_selection"
-            else provider
-        )
-        return selected, "test-model", "low"
 
     monkeypatch.setattr(
         greenfield_proposals_cli,
-        "_greenfield_authoring_provider",
-        provider_for_role,
+        "_greenfield_review_provider",
+        lambda **_kwargs: (_ for _ in ()).throw(
+            AssertionError("clarification must not dispatch candidate review")
+        ),
     )
     rc = cli.main(
         [
@@ -78,6 +74,8 @@ def test_greenfield_propose_command_returns_one_model_authored_clarification(
             str(tmp_path),
             "--prompt",
             "Build an ecommerce site",
+            "--candidate-file",
+            str(candidate_path),
             "--format",
             "json",
         ]
@@ -93,8 +91,6 @@ def test_greenfield_propose_command_returns_one_model_authored_clarification(
     )
     assert clarification["required_fields"] == ["first_path"]
     assert clarification["consistency_assessment"]["status"] == "material_ambiguity"
-    assert participant_provider.calls == 1
-    assert provider.calls == 1
     assert (tmp_path / "odylith/index.html").read_bytes() == publication
     assert greenfield_repository_write_set.greenfield_managed_fingerprints(tmp_path) == baseline
     assert not (tmp_path / ".odylith/runtime/greenfield/pending").exists()

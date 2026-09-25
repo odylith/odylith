@@ -420,6 +420,7 @@ def test_model_authored_multi_component_events_bind_to_exact_source_owned_system
 
 def test_model_authored_project_seals_one_source_and_design_package(tmp_path, monkeypatch) -> None:  # type: ignore[no-untyped-def]
     from tests.unit.runtime.test_greenfield_baseline_activation import _activate, _complete
+    from tests.unit.runtime.test_greenfield_host_candidate import _host_response
 
     _complete(tmp_path)
     _activate(tmp_path)
@@ -429,7 +430,7 @@ def test_model_authored_project_seals_one_source_and_design_package(tmp_path, mo
     provider, provider_factory = _cli_providers(_response(staged_evidence), reviewer)
     monkeypatch.setattr(
         greenfield_proposals_cli,
-        "_greenfield_authoring_provider",
+        "_greenfield_review_provider",
         provider_factory,
     )
 
@@ -438,10 +439,11 @@ def test_model_authored_project_seals_one_source_and_design_package(tmp_path, mo
         prompt=source,
         edit_evidence="",
         release_selector="",
+        host_candidate=_host_response(staged_evidence),
     )
 
     assert candidate["title"] == "Harbor Desk"
-    assert provider.calls == 1
+    assert provider.calls == 0
     assert reviewer.calls == 1
     design = candidate["authored_semantics"]["provisional_design"]
     assert [
@@ -511,22 +513,36 @@ def test_public_propose_cli_uses_one_author_and_review_without_unqualified_write
     baseline = greenfield_repository_write_set.greenfield_managed_fingerprints(tmp_path)
     source = _source()
     staged_evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
+    from tests.unit.runtime.test_greenfield_host_candidate import _host_response
+
+    candidate_path = tmp_path / "host-candidate.json"
+    candidate_path.write_text(
+        json.dumps(_host_response(staged_evidence)),
+        encoding="utf-8",
+    )
     reviewer = AdmittingReviewProvider()
-    provider, provider_factory = _cli_providers(_response(staged_evidence), reviewer)
     monkeypatch.setattr(
         greenfield_proposals_cli,
-        "_greenfield_authoring_provider",
-        provider_factory,
+        "_greenfield_review_provider",
+        lambda **kwargs: (
+            reviewer,
+            "test-reviewer",
+            "medium",
+        ) if kwargs.get("request_role") == "candidate_review" else (_ for _ in ()).throw(
+            AssertionError("public propose dispatched retired runtime authoring")
+        ),
     )
 
     rc = greenfield_proposals_cli.main(
-        ["propose", "--repo-root", str(tmp_path), "--prompt", source, "--format", "json"]
+        [
+            "propose", "--repo-root", str(tmp_path), "--prompt", source,
+            "--candidate-file", str(candidate_path), "--format", "json",
+        ]
     )
     payload = json.loads(capsys.readouterr().out)
 
     assert rc == 0, payload
     assert payload["mode"] == "product_create_transaction"
-    assert provider.calls == 1
     assert reviewer.calls == 1
     assert payload["transaction_file"].endswith("product-create-transaction.v1.json")
     assert payload["confirmation"]["status"] == "terminal_only"
@@ -546,12 +562,24 @@ def test_public_authored_propose_bypasses_the_legacy_completion_cascade(
     activate_greenfield_baseline_fixture(tmp_path)
     source = _source()
     staged_evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
+    from tests.unit.runtime.test_greenfield_host_candidate import _host_response
+
+    candidate_path = tmp_path / "host-candidate.json"
+    candidate_path.write_text(
+        json.dumps(_host_response(staged_evidence)),
+        encoding="utf-8",
+    )
     reviewer = AdmittingReviewProvider()
-    provider, provider_factory = _cli_providers(_response(staged_evidence), reviewer)
     monkeypatch.setattr(
         greenfield_proposals_cli,
-        "_greenfield_authoring_provider",
-        provider_factory,
+        "_greenfield_review_provider",
+        lambda **kwargs: (
+            reviewer,
+            "test-reviewer",
+            "medium",
+        ) if kwargs.get("request_role") == "candidate_review" else (_ for _ in ()).throw(
+            AssertionError("public propose dispatched retired runtime authoring")
+        ),
     )
 
     def forbidden(*_args: object, **_kwargs: object) -> object:
@@ -592,12 +620,14 @@ def test_public_authored_propose_bypasses_the_legacy_completion_cascade(
     )
 
     rc = greenfield_proposals_cli.main(
-        ["propose", "--repo-root", str(tmp_path), "--prompt", source, "--format", "json"]
+        [
+            "propose", "--repo-root", str(tmp_path), "--prompt", source,
+            "--candidate-file", str(candidate_path), "--format", "json",
+        ]
     )
     payload = json.loads(capsys.readouterr().out)
 
     assert rc == 0, payload
-    assert provider.calls == 1
     assert reviewer.calls == 1
     assert payload["mode"] == "product_create_transaction"
     assert payload["transaction_file"].endswith("product-create-transaction.v1.json")
@@ -614,39 +644,33 @@ def test_public_propose_cli_returns_one_model_question_without_a_transaction(
         material_dimension="visible_result",
         evidence_quotes=(),
     )
-    provider = RemainingCandidateProvider(
-        response
+    from tests.unit.runtime.test_greenfield_host_candidate import _host_clarification
+
+    candidate_path = tmp_path / "host-candidate.json"
+    candidate_path.write_text(
+        json.dumps(_host_clarification(response)),
+        encoding="utf-8",
     )
     reviewer = AdmittingReviewProvider()
-    participant = provider.participant_provider()
     monkeypatch.setattr(
         greenfield_proposals_cli,
-        "_greenfield_authoring_provider",
-        lambda **kw: (
-            reviewer if kw.get("request_role") == "candidate_review"
-            else participant if kw.get("request_role") == "participant_selection"
-            else provider,
-            "test-model",
-            "low",
+        "_greenfield_review_provider",
+        lambda **_kwargs: (_ for _ in ()).throw(
+            AssertionError("clarification must not dispatch candidate review")
         ),
     )
 
     rc = greenfield_proposals_cli.main(
-        ["propose", "--repo-root", str(tmp_path), "--prompt", "Create Harbor Desk", "--format", "json"]
+        [
+            "propose", "--repo-root", str(tmp_path), "--prompt", "Create Harbor Desk",
+            "--candidate-file", str(candidate_path), "--format", "json",
+        ]
     )
     payload = json.loads(capsys.readouterr().out)
 
     assert rc == 0
     assert payload["mode"] == "clarification_required"
     assert payload["clarification"]["required_fields"] == ["visible_result"]
-    observed = payload["clarification"]["model_profile"]
-    profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
-    assert set(observed) == {"participant_selection", "remaining_candidate_authoring"}
-    assert observed["participant_selection"]["profile_id"] == STANDARD_PROFILE_ID
-    assert observed["participant_selection"]["model"] == profile.participant_model
-    assert observed["remaining_candidate_authoring"]["provider"] == "codex-cli"
-    assert observed["remaining_candidate_authoring"]["model"] == profile.model
-    assert provider.calls == 1
     assert reviewer.calls == 0
     assert not (tmp_path / ".odylith/runtime/greenfield/pending").exists()
 

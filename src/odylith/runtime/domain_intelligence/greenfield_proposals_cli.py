@@ -32,7 +32,6 @@ from odylith.runtime.domain_intelligence.greenfield_host_candidate_materializati
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
     GreenfieldClarificationRequired,
-    materialize_model_authored_intent,
     prepare_model_authoring_evidence,
     render_product_intent_preview,
 )
@@ -83,10 +82,11 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     propose.add_argument("--prompt", required=True)
     propose.add_argument(
         "--candidate-file",
-        default="",
+        required=True,
         help=(
-            "Path to one host-authored v68 typed candidate. Odylith treats it as an "
-            "untrusted hypothesis, revalidates its source custody, and runs independent review."
+            "Path to one host-authored candidate matching the returned candidate-contract "
+            "schema. Odylith treats it as an untrusted hypothesis, revalidates its source "
+            "custody, and runs independent review."
         ),
     )
     propose.add_argument("--format", choices=("text", "json"), default="text", dest="output_format")
@@ -155,8 +155,11 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     compile_transaction.add_argument("--prompt", required=True)
     compile_transaction.add_argument(
         "--candidate-file",
-        default="",
-        help="Path to one host-authored v68 typed candidate for deterministic validation and review.",
+        required=True,
+        help=(
+            "Path to one host-authored candidate matching the returned candidate-contract "
+            "schema for deterministic validation and review."
+        ),
     )
     compile_transaction.add_argument("--edit", default="", help=argparse.SUPPRESS)
     compile_transaction.add_argument("--edit-evidence", default="", help=argparse.SUPPRESS)
@@ -300,14 +303,15 @@ def rebuild_pending_transaction(
         prompt = previous.proposal.get("intent", {}).get("prompt")
         if not isinstance(prompt, str) or not prompt.strip():
             raise ValueError("The reviewed package has no retained source evidence; start a new proposal.")
-        candidate_path = Path(str(host_candidate_file or "")).expanduser()
+        if not str(host_candidate_file or "").strip():
+            raise ValueError(
+                "Greenfield EDIT requires one host-authored candidate matching the "
+                "returned candidate-contract schema. No governed records were written."
+            )
+        candidate_path = Path(str(host_candidate_file)).expanduser()
         if candidate_path and not candidate_path.is_absolute():
             candidate_path = repo_root / candidate_path
-        host_candidate = (
-            load_greenfield_host_candidate_file(candidate_path)
-            if str(host_candidate_file or "").strip()
-            else None
-        )
+        host_candidate = load_greenfield_host_candidate_file(candidate_path)
         candidate, transaction, staged_path = _compile_prompt_evidence_transaction(
             repo_root=repo_root, prompt=prompt, edit_evidence=correction,
             release_selector=previous.release_selector,
@@ -348,14 +352,6 @@ def _print_greenfield_clarification(exc: GreenfieldClarificationRequired, *, as_
         "question": exc.question,
         "required_fields": list(exc.required_fields),
     }
-    model_profiles = {}
-    for role in ("participant_selection", "remaining_candidate_authoring"):
-        stage = exc.authoring_receipt.get(role)
-        observation = stage.get("model_profile") if isinstance(stage, Mapping) else None
-        if isinstance(observation, Mapping):
-            model_profiles[role] = dict(observation)
-    if len(model_profiles) == 2:
-        clarification["model_profile"] = model_profiles
     consistency = exc.authoring_receipt.get("consistency_assessment")
     if isinstance(consistency, Mapping):
         clarification["consistency_assessment"] = dict(consistency)
@@ -413,10 +409,13 @@ def _edit_evidence_from_args(args: argparse.Namespace, *, repo_root: Path) -> st
 
 def _host_candidate_from_args(
     args: argparse.Namespace, *, repo_root: Path,
-) -> dict[str, Any] | None:
+) -> dict[str, Any]:
     value = str(getattr(args, "candidate_file", "") or "").strip()
     if not value:
-        return None
+        raise ValueError(
+            "Greenfield requires one host-authored candidate matching the returned "
+            "candidate-contract schema; no records were created."
+        )
     path = Path(value).expanduser()
     if not path.is_absolute():
         path = repo_root / path
@@ -433,7 +432,7 @@ def _compile_prompt_evidence_transaction(
     source_language: str = "en",
     started_at: float | None = None,
     clock: Callable[[], float] | None = None,
-    host_candidate: Mapping[str, Any] | None = None,
+    host_candidate: Mapping[str, Any],
 ) -> tuple[dict[str, Any], Any, Path]:
     now = clock or time.perf_counter
     started = now() if started_at is None else float(started_at)
@@ -448,58 +447,24 @@ def _compile_prompt_evidence_transaction(
     if profile.model_timeout_seconds - max(0.0, now() - started) < 1.0:
         raise GreenfieldModelRuntimeError("timeout")
     greenfield_generation_store.require_greenfield_working_generation(repo_root)
-    authoring_timeout_seconds = profile.model_timeout_seconds - max(0.0, now() - started)
-    if authoring_timeout_seconds < 1.0:
-        raise GreenfieldModelRuntimeError("timeout")
     authoring_receipt: dict[str, Any] = {}
-    if host_candidate is not None:
-        candidate_intent = materialize_host_authored_intent(
-            prompt=prompt,
-            repo_root=repo_root,
-            host_candidate=host_candidate,
-            edit_evidence=edit_evidence,
-            authoring_profile_id=profile_id,
-            source_language=source_language,
-            prepared_evidence=prepared_evidence,
-            authoring_receipt=authoring_receipt,
-            authoring_deadline=started + profile.model_timeout_seconds,
-            clock=now,
-            review_provider_factory=lambda: _greenfield_authoring_provider(
-                repo_root=repo_root,
-                profile_id=profile_id,
-                request_role="candidate_review",
-            )[0],
-        )
-    else:
-        provider = _greenfield_authoring_provider(
+    candidate_intent = materialize_host_authored_intent(
+        prompt=prompt,
+        repo_root=repo_root,
+        host_candidate=host_candidate,
+        edit_evidence=edit_evidence,
+        authoring_profile_id=profile_id,
+        source_language=source_language,
+        prepared_evidence=prepared_evidence,
+        authoring_receipt=authoring_receipt,
+        authoring_deadline=started + profile.model_timeout_seconds,
+        clock=now,
+        review_provider_factory=lambda: _greenfield_review_provider(
             repo_root=repo_root,
             profile_id=profile_id,
-        )[0]
-        candidate_intent = materialize_model_authored_intent(
-            prompt=prompt,
-            repo_root=repo_root,
-            edit_evidence=edit_evidence,
-            authoring_provider=provider,
-            authoring_timeout_seconds=authoring_timeout_seconds,
-            authoring_model=profile.model,
-            authoring_reasoning_effort=profile.reasoning_effort,
-            authoring_profile_id=profile_id,
-            source_language=source_language,
-            prepared_evidence=prepared_evidence,
-            authoring_receipt=authoring_receipt,
-            authoring_deadline=started + profile.model_timeout_seconds,
-            clock=now,
-            participant_provider_factory=lambda: _greenfield_authoring_provider(
-                repo_root=repo_root,
-                profile_id=profile_id,
-                request_role="participant_selection",
-            )[0],
-            review_provider_factory=lambda: _greenfield_authoring_provider(
-                repo_root=repo_root,
-                profile_id=profile_id,
-                request_role="candidate_review",
-            )[0],
-        )
+            request_role="candidate_review",
+        )[0],
+    )
     authoring_tier = str(authoring_receipt.get("tier") or "").strip()
     if authoring_tier not in {"standard", "rescue", "deep"}:
         raise RuntimeError(
@@ -591,20 +556,15 @@ def _stage_pending_transaction_with_deadline(
     return transaction_path
 
 
-def _greenfield_authoring_provider(
-    *, repo_root: Path, profile_id: str, request_role: str = "remaining_candidate_authoring",
+def _greenfield_review_provider(
+    *, repo_root: Path, profile_id: str, request_role: str = "candidate_review",
 ) -> tuple[Any, str, str]:
-    """Resolve one pinned role without a lexical fallback or alternate pipeline."""
+    """Resolve the one pinned independent reviewer for a host candidate."""
 
+    if request_role != "candidate_review":
+        raise ValueError("Unsupported Greenfield review request role")
     profile = get_greenfield_model_profile(profile_id)
-    if request_role == "participant_selection":
-        model, effort = profile.participant_model, profile.participant_reasoning_effort
-    elif request_role in {"remaining_candidate_authoring", "candidate_revision"}:
-        model, effort = profile.model, profile.reasoning_effort
-    elif request_role == "candidate_review":
-        model, effort = profile.review_model, profile.review_reasoning_effort
-    else:
-        raise ValueError("Unsupported Greenfield model request role")
+    model, effort = profile.review_model, profile.review_reasoning_effort
     configured = odylith_reasoning.reasoning_config_from_env(repo_root=repo_root)
     config = replace(
         configured,

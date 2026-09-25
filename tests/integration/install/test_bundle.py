@@ -6,12 +6,13 @@ def test_bundle_root_contains_installed_agents_entrypoint() -> None:
     root = bundle_root()
     assert (root / "AGENTS.md").is_file()
     agents_text = (root / "AGENTS.md").read_text(encoding="utf-8")
-    assert "Odylith builds typed custody facts to gate ProductCreateTransaction" in agents_text
-    assert "90/120/150-second performance targets" in agents_text
+    assert "odylith greenfield candidate-contract" in agents_text
+    assert "builds typed custody facts to gate ProductCreateTransaction" in agents_text
+    assert "90/120/150 seconds as advisory targets" in agents_text
     assert "Read-only preview: `odylith greenfield decide" in agents_text
-    assert "CONFIRM/REJECT: one owner, no compiler/model" in agents_text
-    assert "`odylith greenfield create` takes `--transaction-file`" in agents_text
-    assert "verifies receipt/hash/preconditions under rollback guard" in agents_text
+    assert "CONFIRM/REJECT use one owner and no compiler/model" in agents_text
+    assert "odylith greenfield create --transaction-file PATH" in agents_text
+    assert "verifies receipt, hash, and preconditions under rollback guard" in agents_text
     assert "greenfield compile-transaction" not in agents_text
     assert "confirmed-intent.json" not in agents_text
     assert "rerender only the owned surface" in agents_text

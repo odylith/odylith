@@ -11753,3 +11753,77 @@ Current proposal/confirmation/recovery operations and versioned semantic/timing 
   parser, regex, repair, retry, fallback, or added model stage. This freezes the
   winning public mechanism and admits the sealed untouched holdout; do not make
   another architecture change before that one-shot gate.
+
+## Disclosed Release-Tier Stop And Narrow Replacement Gate (2026-09-25)
+
+- Exact build `f87596b4d` cleared clean provenance, public installed output,
+  4 Radar / 4 Registry / 5 Atlas generation, all 48 browser states, commit
+  recovery, and independent semantic review. The stricter release owner then
+  correctly rejected the earlier discovery label and required a disclosed
+  balanced v6/v7 corpus before any new blind holdout.
+- The new 36-case public package passed structural, lineage, annotation, and
+  independent outcome-review preflight. Its first three completed executions
+  produced one `10/10` pass and two safe no-write failures: an impossible quote
+  occurrence and a source import obligation placed only in provisional design.
+  Stop the corpus because the 100% floor is already unattainable; do not spend
+  the remaining cases to make the sample look larger.
+- Replacement gate: diagnose the exact current owners, compare one bounded
+  non-regex ownership alternative for citation occurrence and one for accepted
+  source obligations, make falsifiable predictions on fresh public controls,
+  and remove the losing path. Preserve the one-call host candidate, independent
+  reviewer, canonical validator, transaction laws, 4–5 / 4–5 / 5+ output floor,
+  advisory 90/120/150 timing, and 180-second safety boundary.
+- Separately close the reopened direct-runner interruption law under CB-321:
+  partial evidence must seal, the ledger must become terminal, and the lease
+  must empty without masking the original interrupt. This harness repair must
+  not be represented as a product-semantic win.
+
+## Context-Custody Winner And Public Corpus Repair (2026-09-25)
+
+- The exact `f87596b4d` Astra-medium discriminator cleared Stem Harbour end to
+  end with five Radar workstreams, five Registry components, five Atlas
+  diagrams, ten renders, and sixteen trace nodes. The earlier Luna numeric-
+  occurrence miss is therefore model-sensitive, not sufficient evidence for a
+  wider schema family or another author/reviewer cascade.
+- Facet Path exposed a qualification-corpus defect instead of the prior product
+  failure: the shared generic approval-owner sentence conflicts with later
+  exclusive named owners. Remove that redundant sentence from disclosed public
+  cases 001-024, freshly source-review every changed hash, and reseal the public
+  package. Do not weaken review or count old approval against changed prompts.
+- Retain one bounded product replacement because numeric host locators remain a
+  demonstrated brittle address boundary: compact host format v3 uses exact
+  `{quote, context}` citations. Context must occur once and contain quote once;
+  deterministic custody derives the legacy canonical ordinal/bytes after the
+  raw candidate hash. Delete the host numeric path; do not add regex,
+  vocabulary rules, first-match rebinding, retries, repair, or fallback.
+- Preserve every explicit source-stated product/component responsibility in
+  accepted component facts even when the clause also forms a typed event.
+  Provisional design may reference but cannot substitute for that source fact.
+  This is a contract correction, not a new fact family.
+- Focused contract proof passes `105/105`; the widened host/profile slice passes
+  `363/363`. Rebuild one clean immutable distribution, rerun the corrected
+  disclosed release package with one Astra author per case, require independent
+  strong semantic PASS, then consume exactly one newly blind holdout. Completion
+  remains unclaimed until those gates pass.
+
+## Single Public Meaning Owner Checkpoint (2026-09-25)
+
+- `candidate-contract` plus one host-authored v3 candidate is now the only
+  public authoring route for PROPOSE, controlled compilation, and EDIT.
+  Participant selection and remaining-author generation are no longer reachable
+  from the public CLI; missing candidates fail before reviewer dispatch.
+- The host supplies exact `{quote, context}` citations. Odylith deterministically
+  derives canonical bytes/ordinals, preserves source-stated component
+  responsibilities even when they overlap typed events, and runs exactly one
+  independent candidate review. No regex, retry, repair, fallback, or alternate
+  model ladder was added.
+- Fresh source proof: `141/141` migrated public-path tests, `2183/2183` full
+  runtime Greenfield tests, and `1174/1174` full install Greenfield tests pass.
+  The browser matrix produced `198/199`, exposed a D-038 summary/diagram drift,
+  and the corrected focused browser proof passes; rerun the complete browser
+  matrix after governance settlement for one attributable frozen result.
+- Next and only release wave: settle governed surfaces, obtain independent
+  strong PASS on the final diff, commit and push the current branch, build one
+  immutable distribution, run the corrected disclosed 36-case corpus at the
+  unchanged 100% floor, then consume one newly blind holdout. Do not add scope
+  before those gates decide the mechanism.
