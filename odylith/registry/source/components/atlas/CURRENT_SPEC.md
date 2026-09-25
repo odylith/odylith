@@ -6,7 +6,7 @@
   affordances, admissible action, proof, compact learning, benchmark evidence,
   updated priors, and the cross-system loop through Context, Execution,
   Memory, Intervention, Tribunal, Surfaces, and Benchmarks.
-Last updated: 2026-09-14
+Last updated: 2026-09-25
 
 
 ## Purpose
@@ -57,6 +57,13 @@ checks, including hidden action styling, rather than hidden-attribute assertions
   text also matches the query.
 
 ## Runtime Contract
+
+Greenfield's authored Proposed First Run view projects existing typed semantic
+relations rather than reparsing Mermaid or source prose. Every distinct typed
+performer gets a concept box and an explicit `performs` edge to its event; a
+different typed owner system may add an ownership edge. This guarantees useful
+relationship depth for a valid single-event path without inventing a second
+concept from keywords or treating diagram layout as product truth.
 
 `odylith atlas update --updates-file <file>` accepts a versioned list of explicit
 patches for existing diagrams. It preserves omitted metadata and immutable diagram

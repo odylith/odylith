@@ -640,7 +640,9 @@ def test_authored_atlas_depth_is_five_distinct_semantic_views_not_a_count_floor(
         for row in rows
     }
     assert {"people", "product", "external_systems"} <= node_ids_by_slug["harbor-desk-context"]
-    assert {"event1", "event2", "event3", "owner1"} <= node_ids_by_slug["harbor-desk-sequence"]
+    assert {"event1", "event2", "event3", "performer1", "performer2"} <= node_ids_by_slug[
+        "harbor-desk-sequence"
+    ]
     assert {"proposed", "component1", "component4"} <= node_ids_by_slug[
         "harbor-desk-component-exchanges"
     ]
@@ -714,6 +716,25 @@ def test_provisional_views_keep_authority_and_complete_labels_separate_from_sour
         "Placement View",
         "Placement Evidence",
     }
+
+
+def test_single_human_event_sequence_preserves_typed_performer_edge() -> None:
+    event = "extension publishers assemble release notes"
+    rows = _authored_diagrams(
+        human_actors=("extension publishers",),
+        external_systems=(),
+        visible_result="release notes",
+        result_event_order=1,
+        relations=(_relation(1, "extension publishers", event),),
+        provisional_design=_provisional_design(event_orders=(1,)),
+    )
+    sequence = next(row for row in rows if row["slug"] == "harbor-desk-sequence")
+    boxes = {row["node_id"]: row for row in sequence["diagram_boxes"]}
+
+    assert boxes["performer1"]["label"] == "extension publishers"
+    assert boxes["performer1"]["role"] == "Typed event performer"
+    assert boxes["event1"]["label"] == event
+    assert 'performer1 -->|"performs"| event1' in sequence["mermaid_source"]
 
 
 def test_first_run_keeps_result_first_source_ids_and_proposed_links() -> None:

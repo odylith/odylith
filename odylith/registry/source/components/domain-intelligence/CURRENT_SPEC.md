@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-09-24
+Last updated: 2026-09-25
 
 
 ## Overview
@@ -36,6 +36,13 @@ Independent review denials expose their existing bounded receipt and single
 typed issue in JSON error output. This is diagnostic custody, not a candidate
 revision interface: candidate content remains private, the reviewer is not
 retried, and no repair or fallback path follows from the receipt.
+
+The authored Proposed First Run projection preserves event ownership for every
+typed actor kind. Each distinct source-stated performer is a diagram concept
+with a `performs` edge to its exact event. A separately typed owner system is
+shown only when it differs from the performer. This keeps a single-event path
+architecturally useful without fabricating another event, actor, transition, or
+source ordering relation.
 
 Contract v4 first made the existing source-precedence authority symmetric
 between author and reviewer. Every explicit source-stated ordering requirement

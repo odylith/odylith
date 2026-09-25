@@ -14,7 +14,6 @@ from pathlib import Path
 import shutil
 import sys
 import tempfile
-import time
 import uuid
 from types import SimpleNamespace
 from typing import Any
@@ -30,7 +29,6 @@ from greenfield_browser_surface_proof import (  # noqa: E402
     browser_runtime_preflight_issues,
     browser_surface_proof_issues,
 )
-from greenfield_surface_health import INDEX_SHELL_TAB_CONTRACTS  # noqa: E402
 from greenfield_surface_health import REQUIRED_RENDERED_SURFACES  # noqa: E402
 from greenfield_surface_health import atlas_rendered_asset_count  # noqa: E402
 from greenfield_surface_health import rendered_surface_health_issues  # noqa: E402
@@ -96,7 +94,7 @@ from greenfield_matrix_release_artifacts import write_retained_evidence_manifest
 from greenfield_matrix_run_lease import acquire_matrix_run_lease  # noqa: E402
 from greenfield_matrix_run_lease import write_matrix_payload  # noqa: E402
 from greenfield_semantic_release_score import evaluate_semantic_release  # noqa: E402
-from greenfield_commit_recovery_proof import GreenfieldInstalledCommitRecoveryProof  # noqa: E402
+from greenfield_commit_recovery_proof import GreenfieldInstalledCommitRecoveryProof  # noqa: E402,F401
 from greenfield_commit_recovery_proof import PROOF_SCOPE as COMMIT_RECOVERY_PROOF_SCOPE  # noqa: E402
 from greenfield_commit_recovery_proof import run_installed_commit_recovery_proof  # noqa: E402
 from greenfield_commit_recovery_cases import select_recovery_case  # noqa: E402
@@ -137,7 +135,6 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
     model_profile_id_for_repair_tier,
 )
 from odylith.runtime.domain_intelligence.greenfield_text import text_values  # noqa: E402
-import platform_domain_leakage_check as platform_domain_leakage  # noqa: E402
 
 
 COMMAND_TIMEOUT_SECONDS = 300
@@ -2078,10 +2075,12 @@ def _retained_model_stage_observation(
 ) -> Mapping[str, Any]:
     if retained_case is None:
         return {}
-    return _read_json_mapping(
-        retained_case.staging_root
-        / "semantic"
-        / "model-authoring-observation.v1.json"
+    semantic_root = retained_case.staging_root / "semantic"
+    host_observation = _read_json_mapping(
+        semantic_root / "host-authoring-observation.v1.json"
+    )
+    return host_observation or _read_json_mapping(
+        semantic_root / "model-authoring-observation.v1.json"
     )
 
 

@@ -141,7 +141,15 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
                 )
             candidate_text = _text_stream(getattr(host_result, "stdout", ""))
             candidate = _single_json_object(candidate_text, label="host candidate")
-            observation["candidate_sha256"] = _sha256_text(candidate_text)
+            observation["candidate_sha256"] = hashlib.sha256(
+                json.dumps(
+                    candidate,
+                    ensure_ascii=False,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                    allow_nan=False,
+                ).encode("utf-8")
+            ).hexdigest()
 
             candidate_path = Path(candidate_dir) / "candidate.json"
             candidate_path.write_text(

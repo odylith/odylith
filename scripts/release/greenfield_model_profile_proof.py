@@ -10,6 +10,7 @@ from typing import Any
 
 from greenfield_model_profiles import MODEL_PROFILES
 from greenfield_model_profiles import UNAVAILABLE_PROVIDER_PROFILE
+from greenfield_model_profiles import host_native_model_stage_observation_issues
 from greenfield_model_profiles import model_stage_observation_issues
 from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
     CANDIDATE_REVIEW_VERSION,
@@ -36,6 +37,13 @@ def authored_model_result_binding_issues(
     """Bind retained private author/review evidence to the committed receipt."""
 
     retained = _mapping(stage_observation)
+    model_authoring = _nested_mapping(_mapping(create_payload), "commit_manifest", "model_authoring")
+    if model_authoring.get("authoring_origin") == "host_native":
+        return _host_native_result_binding_issues(
+            stage_observation=retained,
+            model_authoring=model_authoring,
+            expected_source=expected_source,
+        )
     private_request = _mapping(retained.get("request"))
     private_review = _mapping(retained.get("candidate_review"))
     private_review_request = _mapping(private_review.get("request"))
@@ -96,6 +104,44 @@ def authored_model_result_binding_issues(
                 issues.append(
                     "retained private reviewed candidate does not match the sealed receipt"
                 )
+    return tuple(dict.fromkeys(issues))
+
+
+def _host_native_result_binding_issues(
+    *,
+    stage_observation: Mapping[str, Any],
+    model_authoring: Mapping[str, Any],
+    expected_source: str,
+) -> tuple[str, ...]:
+    """Bind retained one-shot host execution to sealed candidate and review receipts."""
+
+    issues: list[str] = []
+    source = str(expected_source or "")
+    if not source:
+        issues.append("expected authored source is missing")
+    candidate = _mapping(model_authoring.get("host_candidate"))
+    if set(candidate) != {
+        "version", "contract_version", "source_sha256", "candidate_sha256",
+    }:
+        issues.append("sealed host candidate receipt is missing or malformed")
+    expected_source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
+    if candidate.get("source_sha256") != expected_source_sha256:
+        issues.append("sealed host candidate source hash does not match the expected source")
+    if not _is_sha256(candidate.get("candidate_sha256")):
+        issues.append("sealed host candidate hash is invalid")
+    if stage_observation.get("candidate_sha256") != candidate.get("candidate_sha256"):
+        issues.append("retained host candidate does not match the sealed receipt")
+
+    review = _mapping(model_authoring.get("candidate_review"))
+    if not review:
+        issues.append("sealed candidate-review receipt is missing")
+    elif (
+        review.get("version") != CANDIDATE_REVIEW_VERSION
+        or review.get("status") != "admitted"
+    ):
+        issues.append("sealed candidate-review receipt is not admitted")
+    elif review.get("source_sha256") != expected_source_sha256:
+        issues.append("sealed candidate-review source hash does not match the expected source")
     return tuple(dict.fromkeys(issues))
 
 
@@ -222,6 +268,14 @@ def model_profile_release_proof(
     profile_summaries = {}
     for profile_id, profile_results in rows.items():
         contract = get_greenfield_model_profile(profile_id)
+        host_native = bool(profile_results) and all(
+            _mapping(
+                _mapping(
+                    _mapping(getattr(result, "evidence", None)).get("model_profile")
+                ).get("observed")
+            ).get("origin") == "host_native"
+            for result in profile_results
+        )
         elapsed_values = [
             _float_value(getattr(result, "proposal_seconds", 0.0))
             for result in profile_results
@@ -231,13 +285,21 @@ def model_profile_release_proof(
             "provider": contract.provider,
             "model": contract.model,
             "reasoning_effort": contract.reasoning_effort,
-            "participant_selection_model": contract.participant_model,
-            "participant_selection_reasoning_effort": contract.participant_reasoning_effort,
-            "remaining_candidate_authoring_model": contract.model,
-            "remaining_candidate_authoring_reasoning_effort": contract.reasoning_effort,
+            "participant_selection_model": (
+                "not_applicable" if host_native else contract.participant_model
+            ),
+            "participant_selection_reasoning_effort": (
+                "not_applicable" if host_native else contract.participant_reasoning_effort
+            ),
+            "remaining_candidate_authoring_model": (
+                "external_host" if host_native else contract.model
+            ),
+            "remaining_candidate_authoring_reasoning_effort": (
+                "outside_runtime_custody" if host_native else contract.reasoning_effort
+            ),
             "candidate_review_model": contract.review_model,
             "candidate_review_reasoning_effort": contract.review_reasoning_effort,
-            "maximum_semantic_model_calls": 5,
+            "maximum_semantic_model_calls": 1 if host_native else 5,
             "performance_target_seconds": contract.performance_target_seconds,
             "operational_timeout_seconds": contract.operational_timeout_seconds,
             "performance_target_met": (
@@ -246,7 +308,9 @@ def model_profile_release_proof(
             ),
             "lower_capability": contract.lower_capability,
             "lower_capability_role": (
-                "remaining_candidate_authoring" if contract.lower_capability else "not_applicable"
+                ("candidate_review" if host_native else "remaining_candidate_authoring")
+                if contract.lower_capability
+                else "not_applicable"
             ),
             "case_count": len(profile_results),
             "committed_positive_case_count": sum(
@@ -427,7 +491,10 @@ def _lower_capability_scope(
             continue
         evidence = _mapping(getattr(valid_results[0], "evidence", None))
         observed = _mapping(_mapping(evidence.get("model_profile")).get("observed"))
-        remaining_observation = _mapping(observed.get("remaining_candidate_authoring"))
+        host_native = observed.get("origin") == "host_native"
+        remaining_observation = _mapping(
+            observed.get("candidate_review" if host_native else "remaining_candidate_authoring")
+        )
         observed_profiles.append(
             {
                 key: remaining_observation.get(key)
@@ -449,7 +516,20 @@ def _lower_capability_scope(
     return {
         "status": "passed" if complete else "unproven",
         "observed_profiles": observed_profiles,
-        "role": "remaining_candidate_authoring",
+        "role": (
+            "candidate_review"
+            if observed_profiles and all(
+                _mapping(
+                    _mapping(
+                        _mapping(getattr(result, "evidence", None)).get("model_profile")
+                    ).get("observed")
+                ).get("origin") == "host_native"
+                for profile_id in lower_profile_ids
+                for result in rows.get(profile_id, ())
+                if _result_proves_profile(result, profile_id)
+            )
+            else "remaining_candidate_authoring"
+        ),
         "requirement": "installed_committed_positive_and_source_bound_clarification_no_write",
     }
 
@@ -461,6 +541,14 @@ def _profile_observation_issues(
     expectation: str,
 ) -> tuple[str, ...]:
     observed = _mapping(profile_evidence.get("observed"))
+    if observed.get("origin") == "host_native":
+        if expectation != TRANSACTION_COMMITTED_EXPECTATION:
+            return ("host-native reviewed candidate does not match the declared case outcome",)
+        return host_native_model_stage_observation_issues(
+            profile_id,
+            observed=observed,
+            stage_observation=_mapping(profile_evidence.get("stage_observation")),
+        )
     if set(observed) != {"participant_selection", "remaining_candidate_authoring"}:
         return ("lacks the two stable six-field request observations",)
     issues: list[str] = []

@@ -479,25 +479,44 @@ def _sequence_view(
 ) -> tuple[str, list[dict[str, str]]]:
     lines = ["flowchart LR"]
     boxes: list[dict[str, str]] = []
-    owners: dict[str, str] = {}
+    performers: dict[tuple[str, str], str] = {}
     for relation in relations:
         index = relation["order"]
         event_quote = _required_string(relation.get("event_quote"), "first-path event quote")
         actor_kind = _required_string(relation.get("actor_kind"), "first-path actor kind")
+        performer = _required_string(
+            relation.get("actor_fact_quote"), "first-path actor fact"
+        )
         lines.append(f'  event{index}["{_mermaid_label(event_quote)}"]')
         boxes.append(
             _box(
                 f"event{index}",
                 event_quote,
                 f"{actor_kind} event",
-                f"Source action {index}, performed by {relation['actor_fact_quote']}: {event_quote}",
+                f"Source action {index}, performed by {performer}: {event_quote}",
             )
         )
+        identity = (actor_kind, performer)
+        if identity not in performers:
+            performer_id = f"performer{len(performers) + 1}"
+            performers[identity] = performer_id
+            lines.append(f'  {performer_id}["{_mermaid_label(performer)}"]')
+            boxes.append(
+                _box(
+                    performer_id,
+                    performer,
+                    "Typed event performer",
+                    f"Source-stated {actor_kind} performer for one or more first-path events: "
+                    f"{performer}",
+                )
+            )
+        lines.append(f'  {performers[identity]} -->|"performs"| event{index}')
         owner = relation.get("owner_system_quote")
-        if isinstance(owner, str) and owner:
-            if owner not in owners:
-                owner_id = f"owner{len(owners) + 1}"
-                owners[owner] = owner_id
+        if isinstance(owner, str) and owner and owner != performer:
+            owner_identity = ("owner_system", owner)
+            if owner_identity not in performers:
+                owner_id = f"performer{len(performers) + 1}"
+                performers[owner_identity] = owner_id
                 lines.append(f'  {owner_id}["{_mermaid_label(owner)}"]')
                 boxes.append(
                     _box(
@@ -507,7 +526,7 @@ def _sequence_view(
                         f"Accepted owner system for one or more first-path events: {owner}",
                     )
                 )
-            lines.append(f"  {owners[owner]} --> event{index}")
+            lines.append(f'  {performers[owner_identity]} -->|"owns event state"| event{index}')
     required = {(row["before_event"], row["after_event"]): row["constraint_index"] for row in source_precedence}
     for (before, after), constraint_index in required.items():
         lines.append(f'  event{before} -->|"source constraint {constraint_index}"| event{after}')

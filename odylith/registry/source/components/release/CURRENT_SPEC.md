@@ -1,5 +1,5 @@
 # Release
-Last updated: 2026-09-24
+Last updated: 2026-09-25
 
 ## Host-native Greenfield release proof (2026-09-24)
 
@@ -19,6 +19,16 @@ from a dirty parent build. The sealed untouched holdout may run only after a
 public exact-commit installed request passes this same path. Legacy runtime
 authoring remains available solely until that qualification accepts; if it does,
 the legacy path must be removed and the release gate repeated.
+
+When the sealed model observation declares `origin: host_native`, release proof
+validates that authority directly: one contract command, one external host
+invocation, one proposal command, an external temporary workspace that is
+cleaned, a canonical candidate hash matching the sealed host receipt, and one
+pinned independent candidate-review observation. It does not require the
+retired participant-selection or remaining-candidate-authoring roles. Their
+existing checks remain fail-closed for legacy observations. Host-native runtime
+semantic-call capacity is one—the independent review; the external host call is
+reported separately and remains outside runtime model custody.
 
 The public candidate contract now uses compact event custody. Each host-authored
 event carries its source citation once; deterministic projection supplies the

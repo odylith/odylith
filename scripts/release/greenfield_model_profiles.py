@@ -13,6 +13,7 @@ from typing import Any
 
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 from greenfield_preconfirm_matrix_cases import case_expectation
+from greenfield_matrix_host_candidate import HOST_NATIVE_MATRIX_OBSERVATION_VERSION
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     DEEP_PROFILE_ID,
     GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION,
@@ -187,7 +188,15 @@ def model_profile_evidence(
         issues.append("configured reasoning effort does not match the assigned release profile")
     if configured["maximum_model_timeout_seconds"] != contract.model_timeout_seconds:
         issues.append("configured timeout does not match the assigned release profile")
-    if observation:
+    host_native = observation.get("origin") == "host_native"
+    if host_native:
+        stage_summary = _host_native_stage_observation_evidence(
+            profile,
+            sealed_observation=observation,
+            stage_observation=dict(stage_observation or {}),
+        )
+        issues.extend(str(issue) for issue in stage_summary["issues"])
+    elif observation:
         if set(observation) != {"participant_selection", "remaining_candidate_authoring"}:
             issues.append("sealed model observations have missing or unsupported roles")
         for request_role in ("participant_selection", "remaining_candidate_authoring"):
@@ -210,7 +219,7 @@ def model_profile_evidence(
             )
     elif profile != UNAVAILABLE_PROVIDER_PROFILE:
         issues.append("sealed model profile observation is missing")
-    stage_summary = (
+    stage_summary = stage_summary if host_native else (
         _model_stage_observation_evidence(
             profile,
             sealed_observation=observation,
@@ -230,12 +239,22 @@ def model_profile_evidence(
         "performance_target_seconds": contract.performance_target_seconds,
         "operational_timeout_seconds": contract.operational_timeout_seconds,
         "lower_capability": contract.lower_capability,
-        "semantic_authority": "typed_evidence_and_preconfirm_tribunal",
-        "sealed_request_roles": ["participant_selection", "remaining_candidate_authoring"],
-        "lower_capability_scope": (
-            "remaining_candidate_authoring" if contract.lower_capability else "not_applicable"
+        "semantic_authority": (
+            "host_native_candidate_and_preconfirm_tribunal"
+            if host_native
+            else "typed_evidence_and_preconfirm_tribunal"
         ),
-        "maximum_semantic_model_calls": 5,
+        "sealed_request_roles": (
+            ["host_candidate", "candidate_review"]
+            if host_native
+            else ["participant_selection", "remaining_candidate_authoring"]
+        ),
+        "lower_capability_scope": (
+            ("candidate_review" if host_native else "remaining_candidate_authoring")
+            if contract.lower_capability
+            else "not_applicable"
+        ),
+        "maximum_semantic_model_calls": 1 if host_native else 5,
         "configured": configured,
         "observed": observation,
         "stage_observation": (
@@ -258,6 +277,143 @@ def model_profile_evidence(
             if profile == UNAVAILABLE_PROVIDER_PROFILE
             else "not_applicable"
         ),
+    }
+
+
+def host_native_model_stage_observation_issues(
+    profile: str,
+    *,
+    observed: Mapping[str, Any],
+    stage_observation: Mapping[str, Any],
+) -> tuple[str, ...]:
+    """Validate host-native custody without reviving retired runtime author roles."""
+
+    return tuple(
+        str(issue)
+        for issue in _host_native_stage_observation_evidence(
+            profile,
+            sealed_observation=observed,
+            stage_observation=stage_observation,
+        )["issues"]
+    )
+
+
+def _host_native_stage_observation_evidence(
+    profile: str,
+    *,
+    sealed_observation: Mapping[str, Any],
+    stage_observation: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Bind one external host candidate and one runtime review to sealed custody."""
+
+    contract = get_greenfield_model_profile(profile)
+    observed = _mapping(sealed_observation)
+    retained = _mapping(stage_observation)
+    issues: list[str] = []
+    if set(observed) != {"origin", "host_candidate", "candidate_review"}:
+        issues.append("sealed host-native observation has missing or unsupported fields")
+    if observed.get("origin") != "host_native":
+        issues.append("sealed host-native observation has an invalid origin")
+
+    candidate = _mapping(observed.get("host_candidate"))
+    if set(candidate) != {
+        "version", "contract_version", "source_sha256", "candidate_sha256",
+    }:
+        issues.append("sealed host candidate receipt has missing or unsupported fields")
+    if candidate.get("version") != "odylith.greenfield.host-candidate.v1":
+        issues.append("sealed host candidate receipt version is invalid")
+    if candidate.get("contract_version") != GREENFIELD_INTENT_AUTHORING_VERSION:
+        issues.append("sealed host candidate canonical contract version is invalid")
+    for field in ("source_sha256", "candidate_sha256"):
+        if not _is_sha256(candidate.get(field)):
+            issues.append(f"sealed host candidate {field} is invalid")
+
+    review = _mapping(observed.get("candidate_review"))
+    expected_review_fields = {
+        "profile_id", "provider", "model", "reasoning_effort",
+        "effective_timeout_seconds", "authoring_tier",
+    }
+    if set(review) != expected_review_fields:
+        issues.append("sealed candidate_review lacks the stable six-field request observation")
+    elif str(review.get("profile_id") or "").strip() != profile:
+        issues.append("sealed candidate_review observation identifies a different profile")
+    else:
+        try:
+            issues.extend(greenfield_model_profile_observation_issues(
+                profile_id=profile,
+                provider=str(review.get("provider") or ""),
+                model=str(review.get("model") or ""),
+                reasoning_effort=str(review.get("reasoning_effort") or ""),
+                effective_timeout_seconds=review.get("effective_timeout_seconds"),
+                authoring_tier=str(review.get("authoring_tier") or ""),
+                request_role="candidate_review",
+            ))
+        except (TypeError, ValueError, OverflowError):
+            issues.append("sealed candidate_review observation is invalid")
+
+    expected_stage_fields = {
+        "version", "status", "host_invocations", "contract_command_invocations",
+        "proposal_command_invocations", "host_argv", "candidate_temp_cleaned",
+        "host_workspace_cleaned", "stage", "contract_returncode", "contract_sha256",
+        "candidate_schema_sha256", "host_returncode", "host_stdout_bytes",
+        "host_stderr_bytes", "candidate_sha256", "candidate_temp_outside_repo",
+        "elapsed_seconds",
+    }
+    if set(retained) != expected_stage_fields:
+        issues.append("retained host-native observation has missing or unsupported fields")
+    if retained.get("version") != HOST_NATIVE_MATRIX_OBSERVATION_VERSION:
+        issues.append("retained host-native observation version is invalid")
+    if retained.get("status") != "passed" or retained.get("stage") != "propose":
+        issues.append("retained host-native flow did not finish proposal successfully")
+    for field in (
+        "host_invocations", "contract_command_invocations", "proposal_command_invocations",
+    ):
+        if retained.get(field) != 1:
+            issues.append(f"retained host-native {field} must equal one")
+    for field in ("contract_returncode", "host_returncode"):
+        if retained.get(field) != 0:
+            issues.append(f"retained host-native {field} is nonzero")
+    for field in (
+        "candidate_temp_cleaned", "host_workspace_cleaned", "candidate_temp_outside_repo",
+    ):
+        if retained.get(field) is not True:
+            issues.append(f"retained host-native {field} is not true")
+    for field in ("contract_sha256", "candidate_schema_sha256", "candidate_sha256"):
+        if not _is_sha256(retained.get(field)):
+            issues.append(f"retained host-native {field} is invalid")
+    if (
+        _is_sha256(candidate.get("candidate_sha256"))
+        and retained.get("candidate_sha256") != candidate.get("candidate_sha256")
+    ):
+        issues.append("retained host candidate does not match the sealed receipt")
+    host_argv = _mapping(retained.get("host_argv"))
+    if (
+        set(host_argv) != {"executable", "argument_count"}
+        or not str(host_argv.get("executable") or "").strip()
+        or type(host_argv.get("argument_count")) is not int
+        or int(host_argv.get("argument_count") or 0) <= 0
+    ):
+        issues.append("retained host-native argv shape is invalid")
+    for field in ("host_stdout_bytes", "host_stderr_bytes"):
+        if type(retained.get(field)) is not int or int(retained.get(field) or 0) < 0:
+            issues.append(f"retained host-native {field} is invalid")
+    elapsed = _positive_float(retained.get("elapsed_seconds"))
+    if elapsed is None or elapsed >= contract.operational_timeout_seconds:
+        issues.append("retained host-native elapsed time lacks operational-timeout proof")
+
+    return {
+        "observation_version": str(retained.get("version") or ""),
+        "origin": "host_native",
+        "semantic_model_call_count": 1,
+        "request_roles": {
+            "host_candidate": {
+                "external_host": str(host_argv.get("executable") or ""),
+                "candidate_sha256": str(retained.get("candidate_sha256") or ""),
+            },
+            "candidate_review": dict(review),
+        },
+        "status": "passed" if not issues else "failed",
+        "issues": list(dict.fromkeys(issues)),
     }
 
 
@@ -715,6 +871,13 @@ def _positive_float(value: Any) -> float | None:
     return number if math.isfinite(number) and number > 0.0 else None
 
 
+def _is_sha256(value: Any) -> bool:
+    normalized = str(value or "").strip().casefold()
+    return len(normalized) == 64 and all(
+        character in "0123456789abcdef" for character in normalized
+    )
+
+
 def _same_seconds(left: float, right: float) -> bool:
     return math.isclose(
         left,
@@ -787,6 +950,7 @@ __all__ = [
     "case_model_profile",
     "model_profile_environment",
     "model_profile_evidence",
+    "host_native_model_stage_observation_issues",
     "model_stage_observation_issues",
     "profile_coverage",
     "profile_counts",

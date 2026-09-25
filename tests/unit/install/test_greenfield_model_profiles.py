@@ -314,6 +314,94 @@ def test_authored_private_result_binds_to_actual_admitted_consumer_receipt() -> 
     ) == ()
 
 
+def test_host_native_profile_evidence_binds_one_host_candidate_and_runtime_review() -> None:
+    profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
+    candidate_sha256 = "1" * 64
+    source_sha256 = "2" * 64
+    observed = {
+        "origin": "host_native",
+        "host_candidate": {
+            "version": "odylith.greenfield.host-candidate.v1",
+            "contract_version": "odylith.greenfield.intent-authoring.v68",
+            "source_sha256": source_sha256,
+            "candidate_sha256": candidate_sha256,
+        },
+        "candidate_review": {
+            "profile_id": STANDARD_PROFILE_ID,
+            "provider": profile.provider,
+            "model": profile.review_model,
+            "reasoning_effort": profile.review_reasoning_effort,
+            "effective_timeout_seconds": 120.0,
+            "authoring_tier": profile.repair_tier,
+        },
+    }
+    stage = _host_native_stage(candidate_sha256=candidate_sha256)
+
+    evidence = model_profile_evidence(
+        STANDARD_PROFILE_ID,
+        model_profile_environment(STANDARD_PROFILE_ID, {}),
+        observed=observed,
+        stage_observation=stage,
+    )
+
+    assert evidence["status"] == "passed", evidence["issues"]
+    assert evidence["sealed_request_roles"] == ["host_candidate", "candidate_review"]
+    assert evidence["maximum_semantic_model_calls"] == 1
+    assert evidence["stage_observation_summary"]["origin"] == "host_native"
+    result = SimpleNamespace(
+        name="host-native control",
+        status="passed",
+        quality=SimpleNamespace(passed=True),
+        proposal_seconds=80.0,
+        evidence={
+            "case": {"expectation": "transaction_committed"},
+            "model_profile": evidence,
+        },
+    )
+    proof = model_profile_release_proof((result,), require_complete=False)
+    assert proof["status"] == "passed", proof["issues"]
+    assert proof["profiles"][STANDARD_PROFILE_ID]["maximum_semantic_model_calls"] == 1
+
+
+def test_host_native_result_binding_matches_retained_candidate_to_commit_receipt() -> None:
+    source = "Extension publishers assemble release notes."
+    source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
+    candidate_sha256 = "3" * 64
+    payload = {
+        "commit_manifest": {
+            "model_authoring": {
+                "authoring_origin": "host_native",
+                "host_candidate": {
+                    "version": "odylith.greenfield.host-candidate.v1",
+                    "contract_version": "odylith.greenfield.intent-authoring.v68",
+                    "source_sha256": source_sha256,
+                    "candidate_sha256": candidate_sha256,
+                },
+                "candidate_review": {
+                    "version": "odylith.greenfield.candidate-review.v4",
+                    "status": "admitted",
+                    "source_sha256": source_sha256,
+                },
+            }
+        }
+    }
+
+    assert authored_model_result_binding_issues(
+        stage_observation=_host_native_stage(candidate_sha256=candidate_sha256),
+        create_payload=payload,
+        expected_source=source,
+    ) == ()
+
+    mismatched = _host_native_stage(candidate_sha256="4" * 64)
+    assert "retained host candidate does not match the sealed receipt" in (
+        authored_model_result_binding_issues(
+            stage_observation=mismatched,
+            create_payload=payload,
+            expected_source=source,
+        )
+    )
+
+
 @pytest.mark.parametrize(
     ("mutation", "expected_issue"),
     (
@@ -779,6 +867,29 @@ def _create_payload_for_stage(stage: dict[str, object], *, source: str) -> dict[
                 }
             }
         }
+    }
+
+
+def _host_native_stage(*, candidate_sha256: str) -> dict[str, object]:
+    return {
+        "version": "odylith.greenfield.host-native-matrix-observation.v1",
+        "status": "passed",
+        "host_invocations": 1,
+        "contract_command_invocations": 1,
+        "proposal_command_invocations": 1,
+        "host_argv": {"executable": "codex", "argument_count": 3},
+        "candidate_temp_cleaned": True,
+        "host_workspace_cleaned": True,
+        "stage": "propose",
+        "contract_returncode": 0,
+        "contract_sha256": "5" * 64,
+        "candidate_schema_sha256": "6" * 64,
+        "host_returncode": 0,
+        "host_stdout_bytes": 100,
+        "host_stderr_bytes": 0,
+        "candidate_sha256": candidate_sha256,
+        "candidate_temp_outside_repo": True,
+        "elapsed_seconds": 80.0,
     }
 
 

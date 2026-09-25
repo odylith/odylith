@@ -1,5 +1,30 @@
 - Bug ID: CB-303
 
+- Exact Public Package Admitted; Downstream Proof Owners Corrected (2026-09-25):
+  Clean distribution commit `4a1c9631a` completed the exact public
+  `cli-extension-release-notes` journey in `83.809s`, inside the `90s` target.
+  Independent candidate review admitted the host-native candidate, commit-only
+  publication completed in `2.661s`, the rollback guard reported zero issues,
+  and the generated package contained four Radar workstreams, four Registry
+  components, five Atlas sources, ten rendered Atlas assets, one project brief,
+  and five implementation prompts. All 48 retained desktop/mobile normal,
+  empty, degraded, error, and invalid-recovery browser states passed. This is
+  the first exact public evidence that the compact host-native mechanism can
+  deliver the required package within target. The aggregate gate still failed
+  for two downstream defects: the single human-owned event in Proposed First
+  Run rendered as one event box without its typed performer edge, and release
+  model-profile proof required the retired participant-selection/remainder
+  roles despite a sealed `origin: host_native` receipt. Correct the Atlas
+  projection from existing typed performer/event facts and add a strict
+  host-native release-evidence branch that binds the one-shot host candidate
+  hash, external-workspace cleanup, exact invocation counts, independent
+  reviewer profile, and sealed transaction receipt. Do not add an event,
+  parser, regex, author role, retry, repair, fallback, or evaluator exception.
+  Focused implementation proof passes `293/293`; exact rebuilt-distribution
+  public proof is still required before holdout access. Evidence:
+  `/private/tmp/greenfield-public-run-v7-4a1-result.json` and
+  `/private/tmp/greenfield-public-run-v7-4a1-evidence/`.
+
 - Reviewer False Positive Diagnosed; Schema Variants Removed (2026-09-25): The
   exact `24c255169` v6 positive control repeats the precedence denial in
   `74.509s`, inside the `90s` target. One retained diagnostic host candidate

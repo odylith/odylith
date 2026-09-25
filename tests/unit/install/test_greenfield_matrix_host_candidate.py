@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import subprocess
 import time
@@ -114,6 +115,15 @@ def test_host_candidate_happy_path_is_one_shot_and_cleans_candidate_file(
     assert observations[-1]["host_invocations"] == 1
     assert observations[-1]["candidate_temp_cleaned"] is True
     assert observations[-1]["host_workspace_cleaned"] is True
+    assert observations[-1]["candidate_sha256"] == hashlib.sha256(
+        json.dumps(
+            {"version": "candidate", "result": {"status": "authored"}},
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        ).encode("utf-8")
+    ).hexdigest()
     assert not host_calls[0][3].exists()
 
 

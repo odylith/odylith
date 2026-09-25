@@ -11455,6 +11455,25 @@ for retries until success. Current runtime profiles remain unchanged.
 
 ## Host-Native Proof Authority Contract Correction (2026-09-24)
 
+### Exact public package breakthrough and bounded downstream closeout (2026-09-25)
+
+- Clean distribution `4a1c9631a` admitted the compact v7 host candidate and
+  committed a complete 4-Radar, 4-Registry, 5-Atlas package in `83.809s` plus
+  `2.661s` commit-only publication. All 48 retained browser states passed.
+- Treat the remaining failure as downstream projection/proof debt, not another
+  authoring redesign. Proposed First Run must show every existing typed
+  performer connected to its exact event, including the one-human/one-event
+  case. It must not invent a second event or infer new source meaning.
+- Release proof must branch on the sealed `origin: host_native` authority. Bind
+  exactly one external host invocation and canonical candidate hash to the
+  sealed host receipt, plus one pinned independent reviewer observation. Keep
+  the participant-first proof unchanged for its legacy path; do not require
+  those retired author roles from host-native execution.
+- Focused implementation proof passes `293/293`. Rebuild a clean immutable
+  distribution and rerun the same public case. Holdout v4 remains inaccessible
+  until artifact quality, model-profile proof, transaction proof, and browser
+  proof all pass on that exact distribution.
+
 - The first exact public host-native run against clean distribution commit
   `c022771d0` failed closed after `72.324s`: its candidate mixed a source
   terminal with a provisional `proof_boundary` assumption. No transaction or
