@@ -27,7 +27,15 @@ host slice before final release adjudication. The current regression boundary
 passes `306` intervention/browser/boundary tests, `172` adjacent
 capability/discipline/guidance tests, and `12` install/bundle contract tests.
 Live source-local Codex status also exits zero with native activation and chat
-visibility proven in this session.
+visibility proven in this session. Exact pushed commit `3e454546e` builds wheel
+`57f832f4d7c95f62bf85f2ac2427af5062ec0cb67854fdd54494ca573cb25994`,
+assembles the complete local release asset set, and passes canonical
+fresh-install release smoke. A separate installed `0.1.15` consumer proves
+read-only Codex status across dirty managed overlap: it returns the intended
+unverified exit `1`, preserves the dirty dashboard bytes, keeps one generation,
+and leaves the generation-manifest hash unchanged. Installed execution for this
+correction is therefore closed; actual Claude chat delivery remains an explicit
+unqualified host slice rather than a reason to widen the mechanism.
 
 ## Current bounded checkpoint (2026-09-23)
 

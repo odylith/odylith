@@ -22,8 +22,20 @@
   The completed regression boundary passes `306`
   intervention/browser/boundary tests, `172` adjacent
   capability/discipline/guidance tests, and `12` install/bundle contract tests;
-  live source-local Codex status also exits zero. Rebuilt installed proof and
-  actual Claude chat delivery remain open.
+  live source-local Codex status also exits zero. Exact pushed commit
+  `3e454546e` now builds wheel
+  `57f832f4d7c95f62bf85f2ac2427af5062ec0cb67854fdd54494ca573cb25994`,
+  assembles the complete local release asset set, and passes the canonical
+  fresh-install release smoke. A separate installed consumer reports pinned and
+  active `0.1.15`; after an operator-owned `odylith/index.html` change, plain
+  Codex status returns the expected unverified exit `1` instead of
+  `RECOVERY_REQUIRED`, retains the dirty bytes, leaves the generation count at
+  one, and preserves generation-manifest hash
+  `f5a236896ef5c080a149083bad57e110fe8982e7e2ed775c35722862701a7526`.
+  This closes rebuilt installed execution for the status correction. Actual
+  Claude chat delivery remains open. Evidence:
+  `/private/tmp/odylith-build-3e454546e.cviKD4/repo/` and
+  `/private/tmp/odylith-installed-3e454546e/`.
 
 - Installed Publication and Actual Fallback (2026-09-19): The rebuilt c0b4e0af3 candidate passes the fresh two-host manual command proof: no-write status retains its generation, visible output and transcript confirmation publish verified successors, prior generations and installed runtime identity remain unchanged, and Codex preserves non-ready exit 1. Those controls use simulated transcripts and do not prove actual visibility. Separately, the installed Codex fallback for session codex-live-c0b4e0af3-20260919 was relayed verbatim in the actual Codex conversation; same-session readback reports proven_this_session, two confirmed events and zero pending confirmations while activation remains unverified. A real Claude Code session 3f480e86-823d-4c21-bfea-f5ad584dad6a returns Not logged in before any model/tool work and warns that the temporary workspace is untrusted. Actual Claude visibility remains open; the user was asked to log in, and no credential or trust settings were changed. Evidence: /Users/freedom/.codex/odylith-boundary-checkpoint.qgYnef/installed-intervention-evidence/ and /Users/freedom/.codex/odylith-boundary-recheck.CLaSzL/actual-visibility-next.md. Manual fallback does not qualify automatic activation or substantive intervention utility.
 

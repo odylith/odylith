@@ -3743,8 +3743,8 @@
         "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py": "4d5173918c00ab4bea1e7ccff84796c198b611c0439e675fae95c19377512357",
         "src/odylith/runtime/surfaces/host_intervention_status.py": "1119de2a7bafd01b430611b9490e6287b8298bd9597fdc37564e7c00eda4012b",
         "src/odylith/runtime/domain_intelligence/greenfield_managed_mutation_boundary.py": "dcd9b2b0c847914ee7d0a8fd17140bd375b107bc99b482ee957d6a891d24ba75",
-        "odylith/technical-plans/in-progress/2026-07/2026-07-20-v0-1-15-guidance-and-browser-surface-migration-assessment.md": "8f5f5c5d8e9aef150e3eb76ad13eb371bc440fc37375c4ad14d4ee47de8a497e",
-        "odylith/casebook/bugs/2026-07-11-host-specific-intervention-transport-hides-odylith-moments.md": "62d92360e61abe7bb8e5a5767556bf9ff687d272c8f2c58a2bffe276e61e5cc8",
+        "odylith/technical-plans/in-progress/2026-07/2026-07-20-v0-1-15-guidance-and-browser-surface-migration-assessment.md": "fc3d667eb8172ff09969a48d5cb59c4bef9961000103d31256145d37a054472f",
+        "odylith/casebook/bugs/2026-07-11-host-specific-intervention-transport-hides-odylith-moments.md": "83a7d3f0d007eb1199c016239176282b136c9c0cdd24d87a0e617d586f4b0384",
         "odylith/agents-guidelines/CODEX_HOST_CONTRACT.md": "860b02ad20f24f531ac907710da622b4402d7e2bdcd5d4f219f07802315a3e7f"
       }
     },
