@@ -4,6 +4,28 @@ Last updated: 2026-09-25
 
 ## Overview
 
+### Event-owned citation cardinality (2026-09-25)
+
+Compact host contract v8 preserves the existing event-owned citation contract
+when several distinct typed events cite the same exact source span. Canonical
+fact projection continues to deduplicate identical first-path prose, while each
+event binds to the one selected fact whose `source_field_rows` contains that
+event's original citation ordinal. Authored relation validation permits the
+identical source and projection coordinates only for distinct typed relations;
+partial overlap, duplicate typed events, missing ordinals, and ambiguous
+bindings still fail closed.
+
+`greenfield_authored_relation_validation.py` is the single owner of authored
+first-path actor and relation validation. The extraction reduces
+`greenfield_authored_semantics.py` from 1,199 to 967 lines without retaining a
+second validator or introducing a compatibility path. The legacy
+participant-first authoring path keeps its one-event/one-fact contract. This
+replacement adds no prompt, schema shape, parser, regex, inference, model call,
+retry, repair, fallback, or publication path. All 2,164 Greenfield runtime unit
+tests pass, including parser-authority retirement, shared exact-span custody,
+and partial-overlap rejection. Immutable installed and browser proof remain the
+next qualification gate; consumed holdout v4 must not be rerun.
+
 ### Complete typed Greenfield presentation projection (2026-09-25)
 
 The accepted host candidate already owns the source-grounded event path and the

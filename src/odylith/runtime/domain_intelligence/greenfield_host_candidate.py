@@ -40,7 +40,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v1"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v7"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v8"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
 
 
@@ -137,6 +137,7 @@ def admit_greenfield_host_candidate(
         effective_timeout_seconds=effective_window,
         semantic_model_call_count=0,
         allow_zero_semantic_calls=True,
+        event_citations_are_event_owned=True,
     )
     if _canonical_candidate_bytes(response) != frozen:
         raise RuntimeError("Greenfield host-candidate validation changed the candidate")

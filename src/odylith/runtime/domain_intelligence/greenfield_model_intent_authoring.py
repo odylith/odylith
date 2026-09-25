@@ -212,6 +212,7 @@ def validate_greenfield_authoring_response(
     effective_timeout_seconds: float,
     semantic_model_call_count: int,
     allow_zero_semantic_calls: bool = False,
+    event_citations_are_event_owned: bool = False,
 ) -> GreenfieldModelAuthoredIntent | GreenfieldAuthoringClarification:
     minimum_call_count = 0 if allow_zero_semantic_calls else 1
     if type(semantic_model_call_count) is not int or semantic_model_call_count < minimum_call_count:
@@ -300,6 +301,7 @@ def validate_greenfield_authoring_response(
             selected_facts=selected_facts,
             first_path=str(intent.get("first_path") or ""),
             evidence_text=evidence_text,
+            event_citations_are_event_owned=event_citations_are_event_owned,
         )
         authored_component_relation_facts(
             title=str(intent.get("title") or ""),

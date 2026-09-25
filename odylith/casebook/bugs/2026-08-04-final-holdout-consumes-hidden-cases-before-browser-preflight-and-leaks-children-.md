@@ -69,3 +69,24 @@
 - Code References: - scripts/release/greenfield_matrix_campaign_runner.py
 - scripts/release/greenfield_matrix_campaign_shard_runner.py
 - scripts/release/greenfield_final_holdout_guard.py
+
+- Direct-Runner Interrupt Reopen (2026-09-25): Exact v4 holdout execution
+  against `d921c00e0` passed browser and distribution preflight, then was
+  intentionally interrupted after its first product failure made the release
+  floor impossible. The direct `greenfield_preconfirm_matrix.py` BaseException
+  path wrote an interruption result inside the lease namespace but could not
+  complete the ledger because no retained root manifest existed yet. Its final
+  lease cleanup then raised `Directory not empty`, shadowing the original
+  interrupt and leaving the one-shot ledger `claimed`. No descendant process
+  survived and no consumer records were written, but the terminalization law
+  still failed. The existing `seal_interrupted_retained_evidence` utility
+  successfully sealed the completed case and partial next-case staging bytes;
+  `complete_final_holdout_run` then terminalized the original ledger as
+  `interrupted`. The temporary execution root was moved recoverably to Trash
+  only after those hashes verified. Reopen this record: direct and campaign
+  runners must share one interrupt owner that seals partial evidence before
+  lease cleanup and cannot let cleanup exceptions suppress ledger completion.
+  Evidence:
+  `/private/tmp/odylith-greenfield-final-holdout-20260924-v4-run-ledger.json`
+  and
+  `/private/tmp/odylith-greenfield-final-holdout-20260924-v4-evidence/retained-evidence-manifest.v1.json`.

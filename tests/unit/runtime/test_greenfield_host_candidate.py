@@ -22,6 +22,9 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization
     GreenfieldClarificationRequired,
     combined_prompt_evidence_source,
 )
+from odylith.runtime.domain_intelligence.greenfield_model_outcomes import (
+    GreenfieldModelAuthoringError,
+)
 from odylith.runtime.domain_intelligence.greenfield_model_receipt_approval import (
     greenfield_model_authoring_receipt_approved,
 )
@@ -260,6 +263,71 @@ def test_host_candidate_preserves_canonical_source_precedence() -> None:
     canonical = canonical_greenfield_host_candidate(response)
 
     assert canonical["result"]["source_precedence"] == expected
+
+
+def test_host_candidate_preserves_multiple_events_on_one_exact_source_fact(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    source = _source()
+    evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
+    response = _host_response(evidence)
+    shared_event = (
+        "Dock attendant Ivo enters a vessel tag and the product records berth "
+        "occupancy before the berth map shows the placement"
+    )
+    shared_citation = {
+        "quote": shared_event,
+        "occurrence": 1,
+    }
+    for event in response["result"]["events"]:
+        event["source_citation"] = deepcopy(shared_citation)
+
+    candidate = materialize_host_authored_intent(
+        prompt=source,
+        repo_root=tmp_path,
+        host_candidate=response,
+        review_provider_factory=AdmittingReviewProvider,
+    )
+
+    relations = candidate["authored_semantics"]["first_path_relations"]
+    assert candidate["first_path"] == shared_event
+    assert [row["action_verb_quote"] for row in relations] == [
+        "enters",
+        "records",
+        "shows",
+    ]
+    assert len(
+        {(row["source_start_byte"], row["source_end_byte"]) for row in relations}
+    ) == 1
+    assert len(
+        {(row["event_start_byte"], row["event_end_byte"]) for row in relations}
+    ) == 1
+
+
+def test_host_candidate_rejects_partially_overlapping_event_citations(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    source = _source()
+    evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
+    response = _host_response(evidence)
+    response["result"]["events"][0]["source_citation"] = {
+        "quote": (
+            "Dock attendant Ivo enters a vessel tag and the product records berth "
+            "occupancy before the berth map shows the placement"
+        ),
+        "occurrence": 1,
+    }
+
+    with pytest.raises(
+        GreenfieldModelAuthoringError,
+        match="overlapping first-path events",
+    ):
+        materialize_host_authored_intent(
+            prompt=source,
+            repo_root=tmp_path,
+            host_candidate=response,
+            review_provider_factory=AdmittingReviewProvider,
+        )
 
 
 def test_public_propose_accepts_a_host_candidate_file(

@@ -1,5 +1,51 @@
 Status: In progress
 
+## Replace the one-to-one event/fact cardinality assumption (2026-09-25)
+
+The newly blinded v4 holdout was legitimately claimed and bound to immutable
+distribution `d921c00e0`. Its first completed case failed closed in `60.843s`
+with zero governed project records because the host candidate could not satisfy
+the canonical requirement for exactly one distinct selected first-path fact per
+event. This independently repeats the same cardinality failure class recorded
+in the retired v3 holdout. The result is decisive against release qualification;
+the run was stopped rather than spending another 35 model/browser journeys on a
+gate that could no longer pass. The ledger is terminal `interrupted`, and the
+completed failure plus partial interruption evidence are hash-sealed. Do not
+inspect or tune against the disclosed case.
+
+The existing compact host contract already gives every event one exact source
+citation. Canonical citation custody intentionally collapses equal source spans
+and preserves every original citation ordinal in `source_field_rows`; the later
+direct-evidence graph incorrectly restores a one-event/one-distinct-fact law.
+Compare one bounded structural alternative on public synthetic evidence: bind
+each event to the unique selected first-path fact containing its original
+citation ordinal, allow multiple typed events to share one identical exact
+source span, and continue rejecting partial overlaps, missing ordinals, and
+ambiguous bindings. Keep canonical first-path prose deduplicated. Add no prompt,
+schema, regex, parser, source inference, model call, retry, repair, or fallback.
+
+Falsifiable prediction: a public source sentence containing two explicit typed
+actions can use the same exact event citation twice and preserve two distinct
+actor/action/target relations, while a partial-overlap candidate and an event
+without one ordinal-bound fact still fail closed. If focused custody, host
+candidate, authored semantics, transaction, and browser proof accept, rebuild
+one immutable public matrix before commissioning a new independently blinded
+holdout. The consumed v4 package is regression evidence only and must never be
+rerun.
+
+The bounded replacement now satisfies that public discriminator. Compact host
+contract v8 maps each event's original citation ordinal through
+`source_field_rows`; canonical first-path prose remains deduplicated, three
+distinct typed actions survive one identical exact citation, and partial
+overlap plus exact duplicate typed relations fail closed. The legacy authoring
+path retains its stricter one-event/one-fact law. Authored relation validation
+now has one cohesive owner rather than extending the 1,199-line semantics
+module past its size ceiling; the original module is 967 lines and no retired
+first-path tower prefix was reintroduced. All 2,164 Greenfield runtime unit
+tests pass. Freeze this mechanism and advance only to an immutable installed
+public/package/browser run; do not add another representation or touch the
+consumed v4 holdout.
+
 ## Pass the exact public gate and rebind recovery proof (2026-09-25)
 
 Clean commit `d4743f3a0` passes the exact public host-native journey in

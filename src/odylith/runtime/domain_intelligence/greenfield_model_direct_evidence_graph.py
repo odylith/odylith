@@ -72,6 +72,7 @@ def derive_model_relations(
     selected_facts: Sequence[Mapping[str, Any]],
     first_path: str,
     evidence_text: str,
+    event_citations_are_event_owned: bool = False,
 ) -> DerivedModelRelations:
     """Compile the compact graph without adding a second semantic author."""
 
@@ -81,6 +82,7 @@ def derive_model_relations(
         selected_facts=selected_facts,
         first_path=first_path,
         evidence_text=evidence_text,
+        event_citations_are_event_owned=event_citations_are_event_owned,
     )
     return DerivedModelRelations(
         first_path_relations=path_relations,
@@ -164,6 +166,7 @@ def _derive_events(
     selected_facts: Sequence[Mapping[str, Any]],
     first_path: str,
     evidence_text: str,
+    event_citations_are_event_owned: bool,
 ) -> tuple[tuple[dict[str, Any], ...], dict[str, Any] | None]:
     if (
         not isinstance(value, Sequence)
@@ -180,20 +183,36 @@ def _derive_events(
         for fact in selected_facts
         if str(fact.get("field") or "") == "first_path"
     )
-    if (
-        not path_facts
-        or len(path_facts) != len(event_rows)
-        or "\n".join(str(fact.get("quote") or "") for fact in path_facts)
-        != first_path
-    ):
+    if not path_facts or "\n".join(
+        str(fact.get("quote") or "") for fact in path_facts
+    ) != first_path:
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authoring must select exactly one first-path fact per event"
         )
+    if event_citations_are_event_owned:
+        event_facts: list[Mapping[str, Any]] = []
+        for event_order in range(1, len(event_rows) + 1):
+            matches = tuple(
+                fact
+                for fact in path_facts
+                if event_order in fact.get("source_field_rows", ())
+            )
+            if len(matches) != 1:
+                raise GreenfieldAuthoredSemanticsError(
+                    "Greenfield authoring must bind every event to one first-path fact"
+                )
+            event_facts.append(matches[0])
+    else:
+        if len(path_facts) != len(event_rows):
+            raise GreenfieldAuthoredSemanticsError(
+                "Greenfield authoring must select exactly one first-path fact per event"
+            )
+        event_facts = list(path_facts)
     owner_facts = _selected_product_owner_facts(selected_facts)
     rows: list[dict[str, Any]] = []
     seen_source_events: set[tuple[int, int]] = set()
     for expected_order, (raw, selected_fact) in enumerate(
-        zip(event_rows, path_facts, strict=True), start=1
+        zip(event_rows, event_facts, strict=True), start=1
     ):
         if not isinstance(raw, Mapping) or set(raw) != MODEL_EVENT_FIELDS:
             raise GreenfieldAuthoredSemanticsError(
@@ -211,6 +230,7 @@ def _derive_events(
             )
         if any(
             source_start < seen_end and seen_start < source_end
+            and (source_start, source_end) != (seen_start, seen_end)
             for seen_start, seen_end in seen_source_events
         ):
             raise GreenfieldAuthoredSemanticsError(

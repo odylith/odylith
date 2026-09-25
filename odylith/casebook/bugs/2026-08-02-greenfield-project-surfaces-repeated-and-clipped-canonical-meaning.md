@@ -1,5 +1,45 @@
 - Bug ID: CB-303
 
+- Event-Owned Citation Cardinality Passed Public Structural Proof
+  (2026-09-25): Compact host contract v8 removes the repeated one-event/one-
+  distinct-fact assumption without adding another semantic author. Identical
+  exact event citations remain one deduplicated canonical first-path fact, and
+  each typed event binds to that fact through its preserved original citation
+  ordinal in `source_field_rows`. Three distinct actor/action relations survive
+  one shared exact span; partial overlaps, missing or ambiguous ordinal
+  bindings, and exact duplicate typed relations fail closed. Legacy authoring
+  keeps its existing one-event/one-fact rule. Authored relation validation moved
+  into one cohesive owner, reducing the original semantics module from 1,199 to
+  967 lines while parser-authority retirement guards remain green. All 2,164
+  Greenfield runtime unit tests pass. No prompt, schema shape, regex, parser,
+  inference, model call, retry, repair, fallback, or alternate publication path
+  was added. Immutable installed package and browser proof are still required;
+  consumed holdout v4 remains prohibited from rerun.
+
+- Blinded V4 Holdout Rejected One-To-One Event/Facts Cardinality (2026-09-25):
+  The newly blinded 36-case v4 holdout was legitimately claimed against exact
+  immutable distribution `d921c00e0`, with protected inputs hash-bound before
+  disclosure. Its first completed case failed closed in `60.843s` with zero
+  Radar workstreams, Registry component specs, Atlas sources, project brief, or
+  transaction because Greenfield required exactly one distinct selected
+  first-path fact per event. This independently repeats the cardinality failure
+  class in retired holdout v3, so the all-requests-success release floor became
+  impossible after one result. The remaining 35 journeys were stopped rather
+  than burned for a verdict they could not change. Existing interruption
+  sealing retained the completed failure and partial next-case bytes; the
+  one-shot ledger is terminal `interrupted`. Do not inspect or tune against the
+  disclosed case and never rerun v4. Replace only the duplicated one-to-one
+  abstraction on public synthetic evidence: map each event's already-owned
+  source-citation ordinal to its selected first-path fact and permit identical
+  exact source spans to support multiple typed events, while preserving
+  deduplicated canonical prose and rejecting partial overlaps or ambiguous
+  bindings. Add no prompt, schema, regex, parser, model call, retry, repair, or
+  fallback. Evidence:
+  `/private/tmp/odylith-greenfield-final-holdout-20260924-v4-run-ledger.json`,
+  `/private/tmp/odylith-greenfield-final-holdout-20260924-v4-interrupted-result.v2.json`,
+  and
+  `/private/tmp/odylith-greenfield-final-holdout-20260924-v4-evidence/retained-evidence-manifest.v1.json`.
+
 - Corrected Presentation Passed Final Semantic Gate (2026-09-25): Exact pushed
   commit `d921c00e0` passed the immutable installed public journey with four
   Radar workstreams, four Registry components, five Atlas sources, ten rendered
