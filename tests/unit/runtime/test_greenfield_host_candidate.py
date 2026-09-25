@@ -239,6 +239,9 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
     authored = payload["candidate_schema"]["properties"]["result"]["anyOf"][0]
     assert "first_path" not in authored["properties"]["facts"]["properties"]
     assert "source_citation" in authored["properties"]["events"]["items"]["required"]
+    source_precedence = authored["properties"]["source_precedence"]
+    assert "every explicit source-stated ordering requirement" in source_precedence["description"]
+    assert "proposed first-run walkthrough" in source_precedence["description"]
     assert any(
         "Use exactly one proof authority" in requirement
         and "facts.proof_boundary and terminal to null" in requirement

@@ -27,6 +27,15 @@ typed issue in JSON error output. This is diagnostic custody, not a candidate
 revision interface: candidate content remains private, the reviewer is not
 retried, and no repair or fallback path follows from the receipt.
 
+Contract v4 also makes the existing source-precedence authority symmetric
+between author and reviewer. Every explicit source-stated ordering requirement
+must be represented as a directed edge between existing event IDs and cite the
+one-based accepted operational constraint that owns it. Empty precedence is
+valid only when the source states no event precedence. Event array order and
+the proposed first-run walkthrough remain design choices, not accepted source
+authority. This is one shared field definition, not a vocabulary rule or
+example-specific prompt patch.
+
 ### Exact-commit host-native release boundary (2026-09-24)
 
 Independent strong review accepts the host-native boundary's semantic fidelity,

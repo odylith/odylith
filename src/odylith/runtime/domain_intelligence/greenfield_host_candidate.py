@@ -40,7 +40,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v1"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v3"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v4"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
 
 

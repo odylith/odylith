@@ -1,5 +1,29 @@
 Status: In progress
 
+## Make accepted source precedence equally visible to author and reviewer (2026-09-24)
+
+The exact clean `367c7a795` public distribution proves that compact event
+custody reaches independent review without the former duplicate-authority
+failure. Host authoring plus validation and review completes in `79.176s`,
+inside the `90s` advisory target, but the reviewer denies one real custody
+defect: the candidate preserves the mandatory same-review-view requirement as
+an operational constraint while leaving its before-announcement event edge out
+of `source_precedence`. No transaction, governed record, or browser credit
+follows.
+
+This is an author/reviewer interface mismatch, not evidence for another parser,
+repair path, model role, or architecture. The reviewer already requires every
+explicit source ordering to use existing event IDs and a cited operational
+constraint, while the author-facing schema previously exposed only three
+integer fields with no semantic ownership. Contract v4 places that existing
+general law on the shared `source_precedence` schema. Empty is valid only when
+the source states no event precedence; event array order and proposed first-run
+order remain non-authoritative. Candidate format, validation, review, model,
+effort, deadlines, projection, transaction, and no-retry behavior stay fixed.
+Focused candidate, event-ordering, and reviewer tests pass `110/110`. Rebuild
+the exact clean distribution and run one fresh public request; do not access the
+sealed holdout until that public gate passes.
+
 ## Exact-commit release adjudication and host-runner closure (2026-09-24)
 
 Independent strong review accepts the host-native mechanism's semantic fidelity,

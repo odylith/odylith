@@ -1,5 +1,23 @@
 - Bug ID: CB-303
 
+- Author/Reviewer Precedence Contract Mismatch (2026-09-24): The exact clean
+  `367c7a795` distribution reaches independent semantic review in `79.176s`,
+  inside the `90s` advisory target, with one host invocation and no repair or
+  retry. Review correctly denies the candidate because it quotes the mandatory
+  shared review view before release announcement but leaves
+  `source_precedence` empty. No transaction or governed record is created and
+  browser proof remains uncredited. The author-facing schema exposed only edge
+  fields while the reviewer already required every explicit source ordering to
+  be represented by cited event edges. Contract v4 closes that interface gap by
+  defining the existing field authority once in the shared schema: source
+  ordering maps existing events to an accepted operational constraint; event
+  array order and proposed first-run order are not source authority. This adds
+  no example vocabulary, parser, regex, repair, retry, fallback, model role, or
+  validator exception. Focused candidate, ordering, and review proof passes
+  `110/110`; the holdout remains sealed and unexecuted. Evidence:
+  `/private/tmp/greenfield-public-run-v3-observed-367-result.json` and
+  `/private/tmp/greenfield-public-run-v3-observed-367-evidence/`.
+
 - Review-Denial Evidence Loss (2026-09-24): Contract v3 eliminates the
   first-path/event cardinality failure by construction. Its exact installed
   public run reaches independent semantic review in `81.629s`, inside the `90s`

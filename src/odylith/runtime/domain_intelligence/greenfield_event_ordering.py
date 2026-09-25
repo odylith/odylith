@@ -12,13 +12,22 @@ from copy import deepcopy
 from graphlib import CycleError, TopologicalSorter
 from typing import Any
 
-from odylith.runtime.domain_intelligence.greenfield_operating_envelope import MAX_AUTHORED_LIST_ITEMS
+from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
+    MAX_AUTHORED_LIST_ITEMS,
+)
 
 _EVENT_INDEX = {"type": "integer", "minimum": 1, "maximum": 32}
 _PRECEDENCE_FIELDS = ("before_event", "after_event", "constraint_index")
 SOURCE_PRECEDENCE_SCHEMA = {
     "type": "array",
     "maxItems": 64,
+    "description": (
+        "Preserve every explicit source-stated ordering requirement as a directed "
+        "edge between existing event IDs, backed by the one-based index of its "
+        "accepted operational constraint. Use an empty array only when the source "
+        "states no event precedence; event array order and the proposed first-run "
+        "walkthrough are not source authority."
+    ),
     "items": {
         "type": "object", "additionalProperties": False,
         "required": list(_PRECEDENCE_FIELDS),
@@ -133,6 +142,8 @@ def _event_identities(value: Any) -> set[int]:
 
 
 __all__ = [
-    "SOURCE_PRECEDENCE_SCHEMA", "FIRST_RUN_SCHEMA",
-    "validate_source_precedence", "validate_first_run",
+    "FIRST_RUN_SCHEMA",
+    "SOURCE_PRECEDENCE_SCHEMA",
+    "validate_first_run",
+    "validate_source_precedence",
 ]
