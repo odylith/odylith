@@ -108,12 +108,12 @@ def canonical_citation_from_host_selection(
 
     if (
         not isinstance(citation, Mapping)
-        or "quote" not in citation
-        or not set(citation).issubset({"quote", "context"})
+        or set(citation) != {"quote", "context"}
     ):
         raise GreenfieldModelAuthoringError(_INVALID_CITATION)
     quote = exact_quote(citation.get("quote"))
-    if not quote:
+    context = exact_quote(citation.get("context"))
+    if not quote or not context:
         raise GreenfieldModelAuthoringError(_INVALID_CITATION)
 
     quote_bytes = quote.encode("utf-8")
@@ -123,9 +123,6 @@ def canonical_citation_from_host_selection(
             return {"prefix": "", "quote": quote, "anchor_occurrence": 1}
         return {"quote": quote, "occurrence": 1}
 
-    context = exact_quote(citation.get("context"))
-    if not context:
-        raise GreenfieldModelAuthoringError(_AMBIGUOUS_CONTEXT)
     context_bytes = context.encode("utf-8")
     context_starts = _overlapping_match_starts(evidence, context_bytes)
     quote_offsets = _overlapping_match_starts(context_bytes, quote_bytes)

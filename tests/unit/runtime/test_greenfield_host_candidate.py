@@ -69,13 +69,30 @@ def _host_response(evidence: str) -> dict[str, object]:
                 state_object=field == "state_object",
             )
     for component in result["components"]:
-        component["responsibilities"] = [
+        component["additional_responsibilities"] = [
             _context_citation(evidence, citation)
             for citation in component["responsibilities"]
         ]
+        component.pop("responsibilities")
     path_citations = facts.pop("first_path")
     for event, citation in zip(result["events"], path_citations, strict=True):
         event["source_citation"] = citation
+        event["responsibility_citation"] = (
+            deepcopy(citation)
+            if event["actor_fact"]["field"] in {"title", "internal_systems"}
+            else None
+        )
+    event_responsibilities = [
+        event["responsibility_citation"]
+        for event in result["events"]
+        if event["responsibility_citation"] is not None
+    ]
+    for component in result["components"]:
+        component["additional_responsibilities"] = [
+            responsibility
+            for responsibility in component["additional_responsibilities"]
+            if responsibility not in event_responsibilities
+        ]
     response["version"] = HOST_CANDIDATE_FORMAT_VERSION
     return response
 
@@ -301,13 +318,38 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
         "source_citation"
     ]
     assert source_citation["required"] == ["quote", "context"]
-    assert source_citation["properties"]["context"]["anyOf"][-1] == {"type": "null"}
+    assert source_citation["properties"]["context"]["type"] == "string"
     assert "occurrence" not in source_citation["properties"]
+    responsibility_citation = authored["properties"]["events"]["items"]["properties"][
+        "responsibility_citation"
+    ]
+    assert responsibility_citation["anyOf"][0]["required"] == ["quote", "context"]
+    assert responsibility_citation["anyOf"][1] == {"type": "null"}
     responsibility = authored["properties"]["components"]["items"]["properties"][
-        "responsibilities"
+        "additional_responsibilities"
     ]["items"]
     assert responsibility["required"] == ["quote", "context"]
+    assert (
+        authored["properties"]["components"]["items"]["properties"][
+            "additional_responsibilities"
+        ]["minItems"]
+        == 0
+    )
+    assert (
+        "responsibilities"
+        not in authored["properties"]["components"]["items"]["properties"]
+    )
     assert "occurrence" not in responsibility["properties"]
+    provisional_component = authored["properties"]["provisional_design"]["properties"][
+        "components"
+    ]["items"]["properties"]
+    assert "cover every source event" in provisional_component[
+        "supported_event_orders"
+    ]["description"]
+    assert any(
+        "including human actions" in requirement
+        for requirement in payload["requirements"]
+    )
     pending = [("$", payload["candidate_schema"])]
     while pending:
         path, value = pending.pop()
@@ -327,8 +369,14 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
         for requirement in payload["requirements"]
     )
     assert any(
-        "supply its exact quote" in requirement
-        and "When that quote occurs more than once" in requirement
+        "supply its exact quote and locator context" in requirement
+        and "When the quote occurs once, repeat the quote as context" in requirement
+        for requirement in payload["requirements"]
+    )
+    assert any(
+        "responsibility_citation that is an exact subspan" in requirement
+        and "additional_responsibilities" in requirement
+        and "Identity is exact" in requirement
         for requirement in payload["requirements"]
     )
     assert payload["request"]["evidence"].endswith(
@@ -405,21 +453,18 @@ def test_host_candidate_preserves_duplicate_precedence_for_validator_rejection()
         )
 
 
-def test_host_candidate_preserves_multiple_events_on_one_exact_source_fact(
+def test_host_candidate_preserves_same_owner_events_on_one_exact_source_fact(
     tmp_path,
 ) -> None:  # type: ignore[no-untyped-def]
     source = _source()
     evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
     response = _host_response(evidence)
-    shared_event = (
-        "Dock attendant Ivo enters a vessel tag and the product records berth "
-        "occupancy before the berth map shows the placement"
-    )
+    shared_event = "the product records berth occupancy before the berth map shows the placement"
     shared_citation = {
         "quote": shared_event,
         "context": shared_event,
     }
-    for event in response["result"]["events"]:
+    for event in response["result"]["events"][1:]:
         event["source_citation"] = deepcopy(shared_citation)
 
     candidate = materialize_host_authored_intent(
@@ -430,7 +475,7 @@ def test_host_candidate_preserves_multiple_events_on_one_exact_source_fact(
     )
 
     relations = candidate["authored_semantics"]["first_path_relations"]
-    assert candidate["first_path"] == shared_event
+    assert candidate["first_path"].endswith(shared_event)
     assert [row["action_verb_quote"] for row in relations] == [
         "enters",
         "records",
@@ -438,7 +483,47 @@ def test_host_candidate_preserves_multiple_events_on_one_exact_source_fact(
     ]
     assert len(
         {(row["source_start_byte"], row["source_end_byte"]) for row in relations}
-    ) == 1
+    ) == 2
+    assert candidate["component_responsibilities"] == [
+        "Record berth occupancy",
+        "the product records berth occupancy",
+        "the berth map shows the placement",
+    ]
+
+
+def test_host_candidate_rejects_shared_event_citation_across_actor_owners() -> None:
+    evidence = combined_prompt_evidence_source(prompt=_source(), edit_evidence="")
+    response = _host_response(evidence)
+    shared_event = (
+        "Dock attendant Ivo enters a vessel tag and the product records berth "
+        "occupancy before the berth map shows the placement"
+    )
+    shared_citation = {"quote": shared_event, "context": shared_event}
+    for event in response["result"]["events"]:
+        event["source_citation"] = deepcopy(shared_citation)
+
+    with pytest.raises(ValueError, match="mixed or contradictory actor ownership"):
+        canonical_greenfield_host_candidate(response, evidence_text=evidence)
+
+
+def test_host_candidate_rejects_shared_human_and_external_event_citation() -> None:
+    evidence = combined_prompt_evidence_source(prompt=_source(), edit_evidence="")
+    response = _host_response(evidence)
+    shared_event = (
+        "Dock attendant Ivo enters a vessel tag and the product records berth "
+        "occupancy before the berth map shows the placement"
+    )
+    shared_citation = {"quote": shared_event, "context": shared_event}
+    response["result"]["events"][0]["source_citation"] = deepcopy(shared_citation)
+    response["result"]["events"][1]["source_citation"] = deepcopy(shared_citation)
+    response["result"]["events"][1]["actor_fact"] = {
+        "field": "external_systems",
+        "row": 1,
+    }
+    response["result"]["events"][1]["responsibility_citation"] = None
+
+    with pytest.raises(ValueError, match="mixed or contradictory actor ownership"):
+        canonical_greenfield_host_candidate(response, evidence_text=evidence)
 
 
 def test_host_candidate_preserves_responsibility_that_is_also_a_typed_event(
@@ -452,7 +537,8 @@ def test_host_candidate_preserves_responsibility_that_is_also_a_typed_event(
         "context": "the product records berth occupancy",
     }
     response["result"]["events"][1]["source_citation"] = deepcopy(shared)
-    response["result"]["components"][0]["responsibilities"] = [deepcopy(shared)]
+    response["result"]["events"][1]["responsibility_citation"] = deepcopy(shared)
+    response["result"]["components"][0]["additional_responsibilities"] = []
 
     candidate = materialize_host_authored_intent(
         prompt=source,
@@ -461,10 +547,101 @@ def test_host_candidate_preserves_responsibility_that_is_also_a_typed_event(
         review_provider_factory=AdmittingReviewProvider,
     )
 
-    relation, = candidate["authored_semantics"]["component_responsibility_relations"]
-    assert candidate["component_responsibilities"] == [shared["quote"]]
+    relation = next(
+        row
+        for row in candidate["authored_semantics"]["component_responsibility_relations"]
+        if row["responsibility_quote"] == shared["quote"]
+    )
+    assert shared["quote"] in candidate["component_responsibilities"]
     assert relation["responsibility_quote"] == shared["quote"]
     assert relation["first_path_event_order"] == 2
+
+
+def test_host_candidate_rejects_one_responsibility_for_distinct_product_owners() -> None:
+    evidence = combined_prompt_evidence_source(prompt=_source(), edit_evidence="")
+    response = _host_response(evidence)
+    shared = {
+        "quote": "the product records berth occupancy before the berth map shows the placement",
+        "context": "the product records berth occupancy before the berth map shows the placement",
+    }
+    response["result"]["events"][1]["actor_fact"] = {"field": "title", "row": 1}
+    response["result"]["events"][1]["source_citation"] = {
+        "quote": (
+            "Dock attendant Ivo enters a vessel tag and the product records berth "
+            "occupancy before the berth map shows the placement"
+        ),
+        "context": (
+            "Dock attendant Ivo enters a vessel tag and the product records berth "
+            "occupancy before the berth map shows the placement"
+        ),
+    }
+    response["result"]["events"][1]["responsibility_citation"] = deepcopy(shared)
+    response["result"]["events"][2]["source_citation"] = deepcopy(shared)
+    response["result"]["events"][2]["responsibility_citation"] = deepcopy(shared)
+
+    with pytest.raises(ValueError, match="contradictory product owners"):
+        canonical_greenfield_host_candidate(response, evidence_text=evidence)
+
+
+def test_host_candidate_rejects_responsibility_on_human_event() -> None:
+    evidence = combined_prompt_evidence_source(prompt=_source(), edit_evidence="")
+    response = _host_response(evidence)
+    response["result"]["events"][0]["responsibility_citation"] = deepcopy(
+        response["result"]["events"][0]["source_citation"]
+    )
+
+    with pytest.raises(ValueError, match="non-product event"):
+        canonical_greenfield_host_candidate(response, evidence_text=evidence)
+
+
+def test_host_candidate_rejects_missing_required_human_responsibility_field() -> None:
+    evidence = combined_prompt_evidence_source(prompt=_source(), edit_evidence="")
+    response = _host_response(evidence)
+    response["result"]["events"][0].pop("responsibility_citation")
+
+    with pytest.raises(ValueError, match="event has invalid fields"):
+        canonical_greenfield_host_candidate(response, evidence_text=evidence)
+
+
+def test_host_candidate_rejects_forbidden_component_responsibility_field() -> None:
+    evidence = combined_prompt_evidence_source(prompt=_source(), edit_evidence="")
+    response = _host_response(evidence)
+    response["result"]["components"][0]["responsibilities"] = []
+
+    with pytest.raises(ValueError, match="component has invalid fields"):
+        canonical_greenfield_host_candidate(response, evidence_text=evidence)
+
+
+def test_host_candidate_rejects_responsibility_outside_its_event_source() -> None:
+    evidence = combined_prompt_evidence_source(prompt=_source(), edit_evidence="")
+    response = _host_response(evidence)
+    response["result"]["events"][1]["responsibility_citation"] = {
+        "quote": "the berth map shows the placement",
+        "context": "the berth map shows the placement",
+    }
+
+    with pytest.raises(ValueError, match="inside its source citation"):
+        canonical_greenfield_host_candidate(response, evidence_text=evidence)
+
+
+def test_host_candidate_unifies_event_identity_without_promoting_human_work() -> None:
+    evidence = combined_prompt_evidence_source(prompt=_source(), edit_evidence="")
+    response = _host_response(evidence)
+    product_citation = deepcopy(response["result"]["events"][1]["source_citation"])
+    response["result"]["components"][0]["additional_responsibilities"].append(
+        deepcopy(product_citation)
+    )
+
+    canonical = canonical_greenfield_host_candidate(response, evidence_text=evidence)
+    first_path = canonical["result"]["facts"]["first_path"]
+
+    responsibilities = [
+        citation
+        for component in canonical["result"]["components"]
+        for citation in component["responsibilities"]
+    ]
+    assert responsibilities.count(first_path[1]) == 1
+    assert first_path[0] not in responsibilities
 
 
 def test_candidate_review_requires_complete_accepted_component_custody() -> None:
@@ -534,19 +711,7 @@ def test_host_candidate_rejects_shared_human_event_as_component_responsibility(
     source = _source()
     evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
     response = _host_response(evidence)
-    shared_citation = {
-        "quote": (
-            "Dock attendant Ivo enters a vessel tag and the product records berth "
-            "occupancy before the berth map shows the placement"
-        ),
-        "context": (
-            "Dock attendant Ivo enters a vessel tag and the product records berth "
-            "occupancy before the berth map shows the placement"
-        ),
-    }
-    for event in response["result"]["events"]:
-        event["source_citation"] = deepcopy(shared_citation)
-    response["result"]["components"][0]["responsibilities"][0] = {
+    response["result"]["components"][0]["additional_responsibilities"][0] = {
         "quote": "Dock attendant Ivo enters a vessel tag",
         "context": "Dock attendant Ivo enters a vessel tag",
     }

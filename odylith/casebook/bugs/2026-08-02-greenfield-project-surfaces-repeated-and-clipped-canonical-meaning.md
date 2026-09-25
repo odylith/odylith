@@ -2720,3 +2720,85 @@
   This corrects evaluator validity only; it does not weaken labels, semantic
   equality, or the 100% release floor. CB-303 remains open pending a rebuilt
   exact distribution and fresh public qualification.
+
+- Repeated-quote nullable-context recurrence (2026-09-25): Exact clean
+  distribution `962425cbc` passed its first disclosed case at `10/10` with a
+  complete 5-Radar, 5-Registry, 5-Atlas package and all retained browser and
+  recovery proof. The second case failed safely after one `77.452s` Luna-medium
+  host call because canonical custody could not locate a repeated quote from a
+  nullable context; no governed records were created. A separate disclosed-case
+  diagnostic reproduced the mechanism: every citation was valid except title,
+  whose exact quote appeared ten times, and proof boundary, whose exact quote
+  appeared twice; the host supplied `context: null` for both. The earlier
+  first-occurrence normalization is not a candidate because fresh governance
+  history already proves that it can bind identical text to the wrong source
+  role. Host format v5 and contract v11 instead require a nonempty context
+  string for every citation while retaining v4 semantics: unique quotes
+  self-locate and ignore locator precision, while repeated quotes still require
+  one exact unique enclosing excerpt. This combines the winning parts of the
+  prior v3 and v4 mechanisms without numeric occurrence arithmetic, first-match
+  rebinding, regex, retry, repair, fallback, or another model role. The focused
+  host, citation, campaign, sealed-input, and proof-scope suite passes `159/159`.
+  The reset that remounted the authoritative volume removed the rejected
+  `/private/tmp` package; the hashes and causal evidence above remain in this
+  record, but the failed run cannot be presented as retained release proof.
+  CB-303 remains open pending a fresh public discriminator, immutable build,
+  public qualification at the frozen floor, and exactly one blind holdout.
+
+- Typed responsibility ownership follow-up (2026-09-25): The fresh v5
+  repeated-quote discriminator returned 40 valid citations in one Luna-medium
+  call. Eleven quotes repeated, including title ten times, proof boundary four
+  times, and state object nine times; every one had exactly one unique context,
+  and canonical v68 projection reported zero invalid locators. Independent
+  Astra-medium review then denied the candidate in `11.578s` because a
+  product-owned event, `Archive Relay validator produces the validation
+  report`, survived as a typed event but not as accepted component
+  responsibility custody. No records were created. This is not evidence for a
+  citation change or another prompt rule. It reproduces the older duplicate
+  ownership class: the host must currently author one source action as both an
+  event and a component responsibility. Replace that duplicate field ownership
+  in host format v6. Product-owned typed events project their existing exact
+  citation into the matching accepted component; the host supplies only
+  additional explicit non-event responsibilities. Human events never become
+  product responsibilities, and the independent reviewer remains unchanged.
+  Require positive product-event, negative human-event, additional-capability,
+  duplicate-identity, full host-candidate, and fresh one-call proof before a
+  build. Add no prose parser, regex, retry, repair loop, fallback, model role,
+  or post-confirm work.
+
+- Typed ownership control result (2026-09-25): Host format v6 first passed the
+  ordinary Archive Relay transaction control, but independent Astra diff review
+  returned `FAIL` with two P1 counterexamples. Reusing the whole event citation
+  dropped product responsibility when a human event shared that span, while the
+  same citation under two product owners failed canonical fact/owner cardinality.
+  The losing projection was removed before commit. Host format v8 and contract
+  v16 instead make responsibility custody part of the typed event: every product
+  event supplies one exact product-only citation inside its own event source
+  span, every human/external event supplies null, mixed-owner events cannot share
+  one source citation, and separately worded source responsibilities remain
+  additional facts. Contract v16 also keeps the existing provisional-design
+  invariant explicit: component support covers every source event without
+  transferring actor ownership.
+- The fresh v16 Luna-high control returned valid context, seven typed events,
+  four event-owned plus four separately worded responsibilities, complete event
+  support, and a four-component/four-workstream design in one call near the
+  `120s` advisory band. Canonical v68 validation accepted the candidate;
+  independent Astra-medium semantic review admitted it; and pre-confirm compile
+  staged a verified 95-write transaction with hash
+  `7a0a778059b488fe4413ee85f512259d748982490ae2e6f068703affbd45ac13`.
+  No repair, retry, fallback, parser, regex, or second author ran. Fresh proof
+  passed `164/164` focused, `2,168/2,168` runtime, `1,178/1,178` install, and
+  `120/120` browser checks before final review.
+- Astra's second review found two remaining raw-admission bypasses: all
+  non-product events shared one ownership label, and missing/extra raw event or
+  component fields could be normalized away before canonical validation. The
+  boundary now derives identity from the actual typed actor fact and requires
+  each raw row's keys to equal the returned schema before any field is removed
+  or projected. Missing human responsibility fields, forbidden legacy
+  responsibility fields, and shared human/external citations fail closed.
+  Post-hardening proof passes `167/167` focused, `2,171/2,171` runtime, and
+  `1,178/1,178` install checks; the unchanged valid candidate again staged a
+  verified transaction, and independent Astra returned `VERDICT: PASS` after
+  reproducing the prior counterexamples and nine raw-field mutations. CB-303
+  remains open until an exact immutable build passes the disclosed public floor
+  and exactly one new blind holdout.

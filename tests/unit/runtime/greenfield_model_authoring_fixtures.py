@@ -136,14 +136,28 @@ def host_candidate_response(
             )
     for event, citation in zip(events, first_path, strict=True):
         event["source_citation"] = _unique_context_citation(evidence_text, citation)
+        event["responsibility_citation"] = (
+            _unique_context_citation(evidence_text, citation)
+            if event["actor_fact"]["field"] in {"title", "internal_systems"}
+            else None
+        )
+    event_responsibilities = {
+        json.dumps(event["responsibility_citation"], sort_keys=True)
+        for event in events
+        if event["responsibility_citation"] is not None
+    }
     for component in components:
         responsibilities = component.get("responsibilities")
         if not isinstance(responsibilities, list):
             raise TypeError("canonical fixture component responsibilities are invalid")
-        component["responsibilities"] = [
+        component["additional_responsibilities"] = [
             _unique_context_citation(evidence_text, row)
             for row in responsibilities
+            if json.dumps(
+                _unique_context_citation(evidence_text, row), sort_keys=True
+            ) not in event_responsibilities
         ]
+        component.pop("responsibilities")
     return candidate
 
 

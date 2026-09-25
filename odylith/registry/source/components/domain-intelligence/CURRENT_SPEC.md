@@ -4,27 +4,43 @@ Last updated: 2026-09-25
 
 ## Overview
 
-### Context-owned host citations and complete responsibility custody (2026-09-25)
+### Context-owned host citations and typed responsibility custody (2026-09-25)
 
-Host candidate contract v9 / compact format v3 removes model-authored numeric
-source occurrences from the host boundary. Every accepted source citation now
-contains an exact semantic `quote` plus exact contiguous locator `context` that
-must occur once and contain the quote once. Deterministic custody derives the
-legacy canonical occurrence and byte address after hashing the immutable raw
-candidate. Context contributes no meaning. Absent, repeated, or internally
-ambiguous context fails closed; there is no first-match rebinding, regex,
-vocabulary rule, retry, repair, or fallback candidate.
+Host candidate contract v16 / compact format v8 keeps numeric source occurrences
+out of the host boundary. Every accepted citation contains an exact semantic
+`quote` plus nonempty exact contiguous locator `context`. Unique quotes
+self-locate; repeated quotes require context that occurs once and contains the
+quote once. Deterministic custody derives the legacy canonical occurrence and
+byte address after hashing the immutable raw candidate. Context contributes no
+meaning, and invalid context fails closed without first-match rebinding, regex,
+retry, repair, or fallback.
 
-Accepted component custody now requires every explicit source-stated product or
-component responsibility, including clauses also represented as typed workflow
-events. The component fact owns responsibility; the event owns workflow order;
-provisional design may reference but cannot replace either accepted fact. This
-corrects the prior schema instruction that excluded responsibilities already
-represented by typed events without creating a new fact category or semantic
-owner. Focused contract proof passes `105/105`; the widened host/profile slice
-passes `363/363`.
-Immutable installed, browser, independent semantic, and fresh blind holdout
-qualification remain open.
+Typed product events now own one accepted responsibility citation inside their
+own event source span. Canonical projection reuses that exact product-only
+subspan under the selected product or internal-system owner, while human events
+must supply null and separately worded source responsibilities remain explicit
+additional facts. Events with mixed or contradictory owners cannot share one
+source citation; same-owner events may. Provisional design must cover every
+source event, including human actions, without transferring actor ownership.
+This removes duplicate semantic authoring while preserving distinct source
+clauses and the independent Astra review boundary.
+
+Astra review rejected the first v6 projection because a whole event span could
+mix human and product work or bind two product owners. The replacement keeps
+responsibility custody inside the typed event and rejects either ambiguity
+before canonical admission. A fresh Luna-high control then returned valid
+contiguous context, seven typed events, eight accepted responsibilities across
+four owners, complete event coverage, and a four-component/four-workstream
+design in one call near the 120-second advisory band. Astra-medium admitted the
+immutable candidate, and Odylith staged a verified 95-write
+ProductCreateTransaction. Proof passes `164/164` focused checks, `2,168/2,168`
+runtime checks, `1,178/1,178` install checks, and `120/120` browser checks.
+Final admission hardening then closed two raw-boundary bypasses: every event and
+component row must match the returned required-key set before projection, and
+shared-citation checks preserve each typed human, external, or product owner
+identity. The post-hardening proof is `167/167` focused, `2,171/2,171` runtime,
+and `1,178/1,178` install, followed by independent Astra `PASS`.
+Exact immutable public qualification and one fresh blind holdout remain open.
 
 ### Runner-native outcome authority (2026-09-25)
 
@@ -1122,6 +1138,12 @@ semantic/design findings.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-25 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_host_candidate_shape.py`
+- **2026-09-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_host_candidate_shape.py`
 - **2026-09-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-141, B-142
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_host_candidate_shape.py`, `tests/unit/runtime/test_greenfield_host_candidate.py`
@@ -1134,12 +1156,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-24 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_profile_contract.py`
-- **2026-09-24 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_host_candidate_materialization.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_authoring_receipt.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_intent_materialization.py`
-- **2026-09-24 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

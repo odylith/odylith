@@ -11889,3 +11889,92 @@ Current proposal/confirmation/recovery operations and versioned semantic/timing 
   issues. Record `140.318s` as a standard-target overrun under the advisory
   90/120/150 guidance. Rebuild and rerun the public matrix without changing
   corpus content or semantic floors.
+
+## Nonnullable Context Transport Correction (2026-09-25)
+
+- Exact clean distribution `962425cbc` passed the first disclosed case at
+  `10/10`, then failed safely on case two after one `77.452s` Luna-medium host
+  call. The candidate selected valid exact text but returned nullable context
+  for two repeated facts: title occurred ten times and proof boundary twice.
+  No record was created, and the frozen 100% floor became unreachable.
+- Do not restore first-occurrence normalization. Prior installed evidence proves
+  that identical text can occur under different source roles, so a mechanical
+  first match can preserve bytes while corrupting semantic custody. Do not add a
+  prompt patch, regex, occurrence counter, retry, repair, fallback, or model
+  stage.
+- Retain one bounded replacement: host format v5 and contract v11 require every
+  citation to carry a nonempty string context. A unique quote still self-locates,
+  and the host may repeat that quote as context; a repeated quote still requires
+  one exact unique enclosing excerpt. This removes the nullable transport choice
+  while preserving the proven v4 canonical resolver and independent semantic
+  reviewer.
+- Falsifiable prediction: a fresh structurally equivalent public control with
+  repeated title and visible-result text returns schema-valid unique contexts
+  and reaches canonical validation in one host call, while missing, empty,
+  ambiguous, and extra-shaped citations continue to fail closed. Focused proof
+  is `159/159`. Require that fresh control, independent review, a pushed clean
+  build, the disclosed qualification floor, complete browser/recovery/host proof,
+  and exactly one blind holdout before completion.
+
+## Typed Product-Event Responsibility Ownership (2026-09-25)
+
+- The v5 prediction passed: one fresh Luna-medium candidate produced 40 valid
+  citations, including eleven repeated quotes with unique locator context, and
+  canonical v68 projection had zero invalid locators. Independent Astra-medium
+  review reached the next boundary and denied one missing accepted component
+  responsibility in `11.578s`; no record was created.
+- The missing responsibility already exists as a typed product event with an
+  exact citation and an internal-system actor edge. Requiring the host to emit
+  the same fact again under `components[*].responsibilities` is duplicate
+  semantic ownership, analogous to the removed `facts.first_path` duplication.
+  Another instruction cannot make that duplication reliable across profiles.
+- Host format v6 removes that duplicate surface. Canonical projection places
+  each typed product event's unchanged citation under its selected product
+  owner and accepts only separately source-stated, non-event responsibilities
+  as host-authored additions. Human-owned events remain workflow-only. Raw
+  candidate hashing, canonical validation, independent review, transaction
+  laws, and post-confirm behavior remain unchanged.
+- Falsifiable prediction: the exact fresh control reaches independent admission
+  without losing its distinct validate-metadata capability or produce-report
+  event; a human event never appears as a product responsibility; an additional
+  source capability remains bound to its explicit owner; and repeated identity
+  does not create duplicate canonical responsibility rows. Stop and reconsider
+  this candidate if any of those controls fail. Add no parser, regex, retry,
+  repair, fallback, second author, or new review role.
+
+## Typed Ownership Development Gate Result (2026-09-25)
+
+- Reject the first host format v6 whole-event projection. Independent Astra
+  review proved that a source span shared with human work lost the product
+  responsibility, while one span shared by distinct product owners broke
+  canonical fact/owner cardinality. The implementation and its implicit
+  human-event suppression were removed before commit.
+- Retain host format v8 and contract v16 for immutable release comparison.
+  Each product event owns one exact product-only responsibility citation inside
+  its own event source span; human/external events own null. Mixed or
+  contradictory product ownership cannot share one event citation. Separately
+  worded source responsibilities remain independent additional facts.
+- Retain the existing provisional-design validator as the single coverage owner.
+  Its schema and host contract now state that all source events, including human
+  actions, must be supported without transferring actor work. No new validator
+  or interpretation stage was introduced.
+- The fresh Archive Relay control passed canonical citation and relation
+  validation with seven events, eight responsibilities across four source
+  owners, four proposed components, four workstreams, and complete event
+  support. Astra-medium independently admitted the immutable candidate, and
+  pre-confirm compilation staged a verified 95-write transaction. Luna-medium
+  previously failed closed on non-contiguous context; the final v16 Luna-high
+  control completed near the 120-second advisory band. Treat that as
+  model-profile evidence, not permission for a runtime retry or model ladder.
+- Final admission hardening requires exact raw event/component key sets before
+  projection and preserves actual typed actor identity for shared-citation
+  checks. This closes the second Astra review's malformed-row and collapsed
+  non-product-owner counterexamples without changing the accepted schema or
+  adding semantic interpretation.
+- Current source proof is `167/167` focused, `2,171/2,171` runtime,
+  `1,178/1,178` install, and `120/120` browser checks, followed by independent
+  Astra `VERDICT: PASS`. Freeze product scope.
+  Next: validate and refresh governed truth, obtain an independent strong diff
+  review, commit and push the existing branch, build one exact immutable
+  distribution, run the disclosed public qualification at the unchanged 100%
+  floor, and only then consume exactly one fresh blind holdout.

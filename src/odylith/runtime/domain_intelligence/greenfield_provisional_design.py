@@ -25,6 +25,11 @@ _COMPONENT_FIELDS = {
     "name": _TEXT,
     "responsibility": _TEXT,
     "supported_event_orders": {
+        "description": (
+            "One-based source-event identities supported by this component. Across all "
+            "components, cover every source event exactly as authored, including human "
+            "actions; support does not transfer a human action to the component."
+        ),
         "type": "array", "minItems": 1, "maxItems": 32,
         "items": {"type": "integer", "minimum": 1, "maximum": 32},
     },

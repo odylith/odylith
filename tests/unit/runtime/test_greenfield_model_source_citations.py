@@ -98,7 +98,13 @@ def test_unique_context_projects_state_without_enlarging_its_meaning() -> None:
     )
 
 
-@pytest.mark.parametrize("citation", ({"quote": "unique proof"}, {"quote": "unique proof", "context": "wrong"}))
+@pytest.mark.parametrize(
+    "citation",
+    (
+        {"quote": "unique proof", "context": "unique proof"},
+        {"quote": "unique proof", "context": "wrong"},
+    ),
+)
 def test_unique_quote_projects_without_host_owned_locator_precision(
     citation: dict[str, object],
 ) -> None:
@@ -118,7 +124,7 @@ def test_unique_state_quote_projects_without_host_owned_locator_precision() -> N
 
     canonical = canonical_citation_from_host_selection(
         evidence,
-        {"quote": "durable state"},
+        {"quote": "durable state", "context": "durable state"},
         state_object=True,
     )
 
@@ -127,6 +133,16 @@ def test_unique_state_quote_projects_without_host_owned_locator_precision() -> N
         "prefix": "",
         "anchor_occurrence": 1,
     }
+
+
+def test_host_selection_requires_nonempty_context_even_when_quote_is_unique() -> None:
+    for citation in (
+        {"quote": "unique proof"},
+        {"quote": "unique proof", "context": ""},
+        {"quote": "unique proof", "context": None},
+    ):
+        with pytest.raises(GreenfieldModelAuthoringError):
+            canonical_citation_from_host_selection(b"one unique proof remains", citation)
 
 
 @pytest.mark.parametrize(

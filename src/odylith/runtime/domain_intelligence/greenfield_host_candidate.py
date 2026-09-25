@@ -40,7 +40,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v1"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v10"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v16"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
 
 
@@ -59,10 +59,11 @@ def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
         "requirements": [
             "Preserve every source-stated participant, action, visible result, constraint, and non-goal.",
             (
-                "For every accepted source fact, supply its exact quote. When that quote occurs "
-                "more than once, also supply exact contiguous context that occurs once and "
-                "contains the selected quote once; context locates the quote but contributes no "
-                "additional meaning."
+                "For every accepted source fact, supply its exact quote and locator context. "
+                "When the quote occurs once, repeat the quote as context. When the quote occurs "
+                "more than once, context must be an exact contiguous source excerpt that occurs "
+                "once and contains the selected quote once. Context locates the quote but "
+                "contributes no additional meaning."
             ),
             (
                 "Bind every explicit ordering constraint to its source events. Different "
@@ -70,8 +71,17 @@ def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
                 "before-event, after-event, and constraint-index binding."
             ),
             (
-                "Preserve every explicit source-stated product or component responsibility in "
-                "accepted source components, even when the same clause also appears as a typed event."
+                "A typed event whose actor_fact selects title or internal_systems must supply one "
+                "responsibility_citation that is an exact subspan of source_citation at the same "
+                "source location and contains only that product-owned clause; use null for human "
+                "or external events. When an event source citation contains several actors "
+                "or product owners, give each differently owned event its own exact contiguous "
+                "source clause; only events with the same product owner may share one source "
+                "citation. Select the responsibility-specific clause separately. Do not repeat "
+                "that exact citation in components.additional_"
+                "responsibilities. Identity is exact: related wording, a shared target, or the "
+                "same owner is still a separate responsibility. Put every other explicit source-"
+                "stated product or component responsibility under its selected owner there."
             ),
             "Keep accepted source facts separate from assumptions and provisional design decisions.",
             (
@@ -80,7 +90,11 @@ def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
                 "proof_boundary assumption; otherwise set both facts.proof_boundary and terminal to "
                 "null and supply exactly one conservative proof_boundary assumption."
             ),
-            "Propose 4-5 distinct useful components and 4-5 actionable workstreams without padding.",
+            (
+                "Propose 4-5 distinct useful components and 4-5 actionable workstreams without "
+                "padding. Across component supported_event_orders, cover every source event, "
+                "including human actions; support never transfers the actor's work to a component."
+            ),
             "Return one material clarification when the usable path or product boundary is genuinely unresolved.",
             "Do not add a parser, regex extraction pass, repair attempt, fallback candidate, or hidden source interpretation.",
         ],
