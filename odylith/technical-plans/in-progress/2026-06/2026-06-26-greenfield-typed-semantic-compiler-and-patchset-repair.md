@@ -11382,6 +11382,27 @@ for retries until success. Current runtime profiles remain unchanged.
   Atlas, transaction/recovery, browser normal/empty/degraded states, and retained
   request-to-preview timing before the untouched holdout can be consumed.
 
+## Compact Host Event Custody Shape (2026-09-24)
+
+- Contract v2's fresh public run falsifies direct host emission of the full v68
+  response. It resolves the proof-authority conflict, then fails in `72.221s`
+  because independently emitted `facts.first_path` citations and event rows do
+  not form the validator's required one-to-one relation. No records are written.
+- Do not add another prompt rule. Replace the duplicate ownership: contract v3
+  removes `facts.first_path` from the host schema and places one exact
+  `source_citation` on each event. A deterministic projection moves those same
+  objects, without text or semantic changes, into the canonical v68 input before
+  the unchanged validator and reviewer.
+- Falsifiable prediction: any schema-valid host candidate now has exactly one
+  first-path citation per event by construction, while citation validity, actor,
+  action, target, terminal, source precedence, component ownership, provisional
+  design, and package utility remain under their current owners. The raw host
+  candidate remains immutable and separately hash-bound.
+- Require focused structural/custody tests, broad host-candidate and installed
+  matrix tests, clean distribution provenance, and one fresh public run before
+  any holdout access. If another independent failure exposes duplicated candidate
+  authority, reconsider the candidate abstraction instead of adding prose.
+
 ## Traceability
 
 Current proposal/confirmation/recovery operations and versioned semantic/timing boundaries; historical post-confirm repair paths are superseded.

@@ -14,6 +14,10 @@ from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
 from odylith.runtime.domain_intelligence.greenfield_host_candidate_materialization import (
     materialize_host_authored_intent,
 )
+from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import (
+    HOST_CANDIDATE_FORMAT_VERSION,
+    canonical_greenfield_host_candidate,
+)
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
     GreenfieldClarificationRequired,
     combined_prompt_evidence_source,
@@ -31,10 +35,27 @@ from tests.unit.runtime.greenfield_model_authoring_fixtures import (
 from tests.unit.runtime.test_greenfield_model_path_custody import _response, _source
 
 
+def _host_response(evidence: str) -> dict[str, object]:
+    response = deepcopy(_response(evidence))
+    result = response["result"]
+    facts = result["facts"]
+    path_citations = facts.pop("first_path")
+    for event, citation in zip(result["events"], path_citations, strict=True):
+        event["source_citation"] = citation
+    response["version"] = HOST_CANDIDATE_FORMAT_VERSION
+    return response
+
+
+def _host_clarification(response: dict[str, object]) -> dict[str, object]:
+    candidate = deepcopy(response)
+    candidate["version"] = HOST_CANDIDATE_FORMAT_VERSION
+    return candidate
+
+
 def test_host_candidate_uses_shared_validator_reviewer_and_custody(tmp_path) -> None:  # type: ignore[no-untyped-def]
     source = _source()
     evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
-    response = _response(evidence)
+    response = _host_response(evidence)
     frozen = deepcopy(response)
     receipt: dict[str, object] = {}
 
@@ -88,11 +109,11 @@ def test_host_candidate_uses_shared_validator_reviewer_and_custody(tmp_path) -> 
 
 def test_host_candidate_clarification_never_dispatches_review(tmp_path) -> None:  # type: ignore[no-untyped-def]
     source = "Draft a product-first greenfield proposal for an assay drift model."
-    response = clarification_response(
+    response = _host_clarification(clarification_response(
         question="",
         material_dimension="first_path",
         evidence_quotes=(),
-    )
+    ))
 
     def forbidden_review() -> object:
         raise AssertionError("clarification must not dispatch candidate review")
@@ -119,7 +140,7 @@ def test_host_candidate_receipt_fails_closed_when_origin_is_rewritten(tmp_path) 
     materialize_host_authored_intent(
         prompt=source,
         repo_root=tmp_path,
-        host_candidate=_response(evidence),
+        host_candidate=_host_response(evidence),
         review_provider_factory=AdmittingReviewProvider,
         authoring_receipt=receipt,
     )
@@ -177,7 +198,7 @@ def test_host_candidate_compiles_the_existing_transaction_without_runtime_author
             prompt=source,
             edit_evidence="",
             release_selector="",
-            host_candidate=_response(evidence),
+            host_candidate=_host_response(evidence),
         )
     )
 
@@ -212,7 +233,11 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
 
     assert rc == 0
     assert payload["version"] == HOST_CANDIDATE_CONTRACT_VERSION
+    assert payload["candidate_version"] == HOST_CANDIDATE_FORMAT_VERSION
     assert payload["candidate_schema"]["additionalProperties"] is False
+    authored = payload["candidate_schema"]["properties"]["result"]["anyOf"][0]
+    assert "first_path" not in authored["properties"]["facts"]["properties"]
+    assert "source_citation" in authored["properties"]["events"]["items"]["required"]
     assert any(
         "Use exactly one proof authority" in requirement
         and "facts.proof_boundary and terminal to null" in requirement
@@ -231,7 +256,7 @@ def test_public_propose_accepts_a_host_candidate_file(
     evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
     candidate_path = tmp_path / "host-candidate.json"
     candidate_path.write_text(
-        json.dumps(_response(evidence)),
+        json.dumps(_host_response(evidence)),
         encoding="utf-8",
     )
     reviewer = AdmittingReviewProvider()
@@ -290,7 +315,7 @@ def test_edit_rebuild_accepts_a_new_host_candidate_and_preserves_old_seal(
             prompt=source,
             edit_evidence="",
             release_selector="",
-            host_candidate=_response(initial_evidence),
+            host_candidate=_host_response(initial_evidence),
         )
     )
     correction = "Keep the accepted source facts unchanged and make the review layout accessible."
@@ -300,7 +325,7 @@ def test_edit_rebuild_accepts_a_new_host_candidate_and_preserves_old_seal(
     )
     candidate_path = tmp_path / "edited-host-candidate.json"
     candidate_path.write_text(
-        json.dumps(_response(edited_evidence)),
+        json.dumps(_host_response(edited_evidence)),
         encoding="utf-8",
     )
 
@@ -321,3 +346,20 @@ def test_edit_rebuild_accepts_a_new_host_candidate_and_preserves_old_seal(
     )
     assert original_path.is_file()
     assert requested_roles == ["candidate_review", "candidate_review"]
+
+
+def test_host_candidate_projection_moves_event_citations_without_rewriting() -> None:
+    evidence = combined_prompt_evidence_source(prompt=_source(), edit_evidence="")
+    host = _host_response(evidence)
+    frozen = deepcopy(host)
+
+    canonical = canonical_greenfield_host_candidate(host)
+
+    assert host == frozen
+    assert canonical["version"] != host["version"]
+    assert canonical["result"]["facts"]["first_path"] == [
+        event["source_citation"] for event in host["result"]["events"]
+    ]
+    assert all(
+        "source_citation" not in event for event in canonical["result"]["events"]
+    )

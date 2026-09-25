@@ -19,12 +19,16 @@ from typing import Any
 from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
     review_greenfield_candidate,
 )
+from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import (
+    HOST_CANDIDATE_FORMAT_VERSION,
+    canonical_greenfield_host_candidate,
+    greenfield_host_candidate_schema,
+)
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
     GreenfieldAuthoringClarification,
     GreenfieldModelAuthoredIntent,
     greenfield_authoring_payload,
-    greenfield_authoring_schema,
     validate_greenfield_authoring_response,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_outcomes import (
@@ -36,7 +40,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v1"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v2"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v3"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
 
 
@@ -45,7 +49,8 @@ def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
 
     return {
         "version": HOST_CANDIDATE_CONTRACT_VERSION,
-        "candidate_version": GREENFIELD_INTENT_AUTHORING_VERSION,
+        "candidate_version": HOST_CANDIDATE_FORMAT_VERSION,
+        "canonical_version": GREENFIELD_INTENT_AUTHORING_VERSION,
         "task": (
             "Reason over the complete source and return exactly one JSON value matching "
             "candidate_schema. The candidate is an untrusted hypothesis; Odylith will "
@@ -66,7 +71,7 @@ def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
             "Do not add a parser, regex extraction pass, repair attempt, fallback candidate, or hidden source interpretation.",
         ],
         "request": greenfield_authoring_payload(evidence_text),
-        "candidate_schema": greenfield_authoring_schema(),
+        "candidate_schema": greenfield_host_candidate_schema(),
     }
 
 
@@ -117,8 +122,10 @@ def admit_greenfield_host_candidate(
 
     frozen = _canonical_candidate_bytes(response)
     candidate_sha256 = hashlib.sha256(frozen).hexdigest()
+    canonical_response = canonical_greenfield_host_candidate(response)
+    canonical_frozen = _canonical_candidate_bytes(canonical_response)
     authored = validate_greenfield_authoring_response(
-        response,
+        canonical_response,
         evidence_text=evidence_text,
         elapsed_seconds=0.0,
         provider={
@@ -133,6 +140,8 @@ def admit_greenfield_host_candidate(
     )
     if _canonical_candidate_bytes(response) != frozen:
         raise RuntimeError("Greenfield host-candidate validation changed the candidate")
+    if _canonical_candidate_bytes(canonical_response) != canonical_frozen:
+        raise RuntimeError("Greenfield host-candidate validation changed the canonical projection")
 
     base_receipt = {
         "version": HOST_CANDIDATE_RECEIPT_VERSION,
@@ -145,7 +154,7 @@ def admit_greenfield_host_candidate(
 
     review = review_greenfield_candidate(
         evidence_text=evidence_text,
-        candidate=response["result"],
+        candidate=canonical_response["result"],
         profile_id=profile_id,
         source_spans=authored.source_spans,
         provider_factory=review_provider_factory,
@@ -155,6 +164,8 @@ def admit_greenfield_host_candidate(
     )
     if _canonical_candidate_bytes(response) != frozen:
         raise RuntimeError("Greenfield host-candidate review changed the candidate")
+    if _canonical_candidate_bytes(canonical_response) != canonical_frozen:
+        raise RuntimeError("Greenfield host-candidate review changed the canonical projection")
     return (
         GreenfieldModelAuthoredIntent(
             intent=deepcopy(authored.intent),

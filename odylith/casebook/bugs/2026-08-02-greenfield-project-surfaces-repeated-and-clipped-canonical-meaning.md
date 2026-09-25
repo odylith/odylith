@@ -1,5 +1,21 @@
 - Bug ID: CB-303
 
+- Direct-V68 Host Shape Rejected (2026-09-24): Contract v2 removed the first
+  public authority mismatch, but the fresh exact-distribution rerun failed
+  closed in `72.221s` on a different duplicate-field inconsistency: the model's
+  `facts.first_path` citations and event rows were not one-to-one. No transaction
+  or governed record was created and browser proof correctly withheld credit.
+  Two independent direct-v68 failures now satisfy the mechanism replacement
+  trigger; adding another prose instruction would create the rule tower this
+  work forbids. Contract v3 removes duplicate first-path authority from the host
+  shape. Each event owns its exact source citation once, and a deterministic
+  structural projection moves those unchanged citation objects into the legacy
+  v68 validator shape before the existing validation and independent review.
+  It performs no extraction, parsing, inference, repair, retry, fallback, or
+  text rewrite. The protected holdout remains sealed and unexecuted. Evidence:
+  `/private/tmp/greenfield-public-run-v2-cd8-result.json` and
+  `/private/tmp/greenfield-public-run-v2-cd8-evidence/`.
+
 - Exact Host Contract Authority Failure (2026-09-24): The first clean,
   provenance-bound public request against commit `c022771d0` reached the
   host-native candidate boundary in `72.324s`, inside the `90s` advisory target,

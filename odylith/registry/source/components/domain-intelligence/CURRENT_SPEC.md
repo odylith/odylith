@@ -4,6 +4,24 @@ Last updated: 2026-09-24
 
 ## Overview
 
+### Compact host event custody (2026-09-24)
+
+The host-native candidate contract no longer asks the host to emit the same
+first-path authority twice. Contract v3 removes `facts.first_path` from the host
+shape and gives each event one exact `source_citation`. Domain Intelligence then
+moves those unchanged citation objects into the canonical v68 validator shape.
+This projection changes structure only: it performs no source extraction, text
+rewrite, inference, repair, retry, fallback, or semantic admission. The raw host
+candidate remains immutable and hash-bound; the existing v68 citation, event,
+actor, terminal, precedence, ownership, design, review, and transaction gates
+remain authoritative.
+
+This replacement follows two independent public failures of the direct-v68 host
+shape: mixed terminal/provisional proof authority and mismatched first-path/event
+cardinality. The second class is eliminated by construction rather than by an
+additional prompt rule. Exact installed public, browser, holdout, legacy-path
+removal, and reproof gates remain open.
+
 ### Exact-commit host-native release boundary (2026-09-24)
 
 Independent strong review accepts the host-native boundary's semantic fidelity,

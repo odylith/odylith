@@ -20,6 +20,14 @@ public exact-commit installed request passes this same path. Legacy runtime
 authoring remains available solely until that qualification accepts; if it does,
 the legacy path must be removed and the release gate repeated.
 
+The public candidate contract now uses compact event custody. Each host-authored
+event carries its source citation once; deterministic projection supplies the
+legacy v68 `facts.first_path` array without changing citation bytes. Release
+evidence must bind the compact candidate hash, contract v3 schema hash, exact
+distribution provenance, projection/validation outcome, and one measured
+request-to-preview interval. The matrix must not count recovery proof seeded by
+the superseded runtime author as host-native lifecycle proof.
+
 ## Greenfield timing qualification (2026-09-18)
 
 The unreleased profile/manifest revision distinguishes advisory 90/120/150-second
