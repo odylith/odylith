@@ -4,6 +4,25 @@ Last updated: 2026-09-25
 
 ## Overview
 
+### Final relation-custody closure (2026-09-25)
+
+Independent final semantic review found two deterministic gaps after the
+event-owned citation replacement. Semantic event uniqueness included the
+terminal visible-result annotation even though that annotation is presentation
+metadata, and component ownership checks ignored an exact-span overlap when it
+contained more than one event. Domain Intelligence now identifies the event
+without terminal metadata and validates the complete overlap set. Any
+non-product actor or owner contradiction fails closed; distinct valid typed
+events may still share one exact source span.
+
+The change stays within the existing authored-relation and component-ownership
+owners. It adds no prompt, schema, parser, regex, lexical inference, model call,
+retry, repair, fallback, or publication path. The two public counterexamples
+reject, the positive shared-span case passes, focused proof is `77/77`, and the
+complete Greenfield suite is `2,166/2,166`. Exact immutable installed/browser
+reproof and independent semantic qualification remain required before a fresh
+holdout; consumed v4 must never be rerun.
+
 ### Event-owned citation cardinality (2026-09-25)
 
 Compact host contract v8 preserves the existing event-owned citation contract

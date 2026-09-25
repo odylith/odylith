@@ -1,5 +1,23 @@
 - Bug ID: CB-303
 
+- Final Semantic Gate Closed Two Relation-Custody Loopholes (2026-09-25):
+  Independent Astra/xhigh review blocked exact public commit `7077dd600` on
+  two deterministic public-fixture counterexamples. A terminal visible-result
+  annotation could make an otherwise duplicate typed event appear unique, and
+  a responsibility overlapping several exact-span events received event order
+  zero, bypassing the existing actor and owner checks. The bounded correction
+  removes presentation-only terminal metadata from semantic event identity and
+  adjudicates every overlapping event: any non-product actor or contradictory
+  owner now fails closed, while distinct valid shared-span events remain
+  accepted. Focused custody and transaction proof passes `77/77`; the complete
+  Greenfield suite passes `2,166/2,166`. No prompt, schema, regex, parser,
+  inference, model call, retry, repair, fallback, or publication path was added.
+  Release qualification remains blocked until this exact correction passes a
+  rebuilt immutable installed public/browser journey and independent final
+  semantic review. Consumed holdout v4 remains terminal and must never be
+  rerun. Evidence:
+  `/private/tmp/greenfield-final-semantic-review-7077dd600.md`.
+
 - Event-Owned Citation Replacement Passed Exact Installed Public Gate
   (2026-09-25): Exact pushed commit and immutable distribution `7077dd600`
   passed the schema-bound host-native public journey in `56.295s`, inside the

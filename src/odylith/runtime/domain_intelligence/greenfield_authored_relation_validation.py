@@ -98,8 +98,14 @@ def validate_first_path_relations(
         target_quote = str(raw.get("target_quote") or "")
         visible_result_quote = str(raw.get("visible_result_quote") or "")
         typed_event = (
-            source_start, source_end, event_start, event_end, actor_kind,
-            actor_fact_path, action_verb_quote, target_quote, visible_result_quote,
+            source_start,
+            source_end,
+            event_start,
+            event_end,
+            actor_kind,
+            actor_fact_path,
+            action_verb_quote,
+            target_quote,
         )
         if (
             order != expected_order

@@ -8,6 +8,9 @@ from copy import deepcopy
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_proposals_cli
+from odylith.runtime.domain_intelligence.greenfield_authored_relation_validation import (
+    GreenfieldAuthoredSemanticsError,
+)
 from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
     HOST_CANDIDATE_CONTRACT_VERSION,
 )
@@ -35,6 +38,7 @@ from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
     StructuredAuthoringProvider,
     clarification_response,
+    structural_design_fixture,
 )
 from tests.unit.runtime.test_greenfield_model_path_custody import _response, _source
 
@@ -321,6 +325,64 @@ def test_host_candidate_rejects_partially_overlapping_event_citations(
     with pytest.raises(
         GreenfieldModelAuthoringError,
         match="overlapping first-path events",
+    ):
+        materialize_host_authored_intent(
+            prompt=source,
+            repo_root=tmp_path,
+            host_candidate=response,
+            review_provider_factory=AdmittingReviewProvider,
+        )
+
+
+def test_host_candidate_rejects_duplicate_event_with_terminal_annotation(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    source = _source()
+    evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
+    response = _host_response(evidence)
+    response["result"]["events"].append(
+        deepcopy(response["result"]["events"][-1])
+    )
+    response["result"]["terminal"]["event_order"] = 4
+    response["result"]["provisional_design"] = structural_design_fixture(
+        [1, 2, 3, 4]
+    )
+
+    with pytest.raises(
+        GreenfieldAuthoredSemanticsError,
+        match="invalid first-path relations",
+    ):
+        materialize_host_authored_intent(
+            prompt=source,
+            repo_root=tmp_path,
+            host_candidate=response,
+            review_provider_factory=AdmittingReviewProvider,
+        )
+
+
+def test_host_candidate_rejects_shared_human_event_as_component_responsibility(
+    tmp_path,
+) -> None:  # type: ignore[no-untyped-def]
+    source = _source()
+    evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
+    response = _host_response(evidence)
+    shared_citation = {
+        "quote": (
+            "Dock attendant Ivo enters a vessel tag and the product records berth "
+            "occupancy before the berth map shows the placement"
+        ),
+        "occurrence": 1,
+    }
+    for event in response["result"]["events"]:
+        event["source_citation"] = deepcopy(shared_citation)
+    response["result"]["components"][0]["responsibilities"][0] = {
+        "quote": "Dock attendant Ivo enters a vessel tag",
+        "occurrence": 1,
+    }
+
+    with pytest.raises(
+        GreenfieldModelAuthoringError,
+        match="non-product event as a component responsibility",
     ):
         materialize_host_authored_intent(
             prompt=source,

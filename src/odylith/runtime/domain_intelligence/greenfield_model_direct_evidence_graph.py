@@ -438,6 +438,9 @@ def _derive_component_relations(
             source_end=responsibility_fact.get("source_end_byte"),
             first_path_relations=first_path_relations,
         )
+        overlapping_events = tuple(
+            first_path_relations[order - 1] for order in sorted(overlaps)
+        )
         event_order = next(iter(overlaps)) if len(overlaps) == 1 else 0
         linked_event = (
             first_path_relations[event_order - 1] if event_order else None
@@ -455,6 +458,21 @@ def _derive_component_relations(
             and responsibility_end
             <= _positive_int(linked_event.get("source_end_byte"))
         )
+        if len(overlapping_events) > 1:
+            if any(
+                str(event.get("actor_kind") or "") != "product"
+                for event in overlapping_events
+            ):
+                raise GreenfieldComponentOwnershipError(
+                    "Greenfield authoring assigned a non-product event as a component responsibility"
+                )
+            if any(
+                str(event.get("owner_system_path") or "") != owner_path
+                for event in overlapping_events
+            ):
+                raise GreenfieldComponentOwnershipError(
+                    "Greenfield authoring assigned contradictory component owners"
+                )
         if (
             responsibility_is_event_bound
             and str(linked_event.get("actor_kind") or "") != "product"

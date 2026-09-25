@@ -1,5 +1,32 @@
 Status: In progress
 
+## Close the final typed-event and shared-ownership loopholes (2026-09-25)
+
+Independent Astra/xhigh review of exact public commit `7077dd600` accepted the
+installed package, timing, browser evidence, transaction custody, and absence of
+competing mechanisms, but correctly blocked holdout eligibility on two public
+counterexamples. The authored relation validator treated terminal
+`visible_result_quote` as part of event identity, allowing two otherwise equal
+events when only one carried terminal annotation. Component ownership reduced
+multiple exact-span overlaps to event order zero, so actor and owner checks did
+not run for an ambiguous responsibility.
+
+Correct only those two laws. Event identity must exclude presentation-only
+terminal metadata. A responsibility overlapping several events must inspect the
+whole overlap set and fail closed when any actor is non-product or any product
+owner contradicts the selected component owner. Preserve valid distinct events
+that share one exact source span. Do not add lexical inference, a schema field,
+prompt rule, regex, parser, model call, retry, repair, fallback, or alternate
+publication path.
+
+The bounded correction satisfies its public discriminators: the two Astra
+counterexamples reject, the valid shared-span control remains accepted, focused
+custody and transaction proof passes `77/77`, and all `2,166` Greenfield tests
+pass. Rebuild one immutable exact-commit distribution, rerun the same
+schema-bound installed public/browser journey, and require independent final
+semantic requalification before commissioning any fresh blinded holdout. The
+consumed v4 ledger remains terminal and prohibited from rerun.
+
 ## Replace the one-to-one event/fact cardinality assumption (2026-09-25)
 
 The newly blinded v4 holdout was legitimately claimed and bound to immutable
