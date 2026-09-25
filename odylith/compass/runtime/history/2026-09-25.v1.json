@@ -138,19 +138,16 @@
         "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
       ],
       "B-001": [
-        "Completed in this window: Product self-governance and the repo boundary closed cleanly. That removes a loose end from the product story.",
-        "Current execution: This work is complete, so attention can move from shaping the boundary to proving it in use.",
-        "Next planned: Capture the next verified checkpoint for this boundary. That keeps the completed work tied to fresh proof.",
-        "Risks to watch: No critical blockers are surfaced right now. The main thing to protect is continued verification."
+        "Brief unavailable right now: The narration provider failed on the last attempt. Compass will retry on backoff."
       ],
       "B-002": [
         "Nothing moved in this window: B-002 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-003": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Brief unavailable right now: The narration provider failed on the last attempt. Compass will retry on backoff."
       ],
       "B-004": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Brief unavailable right now: The narration provider failed on the last attempt. Compass will retry on backoff."
       ],
       "B-005": [
         "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
@@ -159,7 +156,7 @@
         "Nothing moved in this window: B-006 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-007": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Brief unavailable right now: The narration provider failed on the last attempt. Compass will retry on backoff."
       ],
       "B-008": [
         "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
@@ -581,19 +578,16 @@
         "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
       ],
       "B-001": [
-        "Completed in this window: Product self-governance and the repo boundary closed cleanly across this wider window. One important loose end is now off the board.",
-        "Current execution: The boundary is complete. The useful work now is proving that the product story holds in the next checkpoint.",
-        "Next planned: Capture the next verified checkpoint. It is the clearest way to turn completion into current confidence.",
-        "Risks to watch: No critical blockers are surfaced. Continued verification is the only clear watch item in this packet."
+        "Brief unavailable right now: The narration provider failed on the last attempt. Compass will retry on backoff."
       ],
       "B-002": [
         "Nothing moved in this window: B-002 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-003": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Brief unavailable right now: The narration provider failed on the last attempt. Compass will retry on backoff."
       ],
       "B-004": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Brief unavailable right now: The narration provider failed on the last attempt. Compass will retry on backoff."
       ],
       "B-005": [
         "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
@@ -602,7 +596,7 @@
         "Nothing moved in this window: B-006 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-007": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Brief unavailable right now: The narration provider failed on the last attempt. Compass will retry on backoff."
       ],
       "B-008": [
         "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
@@ -1750,131 +1744,32 @@
       },
       "B-001": {
         "schema_version": "v25",
-        "status": "ready",
-        "source": "cache",
+        "status": "unavailable",
+        "source": "unavailable",
         "fingerprint": "0a63b266b334cdfca20097485d42b7a903a9b0498c44c68a6ec5a96f85f2d405",
-        "generated_utc": "2026-09-25T12:35:00Z",
-        "sections": [
-          {
-            "key": "completed",
-            "label": "Completed in this window",
-            "bullets": [
-              {
-                "text": "Product self-governance and the repo boundary closed cleanly. That removes a loose end from the product story.",
-                "fact_ids": [
-                  "F-001"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "current_execution",
-            "label": "Current execution",
-            "bullets": [
-              {
-                "text": "This work is complete, so attention can move from shaping the boundary to proving it in use.",
-                "fact_ids": [
-                  "F-004"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "next_planned",
-            "label": "Next planned",
-            "bullets": [
-              {
-                "text": "Capture the next verified checkpoint for this boundary. That keeps the completed work tied to fresh proof.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "risks_to_watch",
-            "label": "Risks to watch",
-            "bullets": [
-              {
-                "text": "No critical blockers are surfaced right now. The main thing to protect is continued verification.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          }
-        ],
-        "evidence_lookup": {
-          "F-001": {
-            "text": "Closed cleanly in this window: odylith product self governance and repo boundary.",
-            "section_key": "completed",
-            "kind": "plan_completion",
-            "workstreams": [
-              "B-001"
-            ]
-          },
-          "F-002": {
-            "text": "Settle Greenfield release provenance.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-001"
-            ]
-          },
-          "F-003": {
-            "text": "Prove native intervention activation.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-001"
-            ]
-          },
-          "F-004": {
-            "text": "Product Self-Governance and Repo Boundary (B-001) is completed.",
-            "section_key": "current_execution",
-            "kind": "direction",
-            "workstreams": [
-              "B-001"
-            ]
-          },
-          "F-005": {
-            "text": "Checklist is 25/25; execution checklist closure is complete for the scoped plan.",
-            "section_key": "current_execution",
-            "kind": "checklist",
-            "workstreams": [
-              "B-001"
-            ]
-          },
-          "F-006": {
-            "text": "ETA is projected at roughly 0 days (high confidence).",
-            "section_key": "current_execution",
-            "kind": "timeline",
-            "workstreams": [
-              "B-001"
-            ]
-          },
-          "F-007": {
-            "text": "Immediate forcing function is to capture the next verified checkpoint for Product Self-Governance and Repo Boundary (B-001).",
-            "section_key": "next_planned",
-            "kind": "fallback_next",
-            "workstreams": [
-              "B-001"
-            ]
-          },
-          "F-008": {
-            "text": "No critical blockers are currently surfaced.",
-            "section_key": "risks_to_watch",
-            "kind": "risk_posture",
-            "workstreams": [
-              "B-001"
-            ]
-          }
-        },
         "substrate_fingerprint": "0a63b266b334cdfca20097485d42b7a903a9b0498c44c68a6ec5a96f85f2d405",
-        "bundle_fingerprint": "d62620f36d869f79d0a367403843bb0f905bf6e0fcfd5c70d610874b5fac88df",
-        "provider_decision": "cache_reuse",
-        "last_successful_narration_fingerprint": "0a63b266b334cdfca20097485d42b7a903a9b0498c44c68a6ec5a96f85f2d405",
-        "cache_mode": "exact"
+        "bundle_fingerprint": "",
+        "provider_decision": "provider_error",
+        "last_successful_narration_fingerprint": "",
+        "generated_utc": "2026-09-25T12:35:41Z",
+        "sections": [],
+        "diagnostics": {
+          "reason": "provider_error",
+          "title": "Brief unavailable right now",
+          "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Product Self-Governance and Repo Boundary (B-001) is completed.",
+            "Next: Immediate forcing function is to capture the next verified checkpoint for Product Self-Governance and Repo Boundary (B-001).",
+            "Watch: No critical blockers are currently surfaced."
+          ],
+          "provider": "codex-cli",
+          "provider_failure_code": "provider_error",
+          "provider_failure_detail": "Codex CLI exited with status 1. 2026-09-25T12:35:04.410809Z WARN codex_models_manager::model_info: Unknown model gpt-5.3-codex-spark is used. This will use fallback model m ... {\"type\":\"invalid_request_error\",\"message\":\"The 'gpt-5.3-codex-spark' model is not supported when using Codex with a ChatGPT account.\"}}",
+          "provider_model": "gpt-5.3-codex-spark",
+          "provider_reasoning_effort": "medium"
+        },
+        "evidence_lookup": {}
       },
       "B-002": {
         "status": "unavailable",
@@ -1896,18 +1791,24 @@
         "fingerprint": "828f53f795396deb1841e5a5c8a3db0da6a71245ced52535bf5f56e1da7177a4",
         "substrate_fingerprint": "828f53f795396deb1841e5a5c8a3db0da6a71245ced52535bf5f56e1da7177a4",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_error",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-09-25T12:35:41Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background",
+          "reason": "provider_error",
+          "title": "Brief unavailable right now",
+          "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Compass History Retention, Compressed Archive, and Restore (B-003) is completed.",
+            "Next: Immediate forcing function is to log the next concrete checkpoint for Compass History Retention, Compressed Archive, and Restore (B-003) so Compass stops leaning on aging evidence.",
+            "Watch: Freshness signal is aging: latest linked execution proof for Compass History Retention, Compressed Archive, and Restore (B-003) is more than six hours old, so live momentum still needs."
+          ],
           "provider": "codex-cli",
-          "provider_model": "gpt-5.6-luna",
+          "provider_failure_code": "provider_error",
+          "provider_failure_detail": "Codex CLI exited with status 1. 2026-09-25T12:35:04.410809Z WARN codex_models_manager::model_info: Unknown model gpt-5.3-codex-spark is used. This will use fallback model m ... {\"type\":\"invalid_request_error\",\"message\":\"The 'gpt-5.3-codex-spark' model is not supported when using Codex with a ChatGPT account.\"}}",
+          "provider_model": "gpt-5.3-codex-spark",
           "provider_reasoning_effort": "medium"
         },
         "evidence_lookup": {}
@@ -1919,18 +1820,24 @@
         "fingerprint": "b64ac473d2c11cc1a0ed5be34c958390ae49c46907a650b3b6906fd1dfc20612",
         "substrate_fingerprint": "b64ac473d2c11cc1a0ed5be34c958390ae49c46907a650b3b6906fd1dfc20612",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_error",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-09-25T12:35:41Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background",
+          "reason": "provider_error",
+          "title": "Brief unavailable right now",
+          "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Self-Hosting Posture Hardening (B-004) is completed.",
+            "Next: Immediate forcing function is to log the next concrete checkpoint for Self-Hosting Posture Hardening (B-004) so Compass stops leaning on aging evidence.",
+            "Watch: Freshness signal is aging: latest linked execution proof for Self-Hosting Posture Hardening (B-004) is more than six hours old, so live momentum still needs another proving checkpoint."
+          ],
           "provider": "codex-cli",
-          "provider_model": "gpt-5.6-luna",
+          "provider_failure_code": "provider_error",
+          "provider_failure_detail": "Codex CLI exited with status 1. 2026-09-25T12:35:04.410809Z WARN codex_models_manager::model_info: Unknown model gpt-5.3-codex-spark is used. This will use fallback model m ... {\"type\":\"invalid_request_error\",\"message\":\"The 'gpt-5.3-codex-spark' model is not supported when using Codex with a ChatGPT account.\"}}",
+          "provider_model": "gpt-5.3-codex-spark",
           "provider_reasoning_effort": "medium"
         },
         "evidence_lookup": {}
@@ -1980,18 +1887,24 @@
         "fingerprint": "cabe0d94e3cb32077dd31e8c094a29d58c2251a98af3448462a209386fda780e",
         "substrate_fingerprint": "cabe0d94e3cb32077dd31e8c094a29d58c2251a98af3448462a209386fda780e",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_error",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-09-25T12:35:41Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background",
+          "reason": "provider_error",
+          "title": "Brief unavailable right now",
+          "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: GA Promotion and Supported Platform Contract (B-007) is completed.",
+            "Next: Immediate forcing function is to log the next concrete checkpoint for GA Promotion and Supported Platform Contract (B-007) so Compass stops leaning on aging evidence.",
+            "Watch: Freshness signal is aging: latest linked execution proof for GA Promotion and Supported Platform Contract (B-007) is more than six hours old, so live momentum still needs another proving."
+          ],
           "provider": "codex-cli",
-          "provider_model": "gpt-5.6-luna",
+          "provider_failure_code": "provider_error",
+          "provider_failure_detail": "Codex CLI exited with status 1. 2026-09-25T12:35:04.410809Z WARN codex_models_manager::model_info: Unknown model gpt-5.3-codex-spark is used. This will use fallback model m ... {\"type\":\"invalid_request_error\",\"message\":\"The 'gpt-5.3-codex-spark' model is not supported when using Codex with a ChatGPT account.\"}}",
+          "provider_model": "gpt-5.3-codex-spark",
           "provider_reasoning_effort": "medium"
         },
         "evidence_lookup": {}
@@ -4746,131 +4659,32 @@
       },
       "B-001": {
         "schema_version": "v25",
-        "status": "ready",
-        "source": "cache",
+        "status": "unavailable",
+        "source": "unavailable",
         "fingerprint": "c9a1c4a80c4653f71276e96223ab8ef78ccba66daedc3d9d1ed4b0592abe325a",
-        "generated_utc": "2026-09-25T12:35:00Z",
-        "sections": [
-          {
-            "key": "completed",
-            "label": "Completed in this window",
-            "bullets": [
-              {
-                "text": "Product self-governance and the repo boundary closed cleanly across this wider window. One important loose end is now off the board.",
-                "fact_ids": [
-                  "F-001"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "current_execution",
-            "label": "Current execution",
-            "bullets": [
-              {
-                "text": "The boundary is complete. The useful work now is proving that the product story holds in the next checkpoint.",
-                "fact_ids": [
-                  "F-004"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "next_planned",
-            "label": "Next planned",
-            "bullets": [
-              {
-                "text": "Capture the next verified checkpoint. It is the clearest way to turn completion into current confidence.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "risks_to_watch",
-            "label": "Risks to watch",
-            "bullets": [
-              {
-                "text": "No critical blockers are surfaced. Continued verification is the only clear watch item in this packet.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          }
-        ],
-        "evidence_lookup": {
-          "F-001": {
-            "text": "Closed cleanly in this window: odylith product self governance and repo boundary.",
-            "section_key": "completed",
-            "kind": "plan_completion",
-            "workstreams": [
-              "B-001"
-            ]
-          },
-          "F-002": {
-            "text": "Settle Greenfield release provenance.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-001"
-            ]
-          },
-          "F-003": {
-            "text": "Prove native intervention activation.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-001"
-            ]
-          },
-          "F-004": {
-            "text": "Product Self-Governance and Repo Boundary (B-001) is completed.",
-            "section_key": "current_execution",
-            "kind": "direction",
-            "workstreams": [
-              "B-001"
-            ]
-          },
-          "F-005": {
-            "text": "Checklist is 25/25; execution checklist closure is complete for the scoped plan.",
-            "section_key": "current_execution",
-            "kind": "checklist",
-            "workstreams": [
-              "B-001"
-            ]
-          },
-          "F-006": {
-            "text": "ETA is projected at roughly 0 days (high confidence).",
-            "section_key": "current_execution",
-            "kind": "timeline",
-            "workstreams": [
-              "B-001"
-            ]
-          },
-          "F-007": {
-            "text": "Immediate forcing function is to capture the next verified checkpoint for Product Self-Governance and Repo Boundary (B-001).",
-            "section_key": "next_planned",
-            "kind": "fallback_next",
-            "workstreams": [
-              "B-001"
-            ]
-          },
-          "F-008": {
-            "text": "No critical blockers are currently surfaced.",
-            "section_key": "risks_to_watch",
-            "kind": "risk_posture",
-            "workstreams": [
-              "B-001"
-            ]
-          }
-        },
         "substrate_fingerprint": "c9a1c4a80c4653f71276e96223ab8ef78ccba66daedc3d9d1ed4b0592abe325a",
-        "bundle_fingerprint": "d62620f36d869f79d0a367403843bb0f905bf6e0fcfd5c70d610874b5fac88df",
-        "provider_decision": "cache_reuse",
-        "last_successful_narration_fingerprint": "c9a1c4a80c4653f71276e96223ab8ef78ccba66daedc3d9d1ed4b0592abe325a",
-        "cache_mode": "exact"
+        "bundle_fingerprint": "",
+        "provider_decision": "provider_error",
+        "last_successful_narration_fingerprint": "",
+        "generated_utc": "2026-09-25T12:35:41Z",
+        "sections": [],
+        "diagnostics": {
+          "reason": "provider_error",
+          "title": "Brief unavailable right now",
+          "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Product Self-Governance and Repo Boundary (B-001) is completed.",
+            "Next: Immediate forcing function is to capture the next verified checkpoint for Product Self-Governance and Repo Boundary (B-001).",
+            "Watch: No critical blockers are currently surfaced."
+          ],
+          "provider": "codex-cli",
+          "provider_failure_code": "provider_error",
+          "provider_failure_detail": "Codex CLI exited with status 1. 2026-09-25T12:35:04.410809Z WARN codex_models_manager::model_info: Unknown model gpt-5.3-codex-spark is used. This will use fallback model m ... {\"type\":\"invalid_request_error\",\"message\":\"The 'gpt-5.3-codex-spark' model is not supported when using Codex with a ChatGPT account.\"}}",
+          "provider_model": "gpt-5.3-codex-spark",
+          "provider_reasoning_effort": "medium"
+        },
+        "evidence_lookup": {}
       },
       "B-002": {
         "status": "unavailable",
@@ -4892,18 +4706,24 @@
         "fingerprint": "d05c50a0ccadb4aca527c75a0af82a62266a205e23ced2ddb2a02ce8c6fa11bb",
         "substrate_fingerprint": "d05c50a0ccadb4aca527c75a0af82a62266a205e23ced2ddb2a02ce8c6fa11bb",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_error",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-09-25T12:35:41Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background",
+          "reason": "provider_error",
+          "title": "Brief unavailable right now",
+          "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Compass History Retention, Compressed Archive, and Restore (B-003) is completed.",
+            "Next: Immediate forcing function is to log the next concrete checkpoint for Compass History Retention, Compressed Archive, and Restore (B-003) so Compass stops leaning on aging evidence.",
+            "Watch: Freshness signal is aging: latest linked execution proof for Compass History Retention, Compressed Archive, and Restore (B-003) is more than six hours old, so live momentum still needs."
+          ],
           "provider": "codex-cli",
-          "provider_model": "gpt-5.6-luna",
+          "provider_failure_code": "provider_error",
+          "provider_failure_detail": "Codex CLI exited with status 1. 2026-09-25T12:35:04.410809Z WARN codex_models_manager::model_info: Unknown model gpt-5.3-codex-spark is used. This will use fallback model m ... {\"type\":\"invalid_request_error\",\"message\":\"The 'gpt-5.3-codex-spark' model is not supported when using Codex with a ChatGPT account.\"}}",
+          "provider_model": "gpt-5.3-codex-spark",
           "provider_reasoning_effort": "medium"
         },
         "evidence_lookup": {}
@@ -4915,18 +4735,24 @@
         "fingerprint": "94e7cd227ee108f5dc5987a6dac8692efa8af8690726cd202f4d98d34d0b565e",
         "substrate_fingerprint": "94e7cd227ee108f5dc5987a6dac8692efa8af8690726cd202f4d98d34d0b565e",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_error",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-09-25T12:35:41Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background",
+          "reason": "provider_error",
+          "title": "Brief unavailable right now",
+          "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Self-Hosting Posture Hardening (B-004) is completed.",
+            "Next: Immediate forcing function is to log the next concrete checkpoint for Self-Hosting Posture Hardening (B-004) so Compass stops leaning on aging evidence.",
+            "Watch: Freshness signal is aging: latest linked execution proof for Self-Hosting Posture Hardening (B-004) is more than six hours old, so live momentum still needs another proving checkpoint."
+          ],
           "provider": "codex-cli",
-          "provider_model": "gpt-5.6-luna",
+          "provider_failure_code": "provider_error",
+          "provider_failure_detail": "Codex CLI exited with status 1. 2026-09-25T12:35:04.410809Z WARN codex_models_manager::model_info: Unknown model gpt-5.3-codex-spark is used. This will use fallback model m ... {\"type\":\"invalid_request_error\",\"message\":\"The 'gpt-5.3-codex-spark' model is not supported when using Codex with a ChatGPT account.\"}}",
+          "provider_model": "gpt-5.3-codex-spark",
           "provider_reasoning_effort": "medium"
         },
         "evidence_lookup": {}
@@ -4976,18 +4802,24 @@
         "fingerprint": "a90d7e3299dbdb2315e4bf4d2f94e07d2beb088af0e6cc75e102a62486752398",
         "substrate_fingerprint": "a90d7e3299dbdb2315e4bf4d2f94e07d2beb088af0e6cc75e102a62486752398",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_error",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-09-25T12:35:41Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background",
+          "reason": "provider_error",
+          "title": "Brief unavailable right now",
+          "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: GA Promotion and Supported Platform Contract (B-007) is completed.",
+            "Next: Immediate forcing function is to log the next concrete checkpoint for GA Promotion and Supported Platform Contract (B-007) so Compass stops leaning on aging evidence.",
+            "Watch: Freshness signal is aging: latest linked execution proof for GA Promotion and Supported Platform Contract (B-007) is more than six hours old, so live momentum still needs another proving."
+          ],
           "provider": "codex-cli",
-          "provider_model": "gpt-5.6-luna",
+          "provider_failure_code": "provider_error",
+          "provider_failure_detail": "Codex CLI exited with status 1. 2026-09-25T12:35:04.410809Z WARN codex_models_manager::model_info: Unknown model gpt-5.3-codex-spark is used. This will use fallback model m ... {\"type\":\"invalid_request_error\",\"message\":\"The 'gpt-5.3-codex-spark' model is not supported when using Codex with a ChatGPT account.\"}}",
+          "provider_model": "gpt-5.3-codex-spark",
           "provider_reasoning_effort": "medium"
         },
         "evidence_lookup": {}

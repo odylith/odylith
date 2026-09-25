@@ -1,5 +1,28 @@
 - Bug ID: CB-329
 
+- Final V5/V6 Qualification-Contract Reopen (2026-09-25): V5 consumed its
+  one-shot ledger before the runner discovered that the independently authored
+  package omitted the canonical case `name` field; it produced no product
+  qualification evidence and must never be reused. A fresh v6 package then
+  passed structural validation, five disjoint independent release-audit
+  contexts, final Astra/xhigh adjudication, and detached package sealing, yet
+  its completed 36-case run exposed a deeper corpus/evaluator mismatch. Sixteen
+  cases labeled for commit asked the product to resolve material authority and
+  correctly stopped for clarification; twelve clarification cases then failed
+  the harness's own no-write contract. Those 28 outcomes cannot qualify or
+  reject the product. The remaining eight are separate CB-303 product evidence.
+  Retained evidence sealed successfully, unavailable-provider proof passed,
+  and all proposal attempts finished in `8.128-124.346s`, with zero `150s` or
+  `180s` overruns. Browser, recovery, and cleanup summary gates failed
+  downstream because no case reached a successful created package; they are
+  not independent browser or recovery regressions. Before any new protected
+  corpus is commissioned, add a runner-native preflight that loads the exact
+  case file, validates every expected outcome against its source authority, and
+  executes disclosed positive and clarification controls end to end. Do not
+  lower product semantics or author another holdout to paper over this failure.
+  The v6 ledger is terminal `failed`; result SHA-256 is
+  `97d5db7345f1a16f6decdbde257c10bc1ea4db8fc35ac2a77e5434f4ee1ab610`.
+
 - Fresh Publication And Browser Proof (2026-09-10): The original reviewed installed transaction is now confirmed, without reauthoring or replaying the failed latency trial. Confirmation takes 2.491 seconds; canonical transaction/compiler-receipt, managed after-state, active immutable generation and persisted governance readback checks have no issues, and the confirmation model-proof stream is empty. The unchanged per-case desktop/mobile browser state matrix also returns no issues and retains 48 screenshots. This narrows the earlier pending-publication/browser boundary for this one development package; it does not close the separate full-matrix history failure, all-profile 60/90/120 qualification, successful internal repair, populated-predecessor upgrade or current desktop automatic delivery. The original 63.56-second external failure remains unchanged. A single non-model compiler profile is terminal with original receipt and managed inputs unchanged; the next bounded implementation candidate concerns complete cache-invalidation ownership, not evaluator loosening or semantic reconstruction. Evidence: confirm-readback.json, browser-result.json and screenshots/ under /private/tmp/odylith-current-distribution.LLibTP/.
 
 - Current Installed Development Outcome (2026-09-10): The explicitly derived a8789f78 snapshot builds the complete 0.1.15 distribution, including three platform runtimes and memory packs. The generated installer completes in an isolated clean consumer with pinned runtime and full local memory; all 991 wheel product members match the frozen source. One unchanged maintained flood-shelter request uses the current author plus binary-review protocol and stages five distinct workstreams, five components and five non-padding diagrams. Independent complete-package review finds no supported P0/P1 semantic or utility defect; partial participant inventory, repetitive prose and weak local verification remain P2/advisory, with the complete requested actions and first-path proof obligations preserved. This is not release acceptance. External startup-plus-proposal time is 63.56 seconds, failing the fixed sixty-second budget despite the internal 59.483-second manifest. The two model calls total 52.939 seconds inside the shared fifty-five-second window. No identical live retry or deadline increase is authorized by this observation. One provider-free installed compiler profile is bounded to the retained authored candidate, with canonical input and publication fingerprints checked before and after; no confirmation, published browser proof, successful internal repair, populated-predecessor upgrade or current desktop intervention proof follows yet. Evidence: /private/tmp/odylith-current-distribution.LLibTP/; sealed transaction 5deadd3d8664bccf2615005dc1c2402fcddd42322821c9db9bb8321d0f712adf in /private/tmp/odylith-installed-current.Nb2MAM/.

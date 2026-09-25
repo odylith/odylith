@@ -1,5 +1,28 @@
 - Bug ID: CB-303
 
+- Final V6 Holdout Product Verdict (2026-09-25): Exact pushed implementation
+  `74f23f1bb65565a16ace78072093d3b4f903acab` remains the frozen public winner,
+  but it is not release-qualified. The legitimately claimed 36-case v6
+  one-shot run completed and sealed terminal `failed` evidence. Seven cases
+  were denied because the accepted `product_story` citation selected only a
+  product-creation/category occurrence rather than a source span supporting
+  product behavior or outcome. One further case failed closed because its
+  proposed first run did not include every accepted source event exactly once.
+  These are two bounded host-candidate fidelity classes; no records were
+  created, all proposal attempts remained below the `150s` deep guideline and
+  none crossed the `180s` safety timeout. Do not inspect protected prompts,
+  tune the implementation to these examples, add a prompt stack, parser,
+  regex, retry, repair, fallback, or another architecture. Reproduce each
+  disclosed class only with new public synthetic controls against the existing
+  product-story and complete-first-run owners. Preserve the frozen public
+  mechanism unless a general correction passes those controls, the complete
+  Greenfield suite, an immutable installed public/browser gate, and independent
+  semantic review. The consumed v6 package and ledger must never be rerun.
+  Evidence: result SHA-256
+  `97d5db7345f1a16f6decdbde257c10bc1ea4db8fc35ac2a77e5434f4ee1ab610`;
+  retained-evidence manifest SHA-256
+  `174bac2875906aa6fd169c338a0a3472e180cdcdc4d3715e8d1556cdbb88f5bd`.
+
 - Final Semantic Gate Closed Two Relation-Custody Loopholes (2026-09-25):
   Independent Astra/xhigh review blocked exact public commit `7077dd600` on
   two deterministic public-fixture counterexamples. A terminal visible-result

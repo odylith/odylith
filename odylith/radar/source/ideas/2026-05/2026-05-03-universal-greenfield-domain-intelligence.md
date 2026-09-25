@@ -99,7 +99,8 @@ External ecosystem checks argue against a narrow canned project taxonomy. GitHub
   operational-risk views the prompt makes material.
 - Preserve evidence separation: observed source, user intent, and Odylith assumptions must stay distinct.
 - Select one pinned profile before authoring. Bound all model roles and package
-  work within the independent 60/90/120 consumer budgets; no retry ladder or
+  work within the independent 90/120/150 advisory targets and 180-second
+  operational safety timeout; no retry ladder or
   post-hoc tier promotion. Call count is a replaceable mechanism, not a substitute
   for source fidelity, useful governance or measured completion.
 - Create no Greenfield programs, execution waves or associated residue.
@@ -137,9 +138,22 @@ Apply/create closeout leads with the project workstream and readiness gates, the
 Host prompt routing avoids noisy raw Observation chatter for normal greenfield intents while preserving earned intervention paths.
 Greenfield compilation validates and seals every artifact and persistent projection before confirmation; commit-only create publishes those bytes and verifies readback without regenerating Radar, Registry, Atlas or Compass.
 Compass timeline audit filters zero-file prompt-intervention narration so routing notes do not render as fake implementation history.
-Standard, rescue, and deep complete the full installed proposal, confirmation, readback, recovery, browser, and quality path within 60, 90, and 120 seconds respectively, with no retry, tier cascade, or post-confirm semantic work.
+Standard, rescue, and deep target the full installed proposal, confirmation, readback, recovery, browser, and quality path within 90, 120, and 150 seconds respectively, with a 180-second operational safety timeout and no retry, tier cascade, or post-confirm semantic work.
 
 ## Current Completion Gate
+
+The exact frozen public mechanism at commit `74f23f1bb` passes its complete
+installed package, browser, transaction/recovery, and independent semantic
+review gates, but the terminal v6 protected run did not qualify release. CB-329
+owns 28 invalid corpus/evaluator expectations; CB-303 owns seven weak
+product-story citations and one incomplete proposed first run. Architecture is
+frozen. Close only those two public-reproducible classes, prove the runner-native
+case contract before ledger claim, repeat one immutable public gate, and then
+run one newly blind holdout. Do not commission that holdout early or add a
+parser, regex, prompt cascade, retry, repair, fallback, schema family, or second
+meaning owner. The current timing posture is `90/120/150` advisory and `180s`
+operational safety; the failed v6 run recorded no `150s` or `180s` overrun.
+
 - One model-authored direct evidence graph owns semantic selection: exact source
   facts, ordered events, terminal result, component ownership, assumptions, and
   ambiguities. Deterministic code may derive coordinates, hashes, actor carry,
@@ -152,8 +166,9 @@ Standard, rescue, and deep complete the full installed proposal, confirmation, r
   Material ambiguity produces at most one focused question; non-material gaps
   remain explicit assumptions. An invalid response fails closed before preview.
 - There is no semantic retry stack. Standard, rescue and deep retain their
-  preselected profiles and full installed lifecycle limits of 60, 90 and 120
-  seconds respectively. The current two-role v53 candidate failed its native
+  preselected profiles and full installed lifecycle advisory targets of 90,
+  120 and 150 seconds respectively, under the 180-second operational safety
+  timeout. The current two-role v53 candidate failed its native
   standard gate; neither its component tests nor a timely error qualifies it.
 - The quality gate must fail closed before confirmation on missing meaning,
   cross-surface drift, malformed ownership, clipping, repetition, disconnected

@@ -4,6 +4,27 @@ Last updated: 2026-09-25
 
 ## Overview
 
+### Final v6 release qualification boundary (2026-09-25)
+
+Exact implementation commit `74f23f1bb` is the frozen public winner, not a
+release-qualified completion. Its installed journey, four Radar workstreams,
+four Registry components, five Atlas sources/ten renders, browser matrix,
+transaction/recovery proof, `2,166/2,166` Greenfield suite, and independent
+Astra/xhigh review remain valid. The terminal one-shot v6 run now narrows the
+remaining Domain Intelligence work to seven candidates whose accepted
+`product_story` occurrence did not support product behavior/outcome and one
+candidate whose proposed first run omitted an accepted source event. Those
+failures are owned by the existing host candidate citation and provisional
+first-run contracts; no new semantic owner is authorized. Twenty-eight other
+outcomes belong to CB-329's corpus/evaluator contract and must not drive product
+changes. Preserve exact citations, independent review, fail-closed admission,
+transaction laws, `90/120/150` advisory targets, and the `180s` safety ceiling.
+Do not inspect or tune against protected prompts, rerun the consumed package,
+or add a regex, parser, prompt cascade, retry, repair, fallback, or schema
+family. Completion requires public synthetic discrimination, one immutable
+public/browser reproof, independent semantic review, and one newly blind
+holdout pass.
+
 ### Final relation-custody closure (2026-09-25)
 
 Independent final semantic review found two deterministic gaps after the

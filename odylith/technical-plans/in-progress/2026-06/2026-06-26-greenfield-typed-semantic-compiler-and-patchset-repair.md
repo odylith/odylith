@@ -1,5 +1,40 @@
 Status: In progress
 
+## Final V6 qualification verdict and finite closeout (2026-09-25)
+
+Exact public implementation commit `74f23f1bb65565a16ace78072093d3b4f903acab`
+remains frozen after `2,166/2,166` Greenfield tests, a `77/77` focused custody
+and transaction slice, a complete installed public journey with four Radar
+workstreams, four Registry components, five Atlas sources and ten renders, all
+browser states, and independent Astra/xhigh semantic review. Proposal time was
+`53.634s`; confirmation and recovery retry were `2.611s` and `1.769s`.
+
+The final protected floor did not pass. The terminal v6 run separated the
+remaining work into exactly two owners: CB-329 owns 28 invalid qualification
+expectations (16 commit-labeled cases requiring clarification and 12
+clarification cases failing the harness no-write contract); CB-303 owns seven
+weak accepted product-story citations and one incomplete proposed first run.
+No proposal crossed the `150s` deep guideline or `180s` safety timeout.
+
+Freeze architecture. The only admissible closeout sequence is:
+
+1. Prove the two CB-303 classes on new public synthetic controls and make at
+   most one bounded correction in their existing owners; if no general
+   correction wins, retain the current fail-closed behavior and reject the
+   candidate mechanism.
+2. Make CB-329 preflight load and adjudicate the exact runner-native case
+   contract against disclosed positive and clarification controls before any
+   protected ledger exists.
+3. Rebuild one immutable exact-commit distribution; require the complete
+   public package/browser/recovery gate and independent strong semantic review;
+   only then commission one newly blind holdout.
+
+Do not rerun v5 or v6, inspect protected prompts, add regex or phrase rules,
+stack prompts, create repair/retry/fallback paths, expand schemas, or introduce
+another evaluator architecture. `90/120/150` remain advisory product targets;
+`180s` remains the operational safety ceiling. Completion stays unclaimed until
+the new blind floor passes.
+
 ## Close the final typed-event and shared-ownership loopholes (2026-09-25)
 
 Independent Astra/xhigh review of exact public commit `7077dd600` accepted the
