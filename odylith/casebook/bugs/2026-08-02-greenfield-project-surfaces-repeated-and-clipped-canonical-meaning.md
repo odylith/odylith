@@ -1,5 +1,30 @@
 - Bug ID: CB-303
 
+- Final Candidate And Complete-Owner Rejection (2026-09-24): The sealed final
+  holdout rejects participant-first after seven quality-10 passes and twelve
+  fail-closed outcomes among nineteen completed cases. Nine are definite product
+  failures: three model-window failures and six semantic failures spanning
+  first-path cardinality, source faithfulness, citation occurrence, and
+  deterministic participant joining. Three clarifications are unadjudicated.
+  The separate long-run SIGBUS is retained under CB-308 and does not erase these
+  product verdicts. A public/development complete-owner challenger removed the
+  selector and join while preserving v68, current validation, immutable review,
+  model, effort, and budget. Its first local assertion was invalid because a
+  named beneficiary legitimately added a sixth participant. The corrected
+  discriminator changed only the source and raw-response evidence ordering; its
+  first Astra-medium author call returned no structured result inside 165
+  seconds and remained blocked beyond the 180-second operational safety boundary.
+  The operator terminated it with no candidate, review, package, or write, and
+  the thin control stayed unrun. Reject participant-first and complete-owner as
+  release candidates; retained source/design trials are already rejected. Do not
+  retry, tune prompts, sweep models, extend budgets, weaken validators, or add a
+  repair/regex cascade. The sole bounded successor hypothesis is explicit
+  host-native typed candidate ingress with complete independent review and
+  consumer-request-to-preview timing. It is unproved and cannot support a
+  completion claim. Evidence:
+  `/private/tmp/odylith-greenfield-final-holdout-20260924-v3-result.v1.json` and
+  `/private/tmp/odylith-greenfield-complete-owner-20260924-v2/OUTCOME.md`.
+
 - Bounded Review-Recovery Winner (2026-09-24): Checkpoint `548ff926d`
   replaces the review-denial dead end with one bounded semantic recovery branch.
   Admitted candidates retain the existing three calls. A first immutable-review

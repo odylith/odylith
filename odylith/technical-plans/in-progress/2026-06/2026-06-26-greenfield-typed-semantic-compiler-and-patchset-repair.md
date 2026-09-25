@@ -1,6 +1,38 @@
 Status: In progress
 
-## Latest live outcome: bounded semantic recovery wins discovery (2026-09-24)
+## Latest live outcome: no in-runtime authoring winner (2026-09-24)
+
+The independently sealed final holdout rejects the frozen participant-first
+candidate. Nineteen cases completed before the separate Python/volume crash:
+seven passed at quality 10 and twelve failed closed. Nine are definite product
+qualification failures across model-window availability, first-path cardinality,
+source faithfulness, citation occurrence, and deterministic participant joining;
+three clarification outcomes remain unadjudicated. The consumed holdout must not
+be inspected, replayed, or used for tuning.
+
+One public/development-only complete-owner alternative then removed participant
+selection and deterministic joining while keeping v68, current validators, the
+immutable reviewer, Astra medium, and the 165-second shared window. Its first
+acceptance criterion was invalid because the source named five performers plus a
+beneficiary; preserve that evaluator error without credit or retry. A corrected,
+predeclared five-actor source left the mechanism unchanged, but the first author
+call returned no structured result inside 165 seconds and remained blocked past
+the separate 180-second safety boundary. It was terminated with no candidate,
+review, package, or write. Reject this alternative and leave its thin control
+unrun. Evidence:
+`/private/tmp/odylith-greenfield-complete-owner-20260924-v2/OUTCOME.md`.
+
+Participant-first, complete-owner, and source/design split are therefore all
+rejected as release candidates. Do not add prompt exceptions, model or effort
+sweeps, retries, regex rules, schema growth, deadline extensions, or a fourth
+in-runtime authoring role. The only still-credible bounded hypothesis is an
+explicit host-native typed candidate ingress followed by the existing independent
+review, pre-confirm compilation, sealing, and commit-only publication. It is not
+a winner yet. Its first gate must measure elapsed time from the original consumer
+request, bind host identity and source/candidate custody, and pass one positive
+plus one material-clarification public control before production integration.
+
+## Prior live outcome: bounded semantic recovery wins discovery (2026-09-24)
 
 Checkpoint `548ff926d` is committed, pushed, and frozen for qualification. The
 normal pre-confirm path remains three model calls. Only an immutable-review
