@@ -11872,3 +11872,20 @@ Current proposal/confirmation/recovery operations and versioned semantic/timing 
   qualification. Rebuild, commit, and push one immutable distribution; resume
   the same sealed public corpus under a fresh one-shot ledger. Do not alter case
   content, semantic floors, model roles, or the single blind-holdout rule.
+
+## Browser-Visible Boundary Oracle Correction (2026-09-25)
+
+- The first exact `23b0305ba` public case produced a complete 5/5/5 package and
+  clear Project UI, then failed only because the release oracle compared raw
+  Markdown line breaks in a source scope limit against whitespace-collapsed DOM
+  text. The retained screenshots show the three authority groups distinctly;
+  the failure is evaluator validity, not product semantics or UX.
+- Reuse the existing `_browser_visible_text` normalization for boundary items.
+  Preserve exact group keys, labels, item tokens, ordering, authority markers,
+  and all other browser checks. Add a multiline source-limit control rather
+  than a Tide Ledger-specific exception.
+- Focused proof passes `106/106`; a direct rerun against the exact retained
+  generated package passes all `48` desktop/mobile browser cells with zero
+  issues. Record `140.318s` as a standard-target overrun under the advisory
+  90/120/150 guidance. Rebuild and rerun the public matrix without changing
+  corpus content or semantic floors.

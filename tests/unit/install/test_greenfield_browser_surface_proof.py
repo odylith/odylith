@@ -600,6 +600,16 @@ def test_authored_browser_oracle_rejects_release_scope_not_stated_by_source() ->
     )
 
 
+def test_authored_browser_oracle_compares_multiline_scope_as_visible_text() -> None:
+    module = _authored_contract_module()
+    rendered, facts = _source_design_structure()
+    facts["non_goals"] = ["Excluded work:\n- Changing external systems."]
+    boundary = next(row for row in rendered["boundary_groups"] if row["key"] == "non_goals")
+    boundary["items"] = ["Excluded work: - Changing external systems."]
+
+    assert module.authored_structure_issues(rendered, facts) == ()
+
+
 def _result_first_structure() -> tuple[dict, dict]:
     rendered, facts = _source_design_structure()
     facts["first_path_relations"] = [

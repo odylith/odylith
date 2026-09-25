@@ -233,7 +233,7 @@ def authored_structure_issues(rendered: Any, authored_facts: Any) -> tuple[str, 
     ):
         items = (
             [
-                str(value).strip()
+                _browser_visible_text(value)
                 for value in values
                 if isinstance(value, str) and value.strip()
             ]

@@ -2703,3 +2703,20 @@
   returned one structured candidate in about 96 seconds. No regex, parser,
   retry, fallback, case patch, or new model role was added. Rebuild the exact
   distribution before resuming the public qualification; CB-303 remains open.
+
+- Browser-oracle false rejection (2026-09-25): Exact distribution `23b0305ba`
+  completed the first public case with five Radar workstreams, five Registry
+  components, five rendered Atlas diagrams, commit recovery, and a complete
+  Project dashboard in `140.318` seconds, but scored zero because the browser
+  oracle compared a raw multiline source limit with browser-collapsed visible
+  text. The retained desktop and mobile screenshots visibly separate proposed
+  components, source-stated systems, and source-stated scope limits; no product
+  conflation is present. The evaluator now applies its existing visible-text
+  normalization to boundary items just as it already does to events,
+  responsibilities, workstream titles, and deliverables. A multiline scope
+  control plus the focused browser/host suite passes `106/106`, and the exact
+  retained generated package passes all `48` desktop/mobile normal, fallback,
+  degraded, error, and invalid-recovery screenshot cells with zero issues.
+  This corrects evaluator validity only; it does not weaken labels, semantic
+  equality, or the 100% release floor. CB-303 remains open pending a rebuilt
+  exact distribution and fresh public qualification.
