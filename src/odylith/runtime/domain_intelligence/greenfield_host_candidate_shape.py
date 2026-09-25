@@ -11,13 +11,13 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring impor
     greenfield_authoring_schema,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_source_citations import (
-    canonical_citation_from_unique_context,
+    canonical_citation_from_host_selection,
 )
 from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     MAX_AUTHORED_FIELD_VALUE_CHARS,
 )
 
-HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v3"
+HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v4"
 HOST_EVENT_CITATION_FIELD = "source_citation"
 
 
@@ -25,7 +25,7 @@ def _context_citation_schema(*, description: str = "") -> dict[str, Any]:
     schema: dict[str, Any] = {
         "type": "object",
         "additionalProperties": False,
-        "required": ["quote", "context"],
+        "required": ["quote"],
         "properties": {
             "quote": {
                 "type": "string",
@@ -36,8 +36,9 @@ def _context_citation_schema(*, description: str = "") -> dict[str, Any]:
                 "type": "string",
                 "maxLength": MAX_AUTHORED_FIELD_VALUE_CHARS,
                 "description": (
-                    "An exact contiguous source excerpt that occurs once and contains quote once. "
-                    "It locates quote but contributes no additional meaning."
+                    "When quote occurs more than once, an exact contiguous source excerpt that "
+                    "occurs once and contains the selected quote once. It locates quote but "
+                    "contributes no additional meaning. Omit it when quote occurs once."
                 ),
             },
         },
@@ -135,7 +136,7 @@ def canonical_greenfield_host_candidate(
         if HOST_EVENT_CITATION_FIELD not in event:
             raise ValueError("Greenfield host candidate event has no source citation")
         path_citations.append(
-            canonical_citation_from_unique_context(
+            canonical_citation_from_host_selection(
                 evidence,
                 event.pop(HOST_EVENT_CITATION_FIELD),
             )
@@ -158,7 +159,7 @@ def canonical_greenfield_host_candidate(
         ):
             raise TypeError("Greenfield host candidate responsibilities must be an array")
         component["responsibilities"] = [
-            canonical_citation_from_unique_context(evidence, responsibility)
+            canonical_citation_from_host_selection(evidence, responsibility)
             for responsibility in responsibilities
         ]
         canonical_components.append(component)
@@ -180,10 +181,10 @@ def _canonical_fact_value(
         return None
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
         return [
-            canonical_citation_from_unique_context(evidence, citation)
+            canonical_citation_from_host_selection(evidence, citation)
             for citation in value
         ]
-    return canonical_citation_from_unique_context(
+    return canonical_citation_from_host_selection(
         evidence,
         value,
         state_object=state_object,

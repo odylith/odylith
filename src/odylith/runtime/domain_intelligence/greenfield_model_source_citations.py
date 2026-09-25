@@ -93,29 +93,39 @@ def resolve_source_citation(
     return quote, start
 
 
-def canonical_citation_from_unique_context(
+def canonical_citation_from_host_selection(
     evidence: bytes,
     citation: Mapping[str, Any],
     *,
     state_object: bool = False,
 ) -> dict[str, Any]:
-    """Project one host context locator into the legacy canonical address.
+    """Project one host-selected quote into the legacy canonical address.
 
-    The host selects exact source text, never a numeric address.  Context is
-    locator-only: the quote remains the complete semantic fact.  Requiring one
-    exact context match and one quote match inside it makes the projection
-    deterministic without vocabulary rules, regexes, retries, or first-match
-    rebinding.
+    The host selects exact source text, never a numeric address. A unique quote
+    locates itself; a repeated quote requires exact unique context. Context is
+    locator-only and never enlarges the selected meaning.
     """
 
-    if not isinstance(citation, Mapping) or set(citation) != {"quote", "context"}:
+    if (
+        not isinstance(citation, Mapping)
+        or "quote" not in citation
+        or not set(citation).issubset({"quote", "context"})
+    ):
         raise GreenfieldModelAuthoringError(_INVALID_CITATION)
     quote = exact_quote(citation.get("quote"))
-    context = exact_quote(citation.get("context"))
-    if not quote or not context:
+    if not quote:
         raise GreenfieldModelAuthoringError(_INVALID_CITATION)
 
     quote_bytes = quote.encode("utf-8")
+    quote_starts = _overlapping_match_starts(evidence, quote_bytes)
+    if len(quote_starts) == 1:
+        if state_object:
+            return {"prefix": "", "quote": quote, "anchor_occurrence": 1}
+        return {"quote": quote, "occurrence": 1}
+
+    context = exact_quote(citation.get("context"))
+    if not context:
+        raise GreenfieldModelAuthoringError(_AMBIGUOUS_CONTEXT)
     context_bytes = context.encode("utf-8")
     context_starts = _overlapping_match_starts(evidence, context_bytes)
     quote_offsets = _overlapping_match_starts(context_bytes, quote_bytes)
@@ -141,7 +151,6 @@ def canonical_citation_from_unique_context(
             "anchor_occurrence": anchor_occurrence,
         }
 
-    quote_starts = _overlapping_match_starts(evidence, quote_bytes)
     try:
         occurrence = quote_starts.index(quote_start) + 1
     except ValueError as exc:
@@ -175,7 +184,7 @@ def _strict_occurrence_start(haystack: bytes, needle: bytes, occurrence: Any) ->
 
 
 __all__ = [
-    "canonical_citation_from_unique_context",
+    "canonical_citation_from_host_selection",
     "exact_occurrence_start",
     "exact_quote",
     "resolve_source_citation",

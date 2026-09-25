@@ -2663,3 +2663,25 @@
   not release closure: the rebuilt exact distribution, corrected disclosed
   release corpus, independent strong semantic PASS, and one new blind holdout
   remain mandatory.
+
+- Public ownership replacement (2026-09-25): Exact distribution `8e863f229`
+  entered the sealed disclosed qualification package. Three of six completed
+  cases passed at `10/10`, with complete 4–5 Radar, 4–5 Registry, 5+ Atlas,
+  browser, and commit proof. Three failed closed with no write: one source
+  context was absent or ambiguous and two candidates repeated the same
+  precedence pair. The run stopped immediately because the 100% floor was no
+  longer reachable; the interruption ledger and retained evidence are sealed,
+  the work namespace is empty, and the blind holdout remains untouched.
+- The bounded replacement keeps semantic selection with the host model and
+  removes brittle mechanical address burden: a unique exact quote self-locates;
+  only a repeated quote requires exact unique context. Precedence identity is
+  the full `(before event, after event, source constraint)` relationship, so
+  distinct cited constraints may support the same directed pair while an exact
+  duplicate binding still fails closed. The rejected silent-deduplication
+  repair was removed before qualification.
+- Fresh proof passes the focused mechanism suite (`157/157`) and the full
+  Greenfield runtime suite (`2162/2162`). Independent strong review returned
+  `PASS` with no release-relevant finding and confirmed no regex, retry, repair,
+  fallback, or first-match path. Completion remains unclaimed until a newly
+  built exact distribution passes a fresh public corpus at 100% and exactly one
+  newly blind holdout.

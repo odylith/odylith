@@ -6,7 +6,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_outcomes import (
     GreenfieldModelAuthoringError,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_source_citations import (
-    canonical_citation_from_unique_context,
+    canonical_citation_from_host_selection,
     exact_occurrence_start,
     exact_quote,
     resolve_source_citation,
@@ -66,7 +66,7 @@ def test_legacy_source_citation_preserves_closed_shape_and_normalization() -> No
 def test_unique_context_projects_repeated_quote_to_exact_legacy_address() -> None:
     evidence = "α result before. β result after.".encode("utf-8")
 
-    canonical = canonical_citation_from_unique_context(
+    canonical = canonical_citation_from_host_selection(
         evidence,
         {"quote": "result", "context": "β result after"},
     )
@@ -81,7 +81,7 @@ def test_unique_context_projects_repeated_quote_to_exact_legacy_address() -> Non
 def test_unique_context_projects_state_without_enlarging_its_meaning() -> None:
     evidence = "first state; selected state remains".encode("utf-8")
 
-    canonical = canonical_citation_from_unique_context(
+    canonical = canonical_citation_from_host_selection(
         evidence,
         {"quote": "state", "context": "selected state remains"},
         state_object=True,
@@ -98,6 +98,37 @@ def test_unique_context_projects_state_without_enlarging_its_meaning() -> None:
     )
 
 
+@pytest.mark.parametrize("citation", ({"quote": "unique proof"}, {"quote": "unique proof", "context": "wrong"}))
+def test_unique_quote_projects_without_host_owned_locator_precision(
+    citation: dict[str, object],
+) -> None:
+    evidence = b"one unique proof remains"
+
+    canonical = canonical_citation_from_host_selection(evidence, citation)
+
+    assert canonical == {"quote": "unique proof", "occurrence": 1}
+    assert resolve_source_citation(evidence, canonical) == (
+        "unique proof",
+        evidence.index(b"unique proof"),
+    )
+
+
+def test_unique_state_quote_projects_without_host_owned_locator_precision() -> None:
+    evidence = b"one durable state remains"
+
+    canonical = canonical_citation_from_host_selection(
+        evidence,
+        {"quote": "durable state"},
+        state_object=True,
+    )
+
+    assert canonical == {
+        "quote": "durable state",
+        "prefix": "",
+        "anchor_occurrence": 1,
+    }
+
+
 @pytest.mark.parametrize(
     "citation",
     (
@@ -111,7 +142,7 @@ def test_unique_context_fails_closed_when_address_is_not_unique(
     citation: dict[str, object],
 ) -> None:
     with pytest.raises(GreenfieldModelAuthoringError):
-        canonical_citation_from_unique_context(
+        canonical_citation_from_host_selection(
             b"first result; second result",
             citation,
         )

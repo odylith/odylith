@@ -83,9 +83,13 @@ def test_invalid_source_precedence_fails_closed(edges):
         _validate(edges)
 
 
-def test_same_edge_cannot_be_repeated_under_another_constraint():
-    with pytest.raises(ValueError, match="duplicate"):
-        _validate([_edge(), _edge(constraint=2)], constraints=("Review before publication.", "Publish after review."))
+def test_same_edge_can_retain_support_from_distinct_source_constraints():
+    edges = [_edge(), _edge(constraint=2)]
+
+    assert _validate(
+        edges,
+        constraints=("Review before publication.", "Publish after review."),
+    ) == tuple(edges)
 
 
 @pytest.mark.parametrize("orders", [(1, 2), (2, 2, 1), (2, 3, 4), (True, 2, 3)])

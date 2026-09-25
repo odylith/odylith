@@ -11827,3 +11827,29 @@ Current proposal/confirmation/recovery operations and versioned semantic/timing 
   immutable distribution, run the corrected disclosed 36-case corpus at the
   unchanged 100% floor, then consume one newly blind holdout. Do not add scope
   before those gates decide the mechanism.
+
+## Quote Ownership And Precedence Identity Decision (2026-09-25)
+
+- The `8e863f229` disclosed run stopped after six cases at three passes and
+  three safe no-write failures. The recurring owners were host-supplied context
+  for otherwise unique quotes and treating a directed event pair as globally
+  unique even when distinct source constraints supported it. The interruption
+  contract sealed completed evidence and emptied the work namespace; no blind
+  evidence was opened.
+- Retain one bounded replacement only. Host format v4 accepts the selected
+  exact quote and requires context only when that quote repeats. Canonical
+  custody still derives byte range and occurrence deterministically and fails
+  closed for absent or ambiguous selections. Source precedence is identified by
+  `(before event, after event, source constraint)`, not by the event pair alone.
+- An independent review blocked the first draft because it silently removed an
+  exact duplicate precedence binding. That repair was deleted. Canonicalization
+  now preserves the host value unchanged so the existing validator rejects an
+  exact duplicate while retaining different constraints for the same pair.
+  This is the winning bounded mechanism for the next release comparison; it is
+  not permission for another parser, regex, retry, repair, fallback, schema
+  family, or model stage.
+- Current proof is `157/157` focused and `2162/2162` full runtime, followed by
+  independent strong `PASS`. Freeze the implementation, update governed
+  projections, commit and push one checkpoint, build one exact distribution,
+  and run a fresh public qualification at the unchanged 100% floor. Only that
+  pass may admit exactly one newly blind holdout and final semantic adjudication.

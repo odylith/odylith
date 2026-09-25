@@ -17,6 +17,9 @@ from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
 from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
     REVIEW_PROMPT,
 )
+from odylith.runtime.domain_intelligence.greenfield_event_ordering import (
+    validate_source_precedence,
+)
 from odylith.runtime.domain_intelligence.greenfield_host_candidate_materialization import (
     materialize_host_authored_intent,
 )
@@ -297,12 +300,12 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
     source_citation = authored["properties"]["events"]["items"]["properties"][
         "source_citation"
     ]
-    assert source_citation["required"] == ["quote", "context"]
+    assert source_citation["required"] == ["quote"]
     assert "occurrence" not in source_citation["properties"]
     responsibility = authored["properties"]["components"]["items"]["properties"][
         "responsibilities"
     ]["items"]
-    assert responsibility["required"] == ["quote", "context"]
+    assert responsibility["required"] == ["quote"]
     assert "occurrence" not in responsibility["properties"]
     source_precedence = authored["properties"]["source_precedence"]
     assert "every explicit source-stated ordering requirement" in source_precedence["description"]
@@ -313,7 +316,8 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
         for requirement in payload["requirements"]
     )
     assert any(
-        "exact quote plus exact contiguous context" in requirement
+        "supply its exact quote" in requirement
+        and "When that quote occurs more than once" in requirement
         for requirement in payload["requirements"]
     )
     assert payload["request"]["evidence"].endswith(
@@ -365,6 +369,29 @@ def test_host_candidate_preserves_canonical_source_precedence() -> None:
     canonical = canonical_greenfield_host_candidate(response, evidence_text=evidence)
 
     assert canonical["result"]["source_precedence"] == expected
+
+
+def test_host_candidate_preserves_duplicate_precedence_for_validator_rejection() -> None:
+    evidence = combined_prompt_evidence_source(prompt=_source(), edit_evidence="")
+    response = _host_response(evidence)
+    binding = {"before_event": 1, "after_event": 2, "constraint_index": 1}
+    response["result"]["source_precedence"] = [
+        binding,
+        deepcopy(binding),
+    ]
+
+    canonical = canonical_greenfield_host_candidate(response, evidence_text=evidence)
+
+    assert canonical["result"]["source_precedence"] == [
+        binding,
+        binding,
+    ]
+    with pytest.raises(ValueError, match="duplicate binding"):
+        validate_source_precedence(
+            canonical["result"]["source_precedence"],
+            event_orders=(1, 2),
+            operational_constraints=("Review before publish.",),
+        )
 
 
 def test_host_candidate_preserves_multiple_events_on_one_exact_source_fact(

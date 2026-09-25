@@ -24,9 +24,10 @@ SOURCE_PRECEDENCE_SCHEMA = {
     "description": (
         "Preserve every explicit source-stated ordering requirement as a directed "
         "edge between existing event IDs, backed by the one-based index of its "
-        "accepted operational constraint. Use an empty array only when the source "
-        "states no event precedence; event array order and the proposed first-run "
-        "walkthrough are not source authority."
+        "accepted operational constraint. Different constraints may support the same "
+        "directed edge; do not repeat an identical edge and constraint binding. Use an "
+        "empty array only when the source states no event precedence; event array order "
+        "and the proposed first-run walkthrough are not source authority."
     ),
     "items": {
         "type": "object", "additionalProperties": False,
@@ -75,7 +76,7 @@ def _validated_edges(
         or len(value) > SOURCE_PRECEDENCE_SCHEMA["maxItems"]
     ):
         raise ValueError("Greenfield source precedence has an invalid edge list")
-    seen: set[tuple[int, int]] = set()
+    seen: set[tuple[int, int, int]] = set()
     prerequisites: dict[int, list[int]] = {order: [] for order in accepted}
     rows: list[dict[str, int]] = []
     for row in value:
@@ -88,9 +89,10 @@ def _validated_edges(
             or not 1 <= constraint <= constraint_count
         ):
             raise ValueError("Greenfield source precedence has invalid event or constraint references")
-        if (before, after) in seen:
-            raise ValueError("Greenfield source precedence contains a duplicate edge")
-        seen.add((before, after))
+        binding = (before, after, constraint)
+        if binding in seen:
+            raise ValueError("Greenfield source precedence contains a duplicate binding")
+        seen.add(binding)
         prerequisites[after].append(before)
         rows.append(dict(row))
     try:
