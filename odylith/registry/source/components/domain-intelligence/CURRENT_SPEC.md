@@ -4,27 +4,28 @@ Last updated: 2026-09-24
 
 ## Overview
 
-### Installed host-native lifecycle qualification (2026-09-24)
+### Exact-commit host-native release boundary (2026-09-24)
 
-A rebuilt `0.1.15` distribution proves the host-native boundary in clean
-installed consumers. Initial propose, hash-bound EDIT, REJECT, CONFIRM, injected
-fsync rollback, aborted-journal closure, and exact same-hash retry all preserve
-the sealed transaction laws. The accepted package contains five Radar
-workstreams, five Registry components, five Atlas diagrams, and 56 exact
-read-back writes. Pre-confirm completes in 13.05 seconds and commit-only create
-in 0.313 seconds. The retained browser proof covers 48 desktop/mobile screenshots
-across normal, empty/recovery, and degraded/error states for all governed
-surfaces and reports zero issues.
+Independent strong review accepts the host-native boundary's semantic fidelity,
+typed custody, 5/5/5 utility, transaction design, browser quality, and no-cascade
+contract. Retained installed lifecycle, rollback, and 48-screenshot proof remain
+valid parent-runtime evidence, but they were produced from `68456f88f`/profile
+contract v21 and cannot qualify exact v22 commit `edc375e50`; their 13.05-second
+timer excludes host candidate authoring. Exact v22 source passes 2,187 runtime,
+1,140 install, and 152 browser/confirmation checks, and its clean distribution
+is provenance-bound to `edc375e50`, `dirty: false`, with advisory `90/120/150`
+and the unchanged 180-second safety timeout.
 
-Model-profile contract v22 now reports the normal advisory target as 90 seconds,
-consistent with the `90/120/150` operator envelope; 714 focused checks pass.
-Codex visible-fallback delivery is confirmed, but native automatic activation is
-not yet proven in the current session. This checkpoint qualifies the installed
-lifecycle and UX, not the release. Final independent semantic qualification,
-one fresh untouched holdout, and conditional removal plus reproof of the
-superseded in-runtime authoring path remain mandatory. No new authoring
-mechanism, repair cascade, parser, regex stack, retry ladder, or holdout tuning is
-permitted.
+The release matrix now exposes one explicit host-command boundary. It retrieves
+the installed candidate contract, runs exactly one argv-based external host in
+an external temporary workspace, and passes the resulting immutable JSON to
+installed propose through `--candidate-file` inside one total timer. The seam is
+provider-neutral and has no shell expansion, parser, repair, retry, fallback,
+model ladder, or alternate product path. Fresh untouched holdout v4 is sealed
+with 36 cases and annotations, zero structural issues, zero exact collisions
+against 610 prior prompt hashes, and no ledger or execution. One exact installed
+public request-to-preview pass, intervention parity, the one-shot holdout, and
+conditional superseded-path removal plus reproof remain mandatory.
 
 ### Host-native integration ownership correction (2026-09-24)
 

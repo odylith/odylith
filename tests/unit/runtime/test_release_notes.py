@@ -116,7 +116,14 @@ def test_v0_1_15_release_note_describes_sealed_confirmation_not_disabled_apply()
         public_copy = "\n".join((*note.highlights, note.body))
         for obsolete in ("Greenfield apply", "proposal apply", "Apply and authoring paths"):
             assert obsolete not in public_copy
-        for command in ("odylith greenfield propose", "CONFIRM <hash>", "EDIT <hash>", "REJECT <hash>"):
+        for command in (
+            "odylith greenfield candidate-contract",
+            "odylith greenfield propose",
+            "--candidate-file <path>",
+            "CONFIRM <hash>",
+            "EDIT <hash>",
+            "REJECT <hash>",
+        ):
             assert command in public_copy
         assert "After CONFIRM" in public_copy
         assert "does not call a model, generate artifacts, or repair prose" in public_copy

@@ -1,5 +1,24 @@
 # Release
-Last updated: 2026-09-19
+Last updated: 2026-09-24
+
+## Host-native Greenfield release proof (2026-09-24)
+
+The release matrix can explicitly exercise the host-native product path without
+reintroducing runtime authoring. It retrieves the installed candidate contract,
+passes that complete JSON to exactly one configured argv-based host process in
+an external temporary workspace, and invokes installed propose with the returned
+candidate file. Contract retrieval, host reasoning, and proposal compilation
+share one total timeout and one measured request-to-preview interval. The host
+command is provider-neutral; shell expansion, retries, repair, fallbacks, parser
+logic, model ladders, and repository-local candidate files are forbidden.
+
+Retained evidence records contract, schema, and candidate hashes plus invocation,
+cleanup, and timing facts. Exact-commit release proof requires a clean
+provenance-bound distribution and cannot borrow lifecycle or browser evidence
+from a dirty parent build. The sealed untouched holdout may run only after a
+public exact-commit installed request passes this same path. Legacy runtime
+authoring remains available solely until that qualification accepts; if it does,
+the legacy path must be removed and the release gate repeated.
 
 ## Greenfield timing qualification (2026-09-18)
 

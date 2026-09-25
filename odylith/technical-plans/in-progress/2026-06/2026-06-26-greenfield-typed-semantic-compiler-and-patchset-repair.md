@@ -1,27 +1,35 @@
 Status: In progress
 
-## Installed lifecycle and UX qualification (2026-09-24)
+## Exact-commit release adjudication and host-runner closure (2026-09-24)
 
-The host-native candidate now passes the complete installed consumer lifecycle
-from a rebuilt `0.1.15` distribution. Initial propose, hash-bound EDIT, REJECT,
-CONFIRM, injected fsync rollback, recovery-journal closure, and exact same-hash
-retry all behave under the sealed transaction laws. The successful package
-contains five Radar workstreams, five Registry components, five Atlas diagrams,
-and 56 exact read-back writes. The full pre-confirm receipt completes in 13.05
-seconds and create completes in 0.313 seconds. A 48-screenshot desktop/mobile
-browser matrix passes normal, empty/recovery, and degraded/error states across
-Project, Radar, Registry, Atlas, Compass, Casebook, and the shell with zero
-issues. The protected holdout was not read.
+Independent strong review accepts the host-native mechanism's semantic fidelity,
+typed custody, 5/5/5 utility, transaction design, browser quality, and absence of
+a parser or regex cascade. It correctly blocks release attribution: the retained
+installed lifecycle, rollback, and 48-screenshot browser evidence came from
+parent commit `68456f88f` on profile contract v21, not exact v22 commit
+`edc375e50`. Its 13.05-second pre-confirm measurement also begins after host
+candidate creation, so it does not prove original-request-to-preview timing.
+Preserve that evidence as parent-runtime mechanism proof, not exact release
+qualification.
 
-The model-profile contract is now internally consistent with the operator's
-advisory `90/120/150` targets: the stale 60-second normal-case value is removed,
-contract v22 reports 90 seconds, and 714 focused runtime/install checks pass.
-Codex visible-fallback delivery is confirmed, while native automatic Codex hook
-activation remains unverified in the current session; do not convert fallback
-proof into a native-activation claim. The only release gates left are final
-independent strong semantic qualification, one fresh untouched holdout, and—if
-both accept—the removal and reproving of the superseded in-runtime authoring
-path. No new mechanism family or scope expansion is authorized.
+The exact pushed v22 source passes 2,187 non-holdout runtime tests, 1,140 install
+tests, 152 browser/confirmation checks, and all focused timing contracts. A clean
+distribution is now provenance-bound to `edc375e50`, `dirty: false`, and advisory
+`90/120/150` with the 180-second safety timeout. The release matrix now has one
+explicit generic host-command seam: it retrieves the installed candidate
+contract, invokes exactly one external host over the complete contract, stages
+the result only in an external temporary path, and calls installed propose with
+`--candidate-file` inside one total timer. It has no shell expansion, retry,
+fallback, parser, repair, model ladder, or second semantic path.
+
+Fresh untouched holdout v4 is sealed outside the repository with 36 cases and
+annotations, zero structural issues, zero exact collisions against 610 prior
+prompt hashes, and no run ledger, model call, or product execution. Do not
+consume it until one public exact-commit installed request passes from original
+request through host authoring to visible preview. Native Codex current-session
+activation and actual Claude chat-visible delivery remain separate intervention
+gates. If exact public proof and the untouched holdout accept, remove the
+superseded in-runtime authoring path and reprove; do not add another mechanism.
 
 ## Post-integration regression closure (2026-09-24)
 

@@ -108,6 +108,10 @@ from greenfield_preconfirm_matrix_cases import case_expectation  # noqa: E402
 from greenfield_preconfirm_matrix_cases import default_cases  # noqa: E402
 from greenfield_process import CommandLifecycleObserverError  # noqa: E402
 from greenfield_process import command_lifecycle_observer  # noqa: E402
+from greenfield_matrix_host_candidate import (  # noqa: E402
+    HostCandidateFlow,
+    run_host_candidate_flow,
+)
 
 GREENFIELD_MODEL_PROOF_FD_ENV = "ODYLITH_GREENFIELD_MODEL_PROOF_FD"
 from greenfield_process import run_command_with_group_timeout as _run  # noqa: E402
@@ -226,6 +230,7 @@ def run_matrix(
     evaluation_split_manifest: str = "",
     evidence_output_dir: Path | None = None,
     retained_evidence_run_id: str = "",
+    host_candidate_argv: Sequence[str] = (),
     before_product_execution: Callable[[], None] | None = None,
 ) -> tuple[GreenfieldMatrixResult, ...]:
     """Run the real installed greenfield create path for each matrix case."""
@@ -237,6 +242,9 @@ def run_matrix(
     )
     _raise_for_unsupported_case_expectations(selected_cases)
     install_mode = _validated_install_mode(install_mode)
+    host_candidate_argv = tuple(str(argument) for argument in host_candidate_argv)
+    if any(not argument for argument in host_candidate_argv):
+        raise RuntimeError("host-native candidate argv entries must be non-empty")
     campaign_config = MatrixCampaignConfig(
         phase=campaign_phase_from_value(campaign_phase),
         proof_tier=proof_tier_from_value(proof_tier),
@@ -283,20 +291,20 @@ def run_matrix(
     if not install_script.is_file():
         raise FileNotFoundError(f"missing local release install script: {install_script}")
     results: list[GreenfieldMatrixResult] = []
-    telemetry.emit(
-        "run_started",
-        {
-            "phase": campaign_config.phase,
-            "proof_tier": campaign_config.proof_tier,
-            "case_count": len(selected_cases),
-            "install_mode": install_mode,
-            "include_browser_proof": bool(include_browser_proof),
-            "stop_after_failures": campaign_config.stop_after_failures,
-            "stop_after_cluster_failures": campaign_config.stop_after_cluster_failures,
-            "required_stressors": list(campaign_config.required_stressors),
-            "model_profile_counts": profile_counts(selected_cases),
-        },
-    )
+    run_started_payload = {
+        "phase": campaign_config.phase,
+        "proof_tier": campaign_config.proof_tier,
+        "case_count": len(selected_cases),
+        "install_mode": install_mode,
+        "include_browser_proof": bool(include_browser_proof),
+        "stop_after_failures": campaign_config.stop_after_failures,
+        "stop_after_cluster_failures": campaign_config.stop_after_cluster_failures,
+        "required_stressors": list(campaign_config.required_stressors),
+        "model_profile_counts": profile_counts(selected_cases),
+    }
+    if host_candidate_argv:
+        run_started_payload["host_native_candidate"] = True
+    telemetry.emit("run_started", run_started_payload)
     _flush_incremental_matrix_payload(
         output_json=incremental_output_json,
         cases=selected_cases,
@@ -461,6 +469,7 @@ def run_matrix(
                         require_write_audit=True,
                         include_lexical_custody_proof=not semantic_release_requested,
                         retained_case=retained_case,
+                        host_candidate_argv=host_candidate_argv,
                     )
                 if not semantic_release_requested:
                     result = _with_case_platform_leakage_issues(result=result, release_dir=release_dir)
@@ -1050,6 +1059,7 @@ def _run_case(
     require_write_audit: bool = True,
     include_lexical_custody_proof: bool = True,
     retained_case: RetainedEvidenceCase | None = None,
+    host_candidate_argv: Sequence[str] = (),
 ) -> GreenfieldMatrixResult:
     case = assign_model_profiles((case,))[0]
     profile = case_model_profile(case)
@@ -1079,6 +1089,7 @@ def _run_case(
             version=version,
             install_mode=install_mode,
             retained_case=retained_case,
+            host_candidate_argv=host_candidate_argv,
         )
         return replace(
             result,
@@ -1087,6 +1098,25 @@ def _run_case(
     raw_streams: dict[str, str] = {}
     raw_streams["input.prompt"] = case.prompt
     raw_streams["input.edit-evidence"] = str(case.confirmed_intent_markdown or "")
+    invoke_propose = (
+        lambda timeout: _run_host_candidate_propose(
+            repo_root=repo_root,
+            env=env,
+            prompt=case.prompt,
+            edit_evidence=str(case.confirmed_intent_markdown or ""),
+            repair_tier=profile_contract.repair_tier,
+            timeout=timeout,
+            host_candidate_argv=host_candidate_argv,
+            retained_case=retained_case,
+        )
+        if host_candidate_argv
+        else lambda timeout: _run_greenfield_propose(
+            repo_root=repo_root, env=env, prompt=case.prompt,
+            edit_evidence=str(case.confirmed_intent_markdown or ""),
+            repair_tier=profile_contract.repair_tier, timeout=timeout,
+            retained_case=retained_case,
+        )
+    )
     execution = run_compiled_greenfield_journey(
         repo_root=repo_root,
         env=env,
@@ -1095,12 +1125,7 @@ def _run_case(
         invoke_cli=lambda command, timeout: _run(
             cwd=repo_root, env=env, command=list(command), timeout=timeout,
         ),
-        invoke_propose=lambda timeout: _run_greenfield_propose(
-            repo_root=repo_root, env=env, prompt=case.prompt,
-            edit_evidence=str(case.confirmed_intent_markdown or ""),
-            repair_tier=profile_contract.repair_tier, timeout=timeout,
-            retained_case=retained_case,
-        ),
+        invoke_propose=invoke_propose,
     )
     create = execution.failure or execution.decision
     proposal_seconds = execution.proposal_seconds
@@ -1275,6 +1300,73 @@ def _source_evidence_content_custody_issues(
     return ("source evidence text leaked into product artifacts",)
 
 
+def _run_host_candidate_propose(
+    *,
+    repo_root: Path,
+    env: Mapping[str, str],
+    prompt: str,
+    edit_evidence: str,
+    repair_tier: str,
+    timeout: float,
+    host_candidate_argv: Sequence[str],
+    retained_case: RetainedEvidenceCase | None = None,
+    installed_command: Sequence[str] | None = None,
+    pass_fds: tuple[int, ...] = (),
+) -> Any:
+    base_command = tuple(
+        str(value)
+        for value in (installed_command or ("./.odylith/bin/odylith",))
+    )
+
+    def invoke_installed(command: Sequence[str], remaining: float) -> Any:
+        kwargs: dict[str, Any] = {
+            "cwd": repo_root,
+            "env": env,
+            "command": list(command),
+            "timeout": remaining,
+        }
+        if pass_fds:
+            kwargs["pass_fds"] = pass_fds
+        return _run(**kwargs)
+
+    def invoke_propose(candidate_path: Path, remaining: float) -> Any:
+        return _run_greenfield_propose(
+            repo_root=repo_root,
+            env=env,
+            prompt=prompt,
+            edit_evidence=edit_evidence,
+            repair_tier=repair_tier,
+            timeout=remaining,
+            command=base_command,
+            pass_fds=pass_fds,
+            candidate_file=str(candidate_path),
+            retained_case=retained_case,
+        )
+
+    observe = None
+    if retained_case is not None:
+        observe = lambda payload: record_retained_case_json(
+            retained_case,
+            "semantic/host-authoring-observation.v1.json",
+            dict(payload),
+        )
+    return run_host_candidate_flow(
+        HostCandidateFlow(
+            repo_root=repo_root,
+            temp_parent=repo_root.parent,
+            host_argv=tuple(host_candidate_argv),
+            prompt=prompt,
+            edit_evidence=edit_evidence,
+            timeout=timeout,
+            env=env,
+            invoke_installed=invoke_installed,
+            invoke_propose=invoke_propose,
+            installed_command=base_command,
+            observe=observe,
+        )
+    )
+
+
 def _run_expected_clarification_case(
     *,
     case: GreenfieldMatrixCase,
@@ -1286,6 +1378,7 @@ def _run_expected_clarification_case(
     version: str,
     install_mode: str,
     retained_case: RetainedEvidenceCase | None = None,
+    host_candidate_argv: Sequence[str] = (),
 ) -> GreenfieldMatrixResult:
     audit = begin_installed_write_audit(repo_root=repo_root)
     raw_streams: dict[str, str] = {}
@@ -1293,21 +1386,36 @@ def _run_expected_clarification_case(
     raw_streams["input.edit-evidence"] = str(case.confirmed_intent_markdown or "")
 
     def invoke_proposal() -> Any:
-        proposed = _run_greenfield_propose(
-            repo_root=repo_root,
-            env={**env, **audit.environment()},
-            prompt=case.prompt,
-            edit_evidence=str(case.confirmed_intent_markdown or ""),
-            timeout=timeout,
-            repair_tier=repair_tier,
-            command=(
-                audit.command(
-                    runtime_python=repo_root / ".odylith/runtime/current/bin/python",
-                    arguments=(),
-                )
-            ),
-            pass_fds=audit.pass_fds,
-            retained_case=retained_case,
+        audit_env = {**env, **audit.environment()}
+        installed_command = audit.command(
+            runtime_python=repo_root / ".odylith/runtime/current/bin/python",
+            arguments=(),
+        )
+        proposed = (
+            _run_host_candidate_propose(
+                repo_root=repo_root,
+                env=audit_env,
+                prompt=case.prompt,
+                edit_evidence=str(case.confirmed_intent_markdown or ""),
+                repair_tier=repair_tier,
+                timeout=timeout,
+                host_candidate_argv=host_candidate_argv,
+                retained_case=retained_case,
+                installed_command=installed_command,
+                pass_fds=audit.pass_fds,
+            )
+            if host_candidate_argv
+            else _run_greenfield_propose(
+                repo_root=repo_root,
+                env=audit_env,
+                prompt=case.prompt,
+                edit_evidence=str(case.confirmed_intent_markdown or ""),
+                timeout=timeout,
+                repair_tier=repair_tier,
+                command=installed_command,
+                pass_fds=audit.pass_fds,
+                retained_case=retained_case,
+            )
         )
         raw_streams["propose.stdout"] = str(getattr(proposed, "stdout", "") or "")
         raw_streams["propose.stderr"] = str(getattr(proposed, "stderr", "") or "")
@@ -1425,6 +1533,7 @@ def _run_greenfield_propose(
     command: Sequence[str] | None = None,
     pass_fds: tuple[int, ...] = (),
     retained_case: RetainedEvidenceCase | None = None,
+    candidate_file: str = "",
 ) -> Any:
     propose_command = list(command) if command is not None else ["./.odylith/bin/odylith"]
     propose_command.extend(
@@ -1432,6 +1541,7 @@ def _run_greenfield_propose(
             prompt=prompt,
             edit_evidence=edit_evidence,
             repair_tier=repair_tier,
+            candidate_file=candidate_file,
         )
     )
     capture = (
@@ -1464,6 +1574,7 @@ def _greenfield_propose_arguments(
     prompt: str,
     edit_evidence: str = "",
     repair_tier: str = "",
+    candidate_file: str = "",
 ) -> list[str]:
     arguments = [
         "greenfield",
@@ -1479,6 +1590,8 @@ def _greenfield_propose_arguments(
         arguments.extend(["--edit", edit_evidence])
     if repair_tier:
         arguments.extend(["--repair-tier", repair_tier])
+    if candidate_file:
+        arguments.extend(["--candidate-file", candidate_file])
     return arguments
 
 
@@ -2166,6 +2279,15 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
             "does not contain every required class. Release proof must not use this."
         ),
     )
+    parser.add_argument(
+        "--host-candidate-arg",
+        action="append",
+        default=None,
+        help=(
+            "Explicitly enable host-native Greenfield authoring. Repeat once per exact argv entry; "
+            "the configured command receives the complete candidate contract on stdin."
+        ),
+    )
     parser.add_argument("--json", action="store_true", dest="json_output")
     parser.add_argument(
         "--output-json",
@@ -2615,6 +2737,7 @@ def _execute_matrix_campaign(
                 else None
             ),
             retained_evidence_run_id=retained_evidence_run_id,
+            host_candidate_argv=tuple(str(value) for value in (getattr(args, "host_candidate_arg", None) or ())),
             before_product_execution=before_product_execution,
         )
         commit_recovery = (

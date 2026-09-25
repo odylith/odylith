@@ -1,20 +1,23 @@
 - Bug ID: CB-303
 
-- Installed Host-Native Lifecycle And UX Qualification (2026-09-24): A rebuilt
-  `0.1.15` distribution passes initial propose, hash-bound EDIT, REJECT, CONFIRM,
-  injected fsync rollback, aborted-journal closure, and exact same-transaction
-  retry in clean installed consumers. The successful receipt proves five Radar,
-  five Registry, five Atlas, 56 exact read-back writes, 13.05-second total
-  pre-confirm work, and 0.313-second commit-only create. A retained 48-screenshot
-  desktop/mobile browser matrix reports zero issues across normal,
-  empty/recovery, and degraded/error states for Project, Radar, Registry, Atlas,
-  Compass, Casebook, and the shell. Contract v22 removes the stale 60-second
-  normal-case value and consistently exposes advisory `90/120/150`; 714 focused
-  checks pass. Codex chat-visible fallback is confirmed, but the current session
-  still cannot prove native automatic hook activation. CB-303 remains Open/P0
-  only for final independent semantic qualification, one fresh untouched
-  holdout, native-activation evidence, and conditional superseded-path removal
-  plus reproof. Do not add another mechanism or inspect the consumed holdout.
+- Exact-Commit Attribution Correction And Host Runner (2026-09-24): Independent
+  strong review accepts the host-native mechanism's semantic fidelity, typed
+  custody, 5/5/5 utility, transaction design, browser quality, and no-cascade
+  boundary, but correctly blocks release attribution. The retained installed
+  lifecycle, rollback, and 48-screenshot evidence used parent commit
+  `68456f88f`/contract v21; its 13.05-second timer also starts after host candidate
+  creation. It remains useful mechanism evidence but does not qualify exact v22
+  commit `edc375e50`. Exact source passes 2,187 runtime, 1,140 install, and 152
+  browser/confirmation checks, and a clean distribution is provenance-bound to
+  `edc375e50`, `dirty: false`, with advisory `90/120/150`. The release matrix now
+  accepts one explicit argv-based external host: installed candidate-contract,
+  exactly one host invocation, one external temporary candidate, then installed
+  propose with `--candidate-file` under one total timer. No shell, retry,
+  fallback, parser, repair, or model ladder was added. Fresh untouched holdout v4
+  is sealed with 36 cases/annotations, zero issues and no ledger or execution.
+  CB-303 remains Open/P0 pending one exact installed public request-to-preview
+  pass, intervention parity, the one-shot v4 holdout, and conditional removal
+  plus reproof of the superseded runtime authoring path.
 
 - Host-Native Integration Regression Closure (2026-09-24): The first broad
   runtime proof, with the protected holdout explicitly excluded, found two
