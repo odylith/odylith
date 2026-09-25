@@ -1,5 +1,23 @@
 - Bug ID: CB-303
 
+- Exact Host Contract Authority Failure (2026-09-24): The first clean,
+  provenance-bound public request against commit `c022771d0` reached the
+  host-native candidate boundary in `72.324s`, inside the `90s` advisory target,
+  but failed closed before review or publication. The external Astra author
+  returned a schema-valid candidate that combined a source terminal with a
+  provisional `proof_boundary` assumption. The canonical validator correctly
+  rejected that mixed authority; no governed records were created, commit
+  recovery stopped, and browser proof was not credited. The public host contract
+  exposed the closed schema but omitted this already-enforced mutual-exclusion
+  law. Contract v2 now states the existing typed authority choice once: either
+  source-cited proof plus terminal, or both null plus one conservative proof
+  assumption. Validation, review, schema, timing, and transaction ownership stay
+  unchanged; no parser, regex rule, repair, retry loop, fallback, or model ladder
+  was added. Focused custody proof passes `12/12`. CB-303 remains Open/P0 pending
+  a newly built exact distribution and a fresh public end-to-end qualification.
+  Evidence: `/private/tmp/greenfield-public-run-c022-result.json` and
+  `/private/tmp/greenfield-public-run-c022-evidence/`.
+
 - Exact-Commit Attribution Correction And Host Runner (2026-09-24): Independent
   strong review accepts the host-native mechanism's semantic fidelity, typed
   custody, 5/5/5 utility, transaction design, browser quality, and no-cascade

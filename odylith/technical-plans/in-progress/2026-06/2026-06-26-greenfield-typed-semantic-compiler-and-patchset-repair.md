@@ -11362,6 +11362,26 @@ for retries until success. Current runtime profiles remain unchanged.
   gates; remove the loser. Stabilize the long-run Python/volume boundary under
   CB-308 separately from product semantics.
 
+## Host-Native Proof Authority Contract Correction (2026-09-24)
+
+- The first exact public host-native run against clean distribution commit
+  `c022771d0` failed closed after `72.324s`: its candidate mixed a source
+  terminal with a provisional `proof_boundary` assumption. No transaction or
+  governed record was created, so recovery and browser gates correctly withheld
+  credit.
+- The failure belongs to the host contract boundary, not the validator. The
+  canonical validator already owns and enforces the mutually exclusive authority
+  states; the public contract exposed the shape but not that relationship.
+- Adopt the smallest falsifiable correction: contract v2 states the existing
+  choice once—source proof plus terminal, or null proof/terminal plus exactly one
+  conservative proof assumption. Do not change the schema, validator, reviewer,
+  model, timing targets, projection, or transaction path. Add no parser, regex,
+  repair, retry, fallback, or second interpretation.
+- Rebuild from a clean committed tree and restart the same public case once. It
+  must pass source custody, independent review, 4–5 Radar, 4–5 Registry, 5+
+  Atlas, transaction/recovery, browser normal/empty/degraded states, and retained
+  request-to-preview timing before the untouched holdout can be consumed.
+
 ## Traceability
 
 Current proposal/confirmation/recovery operations and versioned semantic/timing boundaries; historical post-confirm repair paths are superseded.

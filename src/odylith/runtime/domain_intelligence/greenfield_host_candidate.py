@@ -36,7 +36,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v1"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v1"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v2"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
 
 
@@ -55,6 +55,12 @@ def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
             "Preserve every source-stated participant, action, visible result, constraint, and non-goal.",
             "Use exact contiguous source quotes and one-based occurrences; do not reconstruct source prose.",
             "Keep accepted source facts separate from assumptions and provisional design decisions.",
+            (
+                "Use exactly one proof authority: when the source identifies both a visible result and "
+                "its producing event, cite facts.proof_boundary and supply terminal without a "
+                "proof_boundary assumption; otherwise set both facts.proof_boundary and terminal to "
+                "null and supply exactly one conservative proof_boundary assumption."
+            ),
             "Propose 4-5 distinct useful components and 4-5 actionable workstreams without padding.",
             "Return one material clarification when the usable path or product boundary is genuinely unresolved.",
             "Do not add a parser, regex extraction pass, repair attempt, fallback candidate, or hidden source interpretation.",

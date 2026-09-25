@@ -213,6 +213,11 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
     assert rc == 0
     assert payload["version"] == HOST_CANDIDATE_CONTRACT_VERSION
     assert payload["candidate_schema"]["additionalProperties"] is False
+    assert any(
+        "Use exactly one proof authority" in requirement
+        and "facts.proof_boundary and terminal to null" in requirement
+        for requirement in payload["requirements"]
+    )
     assert payload["request"]["evidence"].endswith(
         "Create one reviewable harbor plan.\n"
     )
