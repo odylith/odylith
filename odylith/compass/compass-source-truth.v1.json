@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "generated_utc": "2026-09-25T04:28:18Z",
+  "generated_utc": "2026-09-25T04:50:25Z",
   "release_summary": {
     "catalog": [
       {
@@ -322,19 +322,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 9,
-            "local_change_count": 8,
-            "file_touch_count": 97
+            "commit_count": 10,
+            "local_change_count": 3,
+            "file_touch_count": 98
           },
           "48h": {
-            "commit_count": 26,
-            "local_change_count": 8,
+            "commit_count": 27,
+            "local_change_count": 3,
             "file_touch_count": 507
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-09-24T21:27:41-07:00",
+          "last_activity_iso": "2026-09-24T21:50:10-07:00",
           "age_days": 90,
           "eta_days": 14,
           "eta_confidence": "high"
@@ -1717,19 +1717,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 6,
-            "local_change_count": 1,
-            "file_touch_count": 80
-          },
-          "48h": {
             "commit_count": 7,
             "local_change_count": 1,
-            "file_touch_count": 123
+            "file_touch_count": 83
+          },
+          "48h": {
+            "commit_count": 8,
+            "local_change_count": 1,
+            "file_touch_count": 125
           }
         },
         "timeline": {
           "start_date": "2026-03-28",
-          "last_activity_iso": "2026-09-24T21:27:31-07:00",
+          "last_activity_iso": "2026-09-24T21:48:23-07:00",
           "age_days": 180,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -5438,180 +5438,6 @@
         "proof_summary_lines": []
       },
       {
-        "idea_id": "B-069",
-        "title": "Cross-Host Contract Hardening and Codex-Claude Separation",
-        "status": "finished",
-        "priority": "P0",
-        "sizing": "L",
-        "complexity": "VeryHigh",
-        "ordering_score": "95",
-        "implemented_summary": "",
-        "why": {
-          "problem": "Odylith's runtime and governance layers still carry hardcoded Codex-first policy in places that should be host-neutral. Host detection often doubles as policy, canonical execution-profile ids still encode Codex model branding, Compass runtime artifacts still use Codex stream names, and guidance plus proof surfaces still frame Codex behavior as the default product contract even when Claude Code already shares the same grounding and reasoning quality bar. That drift makes Claude compatibility feel partial even where the product already works, while also obscuring the real boundary: native spawn is a host capability question, not the whole product contract.",
-          "customer": "- Primary: Odylith operators who want the same product outcome in Codex and Claude Code without hidden contract drift. - Secondary: maintainers who need host capability, model-family defaults, and benchmark publication scope to stay explicit and auditable.",
-          "proposed_solution": "Add one canonical host capability contract that separates host family, transport capabilities, and model-family behavior; switch runtime routing and execution-profile ids to host-neutral canon with compatibility aliases; rename Compass runtime artifacts to host-neutral stream terms while keeping legacy read compatibility; rewrite source governance and docs around a host matrix; and normalize benchmark/proof fields so published proof can stay Codex-scoped without making the shared product contract Codex-scoped.",
-          "opportunity": "If Odylith makes host capability the canonical runtime contract and treats Codex-only behavior as one scoped model-family policy instead of the global default, the product can keep Codex-native delegation where it truly exists while making Claude Code feel like a first-class supported host across docs, grounding, Compass, governance, and benchmark scaffolding.",
-          "why_now": "Odylith is already claiming shared product value across Codex and Claude Code. Leaving Codex-only naming and policy wired into the canon now will only make later Claude parity and proof work noisier, riskier, and more expensive.",
-          "founder_pov": "Host neutrality is not a doc polish task. It is the product contract that lets Odylith keep one intelligence plane while telling the truth about which host can transport which kind of delegation today."
-        },
-        "links": {
-          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md",
-          "plan_file": "odylith/technical-plans/done/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md"
-        },
-        "registry_components": [
-          {
-            "component_id": "benchmark",
-            "name": "Benchmark"
-          },
-          {
-            "component_id": "compass",
-            "name": "Compass"
-          },
-          {
-            "component_id": "odylith",
-            "name": "Odylith"
-          },
-          {
-            "component_id": "odylith-context-engine",
-            "name": "Odylith Context Engine"
-          },
-          {
-            "component_id": "subagent-orchestrator",
-            "name": "Subagent Orchestrator"
-          },
-          {
-            "component_id": "subagent-router",
-            "name": "Subagent Router"
-          }
-        ],
-        "execution_wave_programs": [],
-        "release": {},
-        "release_history_summary": "Removed from 0.1.11",
-        "plan": {
-          "created": "2026-04-09",
-          "updated": "2026-04-09",
-          "all_total_tasks": 61,
-          "all_done_tasks": 61,
-          "total_tasks": 24,
-          "done_tasks": 24,
-          "progress_ratio": 1.0,
-          "progress_basis": "execution_checklist",
-          "display_progress_ratio": 1.0,
-          "display_progress_label": "100% progress",
-          "display_progress_state": "percent",
-          "progress_classification": "closed",
-          "checklist_label": "Checklist 24/24",
-          "next_tasks": []
-        },
-        "activity": {
-          "24h": {
-            "commit_count": 3,
-            "local_change_count": 2,
-            "file_touch_count": 82
-          },
-          "48h": {
-            "commit_count": 5,
-            "local_change_count": 2,
-            "file_touch_count": 154
-          }
-        },
-        "timeline": {
-          "start_date": "2026-04-09",
-          "last_activity_iso": "2026-09-24T21:23:22-07:00",
-          "age_days": 168,
-          "eta_days": 0,
-          "eta_confidence": "high"
-        },
-        "lineage": {
-          "reopens": [],
-          "reopened_by": [],
-          "split_from": [],
-          "split_into": [
-            "B-070"
-          ],
-          "merged_into": [],
-          "merged_from": []
-        },
-        "cost": {
-          "base_index": 71,
-          "24h": {
-            "index": 84,
-            "band": "High"
-          },
-          "48h": {
-            "index": 91,
-            "band": "High"
-          }
-        },
-        "proof_state": {},
-        "claim_guard": {},
-        "proof_state_resolution": {
-          "lane_ids": [],
-          "state": "none"
-        },
-        "scope_signal": {
-          "budget_class": "fast_simple",
-          "caps": [],
-          "feature_vector": {
-            "blast_radius_class": "cross-surface",
-            "broad_fanout": false,
-            "cross_surface_conflict": false,
-            "decision_count": 72,
-            "decision_evidence": true,
-            "explicit_count": 734,
-            "frontier_phase": "",
-            "generated_only_churn": false,
-            "governance_only_local_change": false,
-            "has_any_signal": true,
-            "implementation_count": 496,
-            "implementation_evidence": true,
-            "linked_child_count": 0,
-            "linked_surface_count": 5,
-            "meaningful_change_count": 589,
-            "meaningful_scope_activity": true,
-            "narrow_verified_signal": true,
-            "open_warning": false,
-            "proof_blocker": false,
-            "proof_status": "",
-            "stale_authority": false,
-            "synthetic_count": 0,
-            "unsafe_closeout": false,
-            "verified_completion": true
-          },
-          "label": "Active scope",
-          "promoted_default": true,
-          "rank": 3,
-          "reasons": [
-            "A recent verified completion was recorded.",
-            "A narrow verified scoped signal was recorded.",
-            "Explicit decision evidence is present.",
-            "Explicit implementation evidence is present.",
-            "Meaningful scope-local implementation evidence is present."
-          ],
-          "rung": "R3",
-          "token": "active_scope"
-        },
-        "proof_refs": [
-          {
-            "anchor": "timeline-audit",
-            "fact_tag": "frontier",
-            "kind": "workstream",
-            "label": "Proof frontier",
-            "surface": "compass",
-            "value": "B-069"
-          },
-          {
-            "anchor": "current-workstreams",
-            "fact_tag": "deployment_truth",
-            "kind": "workstream",
-            "label": "Deployment truth",
-            "surface": "compass",
-            "value": "B-069"
-          }
-        ],
-        "proof_summary_lines": []
-      },
-      {
         "idea_id": "B-027",
         "title": "Lane Boundary, Runtime, and Toolchain Clarity",
         "status": "finished",
@@ -5767,6 +5593,180 @@
             "label": "Deployment truth",
             "surface": "compass",
             "value": "B-027"
+          }
+        ],
+        "proof_summary_lines": []
+      },
+      {
+        "idea_id": "B-069",
+        "title": "Cross-Host Contract Hardening and Codex-Claude Separation",
+        "status": "finished",
+        "priority": "P0",
+        "sizing": "L",
+        "complexity": "VeryHigh",
+        "ordering_score": "95",
+        "implemented_summary": "",
+        "why": {
+          "problem": "Odylith's runtime and governance layers still carry hardcoded Codex-first policy in places that should be host-neutral. Host detection often doubles as policy, canonical execution-profile ids still encode Codex model branding, Compass runtime artifacts still use Codex stream names, and guidance plus proof surfaces still frame Codex behavior as the default product contract even when Claude Code already shares the same grounding and reasoning quality bar. That drift makes Claude compatibility feel partial even where the product already works, while also obscuring the real boundary: native spawn is a host capability question, not the whole product contract.",
+          "customer": "- Primary: Odylith operators who want the same product outcome in Codex and Claude Code without hidden contract drift. - Secondary: maintainers who need host capability, model-family defaults, and benchmark publication scope to stay explicit and auditable.",
+          "proposed_solution": "Add one canonical host capability contract that separates host family, transport capabilities, and model-family behavior; switch runtime routing and execution-profile ids to host-neutral canon with compatibility aliases; rename Compass runtime artifacts to host-neutral stream terms while keeping legacy read compatibility; rewrite source governance and docs around a host matrix; and normalize benchmark/proof fields so published proof can stay Codex-scoped without making the shared product contract Codex-scoped.",
+          "opportunity": "If Odylith makes host capability the canonical runtime contract and treats Codex-only behavior as one scoped model-family policy instead of the global default, the product can keep Codex-native delegation where it truly exists while making Claude Code feel like a first-class supported host across docs, grounding, Compass, governance, and benchmark scaffolding.",
+          "why_now": "Odylith is already claiming shared product value across Codex and Claude Code. Leaving Codex-only naming and policy wired into the canon now will only make later Claude parity and proof work noisier, riskier, and more expensive.",
+          "founder_pov": "Host neutrality is not a doc polish task. It is the product contract that lets Odylith keep one intelligence plane while telling the truth about which host can transport which kind of delegation today."
+        },
+        "links": {
+          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md",
+          "plan_file": "odylith/technical-plans/done/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md"
+        },
+        "registry_components": [
+          {
+            "component_id": "benchmark",
+            "name": "Benchmark"
+          },
+          {
+            "component_id": "compass",
+            "name": "Compass"
+          },
+          {
+            "component_id": "odylith",
+            "name": "Odylith"
+          },
+          {
+            "component_id": "odylith-context-engine",
+            "name": "Odylith Context Engine"
+          },
+          {
+            "component_id": "subagent-orchestrator",
+            "name": "Subagent Orchestrator"
+          },
+          {
+            "component_id": "subagent-router",
+            "name": "Subagent Router"
+          }
+        ],
+        "execution_wave_programs": [],
+        "release": {},
+        "release_history_summary": "Removed from 0.1.11",
+        "plan": {
+          "created": "2026-04-09",
+          "updated": "2026-04-09",
+          "all_total_tasks": 61,
+          "all_done_tasks": 61,
+          "total_tasks": 24,
+          "done_tasks": 24,
+          "progress_ratio": 1.0,
+          "progress_basis": "execution_checklist",
+          "display_progress_ratio": 1.0,
+          "display_progress_label": "100% progress",
+          "display_progress_state": "percent",
+          "progress_classification": "closed",
+          "checklist_label": "Checklist 24/24",
+          "next_tasks": []
+        },
+        "activity": {
+          "24h": {
+            "commit_count": 4,
+            "local_change_count": 0,
+            "file_touch_count": 85
+          },
+          "48h": {
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 156
+          }
+        },
+        "timeline": {
+          "start_date": "2026-04-09",
+          "last_activity_iso": "2026-09-24T21:29:56-07:00",
+          "age_days": 168,
+          "eta_days": 0,
+          "eta_confidence": "high"
+        },
+        "lineage": {
+          "reopens": [],
+          "reopened_by": [],
+          "split_from": [],
+          "split_into": [
+            "B-070"
+          ],
+          "merged_into": [],
+          "merged_from": []
+        },
+        "cost": {
+          "base_index": 71,
+          "24h": {
+            "index": 84,
+            "band": "High"
+          },
+          "48h": {
+            "index": 91,
+            "band": "High"
+          }
+        },
+        "proof_state": {},
+        "claim_guard": {},
+        "proof_state_resolution": {
+          "lane_ids": [],
+          "state": "none"
+        },
+        "scope_signal": {
+          "budget_class": "fast_simple",
+          "caps": [],
+          "feature_vector": {
+            "blast_radius_class": "cross-surface",
+            "broad_fanout": false,
+            "cross_surface_conflict": false,
+            "decision_count": 72,
+            "decision_evidence": true,
+            "explicit_count": 734,
+            "frontier_phase": "",
+            "generated_only_churn": false,
+            "governance_only_local_change": false,
+            "has_any_signal": true,
+            "implementation_count": 496,
+            "implementation_evidence": true,
+            "linked_child_count": 0,
+            "linked_surface_count": 5,
+            "meaningful_change_count": 589,
+            "meaningful_scope_activity": true,
+            "narrow_verified_signal": true,
+            "open_warning": false,
+            "proof_blocker": false,
+            "proof_status": "",
+            "stale_authority": false,
+            "synthetic_count": 0,
+            "unsafe_closeout": false,
+            "verified_completion": true
+          },
+          "label": "Active scope",
+          "promoted_default": true,
+          "rank": 3,
+          "reasons": [
+            "A recent verified completion was recorded.",
+            "A narrow verified scoped signal was recorded.",
+            "Explicit decision evidence is present.",
+            "Explicit implementation evidence is present.",
+            "Meaningful scope-local implementation evidence is present."
+          ],
+          "rung": "R3",
+          "token": "active_scope"
+        },
+        "proof_refs": [
+          {
+            "anchor": "timeline-audit",
+            "fact_tag": "frontier",
+            "kind": "workstream",
+            "label": "Proof frontier",
+            "surface": "compass",
+            "value": "B-069"
+          },
+          {
+            "anchor": "current-workstreams",
+            "fact_tag": "deployment_truth",
+            "kind": "workstream",
+            "label": "Deployment truth",
+            "surface": "compass",
+            "value": "B-069"
           }
         ],
         "proof_summary_lines": []
@@ -8032,205 +8032,6 @@
         ]
       },
       {
-        "idea_id": "B-083",
-        "title": "Claude Guidance Surface Parity and Install Contract Support",
-        "status": "implementation",
-        "priority": "P0",
-        "sizing": "M",
-        "complexity": "High",
-        "ordering_score": "100",
-        "implemented_summary": "",
-        "why": {
-          "problem": "Odylith's shared product contract now talks honestly about Codex and Claude Code, but the install and runtime guidance surface still assumes `AGENTS.md` is the only durable repo instruction entrypoint. Repo-root detection, managed bootstrap writes, dirty-path reasoning, workstream inference, benchmark workspace handling, and several hot-path heuristics still special-case `AGENTS.md` while treating `CLAUDE.md` as incidental or invisible. That means Claude compatibility depends on maintainers remembering to add manual shims instead of the product carrying that contract itself.",
-          "customer": "- Primary: operators who use Odylith through Claude Code and need the same first-run guidance contract that Codex already gets automatically. - Secondary: maintainers who need install, repair, benchmark, and runtime heuristics to describe one truthful host contract instead of a Codex-first default with Claude exceptions layered on top.",
-          "proposed_solution": "- accept either `AGENTS.md` or `CLAUDE.md` as the repo-root guidance marker - always materialize a repo-root `CLAUDE.md` companion when Odylith installs or repairs guidance - ship a managed `odylith/CLAUDE.md` companion in the product repo and bundle - update shared runtime heuristics so `CLAUDE.md` participates anywhere guidance files currently influence routing, dirty-overlap summaries, benchmark isolation, or workstream inference - update the public and install-facing docs and tests so Claude support is product truth instead of a manual aftercare step",
-          "opportunity": "Make `CLAUDE.md` a first-class managed companion surface: root detection can bootstrap from it, install and repair flows can materialize it, runtime heuristics can classify it as guidance, and the shipped `odylith/` tree can present the same scoped contract naturally to Claude Code.",
-          "why_now": "Claude support is already part of the product claim. The contract has to be first-class in the product itself before more host-specific proof or transport work is worth doing.",
-          "founder_pov": "Claude support should not depend on maintainers remembering to hand-place one compatibility file after the fact."
-        },
-        "links": {
-          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md",
-          "plan_file": "odylith/technical-plans/in-progress/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md"
-        },
-        "registry_components": [
-          {
-            "component_id": "benchmark",
-            "name": "Benchmark"
-          },
-          {
-            "component_id": "odylith",
-            "name": "Odylith"
-          },
-          {
-            "component_id": "odylith-context-engine",
-            "name": "Odylith Context Engine"
-          }
-        ],
-        "execution_wave_programs": [],
-        "release": {
-          "release_id": "release-0-1-12",
-          "status": "planning",
-          "version": "0.1.12",
-          "tag": "v0.1.12",
-          "name": "",
-          "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
-          "effective_name": "0.1.12",
-          "display_label": "0.1.12",
-          "notes": "",
-          "created_utc": "2026-04-09",
-          "shipped_utc": "",
-          "closed_utc": "",
-          "aliases": [],
-          "active_workstreams": [
-            "B-070",
-            "B-083",
-            "B-084",
-            "B-085",
-            "B-087",
-            "B-088",
-            "B-092",
-            "B-093",
-            "B-097",
-            "B-126"
-          ],
-          "completed_workstreams": [
-            "B-127"
-          ],
-          "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
-          "terminal": false,
-          "active_workstream_count": 10,
-          "completed_workstream_count": 1
-        },
-        "release_history_summary": "Active: 0.1.12 \u00b7 Latest move: 0.1.11 -> 0.1.12",
-        "plan": {
-          "created": "2026-04-10",
-          "updated": "2026-04-10",
-          "all_total_tasks": 41,
-          "all_done_tasks": 0,
-          "total_tasks": 17,
-          "done_tasks": 0,
-          "progress_ratio": 0.0,
-          "progress_basis": "execution_checklist",
-          "display_progress_ratio": null,
-          "display_progress_label": "Checklist 0/17",
-          "display_progress_state": "checklist_only",
-          "progress_classification": "active_untracked",
-          "checklist_label": "Checklist 0/17",
-          "next_tasks": [
-            "Bind this plan to `B-083` and keep the cross-host scope honest against",
-            "Add a repo-root `CLAUDE.md` companion contract to managed install flows.",
-            "Add a managed `odylith/CLAUDE.md` companion file in the source tree and",
-            "Accept `CLAUDE.md` as a repo-root guidance marker in install and runtime",
-            "Extend guidance-sensitive runtime heuristics and benchmark handling to",
-            "Refresh the public install and repo-integration docs so Claude guidance"
-          ]
-        },
-        "activity": {
-          "24h": {
-            "commit_count": 3,
-            "local_change_count": 2,
-            "file_touch_count": 81
-          },
-          "48h": {
-            "commit_count": 5,
-            "local_change_count": 2,
-            "file_touch_count": 153
-          }
-        },
-        "timeline": {
-          "start_date": "2026-04-10",
-          "last_activity_iso": "2026-09-24T21:23:22-07:00",
-          "age_days": 167,
-          "eta_days": null,
-          "eta_confidence": "low"
-        },
-        "lineage": {
-          "reopens": [],
-          "reopened_by": [],
-          "split_from": [],
-          "split_into": [],
-          "merged_into": [],
-          "merged_from": []
-        },
-        "cost": {
-          "base_index": 35,
-          "24h": {
-            "index": 48,
-            "band": "Medium"
-          },
-          "48h": {
-            "index": 55,
-            "band": "Medium"
-          }
-        },
-        "proof_state": {},
-        "claim_guard": {},
-        "proof_state_resolution": {
-          "lane_ids": [],
-          "state": "none"
-        },
-        "scope_signal": {
-          "budget_class": "fast_simple",
-          "caps": [],
-          "feature_vector": {
-            "blast_radius_class": "cross-surface",
-            "broad_fanout": false,
-            "cross_surface_conflict": false,
-            "decision_count": 65,
-            "decision_evidence": true,
-            "explicit_count": 707,
-            "frontier_phase": "",
-            "generated_only_churn": false,
-            "governance_only_local_change": false,
-            "has_any_signal": true,
-            "implementation_count": 480,
-            "implementation_evidence": true,
-            "linked_child_count": 0,
-            "linked_surface_count": 5,
-            "meaningful_change_count": 587,
-            "meaningful_scope_activity": true,
-            "narrow_verified_signal": true,
-            "open_warning": false,
-            "proof_blocker": false,
-            "proof_status": "",
-            "stale_authority": false,
-            "synthetic_count": 0,
-            "unsafe_closeout": false,
-            "verified_completion": false
-          },
-          "label": "Active scope",
-          "promoted_default": true,
-          "rank": 3,
-          "reasons": [
-            "A narrow verified scoped signal was recorded.",
-            "Explicit decision evidence is present.",
-            "Explicit implementation evidence is present.",
-            "Meaningful scope-local implementation evidence is present."
-          ],
-          "rung": "R3",
-          "token": "active_scope"
-        },
-        "proof_refs": [
-          {
-            "anchor": "timeline-audit",
-            "fact_tag": "frontier",
-            "kind": "workstream",
-            "label": "Proof frontier",
-            "surface": "compass",
-            "value": "B-083"
-          },
-          {
-            "anchor": "current-workstreams",
-            "fact_tag": "deployment_truth",
-            "kind": "workstream",
-            "label": "Deployment truth",
-            "surface": "compass",
-            "value": "B-083"
-          }
-        ],
-        "proof_summary_lines": []
-      },
-      {
         "idea_id": "B-145",
         "title": "Assess v0.1.15 guidance and browser surface migration",
         "status": "implementation",
@@ -8726,6 +8527,205 @@
             "label": "Deployment truth",
             "surface": "compass",
             "value": "B-071"
+          }
+        ],
+        "proof_summary_lines": []
+      },
+      {
+        "idea_id": "B-083",
+        "title": "Claude Guidance Surface Parity and Install Contract Support",
+        "status": "implementation",
+        "priority": "P0",
+        "sizing": "M",
+        "complexity": "High",
+        "ordering_score": "100",
+        "implemented_summary": "",
+        "why": {
+          "problem": "Odylith's shared product contract now talks honestly about Codex and Claude Code, but the install and runtime guidance surface still assumes `AGENTS.md` is the only durable repo instruction entrypoint. Repo-root detection, managed bootstrap writes, dirty-path reasoning, workstream inference, benchmark workspace handling, and several hot-path heuristics still special-case `AGENTS.md` while treating `CLAUDE.md` as incidental or invisible. That means Claude compatibility depends on maintainers remembering to add manual shims instead of the product carrying that contract itself.",
+          "customer": "- Primary: operators who use Odylith through Claude Code and need the same first-run guidance contract that Codex already gets automatically. - Secondary: maintainers who need install, repair, benchmark, and runtime heuristics to describe one truthful host contract instead of a Codex-first default with Claude exceptions layered on top.",
+          "proposed_solution": "- accept either `AGENTS.md` or `CLAUDE.md` as the repo-root guidance marker - always materialize a repo-root `CLAUDE.md` companion when Odylith installs or repairs guidance - ship a managed `odylith/CLAUDE.md` companion in the product repo and bundle - update shared runtime heuristics so `CLAUDE.md` participates anywhere guidance files currently influence routing, dirty-overlap summaries, benchmark isolation, or workstream inference - update the public and install-facing docs and tests so Claude support is product truth instead of a manual aftercare step",
+          "opportunity": "Make `CLAUDE.md` a first-class managed companion surface: root detection can bootstrap from it, install and repair flows can materialize it, runtime heuristics can classify it as guidance, and the shipped `odylith/` tree can present the same scoped contract naturally to Claude Code.",
+          "why_now": "Claude support is already part of the product claim. The contract has to be first-class in the product itself before more host-specific proof or transport work is worth doing.",
+          "founder_pov": "Claude support should not depend on maintainers remembering to hand-place one compatibility file after the fact."
+        },
+        "links": {
+          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md",
+          "plan_file": "odylith/technical-plans/in-progress/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md"
+        },
+        "registry_components": [
+          {
+            "component_id": "benchmark",
+            "name": "Benchmark"
+          },
+          {
+            "component_id": "odylith",
+            "name": "Odylith"
+          },
+          {
+            "component_id": "odylith-context-engine",
+            "name": "Odylith Context Engine"
+          }
+        ],
+        "execution_wave_programs": [],
+        "release": {
+          "release_id": "release-0-1-12",
+          "status": "planning",
+          "version": "0.1.12",
+          "tag": "v0.1.12",
+          "name": "",
+          "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
+          "effective_name": "0.1.12",
+          "display_label": "0.1.12",
+          "notes": "",
+          "created_utc": "2026-04-09",
+          "shipped_utc": "",
+          "closed_utc": "",
+          "aliases": [],
+          "active_workstreams": [
+            "B-070",
+            "B-083",
+            "B-084",
+            "B-085",
+            "B-087",
+            "B-088",
+            "B-092",
+            "B-093",
+            "B-097",
+            "B-126"
+          ],
+          "completed_workstreams": [
+            "B-127"
+          ],
+          "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
+          "terminal": false,
+          "active_workstream_count": 10,
+          "completed_workstream_count": 1
+        },
+        "release_history_summary": "Active: 0.1.12 \u00b7 Latest move: 0.1.11 -> 0.1.12",
+        "plan": {
+          "created": "2026-04-10",
+          "updated": "2026-04-10",
+          "all_total_tasks": 41,
+          "all_done_tasks": 0,
+          "total_tasks": 17,
+          "done_tasks": 0,
+          "progress_ratio": 0.0,
+          "progress_basis": "execution_checklist",
+          "display_progress_ratio": null,
+          "display_progress_label": "Checklist 0/17",
+          "display_progress_state": "checklist_only",
+          "progress_classification": "active_untracked",
+          "checklist_label": "Checklist 0/17",
+          "next_tasks": [
+            "Bind this plan to `B-083` and keep the cross-host scope honest against",
+            "Add a repo-root `CLAUDE.md` companion contract to managed install flows.",
+            "Add a managed `odylith/CLAUDE.md` companion file in the source tree and",
+            "Accept `CLAUDE.md` as a repo-root guidance marker in install and runtime",
+            "Extend guidance-sensitive runtime heuristics and benchmark handling to",
+            "Refresh the public install and repo-integration docs so Claude guidance"
+          ]
+        },
+        "activity": {
+          "24h": {
+            "commit_count": 4,
+            "local_change_count": 0,
+            "file_touch_count": 84
+          },
+          "48h": {
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 155
+          }
+        },
+        "timeline": {
+          "start_date": "2026-04-10",
+          "last_activity_iso": "2026-09-24T21:29:56-07:00",
+          "age_days": 167,
+          "eta_days": null,
+          "eta_confidence": "low"
+        },
+        "lineage": {
+          "reopens": [],
+          "reopened_by": [],
+          "split_from": [],
+          "split_into": [],
+          "merged_into": [],
+          "merged_from": []
+        },
+        "cost": {
+          "base_index": 35,
+          "24h": {
+            "index": 48,
+            "band": "Medium"
+          },
+          "48h": {
+            "index": 55,
+            "band": "Medium"
+          }
+        },
+        "proof_state": {},
+        "claim_guard": {},
+        "proof_state_resolution": {
+          "lane_ids": [],
+          "state": "none"
+        },
+        "scope_signal": {
+          "budget_class": "fast_simple",
+          "caps": [],
+          "feature_vector": {
+            "blast_radius_class": "cross-surface",
+            "broad_fanout": false,
+            "cross_surface_conflict": false,
+            "decision_count": 65,
+            "decision_evidence": true,
+            "explicit_count": 707,
+            "frontier_phase": "",
+            "generated_only_churn": false,
+            "governance_only_local_change": false,
+            "has_any_signal": true,
+            "implementation_count": 480,
+            "implementation_evidence": true,
+            "linked_child_count": 0,
+            "linked_surface_count": 5,
+            "meaningful_change_count": 587,
+            "meaningful_scope_activity": true,
+            "narrow_verified_signal": true,
+            "open_warning": false,
+            "proof_blocker": false,
+            "proof_status": "",
+            "stale_authority": false,
+            "synthetic_count": 0,
+            "unsafe_closeout": false,
+            "verified_completion": false
+          },
+          "label": "Active scope",
+          "promoted_default": true,
+          "rank": 3,
+          "reasons": [
+            "A narrow verified scoped signal was recorded.",
+            "Explicit decision evidence is present.",
+            "Explicit implementation evidence is present.",
+            "Meaningful scope-local implementation evidence is present."
+          ],
+          "rung": "R3",
+          "token": "active_scope"
+        },
+        "proof_refs": [
+          {
+            "anchor": "timeline-audit",
+            "fact_tag": "frontier",
+            "kind": "workstream",
+            "label": "Proof frontier",
+            "surface": "compass",
+            "value": "B-083"
+          },
+          {
+            "anchor": "current-workstreams",
+            "fact_tag": "deployment_truth",
+            "kind": "workstream",
+            "label": "Deployment truth",
+            "surface": "compass",
+            "value": "B-083"
           }
         ],
         "proof_summary_lines": []
@@ -9811,19 +9811,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 49
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 53
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 83
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 87
           }
         },
         "timeline": {
           "start_date": "2026-04-17",
-          "last_activity_iso": "2026-09-24T21:23:22-07:00",
+          "last_activity_iso": "2026-09-24T21:29:56-07:00",
           "age_days": 160,
           "eta_days": null,
           "eta_confidence": "low"
@@ -9839,11 +9839,11 @@
         "cost": {
           "base_index": 84,
           "24h": {
-            "index": 89,
+            "index": 91,
             "band": "High"
           },
           "48h": {
-            "index": 89,
+            "index": 91,
             "band": "High"
           }
         },
@@ -30240,19 +30240,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 9,
-            "local_change_count": 8,
-            "file_touch_count": 97
+            "commit_count": 10,
+            "local_change_count": 3,
+            "file_touch_count": 98
           },
           "48h": {
-            "commit_count": 26,
-            "local_change_count": 8,
+            "commit_count": 27,
+            "local_change_count": 3,
             "file_touch_count": 507
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-09-24T21:27:41-07:00",
+          "last_activity_iso": "2026-09-24T21:50:10-07:00",
           "age_days": 90,
           "eta_days": 14,
           "eta_confidence": "high"
@@ -32798,19 +32798,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 6,
-            "local_change_count": 1,
-            "file_touch_count": 80
-          },
-          "48h": {
             "commit_count": 7,
             "local_change_count": 1,
-            "file_touch_count": 123
+            "file_touch_count": 83
+          },
+          "48h": {
+            "commit_count": 8,
+            "local_change_count": 1,
+            "file_touch_count": 125
           }
         },
         "timeline": {
           "start_date": "2026-03-28",
-          "last_activity_iso": "2026-09-24T21:27:31-07:00",
+          "last_activity_iso": "2026-09-24T21:48:23-07:00",
           "age_days": 180,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -33515,180 +33515,6 @@
         ]
       },
       {
-        "idea_id": "B-069",
-        "title": "Cross-Host Contract Hardening and Codex-Claude Separation",
-        "status": "finished",
-        "priority": "P0",
-        "sizing": "L",
-        "complexity": "VeryHigh",
-        "ordering_score": "95",
-        "implemented_summary": "",
-        "why": {
-          "problem": "Odylith's runtime and governance layers still carry hardcoded Codex-first policy in places that should be host-neutral. Host detection often doubles as policy, canonical execution-profile ids still encode Codex model branding, Compass runtime artifacts still use Codex stream names, and guidance plus proof surfaces still frame Codex behavior as the default product contract even when Claude Code already shares the same grounding and reasoning quality bar. That drift makes Claude compatibility feel partial even where the product already works, while also obscuring the real boundary: native spawn is a host capability question, not the whole product contract.",
-          "customer": "- Primary: Odylith operators who want the same product outcome in Codex and Claude Code without hidden contract drift. - Secondary: maintainers who need host capability, model-family defaults, and benchmark publication scope to stay explicit and auditable.",
-          "proposed_solution": "Add one canonical host capability contract that separates host family, transport capabilities, and model-family behavior; switch runtime routing and execution-profile ids to host-neutral canon with compatibility aliases; rename Compass runtime artifacts to host-neutral stream terms while keeping legacy read compatibility; rewrite source governance and docs around a host matrix; and normalize benchmark/proof fields so published proof can stay Codex-scoped without making the shared product contract Codex-scoped.",
-          "opportunity": "If Odylith makes host capability the canonical runtime contract and treats Codex-only behavior as one scoped model-family policy instead of the global default, the product can keep Codex-native delegation where it truly exists while making Claude Code feel like a first-class supported host across docs, grounding, Compass, governance, and benchmark scaffolding.",
-          "why_now": "Odylith is already claiming shared product value across Codex and Claude Code. Leaving Codex-only naming and policy wired into the canon now will only make later Claude parity and proof work noisier, riskier, and more expensive.",
-          "founder_pov": "Host neutrality is not a doc polish task. It is the product contract that lets Odylith keep one intelligence plane while telling the truth about which host can transport which kind of delegation today."
-        },
-        "links": {
-          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md",
-          "plan_file": "odylith/technical-plans/done/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md"
-        },
-        "registry_components": [
-          {
-            "component_id": "benchmark",
-            "name": "Benchmark"
-          },
-          {
-            "component_id": "compass",
-            "name": "Compass"
-          },
-          {
-            "component_id": "odylith",
-            "name": "Odylith"
-          },
-          {
-            "component_id": "odylith-context-engine",
-            "name": "Odylith Context Engine"
-          },
-          {
-            "component_id": "subagent-orchestrator",
-            "name": "Subagent Orchestrator"
-          },
-          {
-            "component_id": "subagent-router",
-            "name": "Subagent Router"
-          }
-        ],
-        "execution_wave_programs": [],
-        "release": {},
-        "release_history_summary": "Removed from 0.1.11",
-        "plan": {
-          "created": "2026-04-09",
-          "updated": "2026-04-09",
-          "all_total_tasks": 61,
-          "all_done_tasks": 61,
-          "total_tasks": 24,
-          "done_tasks": 24,
-          "progress_ratio": 1.0,
-          "progress_basis": "execution_checklist",
-          "display_progress_ratio": 1.0,
-          "display_progress_label": "100% progress",
-          "display_progress_state": "percent",
-          "progress_classification": "closed",
-          "checklist_label": "Checklist 24/24",
-          "next_tasks": []
-        },
-        "activity": {
-          "24h": {
-            "commit_count": 3,
-            "local_change_count": 2,
-            "file_touch_count": 82
-          },
-          "48h": {
-            "commit_count": 5,
-            "local_change_count": 2,
-            "file_touch_count": 154
-          }
-        },
-        "timeline": {
-          "start_date": "2026-04-09",
-          "last_activity_iso": "2026-09-24T21:23:22-07:00",
-          "age_days": 168,
-          "eta_days": 0,
-          "eta_confidence": "high"
-        },
-        "lineage": {
-          "reopens": [],
-          "reopened_by": [],
-          "split_from": [],
-          "split_into": [
-            "B-070"
-          ],
-          "merged_into": [],
-          "merged_from": []
-        },
-        "cost": {
-          "base_index": 71,
-          "24h": {
-            "index": 84,
-            "band": "High"
-          },
-          "48h": {
-            "index": 91,
-            "band": "High"
-          }
-        },
-        "proof_state": {},
-        "claim_guard": {},
-        "proof_state_resolution": {
-          "lane_ids": [],
-          "state": "none"
-        },
-        "scope_signal": {
-          "budget_class": "fast_simple",
-          "caps": [],
-          "feature_vector": {
-            "blast_radius_class": "cross-surface",
-            "broad_fanout": false,
-            "cross_surface_conflict": false,
-            "decision_count": 72,
-            "decision_evidence": true,
-            "explicit_count": 734,
-            "frontier_phase": "",
-            "generated_only_churn": false,
-            "governance_only_local_change": false,
-            "has_any_signal": true,
-            "implementation_count": 496,
-            "implementation_evidence": true,
-            "linked_child_count": 0,
-            "linked_surface_count": 5,
-            "meaningful_change_count": 589,
-            "meaningful_scope_activity": true,
-            "narrow_verified_signal": true,
-            "open_warning": false,
-            "proof_blocker": false,
-            "proof_status": "",
-            "stale_authority": false,
-            "synthetic_count": 0,
-            "unsafe_closeout": false,
-            "verified_completion": true
-          },
-          "label": "Active scope",
-          "promoted_default": true,
-          "rank": 3,
-          "reasons": [
-            "A recent verified completion was recorded.",
-            "A narrow verified scoped signal was recorded.",
-            "Explicit decision evidence is present.",
-            "Explicit implementation evidence is present.",
-            "Meaningful scope-local implementation evidence is present."
-          ],
-          "rung": "R3",
-          "token": "active_scope"
-        },
-        "proof_refs": [
-          {
-            "anchor": "timeline-audit",
-            "fact_tag": "frontier",
-            "kind": "workstream",
-            "label": "Proof frontier",
-            "surface": "compass",
-            "value": "B-069"
-          },
-          {
-            "anchor": "current-workstreams",
-            "fact_tag": "deployment_truth",
-            "kind": "workstream",
-            "label": "Deployment truth",
-            "surface": "compass",
-            "value": "B-069"
-          }
-        ],
-        "proof_summary_lines": []
-      },
-      {
         "idea_id": "B-115",
         "title": "Discipline Tooling And Host Parity",
         "status": "finished",
@@ -34319,6 +34145,180 @@
             "label": "Deployment truth",
             "surface": "compass",
             "value": "B-059"
+          }
+        ],
+        "proof_summary_lines": []
+      },
+      {
+        "idea_id": "B-069",
+        "title": "Cross-Host Contract Hardening and Codex-Claude Separation",
+        "status": "finished",
+        "priority": "P0",
+        "sizing": "L",
+        "complexity": "VeryHigh",
+        "ordering_score": "95",
+        "implemented_summary": "",
+        "why": {
+          "problem": "Odylith's runtime and governance layers still carry hardcoded Codex-first policy in places that should be host-neutral. Host detection often doubles as policy, canonical execution-profile ids still encode Codex model branding, Compass runtime artifacts still use Codex stream names, and guidance plus proof surfaces still frame Codex behavior as the default product contract even when Claude Code already shares the same grounding and reasoning quality bar. That drift makes Claude compatibility feel partial even where the product already works, while also obscuring the real boundary: native spawn is a host capability question, not the whole product contract.",
+          "customer": "- Primary: Odylith operators who want the same product outcome in Codex and Claude Code without hidden contract drift. - Secondary: maintainers who need host capability, model-family defaults, and benchmark publication scope to stay explicit and auditable.",
+          "proposed_solution": "Add one canonical host capability contract that separates host family, transport capabilities, and model-family behavior; switch runtime routing and execution-profile ids to host-neutral canon with compatibility aliases; rename Compass runtime artifacts to host-neutral stream terms while keeping legacy read compatibility; rewrite source governance and docs around a host matrix; and normalize benchmark/proof fields so published proof can stay Codex-scoped without making the shared product contract Codex-scoped.",
+          "opportunity": "If Odylith makes host capability the canonical runtime contract and treats Codex-only behavior as one scoped model-family policy instead of the global default, the product can keep Codex-native delegation where it truly exists while making Claude Code feel like a first-class supported host across docs, grounding, Compass, governance, and benchmark scaffolding.",
+          "why_now": "Odylith is already claiming shared product value across Codex and Claude Code. Leaving Codex-only naming and policy wired into the canon now will only make later Claude parity and proof work noisier, riskier, and more expensive.",
+          "founder_pov": "Host neutrality is not a doc polish task. It is the product contract that lets Odylith keep one intelligence plane while telling the truth about which host can transport which kind of delegation today."
+        },
+        "links": {
+          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md",
+          "plan_file": "odylith/technical-plans/done/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md"
+        },
+        "registry_components": [
+          {
+            "component_id": "benchmark",
+            "name": "Benchmark"
+          },
+          {
+            "component_id": "compass",
+            "name": "Compass"
+          },
+          {
+            "component_id": "odylith",
+            "name": "Odylith"
+          },
+          {
+            "component_id": "odylith-context-engine",
+            "name": "Odylith Context Engine"
+          },
+          {
+            "component_id": "subagent-orchestrator",
+            "name": "Subagent Orchestrator"
+          },
+          {
+            "component_id": "subagent-router",
+            "name": "Subagent Router"
+          }
+        ],
+        "execution_wave_programs": [],
+        "release": {},
+        "release_history_summary": "Removed from 0.1.11",
+        "plan": {
+          "created": "2026-04-09",
+          "updated": "2026-04-09",
+          "all_total_tasks": 61,
+          "all_done_tasks": 61,
+          "total_tasks": 24,
+          "done_tasks": 24,
+          "progress_ratio": 1.0,
+          "progress_basis": "execution_checklist",
+          "display_progress_ratio": 1.0,
+          "display_progress_label": "100% progress",
+          "display_progress_state": "percent",
+          "progress_classification": "closed",
+          "checklist_label": "Checklist 24/24",
+          "next_tasks": []
+        },
+        "activity": {
+          "24h": {
+            "commit_count": 4,
+            "local_change_count": 0,
+            "file_touch_count": 85
+          },
+          "48h": {
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 156
+          }
+        },
+        "timeline": {
+          "start_date": "2026-04-09",
+          "last_activity_iso": "2026-09-24T21:29:56-07:00",
+          "age_days": 168,
+          "eta_days": 0,
+          "eta_confidence": "high"
+        },
+        "lineage": {
+          "reopens": [],
+          "reopened_by": [],
+          "split_from": [],
+          "split_into": [
+            "B-070"
+          ],
+          "merged_into": [],
+          "merged_from": []
+        },
+        "cost": {
+          "base_index": 71,
+          "24h": {
+            "index": 84,
+            "band": "High"
+          },
+          "48h": {
+            "index": 91,
+            "band": "High"
+          }
+        },
+        "proof_state": {},
+        "claim_guard": {},
+        "proof_state_resolution": {
+          "lane_ids": [],
+          "state": "none"
+        },
+        "scope_signal": {
+          "budget_class": "fast_simple",
+          "caps": [],
+          "feature_vector": {
+            "blast_radius_class": "cross-surface",
+            "broad_fanout": false,
+            "cross_surface_conflict": false,
+            "decision_count": 72,
+            "decision_evidence": true,
+            "explicit_count": 734,
+            "frontier_phase": "",
+            "generated_only_churn": false,
+            "governance_only_local_change": false,
+            "has_any_signal": true,
+            "implementation_count": 496,
+            "implementation_evidence": true,
+            "linked_child_count": 0,
+            "linked_surface_count": 5,
+            "meaningful_change_count": 589,
+            "meaningful_scope_activity": true,
+            "narrow_verified_signal": true,
+            "open_warning": false,
+            "proof_blocker": false,
+            "proof_status": "",
+            "stale_authority": false,
+            "synthetic_count": 0,
+            "unsafe_closeout": false,
+            "verified_completion": true
+          },
+          "label": "Active scope",
+          "promoted_default": true,
+          "rank": 3,
+          "reasons": [
+            "A recent verified completion was recorded.",
+            "A narrow verified scoped signal was recorded.",
+            "Explicit decision evidence is present.",
+            "Explicit implementation evidence is present.",
+            "Meaningful scope-local implementation evidence is present."
+          ],
+          "rung": "R3",
+          "token": "active_scope"
+        },
+        "proof_refs": [
+          {
+            "anchor": "timeline-audit",
+            "fact_tag": "frontier",
+            "kind": "workstream",
+            "label": "Proof frontier",
+            "surface": "compass",
+            "value": "B-069"
+          },
+          {
+            "anchor": "current-workstreams",
+            "fact_tag": "deployment_truth",
+            "kind": "workstream",
+            "label": "Deployment truth",
+            "surface": "compass",
+            "value": "B-069"
           }
         ],
         "proof_summary_lines": []
@@ -35229,205 +35229,6 @@
         "proof_summary_lines": []
       },
       {
-        "idea_id": "B-083",
-        "title": "Claude Guidance Surface Parity and Install Contract Support",
-        "status": "implementation",
-        "priority": "P0",
-        "sizing": "M",
-        "complexity": "High",
-        "ordering_score": "100",
-        "implemented_summary": "",
-        "why": {
-          "problem": "Odylith's shared product contract now talks honestly about Codex and Claude Code, but the install and runtime guidance surface still assumes `AGENTS.md` is the only durable repo instruction entrypoint. Repo-root detection, managed bootstrap writes, dirty-path reasoning, workstream inference, benchmark workspace handling, and several hot-path heuristics still special-case `AGENTS.md` while treating `CLAUDE.md` as incidental or invisible. That means Claude compatibility depends on maintainers remembering to add manual shims instead of the product carrying that contract itself.",
-          "customer": "- Primary: operators who use Odylith through Claude Code and need the same first-run guidance contract that Codex already gets automatically. - Secondary: maintainers who need install, repair, benchmark, and runtime heuristics to describe one truthful host contract instead of a Codex-first default with Claude exceptions layered on top.",
-          "proposed_solution": "- accept either `AGENTS.md` or `CLAUDE.md` as the repo-root guidance marker - always materialize a repo-root `CLAUDE.md` companion when Odylith installs or repairs guidance - ship a managed `odylith/CLAUDE.md` companion in the product repo and bundle - update shared runtime heuristics so `CLAUDE.md` participates anywhere guidance files currently influence routing, dirty-overlap summaries, benchmark isolation, or workstream inference - update the public and install-facing docs and tests so Claude support is product truth instead of a manual aftercare step",
-          "opportunity": "Make `CLAUDE.md` a first-class managed companion surface: root detection can bootstrap from it, install and repair flows can materialize it, runtime heuristics can classify it as guidance, and the shipped `odylith/` tree can present the same scoped contract naturally to Claude Code.",
-          "why_now": "Claude support is already part of the product claim. The contract has to be first-class in the product itself before more host-specific proof or transport work is worth doing.",
-          "founder_pov": "Claude support should not depend on maintainers remembering to hand-place one compatibility file after the fact."
-        },
-        "links": {
-          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md",
-          "plan_file": "odylith/technical-plans/in-progress/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md"
-        },
-        "registry_components": [
-          {
-            "component_id": "benchmark",
-            "name": "Benchmark"
-          },
-          {
-            "component_id": "odylith",
-            "name": "Odylith"
-          },
-          {
-            "component_id": "odylith-context-engine",
-            "name": "Odylith Context Engine"
-          }
-        ],
-        "execution_wave_programs": [],
-        "release": {
-          "release_id": "release-0-1-12",
-          "status": "planning",
-          "version": "0.1.12",
-          "tag": "v0.1.12",
-          "name": "",
-          "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
-          "effective_name": "0.1.12",
-          "display_label": "0.1.12",
-          "notes": "",
-          "created_utc": "2026-04-09",
-          "shipped_utc": "",
-          "closed_utc": "",
-          "aliases": [],
-          "active_workstreams": [
-            "B-070",
-            "B-083",
-            "B-084",
-            "B-085",
-            "B-087",
-            "B-088",
-            "B-092",
-            "B-093",
-            "B-097",
-            "B-126"
-          ],
-          "completed_workstreams": [
-            "B-127"
-          ],
-          "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
-          "terminal": false,
-          "active_workstream_count": 10,
-          "completed_workstream_count": 1
-        },
-        "release_history_summary": "Active: 0.1.12 \u00b7 Latest move: 0.1.11 -> 0.1.12",
-        "plan": {
-          "created": "2026-04-10",
-          "updated": "2026-04-10",
-          "all_total_tasks": 41,
-          "all_done_tasks": 0,
-          "total_tasks": 17,
-          "done_tasks": 0,
-          "progress_ratio": 0.0,
-          "progress_basis": "execution_checklist",
-          "display_progress_ratio": null,
-          "display_progress_label": "Checklist 0/17",
-          "display_progress_state": "checklist_only",
-          "progress_classification": "active_untracked",
-          "checklist_label": "Checklist 0/17",
-          "next_tasks": [
-            "Bind this plan to `B-083` and keep the cross-host scope honest against",
-            "Add a repo-root `CLAUDE.md` companion contract to managed install flows.",
-            "Add a managed `odylith/CLAUDE.md` companion file in the source tree and",
-            "Accept `CLAUDE.md` as a repo-root guidance marker in install and runtime",
-            "Extend guidance-sensitive runtime heuristics and benchmark handling to",
-            "Refresh the public install and repo-integration docs so Claude guidance"
-          ]
-        },
-        "activity": {
-          "24h": {
-            "commit_count": 3,
-            "local_change_count": 2,
-            "file_touch_count": 81
-          },
-          "48h": {
-            "commit_count": 5,
-            "local_change_count": 2,
-            "file_touch_count": 153
-          }
-        },
-        "timeline": {
-          "start_date": "2026-04-10",
-          "last_activity_iso": "2026-09-24T21:23:22-07:00",
-          "age_days": 167,
-          "eta_days": null,
-          "eta_confidence": "low"
-        },
-        "lineage": {
-          "reopens": [],
-          "reopened_by": [],
-          "split_from": [],
-          "split_into": [],
-          "merged_into": [],
-          "merged_from": []
-        },
-        "cost": {
-          "base_index": 35,
-          "24h": {
-            "index": 48,
-            "band": "Medium"
-          },
-          "48h": {
-            "index": 55,
-            "band": "Medium"
-          }
-        },
-        "proof_state": {},
-        "claim_guard": {},
-        "proof_state_resolution": {
-          "lane_ids": [],
-          "state": "none"
-        },
-        "scope_signal": {
-          "budget_class": "fast_simple",
-          "caps": [],
-          "feature_vector": {
-            "blast_radius_class": "cross-surface",
-            "broad_fanout": false,
-            "cross_surface_conflict": false,
-            "decision_count": 65,
-            "decision_evidence": true,
-            "explicit_count": 707,
-            "frontier_phase": "",
-            "generated_only_churn": false,
-            "governance_only_local_change": false,
-            "has_any_signal": true,
-            "implementation_count": 480,
-            "implementation_evidence": true,
-            "linked_child_count": 0,
-            "linked_surface_count": 5,
-            "meaningful_change_count": 587,
-            "meaningful_scope_activity": true,
-            "narrow_verified_signal": true,
-            "open_warning": false,
-            "proof_blocker": false,
-            "proof_status": "",
-            "stale_authority": false,
-            "synthetic_count": 0,
-            "unsafe_closeout": false,
-            "verified_completion": false
-          },
-          "label": "Active scope",
-          "promoted_default": true,
-          "rank": 3,
-          "reasons": [
-            "A narrow verified scoped signal was recorded.",
-            "Explicit decision evidence is present.",
-            "Explicit implementation evidence is present.",
-            "Meaningful scope-local implementation evidence is present."
-          ],
-          "rung": "R3",
-          "token": "active_scope"
-        },
-        "proof_refs": [
-          {
-            "anchor": "timeline-audit",
-            "fact_tag": "frontier",
-            "kind": "workstream",
-            "label": "Proof frontier",
-            "surface": "compass",
-            "value": "B-083"
-          },
-          {
-            "anchor": "current-workstreams",
-            "fact_tag": "deployment_truth",
-            "kind": "workstream",
-            "label": "Deployment truth",
-            "surface": "compass",
-            "value": "B-083"
-          }
-        ],
-        "proof_summary_lines": []
-      },
-      {
         "idea_id": "B-001",
         "title": "Product Self-Governance and Repo Boundary",
         "status": "finished",
@@ -35875,6 +35676,205 @@
             "label": "Deployment truth",
             "surface": "compass",
             "value": "B-031"
+          }
+        ],
+        "proof_summary_lines": []
+      },
+      {
+        "idea_id": "B-083",
+        "title": "Claude Guidance Surface Parity and Install Contract Support",
+        "status": "implementation",
+        "priority": "P0",
+        "sizing": "M",
+        "complexity": "High",
+        "ordering_score": "100",
+        "implemented_summary": "",
+        "why": {
+          "problem": "Odylith's shared product contract now talks honestly about Codex and Claude Code, but the install and runtime guidance surface still assumes `AGENTS.md` is the only durable repo instruction entrypoint. Repo-root detection, managed bootstrap writes, dirty-path reasoning, workstream inference, benchmark workspace handling, and several hot-path heuristics still special-case `AGENTS.md` while treating `CLAUDE.md` as incidental or invisible. That means Claude compatibility depends on maintainers remembering to add manual shims instead of the product carrying that contract itself.",
+          "customer": "- Primary: operators who use Odylith through Claude Code and need the same first-run guidance contract that Codex already gets automatically. - Secondary: maintainers who need install, repair, benchmark, and runtime heuristics to describe one truthful host contract instead of a Codex-first default with Claude exceptions layered on top.",
+          "proposed_solution": "- accept either `AGENTS.md` or `CLAUDE.md` as the repo-root guidance marker - always materialize a repo-root `CLAUDE.md` companion when Odylith installs or repairs guidance - ship a managed `odylith/CLAUDE.md` companion in the product repo and bundle - update shared runtime heuristics so `CLAUDE.md` participates anywhere guidance files currently influence routing, dirty-overlap summaries, benchmark isolation, or workstream inference - update the public and install-facing docs and tests so Claude support is product truth instead of a manual aftercare step",
+          "opportunity": "Make `CLAUDE.md` a first-class managed companion surface: root detection can bootstrap from it, install and repair flows can materialize it, runtime heuristics can classify it as guidance, and the shipped `odylith/` tree can present the same scoped contract naturally to Claude Code.",
+          "why_now": "Claude support is already part of the product claim. The contract has to be first-class in the product itself before more host-specific proof or transport work is worth doing.",
+          "founder_pov": "Claude support should not depend on maintainers remembering to hand-place one compatibility file after the fact."
+        },
+        "links": {
+          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md",
+          "plan_file": "odylith/technical-plans/in-progress/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md"
+        },
+        "registry_components": [
+          {
+            "component_id": "benchmark",
+            "name": "Benchmark"
+          },
+          {
+            "component_id": "odylith",
+            "name": "Odylith"
+          },
+          {
+            "component_id": "odylith-context-engine",
+            "name": "Odylith Context Engine"
+          }
+        ],
+        "execution_wave_programs": [],
+        "release": {
+          "release_id": "release-0-1-12",
+          "status": "planning",
+          "version": "0.1.12",
+          "tag": "v0.1.12",
+          "name": "",
+          "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
+          "effective_name": "0.1.12",
+          "display_label": "0.1.12",
+          "notes": "",
+          "created_utc": "2026-04-09",
+          "shipped_utc": "",
+          "closed_utc": "",
+          "aliases": [],
+          "active_workstreams": [
+            "B-070",
+            "B-083",
+            "B-084",
+            "B-085",
+            "B-087",
+            "B-088",
+            "B-092",
+            "B-093",
+            "B-097",
+            "B-126"
+          ],
+          "completed_workstreams": [
+            "B-127"
+          ],
+          "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
+          "terminal": false,
+          "active_workstream_count": 10,
+          "completed_workstream_count": 1
+        },
+        "release_history_summary": "Active: 0.1.12 \u00b7 Latest move: 0.1.11 -> 0.1.12",
+        "plan": {
+          "created": "2026-04-10",
+          "updated": "2026-04-10",
+          "all_total_tasks": 41,
+          "all_done_tasks": 0,
+          "total_tasks": 17,
+          "done_tasks": 0,
+          "progress_ratio": 0.0,
+          "progress_basis": "execution_checklist",
+          "display_progress_ratio": null,
+          "display_progress_label": "Checklist 0/17",
+          "display_progress_state": "checklist_only",
+          "progress_classification": "active_untracked",
+          "checklist_label": "Checklist 0/17",
+          "next_tasks": [
+            "Bind this plan to `B-083` and keep the cross-host scope honest against",
+            "Add a repo-root `CLAUDE.md` companion contract to managed install flows.",
+            "Add a managed `odylith/CLAUDE.md` companion file in the source tree and",
+            "Accept `CLAUDE.md` as a repo-root guidance marker in install and runtime",
+            "Extend guidance-sensitive runtime heuristics and benchmark handling to",
+            "Refresh the public install and repo-integration docs so Claude guidance"
+          ]
+        },
+        "activity": {
+          "24h": {
+            "commit_count": 4,
+            "local_change_count": 0,
+            "file_touch_count": 84
+          },
+          "48h": {
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 155
+          }
+        },
+        "timeline": {
+          "start_date": "2026-04-10",
+          "last_activity_iso": "2026-09-24T21:29:56-07:00",
+          "age_days": 167,
+          "eta_days": null,
+          "eta_confidence": "low"
+        },
+        "lineage": {
+          "reopens": [],
+          "reopened_by": [],
+          "split_from": [],
+          "split_into": [],
+          "merged_into": [],
+          "merged_from": []
+        },
+        "cost": {
+          "base_index": 35,
+          "24h": {
+            "index": 48,
+            "band": "Medium"
+          },
+          "48h": {
+            "index": 55,
+            "band": "Medium"
+          }
+        },
+        "proof_state": {},
+        "claim_guard": {},
+        "proof_state_resolution": {
+          "lane_ids": [],
+          "state": "none"
+        },
+        "scope_signal": {
+          "budget_class": "fast_simple",
+          "caps": [],
+          "feature_vector": {
+            "blast_radius_class": "cross-surface",
+            "broad_fanout": false,
+            "cross_surface_conflict": false,
+            "decision_count": 65,
+            "decision_evidence": true,
+            "explicit_count": 707,
+            "frontier_phase": "",
+            "generated_only_churn": false,
+            "governance_only_local_change": false,
+            "has_any_signal": true,
+            "implementation_count": 480,
+            "implementation_evidence": true,
+            "linked_child_count": 0,
+            "linked_surface_count": 5,
+            "meaningful_change_count": 587,
+            "meaningful_scope_activity": true,
+            "narrow_verified_signal": true,
+            "open_warning": false,
+            "proof_blocker": false,
+            "proof_status": "",
+            "stale_authority": false,
+            "synthetic_count": 0,
+            "unsafe_closeout": false,
+            "verified_completion": false
+          },
+          "label": "Active scope",
+          "promoted_default": true,
+          "rank": 3,
+          "reasons": [
+            "A narrow verified scoped signal was recorded.",
+            "Explicit decision evidence is present.",
+            "Explicit implementation evidence is present.",
+            "Meaningful scope-local implementation evidence is present."
+          ],
+          "rung": "R3",
+          "token": "active_scope"
+        },
+        "proof_refs": [
+          {
+            "anchor": "timeline-audit",
+            "fact_tag": "frontier",
+            "kind": "workstream",
+            "label": "Proof frontier",
+            "surface": "compass",
+            "value": "B-083"
+          },
+          {
+            "anchor": "current-workstreams",
+            "fact_tag": "deployment_truth",
+            "kind": "workstream",
+            "label": "Deployment truth",
+            "surface": "compass",
+            "value": "B-083"
           }
         ],
         "proof_summary_lines": []
@@ -39729,19 +39729,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 49
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 53
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 83
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 87
           }
         },
         "timeline": {
           "start_date": "2026-04-17",
-          "last_activity_iso": "2026-09-24T21:23:22-07:00",
+          "last_activity_iso": "2026-09-24T21:29:56-07:00",
           "age_days": 160,
           "eta_days": null,
           "eta_confidence": "low"
@@ -39757,11 +39757,11 @@
         "cost": {
           "base_index": 84,
           "24h": {
-            "index": 89,
+            "index": 91,
             "band": "High"
           },
           "48h": {
-            "index": 89,
+            "index": 91,
             "band": "High"
           }
         },
@@ -60159,19 +60159,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 9,
-          "local_change_count": 8,
-          "file_touch_count": 97
+          "commit_count": 10,
+          "local_change_count": 3,
+          "file_touch_count": 98
         },
         "48h": {
-          "commit_count": 26,
-          "local_change_count": 8,
+          "commit_count": 27,
+          "local_change_count": 3,
           "file_touch_count": 507
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-09-24T21:27:41-07:00",
+        "last_activity_iso": "2026-09-24T21:50:10-07:00",
         "age_days": 90,
         "eta_days": 14,
         "eta_confidence": "high"
@@ -62717,19 +62717,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 6,
-          "local_change_count": 1,
-          "file_touch_count": 80
-        },
-        "48h": {
           "commit_count": 7,
           "local_change_count": 1,
-          "file_touch_count": 123
+          "file_touch_count": 83
+        },
+        "48h": {
+          "commit_count": 8,
+          "local_change_count": 1,
+          "file_touch_count": 125
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-09-24T21:27:31-07:00",
+        "last_activity_iso": "2026-09-24T21:48:23-07:00",
         "age_days": 180,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -63434,180 +63434,6 @@
       ]
     },
     {
-      "idea_id": "B-069",
-      "title": "Cross-Host Contract Hardening and Codex-Claude Separation",
-      "status": "finished",
-      "priority": "P0",
-      "sizing": "L",
-      "complexity": "VeryHigh",
-      "ordering_score": "95",
-      "implemented_summary": "",
-      "why": {
-        "problem": "Odylith's runtime and governance layers still carry hardcoded Codex-first policy in places that should be host-neutral. Host detection often doubles as policy, canonical execution-profile ids still encode Codex model branding, Compass runtime artifacts still use Codex stream names, and guidance plus proof surfaces still frame Codex behavior as the default product contract even when Claude Code already shares the same grounding and reasoning quality bar. That drift makes Claude compatibility feel partial even where the product already works, while also obscuring the real boundary: native spawn is a host capability question, not the whole product contract.",
-        "customer": "- Primary: Odylith operators who want the same product outcome in Codex and Claude Code without hidden contract drift. - Secondary: maintainers who need host capability, model-family defaults, and benchmark publication scope to stay explicit and auditable.",
-        "proposed_solution": "Add one canonical host capability contract that separates host family, transport capabilities, and model-family behavior; switch runtime routing and execution-profile ids to host-neutral canon with compatibility aliases; rename Compass runtime artifacts to host-neutral stream terms while keeping legacy read compatibility; rewrite source governance and docs around a host matrix; and normalize benchmark/proof fields so published proof can stay Codex-scoped without making the shared product contract Codex-scoped.",
-        "opportunity": "If Odylith makes host capability the canonical runtime contract and treats Codex-only behavior as one scoped model-family policy instead of the global default, the product can keep Codex-native delegation where it truly exists while making Claude Code feel like a first-class supported host across docs, grounding, Compass, governance, and benchmark scaffolding.",
-        "why_now": "Odylith is already claiming shared product value across Codex and Claude Code. Leaving Codex-only naming and policy wired into the canon now will only make later Claude parity and proof work noisier, riskier, and more expensive.",
-        "founder_pov": "Host neutrality is not a doc polish task. It is the product contract that lets Odylith keep one intelligence plane while telling the truth about which host can transport which kind of delegation today."
-      },
-      "links": {
-        "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md",
-        "plan_file": "odylith/technical-plans/done/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md"
-      },
-      "registry_components": [
-        {
-          "component_id": "benchmark",
-          "name": "Benchmark"
-        },
-        {
-          "component_id": "compass",
-          "name": "Compass"
-        },
-        {
-          "component_id": "odylith",
-          "name": "Odylith"
-        },
-        {
-          "component_id": "odylith-context-engine",
-          "name": "Odylith Context Engine"
-        },
-        {
-          "component_id": "subagent-orchestrator",
-          "name": "Subagent Orchestrator"
-        },
-        {
-          "component_id": "subagent-router",
-          "name": "Subagent Router"
-        }
-      ],
-      "execution_wave_programs": [],
-      "release": {},
-      "release_history_summary": "Removed from 0.1.11",
-      "plan": {
-        "created": "2026-04-09",
-        "updated": "2026-04-09",
-        "all_total_tasks": 61,
-        "all_done_tasks": 61,
-        "total_tasks": 24,
-        "done_tasks": 24,
-        "progress_ratio": 1.0,
-        "progress_basis": "execution_checklist",
-        "display_progress_ratio": 1.0,
-        "display_progress_label": "100% progress",
-        "display_progress_state": "percent",
-        "progress_classification": "closed",
-        "checklist_label": "Checklist 24/24",
-        "next_tasks": []
-      },
-      "activity": {
-        "24h": {
-          "commit_count": 3,
-          "local_change_count": 2,
-          "file_touch_count": 82
-        },
-        "48h": {
-          "commit_count": 5,
-          "local_change_count": 2,
-          "file_touch_count": 154
-        }
-      },
-      "timeline": {
-        "start_date": "2026-04-09",
-        "last_activity_iso": "2026-09-24T21:23:22-07:00",
-        "age_days": 168,
-        "eta_days": 0,
-        "eta_confidence": "high"
-      },
-      "lineage": {
-        "reopens": [],
-        "reopened_by": [],
-        "split_from": [],
-        "split_into": [
-          "B-070"
-        ],
-        "merged_into": [],
-        "merged_from": []
-      },
-      "cost": {
-        "base_index": 71,
-        "24h": {
-          "index": 84,
-          "band": "High"
-        },
-        "48h": {
-          "index": 91,
-          "band": "High"
-        }
-      },
-      "proof_state": {},
-      "claim_guard": {},
-      "proof_state_resolution": {
-        "lane_ids": [],
-        "state": "none"
-      },
-      "scope_signal": {
-        "budget_class": "fast_simple",
-        "caps": [],
-        "feature_vector": {
-          "blast_radius_class": "cross-surface",
-          "broad_fanout": false,
-          "cross_surface_conflict": false,
-          "decision_count": 72,
-          "decision_evidence": true,
-          "explicit_count": 734,
-          "frontier_phase": "",
-          "generated_only_churn": false,
-          "governance_only_local_change": false,
-          "has_any_signal": true,
-          "implementation_count": 496,
-          "implementation_evidence": true,
-          "linked_child_count": 0,
-          "linked_surface_count": 5,
-          "meaningful_change_count": 589,
-          "meaningful_scope_activity": true,
-          "narrow_verified_signal": true,
-          "open_warning": false,
-          "proof_blocker": false,
-          "proof_status": "",
-          "stale_authority": false,
-          "synthetic_count": 0,
-          "unsafe_closeout": false,
-          "verified_completion": true
-        },
-        "label": "Active scope",
-        "promoted_default": true,
-        "rank": 3,
-        "reasons": [
-          "A recent verified completion was recorded.",
-          "A narrow verified scoped signal was recorded.",
-          "Explicit decision evidence is present.",
-          "Explicit implementation evidence is present.",
-          "Meaningful scope-local implementation evidence is present."
-        ],
-        "rung": "R3",
-        "token": "active_scope"
-      },
-      "proof_refs": [
-        {
-          "anchor": "timeline-audit",
-          "fact_tag": "frontier",
-          "kind": "workstream",
-          "label": "Proof frontier",
-          "surface": "compass",
-          "value": "B-069"
-        },
-        {
-          "anchor": "current-workstreams",
-          "fact_tag": "deployment_truth",
-          "kind": "workstream",
-          "label": "Deployment truth",
-          "surface": "compass",
-          "value": "B-069"
-        }
-      ],
-      "proof_summary_lines": []
-    },
-    {
       "idea_id": "B-115",
       "title": "Discipline Tooling And Host Parity",
       "status": "finished",
@@ -64238,6 +64064,180 @@
           "label": "Deployment truth",
           "surface": "compass",
           "value": "B-059"
+        }
+      ],
+      "proof_summary_lines": []
+    },
+    {
+      "idea_id": "B-069",
+      "title": "Cross-Host Contract Hardening and Codex-Claude Separation",
+      "status": "finished",
+      "priority": "P0",
+      "sizing": "L",
+      "complexity": "VeryHigh",
+      "ordering_score": "95",
+      "implemented_summary": "",
+      "why": {
+        "problem": "Odylith's runtime and governance layers still carry hardcoded Codex-first policy in places that should be host-neutral. Host detection often doubles as policy, canonical execution-profile ids still encode Codex model branding, Compass runtime artifacts still use Codex stream names, and guidance plus proof surfaces still frame Codex behavior as the default product contract even when Claude Code already shares the same grounding and reasoning quality bar. That drift makes Claude compatibility feel partial even where the product already works, while also obscuring the real boundary: native spawn is a host capability question, not the whole product contract.",
+        "customer": "- Primary: Odylith operators who want the same product outcome in Codex and Claude Code without hidden contract drift. - Secondary: maintainers who need host capability, model-family defaults, and benchmark publication scope to stay explicit and auditable.",
+        "proposed_solution": "Add one canonical host capability contract that separates host family, transport capabilities, and model-family behavior; switch runtime routing and execution-profile ids to host-neutral canon with compatibility aliases; rename Compass runtime artifacts to host-neutral stream terms while keeping legacy read compatibility; rewrite source governance and docs around a host matrix; and normalize benchmark/proof fields so published proof can stay Codex-scoped without making the shared product contract Codex-scoped.",
+        "opportunity": "If Odylith makes host capability the canonical runtime contract and treats Codex-only behavior as one scoped model-family policy instead of the global default, the product can keep Codex-native delegation where it truly exists while making Claude Code feel like a first-class supported host across docs, grounding, Compass, governance, and benchmark scaffolding.",
+        "why_now": "Odylith is already claiming shared product value across Codex and Claude Code. Leaving Codex-only naming and policy wired into the canon now will only make later Claude parity and proof work noisier, riskier, and more expensive.",
+        "founder_pov": "Host neutrality is not a doc polish task. It is the product contract that lets Odylith keep one intelligence plane while telling the truth about which host can transport which kind of delegation today."
+      },
+      "links": {
+        "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md",
+        "plan_file": "odylith/technical-plans/done/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md"
+      },
+      "registry_components": [
+        {
+          "component_id": "benchmark",
+          "name": "Benchmark"
+        },
+        {
+          "component_id": "compass",
+          "name": "Compass"
+        },
+        {
+          "component_id": "odylith",
+          "name": "Odylith"
+        },
+        {
+          "component_id": "odylith-context-engine",
+          "name": "Odylith Context Engine"
+        },
+        {
+          "component_id": "subagent-orchestrator",
+          "name": "Subagent Orchestrator"
+        },
+        {
+          "component_id": "subagent-router",
+          "name": "Subagent Router"
+        }
+      ],
+      "execution_wave_programs": [],
+      "release": {},
+      "release_history_summary": "Removed from 0.1.11",
+      "plan": {
+        "created": "2026-04-09",
+        "updated": "2026-04-09",
+        "all_total_tasks": 61,
+        "all_done_tasks": 61,
+        "total_tasks": 24,
+        "done_tasks": 24,
+        "progress_ratio": 1.0,
+        "progress_basis": "execution_checklist",
+        "display_progress_ratio": 1.0,
+        "display_progress_label": "100% progress",
+        "display_progress_state": "percent",
+        "progress_classification": "closed",
+        "checklist_label": "Checklist 24/24",
+        "next_tasks": []
+      },
+      "activity": {
+        "24h": {
+          "commit_count": 4,
+          "local_change_count": 0,
+          "file_touch_count": 85
+        },
+        "48h": {
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 156
+        }
+      },
+      "timeline": {
+        "start_date": "2026-04-09",
+        "last_activity_iso": "2026-09-24T21:29:56-07:00",
+        "age_days": 168,
+        "eta_days": 0,
+        "eta_confidence": "high"
+      },
+      "lineage": {
+        "reopens": [],
+        "reopened_by": [],
+        "split_from": [],
+        "split_into": [
+          "B-070"
+        ],
+        "merged_into": [],
+        "merged_from": []
+      },
+      "cost": {
+        "base_index": 71,
+        "24h": {
+          "index": 84,
+          "band": "High"
+        },
+        "48h": {
+          "index": 91,
+          "band": "High"
+        }
+      },
+      "proof_state": {},
+      "claim_guard": {},
+      "proof_state_resolution": {
+        "lane_ids": [],
+        "state": "none"
+      },
+      "scope_signal": {
+        "budget_class": "fast_simple",
+        "caps": [],
+        "feature_vector": {
+          "blast_radius_class": "cross-surface",
+          "broad_fanout": false,
+          "cross_surface_conflict": false,
+          "decision_count": 72,
+          "decision_evidence": true,
+          "explicit_count": 734,
+          "frontier_phase": "",
+          "generated_only_churn": false,
+          "governance_only_local_change": false,
+          "has_any_signal": true,
+          "implementation_count": 496,
+          "implementation_evidence": true,
+          "linked_child_count": 0,
+          "linked_surface_count": 5,
+          "meaningful_change_count": 589,
+          "meaningful_scope_activity": true,
+          "narrow_verified_signal": true,
+          "open_warning": false,
+          "proof_blocker": false,
+          "proof_status": "",
+          "stale_authority": false,
+          "synthetic_count": 0,
+          "unsafe_closeout": false,
+          "verified_completion": true
+        },
+        "label": "Active scope",
+        "promoted_default": true,
+        "rank": 3,
+        "reasons": [
+          "A recent verified completion was recorded.",
+          "A narrow verified scoped signal was recorded.",
+          "Explicit decision evidence is present.",
+          "Explicit implementation evidence is present.",
+          "Meaningful scope-local implementation evidence is present."
+        ],
+        "rung": "R3",
+        "token": "active_scope"
+      },
+      "proof_refs": [
+        {
+          "anchor": "timeline-audit",
+          "fact_tag": "frontier",
+          "kind": "workstream",
+          "label": "Proof frontier",
+          "surface": "compass",
+          "value": "B-069"
+        },
+        {
+          "anchor": "current-workstreams",
+          "fact_tag": "deployment_truth",
+          "kind": "workstream",
+          "label": "Deployment truth",
+          "surface": "compass",
+          "value": "B-069"
         }
       ],
       "proof_summary_lines": []
@@ -65148,205 +65148,6 @@
       "proof_summary_lines": []
     },
     {
-      "idea_id": "B-083",
-      "title": "Claude Guidance Surface Parity and Install Contract Support",
-      "status": "implementation",
-      "priority": "P0",
-      "sizing": "M",
-      "complexity": "High",
-      "ordering_score": "100",
-      "implemented_summary": "",
-      "why": {
-        "problem": "Odylith's shared product contract now talks honestly about Codex and Claude Code, but the install and runtime guidance surface still assumes `AGENTS.md` is the only durable repo instruction entrypoint. Repo-root detection, managed bootstrap writes, dirty-path reasoning, workstream inference, benchmark workspace handling, and several hot-path heuristics still special-case `AGENTS.md` while treating `CLAUDE.md` as incidental or invisible. That means Claude compatibility depends on maintainers remembering to add manual shims instead of the product carrying that contract itself.",
-        "customer": "- Primary: operators who use Odylith through Claude Code and need the same first-run guidance contract that Codex already gets automatically. - Secondary: maintainers who need install, repair, benchmark, and runtime heuristics to describe one truthful host contract instead of a Codex-first default with Claude exceptions layered on top.",
-        "proposed_solution": "- accept either `AGENTS.md` or `CLAUDE.md` as the repo-root guidance marker - always materialize a repo-root `CLAUDE.md` companion when Odylith installs or repairs guidance - ship a managed `odylith/CLAUDE.md` companion in the product repo and bundle - update shared runtime heuristics so `CLAUDE.md` participates anywhere guidance files currently influence routing, dirty-overlap summaries, benchmark isolation, or workstream inference - update the public and install-facing docs and tests so Claude support is product truth instead of a manual aftercare step",
-        "opportunity": "Make `CLAUDE.md` a first-class managed companion surface: root detection can bootstrap from it, install and repair flows can materialize it, runtime heuristics can classify it as guidance, and the shipped `odylith/` tree can present the same scoped contract naturally to Claude Code.",
-        "why_now": "Claude support is already part of the product claim. The contract has to be first-class in the product itself before more host-specific proof or transport work is worth doing.",
-        "founder_pov": "Claude support should not depend on maintainers remembering to hand-place one compatibility file after the fact."
-      },
-      "links": {
-        "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md",
-        "plan_file": "odylith/technical-plans/in-progress/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md"
-      },
-      "registry_components": [
-        {
-          "component_id": "benchmark",
-          "name": "Benchmark"
-        },
-        {
-          "component_id": "odylith",
-          "name": "Odylith"
-        },
-        {
-          "component_id": "odylith-context-engine",
-          "name": "Odylith Context Engine"
-        }
-      ],
-      "execution_wave_programs": [],
-      "release": {
-        "release_id": "release-0-1-12",
-        "status": "planning",
-        "version": "0.1.12",
-        "tag": "v0.1.12",
-        "name": "",
-        "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
-        "effective_name": "0.1.12",
-        "display_label": "0.1.12",
-        "notes": "",
-        "created_utc": "2026-04-09",
-        "shipped_utc": "",
-        "closed_utc": "",
-        "aliases": [],
-        "active_workstreams": [
-          "B-070",
-          "B-083",
-          "B-084",
-          "B-085",
-          "B-087",
-          "B-088",
-          "B-092",
-          "B-093",
-          "B-097",
-          "B-126"
-        ],
-        "completed_workstreams": [
-          "B-127"
-        ],
-        "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
-        "terminal": false,
-        "active_workstream_count": 10,
-        "completed_workstream_count": 1
-      },
-      "release_history_summary": "Active: 0.1.12 \u00b7 Latest move: 0.1.11 -> 0.1.12",
-      "plan": {
-        "created": "2026-04-10",
-        "updated": "2026-04-10",
-        "all_total_tasks": 41,
-        "all_done_tasks": 0,
-        "total_tasks": 17,
-        "done_tasks": 0,
-        "progress_ratio": 0.0,
-        "progress_basis": "execution_checklist",
-        "display_progress_ratio": null,
-        "display_progress_label": "Checklist 0/17",
-        "display_progress_state": "checklist_only",
-        "progress_classification": "active_untracked",
-        "checklist_label": "Checklist 0/17",
-        "next_tasks": [
-          "Bind this plan to `B-083` and keep the cross-host scope honest against",
-          "Add a repo-root `CLAUDE.md` companion contract to managed install flows.",
-          "Add a managed `odylith/CLAUDE.md` companion file in the source tree and",
-          "Accept `CLAUDE.md` as a repo-root guidance marker in install and runtime",
-          "Extend guidance-sensitive runtime heuristics and benchmark handling to",
-          "Refresh the public install and repo-integration docs so Claude guidance"
-        ]
-      },
-      "activity": {
-        "24h": {
-          "commit_count": 3,
-          "local_change_count": 2,
-          "file_touch_count": 81
-        },
-        "48h": {
-          "commit_count": 5,
-          "local_change_count": 2,
-          "file_touch_count": 153
-        }
-      },
-      "timeline": {
-        "start_date": "2026-04-10",
-        "last_activity_iso": "2026-09-24T21:23:22-07:00",
-        "age_days": 167,
-        "eta_days": null,
-        "eta_confidence": "low"
-      },
-      "lineage": {
-        "reopens": [],
-        "reopened_by": [],
-        "split_from": [],
-        "split_into": [],
-        "merged_into": [],
-        "merged_from": []
-      },
-      "cost": {
-        "base_index": 35,
-        "24h": {
-          "index": 48,
-          "band": "Medium"
-        },
-        "48h": {
-          "index": 55,
-          "band": "Medium"
-        }
-      },
-      "proof_state": {},
-      "claim_guard": {},
-      "proof_state_resolution": {
-        "lane_ids": [],
-        "state": "none"
-      },
-      "scope_signal": {
-        "budget_class": "fast_simple",
-        "caps": [],
-        "feature_vector": {
-          "blast_radius_class": "cross-surface",
-          "broad_fanout": false,
-          "cross_surface_conflict": false,
-          "decision_count": 65,
-          "decision_evidence": true,
-          "explicit_count": 707,
-          "frontier_phase": "",
-          "generated_only_churn": false,
-          "governance_only_local_change": false,
-          "has_any_signal": true,
-          "implementation_count": 480,
-          "implementation_evidence": true,
-          "linked_child_count": 0,
-          "linked_surface_count": 5,
-          "meaningful_change_count": 587,
-          "meaningful_scope_activity": true,
-          "narrow_verified_signal": true,
-          "open_warning": false,
-          "proof_blocker": false,
-          "proof_status": "",
-          "stale_authority": false,
-          "synthetic_count": 0,
-          "unsafe_closeout": false,
-          "verified_completion": false
-        },
-        "label": "Active scope",
-        "promoted_default": true,
-        "rank": 3,
-        "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Explicit decision evidence is present.",
-          "Explicit implementation evidence is present.",
-          "Meaningful scope-local implementation evidence is present."
-        ],
-        "rung": "R3",
-        "token": "active_scope"
-      },
-      "proof_refs": [
-        {
-          "anchor": "timeline-audit",
-          "fact_tag": "frontier",
-          "kind": "workstream",
-          "label": "Proof frontier",
-          "surface": "compass",
-          "value": "B-083"
-        },
-        {
-          "anchor": "current-workstreams",
-          "fact_tag": "deployment_truth",
-          "kind": "workstream",
-          "label": "Deployment truth",
-          "surface": "compass",
-          "value": "B-083"
-        }
-      ],
-      "proof_summary_lines": []
-    },
-    {
       "idea_id": "B-001",
       "title": "Product Self-Governance and Repo Boundary",
       "status": "finished",
@@ -65794,6 +65595,205 @@
           "label": "Deployment truth",
           "surface": "compass",
           "value": "B-031"
+        }
+      ],
+      "proof_summary_lines": []
+    },
+    {
+      "idea_id": "B-083",
+      "title": "Claude Guidance Surface Parity and Install Contract Support",
+      "status": "implementation",
+      "priority": "P0",
+      "sizing": "M",
+      "complexity": "High",
+      "ordering_score": "100",
+      "implemented_summary": "",
+      "why": {
+        "problem": "Odylith's shared product contract now talks honestly about Codex and Claude Code, but the install and runtime guidance surface still assumes `AGENTS.md` is the only durable repo instruction entrypoint. Repo-root detection, managed bootstrap writes, dirty-path reasoning, workstream inference, benchmark workspace handling, and several hot-path heuristics still special-case `AGENTS.md` while treating `CLAUDE.md` as incidental or invisible. That means Claude compatibility depends on maintainers remembering to add manual shims instead of the product carrying that contract itself.",
+        "customer": "- Primary: operators who use Odylith through Claude Code and need the same first-run guidance contract that Codex already gets automatically. - Secondary: maintainers who need install, repair, benchmark, and runtime heuristics to describe one truthful host contract instead of a Codex-first default with Claude exceptions layered on top.",
+        "proposed_solution": "- accept either `AGENTS.md` or `CLAUDE.md` as the repo-root guidance marker - always materialize a repo-root `CLAUDE.md` companion when Odylith installs or repairs guidance - ship a managed `odylith/CLAUDE.md` companion in the product repo and bundle - update shared runtime heuristics so `CLAUDE.md` participates anywhere guidance files currently influence routing, dirty-overlap summaries, benchmark isolation, or workstream inference - update the public and install-facing docs and tests so Claude support is product truth instead of a manual aftercare step",
+        "opportunity": "Make `CLAUDE.md` a first-class managed companion surface: root detection can bootstrap from it, install and repair flows can materialize it, runtime heuristics can classify it as guidance, and the shipped `odylith/` tree can present the same scoped contract naturally to Claude Code.",
+        "why_now": "Claude support is already part of the product claim. The contract has to be first-class in the product itself before more host-specific proof or transport work is worth doing.",
+        "founder_pov": "Claude support should not depend on maintainers remembering to hand-place one compatibility file after the fact."
+      },
+      "links": {
+        "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md",
+        "plan_file": "odylith/technical-plans/in-progress/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md"
+      },
+      "registry_components": [
+        {
+          "component_id": "benchmark",
+          "name": "Benchmark"
+        },
+        {
+          "component_id": "odylith",
+          "name": "Odylith"
+        },
+        {
+          "component_id": "odylith-context-engine",
+          "name": "Odylith Context Engine"
+        }
+      ],
+      "execution_wave_programs": [],
+      "release": {
+        "release_id": "release-0-1-12",
+        "status": "planning",
+        "version": "0.1.12",
+        "tag": "v0.1.12",
+        "name": "",
+        "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
+        "effective_name": "0.1.12",
+        "display_label": "0.1.12",
+        "notes": "",
+        "created_utc": "2026-04-09",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [],
+        "active_workstreams": [
+          "B-070",
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-097",
+          "B-126"
+        ],
+        "completed_workstreams": [
+          "B-127"
+        ],
+        "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 10,
+        "completed_workstream_count": 1
+      },
+      "release_history_summary": "Active: 0.1.12 \u00b7 Latest move: 0.1.11 -> 0.1.12",
+      "plan": {
+        "created": "2026-04-10",
+        "updated": "2026-04-10",
+        "all_total_tasks": 41,
+        "all_done_tasks": 0,
+        "total_tasks": 17,
+        "done_tasks": 0,
+        "progress_ratio": 0.0,
+        "progress_basis": "execution_checklist",
+        "display_progress_ratio": null,
+        "display_progress_label": "Checklist 0/17",
+        "display_progress_state": "checklist_only",
+        "progress_classification": "active_untracked",
+        "checklist_label": "Checklist 0/17",
+        "next_tasks": [
+          "Bind this plan to `B-083` and keep the cross-host scope honest against",
+          "Add a repo-root `CLAUDE.md` companion contract to managed install flows.",
+          "Add a managed `odylith/CLAUDE.md` companion file in the source tree and",
+          "Accept `CLAUDE.md` as a repo-root guidance marker in install and runtime",
+          "Extend guidance-sensitive runtime heuristics and benchmark handling to",
+          "Refresh the public install and repo-integration docs so Claude guidance"
+        ]
+      },
+      "activity": {
+        "24h": {
+          "commit_count": 4,
+          "local_change_count": 0,
+          "file_touch_count": 84
+        },
+        "48h": {
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 155
+        }
+      },
+      "timeline": {
+        "start_date": "2026-04-10",
+        "last_activity_iso": "2026-09-24T21:29:56-07:00",
+        "age_days": 167,
+        "eta_days": null,
+        "eta_confidence": "low"
+      },
+      "lineage": {
+        "reopens": [],
+        "reopened_by": [],
+        "split_from": [],
+        "split_into": [],
+        "merged_into": [],
+        "merged_from": []
+      },
+      "cost": {
+        "base_index": 35,
+        "24h": {
+          "index": 48,
+          "band": "Medium"
+        },
+        "48h": {
+          "index": 55,
+          "band": "Medium"
+        }
+      },
+      "proof_state": {},
+      "claim_guard": {},
+      "proof_state_resolution": {
+        "lane_ids": [],
+        "state": "none"
+      },
+      "scope_signal": {
+        "budget_class": "fast_simple",
+        "caps": [],
+        "feature_vector": {
+          "blast_radius_class": "cross-surface",
+          "broad_fanout": false,
+          "cross_surface_conflict": false,
+          "decision_count": 65,
+          "decision_evidence": true,
+          "explicit_count": 707,
+          "frontier_phase": "",
+          "generated_only_churn": false,
+          "governance_only_local_change": false,
+          "has_any_signal": true,
+          "implementation_count": 480,
+          "implementation_evidence": true,
+          "linked_child_count": 0,
+          "linked_surface_count": 5,
+          "meaningful_change_count": 587,
+          "meaningful_scope_activity": true,
+          "narrow_verified_signal": true,
+          "open_warning": false,
+          "proof_blocker": false,
+          "proof_status": "",
+          "stale_authority": false,
+          "synthetic_count": 0,
+          "unsafe_closeout": false,
+          "verified_completion": false
+        },
+        "label": "Active scope",
+        "promoted_default": true,
+        "rank": 3,
+        "reasons": [
+          "A narrow verified scoped signal was recorded.",
+          "Explicit decision evidence is present.",
+          "Explicit implementation evidence is present.",
+          "Meaningful scope-local implementation evidence is present."
+        ],
+        "rung": "R3",
+        "token": "active_scope"
+      },
+      "proof_refs": [
+        {
+          "anchor": "timeline-audit",
+          "fact_tag": "frontier",
+          "kind": "workstream",
+          "label": "Proof frontier",
+          "surface": "compass",
+          "value": "B-083"
+        },
+        {
+          "anchor": "current-workstreams",
+          "fact_tag": "deployment_truth",
+          "kind": "workstream",
+          "label": "Deployment truth",
+          "surface": "compass",
+          "value": "B-083"
         }
       ],
       "proof_summary_lines": []
@@ -69648,19 +69648,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 49
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 53
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 83
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 87
         }
       },
       "timeline": {
         "start_date": "2026-04-17",
-        "last_activity_iso": "2026-09-24T21:23:22-07:00",
+        "last_activity_iso": "2026-09-24T21:29:56-07:00",
         "age_days": 160,
         "eta_days": null,
         "eta_confidence": "low"
@@ -69676,11 +69676,11 @@
       "cost": {
         "base_index": 84,
         "24h": {
-          "index": 89,
+          "index": 91,
           "band": "High"
         },
         "48h": {
-          "index": 89,
+          "index": 91,
           "band": "High"
         }
       },
@@ -92078,19 +92078,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 2,
-          "file_touch_count": 81
+          "commit_count": 4,
+          "local_change_count": 0,
+          "file_touch_count": 84
         },
         "48h": {
-          "commit_count": 5,
-          "local_change_count": 2,
-          "file_touch_count": 153
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 155
         }
       },
       "timeline": {
         "start_date": "2026-04-10",
-        "last_activity_iso": "2026-09-24T21:23:22-07:00",
+        "last_activity_iso": "2026-09-24T21:29:56-07:00",
         "age_days": 167,
         "eta_days": null,
         "eta_confidence": "low"
@@ -94852,19 +94852,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 9,
-          "local_change_count": 8,
-          "file_touch_count": 97
+          "commit_count": 10,
+          "local_change_count": 3,
+          "file_touch_count": 98
         },
         "48h": {
-          "commit_count": 26,
-          "local_change_count": 8,
+          "commit_count": 27,
+          "local_change_count": 3,
           "file_touch_count": 507
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-09-24T21:27:41-07:00",
+        "last_activity_iso": "2026-09-24T21:50:10-07:00",
         "age_days": 90,
         "eta_days": 14,
         "eta_confidence": "high"
@@ -95961,19 +95961,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 6,
-          "local_change_count": 1,
-          "file_touch_count": 80
-        },
-        "48h": {
           "commit_count": 7,
           "local_change_count": 1,
-          "file_touch_count": 123
+          "file_touch_count": 83
+        },
+        "48h": {
+          "commit_count": 8,
+          "local_change_count": 1,
+          "file_touch_count": 125
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-09-24T21:27:31-07:00",
+        "last_activity_iso": "2026-09-24T21:48:23-07:00",
         "age_days": 180,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -105002,19 +105002,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 2,
-          "file_touch_count": 82
+          "commit_count": 4,
+          "local_change_count": 0,
+          "file_touch_count": 85
         },
         "48h": {
-          "commit_count": 5,
-          "local_change_count": 2,
-          "file_touch_count": 154
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 156
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-09-24T21:23:22-07:00",
+        "last_activity_iso": "2026-09-24T21:29:56-07:00",
         "age_days": 168,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -113644,19 +113644,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 49
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 53
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 83
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 87
         }
       },
       "timeline": {
         "start_date": "2026-04-17",
-        "last_activity_iso": "2026-09-24T21:23:22-07:00",
+        "last_activity_iso": "2026-09-24T21:29:56-07:00",
         "age_days": 160,
         "eta_days": null,
         "eta_confidence": "low"
@@ -113672,11 +113672,11 @@
       "cost": {
         "base_index": 84,
         "24h": {
-          "index": 89,
+          "index": 91,
           "band": "High"
         },
         "48h": {
-          "index": 89,
+          "index": 91,
           "band": "High"
         }
       },
@@ -119943,7 +119943,6 @@
       "B-079",
       "B-080",
       "B-082",
-      "B-083",
       "B-096",
       "B-098",
       "B-099",
@@ -120113,7 +120112,6 @@
       "B-079",
       "B-080",
       "B-082",
-      "B-083",
       "B-096",
       "B-098",
       "B-099",
@@ -120443,30 +120441,21 @@
         }
       },
       "B-083": {
-        "rank": 3,
-        "rung": "R3",
-        "token": "active_scope",
-        "label": "Active scope",
+        "rank": 1,
+        "rung": "R1",
+        "token": "background_trace",
+        "label": "Background trace",
         "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Explicit implementation evidence is present.",
-          "Meaningful scope-local implementation evidence is present."
+          "Recent signal exists, but it is not strong enough to promote by default."
         ],
         "caps": [],
-        "promoted_default": true,
-        "budget_class": "fast_simple",
+        "promoted_default": false,
+        "budget_class": "cache_only",
         "feature_vector": {
           "has_any_signal": true,
-          "verified_completion": false,
-          "narrow_verified_signal": true,
-          "meaningful_scope_activity": true,
-          "decision_evidence": false,
-          "implementation_evidence": true,
-          "open_warning": false,
-          "cross_surface_conflict": false,
-          "stale_authority": false,
-          "unsafe_closeout": false,
-          "proof_blocker": false
+          "window_inactive": false,
+          "governance_only_local_change": false,
+          "broad_fanout": false
         }
       },
       "B-084": {
@@ -122951,7 +122940,6 @@
         "label": "Active scope",
         "reasons": [
           "A recent verified completion was recorded.",
-          "A narrow verified scoped signal was recorded.",
           "Meaningful scope-local implementation evidence is present."
         ],
         "caps": [],
@@ -122960,7 +122948,7 @@
         "feature_vector": {
           "has_any_signal": true,
           "verified_completion": true,
-          "narrow_verified_signal": true,
+          "narrow_verified_signal": false,
           "meaningful_scope_activity": true,
           "decision_evidence": false,
           "implementation_evidence": false,
@@ -126367,7 +126355,6 @@
         "label": "Active scope",
         "reasons": [
           "A recent verified completion was recorded.",
-          "A narrow verified scoped signal was recorded.",
           "Meaningful scope-local implementation evidence is present."
         ],
         "caps": [],
@@ -126376,7 +126363,7 @@
         "feature_vector": {
           "has_any_signal": true,
           "verified_completion": true,
-          "narrow_verified_signal": true,
+          "narrow_verified_signal": false,
           "meaningful_scope_activity": true,
           "decision_evidence": false,
           "implementation_evidence": false,

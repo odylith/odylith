@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import pytest
 
-from odylith.runtime.domain_intelligence import greenfield_model_profile_contract as profiles
-
+from odylith.runtime.domain_intelligence import (
+    greenfield_model_profile_contract as profiles,
+)
 
 PROFILE_IDS = profiles.supported_greenfield_model_profile_ids()
 ROLES = (
@@ -34,9 +35,9 @@ def _observation(profile_id, role):
     }
 
 
-def test_v21_profiles_separate_performance_targets_from_operational_timeouts():
-    assert profiles.GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION == "odylith.greenfield.model-profile-contract.v21"
-    assert profiles.GREENFIELD_NORMAL_CASE_TARGET_SECONDS == 60.0
+def test_v22_profiles_separate_performance_targets_from_operational_timeouts():
+    assert profiles.GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION == "odylith.greenfield.model-profile-contract.v22"
+    assert profiles.GREENFIELD_NORMAL_CASE_TARGET_SECONDS == 90.0
     assert profiles.GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS == 180.0
     assert PROFILE_IDS == (
         "greenfield-standard-participant-first-astra-medium-v19",

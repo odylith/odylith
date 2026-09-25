@@ -1,5 +1,28 @@
 Status: In progress
 
+## Installed lifecycle and UX qualification (2026-09-24)
+
+The host-native candidate now passes the complete installed consumer lifecycle
+from a rebuilt `0.1.15` distribution. Initial propose, hash-bound EDIT, REJECT,
+CONFIRM, injected fsync rollback, recovery-journal closure, and exact same-hash
+retry all behave under the sealed transaction laws. The successful package
+contains five Radar workstreams, five Registry components, five Atlas diagrams,
+and 56 exact read-back writes. The full pre-confirm receipt completes in 13.05
+seconds and create completes in 0.313 seconds. A 48-screenshot desktop/mobile
+browser matrix passes normal, empty/recovery, and degraded/error states across
+Project, Radar, Registry, Atlas, Compass, Casebook, and the shell with zero
+issues. The protected holdout was not read.
+
+The model-profile contract is now internally consistent with the operator's
+advisory `90/120/150` targets: the stale 60-second normal-case value is removed,
+contract v22 reports 90 seconds, and 714 focused runtime/install checks pass.
+Codex visible-fallback delivery is confirmed, while native automatic Codex hook
+activation remains unverified in the current session; do not convert fallback
+proof into a native-activation claim. The only release gates left are final
+independent strong semantic qualification, one fresh untouched holdout, and—if
+both accept—the removal and reproving of the superseded in-runtime authoring
+path. No new mechanism family or scope expansion is authorized.
+
 ## Post-integration regression closure (2026-09-24)
 
 The first protected-holdout-excluded broad proof exposed two integration

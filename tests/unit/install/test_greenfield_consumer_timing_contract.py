@@ -2,19 +2,24 @@
 
 from __future__ import annotations
 
+import sys
 from copy import deepcopy
 from pathlib import Path
-import sys
 from types import SimpleNamespace
 
 import pytest
 
-from odylith.runtime.domain_intelligence import greenfield_create_transaction as transactions
-from odylith.runtime.domain_intelligence import greenfield_model_profile_contract as profiles
+from odylith.runtime.domain_intelligence import (
+    greenfield_create_transaction as transactions,
+)
+from odylith.runtime.domain_intelligence import (
+    greenfield_model_profile_contract as profiles,
+)
 from odylith.runtime.domain_intelligence import greenfield_preconfirm_engine as engine
 from odylith.runtime.domain_intelligence import greenfield_proposals_cli as cli
-from tests.unit.runtime.greenfield_authored_proposal_fixtures import approved_authored_quality_manifest_fixture
-
+from tests.unit.runtime.greenfield_authored_proposal_fixtures import (
+    approved_authored_quality_manifest_fixture,
+)
 
 SCRIPTS_ROOT = Path(__file__).resolve().parents[3] / "scripts" / "release"
 if str(SCRIPTS_ROOT) not in sys.path:
@@ -23,7 +28,6 @@ if str(SCRIPTS_ROOT) not in sys.path:
 import greenfield_matrix_quality_scoring as scoring
 from greenfield_matrix_quality_scoring import completion_issues, proposal_time_issues
 from greenfield_matrix_types import GreenfieldArtifactCounts
-
 
 TIERS = (("standard", 90.0), ("rescue", 120.0), ("deep", 150.0))
 HISTORICAL_V12_PROFILES = (
@@ -171,7 +175,7 @@ def test_help_distinguishes_performance_targets_from_operational_timeout(capsys,
     text = " ".join(capsys.readouterr().out.split())
     assert "90s" in text and "120s" in text and "150s" in text
     assert "Operational safety timeout: 180s" in text
-    assert "60s" in text and "advisory" in text
+    assert "Normal-case target: 90s" in text and "advisory" in text
     assert "under-60s profile" not in text
 
 

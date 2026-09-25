@@ -11,9 +11,8 @@ import math
 from dataclasses import dataclass
 from types import MappingProxyType
 
-
-GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION = "odylith.greenfield.model-profile-contract.v21"
-GREENFIELD_NORMAL_CASE_TARGET_SECONDS = 60.0
+GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION = "odylith.greenfield.model-profile-contract.v22"
+GREENFIELD_NORMAL_CASE_TARGET_SECONDS = 90.0
 GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS = 180.0
 # The shared model window leaves finite headroom for compilation, sealing and staging.
 _COMPLETION_RESERVE_SECONDS = 15.0
@@ -247,12 +246,12 @@ __all__ = [
     "GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION",
     "GREENFIELD_NORMAL_CASE_TARGET_SECONDS",
     "GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS",
-    "GreenfieldModelProfile",
     "RESCUE_PROFILE_ID",
     "STANDARD_PROFILE_ID",
     "UNAVAILABLE_PROVIDER_PROFILE_ID",
-    "greenfield_model_profile_observation_issues",
+    "GreenfieldModelProfile",
     "get_greenfield_model_profile",
+    "greenfield_model_profile_observation_issues",
     "model_profile_id_for_repair_tier",
     "normalize_greenfield_model_repair_tier",
     "require_greenfield_model_profile_observation",
