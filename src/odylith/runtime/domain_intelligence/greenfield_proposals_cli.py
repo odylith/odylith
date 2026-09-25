@@ -3,39 +3,51 @@
 from __future__ import annotations
 
 import argparse
-from collections.abc import Callable, Sequence
-from dataclasses import replace
 import json
-from pathlib import Path
 import time
-from typing import Any, Mapping
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import replace
+from pathlib import Path
+from typing import Any
 
-from odylith.runtime.domain_intelligence import greenfield_proposals
-from odylith.runtime.domain_intelligence import greenfield_generation_store
-from odylith.runtime.domain_intelligence import greenfield_pending_transaction_store
+from odylith.runtime.domain_intelligence import (
+    greenfield_generation_store,
+    greenfield_pending_transaction_store,
+    greenfield_proposals,
+)
 from odylith.runtime.domain_intelligence.greenfield_cli import terminal_decision_offer
-from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import GreenfieldClarificationRequired
-from odylith.runtime.domain_intelligence.greenfield_model_outcomes import GreenfieldModelRuntimeError
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
     require_product_create_transaction_quality_approved,
-)
-from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
     require_product_create_transaction_verified,
 )
-from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import materialize_model_authored_intent
-from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import prepare_model_authoring_evidence
-from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import render_product_intent_preview
+from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
+    greenfield_host_candidate_contract,
+    load_greenfield_host_candidate_file,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
+    GreenfieldClarificationRequired,
+    materialize_host_authored_intent,
+    materialize_model_authored_intent,
+    prepare_model_authoring_evidence,
+    render_product_intent_preview,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_outcomes import (
+    GreenfieldModelRuntimeError,
+)
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     GREENFIELD_NORMAL_CASE_TARGET_SECONDS,
     GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS,
     get_greenfield_model_profile,
     model_profile_id_for_repair_tier,
 )
-from odylith.runtime.domain_intelligence.greenfield_operating_envelope import MAX_EVIDENCE_BYTES
-from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import GreenfieldPreconfirmEngineError
-from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import PRECONFIRM_REPAIR_TIERS
+from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
+    MAX_EVIDENCE_BYTES,
+)
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import (
+    PRECONFIRM_REPAIR_TIERS,
+    GreenfieldPreconfirmEngineError,
+)
 from odylith.runtime.reasoning import odylith_reasoning
-
 
 _PUBLIC_INTENT_AUTHORITY_SUMMARY_VERSION = "odylith.product-intent-authority-summary.v1"
 _PUBLIC_INTENT_AUTHORITY_SUMMARY_KEYS = (
@@ -64,6 +76,14 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     propose = subparsers.add_parser("propose", help="Stage a complete Greenfield package and show a read-only proposal.")
     propose.add_argument("--repo-root", default=".")
     propose.add_argument("--prompt", required=True)
+    propose.add_argument(
+        "--candidate-file",
+        default="",
+        help=(
+            "Path to one host-authored v68 typed candidate. Odylith treats it as an "
+            "untrusted hypothesis, revalidates its source custody, and runs independent review."
+        ),
+    )
     propose.add_argument("--format", choices=("text", "json"), default="text", dest="output_format")
     propose.add_argument(
         "--edit",
@@ -128,6 +148,11 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     )
     compile_transaction.add_argument("--repo-root", default=".")
     compile_transaction.add_argument("--prompt", required=True)
+    compile_transaction.add_argument(
+        "--candidate-file",
+        default="",
+        help="Path to one host-authored v68 typed candidate for deterministic validation and review.",
+    )
     compile_transaction.add_argument("--edit", default="", help=argparse.SUPPRESS)
     compile_transaction.add_argument("--edit-evidence", default="", help=argparse.SUPPRESS)
     compile_transaction.add_argument(
@@ -156,6 +181,24 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         help="Optional path for the compiled transaction JSON. The proposal view remains read-only.",
     )
     compile_transaction.add_argument("--format", choices=("text", "json"), default="text", dest="output_format")
+    candidate_contract = subparsers.add_parser(
+        "candidate-contract",
+        help="Show the typed host reasoning contract for one Greenfield request.",
+    )
+    candidate_contract.add_argument("--repo-root", default=".")
+    candidate_source = candidate_contract.add_mutually_exclusive_group(required=True)
+    candidate_source.add_argument("--prompt")
+    candidate_source.add_argument(
+        "--transaction-hash",
+        help="Use the retained source from this reviewed package for an EDIT candidate.",
+    )
+    candidate_contract.add_argument("--edit", default="")
+    candidate_contract.add_argument("--edit-evidence", default="")
+    candidate_contract.add_argument(
+        "--evidence-language",
+        choices=("en",),
+        default="en",
+    )
     return parser.parse_args(argv)
 
 
@@ -189,8 +232,10 @@ def _transaction_review_text(
         f"- quality gate: {summary.get('quality_status') or manifest.get('status', 'unknown')}",
         f"- validation gate: {summary.get('validation_status') or manifest.get('validation_status', 'unknown')}",
         f"- governed package: {len(created)} workstreams, {len(components)} component previews, {len(diagrams)} Atlas previews",
-        f"- sealed commit: {summary.get('repository_write_count', 0)} exact file writes, "
-        f"{summary.get('repository_delete_count', 0)} deletions, and hashed repo preconditions",
+        (
+            f"- sealed commit: {summary.get('repository_write_count', 0)} exact file writes, "
+            f"{summary.get('repository_delete_count', 0)} deletions, and hashed repo preconditions"
+        ),
         "",
         str(confirmation["reason"]),
         "",
@@ -229,9 +274,12 @@ def _print_transaction_review(
 def rebuild_pending_transaction(
     *, repo_root: Path, transaction_hash: str, edit_evidence: str,
     edit_evidence_file: str, as_json: bool, started_at: float | None = None,
+    host_candidate_file: str = "",
 ) -> int:
     """Re-author from verified retained evidence; never alter the reviewed package."""
-    from odylith.runtime.domain_intelligence.greenfield_create_transaction import load_compiled_product_create_transaction_file
+    from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
+        load_compiled_product_create_transaction_file,
+    )
 
     started = time.perf_counter() if started_at is None else started_at
     try:
@@ -247,11 +295,20 @@ def rebuild_pending_transaction(
         prompt = previous.proposal.get("intent", {}).get("prompt")
         if not isinstance(prompt, str) or not prompt.strip():
             raise ValueError("The reviewed package has no retained source evidence; start a new proposal.")
+        candidate_path = Path(str(host_candidate_file or "")).expanduser()
+        if candidate_path and not candidate_path.is_absolute():
+            candidate_path = repo_root / candidate_path
+        host_candidate = (
+            load_greenfield_host_candidate_file(candidate_path)
+            if str(host_candidate_file or "").strip()
+            else None
+        )
         candidate, transaction, staged_path = _compile_prompt_evidence_transaction(
             repo_root=repo_root, prompt=prompt, edit_evidence=correction,
             release_selector=previous.release_selector,
             repair_tier=previous.quality_manifest["requested_repair_tier"],
             source_language="en", started_at=started,
+            host_candidate=host_candidate,
         )
         if transaction.transaction_hash == transaction_hash:
             raise RuntimeError("The correction did not produce a new reviewed package. The old package is unchanged.")
@@ -347,6 +404,18 @@ def _edit_evidence_from_args(args: argparse.Namespace, *, repo_root: Path) -> st
         raise ValueError("Greenfield EDIT evidence must be valid UTF-8 text") from exc
 
 
+def _host_candidate_from_args(
+    args: argparse.Namespace, *, repo_root: Path,
+) -> dict[str, Any] | None:
+    value = str(getattr(args, "candidate_file", "") or "").strip()
+    if not value:
+        return None
+    path = Path(value).expanduser()
+    if not path.is_absolute():
+        path = repo_root / path
+    return load_greenfield_host_candidate_file(path)
+
+
 def _compile_prompt_evidence_transaction(
     *,
     repo_root: Path,
@@ -357,6 +426,7 @@ def _compile_prompt_evidence_transaction(
     source_language: str = "en",
     started_at: float | None = None,
     clock: Callable[[], float] | None = None,
+    host_candidate: Mapping[str, Any] | None = None,
 ) -> tuple[dict[str, Any], Any, Path]:
     now = clock or time.perf_counter
     started = now() if started_at is None else float(started_at)
@@ -371,38 +441,58 @@ def _compile_prompt_evidence_transaction(
     if profile.model_timeout_seconds - max(0.0, now() - started) < 1.0:
         raise GreenfieldModelRuntimeError("timeout")
     greenfield_generation_store.require_greenfield_working_generation(repo_root)
-    provider_result = _greenfield_authoring_provider(
-        repo_root=repo_root,
-        profile_id=profile_id,
-    )
-    provider = provider_result[0]
-    model = profile.model
-    reasoning_effort = profile.reasoning_effort
     authoring_timeout_seconds = profile.model_timeout_seconds - max(0.0, now() - started)
     if authoring_timeout_seconds < 1.0:
         raise GreenfieldModelRuntimeError("timeout")
     authoring_receipt: dict[str, Any] = {}
-    candidate_intent = materialize_model_authored_intent(
-        prompt=prompt,
-        repo_root=repo_root,
-        edit_evidence=edit_evidence,
-        authoring_provider=provider,
-        authoring_timeout_seconds=authoring_timeout_seconds,
-        authoring_model=model,
-        authoring_reasoning_effort=reasoning_effort,
-        authoring_profile_id=profile_id,
-        source_language=source_language,
-        prepared_evidence=prepared_evidence,
-        authoring_receipt=authoring_receipt,
-        authoring_deadline=started + profile.model_timeout_seconds,
-        clock=now,
-        participant_provider_factory=lambda: _greenfield_authoring_provider(
-            repo_root=repo_root, profile_id=profile_id, request_role="participant_selection",
-        )[0],
-        review_provider_factory=lambda: _greenfield_authoring_provider(
-            repo_root=repo_root, profile_id=profile_id, request_role="candidate_review",
-        )[0],
-    )
+    if host_candidate is not None:
+        candidate_intent = materialize_host_authored_intent(
+            prompt=prompt,
+            repo_root=repo_root,
+            host_candidate=host_candidate,
+            edit_evidence=edit_evidence,
+            authoring_profile_id=profile_id,
+            source_language=source_language,
+            prepared_evidence=prepared_evidence,
+            authoring_receipt=authoring_receipt,
+            authoring_deadline=started + profile.model_timeout_seconds,
+            clock=now,
+            review_provider_factory=lambda: _greenfield_authoring_provider(
+                repo_root=repo_root,
+                profile_id=profile_id,
+                request_role="candidate_review",
+            )[0],
+        )
+    else:
+        provider = _greenfield_authoring_provider(
+            repo_root=repo_root,
+            profile_id=profile_id,
+        )[0]
+        candidate_intent = materialize_model_authored_intent(
+            prompt=prompt,
+            repo_root=repo_root,
+            edit_evidence=edit_evidence,
+            authoring_provider=provider,
+            authoring_timeout_seconds=authoring_timeout_seconds,
+            authoring_model=profile.model,
+            authoring_reasoning_effort=profile.reasoning_effort,
+            authoring_profile_id=profile_id,
+            source_language=source_language,
+            prepared_evidence=prepared_evidence,
+            authoring_receipt=authoring_receipt,
+            authoring_deadline=started + profile.model_timeout_seconds,
+            clock=now,
+            participant_provider_factory=lambda: _greenfield_authoring_provider(
+                repo_root=repo_root,
+                profile_id=profile_id,
+                request_role="participant_selection",
+            )[0],
+            review_provider_factory=lambda: _greenfield_authoring_provider(
+                repo_root=repo_root,
+                profile_id=profile_id,
+                request_role="candidate_review",
+            )[0],
+        )
     authoring_tier = str(authoring_receipt.get("tier") or "").strip()
     if authoring_tier not in {"standard", "rescue", "deep"}:
         raise RuntimeError(
@@ -416,7 +506,7 @@ def _compile_prompt_evidence_transaction(
     )
     candidate_authority = candidate_intent.get("product_intent_authority")
     if not isinstance(candidate_authority, Mapping):
-        raise RuntimeError("pre-confirm typed Product Intent authority is missing")
+        raise TypeError("pre-confirm typed Product Intent authority is missing")
     proposal = dict(proposal)
     proposal["product_intent_authority"] = candidate_authority
     elapsed_before_preconfirm_seconds = max(0.0, now() - started)
@@ -558,11 +648,46 @@ def _retired_intent_file_message() -> str:
 def main(argv: Sequence[str] | None = None) -> int:
     tokens = [str(token) for token in (argv or ())]
     if tokens[:1] == ["create"]:
-        from odylith.runtime.domain_intelligence.greenfield_create_cli import main as create_main
+        from odylith.runtime.domain_intelligence.greenfield_create_cli import (
+            main as create_main,
+        )
 
         return create_main(tokens)
     args = _parse_args(tokens)
     repo_root = Path(str(args.repo_root)).expanduser().resolve()
+    if args.command == "candidate-contract":
+        try:
+            edit_evidence = _edit_evidence_from_args(args, repo_root=repo_root)
+            prompt = str(args.prompt or "")
+            if args.transaction_hash:
+                from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
+                    load_compiled_product_create_transaction_file,
+                )
+
+                path = greenfield_pending_transaction_store.resolve_pending_transaction(
+                    repo_root=repo_root,
+                    transaction_hash=str(args.transaction_hash),
+                )
+                previous = load_compiled_product_create_transaction_file(path)
+                prompt = str(previous.proposal.get("intent", {}).get("prompt") or "")
+                if not prompt.strip():
+                    raise ValueError(
+                        "The reviewed package has no retained source evidence; start a new proposal."
+                    )
+            prepared = prepare_model_authoring_evidence(
+                prompt=prompt,
+                edit_evidence=edit_evidence,
+                source_language=str(args.evidence_language),
+            )
+            print(json.dumps(
+                greenfield_host_candidate_contract(prepared.evidence_source),
+                indent=2,
+                sort_keys=True,
+            ))
+        except (OSError, ValueError, RuntimeError) as exc:
+            _print_greenfield_error(exc, as_json=True)
+            return 2
+        return 0
     if args.command == "propose":
         if bool(args.confirm_intent) or str(args.intent_file or "").strip():
             _print_greenfield_error(ValueError(_retired_intent_file_message()), as_json=args.output_format == "json")
@@ -570,6 +695,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         try:
             started_at = time.perf_counter()
             edit_evidence = _edit_evidence_from_args(args, repo_root=repo_root)
+            host_candidate = _host_candidate_from_args(args, repo_root=repo_root)
             candidate_intent, transaction, transaction_path = _compile_prompt_evidence_transaction(
                 repo_root=repo_root,
                 prompt=str(args.prompt),
@@ -578,6 +704,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 repair_tier=str(args.repair_tier),
                 source_language=str(args.evidence_language),
                 started_at=started_at,
+                host_candidate=host_candidate,
             )
         except GreenfieldClarificationRequired as exc:
             return _finish_clarification(exc=exc, as_json=args.output_format == "json")
@@ -603,6 +730,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         try:
             started_at = time.perf_counter()
             edit_evidence = _edit_evidence_from_args(args, repo_root=repo_root)
+            host_candidate = _host_candidate_from_args(args, repo_root=repo_root)
             candidate_intent, transaction, staged_path = _compile_prompt_evidence_transaction(
                 repo_root=repo_root,
                 prompt=str(args.prompt),
@@ -611,6 +739,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 repair_tier=str(args.repair_tier),
                 source_language=str(args.evidence_language),
                 started_at=started_at,
+                host_candidate=host_candidate,
             )
             output_path = str(args.output or "").strip()
             if output_path:

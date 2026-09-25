@@ -4,6 +4,31 @@ Last updated: 2026-09-24
 
 ## Overview
 
+### Host-native Greenfield candidate boundary (2026-09-24)
+
+The active host now owns the single semantic-authoring decision for Greenfield.
+`greenfield candidate-contract` publishes the exact admitted evidence and closed
+v68 response schema; `propose --candidate-file` and hash-bound EDIT accept one
+immutable candidate as an untrusted hypothesis. Domain Intelligence revalidates
+every citation, typed event/relation, source/proposed authority split, provisional
+design, and source-precedence edge before one independent Astra review. It then
+seals the existing Product Intent authority and compiles the unchanged
+ProductCreateTransaction. The quality receipt identifies `host_native` directly
+and never aliases the candidate to participant-selection or remaining-author
+roles. No parser, regex extraction, deterministic participant join, revision,
+repair, retry, fallback candidate, or alternate model ladder belongs to this path.
+
+The public discriminator preserves seven events, six human participants, five
+components, five workstreams, and one explicit safety prohibition; independent
+review admits it in 9.782 seconds, while a thin request produces a material
+`first_path` clarification without review. A real-review full compile passes in
+12.296 seconds with 5 Radar / 5 Registry / 5 Atlas and a sealed pending
+transaction; 257 focused tests prove initial, EDIT, custody, receipt, envelope,
+preconfirm, CLI, and decision behavior. This qualifies the integration candidate,
+not the release. Clean installed transaction/recovery, complete browser states,
+host-inclusive timing, host/intervention parity, final independent adjudication,
+superseded-path removal, and one fresh untouched holdout remain mandatory.
+
 ### Bounded candidate review recovery (2026-09-24)
 
 Greenfield candidate admission has one finite recovery edge. The ordinary path

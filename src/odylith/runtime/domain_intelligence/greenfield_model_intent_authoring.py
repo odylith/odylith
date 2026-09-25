@@ -16,6 +16,13 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
+    ASSUMPTION_SCHEMA,
+    assumption_rows,
+    provisional_proof_assumption,
+    require_decision_assumptions,
+    require_provisional_proof_decision,
+)
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     GreenfieldAuthoredSemanticsError,
     authored_component_relation_facts,
@@ -27,20 +34,9 @@ from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
     PROOF_BOUNDARY_ROLE_DEFINITION,
     STATE_OBJECT_ROLE_DEFINITION,
 )
-from odylith.runtime.domain_intelligence.greenfield_model_outcomes import (
-    GreenfieldModelAuthoringError,
-)
-from odylith.runtime.domain_intelligence.greenfield_model_source_citations import (
-    exact_occurrence_start,
-    exact_quote,
-    resolve_source_citation,
-)
-from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
-    ASSUMPTION_SCHEMA,
-    assumption_rows,
-    provisional_proof_assumption,
-    require_decision_assumptions,
-    require_provisional_proof_decision,
+from odylith.runtime.domain_intelligence.greenfield_event_ordering import (
+    SOURCE_PRECEDENCE_SCHEMA,
+    validate_source_precedence,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_atomic_projection import (
     derive_model_atomic_claims,
@@ -52,21 +48,25 @@ from odylith.runtime.domain_intelligence.greenfield_model_direct_evidence_graph 
     derive_model_relations,
     model_component_responsibility_rows,
 )
-from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
-    PROVISIONAL_DESIGN_SCHEMA,
-    validate_provisional_design,
-)
-from odylith.runtime.domain_intelligence.greenfield_event_ordering import (
-    SOURCE_PRECEDENCE_SCHEMA,
-    validate_source_precedence,
+from odylith.runtime.domain_intelligence.greenfield_model_outcomes import (
+    GreenfieldModelAuthoringError,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     get_greenfield_model_profile,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_source_citations import (
+    exact_occurrence_start,
+    exact_quote,
+    resolve_source_citation,
 )
 from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     MAX_AUTHORED_CITATIONS,
     MAX_AUTHORED_FIELD_VALUE_CHARS,
     MAX_AUTHORED_LIST_ITEMS,
+)
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
+    PROVISIONAL_DESIGN_SCHEMA,
+    validate_provisional_design,
 )
 
 GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v68"
@@ -212,7 +212,7 @@ def validate_greenfield_authoring_response(
     effective_timeout_seconds: float,
     semantic_model_call_count: int,
 ) -> GreenfieldModelAuthoredIntent | GreenfieldAuthoringClarification:
-    if type(semantic_model_call_count) is not int or semantic_model_call_count < 1:
+    if type(semantic_model_call_count) is not int or semantic_model_call_count < 0:
         raise GreenfieldModelAuthoringError(
             "Greenfield authoring received an invalid semantic call count; no records were created."
         )
@@ -472,9 +472,9 @@ def _intent_from_typed_source_spans(
     if not isinstance(value, Mapping) or set(value) != set(_SOURCE_FACT_FIELDS):
         raise GreenfieldModelAuthoringError("Greenfield authoring returned invalid source citations; no records were created.")
     typed_citations: list[tuple[str, int, Mapping[str, Any]]] = []
-    for field in _SOURCE_FACT_FIELDS:
-        raw_value = value.get(field)
-        if field in _SINGULAR_SOURCE_FIELDS:
+    for source_field in _SOURCE_FACT_FIELDS:
+        raw_value = value.get(source_field)
+        if source_field in _SINGULAR_SOURCE_FIELDS:
             rows: Sequence[Any] = () if raw_value is None else (raw_value,)
         elif (
             isinstance(raw_value, Sequence)
@@ -487,7 +487,7 @@ def _intent_from_typed_source_spans(
         for source_field_row, raw in enumerate(rows, start=1):
             if not isinstance(raw, Mapping):
                 raise GreenfieldModelAuthoringError("Greenfield authoring returned invalid source citations; no records were created.")
-            typed_citations.append((field, source_field_row, raw))
+            typed_citations.append((source_field, source_field_row, raw))
     typed_citations.extend(
         (
             "component_responsibilities",
@@ -513,23 +513,23 @@ def _intent_from_typed_source_spans(
         raise GreenfieldModelAuthoringError(str(exc)) from exc
     intent["ambiguities"] = _advisory_rows(ambiguities)
     selected_facts: list[dict[str, Any]] = []
-    for citation_index, (field, source_field_row, raw) in enumerate(typed_citations, start=1):
-        if field not in _SOURCE_REQUIRED_FIELDS:
+    for citation_index, (source_field, source_field_row, raw) in enumerate(typed_citations, start=1):
+        if source_field not in _SOURCE_REQUIRED_FIELDS:
             raise GreenfieldModelAuthoringError("Greenfield authoring returned invalid source citations; no records were created.")
         quote, start = resolve_source_citation(
-            evidence, raw, state_object=field == "state_object"
+            evidence, raw, state_object=source_field == "state_object"
         )
         quoted_bytes = quote.encode("utf-8")
         end = start + len(quoted_bytes)
-        key = (field, start, end)
-        if key in seen and field != "operational_constraints":
+        key = (source_field, start, end)
+        if key in seen and source_field != "operational_constraints":
             # Duplicate collapse must not renumber model-authored references.
             seen[key]["source_field_rows"].append(source_field_row)
             continue
         projection_start = 0
-        if field == "first_path":
-            existing_path = str(intent[field])
-            row_index = sum(1 for span in spans if span["section_key"] == field) + 1
+        if source_field == "first_path":
+            existing_path = str(intent[source_field])
+            row_index = sum(1 for span in spans if span["section_key"] == source_field) + 1
             if row_index > MAX_AUTHORED_LIST_ITEMS:
                 raise GreenfieldModelAuthoringError(
                     "Greenfield authoring exceeded the declared intent size; no records were created."
@@ -540,22 +540,24 @@ def _intent_from_typed_source_spans(
                 raise GreenfieldModelAuthoringError(
                     "Greenfield authoring exceeded the declared intent size; no records were created."
                 )
-            intent[field] = composed
-        elif field in _TEXT_FIELDS:
-            intent[field] = quote
-            row_index = sum(1 for span in spans if span["section_key"] == field) + 1
+            intent[source_field] = composed
+        elif source_field in _TEXT_FIELDS:
+            intent[source_field] = quote
+            row_index = sum(1 for span in spans if span["section_key"] == source_field) + 1
         else:
-            rows = intent[field]
+            rows = intent[source_field]
             assert isinstance(rows, list)
             if len(rows) >= MAX_AUTHORED_LIST_ITEMS:
                 raise GreenfieldModelAuthoringError("Greenfield authoring exceeded the declared intent size; no records were created.")
             rows.append(quote)
             row_index = len(rows)
-        projection_path = f"/{field}" if field in _TEXT_FIELDS else f"/{field}/{row_index - 1}"
+        projection_path = (
+            f"/{source_field}" if source_field in _TEXT_FIELDS else f"/{source_field}/{row_index - 1}"
+        )
         selected_facts.append(
             {
                 "fact_index": citation_index,
-                "field": field,
+                "field": source_field,
                 "source_field_rows": [source_field_row],
                 "quote": quote,
                 "source_start_byte": start,
@@ -568,8 +570,8 @@ def _intent_from_typed_source_spans(
         seen[key] = selected_facts[-1]
         spans.append(
             {
-                "span_id": f"authoring:{field}:{row_index}:{citation_index}",
-                "section_key": field,
+                "span_id": f"authoring:{source_field}:{row_index}:{citation_index}",
+                "section_key": source_field,
                 "row_index": row_index,
                 "classification": "product_claim",
                 "text": quote,
@@ -867,7 +869,7 @@ __all__ = [
     "GreenfieldModelAuthoringError",
     "authoring_tier",
     "bounded_greenfield_model_timeout",
-    "greenfield_authoring_schema",
     "greenfield_authoring_payload",
+    "greenfield_authoring_schema",
     "validate_greenfield_authoring_response",
 ]

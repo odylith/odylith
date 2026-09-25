@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 import math
+from collections.abc import Mapping
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
     CANDIDATE_REVIEW_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
+    HOST_CANDIDATE_RECEIPT_VERSION,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
@@ -26,6 +29,13 @@ def greenfield_model_authoring_receipt_approved(
     requested_repair_tier: str,
 ) -> bool:
     """Validate observed author/reviewer metadata, not source authority or quality."""
+
+    if model_authoring.get("authoring_origin") == "host_native":
+        return _host_native_authoring_receipt_approved(
+            model_authoring=model_authoring,
+            semantic_compiler=semantic_compiler,
+            requested_repair_tier=requested_repair_tier,
+        )
 
     revised = model_authoring.get("semantic_model_call_count") == 5
     expected_fields = {
@@ -174,7 +184,81 @@ def _candidate_review_approved(
         request_role="candidate_review",
     ):
         return False
+    if model_authoring.get("authoring_origin") == "host_native":
+        return _host_native_timing_approved(model_authoring)
     return _sequential_model_receipts_approved(model_authoring)
+
+
+def _host_native_authoring_receipt_approved(
+    *,
+    model_authoring: Mapping[str, Any],
+    semantic_compiler: Mapping[str, Any],
+    requested_repair_tier: str,
+) -> bool:
+    expected_fields = {
+        "authoring_origin",
+        "authoring_version",
+        "runtime_semantic_model_call_count",
+        "tier",
+        "elapsed_seconds",
+        "effective_model_window_seconds",
+        "host_candidate",
+        "candidate_review",
+    }
+    host = model_authoring.get("host_candidate")
+    review = model_authoring.get("candidate_review")
+    return bool(
+        set(model_authoring) == expected_fields
+        and model_authoring.get("authoring_origin") == "host_native"
+        and model_authoring.get("authoring_version")
+        == GREENFIELD_INTENT_AUTHORING_VERSION
+        and model_authoring.get("runtime_semantic_model_call_count") == 1
+        and str(semantic_compiler.get("version", "")).strip()
+        == "odylith.greenfield.authored-semantic-validation.v4"
+        and semantic_compiler.get("status") == "passed"
+        and semantic_compiler.get("semantic_owner")
+        == "validated_model_authored_intent"
+        and semantic_compiler.get("post_authoring_interpretation_calls") == 1
+        and isinstance(host, Mapping)
+        and set(host)
+        == {"version", "contract_version", "source_sha256", "candidate_sha256"}
+        and host.get("version") == HOST_CANDIDATE_RECEIPT_VERSION
+        and host.get("contract_version") == GREENFIELD_INTENT_AUTHORING_VERSION
+        and _is_sha256(host.get("source_sha256"))
+        and _is_sha256(host.get("candidate_sha256"))
+        and isinstance(review, Mapping)
+        and review.get("source_sha256") == host.get("source_sha256")
+        and _candidate_review_approved(
+            model_authoring,
+            requested_repair_tier=requested_repair_tier,
+        )
+    )
+
+
+def _host_native_timing_approved(model_authoring: Mapping[str, Any]) -> bool:
+    review = model_authoring.get("candidate_review")
+    profile_observation = review.get("model_profile") if isinstance(review, Mapping) else None
+    if not isinstance(profile_observation, Mapping):
+        return False
+    values = (
+        model_authoring.get("elapsed_seconds"),
+        model_authoring.get("effective_model_window_seconds"),
+        review.get("elapsed_seconds"),
+        profile_observation.get("effective_timeout_seconds"),
+    )
+    if any(type(value) not in (int, float) for value in values):
+        return False
+    total, window, review_elapsed, review_timeout = (float(value) for value in values)
+    if any(not math.isfinite(value) for value in (total, window, review_elapsed, review_timeout)):
+        return False
+    try:
+        profile = get_greenfield_model_profile(str(profile_observation.get("profile_id") or ""))
+    except ValueError:
+        return False
+    return (
+        0.0 <= review_elapsed <= review_timeout <= window <= profile.model_timeout_seconds
+        and review_elapsed <= total <= window
+    )
 
 
 def _rejected_candidate_review_approved(

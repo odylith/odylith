@@ -1,5 +1,29 @@
 - Bug ID: CB-303
 
+- Host-Native Candidate Integration Checkpoint (2026-09-24): The final
+  unconsumed public mechanism hypothesis passes its bounded discriminator. One
+  host-authored v68 candidate preserves seven source events, six human
+  participants, five proposed components, five workstreams, and the explicit
+  prohibition on automatic vessel movement; the unchanged deterministic
+  validator accepts it and the unchanged Astra-medium reviewer admits it in
+  9.782 seconds. A thin assay request returns the canonical `first_path`
+  clarification without review. The checkout is unchanged. The 317.542-second
+  preparation interval includes harness construction and is not consumer timing
+  evidence. Production now has an explicit candidate-contract/candidate-file
+  seam, truthful `host_native` receipts, initial and hash-bound EDIT compilation,
+  and no selector, remaining author, join, repair, retry, fallback candidate,
+  regex extraction, or alternate model ladder on that path. A real reviewer plus
+  full package compile passes in 12.296 seconds and yields 5 Radar / 5 Registry /
+  5 Atlas plus a sealed pending transaction; 257 focused custody, receipt, CLI,
+  EDIT, preconfirm, decision, and envelope tests pass. This earns integration,
+  not closure. CB-303 remains Open/P0 pending clean installed transaction and
+  recovery proof, complete governed-surface browser states, request-to-preview
+  timing including host authoring, Codex/Claude and intervention parity,
+  independent final qualification, superseded-path removal, and one fresh
+  untouched holdout. Do not inspect or tune against the consumed holdout.
+  Evidence: `/private/tmp/odylith-greenfield-host-native-discriminator-20260924/result.v1.json`
+  and `/private/tmp/odylith-greenfield-host-native-e2e-result-20260924.json`.
+
 - Final Candidate And Complete-Owner Rejection (2026-09-24): The sealed final
   holdout rejects participant-first after seven quality-10 passes and twelve
   fail-closed outcomes among nineteen completed cases. Nine are definite product

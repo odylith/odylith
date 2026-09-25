@@ -1,5 +1,39 @@
 Status: In progress
 
+## Latest live outcome: host-native candidate earns integration (2026-09-24)
+
+The predeclared public discriminator for the last credible mechanism passes.
+The active host authored one complete v68 candidate; the unchanged deterministic
+validator preserved seven source events, six human participants, five provisional
+components, five workstreams, and the explicit no-automatic-movement constraint.
+The unchanged Astra-medium full-candidate reviewer admitted it in 9.782 seconds.
+A thin assay request returned the canonical `first_path` clarification with no
+review call. The checkout remained unchanged. Preparation took 317.542 seconds
+and is not accepted as consumer timing evidence. Evidence:
+`/private/tmp/odylith-greenfield-host-native-discriminator-20260924/result.v1.json`.
+
+The bounded production candidate now exposes `greenfield candidate-contract`
+and accepts one untrusted `--candidate-file` for initial propose and hash-bound
+EDIT rebuilds. The receipt identifies `host_native` directly; it does not fake
+participant-selector or remaining-author observations. Odylith revalidates the
+same typed source custody, runs one independent review, seals the existing
+authority envelope, and compiles the unchanged ProductCreateTransaction. A real
+Astra review plus complete package compile passed in 12.296 seconds with five
+Radar workstreams, five Registry components, five Atlas diagrams, and one sealed
+pending transaction. Focused custody, receipt, CLI, EDIT, preconfirm, decision,
+and operating-envelope proof passes 257 tests. Shipped Codex/Claude guidance now
+routes the host through this seam and explicitly forbids parser, regex, selector,
+join, retry, repair, fallback-candidate, and model-ladder growth.
+
+This is a working production candidate, not release completion. Preserve the
+consumed holdout boundary. Next prove clean installed initial/EDIT/CONFIRM/REJECT
+and rollback behavior, normal/empty/degraded browser UX across all governed
+surfaces, request-to-preview timing including host authoring, host parity and
+intervention visibility, then obtain independent final semantic adjudication and
+run a fresh untouched holdout once. Remove the superseded in-runtime authoring
+path only after those gates accept this replacement; do not tune this mechanism
+to the consumed holdout or add another architecture family on failure.
+
 ## Latest live outcome: no in-runtime authoring winner (2026-09-24)
 
 The independently sealed final holdout rejects the frozen participant-first

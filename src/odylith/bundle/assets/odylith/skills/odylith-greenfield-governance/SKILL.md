@@ -17,9 +17,19 @@ mechanism-level learning.
 1. Do not refuse merely because the repo has no app source. Greenfield intent is
    proposal evidence, not source evidence.
    Product meaning comes before artifact mapping.
-2. Run `./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<operator request>"`.
-   It treats the prompt and corrections as untrusted evidence, compiles typed
+2. Use the active host as the single semantic author. First run
+   `./.odylith/bin/odylith greenfield candidate-contract --repo-root . --prompt
+   "<operator request>"`. Reason over its complete evidence and write exactly one
+   JSON candidate matching the returned schema to a temporary file outside the
+   repository. Then run `./.odylith/bin/odylith greenfield propose --repo-root .
+   --prompt "<operator request>" --candidate-file '<temporary-file>'`.
+   The candidate is an untrusted hypothesis: Odylith revalidates every source
+   citation and typed relation, runs one independent semantic review, seals the
    custody facts, and quality-gates the complete staged ProductCreateTransaction.
+   Do not inspect source code to infer the candidate schema. Do not add a parser,
+   regex extraction pass, participant selector, remainder author, join, repair,
+   retry, fallback candidate, or alternate model ladder. Stop on the first
+   validation or review failure and record that mechanism evidence.
 3. Show the read-only, transaction-bound preview directly. It publishes nothing, but prints
    three full shell-quoted terminal commands: `odylith greenfield decide --repo-root
    '<path>' CONFIRM '<hash>'`, `odylith greenfield decide --repo-root '<path>' EDIT
@@ -27,10 +37,13 @@ mechanism-level learning.
    greenfield decide --repo-root '<path>' REJECT '<hash>'`. No qualified confirmation
    interface comes from ordinary chat approval, host names, or hooks.
 4. `CONFIRM` and `REJECT` use the shared bounded deterministic owner without
-   compiler or model work. `EDIT` verifies its retained hash, lazily compiles the
-   sealed original source plus new untrusted correction with the existing compiler,
-   preserves original tier and 90/120/150 limits, retains the old seal, and
-   returns a new preview/hash. It adds no schema, stage, retry, or repair path.
+   compiler or model work. For `EDIT`, run `greenfield candidate-contract` with
+   `--transaction-hash '<old-hash>'` and the new `--edit` or `--edit-evidence`,
+   author one new host candidate, then pass that same correction and
+   `--candidate-file '<temporary-file>'` to `greenfield decide EDIT`. EDIT verifies
+   the retained hash, compiles the sealed original source plus correction,
+   preserves the original tier and advisory 90/120/150 targets, retains the old
+   seal, and returns a new preview/hash. It adds no repair or fallback path.
 5. `odylith greenfield create` with `--transaction-file`, `--transaction-hash`,
    and `--confirm` remains a separate commit-only interface, not a fallback for
    chat approval or `decide`. Do not create from a chat approval. It verifies the compiler receipt, hash and

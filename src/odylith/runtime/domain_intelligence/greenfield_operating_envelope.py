@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
 import math
+from collections.abc import Mapping, Sequence
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
@@ -11,7 +11,6 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
     greenfield_model_profile_observation_issues,
     supported_greenfield_model_profile_ids,
 )
-
 
 GREENFIELD_OPERATING_ENVELOPE_VERSION = "odylith.greenfield-operating-envelope.v4"
 GREENFIELD_OPERATING_PROFILE = "single-product-governance-onboarding"
@@ -212,7 +211,7 @@ def require_supported_greenfield_operating_envelope(value: Mapping[str, Any]) ->
     """Fail before confirmation when a sealed request exceeds the envelope."""
 
     if not isinstance(value, Mapping):
-        raise ValueError("Greenfield operating envelope is missing")
+        raise TypeError("Greenfield operating envelope is missing")
     if set(value) != {
         "version",
         "profile",
@@ -441,6 +440,31 @@ def _evidence_issues(observed: Mapping[str, Any], *, public_only: bool) -> list[
 
 
 def _model_authoring_observations(value: Mapping[str, Any] | None) -> dict[str, Any] | None:
+    if isinstance(value, Mapping) and value.get("origin") == "host_native":
+        if set(value) != {"origin", "host_candidate", "candidate_review"}:
+            return None
+        candidate = value.get("host_candidate")
+        review = _model_authoring_observation(value.get("candidate_review"))
+        if (
+            not isinstance(candidate, Mapping)
+            or set(candidate)
+            != {"version", "contract_version", "source_sha256", "candidate_sha256"}
+            or any(
+                not isinstance(candidate.get(key), str) or not candidate.get(key)
+                for key in ("version", "contract_version")
+            )
+            or any(
+                not _is_sha256(candidate.get(key))
+                for key in ("source_sha256", "candidate_sha256")
+            )
+            or review is None
+        ):
+            return None
+        return {
+            "origin": "host_native",
+            "host_candidate": dict(candidate),
+            "candidate_review": review,
+        }
     if not isinstance(value, Mapping) or set(value) != set(_AUTHORING_OBSERVATION_ROLES):
         return None
     observations = {
@@ -484,8 +508,21 @@ def _model_authoring_observation(value: Any) -> dict[str, Any] | None:
 
 
 def _model_authoring_observation_issues(
-    observations: Mapping[str, Mapping[str, Any]],
+    observations: Mapping[str, Any],
 ) -> tuple[str, ...]:
+    if observations.get("origin") == "host_native":
+        review = observations.get("candidate_review")
+        if not isinstance(review, Mapping):
+            return ("host-native candidate review observation is missing",)
+        return greenfield_model_profile_observation_issues(
+            profile_id=str(review.get("profile_id") or ""),
+            provider=str(review.get("provider") or ""),
+            model=str(review.get("model") or ""),
+            reasoning_effort=str(review.get("reasoning_effort") or ""),
+            effective_timeout_seconds=review.get("effective_timeout_seconds"),
+            authoring_tier=str(review.get("authoring_tier") or ""),
+            request_role="candidate_review",
+        )
     issues: list[str] = []
     profile_ids: set[str] = set()
     tiers: set[str] = set()
@@ -508,6 +545,14 @@ def _model_authoring_observation_issues(
     elif get_greenfield_model_profile(next(iter(profile_ids))).repair_tier != next(iter(tiers)):
         issues.append("authoring tier does not match the pinned Greenfield model profile")
     return tuple(issues)
+
+
+def _is_sha256(value: Any) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == 64
+        and not set(value) - set("0123456789abcdef")
+    )
 
 
 def _host_contract_receipt() -> dict[str, Any]:
@@ -603,7 +648,6 @@ __all__ = [
     "AUTHORED_LIST_FIELDS",
     "GREENFIELD_OPERATING_ENVELOPE_VERSION",
     "GREENFIELD_OPERATING_PROFILE",
-    "GreenfieldOperatingEnvelopeError",
     "INTERNAL_CUSTODY_FORMATS",
     "LANGUAGE_ASSURANCE",
     "MAX_AUTHORED_CITATIONS",
@@ -619,6 +663,7 @@ __all__ = [
     "SUPPORTED_EVIDENCE_LANGUAGES",
     "SUPPORTED_INTERNAL_CUSTODY_FORMATS",
     "SUPPORTED_PUBLIC_INPUT_FORMATS",
+    "GreenfieldOperatingEnvelopeError",
     "admit_greenfield_public_evidence",
     "greenfield_complexity_band",
     "greenfield_operating_envelope_receipt",

@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
+import time
 from collections.abc import Callable, Mapping, Sequence
 from copy import deepcopy
 from dataclasses import asdict, dataclass
-import time
 from typing import Any
 
 from odylith.runtime.common.value_coercion import normalize_string
@@ -40,7 +40,6 @@ from odylith.runtime.domain_intelligence.proposal_tribunal import (
     raise_for_failed_greenfield_tribunal,
     run_greenfield_tribunal,
 )
-
 
 PRECONFIRM_STANDARD_TARGET_SECONDS = get_greenfield_model_profile(
     STANDARD_PROFILE_ID
@@ -319,6 +318,20 @@ def build_greenfield_preconfirm_manifest(
 
 
 def _model_authoring_manifest(receipt: Mapping[str, Any]) -> dict[str, Any]:
+    if receipt.get("authoring_origin") == "host_native":
+        return {
+            key: deepcopy(receipt.get(key))
+            for key in (
+                "authoring_origin",
+                "authoring_version",
+                "runtime_semantic_model_call_count",
+                "tier",
+                "elapsed_seconds",
+                "effective_model_window_seconds",
+                "host_candidate",
+                "candidate_review",
+            )
+        }
     return {
         key: receipt.get(key)
         for key in (
@@ -408,9 +421,6 @@ def _issue_from_review_finding(finding: GreenfieldReviewFinding) -> GreenfieldPr
 
 
 __all__ = [
-    "GreenfieldPreconfirmEngineError",
-    "GreenfieldPreconfirmEngineResult",
-    "GreenfieldPreconfirmIssue",
     "PRECONFIRM_DEEP_TARGET_SECONDS",
     "PRECONFIRM_ENGINE_VERSION",
     "PRECONFIRM_OPERATIONAL_TIMEOUT_SECONDS",
@@ -418,6 +428,9 @@ __all__ = [
     "PRECONFIRM_REPAIR_TIERS",
     "PRECONFIRM_RESCUE_TARGET_SECONDS",
     "PRECONFIRM_STANDARD_TARGET_SECONDS",
+    "GreenfieldPreconfirmEngineError",
+    "GreenfieldPreconfirmEngineResult",
+    "GreenfieldPreconfirmIssue",
     "build_greenfield_preconfirm_manifest",
     "classify_greenfield_preconfirm_issues",
     "run_greenfield_preconfirm_engine",

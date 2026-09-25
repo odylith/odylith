@@ -3,15 +3,15 @@
 from __future__ import annotations
 
 import argparse
-from collections.abc import Sequence
 import json
-from pathlib import Path
 import shlex
 import time
+from collections.abc import Sequence
+from pathlib import Path
 from typing import Any
 
-
 COMMANDS = (
+    ("candidate-contract", "Show the typed host reasoning contract for one request."),
     ("propose", "Compile and review a complete Greenfield package before confirmation."),
     ("decide", "Confirm, edit or reject one reviewed package in the terminal."),
     ("apply", "Disabled legacy command; use propose to review a package."),
@@ -48,11 +48,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     started_at = time.perf_counter()
     tokens = list(argv or ())
     if tokens[:1] == ["create"]:
-        from odylith.runtime.domain_intelligence.greenfield_create_cli import main as create_main
+        from odylith.runtime.domain_intelligence.greenfield_create_cli import (
+            main as create_main,
+        )
 
         return create_main(tokens[1:])
     if tokens[:1] != ["decide"]:
-        from odylith.runtime.domain_intelligence.greenfield_proposals_cli import main as proposal_main
+        from odylith.runtime.domain_intelligence.greenfield_proposals_cli import (
+            main as proposal_main,
+        )
 
         return proposal_main(tokens)
 
@@ -63,18 +67,27 @@ def main(argv: Sequence[str] | None = None) -> int:
     evidence = parser.add_mutually_exclusive_group()
     evidence.add_argument("--edit")
     evidence.add_argument("--edit-evidence")
+    parser.add_argument(
+        "--candidate-file",
+        default="",
+        help="Host-authored v68 candidate for a full EDIT rebuild.",
+    )
     parser.add_argument("--json", action="store_true", dest="as_json")
     args = parser.parse_args(tokens[1:])
     if len(args.transaction_hash) != 64 or not set(args.transaction_hash) <= set("0123456789abcdef"):
         parser.error("use the exact 64-character approval hash from the reviewed package")
     if args.command != "EDIT" and (args.edit is not None or args.edit_evidence is not None):
         parser.error("correction evidence is accepted only with EDIT")
+    if args.command != "EDIT" and args.candidate_file:
+        parser.error("a host candidate is accepted only with EDIT")
     args.edit = args.edit or ""
     args.edit_evidence = args.edit_evidence or ""
     root = Path(args.repo_root).expanduser().resolve()
 
     if args.command == "EDIT" and (args.edit.strip() or args.edit_evidence.strip()):
-        from odylith.runtime.domain_intelligence import greenfield_pending_transaction_store
+        from odylith.runtime.domain_intelligence import (
+            greenfield_pending_transaction_store,
+        )
 
         try:
             greenfield_pending_transaction_store.resolve_pending_transaction(
@@ -84,15 +97,20 @@ def main(argv: Sequence[str] | None = None) -> int:
             message = f"This reviewed package is unavailable: {error}. No governed records were written."
             print(json.dumps({"status": "STALE_TRANSACTION", "error": message}) if args.as_json else message)
             return 2
-        from odylith.runtime.domain_intelligence.greenfield_proposals_cli import rebuild_pending_transaction
+        from odylith.runtime.domain_intelligence.greenfield_proposals_cli import (
+            rebuild_pending_transaction,
+        )
 
         return rebuild_pending_transaction(
             repo_root=root, transaction_hash=args.transaction_hash,
             edit_evidence=args.edit, edit_evidence_file=args.edit_evidence,
             as_json=args.as_json, started_at=started_at,
+            host_candidate_file=args.candidate_file,
         )
 
-    from odylith.runtime.surfaces.greenfield_host_confirmation import handle_greenfield_decision
+    from odylith.runtime.surfaces.greenfield_host_confirmation import (
+        handle_greenfield_decision,
+    )
 
     decision = handle_greenfield_decision(
         repo_root=root, command=args.command, transaction_hash=args.transaction_hash, edit_evidence=None,
