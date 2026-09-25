@@ -1,5 +1,24 @@
 - Bug ID: CB-303
 
+- Final Semantic Gate Found a Presentation Projection Loss (2026-09-25):
+  Independent Astra review accepted the compact host-native mechanism, exact
+  custody, transaction/recovery safety, timing, package counts, and 48 browser
+  states, but correctly rejected holdout eligibility. The accepted candidate
+  already contains the shared-review queue, export stage, four proposed
+  components, three exchanges, four workstreams, and a complete first-run
+  rationale. The project brief and Proposed First Run diagram drop that typed
+  design context, while System Context leaves named non-performing participants
+  disconnected. Correct only the deterministic presentation projection: show
+  the existing product view and first-run rationale in the brief, show the
+  existing proposed component/exchange path beside its source-owned event, and
+  connect contextual participants with an explicitly non-action dotted edge.
+  Add no source event, inferred role, parser, regex, model call, repair, retry,
+  fallback, schema, or alternate mechanism. The corrected projection passes all
+  `2,162` Greenfield unit/runtime tests plus Casebook, Registry, plan-risk,
+  plan-traceability, and workstream-binding validation. The holdout remains
+  sealed until a rebuilt public package and independent semantic review accept
+  the correction.
+
 - Host-native Installed Recovery Passed (2026-09-25): The isolated recovery
   proof against immutable distribution `d4743f3a0` passed with no issues after
   seeding the transaction through the configured host-native path. It observed

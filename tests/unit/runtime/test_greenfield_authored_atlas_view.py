@@ -239,7 +239,10 @@ def test_context_distinguishes_performers_from_contextual_participants() -> None
         "Named in project evidence; no first-path action is assigned."
     )
     assert "actor1 --> product" not in context["mermaid_source"]
-    assert "actor2 --> product" not in context["mermaid_source"]
+    assert (
+        'actor2 -. "participant context; no action assigned" .-> product'
+        in context["mermaid_source"]
+    )
     sequence = next(row for row in rows if row["slug"] == "harbor-desk-sequence")
     assert sequence == next(
         row for row in _authored_diagrams() if row["slug"] == "harbor-desk-sequence"
@@ -640,9 +643,10 @@ def test_authored_atlas_depth_is_five_distinct_semantic_views_not_a_count_floor(
         for row in rows
     }
     assert {"people", "product", "external_systems"} <= node_ids_by_slug["harbor-desk-context"]
-    assert {"event1", "event2", "event3", "performer1", "performer2"} <= node_ids_by_slug[
-        "harbor-desk-sequence"
-    ]
+    assert {
+        "event1", "event2", "event3", "performer1", "performer2",
+        "proposed_component1", "proposed_component4",
+    } <= node_ids_by_slug["harbor-desk-sequence"]
     assert {"proposed", "component1", "component4"} <= node_ids_by_slug[
         "harbor-desk-component-exchanges"
     ]
@@ -735,6 +739,11 @@ def test_single_human_event_sequence_preserves_typed_performer_edge() -> None:
     assert boxes["performer1"]["role"] == "Typed event performer"
     assert boxes["event1"]["label"] == event
     assert 'performer1 -->|"performs"| event1' in sequence["mermaid_source"]
+    assert 'event1 -. "proposed support" .-> proposed_component1' in sequence["mermaid_source"]
+    assert (
+        'proposed_component1 -->|"Proposed exchange: Proposed vessel-tag record"| '
+        'proposed_component2'
+    ) in sequence["mermaid_source"]
 
 
 def test_first_run_keeps_result_first_source_ids_and_proposed_links() -> None:

@@ -4,6 +4,20 @@ Last updated: 2026-09-25
 
 ## Overview
 
+### Complete typed Greenfield presentation projection (2026-09-25)
+
+The accepted host candidate already owns the source-grounded event path and the
+separately marked provisional design. Project-brief and Atlas presentation must
+carry both layers without reparsing either one. The brief displays the existing
+product view and first-run rationale. Proposed First Run retains exact actor and
+event custody, then displays the already-validated proposed components and
+exchanges as proposed stages. System Context gives named off-path participants a
+dotted context link that explicitly assigns no action. This is a deterministic
+view correction, not new semantic authoring: no event, role, source relation,
+schema, parser, regex, model call, repair, retry, or fallback is introduced.
+The source-local correction passes all `2,162` Greenfield tests; exact installed
+package, browser, and independent semantic requalification remain the next gate.
+
 ### Compact host event custody (2026-09-24)
 
 The host-native candidate contract no longer asks the host to emit the same

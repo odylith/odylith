@@ -30,6 +30,8 @@ def test_authored_handoff_preserves_verified_fields_without_legacy_reconstructio
     assert proposal["project_brief"]["coding_readiness_gates"] == []
     brief_text = "\n".join(render_authored_project_brief_lines(proposal["project_brief"]))
     assert intent["proof_boundary"] in brief_text
+    assert intent["product_view"] in brief_text
+    assert intent["authored_semantics"]["provisional_design"]["first_run"]["rationale"] in brief_text
     assert "coding readiness gates:" not in brief_text
     selected = intent["authored_semantics"]["provisional_design"]["workstreams"][0]
     proposed_run = authored_first_run_text(intent)

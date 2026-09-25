@@ -202,6 +202,7 @@ def build_authored_greenfield_proposal(
             title=title,
             product_story=product_story,
             problem=decision_copy(confirmed_intent, "problem"),
+            product_view=decision_copy(confirmed_intent, "product_view"),
             first_path=first_path,
             visible_result=visible_result,
             proof_boundary=proof_boundary,
@@ -212,6 +213,7 @@ def build_authored_greenfield_proposal(
             operational_constraints=operational_constraints,
             evidence_requirements=evidence_requirements,
             assumptions=assumptions,
+            provisional_design=provisional_design,
         ),
         "project_intelligence": _project_intelligence(
             title=title,
@@ -524,6 +526,7 @@ def _project_brief(
     title: str,
     product_story: str,
     problem: str,
+    product_view: str,
     first_path: str,
     visible_result: str,
     proof_boundary: str,
@@ -534,6 +537,7 @@ def _project_brief(
     operational_constraints: Sequence[str],
     evidence_requirements: Sequence[str],
     assumptions: Sequence[Mapping[str, str]],
+    provisional_design: Mapping[str, Any],
 ) -> dict[str, Any]:
     problem_statement = problem
     assumption_values = assumption_preview_values(assumptions)
@@ -545,7 +549,17 @@ def _project_brief(
             problem_statement,
             "The source-stated need or an explicitly provisional decision assumption.",
         ),
+        _brief_section(
+            "Product view",
+            product_view,
+            "The source-stated product experience or an explicitly provisional decision assumption.",
+        ),
         _brief_section("First path", first_path, "One proposed walkthrough constrained by source evidence."),
+        _brief_section(
+            "Proposed walkthrough",
+            _required_text(provisional_design["first_run"], "rationale"),
+            "The model-authored design path that connects the source action to the proposed product stages.",
+        ),
         *([] if proof_is_provisional else [
             _brief_section("Visible result", visible_result, "The source result bound to its producing action."),
         ]),

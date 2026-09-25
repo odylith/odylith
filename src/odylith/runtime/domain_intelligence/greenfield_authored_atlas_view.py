@@ -101,7 +101,9 @@ def build_authored_atlas_diagrams(
         source_precedence=source_precedence,
     )
     sequence_source, sequence_boxes = _sequence_view(
-        relations, first_run=provisional_design["first_run"], source_precedence=source_precedence,
+        relations,
+        design=provisional_design,
+        source_precedence=source_precedence,
     )
     design_workstream_titles = design_specs["delivery_dependencies"]["workstream_titles"]
     if backlog_titles != design_workstream_titles:
@@ -116,7 +118,7 @@ def build_authored_atlas_diagrams(
             "read_guide": (
                 "People are source-stated participants, not necessarily product users. "
                 "Each performing person, product system, or external system connects to its "
-                "own exact events; other people remain edge-free. The first-run view shows "
+                "own exact events; dotted participant-context links assign no action. The first-run view shows "
                 "one proposed walkthrough, not source-list chronology. Registry links identify proposed "
                 "support, not replacement of source ownership."
             ),
@@ -462,6 +464,11 @@ def _context_view(
                 "Listing order does not establish execution order.",
             )
         )
+    for index, actor in enumerate(actors, start=1):
+        if ("human", actor) not in performer_events:
+            lines.append(
+                f'  actor{index} -. "participant context; no action assigned" .-> product'
+            )
     for external_index, component_index in _external_component_edges(
         externals=externals,
         components=components,
@@ -474,7 +481,7 @@ def _context_view(
 def _sequence_view(
     relations: Sequence[Mapping[str, Any]],
     *,
-    first_run: Mapping[str, Any],
+    design: Mapping[str, Any],
     source_precedence: Sequence[Mapping[str, Any]],
 ) -> tuple[str, list[dict[str, str]]]:
     lines = ["flowchart LR"]
@@ -530,10 +537,35 @@ def _sequence_view(
     required = {(row["before_event"], row["after_event"]): row["constraint_index"] for row in source_precedence}
     for (before, after), constraint_index in required.items():
         lines.append(f'  event{before} -->|"source constraint {constraint_index}"| event{after}')
-    orders = first_run["event_orders"]
+    orders = design["first_run"]["event_orders"]
     for before, after in zip(orders, orders[1:]):
         if (before, after) not in required:
             lines.append(f'  event{before} -. "proposed next step" .-> event{after}')
+    component_nodes = {
+        component["key"]: f"proposed_component{index}"
+        for index, component in enumerate(design["components"], start=1)
+    }
+    for component in design["components"]:
+        node_id = component_nodes[component["key"]]
+        lines.append(
+            f'  {node_id}["Proposed stage<br/>{_mermaid_label(component["name"])}"]'
+        )
+        boxes.append(
+            _box(
+                node_id,
+                component["name"],
+                "Proposed first-run stage",
+                f"Proposed responsibility: {component['responsibility']}",
+            )
+        )
+        for order in component["supported_event_orders"]:
+            lines.append(f'  event{order} -. "proposed support" .-> {node_id}')
+    for exchange in design["exchanges"]:
+        lines.append(
+            f'  {component_nodes[exchange["from_component"]]} '
+            f'-->|"Proposed exchange: {_mermaid_label(exchange["contract"])}"| '
+            f'{component_nodes[exchange["to_component"]]}'
+        )
     return _styled_mermaid(lines), boxes
 
 

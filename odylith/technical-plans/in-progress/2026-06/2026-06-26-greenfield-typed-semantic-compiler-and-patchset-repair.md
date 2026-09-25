@@ -11572,3 +11572,29 @@ Current proposal/confirmation/recovery operations and versioned semantic/timing 
 - `src/odylith/runtime/domain_intelligence/greenfield_proposals.py`
 - `src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py`
 - `src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py`
+
+## Final Presentation Qualification Correction (2026-09-25)
+
+- Independent final review accepted the host-native mechanism, custody,
+  transaction/recovery safety, advisory timing, package counts, and browser
+  matrix, but rejected the generated package because the presentation projected
+  only its one source-owned assembly action.
+- The accepted candidate already contains the missing shared-review, export,
+  component-exchange, and delivery meaning. Correct the deterministic
+  presentation rather than changing authoring: add the existing product view
+  and first-run rationale to the brief; add the existing proposed component and
+  exchange path to Proposed First Run; give contextual participants a dotted
+  non-action link in System Context.
+- Falsifiable gate: the exact public request must show assembly, shared review,
+  and export in its brief and first-path diagram, keep the single source event
+  and typed performer unchanged, connect both reviewer roles without assigning
+  them actions, preserve 4 Radar / 4 Registry / 5 distinct Atlas outputs, pass
+  focused and browser proof, and pass a fresh independent semantic review.
+- Add no source event, role inference, parser, regex, schema, model stage,
+  repair, retry, fallback, or alternate architecture. Keep holdout v4 sealed
+  until this public gate is green.
+- Source qualification passes all `2,162` Greenfield tests, Casebook source
+  validation, the complete Registry mapping contract (`813/813` meaningful
+  events mapped), 95 plan-risk checks, 26 plan-traceability checks, and the
+  active workstream-binding gate. Exact installed package/browser evidence and
+  independent semantic requalification remain open.

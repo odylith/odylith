@@ -58,6 +58,16 @@ checks, including hidden action styling, rather than hidden-attribute assertions
 
 ## Runtime Contract
 
+Greenfield Atlas presentation carries the complete already-validated typed
+design. Proposed First Run keeps source-owned performers and events distinct,
+then adds visibly proposed component stages, support links, and typed exchanges
+from the candidate's provisional design. System Context gives a named person
+without a source action one dotted `participant context; no action assigned`
+link to the product boundary. That edge communicates product context without
+inventing an action, ownership transfer, event order, or source fact. The sealed
+diagram authority continues to hash the exact Mermaid, box inventory, narrative,
+and component display rows.
+
 Greenfield's authored Proposed First Run view projects existing typed semantic
 relations rather than reparsing Mermaid or source prose. Every distinct typed
 performer gets a concept box and an explicit `performs` edge to its event; a
