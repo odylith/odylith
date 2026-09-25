@@ -90,7 +90,7 @@ def managed_block(*, repo_role: str = "consumer_repo") -> str:
         ),
         "- Codex checkpoint hooks may carry hidden Observation/Proposal/Assist context and surface an earned beat; Claude direct-edit and Bash PostToolUse hooks stay silent on success and emit only compact failure/skipped-refresh status. Claude Stop is memory/logging only, not a fallback closeout.",
         (
-            "- Hook context is not chat-visible proof. Before claiming intervention UX, run or cite `odylith codex intervention-status` or `odylith claude intervention-status`; end-to-end proof requires `Activation: ready` plus chat visibility. When uncertain, show `visible-intervention` Markdown directly. Existing sessions may not hot-reload hooks or guidance."
+            "- Hook context is not chat-visible proof. Before claiming intervention UX, run or cite `odylith <host> intervention-status`; require `Activation: ready` plus chat visibility. If uncertain, run `odylith <host> visible-intervention` and show its Markdown. Existing sessions may not hot-reload hooks or guidance."
             if product_repo
             else "- Hook `systemMessage` or `additionalContext` is not chat-visible proof. Before claiming active intervention UX, run or cite `odylith codex intervention-status` or `odylith claude intervention-status`; it is the low-latency delivery record for Teaser, Ambient Highlight, Observation, Proposal, and Assist readiness. End-to-end proof requires `Activation: ready` plus chat visibility. When in doubt, run `odylith codex visible-intervention` or `odylith claude visible-intervention` and show that Markdown directly. Existing sessions may not hot-reload hooks or guidance."
         ),

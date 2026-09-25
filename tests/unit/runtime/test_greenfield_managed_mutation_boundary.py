@@ -163,6 +163,8 @@ def _run(
         (("codex", "prompt-context"), False),
         (("claude", "prompt-bundle"), False),
         (("codex", "visible-intervention", "--confirm-chat"), True),
+        (("codex", "intervention-status"), False),
+        (("claude", "intervention-status", "--json"), False),
         (("codex", "intervention-status", "--last-assistant-message", "visible"), True),
         (("claude", "visible-intervention", "--confirm-chat"), True),
         (("claude", "intervention-status", "--last-assistant-message", "visible"), True),
@@ -317,6 +319,32 @@ def test_nonready_intervention_status_without_confirmation_keeps_generation(
     assert greenfield_generation_store.pin_active_greenfield_generation(repo).write_set_hash == (
         generation.write_set_hash
     )
+
+
+@pytest.mark.parametrize("host", ("codex", "claude"))
+def test_read_only_intervention_status_ignores_managed_working_drift(
+    tmp_path: Path,
+    host: str,
+) -> None:
+    repo, generation = _active_repository(tmp_path)
+    entry = repo / "odylith/index.html"
+    generation_names = tuple(sorted(path.name for path in generation.generation_root.parent.iterdir()))
+    manifest_path = generation.generation_root / "generation-manifest.v1.json"
+    manifest_bytes = manifest_path.read_bytes()
+    _write(entry, "operator-owned working change\n")
+    descriptors: list[int | None] = []
+
+    result = greenfield_managed_mutation_boundary.run_with_greenfield_managed_mutation_boundary(
+        repo_root=repo,
+        command_tokens=(host, "intervention-status", "--json"),
+        operation=lambda descriptor: (descriptors.append(descriptor) or 1),
+    )
+
+    assert result == 1
+    assert descriptors == [None]
+    assert entry.read_text(encoding="utf-8") == "operator-owned working change\n"
+    assert tuple(sorted(path.name for path in generation.generation_root.parent.iterdir())) == generation_names
+    assert manifest_path.read_bytes() == manifest_bytes
 
 
 def test_noop_writer_keeps_reviewed_generation_active(tmp_path: Path) -> None:

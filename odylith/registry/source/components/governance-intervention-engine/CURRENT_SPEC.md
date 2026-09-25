@@ -15,7 +15,7 @@
   platform seamless" may rank voice or integration inspection affordances, but
   it must still stay silent when no hard law is violated and no immediate
   user-visible value is earned.
-Last updated: 2026-09-19
+Last updated: 2026-09-24
 
 ## Manual delivery publication boundary
 
@@ -68,13 +68,20 @@ comments, strings, unrelated tables, malformed input and explicit disablement
 cannot establish readiness. Neither reader grants trust or starts a model turn.
 
 Configured Codex assets yield `baseline_safe_hooks_configured` compatibility and
-`Activation: unverified` status, not a native-ready claim. Status exits nonzero
-until activation is proven; this is not permission to modify native trust.
-Review of exact non-managed hook definitions belongs to the user's native
-`/hooks` flow. New or changed definitions require review again. Manual transcript
-confirmation remains useful fallback evidence but cannot promote native
-activation. CB-242 stays open for matching-runtime installed execution and
-earned automatic visible delivery; CB-304 owns confirmation fault safety.
+`Activation: unverified`, not a native-ready claim. The current session advances
+to `Activation: ready` only when the delivery ledger joins a native
+`codex_user_prompt_submit` system-message/fallback event to a `codex_stop`
+assistant-chat confirmation through the same nonempty confirmation identity.
+Static files, a manual visible command, or an unrelated chat confirmation cannot
+satisfy that gate. New or changed hook definitions require a fresh/reloaded
+session and a new matching pair; status never modifies native trust.
+
+Plain `intervention-status` is a read-only inspection and remains usable while
+operator-owned managed files differ from the published generation. Supplying
+`--last-assistant-message` is different: it records confirmation evidence and
+therefore remains inside the governed mutation/publication boundary. CB-242
+owns native activation and visible-delivery evidence; CB-304 owns confirmation
+fault safety.
 
 
 ## Purpose

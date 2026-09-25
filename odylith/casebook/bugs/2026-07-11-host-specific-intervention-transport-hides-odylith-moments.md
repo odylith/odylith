@@ -1,5 +1,30 @@
 - Bug ID: CB-242
 
+- Current-Session Native Activation Evidence (2026-09-24): The status reader no
+  longer enters the managed publication boundary for a read-only inspection;
+  only `--last-assistant-message` confirmation remains a governed writer. This
+  lets both host probes inspect a dirty but preserved operator workspace without
+  publishing, repairing, or rejecting its managed files. Codex activation now
+  advances from `unverified` only when static readiness is complete and the
+  current session ledger contains a matching native `UserPromptSubmit`
+  system-message/fallback event and `Stop` assistant-chat confirmation with the
+  same intervention identity. Static configuration, manual visible commands,
+  and chat confirmation without that native pair remain insufficient. The
+  actual current Codex session now reports `Activation: ready`, all six
+  readiness checks true, `17` chat-confirmed events, zero waiting events, and
+  one proven prompt-to-stop identity. The same source-local probe reports Claude
+  `Activation: ready` but no chat-visible event in its synthetic local session;
+  this is static Claude readiness, not actual Claude chat proof. Focused managed
+  boundary, delivery-ledger, status-browser, and Codex capability proof passes
+  `90` tests before the wider cross-host gate. This closes the impossible Codex
+  status state and current-session Codex activation gap without changing hook
+  trust, adding a background probe, or treating fallback output as native.
+  The completed regression boundary passes `306`
+  intervention/browser/boundary tests, `172` adjacent
+  capability/discipline/guidance tests, and `12` install/bundle contract tests;
+  live source-local Codex status also exits zero. Rebuilt installed proof and
+  actual Claude chat delivery remain open.
+
 - Installed Publication and Actual Fallback (2026-09-19): The rebuilt c0b4e0af3 candidate passes the fresh two-host manual command proof: no-write status retains its generation, visible output and transcript confirmation publish verified successors, prior generations and installed runtime identity remain unchanged, and Codex preserves non-ready exit 1. Those controls use simulated transcripts and do not prove actual visibility. Separately, the installed Codex fallback for session codex-live-c0b4e0af3-20260919 was relayed verbatim in the actual Codex conversation; same-session readback reports proven_this_session, two confirmed events and zero pending confirmations while activation remains unverified. A real Claude Code session 3f480e86-823d-4c21-bfea-f5ad584dad6a returns Not logged in before any model/tool work and warns that the temporary workspace is untrusted. Actual Claude visibility remains open; the user was asked to log in, and no credential or trust settings were changed. Evidence: /Users/freedom/.codex/odylith-boundary-checkpoint.qgYnef/installed-intervention-evidence/ and /Users/freedom/.codex/odylith-boundary-recheck.CLaSzL/actual-visibility-next.md. Manual fallback does not qualify automatic activation or substantive intervention utility.
 
 - Full Boundary Regression (2026-09-19): The frozen launcher/publication correction passes 1,600 install tests, 6,564 runtime tests and 460 browser checks with no failures or skips; selected inputs remain unchanged throughout. Independent review accepts the actual two-host status-owner controls, including changed managed state with preserved non-ready exit 1. Evidence: /Users/freedom/.codex/odylith-boundary-recheck.CLaSzL/. Rebuilt installed execution and actual host-visible delivery remain separate open obligations; simulated transcript confirmation must never be promoted to native chat evidence.

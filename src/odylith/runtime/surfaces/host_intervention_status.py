@@ -23,6 +23,10 @@ from odylith.runtime.intervention_engine.visibility_contract import normalize_to
 
 
 _SUPPORTED_HOST_FAMILIES = ("codex", "claude")
+_CODEX_NATIVE_PROMPT_CHANNEL = "system_message_and_assistant_fallback"
+_CODEX_NATIVE_PROMPT_SURFACE = "codex_user_prompt_submit"
+_CODEX_NATIVE_CONFIRMATION_CHANNEL = "assistant_chat_transcript"
+_CODEX_NATIVE_CONFIRMATION_SURFACE = "codex_stop"
 
 
 def _codex_hooks_feature_configured(repo_root: Path) -> bool:
@@ -202,6 +206,52 @@ def _chat_visible_proof(*, ledger: Mapping[str, Any], static_ready: bool) -> dic
     }
 
 
+def _codex_native_activation_evidence(ledger: Mapping[str, Any]) -> dict[str, Any]:
+    """Recognize one native prompt-to-stop delivery pair in the current session."""
+
+    raw_events = ledger.get("recent_events")
+    events = [row for row in raw_events if isinstance(row, Mapping)] if isinstance(raw_events, list) else []
+    prompt_keys = {
+        _normalize_string(row.get("chat_confirmation_key"))
+        for row in events
+        if _normalize_token(row.get("render_surface")) == _CODEX_NATIVE_PROMPT_SURFACE
+        and _normalize_token(row.get("delivery_channel")) == _CODEX_NATIVE_PROMPT_CHANNEL
+        and _normalize_token(row.get("delivery_status")) == "assistant_fallback_ready"
+        and _normalize_token(row.get("turn_phase")) == "prompt_submit"
+        and bool(row.get("has_display"))
+        and _normalize_string(row.get("chat_confirmation_key"))
+    }
+    confirmed_keys = {
+        _normalize_string(row.get("chat_confirmation_key"))
+        for row in events
+        if _normalize_token(row.get("render_surface")) == _CODEX_NATIVE_CONFIRMATION_SURFACE
+        and _normalize_token(row.get("delivery_channel")) == _CODEX_NATIVE_CONFIRMATION_CHANNEL
+        and _normalize_token(row.get("delivery_status")) == "assistant_chat_confirmed"
+        and bool(row.get("chat_confirmed"))
+        and _normalize_string(row.get("chat_confirmation_key"))
+    }
+    matched = sorted(prompt_keys & confirmed_keys)
+    if matched:
+        return {
+            "status": "proven_this_session",
+            "ready": True,
+            "matched_delivery_count": len(matched),
+            "summary": (
+                "A Codex UserPromptSubmit delivery and Codex Stop chat confirmation share "
+                "the same session-local intervention identity."
+            ),
+        }
+    return {
+        "status": "unverified",
+        "ready": False,
+        "matched_delivery_count": 0,
+        "summary": (
+            "No session-local Codex prompt-to-stop delivery pair proves native hook execution yet; "
+            "static configuration and manual fallback evidence remain partial."
+        ),
+    }
+
+
 def inspect_intervention_status(
     *,
     repo_root: Path | str = ".",
@@ -254,10 +304,16 @@ def inspect_intervention_status(
         session_id=resolved_session,
         limit=limit,
     )
+    native_activation = _codex_native_activation_evidence(ledger) if host == "codex" else {}
     activation = "ready" if bool(readiness.get("ready")) else "degraded"
     if host == "codex" and readiness.get("ready"):
-        # Static files cannot attest native per-definition trust or execution.
-        activation = "unverified"
+        activation = "ready" if bool(native_activation.get("ready")) else "unverified"
+        if activation == "ready":
+            readiness = dict(readiness)
+            readiness["activation_note"] = (
+                "Codex prompt-submit and Stop delivery are proven in this session. "
+                "Any changed hook definition requires a fresh/reloaded session and a new matching delivery pair."
+            )
     proof = _chat_visible_proof(
         ledger=ledger,
         static_ready=bool(readiness.get("ready")),
@@ -290,6 +346,7 @@ def inspect_intervention_status(
             "Use hook output when the host visibly renders it; otherwise the assistant-render fallback must speak the same Markdown directly."
         ),
         "chat_visible_proof": proof,
+        "native_activation_evidence": native_activation,
         "assistant_visible_replay_markdown": replay_markdown,
         "assistant_visible_replay_count": len(replay_blocks),
         "assistant_visible_replay_additional_count": 0,
@@ -343,6 +400,11 @@ def render_intervention_status(report: Mapping[str, Any]) -> str:
     checks = readiness.get("checks") if isinstance(readiness.get("checks"), Mapping) else {}
     ledger = report.get("delivery_ledger") if isinstance(report.get("delivery_ledger"), Mapping) else {}
     proof = report.get("chat_visible_proof") if isinstance(report.get("chat_visible_proof"), Mapping) else {}
+    native_activation = (
+        report.get("native_activation_evidence")
+        if isinstance(report.get("native_activation_evidence"), Mapping)
+        else {}
+    )
     latest = ledger.get("latest_visible_event") if isinstance(ledger.get("latest_visible_event"), Mapping) else {}
     pending_count = int(report.get("pending_proposal_count") or 0)
     lines = [
@@ -362,6 +424,12 @@ def render_intervention_status(report: Mapping[str, Any]) -> str:
             "waiting states are partial."
         ),
     ]
+    native_summary = _normalize_string(native_activation.get("summary"))
+    if native_summary:
+        lines.append(
+            "Native activation evidence: "
+            f"{_normalize_token(native_activation.get('status')) or 'unknown'} - {native_summary}"
+        )
     activation_note = _normalize_string(readiness.get("activation_note"))
     if activation_note:
         lines.append(f"Fresh-session note: {activation_note}")

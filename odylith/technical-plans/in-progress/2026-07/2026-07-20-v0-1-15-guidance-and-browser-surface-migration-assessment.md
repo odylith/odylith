@@ -1,9 +1,33 @@
 Status: In progress
 Created: 2026-07-20
-Updated: 2026-09-23
+Updated: 2026-09-24
 Backlog: B-145
 
 # v0.1.15 Guidance And Browser Surface Migration Assessment
+
+## Native intervention qualification checkpoint (2026-09-24)
+
+The intervention status path now separates inspection from confirmation. A
+plain Codex/Claude `intervention-status` command is read-only and may inspect a
+preserved dirty workspace; supplying `--last-assistant-message` still enters the
+governed mutation boundary because it writes chat-confirmation evidence. Codex
+static configuration alone remains `unverified`. Activation becomes `ready`
+only when the current session contains a matching native UserPromptSubmit
+delivery and Stop chat confirmation for the same intervention identity.
+
+The current Codex session satisfies that gate: all six readiness checks pass,
+the matching native pair is present, and status reports `17` chat-confirmed
+events with zero waiting events. Claude is statically ready but has no actual
+chat-visible proof in the local synthetic session. Focused boundary, ledger,
+status/browser and capability proof passes `90` tests. Freeze this evidence
+contract; do not add trust-store mutation, UI automation bypass, background
+probing, or manual-fallback promotion. Rebuild and prove the installed runtime,
+then obtain actual Claude chat delivery or retain it as an explicit unqualified
+host slice before final release adjudication. The current regression boundary
+passes `306` intervention/browser/boundary tests, `172` adjacent
+capability/discipline/guidance tests, and `12` install/bundle contract tests.
+Live source-local Codex status also exits zero with native activation and chat
+visibility proven in this session.
 
 ## Current bounded checkpoint (2026-09-23)
 

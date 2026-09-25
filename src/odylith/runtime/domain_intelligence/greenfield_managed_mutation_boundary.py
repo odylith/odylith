@@ -66,6 +66,13 @@ def command_may_mutate_greenfield_managed_paths(tokens: Sequence[str]) -> bool:
     ):
         # These adapters enter the Greenfield decision lock themselves.
         return False
+    if command[:2] in _COMPLETED_INTERVENTION_STATUS_COMMANDS and not any(
+        token == "--last-assistant-message" or token.startswith("--last-assistant-message=")
+        for token in command[2:]
+    ):
+        # Status inspection reads readiness and delivery evidence. It becomes a
+        # governed writer only when it confirms assistant-rendered chat output.
+        return False
     if top == "doctor" and "--repair" not in command:
         return False
     if top == "casebook" and len(command) > 1 and command[1] == "validate":

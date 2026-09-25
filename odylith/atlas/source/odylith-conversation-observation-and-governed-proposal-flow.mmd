@@ -63,7 +63,8 @@ flowchart LR
     StopGuard --> Chat
     DeliveryMetadata --> Events
     Events --> Ledger["Delivery ledger<br/>Teaser + Ambient + Observation<br/>Proposal + Assist visibility"]
-    Ledger --> Status["intervention-status CLI<br/>static readiness + active lanes<br/>unproven vs proven-this-session<br/>exact fallback smoke"]
+    Ledger --> NativeActivation["Native activation evidence<br/>Codex prompt-submit + Stop share one confirmation identity<br/>static files or manual fallback alone stay unverified"]
+    NativeActivation --> Status["read-only intervention-status CLI<br/>static readiness + native evidence + active lanes<br/>unproven vs proven-this-session<br/>exact fallback smoke"]
     Status --> ChatProbe["Status transcript probe<br/>promotes only exact rendered Markdown<br/>to assistant_chat_confirmed"]
     ChatProbe --> Ledger
     Status --> Chat

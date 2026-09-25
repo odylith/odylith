@@ -135,8 +135,11 @@
   `UserPromptSubmit`, Bash `PostToolUse`, and `Stop` to the Odylith CLI hook
   commands. This is not native trust, execution or visible-delivery proof.
   Static `intervention-status` reports `Activation: unverified` when those files
-  are configured; its nonzero exit must not trigger automatic trust changes.
-  A manual chat confirmation proves the rendered fallback, not native hooks.
+  are configured. It advances to `Activation: ready` only when the current
+  delivery ledger joins a native UserPromptSubmit system-message/fallback event
+  to a Stop assistant-chat confirmation with the same intervention identity.
+  Manual fallback, unrelated confirmation, and static files remain partial and
+  must never trigger automatic trust changes.
   `codex debug prompt-input` proves model-visible repo guidance only; it does
   not prove the user saw any intervention in chat.
 - `codex exec --json` is useful smoke coverage for the CLI command lane, but

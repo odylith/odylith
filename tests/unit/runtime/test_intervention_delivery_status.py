@@ -585,6 +585,47 @@ def test_codex_intervention_status_separates_static_ready_from_visible_proof(tmp
     assert "assistant must render assistant-visible Odylith text directly" in rendered
 
 
+def test_codex_intervention_status_accepts_native_prompt_to_stop_delivery_pair(tmp_path: Path) -> None:
+    _seed_codex_repo(tmp_path)
+    markdown = "**Odylith Assist:** Native delivery is visible."
+    common = {
+        "repo_root": tmp_path,
+        "kind": "assist_closeout",
+        "summary": markdown,
+        "session_id": "session-native-ready",
+        "host_family": "codex",
+        "intervention_key": "assist",
+        "turn_phase": "prompt_submit",
+        "display_markdown": markdown,
+    }
+    stream_state.append_intervention_event(
+        **common,
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_fallback_ready",
+        render_surface="codex_user_prompt_submit",
+    )
+    stream_state.append_intervention_event(
+        **common,
+        delivery_channel="assistant_chat_transcript",
+        delivery_status="assistant_chat_confirmed",
+        render_surface="codex_stop",
+    )
+
+    report = host_intervention_status.inspect_intervention_status(
+        repo_root=tmp_path,
+        host_family="codex",
+        session_id="session-native-ready",
+    )
+    rendered = host_intervention_status.render_intervention_status(report)
+
+    assert report["activation"] == "ready"
+    assert report["native_activation_evidence"]["status"] == "proven_this_session"
+    assert report["native_activation_evidence"]["matched_delivery_count"] == 1
+    assert report["chat_visible_proof"]["status"] == "proven_this_session"
+    assert "Activation: ready" in rendered
+    assert "Native activation evidence: proven_this_session" in rendered
+
+
 def test_codex_intervention_status_does_not_count_hidden_ready_payload_as_visible(tmp_path: Path) -> None:
     _seed_codex_repo(tmp_path)
     stream_state.append_intervention_event(
