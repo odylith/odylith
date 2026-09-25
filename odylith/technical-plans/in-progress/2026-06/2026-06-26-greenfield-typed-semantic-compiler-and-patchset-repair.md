@@ -1,5 +1,26 @@
 Status: In progress
 
+## Co-locate accepted constraints and their typed event relations (2026-09-24)
+
+V5's global discriminated choice still remained detached from the evidence it
+classified. The exact `7af18451e` public positive control retained the mandatory
+review-before-announcement constraint, selected no source precedence, and was
+correctly denied by independent review in `83.978s`. It created no transaction,
+governed records, browser credit, or holdout access. Another global instruction
+or model retry is rejected.
+
+Contract v6 removes `source_precedence` from the host shape. Each accepted
+operational constraint now owns one exact source citation plus a closed ordering
+relation: `not_event_ordering`, or `event_ordering` with one or more directed
+existing-event edges. The projection enumerates the accepted constraints once,
+adds their canonical one-based `constraint_index`, and feeds the unchanged
+validator and independent reviewer. This reduces separated authority and
+cross-array indirection; it adds no semantic call, source parser, regex, keyword
+rule, repair, retry, fallback, or publication path. Candidate format advances to
+v4 and the host contract to v6. Focused custody/review proof passes `112/112`.
+Run one exact public ordering-positive control; only after it passes, run a
+no-ordering control. Any semantic failure rejects v6 without holdout access.
+
 ## Replace passive precedence omission with an explicit typed decision (2026-09-24)
 
 Contract v4 did not earn continuation. The exact clean `0631442a7` public run

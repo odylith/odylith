@@ -22,13 +22,16 @@ cardinality. The second class is eliminated by construction rather than by an
 additional prompt rule. Exact installed public, browser, holdout, legacy-path
 removal, and reproof gates remain open.
 
-Contract v5 likewise removes the passive empty-list convention from host source
-precedence. The host must select exactly one typed state: `none_stated`, or
-`stated` with at least one cited edge. Domain Intelligence projects that choice
-into the unchanged canonical list before validation and review. This forces an
-explicit semantic decision without interpreting source text deterministically;
-there is no keyword rule, parser, repair, retry, fallback, or second publication
-owner.
+Contract v6 removes host `source_precedence` as a separate authority. Every
+accepted operational constraint owns its exact citation and a closed
+`not_event_ordering` or `event_ordering` relation; ordering relations contain one
+or more directed existing-event edges. Domain Intelligence enumerates those
+constraints once, supplies the canonical `constraint_index`, and feeds the
+unchanged validator and independent reviewer. This co-locates evidence and
+relation without interpreting source text deterministically; there is no keyword
+rule, parser, repair, retry, fallback, extra model call, or second publication
+owner. V5's detached global typed choice is retained as rejected evidence after
+repeating the same semantic omission.
 
 Independent review denials expose their existing bounded receipt and single
 typed issue in JSON error output. This is diagnostic custody, not a candidate
@@ -41,8 +44,9 @@ must be represented as a directed edge between existing event IDs and cite the
 one-based accepted operational constraint that owns it. Empty precedence is
 valid only when the source states no event precedence. Event array order and
 the proposed first-run walkthrough remain design choices, not accepted source
-authority. Its next exact public run still repeated the omission, so v5 replaces
-that passive representation rather than stacking another instruction.
+authority. Its next exact public run still repeated the omission; v5's global
+typed choice repeated it again. V6 removes that detached boundary instead of
+stacking another instruction.
 
 ### Exact-commit host-native release boundary (2026-09-24)
 

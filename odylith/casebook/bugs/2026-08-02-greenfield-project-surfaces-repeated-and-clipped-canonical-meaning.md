@@ -1,5 +1,22 @@
 - Bug ID: CB-303
 
+- Detached Ordering Classification Rejected (2026-09-24): Contract v5 forced
+  an explicit global `none_stated`/`stated` choice, but the exact `7af18451e`
+  public positive control still chose no precedence despite retaining the
+  review-before-announcement constraint. Independent review denied the same
+  source-semantic defect in `83.978s`, inside the `90s` target, with no package,
+  transaction, write, retry, or holdout access. This rejects a detached global
+  classification, not the independent reviewer. Contract v6 removes the
+  separate host `source_precedence` field. Every accepted operational constraint
+  now owns its exact citation and a closed `not_event_ordering` or
+  `event_ordering` relation with one or more event edges. Deterministic projection
+  supplies the existing one-based constraint index and unchanged canonical list.
+  The mechanism adds no model call, parser, regex, keyword rule, repair, retry,
+  fallback, or validator exception. Focused proof passes `112/112`; holdout v4
+  remains sealed and unexecuted. Evidence:
+  `/private/tmp/greenfield-public-run-v5-7af-positive-result.json` and
+  `/private/tmp/greenfield-public-run-v5-7af-positive-evidence/`.
+
 - Passive Source-Precedence Choice Rejected (2026-09-24): Contract v4 made the
   reviewer-owned ordering definition visible to the host, but the next exact
   `0631442a7` public run still selected an empty precedence list and was denied

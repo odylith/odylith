@@ -16,8 +16,8 @@ from odylith.runtime.domain_intelligence.greenfield_host_candidate_materializati
 )
 from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import (
     HOST_CANDIDATE_FORMAT_VERSION,
-    HOST_PRECEDENCE_NONE,
-    HOST_PRECEDENCE_STATED,
+    HOST_CONSTRAINT_NOT_ORDERING,
+    HOST_CONSTRAINT_ORDERING,
     canonical_greenfield_host_candidate,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
@@ -45,12 +45,29 @@ def _host_response(evidence: str) -> dict[str, object]:
     path_citations = facts.pop("first_path")
     for event, citation in zip(result["events"], path_citations, strict=True):
         event["source_citation"] = citation
-    precedence = result["source_precedence"]
-    result["source_precedence"] = (
-        {"status": HOST_PRECEDENCE_STATED, "edges": precedence}
-        if precedence
-        else {"status": HOST_PRECEDENCE_NONE}
-    )
+    precedence = result.pop("source_precedence")
+    constraints = facts["operational_constraints"]
+    facts["operational_constraints"] = [
+        {
+            "source_citation": citation,
+            "ordering": (
+                {
+                    "status": HOST_CONSTRAINT_ORDERING,
+                    "edges": [
+                        {
+                            "before_event": edge["before_event"],
+                            "after_event": edge["after_event"],
+                        }
+                        for edge in precedence
+                        if edge["constraint_index"] == index
+                    ],
+                }
+                if any(edge["constraint_index"] == index for edge in precedence)
+                else {"status": HOST_CONSTRAINT_NOT_ORDERING}
+            ),
+        }
+        for index, citation in enumerate(constraints, 1)
+    ]
     response["version"] = HOST_CANDIDATE_FORMAT_VERSION
     return response
 
@@ -247,13 +264,17 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
     authored = payload["candidate_schema"]["properties"]["result"]["anyOf"][0]
     assert "first_path" not in authored["properties"]["facts"]["properties"]
     assert "source_citation" in authored["properties"]["events"]["items"]["required"]
-    source_precedence = authored["properties"]["source_precedence"]
-    assert "one explicit source-ordering decision" in source_precedence["description"]
-    assert source_precedence["anyOf"][0]["properties"]["status"]["enum"] == [
-        HOST_PRECEDENCE_NONE
+    assert "source_precedence" not in authored["properties"]
+    constraints = authored["properties"]["facts"]["properties"][
+        "operational_constraints"
     ]
-    stated = source_precedence["anyOf"][1]
-    assert stated["properties"]["status"]["enum"] == [HOST_PRECEDENCE_STATED]
+    assert "constraint itself" in constraints["description"]
+    ordering = constraints["items"]["properties"]["ordering"]
+    assert ordering["anyOf"][0]["properties"]["status"]["enum"] == [
+        HOST_CONSTRAINT_NOT_ORDERING
+    ]
+    stated = ordering["anyOf"][1]
+    assert stated["properties"]["status"]["enum"] == [HOST_CONSTRAINT_ORDERING]
     assert stated["properties"]["edges"]["minItems"] == 1
     assert any(
         "Use exactly one proof authority" in requirement
@@ -268,7 +289,8 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
 def test_host_candidate_projects_an_explicit_no_precedence_decision() -> None:
     evidence = combined_prompt_evidence_source(prompt=_source(), edit_evidence="")
     response = _host_response(evidence)
-    response["result"]["source_precedence"] = {"status": HOST_PRECEDENCE_NONE}
+    for constraint in response["result"]["facts"]["operational_constraints"]:
+        constraint["ordering"] = {"status": HOST_CONSTRAINT_NOT_ORDERING}
 
     canonical = canonical_greenfield_host_candidate(response)
 
@@ -278,12 +300,12 @@ def test_host_candidate_projects_an_explicit_no_precedence_decision() -> None:
 def test_host_candidate_requires_edges_for_stated_precedence() -> None:
     evidence = combined_prompt_evidence_source(prompt=_source(), edit_evidence="")
     response = _host_response(evidence)
-    response["result"]["source_precedence"] = {
-        "status": HOST_PRECEDENCE_STATED,
+    response["result"]["facts"]["operational_constraints"][0]["ordering"] = {
+        "status": HOST_CONSTRAINT_ORDERING,
         "edges": [],
     }
 
-    with pytest.raises(ValueError, match="requires at least one edge"):
+    with pytest.raises(ValueError, match="requires edges"):
         canonical_greenfield_host_candidate(response)
 
 
