@@ -1123,6 +1123,9 @@ This section captures synchronized requirement and contract signals derived from
 
 <!-- registry-requirements:start -->
 - **2026-09-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-141, B-142
+  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_host_candidate_shape.py`, `tests/unit/runtime/test_greenfield_host_candidate.py`
+- **2026-09-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py`
 - **2026-09-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
@@ -1137,9 +1140,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-24 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py`
-- **2026-09-23 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-09-23-greenfield-coding-readiness-projection-drops-repeated-source-facts-2.md`, `src/odylith/runtime/domain_intelligence/greenfield_handoff_contract.py`, `tests/unit/runtime/test_greenfield_handoff_contract.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

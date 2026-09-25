@@ -16,12 +16,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 156,
-    "mapped_workstream_evidence_count": 139,
+    "explicit_event_count": 157,
+    "mapped_workstream_evidence_count": 140,
     "recent_path_match_count": 0,
     "spec_history_event_count": 16,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 156
+    "timeline_event_count": 157
   },
   "name": "Odylith Chatter",
   "path_prefixes": [
@@ -54,6 +54,59 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_host_candidate_shape.py",
+        "tests/unit/runtime/test_greenfield_host_candidate.py"
+      ],
+      "confidence": "high",
+      "event_index": 1311,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
+      "ts_iso": "2026-09-25T10:24:28-07:00",
+      "workstreams": [
+        "B-141",
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 2,
       "artifacts": [

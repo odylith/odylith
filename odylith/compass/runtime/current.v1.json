@@ -129,7 +129,10 @@
         "Nothing moved in this window: B-126 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-141": [
-        "Brief unavailable right now: The narration provider failed on the last attempt. Compass will retry on backoff."
+        "Completed in this window: The host response schema now carries nullable citation context on every declared object property. The 147 focused tests and Astra smoke pass give that change a solid check.",
+        "Current execution: Cross-host hook latency and fast-path startup work is in active implementation. The aim is to keep supported hosts responsive when no high-value intervention is available.",
+        "Next planned: Turn the next open checklist item into a named checkpoint and record it as explicit backlog truth.",
+        "Risks to watch: Two plan items remain open while the hook and startup budget work settles. Close those gaps so the slice has a clear finish line."
       ],
       "B-142": [
         "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
@@ -617,16 +620,16 @@
         "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
       ],
       "B-015": [
-        "Brief unavailable right now: The narration provider failed on the last attempt. Compass will retry on backoff."
+        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
       ],
       "B-016": [
-        "Brief unavailable right now: The narration provider failed on the last attempt. Compass will retry on backoff."
+        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
       ],
       "B-017": [
-        "Brief unavailable right now: The narration provider failed on the last attempt. Compass will retry on backoff."
+        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
       ],
       "B-018": [
-        "Brief unavailable right now: The narration provider failed on the last attempt. Compass will retry on backoff."
+        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
       ],
       "B-019": [
         "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
@@ -1550,32 +1553,130 @@
       },
       "B-141": {
         "schema_version": "v25",
-        "status": "unavailable",
-        "source": "unavailable",
+        "status": "ready",
+        "source": "provider",
         "fingerprint": "c1ee1cb20bf033489496c13c11969d1fe6a7c87d64ddd3527f4d04c55dd4d6b5",
-        "substrate_fingerprint": "c1ee1cb20bf033489496c13c11969d1fe6a7c87d64ddd3527f4d04c55dd4d6b5",
-        "bundle_fingerprint": "",
-        "provider_decision": "provider_error",
-        "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-09-25T17:24:30Z",
-        "sections": [],
-        "diagnostics": {
-          "reason": "provider_error",
-          "title": "Brief unavailable right now",
-          "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
-          "fallback_title": "Local runtime facts",
-          "fallback_digest": [
-            "Current: Cross-host hook latency budget and fast-path startup (B-141) is in active implementation.",
-            "Next: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Cross-host hook latency budget and fast-path startup (B-141) so this slice is active enough.",
-            "Watch: Primary watch item is closure discipline: 2 plan items remain open for Cross-host hook latency budget and fast-path startup (B-141)."
-          ],
-          "provider": "codex-cli",
-          "provider_failure_code": "provider_error",
-          "provider_failure_detail": "Codex CLI exited with status 1. 2026-09-25T17:24:33.790433Z WARN codex_models_manager::model_info: Unknown model gpt-5.3-codex-spark is used. This will use fallback model m ... {\"type\":\"invalid_request_error\",\"message\":\"The 'gpt-5.3-codex-spark' model is not supported when using Codex with a ChatGPT account.\"}}",
-          "provider_model": "gpt-5.3-codex-spark",
-          "provider_reasoning_effort": "medium"
+        "sections": [
+          {
+            "key": "completed",
+            "label": "Completed in this window",
+            "bullets": [
+              {
+                "text": "The host response schema now carries nullable citation context on every declared object property. The 147 focused tests and Astra smoke pass give that change a solid check.",
+                "fact_ids": [
+                  "F-001"
+                ]
+              }
+            ]
+          },
+          {
+            "key": "current_execution",
+            "label": "Current execution",
+            "bullets": [
+              {
+                "text": "Cross-host hook latency and fast-path startup work is in active implementation. The aim is to keep supported hosts responsive when no high-value intervention is available.",
+                "fact_ids": [
+                  "F-004"
+                ]
+              }
+            ]
+          },
+          {
+            "key": "next_planned",
+            "label": "Next planned",
+            "bullets": [
+              {
+                "text": "Turn the next open checklist item into a named checkpoint and record it as explicit backlog truth.",
+                "fact_ids": [
+                  "F-007"
+                ]
+              }
+            ]
+          },
+          {
+            "key": "risks_to_watch",
+            "label": "Risks to watch",
+            "bullets": [
+              {
+                "text": "Two plan items remain open while the hook and startup budget work settles. Close those gaps so the slice has a clear finish line.",
+                "fact_ids": [
+                  "F-008"
+                ]
+              }
+            ]
+          }
+        ],
+        "evidence_lookup": {
+          "F-001": {
+            "text": "Greenfield host response schema now requires nullable citation context across every declared object property; 147 focused tests and one Astra structured-output smoke pass.",
+            "section_key": "completed",
+            "kind": "execution_highlight",
+            "workstreams": [
+              "B-141"
+            ]
+          },
+          "F-002": {
+            "text": "Decision: Greenfield retained exact-quote host selection and full source-precedence identity after public release evidence; silent duplicate repair was removed, 157 focused and.",
+            "section_key": "completed",
+            "kind": "execution_highlight",
+            "workstreams": [
+              "B-141"
+            ]
+          },
+          "F-003": {
+            "text": "Nothing fully closed for Cross-host hook latency budget and fast-path startup (B-141) in the last 24 hours.",
+            "section_key": "completed",
+            "kind": "window_summary",
+            "workstreams": [
+              "B-141"
+            ]
+          },
+          "F-004": {
+            "text": "Cross-host hook latency budget and fast-path startup (B-141) is in active implementation.",
+            "section_key": "current_execution",
+            "kind": "direction",
+            "workstreams": [
+              "B-141"
+            ]
+          },
+          "F-005": {
+            "text": "Checklist is 140/142; execution checklist closure is underway while implementation execution remains active.",
+            "section_key": "current_execution",
+            "kind": "checklist",
+            "workstreams": [
+              "B-141"
+            ]
+          },
+          "F-006": {
+            "text": "ETA is projected at roughly 3 days (high confidence).",
+            "section_key": "current_execution",
+            "kind": "timeline",
+            "workstreams": [
+              "B-141"
+            ]
+          },
+          "F-007": {
+            "text": "Immediate forcing function is to turn the next open checklist item into a named checkpoint for Cross-host hook latency budget and fast-path startup (B-141) so this slice is active enough that it should exist as explicit backlog truth now.",
+            "section_key": "next_planned",
+            "kind": "fallback_next",
+            "workstreams": [
+              "B-141"
+            ]
+          },
+          "F-008": {
+            "text": "Primary watch item is closure discipline: 2 plan items remain open for Cross-host hook latency budget and fast-path startup (B-141).",
+            "section_key": "risks_to_watch",
+            "kind": "risk_posture",
+            "workstreams": [
+              "B-141"
+            ]
+          }
         },
-        "evidence_lookup": {}
+        "substrate_fingerprint": "c1ee1cb20bf033489496c13c11969d1fe6a7c87d64ddd3527f4d04c55dd4d6b5",
+        "bundle_fingerprint": "bafb86fccd2a66290068bfe89fd13117ba4ea5721dffa24e25a49d701170439f",
+        "provider_decision": "provider_called",
+        "last_successful_narration_fingerprint": "c1ee1cb20bf033489496c13c11969d1fe6a7c87d64ddd3527f4d04c55dd4d6b5"
       },
       "B-142": {
         "schema_version": "v25",
@@ -3826,28 +3927,19 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "8f3667e207a9c2ed5edbecf06e028547c7949e2c0ac45893e2f64c772d26b99e",
-        "substrate_fingerprint": "8f3667e207a9c2ed5edbecf06e028547c7949e2c0ac45893e2f64c772d26b99e",
+        "fingerprint": "",
+        "substrate_fingerprint": "",
         "bundle_fingerprint": "",
-        "provider_decision": "provider_error",
+        "provider_decision": "skipped_not_worth_calling",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-09-25T17:24:30Z",
         "sections": [],
         "diagnostics": {
-          "reason": "provider_error",
-          "title": "Brief unavailable right now",
-          "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
-          "fallback_title": "Local runtime facts",
-          "fallback_digest": [
-            "Current: Add explicit earned-depth and delegation-readiness posture to routed task assessment, use that posture to tighten Router profile selection; Subagent Reasoning Ladder and Grounded Spawn.",
-            "Next: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Subagent Reasoning Ladder and Grounded Spawn Defaults (B-015) so odylith's biggest compounding.",
-            "Watch: Primary watch item is closure discipline: 1 plan items remain open for Subagent Reasoning Ladder and Grounded Spawn Defaults (B-015)."
-          ],
-          "provider": "codex-cli",
-          "provider_failure_code": "provider_error",
-          "provider_failure_detail": "Codex CLI exited with status 1. 2026-09-25T17:24:33.790433Z WARN codex_models_manager::model_info: Unknown model gpt-5.3-codex-spark is used. This will use fallback model m ... {\"type\":\"invalid_request_error\",\"message\":\"The 'gpt-5.3-codex-spark' model is not supported when using Codex with a ChatGPT account.\"}}",
-          "provider_model": "gpt-5.3-codex-spark",
-          "provider_reasoning_effort": "medium"
+          "reason": "skipped_not_worth_calling",
+          "title": "Brief reused last validated narration",
+          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
+          "provider_decision": "skipped_not_worth_calling",
+          "skip_reason": "deferred_to_background"
         },
         "evidence_lookup": {}
       },
@@ -3855,28 +3947,19 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "de6294bef1358b2bbf932c8e858e3289577c32a9909ee1663087bf218f2e9480",
-        "substrate_fingerprint": "de6294bef1358b2bbf932c8e858e3289577c32a9909ee1663087bf218f2e9480",
+        "fingerprint": "",
+        "substrate_fingerprint": "",
         "bundle_fingerprint": "",
-        "provider_decision": "provider_error",
+        "provider_decision": "skipped_not_worth_calling",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-09-25T17:24:30Z",
         "sections": [],
         "diagnostics": {
-          "reason": "provider_error",
-          "title": "Brief unavailable right now",
-          "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
-          "fallback_title": "Local runtime facts",
-          "fallback_digest": [
-            "Current: Land strengthen install-time repo-root AGENTS.md injection, sync consumer-safe Odylith guidelines and skills into the installed repo every time; Install-Time Agent Activation and Dogfood.",
-            "Next: Immediate forcing function is to log the next concrete checkpoint for Install-Time Agent Activation and Dogfood Guidance Split (B-016) so Compass stops leaning on aging evidence.",
-            "Watch: Freshness signal is stale: latest linked execution proof for Install-Time Agent Activation and Dogfood Guidance Split (B-016) is more than a day old, so a new checkpoint is needed."
-          ],
-          "provider": "codex-cli",
-          "provider_failure_code": "provider_error",
-          "provider_failure_detail": "Codex CLI exited with status 1. 2026-09-25T17:24:33.790433Z WARN codex_models_manager::model_info: Unknown model gpt-5.3-codex-spark is used. This will use fallback model m ... {\"type\":\"invalid_request_error\",\"message\":\"The 'gpt-5.3-codex-spark' model is not supported when using Codex with a ChatGPT account.\"}}",
-          "provider_model": "gpt-5.3-codex-spark",
-          "provider_reasoning_effort": "medium"
+          "reason": "skipped_not_worth_calling",
+          "title": "Brief reused last validated narration",
+          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
+          "provider_decision": "skipped_not_worth_calling",
+          "skip_reason": "deferred_to_background"
         },
         "evidence_lookup": {}
       },
@@ -3884,28 +3967,19 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "2ef9c4097574da76ead1eee846eb65d6498c1dbedd89d7341692a359c6450bb0",
-        "substrate_fingerprint": "2ef9c4097574da76ead1eee846eb65d6498c1dbedd89d7341692a359c6450bb0",
+        "fingerprint": "",
+        "substrate_fingerprint": "",
         "bundle_fingerprint": "",
-        "provider_decision": "provider_error",
+        "provider_decision": "skipped_not_worth_calling",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-09-25T17:24:30Z",
         "sections": [],
         "diagnostics": {
-          "reason": "provider_error",
-          "title": "Brief unavailable right now",
-          "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
-          "fallback_title": "Local runtime facts",
-          "fallback_digest": [
-            "Current: Surface Browser Stability and End-to-End Hardening (B-017) is completed.",
-            "Next: Immediate forcing function is to log the next concrete checkpoint for Surface Browser Stability and End-to-End Hardening (B-017) so Compass stops leaning on aging evidence.",
-            "Watch: Freshness signal is stale: latest linked execution proof for Surface Browser Stability and End-to-End Hardening (B-017) is more than a day old, so a new checkpoint is needed before momentum."
-          ],
-          "provider": "codex-cli",
-          "provider_failure_code": "provider_error",
-          "provider_failure_detail": "Codex CLI exited with status 1. 2026-09-25T17:24:33.790433Z WARN codex_models_manager::model_info: Unknown model gpt-5.3-codex-spark is used. This will use fallback model m ... {\"type\":\"invalid_request_error\",\"message\":\"The 'gpt-5.3-codex-spark' model is not supported when using Codex with a ChatGPT account.\"}}",
-          "provider_model": "gpt-5.3-codex-spark",
-          "provider_reasoning_effort": "medium"
+          "reason": "skipped_not_worth_calling",
+          "title": "Brief reused last validated narration",
+          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
+          "provider_decision": "skipped_not_worth_calling",
+          "skip_reason": "deferred_to_background"
         },
         "evidence_lookup": {}
       },
@@ -3913,28 +3987,19 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "ef0dce773bd63dadb76ac5d70e5139204e2df3160283e8d19c9306630f62ad87",
-        "substrate_fingerprint": "ef0dce773bd63dadb76ac5d70e5139204e2df3160283e8d19c9306630f62ad87",
+        "fingerprint": "",
+        "substrate_fingerprint": "",
         "bundle_fingerprint": "",
-        "provider_decision": "provider_error",
+        "provider_decision": "skipped_not_worth_calling",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-09-25T17:24:30Z",
         "sections": [],
         "diagnostics": {
-          "reason": "provider_error",
-          "title": "Brief unavailable right now",
-          "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
-          "fallback_title": "Local runtime facts",
-          "fallback_digest": [
-            "Current: Land extend the headless browser lane to cover direct shell query-state routes and reload restoration for each major surface, plus standalone; Query-State Reload and Standalone Surface.",
-            "Next: Immediate forcing function is to log the next concrete checkpoint for Query-State Reload and Standalone Surface Browser Proof (B-018) so Compass stops leaning on aging evidence.",
-            "Watch: Freshness signal is stale: latest linked execution proof for Query-State Reload and Standalone Surface Browser Proof (B-018) is more than a day old, so a new checkpoint is needed."
-          ],
-          "provider": "codex-cli",
-          "provider_failure_code": "provider_error",
-          "provider_failure_detail": "Codex CLI exited with status 1. 2026-09-25T17:24:33.790433Z WARN codex_models_manager::model_info: Unknown model gpt-5.3-codex-spark is used. This will use fallback model m ... {\"type\":\"invalid_request_error\",\"message\":\"The 'gpt-5.3-codex-spark' model is not supported when using Codex with a ChatGPT account.\"}}",
-          "provider_model": "gpt-5.3-codex-spark",
-          "provider_reasoning_effort": "medium"
+          "reason": "skipped_not_worth_calling",
+          "title": "Brief reused last validated narration",
+          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
+          "provider_decision": "skipped_not_worth_calling",
+          "skip_reason": "deferred_to_background"
         },
         "evidence_lookup": {}
       },
