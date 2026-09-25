@@ -30,6 +30,7 @@ from tests.unit.runtime.greenfield_baseline_fixtures import (
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
+    StructuredAuthoringProvider,
     clarification_response,
 )
 from tests.unit.runtime.test_greenfield_model_path_custody import _response, _source
@@ -287,6 +288,52 @@ def test_public_propose_accepts_a_host_candidate_file(
     assert payload["mode"] == "product_create_transaction"
     assert payload["intent_hypothesis"]["title"] == "Harbor Desk"
     assert reviewer.calls == 1
+
+
+def test_public_propose_exposes_one_typed_candidate_review_denial(
+    tmp_path, monkeypatch, capsys,
+) -> None:  # type: ignore[no-untyped-def]
+    activate_greenfield_baseline_fixture(tmp_path)
+    source = _source()
+    evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
+    candidate_path = tmp_path / "host-candidate.json"
+    candidate_path.write_text(
+        json.dumps(_host_response(evidence)),
+        encoding="utf-8",
+    )
+    reviewer = StructuredAuthoringProvider({
+        "admissible": False,
+        "issues": [{
+            "path": "candidate.accepted_source.events[0]",
+            "reason": "The selected event assigns the action to the wrong actor.",
+        }],
+    })
+
+    monkeypatch.setattr(
+        greenfield_proposals_cli,
+        "_greenfield_authoring_provider",
+        lambda **_kwargs: (reviewer, "test-reviewer", "medium"),
+    )
+    rc = greenfield_proposals_cli.main([
+        "propose",
+        "--repo-root",
+        str(tmp_path),
+        "--prompt",
+        source,
+        "--candidate-file",
+        str(candidate_path),
+        "--format",
+        "json",
+    ])
+    payload = json.loads(capsys.readouterr().out)
+
+    assert rc == 2
+    assert payload["mode"] == "error"
+    assert payload["candidate_review"]["status"] == "denied"
+    assert payload["candidate_review"]["issue"] == {
+        "path": "candidate.accepted_source.events[0]",
+        "reason": "The selected event assigns the action to the wrong actor.",
+    }
 
 
 def test_edit_rebuild_accepts_a_new_host_candidate_and_preserves_old_seal(

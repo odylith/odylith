@@ -15,6 +15,9 @@ from odylith.runtime.domain_intelligence import (
     greenfield_pending_transaction_store,
     greenfield_proposals,
 )
+from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
+    GreenfieldCandidateRejected,
+)
 from odylith.runtime.domain_intelligence.greenfield_cli import terminal_decision_offer
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
     require_product_create_transaction_quality_approved,
@@ -333,6 +336,8 @@ def _print_greenfield_error(exc: Exception, *, as_json: bool) -> None:
             payload["outcome"] = exc.outcome
         if isinstance(exc, GreenfieldPreconfirmEngineError):
             payload["commit_manifest"] = exc.manifest
+        if isinstance(exc, GreenfieldCandidateRejected):
+            payload["candidate_review"] = dict(exc.receipt)
         print(json.dumps(payload, indent=2, sort_keys=True))
         return
     print(str(exc))

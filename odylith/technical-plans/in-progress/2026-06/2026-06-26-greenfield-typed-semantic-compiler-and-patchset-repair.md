@@ -11403,6 +11403,19 @@ for retries until success. Current runtime profiles remain unchanged.
   any holdout access. If another independent failure exposes duplicated candidate
   authority, reconsider the candidate abstraction instead of adding prose.
 
+## Review-Denial Evidence Boundary (2026-09-24)
+
+- The first contract-v3 installed request clears structural projection and
+  canonical validation, reaches independent review in `81.629s`, and is denied
+  without writes. This proves the duplicate event authority class is removed;
+  it does not prove semantic quality.
+- The JSON CLI currently drops the review receipt and its single typed issue,
+  leaving only a generic denial. Expose that already-produced receipt in the
+  error payload so retained public evidence can identify the owning defect.
+- Do not expose the candidate, invoke a repair, revise the candidate, retry the
+  reviewer, or treat the issue as accepted source truth. Re-run public evidence
+  only after the observability correction is committed and packaged.
+
 ## Traceability
 
 Current proposal/confirmation/recovery operations and versioned semantic/timing boundaries; historical post-confirm repair paths are superseded.

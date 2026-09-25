@@ -22,6 +22,11 @@ cardinality. The second class is eliminated by construction rather than by an
 additional prompt rule. Exact installed public, browser, holdout, legacy-path
 removal, and reproof gates remain open.
 
+Independent review denials expose their existing bounded receipt and single
+typed issue in JSON error output. This is diagnostic custody, not a candidate
+revision interface: candidate content remains private, the reviewer is not
+retried, and no repair or fallback path follows from the receipt.
+
 ### Exact-commit host-native release boundary (2026-09-24)
 
 Independent strong review accepts the host-native boundary's semantic fidelity,

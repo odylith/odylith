@@ -1,5 +1,19 @@
 - Bug ID: CB-303
 
+- Review-Denial Evidence Loss (2026-09-24): Contract v3 eliminates the
+  first-path/event cardinality failure by construction. Its exact installed
+  public run reaches independent semantic review in `81.629s`, inside the `90s`
+  advisory target, and is denied without writes. The CLI then collapses the
+  reviewer's one typed issue to `Greenfield candidate was not admitted`, so the
+  retained matrix cannot distinguish a real candidate defect from reviewer
+  error. Preserve this run as a failed semantic qualification, not a mechanism
+  pass. The bounded correction exposes only the existing denial receipt and its
+  single typed issue in JSON error output; it does not expose candidate content,
+  alter review, add a repair/revision path, or authorize a retry loop. Focused
+  denial/custody proof passes `72/72`. Evidence:
+  `/private/tmp/greenfield-public-run-v3-f320-result.json` and
+  `/private/tmp/greenfield-public-run-v3-f320-evidence/`.
+
 - Direct-V68 Host Shape Rejected (2026-09-24): Contract v2 removed the first
   public authority mismatch, but the fresh exact-distribution rerun failed
   closed in `72.221s` on a different duplicate-field inconsistency: the model's
