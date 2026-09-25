@@ -46,6 +46,19 @@ tests pass. Freeze this mechanism and advance only to an immutable installed
 public/package/browser run; do not add another representation or touch the
 consumed v4 holdout.
 
+Exact pushed commit and immutable distribution `7077dd600` pass that public
+gate. The schema-bound host-native request completes proposal in `56.295s`,
+inside the `90s` target, and commit-only creation in `0.303s`. It produces four
+Radar workstreams, four Registry components, five Atlas diagrams, ten rendered
+diagram assets, one project brief, five implementation prompts, and fourteen
+trace nodes; all generated browser states pass. Retained custody records exactly
+one contract call, one external host invocation, one proposal call, one runtime
+semantic review, and complete temporary cleanup. The first local attempt was
+invalid because the validation command omitted the host `--output-schema`
+argument; that non-equivalent run failed closed and did not justify a product
+change. Freeze the mechanism again. Proceed only to independent final semantic
+qualification and one newly sealed untouched holdout; never reuse consumed v4.
+
 ## Pass the exact public gate and rebind recovery proof (2026-09-25)
 
 Clean commit `d4743f3a0` passes the exact public host-native journey in

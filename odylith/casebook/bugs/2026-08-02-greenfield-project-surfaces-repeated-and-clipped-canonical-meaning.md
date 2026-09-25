@@ -1,5 +1,23 @@
 - Bug ID: CB-303
 
+- Event-Owned Citation Replacement Passed Exact Installed Public Gate
+  (2026-09-25): Exact pushed commit and immutable distribution `7077dd600`
+  passed the schema-bound host-native public journey in `56.295s`, inside the
+  `90s` advisory target; commit-only creation completed in `0.303s`. The package
+  contains four Radar workstreams, four Registry components, five Atlas sources,
+  ten rendered diagram assets, one project brief, five implementation prompts,
+  and fourteen trace nodes. All retained normal, empty/fallback, degraded,
+  error, and recovery browser states passed. Evidence records one contract
+  command, one external Astra host invocation, one installed proposal command,
+  one independent runtime semantic review, and complete candidate/host temporary
+  cleanup. A preceding local validation attempt omitted the required host
+  `--output-schema {candidate_schema}` argument and failed before publication;
+  it was not equivalent product evidence and caused no mechanism change. Final
+  semantic qualification and a fresh untouched holdout remain open; consumed v4
+  must never be rerun. Evidence:
+  `/private/tmp/greenfield-public-run-v10b-7077-result.json` and
+  `/private/tmp/greenfield-public-run-v10b-7077-evidence/`.
+
 - Event-Owned Citation Cardinality Passed Public Structural Proof
   (2026-09-25): Compact host contract v8 removes the repeated one-event/one-
   distinct-fact assumption without adding another semantic author. Identical

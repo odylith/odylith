@@ -1,6 +1,27 @@
 # Release
 Last updated: 2026-09-25
 
+## Event-owned citation replacement public qualification (2026-09-25)
+
+Exact pushed commit and immutable distribution `7077dd600` pass the
+schema-bound public host-native journey after replacing the one-event/one-
+distinct-fact assumption. Proposal completed in `56.295s`, inside the `90s`
+advisory target, and commit-only creation completed in `0.303s`. The generated
+package contains four Radar workstreams, four Registry component specs, five
+Atlas sources, ten rendered Atlas assets, one project brief, five implementation
+prompts, and fourteen trace nodes. Normal, empty/fallback, degraded, error, and
+recovery browser states pass with retained desktop/mobile evidence.
+
+The run records one candidate-contract command, one external Astra host
+invocation, one installed proposal command, and one independent runtime semantic
+review. Candidate and host temporary workspaces were removed. An earlier local
+validation attempt omitted the required `--output-schema {candidate_schema}`
+host argument and failed before publication; it is not equivalent product
+evidence and caused no code change. Release remains unclaimed until independent
+final semantic qualification and a fresh untouched holdout accept this exact
+mechanism. Consumed holdout v4 remains regression evidence and must never be
+rerun.
+
 ## Host-native installed recovery qualification (2026-09-25)
 
 The public host-native control at clean commit `d4743f3a0` passes proposal,

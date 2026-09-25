@@ -23,8 +23,13 @@ participant-first authoring path keeps its one-event/one-fact contract. This
 replacement adds no prompt, schema shape, parser, regex, inference, model call,
 retry, repair, fallback, or publication path. All 2,164 Greenfield runtime unit
 tests pass, including parser-authority retirement, shared exact-span custody,
-and partial-overlap rejection. Immutable installed and browser proof remain the
-next qualification gate; consumed holdout v4 must not be rerun.
+and partial-overlap rejection. Exact immutable distribution `7077dd600` then
+passes the schema-bound installed public journey in `56.295s`, inside the
+`90s` advisory target, with one host invocation, one independent semantic
+review, commit-only creation, four Radar workstreams, four Registry components,
+five Atlas diagrams, ten rendered diagram assets, five implementation prompts,
+and all browser states. Consumed holdout v4 must not be rerun; independent final
+semantic qualification and a fresh untouched holdout remain release gates.
 
 ### Complete typed Greenfield presentation projection (2026-09-25)
 
