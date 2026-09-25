@@ -11596,5 +11596,19 @@ Current proposal/confirmation/recovery operations and versioned semantic/timing 
 - Source qualification passes all `2,162` Greenfield tests, Casebook source
   validation, the complete Registry mapping contract (`813/813` meaningful
   events mapped), 95 plan-risk checks, 26 plan-traceability checks, and the
-  active workstream-binding gate. Exact installed package/browser evidence and
-  independent semantic requalification remain open.
+  active workstream-binding gate.
+- Exact pushed commit `d921c00e0` then passed the rebuilt immutable installed
+  public journey with four Radar workstreams, four Registry components, five
+  Atlas sources, ten rendered Atlas assets, five implementation prompts, and
+  all 48 retained desktop/mobile normal, empty, degraded, error, and recovery
+  browser states. Proposal elapsed time was `125.753s`, above the `90s`
+  standard advisory target but inside the `150s` deep guideline and `180s`
+  operational safety timeout; commit-only creation completed in `2.644s`.
+- Independent Astra/xhigh semantic qualification returned binary `PASS` with
+  no concrete blocker. It verified the brief walkthrough, all five distinct
+  diagrams, contextual non-action participant links, one source-owned event,
+  proposed component/exchange path, `182/182` retained artifact hashes,
+  `114/114` sealed output files, atomic custody, exact runtime identity, and no
+  parser, regex, repair, retry, fallback, or added model stage. This freezes the
+  winning public mechanism and admits the sealed untouched holdout; do not make
+  another architecture change before that one-shot gate.

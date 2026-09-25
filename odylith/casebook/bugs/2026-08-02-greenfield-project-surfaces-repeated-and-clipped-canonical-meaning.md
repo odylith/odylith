@@ -1,5 +1,27 @@
 - Bug ID: CB-303
 
+- Corrected Presentation Passed Final Semantic Gate (2026-09-25): Exact pushed
+  commit `d921c00e0` passed the immutable installed public journey with four
+  Radar workstreams, four Registry components, five Atlas sources, ten rendered
+  Atlas assets, five implementation prompts, and all 48 retained desktop/mobile
+  normal, empty, degraded, error, and recovery browser states. Proposal elapsed
+  time was `125.753s`, above the `90s` standard advisory target but within the
+  `150s` deep guideline and `180s` operational safety timeout; commit-only
+  creation completed in `2.644s`. The generated brief now carries assembly,
+  shared-review, and export walkthrough meaning; Proposed First Run retains its
+  single source-owned event while showing four explicitly proposed stages and
+  three typed exchanges; System Context connects both reviewer roles with
+  `participant context; no action assigned` rather than inventing an action.
+  Independent Astra/xhigh qualification returned binary `PASS` with no concrete
+  blocker and authorized the untouched holdout. It verified `182/182` retained
+  artifact hashes, `114/114` sealed output files, atomic custody, exact runtime
+  identity, browser proof, and absence of a parser, regex, repair, retry,
+  fallback, or added model stage. Freeze this public mechanism and proceed only
+  to the sealed one-shot holdout. Evidence:
+  `/private/tmp/greenfield-public-run-v9b-d921-result.json`,
+  `/private/tmp/greenfield-public-run-v9b-d921-evidence/`, and
+  `/private/tmp/greenfield-final-semantic-review-d921c00e0.md`.
+
 - Final Semantic Gate Found a Presentation Projection Loss (2026-09-25):
   Independent Astra review accepted the compact host-native mechanism, exact
   custody, transaction/recovery safety, timing, package counts, and 48 browser

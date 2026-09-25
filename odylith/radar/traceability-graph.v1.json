@@ -9,8 +9,8 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "cdc7b0f6ddbf701897c2f7a08a8f4afbc87351220c0d2596c4a46b901ed8eb58",
-    "file_count": 317,
+    "digest": "82a954642cd7335d2083431a5174996b01bee89247aef350f8d9f81f8a741939",
+    "file_count": 315,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
       "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
@@ -167,7 +167,6 @@
       "odylith/radar/source/releases/release-assignment-events.v1.jsonl",
       "odylith/radar/source/releases/releases.v1.json",
       "odylith/technical-plans/INDEX.md",
-      "odylith/technical-plans/in-progress/.DS_Store",
       "odylith/technical-plans/in-progress/.gitkeep",
       "odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md",
       "odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md",
@@ -195,7 +194,6 @@
       "odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md",
       "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
       "odylith/technical-plans/in-progress/2026-07/2026-07-20-v0-1-15-guidance-and-browser-surface-migration-assessment.md",
-      "odylith/technical-plans/done/.DS_Store",
       "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
       "odylith/technical-plans/done/2026-03/2026-03-27-compass-history-retention-compressed-archive-and-restore.md",
       "odylith/technical-plans/done/2026-03/2026-03-27-odylith-canonical-release-version-session-and-maintainer-runbook.md",
@@ -3540,7 +3538,7 @@
         "completed_workstreams": [
           "B-127"
         ],
-        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 10,
         "completed_workstream_count": 1
@@ -4489,7 +4487,7 @@
         "completed_workstreams": [
           "B-127"
         ],
-        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 10,
         "completed_workstream_count": 1
@@ -4597,7 +4595,7 @@
         "completed_workstreams": [
           "B-127"
         ],
-        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 10,
         "completed_workstream_count": 1
@@ -4702,7 +4700,7 @@
         "completed_workstreams": [
           "B-127"
         ],
-        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 10,
         "completed_workstream_count": 1
@@ -4852,7 +4850,7 @@
         "completed_workstreams": [
           "B-127"
         ],
-        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 10,
         "completed_workstream_count": 1
@@ -4968,7 +4966,7 @@
         "completed_workstreams": [
           "B-127"
         ],
-        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 10,
         "completed_workstream_count": 1
@@ -5216,7 +5214,7 @@
         "completed_workstreams": [
           "B-127"
         ],
-        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 10,
         "completed_workstream_count": 1
@@ -5324,7 +5322,7 @@
         "completed_workstreams": [
           "B-127"
         ],
-        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 10,
         "completed_workstream_count": 1
@@ -5569,7 +5567,7 @@
         "completed_workstreams": [
           "B-127"
         ],
-        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 10,
         "completed_workstream_count": 1
@@ -7105,7 +7103,7 @@
           "B-125"
         ],
         "completed_workstreams": [],
-        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 8,
         "completed_workstream_count": 0
@@ -7199,7 +7197,7 @@
           "B-125"
         ],
         "completed_workstreams": [],
-        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 8,
         "completed_workstream_count": 0
@@ -7302,7 +7300,7 @@
           "B-125"
         ],
         "completed_workstreams": [],
-        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 8,
         "completed_workstream_count": 0
@@ -7405,7 +7403,7 @@
           "B-125"
         ],
         "completed_workstreams": [],
-        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 8,
         "completed_workstream_count": 0
@@ -7508,7 +7506,7 @@
           "B-125"
         ],
         "completed_workstreams": [],
-        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 8,
         "completed_workstream_count": 0
@@ -7611,7 +7609,7 @@
           "B-125"
         ],
         "completed_workstreams": [],
-        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 8,
         "completed_workstream_count": 0
@@ -7714,7 +7712,7 @@
           "B-125"
         ],
         "completed_workstreams": [],
-        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 8,
         "completed_workstream_count": 0
@@ -7817,7 +7815,7 @@
           "B-125"
         ],
         "completed_workstreams": [],
-        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 8,
         "completed_workstream_count": 0
@@ -7927,7 +7925,7 @@
         "completed_workstreams": [
           "B-127"
         ],
-        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 10,
         "completed_workstream_count": 1
@@ -8628,7 +8626,7 @@
         "completed_workstreams": [
           "B-140"
         ],
-        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 2,
         "completed_workstream_count": 1
@@ -8744,7 +8742,7 @@
         "completed_workstreams": [
           "B-140"
         ],
-        "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 2,
         "completed_workstream_count": 1
@@ -9002,7 +9000,7 @@
         "B-116",
         "B-117"
       ],
-      "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
+      "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
       "terminal": true,
       "active_workstream_count": 0,
       "completed_workstream_count": 36
@@ -9036,7 +9034,7 @@
       "completed_workstreams": [
         "B-127"
       ],
-      "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
+      "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
       "active_workstream_count": 10,
       "completed_workstream_count": 1
@@ -9057,7 +9055,7 @@
       "aliases": [],
       "active_workstreams": [],
       "completed_workstreams": [],
-      "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
+      "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
       "active_workstream_count": 0,
       "completed_workstream_count": 0
@@ -9087,7 +9085,7 @@
         "B-125"
       ],
       "completed_workstreams": [],
-      "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
+      "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
       "active_workstream_count": 8,
       "completed_workstream_count": 0
@@ -9115,7 +9113,7 @@
       "completed_workstreams": [
         "B-140"
       ],
-      "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
+      "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
       "active_workstream_count": 2,
       "completed_workstream_count": 1
@@ -9145,7 +9143,7 @@
       "completed_workstreams": [
         "B-140"
       ],
-      "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
+      "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
       "active_workstream_count": 2,
       "completed_workstream_count": 1
@@ -9174,7 +9172,7 @@
     "completed_workstreams": [
       "B-140"
     ],
-    "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
+    "source_path": "/private/tmp/odylith-host-native-publish-20260924/odylith/radar/source/releases/releases.v1.json",
     "terminal": false,
     "active_workstream_count": 2,
     "completed_workstream_count": 1
@@ -14496,7 +14494,7 @@
     {
       "id": "diagram:D-045",
       "type": "diagram",
-      "label": "Greenfield First-Path Semantic Copy Custody",
+      "label": "Greenfield Host-Native Candidate And Transaction Custody",
       "diagram_id": "D-045",
       "status": "active",
       "owner": "product",
@@ -14505,7 +14503,7 @@
         "B-142"
       ],
       "component_names": [
-        "Joined source-cited evidence graph",
+        "Host-native source-cited evidence graph",
         "Source precedence and proposed first run",
         "Provisional delivery design",
         "Read-only candidate admission",
@@ -26295,5 +26293,5 @@
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-09-23 20:05:28Z"
+  "generated_utc": "2026-09-25 08:29:01Z"
 }
