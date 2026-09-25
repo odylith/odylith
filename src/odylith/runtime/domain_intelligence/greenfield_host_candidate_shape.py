@@ -11,8 +11,10 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring impor
     greenfield_authoring_schema,
 )
 
-HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v2"
+HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v3"
 HOST_EVENT_CITATION_FIELD = "source_citation"
+HOST_PRECEDENCE_NONE = "none_stated"
+HOST_PRECEDENCE_STATED = "stated"
 
 
 def greenfield_host_candidate_schema() -> dict[str, Any]:
@@ -34,6 +36,37 @@ def greenfield_host_candidate_schema() -> dict[str, Any]:
             "The exact source citation for this event. Each event owns exactly one "
             "citation; do not return a separate facts.first_path list."
         ),
+    }
+    precedence_schema = authored["properties"]["source_precedence"]
+    authored["properties"]["source_precedence"] = {
+        "description": (
+            "Make one explicit source-ordering decision. Choose none_stated only "
+            "when the source states no event precedence. Choose stated and supply "
+            "every cited directed edge when the source says an event or visible "
+            "result must occur before or after another event."
+        ),
+        "anyOf": [
+            {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["status"],
+                "properties": {
+                    "status": {"type": "string", "enum": [HOST_PRECEDENCE_NONE]},
+                },
+            },
+            {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["status", "edges"],
+                "properties": {
+                    "status": {
+                        "type": "string",
+                        "enum": [HOST_PRECEDENCE_STATED],
+                    },
+                    "edges": {**precedence_schema, "minItems": 1},
+                },
+            },
+        ],
     }
     return schema
 
@@ -79,6 +112,28 @@ def canonical_greenfield_host_candidate(
     canonical_result = deepcopy(dict(result))
     canonical_result["facts"] = canonical_facts
     canonical_result["events"] = canonical_events
+    precedence = result.get("source_precedence")
+    if not isinstance(precedence, Mapping):
+        raise TypeError("Greenfield host candidate source precedence must be an object")
+    precedence_status = precedence.get("status")
+    if precedence_status == HOST_PRECEDENCE_NONE and set(precedence) == {"status"}:
+        canonical_result["source_precedence"] = []
+    elif precedence_status == HOST_PRECEDENCE_STATED and set(precedence) == {
+        "status",
+        "edges",
+    }:
+        edges = precedence.get("edges")
+        if (
+            not isinstance(edges, Sequence)
+            or isinstance(edges, (str, bytes, bytearray))
+            or not edges
+        ):
+            raise ValueError(
+                "Greenfield stated source precedence requires at least one edge"
+            )
+        canonical_result["source_precedence"] = deepcopy(list(edges))
+    else:
+        raise ValueError("Greenfield host candidate source precedence is invalid")
     candidate["result"] = canonical_result
     return candidate
 
@@ -86,6 +141,8 @@ def canonical_greenfield_host_candidate(
 __all__ = [
     "HOST_CANDIDATE_FORMAT_VERSION",
     "HOST_EVENT_CITATION_FIELD",
+    "HOST_PRECEDENCE_NONE",
+    "HOST_PRECEDENCE_STATED",
     "canonical_greenfield_host_candidate",
     "greenfield_host_candidate_schema",
 ]

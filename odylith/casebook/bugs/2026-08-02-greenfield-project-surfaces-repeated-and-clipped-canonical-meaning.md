@@ -1,5 +1,22 @@
 - Bug ID: CB-303
 
+- Passive Source-Precedence Choice Rejected (2026-09-24): Contract v4 made the
+  reviewer-owned ordering definition visible to the host, but the next exact
+  `0631442a7` public run still selected an empty precedence list and was denied
+  on the same mandatory review-before-announcement relationship. The measured
+  proposal path completed in `85.578s`, inside the `90s` advisory target, with
+  one host invocation, one independent review, no retry, no transaction, and no
+  governed writes. The repeated class rejects another prose clarification.
+  Contract v5 replaces the passive empty-array convention at the host boundary
+  with a discriminated typed decision: `none_stated`, or `stated` with at least
+  one cited canonical edge. Deterministic projection maps that explicit choice
+  into the unchanged canonical precedence list before validation and review.
+  This adds no source parser, vocabulary match, inference, repair, retry,
+  fallback, model role, or validator exception. Focused custody/review proof
+  passes `112/112`; the sealed holdout remains untouched. Evidence:
+  `/private/tmp/greenfield-public-run-v4-063-result.json` and
+  `/private/tmp/greenfield-public-run-v4-063-evidence/`.
+
 - Author/Reviewer Precedence Contract Mismatch (2026-09-24): The exact clean
   `367c7a795` distribution reaches independent semantic review in `79.176s`,
   inside the `90s` advisory target, with one host invocation and no repair or

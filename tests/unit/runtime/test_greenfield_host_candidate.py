@@ -16,6 +16,8 @@ from odylith.runtime.domain_intelligence.greenfield_host_candidate_materializati
 )
 from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import (
     HOST_CANDIDATE_FORMAT_VERSION,
+    HOST_PRECEDENCE_NONE,
+    HOST_PRECEDENCE_STATED,
     canonical_greenfield_host_candidate,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
@@ -43,6 +45,12 @@ def _host_response(evidence: str) -> dict[str, object]:
     path_citations = facts.pop("first_path")
     for event, citation in zip(result["events"], path_citations, strict=True):
         event["source_citation"] = citation
+    precedence = result["source_precedence"]
+    result["source_precedence"] = (
+        {"status": HOST_PRECEDENCE_STATED, "edges": precedence}
+        if precedence
+        else {"status": HOST_PRECEDENCE_NONE}
+    )
     response["version"] = HOST_CANDIDATE_FORMAT_VERSION
     return response
 
@@ -240,8 +248,13 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
     assert "first_path" not in authored["properties"]["facts"]["properties"]
     assert "source_citation" in authored["properties"]["events"]["items"]["required"]
     source_precedence = authored["properties"]["source_precedence"]
-    assert "every explicit source-stated ordering requirement" in source_precedence["description"]
-    assert "proposed first-run walkthrough" in source_precedence["description"]
+    assert "one explicit source-ordering decision" in source_precedence["description"]
+    assert source_precedence["anyOf"][0]["properties"]["status"]["enum"] == [
+        HOST_PRECEDENCE_NONE
+    ]
+    stated = source_precedence["anyOf"][1]
+    assert stated["properties"]["status"]["enum"] == [HOST_PRECEDENCE_STATED]
+    assert stated["properties"]["edges"]["minItems"] == 1
     assert any(
         "Use exactly one proof authority" in requirement
         and "facts.proof_boundary and terminal to null" in requirement
@@ -250,6 +263,28 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
     assert payload["request"]["evidence"].endswith(
         "Create one reviewable harbor plan.\n"
     )
+
+
+def test_host_candidate_projects_an_explicit_no_precedence_decision() -> None:
+    evidence = combined_prompt_evidence_source(prompt=_source(), edit_evidence="")
+    response = _host_response(evidence)
+    response["result"]["source_precedence"] = {"status": HOST_PRECEDENCE_NONE}
+
+    canonical = canonical_greenfield_host_candidate(response)
+
+    assert canonical["result"]["source_precedence"] == []
+
+
+def test_host_candidate_requires_edges_for_stated_precedence() -> None:
+    evidence = combined_prompt_evidence_source(prompt=_source(), edit_evidence="")
+    response = _host_response(evidence)
+    response["result"]["source_precedence"] = {
+        "status": HOST_PRECEDENCE_STATED,
+        "edges": [],
+    }
+
+    with pytest.raises(ValueError, match="requires at least one edge"):
+        canonical_greenfield_host_candidate(response)
 
 
 def test_public_propose_accepts_a_host_candidate_file(

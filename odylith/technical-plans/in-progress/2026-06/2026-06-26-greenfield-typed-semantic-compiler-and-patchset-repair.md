@@ -1,5 +1,27 @@
 Status: In progress
 
+## Replace passive precedence omission with an explicit typed decision (2026-09-24)
+
+Contract v4 did not earn continuation. The exact clean `0631442a7` public run
+completed host authoring, canonical validation, and independent review in
+`85.578s`, inside the `90s` advisory target, but repeated the same missing
+review-before-announcement edge. The reviewer denied it; no package, transaction,
+governed write, or browser credit followed. The host had received the correct
+field definition, so another instruction would be a prompt stack rather than a
+mechanism improvement.
+
+Contract v5 replaces only the ambiguous host representation. Instead of a bare
+array where empty silently means no source ordering, the host must make one
+closed typed choice: `none_stated`, or `stated` with one or more canonical cited
+edges. A deterministic structural projection maps that explicit decision back
+to the unchanged canonical list before the existing validator and independent
+review. It performs no source interpretation and adds no regex, vocabulary
+rule, repair, retry, fallback, model role, or transaction path. Candidate format
+advances to v3; model, effort, timing, accepted-source authority, and downstream
+package mechanics stay fixed. Focused candidate, event-ordering, and reviewer
+proof passes `112/112`. Rebuild and run one fresh public positive control plus a
+bounded no-precedence negative control before any holdout access.
+
 ## Make accepted source precedence equally visible to author and reviewer (2026-09-24)
 
 The exact clean `367c7a795` public distribution proves that compact event

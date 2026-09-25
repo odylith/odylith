@@ -22,19 +22,27 @@ cardinality. The second class is eliminated by construction rather than by an
 additional prompt rule. Exact installed public, browser, holdout, legacy-path
 removal, and reproof gates remain open.
 
+Contract v5 likewise removes the passive empty-list convention from host source
+precedence. The host must select exactly one typed state: `none_stated`, or
+`stated` with at least one cited edge. Domain Intelligence projects that choice
+into the unchanged canonical list before validation and review. This forces an
+explicit semantic decision without interpreting source text deterministically;
+there is no keyword rule, parser, repair, retry, fallback, or second publication
+owner.
+
 Independent review denials expose their existing bounded receipt and single
 typed issue in JSON error output. This is diagnostic custody, not a candidate
 revision interface: candidate content remains private, the reviewer is not
 retried, and no repair or fallback path follows from the receipt.
 
-Contract v4 also makes the existing source-precedence authority symmetric
+Contract v4 first made the existing source-precedence authority symmetric
 between author and reviewer. Every explicit source-stated ordering requirement
 must be represented as a directed edge between existing event IDs and cite the
 one-based accepted operational constraint that owns it. Empty precedence is
 valid only when the source states no event precedence. Event array order and
 the proposed first-run walkthrough remain design choices, not accepted source
-authority. This is one shared field definition, not a vocabulary rule or
-example-specific prompt patch.
+authority. Its next exact public run still repeated the omission, so v5 replaces
+that passive representation rather than stacking another instruction.
 
 ### Exact-commit host-native release boundary (2026-09-24)
 
