@@ -270,6 +270,17 @@ normalizing unsupported receipt fields away. Independent integration findings ar
 resolved; focused checks are green, but frozen regression and installed/profile,
 host/recovery/browser and unseen-input qualification remain required.
 
+The 2026-09-24 blinded final-holdout run rejects the current participant-first
+candidate as release-qualified. Before a Python `SIGBUS`, seven of nineteen
+completed cases passed and twelve failed closed; nine failures were definite
+product failures spanning model-window exhaustion, first-path cardinality,
+source-faithfulness, quote occurrence, and deterministic joining. Three material
+clarifications remain unadjudicated. Luna remains the bounded rescue-author winner
+over the retired Terra binding, but that local result does not qualify the overall
+mechanism. Preserve fail-closed validation, exact citations, transaction custody,
+and the `180s` boundary. Compare no more than one public/development alternative
+per recurring owner, and never train or replay against the consumed holdout.
+
 Authoring v63 shares a portable operational-constraint definition with immutable
 review. Each independently projected citation retains any source-stated governed
 subject, required/prohibited/permitted behavior and material condition/scope.

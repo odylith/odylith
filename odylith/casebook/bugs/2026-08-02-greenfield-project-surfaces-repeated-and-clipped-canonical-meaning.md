@@ -2186,3 +2186,21 @@
   regex rule, or new repair stage. The full repository browser matrix, native
   Claude chat-delivery proof, independent semantic review, and untouched holdout
   remain open.
+
+- Final holdout rejection (2026-09-24): Independent pre-holdout review found no
+  P0/P1 and admitted frozen commit `15c26db1e` to one newly blinded, sealed
+  current-contract holdout. The one-shot ledger was claimed against exact
+  distribution provenance, but Python 3.13.12 terminated with `SIGBUS` after 19
+  of 36 cases. Incremental immutable evidence is already decisive: seven cases
+  passed at quality `10` with four Radar workstreams, four Registry components,
+  five Atlas sources/ten renders, and commit-only publication; twelve failed
+  closed with no governed records. Nine are definite product-qualification
+  failures: three model-window overruns plus six recurring semantic failures in
+  first-path cardinality, source-faithfulness, quote occurrence, and deterministic
+  joining. Three material clarifications remain unadjudicated and cannot count as
+  successful creation. Retire this frozen candidate as release-qualified. Do not
+  inspect, tune against, or rerun the consumed holdout. Preserve its no-write,
+  citation, validation, and transaction invariants. Use only public/development
+  evidence to compare at most one bounded alternative for each recurring owner;
+  retain an alternative only if it reduces the failure class without weakening
+  the `180s` boundary, focused proof, or browser gate.

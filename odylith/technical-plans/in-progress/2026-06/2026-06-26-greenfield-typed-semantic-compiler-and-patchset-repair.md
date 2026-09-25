@@ -11218,6 +11218,33 @@ for retries until success. Current runtime profiles remain unchanged.
   holdout. Any failure at those gates reopens the owning mechanism rather than
   inviting example-specific patches.
 
+## Final Holdout Rejection And Bounded Replacement Gate (2026-09-24)
+
+- Independent review admitted exact pushed commit `15c26db1e`; the clean-checkout
+  browser gate passed `152/152`, the aggregate Luna positive/clarification proof
+  passed, and no regex, fallback, retry, schema, or repair cascade was added.
+- A new independently authored, sealed 36-case holdout passed structural and
+  custody preflight with zero model calls before its one-shot ledger was claimed.
+  The exact distribution was bound to provenance SHA-256
+  `8020d3fc7c47e09676ce6abbc89d7c5e64e85e6f4e21e8af5b29ff69b6fff450`.
+- Python 3.13.12 crashed with `SIGBUS` during garbage collection after 19 cases.
+  Retained incremental evidence is nevertheless release-decisive: `7/19` passed
+  at quality `10`; twelve failed closed. Three model-window failures and six
+  semantic failures across first-path cardinality, source-faithfulness, quote
+  occurrence, and deterministic joining reject the product mechanism. Three
+  clarifications are unadjudicated and cannot be credited as successful creation.
+- Retire this frozen candidate as release-qualified. Never inspect, replay, or
+  tune against the consumed holdout. Preserve no-write behavior, citation custody,
+  canonical validation, commit-only publication, rollback/recovery, required
+  `4–5` Radar, `4–5` Registry, `5+` Atlas outputs, and the `180s` safety boundary.
+- Resume only through public/development evidence. For each of the four recurring
+  owners—deadline behavior, first-path cardinality, citation/source-faithfulness,
+  and deterministic joining—compare the current owner with at most one bounded
+  alternative and state a falsifiable prediction. Retain only an alternative that
+  eliminates the class without regressing the existing focused and clean-browser
+  gates; remove the loser. Stabilize the long-run Python/volume boundary under
+  CB-308 separately from product semantics.
+
 ## Traceability
 
 Current proposal/confirmation/recovery operations and versioned semantic/timing boundaries; historical post-confirm repair paths are superseded.

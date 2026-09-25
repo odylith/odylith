@@ -70,3 +70,15 @@
 - scripts/run_pytest_shards.py
 - tests/unit/test_pytest_shards.py
 - tests/unit/runtime/test_greenfield_confirmed_body_comp.py
+
+- Greenfield holdout runner recurrence (2026-09-24): The unsharded semantic
+  release runner processed 19 of 36 one-shot cases over roughly fifty minutes,
+  persisted `1,467` retained evidence files and incremental results, then exited
+  `138`. macOS incident `B5267C9B-15E0-4FC2-9C37-FF0FC854DD06` records Python
+  3.13.12 `EXC_BAD_ACCESS`/`SIGBUS` in `visit_decref` during cyclic garbage
+  collection. The one-shot ledger remains correctly claimed; no rerun is allowed.
+  Incremental evidence preserved the completed-case product verdict, so the crash
+  does not erase those results, but it prevents a terminal 36-case release
+  receipt. Stabilize long release campaigns separately on a non-force-unmounted
+  volume or a proven Python runtime and retain bounded-process evidence; do not
+  treat fresh-process replay of protected cases as an authorized workaround.
