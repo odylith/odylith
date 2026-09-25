@@ -2685,3 +2685,21 @@
   fallback, or first-match path. Completion remains unclaimed until a newly
   built exact distribution passes a fresh public corpus at 100% and exactly one
   newly blind holdout.
+
+- Exact host-schema qualification blocker (2026-09-25): Immutable distribution
+  `aed53a355` passed source, install, and frozen browser proof, but its first
+  disclosed qualification case made no model call. The Codex host API rejected
+  the response schema because contextual citations declared optional `context`
+  properties without listing them in each object's `required` array. A second
+  operational attempt first proved the runner also needs the explicit
+  `{candidate_schema}` argv entry; both failed attempts are terminal, retained,
+  and separate from semantic evidence. The bounded correction requires
+  `context` everywhere and makes its value nullable when the selected quote is
+  unique. Canonical custody already treats null as absent and still requires an
+  exact unique context for repeated quotes. A recursive contract assertion now
+  proves every response-schema object requires every declared property. The
+  focused host, citation, campaign, sealed-input, and proof-scope suite passes
+  `147/147`; an actual Astra/medium call accepted the corrected schema and
+  returned one structured candidate in about 96 seconds. No regex, parser,
+  retry, fallback, case patch, or new model role was added. Rebuild the exact
+  distribution before resuming the public qualification; CB-303 remains open.

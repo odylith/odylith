@@ -11853,3 +11853,22 @@ Current proposal/confirmation/recovery operations and versioned semantic/timing 
   projections, commit and push one checkpoint, build one exact distribution,
   and run a fresh public qualification at the unchanged 100% floor. Only that
   pass may admit exactly one newly blind holdout and final semantic adjudication.
+
+## Host Response-Schema Compatibility Gate (2026-09-25)
+
+- The first `aed53a355` release invocation failed before model execution because
+  the host runner omitted its schema-path argv token. After that wiring was
+  corrected, the host API exposed the owning product defect: citation objects
+  declared `context` but did not require it, which violates the host structured
+  output contract that every object property be required.
+- Keep the citation mechanism unchanged. Require both `quote` and `context`,
+  permit `context: null` for a unique quote, and continue to require exact unique
+  context for a repeated quote during canonical validation. Add one recursive
+  schema assertion so this entire failure class is checked without duplicating
+  field-by-field rules.
+- The corrected focused boundary passes `147/147`, and one actual Astra/medium
+  smoke call accepts the schema and returns structured output in about 96
+  seconds. Treat that as API compatibility and timing evidence only, not public
+  qualification. Rebuild, commit, and push one immutable distribution; resume
+  the same sealed public corpus under a fresh one-shot ledger. Do not alter case
+  content, semantic floors, model roles, or the single blind-holdout rule.

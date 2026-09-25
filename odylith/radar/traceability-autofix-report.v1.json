@@ -1,5 +1,5 @@
 {
-  "repo_root": "/private/tmp/odylith-host-native-publish-20260924",
+  "repo_root": "/Volumes/FREEDOM_RESEARCH/research-code/odylith",
   "dry_run": false,
   "force_overwrite": false,
   "modified_files": [],
@@ -58,5 +58,5 @@
     "unresolved": 0,
     "warnings": 0
   },
-  "generated_utc": "2026-09-25 14:28:34Z"
+  "generated_utc": "2026-09-25 17:23:28Z"
 }

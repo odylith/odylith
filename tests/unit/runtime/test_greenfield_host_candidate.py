@@ -300,13 +300,24 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
     source_citation = authored["properties"]["events"]["items"]["properties"][
         "source_citation"
     ]
-    assert source_citation["required"] == ["quote"]
+    assert source_citation["required"] == ["quote", "context"]
+    assert source_citation["properties"]["context"]["anyOf"][-1] == {"type": "null"}
     assert "occurrence" not in source_citation["properties"]
     responsibility = authored["properties"]["components"]["items"]["properties"][
         "responsibilities"
     ]["items"]
-    assert responsibility["required"] == ["quote"]
+    assert responsibility["required"] == ["quote", "context"]
     assert "occurrence" not in responsibility["properties"]
+    pending = [("$", payload["candidate_schema"])]
+    while pending:
+        path, value = pending.pop()
+        if isinstance(value, dict):
+            properties = value.get("properties")
+            if value.get("type") == "object" and isinstance(properties, dict):
+                assert set(value.get("required", ())) == set(properties), path
+            pending.extend((f"{path}.{key}", child) for key, child in value.items())
+        elif isinstance(value, list):
+            pending.extend((f"{path}[{index}]", child) for index, child in enumerate(value))
     source_precedence = authored["properties"]["source_precedence"]
     assert "every explicit source-stated ordering requirement" in source_precedence["description"]
     assert "proposed first-run walkthrough" in source_precedence["description"]

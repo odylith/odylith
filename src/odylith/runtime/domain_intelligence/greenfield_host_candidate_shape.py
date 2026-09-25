@@ -25,7 +25,7 @@ def _context_citation_schema(*, description: str = "") -> dict[str, Any]:
     schema: dict[str, Any] = {
         "type": "object",
         "additionalProperties": False,
-        "required": ["quote"],
+        "required": ["quote", "context"],
         "properties": {
             "quote": {
                 "type": "string",
@@ -33,12 +33,17 @@ def _context_citation_schema(*, description: str = "") -> dict[str, Any]:
                 "description": "The exact complete source text that carries the selected meaning.",
             },
             "context": {
-                "type": "string",
-                "maxLength": MAX_AUTHORED_FIELD_VALUE_CHARS,
+                "anyOf": [
+                    {
+                        "type": "string",
+                        "maxLength": MAX_AUTHORED_FIELD_VALUE_CHARS,
+                    },
+                    {"type": "null"},
+                ],
                 "description": (
                     "When quote occurs more than once, an exact contiguous source excerpt that "
                     "occurs once and contains the selected quote once. It locates quote but "
-                    "contributes no additional meaning. Omit it when quote occurs once."
+                    "contributes no additional meaning. Set it to null when quote occurs once."
                 ),
             },
         },
