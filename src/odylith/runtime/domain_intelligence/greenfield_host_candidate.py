@@ -123,6 +123,7 @@ def admit_greenfield_host_candidate(
         profile_id=profile_id,
         effective_timeout_seconds=effective_window,
         semantic_model_call_count=0,
+        allow_zero_semantic_calls=True,
     )
     if _canonical_candidate_bytes(response) != frozen:
         raise RuntimeError("Greenfield host-candidate validation changed the candidate")

@@ -4,6 +4,19 @@ Last updated: 2026-09-24
 
 ## Overview
 
+### Host-native integration ownership correction (2026-09-24)
+
+The host-native candidate boundary preserves one materialization owner and one
+validation law. `greenfield_model_intent_materialization.py` remains the sole
+owner of `stage_candidate_intent` and is 284 lines. Host admission and host
+materialization are separate bounded modules, while receipt projection carries
+the common envelope observation without a second staging path. The shared
+authoring validator requires at least one semantic call unless the explicit
+host-candidate pre-review boundary opts into zero; an admitted host transaction
+still records the one independent review call. Fresh protected-holdout-excluded
+proof passes 2,187 runtime tests and 1,140 install tests. This is source/install
+qualification only; the remaining release gates stay unchanged.
+
 ### Host-native Greenfield candidate boundary (2026-09-24)
 
 The active host now owns the single semantic-authoring decision for Greenfield.

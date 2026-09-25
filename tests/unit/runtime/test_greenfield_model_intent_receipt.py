@@ -12,13 +12,13 @@ from odylith.runtime.domain_intelligence import greenfield_create_transaction
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
     build_product_create_transaction,
 )
+from odylith.runtime.domain_intelligence.greenfield_model_authoring_receipt import (
+    model_authoring_receipt,
+)
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
     GreenfieldAuthoringClarification,
     GreenfieldModelAuthoredIntent,
-)
-from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
-    _authoring_receipt,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     DEEP_PROFILE_ID,
@@ -65,7 +65,7 @@ def test_authoring_receipt_preserves_observed_count_without_authenticating_it(ca
         candidate_review=review,
     )
 
-    receipt = _authoring_receipt(authored)
+    receipt = model_authoring_receipt(authored)
     assert receipt["semantic_model_call_count"] == call_count
     assert receipt["candidate_review"] == review
     assert receipt["candidate_review"] is not review
@@ -108,7 +108,7 @@ def test_clarification_receipt_preserves_the_observed_call_count(call_count) -> 
         semantic_model_call_count=call_count,
     )
 
-    receipt = _authoring_receipt(clarification)
+    receipt = model_authoring_receipt(clarification)
     assert receipt["semantic_model_call_count"] == call_count
     assert "candidate_review" not in receipt
     # Clarification observations never authorize a complete transaction.

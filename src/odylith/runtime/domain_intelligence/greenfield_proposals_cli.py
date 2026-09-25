@@ -24,9 +24,11 @@ from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
     greenfield_host_candidate_contract,
     load_greenfield_host_candidate_file,
 )
+from odylith.runtime.domain_intelligence.greenfield_host_candidate_materialization import (
+    materialize_host_authored_intent,
+)
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
     GreenfieldClarificationRequired,
-    materialize_host_authored_intent,
     materialize_model_authored_intent,
     prepare_model_authoring_evidence,
     render_product_intent_preview,

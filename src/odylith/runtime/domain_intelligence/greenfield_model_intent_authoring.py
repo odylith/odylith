@@ -211,8 +211,10 @@ def validate_greenfield_authoring_response(
     profile_id: str,
     effective_timeout_seconds: float,
     semantic_model_call_count: int,
+    allow_zero_semantic_calls: bool = False,
 ) -> GreenfieldModelAuthoredIntent | GreenfieldAuthoringClarification:
-    if type(semantic_model_call_count) is not int or semantic_model_call_count < 0:
+    minimum_call_count = 0 if allow_zero_semantic_calls else 1
+    if type(semantic_model_call_count) is not int or semantic_model_call_count < minimum_call_count:
         raise GreenfieldModelAuthoringError(
             "Greenfield authoring received an invalid semantic call count; no records were created."
         )

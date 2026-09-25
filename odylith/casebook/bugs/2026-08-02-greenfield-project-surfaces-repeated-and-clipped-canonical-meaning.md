@@ -1,5 +1,21 @@
 - Bug ID: CB-303
 
+- Host-Native Integration Regression Closure (2026-09-24): The first broad
+  runtime proof, with the protected holdout explicitly excluded, found two
+  real integration regressions: the canonical materialization owner grew to
+  425 lines against its `<300` structural law, and the shared validator
+  admitted a zero-call claim outside the host seam. The corrected ownership
+  keeps the sole candidate-staging call in the 284-line canonical owner, moves
+  host materialization and receipt projection into bounded modules, restores
+  the validator's one-call default, and permits zero only for host validation
+  before the single independent review. Fresh proof passes 2,187 runtime tests
+  and all 1,140 install tests, excluding only the named protected-holdout files.
+  One stale Luna expectation and shipped create-command/chat-approval guidance
+  were also corrected. No parser, regex, repair, retry, fallback, or alternate
+  authoring path was added. CB-303 remains Open/P0 for live installed
+  transaction/recovery, browser-state, host-parity/intervention, final semantic
+  adjudication, superseded-path removal, and untouched-holdout gates.
+
 - Host-Native Candidate Integration Checkpoint (2026-09-24): The final
   unconsumed public mechanism hypothesis passes its bounded discriminator. One
   host-authored v68 candidate preserves seven source events, six human

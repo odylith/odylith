@@ -11,10 +11,12 @@ from odylith.runtime.domain_intelligence import greenfield_proposals_cli
 from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
     HOST_CANDIDATE_CONTRACT_VERSION,
 )
+from odylith.runtime.domain_intelligence.greenfield_host_candidate_materialization import (
+    materialize_host_authored_intent,
+)
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
     GreenfieldClarificationRequired,
     combined_prompt_evidence_source,
-    materialize_host_authored_intent,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_receipt_approval import (
     greenfield_model_authoring_receipt_approved,

@@ -30,7 +30,7 @@ def _module():
     return _load_module(SCRIPTS_ROOT / "greenfield_preconfirm_matrix.py", "greenfield_preconfirm_matrix")
 
 
-def _release_audit_binding(case) -> dict[str, str]:  # noqa: ANN001
+def _release_audit_binding(case) -> dict[str, str]:
     audit_evidence = importlib.import_module("greenfield_matrix_release_audit_evidence")
     source_verification_method = "github-rest-v3"
     source_verification_uri = "https://api.github.com/repositories/295992065"
@@ -308,7 +308,7 @@ def test_main_uses_external_case_files_instead_of_default_catalog(
     )
     matrix_kwargs: dict[str, object] = {}
 
-    def fake_run_matrix(**kwargs):  # noqa: ANN001
+    def fake_run_matrix(**kwargs):
         matrix_kwargs.update(kwargs)
         return (_passing_matrix_result(module),)
 
@@ -614,7 +614,7 @@ def test_main_fails_when_owned_temp_cleanup_finds_a_leftover_repo(monkeypatch, t
     dist_dir = tmp_path / "dist"
     _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
 
-    def fake_run_matrix(**kwargs):  # noqa: ANN001
+    def fake_run_matrix(**kwargs):
         snapshot = kwargs["temp_parent"] / "odylith-greenfield-matrix-leftover" / "snapshot"
         snapshot.parent.mkdir()
         snapshot.write_text("required recovery evidence", encoding="utf-8")
@@ -700,7 +700,7 @@ def test_main_binds_commit_recovery_to_the_selected_external_case(monkeypatch, t
     monkeypatch.setattr(module, "_load_cli_case_files", lambda _paths, **_kwargs: (external_case,))
     monkeypatch.setattr(module, "run_matrix", lambda **_kwargs: (_passing_matrix_result(module),))
 
-    def fake_commit_recovery(**kwargs):  # noqa: ANN001
+    def fake_commit_recovery(**kwargs):
         captured.update(kwargs)
         return module.GreenfieldInstalledCommitRecoveryProof(
             status="passed",
@@ -873,7 +873,7 @@ def test_release_campaign_forwards_the_evaluated_audit_binding_to_commit_recover
     monkeypatch.setattr(module, "_platform_leakage_proof_summary", lambda _results: {"status": "passed"})
     monkeypatch.setattr(module, "temp_cleanup_proof", lambda _path: {"status": "passed"})
 
-    def fake_commit_recovery(**kwargs):  # noqa: ANN001
+    def fake_commit_recovery(**kwargs):
         captured.update(kwargs)
         return module.GreenfieldInstalledCommitRecoveryProof(
             status="passed",
@@ -883,7 +883,7 @@ def test_release_campaign_forwards_the_evaluated_audit_binding_to_commit_recover
 
     monkeypatch.setattr(module, "run_installed_commit_recovery_proof", fake_commit_recovery)
 
-    exit_code = module._execute_matrix_campaign(  # noqa: SLF001
+    exit_code = module._execute_matrix_campaign(
         args=args,
         selected_cases=(recovery_case,),
         planned_cases=(recovery_case,),
@@ -954,7 +954,7 @@ def test_semantic_release_campaign_uses_sealed_case_binding_for_commit_recovery(
     monkeypatch.setattr(module, "temp_cleanup_proof", lambda _path: {"status": "passed"})
     monkeypatch.setattr(module, "_semantic_release_report", lambda **_kwargs: {"status": "passed"})
 
-    def fake_commit_recovery(**kwargs):  # noqa: ANN001
+    def fake_commit_recovery(**kwargs):
         captured.update(kwargs)
         return module.GreenfieldInstalledCommitRecoveryProof(
             status="passed",
@@ -964,7 +964,7 @@ def test_semantic_release_campaign_uses_sealed_case_binding_for_commit_recovery(
 
     monkeypatch.setattr(module, "run_installed_commit_recovery_proof", fake_commit_recovery)
 
-    exit_code = module._execute_matrix_campaign(  # noqa: SLF001
+    exit_code = module._execute_matrix_campaign(
         args=args,
         selected_cases=(recovery_case,),
         planned_cases=(recovery_case,),
@@ -1031,7 +1031,7 @@ def test_release_campaign_fails_when_onboarding_scorecard_fails(
     monkeypatch.setattr(module, "temp_cleanup_proof", lambda _path: {"status": "passed"})
     monkeypatch.setattr(module, "_semantic_release_report", lambda **_kwargs: {"status": "passed"})
 
-    exit_code = module._execute_matrix_campaign(  # noqa: SLF001
+    exit_code = module._execute_matrix_campaign(
         args=args,
         selected_cases=(release_case,),
         planned_cases=(release_case,),
@@ -1075,11 +1075,11 @@ def test_final_holdout_child_rechecks_sealed_distribution_provenance_before_clai
     )
 
     with pytest.raises(RuntimeError, match="implementation revision does not match distribution build provenance"):
-        module._final_holdout_run_from_args(args, sealed_input_root=str(sealed_root))  # noqa: SLF001
+        module._final_holdout_run_from_args(args, sealed_input_root=str(sealed_root))
     assert not ledger.exists()
 
     args.implementation_revision = "a" * 40
-    holdout_run = module._final_holdout_run_from_args(args, sealed_input_root=str(sealed_root))  # noqa: SLF001
+    holdout_run = module._final_holdout_run_from_args(args, sealed_input_root=str(sealed_root))
 
     assert holdout_run is not None
     assert holdout_run.implementation_revision == "a" * 40
@@ -1153,7 +1153,7 @@ def test_model_profile_release_proof_requires_all_tiers_under_strict_budgets() -
     assert proof["profiles"][lower_profile_id]["clarification_no_write_control_count"] == 1
     assert proof["lower_capability_scope"]["status"] == "passed"
     assert len(proof["lower_capability_scope"]["observed_profiles"]) == 1
-    assert proof["lower_capability_scope"]["observed_profiles"][0]["model"] == "gpt-5.6-terra"
+    assert proof["lower_capability_scope"]["observed_profiles"][0]["model"] == "gpt-5.6-luna"
     assert module.model_profile_release_proof(
         (*results[:-1], *clarifications),
         require_complete=True,

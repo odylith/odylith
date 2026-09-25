@@ -25,14 +25,14 @@ from odylith.runtime.domain_intelligence.greenfield_candidate_intent_stage impor
     render_candidate_intent_markdown,
     stage_candidate_intent,
 )
-from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
-    admit_greenfield_host_candidate,
-)
 from odylith.runtime.domain_intelligence.greenfield_material_clarification import (
     material_clarification_for_fields,
 )
+from odylith.runtime.domain_intelligence.greenfield_model_authoring_receipt import (
+    envelope_authoring_observation,
+    model_authoring_receipt,
+)
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
-    GREENFIELD_INTENT_AUTHORING_VERSION,
     GreenfieldAuthoringClarification,
     GreenfieldModelAuthoredIntent,
 )
@@ -155,7 +155,7 @@ def materialize_model_authored_intent(
         deadline=authoring_deadline,
         clock=clock,
     )
-    receipt = _authoring_receipt(authored)
+    receipt = model_authoring_receipt(authored)
     if isinstance(authored, GreenfieldAuthoringClarification):
         clarification = material_clarification_for_fields(
             authored.required_fields, consistency_status=authored.consistency_status,
@@ -171,72 +171,18 @@ def materialize_model_authored_intent(
     if not isinstance(authored, GreenfieldModelAuthoredIntent):
         raise TypeError("Greenfield model authoring returned an unsupported result")
 
-    return _stage_validated_authored_intent(
+    return stage_validated_authored_intent(
         prompt=prompt,
         repo_root=repo_root,
         prepared=prepared,
         authored=authored,
         receipt=receipt,
         authoring_receipt=authoring_receipt,
+        clarification_error=GreenfieldClarificationRequired,
     )
 
 
-def materialize_host_authored_intent(
-    *,
-    prompt: str,
-    repo_root: Path,
-    host_candidate: Mapping[str, Any],
-    review_provider_factory: Callable[[], Any] | None,
-    edit_evidence: str = "",
-    authoring_profile_id: str = STANDARD_PROFILE_ID,
-    source_language: str = "en",
-    prepared_evidence: GreenfieldPreparedAuthoringEvidence | None = None,
-    authoring_receipt: dict[str, Any] | None = None,
-    authoring_deadline: float | None = None,
-    clock: Callable[[], float] = monotonic,
-) -> dict[str, Any]:
-    """Stage one immutable host candidate after validation and review."""
-
-    prepared = prepared_evidence or prepare_model_authoring_evidence(
-        prompt=prompt,
-        edit_evidence=edit_evidence,
-        source_language=source_language,
-    )
-    if prepared.prompt != prompt:
-        raise ValueError("prepared Greenfield evidence does not match the operator prompt")
-    authored, host_receipt = admit_greenfield_host_candidate(
-        host_candidate,
-        evidence_text=prepared.evidence_source,
-        profile_id=authoring_profile_id,
-        review_provider_factory=review_provider_factory,
-        deadline=authoring_deadline,
-        clock=clock,
-    )
-    receipt = _host_authoring_receipt(authored, host_receipt=host_receipt)
-    if isinstance(authored, GreenfieldAuthoringClarification):
-        clarification = material_clarification_for_fields(
-            authored.required_fields,
-            consistency_status=authored.consistency_status,
-        )
-        if authoring_receipt is not None:
-            authoring_receipt.clear()
-            authoring_receipt.update(receipt)
-        raise GreenfieldClarificationRequired(
-            clarification.question,
-            required_fields=clarification.required_fields,
-            authoring_receipt=receipt,
-        )
-    return _stage_validated_authored_intent(
-        prompt=prompt,
-        repo_root=repo_root,
-        prepared=prepared,
-        authored=authored,
-        receipt=receipt,
-        authoring_receipt=authoring_receipt,
-    )
-
-
-def _stage_validated_authored_intent(
+def stage_validated_authored_intent(
     *,
     prompt: str,
     repo_root: Path,
@@ -244,10 +190,11 @@ def _stage_validated_authored_intent(
     authored: GreenfieldModelAuthoredIntent,
     receipt: dict[str, Any],
     authoring_receipt: dict[str, Any] | None,
+    clarification_error: Callable[..., Exception],
 ) -> dict[str, Any]:
-    """Seal one already-validated candidate through the shared custody path."""
+    """Seal one validated candidate through the shared custody path."""
 
-    intent = _preserve_model_authored_intent(authored.intent)
+    intent = deepcopy(dict(authored.intent))
     intent[AUTHORED_SEMANTICS_KEY] = authored_semantics_mapping(
         authored.first_path_relations,
         authored.component_responsibility_relations,
@@ -264,7 +211,7 @@ def _stage_validated_authored_intent(
         source_format=prepared.source_format,
         source_document_count=prepared.source_document_count,
         source_language=prepared.source_language,
-        model_authoring=_envelope_authoring_observation(receipt),
+        model_authoring=envelope_authoring_observation(receipt),
         authored_source_spans=authored.source_spans,
         authored_atomic_claims=authored.atomic_claims,
         authored_source_sha256=authored.source_sha256,
@@ -273,7 +220,7 @@ def _stage_validated_authored_intent(
     if isinstance(materiality_gate, Mapping) and materiality_gate.get("status") != "passed":
         blocked = tuple(str(field) for field in materiality_gate.get("blocked_fields", ()) if str(field))
         clarification = material_clarification_for_fields(blocked)
-        raise GreenfieldClarificationRequired(
+        raise clarification_error(
             clarification.question,
             required_fields=clarification.required_fields,
         )
@@ -299,93 +246,6 @@ def _stage_validated_authored_intent(
         authoring_receipt.clear()
         authoring_receipt.update(receipt)
     return candidate
-
-
-def _host_authoring_receipt(
-    authored: GreenfieldModelAuthoredIntent | GreenfieldAuthoringClarification,
-    *,
-    host_receipt: Mapping[str, Any],
-) -> dict[str, Any]:
-    consistency_spans = (
-        authored.consistency_source_spans
-        if isinstance(authored, GreenfieldAuthoringClarification)
-        else tuple(
-            span
-            for span in authored.source_spans
-            if str(span.get("span_id") or "").startswith("authoring:consistency:")
-        )
-    )
-    return {
-        "authoring_origin": "host_native",
-        "authoring_version": GREENFIELD_INTENT_AUTHORING_VERSION,
-        "runtime_semantic_model_call_count": authored.semantic_model_call_count,
-        "tier": authored.tier,
-        "elapsed_seconds": authored.elapsed_seconds,
-        "effective_model_window_seconds": authored.effective_model_window_seconds,
-        "host_candidate": deepcopy(dict(host_receipt)),
-        **(
-            {"candidate_review": deepcopy(authored.candidate_review)}
-            if isinstance(authored, GreenfieldModelAuthoredIntent)
-            else {}
-        ),
-        "consistency_assessment": {
-            "status": authored.consistency_status,
-            "source_spans": [dict(span) for span in consistency_spans],
-        },
-    }
-
-
-def _envelope_authoring_observation(receipt: Mapping[str, Any]) -> dict[str, Any]:
-    if receipt.get("authoring_origin") == "host_native":
-        review = receipt.get("candidate_review")
-        review_profile = review.get("model_profile") if isinstance(review, Mapping) else None
-        return {
-            "origin": "host_native",
-            "host_candidate": deepcopy(receipt.get("host_candidate")),
-            "candidate_review": deepcopy(review_profile),
-        }
-    return {
-        role: deepcopy(receipt[role]["model_profile"])
-        for role in ("participant_selection", "remaining_candidate_authoring")
-    }
-
-
-def _authoring_receipt(
-    authored: GreenfieldModelAuthoredIntent | GreenfieldAuthoringClarification,
-) -> dict[str, Any]:
-    consistency_spans = (
-        authored.consistency_source_spans
-        if isinstance(authored, GreenfieldAuthoringClarification)
-        else tuple(
-            span
-            for span in authored.source_spans
-            if str(span.get("span_id") or "").startswith("authoring:consistency:")
-        )
-    )
-    return {
-        "authoring_version": GREENFIELD_INTENT_AUTHORING_VERSION,
-        "semantic_model_call_count": authored.semantic_model_call_count,
-        "tier": authored.tier,
-        "elapsed_seconds": authored.elapsed_seconds,
-        "effective_model_window_seconds": authored.effective_model_window_seconds,
-        "participant_selection": deepcopy(authored.participant_selection),
-        "remaining_candidate_authoring": deepcopy(authored.remaining_candidate_authoring),
-        **({
-            "candidate_review": deepcopy(authored.candidate_review),
-            **({
-                "candidate_revision": deepcopy(authored.candidate_revision),
-                "rejected_candidate_review": deepcopy(authored.rejected_candidate_review),
-            } if authored.candidate_revision else {}),
-        } if isinstance(authored, GreenfieldModelAuthoredIntent) else {}),
-        "consistency_assessment": {
-            "status": authored.consistency_status,
-            "source_spans": [dict(span) for span in consistency_spans],
-        },
-    }
-
-
-def _preserve_model_authored_intent(intent: Mapping[str, Any]) -> dict[str, Any]:
-    return deepcopy(dict(intent))
 
 
 def _without_edit_command(value: str) -> str:
@@ -417,7 +277,6 @@ __all__ = [
     "GreenfieldClarificationRequired",
     "GreenfieldPreparedAuthoringEvidence",
     "combined_prompt_evidence_source",
-    "materialize_host_authored_intent",
     "materialize_model_authored_intent",
     "prepare_model_authoring_evidence",
     "prompt_only_material_decision_error",

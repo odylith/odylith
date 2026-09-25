@@ -1,5 +1,25 @@
 Status: In progress
 
+## Post-integration regression closure (2026-09-24)
+
+The first protected-holdout-excluded broad proof exposed two integration
+regressions: host support pushed the canonical materialization owner to 425
+lines against its `<300` law, and the shared validation boundary admitted a
+zero-call claim outside the host-native pre-review seam. The correction moves
+host materialization and receipt projection into bounded owners while retaining
+the sole `stage_candidate_intent` call in the original materialization owner,
+now 284 lines. The shared validator again requires at least one semantic call by
+default; only the explicit host-candidate validator opts into zero before its
+one independent review. No fallback or alternate authoring path was added.
+
+Fresh broad proof passes 2,187 Greenfield runtime tests with the protected
+holdout file explicitly excluded, plus all 1,140 Greenfield install tests with
+the holdout guard excluded. The install run also corrected one stale Luna
+profile assertion and restored the full commit-only create syntax and chat
+approval prohibition in shipped guidance. This closes the source/install
+regression wave. It does not satisfy installed live transaction, browser-state,
+host-parity, final semantic adjudication, or untouched-holdout gates.
+
 ## Latest live outcome: host-native candidate earns integration (2026-09-24)
 
 The predeclared public discriminator for the last credible mechanism passes.
