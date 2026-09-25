@@ -675,6 +675,9 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-24 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
 - **2026-09-19 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 1 verifiable artifact reference.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`
@@ -688,9 +691,6 @@ This section captures synchronized requirement and contract signals derived from
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
 - **2026-09-16 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 1 verifiable artifact reference.
-  - Scope: B-142
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`
-- **2026-09-15 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 1 verifiable artifact reference.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`
 <!-- registry-requirements:end -->
