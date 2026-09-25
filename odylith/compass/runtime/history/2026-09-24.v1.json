@@ -42,16 +42,10 @@
   },
   "digest": {
     "24h": [
-      "Completed in this window: Several release and runtime packaging strands closed cleanly, including release-member reconciliation and stale-runtime guardrails. That removes a real source of ambiguity. | The product boundary is clearer now: in-runtime Greenfield authoring mechanisms are rejected.",
-      "Current execution: B-022 is now the umbrella for honest benchmark improvement, anti-gaming integrity, and independent proof. Implementation is active. | The current delivery estimate is roughly 20 days, with high confidence. | Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening are moving, but some active lanes still lack captured progress evidence.",
-      "Next planned: The benchmark corpus needs to grow beyond the current 30-scenario suite, with deeper weak-case coverage. | The next proof rerun must clear both cache profiles before the benchmark claim can move forward.",
-      "Risks to watch: Candidate release notes still advertise the disabled Greenfield apply flow. That P1 issue remains open and needs correction."
+      "Brief unavailable right now: The narration provider failed on the last attempt. Compass will retry on backoff."
     ],
     "48h": [
-      "Completed in this window: Release, runtime packaging, hosted-asset proof, and release-member visibility work closed cleanly. That leaves the canonical release and stale-runtime guardrails in place. | The direction is also clear on greenfield authoring: in-runtime authoring mechanisms are rejected.",
-      "Current execution: B-022 is now the umbrella for honest benchmark improvement, anti-gaming integrity, and independent proof. Implementation is active, with an ETA of roughly 20 days. | Movement is strongest in benchmark integrity, conservative multi-profile proof, and README hardening. Some active lanes still lack captured progress evidence.",
-      "Next planned: The benchmark corpus needs to grow beyond the current 30-scenario suite, including deeper weak cases. | The next proof rerun must clear both cache profiles.",
-      "Risks to watch: Candidate release notes still advertise the disabled greenfield apply flow. That P1 remains open and can mislead users about the supported path."
+      "Brief unavailable right now: The narration provider failed on the last attempt. Compass will retry on backoff."
     ]
   },
   "digest_scoped": {
@@ -156,28 +150,16 @@
         "Nothing moved in this window: B-006 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-007": [
-        "Completed in this window: The GA promotion and supported platform contract closed cleanly. That gives the public release story one settled foundation.",
-        "Current execution: B-007 is complete. There is no remaining contract work to land in this lane.",
-        "Next planned: Capture the next verified checkpoint so the completed contract stays backed by fresh evidence.",
-        "Risks to watch: No critical blockers are surfaced right now."
+        "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
       ],
       "B-008": [
-        "Completed in this window: The memory areas and operator readout closed cleanly. That gives the current memory posture a clearer shape.",
-        "Current execution: This work is complete. The useful follow-through now is to keep the readout grounded in what has actually been established.",
-        "Next planned: Capture the next verified checkpoint for the memory areas and operator readout.",
-        "Risks to watch: No critical blockers are surfaced at present."
+        "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
       ],
       "B-009": [
-        "Completed in this window: Benchmark corpus truth and adoption proof parity closed cleanly. That leaves the benchmark work on a more honest footing.",
-        "Current execution: The work is complete, with the corpus truth and adoption proof parity now established as the current result.",
-        "Next planned: Capture the next verified checkpoint for the benchmark corpus and adoption proof.",
-        "Risks to watch: No critical blockers are currently surfaced."
+        "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
       ],
       "B-010": [
-        "Completed in this window: Durable judgment memory and memory backend productization closed cleanly. That is a meaningful step toward making high-signal decisions durable.",
-        "Current execution: This work is complete. The finished memory backend and judgment-memory result now need a fresh checkpoint behind them.",
-        "Next planned: Capture the next verified checkpoint for durable judgment memory and the memory backend.",
-        "Risks to watch: No critical blockers are surfaced right now."
+        "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
       ],
       "B-011": [
         "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
@@ -605,28 +587,16 @@
         "Nothing moved in this window: B-006 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-007": [
-        "Completed in this window: The GA promotion and supported platform contract closed cleanly across the wider window. The public release story now has one settled foundation.",
-        "Current execution: The contract is complete. Attention can stay on confirming that the finished result continues to hold.",
-        "Next planned: Capture the next verified checkpoint to keep the completed contract backed by current evidence.",
-        "Risks to watch: No critical blockers are surfaced in this wider view."
+        "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
       ],
       "B-008": [
-        "Completed in this window: The memory areas and operator readout closed cleanly over the wider window. The current memory posture now has a clearer shape.",
-        "Current execution: This work is complete. The readout now needs continued grounding in what has actually been established.",
-        "Next planned: Capture the next verified checkpoint for the memory areas and operator readout.",
-        "Risks to watch: No critical blockers are surfaced across this window."
+        "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
       ],
       "B-009": [
-        "Completed in this window: Benchmark corpus truth and adoption proof parity closed cleanly. The benchmark work now rests on a more honest footing.",
-        "Current execution: The work is complete, with corpus truth and adoption proof parity established as the current result.",
-        "Next planned: Capture the next verified checkpoint for the benchmark corpus and adoption proof.",
-        "Risks to watch: No critical blockers are currently surfaced."
+        "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
       ],
       "B-010": [
-        "Completed in this window: Durable judgment memory and memory backend productization closed cleanly across the wider window. High-signal decisions now have a stronger durable-memory foundation.",
-        "Current execution: This work is complete. The finished memory backend and judgment-memory result now need a fresh checkpoint behind them.",
-        "Next planned: Capture the next verified checkpoint for durable judgment memory and the memory backend.",
-        "Risks to watch: No critical blockers are surfaced in this wider view."
+        "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
       ],
       "B-011": [
         "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
@@ -957,416 +927,49 @@
   "standup_brief": {
     "24h": {
       "schema_version": "v25",
-      "status": "ready",
-      "source": "cache",
+      "status": "unavailable",
+      "source": "unavailable",
       "fingerprint": "90199042787495e473c837a712edd7029d2d9c13ca6115c0490c63ded55084a9",
-      "generated_utc": "2026-09-25T03:20:30Z",
-      "sections": [
-        {
-          "key": "completed",
-          "label": "Completed in this window",
-          "bullets": [
-            {
-              "text": "Several release and runtime packaging strands closed cleanly, including release-member reconciliation and stale-runtime guardrails. That removes a real source of ambiguity.",
-              "fact_ids": [
-                "F-001"
-              ]
-            },
-            {
-              "text": "The product boundary is clearer now: in-runtime Greenfield authoring mechanisms are rejected.",
-              "fact_ids": [
-                "F-002"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "current_execution",
-          "label": "Current execution",
-          "bullets": [
-            {
-              "text": "B-022 is now the umbrella for honest benchmark improvement, anti-gaming integrity, and independent proof. Implementation is active.",
-              "fact_ids": [
-                "F-004"
-              ]
-            },
-            {
-              "text": "The current delivery estimate is roughly 20 days, with high confidence.",
-              "fact_ids": [
-                "F-005"
-              ]
-            },
-            {
-              "text": "Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening are moving, but some active lanes still lack captured progress evidence.",
-              "fact_ids": [
-                "F-006"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "next_planned",
-          "label": "Next planned",
-          "bullets": [
-            {
-              "text": "The benchmark corpus needs to grow beyond the current 30-scenario suite, with deeper weak-case coverage.",
-              "fact_ids": [
-                "F-008"
-              ]
-            },
-            {
-              "text": "The next proof rerun must clear both cache profiles before the benchmark claim can move forward.",
-              "fact_ids": [
-                "F-009"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "risks_to_watch",
-          "label": "Risks to watch",
-          "bullets": [
-            {
-              "text": "Candidate release notes still advertise the disabled Greenfield apply flow. That P1 issue remains open and needs correction.",
-              "fact_ids": [
-                "F-010"
-              ]
-            }
-          ]
-        }
-      ],
-      "evidence_lookup": {
-        "F-001": {
-          "text": "Closed cleanly in this window: Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005) -> odylith canonical release version session and maintainer runbook; odylith managed runtime bundles and supported platform contract plus follow-on closeout deliverables; Completed Release Members Stay Visible Until Explicit GA (B-066) -> completed release members source truth reconciliation and stale runtime guardrails; completed release members stay visible until explicit ga.",
-          "section_key": "completed",
-          "kind": "plan_completion"
-        },
-        "F-002": {
-          "text": "Reject in-runtime Greenfield authoring mechanisms.",
-          "section_key": "completed",
-          "kind": "execution_highlight"
-        },
-        "F-003": {
-          "text": "Workstream lineage reopen update across 8 workstreams.",
-          "section_key": "completed",
-          "kind": "execution_highlight"
-        },
-        "F-004": {
-          "text": "Land re-scope B-022 as the umbrella workstream for honest benchmark improvement; Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022) is in active implementation.",
-          "section_key": "current_execution",
-          "kind": "direction",
-          "workstreams": [
-            "B-022"
-          ]
-        },
-        "F-005": {
-          "text": "ETA is projected at roughly 20 days (high confidence).",
-          "section_key": "current_execution",
-          "kind": "timeline"
-        },
-        "F-006": {
-          "text": "Implementation is moving, but some active lanes still do not have progress evidence captured. Heaviest movement is in Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening (B-020), Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022).",
-          "section_key": "current_execution",
-          "kind": "portfolio_posture"
-        },
-        "F-007": {
-          "text": "Most of the movement this window sat in B-020, B-022, B-038, B-005, B-142, and B-066.",
-          "section_key": "current_execution",
-          "kind": "window_coverage",
-          "workstreams": [
-            "B-020",
-            "B-022",
-            "B-038",
-            "B-005",
-            "B-142",
-            "B-066",
-            "B-069",
-            "B-099",
-            "B-104",
-            "B-110",
-            "B-115",
-            "B-117",
-            "B-003",
-            "B-004",
-            "B-007",
-            "B-008",
-            "B-009",
-            "B-010",
-            "B-011",
-            "B-012",
-            "B-013",
-            "B-014",
-            "B-015",
-            "B-016",
-            "B-017",
-            "B-018",
-            "B-019",
-            "B-023",
-            "B-024",
-            "B-026",
-            "B-027",
-            "B-028",
-            "B-029",
-            "B-030",
-            "B-032",
-            "B-049",
-            "B-050",
-            "B-051",
-            "B-052",
-            "B-053",
-            "B-054",
-            "B-055",
-            "B-056",
-            "B-058",
-            "B-059",
-            "B-061",
-            "B-062",
-            "B-063",
-            "B-065",
-            "B-067",
-            "B-068",
-            "B-073",
-            "B-074",
-            "B-075",
-            "B-076",
-            "B-077",
-            "B-078",
-            "B-079",
-            "B-080",
-            "B-082",
-            "B-098",
-            "B-100",
-            "B-101",
-            "B-102",
-            "B-103",
-            "B-127"
-          ]
-        },
-        "F-008": {
-          "text": "Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022): The corpus grows beyond the current 30-scenario suite with deeper weak.",
-          "section_key": "next_planned",
-          "kind": "forcing_function"
-        },
-        "F-009": {
-          "text": "Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022): The next proof rerun must clear both cache profiles, keep.",
-          "section_key": "next_planned",
-          "kind": "follow_on"
-        },
-        "F-010": {
-          "text": "Candidate release notes advertise the disabled greenfield apply flow. It is still open at P1.",
-          "section_key": "risks_to_watch",
-          "kind": "bug"
-        }
-      },
       "substrate_fingerprint": "90199042787495e473c837a712edd7029d2d9c13ca6115c0490c63ded55084a9",
-      "bundle_fingerprint": "67b559f67633975ea54f5cc45e50233219fec2ae4ef623dae7c4ac69f9b0f5a7",
-      "provider_decision": "cache_reuse",
-      "last_successful_narration_fingerprint": "90199042787495e473c837a712edd7029d2d9c13ca6115c0490c63ded55084a9",
-      "cache_mode": "exact"
+      "bundle_fingerprint": "",
+      "provider_decision": "provider_error",
+      "last_successful_narration_fingerprint": "",
+      "generated_utc": "2026-09-25T03:20:49Z",
+      "sections": [],
+      "diagnostics": {
+        "reason": "provider_error",
+        "title": "Brief unavailable right now",
+        "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
+        "provider": "codex-cli",
+        "provider_failure_code": "provider_error",
+        "provider_failure_detail": "Codex CLI exited with status 1. 2026-09-25T03:20:33.753155Z WARN codex_models_manager::model_info: Unknown model gpt-5.3-codex-spark is used. This will use fallback model m ... {\"type\":\"invalid_request_error\",\"message\":\"The 'gpt-5.3-codex-spark' model is not supported when using Codex with a ChatGPT account.\"}}",
+        "provider_model": "gpt-5.3-codex-spark",
+        "provider_reasoning_effort": "medium"
+      },
+      "evidence_lookup": {}
     },
     "48h": {
       "schema_version": "v25",
-      "status": "ready",
-      "source": "cache",
+      "status": "unavailable",
+      "source": "unavailable",
       "fingerprint": "dda2b3f4ad8a26ed394df68ae26c9bfb21e9399ac357ec55e4a0ddb24c2cd589",
-      "generated_utc": "2026-09-25T03:20:30Z",
-      "sections": [
-        {
-          "key": "completed",
-          "label": "Completed in this window",
-          "bullets": [
-            {
-              "text": "Release, runtime packaging, hosted-asset proof, and release-member visibility work closed cleanly. That leaves the canonical release and stale-runtime guardrails in place.",
-              "fact_ids": [
-                "F-001"
-              ]
-            },
-            {
-              "text": "The direction is also clear on greenfield authoring: in-runtime authoring mechanisms are rejected.",
-              "fact_ids": [
-                "F-002"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "current_execution",
-          "label": "Current execution",
-          "bullets": [
-            {
-              "text": "B-022 is now the umbrella for honest benchmark improvement, anti-gaming integrity, and independent proof. Implementation is active, with an ETA of roughly 20 days.",
-              "fact_ids": [
-                "F-004",
-                "F-005"
-              ]
-            },
-            {
-              "text": "Movement is strongest in benchmark integrity, conservative multi-profile proof, and README hardening. Some active lanes still lack captured progress evidence.",
-              "fact_ids": [
-                "F-006"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "next_planned",
-          "label": "Next planned",
-          "bullets": [
-            {
-              "text": "The benchmark corpus needs to grow beyond the current 30-scenario suite, including deeper weak cases.",
-              "fact_ids": [
-                "F-008"
-              ]
-            },
-            {
-              "text": "The next proof rerun must clear both cache profiles.",
-              "fact_ids": [
-                "F-009"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "risks_to_watch",
-          "label": "Risks to watch",
-          "bullets": [
-            {
-              "text": "Candidate release notes still advertise the disabled greenfield apply flow. That P1 remains open and can mislead users about the supported path.",
-              "fact_ids": [
-                "F-010"
-              ]
-            }
-          ]
-        }
-      ],
-      "evidence_lookup": {
-        "F-001": {
-          "text": "Closed cleanly in this window: Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005) -> odylith canonical release version session and maintainer runbook; odylith managed runtime bundles and supported platform contract plus follow-on closeout deliverables; Completed Release Members Stay Visible Until Explicit GA (B-066) -> completed release members source truth reconciliation and stale runtime guardrails; completed release members stay visible until explicit ga.",
-          "section_key": "completed",
-          "kind": "plan_completion"
-        },
-        "F-002": {
-          "text": "Reject in-runtime Greenfield authoring mechanisms.",
-          "section_key": "completed",
-          "kind": "execution_highlight"
-        },
-        "F-003": {
-          "text": "Greenfield coding-readiness now preserves repeated source-fact rows; focused handoff and 2,066 non-holdout Greenfield tests pass, while installed provider and final semantic.",
-          "section_key": "completed",
-          "kind": "execution_highlight"
-        },
-        "F-004": {
-          "text": "Land re-scope B-022 as the umbrella workstream for honest benchmark improvement; Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022) is in active implementation.",
-          "section_key": "current_execution",
-          "kind": "direction",
-          "workstreams": [
-            "B-022"
-          ]
-        },
-        "F-005": {
-          "text": "ETA is projected at roughly 20 days (high confidence).",
-          "section_key": "current_execution",
-          "kind": "timeline"
-        },
-        "F-006": {
-          "text": "Implementation is moving, but some active lanes still do not have progress evidence captured. Heaviest movement is in Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening (B-020), Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022).",
-          "section_key": "current_execution",
-          "kind": "portfolio_posture"
-        },
-        "F-007": {
-          "text": "Most of the movement this window sat in B-020, B-022, B-038, B-142, B-005, and B-066.",
-          "section_key": "current_execution",
-          "kind": "window_coverage",
-          "workstreams": [
-            "B-020",
-            "B-022",
-            "B-038",
-            "B-142",
-            "B-005",
-            "B-066",
-            "B-069",
-            "B-099",
-            "B-104",
-            "B-110",
-            "B-115",
-            "B-117",
-            "B-003",
-            "B-004",
-            "B-007",
-            "B-008",
-            "B-009",
-            "B-010",
-            "B-011",
-            "B-012",
-            "B-013",
-            "B-014",
-            "B-015",
-            "B-016",
-            "B-017",
-            "B-018",
-            "B-019",
-            "B-023",
-            "B-024",
-            "B-026",
-            "B-027",
-            "B-028",
-            "B-029",
-            "B-030",
-            "B-032",
-            "B-049",
-            "B-050",
-            "B-051",
-            "B-052",
-            "B-053",
-            "B-054",
-            "B-055",
-            "B-056",
-            "B-058",
-            "B-059",
-            "B-061",
-            "B-062",
-            "B-063",
-            "B-065",
-            "B-067",
-            "B-068",
-            "B-073",
-            "B-074",
-            "B-075",
-            "B-076",
-            "B-077",
-            "B-078",
-            "B-079",
-            "B-080",
-            "B-082",
-            "B-098",
-            "B-100",
-            "B-101",
-            "B-102",
-            "B-103",
-            "B-127"
-          ]
-        },
-        "F-008": {
-          "text": "Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022): The corpus grows beyond the current 30-scenario suite with deeper weak.",
-          "section_key": "next_planned",
-          "kind": "forcing_function"
-        },
-        "F-009": {
-          "text": "Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022): The next proof rerun must clear both cache profiles, keep.",
-          "section_key": "next_planned",
-          "kind": "follow_on"
-        },
-        "F-010": {
-          "text": "Candidate release notes advertise the disabled greenfield apply flow. It is still open at P1.",
-          "section_key": "risks_to_watch",
-          "kind": "bug"
-        }
-      },
       "substrate_fingerprint": "dda2b3f4ad8a26ed394df68ae26c9bfb21e9399ac357ec55e4a0ddb24c2cd589",
-      "bundle_fingerprint": "885a1773863d4fc3813505a384a2084edfb3afdf8b584e4ae6fabc38c58db6a6",
-      "provider_decision": "cache_reuse",
-      "last_successful_narration_fingerprint": "dda2b3f4ad8a26ed394df68ae26c9bfb21e9399ac357ec55e4a0ddb24c2cd589",
-      "cache_mode": "exact"
+      "bundle_fingerprint": "",
+      "provider_decision": "provider_error",
+      "last_successful_narration_fingerprint": "",
+      "generated_utc": "2026-09-25T03:20:49Z",
+      "sections": [],
+      "diagnostics": {
+        "reason": "provider_error",
+        "title": "Brief unavailable right now",
+        "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
+        "provider": "codex-cli",
+        "provider_failure_code": "provider_error",
+        "provider_failure_detail": "Codex CLI exited with status 1. 2026-09-25T03:20:33.753155Z WARN codex_models_manager::model_info: Unknown model gpt-5.3-codex-spark is used. This will use fallback model m ... {\"type\":\"invalid_request_error\",\"message\":\"The 'gpt-5.3-codex-spark' model is not supported when using Codex with a ChatGPT account.\"}}",
+        "provider_model": "gpt-5.3-codex-spark",
+        "provider_reasoning_effort": "medium"
+      },
+      "evidence_lookup": {}
     }
   },
   "standup_brief_scoped": {
@@ -1883,515 +1486,99 @@
       },
       "B-007": {
         "schema_version": "v25",
-        "status": "ready",
-        "source": "cache",
+        "status": "unavailable",
+        "source": "unavailable",
         "fingerprint": "6eedaa1c01eff58b639da3a26ff8c20bd8d88583da459b73c99e1bf05cf88fbf",
-        "generated_utc": "2026-09-25T03:20:49Z",
-        "sections": [
-          {
-            "key": "completed",
-            "label": "Completed in this window",
-            "bullets": [
-              {
-                "text": "The GA promotion and supported platform contract closed cleanly. That gives the public release story one settled foundation.",
-                "fact_ids": [
-                  "F-001"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "current_execution",
-            "label": "Current execution",
-            "bullets": [
-              {
-                "text": "B-007 is complete. There is no remaining contract work to land in this lane.",
-                "fact_ids": [
-                  "F-004"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "next_planned",
-            "label": "Next planned",
-            "bullets": [
-              {
-                "text": "Capture the next verified checkpoint so the completed contract stays backed by fresh evidence.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "risks_to_watch",
-            "label": "Risks to watch",
-            "bullets": [
-              {
-                "text": "No critical blockers are surfaced right now.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          }
-        ],
-        "evidence_lookup": {
-          "F-001": {
-            "text": "Closed cleanly in this window: odylith ga promotion and supported platform contract.",
-            "section_key": "completed",
-            "kind": "plan_completion",
-            "workstreams": [
-              "B-007"
-            ]
-          },
-          "F-002": {
-            "text": "Plan milestone completed for B-007.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-007"
-            ]
-          },
-          "F-003": {
-            "text": "Plan milestone completed: odylith ga promotion and supported platform contract closed for B-007.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-007"
-            ]
-          },
-          "F-004": {
-            "text": "GA Promotion and Supported Platform Contract (B-007) is completed.",
-            "section_key": "current_execution",
-            "kind": "direction",
-            "workstreams": [
-              "B-007"
-            ]
-          },
-          "F-005": {
-            "text": "Checklist is 16/16; execution checklist closure is complete for the scoped plan.",
-            "section_key": "current_execution",
-            "kind": "checklist",
-            "workstreams": [
-              "B-007"
-            ]
-          },
-          "F-006": {
-            "text": "ETA is projected at roughly 0 days (high confidence).",
-            "section_key": "current_execution",
-            "kind": "timeline",
-            "workstreams": [
-              "B-007"
-            ]
-          },
-          "F-007": {
-            "text": "Immediate forcing function is to capture the next verified checkpoint for GA Promotion and Supported Platform Contract (B-007).",
-            "section_key": "next_planned",
-            "kind": "fallback_next",
-            "workstreams": [
-              "B-007"
-            ]
-          },
-          "F-008": {
-            "text": "No critical blockers are currently surfaced.",
-            "section_key": "risks_to_watch",
-            "kind": "risk_posture",
-            "workstreams": [
-              "B-007"
-            ]
-          }
-        },
         "substrate_fingerprint": "6eedaa1c01eff58b639da3a26ff8c20bd8d88583da459b73c99e1bf05cf88fbf",
-        "bundle_fingerprint": "5c04b64b0a96bcc68f19b960c38e1e8e898a04cbdb46e319164f5fed9a21a5c1",
-        "provider_decision": "cache_reuse",
-        "last_successful_narration_fingerprint": "6eedaa1c01eff58b639da3a26ff8c20bd8d88583da459b73c99e1bf05cf88fbf",
-        "cache_mode": "exact"
+        "bundle_fingerprint": "",
+        "provider_decision": "provider_deferred",
+        "last_successful_narration_fingerprint": "",
+        "generated_utc": "2026-09-25T03:20:49Z",
+        "sections": [],
+        "diagnostics": {
+          "reason": "provider_deferred",
+          "title": "Local runtime facts",
+          "message": "Compass is showing local runtime facts; a narrated brief is not available for this view.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: GA Promotion and Supported Platform Contract (B-007) is completed.",
+            "Next: Immediate forcing function is to capture the next verified checkpoint for GA Promotion and Supported Platform Contract (B-007).",
+            "Watch: No critical blockers are currently surfaced."
+          ]
+        },
+        "evidence_lookup": {}
       },
       "B-008": {
         "schema_version": "v25",
-        "status": "ready",
-        "source": "cache",
+        "status": "unavailable",
+        "source": "unavailable",
         "fingerprint": "0a607c3e5571f294b8c21ac096069068f7c5974f31e670f36899e6e08fa4bd09",
-        "generated_utc": "2026-09-25T03:20:49Z",
-        "sections": [
-          {
-            "key": "completed",
-            "label": "Completed in this window",
-            "bullets": [
-              {
-                "text": "The memory areas and operator readout closed cleanly. That gives the current memory posture a clearer shape.",
-                "fact_ids": [
-                  "F-001"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "current_execution",
-            "label": "Current execution",
-            "bullets": [
-              {
-                "text": "This work is complete. The useful follow-through now is to keep the readout grounded in what has actually been established.",
-                "fact_ids": [
-                  "F-004"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "next_planned",
-            "label": "Next planned",
-            "bullets": [
-              {
-                "text": "Capture the next verified checkpoint for the memory areas and operator readout.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "risks_to_watch",
-            "label": "Risks to watch",
-            "bullets": [
-              {
-                "text": "No critical blockers are surfaced at present.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          }
-        ],
-        "evidence_lookup": {
-          "F-001": {
-            "text": "Closed cleanly in this window: odylith memory areas and operator readout.",
-            "section_key": "completed",
-            "kind": "plan_completion",
-            "workstreams": [
-              "B-008"
-            ]
-          },
-          "F-002": {
-            "text": "Plan milestone completed for B-008.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-008"
-            ]
-          },
-          "F-003": {
-            "text": "Plan milestone completed: odylith memory areas and operator readout closed for B-008.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-008"
-            ]
-          },
-          "F-004": {
-            "text": "Memory Areas and Operator Readout (B-008) is completed.",
-            "section_key": "current_execution",
-            "kind": "direction",
-            "workstreams": [
-              "B-008"
-            ]
-          },
-          "F-005": {
-            "text": "Checklist is 14/14; execution checklist closure is complete for the scoped plan.",
-            "section_key": "current_execution",
-            "kind": "checklist",
-            "workstreams": [
-              "B-008"
-            ]
-          },
-          "F-006": {
-            "text": "ETA is projected at roughly 0 days (high confidence).",
-            "section_key": "current_execution",
-            "kind": "timeline",
-            "workstreams": [
-              "B-008"
-            ]
-          },
-          "F-007": {
-            "text": "Immediate forcing function is to capture the next verified checkpoint for Memory Areas and Operator Readout (B-008).",
-            "section_key": "next_planned",
-            "kind": "fallback_next",
-            "workstreams": [
-              "B-008"
-            ]
-          },
-          "F-008": {
-            "text": "No critical blockers are currently surfaced.",
-            "section_key": "risks_to_watch",
-            "kind": "risk_posture",
-            "workstreams": [
-              "B-008"
-            ]
-          }
-        },
         "substrate_fingerprint": "0a607c3e5571f294b8c21ac096069068f7c5974f31e670f36899e6e08fa4bd09",
-        "bundle_fingerprint": "5c04b64b0a96bcc68f19b960c38e1e8e898a04cbdb46e319164f5fed9a21a5c1",
-        "provider_decision": "cache_reuse",
-        "last_successful_narration_fingerprint": "0a607c3e5571f294b8c21ac096069068f7c5974f31e670f36899e6e08fa4bd09",
-        "cache_mode": "exact"
+        "bundle_fingerprint": "",
+        "provider_decision": "provider_deferred",
+        "last_successful_narration_fingerprint": "",
+        "generated_utc": "2026-09-25T03:20:49Z",
+        "sections": [],
+        "diagnostics": {
+          "reason": "provider_deferred",
+          "title": "Local runtime facts",
+          "message": "Compass is showing local runtime facts; a narrated brief is not available for this view.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Memory Areas and Operator Readout (B-008) is completed.",
+            "Next: Immediate forcing function is to capture the next verified checkpoint for Memory Areas and Operator Readout (B-008).",
+            "Watch: No critical blockers are currently surfaced."
+          ]
+        },
+        "evidence_lookup": {}
       },
       "B-009": {
         "schema_version": "v25",
-        "status": "ready",
-        "source": "cache",
+        "status": "unavailable",
+        "source": "unavailable",
         "fingerprint": "061ca18b319b2b8a66aaf13ddaf91b2407b54d1be853094b44ff9ac5e309c5d6",
-        "generated_utc": "2026-09-25T03:20:49Z",
-        "sections": [
-          {
-            "key": "completed",
-            "label": "Completed in this window",
-            "bullets": [
-              {
-                "text": "Benchmark corpus truth and adoption proof parity closed cleanly. That leaves the benchmark work on a more honest footing.",
-                "fact_ids": [
-                  "F-001"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "current_execution",
-            "label": "Current execution",
-            "bullets": [
-              {
-                "text": "The work is complete, with the corpus truth and adoption proof parity now established as the current result.",
-                "fact_ids": [
-                  "F-004"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "next_planned",
-            "label": "Next planned",
-            "bullets": [
-              {
-                "text": "Capture the next verified checkpoint for the benchmark corpus and adoption proof.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "risks_to_watch",
-            "label": "Risks to watch",
-            "bullets": [
-              {
-                "text": "No critical blockers are currently surfaced.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          }
-        ],
-        "evidence_lookup": {
-          "F-001": {
-            "text": "Closed cleanly in this window: odylith benchmark corpus truth and adoption proof parity.",
-            "section_key": "completed",
-            "kind": "plan_completion",
-            "workstreams": [
-              "B-009"
-            ]
-          },
-          "F-002": {
-            "text": "Plan milestone completed across 4 workstreams.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-009"
-            ]
-          },
-          "F-003": {
-            "text": "Plan milestone completed: odylith benchmark corpus truth and adoption proof parity closed for B-009.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-009"
-            ]
-          },
-          "F-004": {
-            "text": "Benchmark Corpus Truth and Adoption Proof Parity (B-009) is completed.",
-            "section_key": "current_execution",
-            "kind": "direction",
-            "workstreams": [
-              "B-009"
-            ]
-          },
-          "F-005": {
-            "text": "Checklist is 19/19; execution checklist closure is complete for the scoped plan.",
-            "section_key": "current_execution",
-            "kind": "checklist",
-            "workstreams": [
-              "B-009"
-            ]
-          },
-          "F-006": {
-            "text": "ETA is projected at roughly 0 days (high confidence).",
-            "section_key": "current_execution",
-            "kind": "timeline",
-            "workstreams": [
-              "B-009"
-            ]
-          },
-          "F-007": {
-            "text": "Immediate forcing function is to capture the next verified checkpoint for Benchmark Corpus Truth and Adoption Proof Parity (B-009).",
-            "section_key": "next_planned",
-            "kind": "fallback_next",
-            "workstreams": [
-              "B-009"
-            ]
-          },
-          "F-008": {
-            "text": "No critical blockers are currently surfaced.",
-            "section_key": "risks_to_watch",
-            "kind": "risk_posture",
-            "workstreams": [
-              "B-009"
-            ]
-          }
-        },
         "substrate_fingerprint": "061ca18b319b2b8a66aaf13ddaf91b2407b54d1be853094b44ff9ac5e309c5d6",
-        "bundle_fingerprint": "5c04b64b0a96bcc68f19b960c38e1e8e898a04cbdb46e319164f5fed9a21a5c1",
-        "provider_decision": "cache_reuse",
-        "last_successful_narration_fingerprint": "061ca18b319b2b8a66aaf13ddaf91b2407b54d1be853094b44ff9ac5e309c5d6",
-        "cache_mode": "exact"
+        "bundle_fingerprint": "",
+        "provider_decision": "provider_deferred",
+        "last_successful_narration_fingerprint": "",
+        "generated_utc": "2026-09-25T03:20:49Z",
+        "sections": [],
+        "diagnostics": {
+          "reason": "provider_deferred",
+          "title": "Local runtime facts",
+          "message": "Compass is showing local runtime facts; a narrated brief is not available for this view.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Benchmark Corpus Truth and Adoption Proof Parity (B-009) is completed.",
+            "Next: Immediate forcing function is to capture the next verified checkpoint for Benchmark Corpus Truth and Adoption Proof Parity (B-009).",
+            "Watch: No critical blockers are currently surfaced."
+          ]
+        },
+        "evidence_lookup": {}
       },
       "B-010": {
         "schema_version": "v25",
-        "status": "ready",
-        "source": "cache",
+        "status": "unavailable",
+        "source": "unavailable",
         "fingerprint": "c9ad0ad999d8318ce9e918b7a0e9885f0b901051e5f9aa4a4fd3c362695125ff",
-        "generated_utc": "2026-09-25T03:20:49Z",
-        "sections": [
-          {
-            "key": "completed",
-            "label": "Completed in this window",
-            "bullets": [
-              {
-                "text": "Durable judgment memory and memory backend productization closed cleanly. That is a meaningful step toward making high-signal decisions durable.",
-                "fact_ids": [
-                  "F-001"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "current_execution",
-            "label": "Current execution",
-            "bullets": [
-              {
-                "text": "This work is complete. The finished memory backend and judgment-memory result now need a fresh checkpoint behind them.",
-                "fact_ids": [
-                  "F-004"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "next_planned",
-            "label": "Next planned",
-            "bullets": [
-              {
-                "text": "Capture the next verified checkpoint for durable judgment memory and the memory backend.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "risks_to_watch",
-            "label": "Risks to watch",
-            "bullets": [
-              {
-                "text": "No critical blockers are surfaced right now.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          }
-        ],
-        "evidence_lookup": {
-          "F-001": {
-            "text": "Closed cleanly in this window: odylith durable judgment memory and memory backend productization.",
-            "section_key": "completed",
-            "kind": "plan_completion",
-            "workstreams": [
-              "B-010"
-            ]
-          },
-          "F-002": {
-            "text": "Plan milestone completed across 3 workstreams.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-010"
-            ]
-          },
-          "F-003": {
-            "text": "Plan milestone completed across 9 workstreams.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-010"
-            ]
-          },
-          "F-004": {
-            "text": "Durable Judgment Memory and Memory Backend Productization (B-010) is completed.",
-            "section_key": "current_execution",
-            "kind": "direction",
-            "workstreams": [
-              "B-010"
-            ]
-          },
-          "F-005": {
-            "text": "Checklist is 21/21; execution checklist closure is complete for the scoped plan.",
-            "section_key": "current_execution",
-            "kind": "checklist",
-            "workstreams": [
-              "B-010"
-            ]
-          },
-          "F-006": {
-            "text": "ETA is projected at roughly 0 days (high confidence).",
-            "section_key": "current_execution",
-            "kind": "timeline",
-            "workstreams": [
-              "B-010"
-            ]
-          },
-          "F-007": {
-            "text": "Immediate forcing function is to capture the next verified checkpoint for Durable Judgment Memory and Memory Backend Productization (B-010).",
-            "section_key": "next_planned",
-            "kind": "fallback_next",
-            "workstreams": [
-              "B-010"
-            ]
-          },
-          "F-008": {
-            "text": "No critical blockers are currently surfaced.",
-            "section_key": "risks_to_watch",
-            "kind": "risk_posture",
-            "workstreams": [
-              "B-010"
-            ]
-          }
-        },
         "substrate_fingerprint": "c9ad0ad999d8318ce9e918b7a0e9885f0b901051e5f9aa4a4fd3c362695125ff",
-        "bundle_fingerprint": "5c04b64b0a96bcc68f19b960c38e1e8e898a04cbdb46e319164f5fed9a21a5c1",
-        "provider_decision": "cache_reuse",
-        "last_successful_narration_fingerprint": "c9ad0ad999d8318ce9e918b7a0e9885f0b901051e5f9aa4a4fd3c362695125ff",
-        "cache_mode": "exact"
+        "bundle_fingerprint": "",
+        "provider_decision": "provider_deferred",
+        "last_successful_narration_fingerprint": "",
+        "generated_utc": "2026-09-25T03:20:49Z",
+        "sections": [],
+        "diagnostics": {
+          "reason": "provider_deferred",
+          "title": "Local runtime facts",
+          "message": "Compass is showing local runtime facts; a narrated brief is not available for this view.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Durable Judgment Memory and Memory Backend Productization (B-010) is completed.",
+            "Next: Immediate forcing function is to capture the next verified checkpoint for Durable Judgment Memory and Memory Backend Productization (B-010).",
+            "Watch: No critical blockers are currently surfaced."
+          ]
+        },
+        "evidence_lookup": {}
       },
       "B-011": {
         "schema_version": "v25",
@@ -5070,515 +4257,99 @@
       },
       "B-007": {
         "schema_version": "v25",
-        "status": "ready",
-        "source": "cache",
+        "status": "unavailable",
+        "source": "unavailable",
         "fingerprint": "d79386e3a831458295f2695aa68194c1be942514bb8e6ca11cfbdb7c58d9f7e2",
-        "generated_utc": "2026-09-25T03:20:49Z",
-        "sections": [
-          {
-            "key": "completed",
-            "label": "Completed in this window",
-            "bullets": [
-              {
-                "text": "The GA promotion and supported platform contract closed cleanly across the wider window. The public release story now has one settled foundation.",
-                "fact_ids": [
-                  "F-001"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "current_execution",
-            "label": "Current execution",
-            "bullets": [
-              {
-                "text": "The contract is complete. Attention can stay on confirming that the finished result continues to hold.",
-                "fact_ids": [
-                  "F-004"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "next_planned",
-            "label": "Next planned",
-            "bullets": [
-              {
-                "text": "Capture the next verified checkpoint to keep the completed contract backed by current evidence.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "risks_to_watch",
-            "label": "Risks to watch",
-            "bullets": [
-              {
-                "text": "No critical blockers are surfaced in this wider view.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          }
-        ],
-        "evidence_lookup": {
-          "F-001": {
-            "text": "Closed cleanly in this window: odylith ga promotion and supported platform contract.",
-            "section_key": "completed",
-            "kind": "plan_completion",
-            "workstreams": [
-              "B-007"
-            ]
-          },
-          "F-002": {
-            "text": "Plan milestone completed for B-007.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-007"
-            ]
-          },
-          "F-003": {
-            "text": "Plan milestone completed: odylith ga promotion and supported platform contract closed for B-007.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-007"
-            ]
-          },
-          "F-004": {
-            "text": "GA Promotion and Supported Platform Contract (B-007) is completed.",
-            "section_key": "current_execution",
-            "kind": "direction",
-            "workstreams": [
-              "B-007"
-            ]
-          },
-          "F-005": {
-            "text": "Checklist is 16/16; execution checklist closure is complete for the scoped plan.",
-            "section_key": "current_execution",
-            "kind": "checklist",
-            "workstreams": [
-              "B-007"
-            ]
-          },
-          "F-006": {
-            "text": "ETA is projected at roughly 0 days (high confidence).",
-            "section_key": "current_execution",
-            "kind": "timeline",
-            "workstreams": [
-              "B-007"
-            ]
-          },
-          "F-007": {
-            "text": "Immediate forcing function is to capture the next verified checkpoint for GA Promotion and Supported Platform Contract (B-007).",
-            "section_key": "next_planned",
-            "kind": "fallback_next",
-            "workstreams": [
-              "B-007"
-            ]
-          },
-          "F-008": {
-            "text": "No critical blockers are currently surfaced.",
-            "section_key": "risks_to_watch",
-            "kind": "risk_posture",
-            "workstreams": [
-              "B-007"
-            ]
-          }
-        },
         "substrate_fingerprint": "d79386e3a831458295f2695aa68194c1be942514bb8e6ca11cfbdb7c58d9f7e2",
-        "bundle_fingerprint": "5c04b64b0a96bcc68f19b960c38e1e8e898a04cbdb46e319164f5fed9a21a5c1",
-        "provider_decision": "cache_reuse",
-        "last_successful_narration_fingerprint": "d79386e3a831458295f2695aa68194c1be942514bb8e6ca11cfbdb7c58d9f7e2",
-        "cache_mode": "exact"
+        "bundle_fingerprint": "",
+        "provider_decision": "provider_deferred",
+        "last_successful_narration_fingerprint": "",
+        "generated_utc": "2026-09-25T03:20:49Z",
+        "sections": [],
+        "diagnostics": {
+          "reason": "provider_deferred",
+          "title": "Local runtime facts",
+          "message": "Compass is showing local runtime facts; a narrated brief is not available for this view.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: GA Promotion and Supported Platform Contract (B-007) is completed.",
+            "Next: Immediate forcing function is to capture the next verified checkpoint for GA Promotion and Supported Platform Contract (B-007).",
+            "Watch: No critical blockers are currently surfaced."
+          ]
+        },
+        "evidence_lookup": {}
       },
       "B-008": {
         "schema_version": "v25",
-        "status": "ready",
-        "source": "cache",
+        "status": "unavailable",
+        "source": "unavailable",
         "fingerprint": "7cca4cf82ae6dd4cd66e883911a3662fc9cf29f390b7873fca497e18baaf9401",
-        "generated_utc": "2026-09-25T03:20:49Z",
-        "sections": [
-          {
-            "key": "completed",
-            "label": "Completed in this window",
-            "bullets": [
-              {
-                "text": "The memory areas and operator readout closed cleanly over the wider window. The current memory posture now has a clearer shape.",
-                "fact_ids": [
-                  "F-001"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "current_execution",
-            "label": "Current execution",
-            "bullets": [
-              {
-                "text": "This work is complete. The readout now needs continued grounding in what has actually been established.",
-                "fact_ids": [
-                  "F-004"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "next_planned",
-            "label": "Next planned",
-            "bullets": [
-              {
-                "text": "Capture the next verified checkpoint for the memory areas and operator readout.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "risks_to_watch",
-            "label": "Risks to watch",
-            "bullets": [
-              {
-                "text": "No critical blockers are surfaced across this window.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          }
-        ],
-        "evidence_lookup": {
-          "F-001": {
-            "text": "Closed cleanly in this window: odylith memory areas and operator readout.",
-            "section_key": "completed",
-            "kind": "plan_completion",
-            "workstreams": [
-              "B-008"
-            ]
-          },
-          "F-002": {
-            "text": "Plan milestone completed for B-008.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-008"
-            ]
-          },
-          "F-003": {
-            "text": "Plan milestone completed: odylith memory areas and operator readout closed for B-008.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-008"
-            ]
-          },
-          "F-004": {
-            "text": "Memory Areas and Operator Readout (B-008) is completed.",
-            "section_key": "current_execution",
-            "kind": "direction",
-            "workstreams": [
-              "B-008"
-            ]
-          },
-          "F-005": {
-            "text": "Checklist is 14/14; execution checklist closure is complete for the scoped plan.",
-            "section_key": "current_execution",
-            "kind": "checklist",
-            "workstreams": [
-              "B-008"
-            ]
-          },
-          "F-006": {
-            "text": "ETA is projected at roughly 0 days (high confidence).",
-            "section_key": "current_execution",
-            "kind": "timeline",
-            "workstreams": [
-              "B-008"
-            ]
-          },
-          "F-007": {
-            "text": "Immediate forcing function is to capture the next verified checkpoint for Memory Areas and Operator Readout (B-008).",
-            "section_key": "next_planned",
-            "kind": "fallback_next",
-            "workstreams": [
-              "B-008"
-            ]
-          },
-          "F-008": {
-            "text": "No critical blockers are currently surfaced.",
-            "section_key": "risks_to_watch",
-            "kind": "risk_posture",
-            "workstreams": [
-              "B-008"
-            ]
-          }
-        },
         "substrate_fingerprint": "7cca4cf82ae6dd4cd66e883911a3662fc9cf29f390b7873fca497e18baaf9401",
-        "bundle_fingerprint": "5c04b64b0a96bcc68f19b960c38e1e8e898a04cbdb46e319164f5fed9a21a5c1",
-        "provider_decision": "cache_reuse",
-        "last_successful_narration_fingerprint": "7cca4cf82ae6dd4cd66e883911a3662fc9cf29f390b7873fca497e18baaf9401",
-        "cache_mode": "exact"
+        "bundle_fingerprint": "",
+        "provider_decision": "provider_deferred",
+        "last_successful_narration_fingerprint": "",
+        "generated_utc": "2026-09-25T03:20:49Z",
+        "sections": [],
+        "diagnostics": {
+          "reason": "provider_deferred",
+          "title": "Local runtime facts",
+          "message": "Compass is showing local runtime facts; a narrated brief is not available for this view.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Memory Areas and Operator Readout (B-008) is completed.",
+            "Next: Immediate forcing function is to capture the next verified checkpoint for Memory Areas and Operator Readout (B-008).",
+            "Watch: No critical blockers are currently surfaced."
+          ]
+        },
+        "evidence_lookup": {}
       },
       "B-009": {
         "schema_version": "v25",
-        "status": "ready",
-        "source": "cache",
+        "status": "unavailable",
+        "source": "unavailable",
         "fingerprint": "424f1f133817c8d2f5bb1133f576976227e761562c8f0b27567ee07c60d08d2c",
-        "generated_utc": "2026-09-25T03:20:49Z",
-        "sections": [
-          {
-            "key": "completed",
-            "label": "Completed in this window",
-            "bullets": [
-              {
-                "text": "Benchmark corpus truth and adoption proof parity closed cleanly. The benchmark work now rests on a more honest footing.",
-                "fact_ids": [
-                  "F-001"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "current_execution",
-            "label": "Current execution",
-            "bullets": [
-              {
-                "text": "The work is complete, with corpus truth and adoption proof parity established as the current result.",
-                "fact_ids": [
-                  "F-004"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "next_planned",
-            "label": "Next planned",
-            "bullets": [
-              {
-                "text": "Capture the next verified checkpoint for the benchmark corpus and adoption proof.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "risks_to_watch",
-            "label": "Risks to watch",
-            "bullets": [
-              {
-                "text": "No critical blockers are currently surfaced.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          }
-        ],
-        "evidence_lookup": {
-          "F-001": {
-            "text": "Closed cleanly in this window: odylith benchmark corpus truth and adoption proof parity.",
-            "section_key": "completed",
-            "kind": "plan_completion",
-            "workstreams": [
-              "B-009"
-            ]
-          },
-          "F-002": {
-            "text": "Plan milestone completed across 4 workstreams.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-009"
-            ]
-          },
-          "F-003": {
-            "text": "Plan milestone completed: odylith benchmark corpus truth and adoption proof parity closed for B-009.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-009"
-            ]
-          },
-          "F-004": {
-            "text": "Benchmark Corpus Truth and Adoption Proof Parity (B-009) is completed.",
-            "section_key": "current_execution",
-            "kind": "direction",
-            "workstreams": [
-              "B-009"
-            ]
-          },
-          "F-005": {
-            "text": "Checklist is 19/19; execution checklist closure is complete for the scoped plan.",
-            "section_key": "current_execution",
-            "kind": "checklist",
-            "workstreams": [
-              "B-009"
-            ]
-          },
-          "F-006": {
-            "text": "ETA is projected at roughly 0 days (high confidence).",
-            "section_key": "current_execution",
-            "kind": "timeline",
-            "workstreams": [
-              "B-009"
-            ]
-          },
-          "F-007": {
-            "text": "Immediate forcing function is to capture the next verified checkpoint for Benchmark Corpus Truth and Adoption Proof Parity (B-009).",
-            "section_key": "next_planned",
-            "kind": "fallback_next",
-            "workstreams": [
-              "B-009"
-            ]
-          },
-          "F-008": {
-            "text": "No critical blockers are currently surfaced.",
-            "section_key": "risks_to_watch",
-            "kind": "risk_posture",
-            "workstreams": [
-              "B-009"
-            ]
-          }
-        },
         "substrate_fingerprint": "424f1f133817c8d2f5bb1133f576976227e761562c8f0b27567ee07c60d08d2c",
-        "bundle_fingerprint": "5c04b64b0a96bcc68f19b960c38e1e8e898a04cbdb46e319164f5fed9a21a5c1",
-        "provider_decision": "cache_reuse",
-        "last_successful_narration_fingerprint": "424f1f133817c8d2f5bb1133f576976227e761562c8f0b27567ee07c60d08d2c",
-        "cache_mode": "exact"
+        "bundle_fingerprint": "",
+        "provider_decision": "provider_deferred",
+        "last_successful_narration_fingerprint": "",
+        "generated_utc": "2026-09-25T03:20:49Z",
+        "sections": [],
+        "diagnostics": {
+          "reason": "provider_deferred",
+          "title": "Local runtime facts",
+          "message": "Compass is showing local runtime facts; a narrated brief is not available for this view.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Benchmark Corpus Truth and Adoption Proof Parity (B-009) is completed.",
+            "Next: Immediate forcing function is to capture the next verified checkpoint for Benchmark Corpus Truth and Adoption Proof Parity (B-009).",
+            "Watch: No critical blockers are currently surfaced."
+          ]
+        },
+        "evidence_lookup": {}
       },
       "B-010": {
         "schema_version": "v25",
-        "status": "ready",
-        "source": "cache",
+        "status": "unavailable",
+        "source": "unavailable",
         "fingerprint": "d3300c56451d1ad94088c3943e40a10ce2c11f5487d44ac5c1b1cf76497d5248",
-        "generated_utc": "2026-09-25T03:20:49Z",
-        "sections": [
-          {
-            "key": "completed",
-            "label": "Completed in this window",
-            "bullets": [
-              {
-                "text": "Durable judgment memory and memory backend productization closed cleanly across the wider window. High-signal decisions now have a stronger durable-memory foundation.",
-                "fact_ids": [
-                  "F-001"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "current_execution",
-            "label": "Current execution",
-            "bullets": [
-              {
-                "text": "This work is complete. The finished memory backend and judgment-memory result now need a fresh checkpoint behind them.",
-                "fact_ids": [
-                  "F-004"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "next_planned",
-            "label": "Next planned",
-            "bullets": [
-              {
-                "text": "Capture the next verified checkpoint for durable judgment memory and the memory backend.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "risks_to_watch",
-            "label": "Risks to watch",
-            "bullets": [
-              {
-                "text": "No critical blockers are surfaced in this wider view.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          }
-        ],
-        "evidence_lookup": {
-          "F-001": {
-            "text": "Closed cleanly in this window: odylith durable judgment memory and memory backend productization.",
-            "section_key": "completed",
-            "kind": "plan_completion",
-            "workstreams": [
-              "B-010"
-            ]
-          },
-          "F-002": {
-            "text": "Plan milestone completed across 3 workstreams.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-010"
-            ]
-          },
-          "F-003": {
-            "text": "Plan milestone completed across 9 workstreams.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-010"
-            ]
-          },
-          "F-004": {
-            "text": "Durable Judgment Memory and Memory Backend Productization (B-010) is completed.",
-            "section_key": "current_execution",
-            "kind": "direction",
-            "workstreams": [
-              "B-010"
-            ]
-          },
-          "F-005": {
-            "text": "Checklist is 21/21; execution checklist closure is complete for the scoped plan.",
-            "section_key": "current_execution",
-            "kind": "checklist",
-            "workstreams": [
-              "B-010"
-            ]
-          },
-          "F-006": {
-            "text": "ETA is projected at roughly 0 days (high confidence).",
-            "section_key": "current_execution",
-            "kind": "timeline",
-            "workstreams": [
-              "B-010"
-            ]
-          },
-          "F-007": {
-            "text": "Immediate forcing function is to capture the next verified checkpoint for Durable Judgment Memory and Memory Backend Productization (B-010).",
-            "section_key": "next_planned",
-            "kind": "fallback_next",
-            "workstreams": [
-              "B-010"
-            ]
-          },
-          "F-008": {
-            "text": "No critical blockers are currently surfaced.",
-            "section_key": "risks_to_watch",
-            "kind": "risk_posture",
-            "workstreams": [
-              "B-010"
-            ]
-          }
-        },
         "substrate_fingerprint": "d3300c56451d1ad94088c3943e40a10ce2c11f5487d44ac5c1b1cf76497d5248",
-        "bundle_fingerprint": "5c04b64b0a96bcc68f19b960c38e1e8e898a04cbdb46e319164f5fed9a21a5c1",
-        "provider_decision": "cache_reuse",
-        "last_successful_narration_fingerprint": "d3300c56451d1ad94088c3943e40a10ce2c11f5487d44ac5c1b1cf76497d5248",
-        "cache_mode": "exact"
+        "bundle_fingerprint": "",
+        "provider_decision": "provider_deferred",
+        "last_successful_narration_fingerprint": "",
+        "generated_utc": "2026-09-25T03:20:49Z",
+        "sections": [],
+        "diagnostics": {
+          "reason": "provider_deferred",
+          "title": "Local runtime facts",
+          "message": "Compass is showing local runtime facts; a narrated brief is not available for this view.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Durable Judgment Memory and Memory Backend Productization (B-010) is completed.",
+            "Next: Immediate forcing function is to capture the next verified checkpoint for Durable Judgment Memory and Memory Backend Productization (B-010).",
+            "Watch: No critical blockers are currently surfaced."
+          ]
+        },
+        "evidence_lookup": {}
       },
       "B-011": {
         "schema_version": "v25",
