@@ -58,7 +58,7 @@ does not itself establish qualification:
 
 - `greenfield-standard-participant-first-astra-medium-v19`: the default and
   `auto` path, with a 90-second advisory performance target.
-- `greenfield-rescue-participant-first-terra-medium-v18`: the explicit rescue
+- `greenfield-rescue-participant-first-luna-medium-v19`: the explicit rescue
   path, with a 120-second advisory performance target.
 - `greenfield-deep-participant-first-sol-high-v18`: the explicit deep path,
   with a 150-second advisory performance target.
@@ -69,19 +69,23 @@ missing the selected 90/120/150-second target is recorded as performance evidenc
 not used as an admission gate. Proposal elapsed time must remain strictly below
 the operational timeout. Sixty seconds remains an advisory normal-case target.
 The separate commit-only step must still finish strictly below 60 seconds.
-Profile contract v19 changes only the default remaining author to Astra medium.
+Profile contract v21 changes only the rescue remaining author from Terra medium
+to Luna medium after the retained Terra clarification control invented an
+unsupported product path and the unchanged Luna comparison returned the required
+source-bound material clarification. Profile contract v19's default Astra author,
 Participant ownership, advisory targets, finite timeout, final reviewer, semantic
 requirements and transaction laws are unchanged. This selection requires fresh
-integrated qualification; the explicit rescue/deep identities are unchanged.
+integrated qualification; the deep identity is unchanged.
 Historical observations keep their original limits and verdicts; old sealed
 v12/v13/v14/v15/v16/v17 transactions are not relabeled as current. Retired standard
-v18 authoring receipts are not relabeled as v19. Fresh
+v18 authoring receipts are not relabeled as v19, and retired rescue Terra v18
+receipts are not relabeled as Luna v19. Fresh
 per-profile evidence is required for qualification.
 
 The selected profile is fixed before the model request. Elapsed time or a failed
 attempt never relabels or extends a standard request into rescue or deep.
 Every profile first uses Astra/medium to select source-grounded participants and
-their exact source locations. Standard then uses Astra medium, rescue uses Terra
+their exact source locations. Standard then uses Astra medium, rescue uses Luna
 medium, and deep uses Sol high to author the remaining candidate around that
 immutable participant set. An authored result requires one final read-only
 Astra/medium review of the complete joined candidate using only the shared model
@@ -110,7 +114,7 @@ requires each profile's observed committed positive case and a source-bound mate
 clarification with no writes, separately from unavailable-provider behavior.
 No other model earns a proof claim without its own observed request evidence.
 
-Authoring v64 returns either a reviewed source-and-design candidate or the
+Authoring v68 returns either a reviewed source-and-design candidate or the
 existing material clarification result. Source facts, actions and relationships
 remain citation-bound. A required, separately labeled `provisional_design`
 proposes 4–5 logical components, 4–5 workstreams, internal exchanges and

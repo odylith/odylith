@@ -84,7 +84,7 @@ def test_review_dispatch_window_cannot_exceed_remaining_shared_window() -> None:
         (("model_authoring", "candidate_review", "model_profile", "effective_timeout_seconds"), 165.001),
         (("model_authoring", "participant_selection", "model_profile", "model"), "gpt-5.6-terra"),
         (("model_authoring", "participant_selection", "model_profile", "profile_id"),
-         "greenfield-rescue-participant-first-terra-medium-v18"),
+         "greenfield-rescue-participant-first-luna-medium-v19"),
         (("model_authoring", "remaining_candidate_authoring", "model_profile", "model"), "gpt-5.6-terra"),
         (("model_authoring", "remaining_candidate_authoring", "model_profile", "request_role"),
          "remaining_candidate_authoring"),

@@ -2119,3 +2119,70 @@
   strengthens source-level normal, fallback, degraded/error, and visible
   delivery evidence; native host activation and the untouched final holdout
   remain separate gates.
+
+- Lower-capability clarification qualification reopen (2026-09-24): One clean
+  full-install discovery control pinned to the existing rescue
+  `gpt-5.6-terra`/medium profile preserved the no-write boundary (`168` records
+  before and after, no changed records, no staged transaction, no write
+  attempts) and completed in `96.975s`, inside the advisory `120s` target. It
+  nevertheless exited `2` before retaining either required semantic-call
+  observation, so the clarification contract and lower-capability profile proof
+  remain failed. A direct schema-constrained Terra/medium provider probe then
+  succeeded in `3.7s`, ruling out model unavailability. Do not patch the assay
+  example, relax the clarification gate, add retries, or change the accepted
+  Greenfield mechanism. Retain the failed result at
+  `/private/tmp/odylith-greenfield-terra-clarification-control-result.v1.json`;
+  the next bounded step is one evidence-retaining replay of the same control to
+  capture the installed provider failure detail and distinguish a shared model
+  window/transport defect from transient capacity. The protected holdout remains
+  untouched and release stays blocked.
+
+- Lower-capability bounded alternative (2026-09-24): Retained replay disproves
+  the transport/window hypothesis. Astra participant selection completed in
+  `4.709s`; Terra/medium remaining authoring completed in `21.201s` but treated
+  the instruction to draft a proposal as the product's first user action,
+  invented a four-component design, and failed exact source-citation validation.
+  The compiler correctly exposed no transaction or governed write. A single
+  Luna/medium comparison used the unchanged v68 authoring prompt, response schema,
+  empty frozen-participant set, assay source and validator. It returned the typed
+  `first_path` material-ambiguity clarification and passed validation in `11.416s`.
+  This earns one bounded rescue-profile replacement candidate only: replace the
+  Terra author binding with Luna while preserving Astra participant selection and
+  review, the shared two-to-five-call ceiling, exact citations, fail-closed
+  validation, and the `120s` advisory/`180s` safety envelopes. Require focused
+  contract tests plus one installed committed positive and this installed
+  clarification/no-write control before retaining the candidate. Do not add a
+  fallback ladder, retry, prompt exception, regex rule, or new repair stage.
+
+- Luna installed-control checkpoint (2026-09-24): Immutable comparison commit
+  `a4e9cccc6` built wheel SHA-256
+  `e19f778ecbc1b537ae839d74ec7a2c96ddd9e420ba532c2eba47292770b3c56e`.
+  The installed assay control passed the complete clarification contract in
+  `12.957s`: two retained calls, exact `first_path` question, `168` records
+  before and after, no changed record, staged transaction or write attempt.
+  The installed developer-runbook positive passed model-profile, structural,
+  semantic-manifest, traceability, copy, governance, operator and transaction
+  checks; it published five Radar workstreams, five Registry components, five
+  Atlas sources/ten renders and five implementation prompts, with a `3.011s`
+  commit. Proposal time was `149.660s`, over the advisory `120s` target but
+  below the `180s` operational timeout. Its matrix result is intentionally not
+  a pass because browser proof was omitted; the only quality issue is the
+  unscored browser dimension. Retain
+  `/private/tmp/odylith-greenfield-luna-installed-controls-result.v1.json` and
+  rerun only the positive with browser proof. Do not change semantics or timing
+  from this checkpoint.
+
+- Luna installed-profile qualification (2026-09-24): The bounded positive rerun
+  with generated browser proof passes discovery, model-profile, structural,
+  semantic-manifest, traceability, copy, governance, operator, transaction, and
+  browser checks. It publishes four Radar workstreams, four Registry components,
+  five Atlas sources/ten renders, and five implementation prompts. Proposal time
+  is `138.436s`: above the advisory `120s` target but below the unchanged `180s`
+  operational safety timeout. Aggregating this result with the installed assay
+  clarification produces a passing lower-capability release proof with one
+  committed positive, one exact no-write clarification control, and no issues.
+  Retain the Luna/medium rescue author candidate and retire the losing Terra
+  binding; do not broaden this decision into a retry ladder, prompt exception,
+  regex rule, or new repair stage. The full repository browser matrix, native
+  Claude chat-delivery proof, independent semantic review, and untouched holdout
+  remain open.

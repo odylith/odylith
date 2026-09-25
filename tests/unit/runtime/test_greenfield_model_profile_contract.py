@@ -34,13 +34,13 @@ def _observation(profile_id, role):
     }
 
 
-def test_v20_profiles_separate_performance_targets_from_operational_timeouts():
-    assert profiles.GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION == "odylith.greenfield.model-profile-contract.v20"
+def test_v21_profiles_separate_performance_targets_from_operational_timeouts():
+    assert profiles.GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION == "odylith.greenfield.model-profile-contract.v21"
     assert profiles.GREENFIELD_NORMAL_CASE_TARGET_SECONDS == 60.0
     assert profiles.GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS == 180.0
     assert PROFILE_IDS == (
         "greenfield-standard-participant-first-astra-medium-v19",
-        "greenfield-rescue-participant-first-terra-medium-v18",
+        "greenfield-rescue-participant-first-luna-medium-v19",
         "greenfield-deep-participant-first-sol-high-v18",
     )
     assert profiles.supported_greenfield_model_repair_tiers() == ("standard", "rescue", "deep")
@@ -52,7 +52,7 @@ def test_v20_profiles_separate_performance_targets_from_operational_timeouts():
         for p in map(profiles.get_greenfield_model_profile, PROFILE_IDS)
     ] == [
         ("gpt-6-astra", "medium", 165.0, 90.0, 180.0),
-        ("gpt-5.6-terra", "medium", 165.0, 120.0, 180.0),
+        ("gpt-5.6-luna", "medium", 165.0, 120.0, 180.0),
         ("gpt-5.6-sol", "high", 165.0, 150.0, 180.0),
     ]
     for profile_id in PROFILE_IDS:

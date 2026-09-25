@@ -143,6 +143,15 @@
   regress back to cache reuse, wrapper-only stale disclosure, or retained
   history-range violations from stale live snapshots.
 
+- Greenfield packaging follow-up (2026-09-24): The release candidate's committed
+  Compass history index referenced the retained `2026-09-21` and `2026-09-22`
+  snapshots without packaging those files, producing one browser-visible 404 and
+  a `151/152` gate. Including the three retained daily snapshots closes that
+  publication gap. The exact Greenfield dashboard-publication, carrier,
+  proof-summary, selection, surface-health, and host-confirmation matrix now
+  passes `152/152` in `265.22s`, including normal, fallback, and degraded/error
+  states. No browser assertion was weakened.
+
 - Related Incidents/Bugs: [2026-03-29-compass-standup-brief-fails-to-use-local-provider-and-stays-deterministic.md](2026-03-29-compass-standup-brief-fails-to-use-local-provider-and-stays-deterministic.md)
 
 - Version/Build: workspace state on 2026-03-29 before Compass runtime

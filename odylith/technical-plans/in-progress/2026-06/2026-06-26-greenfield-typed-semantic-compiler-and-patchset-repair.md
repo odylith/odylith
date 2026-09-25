@@ -11194,6 +11194,30 @@ for retries until success. Current runtime profiles remain unchanged.
   source frozen during each live comparison and commission no blind holdout
   until all independent P0/P1 findings and the complete public gate are clear.
 
+## Rescue Profile Qualification Checkpoint (2026-09-24)
+
+- The installed Terra/medium clarification control preserved the no-write boundary
+  but misread the proposal instruction as a product action, invented four
+  components, and failed exact citation validation. Transport and timing were not
+  the cause: the author call completed in `21.201s`.
+- A bounded Luna/medium comparison held authoring v68, schema, source, citations,
+  validator, participant selection, review ownership, call limits, and timing
+  envelopes fixed. It returned the required typed `first_path` clarification in
+  `11.416s`; the installed replay passed in `12.957s` with `168/168` records and no
+  staged transaction or write attempt.
+- The installed positive browser run passes and publishes four Radar workstreams,
+  four Registry components, five Atlas sources/ten renders, and five prompts in
+  `138.436s`. The combined lower-capability proof passes with no issues. Focused
+  contract proof passes `833/833`.
+- Adopt only the rescue remaining-author change to Luna/medium. Astra continues to
+  own participant selection and full-candidate review. Add no retry, fallback
+  ladder, prompt exception, regex rule, schema, or repair stage. The `120s` target
+  miss remains timing evidence under the unchanged `180s` operational boundary.
+- Freeze this candidate through the full repository browser matrix, native Claude
+  chat-delivery proof, independent semantic review, and the untouched final
+  holdout. Any failure at those gates reopens the owning mechanism rather than
+  inviting example-specific patches.
+
 ## Traceability
 
 Current proposal/confirmation/recovery operations and versioned semantic/timing boundaries; historical post-confirm repair paths are superseded.

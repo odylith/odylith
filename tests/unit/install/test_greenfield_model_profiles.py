@@ -133,7 +133,7 @@ def test_profile_registry_pins_preselected_standard_rescue_and_deep_requests() -
     assert standard.participant_reasoning_effort == "medium"
     assert standard.lower_capability is False
     rescue = get_greenfield_model_profile(RESCUE_PROFILE_ID)
-    assert rescue.model == "gpt-5.6-terra"
+    assert rescue.model == "gpt-5.6-luna"
     assert rescue.reasoning_effort == "medium"
     assert rescue.lower_capability is True
     deep = get_greenfield_model_profile(DEEP_PROFILE_ID)
@@ -172,7 +172,7 @@ def test_profile_environments_pin_provider_model_effort_and_shared_tier_windows(
     assert standard["ODYLITH_REASONING_MODEL"] == "gpt-6-astra"
     assert standard["ODYLITH_REASONING_CODEX_REASONING_EFFORT"] == "medium"
     assert standard["ODYLITH_REASONING_TIMEOUT_SECONDS"] == "165"
-    assert rescue["ODYLITH_REASONING_MODEL"] == "gpt-5.6-terra"
+    assert rescue["ODYLITH_REASONING_MODEL"] == "gpt-5.6-luna"
     assert rescue["ODYLITH_REASONING_CODEX_REASONING_EFFORT"] == "medium"
     assert rescue["ODYLITH_REASONING_TIMEOUT_SECONDS"] == "165"
     assert deep["ODYLITH_REASONING_MODEL"] == "gpt-5.6-sol"

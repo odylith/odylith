@@ -224,10 +224,13 @@ and reviewable concerns support an explicit proposed checkpoint. Unresolved choi
 that cannot safely remain proposed still require clarification. Shared role
 definitions retain source-stated beneficiaries without assigning them actions and
 exclude ordinary capability descriptions from operational constraints. Field
-shapes, production participant-first roles, profile v18, three-call ceiling,
-shared deadline, custody and commit-only publication remain unchanged. The rejected
-source/design split is not adopted. Contract tests and actual model behavior must
-be reported separately; v67 is not yet live-qualified.
+shapes, production participant-first roles, three-call ceiling, shared deadline,
+custody and commit-only publication remain unchanged. Profile contract v21 changes
+only the rescue remaining-author binding from Terra/medium to Luna/medium after an
+installed Terra control returned an authored package instead of the required
+material-ambiguity clarification. Astra still owns participant selection and full-
+candidate review. The rejected source/design split is not adopted. Contract tests
+and actual model behavior must be reported separately.
 
 Candidate v66 permits a conservative proof checkpoint as one targeted, visible
 assumption when the source supports a usable path and reviewable concerns but does
@@ -258,7 +261,7 @@ The current unreleased participant-first owner selects exact source-grounded hum
 participants once, freezes their citations, and permits remaining-candidate
 authoring only for the other facts, relations and proposed design. Deterministic
 join and canonical validation precede unchanged full-candidate review. Authoring
-v67/profile v18/envelope v4/private proof v3 replace the old complete-author path;
+v68/profile v19/envelope v4/private proof v3 replace the old complete-author path;
 success requires three actual calls and clarification two, under one shared model
 deadline. Sealed observations identify both author roles separately. Review timing
 uses the actual request origin while total elapsed includes setup. Release checks

@@ -272,7 +272,7 @@ def test_author_validator_remaps_a_collapsed_raw_actor_row_before_a_later_actor(
         evidence_text=evidence,
         elapsed_seconds=0.0,
         provider={"provider": "test", "model": "test"},
-        profile_id="greenfield-rescue-participant-first-terra-medium-v18",
+        profile_id="greenfield-rescue-participant-first-luna-medium-v19",
         effective_timeout_seconds=1.0,
         semantic_model_call_count=1,
     )
