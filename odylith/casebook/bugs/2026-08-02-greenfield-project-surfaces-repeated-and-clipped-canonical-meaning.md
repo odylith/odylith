@@ -1,5 +1,28 @@
 - Bug ID: CB-303
 
+- Reviewer False Positive Diagnosed; Schema Variants Removed (2026-09-25): The
+  exact `24c255169` v6 positive control repeats the precedence denial in
+  `74.509s`, inside the `90s` target. One retained diagnostic host candidate
+  explains why: the source supports exactly one owned action event—extension
+  publishers `assemble` release notes. It separately states a timing condition
+  that support engineers and publisher maintainers need the same review view
+  before an unowned passive release announcement. The candidate correctly
+  preserves that sentence as an operational constraint and does not fabricate
+  an announcer, announcement action, or second accepted event. The reviewer was
+  demanding an impossible edge between existing event IDs, so v4-v6 optimized
+  an evaluator false positive. Remove those active schema variants. Contract v7
+  returns to compact event-citation format v2 and canonical source precedence;
+  candidate-review v4 requires edges only when both sides are source-supported
+  accepted events with actor/action ownership. Other timing, approval, and
+  readiness conditions remain operational constraints. No validator is
+  weakened, no candidate is repaired, and no regex, parser, keyword rule, retry,
+  fallback, fabricated event, or extra model call is added. Focused receipt,
+  review, host-custody, and profile proof passes `300/300`. Holdout v4 remains
+  sealed and unexecuted. Evidence:
+  `/private/tmp/greenfield-public-run-v6-24c-positive-result.json`,
+  `/private/tmp/greenfield-public-run-v6-24c-positive-evidence/`, and
+  `/private/tmp/greenfield-v6-precedence-diagnostic/candidate.json`.
+
 - Detached Ordering Classification Rejected (2026-09-24): Contract v5 forced
   an explicit global `none_stated`/`stated` choice, but the exact `7af18451e`
   public positive control still chose no precedence despite retaining the

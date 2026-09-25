@@ -769,7 +769,7 @@ def _create_payload_for_stage(stage: dict[str, object], *, source: str) -> dict[
         "commit_manifest": {
             "model_authoring": {
                 "candidate_review": {
-                    "version": "odylith.greenfield.candidate-review.v3",
+                    "version": "odylith.greenfield.candidate-review.v4",
                     "status": "admitted",
                     "source_sha256": hashlib.sha256(source.encode("utf-8")).hexdigest(),
                     "candidate_sha256": hashlib.sha256(encoded).hexdigest(),

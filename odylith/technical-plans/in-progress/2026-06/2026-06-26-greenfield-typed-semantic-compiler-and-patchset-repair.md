@@ -1,5 +1,29 @@
 Status: In progress
 
+## Correct reviewer event authority and remove losing schema variants (2026-09-25)
+
+The exact v6 positive control fails on the same precedence verdict in `74.509s`.
+A separate retained host diagnostic reveals the decisive fact: the source has
+one source-owned product action, publishers `assemble` release notes. Its
+review-before-announcement sentence is an operational timing condition, but the
+passive announcement has no source-supported performer and no accepted event.
+The canonical precedence schema can reference only existing event IDs. Requiring
+an edge would therefore require fabricating an announcer/action or misclassifying
+`need` as a product action.
+
+The reviewer, not the candidate shape, owned this recurring failure. Remove the
+v4 global-description, v5 discriminated-global, and v6 co-located-constraint
+variants from the active path. Contract v7 returns to compact host format v2:
+each accepted event owns one citation, while canonical source precedence remains
+an ordinary validated edge list. Candidate-review v4 requires precedence only
+when both ordered sides are source-supported accepted events with actor/action
+ownership. Timing, approval, or readiness conditions without that ownership
+remain accepted operational constraints; the reviewer must not invent events,
+actions, or performers. Validation, independent review, models, effort, timing,
+transaction, and no-retry behavior remain fixed. Focused proof passes `300/300`.
+Build one exact clean artifact and rerun the public control once. Do not access
+the holdout until that full package, commit, readback, and browser gate passes.
+
 ## Co-locate accepted constraints and their typed event relations (2026-09-24)
 
 V5's global discriminated choice still remained detached from the evidence it

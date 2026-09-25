@@ -1,22 +1,28 @@
 """Complete-candidate admission: immutable inputs, one call, shared deadlines."""
 
-from copy import deepcopy
 import hashlib
 import json
+from copy import deepcopy
 
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_candidate_review as review
-from odylith.runtime.domain_intelligence import greenfield_model_intent_authoring as author
-from odylith.runtime.domain_intelligence import greenfield_participant_first_authoring as participant_authoring
-from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import STANDARD_PROFILE_ID
+from odylith.runtime.domain_intelligence import (
+    greenfield_model_intent_authoring as author,
+)
+from odylith.runtime.domain_intelligence import (
+    greenfield_participant_first_authoring as participant_authoring,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    STANDARD_PROFILE_ID,
+)
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
     RemainingCandidateProvider,
     StructuredAuthoringProvider,
     authored_response,
 )
-from tests.unit.runtime.test_greenfield_model_path_custody import _source, _response
+from tests.unit.runtime.test_greenfield_model_path_custody import _response, _source
 
 
 class Clock:
@@ -122,6 +128,18 @@ def test_review_request_makes_selected_source_location_authoritative():
     assert "resolved_source_custody is the authoritative resolution" in prompt
     assert "Judge its semantic role at those exact byte offsets and surrounding context" in prompt
     assert "support from another occurrence of the same quote does not cure" in prompt
+
+
+def test_review_request_does_not_invent_events_for_unowned_timing_conditions():
+    clock = Clock()
+    provider = Reviewer({"admissible": True, "issues": []}, clock)
+    run_review(provider, clock)
+
+    prompt = provider.requests[0].system_prompt
+    assert "both ordered sides are source-supported" in prompt
+    assert "accepted events with actor/action ownership" in prompt
+    assert "lack such event ownership as operational constraints" in prompt
+    assert "never invent an event, action, or performer" in prompt
 
 
 def test_human_subject_state_object_keeps_source_and_performer_custody_separate():

@@ -6,22 +6,24 @@ authorities. It may admit or deny, never repair or replace the candidate.
 
 from __future__ import annotations
 
+import hashlib
 from collections.abc import Callable, Mapping, Sequence
 from copy import deepcopy
-import hashlib
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_model_json import (
     encode_greenfield_model_value,
 )
-from odylith.runtime.domain_intelligence.greenfield_model_outcomes import GreenfieldModelRuntimeError
+from odylith.runtime.domain_intelligence.greenfield_model_outcomes import (
+    GreenfieldModelRuntimeError,
+)
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     get_greenfield_model_profile,
     require_greenfield_model_profile_observation,
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-CANDIDATE_REVIEW_VERSION = "odylith.greenfield.candidate-review.v3"
+CANDIDATE_REVIEW_VERSION = "odylith.greenfield.candidate-review.v4"
 STATE_OBJECT_ROLE_DEFINITION = (
     "One source-cited subject, entity, record, work item, case, artifact, or status "
     "whose state the workflow changes or reviews. The subject may be a person; never "
@@ -88,6 +90,10 @@ system or performer from a name or downstream output purpose. Assumptions remain
 proposed choices, not accepted source facts. source_precedence must preserve all
 explicit ordering requirements using the packet's existing event IDs and cited
 operational constraints; event array order alone is not source temporal authority.
+Require a precedence edge only when both ordered sides are source-supported
+accepted events with actor/action ownership. Preserve timing, approval, or
+readiness conditions that lack such event ownership as operational constraints;
+never invent an event, action, or performer merely to create a precedence edge.
 Report only substantive unsupported, contradictory or missing source meaning or
 unresolved material uncertainty. Do not demand implementation detail, alternative
 wording or facts absent from the source. Admission is not an exhaustive defect report. Once one substantive defect is substantiated against the full source context, stop and return admissible=false with exactly one concise issue, locating it by candidate dot/index path. Do not enumerate further defects before denying. To return admissible=true, first verify every source-semantic and proposed-decision requirement and return no issues. Return no replacements, edits or proposed design.
@@ -140,7 +146,7 @@ def candidate_review_payload(
     resolved_source_custody: list[dict[str, Any]] = []
     for span in source_spans:
         if not isinstance(span, Mapping):
-            raise ValueError("Greenfield candidate review received an invalid source span")
+            raise TypeError("Greenfield candidate review received an invalid source span")
         field, row, quote = span.get("section_key"), span.get("row_index"), span.get("text")
         start, end = span.get("source_start_byte"), span.get("source_end_byte")
         if (

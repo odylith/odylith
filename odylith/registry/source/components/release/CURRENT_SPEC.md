@@ -23,17 +23,18 @@ the legacy path must be removed and the release gate repeated.
 The public candidate contract now uses compact event custody. Each host-authored
 event carries its source citation once; deterministic projection supplies the
 legacy v68 `facts.first_path` array without changing citation bytes. Release
-evidence must bind the compact candidate hash, contract v6 schema hash, exact
+evidence must bind the compact candidate hash, contract v7 schema hash, exact
 distribution provenance, projection/validation outcome, and one measured
 request-to-preview interval. The matrix must not count recovery proof seeded by
 the superseded runtime author as host-native lifecycle proof.
 
-Contract v6 makes each accepted operational constraint own its citation and its
-typed event-ordering relation, then projects those relations into the unchanged
-canonical precedence list. Explicit source ordering remains a cited edge between
-existing events; event array order and proposed first-run order have no
-accepted-source authority. The representation change adds no model call, retry,
-repair, fallback, or second release path.
+Contract v7 uses compact host format v2 and candidate-review v4. Explicit source
+ordering remains a cited edge between source-supported accepted events; timing
+conditions without source-owned actor/action events remain operational
+constraints. Event array order and proposed first-run order have no
+accepted-source authority. The removed v4-v6 schema variants are not release
+paths, and the reviewer correction adds no model call, retry, repair, fallback,
+or second publication owner.
 
 ## Greenfield timing qualification (2026-09-18)
 

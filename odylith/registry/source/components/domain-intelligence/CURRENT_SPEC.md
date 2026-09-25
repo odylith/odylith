@@ -22,16 +22,15 @@ cardinality. The second class is eliminated by construction rather than by an
 additional prompt rule. Exact installed public, browser, holdout, legacy-path
 removal, and reproof gates remain open.
 
-Contract v6 removes host `source_precedence` as a separate authority. Every
-accepted operational constraint owns its exact citation and a closed
-`not_event_ordering` or `event_ordering` relation; ordering relations contain one
-or more directed existing-event edges. Domain Intelligence enumerates those
-constraints once, supplies the canonical `constraint_index`, and feeds the
-unchanged validator and independent reviewer. This co-locates evidence and
-relation without interpreting source text deterministically; there is no keyword
-rule, parser, repair, retry, fallback, extra model call, or second publication
-owner. V5's detached global typed choice is retained as rejected evidence after
-repeating the same semantic omission.
+Contract v7 keeps compact host format v2 as the active shape. Each event owns one
+exact citation; canonical `source_precedence` remains the validated edge list.
+Candidate-review v4 requires an edge only when both sides are source-supported
+accepted events with actor/action ownership. Timing, approval, and readiness
+conditions without that ownership remain operational constraints; review may not
+invent an event, action, or performer to populate an edge. The v4-v6 host schema
+variants are removed from the active path after a retained diagnostic proved
+they were optimizing a reviewer false positive. There is no keyword rule,
+parser, repair, retry, fallback, extra model call, or second publication owner.
 
 Independent review denials expose their existing bounded receipt and single
 typed issue in JSON error output. This is diagnostic custody, not a candidate
@@ -44,9 +43,9 @@ must be represented as a directed edge between existing event IDs and cite the
 one-based accepted operational constraint that owns it. Empty precedence is
 valid only when the source states no event precedence. Event array order and
 the proposed first-run walkthrough remain design choices, not accepted source
-authority. Its next exact public run still repeated the omission; v5's global
-typed choice repeated it again. V6 removes that detached boundary instead of
-stacking another instruction.
+authority. Later v5/v6 structural variants repeated the same denial until the
+retained candidate proved the missing second event had no source-owned action.
+Those variants are historical evidence, not active mechanisms.
 
 ### Exact-commit host-native release boundary (2026-09-24)
 
