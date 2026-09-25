@@ -1,5 +1,41 @@
 - Bug ID: CB-303
 
+- Host-native Installed Recovery Passed (2026-09-25): The isolated recovery
+  proof against immutable distribution `d4743f3a0` passed with no issues after
+  seeding the transaction through the configured host-native path. It observed
+  the intentional SIGKILL (`-9`) after a partial governed write, recovered the
+  journal from `projecting` to `closed`, preserved the concurrent operator
+  mutation and retained conflict snapshot, rejected the conflict with the
+  expected failure kind, rolled back the injected fsync failure, and completed
+  both retry and same-hash retry with zero return codes. All three phases retained
+  the same sealed Product Intent facts hash
+  `90bf4e0e8a9ebc1485e7bb39c1e51b98393bcdf3f4d32db24104233421d151b7`;
+  temporary recovery roots were cleaned. This validates the bounded harness
+  ownership correction without adding a production path. Evidence:
+  `/private/tmp/greenfield-host-native-recovery-v8-d474-result.json` and
+  `/private/tmp/greenfield-recovery-v8-evidence/`.
+
+- Exact Public Gate Passed; Recovery Owner Rebound (2026-09-25): Clean
+  distribution commit `d4743f3a0` passed the exact public host-native journey in
+  `83.924s`, inside the `90s` target, followed by commit-only creation in
+  `2.602s`. The package contains four Radar workstreams, four Registry
+  components, five Atlas diagrams, ten rendered Atlas assets, one project brief,
+  and five implementation prompts. All generated normal, empty, degraded,
+  error, and invalid-recovery desktop/mobile browser states passed. The corrected
+  first-path diagram now renders the retained typed relation `extension
+  publishers -> performs -> event`. Retained evidence proves one contract call,
+  one external host call, one proposal call, one runtime semantic review, an
+  external cleaned workspace, and a canonical candidate hash matching the
+  sealed host receipt. This accepts the compact host-native mechanism on the
+  public positive control. The next release blocker is proof ownership, not
+  product behavior: installed crash recovery still compiled its seed through
+  the retired runtime-author path. Pass the already-configured host argv into
+  the recovery seed compiler and preserve the existing sealed transaction,
+  SIGKILL, conflict, fsync rollback, retry, and evidence checks unchanged. Add
+  no parser, regex, repair, fallback, model ladder, or production path. Evidence:
+  `/private/tmp/greenfield-public-run-v8-d474-result.json` and
+  `/private/tmp/greenfield-public-run-v8-d474-evidence/`.
+
 - Exact Public Package Admitted; Downstream Proof Owners Corrected (2026-09-25):
   Clean distribution commit `4a1c9631a` completed the exact public
   `cli-extension-release-notes` journey in `83.809s`, inside the `90s` target.

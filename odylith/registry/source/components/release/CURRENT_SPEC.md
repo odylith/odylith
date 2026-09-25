@@ -1,6 +1,31 @@
 # Release
 Last updated: 2026-09-25
 
+## Host-native installed recovery qualification (2026-09-25)
+
+The public host-native control at clean commit `d4743f3a0` passes proposal,
+commit-only creation, package readback, generated-surface browser proof, and the
+required governance floor. Installed crash recovery must therefore seed its
+sealed transaction through the same configured host-native flow. The release
+matrix forwards the exact host argv to recovery; recovery retrieves the installed
+candidate contract, invokes that host once in an external temporary workspace,
+and proposes the returned candidate file before exercising the unchanged sealed
+transaction across SIGKILL, concurrent-operator conflict, fsync rollback,
+recovery, and same-hash retry phases.
+
+This is release-harness ownership alignment, not a second production mechanism.
+Legacy seed compilation remains only when no host argv is configured so existing
+legacy-profile proof stays fail-closed. Host-native release qualification must
+retain the host observation, candidate hash, independent review observation,
+sealed Product Intent facts hash, and recovery evidence. It may not substitute a
+runtime author, add retries or repair, or relax any recovery check.
+
+Fresh installed proof passes this contract against immutable distribution
+`d4743f3a0`: SIGKILL, partial-write recovery, operator conflict preservation,
+conflict snapshot retention, fsync rollback, recovery, retry, and unchanged
+same-hash retry all pass with one sealed Product Intent facts hash and no retained
+temporary fixture roots.
+
 ## Host-native Greenfield release proof (2026-09-24)
 
 The release matrix can explicitly exercise the host-native product path without

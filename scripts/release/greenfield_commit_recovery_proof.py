@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 import hashlib
 import json
@@ -24,11 +24,11 @@ from greenfield_commit_recovery_evidence import as_mapping
 from greenfield_process import run_command_with_group_timeout as _run
 from greenfield_commit_recovery_cases import RECOVERY_CASE_SCOPE
 from greenfield_commit_recovery_cases import recovery_case_evidence
-from greenfield_commit_recovery_cases import select_recovery_case
+from greenfield_commit_recovery_cases import select_recovery_case  # noqa: F401
 from greenfield_commit_recovery_generation import FSYNC_FAILURE_FAULT as _FSYNC_FAILURE_FAULT
 from greenfield_commit_recovery_generation import GENERATION_OBSERVATION_SCRIPT as _GENERATION_OBSERVATION_SCRIPT
 from greenfield_commit_recovery_generation import SIGKILL_FAULT as _SIGKILL_FAULT
-from greenfield_commit_recovery_generation import generation_observation_issues as _generation_observation_issues
+from greenfield_commit_recovery_generation import generation_observation_issues as _generation_observation_issues  # noqa: F401
 from greenfield_commit_recovery_generation import require_aborted_generation_boundary as _require_aborted_generation_boundary
 from greenfield_commit_recovery_generation import require_journal_generation_binding as _require_journal_generation_binding
 from greenfield_commit_recovery_generation import (
@@ -38,6 +38,8 @@ from greenfield_commit_recovery_generation import (
     require_published_generation_boundary as _require_published_generation_boundary,
 )
 from greenfield_matrix_release_artifacts import is_sha256
+from greenfield_matrix_host_candidate import HostCandidateFlow
+from greenfield_matrix_host_candidate import run_host_candidate_flow
 from greenfield_model_profiles import STANDARD_PROFILE_ID
 from greenfield_model_profiles import model_profile_environment
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
@@ -160,6 +162,7 @@ def run_installed_commit_recovery_proof(
     retained_evidence_run_id: str = "",
     require_release_binding: bool = False,
     release_audit_binding: Mapping[str, Any] | None = None,
+    host_candidate_argv: Sequence[str] = (),
 ) -> GreenfieldInstalledCommitRecoveryProof:
     """Prove installed recovery against one deterministic campaign case."""
 
@@ -194,6 +197,7 @@ def run_installed_commit_recovery_proof(
             env=env,
             case=recovery_case,
             evidence=proposal_evidence,
+            host_candidate_argv=host_candidate_argv,
         )
         recovery_evidence.finish_proposal(evidence=proposal_evidence, repo_root=seed.repo_root, status="passed", issues=[], run_id=retained_evidence_run_id)
         proposal_sealed = True
@@ -758,12 +762,19 @@ def _prepare_recovery_seed(
     env: Mapping[str, str],
     case: GreenfieldMatrixCase,
     evidence: recovery_evidence.RetainedEvidenceCase | None = None,
+    host_candidate_argv: Sequence[str] = (),
 ) -> _RecoverySeed:
     """Compile once so recovery phases exercise identical sealed bytes."""
 
     repo_root = run_root / "sealed-transaction-seed"
     _install_repo(repo_root=repo_root, install_script=install_script, env=env)
-    transaction = _compile_transaction(repo_root=repo_root, env=env, case=case, evidence=evidence)
+    transaction = _compile_transaction(
+        repo_root=repo_root,
+        env=env,
+        case=case,
+        evidence=evidence,
+        host_candidate_argv=host_candidate_argv,
+    )
     return _RecoverySeed(repo_root=repo_root, transaction=transaction)
 
 
@@ -831,6 +842,7 @@ def _compile_transaction(
     env: Mapping[str, str],
     case: GreenfieldMatrixCase,
     evidence: recovery_evidence.RetainedEvidenceCase | None = None,
+    host_candidate_argv: Sequence[str] = (),
 ) -> _CompiledRecoveryTransaction:
     command = [
         "./.odylith/bin/odylith",
@@ -846,13 +858,57 @@ def _compile_transaction(
     confirmed_intent = str(case.confirmed_intent_markdown or "").strip()
     if confirmed_intent:
         command.extend(["--edit", confirmed_intent])
-    proposed = recovery_evidence.run_proposal(
-        evidence=evidence, runner=_run,
-        cwd=repo_root,
-        env=dict(env),
-        command=command,
-        timeout=COMMAND_TIMEOUT_SECONDS,
-    )
+    if host_candidate_argv:
+        confirmed_intent = str(case.confirmed_intent_markdown or "").strip()
+
+        def invoke_installed(installed_command: Sequence[str], timeout: float) -> Any:
+            return _run(
+                cwd=repo_root,
+                env=dict(env),
+                command=list(installed_command),
+                timeout=timeout,
+            )
+
+        def invoke_propose(candidate_path: Path, timeout: float) -> Any:
+            candidate_command = [*command, "--candidate-file", str(candidate_path)]
+            return recovery_evidence.run_proposal(
+                evidence=evidence,
+                runner=_run,
+                cwd=repo_root,
+                env=dict(env),
+                command=candidate_command,
+                timeout=timeout,
+            )
+
+        observe = None
+        if evidence is not None:
+            observe = lambda payload: recovery_evidence.record_retained_case_json(
+                evidence,
+                "semantic/host-authoring-observation.v1.json",
+                dict(payload),
+            )
+        proposed = run_host_candidate_flow(
+            HostCandidateFlow(
+                repo_root=repo_root,
+                temp_parent=repo_root.parent,
+                host_argv=tuple(str(value) for value in host_candidate_argv),
+                prompt=case.prompt,
+                edit_evidence=confirmed_intent,
+                timeout=COMMAND_TIMEOUT_SECONDS,
+                env=env,
+                invoke_installed=invoke_installed,
+                invoke_propose=invoke_propose,
+                observe=observe,
+            )
+        )
+    else:
+        proposed = recovery_evidence.run_proposal(
+            evidence=evidence, runner=_run,
+            cwd=repo_root,
+            env=dict(env),
+            command=command,
+            timeout=COMMAND_TIMEOUT_SECONDS,
+        )
     payload = _require_success_payload(proposed, label="installed commit recovery propose")
     transaction = as_mapping(payload.get("product_create_transaction"))
     transaction_hash = str(transaction.get("transaction_hash") or "").strip()

@@ -1,5 +1,34 @@
 Status: In progress
 
+## Pass the exact public gate and rebind recovery proof (2026-09-25)
+
+Clean commit `d4743f3a0` passes the exact public host-native journey in
+`83.924s`, commit-only creation in `2.602s`, all generated browser states, and
+the required four Radar, four Registry, and five Atlas package floor. Retained
+custody proves one external host invocation and one runtime semantic review; the
+host-candidate hash matches the sealed transaction receipt. The first-path Atlas
+diagram now projects the existing performer-to-event relation. The protected
+holdout remains untouched.
+
+Do not change the winning product mechanism. The remaining recovery gate has a
+single stale harness owner: it compiles its sealed seed transaction through the
+retired runtime-author path. Forward the matrix's configured host argv into that
+seed compilation, run the existing candidate-contract/host/propose flow once,
+and preserve all crash, conflict, rollback, retry, readback, and retained-evidence
+checks. Prove the forwarding and transaction binding with focused tests, rebuild
+one immutable clean distribution, and run isolated installed recovery before
+any broader release or holdout gate. Add no parser, regex, retry, repair,
+fallback, schema variant, or production architecture.
+
+The isolated installed recovery rerun passes with no issues. It proves SIGKILL
+after a partial governed write, `projecting` to `closed` recovery, concurrent
+operator-mutation preservation and conflict snapshot retention, fsync rollback,
+successful retry, unchanged same-hash retry, one sealed Product Intent facts
+hash across all phases, and complete temporary-root cleanup. This clears the
+recovery-owner blocker. Proceed to the unchanged final qualification gates; do
+not expand the mechanism or consume the protected holdout before their public
+preconditions are green.
+
 ## Correct reviewer event authority and remove losing schema variants (2026-09-25)
 
 The exact v6 positive control fails on the same precedence verdict in `74.509s`.

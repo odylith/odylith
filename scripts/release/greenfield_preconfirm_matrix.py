@@ -2757,6 +2757,10 @@ def _execute_matrix_campaign(
                     and isinstance(approved_audit_bindings.get(recovery_case.case_id), Mapping)
                     else None
                 ),
+                host_candidate_argv=tuple(
+                    str(value)
+                    for value in (getattr(args, "host_candidate_arg", None) or ())
+                ),
             )
             if bool(args.include_commit_recovery_proof)
             else None

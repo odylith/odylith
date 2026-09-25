@@ -548,6 +548,79 @@ def test_compile_transaction_uses_the_exact_case_prompt_and_confirmed_intent(tmp
     assert command[command.index("--edit") + 1] == case.confirmed_intent_markdown
 
 
+def test_compile_transaction_uses_host_native_candidate_when_configured(tmp_path: Path, monkeypatch) -> None:
+    module = _module()
+    transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+    transaction_path = tmp_path / transaction_file
+    transaction_path.parent.mkdir(parents=True)
+    case = module.GreenfieldMatrixCase(
+        name="host-native recovery case",
+        prompt="Create the exact host-native recovery product.",
+        required_terms=("recovery",),
+    )
+    source_hash = module.hashlib.sha256(
+        module.combined_prompt_evidence_source(
+            prompt=case.prompt,
+            edit_evidence="",
+        ).encode("utf-8")
+    ).hexdigest()
+    transaction_path.write_text(
+        json.dumps(
+            {
+                "transaction_hash": "a" * 64,
+                "intent_authority": {
+                    "source_format": "operator_prompt",
+                    "product_facts_sha256": "c" * 64,
+                    "markdown_source_sha256": source_hash,
+                },
+                "prewrite_package": {
+                    "repository_write_set": {"write_set_hash": "b" * 64}
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    captured: dict[str, object] = {}
+
+    def fake_host_flow(flow):  # noqa: ANN001
+        captured["flow"] = flow
+        candidate_path = tmp_path.parent / "candidate.json"
+        candidate_path.write_text("{}\n", encoding="utf-8")
+        return flow.invoke_propose(candidate_path, 123.0)
+
+    def fake_run(**kwargs):  # noqa: ANN003
+        captured["command"] = kwargs["command"]
+        return SimpleNamespace(
+            returncode=0,
+            stdout=json.dumps(
+                {
+                    "product_create_transaction": {
+                        "transaction_hash": "a" * 64,
+                        "product_facts_sha256": "c" * 64,
+                    },
+                    "transaction_file": transaction_file,
+                }
+            ),
+            stderr="",
+        )
+
+    monkeypatch.setattr(module, "run_host_candidate_flow", fake_host_flow)
+    monkeypatch.setattr(module, "_run", fake_run)
+
+    compiled = module._compile_transaction(  # noqa: SLF001
+        repo_root=tmp_path,
+        env={"PATH": "/usr/bin"},
+        case=case,
+        host_candidate_argv=("host", "--schema", "{candidate_schema}"),
+    )
+
+    assert compiled.transaction_hash == "a" * 64
+    flow = captured["flow"]
+    assert flow.host_argv == ("host", "--schema", "{candidate_schema}")
+    command = captured["command"]
+    assert command[command.index("--candidate-file") + 1] == str(tmp_path.parent / "candidate.json")
+
+
 def test_compile_transaction_rejects_an_authority_that_does_not_bind_edit_evidence(tmp_path: Path, monkeypatch) -> None:
     module = _module()
     transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
