@@ -1,5 +1,25 @@
 Status: In progress
 
+## Runner-native outcome authority checkpoint (2026-09-25)
+
+The release contract now implements closeout step 2 without changing the
+frozen product mechanism. Evaluation-splits v6 and final-holdout v7 require one
+hash-bound independent source-sufficiency adjudication for every exact case
+before a protected ledger can be claimed. Commit labels require an explicit
+source-sufficient verdict; clarification labels require an explicit material-
+uncertainty verdict and the exact retained question. Five disjoint review
+contexts are required, no context may own more than eight cases, and derivation
+ownership cannot self-review.
+
+The gate passes `20/20` direct contract tests, `142/142` release-runner and
+recovery tests, and `1,151/1,151` complete install-side Greenfield tests. It
+adds no prompt, parser, regex, semantic retry, product schema, or alternate
+meaning owner. Keep the eight CB-303 candidate observations frozen until a new
+public synthetic control independently reproduces their classes. The remaining
+sequence is one immutable public/browser/recovery reproof, independent strong
+semantic review, and one newly blind holdout authored against the corrected
+preflight.
+
 ## Final V6 qualification verdict and finite closeout (2026-09-25)
 
 Exact public implementation commit `74f23f1bb65565a16ace78072093d3b4f903acab`

@@ -4,6 +4,23 @@ Last updated: 2026-09-25
 
 ## Overview
 
+### Runner-native outcome authority (2026-09-25)
+
+Final-holdout v7 and evaluation-splits v6 add one release-evidence boundary,
+not a product semantic mechanism. Every exact protected case must carry a
+hash-bound independent review of whether its source supports commit or requires
+material clarification, including the exact expected clarification when
+applicable. Review contexts must differ from derivation ownership, span at
+least five contexts, and own no more than eight cases each. Missing, mismatched,
+or self-reviewed outcome authority fails preflight before ledger claim.
+
+The contract closes the CB-329 gap that admitted 28 invalid v6 expectations
+without changing host authoring, typed custody, proposal compilation, or
+transaction behavior. Direct proof passes `20/20`, release-runner/recovery
+proof passes `142/142`, and the complete install-side Greenfield frontier
+passes `1,151/1,151`. No prompt, parser, regex, product schema, model call,
+retry, repair, fallback, or second meaning owner was added.
+
 ### Final v6 release qualification boundary (2026-09-25)
 
 Exact implementation commit `74f23f1bb` is the frozen public winner, not a

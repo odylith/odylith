@@ -132,11 +132,20 @@ def write_semantic_release_fixture(*, repo_root: Path, temp_root: Path) -> tuple
             },
         },
     )
+    annotations = [
+        _semantic_annotation(
+            f"holdout-{index}",
+            row["prompt"],
+            edit_evidence=row["edit_evidence"],
+            complexity_overrides=row["complexity"],
+        )
+        for index, row in enumerate(cases, start=1)
+    ]
     holdout_path = temp_root / "holdout.json"
     holdout_path.write_text(
         json.dumps(
             {
-                "version": "odylith.greenfield.final-holdout.v2",
+                "version": "odylith.greenfield.final-holdout.v7",
                 "claim_class": "blinded-independent-synthetic-holdout",
                 "cases": [
                     {
@@ -153,15 +162,8 @@ def write_semantic_release_fixture(*, repo_root: Path, temp_root: Path) -> tuple
                     }
                     for index, row in enumerate(cases, start=1)
                 ],
-                "annotations": [
-                    _semantic_annotation(
-                        f"holdout-{index}",
-                        row["prompt"],
-                        edit_evidence=row["edit_evidence"],
-                        complexity_overrides=row["complexity"],
-                    )
-                    for index, row in enumerate(cases, start=1)
-                ],
+                "annotations": annotations,
+                "annotation_review": _semantic_annotation_review(cases, annotations),
             }
         ),
         encoding="utf-8",
@@ -170,7 +172,7 @@ def write_semantic_release_fixture(*, repo_root: Path, temp_root: Path) -> tuple
     manifest_path.write_text(
         json.dumps(
             {
-                "version": "odylith.greenfield.evaluation-splits.v2",
+                "version": "odylith.greenfield.evaluation-splits.v6",
                 "tracked_corpus": {
                     "path": "tests/fixtures/tracked.json",
                     "sha256": hashlib.sha256(tracked_path.read_bytes()).hexdigest(),
@@ -190,6 +192,7 @@ def write_semantic_release_fixture(*, repo_root: Path, temp_root: Path) -> tuple
                     "byte_size": holdout_path.stat().st_size,
                     "case_count": 3,
                     "annotation_count": 3,
+                    "annotation_review_count": 3,
                     "claim_class": "blinded-independent-synthetic-holdout",
                 },
                 "profiles": {
@@ -214,6 +217,32 @@ def write_semantic_release_fixture(*, repo_root: Path, temp_root: Path) -> tuple
         encoding="utf-8",
     )
     return holdout_path, manifest_path
+
+
+def _semantic_annotation_review(
+    cases: tuple[dict[str, object], ...],
+    annotations: list[dict[str, object]],
+) -> dict[str, object]:
+    by_id = {str(row["case_id"]): row for row in annotations}
+    return {
+        "version": "odylith.greenfield.final-holdout-annotation-review.v1",
+        "claim_class": "blinded-independent-annotation-review",
+        "reviews": [
+            {
+                "case_id": f"holdout-{index}",
+                "prompt_sha256": hashlib.sha256(str(row["prompt"]).encode("utf-8")).hexdigest(),
+                "expected_outcome": by_id[f"holdout-{index}"]["expected_outcome"],
+                "expected_clarification": by_id[f"holdout-{index}"]["expected_clarification"],
+                "review_context_label": f"fixture-independent-context-{index}",
+                "review_method": "blinded-source-outcome-adjudication-v1",
+                "reviewed_on": "2026-09-25",
+                "review_status": "approved",
+                "outcome_basis_assessment": "source_supports_commit",
+                "rationale": "The independent fixture reviewer checked the source against the declared outcome.",
+            }
+            for index, row in enumerate(cases, start=1)
+        ],
+    }
 
 
 def _semantic_annotation(

@@ -1,5 +1,20 @@
 - Bug ID: CB-329
 
+- Runner-Native Outcome-Adjudication Gate (2026-09-25): Evaluation-splits v6
+  and final-holdout v7 now reject a protected package unless every exact case
+  has a hash-bound independent annotation review. A commit expectation must be
+  explicitly adjudicated as source-sufficient; a clarification expectation
+  must be adjudicated as materially uncertain, with its exact question
+  retained. Review contexts must be distinct from derivation ownership,
+  distributed across at least five contexts, limited to eight cases each, and
+  complete before the one-shot ledger can be claimed. This closes the concrete
+  preflight gap that allowed 28 invalid v6 outcomes to pass structural review;
+  it does not reinterpret protected prompts or change product semantics.
+  Direct contract proof passes `20/20`, the release runner/recovery scope passes
+  `142/142`, and the complete install-side Greenfield frontier passes
+  `1,151/1,151`. CB-329 remains open for one immutable public reproof and a
+  newly authored blind package that satisfies this gate.
+
 - Final V5/V6 Qualification-Contract Reopen (2026-09-25): V5 consumed its
   one-shot ledger before the runner discovered that the independently authored
   package omitted the canonical case `name` field; it produced no product

@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from greenfield_matrix_case_file import load_case_file
+from greenfield_holdout_annotation_review import validate_holdout_annotation_review
 from greenfield_matrix_release_artifacts import is_sha256
 from greenfield_matrix_release_artifacts import sha256_file
 from greenfield_matrix_input_axes import RELEASE_INPUT_STYLES
@@ -41,8 +42,8 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 
 
-EVALUATION_SPLIT_VERSION = "odylith.greenfield.evaluation-splits.v5"
-FINAL_HOLDOUT_VERSION = "odylith.greenfield.final-holdout.v6"
+EVALUATION_SPLIT_VERSION = "odylith.greenfield.evaluation-splits.v6"
+FINAL_HOLDOUT_VERSION = "odylith.greenfield.final-holdout.v7"
 STRUCTURAL_FLOORS_VERSION = "odylith.greenfield.structural-floors.v4"
 ATOMIC_CATEGORIES = (
     "actors",
@@ -147,6 +148,7 @@ def evaluate_frozen_evaluation_contract(
     holdout_payload: dict[str, Any] = {}
     holdout_cases: tuple[GreenfieldMatrixCase, ...] = ()
     annotations: dict[str, Mapping[str, Any]] = {}
+    annotation_reviews: dict[str, Mapping[str, Any]] = {}
     try:
         holdout_payload = _json_object(holdout_path, label="final holdout")
         holdout_cases = load_case_file(holdout_path)
@@ -162,10 +164,18 @@ def evaluate_frozen_evaluation_contract(
             rows=holdout_payload.get("annotations"),
         )
         issues.extend(annotation_issues)
+        annotation_reviews, review_issues = validate_holdout_annotation_review(
+            cases=holdout_cases,
+            annotations=annotations,
+            value=holdout_payload.get("annotation_review"),
+        )
+        issues.extend(review_issues)
     if len(holdout_cases) != _positive_int(final_ref.get("case_count")):
         issues.append("final holdout case_count does not match the frozen manifest")
     if len(annotations) != _positive_int(final_ref.get("annotation_count")):
         issues.append("final holdout annotation_count does not match the frozen manifest")
+    if len(annotation_reviews) != _positive_int(final_ref.get("annotation_review_count")):
+        issues.append("final holdout annotation_review_count does not match the frozen manifest")
     profiles = _mapping(manifest.get("profiles"))
     required_release_slices = release_slice_contract()
     declared_styles = _string_sequence(profiles.get("evidence_styles"))
@@ -266,6 +276,7 @@ def evaluate_frozen_evaluation_contract(
         "final_holdout": {
             "case_count": len(holdout_cases),
             "annotation_count": len(annotations),
+            "annotation_review_count": len(annotation_reviews),
             "sha256": str(final_ref.get("sha256") or ""),
             "claim_class": str(final_ref.get("claim_class") or ""),
             "outcome_counts": _outcome_counts(holdout_cases),

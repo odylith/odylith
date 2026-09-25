@@ -23,6 +23,10 @@ from greenfield_evaluation_contract import cross_split_membership_issues
 from greenfield_evaluation_contract import evaluate_frozen_evaluation_contract
 from greenfield_evaluation_contract import profile_confidence_sample_issues
 from greenfield_evaluation_contract import validate_atomic_annotations
+from greenfield_holdout_annotation_review import ANNOTATION_REVIEW_CLAIM_CLASS
+from greenfield_holdout_annotation_review import ANNOTATION_REVIEW_VERSION
+from greenfield_holdout_annotation_review import validate_holdout_annotation_review
+from greenfield_matrix_corpus_provenance import GreenfieldCaseProvenance
 from greenfield_model_profiles import MODEL_PROFILES
 from greenfield_model_profiles import MODEL_PROFILE_ASSIGNMENT_SEED
 from greenfield_model_profiles import MODEL_PROFILE_ASSIGNMENT_VERSION
@@ -257,6 +261,39 @@ def _clarification_annotation(case: GreenfieldMatrixCase) -> dict[str, object]:
     return annotation
 
 
+def _annotation_review(
+    cases: tuple[GreenfieldMatrixCase, ...],
+    annotations: list[dict[str, object]],
+) -> dict[str, object]:
+    by_id = {str(row["case_id"]): row for row in annotations}
+    return {
+        "version": ANNOTATION_REVIEW_VERSION,
+        "claim_class": ANNOTATION_REVIEW_CLAIM_CLASS,
+        "reviews": [
+            {
+                "case_id": case.case_id,
+                "prompt_sha256": hashlib.sha256(case.prompt.encode("utf-8")).hexdigest(),
+                "expected_outcome": by_id[case.case_id]["expected_outcome"],
+                "expected_clarification": by_id[case.case_id]["expected_clarification"],
+                "review_context_label": f"independent-context-{index % 5}",
+                "review_method": "blinded-source-outcome-adjudication-v1",
+                "reviewed_on": "2026-09-25",
+                "review_status": "approved",
+                "outcome_basis_assessment": (
+                    "source_supports_commit"
+                    if by_id[case.case_id]["expected_outcome"] == "commit"
+                    else "material_clarification_required"
+                ),
+                "rationale": (
+                    "The independent reviewer checked the complete source against "
+                    "the declared outcome."
+                ),
+            }
+            for index, case in enumerate(cases)
+        ],
+    }
+
+
 def _floors() -> dict[str, object]:
     return {
         "version": STRUCTURAL_FLOORS_VERSION,
@@ -343,6 +380,74 @@ def test_atomic_annotations_require_one_typed_clarification_identity() -> None:
     annotation["expected_clarification"]["field"] = "totally_unbounded_field"
     _annotations, issues = validate_atomic_annotations(cases=(case,), rows=[annotation])
     assert "annotation `case-1` unsupported material question field `totally_unbounded_field`" in issues
+
+
+def test_holdout_annotation_review_requires_explicit_source_outcome_adjudication() -> None:
+    cases = tuple(
+        _case(
+            f"case-{index}",
+            f"Review Desk {index} supports this path: Operator records one decision {index}.",
+        )
+        for index in range(1, 6)
+    )
+    annotations = [_annotation(case) for case in cases]
+    review = _annotation_review(cases, annotations)
+
+    approved, issues = validate_holdout_annotation_review(
+        cases=cases,
+        annotations={str(row["case_id"]): row for row in annotations},
+        value=review,
+    )
+
+    assert not issues
+    assert set(approved) == {case.case_id for case in cases}
+
+    review["reviews"][0]["outcome_basis_assessment"] = "material_clarification_required"
+    _approved, issues = validate_holdout_annotation_review(
+        cases=cases,
+        annotations={str(row["case_id"]): row for row in annotations},
+        value=review,
+    )
+    assert any("must declare outcome_basis_assessment `source_supports_commit`" in issue for issue in issues)
+
+
+def test_holdout_annotation_review_binds_clarification_materiality_and_independence() -> None:
+    cases = tuple(
+        _case(
+            f"case-{index}",
+            f"Review Desk {index} supports this path: Operator records one decision {index}.",
+        )
+        for index in range(1, 6)
+    )
+    annotations = [_annotation(case) for case in cases]
+    annotations[0] = _clarification_annotation(cases[0])
+    cases = (
+        replace(
+            cases[0],
+            provenance=GreenfieldCaseProvenance(
+                derivation_author="independent-context-0",
+                derivation_method="blinded-source-outcome-adjudication-v1",
+            ),
+        ),
+        *cases[1:],
+    )
+    review = _annotation_review(cases, annotations)
+
+    review["reviews"][0]["outcome_basis_assessment"] = "source_supports_commit"
+    review["reviews"][1]["review_context_label"] = ""
+    _approved, issues = validate_holdout_annotation_review(
+        cases=cases,
+        annotations={str(row["case_id"]): row for row in annotations},
+        value=review,
+    )
+
+    assert any(
+        "must declare outcome_basis_assessment `material_clarification_required`" in issue
+        for issue in issues
+    )
+    assert "annotation review `case-2` must name a review_context_label" in issues
+    assert "annotation review `case-1` context must differ from its derivation author" in issues
+    assert "annotation review `case-1` method must differ from its derivation method" in issues
 
 
 def test_reference_only_atoms_are_admitted_without_becoming_scored_truth() -> None:
@@ -527,7 +632,7 @@ def test_exact_prompt_identity_crossing_is_rejected_without_a_similarity_thresho
     )
 
 
-def test_frozen_contract_verifies_v5_acceptance_confidence_and_samples(tmp_path: Path) -> None:
+def test_frozen_contract_verifies_v6_acceptance_confidence_and_samples(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     corpus_path = repo_root / "tests/fixtures/corpus.json"
     corpus_path.parent.mkdir(parents=True)
@@ -593,6 +698,7 @@ def test_frozen_contract_verifies_v5_acceptance_confidence_and_samples(tmp_path:
             for case in holdout_cases
         ],
         "annotations": annotations,
+        "annotation_review": _annotation_review(holdout_cases, annotations),
     }
     holdout_path.write_text(json.dumps(holdout), encoding="utf-8")
     manifest_path = repo_root / "manifest.json"
@@ -622,6 +728,7 @@ def test_frozen_contract_verifies_v5_acceptance_confidence_and_samples(tmp_path:
             "byte_size": holdout_path.stat().st_size,
             "case_count": 36,
             "annotation_count": 36,
+            "annotation_review_count": 36,
             "claim_class": "blinded-independent-synthetic-holdout",
             "lineage": {
                 case.case_id: {
@@ -653,6 +760,7 @@ def test_frozen_contract_verifies_v5_acceptance_confidence_and_samples(tmp_path:
     assert report["passed"] is True
     assert report["tracked"]["case_count"] == 1
     assert report["final_holdout"]["annotation_count"] == 36
+    assert report["final_holdout"]["annotation_review_count"] == 36
     assert report["final_holdout"]["confidence_sample_issues"] == []
     assert report["acceptance_thresholds"]["overall_case_success"] == 1.0
     assert report["statistical_confidence"]["overall_case_success"] == 0.5

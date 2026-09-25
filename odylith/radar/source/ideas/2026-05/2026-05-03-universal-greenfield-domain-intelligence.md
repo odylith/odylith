@@ -142,6 +142,15 @@ Standard, rescue, and deep target the full installed proposal, confirmation, rea
 
 ## Current Completion Gate
 
+Runner-native outcome authority is now implemented. Evaluation-splits v6 and
+final-holdout v7 require a hash-bound independent source-sufficiency decision
+for every exact case before ledger claim: commit expectations must be confirmed
+as source-sufficient, clarification expectations as materially uncertain, and
+review ownership must be distributed and distinct from case derivation. The
+gate passes `20/20` direct contract tests, `142/142` release-runner/recovery
+tests, and `1,151/1,151` complete install-side Greenfield tests. No product
+prompt, parser, regex, schema, retry, or semantic owner changed.
+
 The exact frozen public mechanism at commit `74f23f1bb` passes its complete
 installed package, browser, transaction/recovery, and independent semantic
 review gates, but the terminal v6 protected run did not qualify release. CB-329
