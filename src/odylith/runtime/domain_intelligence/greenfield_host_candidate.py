@@ -40,7 +40,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v1"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v16"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v17"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
 
 
@@ -81,7 +81,7 @@ def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
                 "that exact citation in components.additional_"
                 "responsibilities. Identity is exact: related wording, a shared target, or the "
                 "same owner is still a separate responsibility. Put every other explicit source-"
-                "stated product or component responsibility under its selected owner there."
+                "stated product or component responsibility under its typed owner_fact there."
             ),
             "Keep accepted source facts separate from assumptions and provisional design decisions.",
             (

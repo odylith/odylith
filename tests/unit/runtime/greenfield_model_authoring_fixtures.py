@@ -147,6 +147,24 @@ def host_candidate_response(
         if event["responsibility_citation"] is not None
     }
     for component in components:
+        owner_quote = str(component.pop("owner_fact_quote", ""))
+        title = facts.get("title")
+        title_quote = str(title.get("quote") or "") if isinstance(title, Mapping) else ""
+        if owner_quote == title_quote:
+            component["owner_fact"] = {"field": "title", "row": 1}
+        else:
+            systems = facts.get("internal_systems")
+            if not isinstance(systems, list):
+                raise TypeError("canonical fixture internal systems are invalid")
+            component["owner_fact"] = {
+                "field": "internal_systems",
+                "row": next(
+                    index
+                    for index, citation in enumerate(systems, start=1)
+                    if isinstance(citation, Mapping)
+                    and str(citation.get("quote") or "") == owner_quote
+                ),
+            }
         responsibilities = component.get("responsibilities")
         if not isinstance(responsibilities, list):
             raise TypeError("canonical fixture component responsibilities are invalid")

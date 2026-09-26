@@ -4717,3 +4717,22 @@ projection coherence, confirmation, and readback.
   `2183/2183`, and full install `1174/1174` Greenfield gates. Release
   qualification still requires the exact rebuilt distribution, corrected
   disclosed corpus, independent strong review, and one new blind holdout.
+
+## Typed Host Component Ownership (2026-09-25)
+
+- Host candidate format v9 selects every additional accepted component owner by
+  `{field,row}` over `title` or `internal_systems`. The host no longer repeats a
+  source quote as an ownership join key. Deterministic materialization resolves
+  that typed identity into the unchanged canonical v68 owner quote and rejects
+  missing, human, external, or out-of-range selectors before review.
+- Event-owned responsibilities keep their existing typed actor identity and
+  exact responsibility citation. Additional non-event responsibilities keep
+  exact `{quote,context}` custody. Independent semantic review remains the sole
+  admission authority after deterministic validation; there is no normalization
+  repair, retry, fallback candidate, or alternate author path.
+- Current source proof passes `2,151/2,151` runtime unit checks,
+  `1,139/1,139` install checks, and `23/23` integration browser tests. The
+  runtime proof includes missing, extra, wrong-type, boolean, human, external,
+  and out-of-range typed-owner selectors. Exact immutable distribution and
+  release-corpus qualification remain required before this boundary is
+  release-qualified.

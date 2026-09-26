@@ -69,6 +69,19 @@ def _host_response(evidence: str) -> dict[str, object]:
                 state_object=field == "state_object",
             )
     for component in result["components"]:
+        owner_quote = component.pop("owner_fact_quote")
+        title_quote = facts["title"]["quote"]
+        if owner_quote == title_quote:
+            component["owner_fact"] = {"field": "title", "row": 1}
+        else:
+            component["owner_fact"] = {
+                "field": "internal_systems",
+                "row": next(
+                    index
+                    for index, citation in enumerate(facts["internal_systems"], start=1)
+                    if citation["quote"] == owner_quote
+                ),
+            }
         component["additional_responsibilities"] = [
             _context_citation(evidence, citation)
             for citation in component["responsibilities"]
@@ -328,6 +341,21 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
     responsibility = authored["properties"]["components"]["items"]["properties"][
         "additional_responsibilities"
     ]["items"]
+    owner_fact = authored["properties"]["components"]["items"]["properties"][
+        "owner_fact"
+    ]
+    assert [branch["required"] for branch in owner_fact["anyOf"]] == [
+        ["field", "row"],
+        ["field", "row"],
+    ]
+    assert [
+        branch["properties"]["field"]["const"]
+        for branch in owner_fact["anyOf"]
+    ] == ["title", "internal_systems"]
+    assert owner_fact["anyOf"][0]["properties"]["row"]["const"] == 1
+    assert "owner_fact_quote" not in authored["properties"]["components"]["items"][
+        "properties"
+    ]
     assert responsibility["required"] == ["quote", "context"]
     assert (
         authored["properties"]["components"]["items"]["properties"][
@@ -609,6 +637,36 @@ def test_host_candidate_rejects_forbidden_component_responsibility_field() -> No
     response["result"]["components"][0]["responsibilities"] = []
 
     with pytest.raises(ValueError, match="component has invalid fields"):
+        canonical_greenfield_host_candidate(response, evidence_text=evidence)
+
+
+@pytest.mark.parametrize(
+    "owner_fact",
+    (
+        {"field": "title", "row": 0},
+        {"field": "title", "row": 2},
+        {"field": "title", "row": True},
+        {"field": "title", "row": "1"},
+        {"field": "title"},
+        {"field": "title", "row": 1, "quote": "invented"},
+        {"field": "human_actors", "row": 1},
+        {"field": "external_systems", "row": 1},
+        {"field": "internal_systems", "row": 0},
+        {"field": "internal_systems", "row": True},
+        {"field": "internal_systems", "row": "1"},
+        {"field": "internal_systems", "row": 99},
+        {"field": "internal_systems"},
+        {"field": "internal_systems", "row": 1, "quote": "invented"},
+    ),
+)
+def test_host_candidate_rejects_unbound_typed_component_owner(
+    owner_fact: dict[str, object],
+) -> None:
+    evidence = combined_prompt_evidence_source(prompt=_source(), edit_evidence="")
+    response = _host_response(evidence)
+    response["result"]["components"][0]["owner_fact"] = owner_fact
+
+    with pytest.raises(ValueError, match="unbound owner"):
         canonical_greenfield_host_candidate(response, evidence_text=evidence)
 
 

@@ -11978,3 +11978,29 @@ Current proposal/confirmation/recovery operations and versioned semantic/timing 
   review, commit and push the existing branch, build one exact immutable
   distribution, run the disclosed public qualification at the unchanged 100%
   floor, and only then consume exactly one fresh blind holdout.
+
+## Typed Component Owner And Evaluator Reset (2026-09-25)
+
+- The first valid disclosed public case stopped safely after `57.778s` because
+  host-authored free-form component ownership did not bind to a selected product
+  fact. A retained equivalent rerun passed, identifying a stochastic prose join.
+  Host format v9 and contract v17 replace that one join with typed `{field,row}`
+  owner identity, matching the existing event-actor mechanism. Canonical v68,
+  citation custody, independent review, transaction laws, and projection stay
+  unchanged. Add no parser, regex, retry, repair, fallback, or model stage.
+- The recovered v6/v7 package and the first public-v9 replacement are both
+  disqualified as release authority. The former labels explicit pre-commit
+  uncertainty as commit-ready; the latter never states whether repository
+  metadata is product scope or background. Blind Astra review classified every
+  ambiguous case as clarification, and Astra/xhigh reproduced the boundary
+  question. Do not change fail-closed product behavior to satisfy either label.
+- One corrected public discriminator explicitly bounds the product workflow and
+  marks repository metadata as background. Astra-medium authored once,
+  independent Astra review admitted it, and pre-confirm staged a verified
+  95-write transaction. Source proof is `2,151/2,151` runtime unit checks,
+  `1,139/1,139` install checks, and `23/23` integration browser tests, including
+  deterministic rejection of malformed typed owners. Next: reseal and
+  blind-review the corrected 36-case, 12-domain disclosed corpus, commit and
+  build one immutable distribution, require the 100% public
+  package/browser/recovery floor, then commission exactly one fresh untouched
+  holdout. Completion remains unclaimed.

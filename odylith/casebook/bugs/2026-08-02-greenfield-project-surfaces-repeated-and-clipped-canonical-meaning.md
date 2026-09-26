@@ -1,5 +1,34 @@
 - Bug ID: CB-303
 
+- Typed component-owner and public-corpus adjudication (2026-09-25): The
+  disclosed public-v9 gate stopped on its first source-provenanced case after
+  one `57.778s` host call with zero governed writes: the candidate supplied a
+  free-form component owner that did not bind to its selected product facts.
+  A retained equivalent rerun passed, proving a stochastic prose-join failure
+  rather than a missing product capability. Host format v9 and contract v17
+  replace only that host-facing `owner_fact_quote` join with the already-proven
+  typed `{field,row}` identity used by event actors; canonical v68 meaning,
+  independent review, transaction custody, and output projection are unchanged.
+  The replacement passes `2,151/2,151` runtime unit checks, `1,139/1,139`
+  install checks, and all `23/23` integration browser tests. The runtime total
+  includes a deterministic negative matrix for missing, extra, wrong-type,
+  boolean, human, external, and out-of-range owner selectors. No parser,
+  regex, retry, repair, fallback, or extra model call was added.
+- The same wave independently invalidated two release corpora instead of
+  weakening product semantics. The recovered v6/v7 package explicitly required
+  unresolved policy before commitment despite commit labels. The first
+  public-v9 replacement then left repository metadata's relationship to the
+  intended product unstated: five blind Astra/xhigh contexts classified its
+  24 alleged positives as clarification, and an Astra/xhigh author reproduced
+  that boundary question. The case becomes commit-ready only when the source
+  explicitly limits the product to the stated workflow and labels repository
+  metadata as background. That corrected public control completed one
+  Astra-medium author call, independent Astra review, and a verified 95-write
+  pre-confirm transaction. Retire the ambiguous labels; rebuild a disclosed
+  36-case, 12-domain public gate from exact explicit-boundary sources before
+  building the final blind holdout. CB-303 remains open until the immutable
+  distribution passes that 100% floor and exactly one new untouched holdout.
+
 - Public Astra discriminator and corpus correction (2026-09-25): The exact
   `f87596b4d` installed build reran only disclosed public controls 002 and 003
   with one external Astra-medium author per case. Stem Harbour compiled and

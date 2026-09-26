@@ -18,7 +18,7 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     MAX_AUTHORED_FIELD_VALUE_CHARS,
 )
 
-HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v8"
+HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v9"
 HOST_EVENT_CITATION_FIELD = "source_citation"
 HOST_EVENT_RESPONSIBILITY_FIELD = "responsibility_citation"
 
@@ -104,6 +104,38 @@ def greenfield_host_candidate_schema() -> dict[str, Any]:
         ),
     }
     component = authored["properties"]["components"]["items"]
+    component["required"] = [
+        "owner_fact" if field == "owner_fact_quote" else field
+        for field in component["required"]
+    ]
+    component["properties"].pop("owner_fact_quote")
+    component["properties"]["owner_fact"] = {
+        "description": (
+            "Select the exact accepted product owner by typed fact identity. Use title "
+            "when the source names no narrower internal system; never select a human or "
+            "external participant."
+        ),
+        "anyOf": [
+            {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["field", "row"],
+                "properties": {
+                    "field": {"type": "string", "const": "title"},
+                    "row": {"type": "integer", "const": 1},
+                },
+            },
+            {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["field", "row"],
+                "properties": {
+                    "field": {"type": "string", "const": "internal_systems"},
+                    "row": {"type": "integer", "minimum": 1},
+                },
+            },
+        ],
+    }
     responsibility = component["properties"].pop("responsibilities")
     component["required"] = [
         "additional_responsibilities" if field == "responsibilities" else field
@@ -235,7 +267,10 @@ def canonical_greenfield_host_candidate(
         if not isinstance(raw_component, Mapping) or set(raw_component) != component_fields:
             raise ValueError("Greenfield host candidate component has invalid fields")
         component = deepcopy(dict(raw_component))
-        owner_quote = str(component.get("owner_fact_quote") or "")
+        owner_quote = _product_event_owner_quote(facts, component.pop("owner_fact", None))
+        if not owner_quote:
+            raise ValueError("Greenfield host candidate component has unbound owner")
+        component["owner_fact_quote"] = owner_quote
         responsibilities = component.pop("additional_responsibilities", None)
         if not isinstance(responsibilities, Sequence) or isinstance(
             responsibilities, (str, bytes, bytearray)
@@ -281,13 +316,15 @@ def _product_event_owner_quote(
 ) -> str:
     """Return the selected product owner for an event, never a human actor."""
 
-    if not isinstance(actor_fact, Mapping):
+    if not isinstance(actor_fact, Mapping) or set(actor_fact) != {"field", "row"}:
         return ""
     field = str(actor_fact.get("field") or "")
     row = actor_fact.get("row")
-    if field == "title":
+    if not isinstance(row, int) or isinstance(row, bool):
+        return ""
+    if field == "title" and row == 1:
         citation = facts.get("title")
-    elif field == "internal_systems" and isinstance(row, int) and not isinstance(row, bool):
+    elif field == "internal_systems":
         systems = facts.get("internal_systems")
         citation = (
             systems[row - 1]
