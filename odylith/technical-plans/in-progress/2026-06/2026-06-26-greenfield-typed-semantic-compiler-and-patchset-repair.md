@@ -12055,3 +12055,25 @@ Current proposal/confirmation/recovery operations and versioned semantic/timing 
   be fixed only by another local rule, do not patch the example. Reopen the
   owning abstraction, compare one bounded alternative, and remove the losing
   path. If no new class appears, do not expand architecture or scope.
+
+## V20 Contract-Parity Correction (2026-09-25)
+
+- The first immutable V20 public case repeated CB-303: the host candidate used
+  the operator's product-creation invocation as `product_story`, and the
+  independent reviewer correctly denied it. Authoring took `75.866s`, review
+  took `9.405s`, and fail-closed execution created no transaction or governed
+  writes.
+- The defect is boundary drift, not missing semantic machinery. The reviewer
+  already defined `product_story` as product behavior/outcome, but the external
+  host candidate schema did not expose that role. Share one definition across
+  both surfaces; exclude operator creation requests and title/category labels.
+  Do not add a parser, regex, phrase classifier, prompt cascade, retry, repair,
+  fallback, model ladder, or model call.
+- Direct schema/reviewer parity proof passes `95/95`, the complete Greenfield
+  suite passes `3,177/3,177`, the cross-surface browser/UX matrix passes
+  `68/68`, and independent bounded review returns `SHIP`. The falsification
+  gate is the unchanged 36-case disclosed
+  corpus from a newly built immutable distribution. Preserve the 100% package,
+  browser, recovery, no-write clarification, exact-host-argv, and timing floors.
+  Require independent final semantic qualification before exactly one new blind
+  holdout; completion remains unclaimed until that holdout passes.

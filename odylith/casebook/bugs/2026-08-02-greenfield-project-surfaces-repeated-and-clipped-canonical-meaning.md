@@ -1,5 +1,27 @@
 - Bug ID: CB-303
 
+- V20 host-contract parity recurrence (2026-09-25): The first case of the
+  immutable 36-case public campaign stopped safely after one `75.866s`
+  Astra-medium author call and one `9.405s` independent review. The host
+  candidate selected the operator invocation `Create an accessibility
+  product.` as `facts.product_story`; the reviewer correctly denied it because
+  the span described creation/category, not product behavior or outcome. No
+  transaction or governed write occurred. This repeats the disclosed V6
+  product-story class already owned by CB-303. The internal reviewer contract
+  already carried the correct semantic role, but the external host candidate
+  schema omitted it after host-native authoring replaced the internal author.
+  The bounded correction projects one shared `product_story` role definition
+  into both boundaries and explicitly excludes operator creation requests and
+  title/category labels. It adds no parser, regex, phrase classifier, prompt
+  cascade, retry, repair, fallback, model ladder, or additional model call.
+  Focused proof passes `95/95`, the complete Greenfield suite passes
+  `3,177/3,177`, the cross-surface browser/UX matrix passes `68/68`, and
+  independent bounded review returned `SHIP`.
+  Rebuild immutable installed bytes and restart the frozen public campaign from
+  case one; do not touch the protected holdout unless that complete gate and
+  final independent semantic qualification pass. Evidence:
+  `/private/tmp/odylith-v20-public.I1L4Xy/`.
+
 - Public-v11 event-citation overlap finding (2026-09-25): The exact immutable
   `778d2fb6e` distribution stopped safely on the first disclosed public-v11
   positive after one `121.423s` Sol-high host call. The candidate used partially

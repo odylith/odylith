@@ -21,6 +21,7 @@ from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
     canonical_greenfield_reviewer_candidate_sha256,
 )
 from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
+    PRODUCT_STORY_ROLE_DEFINITION,
     REVIEW_PROMPT,
 )
 from odylith.runtime.domain_intelligence.greenfield_event_ordering import (
@@ -442,6 +443,12 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
     )
     assert payload["candidate_schema"]["additionalProperties"] is False
     authored = payload["candidate_schema"]["properties"]["result"]["anyOf"][0]
+    assert (
+        authored["properties"]["facts"]["properties"]["product_story"][
+            "description"
+        ]
+        == PRODUCT_STORY_ROLE_DEFINITION
+    )
     assert "first_path" not in authored["properties"]["facts"]["properties"]
     assert "source_citation" in authored["properties"]["events"]["items"]["required"]
     source_citation = authored["properties"]["events"]["items"]["properties"][

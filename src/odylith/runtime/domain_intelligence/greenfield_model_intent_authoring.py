@@ -31,6 +31,7 @@ from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
     HUMAN_ACTOR_ROLE_DEFINITION,
     INTERNAL_SYSTEM_ROLE_DEFINITION,
     OPERATIONAL_CONSTRAINT_ROLE_DEFINITION,
+    PRODUCT_STORY_ROLE_DEFINITION,
     PROOF_BOUNDARY_ROLE_DEFINITION,
     STATE_OBJECT_ROLE_DEFINITION,
 )
@@ -680,9 +681,10 @@ _AUTHORED_FACTS_SCHEMA: dict[str, Any] = {
     **_TYPED_FACTS_SCHEMA,
     "properties": {
         **_TYPED_FACTS_SCHEMA["properties"],
-        **{
-            field: _CITATION_SCHEMA
-            for field in ("title", "product_story")
+        "title": _CITATION_SCHEMA,
+        "product_story": {
+            **_CITATION_SCHEMA,
+            "description": PRODUCT_STORY_ROLE_DEFINITION,
         },
         "state_object": {
             **_STATE_CITATION_SCHEMA,

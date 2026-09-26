@@ -9,7 +9,7 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "32f8107e089015e2789da095be7f7fa6dfb7f89b53ed67030b813fd2aa3991e9",
+    "digest": "23197d04d28332a7ce65baadca2452da946633820fd5bd7a297c04a5f5ee5404",
     "file_count": 317,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
@@ -14502,7 +14502,7 @@
       ],
       "component_names": [
         "Independent tri-state candidate review",
-        "Failed-candidate custody"
+        "Failed-review custody"
       ],
       "related_component_ids": []
     },
@@ -26287,5 +26287,5 @@
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-09-26 05:32:33Z"
+  "generated_utc": "2026-09-26 06:36:40Z"
 }

@@ -87,6 +87,13 @@ def test_partition_preserves_every_value_and_binds_complete_candidate():
     assert "phrase or complete statement" in proof_role
     assert "do not reject a longer faithful span" in proof_role
     assert "purpose without an identified result is not proof" in proof_role
+    product_story_role = payload["role_definitions"]["product_story"]
+    assert product_story_role == review.PRODUCT_STORY_ROLE_DEFINITION
+    assert product_story_role == author._AUTHORED_FACTS_SCHEMA["properties"][
+        "product_story"
+    ]["description"]
+    assert "operator request" in product_story_role
+    assert "title or category label" in product_story_role
     internal_role = payload["role_definitions"]["internal_systems"]
     assert internal_role == review.INTERNAL_SYSTEM_ROLE_DEFINITION
     assert internal_role == author._AUTHORED_FACTS_SCHEMA["properties"]["internal_systems"]["description"]

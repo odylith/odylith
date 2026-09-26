@@ -70,6 +70,10 @@ HUMAN_ACTOR_ROLE_DEFINITION = (
     "human participant is stated. An activity, artifact, or output-purpose modifier "
     "is not a human participant."
 )
+PRODUCT_STORY_ROLE_DEFINITION = (
+    "A complete source span about product behavior or outcome, excluding the operator "
+    "request to create a proposal or product and excluding a title or category label."
+)
 _SOURCE_FIELDS = frozenset((
     "status", "facts", "events", "components", "terminal", "source_precedence",
     "consistency", "ambiguities",
@@ -166,7 +170,7 @@ _ROLE_DEFINITIONS = {
     "internal_systems": INTERNAL_SYSTEM_ROLE_DEFINITION,
     "operational_constraints": OPERATIONAL_CONSTRAINT_ROLE_DEFINITION,
     "external_systems": "Only an explicitly source-stated operational exchange or dependency between this product and a named external system, service, authority, organization, or data source. Merely naming task data, an output recipient, or a reviewer does not establish that connection.",
-    "product_story": "A complete source span about product behavior or outcome, excluding the operator request to create a proposal.",
+    "product_story": PRODUCT_STORY_ROLE_DEFINITION,
 }
 
 

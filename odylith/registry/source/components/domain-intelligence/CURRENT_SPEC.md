@@ -4,6 +4,25 @@ Last updated: 2026-09-25
 
 ## Overview
 
+### Host/reviewer product-story contract parity (2026-09-25)
+
+The V20 public campaign reproduced CB-303 on its first accessibility case. The
+host candidate selected the operator's product-creation invocation as
+`product_story`; the independent reviewer denied it because that occurrence did
+not describe product behavior or outcome. The failure was fail-closed and
+created no transaction or governed files.
+
+The semantic law already existed in reviewer ownership but was absent from the
+external host candidate schema. One shared role definition now drives both
+surfaces and excludes operator requests to create a proposal or product plus
+title/category labels. This restores contract parity without adding a parser,
+regex, phrase classifier, prompt cascade, retry, repair, fallback, model ladder,
+or model call. Focused proof passes `95/95`, the complete Greenfield suite
+passes `3,177/3,177`, the cross-surface browser/UX matrix passes `68/68`, and
+independent review returned `SHIP`. Exact immutable installed
+public/browser/recovery qualification and one fresh untouched holdout remain
+open.
+
 ### Tri-state independent Greenfield review (2026-09-25)
 
 The host-native candidate remains one untrusted source-cited hypothesis. The
@@ -1175,6 +1194,9 @@ semantic/design findings.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_candidate_review.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py`
 - **2026-09-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_candidate_review.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_proof_observation.py`
@@ -1190,9 +1212,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_host_candidate_shape.py`
-- **2026-09-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-141, B-142
-  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_host_candidate_shape.py`, `tests/unit/runtime/test_greenfield_host_candidate.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

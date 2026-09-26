@@ -3169,3 +3169,24 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   immutable bytes and restarting the public campaign from case one. Do not
   touch the protected holdout until the complete public gate and independent
   semantic review pass.
+
+## V20 Product-Story Contract Parity Gate (2026-09-25)
+
+- Exact immutable V20 passed the previously blocked civic clarification
+  discriminator, then stopped on public case one when Astra selected the
+  operator invocation as `product_story`. Independent review denied the
+  candidate in `9.405s`; the `75.866s` author call stayed within the advisory
+  envelope, and no transaction or governed write occurred.
+- Reopen no architecture. CB-303 already owns this product-story failure class.
+  The reviewer carried the correct behavior/outcome role, while the external
+  host schema omitted it. Use one shared semantic definition at both boundaries
+  and exclude operator creation requests and title/category labels. Add no
+  parser, regex, phrase classifier, stacked prompt, retry, repair, fallback,
+  model ladder, or second author.
+- Focused proof passes `95/95`, the complete Greenfield suite passes
+  `3,177/3,177`, the cross-surface browser/UX matrix passes `68/68`, and an
+  independent bounded review returns `SHIP`. Commit and push the existing
+  branch, build one clean immutable distribution, and restart all 36 disclosed
+  cases from case one. Only a 100% public/package/browser/recovery pass plus
+  final independent semantic review may unlock exactly one fresh untouched
+  blind holdout.
