@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "generated_utc": "2026-09-26T00:44:34Z",
+  "generated_utc": "2026-09-26T01:31:17Z",
   "release_summary": {
     "catalog": [
       {
@@ -324,17 +324,17 @@
           "24h": {
             "commit_count": 31,
             "local_change_count": 3,
-            "file_touch_count": 151
+            "file_touch_count": 144
           },
           "48h": {
-            "commit_count": 36,
+            "commit_count": 37,
             "local_change_count": 3,
             "file_touch_count": 550
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-09-25T17:44:00-07:00",
+          "last_activity_iso": "2026-09-25T18:31:14-07:00",
           "age_days": 91,
           "eta_days": 14,
           "eta_confidence": "high"
@@ -776,17 +776,17 @@
           "24h": {
             "commit_count": 30,
             "local_change_count": 1,
-            "file_touch_count": 149
+            "file_touch_count": 142
           },
           "48h": {
-            "commit_count": 32,
+            "commit_count": 33,
             "local_change_count": 1,
             "file_touch_count": 198
           }
         },
         "timeline": {
           "start_date": "2026-03-28",
-          "last_activity_iso": "2026-09-25T17:41:59-07:00",
+          "last_activity_iso": "2026-09-25T18:26:03-07:00",
           "age_days": 181,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -4605,157 +4605,6 @@
             "label": "Deployment truth",
             "surface": "compass",
             "value": "B-059"
-          }
-        ],
-        "proof_summary_lines": []
-      },
-      {
-        "idea_id": "B-145",
-        "title": "Assess v0.1.15 guidance and browser surface migration",
-        "status": "implementation",
-        "priority": "P1",
-        "sizing": "S",
-        "complexity": "Medium",
-        "ordering_score": "100",
-        "implemented_summary": "",
-        "why": {
-          "problem": "The clean candidate at `bbe312144e75bdde37d1fa93f569d9d27df06eb0` changes 809 consumer-sensitive paths relative to published v0.1.14 at `fae446995e13e12409e50f944a336dbc846db90a`. CB-337 established that earlier dirty-only checks could forget committed changes. This assessment is reopened: its historical bindings do not qualify the current release-wide comparison. Historical bindings from earlier snapshots, retained for traceability only: The v0.1.15 release changes managed guidance, browser-rendered governance surfaces, and install-managed assets. Existing consumer installs need an explicit assessment before promotion. Evidence markers: `migration-observer:0.1.15:guidance-and-skills:1dbd05321562`; `migration-observer:0.1.15:guidance-and-skills:5cf1c66e46da`; `migration-observer:0.1.15:browser-surfaces:e400b39b824e`; `migration-observer:0.1.15:browser-surfaces:835aaa4f49de`; `migration-observer:0.1.15:browser-surfaces:9a4db93486ab`; `migration-observer:0.1.15:browser-surfaces:e64341855d69`; `migration-observer:0.1.15:browser-surfaces:28bfbc30ae65`; `migration-observer:0.1.15:browser-surfaces:068dac56194b`; `migration-observer:0.1.15:browser-surfaces:341c9fc14c4e`; `migration-observer:0.1.15:public-docs-and-release-guidance:b91b6c7e0995`; `migration-observer:0.1.15:install-managed-assets:352b7f58e4df`; `migration-observer:0.1.15:install-managed-assets:fae6b20b969f`; `migration-observer:0.1.15:install-managed-assets:46796f8138f3`; `migration-observer:0.1.15:install-managed-assets:87c9b491c829`.",
-          "customer": "Odylith operators upgrading managed guidance, skill, Atlas, and Casebook browser surfaces.",
-          "proposed_solution": "Compare the published predecessor and complete candidate trees, map each classified path to its compatibility decision and proof, and exercise the actual published runtime with populated governance. Bind final fingerprints only after the assessment is complete; do not infer source preservation from an empty repo.",
-          "opportunity": "Make upgrade impact explicit, reversible, and traceable rather than relying on implicit regenerated assets.",
-          "why_now": "The release gate observed these consumer-visible changes in the current diff; the assessment must bind the exact final fingerprints before promotion.",
-          "founder_pov": "Assess the changed guidance and browser surfaces, record compatibility and rollback posture, and either complete the assessment or route concrete migration work before release."
-        },
-        "links": {
-          "idea_file": "odylith/radar/source/ideas/2026-07/2026-07-20-assess-v0-1-15-guidance-and-browser-surface-migration.md",
-          "plan_file": "odylith/technical-plans/in-progress/2026-07/2026-07-20-v0-1-15-guidance-and-browser-surface-migration-assessment.md"
-        },
-        "registry_components": [
-          {
-            "component_id": "odylith",
-            "name": "Odylith"
-          }
-        ],
-        "execution_wave_programs": [],
-        "release": {},
-        "release_history_summary": "Removed from 0.1.15",
-        "plan": {
-          "created": "2026-07-20",
-          "updated": "2026-09-24",
-          "all_total_tasks": 4,
-          "all_done_tasks": 0,
-          "total_tasks": 0,
-          "done_tasks": 0,
-          "progress_ratio": 0.0,
-          "progress_basis": "execution_checklist",
-          "display_progress_ratio": null,
-          "display_progress_label": "Progress not yet captured",
-          "display_progress_state": "unknown",
-          "progress_classification": "active_untracked",
-          "checklist_label": "",
-          "next_tasks": []
-        },
-        "activity": {
-          "24h": {
-            "commit_count": 1,
-            "local_change_count": 0,
-            "file_touch_count": 13
-          },
-          "48h": {
-            "commit_count": 5,
-            "local_change_count": 0,
-            "file_touch_count": 35
-          }
-        },
-        "timeline": {
-          "start_date": "2026-07-20",
-          "last_activity_iso": "2026-09-24T18:25:01-07:00",
-          "age_days": 67,
-          "eta_days": null,
-          "eta_confidence": "low"
-        },
-        "lineage": {
-          "reopens": [],
-          "reopened_by": [],
-          "split_from": [],
-          "split_into": [],
-          "merged_into": [],
-          "merged_from": []
-        },
-        "cost": {
-          "base_index": 18,
-          "24h": {
-            "index": 21,
-            "band": "Low"
-          },
-          "48h": {
-            "index": 35,
-            "band": "Low"
-          }
-        },
-        "proof_state": {},
-        "claim_guard": {},
-        "proof_state_resolution": {
-          "lane_ids": [],
-          "state": "none"
-        },
-        "scope_signal": {
-          "budget_class": "fast_simple",
-          "caps": [],
-          "feature_vector": {
-            "blast_radius_class": "cross-surface",
-            "broad_fanout": false,
-            "cross_surface_conflict": false,
-            "decision_count": 70,
-            "decision_evidence": true,
-            "explicit_count": 717,
-            "frontier_phase": "",
-            "generated_only_churn": false,
-            "governance_only_local_change": false,
-            "has_any_signal": true,
-            "implementation_count": 487,
-            "implementation_evidence": true,
-            "linked_child_count": 0,
-            "linked_surface_count": 5,
-            "meaningful_change_count": 583,
-            "meaningful_scope_activity": true,
-            "narrow_verified_signal": true,
-            "open_warning": false,
-            "proof_blocker": false,
-            "proof_status": "",
-            "stale_authority": false,
-            "synthetic_count": 0,
-            "unsafe_closeout": false,
-            "verified_completion": false
-          },
-          "label": "Active scope",
-          "promoted_default": true,
-          "rank": 3,
-          "reasons": [
-            "A narrow verified scoped signal was recorded.",
-            "Explicit decision evidence is present.",
-            "Explicit implementation evidence is present.",
-            "Meaningful scope-local implementation evidence is present."
-          ],
-          "rung": "R3",
-          "token": "active_scope"
-        },
-        "proof_refs": [
-          {
-            "anchor": "timeline-audit",
-            "fact_tag": "frontier",
-            "kind": "workstream",
-            "label": "Proof frontier",
-            "surface": "compass",
-            "value": "B-145"
-          },
-          {
-            "anchor": "current-workstreams",
-            "fact_tag": "deployment_truth",
-            "kind": "workstream",
-            "label": "Deployment truth",
-            "surface": "compass",
-            "value": "B-145"
           }
         ],
         "proof_summary_lines": []
@@ -8938,6 +8787,157 @@
             "label": "Deployment truth",
             "surface": "compass",
             "value": "B-126"
+          }
+        ],
+        "proof_summary_lines": []
+      },
+      {
+        "idea_id": "B-145",
+        "title": "Assess v0.1.15 guidance and browser surface migration",
+        "status": "implementation",
+        "priority": "P1",
+        "sizing": "S",
+        "complexity": "Medium",
+        "ordering_score": "100",
+        "implemented_summary": "",
+        "why": {
+          "problem": "The clean candidate at `bbe312144e75bdde37d1fa93f569d9d27df06eb0` changes 809 consumer-sensitive paths relative to published v0.1.14 at `fae446995e13e12409e50f944a336dbc846db90a`. CB-337 established that earlier dirty-only checks could forget committed changes. This assessment is reopened: its historical bindings do not qualify the current release-wide comparison. Historical bindings from earlier snapshots, retained for traceability only: The v0.1.15 release changes managed guidance, browser-rendered governance surfaces, and install-managed assets. Existing consumer installs need an explicit assessment before promotion. Evidence markers: `migration-observer:0.1.15:guidance-and-skills:1dbd05321562`; `migration-observer:0.1.15:guidance-and-skills:5cf1c66e46da`; `migration-observer:0.1.15:browser-surfaces:e400b39b824e`; `migration-observer:0.1.15:browser-surfaces:835aaa4f49de`; `migration-observer:0.1.15:browser-surfaces:9a4db93486ab`; `migration-observer:0.1.15:browser-surfaces:e64341855d69`; `migration-observer:0.1.15:browser-surfaces:28bfbc30ae65`; `migration-observer:0.1.15:browser-surfaces:068dac56194b`; `migration-observer:0.1.15:browser-surfaces:341c9fc14c4e`; `migration-observer:0.1.15:public-docs-and-release-guidance:b91b6c7e0995`; `migration-observer:0.1.15:install-managed-assets:352b7f58e4df`; `migration-observer:0.1.15:install-managed-assets:fae6b20b969f`; `migration-observer:0.1.15:install-managed-assets:46796f8138f3`; `migration-observer:0.1.15:install-managed-assets:87c9b491c829`.",
+          "customer": "Odylith operators upgrading managed guidance, skill, Atlas, and Casebook browser surfaces.",
+          "proposed_solution": "Compare the published predecessor and complete candidate trees, map each classified path to its compatibility decision and proof, and exercise the actual published runtime with populated governance. Bind final fingerprints only after the assessment is complete; do not infer source preservation from an empty repo.",
+          "opportunity": "Make upgrade impact explicit, reversible, and traceable rather than relying on implicit regenerated assets.",
+          "why_now": "The release gate observed these consumer-visible changes in the current diff; the assessment must bind the exact final fingerprints before promotion.",
+          "founder_pov": "Assess the changed guidance and browser surfaces, record compatibility and rollback posture, and either complete the assessment or route concrete migration work before release."
+        },
+        "links": {
+          "idea_file": "odylith/radar/source/ideas/2026-07/2026-07-20-assess-v0-1-15-guidance-and-browser-surface-migration.md",
+          "plan_file": "odylith/technical-plans/in-progress/2026-07/2026-07-20-v0-1-15-guidance-and-browser-surface-migration-assessment.md"
+        },
+        "registry_components": [
+          {
+            "component_id": "odylith",
+            "name": "Odylith"
+          }
+        ],
+        "execution_wave_programs": [],
+        "release": {},
+        "release_history_summary": "Removed from 0.1.15",
+        "plan": {
+          "created": "2026-07-20",
+          "updated": "2026-09-24",
+          "all_total_tasks": 4,
+          "all_done_tasks": 0,
+          "total_tasks": 0,
+          "done_tasks": 0,
+          "progress_ratio": 0.0,
+          "progress_basis": "execution_checklist",
+          "display_progress_ratio": null,
+          "display_progress_label": "Progress not yet captured",
+          "display_progress_state": "unknown",
+          "progress_classification": "active_untracked",
+          "checklist_label": "",
+          "next_tasks": []
+        },
+        "activity": {
+          "24h": {
+            "commit_count": 0,
+            "local_change_count": 0,
+            "file_touch_count": 0
+          },
+          "48h": {
+            "commit_count": 5,
+            "local_change_count": 0,
+            "file_touch_count": 35
+          }
+        },
+        "timeline": {
+          "start_date": "2026-07-20",
+          "last_activity_iso": "2026-09-24T18:25:01-07:00",
+          "age_days": 67,
+          "eta_days": null,
+          "eta_confidence": "low"
+        },
+        "lineage": {
+          "reopens": [],
+          "reopened_by": [],
+          "split_from": [],
+          "split_into": [],
+          "merged_into": [],
+          "merged_from": []
+        },
+        "cost": {
+          "base_index": 18,
+          "24h": {
+            "index": 18,
+            "band": "Low"
+          },
+          "48h": {
+            "index": 35,
+            "band": "Low"
+          }
+        },
+        "proof_state": {},
+        "claim_guard": {},
+        "proof_state_resolution": {
+          "lane_ids": [],
+          "state": "none"
+        },
+        "scope_signal": {
+          "budget_class": "fast_simple",
+          "caps": [],
+          "feature_vector": {
+            "blast_radius_class": "cross-surface",
+            "broad_fanout": false,
+            "cross_surface_conflict": false,
+            "decision_count": 70,
+            "decision_evidence": true,
+            "explicit_count": 717,
+            "frontier_phase": "",
+            "generated_only_churn": false,
+            "governance_only_local_change": false,
+            "has_any_signal": true,
+            "implementation_count": 487,
+            "implementation_evidence": true,
+            "linked_child_count": 0,
+            "linked_surface_count": 5,
+            "meaningful_change_count": 583,
+            "meaningful_scope_activity": true,
+            "narrow_verified_signal": true,
+            "open_warning": false,
+            "proof_blocker": false,
+            "proof_status": "",
+            "stale_authority": false,
+            "synthetic_count": 0,
+            "unsafe_closeout": false,
+            "verified_completion": false
+          },
+          "label": "Active scope",
+          "promoted_default": true,
+          "rank": 3,
+          "reasons": [
+            "A narrow verified scoped signal was recorded.",
+            "Explicit decision evidence is present.",
+            "Explicit implementation evidence is present.",
+            "Meaningful scope-local implementation evidence is present."
+          ],
+          "rung": "R3",
+          "token": "active_scope"
+        },
+        "proof_refs": [
+          {
+            "anchor": "timeline-audit",
+            "fact_tag": "frontier",
+            "kind": "workstream",
+            "label": "Proof frontier",
+            "surface": "compass",
+            "value": "B-145"
+          },
+          {
+            "anchor": "current-workstreams",
+            "fact_tag": "deployment_truth",
+            "kind": "workstream",
+            "label": "Deployment truth",
+            "surface": "compass",
+            "value": "B-145"
           }
         ],
         "proof_summary_lines": []
@@ -30247,17 +30247,17 @@
           "24h": {
             "commit_count": 31,
             "local_change_count": 3,
-            "file_touch_count": 151
+            "file_touch_count": 144
           },
           "48h": {
-            "commit_count": 36,
+            "commit_count": 37,
             "local_change_count": 3,
             "file_touch_count": 550
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-09-25T17:44:00-07:00",
+          "last_activity_iso": "2026-09-25T18:31:14-07:00",
           "age_days": 91,
           "eta_days": 14,
           "eta_confidence": "high"
@@ -30699,17 +30699,17 @@
           "24h": {
             "commit_count": 30,
             "local_change_count": 1,
-            "file_touch_count": 149
+            "file_touch_count": 142
           },
           "48h": {
-            "commit_count": 32,
+            "commit_count": 33,
             "local_change_count": 1,
             "file_touch_count": 198
           }
         },
         "timeline": {
           "start_date": "2026-03-28",
-          "last_activity_iso": "2026-09-25T17:41:59-07:00",
+          "last_activity_iso": "2026-09-25T18:26:03-07:00",
           "age_days": 181,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -33360,9 +33360,9 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
+            "commit_count": 0,
             "local_change_count": 0,
-            "file_touch_count": 13
+            "file_touch_count": 0
           },
           "48h": {
             "commit_count": 5,
@@ -33388,7 +33388,7 @@
         "cost": {
           "base_index": 18,
           "24h": {
-            "index": 21,
+            "index": 18,
             "band": "Low"
           },
           "48h": {
@@ -60171,17 +60171,17 @@
         "24h": {
           "commit_count": 31,
           "local_change_count": 3,
-          "file_touch_count": 151
+          "file_touch_count": 144
         },
         "48h": {
-          "commit_count": 36,
+          "commit_count": 37,
           "local_change_count": 3,
           "file_touch_count": 550
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-09-25T17:44:00-07:00",
+        "last_activity_iso": "2026-09-25T18:31:14-07:00",
         "age_days": 91,
         "eta_days": 14,
         "eta_confidence": "high"
@@ -60623,17 +60623,17 @@
         "24h": {
           "commit_count": 30,
           "local_change_count": 1,
-          "file_touch_count": 149
+          "file_touch_count": 142
         },
         "48h": {
-          "commit_count": 32,
+          "commit_count": 33,
           "local_change_count": 1,
           "file_touch_count": 198
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-09-25T17:41:59-07:00",
+        "last_activity_iso": "2026-09-25T18:26:03-07:00",
         "age_days": 181,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -63284,9 +63284,9 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
+          "commit_count": 0,
           "local_change_count": 0,
-          "file_touch_count": 13
+          "file_touch_count": 0
         },
         "48h": {
           "commit_count": 5,
@@ -63312,7 +63312,7 @@
       "cost": {
         "base_index": 18,
         "24h": {
-          "index": 21,
+          "index": 18,
           "band": "Low"
         },
         "48h": {
@@ -94871,17 +94871,17 @@
         "24h": {
           "commit_count": 31,
           "local_change_count": 3,
-          "file_touch_count": 151
+          "file_touch_count": 144
         },
         "48h": {
-          "commit_count": 36,
+          "commit_count": 37,
           "local_change_count": 3,
           "file_touch_count": 550
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-09-25T17:44:00-07:00",
+        "last_activity_iso": "2026-09-25T18:31:14-07:00",
         "age_days": 91,
         "eta_days": 14,
         "eta_confidence": "high"
@@ -95067,9 +95067,9 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
+          "commit_count": 0,
           "local_change_count": 0,
-          "file_touch_count": 13
+          "file_touch_count": 0
         },
         "48h": {
           "commit_count": 5,
@@ -95095,7 +95095,7 @@
       "cost": {
         "base_index": 18,
         "24h": {
-          "index": 21,
+          "index": 18,
           "band": "Low"
         },
         "48h": {
@@ -95983,17 +95983,17 @@
         "24h": {
           "commit_count": 30,
           "local_change_count": 1,
-          "file_touch_count": 149
+          "file_touch_count": 142
         },
         "48h": {
-          "commit_count": 32,
+          "commit_count": 33,
           "local_change_count": 1,
           "file_touch_count": 198
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-09-25T17:41:59-07:00",
+        "last_activity_iso": "2026-09-25T18:26:03-07:00",
         "age_days": 181,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -119908,8 +119908,7 @@
     "24h": [
       "B-005",
       "B-141",
-      "B-142",
-      "B-145"
+      "B-142"
     ],
     "48h": [
       "B-005",
@@ -119922,8 +119921,7 @@
     "24h": [
       "B-005",
       "B-141",
-      "B-142",
-      "B-145"
+      "B-142"
     ],
     "48h": [
       "B-005",
@@ -120472,30 +120470,23 @@
         }
       },
       "B-145": {
-        "rank": 3,
-        "rung": "R3",
-        "token": "active_scope",
-        "label": "Active scope",
+        "rank": 0,
+        "rung": "R0",
+        "token": "suppressed_noise",
+        "label": "Suppressed noise",
         "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Explicit implementation evidence is present.",
-          "Meaningful scope-local implementation evidence is present."
+          "This scope has no verified activity in the selected window."
         ],
-        "caps": [],
-        "promoted_default": true,
-        "budget_class": "fast_simple",
+        "caps": [
+          "window_inactive"
+        ],
+        "promoted_default": false,
+        "budget_class": "none",
         "feature_vector": {
-          "has_any_signal": true,
-          "verified_completion": false,
-          "narrow_verified_signal": true,
-          "meaningful_scope_activity": true,
-          "decision_evidence": false,
-          "implementation_evidence": true,
-          "open_warning": false,
-          "cross_surface_conflict": false,
-          "stale_authority": false,
-          "unsafe_closeout": false,
-          "proof_blocker": false
+          "has_any_signal": false,
+          "window_inactive": true,
+          "governance_only_local_change": false,
+          "broad_fanout": false
         }
       },
       "B-001": {

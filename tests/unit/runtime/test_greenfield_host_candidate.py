@@ -323,6 +323,11 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
     assert rc == 0
     assert payload["version"] == HOST_CANDIDATE_CONTRACT_VERSION
     assert payload["candidate_version"] == HOST_CANDIDATE_FORMAT_VERSION
+    assert any(
+        "must otherwise be disjoint exact clauses" in requirement
+        and "never use partially overlapping event citations" in requirement
+        for requirement in payload["requirements"]
+    )
     assert payload["candidate_schema"]["additionalProperties"] is False
     authored = payload["candidate_schema"]["properties"]["result"]["anyOf"][0]
     assert "first_path" not in authored["properties"]["facts"]["properties"]

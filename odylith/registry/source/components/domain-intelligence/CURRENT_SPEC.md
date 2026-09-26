@@ -4,6 +4,26 @@ Last updated: 2026-09-25
 
 ## Overview
 
+### Event-citation topology at the host boundary (2026-09-25)
+
+Host candidate contract v18 now exposes the relation already enforced by
+canonical v68: distinct typed events may reuse one identical exact source span
+when their owner permits sharing, but non-identical event citations must be
+disjoint and may never partially overlap. The public-v11 first positive proved
+that contract v17's same-owner sharing sentence left this complementary rule
+implicit; one Sol-high candidate returned intersecting non-identical spans and
+failed closed after `121.423s` with zero governed writes.
+
+The correction changes only that existing contract sentence and its version.
+Compact format v9, citation schema, canonical relation validation, independent
+semantic review, transaction custody, model profiles, and the public corpus stay
+unchanged. Focused proof passes `43/43`, the complete runtime Greenfield frontier
+passes `2,185/2,185`, and the install Greenfield frontier passes `1,178/1,178`.
+The unchanged public-v11 first positive must now pass from a new immutable build;
+if the overlap class recurs, citation representation must be reconsidered instead
+of adding another instruction, parser, regex, repair, retry, fallback, or model
+stage.
+
 ### Context-owned host citations and typed responsibility custody (2026-09-25)
 
 Host candidate contract v16 / compact format v8 keeps numeric source occurrences

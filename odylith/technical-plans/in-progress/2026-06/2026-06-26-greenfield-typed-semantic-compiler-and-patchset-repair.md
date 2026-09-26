@@ -12004,3 +12004,28 @@ Current proposal/confirmation/recovery operations and versioned semantic/timing 
   build one immutable distribution, require the 100% public
   package/browser/recovery floor, then commission exactly one fresh untouched
   holdout. Completion remains unclaimed.
+
+## Public-v11 Event Citation Boundary (2026-09-25)
+
+- The corrected 36-case public-v11 corpus passed five independent blind
+  Astra/xhigh outcome reviews with all `36/36` labels aligned: 24 commit and 12
+  clarify, with no duplicate, missing, or mismatched IDs. Exact immutable
+  distribution `778d2fb6e` then failed closed on the first positive after
+  `121.423s` because its host candidate returned partially overlapping
+  first-path event spans. No governed record or transaction was created.
+- Preserve canonical v68 and compact host format v9. They already accept one
+  identical exact source span for distinct typed same-owner events and reject
+  partial overlap. Contract v17 states when events may share a citation but
+  does not expose the complementary disjointness law, leaving the host to emit
+  a schema-valid candidate that the canonical relation validator must reject.
+- Adopt one bounded correction only: revise that existing contract sentence to
+  require event citations to be either identical for source text shared by the
+  same owner or disjoint exact clauses, never partially overlapping. Pin the
+  contract wording with a focused test. Do not change the schema, canonical
+  validator, independent reviewer, transaction path, model profiles, corpus,
+  or timing laws; add no parser, regex, repair, retry, fallback, or model stage.
+- Falsifiable gate: the unchanged first public-v11 positive must reach a complete
+  4-5 Radar / 4-5 Registry / 5+ Atlas package in one host call while the existing
+  identical-span positive and partial-overlap negative controls stay green. If
+  this wording does not eliminate the class, stop and reconsider citation
+  representation rather than stacking another instruction.

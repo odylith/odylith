@@ -1,5 +1,22 @@
 - Bug ID: CB-303
 
+- Public-v11 event-citation overlap finding (2026-09-25): The exact immutable
+  `778d2fb6e` distribution stopped safely on the first disclosed public-v11
+  positive after one `121.423s` Sol-high host call. The candidate used partially
+  overlapping source spans for distinct first-path events, so canonical v68
+  rejected it and created zero governed records. This is not a missing semantic
+  validator or a reason to add parsing, repair, retry, fallback, or another model
+  stage: the validator has long accepted identical exact spans for distinct
+  same-owner events and rejected partial overlap, but contract v17 exposed the
+  same-owner sharing rule without stating that partial overlap is invalid. The
+  bounded replacement is to clarify that existing relation in the single host
+  contract and pin it with a focused contract test. Falsifiable prediction: the
+  unchanged public-v11 source can use either one identical same-owner sentence
+  citation for its three events or three disjoint clauses, reach canonical
+  admission in one host call, and preserve the existing partial-overlap rejection.
+  Evidence: `/private/tmp/odylith-greenfield-public-v11-matrix-discovery.json`
+  and `/private/tmp/odylith-greenfield-public-v11-evidence/`.
+
 - Typed component-owner and public-corpus adjudication (2026-09-25): The
   disclosed public-v9 gate stopped on its first source-provenanced case after
   one `57.778s` host call with zero governed writes: the candidate supplied a

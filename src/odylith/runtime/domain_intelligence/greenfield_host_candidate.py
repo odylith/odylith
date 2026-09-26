@@ -40,7 +40,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v1"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v17"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v18"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
 
 
@@ -77,7 +77,9 @@ def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
                 "or external events. When an event source citation contains several actors "
                 "or product owners, give each differently owned event its own exact contiguous "
                 "source clause; only events with the same product owner may share one source "
-                "citation. Select the responsibility-specific clause separately. Do not repeat "
+                "citation. Event citations must otherwise be disjoint exact clauses; never use "
+                "partially overlapping event citations. Select the responsibility-specific "
+                "clause separately. Do not repeat "
                 "that exact citation in components.additional_"
                 "responsibilities. Identity is exact: related wording, a shared target, or the "
                 "same owner is still a separate responsibility. Put every other explicit source-"
