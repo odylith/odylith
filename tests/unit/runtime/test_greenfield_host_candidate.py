@@ -262,6 +262,9 @@ def test_host_candidate_clarification_never_dispatches_review(
         os.close(descriptor)
 
     assert raised.value.required_fields == ("first_path",)
+    assert raised.value.question == (
+        "Who uses this product first, what complete task do they finish, and what result do they see?"
+    )
     assert receipt["runtime_semantic_model_call_count"] == 0
     assert "candidate_review" not in receipt
     assert "basis" not in receipt["consistency_assessment"]
@@ -331,6 +334,8 @@ def test_reviewer_source_insufficiency_becomes_a_bound_first_path_question(
     assert public["clarification"]["consistency_assessment"] == receipt[
         "consistency_assessment"
     ]
+    assert public["clarification"]["question"] == raised.value.question
+    assert public["clarification"]["required_fields"] == ["first_path"]
     assert "candidate_review" not in public["clarification"]
     assert reviewer.calls == 1
 

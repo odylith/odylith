@@ -12077,3 +12077,32 @@ Current proposal/confirmation/recovery operations and versioned semantic/timing 
   browser, recovery, no-write clarification, exact-host-argv, and timing floors.
   Require independent final semantic qualification before exactly one new blind
   holdout; completion remains unclaimed until that holdout passes.
+
+## V21 Actor-Task-Result Reviewer Correction (2026-09-26)
+
+- Exact immutable V21 passed cases one through ten of the frozen disclosed
+  campaign. The seven commit cases each produced complete `10/10` packages;
+  the three expected clarifications stopped without writes; proposal times were
+  `79.282-88.578s` for commits and `9.367-63.829s` for clarifications.
+- Case eleven was correctly source-insufficient but incorrectly admitted. Its
+  climate repository description supplied product actions, not a human first
+  user or a visible result. The host candidate used product-owned events and
+  `terminal: null`; reviewer v5 admitted it and a pending transaction was
+  staged, failing the clarification no-write contract. Commit publication did
+  not run and no governed product records were written. Retain the terminal
+  V21 result as failed evidence; do not rerun it as the same build.
+- The recurring class and owner were already known: `first_path` is incomplete
+  without actor, complete task, and result. Reviewer v5 tested actor and task
+  but omitted result. Reviewer v6 adds that missing obligation to the existing
+  tri-state decision and maps a source-missing result to `first_path`; it does
+  not alter schemas, authoring, model profiles, timing, staging, transaction
+  laws, or the canonical question. Add no parser, regex, phrase rule, retry,
+  repair, fallback, model ladder, or additional call.
+- Direct climate-shaped review and no-stage clarification proof passes inside
+  `148/148` focused checks. The complete Greenfield suite passes
+  `3,178/3,178` in `307.81s`; the comprehensive browser matrix passes
+  `261/261` in `434.34s` across normal, empty/fallback, degraded/error, desktop,
+  mobile, and all governance surfaces. After independent bounded review, commit
+  and push this checkpoint, build a fresh immutable distribution, and restart
+  the unchanged public campaign at case one. Preserve the final semantic-review
+  and single untouched-holdout gates.

@@ -60,6 +60,28 @@ supersedes:
 
 superseded_by: 
 
+## V21 Actor-Task-Result Release Gate (2026-09-26)
+
+- Immutable V21 passed ten disclosed public cases before case eleven exposed
+  one precise reviewer omission. Seven commit cases produced complete `10/10`
+  packages, three clarification cases stopped without writes, and all ten were
+  inside the `90s` advisory target. The climate source-only case named product
+  capabilities but no human user or visible result; its host candidate left
+  `terminal` null, yet independent review admitted it and allowed transaction
+  staging. No governed product publication occurred.
+- Keep the mechanism fixed. Reviewer v6 restores the already-governed
+  actor-task-result law and maps source-missing actor, usable task, or visible
+  result to the existing `first_path` clarification. It adds no parser, regex,
+  prompt cascade, candidate repair, retry, fallback, model ladder, or model
+  call. A source-sufficient but incorrect candidate still receives denial.
+- Focused proof passes `148/148`, the complete Greenfield suite passes
+  `3,178/3,178` in `307.81s`, and the complete integration browser matrix passes
+  `261/261` in `434.34s`. Next: independent bounded review, commit and push the
+  current branch, build one immutable distribution, and restart the unchanged
+  36-case disclosed campaign from case one. Only a 100% public gate plus
+  independent retained-output semantic qualification may unlock exactly one
+  fresh untouched blind holdout.
+
 ## Problem
 Empty or thin consumer repos could dead-end on broad project intent such as building an ecommerce site because Odylith treated missing app source as a hard refusal point instead of producing a confirmation-gated governance proposal. That made the consumer lane accurate but unhelpful, and it left Radar, Registry, Atlas, release planning, and validation strategy uncaptured until the operator supplied fully-formed governance fields.
 

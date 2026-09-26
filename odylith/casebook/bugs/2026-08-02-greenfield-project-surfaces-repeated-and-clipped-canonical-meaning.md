@@ -1,5 +1,36 @@
 - Bug ID: CB-303
 
+- V21 actor-task-result reviewer correction (2026-09-26): The immutable V21
+  distribution passed the first ten disclosed public cases: seven complete
+  commit packages scored `10/10`, three clarification cases stopped without
+  writes, and every proposal completed inside the `90s` advisory target. Case
+  eleven then exposed a recurring `first_path` gap on source-only climate
+  metadata. The source stated that the product could access and analyze climate
+  data, but did not identify a human user or the result that user would see.
+  The host candidate made the product the actor and left `terminal` null; the
+  independent reviewer admitted it, so a transaction was staged instead of the
+  canonical clarification being returned. No governed product records were
+  published. Evidence:
+  `/private/tmp/odylith-v21-public.OEvpGS/evidence-retained/public-v11-climate-062-topic/`
+  and `/private/tmp/odylith-v21-public.OEvpGS/result.json`.
+- The owning semantic law already requires a first path to identify actor,
+  complete task, and visible result. Reviewer v5 mentioned actor and task but
+  omitted the result half of that law. Reviewer v6 closes only that contract
+  drift: when source evidence lacks the actor, usable task, or visible result
+  whether the candidate leaves that fact absent or fills the gap, select
+  `first_path` clarification; when the source supplies those facts and the
+  candidate omits or misstates them, deny it. The
+  existing one-author/one-reviewer mechanism, schema, model profile, deadline,
+  transaction path, and canonical question remain unchanged. No parser, regex,
+  phrase classifier, retry, repair, fallback, model ladder, or extra call was
+  added.
+- Fresh proof passes `148/148` focused checks, the complete Greenfield suite
+  passes `3,178/3,178` in `307.81s`, and the comprehensive cross-governance
+  browser matrix passes `261/261` in `434.34s`, including normal, empty,
+  fallback, degraded/error, desktop, and mobile states. CB-303 remains open
+  pending a new immutable public campaign from case one, exact retained-output
+  semantic qualification, and exactly one fresh untouched blind holdout.
+
 - V20 host-contract parity recurrence (2026-09-25): The first case of the
   immutable 36-case public campaign stopped safely after one `75.866s`
   Astra-medium author call and one `9.405s` independent review. The host

@@ -391,7 +391,7 @@ def test_denial_or_malformed_verdict_never_repairs_or_retries(verdict):
     assert observation["dispatched"] is True
 
 
-def test_source_insufficient_wrong_actor_authorship_maps_to_first_path_clarification() -> None:
+def test_source_insufficient_actor_task_or_result_maps_to_first_path_clarification() -> None:
     clock = Clock()
     provider = Reviewer(
         {
@@ -408,13 +408,84 @@ def test_source_insufficient_wrong_actor_authorship_maps_to_first_path_clarifica
     assert raised.value.receipt["status"] == "clarification_required"
     assert set(raised.value.receipt) >= {"source_sha256", "candidate_sha256"}
     assert provider.calls == 1
-    assert "first decide whether the source supplies the actor and usable-task facts" in (
-        provider.requests[0].system_prompt
+    prompt = provider.requests[0].system_prompt
+    assert (
+        "first decide whether the source supplies the actor, usable-task, and\n"
+        "visible-result facts"
+    ) in prompt
+    assert "candidate that omits or misrepresents\nthe fact is `denied`" in prompt
+    assert "either leaves the fact absent or fills that gap" in prompt
+    assert "select\n`first_path`;" in provider.requests[0].system_prompt
+    assert "do not select `component_ownership`" in provider.requests[0].system_prompt
+    assert "result needed to complete that path" in provider.requests[0].system_prompt
+
+
+def test_climate_source_without_user_result_is_reviewed_as_first_path_clarification() -> None:
+    source = (
+        "Create a reviewed climate product. Source repository: meteostat/meteostat. "
+        "Source evidence: climate. Repository description: Access and analyze historical "
+        "weather and climate data with Python."
     )
-    assert "candidate that misrepresents them is\n`denied`" in provider.requests[0].system_prompt
-    assert "select `first_path`; do not select `component_ownership`" in (
-        provider.requests[0].system_prompt
+    candidate = {
+        "status": "authored",
+        "facts": {
+            "title": {"quote": "climate product", "context": "reviewed climate product"},
+            "product_story": {
+                "quote": "Access and analyze historical weather and climate data with Python",
+                "context": "Access and analyze historical weather and climate data with Python.",
+            },
+            "state_object": {
+                "quote": "historical weather and climate data",
+                "context": "Access and analyze historical weather and climate data with Python.",
+            },
+            "human_actors": [],
+        },
+        "events": [
+            {"actor_kind": "product", "action_quote": "Access"},
+            {"actor_kind": "product", "action_quote": "analyze"},
+        ],
+        "components": [],
+        "terminal": None,
+        "source_precedence": [],
+        "consistency": {"status": "consistent", "evidence_quotes": []},
+        "ambiguities": ["The source does not state who uses the product or what result they see."],
+        "assumptions": [],
+        "provisional_design": {},
+    }
+    clock = Clock()
+    provider = Reviewer(
+        {
+            "outcome": "clarification_required",
+            "issue": None,
+            "clarification": {"material_dimension": "first_path"},
+        },
+        clock,
     )
+
+    with pytest.raises(review.GreenfieldCandidateClarificationRequired) as raised:
+        review.review_greenfield_candidate(
+            evidence_text=source,
+            candidate=candidate,
+            source_spans=(
+                _span(
+                    source,
+                    "Access and analyze historical weather and climate data with Python",
+                    field="product_story",
+                ),
+            ),
+            profile_id=STANDARD_PROFILE_ID,
+            provider_factory=lambda: provider,
+            deadline=55.0,
+            clock=clock,
+            observation={},
+        )
+
+    assert raised.value.material_dimension == "first_path"
+    assert raised.value.receipt["status"] == "clarification_required"
+    assert provider.calls == 1
+    assert provider.requests[0].prompt_payload["source"] == source
+    reviewed = provider.requests[0].prompt_payload["candidate"]
+    assert {**reviewed["accepted_source"], **reviewed["proposed_decisions"]} == candidate
 
 
 @pytest.mark.parametrize("scope", ["source", "resolved_source_custody", "accepted_source", "proposed_decisions"])

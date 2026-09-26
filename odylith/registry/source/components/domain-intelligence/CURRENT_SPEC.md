@@ -1,8 +1,30 @@
 # Domain Intelligence
-Last updated: 2026-09-25
+Last updated: 2026-09-26
 
 
 ## Overview
+
+### Actor-task-result independent review (2026-09-26)
+
+Immutable V21 passed ten disclosed public cases before a source-only climate
+case revealed that the independent reviewer enforced first actor and task but
+not the visible result. The host candidate used product-owned access/analysis
+events, identified no human user, and left `terminal` null. Reviewer admission
+therefore staged a transaction where the product contract required the existing
+`first_path` clarification; no governed product publication occurred.
+
+Candidate-review v6 restores the complete actor-task-result law at the same
+tri-state boundary. If the source omits the actor, usable task, or visible result
+whether the candidate leaves that fact absent or fills the gap, the reviewer
+selects `first_path`; if source evidence is sufficient and the candidate omits
+or misstates the fact, it denies the candidate.
+The candidate schema, one-author/one-reviewer topology, model profile, advisory
+timing, canonical clarification, and transaction mechanism are unchanged. No
+parser, regex, repair, retry, fallback, model ladder, or additional model call
+was introduced. Focused proof passes `148/148`, the complete Greenfield suite
+passes `3,178/3,178`, and the comprehensive browser matrix passes `261/261`.
+Fresh immutable public qualification, independent retained-output semantic
+review, and exactly one untouched blind holdout remain open.
 
 ### Host/reviewer product-story contract parity (2026-09-25)
 
@@ -1194,6 +1216,9 @@ semantic/design findings.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-26 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_candidate_review.py`
 - **2026-09-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_candidate_review.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py`
@@ -1207,9 +1232,6 @@ This section captures synchronized requirement and contract signals derived from
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_profile_contract.py`
 - **2026-09-25 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_host_candidate_shape.py`
-- **2026-09-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_host_candidate_shape.py`
 <!-- registry-requirements:end -->

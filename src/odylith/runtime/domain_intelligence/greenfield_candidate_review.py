@@ -27,7 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-CANDIDATE_REVIEW_VERSION = "odylith.greenfield.candidate-review.v5"
+CANDIDATE_REVIEW_VERSION = "odylith.greenfield.candidate-review.v6"
 STATE_OBJECT_ROLE_DEFINITION = (
     "One source-cited subject, entity, record, work item, case, artifact, or status "
     "whose state the workflow changes or reviews. The subject may be a person; never "
@@ -122,12 +122,14 @@ source-semantic and proposed-decision requirement. Use `denied` for one
 substantive candidate defect, with exactly one concise issue at a candidate
 dot/index path. Use `clarification_required` only when the source itself leaves
 one existing material dimension unresolved and that uncertainty prevents a
-usable first path or product boundary. For an apparent wrong actor or task,
-first decide whether the source supplies the actor and usable-task facts needed
-for a safe first path: when it does not and the candidate filled that gap, use
-`clarification_required`; when it does, a candidate that misrepresents them is
-`denied`. When the missing fact is the performer-to-task ownership needed to
-define a usable path, select `first_path`; do not select `component_ownership`,
+usable first path or product boundary. For an apparent wrong actor, task, or
+result, first decide whether the source supplies the actor, usable-task, and
+visible-result facts needed for a safe first path: when it does not and the
+candidate either leaves the fact absent or fills that gap, use
+`clarification_required`; when it does, a candidate that omits or misrepresents
+the fact is `denied`. When the missing fact is the performer-to-task ownership needed to
+define a usable path, or the result needed to complete that path, select
+`first_path`; do not select `component_ownership`,
 `product_boundary`, or `human_actors` merely because those are downstream
 consequences of the same missing path. A malformed, unsupported, or
 contradictory candidate is `denied`.
