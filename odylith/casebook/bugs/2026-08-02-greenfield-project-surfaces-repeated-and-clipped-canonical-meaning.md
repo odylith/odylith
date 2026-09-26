@@ -1,5 +1,28 @@
 - Bug ID: CB-303
 
+- V23/V25 evaluator-adjudication checkpoint (2026-09-26): Immutable V23
+  passed `25/26` disclosed cases at `10/10` before the evaluator mislabeled
+  `public-v11-research-162-topic` as clarification-required. Independent review
+  proved the prompt itself supplied an explicit product owner, task, and visible
+  result, so the corrected disclosed label is transaction-committed. V25 then
+  created that package in `86.157s` plus `2.266s` commit time with four Radar
+  workstreams, four Registry components, five Atlas sources, ten renders, clean
+  browser proof, and no manifest issue codes. Its score-zero result exposed two
+  evaluator false positives: authoritative complete-path source text was
+  treated as forbidden background leakage, and generated candidate vocabulary
+  was compared against a narrower native-platform baseline.
+- The bounded evaluator correction honors only the explicit
+  `source-evidence-complete-product-path` contract while retaining the separate
+  source-identifier ban, and derives the native baseline from the same candidate
+  universe used by generated-term detection. Untagged/background source copies
+  and source identifiers remain rejected. The misleading generic score message
+  now reports an external release-quality failure instead of falsely claiming
+  commit readback drift. Independent adjudication accepted this correction;
+  focused proof passes `64/64` and the complete Greenfield suite passes
+  `3,137/3,137`. V23 and V25 remain immutable failed-evaluator evidence. Rebuild
+  exact bytes and restart the disclosed campaign from case one; completion and
+  holdout eligibility remain unclaimed.
+
 - V22 typed-admission-witness recurrence (2026-09-26): Immutable V22 passed
   sixteen disclosed public cases before `public-v11-healthcare-102-topic`
   failed the release floor in `72.395s`. Its retained candidate named no

@@ -1,6 +1,17 @@
 # Release
 Last updated: 2026-09-26
 
+## Candidate-vocabulary baseline parity (2026-09-26)
+
+Installed Greenfield leakage proof derives generated sentinels from the broad
+source-grounded candidate vocabulary. Native-platform baseline collection must
+scan that same vocabulary before evaluating generated output; otherwise a term
+already present in immutable platform custody can be misreported as new
+consumer-domain leakage. Repository/source identifiers remain independently
+forbidden. External release-quality failures report their actual contract class
+rather than claiming commit readback drift when the manifest and sealed
+transaction passed.
+
 ## Host-native admitted-review proof (2026-09-26)
 
 Release qualification now treats the private admitted review receipt as proof,

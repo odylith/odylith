@@ -1,5 +1,28 @@
 Status: In progress
 
+## V23/V25 Evaluator-Adjudication Checkpoint (2026-09-26)
+
+The typed admission-witness mechanism cleared V23's first 25 disclosed cases
+at `10/10`. Independent adjudication found case 162's clarification expectation
+false: the prompt supplied an explicit product owner, task, and visible result.
+With that disclosed label corrected, V25 committed the complete package in
+`86.157s` plus `2.266s`, with four Radar workstreams, four Registry components,
+five Atlas sources, ten renders, clean browser proof, and no manifest issues.
+
+The remaining stop belongs to evaluator ownership, not Greenfield generation.
+The evaluator must distinguish authoritative complete-product-path evidence
+from background-source copying and must subtract native platform vocabulary
+from the same broad candidate set used for generated leakage detection. Apply
+only those two changes, retain the independent source-identifier guard, and
+replace the generic false readback-drift score explanation. Focused proof is
+`64/64`; complete Greenfield proof is `3,137/3,137`. No parser, regex, prompt
+stack, author, reviewer, repair, retry, fallback, or model ladder changes.
+
+Preserve V23 and V25 as terminal evidence. Commit the bounded evaluator fix,
+build new immutable bytes, and restart the 36-case disclosed campaign from case
+one. Require independent retained-output semantic qualification before exactly
+one untouched holdout. Completion remains unclaimed until those gates pass.
+
 ## Runner-native outcome authority checkpoint (2026-09-25)
 
 The release contract now implements closeout step 2 without changing the

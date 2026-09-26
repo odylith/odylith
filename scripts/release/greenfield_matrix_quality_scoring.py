@@ -587,7 +587,7 @@ def _score_explanation(
     if create_returncode != 0 or not write_committed(manifest):
         return ("score forced to 0 because commit-only create did not commit governed records",)
     if any(str(issue).strip() for issue in external_issues):
-        return ("score forced to 0 because commit readback differs from the sealed pre-confirm transaction",)
+        return ("score forced to 0 because an external release-quality contract failed",)
     explanations: list[str] = []
     if rendered_issues:
         explanations.append(f"copy/semantic artifact findings cap release score at 6; findings={len(tuple(rendered_issues))}")

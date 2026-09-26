@@ -1450,6 +1450,13 @@ def _source_evidence_content_custody_issues(
     provenance = getattr(case, "provenance", None)
     if str(getattr(provenance, "corpus_tier", "") or "").strip() != "source_provenanced":
         return ()
+    tags = {
+        str(tag).strip()
+        for tag in tuple(getattr(case, "tags", ()) or ())
+        if str(tag).strip()
+    }
+    if "source-evidence-complete-product-path" in tags:
+        return ()
     excerpt = " ".join(str(getattr(provenance, "source_excerpt", "") or "").split())
     if len(excerpt.split()) < 3 or not _term_present(generated_text, excerpt):
         return ()

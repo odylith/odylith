@@ -88,7 +88,7 @@ def platform_baseline_required_terms(
             {
                 term
                 for case in cases
-                for term in platform_domain_leakage.case_leakage_terms(case)
+                for term in platform_domain_leakage.case_leakage_term_candidates(case)
             }
         )
     )

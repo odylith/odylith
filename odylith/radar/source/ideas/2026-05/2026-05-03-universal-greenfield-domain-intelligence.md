@@ -60,6 +60,28 @@ supersedes:
 
 superseded_by: 
 
+## V23/V25 Evaluator Convergence Gate (2026-09-26)
+
+- V23 passed `25/26` disclosed public cases at `10/10`; independent review
+  proved case 162's clarification label contradicted its explicit product
+  owner, task, and visible result. V25 used the corrected disclosed label and
+  produced a complete package in `86.157s` plus `2.266s` commit time: four
+  Radar workstreams, four Registry components, five Atlas sources, ten renders,
+  clean browser proof, and no manifest issue codes.
+- V25's score-zero stop was evaluator-only. The custody check treated
+  authoritative product-path evidence as forbidden background copying, while
+  platform-baseline collection used a narrower vocabulary than generated-term
+  detection and misreported the already-native phrase `grounded summary` as new
+  leakage. Honor the explicit `source-evidence-complete-product-path` contract
+  narrowly, keep repository/source identifiers forbidden, and build the native
+  baseline from the same candidate universe used by detection.
+- The correction adds no parser, regex, phrase classifier, author, reviewer,
+  repair, retry, fallback, or model ladder. Focused proof passes `64/64`; the
+  complete Greenfield suite passes `3,137/3,137`. Preserve V23 and V25 as
+  terminal evaluator evidence, build one new exact immutable distribution, and
+  restart all 36 disclosed cases from case one. Only a clean campaign plus
+  independent retained-output review may unlock exactly one fresh holdout.
+
 ## V22 Typed Admission-Witness Release Gate (2026-09-26)
 
 - Immutable V22 passed sixteen disclosed cases before case seventeen repeated

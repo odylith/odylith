@@ -4,6 +4,18 @@ Last updated: 2026-09-26
 
 ## Overview
 
+### Authoritative source-path versus background-source custody (2026-09-26)
+
+Greenfield may preserve a source-provenanced excerpt as canonical product truth
+when the disclosed case explicitly marks it
+`source-evidence-complete-product-path`. This narrow contract covers evidence
+that itself supplies the product owner, task, and visible result; preserving it
+in the project story and constraints is semantic fidelity. Untagged or
+background-only excerpts remain subject to the content-copy guard, and source
+repository identifiers remain forbidden through the separate identifier-custody
+check. This evaluator distinction does not change candidate authoring, tri-state
+review, admission witnesses, transaction compilation, or projection.
+
 ### Typed admission witness at the independent review boundary (2026-09-26)
 
 Immutable V22 passed sixteen disclosed public cases before case seventeen
