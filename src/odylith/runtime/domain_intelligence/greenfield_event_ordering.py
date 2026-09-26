@@ -44,6 +44,13 @@ FIRST_RUN_SCHEMA = {
     "properties": {
         "event_orders": {
             "type": "array", "minItems": 1, "maxItems": 32,
+            "description": (
+                "One coherent proposed walkthrough over a unique subset of source-event "
+                "identities. Include the selected terminal result and every cited source-"
+                "precedence prerequisite on that branch. Do not concatenate mutually "
+                "exclusive outcomes. Other source events remain retained and component-"
+                "supported outside this first run."
+            ),
             "items": dict(_EVENT_INDEX),
         },
         "rationale": {"type": "string", "minLength": 1, "maxLength": 1000},
@@ -106,13 +113,14 @@ def validate_first_run(
     value: Any, *, event_orders: Sequence[int],
     source_precedence: Sequence[Mapping[str, int]], result_event_order: int | None,
 ) -> dict[str, Any]:
-    """Validate one complete proposed walk, never infer a runtime ordering."""
+    """Validate one selected proposed branch, never infer a runtime ordering."""
 
     accepted = _event_identities(event_orders)
     if not isinstance(value, Mapping) or set(value) != set(FIRST_RUN_SCHEMA["required"]):
         raise ValueError("Greenfield first run has an invalid design contract")
-    if _event_identities(value["event_orders"]) != accepted:
-        raise ValueError("Greenfield first run must include every source event exactly once")
+    selected = _event_identities(value["event_orders"])
+    if not selected <= accepted:
+        raise ValueError("Greenfield first run references an unknown source event")
     rationale = value["rationale"]
     if (
         not isinstance(rationale, str) or not rationale.strip()
@@ -123,10 +131,16 @@ def validate_first_run(
         type(result_event_order) is not int or result_event_order not in accepted
     ):
         raise ValueError("Greenfield first run has an invalid explicit result event")
+    if result_event_order is not None and result_event_order not in selected:
+        raise ValueError("Greenfield first run must include its explicit result event")
     positions = {order: index for index, order in enumerate(value["event_orders"])}
     for edge in _validated_edges(
         source_precedence, accepted=accepted, constraint_count=MAX_AUTHORED_LIST_ITEMS,
     ):
+        if edge["after_event"] not in selected:
+            continue
+        if edge["before_event"] not in selected:
+            raise ValueError("Greenfield first run omits a cited source prerequisite")
         if positions[edge["before_event"]] >= positions[edge["after_event"]]:
             raise ValueError("Greenfield first run violates cited source precedence")
     return deepcopy(dict(value))

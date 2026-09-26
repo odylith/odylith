@@ -1,6 +1,24 @@
 # Release
 Last updated: 2026-09-26
 
+## V27 coherent-branch qualification stop (2026-09-26)
+
+Immutable V27 passed 30 disclosed public cases at `10/10` before the archive
+custody case exposed a product-contract failure: provisional design v2 required
+one First Run to contain mutually exclusive accepted and rejected outcomes. The
+case failed before staging and wrote no governed package. V27 is terminal
+evidence and must not be resumed from case 31.
+
+The new source checkpoint versions the full serialized change—provisional
+design v3, canonical authoring v70, host format v10, host contract v21, and
+reviewer v8. Release proof must accept one coherent selected branch only when
+complete accepted-event and component-support custody remains intact, and must
+retain the independent review receipt that distinguishes alternate omission
+from a missing required step. Source proof and live controls do not qualify the
+release. Build one clean immutable distribution and restart all 36 cases from
+case one with package, browser, recovery, cleanup, and timing evidence before
+independent retained-output review or any fresh holdout.
+
 ## Candidate-vocabulary baseline parity (2026-09-26)
 
 Installed Greenfield leakage proof derives generated sentinels from the broad

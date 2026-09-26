@@ -120,7 +120,7 @@ def test_schema_and_validator_keep_provisional_proof_out_of_source_truth() -> No
     schema = greenfield_authoring_schema()
     authored_schema = schema["properties"]["result"]["anyOf"][0]
     facts_schema = authored_schema["properties"]["facts"]["properties"]
-    assert GREENFIELD_INTENT_AUTHORING_VERSION.endswith(".v69")
+    assert GREENFIELD_INTENT_AUTHORING_VERSION.endswith(".v70")
     assert {row["type"] for row in facts_schema["proof_boundary"]["anyOf"]} == {
         "object",
         "null",

@@ -16,7 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_event_ordering import (
     validate_first_run,
 )
 
-PROVISIONAL_DESIGN_VERSION = "odylith.greenfield.provisional-design.v2"
+PROVISIONAL_DESIGN_VERSION = "odylith.greenfield.provisional-design.v3"
 PROVISIONAL_DESIGN_AUTHORITY_KIND = "provisional_design"
 _TEXT = {"type": "string", "minLength": 1, "maxLength": 4000}
 _KEY = {"type": "string", "minLength": 1, "maxLength": 80, "pattern": "^[a-z][a-z0-9-]*$"}

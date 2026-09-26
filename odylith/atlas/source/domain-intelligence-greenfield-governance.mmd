@@ -5,7 +5,7 @@ flowchart TB
       baseline["Complete installed baseline<br/>Immutable view exists before proposal admission"]
       contract["Public candidate contract<br/>Sealed source context and typed schema"]
       model_pass["One active host author<br/>One compact complete candidate inside the shared deadline"]
-      typed_graph["Host-authored typed evidence graph<br/>Exact citations, actors, actions, results,<br/>constraints and proposed first run"]
+      typed_graph["Host-authored typed evidence graph<br/>Complete cited events and component support<br/>plus one proposed coherent branch"]
       ambiguity{"Material meaning complete?"}
       clarify["One focused clarification<br/>No transaction or governed write"]
       request --> contract --> model_pass --> typed_graph --> ambiguity
@@ -15,8 +15,8 @@ flowchart TB
 
     subgraph projection_lane["Deterministic package construction"]
       direction LR
-      custody["Custody and invariant validation<br/>Stable source IDs and explicit result producer<br/>No chronology from source-list position"]
-      review["Independent tri-state review<br/>One immutable decision: admit, clarify, or deny"]
+      custody["Custody and invariant validation<br/>Complete source-event inventory; selected branch<br/>keeps its terminal and cited predecessors"]
+      review["Independent tri-state review<br/>Required omissions and mutually exclusive<br/>outcome concatenation are denied"]
       review_clarify["Reviewer-selected material clarification<br/>Retain the review receipt; one focused question<br/>No transaction or governed write"]
       denied["Denied after completed review<br/>Retain exact candidate and review receipt<br/>No repair, retry, fallback, or governed write"]
       review_failure["Reviewer unavailable or late<br/>Fail closed; retain attempt and failure custody only<br/>No review receipt or governed write"]

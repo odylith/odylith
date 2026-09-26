@@ -4,6 +4,26 @@ Last updated: 2026-09-26
 
 ## Overview
 
+### Coherent First Run versus complete source-event custody (2026-09-26)
+
+Accepted typed events remain the complete source action inventory, and proposed
+component support must still cover every one of them. Provisional design v3 no
+longer forces mutually exclusive outcomes into one First Run. It selects one
+nonempty unique branch, includes its explicit terminal result and every cited
+source-precedence predecessor, and preserves selected-edge order. Alternate
+events remain accepted and component-supported outside that walkthrough.
+
+Candidate-review v8 owns the semantic distinction deterministic structure
+cannot infer: it denies a First Run that drops a required sequential event or
+concatenates mutually exclusive outcomes, while admitting omission of events
+that belong only to alternate branches. The candidate remains unchanged after
+review. Host format v10, canonical authoring v70, and host contract v21 advance
+with the nested provisional-design contract. No parser, regex, branch
+classifier, repair, retry, fallback, model ladder, or additional call exists.
+Fresh Astra controls admit the archive acceptance branch and deny omission of
+a required resolution-owner assignment. Immutable public qualification and
+retained-output review remain open.
+
 ### Authoritative source-path versus background-source custody (2026-09-26)
 
 Greenfield may preserve a source-provenanced excerpt as canonical product truth

@@ -86,7 +86,6 @@ def test_valid_design_is_copied_without_rewriting_provisional_text(count: int) -
         (("authority_kind",), "accepted_fact"),
         (("first_run", "event_orders"), []),
         (("first_run", "event_orders"), [1, 1]),
-        (("first_run", "event_orders"), [1]),
         (("first_run", "event_orders"), [1, 2, 3]),
         (("first_run", "event_orders"), [True, 2]),
         (("first_run", "rationale"), " "),
@@ -185,23 +184,38 @@ def test_workstreams_may_own_multiple_components_and_exchanges_may_be_empty() ->
     assert validate_provisional_design(design, event_orders=(1, 2)) == design
 
 
-def test_first_run_is_an_explicit_permutation_not_document_order() -> None:
+def test_first_run_is_an_explicit_coherent_subset_not_document_order() -> None:
     design = _design(event_orders=(1, 2, 3))
-    design["first_run"]["event_orders"] = [2, 3, 1]
+    design["first_run"]["event_orders"] = [2, 3]
     precedence = [{"before_event": 2, "after_event": 3, "constraint_index": 1}]
 
     assert validate_provisional_design(
         design, event_orders=(1, 2, 3), source_precedence=precedence,
-        result_event_order=1,
+        result_event_order=3,
     ) == design
     assert design["components"][0]["supported_event_orders"] == [1, 2, 3]
 
-    design["first_run"]["event_orders"] = [3, 2, 1]
+    design["first_run"]["event_orders"] = [3, 2]
     with pytest.raises(ValueError):
         validate_provisional_design(
             design, event_orders=(1, 2, 3), source_precedence=precedence,
-            result_event_order=1,
+            result_event_order=3,
         )
+
+
+def test_first_run_may_select_one_of_two_mutually_exclusive_outcomes() -> None:
+    design = _design(event_orders=(1, 2, 3, 4))
+    design["first_run"]["event_orders"] = [1, 2, 3]
+    precedence = [
+        {"before_event": 2, "after_event": 3, "constraint_index": 1},
+        {"before_event": 2, "after_event": 4, "constraint_index": 1},
+    ]
+
+    assert validate_provisional_design(
+        design, event_orders=(1, 2, 3, 4), source_precedence=precedence,
+        result_event_order=3,
+    ) == design
+    assert design["components"][0]["supported_event_orders"] == [1, 2, 3, 4]
 
 
 def test_first_run_preserves_post_result_actions_and_their_source_precedence() -> None:

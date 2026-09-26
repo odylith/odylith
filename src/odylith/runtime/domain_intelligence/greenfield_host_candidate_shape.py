@@ -18,7 +18,7 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     MAX_AUTHORED_FIELD_VALUE_CHARS,
 )
 
-HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v9"
+HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v10"
 HOST_EVENT_CITATION_FIELD = "source_citation"
 HOST_EVENT_RESPONSIBILITY_FIELD = "responsibility_citation"
 

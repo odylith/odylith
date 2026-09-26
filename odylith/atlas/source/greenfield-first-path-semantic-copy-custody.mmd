@@ -9,15 +9,15 @@ flowchart LR
     subgraph host_lane["Host-native semantic authoring"]
       direction TB
       host["Active host reasoning<br/>One compact complete candidate"]
-      candidate["Typed candidate<br/>Exact citations, actors, actions, constraints,<br/>4–5 workstreams and components, 5+ diagrams"]
+      candidate["Typed candidate<br/>Complete cited events and component support<br/>plus one proposed coherent branch"]
     end
 
     subgraph admission_lane["Deterministic admission"]
       direction TB
-      validator["Deterministic validator and custody compiler<br/>Schema, citations, relations, completeness and invariants"]
+      validator["Deterministic validator and custody compiler<br/>Complete event custody; selected terminal,<br/>predecessors and branch order"]
       complete{"Complete and<br/>source-grounded?"}
       clarify["One focused clarification<br/>No review, package or governed write"]
-      review["Independent tri-state review<br/>One immutable decision: admit, clarify, or deny"]
+      review["Independent tri-state review<br/>Distinguishes required sequence<br/>from alternate outcomes"]
       review_clarify["Reviewer-selected material clarification<br/>Retain review receipt; one focused question<br/>No package or governed write"]
       denied["Denied after completed review<br/>Retain exact candidate and review receipt<br/>No repair, retry, or fallback ladder"]
       review_failure["Reviewer unavailable or late<br/>Fail closed; retain attempt and failure custody only<br/>No review receipt or governed write"]
@@ -26,7 +26,7 @@ flowchart LR
 
     subgraph projection_lane["Deterministic governance projections"]
       direction TB
-      project["Project story and first run"]
+      project["Project story and one coherent first run<br/>Alternate events remain retained"]
       radar["4–5 grounded Radar workstreams"]
       registry["4–5 Registry components"]
       atlas["5+ detailed Atlas diagrams<br/>Typed performer-to-event relations preserved"]

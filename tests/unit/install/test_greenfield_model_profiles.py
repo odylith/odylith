@@ -325,7 +325,7 @@ def test_host_native_profile_evidence_binds_one_host_candidate_and_runtime_revie
         "origin": "host_native",
         "host_candidate": {
             "version": "odylith.greenfield.host-candidate.v1",
-            "contract_version": "odylith.greenfield.intent-authoring.v69",
+            "contract_version": "odylith.greenfield.intent-authoring.v70",
             "source_sha256": source_sha256,
             "candidate_sha256": candidate_sha256,
         },
@@ -396,7 +396,7 @@ def test_host_native_profile_evidence_rejects_unbound_private_admission(
         "origin": "host_native",
         "host_candidate": {
             "version": "odylith.greenfield.host-candidate.v1",
-            "contract_version": "odylith.greenfield.intent-authoring.v69",
+            "contract_version": "odylith.greenfield.intent-authoring.v70",
             "source_sha256": source_sha256,
             "candidate_sha256": "1" * 64,
         },
@@ -459,7 +459,7 @@ def test_host_native_profile_evidence_rejects_forged_safe_argv_receipt(
         "origin": "host_native",
         "host_candidate": {
             "version": "odylith.greenfield.host-candidate.v1",
-            "contract_version": "odylith.greenfield.intent-authoring.v69",
+            "contract_version": "odylith.greenfield.intent-authoring.v70",
             "source_sha256": "2" * 64,
             "candidate_sha256": candidate_sha256,
         },
@@ -549,7 +549,7 @@ def test_host_native_result_binding_matches_retained_candidate_to_commit_receipt
                 "authoring_origin": "host_native",
                 "host_candidate": {
                     "version": "odylith.greenfield.host-candidate.v1",
-                    "contract_version": "odylith.greenfield.intent-authoring.v69",
+                    "contract_version": "odylith.greenfield.intent-authoring.v70",
                     "source_sha256": source_sha256,
                     "candidate_sha256": candidate_sha256,
                 },
@@ -1119,9 +1119,9 @@ def _host_native_private_admission(
     }
     return {
         "version": "odylith.greenfield.model-proof-observation.v4",
-        "authoring_version": "odylith.greenfield.intent-authoring.v69",
+        "authoring_version": "odylith.greenfield.intent-authoring.v70",
         "request": {
-            "version": "odylith.greenfield.intent-authoring.v69",
+            "version": "odylith.greenfield.intent-authoring.v70",
             "evidence": source,
         },
         "semantic_model_call_count": 1,

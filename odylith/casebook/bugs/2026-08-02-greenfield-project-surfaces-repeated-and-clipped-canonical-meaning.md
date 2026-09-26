@@ -1,5 +1,30 @@
 - Bug ID: CB-303
 
+- V27 first-run branch-conflation recurrence (2026-09-26): Immutable V27
+  passed 30 disclosed cases at `10/10`, then stopped before transaction staging
+  on `public-v11-archive-custody-01`. The candidate retained all four source
+  events and both steward outcomes, but provisional design v2 required one
+  First Run to include every event. That rule would concatenate mutually
+  exclusive accepted and rejected dispositions. No governed package was
+  published. Evidence: `/private/tmp/odylith-v27-public.KIxnJA`.
+- The rejected first fix tried to force both outcomes into the walkthrough;
+  independent review correctly returned `DO NOT SHIP`. The winning correction
+  keeps complete event custody in accepted events and component support while
+  provisional design v3 selects one coherent branch. Deterministic validation
+  requires a unique known subset, the selected terminal, every cited
+  predecessor, and valid selected-edge order. Candidate-review v8 alone judges
+  required sequential omissions versus alternate branches and denies mutually
+  exclusive concatenation. Host format v10, canonical v70, and contract v21
+  version the same boundary. No parser, regex, repair, retry, fallback, branch
+  classifier, model ladder, or extra call was added.
+- Source proof passes `1,796/1,796` fast and `288/288` lifecycle tests;
+  independent review returns `SHIP`. Fresh Astra behavior proof admits the
+  archive acceptance branch and denies a source-sufficient candidate that
+  omits the required resolution-owner assignment. CB-303 remains open pending
+  a new immutable 36-case public campaign, complete browser/recovery proof,
+  independent retained-output semantic qualification, and exactly one fresh
+  untouched holdout.
+
 - V26 byte-custody recurrence (2026-09-26): Immutable V26 passed its first
   committed package and its clarification/no-write control at `10/10`, then
   stopped before review or staging on `public-v11-accessibility-003-description`.

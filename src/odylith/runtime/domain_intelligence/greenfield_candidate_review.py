@@ -27,7 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-CANDIDATE_REVIEW_VERSION = "odylith.greenfield.candidate-review.v7"
+CANDIDATE_REVIEW_VERSION = "odylith.greenfield.candidate-review.v8"
 STATE_OBJECT_ROLE_DEFINITION = (
     "One source-cited subject, entity, record, work item, case, artifact, or status "
     "whose state the workflow changes or reviews. The subject may be a person; never "
@@ -114,6 +114,12 @@ Require a precedence edge only when both ordered sides are source-supported
 accepted events with actor/action ownership. Preserve timing, approval, or
 readiness conditions that lack such event ownership as operational constraints;
 never invent an event, action, or performer merely to create a precedence edge.
+Judge candidate.proposed_decisions.provisional_design.first_run as one coherent
+executable branch. Deny it when it omits a source event required to complete that
+branch or concatenates mutually exclusive outcomes. It may omit source events that
+belong only to alternate branches; those remain accepted-source and component-support
+obligations. The selected terminal result and every cited predecessor on the chosen
+branch must remain present.
 Report only substantive unsupported, contradictory or missing source meaning or
 unresolved material uncertainty. Do not demand implementation detail, alternative
 wording or facts absent from the source. Admission is not an exhaustive defect report.

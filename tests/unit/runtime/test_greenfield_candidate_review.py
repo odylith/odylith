@@ -160,6 +160,18 @@ def test_review_request_does_not_invent_events_for_unowned_timing_conditions():
     assert "never invent an event, action, or performer" in prompt
 
 
+def test_review_request_owns_coherent_branch_completeness():
+    clock = Clock()
+    provider = Reviewer(ADMITTED, clock)
+    run_review(provider, clock)
+
+    prompt = provider.requests[0].system_prompt
+    assert "one coherent\nexecutable branch" in prompt
+    assert "omits a source event required to complete that\nbranch" in prompt
+    assert "concatenates mutually exclusive outcomes" in prompt
+    assert "belong only to alternate branches" in prompt
+
+
 def test_human_subject_state_object_keeps_source_and_performer_custody_separate():
     source = "Harbor intake helps city staff register displaced residents."
     event = "city staff register displaced residents"

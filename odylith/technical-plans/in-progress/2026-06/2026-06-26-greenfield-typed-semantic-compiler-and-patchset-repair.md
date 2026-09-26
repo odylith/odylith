@@ -1,5 +1,40 @@
 Status: In progress
 
+## V27 Coherent-Branch Checkpoint (2026-09-26)
+
+Immutable V27 passed 30 disclosed cases at `10/10`, including the prior
+product-story, first-path, evaluator, and citation-custody failures. Case 31
+then failed before staging because the deterministic provisional-design owner
+required every source event in one First Run. The retained archive candidate
+was otherwise coherent: the steward's decision precedes two mutually exclusive
+outcomes, while the proposed acceptance branch selected events `[1, 2, 3]` and
+left rejection event 4 for a separate walkthrough. No governed package was
+published. Preserve `/private/tmp/odylith-v27-public.KIxnJA` as terminal V27
+evidence; do not retry that build or touch the protected holdout.
+
+The correction moves ownership instead of adding a special case. The accepted
+event inventory and component support retain every source action. First Run is
+now one nonempty unique subset that must contain its selected terminal and every
+cited predecessor on that branch. Deterministic code owns only those structural
+laws; independent candidate-review v8 owns the semantic distinction between an
+omitted required sequential event and an omitted alternate-branch event. It
+must deny both required omissions and concatenated mutually exclusive outcomes.
+The nested serialized boundaries advance together: provisional design v3,
+canonical authoring v70, host format v10, host contract v21, and reviewer v8.
+There is no parser, regex, repair, retry, fallback, branch vocabulary, model
+ladder, or additional model call.
+
+Focused and contract proof passes `593/593`; complete source proof passes
+`1,796/1,796` fast and `288/288` lifecycle tests. Independent source review
+returns `SHIP`. A fresh Astra semantic control admits the retained archive
+acceptance branch and denies a controlled candidate that skips the required
+resolution-owner assignment, naming the exact First Run event path. Next: sync
+governance, commit and push the frozen checkpoint, build one clean immutable
+distribution, and restart all 36 disclosed cases from case one. Require the
+complete package, browser, recovery, cleanup, and timing floor plus independent
+retained-output review before exactly one fresh holdout. Completion remains
+unclaimed.
+
 ## V26 Byte-Custody Checkpoint (2026-09-26)
 
 Immutable V26 passed its first committed case and the following no-write

@@ -519,6 +519,12 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
     assert "cover every source event" in provisional_component[
         "supported_event_orders"
     ]["description"]
+    first_run_orders = authored["properties"]["provisional_design"]["properties"][
+        "first_run"
+    ]["properties"]["event_orders"]
+    assert "one coherent proposed walkthrough" in first_run_orders["description"].lower()
+    assert "mutually exclusive outcomes" in first_run_orders["description"]
+    assert "remain retained and component-supported" in first_run_orders["description"]
     assert any(
         "including human actions" in requirement
         for requirement in payload["requirements"]

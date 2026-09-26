@@ -92,11 +92,51 @@ def test_same_edge_can_retain_support_from_distinct_source_constraints():
     ) == tuple(edges)
 
 
-@pytest.mark.parametrize("orders", [(1, 2), (2, 2, 1), (2, 3, 4), (True, 2, 3)])
-def test_first_run_requires_each_event_once(orders):
+@pytest.mark.parametrize("orders", [(), (2, 2, 1), (2, 3, 4), (True, 2, 3)])
+def test_first_run_requires_unique_known_source_events(orders):
     with pytest.raises(ValueError):
         validate_first_run(
             _walk(orders), event_orders=(1, 2, 3), source_precedence=(), result_event_order=1,
+        )
+
+
+def test_first_run_selects_one_coherent_branch_without_losing_source_inventory():
+    precedence = _validate(
+        [_edge(2, 3), _edge(2, 4)],
+        events=(1, 2, 3, 4),
+        constraints=("The decision precedes either disposition outcome.",),
+    )
+    accepted = {"event_orders": [1, 2, 3], "rationale": "Exercise the acceptance branch."}
+
+    assert validate_first_run(
+        accepted,
+        event_orders=(1, 2, 3, 4),
+        source_precedence=precedence,
+        result_event_order=3,
+    ) == accepted
+    rejected = {"event_orders": [1, 2, 4], "rationale": "Exercise the rejection branch."}
+    assert validate_first_run(
+        rejected,
+        event_orders=(1, 2, 3, 4),
+        source_precedence=precedence,
+        result_event_order=4,
+    ) == rejected
+
+
+def test_first_run_requires_selected_terminal_and_its_cited_predecessors():
+    precedence = _validate(
+        [_edge(2, 3)], events=(1, 2, 3),
+        constraints=("The decision precedes the result.",),
+    )
+    with pytest.raises(ValueError, match="explicit result event"):
+        validate_first_run(
+            _walk((1, 2)), event_orders=(1, 2, 3),
+            source_precedence=precedence, result_event_order=3,
+        )
+    with pytest.raises(ValueError, match="prerequisite"):
+        validate_first_run(
+            _walk((1, 3)), event_orders=(1, 2, 3),
+            source_precedence=precedence, result_event_order=3,
         )
 
 

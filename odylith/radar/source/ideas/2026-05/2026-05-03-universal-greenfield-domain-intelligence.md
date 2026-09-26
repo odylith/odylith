@@ -60,6 +60,32 @@ supersedes:
 
 superseded_by: 
 
+## V27 Coherent-Branch Release Gate (2026-09-26)
+
+- Immutable V27 passed its first 30 disclosed cases at `10/10`, including every
+  previous decisive failure, then stopped before staging on
+  `public-v11-archive-custody-01`. The candidate retained all four source
+  events and selected the acceptance walkthrough `[1, 2, 3]`, but provisional
+  design v2 incorrectly required First Run to contain the mutually exclusive
+  rejection outcome too. Preserve `/private/tmp/odylith-v27-public.KIxnJA` as
+  terminal evidence; the protected holdout remains untouched.
+- Replace the conflated owner, not the example. Typed events and component
+  support retain every source action. Provisional design v3 selects one
+  nonempty coherent branch, requires its terminal result and cited
+  predecessors, and leaves the independent reviewer to deny either a required
+  sequential omission or a concatenation of mutually exclusive outcomes.
+  Host format v10, canonical authoring v70, contract v21, and reviewer v8 make
+  the changed serialized semantics explicit. Add no parser, regex, repair,
+  retry, fallback, branch classifier, model ladder, or model call.
+- Source proof passes `1,796/1,796` fast and `288/288` lifecycle tests.
+  Independent source review returns `SHIP`. Fresh live Astra review admits the
+  archive acceptance branch while preserving the rejected branch outside the
+  walkthrough, and denies a controlled source-sufficient candidate that omits
+  the required resolution-owner assignment. Build one clean immutable
+  distribution and restart all 36 disclosed cases from case one. Only a clean
+  public/browser/recovery gate plus independent retained-output qualification
+  may unlock one fresh holdout; completion remains unclaimed.
+
 ## V26 Byte-Custody Release Gate (2026-09-26)
 
 - Immutable V26 passed one complete `10/10` package and one `10/10`

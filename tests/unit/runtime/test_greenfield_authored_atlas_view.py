@@ -121,7 +121,7 @@ def _provisional_design(*, event_orders: tuple[int, ...] = (1, 2, 3)) -> dict[st
     ]
     assigned_orders.append(list(event_orders))
     return {
-        "version": "odylith.greenfield.provisional-design.v2",
+        "version": "odylith.greenfield.provisional-design.v3",
         "authority_kind": "provisional_design",
         "first_run": {
             "event_orders": list(event_orders),
@@ -770,12 +770,22 @@ def test_first_run_keeps_result_first_source_ids_and_proposed_links() -> None:
     assert 'event2 -. "proposed next step" .-> event3' in source
     assert 'event3 -. "proposed next step" .-> event1' in source
     assert 'event1 -. "proposed next step" .-> event2' not in source
-    design["first_run"]["event_orders"] = [1, 2]
-    with pytest.raises(ValueError, match="must include every source event exactly once"):
-        _authored_diagrams(
-            relations=relations, provisional_design=design,
-            result_event_order=1, visible_result="the placement",
-        )
+    design["first_run"]["event_orders"] = [2, 1]
+    rows = _authored_diagrams(
+        relations=relations, provisional_design=design,
+        result_event_order=1, visible_result="the placement",
+    )
+    selected = rows[1]
+    assert [
+        box["node_id"] for box in selected["diagram_boxes"]
+        if box["node_id"].startswith("event")
+    ] == ["event1", "event2", "event3"]
+    assert 'event2 -. "proposed next step" .-> event1' in selected["mermaid_source"]
+    proposed_steps = [
+        line.strip() for line in selected["mermaid_source"].splitlines()
+        if "proposed next step" in line
+    ]
+    assert proposed_steps == ['event2 -. "proposed next step" .-> event1']
 
 
 @pytest.mark.parametrize("event_count", [1, 3])

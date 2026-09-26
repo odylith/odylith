@@ -87,7 +87,7 @@ def approved_authored_quality_manifest_fixture(
                 },
             },
             "candidate_review": {
-                "version": "odylith.greenfield.candidate-review.v7",
+                "version": "odylith.greenfield.candidate-review.v8",
                 "status": "admitted",
                 "source_sha256": authority.get("markdown_source_sha256", "0" * 64),
                 "candidate_sha256": "1" * 64,

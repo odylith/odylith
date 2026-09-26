@@ -146,13 +146,14 @@ actions the capability supports; they never transfer the original actor's work t
 the component. Support every source event and assign every component to work.
 Give each workstream a concrete deliverable, useful acceptance, component references
 and only necessary prerequisite workstream keys. Prerequisites must be acyclic.
-first_run proposes one complete walkthrough: include each source event identity once
-and respect every cited source_precedence edge, including required actions after a
-source-stated terminal when present. A non-null terminal.event_order identifies the
-source-stated result producer, independent of its walkthrough position. Explain the
-chosen sequence in its rationale.
+first_run proposes one coherent executable branch over a unique subset of source
+event identities. Include the selected terminal result and every cited
+source_precedence prerequisite on that branch. Do not concatenate mutually exclusive
+outcomes. Other source events remain retained and component-supported outside this
+first run. A non-null terminal.event_order identifies the source-stated result producer,
+independent of its walkthrough position. Explain the chosen sequence in its rationale.
 This is a provisional first run, not source fact or a model of all concurrency,
-branches or loops. Never derive runtime order from workstream depends_on, which
+alternate branches or loops. Never derive runtime order from workstream depends_on, which
 describes delivery work rather than product use. Exchanges name internal component
 keys and the specific information or contract crossing that proposed boundary. Do
 not add proposed names to source facts or source components. Invent no external
