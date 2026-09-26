@@ -145,6 +145,31 @@ def test_host_selection_requires_nonempty_context_even_when_quote_is_unique() ->
             canonical_citation_from_host_selection(b"one unique proof remains", citation)
 
 
+def test_host_selection_preserves_v26_actor_bytes_and_rejects_rewrites() -> None:
+    evidence = (
+        b"Project brief for an accessibility team. User intent: A program lead "
+        b"registers a readiness dossier."
+    )
+    exact = {"quote": "A program lead", "context": "A program lead"}
+
+    assert canonical_citation_from_host_selection(evidence, exact) == {
+        "quote": "A program lead",
+        "occurrence": 1,
+    }
+
+    for rewritten in (
+        "a program lead",
+        "the program lead",
+        "A program lead.",
+        "A  program lead",
+    ):
+        with pytest.raises(GreenfieldModelAuthoringError):
+            canonical_citation_from_host_selection(
+                evidence,
+                {"quote": rewritten, "context": rewritten},
+            )
+
+
 @pytest.mark.parametrize(
     "citation",
     (

@@ -549,7 +549,8 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
         for requirement in payload["requirements"]
     )
     assert any(
-        "supply its exact quote and locator context" in requirement
+        "copy quote and locator context byte-for-byte" in requirement
+        and "never normalize or rewrite either value" in requirement
         and "When the quote occurs once, repeat the quote as context" in requirement
         for requirement in payload["requirements"]
     )

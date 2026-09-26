@@ -4877,3 +4877,18 @@ projection coherence, confirmation, and readback.
 - The 90/120/150-second values remain advisory profile observations under one
   180-second operational safety timeout. No elapsed-time promotion, fallback,
   retry, repair, parser, regex stack, or alternate model ladder is allowed.
+
+## Greenfield Host Citation Byte Custody (2026-09-26)
+
+- Host candidate contract v20 requires every quote and locator context to be
+  copied byte-for-byte from source without normalization or rewriting. This
+  replaces the prior generic exact-text sentence; it is not an additional
+  lexical rule or alternate authoring path.
+- Existing deterministic citation validation remains the authority and still
+  fails closed before review or staging. Candidate v9, canonical authoring v69,
+  reviewer v7, typed relations, and ProductCreateTransaction are unchanged.
+- Exact V26-shaped mutation proof rejects case, article-substitution,
+  punctuation, and whitespace rewrites. No parser, regex, repair, retry,
+  fallback, extra model stage, or schema branch belongs to this boundary.
+  Current source and UX proof is `86/86` focused, `3,185/3,185` complete
+  Greenfield, and `133/133` governed-surface browser checks.

@@ -1,5 +1,31 @@
 - Bug ID: CB-303
 
+- V26 byte-custody recurrence (2026-09-26): Immutable V26 passed its first
+  committed package and its clarification/no-write control at `10/10`, then
+  stopped before review or staging on `public-v11-accessibility-003-description`.
+  The host candidate changed source `A program lead` to absent
+  `a program lead` in `facts.customer`; deterministic citation custody correctly
+  rejected it and wrote no governed records. Every other citation in that
+  candidate resolved. Preserve V26 as terminal failed evidence under
+  `/private/tmp/odylith-v26-public.vliHJW`.
+- Independent review rejected an initial enumerated capitalization/punctuation
+  wording patch because the contract already required exact text. That losing
+  patch was removed. Contract v20 instead replaces the old sentence with one
+  generalized law: copy quote and locator context byte-for-byte and never
+  normalize or rewrite either value. It adds no parser, regex, matcher, schema,
+  repair, retry, fallback, model stage, or validator branch.
+- The exact V26-shaped source control accepts `A program lead` and rejects
+  lowercase, substituted-article, punctuation-added, and doubled-whitespace
+  rewrites. A fresh one-shot host output retained at
+  `/private/tmp/odylith-v27-host-control.4o85bA` returned exact source
+  substrings. Focused proof passes `86/86`; the complete Greenfield suite passes
+  `3,185/3,185`; the governed-surface browser matrix passes `133/133` across
+  normal, empty/fallback, degraded/error, desktop, mobile, Project, and
+  intervention views; independent re-review returns `SHIP`. Build a new
+  immutable distribution and restart the disclosed public campaign from case
+  one. If the class recurs, stop wording changes and replace the
+  citation-authoring boundary. The protected holdout remains sealed.
+
 - V23/V25 evaluator-adjudication checkpoint (2026-09-26): Immutable V23
   passed `25/26` disclosed cases at `10/10` before the evaluator mislabeled
   `public-v11-research-162-topic` as clarification-required. Independent review

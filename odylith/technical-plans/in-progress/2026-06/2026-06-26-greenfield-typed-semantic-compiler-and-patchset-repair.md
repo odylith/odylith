@@ -1,5 +1,38 @@
 Status: In progress
 
+## V26 Byte-Custody Checkpoint (2026-09-26)
+
+Immutable V26 passed its first committed case and the following no-write
+clarification at `10/10`, then stopped on case three before independent review
+or transaction staging. The host candidate rewrote the source citation
+`A program lead` as `a program lead` only in `facts.customer`. Exact citation
+validation correctly failed closed; every other candidate citation resolved and
+no governed records were written.
+
+Independent review rejected the first enumerated prompt patch as redundant with
+the existing exact-text contract. Remove that losing variant. Contract v20
+instead replaces the prior citation sentence with one falsifiable byte-custody
+law: copy quote and locator context byte-for-byte and never normalize or rewrite
+either value. Preserve host candidate v9, canonical authoring v69, reviewer v7,
+one author, one independent review, transaction laws, model assignments, and the
+`90/120/150` advisory targets under the `180s` safety timeout. Add no parser,
+regex, phrase matcher, repair, retry, fallback, extra call, or schema branch.
+
+The exact V26-shaped deterministic control accepts source bytes and rejects
+capitalization, article-substitution, punctuation, and whitespace rewrites. One
+fresh host output returned exact source substrings; its contract, schema, and
+candidate are retained at `/private/tmp/odylith-v27-host-control.4o85bA` without
+an independent invocation receipt. Focused proof passes `86/86`; the complete
+Greenfield suite passes `3,185/3,185`; governed-surface browser proof passes
+`133/133` across normal, empty/fallback, degraded/error, desktop, mobile,
+Project, and intervention views; independent review returns `SHIP`.
+
+Next: commit and push the frozen checkpoint, build a new immutable distribution,
+and restart the unchanged 36-case public campaign from case one. If the class
+recurs, stop wording changes and replace the citation-authoring boundary. Require
+100% package/browser/recovery proof and retained-output semantic review before
+exactly one fresh untouched holdout. Completion remains unclaimed.
+
 ## V23/V25 Evaluator-Adjudication Checkpoint (2026-09-26)
 
 The typed admission-witness mechanism cleared V23's first 25 disclosed cases

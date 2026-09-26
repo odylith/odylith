@@ -109,6 +109,21 @@ retain the host observation, candidate hash, independent review observation,
 sealed Product Intent facts hash, and recovery evidence. It may not substitute a
 runtime author, add retries or repair, or relax any recovery check.
 
+## V26 Byte-Custody Qualification Stop (2026-09-26)
+
+- Immutable V26 stopped after two passing cases when its third host candidate
+  changed one citation's capitalization. The campaign correctly failed before
+  review, transaction staging, browser proof, or governed writes for that case.
+- V26 is retained as failed evidence. Contract v20's bounded byte-copy
+  correction has `86/86` focused and `3,185/3,185` complete Greenfield source
+  proof, `133/133` governed-surface browser proof, and independent `SHIP`
+  review; it is not release qualification.
+- Release must build new immutable bytes, restart the disclosed 36-case campaign
+  from case one, preserve direct host argv and retained private review custody,
+  and pass every package, browser, recovery, no-write, cleanup, and timing floor
+  before retained-output review or a fresh holdout. A repeated citation rewrite
+  ends prompt-wording changes and reopens the representation boundary.
+
 Fresh installed proof passes this contract against immutable distribution
 `d4743f3a0`: SIGKILL, partial-write recovery, operator conflict preservation,
 conflict snapshot retention, fsync rollback, recovery, retry, and unchanged

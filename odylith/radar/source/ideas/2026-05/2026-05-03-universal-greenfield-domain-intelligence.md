@@ -60,6 +60,26 @@ supersedes:
 
 superseded_by: 
 
+## V26 Byte-Custody Release Gate (2026-09-26)
+
+- Immutable V26 passed one complete `10/10` package and one `10/10`
+  clarification/no-write control, then failed closed before review or staging
+  because `facts.customer` normalized source `A program lead` to absent
+  `a program lead`. No governed product records were written; retain
+  `/private/tmp/odylith-v26-public.vliHJW` as terminal evidence.
+- Reject the first enumerated wording patch. Contract v20 replaces the existing
+  citation instruction with one general byte-for-byte copy law. Deterministic
+  custody, candidate v9, canonical v69, reviewer v7, transaction laws, model
+  profile, timing, and package projection stay unchanged. Add no parser, regex,
+  repair, retry, fallback, model stage, or local vocabulary rule.
+- Exact mutation proof and the host-shaped source control pass; focused proof is
+  `86/86`, complete Greenfield proof is `3,185/3,185`, governed-surface browser
+  proof is `133/133`, and independent review is `SHIP`. Commit and push this
+  checkpoint, build one new immutable distribution, and restart all 36 disclosed
+  cases from case one. A repeated byte-citation failure retires further wording
+  changes and reopens the citation representation. Only a clean public campaign
+  plus retained-output review may unlock one fresh holdout.
+
 ## V23/V25 Evaluator Convergence Gate (2026-09-26)
 
 - V23 passed `25/26` disclosed public cases at `10/10`; independent review

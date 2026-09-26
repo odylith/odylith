@@ -49,7 +49,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v1"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v19"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v20"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
 
 
@@ -68,7 +68,8 @@ def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
         "requirements": [
             "Preserve every source-stated participant, action, visible result, constraint, and non-goal.",
             (
-                "For every accepted source fact, supply its exact quote and locator context. "
+                "For every accepted source fact, copy quote and locator context byte-for-byte "
+                "from the source; never normalize or rewrite either value. "
                 "When the quote occurs once, repeat the quote as context. When the quote occurs "
                 "more than once, context must be an exact contiguous source excerpt that occurs "
                 "once and contains the selected quote once. Context locates the quote but "
