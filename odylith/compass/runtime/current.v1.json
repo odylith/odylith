@@ -573,7 +573,7 @@
         "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
       ],
       "B-145": [
-        "Brief unavailable right now: The narration provider failed on the last attempt. Compass will retry on backoff."
+        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
       ],
       "B-001": [
         "Nothing moved in this window: B-001 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
@@ -3500,28 +3500,19 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "51383bc8948b8c0a9e26f042445b369430043cc5da980f16b4302d33109c343c",
-        "substrate_fingerprint": "51383bc8948b8c0a9e26f042445b369430043cc5da980f16b4302d33109c343c",
+        "fingerprint": "",
+        "substrate_fingerprint": "",
         "bundle_fingerprint": "",
-        "provider_decision": "provider_error",
+        "provider_decision": "skipped_not_worth_calling",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-09-26T01:31:17Z",
         "sections": [],
         "diagnostics": {
-          "reason": "provider_error",
-          "title": "Brief unavailable right now",
-          "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
-          "fallback_title": "Local runtime facts",
-          "fallback_digest": [
-            "Current: Make upgrade impact explicit, reversible, and traceable rather than relying on implicit regenerated assets; Assess v0.1.15 guidance and browser surface migration (B-145) is in active.",
-            "Next: Immediate forcing function is to log the next concrete checkpoint for Assess v0.1.15 guidance and browser surface migration (B-145) so Compass stops leaning on aging evidence.",
-            "Watch: Freshness signal is stale: latest linked execution proof for Assess v0.1.15 guidance and browser surface migration (B-145) is more than a day old, so a new checkpoint is needed."
-          ],
-          "provider": "codex-cli",
-          "provider_failure_code": "provider_error",
-          "provider_failure_detail": "Codex CLI exited with status 1. 2026-09-26T01:31:19.760327Z WARN codex_models_manager::model_info: Unknown model gpt-5.3-codex-spark is used. This will use fallback model m ... {\"type\":\"invalid_request_error\",\"message\":\"The 'gpt-5.3-codex-spark' model is not supported when using Codex with a ChatGPT account.\"}}",
-          "provider_model": "gpt-5.3-codex-spark",
-          "provider_reasoning_effort": "medium"
+          "reason": "skipped_not_worth_calling",
+          "title": "Brief reused last validated narration",
+          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
+          "provider_decision": "skipped_not_worth_calling",
+          "skip_reason": "deferred_to_background"
         },
         "evidence_lookup": {}
       },
