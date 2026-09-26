@@ -39,6 +39,7 @@ from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     ParticipantSelectionProvider,
     RemainingCandidateProvider,
     StructuredAuthoringProvider,
+    admitted_review_response,
     authored_response,
     clarification_response,
 )
@@ -440,7 +441,7 @@ def test_three_calls_receive_only_the_shared_deadlines_remaining_time():
         duration=3.0,
     )
     reviewer = _TimedProvider(
-        {"outcome": "admitted", "issue": None, "clarification": None},
+        admitted_review_response(result_event_order=1),
         clock=clock,
         duration=1.0,
     )
@@ -472,6 +473,7 @@ def test_reviewer_clarification_stops_participant_authoring_before_staging(
         "outcome": "clarification_required",
         "issue": None,
         "clarification": {"material_dimension": "first_path"},
+        "admission_witness": None,
     }])
 
     def forbidden_stage(**_kwargs: object) -> object:
@@ -532,8 +534,9 @@ def test_denial_gets_one_revision_and_fresh_review_within_shared_deadline(
                     "reason": "The selected action is not a complete improvement.",
                 },
                 "clarification": None,
+                "admission_witness": None,
             },
-            {"outcome": "admitted", "issue": None, "clarification": None},
+            admitted_review_response(result_event_order=1),
         ],
         clock=clock,
         durations=[3.0, 5.0],
@@ -579,9 +582,9 @@ def test_denial_gets_one_revision_and_fresh_review_within_shared_deadline(
     }
     assert retained["semantic_model_call_count"] == 5
     assert retained["rejected_candidate_review"]["response"]["outcome"] == "denied"
-    assert retained["candidate_review"]["response"] == {
-        "outcome": "admitted", "issue": None, "clarification": None,
-    }
+    assert retained["candidate_review"]["response"] == admitted_review_response(
+        result_event_order=1,
+    )
 
 
 def test_revision_receipts_reach_the_staged_candidate_without_expanding_sealed_roles(
@@ -598,8 +601,9 @@ def test_revision_receipts_reach_the_staged_candidate_without_expanding_sealed_r
                 "reason": "The selected action is not a complete improvement.",
             },
             "clarification": None,
+            "admission_witness": None,
         },
-        {"outcome": "admitted", "issue": None, "clarification": None},
+        admitted_review_response(result_event_order=1),
     ])
     receipt: dict[str, Any] = {}
 
@@ -633,11 +637,13 @@ def test_repeated_review_denial_fails_closed_without_a_second_revision():
                 "outcome": "denied",
                 "issue": {"path": "candidate.accepted_source.facts.opportunity", "reason": "Invalid."},
                 "clarification": None,
+                "admission_witness": None,
             },
             {
                 "outcome": "denied",
                 "issue": {"path": "candidate.accepted_source.source_precedence", "reason": "Still invalid."},
                 "clarification": None,
+                "admission_witness": None,
             },
         ]
     )
@@ -722,4 +728,4 @@ def test_old_two_call_orchestration_is_not_exported():
     assert not hasattr(greenfield_model_intent_authoring, "author_greenfield_intent")
     assert not hasattr(greenfield_model_intent_authoring, "GREENFIELD_MODEL_PROOF_FD_ENV")
     assert MAX_GREENFIELD_SEMANTIC_CALLS == 5
-    assert GREENFIELD_INTENT_AUTHORING_VERSION.endswith(".v68")
+    assert GREENFIELD_INTENT_AUTHORING_VERSION.endswith(".v69")

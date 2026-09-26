@@ -73,18 +73,18 @@ from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
     validate_provisional_design,
 )
 
-GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v68"
+GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v69"
 MATERIALITY_DECISION_CONTRACT = (
     "Ask only when a missing or conflicting choice materially changes the target "
     "user, usable path, visible outcome, product/dependency boundary, source constraint, "
     "safety or proof obligation and cannot safely remain an explicit proposed assumption. "
-    "A stated product task with observable or reviewable concerns is sufficient to "
-    "propose a first path. Missing implementation or performer names, or a "
-    "source-stated terminal producer, alone do not require clarification. "
-    "Keep absent source proof and terminal null and supply a proposed proof_boundary "
-    "assumption; never promote a proposed checkpoint into an accepted source result. "
-    "Use first_path when the evidence gives no usable task or competing task "
-    "interpretations cannot safely remain proposed. Use product_boundary for a "
+    "Admission requires a source-supported participant, beneficiary, or explicit "
+    "product/system task owner; a usable task; and a visible result. A product title "
+    "cannot act as a fabricated user, but a source-supported product or internal system "
+    "may own its bound task. Assumptions or provisional design cannot fill any of those "
+    "three accepted-source gaps. Use first_path when any part is absent or when competing "
+    "task interpretations cannot safely remain proposed. Missing implementation detail "
+    "alone does not require clarification. Use product_boundary for a "
     "competing or unclear product responsibility or scope limit; otherwise select "
     "the matching material dimension. Explicit source results, dependencies, "
     "constraints and safety obligations cannot be overridden by assumptions."

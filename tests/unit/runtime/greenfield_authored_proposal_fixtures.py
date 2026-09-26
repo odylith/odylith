@@ -87,11 +87,16 @@ def approved_authored_quality_manifest_fixture(
                 },
             },
             "candidate_review": {
-                "version": "odylith.greenfield.candidate-review.v6",
+                "version": "odylith.greenfield.candidate-review.v7",
                 "status": "admitted",
                 "source_sha256": authority.get("markdown_source_sha256", "0" * 64),
                 "candidate_sha256": "1" * 64,
                 "product_facts_sha256": authority.get("product_facts_sha256", "2" * 64),
+                "admission_witness": {
+                    "participant_fact": {"field": "human_actors", "row": 1},
+                    "task_event_order": 1,
+                    "result_event_order": 1,
+                },
                 "elapsed_seconds": 0.25,
                 "model_profile": {
                     "profile_id": profile.profile_id,

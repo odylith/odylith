@@ -60,6 +60,33 @@ supersedes:
 
 superseded_by: 
 
+## V22 Typed Admission-Witness Release Gate (2026-09-26)
+
+- Immutable V22 passed sixteen disclosed cases before case seventeen repeated
+  the source-insufficient first-path class. The retained candidate named no
+  customer, human actor, or external participant, used a title-owned product
+  event as its task, and supplied no terminal result. Reviewer v6 admitted it;
+  the harness staged a transaction instead of returning the existing
+  clarification. The proposal completed in `72.395s`, so latency was not the
+  cause, and no governed product package was published.
+- Keep the one-author/one-reviewer topology. Reviewer v7 requires each admitted
+  decision to identify one typed participant or explicit product/system task
+  owner, one task event, and one terminal-result event already present in the
+  candidate and in source order. Product/system task witnesses must bind to the
+  same event actor fact. Assumptions and provisional design cannot satisfy the
+  witness; denied and clarification outcomes carry none.
+- Release proof now verifies the private admitted receipt against the exact
+  source, candidate hash, sealed host receipt, reviewer profile, decision,
+  version, witness, and committed receipt. It cannot qualify an unreported or
+  merely retained decision. This adds no parser, regex, phrase rule, repair,
+  retry, fallback, model ladder, or model call.
+- Proof is `535/535` focused, `3,179/3,179` complete Greenfield, and `460/460`
+  comprehensive integration browser checks. Next: commit and push this frozen
+  checkpoint, build one immutable distribution, and restart all 36 disclosed
+  cases from case one. Require independent retained-output semantic review
+  before exactly one fresh untouched blind holdout. Completion remains
+  unclaimed until both gates pass.
+
 ## V21 Actor-Task-Result Release Gate (2026-09-26)
 
 - Immutable V21 passed ten disclosed public cases before case eleven exposed

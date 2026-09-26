@@ -439,13 +439,15 @@ def test_case_preserves_stage_observation_and_actual_terminal_diagnostics(
 
     def profile_evidence(  # noqa: ANN001
         profile, environ, *, observed, stage_observation,
-        reviewer_observation=None, expected_source="",
+        reviewer_observation=None, expected_reviewer_candidate_sha256="",
+        expected_source="",
     ):
         captured.update(
             profile=profile,
             observed=observed,
             stage_observation=stage_observation,
             reviewer_observation=reviewer_observation,
+            expected_reviewer_candidate_sha256=expected_reviewer_candidate_sha256,
             expected_source=expected_source,
         )
         return {"status": "passed", "issues": []}
@@ -796,16 +798,16 @@ def _host_native_reviewer_clarification_observation(
     source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
     return {
         "version": "odylith.greenfield.model-proof-observation.v4",
-        "authoring_version": "odylith.greenfield.intent-authoring.v68",
+        "authoring_version": "odylith.greenfield.intent-authoring.v69",
         "request": {
-            "version": "odylith.greenfield.intent-authoring.v68",
+            "version": "odylith.greenfield.intent-authoring.v69",
             "evidence": source,
         },
         "semantic_model_call_count": 1,
         "origin": "host_native",
         "host_candidate": {
             "version": "odylith.greenfield.host-candidate.v1",
-            "contract_version": "odylith.greenfield.intent-authoring.v68",
+            "contract_version": "odylith.greenfield.intent-authoring.v69",
             "source_sha256": source_sha256,
             "candidate_sha256": candidate_sha256,
         },
@@ -824,6 +826,53 @@ def _host_native_reviewer_clarification_observation(
             },
             "elapsed_seconds": 0.1,
             "clarification": {"material_dimension": "first_path"},
+        },
+    }
+
+
+def _host_native_reviewer_admission_observation(
+    source: str,
+    *,
+    profile_id: str = STANDARD_PROFILE_ID,
+    host_candidate_sha256: str = "3" * 64,
+    reviewer_candidate_sha256: str = "9" * 64,
+) -> dict[str, object]:
+    profile = get_greenfield_model_profile(profile_id)
+    source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
+    return {
+        "version": "odylith.greenfield.model-proof-observation.v4",
+        "authoring_version": "odylith.greenfield.intent-authoring.v69",
+        "request": {
+            "version": "odylith.greenfield.intent-authoring.v69",
+            "evidence": source,
+        },
+        "semantic_model_call_count": 1,
+        "origin": "host_native",
+        "host_candidate": {
+            "version": "odylith.greenfield.host-candidate.v1",
+            "contract_version": "odylith.greenfield.intent-authoring.v69",
+            "source_sha256": source_sha256,
+            "candidate_sha256": host_candidate_sha256,
+        },
+        "candidate_review": {
+            "version": CANDIDATE_REVIEW_VERSION,
+            "status": "admitted",
+            "source_sha256": source_sha256,
+            "candidate_sha256": reviewer_candidate_sha256,
+            "model_profile": {
+                "profile_id": profile_id,
+                "provider": profile.provider,
+                "model": profile.review_model,
+                "reasoning_effort": profile.review_reasoning_effort,
+                "effective_timeout_seconds": 120.0,
+                "authoring_tier": profile.repair_tier,
+            },
+            "elapsed_seconds": 0.1,
+            "admission_witness": {
+                "participant_fact": {"field": "human_actors", "row": 1},
+                "task_event_order": 1,
+                "result_event_order": 1,
+            },
         },
     }
 
@@ -1032,7 +1081,7 @@ def _host_native_authored_profile_evidence(
         "origin": "host_native",
         "host_candidate": {
             "version": "odylith.greenfield.host-candidate.v1",
-            "contract_version": "odylith.greenfield.intent-authoring.v68",
+            "contract_version": "odylith.greenfield.intent-authoring.v69",
             "source_sha256": stage["source_sha256"],
             "candidate_sha256": stage["candidate_sha256"],
         },
@@ -1045,11 +1094,20 @@ def _host_native_authored_profile_evidence(
             "authoring_tier": profile.repair_tier,
         },
     }
+    reviewer_candidate_sha256 = "9" * 64
+    reviewer = _host_native_reviewer_admission_observation(
+        source,
+        profile_id=profile_id,
+        host_candidate_sha256=str(stage["candidate_sha256"]),
+        reviewer_candidate_sha256=reviewer_candidate_sha256,
+    )
     return model_profile_evidence(
         profile_id,
         model_profile_environment(profile_id, {}),
         observed=observed,
         stage_observation=stage,
+        reviewer_observation=reviewer,
+        expected_reviewer_candidate_sha256=reviewer_candidate_sha256,
         expected_source=source,
     )
 
@@ -1247,34 +1305,7 @@ def test_aggregate_clarification_rejects_contradictory_authored_observations() -
 
 def test_aggregate_authored_evidence_cannot_be_reclassified_by_response_kind() -> None:
     source = "The first complete task remains materially ambiguous."
-    profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
-    stage = _host_native_clarification_stage(source)
-    stage["response_kind"] = "authored"
-    candidate_sha256 = str(stage["candidate_sha256"])
-    observed = {
-        "origin": "host_native",
-        "host_candidate": {
-            "version": "odylith.greenfield.host-candidate.v1",
-            "contract_version": "odylith.greenfield.intent-authoring.v68",
-            "source_sha256": stage["source_sha256"],
-            "candidate_sha256": candidate_sha256,
-        },
-        "candidate_review": {
-            "profile_id": STANDARD_PROFILE_ID,
-            "provider": profile.provider,
-            "model": profile.review_model,
-            "reasoning_effort": profile.review_reasoning_effort,
-            "effective_timeout_seconds": 120.0,
-            "authoring_tier": profile.repair_tier,
-        },
-    }
-    profile_evidence = model_profile_evidence(
-        STANDARD_PROFILE_ID,
-        model_profile_environment(STANDARD_PROFILE_ID, {}),
-        observed=observed,
-        stage_observation=stage,
-        expected_source=source,
-    )
+    profile_evidence = _host_native_authored_profile_evidence(source)
     assert profile_evidence["status"] == "passed", profile_evidence["issues"]
     profile_evidence["stage_observation"]["response_kind"] = "clarification_required"
     result = _host_native_clarification_aggregate_result(

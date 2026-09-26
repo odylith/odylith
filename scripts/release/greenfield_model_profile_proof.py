@@ -13,7 +13,6 @@ from greenfield_model_profiles import LOWER_CAPABILITY_CONTROL_PROFILES
 from greenfield_model_profiles import MODEL_PROFILES
 from greenfield_model_profiles import UNAVAILABLE_PROVIDER_PROFILE
 from greenfield_model_profiles import host_native_clarification_stage_observation_issues
-from greenfield_model_profiles import host_native_model_stage_observation_issues
 from greenfield_model_profiles import model_stage_observation_issues
 from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
     CANDIDATE_REVIEW_VERSION,
@@ -34,6 +33,7 @@ CLARIFICATION_NO_WRITE_SCORE_BASIS = "clarification_required_no_write_contract"
 def authored_model_result_binding_issues(
     *,
     stage_observation: Mapping[str, Any],
+    reviewer_observation: Mapping[str, Any] | None = None,
     create_payload: Mapping[str, Any],
     expected_source: str,
 ) -> tuple[str, ...]:
@@ -44,6 +44,7 @@ def authored_model_result_binding_issues(
     if model_authoring.get("authoring_origin") == "host_native":
         return _host_native_result_binding_issues(
             stage_observation=retained,
+            reviewer_observation=_mapping(reviewer_observation),
             model_authoring=model_authoring,
             expected_source=expected_source,
         )
@@ -113,6 +114,7 @@ def authored_model_result_binding_issues(
 def _host_native_result_binding_issues(
     *,
     stage_observation: Mapping[str, Any],
+    reviewer_observation: Mapping[str, Any],
     model_authoring: Mapping[str, Any],
     expected_source: str,
 ) -> tuple[str, ...]:
@@ -145,7 +147,55 @@ def _host_native_result_binding_issues(
         issues.append("sealed candidate-review receipt is not admitted")
     elif review.get("source_sha256") != expected_source_sha256:
         issues.append("sealed candidate-review source hash does not match the expected source")
+    private = _mapping(reviewer_observation)
+    private_request = _mapping(private.get("request"))
+    private_candidate = _mapping(private.get("host_candidate"))
+    private_review = _mapping(private.get("candidate_review"))
+    if set(private) != {
+        "version", "authoring_version", "request", "semantic_model_call_count",
+        "origin", "host_candidate", "candidate_review",
+    }:
+        issues.append("retained private host-native admission proof is missing or malformed")
+    if private.get("origin") != "host_native" or private.get("semantic_model_call_count") != 1:
+        issues.append("retained private host-native admission proof has invalid custody")
+    if private_request.get("evidence") != source:
+        issues.append("retained private host-native admission source does not match expected source")
+    if private_candidate != candidate:
+        issues.append("retained private host candidate receipt does not match the sealed receipt")
+    for field in ("version", "status", "source_sha256", "candidate_sha256", "model_profile", "admission_witness"):
+        if private_review.get(field) != review.get(field):
+            issues.append(
+                "retained private host-native admission does not match the sealed reviewer receipt"
+            )
+            break
+    if not _is_sha256(review.get("candidate_sha256")):
+        issues.append("sealed candidate-review candidate hash is invalid")
+    if not _is_sha256(review.get("product_facts_sha256")):
+        issues.append("sealed candidate-review product-facts hash is invalid")
+    if not _valid_admission_witness(review.get("admission_witness")):
+        issues.append("sealed candidate-review admission witness is invalid")
     return tuple(dict.fromkeys(issues))
+
+
+def _valid_admission_witness(value: Any) -> bool:
+    if not isinstance(value, Mapping) or set(value) != {
+        "participant_fact", "task_event_order", "result_event_order",
+    }:
+        return False
+    participant = value.get("participant_fact")
+    return bool(
+        isinstance(participant, Mapping)
+        and set(participant) == {"field", "row"}
+        and participant.get("field") in {
+            "customer", "external_systems", "human_actors", "internal_systems", "title",
+        }
+        and type(participant.get("row")) is int
+        and participant["row"] >= 1
+        and type(value.get("task_event_order")) is int
+        and value["task_event_order"] >= 1
+        and type(value.get("result_event_order")) is int
+        and value["result_event_order"] >= 1
+    )
 
 
 def sealed_model_profile_observation(
@@ -561,11 +611,11 @@ def _profile_observation_issues(
     if observed.get("origin") == "host_native":
         if expectation != TRANSACTION_COMMITTED_EXPECTATION:
             return ("host-native reviewed candidate does not match the declared case outcome",)
-        return host_native_model_stage_observation_issues(
-            profile_id,
-            observed=observed,
-            stage_observation=_mapping(profile_evidence.get("stage_observation")),
-        )
+        if summary.get("reviewer_receipt_verified") is not True:
+            return ("host-native admission lacks verified private proof receipt",)
+        # model_profile_evidence already bound the private receipt to the exact
+        # source, canonical reviewer candidate, sealed profile, and witness.
+        return ()
     if stages.get("response_kind") == CLARIFICATION_REQUIRED_EXPECTATION:
         if expectation != CLARIFICATION_REQUIRED_EXPECTATION:
             return ("host-native clarification does not match the declared case outcome",)

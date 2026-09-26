@@ -24,7 +24,16 @@ from tests.unit.runtime.greenfield_model_authoring_fixtures import (
 )
 from tests.unit.runtime.test_greenfield_model_path_custody import _response, _source
 
-ADMITTED = {"outcome": "admitted", "issue": None, "clarification": None}
+ADMITTED = {
+    "outcome": "admitted",
+    "issue": None,
+    "clarification": None,
+    "admission_witness": {
+        "participant_fact": {"field": "human_actors", "row": 1},
+        "task_event_order": 1,
+        "result_event_order": 3,
+    },
+}
 
 
 class Clock:
@@ -257,12 +266,18 @@ def test_title_actor_address_stays_hash_bound_before_canonical_product_translati
         source_spans=authored.source_spans,
     )
     clock = Clock()
+    admitted = deepcopy(ADMITTED)
+    admitted["admission_witness"] = {
+        "participant_fact": {"field": "customer", "row": 1},
+        "task_event_order": 1,
+        "result_event_order": 1,
+    }
     receipt = review.review_greenfield_candidate(
         evidence_text=source,
         candidate=response["result"],
         source_spans=authored.source_spans,
         profile_id=STANDARD_PROFILE_ID,
-        provider_factory=lambda: Reviewer(ADMITTED, clock),
+        provider_factory=lambda: Reviewer(admitted, clock),
         deadline=55.0,
         clock=clock,
         observation={},
@@ -278,6 +293,7 @@ def test_title_actor_address_stays_hash_bound_before_canonical_product_translati
             payload["candidate"], sort_keys=True, ensure_ascii=False, separators=(",", ":")
         ).encode()
     ).hexdigest()
+    assert receipt["admission_witness"] == admitted["admission_witness"]
     relation = authored.first_path_relations[0]
     assert (relation["actor_kind"], relation["actor_fact_path"], relation["owner_system_path"]) == (
         "product", "/title", "/title",
@@ -398,6 +414,7 @@ def test_source_insufficient_actor_task_or_result_maps_to_first_path_clarificati
             "outcome": "clarification_required",
             "issue": None,
             "clarification": {"material_dimension": "first_path"},
+            "admission_witness": None,
         },
         clock,
     )
@@ -418,6 +435,7 @@ def test_source_insufficient_actor_task_or_result_maps_to_first_path_clarificati
     assert "select\n`first_path`;" in provider.requests[0].system_prompt
     assert "do not select `component_ownership`" in provider.requests[0].system_prompt
     assert "result needed to complete that path" in provider.requests[0].system_prompt
+    assert "must participate in or benefit\nfrom the witnessed path" in prompt
 
 
 def test_climate_source_without_user_result_is_reviewed_as_first_path_clarification() -> None:
@@ -458,6 +476,7 @@ def test_climate_source_without_user_result_is_reviewed_as_first_path_clarificat
             "outcome": "clarification_required",
             "issue": None,
             "clarification": {"material_dimension": "first_path"},
+            "admission_witness": None,
         },
         clock,
     )
@@ -486,6 +505,74 @@ def test_climate_source_without_user_result_is_reviewed_as_first_path_clarificat
     assert provider.requests[0].prompt_payload["source"] == source
     reviewed = provider.requests[0].prompt_payload["candidate"]
     assert {**reviewed["accepted_source"], **reviewed["proposed_decisions"]} == candidate
+
+
+def test_source_without_participant_or_terminal_cannot_be_admitted_by_fabricated_witness() -> None:
+    source = (
+        "Create a reviewed healthcare product. Source evidence: healthcare. "
+        "Repository description: Unify wearable health data."
+    )
+    candidate = {
+        "status": "authored",
+        "facts": {
+            "title": {"quote": "healthcare product"},
+            "product_story": {"quote": "Unify wearable health data"},
+            "state_object": {"quote": "wearable health data"},
+            "customer": None,
+            "human_actors": [],
+            "external_systems": [],
+        },
+        "events": [{"actor_kind": "product", "action_quote": "Unify"}],
+        "components": [],
+        "terminal": None,
+        "source_precedence": [],
+        "consistency": {"status": "consistent", "evidence_quotes": []},
+        "ambiguities": [],
+        "assumptions": [
+            {"applies_to": "customer", "statement": "A developer uses the product."},
+        ],
+        "provisional_design": {},
+    }
+    clock = Clock()
+    provider = Reviewer(
+        {
+            "outcome": "admitted",
+            "issue": None,
+            "clarification": None,
+            "admission_witness": {
+                "participant_fact": {"field": "human_actors", "row": 1},
+                "task_event_order": 1,
+                "result_event_order": 1,
+            },
+        },
+        clock,
+    )
+
+    with pytest.raises(RuntimeError, match="invalid admission witness"):
+        review.review_greenfield_candidate(
+            evidence_text=source,
+            candidate=candidate,
+            source_spans=(
+                _span(source, "healthcare product", field="title"),
+                _span(
+                    source,
+                    "Unify wearable health data",
+                    field="product_story",
+                ),
+                _span(
+                    source,
+                    "wearable health data",
+                    field="state_object",
+                ),
+            ),
+            profile_id=STANDARD_PROFILE_ID,
+            provider_factory=lambda: provider,
+            deadline=55.0,
+            clock=clock,
+            observation={},
+        )
+
+    assert provider.calls == 1
 
 
 @pytest.mark.parametrize("scope", ["source", "resolved_source_custody", "accepted_source", "proposed_decisions"])

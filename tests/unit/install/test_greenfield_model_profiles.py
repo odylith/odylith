@@ -318,12 +318,14 @@ def test_authored_private_result_binds_to_actual_admitted_consumer_receipt() -> 
 def test_host_native_profile_evidence_binds_one_host_candidate_and_runtime_review() -> None:
     profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
     candidate_sha256 = "1" * 64
-    source_sha256 = "2" * 64
+    reviewer_candidate_sha256 = "3" * 64
+    source = "Extension publishers assemble release notes."
+    source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
     observed = {
         "origin": "host_native",
         "host_candidate": {
             "version": "odylith.greenfield.host-candidate.v1",
-            "contract_version": "odylith.greenfield.intent-authoring.v68",
+            "contract_version": "odylith.greenfield.intent-authoring.v69",
             "source_sha256": source_sha256,
             "candidate_sha256": candidate_sha256,
         },
@@ -337,12 +339,21 @@ def test_host_native_profile_evidence_binds_one_host_candidate_and_runtime_revie
         },
     }
     stage = _host_native_stage(candidate_sha256=candidate_sha256)
+    stage["source_sha256"] = source_sha256
+    reviewer_observation = _host_native_private_admission(
+        observed=observed,
+        source=source,
+        reviewer_candidate_sha256=reviewer_candidate_sha256,
+    )
 
     evidence = model_profile_evidence(
         STANDARD_PROFILE_ID,
         model_profile_environment(STANDARD_PROFILE_ID, {}),
         observed=observed,
         stage_observation=stage,
+        reviewer_observation=reviewer_observation,
+        expected_reviewer_candidate_sha256=reviewer_candidate_sha256,
+        expected_source=source,
     )
 
     assert evidence["status"] == "passed", evidence["issues"]
@@ -362,6 +373,70 @@ def test_host_native_profile_evidence_binds_one_host_candidate_and_runtime_revie
     proof = model_profile_release_proof((result,), require_complete=False)
     assert proof["status"] == "passed", proof["issues"]
     assert proof["profiles"][STANDARD_PROFILE_ID]["maximum_semantic_model_calls"] == 1
+
+
+@pytest.mark.parametrize(
+    ("mutation", "expected_issue"),
+    (
+        ("missing", "private host-native reviewer admission observation is missing or malformed"),
+        ("candidate", "private host-native reviewer admission candidate hash is invalid"),
+        ("witness", "private host-native reviewer admission witness is invalid"),
+        ("profile", "private host-native reviewer admission profile is not sealed"),
+    ),
+)
+def test_host_native_profile_evidence_rejects_unbound_private_admission(
+    mutation: str,
+    expected_issue: str,
+) -> None:
+    profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
+    source = "Extension publishers assemble release notes."
+    source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
+    reviewer_candidate_sha256 = "3" * 64
+    observed = {
+        "origin": "host_native",
+        "host_candidate": {
+            "version": "odylith.greenfield.host-candidate.v1",
+            "contract_version": "odylith.greenfield.intent-authoring.v69",
+            "source_sha256": source_sha256,
+            "candidate_sha256": "1" * 64,
+        },
+        "candidate_review": {
+            "profile_id": STANDARD_PROFILE_ID,
+            "provider": profile.provider,
+            "model": profile.review_model,
+            "reasoning_effort": profile.review_reasoning_effort,
+            "effective_timeout_seconds": 120.0,
+            "authoring_tier": profile.repair_tier,
+        },
+    }
+    stage = _host_native_stage(candidate_sha256="1" * 64)
+    stage["source_sha256"] = source_sha256
+    private = _host_native_private_admission(
+        observed=observed,
+        source=source,
+        reviewer_candidate_sha256=reviewer_candidate_sha256,
+    )
+    if mutation == "missing":
+        private = {}
+    elif mutation == "candidate":
+        private["candidate_review"]["candidate_sha256"] = "4" * 64
+    elif mutation == "witness":
+        private["candidate_review"]["admission_witness"] = None
+    else:
+        private["candidate_review"]["model_profile"]["model"] = "gpt-5.6-sol"
+
+    evidence = model_profile_evidence(
+        STANDARD_PROFILE_ID,
+        model_profile_environment(STANDARD_PROFILE_ID, {}),
+        observed=observed,
+        stage_observation=stage,
+        reviewer_observation=private,
+        expected_reviewer_candidate_sha256=reviewer_candidate_sha256,
+        expected_source=source,
+    )
+
+    assert evidence["status"] == "failed"
+    assert expected_issue in evidence["issues"]
 
 
 @pytest.mark.parametrize("mutation", ("executable", "model", "effort", "output_schema"))
@@ -384,7 +459,7 @@ def test_host_native_profile_evidence_rejects_forged_safe_argv_receipt(
         "origin": "host_native",
         "host_candidate": {
             "version": "odylith.greenfield.host-candidate.v1",
-            "contract_version": "odylith.greenfield.intent-authoring.v68",
+            "contract_version": "odylith.greenfield.intent-authoring.v69",
             "source_sha256": "2" * 64,
             "candidate_sha256": candidate_sha256,
         },
@@ -454,13 +529,27 @@ def test_host_native_result_binding_matches_retained_candidate_to_commit_receipt
     source = "Extension publishers assemble release notes."
     source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
     candidate_sha256 = "3" * 64
+    reviewer_candidate_sha256 = "4" * 64
+    witness = {
+        "participant_fact": {"field": "human_actors", "row": 1},
+        "task_event_order": 1,
+        "result_event_order": 1,
+    }
+    review_profile = {
+        "profile_id": STANDARD_PROFILE_ID,
+        "provider": "codex-cli",
+        "model": "gpt-6-astra",
+        "reasoning_effort": "medium",
+        "effective_timeout_seconds": 120.0,
+        "authoring_tier": "standard",
+    }
     payload = {
         "commit_manifest": {
             "model_authoring": {
                 "authoring_origin": "host_native",
                 "host_candidate": {
                     "version": "odylith.greenfield.host-candidate.v1",
-                    "contract_version": "odylith.greenfield.intent-authoring.v68",
+                    "contract_version": "odylith.greenfield.intent-authoring.v69",
                     "source_sha256": source_sha256,
                     "candidate_sha256": candidate_sha256,
                 },
@@ -468,13 +557,30 @@ def test_host_native_result_binding_matches_retained_candidate_to_commit_receipt
                     "version": CANDIDATE_REVIEW_VERSION,
                     "status": "admitted",
                     "source_sha256": source_sha256,
+                    "candidate_sha256": reviewer_candidate_sha256,
+                    "product_facts_sha256": "5" * 64,
+                    "elapsed_seconds": 1.0,
+                    "model_profile": review_profile,
+                    "admission_witness": witness,
                 },
             }
         }
     }
 
+    observed = {
+        "origin": "host_native",
+        "host_candidate": payload["commit_manifest"]["model_authoring"]["host_candidate"],
+        "candidate_review": review_profile,
+    }
+    reviewer_observation = _host_native_private_admission(
+        observed=observed,
+        source=source,
+        reviewer_candidate_sha256=reviewer_candidate_sha256,
+        witness=witness,
+    )
     assert authored_model_result_binding_issues(
         stage_observation=_host_native_stage(candidate_sha256=candidate_sha256),
+        reviewer_observation=reviewer_observation,
         create_payload=payload,
         expected_source=source,
     ) == ()
@@ -483,6 +589,7 @@ def test_host_native_result_binding_matches_retained_candidate_to_commit_receipt
     assert "retained host candidate does not match the sealed receipt" in (
         authored_model_result_binding_issues(
             stage_observation=mismatched,
+            reviewer_observation=reviewer_observation,
             create_payload=payload,
             expected_source=source,
         )
@@ -995,6 +1102,40 @@ def _host_native_stage(*, candidate_sha256: str) -> dict[str, object]:
         "proposal_mode": "product_create_transaction",
         "candidate_review_status": "unreported",
         "elapsed_seconds": 80.0,
+    }
+
+
+def _host_native_private_admission(
+    *,
+    observed: dict[str, object],
+    source: str,
+    reviewer_candidate_sha256: str,
+    witness: dict[str, object] | None = None,
+) -> dict[str, object]:
+    admission_witness = witness or {
+        "participant_fact": {"field": "human_actors", "row": 1},
+        "task_event_order": 1,
+        "result_event_order": 1,
+    }
+    return {
+        "version": "odylith.greenfield.model-proof-observation.v4",
+        "authoring_version": "odylith.greenfield.intent-authoring.v69",
+        "request": {
+            "version": "odylith.greenfield.intent-authoring.v69",
+            "evidence": source,
+        },
+        "semantic_model_call_count": 1,
+        "origin": "host_native",
+        "host_candidate": deepcopy(observed["host_candidate"]),
+        "candidate_review": {
+            "version": CANDIDATE_REVIEW_VERSION,
+            "status": "admitted",
+            "source_sha256": hashlib.sha256(source.encode("utf-8")).hexdigest(),
+            "candidate_sha256": reviewer_candidate_sha256,
+            "model_profile": deepcopy(observed["candidate_review"]),
+            "elapsed_seconds": 1.0,
+            "admission_witness": admission_witness,
+        },
     }
 
 

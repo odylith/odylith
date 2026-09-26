@@ -4,6 +4,37 @@ Last updated: 2026-09-26
 
 ## Overview
 
+### Typed admission witness at the independent review boundary (2026-09-26)
+
+Immutable V22 passed sixteen disclosed public cases before case seventeen
+reproduced the source-insufficient first-path class. The retained host candidate
+named no customer, human actor, or external participant; used a title-owned
+product event as the task; and left the terminal result null. Reviewer v6 still
+admitted it, so the release harness staged a transaction that should have
+returned the existing `first_path` clarification. The failure occurred in
+`72.395s`, inside the advisory envelope, and no governed product package was
+published.
+
+Candidate-review v7 makes an admitted decision carry one typed
+`admission_witness` over facts already present in the immutable candidate: one
+participant or explicit product/system task owner, one task event, and one
+terminal-result event in source order. Title- and internal-system-owned task
+witnesses must bind to the same typed actor fact selected by that event;
+assumptions and provisional design cannot satisfy admission. Clarification and
+denial carry no witness. The reviewer still owns the decision and does not
+rewrite candidate meaning. This adds no parser, regex, phrase rule, repair,
+retry, fallback, model ladder, or model call.
+
+The release boundary now retains and verifies the private admitted review
+receipt against the exact source, canonical candidate hash, sealed host receipt,
+reviewer profile, decision, version, witness shape, and committed receipt.
+Missing, malformed, mismatched, or unverified admission proof fails release
+qualification. Focused proof passes `535/535`; the complete Greenfield suite
+passes `3,179/3,179`; and the comprehensive integration browser matrix passes
+`460/460` across normal, fallback, degraded/error, desktop, mobile, dashboard,
+and governed surfaces. Fresh immutable public qualification, retained-output
+semantic review, and exactly one untouched blind holdout remain open.
+
 ### Actor-task-result independent review (2026-09-26)
 
 Immutable V21 passed ten disclosed public cases before a source-only climate

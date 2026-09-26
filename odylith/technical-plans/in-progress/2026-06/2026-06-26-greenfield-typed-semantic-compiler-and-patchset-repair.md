@@ -12106,3 +12106,38 @@ Current proposal/confirmation/recovery operations and versioned semantic/timing 
   and push this checkpoint, build a fresh immutable distribution, and restart
   the unchanged public campaign at case one. Preserve the final semantic-review
   and single untouched-holdout gates.
+
+## V22 Typed Admission-Witness Correction (2026-09-26)
+
+- Immutable V22 passed sixteen disclosed public cases before case seventeen
+  repeated the same source-insufficient first-path class. The candidate named
+  no customer, human actor, or external participant, selected a title-owned
+  product event as its task, and left the terminal result null. Reviewer v6
+  admitted it and staging followed. The `72.395s` proposal was inside the
+  advisory envelope; no governed product package was published.
+- Keep one host author and one independent tri-state reviewer. Reviewer v7 adds
+  one typed `admission_witness` to an admitted receipt: an existing participant
+  or explicit product/system task owner, an existing task event, and an existing
+  terminal-result event in source order. Title/internal-system task witnesses
+  must match the event's typed actor fact. Assumptions and provisional design
+  cannot satisfy it. Clarification and denial carry null. Do not add a parser,
+  regex, phrase rule, repair, retry, fallback, model ladder, or model call.
+- Close the release-proof escape found by independent review. Validate the
+  private admitted receipt against exact source, recomputed canonical candidate
+  hash, sealed host receipt, reviewer profile, decision, receipt version,
+  witness shape, and sealed committed receipt. Aggregate success requires
+  `reviewer_receipt_verified: true` and reports admission only after this proof.
+- Current frozen-tree proof is `535/535` focused and `3,179/3,179` across the
+  complete Greenfield suite. The comprehensive integration browser/UX matrix
+  passes `460/460` in `917.14s` across normal, fallback, degraded/error,
+  desktop, mobile, dashboard, and governed surfaces. Independent read-only
+  review found no regex/parser/retry/fallback regression and confirmed that the
+  exact V22 failure cannot pass the new witness gate.
+- Record the old source-visible three-to-five-call participant-selector,
+  remainder-author, join, and revision path as bounded retirement debt because
+  it has no production callers. Do not reactivate or expand it in this release
+  wave. Freeze product scope, refresh governed truth, commit and push the exact
+  checkpoint, build one immutable distribution, and restart the disclosed
+  campaign from case one. Only a 100% public pass plus retained-output semantic
+  review may unlock exactly one newly blind holdout; completion remains
+  unclaimed until that holdout passes.

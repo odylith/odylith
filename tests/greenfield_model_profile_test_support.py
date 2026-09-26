@@ -15,6 +15,7 @@ from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     ParticipantSelectionProvider,
     RemainingCandidateProvider,
     StructuredAuthoringProvider,
+    admitted_review_response,
     authored_response,
     clarification_response,
 )
@@ -108,9 +109,16 @@ def production_stage_observation(
                     "reason": "The selected action is not a complete improvement.",
                 },
                 "clarification": None,
+                "admission_witness": None,
             },
-            {"outcome": "admitted", "issue": None, "clarification": None},
+            admitted_review_response(result_event_order=1),
         )
+
+        def __init__(self):
+            StructuredAuthoringProvider.__init__(
+                self,
+                admitted_review_response(result_event_order=1),
+            )
 
         def generate_structured(self, *, request):
             now[0] += 1.0

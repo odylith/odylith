@@ -302,6 +302,7 @@ def test_wrong_state_anchor_is_reviewed_at_its_selected_location_not_rebound() -
             "reason": "Selected text is a training subject, not managed state.",
         },
         "clarification": None,
+        "admission_witness": None,
     })
 
     with pytest.raises(GreenfieldModelAuthoringError):

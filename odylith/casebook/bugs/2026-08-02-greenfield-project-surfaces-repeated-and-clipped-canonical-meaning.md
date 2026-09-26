@@ -1,5 +1,32 @@
 - Bug ID: CB-303
 
+- V22 typed-admission-witness recurrence (2026-09-26): Immutable V22 passed
+  sixteen disclosed public cases before `public-v11-healthcare-102-topic`
+  failed the release floor in `72.395s`. Its retained candidate named no
+  customer, human actor, or external participant, used a title-owned product
+  event as the task, and left `terminal` null. Reviewer v6 admitted it and a
+  transaction was staged even though the existing `first_path` clarification
+  was required. No governed product package was published. Evidence:
+  `/private/tmp/odylith-v22-public.X4qlEX/evidence-retained/public-v11-healthcare-102-topic/semantic/host-candidate.raw.v1.json`.
+- The recurring defect is admission ownership, not latency, citation parsing,
+  or package generation. Reviewer v7 keeps the same tri-state owner but requires
+  an admitted decision to return a typed witness over one existing participant
+  or explicit product/system task owner, one existing task event, and one
+  existing terminal-result event in source order. Title/internal-system task
+  witnesses must match the event's typed actor fact. Assumptions and provisional
+  design cannot satisfy admission; clarification and denial carry no witness.
+  No parser, regex, phrase rule, repair, retry, fallback, model ladder, or model
+  call was added.
+- Independent review found a separate release-proof escape: the private admitted
+  receipt was retained but ignored. The release harness now verifies that
+  receipt against exact source, recomputed candidate hash, sealed host receipt,
+  reviewer profile, decision, version, witness shape, and committed receipt.
+  Missing or mismatched proof fails qualification. Focused proof passes
+  `535/535`; the complete Greenfield suite passes `3,179/3,179`; and the full
+  integration browser/UX matrix passes `460/460`. CB-303 remains open pending a
+  fresh immutable 36-case public campaign, independent retained-output semantic
+  review, and exactly one untouched blind holdout.
+
 - V21 actor-task-result reviewer correction (2026-09-26): The immutable V21
   distribution passed the first ten disclosed public cases: seven complete
   commit packages scored `10/10`, three clarification cases stopped without

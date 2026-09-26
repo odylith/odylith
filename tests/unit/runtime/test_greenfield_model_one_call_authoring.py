@@ -13,7 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider, ParticipantSelectionProvider, RemainingCandidateProvider,
-    authored_response,
+    admitted_review_response, authored_response,
 )
 from tests.unit.runtime.test_greenfield_model_path_custody import _LIST_FIELDS, _TEXT_FIELDS, _response, _source
 
@@ -71,7 +71,7 @@ def test_two_author_roles_and_review_share_the_full_pinned_window(profile_id, mo
     participant, provider = _timed_stages(
         response, clock, participant_seconds=1.0, remaining_seconds=model_budget - 2.0,
     )
-    reviewer = Provider([{"outcome": "admitted", "issue": None, "clarification": None}], [1.0], clock)
+    reviewer = Provider([admitted_review_response()], [1.0], clock)
     result = author.author_greenfield_intent(
         review_provider_factory=lambda: reviewer,
         evidence_text=_source(), provider=provider,
@@ -128,7 +128,7 @@ def test_shorter_remaining_window_is_not_reduced_by_a_review_reserve():
     participant, provider = _timed_stages(
         response, clock, participant_seconds=0.5, remaining_seconds=18.5,
     )
-    reviewer = Provider([{"outcome": "admitted", "issue": None, "clarification": None}], [1.0], clock)
+    reviewer = Provider([admitted_review_response()], [1.0], clock)
     result = author.author_greenfield_intent(
         review_provider_factory=lambda: reviewer,
         evidence_text=_source(), provider=provider,
@@ -153,7 +153,7 @@ def test_allocation_leaves_review_headroom_without_resetting_the_absolute_deadli
     participant, provider = _timed_stages(
         response, clock, participant_seconds=0.5, remaining_seconds=50.0,
     )
-    reviewer = Provider([{"outcome": "admitted", "issue": None, "clarification": None}], [review_window], clock)
+    reviewer = Provider([admitted_review_response()], [review_window], clock)
     result = author.author_greenfield_intent(
         evidence_text=_source(), provider=provider,
         participant_provider_factory=lambda: participant, clock=clock,
@@ -357,7 +357,7 @@ def test_proof_preserves_the_exact_candidate_and_dispatched_review_metadata(tmp_
         assert "candidate_review" not in retained
     else:
         assert retained["candidate_review"]["response"] == {
-            "outcome": "admitted", "issue": None, "clarification": None,
+            **admitted_review_response(participant_field="customer"),
         }
         assert retained["candidate_review"]["request"]["source"] == _source()
     assert "response" not in retained

@@ -18,6 +18,7 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
     GreenfieldCandidateClarificationRequired,
+    GreenfieldCandidateRejected,
     candidate_review_payload,
     review_greenfield_candidate,
 )
@@ -48,7 +49,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v1"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v18"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v19"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
 
 
@@ -95,10 +96,18 @@ def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
             ),
             "Keep accepted source facts separate from assumptions and provisional design decisions.",
             (
+                "An authored candidate must bind one source-supported participant, beneficiary, "
+                "or explicit product/system task owner; one usable task event; and one source-supported "
+                "terminal result event. A product title cannot act as a fabricated user, but a source-"
+                "supported product or internal system may own its bound task. Assumptions or provisional "
+                "design cannot supply any missing witness part. When the source lacks one of those facts, "
+                "return clarification_required for first_path instead of authoring a package."
+            ),
+            (
                 "Use exactly one proof authority: when the source identifies both a visible result and "
                 "its producing event, cite facts.proof_boundary and supply terminal without a "
-                "proof_boundary assumption; otherwise set both facts.proof_boundary and terminal to "
-                "null and supply exactly one conservative proof_boundary assumption."
+                "proof_boundary assumption. A proof_boundary assumption may describe a proposed "
+                "checkpoint but cannot make an authored candidate admission-ready."
             ),
             (
                 "Propose 4-5 distinct useful components and 4-5 actionable workstreams without "
@@ -232,6 +241,7 @@ def admit_greenfield_host_candidate(
     if isinstance(authored, GreenfieldAuthoringClarification):
         return authored, base_receipt
 
+    review_observation: dict[str, Any] = {}
     try:
         review = review_greenfield_candidate(
             evidence_text=evidence_text,
@@ -241,8 +251,24 @@ def admit_greenfield_host_candidate(
             provider_factory=review_provider_factory,
             deadline=model_deadline,
             clock=clock,
-            observation={},
+            observation=review_observation,
         )
+    except GreenfieldCandidateRejected as rejection:
+        emit_greenfield_model_proof_observation(
+            evidence_text=evidence_text,
+            semantic_model_call_count=1,
+            participant_selection=None,
+            remaining_candidate_authoring=None,
+            rejected_candidate=None,
+            rejected_candidate_review=None,
+            candidate_revision=None,
+            joined_candidate=None,
+            candidate_review=rejection.receipt,
+            failure=None,
+            origin="host_native",
+            host_candidate=base_receipt,
+        )
+        raise
     except GreenfieldCandidateClarificationRequired as clarification:
         emit_greenfield_model_proof_observation(
             evidence_text=evidence_text,
@@ -275,6 +301,20 @@ def admit_greenfield_host_candidate(
             ),
             base_receipt,
         )
+    emit_greenfield_model_proof_observation(
+        evidence_text=evidence_text,
+        semantic_model_call_count=1,
+        participant_selection=None,
+        remaining_candidate_authoring=None,
+        rejected_candidate=None,
+        rejected_candidate_review=None,
+        candidate_revision=None,
+        joined_candidate=None,
+        candidate_review=review,
+        failure=None,
+        origin="host_native",
+        host_candidate=base_receipt,
+    )
     if _canonical_candidate_bytes(response) != frozen:
         raise RuntimeError("Greenfield host-candidate review changed the candidate")
     if _canonical_candidate_bytes(canonical_response) != canonical_frozen:

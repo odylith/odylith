@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization
 from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     StructuredAuthoringProvider,
+    admitted_review_response,
     write_host_candidate_fixture,
 )
 from tests.unit.runtime.test_greenfield_model_path_custody import _response, _source
@@ -62,7 +63,7 @@ def _run(tmp_path, monkeypatch, capsys, *, failure, command, output_format):
         evidence_text=evidence,
     )
     reviewer = FailureProvider(
-        {"outcome": "admitted", "issue": None, "clarification": None},
+        admitted_review_response(),
         failure,
         clock,
     )
@@ -73,6 +74,7 @@ def _run(tmp_path, monkeypatch, capsys, *, failure, command, output_format):
             "outcome": "denied",
             "issue": {"path": "facts", "reason": "Unsupported meaning"},
             "clarification": None,
+            "admission_witness": None,
         }
 
     def resolve(*_args, **_kwargs):

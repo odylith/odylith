@@ -95,13 +95,71 @@ class AdmittingReviewProvider(StructuredAuthoringProvider):
     """Independent transport double for structurally valid positive wiring cases."""
 
     def __init__(self) -> None:
-        super().__init__({"outcome": "admitted", "issue": None, "clarification": None})
+        super().__init__(admitted_review_response())
 
     def generate_structured(self, *, request: object) -> Mapping[str, Any] | None:
         assert getattr(request, "schema_name", "") == "greenfield_candidate_review"
         assert getattr(request, "model", "") == "gpt-6-astra"
         assert getattr(request, "reasoning_effort", "") == "medium"
+        if isinstance(self.response, Mapping) and self.response.get("outcome") == "admitted":
+            payload = getattr(request, "prompt_payload", {})
+            candidate = payload.get("candidate") if isinstance(payload, Mapping) else None
+            facts = candidate.get("accepted_source", {}).get("facts") if isinstance(candidate, Mapping) else None
+            terminal = candidate.get("accepted_source", {}).get("terminal") if isinstance(candidate, Mapping) else None
+            events = candidate.get("accepted_source", {}).get("events") if isinstance(candidate, Mapping) else None
+            participant_field = "human_actors"
+            participant_row = 1
+            if isinstance(facts, Mapping):
+                if isinstance(facts.get("customer"), Mapping):
+                    participant_field = "customer"
+                elif not facts.get("human_actors") and facts.get("external_systems"):
+                    participant_field = "external_systems"
+                elif not facts.get("human_actors"):
+                    first_event = events[0] if isinstance(events, list) and events else None
+                    actor_fact = (
+                        first_event.get("actor_fact")
+                        if isinstance(first_event, Mapping)
+                        else None
+                    )
+                    if (
+                        isinstance(actor_fact, Mapping)
+                        and actor_fact.get("field") in {"title", "internal_systems"}
+                    ):
+                        participant_field = str(actor_fact["field"])
+                        participant_row = int(actor_fact.get("row") or 1)
+            result_event_order = (
+                terminal.get("event_order") if isinstance(terminal, Mapping) else 1
+            )
+            self.response = admitted_review_response(
+                participant_field=participant_field,
+                participant_row=participant_row,
+                result_event_order=result_event_order,
+            )
         return super().generate_structured(request=request)
+
+
+def admitted_review_response(
+    *,
+    participant_field: str = "human_actors",
+    participant_row: int = 1,
+    task_event_order: int = 1,
+    result_event_order: int = 3,
+) -> dict[str, Any]:
+    """Return one structurally grounded admitted-review fixture."""
+
+    return {
+        "outcome": "admitted",
+        "issue": None,
+        "clarification": None,
+        "admission_witness": {
+            "participant_fact": {
+                "field": participant_field,
+                "row": participant_row,
+            },
+            "task_event_order": task_event_order,
+            "result_event_order": result_event_order,
+        },
+    }
 
 
 def host_candidate_response(

@@ -27,7 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-CANDIDATE_REVIEW_VERSION = "odylith.greenfield.candidate-review.v6"
+CANDIDATE_REVIEW_VERSION = "odylith.greenfield.candidate-review.v7"
 STATE_OBJECT_ROLE_DEFINITION = (
     "One source-cited subject, entity, record, work item, case, artifact, or status "
     "whose state the workflow changes or reviews. The subject may be a person; never "
@@ -133,6 +133,18 @@ define a usable path, or the result needed to complete that path, select
 `product_boundary`, or `human_actors` merely because those are downstream
 consequences of the same missing path. A malformed, unsupported, or
 contradictory candidate is `denied`.
+An `admitted` outcome must identify one typed admission_witness from the
+candidate's accepted source: a source-supported participant, beneficiary, or
+explicit task-owner fact; a task event; and the source-supported terminal result
+event. A customer, human actor, or external system must participate in or benefit
+from the witnessed path. A product title or internal system is valid only as an
+explicit task owner when the task event binds that same accepted fact; it never
+acts as a fabricated user. Event orders are the candidate's existing one-based
+event IDs. Proposed assumptions and provisional design cannot
+satisfy this witness. If the source lacks any witness part, require
+`first_path` clarification; if the source supplies it but the candidate omits or
+misrepresents it, deny the candidate. For `denied` or `clarification_required`,
+admission_witness must be null.
 A clarification selects exactly one existing material_dimension and has no
 issue. Never return replacements, edits, or proposed design.
 AUTHORITY BOUNDARY
@@ -140,7 +152,7 @@ candidate.accepted_source owns source facts, roles, events, constraints and resu
 
 REVIEW_SCHEMA = {
     "type": "object", "additionalProperties": False,
-    "required": ["outcome", "issue", "clarification"],
+    "required": ["outcome", "issue", "clarification", "admission_witness"],
     "properties": {
         "outcome": {
             "type": "string",
@@ -156,6 +168,37 @@ REVIEW_SCHEMA = {
             "required": ["material_dimension"],
             "properties": {
                 "material_dimension": {"type": "string", "enum": sorted(MATERIAL_DIMENSIONS)},
+            },
+        },
+        "admission_witness": {
+            "type": ["object", "null"],
+            "additionalProperties": False,
+            "required": [
+                "participant_fact",
+                "task_event_order",
+                "result_event_order",
+            ],
+            "properties": {
+                "participant_fact": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": ["field", "row"],
+                    "properties": {
+                        "field": {
+                            "type": "string",
+                            "enum": [
+                                "customer",
+                                "external_systems",
+                                "human_actors",
+                                "internal_systems",
+                                "title",
+                            ],
+                        },
+                        "row": {"type": "integer", "minimum": 1},
+                    },
+                },
+                "task_event_order": {"type": "integer", "minimum": 1},
+                "result_event_order": {"type": "integer", "minimum": 1},
             },
         },
     },
@@ -280,7 +323,9 @@ def review_greenfield_candidate(
             raise RuntimeError("Greenfield review changed its candidate or evidence")
         if response is None and metadata.get("code") in {"timeout", "unavailable"}:
             raise GreenfieldModelRuntimeError(metadata["code"])
-        outcome, issue, material_dimension = _validated_review_outcome(response)
+        outcome, issue, material_dimension, admission_witness = (
+            _validated_review_outcome(response, candidate=candidate)
+        )
         receipt = {
             "version": CANDIDATE_REVIEW_VERSION,
             "status": outcome,
@@ -299,6 +344,9 @@ def review_greenfield_candidate(
                 receipt,
                 material_dimension=material_dimension,
             )
+        if admission_witness is None:
+            raise RuntimeError("Greenfield candidate review omitted its admission witness")
+        receipt["admission_witness"] = deepcopy(admission_witness)
         if clock() > review_deadline:
             raise GreenfieldModelRuntimeError("timeout")
         return receipt
@@ -315,27 +363,37 @@ def review_greenfield_candidate(
 
 def _validated_review_outcome(
     response: Any,
-) -> tuple[str, Mapping[str, str] | None, str | None]:
+    *,
+    candidate: Mapping[str, Any],
+) -> tuple[str, Mapping[str, str] | None, str | None, Mapping[str, Any] | None]:
     """Validate one closed decision without adding a recovery or repair branch."""
 
     if not isinstance(response, Mapping) or set(response) != {
-        "outcome", "issue", "clarification",
+        "outcome", "issue", "clarification", "admission_witness",
     }:
         raise RuntimeError("Greenfield candidate review returned an invalid verdict")
     outcome = response.get("outcome")
     issue = response.get("issue")
     clarification = response.get("clarification")
+    admission_witness = response.get("admission_witness")
     if outcome == "admitted" and issue is None and clarification is None:
-        return outcome, None, None
-    if outcome == "denied" and clarification is None:
+        return outcome, None, None, _validated_admission_witness(
+            admission_witness,
+            candidate=candidate,
+        )
+    if outcome == "denied" and clarification is None and admission_witness is None:
         if (
             not isinstance(issue, Mapping)
             or set(issue) != {"path", "reason"}
             or any(not isinstance(issue[key], str) or not issue[key].strip() for key in issue)
         ):
             raise RuntimeError("Greenfield candidate review returned an invalid witness")
-        return outcome, {"path": issue["path"], "reason": issue["reason"]}, None
-    if outcome == "clarification_required" and issue is None:
+        return outcome, {"path": issue["path"], "reason": issue["reason"]}, None, None
+    if (
+        outcome == "clarification_required"
+        and issue is None
+        and admission_witness is None
+    ):
         if (
             not isinstance(clarification, Mapping)
             or set(clarification) != {"material_dimension"}
@@ -343,5 +401,77 @@ def _validated_review_outcome(
             or clarification["material_dimension"] not in MATERIAL_DIMENSIONS
         ):
             raise RuntimeError("Greenfield candidate review returned an invalid clarification")
-        return outcome, None, clarification["material_dimension"]
+        return outcome, None, clarification["material_dimension"], None
     raise RuntimeError("Greenfield candidate review returned an invalid verdict")
+
+
+def _validated_admission_witness(
+    value: Any,
+    *,
+    candidate: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Bind admission to accepted participant, task, and result facts."""
+
+    if not isinstance(value, Mapping) or set(value) != {
+        "participant_fact", "task_event_order", "result_event_order",
+    }:
+        raise RuntimeError("Greenfield candidate review returned an invalid admission witness")
+    participant = value.get("participant_fact")
+    if not isinstance(participant, Mapping) or set(participant) != {"field", "row"}:
+        raise RuntimeError("Greenfield candidate review returned an invalid admission witness")
+    field, row = participant.get("field"), participant.get("row")
+    if field not in {
+        "customer", "human_actors", "external_systems", "internal_systems", "title",
+    } or (
+        type(row) is not int or row < 1
+    ):
+        raise RuntimeError("Greenfield candidate review returned an invalid admission witness")
+    facts = candidate.get("facts")
+    if not isinstance(facts, Mapping):
+        raise RuntimeError("Greenfield candidate review returned an invalid admission witness")
+    selected = facts.get(field)
+    if field in {"customer", "title"}:
+        participant_exists = row == 1 and isinstance(selected, Mapping)
+    else:
+        participant_exists = (
+            isinstance(selected, Sequence)
+            and not isinstance(selected, (str, bytes, bytearray))
+            and row <= len(selected)
+            and isinstance(selected[row - 1], Mapping)
+        )
+    events = candidate.get("events")
+    task_order = value.get("task_event_order")
+    result_order = value.get("result_event_order")
+    terminal = candidate.get("terminal")
+    task_event = (
+        events[task_order - 1]
+        if isinstance(events, Sequence)
+        and not isinstance(events, (str, bytes, bytearray))
+        and type(task_order) is int
+        and 1 <= task_order <= len(events)
+        and isinstance(events[task_order - 1], Mapping)
+        else None
+    )
+    task_owner = task_event.get("actor_fact") if isinstance(task_event, Mapping) else None
+    if (
+        not participant_exists
+        or not isinstance(events, Sequence)
+        or isinstance(events, (str, bytes, bytearray))
+        or type(task_order) is not int
+        or not 1 <= task_order <= len(events)
+        or task_event is None
+        or (
+            field in {"title", "internal_systems"}
+            and task_owner != {"field": field, "row": row}
+        )
+        or type(result_order) is not int
+        or not 1 <= result_order <= len(events)
+        or not isinstance(terminal, Mapping)
+        or terminal.get("event_order") != result_order
+    ):
+        raise RuntimeError("Greenfield candidate review returned an invalid admission witness")
+    return {
+        "participant_fact": {"field": field, "row": row},
+        "task_event_order": task_order,
+        "result_event_order": result_order,
+    }

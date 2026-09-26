@@ -1280,6 +1280,14 @@ def _run_case(
     package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
     stage_observation = _retained_model_stage_observation(retained_case)
     reviewer_observation = _retained_host_native_reviewer_observation(retained_case)
+    expected_model_source = prepare_model_authoring_evidence(
+        prompt=case.prompt, edit_evidence=str(case.confirmed_intent_markdown or ""),
+    ).evidence_source
+    expected_reviewer_candidate_sha256 = _retained_reviewer_candidate_sha256(
+        retained_case,
+        evidence_text=expected_model_source,
+        profile_id=profile,
+    )
     profile_evidence = model_profile_evidence(
         profile,
         env,
@@ -1289,15 +1297,13 @@ def _run_case(
         ),
         stage_observation=stage_observation,
         reviewer_observation=reviewer_observation,
-        expected_source=prepare_model_authoring_evidence(
-            prompt=case.prompt, edit_evidence=str(case.confirmed_intent_markdown or ""),
-        ).evidence_source,
+        expected_reviewer_candidate_sha256=expected_reviewer_candidate_sha256,
+        expected_source=expected_model_source,
     )
     model_result_issues = authored_model_result_binding_issues(
         stage_observation=stage_observation, create_payload=payload,
-        expected_source=prepare_model_authoring_evidence(
-            prompt=case.prompt, edit_evidence=str(case.confirmed_intent_markdown or ""),
-        ).evidence_source,
+        reviewer_observation=reviewer_observation,
+        expected_source=expected_model_source,
     )
     counts = collect_artifact_counts(repo_root=repo_root, package=package, required_terms=case.required_terms)
     surface_issues = rendered_surface_health_issues(repo_root=repo_root)

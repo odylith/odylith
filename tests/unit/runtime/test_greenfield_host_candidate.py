@@ -151,20 +151,28 @@ def _host_clarification(response: dict[str, object]) -> dict[str, object]:
     return candidate
 
 
-def test_host_candidate_uses_shared_validator_reviewer_and_custody(tmp_path) -> None:  # type: ignore[no-untyped-def]
+def test_host_candidate_uses_shared_validator_reviewer_and_custody(
+    tmp_path, monkeypatch,
+) -> None:  # type: ignore[no-untyped-def]
     source = _source()
     evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
     response = _host_response(evidence)
     frozen = deepcopy(response)
     receipt: dict[str, object] = {}
 
-    candidate = materialize_host_authored_intent(
-        prompt=source,
-        repo_root=tmp_path,
-        host_candidate=response,
-        review_provider_factory=AdmittingReviewProvider,
-        authoring_receipt=receipt,
-    )
+    proof_path = tmp_path / "host-reviewer-admitted-proof.json"
+    descriptor = os.open(proof_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    monkeypatch.setenv(GREENFIELD_MODEL_PROOF_FD_ENV, str(descriptor))
+    try:
+        candidate = materialize_host_authored_intent(
+            prompt=source,
+            repo_root=tmp_path,
+            host_candidate=response,
+            review_provider_factory=AdmittingReviewProvider,
+            authoring_receipt=receipt,
+        )
+    finally:
+        os.close(descriptor)
 
     assert response == frozen
     assert receipt["authoring_origin"] == "host_native"
@@ -180,6 +188,13 @@ def test_host_candidate_uses_shared_validator_reviewer_and_custody(tmp_path) -> 
     ]["observed"]
     assert observed["origin"] == "host_native"
     assert observed["host_candidate"] == receipt["host_candidate"]
+    retained = json.loads(proof_path.read_text(encoding="utf-8"))
+    assert retained["origin"] == "host_native"
+    assert retained["host_candidate"] == receipt["host_candidate"]
+    assert retained["candidate_review"]["status"] == "admitted"
+    assert retained["candidate_review"]["admission_witness"] == receipt[
+        "candidate_review"
+    ]["admission_witness"]
 
     manifest_receipt = {
         key: deepcopy(receipt[key])
@@ -282,6 +297,7 @@ def test_reviewer_source_insufficiency_becomes_a_bound_first_path_question(
         "outcome": "clarification_required",
         "issue": None,
         "clarification": {"material_dimension": "first_path"},
+        "admission_witness": None,
     })
 
     def forbidden_stage(**_kwargs: object) -> object:
@@ -522,7 +538,14 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
     assert "proposed first-run walkthrough" in source_precedence["description"]
     assert any(
         "Use exactly one proof authority" in requirement
-        and "facts.proof_boundary and terminal to null" in requirement
+        and "cannot make an authored candidate admission-ready" in requirement
+        for requirement in payload["requirements"]
+    )
+    assert any(
+        "source-supported participant, beneficiary" in requirement
+        and "explicit product/system task owner" in requirement
+        and "source-supported terminal result event" in requirement
+        and "clarification_required for first_path" in requirement
         for requirement in payload["requirements"]
     )
     assert any(
@@ -879,6 +902,8 @@ def test_host_candidate_rejects_duplicate_event_with_terminal_annotation(
     response["result"]["provisional_design"] = structural_design_fixture(
         [1, 2, 3, 4]
     )
+    admitted = deepcopy(AdmittingReviewProvider().response)
+    admitted["admission_witness"]["result_event_order"] = 4
 
     with pytest.raises(
         GreenfieldAuthoredSemanticsError,
@@ -888,7 +913,7 @@ def test_host_candidate_rejects_duplicate_event_with_terminal_annotation(
             prompt=source,
             repo_root=tmp_path,
             host_candidate=response,
-            review_provider_factory=AdmittingReviewProvider,
+            review_provider_factory=lambda: StructuredAuthoringProvider(admitted),
         )
 
 
@@ -974,6 +999,7 @@ def test_public_propose_exposes_one_typed_candidate_review_denial(
             "reason": "The selected event assigns the action to the wrong actor.",
         },
         "clarification": None,
+        "admission_witness": None,
     })
 
     monkeypatch.setattr(

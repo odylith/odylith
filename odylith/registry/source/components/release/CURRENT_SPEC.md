@@ -1,5 +1,29 @@
 # Release
-Last updated: 2026-09-25
+Last updated: 2026-09-26
+
+## Host-native admitted-review proof (2026-09-26)
+
+Release qualification now treats the private admitted review receipt as proof,
+not merely retained diagnostics. The harness verifies that its source matches
+the sealed transaction source, its canonical candidate hash matches both the
+recomputed candidate and sealed host receipt, its reviewer profile is the
+selected profile, its decision and receipt version are current, and its typed
+admission witness is present and stable. The sealed committed review receipt
+must equal that verified receipt, including the witness. Missing, malformed,
+mismatched, or unverified proof fails the aggregate gate and cannot be reported
+as admitted.
+
+This closes the observability gap exposed by V22 case seventeen, where a
+source-insufficient candidate was admitted and staged but the aggregate result
+reported `candidate_review_status: unreported`. The corrected stage summary
+reports `admitted` only after verification and requires
+`reviewer_receipt_verified: true`. No public CLI surface exposes the private
+candidate or reviewer metadata, and no author, parser, regex, repair, retry,
+fallback, model ladder, or additional model call was added. Direct negative
+controls cover missing proof, candidate mismatch, malformed witness, and
+profile mismatch. The release remains open until a newly built immutable
+distribution passes the complete disclosed campaign and independent retained-
+output review before one fresh blind holdout.
 
 ## Denied host-candidate evidence custody (2026-09-25)
 
