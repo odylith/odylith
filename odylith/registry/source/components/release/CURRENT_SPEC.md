@@ -1,6 +1,25 @@
 # Release
 Last updated: 2026-09-26
 
+## V28 source-custody qualification stop (2026-09-26)
+
+Immutable V28 passed the first 30 disclosed cases, then failed the archive
+custody quality floor after a successful transaction and clean browser proof.
+The committed package repeated `PUBLIC-V11-ARCHIVE-MARKER` and its
+synthetic-source exclusion as product governance copy. This is a semantic
+admission defect, not evaluator noise; V28 remains terminal evidence and must
+not resume from case 31.
+
+The bounded V29 source checkpoint keeps source-custody and non-projection
+controls only in sealed evidence through canonical v71, host format v11,
+contract v22 and reviewer v9. It also preserves complete source-owned
+disjunctive actions so coherent branches keep both outcome relationships
+without invented events. Release proof must rebuild exact immutable bytes and
+restart all 36 disclosed cases from case one. Package, browser, recovery,
+cleanup, advisory timing, retained-output semantic review and the single fresh
+holdout remain separate required gates; source tests alone do not qualify the
+release.
+
 ## V27 coherent-branch qualification stop (2026-09-26)
 
 Immutable V27 passed 30 disclosed public cases at `10/10` before the archive

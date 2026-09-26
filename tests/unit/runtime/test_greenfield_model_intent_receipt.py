@@ -188,7 +188,7 @@ def _approved_revised_model_authoring(profile_id: str) -> dict[str, Any]:
         "effective_timeout_seconds"
     ] = profile.model_timeout_seconds - 1.0
     receipt["rejected_candidate_review"] = {
-        "version": "odylith.greenfield.candidate-review.v8",
+        "version": "odylith.greenfield.candidate-review.v9",
         "status": "denied",
         "source_sha256": "0" * 64,
         "candidate_sha256": "3" * 64,

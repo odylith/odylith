@@ -798,16 +798,16 @@ def _host_native_reviewer_clarification_observation(
     source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
     return {
         "version": "odylith.greenfield.model-proof-observation.v4",
-        "authoring_version": "odylith.greenfield.intent-authoring.v70",
+        "authoring_version": "odylith.greenfield.intent-authoring.v71",
         "request": {
-            "version": "odylith.greenfield.intent-authoring.v70",
+            "version": "odylith.greenfield.intent-authoring.v71",
             "evidence": source,
         },
         "semantic_model_call_count": 1,
         "origin": "host_native",
         "host_candidate": {
             "version": "odylith.greenfield.host-candidate.v1",
-            "contract_version": "odylith.greenfield.intent-authoring.v70",
+            "contract_version": "odylith.greenfield.intent-authoring.v71",
             "source_sha256": source_sha256,
             "candidate_sha256": candidate_sha256,
         },
@@ -841,16 +841,16 @@ def _host_native_reviewer_admission_observation(
     source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
     return {
         "version": "odylith.greenfield.model-proof-observation.v4",
-        "authoring_version": "odylith.greenfield.intent-authoring.v70",
+        "authoring_version": "odylith.greenfield.intent-authoring.v71",
         "request": {
-            "version": "odylith.greenfield.intent-authoring.v70",
+            "version": "odylith.greenfield.intent-authoring.v71",
             "evidence": source,
         },
         "semantic_model_call_count": 1,
         "origin": "host_native",
         "host_candidate": {
             "version": "odylith.greenfield.host-candidate.v1",
-            "contract_version": "odylith.greenfield.intent-authoring.v70",
+            "contract_version": "odylith.greenfield.intent-authoring.v71",
             "source_sha256": source_sha256,
             "candidate_sha256": host_candidate_sha256,
         },
@@ -1081,7 +1081,7 @@ def _host_native_authored_profile_evidence(
         "origin": "host_native",
         "host_candidate": {
             "version": "odylith.greenfield.host-candidate.v1",
-            "contract_version": "odylith.greenfield.intent-authoring.v70",
+            "contract_version": "odylith.greenfield.intent-authoring.v71",
             "source_sha256": stage["source_sha256"],
             "candidate_sha256": stage["candidate_sha256"],
         },

@@ -60,6 +60,33 @@ supersedes:
 
 superseded_by: 
 
+## V28 Source-Custody Release Gate (2026-09-26)
+
+- Immutable V28 passed 30 disclosed cases, then committed the archive control
+  with 4 Radar workstreams, 4 Registry components, 5 Atlas sources, clean
+  browser proof and valid transaction custody. Quality correctly failed because
+  the package repeated a synthetic source identifier and paraphrased its
+  non-projection directive across Radar, Atlas, the project brief, dashboard
+  and all five handoffs. Preserve V28 as terminal evidence; the protected
+  holdout remains untouched.
+- Replace the semantic classification owner, not the evaluator or renderers.
+  Canonical v71, host format v11, contract v22 and reviewer v9 treat directives
+  governing the supplied source, fixture or candidate as authoring-transaction
+  inputs as sealed source custody, never product facts or proposed work.
+  Requested product workflows that manage evidence, provenance or source
+  identity as domain data remain product truth. A disjunctive source action
+  retains its full joined action phrase. Add no
+  parser, regex, word list, repair, retry, fallback, projection schema,
+  renderer filter, model ladder or extra call.
+- Live Astra author/reviewer controls admit a genuine product audit-ledger
+  requirement for evidence source identity and deny truncated action custody
+  plus literal and paraphrased source-control contamination. Focused proof
+  passes `437/437`; regression proof passes `1,971/1,971`
+  runtime, `1,175/1,175` installed and `23/23` integration/browser checks.
+  Build V29 and restart the 36-case public gate from case one; only complete
+  public evidence plus independent retained-output qualification may unlock
+  one fresh holdout.
+
 ## V27 Coherent-Branch Release Gate (2026-09-26)
 
 - Immutable V27 passed its first 30 disclosed cases at `10/10`, including every

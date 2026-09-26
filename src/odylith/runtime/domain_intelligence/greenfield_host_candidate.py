@@ -1,8 +1,8 @@
 """Admit one host-authored Greenfield candidate without runtime re-authoring.
 
 The host candidate is an untrusted typed hypothesis.  This boundary reuses the
-canonical v68 validator and independent candidate reviewer; it does not repair,
-revise, parse, or reinterpret the candidate.
+canonical authoring validator and independent candidate reviewer; it does not
+repair, revise, parse, or reinterpret the candidate.
 """
 
 from __future__ import annotations
@@ -49,7 +49,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v1"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v21"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v22"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
 
 
@@ -66,7 +66,17 @@ def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
             "revalidate every citation and run an independent semantic review."
         ),
         "requirements": [
-            "Preserve every source-stated participant, action, visible result, constraint, and non-goal.",
+            (
+                "Preserve every source-stated participant, action, visible result, product-governing "
+                "constraint, and non-goal. Instructions that govern the supplied source evidence, "
+                "fixture or candidate as inputs to this authoring transaction—including their identity, "
+                "metadata, handling or exclusion from product copy—are authoring controls, not product "
+                "meaning: retain them only in the supplied evidence and do not cite, restate "
+                "or paraphrase them as accepted facts, assumptions, components, workstreams, "
+                "deliverables, acceptance, verification or exchanges. Do not apply that exclusion to "
+                "a requested product workflow that manages evidence, provenance or source identity as "
+                "domain data. Classify by the directive's actual governed system and outcome."
+            ),
             (
                 "For every accepted source fact, copy quote and locator context byte-for-byte "
                 "from the source; never normalize or rewrite either value. "
@@ -79,6 +89,13 @@ def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
                 "Bind every explicit ordering constraint to its source events. Different "
                 "constraints may support the same directed edge; never repeat an identical "
                 "before-event, after-event, and constraint-index binding."
+            ),
+            (
+                "Each action_quote must preserve the complete source action owned by its actor. "
+                "When one source performer explicitly owns alternative verbs that govern separate "
+                "outcomes, keep the full joined action phrase in one event instead of selecting "
+                "only one branch verb or inventing separate performer actions; a truncated branch "
+                "action is not admissible."
             ),
             (
                 "A typed event whose actor_fact selects title or internal_systems must supply one "

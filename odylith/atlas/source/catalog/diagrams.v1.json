@@ -2230,7 +2230,7 @@
         "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-public-release-dogfood-activation-and-consumer-rehearsal.md": "da20bb2c778974ea69ef1474dbe41a4b42de3617d4ef1875a493543786b02175",
         "odylith/technical-plans/done/2026-03/2026-03-27-odylith-canonical-release-version-session-and-maintainer-runbook.md": "144394af246ee71229fa52513abfdce9f6321b0eaa4173cd154b0b45b13e1e01",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "5751d4fe4f5b790bf450d7b36679bdb48f1622aae313cdefee7ea1be76a561df",
-        "odylith/registry/source/components/release/CURRENT_SPEC.md": "41640749f228058247a55692793524d1a7dc9d563b6c25f0c490ed487e455e24",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md": "4abdaa001c9564b813cf173e27e7f28e2735c62584d9b72fc178d72a46ce6db0",
         "odylith/registry/source/component_registry.v1.json": "cde55ce2eba82e67ee574d58385bf8711f58adb40498c2e576a81b6bc1817b6f",
         "odylith/MAINTAINER_RELEASE_RUNBOOK.md": "d5b47536186bec90a555cca2a73d5e4a9f81d9877b05f5251f7a3e91cba6fe61",
         "Makefile": "18bb5a0686b0df11882f74868a8146a567ac31d6b31ad162e9edc115edf33d6a",
@@ -2334,12 +2334,12 @@
         "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md": "24bb4c333407124a37a9ecf187eb1dcbfcfb74e43fc4ad5ea866d240c1ad953d",
         "odylith/MAINTAINER_RELEASE_RUNBOOK.md": "d5b47536186bec90a555cca2a73d5e4a9f81d9877b05f5251f7a3e91cba6fe61",
         "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-public-release-dogfood-activation-and-consumer-rehearsal.md": "da20bb2c778974ea69ef1474dbe41a4b42de3617d4ef1875a493543786b02175",
-        "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md": "02694e4e59a1466d3ba8e2fe0c859e7353deee6a010ea93769197c1bf582a6c1",
+        "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md": "8ffbaca5febee1bf2c2020f8a2cb3372bc73b45da211da69e40321f28c324e15",
         "odylith/technical-plans/done/2026-03/2026-03-28-odylith-managed-runtime-bundles-and-supported-platform-contract.md": "1f23b5b159f92612c4dd52b7fe1e077d5842a9e6439b59b6c42c617111ccf45b",
-        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "5387f2132753e5392c90a103d8e216cb93e39f06476389323e5a75d0206449da",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "adb84587ab39d39d686e0036bc01b4a6a10334a795b7796e7c430a99aaba97e1",
         "odylith/casebook/bugs/2026-03-28-public-consumer-install-depends-on-machine-python.md": "892477de3906a35157275d8aaa2f9cfc259dd2efb76222fa7247461d011a1ea6",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "5751d4fe4f5b790bf450d7b36679bdb48f1622aae313cdefee7ea1be76a561df",
-        "odylith/registry/source/components/release/CURRENT_SPEC.md": "41640749f228058247a55692793524d1a7dc9d563b6c25f0c490ed487e455e24",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md": "4abdaa001c9564b813cf173e27e7f28e2735c62584d9b72fc178d72a46ce6db0",
         "odylith/registry/source/component_registry.v1.json": "cde55ce2eba82e67ee574d58385bf8711f58adb40498c2e576a81b6bc1817b6f",
         "src/odylith/install/manager.py": "62ce04cad1b4a86030873386e80181f83f7b499b090bcaac7d31db51b8340a46",
         "src/odylith/install/managed_runtime.py": "280dee8b12e93ce0359b610aae78399b042a2111d68f5103e59c45d3b195b90f",
@@ -4239,8 +4239,8 @@
         "scripts/release/greenfield_preconfirm_matrix.py",
         "scripts/release/greenfield_model_profiles.py"
       ],
-      "summary": "One active host authors a complete typed event inventory plus one proposed coherent First Run branch. Deterministic custody preserves every source event and component support while enforcing the selected terminal, cited predecessors, and branch order; one independent reviewer distinguishes required sequential events from alternate outcomes and denies mutually exclusive concatenation. Admitted candidates still project 4\u20135 Radar workstreams, 4\u20135 Registry components, and five detailed Atlas views before CONFIRM, EDIT, or REJECT inside the advisory timing envelope.",
-      "read_guide": "Follow the sealed candidate contract to one host-authored evidence graph and deterministic custody. The independent reviewer has exactly three completed outcomes\u2014admission, material clarification, or denial\u2014and each retains a review receipt. An unavailable or late review has no verdict or receipt: it fails closed with only attempt/failure custody. Then follow sealing and explicit terminal decisions: CONFIRM publishes exact bytes, EDIT starts a new contract from the retained seal plus correction, and REJECT writes nothing. Final release still requires native intervention visibility, independent semantic adjudication, and the untouched holdout.",
+      "summary": "One active host authors complete typed product meaning while source/evidence identity and non-projection controls remain sealed source custody. Deterministic validation preserves complete source events, joined disjunctive actions, component support, the selected terminal, cited predecessors, and branch order; one independent reviewer denies both product contamination and incoherent branch semantics. Admitted candidates project 4\u20135 Radar workstreams, 4\u20135 Registry components, and five detailed Atlas views before CONFIRM, EDIT, or REJECT inside the advisory timing envelope.",
+      "read_guide": "Follow the sealed candidate contract through the source-custody boundary: source-only controls must not appear in accepted facts or proposed work, while genuine product-facing constraints remain. Then follow deterministic custody and the independent tri-state reviewer across admission, material clarification, denial, and unavailable-review failure. CONFIRM publishes exact bytes, EDIT starts a new contract from retained source plus correction, and REJECT writes nothing. Final release still requires the immutable public campaign, retained-output adjudication, and the untouched holdout.",
       "components": [
         {
           "name": "Host-native candidate author",
@@ -4284,14 +4284,14 @@
         "scripts/release/greenfield_preconfirm_matrix.py",
         "scripts/release/greenfield_model_profiles.py"
       ],
-      "render_source_fingerprint": "92ce89a77eb54f0fd1bbd64a677453b42c7fda2fbb9105f42abf228ff1691796",
+      "render_source_fingerprint": "689b586bd9dd6c4a4341c68ae74988c1c9291cc4a05749ee9279a2ee1e4f0c98",
       "reviewed_watch_fingerprints": {
-        "src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py": "33f56fcc4bd41002d391c4187c64dbba4d596a9bbad0de92c4c2707e1e8b07e5",
+        "src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py": "22806edf63da2035bd7967f62ae5e134be2183e41ff3cdd85d18f96ec32b8bc5",
         "src/odylith/runtime/domain_intelligence/greenfield_host_candidate_materialization.py": "5aa335a7c7465c9a9059a9ecc4636ac2b47a807f679ff0e984a819abbf56b1f3",
-        "src/odylith/runtime/domain_intelligence/greenfield_candidate_review.py": "be4fd1a51c72eadeb91e4ef9bec9fb790aa82c132e6b72c2bf7fbfa9454c1068",
+        "src/odylith/runtime/domain_intelligence/greenfield_candidate_review.py": "3ca8a1e53c20aff988fe2ff6743e1382fd0b3cd414b03d990e287d8dffefd52a",
         "src/odylith/runtime/domain_intelligence/greenfield_material_clarification.py": "4e42865cdf46cf86871aba1b2df7887299086642eeb7e36e09ef6a6feb387339",
         "src/odylith/runtime/domain_intelligence/greenfield_model_authoring_receipt.py": "e7a01c4880f24de2d67d8283c3c12dbf403ba2b68f1aba19ddbf6faa621c98fe",
-        "src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py": "226e80fb0f158d872cd00f1e6287f22a8f6d1a4c9093cf1c38a05f2c77284b2e",
+        "src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py": "a6a177645c34b4c28f044d9266a9df826c06041e19cd193094e55a95c03a0407",
         "src/odylith/runtime/domain_intelligence/greenfield_model_proof_observation.py": "525f400b57d796487c4c7e1a97614f19bf486cd5b378c05caeb8ed6fea5b2bce",
         "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_engine.py": "4eacbc406e6a74e39aee4863d0e0a797637562ed2c93e5ac732195fb15d7a9d8",
         "scripts/release/greenfield_preconfirm_matrix.py": "258921666816fe9e95439ceb0e109f66cddedd168eabec943f04d4dbfff800bc",
@@ -4401,8 +4401,8 @@
         "scripts/release/greenfield_model_profiles.py",
         "scripts/release/greenfield_model_profile_proof.py"
       ],
-      "summary": "One active host authors complete cited events and component support plus one coherent selected First Run branch. Deterministic custody validates citations, terminal and predecessor structure; one independent tri-state reviewer denies missing required sequence or concatenated mutually exclusive outcomes while allowing alternate events to remain retained outside the walkthrough. Admitted relations project the project plus 4\u20135 Radar workstreams, 4\u20135 Registry components, and 5+ Atlas diagrams before sealed terminal decisions.",
-      "read_guide": "Read left to right: retained request or EDIT evidence produces a public candidate contract; host reasoning returns exactly one compact typed candidate; deterministic validation either asks one focused clarification or sends the unchanged candidate to one independent tri-state reviewer. Completed admission, material clarification, and denial each retain the reviewer receipt. If review is unavailable or late, no receipt exists and the system fails closed with only attempt/failure custody. Admission feeds every governance projection and a sealed transaction. CONFIRM is commit-only, EDIT returns to a new contract, and REJECT is no-write.",
+      "summary": "One active host authors complete cited events and component support plus one coherent selected branch. Source-custody and non-projection controls remain sealed evidence, complete disjunctive actions retain both outcomes, deterministic custody validates structural invariants, and one independent reviewer denies contamination, missing required sequence, or mutually exclusive concatenation. Admitted relations project the project plus 4\u20135 Radar workstreams, 4\u20135 Registry components, and 5+ Atlas diagrams before sealed terminal decisions.",
+      "read_guide": "Read left to right: retained request or EDIT evidence produces one public candidate contract; host reasoning returns one compact typed candidate that excludes source-only controls from product meaning. Deterministic validation checks custody before one independent tri-state review. Completed admission, material clarification, and denial retain review evidence; unavailable or late review fails closed. Admission feeds every structural governance projection and sealed transaction. CONFIRM is commit-only, EDIT returns to a new contract, and REJECT is no-write.",
       "components": [
         {
           "name": "Independent tri-state candidate review",
@@ -4434,11 +4434,11 @@
         "scripts/release/greenfield_model_profiles.py",
         "scripts/release/greenfield_model_profile_proof.py"
       ],
-      "render_source_fingerprint": "7033d1700dfe486e9e29b0d88941212cdb947c0a26c0f4435b6146d16ce0d15a",
+      "render_source_fingerprint": "dfa46cee220ae0017c2f6963aa9e55b8ee73de38fd2045445606602884d3f58e",
       "reviewed_watch_fingerprints": {
-        "src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py": "33f56fcc4bd41002d391c4187c64dbba4d596a9bbad0de92c4c2707e1e8b07e5",
+        "src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py": "22806edf63da2035bd7967f62ae5e134be2183e41ff3cdd85d18f96ec32b8bc5",
         "src/odylith/runtime/domain_intelligence/greenfield_host_candidate_materialization.py": "5aa335a7c7465c9a9059a9ecc4636ac2b47a807f679ff0e984a819abbf56b1f3",
-        "src/odylith/runtime/domain_intelligence/greenfield_candidate_review.py": "be4fd1a51c72eadeb91e4ef9bec9fb790aa82c132e6b72c2bf7fbfa9454c1068",
+        "src/odylith/runtime/domain_intelligence/greenfield_candidate_review.py": "3ca8a1e53c20aff988fe2ff6743e1382fd0b3cd414b03d990e287d8dffefd52a",
         "src/odylith/runtime/domain_intelligence/greenfield_material_clarification.py": "4e42865cdf46cf86871aba1b2df7887299086642eeb7e36e09ef6a6feb387339",
         "src/odylith/runtime/domain_intelligence/greenfield_model_authoring_receipt.py": "e7a01c4880f24de2d67d8283c3c12dbf403ba2b68f1aba19ddbf6faa621c98fe",
         "src/odylith/runtime/domain_intelligence/greenfield_model_proof_observation.py": "525f400b57d796487c4c7e1a97614f19bf486cd5b378c05caeb8ed6fea5b2bce",

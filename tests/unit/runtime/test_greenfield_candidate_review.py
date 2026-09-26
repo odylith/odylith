@@ -120,6 +120,11 @@ def test_partition_preserves_every_value_and_binds_complete_candidate():
     assert "contiguous source context before or after" in constraint_role
     assert "Do not require an explicit subject" in constraint_role
     assert "capability description alone is not an operational constraint" in constraint_role
+    assert "source-custody control" in constraint_role
+    assert "not by selecting or restating it as a product fact" in constraint_role
+    assert "supplied source evidence, fixture, or candidate" in constraint_role
+    assert "manages evidence, provenance, or source identity as domain data" in constraint_role
+    assert "actual governed system and outcome" in constraint_role
     participant_role = payload["role_definitions"]["human_actors"]
     assert participant_role == author._AUTHORED_FACTS_SCHEMA["properties"]["human_actors"]["description"]
     assert "source-stated beneficiaries" in participant_role
@@ -158,6 +163,11 @@ def test_review_request_does_not_invent_events_for_unowned_timing_conditions():
     assert "accepted events with actor/action ownership" in prompt
     assert "lack such event ownership as operational constraints" in prompt
     assert "never invent an event, action, or performer" in prompt
+    assert "explicitly owns a disjunctive branch decision" in prompt
+    assert "one accepted event owns both alternatives" in prompt
+    assert "action_quote keeps only one branch verb" in prompt
+    assert "complete joined action must remain one event" in prompt
+    assert "nonempty substring is\nnot sufficient semantic custody" in prompt
 
 
 def test_review_request_owns_coherent_branch_completeness():
@@ -170,6 +180,19 @@ def test_review_request_owns_coherent_branch_completeness():
     assert "omits a source event required to complete that\nbranch" in prompt
     assert "concatenates mutually exclusive outcomes" in prompt
     assert "belong only to alternate branches" in prompt
+
+
+def test_review_request_keeps_source_custody_out_of_product_meaning():
+    clock = Clock()
+    provider = Reviewer(ADMITTED, clock)
+    run_review(provider, clock)
+
+    prompt = provider.requests[0].system_prompt
+    assert "supplied source evidence, fixture, or candidate as inputs" in prompt
+    assert "source-custody controls, not product meaning" in prompt
+    assert "restates or\nparaphrases it as an assumption, component, workstream" in prompt
+    assert "product workflows that manage evidence" in prompt
+    assert "actual\ngoverned system and outcome" in prompt
 
 
 def test_human_subject_state_object_keeps_source_and_performer_custody_separate():

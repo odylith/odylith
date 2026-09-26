@@ -462,6 +462,20 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
         and "never use partially overlapping event citations" in requirement
         for requirement in payload["requirements"]
     )
+    assert any(
+        "supplied source evidence" in requirement
+        and "inputs to this authoring transaction" in requirement
+        and "do not cite, restate or paraphrase them" in requirement
+        and "manages evidence, provenance or source identity as domain data" in requirement
+        for requirement in payload["requirements"]
+    )
+    assert any(
+        "complete source action owned by its actor" in requirement
+        and "full joined action phrase" in requirement
+        and "only one branch verb" in requirement
+        and "truncated branch action is not admissible" in requirement
+        for requirement in payload["requirements"]
+    )
     assert payload["candidate_schema"]["additionalProperties"] is False
     authored = payload["candidate_schema"]["properties"]["result"]["anyOf"][0]
     assert (
@@ -483,6 +497,11 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
     ]
     assert responsibility_citation["anyOf"][0]["required"] == ["quote", "context"]
     assert responsibility_citation["anyOf"][1] == {"type": "null"}
+    action_quote = authored["properties"]["events"]["items"]["properties"][
+        "action_quote"
+    ]
+    assert "complete joined action" in action_quote["description"]
+    assert "do not reduce that disjunctive action" in action_quote["description"]
     responsibility = authored["properties"]["components"]["items"]["properties"][
         "additional_responsibilities"
     ]["items"]

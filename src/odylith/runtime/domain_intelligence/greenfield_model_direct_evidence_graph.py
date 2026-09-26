@@ -725,7 +725,14 @@ _EVENT_SCHEMA: dict[str, Any] = {
                 "This address selects the performer without guessing from matching text."
             ),
         },
-        "action_quote": _quote_schema(required=True),
+        "action_quote": {
+            **_quote_schema(required=True),
+            "description": (
+                "Exact source action owned by actor_fact. Preserve the complete joined action "
+                "when one source performer explicitly owns alternative verbs that govern "
+                "different outcomes; do not reduce that disjunctive action to one branch verb."
+            ),
+        },
         "target_quote": _quote_schema(),
     },
 }

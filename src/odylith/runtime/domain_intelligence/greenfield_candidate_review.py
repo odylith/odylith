@@ -27,7 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-CANDIDATE_REVIEW_VERSION = "odylith.greenfield.candidate-review.v8"
+CANDIDATE_REVIEW_VERSION = "odylith.greenfield.candidate-review.v9"
 STATE_OBJECT_ROLE_DEFINITION = (
     "One source-cited subject, entity, record, work item, case, artifact, or status "
     "whose state the workflow changes or reviews. The subject may be a person; never "
@@ -50,6 +50,7 @@ INTERNAL_SYSTEM_ROLE_DEFINITION = (
 )
 OPERATIONAL_CONSTRAINT_ROLE_DEFINITION = (
     "A complete source-stated requirement, prohibition, permission or ordering constraint. "
+    "It must govern the requested product or its requested governance or delivery outcome. "
     "An ordinary product capability description alone is not an operational constraint; "
     "retain actual operating obligations, exclusions and conditions, including those "
     "stated alongside a capability. "
@@ -59,8 +60,14 @@ OPERATIONAL_CONSTRAINT_ROLE_DEFINITION = (
     "contiguous source context before or after when needed; a fragment whose subject or "
     "applicability can only be recovered from surrounding source is insufficient. "
     "Do not require an explicit subject for a complete impersonal or imperative "
-    "source constraint. Prefer a concise self-contained span, without inventing actors, relations "
-    "or restrictions absent from the source."
+    "source constraint. A directive that governs the supplied source evidence, fixture, or "
+    "candidate as an input to this authoring transaction—including its identity, metadata, "
+    "handling, projection, or exclusion from product copy—is a source-custody control: obey it "
+    "by leaving it in sealed source evidence, not by selecting or restating it as a product fact "
+    "or proposed product work. Do not apply that exclusion to a requested product workflow that "
+    "manages evidence, provenance, or source identity as domain data. Classify by the directive's "
+    "actual governed system and outcome. Prefer a concise "
+    "self-contained span, without inventing actors, relations or restrictions absent from the source."
 )
 HUMAN_ACTOR_ROLE_DEFINITION = (
     "Source-stated people or human roles participating in the product, including "
@@ -114,12 +121,27 @@ Require a precedence edge only when both ordered sides are source-supported
 accepted events with actor/action ownership. Preserve timing, approval, or
 readiness conditions that lack such event ownership as operational constraints;
 never invent an event, action, or performer merely to create a precedence edge.
+One source event that explicitly owns a disjunctive branch decision may precede
+each corresponding source-stated outcome. Do not invent separate branch-decision
+events or deny those edges merely because the one accepted event owns both alternatives.
+Deny a candidate whose action_quote keeps only one branch verb when its cited source
+event assigns the same performer a joined action governing separate outcomes. The
+complete joined action must remain one event; prompt text or a nonempty substring is
+not sufficient semantic custody.
 Judge candidate.proposed_decisions.provisional_design.first_run as one coherent
 executable branch. Deny it when it omits a source event required to complete that
 branch or concatenates mutually exclusive outcomes. It may omit source events that
 belong only to alternate branches; those remain accepted-source and component-support
 obligations. The selected terminal result and every cited predecessor on the chosen
 branch must remain present.
+Instructions that govern the supplied source evidence, fixture, or candidate as inputs
+to this authoring transaction—including their identity, metadata, handling, projection,
+or exclusion from product copy—are source-custody controls, not product meaning. Deny a
+candidate that selects such control meaning into accepted facts or restates or
+paraphrases it as an assumption, component, workstream, deliverable, acceptance,
+verification or exchange. Preserve requested product workflows that manage evidence,
+provenance, or source identity as domain data; classify by the directive's actual
+governed system and outcome, not by isolated words.
 Report only substantive unsupported, contradictory or missing source meaning or
 unresolved material uncertainty. Do not demand implementation detail, alternative
 wording or facts absent from the source. Admission is not an exhaustive defect report.

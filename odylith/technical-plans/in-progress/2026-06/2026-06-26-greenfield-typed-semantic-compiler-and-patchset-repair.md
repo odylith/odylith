@@ -1,5 +1,40 @@
 Status: In progress
 
+## V28 Source-Custody Checkpoint (2026-09-26)
+
+Immutable V28 passed 30 disclosed cases before `public-v11-archive-custody-01`
+exposed a new semantic-admission failure. The package committed atomically with
+4 Radar workstreams, 4 Registry components, 5 Atlas sources, 10 renders and
+clean browser proof, but its governed and visible output repeated
+`PUBLIC-V11-ARCHIVE-MARKER` and restated the synthetic-source exclusion as
+product work. The retained identifier guard correctly scored the case zero.
+Preserve V28 as terminal evidence; do not resume it or touch the protected
+holdout.
+
+The correction stays at the existing one-author/one-reviewer boundary.
+Operational constraints must govern the requested product or its requested
+governance/delivery outcome. Instructions governing the supplied source,
+fixture or candidate as authoring-transaction inputs stay in sealed evidence
+and cannot become accepted facts, assumptions or provisional design. Requested
+product workflows that manage evidence, provenance or source identity as domain
+data remain admissible. The host
+contract also requires a source-owned disjunctive decision to retain its full
+joined action phrase, preserving both outcome relations without inventing
+separate branch events. Canonical v71, host format v11, contract v22 and
+reviewer v9 version the boundary. Downstream structural projection is unchanged;
+there is no parser, regex, word list, repair, retry, fallback, projection
+schema, renderer filter, model ladder or additional call.
+
+Live Astra controls omit both literal and paraphrased source-control meaning,
+retain `accepts or rejects`, admit a genuine product audit-ledger requirement
+for evidence source identity, deny a truncated branch action, and deny literal
+and paraphrased contaminated candidates at exact typed paths. Focused tests pass
+`437/437`; complete proof passes `1,971/1,971` runtime,
+`1,175/1,175` installed, and `23/23` integration/browser checks. Next: settle
+governance, commit and push, build immutable V29, and restart all 36 disclosed
+cases from case one. Independent retained-output review and exactly one fresh
+holdout remain required before completion.
+
 ## V27 Coherent-Branch Checkpoint (2026-09-26)
 
 Immutable V27 passed 30 disclosed cases at `10/10`, including the prior

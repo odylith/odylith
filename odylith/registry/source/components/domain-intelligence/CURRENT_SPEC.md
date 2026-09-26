@@ -4,6 +4,37 @@ Last updated: 2026-09-26
 
 ## Overview
 
+### Source-custody controls stay outside product meaning (2026-09-26)
+
+Immutable V28 passed its first 30 disclosed cases at `10/10`, then committed a
+4 Radar / 4 Registry / 5 Atlas archive package whose product-facing Radar,
+Atlas, brief, dashboard and handoff copy repeated a synthetic source marker and
+paraphrased its non-projection directive. Transaction, browser and depth proof
+all passed; the retained source-identifier guard correctly failed quality.
+
+Canonical authoring v71, host format v11, contract v22 and candidate-review v9
+keep one semantic owner on each side of admission. A requirement must govern
+the requested product or requested governance/delivery outcome to become an
+operational constraint. Instructions concerning source or evidence identity,
+fixture metadata, candidate authoring or non-projection remain sealed source
+custody only when they govern the supplied source, fixture or candidate as an
+input to the authoring transaction; they may not be cited or paraphrased
+into accepted facts, assumptions or provisional work. Requested product
+workflows that manage evidence, provenance or source identity as domain data
+remain product truth. One source performer that explicitly owns a disjunctive
+decision retains the complete joined action
+phrase, so both named outcomes keep actor/action custody without invented
+branch events.
+
+The downstream compiler and renderers remain structural and unchanged. No
+regex, parser, word list, repair, retry, fallback, projection schema, renderer
+filter, model ladder or additional model call was added. Live Astra controls
+admit a genuine product audit-ledger requirement for evidence source identity,
+deny a truncated disjunctive action, and deny both literal and paraphrased
+source-control contamination. Focused proof passes `437/437`; source proof passes `1,971/1,971` runtime,
+`1,175/1,175` installed, and `23/23` integration/browser checks. Immutable V29
+qualification remains open.
+
 ### Coherent First Run versus complete source-event custody (2026-09-26)
 
 Accepted typed events remain the complete source action inventory, and proposed
@@ -1281,6 +1312,9 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:start -->
 - **2026-09-26 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-09-26-greenfield-projects-source-custody-directives-into-product-governance.md`, `src/odylith/runtime/domain_intelligence/greenfield_candidate_review.py`
+- **2026-09-26 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py`, `tests/unit/runtime/test_greenfield_model_source_citations.py`
 - **2026-09-26 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
@@ -1294,9 +1328,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_candidate_review.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_proof_observation.py`
-- **2026-09-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_candidate_review.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
