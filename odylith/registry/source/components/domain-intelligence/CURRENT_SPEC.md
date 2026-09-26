@@ -4,6 +4,23 @@ Last updated: 2026-09-25
 
 ## Overview
 
+### Tri-state independent Greenfield review (2026-09-25)
+
+The host-native candidate remains one untrusted source-cited hypothesis. The
+existing independent semantic review is the sole admission owner and returns
+one typed outcome: admitted, material clarification, or denied. A material
+clarification names one existing material dimension and terminates before
+staging through the canonical clarification question. A denial remains terminal
+when source evidence was sufficient but the candidate was wrong. The reviewer
+never rewrites candidate content, and the flow adds no parser, regex, candidate
+revision, retry, repair, fallback, or additional model call.
+
+This boundary addresses source metadata that describes a repository purpose
+without establishing a product actor or complete task. Repository evidence may
+ground accepted meaning, but it cannot silently become product intent. The
+disclosed civic-tech case and an independent source-sufficient denial are the
+minimum behavior controls before installed public requalification.
+
 ### Event-citation topology at the host boundary (2026-09-25)
 
 Host candidate contract v18 now exposes the relation already enforced by

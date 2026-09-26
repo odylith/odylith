@@ -102,13 +102,14 @@ def production_stage_observation(
     class TimedReviewProvider(AdmittingReviewProvider):
         responses = (
             {
-                "admissible": False,
-                "issues": [{
+                "outcome": "denied",
+                "issue": {
                     "path": "candidate.accepted_source.facts.opportunity",
                     "reason": "The selected action is not a complete improvement.",
-                }],
+                },
+                "clarification": None,
             },
-            {"admissible": True, "issues": []},
+            {"outcome": "admitted", "issue": None, "clarification": None},
         )
 
         def generate_structured(self, *, request):

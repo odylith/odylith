@@ -207,3 +207,27 @@
   The exact installed clarification previously passed the corrected path at
   `18.633s` with zero writes; one post-v23 installed replay and the full public
   matrix remain required before this defect can close.
+
+## V19 Denied-Candidate Custody Reopen (2026-09-25)
+
+- The exact v19 public campaign passed seven cases, then stopped on the first
+  civic-tech clarification case. The host invocation succeeded on
+  `gpt-6-astra/medium`, but its `7,385`-byte authored candidate was deleted with
+  the temporary workspace after independent review denied one unsupported
+  product-actor relation. External evidence retained only the candidate hash,
+  host byte counts, and denial payload; the raw structured candidate was not
+  available for independent adjudication.
+- The host-flow receipt also omitted proposal return code and classified the
+  flow as passed merely because the proposal subprocess returned. Model-profile
+  proof recognized only admitted host-authored transactions or direct host
+  clarifications, so this denied host-native outcome fell into the retired
+  participant-selection and remaining-author validators and emitted forty-plus
+  collateral issues.
+- The correction must retain exact candidate and proposal bytes before
+  cleanup and bind the full reviewer receipt through the existing
+  parent-granted private proof descriptor. Reviewer-selected clarification is
+  corroborated by the authored host response, its typed public clarification,
+  and explicit complete-source-missingness basis. Admitted, clarified, and
+  denied host-native results stay inside one host-native custody family and
+  never fall into retired two-role diagnostics.
+  The public run remains failed, and the protected holdout remains untouched.

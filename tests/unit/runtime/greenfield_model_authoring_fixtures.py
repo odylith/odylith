@@ -95,7 +95,7 @@ class AdmittingReviewProvider(StructuredAuthoringProvider):
     """Independent transport double for structurally valid positive wiring cases."""
 
     def __init__(self) -> None:
-        super().__init__({"admissible": True, "issues": []})
+        super().__init__({"outcome": "admitted", "issue": None, "clarification": None})
 
     def generate_structured(self, *, request: object) -> Mapping[str, Any] | None:
         assert getattr(request, "schema_name", "") == "greenfield_candidate_review"

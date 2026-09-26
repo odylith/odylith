@@ -47,6 +47,8 @@ class HostCandidateFlow:
     invoke_propose: Callable[[Path, float], Any]
     installed_command: tuple[str, ...] = ("./.odylith/bin/odylith",)
     observe: Callable[[Mapping[str, Any]], None] | None = None
+    retain_candidate_bytes: Callable[[bytes], None] | None = None
+    retain_proposal_bytes: Callable[[str, bytes], None] | None = None
 
 
 def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
@@ -172,6 +174,9 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
                     stage="host",
                 )
             candidate_text = _text_stream(getattr(host_result, "stdout", ""))
+            candidate_bytes = candidate_text.encode("utf-8")
+            if flow.retain_candidate_bytes is not None:
+                flow.retain_candidate_bytes(candidate_bytes)
             candidate = _single_json_object(candidate_text, label="host candidate")
             result = candidate.get("result")
             response_kind = (
@@ -195,6 +200,8 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
                     allow_nan=False,
                 ).encode("utf-8")
             ).hexdigest()
+            observation["candidate_raw_sha256"] = hashlib.sha256(candidate_bytes).hexdigest()
+            observation["candidate_raw_bytes"] = len(candidate_bytes)
 
             candidate_path = Path(candidate_dir) / "candidate.json"
             candidate_path.write_text(
@@ -217,6 +224,31 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
                 candidate_path,
                 _remaining(started, timeout),
             )
+            proposal_stdout = _text_stream(getattr(proposal, "stdout", ""))
+            proposal_stderr = _text_stream(getattr(proposal, "stderr", ""))
+            if flow.retain_proposal_bytes is not None:
+                flow.retain_proposal_bytes("stdout", proposal_stdout.encode("utf-8"))
+                flow.retain_proposal_bytes("stderr", proposal_stderr.encode("utf-8"))
+            observation["proposal_returncode"] = int(getattr(proposal, "returncode", 1))
+            observation["proposal_stdout_sha256"] = _sha256_text(proposal_stdout)
+            observation["proposal_stderr_sha256"] = _sha256_text(proposal_stderr)
+            proposal_outcome = _proposal_outcome(proposal_stdout)
+            observation.update(proposal_outcome)
+            if observation["proposal_returncode"] != 0:
+                _fail(
+                    "host-native candidate proposal command returned nonzero",
+                    observation=observation,
+                    stage="propose",
+                )
+            if proposal_outcome["proposal_mode"] not in {
+                "product_create_transaction",
+                "clarification_required",
+            }:
+                _fail(
+                    "host-native candidate proposal did not produce an admitted outcome",
+                    observation=observation,
+                    stage="propose",
+                )
         observation["candidate_temp_cleaned"] = not candidate_path.exists()
         observation["host_workspace_cleaned"] = not host_workspace.exists()
         if not observation["candidate_temp_cleaned"]:
@@ -456,6 +488,22 @@ def _text_stream(value: Any) -> str:
 
 def _sha256_text(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def _proposal_outcome(value: str) -> dict[str, str]:
+    """Return only stable reviewer/outcome metadata from a proposal response."""
+
+    try:
+        payload = _single_json_object(value, label="proposal")
+    except (TypeError, ValueError, json.JSONDecodeError):
+        return {"proposal_mode": "invalid", "candidate_review_status": "unreported"}
+    review = payload.get("candidate_review")
+    review = review if isinstance(review, Mapping) else {}
+    status = str(review.get("status") or "").strip()
+    return {
+        "proposal_mode": str(payload.get("mode") or "").strip() or "invalid",
+        "candidate_review_status": status or "unreported",
+    }
 
 
 def _emit_observation(

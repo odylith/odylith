@@ -249,6 +249,48 @@ def test_typed_clarification_accepts_source_bound_material_ambiguity() -> None:
     ) == ()
 
 
+def test_typed_clarification_accepts_complete_source_missingness_without_fake_span() -> None:
+    execution = _clarification_execution(
+        question="Who uses this product first, what complete task do they finish, and what result do they see?",
+        required_fields=("first_path",),
+    )
+    payload = dict(execution.payload)
+    clarification = dict(payload["clarification"])
+    clarification["consistency_assessment"] = {
+        "status": "material_ambiguity",
+        "source_spans": [],
+        "basis": "complete_source_missingness",
+    }
+    payload["clarification"] = clarification
+
+    assert clarification_contract_issues(
+        replace(execution, payload=payload),
+        expected_fields=("first_path",),
+    ) == ()
+
+
+def test_complete_source_missingness_rejects_a_fabricated_span() -> None:
+    execution = _clarification_execution(
+        question="Who uses this product first, what complete task do they finish, and what result do they see?",
+        required_fields=("first_path",),
+    )
+    payload = dict(execution.payload)
+    clarification = dict(payload["clarification"])
+    clarification["consistency_assessment"] = {
+        "status": "material_ambiguity",
+        "source_spans": [_consistency_span("invented support")],
+        "basis": "complete_source_missingness",
+    }
+    payload["clarification"] = clarification
+
+    issues = clarification_contract_issues(
+        replace(execution, payload=payload),
+        expected_fields=("first_path",),
+    )
+
+    assert "complete-source missingness clarification must not invent source spans" in issues
+
+
 def test_typed_clarification_rejects_unbound_material_ambiguity() -> None:
     execution = _clarification_execution(
         question="Which system should own the stated responsibility?",
@@ -395,11 +437,16 @@ def test_case_preserves_stage_observation_and_actual_terminal_diagnostics(
         retained = None
     captured: dict[str, object] = {}
 
-    def profile_evidence(profile, environ, *, observed, stage_observation):  # noqa: ANN001
+    def profile_evidence(  # noqa: ANN001
+        profile, environ, *, observed, stage_observation,
+        reviewer_observation=None, expected_source="",
+    ):
         captured.update(
             profile=profile,
             observed=observed,
             stage_observation=stage_observation,
+            reviewer_observation=reviewer_observation,
+            expected_source=expected_source,
         )
         return {"status": "passed", "issues": []}
 
@@ -515,12 +562,14 @@ def test_clarification_case_binds_two_call_stage_to_public_decision(
 
     def profile_evidence(  # noqa: ANN001
         profile, environ, *, observed, stage_observation, expected_source,
+        reviewer_observation=None, expected_reviewer_candidate_sha256="",
     ):
         captured.update(
             profile=profile,
             observed=observed,
             stage_observation=stage_observation,
             expected_source=expected_source,
+            reviewer_observation=reviewer_observation,
         )
         return {"status": "passed", "issues": []}
 
@@ -563,6 +612,86 @@ def test_clarification_case_binds_two_call_stage_to_public_decision(
     assert captured["profile"] == STANDARD_PROFILE_ID
     assert captured["stage_observation"] == stage
     assert captured["expected_source"] == stage["request"]["evidence"]
+
+
+def test_runner_passes_retained_reviewer_observation_to_expected_clarification(
+    tmp_path: Path, monkeypatch,  # noqa: ANN001
+) -> None:
+    module = _matrix_module()
+    prompt = "The first complete task remains materially ambiguous."
+    source = prepare_model_authoring_evidence(prompt=prompt).evidence_source
+    retained = _retained_case(module, tmp_path, "reviewer-clarification")
+    stage = _host_native_clarification_stage(source)
+    stage["response_kind"] = "authored"
+    stage["candidate_review_status"] = "clarification_required"
+    semantic = retained.staging_root / "semantic"
+    semantic.mkdir()
+    (semantic / "host-authoring-observation.v1.json").write_text(
+        json.dumps(stage), encoding="utf-8",
+    )
+    reviewer = _host_native_reviewer_clarification_observation(source)
+    (semantic / "model-authoring-observation.v1.json").write_text(
+        json.dumps(reviewer), encoding="utf-8",
+    )
+    execution = _host_native_clarification_execution(source)
+    captured: dict[str, object] = {}
+
+    class Audit:
+        pass_fds: tuple[int, ...] = ()
+
+        def environment(self):  # noqa: ANN201
+            return {}
+
+        def command(self, **_kwargs):  # noqa: ANN201
+            return ()
+
+        def finish(self):  # noqa: ANN201
+            return SimpleNamespace(active=True, write_attempts=(), subprocess_attempts=(), error="")
+
+    def profile_evidence(  # noqa: ANN001
+        profile, environ, *, observed, stage_observation, expected_source,
+        reviewer_observation=None, expected_reviewer_candidate_sha256="",
+    ):
+        captured.update(
+            stage_observation=stage_observation,
+            reviewer_observation=reviewer_observation,
+            expected_source=expected_source,
+        )
+        return {"status": "passed", "issues": []}
+
+    monkeypatch.setattr(module, "begin_installed_write_audit", lambda **_kwargs: Audit())
+    monkeypatch.setattr(module, "_run_greenfield_propose", lambda **_kwargs: SimpleNamespace(stdout="", stderr=""))
+    monkeypatch.setattr(module, "run_expected_clarification", lambda **kwargs: (kwargs["invoke"](), execution)[1])
+    monkeypatch.setattr(module, "collect_artifact_package", lambda **_kwargs: SimpleNamespace())
+    monkeypatch.setattr(module, "collect_artifact_counts", lambda **_kwargs: module.GreenfieldArtifactCounts())
+    monkeypatch.setattr(module, "sealed_model_profile_observation", lambda **_kwargs: {})
+    review = reviewer["candidate_review"]
+    assert isinstance(review, dict)
+    monkeypatch.setattr(
+        module,
+        "_retained_reviewer_candidate_sha256",
+        lambda *_args, **_kwargs: str(review["candidate_sha256"]),
+    )
+    monkeypatch.setattr(module, "model_profile_evidence", profile_evidence)
+    monkeypatch.setattr(module, "_case_evidence_manifest", lambda **_kwargs: {})
+    monkeypatch.setattr(module, "_record_retained_execution", lambda **_kwargs: None)
+
+    result = module._run_expected_clarification_case(  # noqa: SLF001
+        case=module.GreenfieldMatrixCase(
+            case_id="reviewer-clarification", name="reviewer clarification", prompt=prompt,
+            required_terms=(), expectation="clarification_required",
+            expected_clarification_field="first_path",
+            expected_clarification_question=execution.payload["clarification"]["question"],
+        ),
+        repo_root=tmp_path / "repo", env=model_profile_environment(STANDARD_PROFILE_ID, {}),
+        timeout=90, repair_tier="standard", install_script=tmp_path / "install.sh",
+        version="0.0.0", install_mode="full", retained_case=retained,
+    )
+
+    assert result.status == "passed", result.quality.issues
+    assert captured["stage_observation"] == stage
+    assert captured["reviewer_observation"] == reviewer
+    assert captured["expected_source"] == source
 
 
 def _source_bound_clarification_execution(stage):
@@ -645,8 +774,57 @@ def _host_native_clarification_stage(
         "host_stderr_bytes": 0,
         "response_kind": "clarification_required",
         "candidate_sha256": "3" * 64,
+        "candidate_raw_sha256": "4" * 64,
+        "candidate_raw_bytes": 200,
         "candidate_temp_outside_repo": True,
+        "proposal_returncode": 0,
+        "proposal_stdout_sha256": "5" * 64,
+        "proposal_stderr_sha256": "6" * 64,
+        "proposal_mode": "clarification_required",
+        "candidate_review_status": "unreported",
         "elapsed_seconds": 18.02,
+    }
+
+
+def _host_native_reviewer_clarification_observation(
+    source: str,
+    *,
+    profile_id: str = STANDARD_PROFILE_ID,
+    candidate_sha256: str = "3" * 64,
+) -> dict[str, object]:
+    profile = get_greenfield_model_profile(profile_id)
+    source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
+    return {
+        "version": "odylith.greenfield.model-proof-observation.v4",
+        "authoring_version": "odylith.greenfield.intent-authoring.v68",
+        "request": {
+            "version": "odylith.greenfield.intent-authoring.v68",
+            "evidence": source,
+        },
+        "semantic_model_call_count": 1,
+        "origin": "host_native",
+        "host_candidate": {
+            "version": "odylith.greenfield.host-candidate.v1",
+            "contract_version": "odylith.greenfield.intent-authoring.v68",
+            "source_sha256": source_sha256,
+            "candidate_sha256": candidate_sha256,
+        },
+        "candidate_review": {
+            "version": CANDIDATE_REVIEW_VERSION,
+            "status": "clarification_required",
+            "source_sha256": source_sha256,
+            "candidate_sha256": candidate_sha256,
+            "model_profile": {
+                "profile_id": profile_id,
+                "provider": profile.provider,
+                "model": profile.review_model,
+                "reasoning_effort": profile.review_reasoning_effort,
+                "effective_timeout_seconds": 120.0,
+                "authoring_tier": profile.repair_tier,
+            },
+            "elapsed_seconds": 0.1,
+            "clarification": {"material_dimension": "first_path"},
+        },
     }
 
 
@@ -692,6 +870,137 @@ def test_host_native_clarification_uses_private_one_call_custody() -> None:
     assert evidence["status"] == "passed", evidence["issues"]
     assert evidence["sealed_request_roles"] == ["host_candidate"]
     assert evidence["maximum_semantic_model_calls"] == 1
+
+
+def test_reviewer_selected_clarification_stays_host_native_without_reclassifying_host_output() -> None:
+    source = "The first complete task remains materially ambiguous."
+    stage = _host_native_clarification_stage(source)
+    stage["response_kind"] = "authored"
+    stage["candidate_review_status"] = "clarification_required"
+    reviewer = _host_native_reviewer_clarification_observation(source)
+    review = reviewer["candidate_review"]
+    assert isinstance(review, dict)
+
+    evidence = model_profile_evidence(
+        STANDARD_PROFILE_ID,
+        model_profile_environment(STANDARD_PROFILE_ID, {}),
+        observed={},
+        stage_observation=stage,
+        reviewer_observation=reviewer,
+        expected_reviewer_candidate_sha256=str(review["candidate_sha256"]),
+        expected_source=source,
+    )
+
+    assert evidence["status"] == "passed", evidence["issues"]
+    summary = evidence["stage_observation_summary"]
+    assert summary["response_kind"] == "authored"
+    assert summary["clarification_origin"] == "reviewer"
+    assert evidence["sealed_request_roles"] == ["host_candidate"]
+    assert summary["reviewer_receipt_verified"] is True
+    assert not any(
+        "participant_selection" in issue or "remaining_candidate_authoring" in issue
+        for issue in evidence["issues"]
+    )
+
+    result = _host_native_clarification_aggregate_result(
+        source,
+        profile_evidence=evidence,
+    )
+    proof = model_profile_release_proof((result,), require_complete=False)
+    assert proof["status"] == "passed", proof["issues"]
+
+
+def test_reviewer_selected_clarification_fails_closed_without_private_receipt() -> None:
+    source = "The first complete task remains materially ambiguous."
+    stage = _host_native_clarification_stage(source)
+    stage["response_kind"] = "authored"
+    stage["candidate_review_status"] = "clarification_required"
+
+    evidence = model_profile_evidence(
+        STANDARD_PROFILE_ID,
+        model_profile_environment(STANDARD_PROFILE_ID, {}),
+        observed={},
+        stage_observation=stage,
+        expected_source=source,
+    )
+
+    assert evidence["status"] == "failed"
+    assert "private host-native reviewer clarification observation is missing or malformed" in evidence["issues"]
+    assert evidence["stage_observation_summary"]["clarification_origin"] == "reviewer"
+    assert not any(
+        "participant_selection" in issue or "remaining_candidate_authoring" in issue
+        for issue in evidence["issues"]
+    )
+
+
+@pytest.mark.parametrize(
+    ("mutation", "expected_issue"),
+    (
+        ("source", "private host-native reviewer receipt source does not match the evaluated source"),
+        ("candidate_hash", "private host-native reviewer receipt candidate hash is invalid"),
+        ("substituted_candidate_hash", "private host-native reviewer receipt does not match the canonical candidate"),
+        ("model", "does not match pinned"),
+        ("missing_profile_field", "private host-native reviewer model profile is missing or malformed"),
+        ("extra_profile_field", "private host-native reviewer model profile is missing or malformed"),
+        ("profile_id", "private host-native reviewer model profile identifies a different profile"),
+        ("elapsed_effective_timeout", "private host-native reviewer elapsed time exceeds its effective timeout"),
+        ("elapsed_shared_window", "private host-native reviewer elapsed time exceeds the shared model window"),
+        ("returncode", "retained host-native successful proposal has a nonzero return code"),
+    ),
+)
+def test_reviewer_selected_clarification_rejects_forged_private_or_stage_custody(
+    mutation: str, expected_issue: str,
+) -> None:
+    source = "The first complete task remains materially ambiguous."
+    stage = _host_native_clarification_stage(source)
+    stage["response_kind"] = "authored"
+    stage["candidate_review_status"] = "clarification_required"
+    reviewer = _host_native_reviewer_clarification_observation(source)
+    review = reviewer["candidate_review"]
+    assert isinstance(review, dict)
+    canonical_candidate_sha256 = str(review["candidate_sha256"])
+    if mutation == "source":
+        review["source_sha256"] = "0" * 64
+    elif mutation == "candidate_hash":
+        review["candidate_sha256"] = "forged"
+    elif mutation == "substituted_candidate_hash":
+        review["candidate_sha256"] = "f" * 64
+    elif mutation in {"elapsed_effective_timeout", "elapsed_shared_window"}:
+        model_profile = review["model_profile"]
+        assert isinstance(model_profile, dict)
+        if mutation == "elapsed_effective_timeout":
+            review["elapsed_seconds"] = float(model_profile["effective_timeout_seconds"]) + 1.0
+        else:
+            model_profile["effective_timeout_seconds"] = 200.0
+            review["elapsed_seconds"] = (
+                get_greenfield_model_profile(STANDARD_PROFILE_ID).model_timeout_seconds + 1.0
+            )
+    elif mutation in {"model", "missing_profile_field", "extra_profile_field", "profile_id"}:
+        model_profile = review["model_profile"]
+        assert isinstance(model_profile, dict)
+        if mutation == "model":
+            model_profile["model"] = "forged"
+        elif mutation == "missing_profile_field":
+            model_profile.pop("profile_id")
+        elif mutation == "extra_profile_field":
+            model_profile["forged"] = True
+        else:
+            model_profile["profile_id"] = RESCUE_PROFILE_ID
+    else:
+        stage["proposal_returncode"] = 2
+
+    evidence = model_profile_evidence(
+        STANDARD_PROFILE_ID,
+        model_profile_environment(STANDARD_PROFILE_ID, {}),
+        observed={},
+        stage_observation=stage,
+        reviewer_observation=reviewer,
+        expected_reviewer_candidate_sha256=canonical_candidate_sha256,
+        expected_source=source,
+    )
+
+    assert evidence["status"] == "failed"
+    assert any(expected_issue in issue for issue in evidence["issues"])
 
 
 def _host_native_clarification_profile_evidence(

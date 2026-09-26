@@ -3,38 +3,35 @@ flowchart TB
       direction LR
       request["Greenfield request and EDIT evidence<br/>Untrusted input with exact source custody"]
       baseline["Complete installed baseline<br/>Immutable view exists before proposal admission"]
-      select_people["Participant selector<br/>Source-supported people and exact locations"]
-      people["Frozen participant candidate<br/>No additions or removal by the remaining author"]
-      model_pass["Remaining source and design author<br/>Pinned role inside the same model deadline"]
-      typed_graph["Deterministically joined source and design candidate<br/>Source prerequisites; proposed first run<br/>Distinct authority; one relation hash"]
+      contract["Public candidate contract<br/>Sealed source context and typed schema"]
+      model_pass["One active host author<br/>One compact complete candidate inside the shared deadline"]
+      typed_graph["Host-authored typed evidence graph<br/>Exact citations, actors, actions, results,<br/>constraints and proposed first run"]
       ambiguity{"Material meaning complete?"}
       clarify["One focused clarification<br/>No transaction or governed write"]
-      request --> select_people --> people --> model_pass --> typed_graph --> ambiguity
-      people -- "unchanged participant insertion" --> typed_graph
-      baseline -. "required" .-> select_people
+      request --> contract --> model_pass --> typed_graph --> ambiguity
+      baseline -. "required" .-> contract
       ambiguity -- "no" --> clarify
     end
 
     subgraph projection_lane["Deterministic package construction"]
       direction LR
       custody["Custody and invariant validation<br/>Stable source IDs and explicit result producer<br/>No chronology from source-list position"]
-      review["Read-only complete-candidate admission<br/>Exact resolved citations; distinct source and design<br/>One review inside the remaining shared deadline"]
-      revision["One bounded author revision<br/>Original source + rejected candidate + exact typed issue<br/>Only after the first denial"]
-      rereview["Fresh independent complete-candidate review<br/>Exactly one re-adjudication; retained evidence"]
-      denied["No admitted package<br/>Second denial, unavailable, or late<br/>No loop, cascade, or governed write"]
+      review["Independent tri-state review<br/>One immutable decision: admit, clarify, or deny"]
+      review_clarify["Reviewer-selected material clarification<br/>Retain the review receipt; one focused question<br/>No transaction or governed write"]
+      denied["Denied after completed review<br/>Retain exact candidate and review receipt<br/>No repair, retry, fallback, or governed write"]
+      review_failure["Reviewer unavailable or late<br/>Fail closed; retain attempt and failure custody only<br/>No review receipt or governed write"]
       projections["Deterministic source and design projections<br/>4–5 Radar, 4–5 Registry, five Atlas views<br/>Exact release membership and dependency-ready task"]
       staged_surfaces["Temporary-root surface rendering<br/>Shared read lock holds the validated baseline<br/>No detached narration queue or worker"]
       delivery_proof["Staged Delivery Intelligence proof<br/>v4 artifact validated before sealing"]
-      quality["Pre-confirm complete-package gates<br/>Three-role receipt bound to source and intent<br/>Independent release qualification remains open"]
+      quality["Pre-confirm complete-package gates<br/>Host-author custody plus independent tri-state review receipt<br/>Independent release qualification remains open"]
       execution_handoff["Typed Execution Engine handoff<br/>Canonical handshake, snapshot and validation bundle"]
       intervention_fallback["Host-neutral intervention fallback<br/>Observation / Proposal / Assist remain distinct"]
       timing["Proposal timing gate<br/>90 / 120 / 150-second advisory targets<br/>165-second model window; below 180 seconds overall"]
       custody --> review
       review -- "admitted unchanged" --> projections --> staged_surfaces --> delivery_proof --> quality --> execution_handoff --> intervention_fallback --> timing
-      review -- "first typed denial" --> revision --> rereview
-      rereview -- "admitted revised candidate" --> projections
-      rereview -- "denied, unavailable or late" --> denied
-      review -- "unavailable or late" --> denied
+      review -- "material source gap" --> review_clarify
+      review -- "source-sufficient semantic defect" --> denied
+      review -- "unavailable or late" --> review_failure
     end
 
     subgraph status_lane["Shell status acquisition: first install and later packages"]
@@ -91,7 +88,6 @@ flowchart TB
     end
 
     ambiguity -- "yes" --> custody
-    select_people -- "invalid or unavailable" --> denied
     baseline -. "status acquisition" .-> bundle_scope
     staged_surfaces -. "status acquisition" .-> bundle_scope
     timing --> write_set
@@ -103,11 +99,11 @@ flowchart TB
     classDef governance fill:#F5F3FF,stroke:#DDD6FE,color:#132033,stroke-width:1px;
     classDef constraint fill:#FFF8E6,stroke:#F6D98B,color:#132033,stroke-width:1px;
     classDef invalid fill:#FFF1F0,stroke:#F7B4AE,color:#132033,stroke-width:1px;
-    class request,baseline,select_people,people,model_pass,typed_graph primary;
-    class custody,review,revision,rereview,projections,staged_surfaces,delivery_proof,quality,execution_handoff,intervention_fallback,timing,bundle_scope,live_telemetry,direct_live execution;
+    class request,baseline,contract,model_pass,typed_graph primary;
+    class custody,review,projections,staged_surfaces,delivery_proof,quality,execution_handoff,intervention_fallback,timing,bundle_scope,live_telemetry,direct_live execution;
     class write_set,generation_manifest,entry,sealed,decision,edit,reject,confirm,publish,observed,navigate,captured_status,later,recovery,owners,evaluator,acceptance,confidence,retained governance;
     class ambiguity,drift constraint;
-    class clarify,denied,replace invalid;
+    class clarify,review_clarify,denied,review_failure,replace invalid;
 
     style evidence_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#293D52
     style projection_lane fill:#F8FFFE,stroke:#A7E9E3,stroke-width:1px,color:#293D52

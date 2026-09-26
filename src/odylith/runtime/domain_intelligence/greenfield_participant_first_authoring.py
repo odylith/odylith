@@ -8,13 +8,12 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping, Sequence
 from copy import deepcopy
 from dataclasses import replace
-import json
 import math
-import os
 from time import monotonic
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
+    GreenfieldCandidateClarificationRequired,
     GreenfieldCandidateRejected,
     HUMAN_ACTOR_ROLE_DEFINITION,
     review_greenfield_candidate,
@@ -25,6 +24,11 @@ from odylith.runtime.domain_intelligence.greenfield_candidate_revision import (
 )
 from odylith.runtime.domain_intelligence.greenfield_model_json import (
     encode_greenfield_model_value,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_proof_observation import (
+    GREENFIELD_MODEL_PROOF_FD_ENV,
+    GREENFIELD_MODEL_PROOF_OBSERVATION_VERSION,
+    emit_greenfield_model_proof_observation,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
@@ -57,8 +61,6 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-GREENFIELD_MODEL_PROOF_FD_ENV = "ODYLITH_GREENFIELD_MODEL_PROOF_FD"
-GREENFIELD_MODEL_PROOF_OBSERVATION_VERSION = "odylith.greenfield.model-proof-observation.v4"
 MAX_GREENFIELD_SEMANTIC_CALLS = 5
 _PARTICIPANT_SELECTION_SCHEMA: dict[str, Any] = {
     "type": "object",
@@ -348,7 +350,7 @@ def author_greenfield_intent(
         source_language=source_language,
     )
     if provider is None:
-        _emit_release_proof_observation(
+        emit_greenfield_model_proof_observation(
             evidence_text=text, semantic_model_call_count=0,
             participant_selection=None, remaining_candidate_authoring=None,
             rejected_candidate=None, rejected_candidate_review=None,
@@ -506,6 +508,18 @@ def author_greenfield_intent(
             )
             review_observation = rejected_review_observation
             rejected_review_observation = {}
+        except GreenfieldCandidateClarificationRequired as clarification_required:
+            clarification = True
+            return _review_clarification(
+                authored=authored,
+                material_dimension=clarification_required.material_dimension,
+                review_receipt=clarification_required.receipt,
+                participant_receipt=participant_stage.receipt,
+                remaining_receipt=remaining_stage.receipt,
+                effective_model_window_seconds=effective_model_window_seconds,
+                elapsed_seconds=max(0.0, clock() - started),
+                semantic_model_call_count=3,
+            )
         except GreenfieldCandidateRejected as rejection:
             rejected_candidate = deepcopy(joined_candidate)
             rejected_review_receipt = deepcopy(dict(rejection.receipt))
@@ -568,6 +582,18 @@ def author_greenfield_intent(
                     clock=clock,
                     observation=review_observation,
                 )
+            except GreenfieldCandidateClarificationRequired as clarification_required:
+                clarification = True
+                return _review_clarification(
+                    authored=authored,
+                    material_dimension=clarification_required.material_dimension,
+                    review_receipt=clarification_required.receipt,
+                    participant_receipt=participant_stage.receipt,
+                    remaining_receipt=remaining_stage.receipt,
+                    effective_model_window_seconds=effective_model_window_seconds,
+                    elapsed_seconds=max(0.0, clock() - started),
+                    semantic_model_call_count=5,
+                )
             except GreenfieldCandidateRejected as exc:
                 raise GreenfieldModelAuthoringError(
                     "A source-faithful Greenfield package could not be verified; no records were created."
@@ -613,7 +639,7 @@ def author_greenfield_intent(
         }
         raise
     finally:
-        _emit_release_proof_observation(
+        emit_greenfield_model_proof_observation(
             evidence_text=text,
             semantic_model_call_count=sum(
                 observation.get("dispatched") is True
@@ -638,6 +664,37 @@ def author_greenfield_intent(
             candidate_review=review_observation or None,
             failure=None if completed or clarification else failure,
         )
+
+
+def _review_clarification(
+    *,
+    authored: GreenfieldModelAuthoredIntent,
+    material_dimension: str,
+    review_receipt: Mapping[str, Any],
+    participant_receipt: Mapping[str, Any],
+    remaining_receipt: Mapping[str, Any],
+    effective_model_window_seconds: float,
+    elapsed_seconds: float,
+    semantic_model_call_count: int,
+) -> GreenfieldAuthoringClarification:
+    """Map the reviewer's source-insufficiency decision before any staging."""
+
+    return GreenfieldAuthoringClarification(
+        required_fields=(material_dimension,),
+        elapsed_seconds=elapsed_seconds,
+        tier=authored.tier,
+        provider=deepcopy(authored.provider),
+        profile_id=authored.profile_id,
+        effective_timeout_seconds=authored.effective_timeout_seconds,
+        consistency_status="material_ambiguity",
+        consistency_source_spans=(),
+        clarification_basis="complete_source_missingness",
+        effective_model_window_seconds=effective_model_window_seconds,
+        participant_selection=deepcopy(dict(participant_receipt)),
+        remaining_candidate_authoring=deepcopy(dict(remaining_receipt)),
+        candidate_review=deepcopy(dict(review_receipt)),
+        semantic_model_call_count=semantic_model_call_count,
+    )
 
 
 def _remaining_authoring_contract() -> tuple[dict[str, Any], str]:
@@ -699,79 +756,6 @@ def _global_occurrence_for_start(evidence: bytes, quote: str, start: int) -> int
     raise GreenfieldModelAuthoringError(
         "Greenfield participant selection could not preserve source custody; no records were created."
     )
-
-
-def _emit_release_proof_observation(
-    *,
-    evidence_text: str,
-    semantic_model_call_count: int,
-    participant_selection: Mapping[str, Any] | None,
-    remaining_candidate_authoring: Mapping[str, Any] | None,
-    rejected_candidate: Mapping[str, Any] | None,
-    rejected_candidate_review: Mapping[str, Any] | None,
-    candidate_revision: Mapping[str, Any] | None,
-    joined_candidate: Mapping[str, Any] | None,
-    candidate_review: Mapping[str, Any] | None,
-    failure: Mapping[str, Any] | None,
-) -> None:
-    """Write exact stage evidence only through a parent-granted descriptor."""
-
-    descriptor_text = str(os.environ.get(GREENFIELD_MODEL_PROOF_FD_ENV) or "").strip()
-    if not descriptor_text:
-        return
-    try:
-        descriptor = int(descriptor_text)
-    except ValueError as exc:
-        raise GreenfieldModelAuthoringError(
-            "Greenfield release-proof evidence capture is invalid; no records were created."
-        ) from exc
-    if descriptor <= 2:
-        raise GreenfieldModelAuthoringError(
-            "Greenfield release-proof evidence capture is invalid; no records were created."
-        )
-    payload: dict[str, Any] = {
-        "version": GREENFIELD_MODEL_PROOF_OBSERVATION_VERSION,
-        "authoring_version": GREENFIELD_INTENT_AUTHORING_VERSION,
-        "request": greenfield_authoring_payload(evidence_text),
-        "semantic_model_call_count": semantic_model_call_count,
-    }
-    if participant_selection is not None:
-        payload["participant_selection"] = deepcopy(dict(participant_selection))
-    if remaining_candidate_authoring is not None:
-        payload["remaining_candidate_authoring"] = deepcopy(
-            dict(remaining_candidate_authoring)
-        )
-    if rejected_candidate is not None:
-        payload["rejected_candidate"] = deepcopy(dict(rejected_candidate))
-    if rejected_candidate_review is not None:
-        payload["rejected_candidate_review"] = deepcopy(
-            dict(rejected_candidate_review)
-        )
-    if candidate_revision is not None:
-        payload["candidate_revision"] = deepcopy(dict(candidate_revision))
-    if candidate_review is not None:
-        payload["candidate_review"] = deepcopy(dict(candidate_review))
-    if joined_candidate is not None:
-        payload["joined_candidate"] = deepcopy(dict(joined_candidate))
-    if failure is not None:
-        payload["failure"] = deepcopy(dict(failure))
-    encoded = json.dumps(
-        payload,
-        sort_keys=True,
-        ensure_ascii=False,
-        allow_nan=False,
-    ).encode("utf-8") + b"\n"
-    written = 0
-    try:
-        while written < len(encoded):
-            count = os.write(descriptor, encoded[written:])
-            if count <= 0:
-                raise OSError("proof descriptor accepted no bytes")
-            written += count
-    except OSError as exc:
-        raise GreenfieldModelAuthoringError(
-            "Greenfield release-proof evidence capture failed; no records were created."
-        ) from exc
 
 
 __all__ = [

@@ -71,7 +71,7 @@ def test_two_author_roles_and_review_share_the_full_pinned_window(profile_id, mo
     participant, provider = _timed_stages(
         response, clock, participant_seconds=1.0, remaining_seconds=model_budget - 2.0,
     )
-    reviewer = Provider([{"admissible": True, "issues": []}], [1.0], clock)
+    reviewer = Provider([{"outcome": "admitted", "issue": None, "clarification": None}], [1.0], clock)
     result = author.author_greenfield_intent(
         review_provider_factory=lambda: reviewer,
         evidence_text=_source(), provider=provider,
@@ -128,7 +128,7 @@ def test_shorter_remaining_window_is_not_reduced_by_a_review_reserve():
     participant, provider = _timed_stages(
         response, clock, participant_seconds=0.5, remaining_seconds=18.5,
     )
-    reviewer = Provider([{"admissible": True, "issues": []}], [1.0], clock)
+    reviewer = Provider([{"outcome": "admitted", "issue": None, "clarification": None}], [1.0], clock)
     result = author.author_greenfield_intent(
         review_provider_factory=lambda: reviewer,
         evidence_text=_source(), provider=provider,
@@ -153,7 +153,7 @@ def test_allocation_leaves_review_headroom_without_resetting_the_absolute_deadli
     participant, provider = _timed_stages(
         response, clock, participant_seconds=0.5, remaining_seconds=50.0,
     )
-    reviewer = Provider([{"admissible": True, "issues": []}], [review_window], clock)
+    reviewer = Provider([{"outcome": "admitted", "issue": None, "clarification": None}], [review_window], clock)
     result = author.author_greenfield_intent(
         evidence_text=_source(), provider=provider,
         participant_provider_factory=lambda: participant, clock=clock,
@@ -356,7 +356,9 @@ def test_proof_preserves_the_exact_candidate_and_dispatched_review_metadata(tmp_
     if failed:
         assert "candidate_review" not in retained
     else:
-        assert retained["candidate_review"]["response"] == {"admissible": True, "issues": []}
+        assert retained["candidate_review"]["response"] == {
+            "outcome": "admitted", "issue": None, "clarification": None,
+        }
         assert retained["candidate_review"]["request"]["source"] == _source()
     assert "response" not in retained
 

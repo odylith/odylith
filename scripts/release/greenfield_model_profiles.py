@@ -39,7 +39,11 @@ from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring 
     resolve_greenfield_participant_selection,
 )
 from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
+    CANDIDATE_REVIEW_VERSION,
     candidate_review_payload,
+)
+from odylith.runtime.domain_intelligence.greenfield_material_clarification import (
+    MATERIAL_DIMENSIONS,
 )
 from odylith.runtime.domain_intelligence.greenfield_candidate_revision import (
     candidate_revision_payload,
@@ -77,7 +81,9 @@ _HOST_NATIVE_STAGE_FIELDS = frozenset(
         "contract_returncode", "contract_sha256", "source_sha256",
         "candidate_schema_sha256", "host_returncode", "host_stdout_bytes",
         "host_stderr_bytes", "response_kind", "candidate_sha256",
-        "candidate_temp_outside_repo", "elapsed_seconds",
+        "candidate_raw_sha256", "candidate_raw_bytes", "candidate_temp_outside_repo",
+        "proposal_returncode", "proposal_stdout_sha256", "proposal_stderr_sha256",
+        "proposal_mode", "candidate_review_status", "elapsed_seconds",
     }
 )
 
@@ -193,6 +199,8 @@ def model_profile_evidence(
     *,
     observed: Mapping[str, Any] | None = None,
     stage_observation: Mapping[str, Any] | None = None,
+    reviewer_observation: Mapping[str, Any] | None = None,
+    expected_reviewer_candidate_sha256: str = "",
     expected_source: str = "",
 ) -> dict[str, Any]:
     """Bind configured and retained author/reviewer evidence to a pinned profile."""
@@ -225,11 +233,24 @@ def model_profile_evidence(
         if expected_source
         else ""
     )
-    host_native = observation.get("origin") == "host_native"
-    host_native_clarification = (
-        not observation
-        and retained_stage.get("version") == HOST_NATIVE_MATRIX_OBSERVATION_VERSION
+    host_native_stage = (
+        retained_stage.get("version") == HOST_NATIVE_MATRIX_OBSERVATION_VERSION
+    )
+    host_native = host_native_stage and observation.get("origin") == "host_native"
+    direct_host_clarification = (
+        host_native_stage
         and retained_stage.get("response_kind") == "clarification_required"
+    )
+    reviewer_host_clarification = (
+        host_native_stage
+        and retained_stage.get("response_kind") == "authored"
+        and retained_stage.get("proposal_mode") == "clarification_required"
+    )
+    host_native_clarification = (
+        direct_host_clarification or reviewer_host_clarification
+    )
+    host_native_unadmitted = host_native_stage and not (
+        host_native or host_native_clarification
     )
     if host_native:
         stage_summary = _host_native_stage_observation_evidence(
@@ -240,6 +261,18 @@ def model_profile_evidence(
         issues.extend(str(issue) for issue in stage_summary["issues"])
     elif host_native_clarification:
         stage_summary = _host_native_clarification_stage_observation_evidence(
+            profile,
+            stage_observation=retained_stage,
+            expected_source_sha256=expected_source_sha256,
+            clarification_origin=(
+                "reviewer" if reviewer_host_clarification else "host_candidate"
+            ),
+            reviewer_observation=reviewer_observation,
+            expected_reviewer_candidate_sha256=expected_reviewer_candidate_sha256,
+        )
+        issues.extend(str(issue) for issue in stage_summary["issues"])
+    elif host_native_unadmitted:
+        stage_summary = _host_native_unadmitted_stage_observation_evidence(
             profile,
             stage_observation=retained_stage,
             expected_source_sha256=expected_source_sha256,
@@ -268,7 +301,7 @@ def model_profile_evidence(
             )
     elif profile != UNAVAILABLE_PROVIDER_PROFILE:
         issues.append("sealed model profile observation is missing")
-    stage_summary = stage_summary if host_native or host_native_clarification else (
+    stage_summary = stage_summary if (host_native or host_native_clarification or host_native_unadmitted) else (
         _model_stage_observation_evidence(
             profile,
             sealed_observation=observation,
@@ -288,6 +321,10 @@ def model_profile_evidence(
         semantic_authority = "host_native_clarification"
         sealed_request_roles = ["host_candidate"]
         lower_capability_scope = "not_applicable"
+    elif host_native_unadmitted:
+        semantic_authority = "host_native_candidate_and_preconfirm_tribunal"
+        sealed_request_roles = ["host_candidate", "candidate_review"]
+        lower_capability_scope = "candidate_review"
     else:
         semantic_authority = "typed_evidence_and_preconfirm_tribunal"
         sealed_request_roles = ["participant_selection", "remaining_candidate_authoring"]
@@ -308,7 +345,7 @@ def model_profile_evidence(
             else "not_applicable"
         ),
         "maximum_semantic_model_calls": (
-            1 if host_native or host_native_clarification else 5
+            1 if host_native or host_native_clarification or host_native_unadmitted else 5
         ),
         "configured": configured,
         "expected_source_sha256": expected_source_sha256,
@@ -439,15 +476,30 @@ def host_native_clarification_stage_observation_issues(
     *,
     stage_observation: Mapping[str, Any],
     expected_source_sha256: str,
+    clarification_origin: str = "host_candidate",
+    reviewer_observation: Mapping[str, Any] | None = None,
+    expected_reviewer_candidate_sha256: str = "",
 ) -> tuple[str, ...]:
     """Validate one source-bound host clarification without public model metadata."""
 
-    return tuple(_host_native_flow_observation_issues(
+    issues = _host_native_flow_observation_issues(
         profile,
         retained=_mapping(stage_observation),
-        expected_response_kind="clarification_required",
+        expected_response_kind=(
+            "authored" if clarification_origin == "reviewer" else "clarification_required"
+        ),
         expected_source_sha256=expected_source_sha256,
-    ))
+        expected_proposal_mode="clarification_required",
+    )
+    if clarification_origin == "reviewer":
+        issues.extend(_host_native_reviewer_clarification_issues(
+            profile,
+            stage_observation=_mapping(stage_observation),
+            reviewer_observation=_mapping(reviewer_observation),
+            expected_source_sha256=expected_source_sha256,
+            expected_reviewer_candidate_sha256=expected_reviewer_candidate_sha256,
+        ))
+    return tuple(dict.fromkeys(issues))
 
 
 def _host_native_clarification_stage_observation_evidence(
@@ -455,20 +507,38 @@ def _host_native_clarification_stage_observation_evidence(
     *,
     stage_observation: Mapping[str, Any],
     expected_source_sha256: str,
+    clarification_origin: str,
+    reviewer_observation: Mapping[str, Any] | None,
+    expected_reviewer_candidate_sha256: str,
 ) -> dict[str, Any]:
     retained = _mapping(stage_observation)
     issues = _host_native_flow_observation_issues(
         profile,
         retained=retained,
-        expected_response_kind="clarification_required",
+        expected_response_kind=(
+            "authored" if clarification_origin == "reviewer" else "clarification_required"
+        ),
         expected_source_sha256=expected_source_sha256,
+        expected_proposal_mode="clarification_required",
     )
+    reviewer_summary: dict[str, Any] = {}
+    if clarification_origin == "reviewer":
+        reviewer_summary, reviewer_issues = _host_native_reviewer_clarification_evidence(
+            profile,
+            stage_observation=retained,
+            reviewer_observation=_mapping(reviewer_observation),
+            expected_source_sha256=expected_source_sha256,
+            expected_reviewer_candidate_sha256=expected_reviewer_candidate_sha256,
+        )
+        issues.extend(reviewer_issues)
     host_request = _mapping(retained.get("host_request"))
     return {
         "observation_version": str(retained.get("version") or ""),
         "origin": "host_native",
         "semantic_model_call_count": 1,
         "response_kind": str(retained.get("response_kind") or ""),
+        "clarification_origin": clarification_origin,
+        **reviewer_summary,
         "source_sha256": str(retained.get("source_sha256") or ""),
         "request_roles": {
             "host_candidate": {
@@ -481,12 +551,184 @@ def _host_native_clarification_stage_observation_evidence(
     }
 
 
+def _host_native_reviewer_clarification_issues(
+    profile: str,
+    *,
+    stage_observation: Mapping[str, Any],
+    reviewer_observation: Mapping[str, Any],
+    expected_source_sha256: str,
+    expected_reviewer_candidate_sha256: str,
+) -> list[str]:
+    """Require the private FD receipt before treating a host result as reviewer-led."""
+
+    _summary, issues = _host_native_reviewer_clarification_evidence(
+        profile,
+        stage_observation=stage_observation,
+        reviewer_observation=reviewer_observation,
+        expected_source_sha256=expected_source_sha256,
+        expected_reviewer_candidate_sha256=expected_reviewer_candidate_sha256,
+    )
+    return issues
+
+
+def _host_native_reviewer_clarification_evidence(
+    profile: str,
+    *,
+    stage_observation: Mapping[str, Any],
+    reviewer_observation: Mapping[str, Any],
+    expected_source_sha256: str,
+    expected_reviewer_candidate_sha256: str,
+) -> tuple[dict[str, Any], list[str]]:
+    """Validate the private host-native reviewer receipt without publishing it."""
+
+    retained = _mapping(stage_observation)
+    private = _mapping(reviewer_observation)
+    issues: list[str] = []
+    expected_fields = {
+        "version", "authoring_version", "request", "semantic_model_call_count",
+        "origin", "host_candidate", "candidate_review",
+    }
+    if set(private) != expected_fields:
+        issues.append("private host-native reviewer clarification observation is missing or malformed")
+    if private.get("version") != GREENFIELD_MODEL_PROOF_OBSERVATION_VERSION:
+        issues.append("private host-native reviewer clarification observation version is invalid")
+    if private.get("authoring_version") != GREENFIELD_INTENT_AUTHORING_VERSION:
+        issues.append("private host-native reviewer clarification authoring version is invalid")
+    if private.get("origin") != "host_native":
+        issues.append("private host-native reviewer clarification origin is invalid")
+    if private.get("semantic_model_call_count") != 1:
+        issues.append("private host-native reviewer clarification call count is invalid")
+    request = _mapping(private.get("request"))
+    if set(request) != {"version", "evidence"}:
+        issues.append("private host-native reviewer clarification request is malformed")
+    if isinstance(request.get("evidence"), str):
+        if hashlib.sha256(request["evidence"].encode("utf-8")).hexdigest() != expected_source_sha256:
+            issues.append("private host-native reviewer clarification source does not match the evaluated source")
+    else:
+        issues.append("private host-native reviewer clarification request is malformed")
+
+    candidate = _mapping(private.get("host_candidate"))
+    if set(candidate) != {"version", "contract_version", "source_sha256", "candidate_sha256"}:
+        issues.append("private host-native reviewer host candidate receipt is missing or malformed")
+    if candidate.get("version") != "odylith.greenfield.host-candidate.v1":
+        issues.append("private host-native reviewer host candidate receipt version is invalid")
+    if candidate.get("contract_version") != GREENFIELD_INTENT_AUTHORING_VERSION:
+        issues.append("private host-native reviewer host candidate contract version is invalid")
+    for field in ("source_sha256", "candidate_sha256"):
+        if not _is_sha256(candidate.get(field)):
+            issues.append(f"private host-native reviewer host candidate {field} is invalid")
+    if candidate.get("source_sha256") != expected_source_sha256:
+        issues.append("private host-native reviewer host candidate source does not match the evaluated source")
+    if candidate.get("candidate_sha256") != retained.get("candidate_sha256"):
+        issues.append("private host-native reviewer host candidate does not match retained custody")
+
+    review = _mapping(private.get("candidate_review"))
+    expected_review_fields = {
+        "version", "status", "source_sha256", "candidate_sha256", "model_profile",
+        "elapsed_seconds", "clarification",
+    }
+    if set(review) != expected_review_fields:
+        issues.append("private host-native reviewer receipt is missing or malformed")
+    if review.get("version") != CANDIDATE_REVIEW_VERSION:
+        issues.append("private host-native reviewer receipt version is invalid")
+    if review.get("status") != "clarification_required":
+        issues.append("private host-native reviewer receipt is not a clarification")
+    if review.get("source_sha256") != expected_source_sha256:
+        issues.append("private host-native reviewer receipt source does not match the evaluated source")
+    if not _is_sha256(review.get("candidate_sha256")):
+        issues.append("private host-native reviewer receipt candidate hash is invalid")
+    if not _is_sha256(expected_reviewer_candidate_sha256):
+        issues.append("private host-native reviewer canonical candidate hash is unavailable")
+    elif review.get("candidate_sha256") != expected_reviewer_candidate_sha256:
+        issues.append("private host-native reviewer receipt does not match the canonical candidate")
+    review_profile = _mapping(review.get("model_profile"))
+    expected_profile_fields = {
+        "profile_id", "provider", "model", "reasoning_effort",
+        "effective_timeout_seconds", "authoring_tier",
+    }
+    if set(review_profile) != expected_profile_fields:
+        issues.append("private host-native reviewer model profile is missing or malformed")
+    if review_profile.get("profile_id") != profile:
+        issues.append("private host-native reviewer model profile identifies a different profile")
+    try:
+        issues.extend(greenfield_model_profile_observation_issues(
+            profile_id=profile,
+            provider=str(review_profile.get("provider") or ""),
+            model=str(review_profile.get("model") or ""),
+            reasoning_effort=str(review_profile.get("reasoning_effort") or ""),
+            effective_timeout_seconds=review_profile.get("effective_timeout_seconds"),
+            authoring_tier=str(review_profile.get("authoring_tier") or ""),
+            request_role="candidate_review",
+        ))
+    except (TypeError, ValueError, OverflowError):
+        issues.append("private host-native reviewer model profile is invalid")
+    clarification = _mapping(review.get("clarification"))
+    dimension = clarification.get("material_dimension")
+    if set(clarification) != {"material_dimension"} or dimension not in MATERIAL_DIMENSIONS:
+        issues.append("private host-native reviewer clarification dimension is invalid")
+    elapsed = _positive_float(review.get("elapsed_seconds"))
+    contract = get_greenfield_model_profile(profile)
+    effective_timeout = _positive_float(review_profile.get("effective_timeout_seconds"))
+    if elapsed is None or elapsed >= contract.operational_timeout_seconds:
+        issues.append("private host-native reviewer elapsed time lacks operational-timeout proof")
+    elif effective_timeout is None or elapsed > effective_timeout:
+        issues.append("private host-native reviewer elapsed time exceeds its effective timeout")
+    elif elapsed > contract.model_timeout_seconds:
+        issues.append("private host-native reviewer elapsed time exceeds the shared model window")
+    summary = {
+        "reviewer_receipt_verified": not issues,
+        "reviewer_clarification_dimension": dimension if isinstance(dimension, str) else "",
+    }
+    return summary, list(dict.fromkeys(issues))
+
+
+def _host_native_unadmitted_stage_observation_evidence(
+    profile: str,
+    *,
+    stage_observation: Mapping[str, Any],
+    expected_source_sha256: str,
+) -> dict[str, Any]:
+    """Keep denied host outcomes in one-call custody without retired-role fallback."""
+
+    retained = _mapping(stage_observation)
+    issues = _host_native_flow_observation_issues(
+        profile,
+        retained=retained,
+        expected_response_kind="authored",
+        expected_source_sha256=expected_source_sha256,
+        require_successful_proposal=False,
+    )
+    if retained.get("proposal_mode") != "error":
+        issues.append("retained host-native unadmitted outcome is not a proposal error")
+    if retained.get("candidate_review_status") not in {"denied", "clarification_required"}:
+        issues.append("retained host-native unadmitted outcome lacks a reviewer decision")
+    host_request = _mapping(retained.get("host_request"))
+    return {
+        "observation_version": str(retained.get("version") or ""),
+        "origin": "host_native",
+        "semantic_model_call_count": 1,
+        "response_kind": str(retained.get("response_kind") or ""),
+        "proposal_mode": str(retained.get("proposal_mode") or ""),
+        "candidate_review_status": str(retained.get("candidate_review_status") or ""),
+        "request_roles": {
+            "host_candidate": {
+                "executable_sha256": str(host_request.get("executable_sha256") or ""),
+                "candidate_sha256": str(retained.get("candidate_sha256") or ""),
+            },
+        },
+        "status": "failed",
+        "issues": list(dict.fromkeys(issues)),
+    }
+
+
 def _host_native_flow_observation_issues(
     profile: str,
     *,
     retained: Mapping[str, Any],
     expected_response_kind: str,
     expected_source_sha256: str = "",
+    require_successful_proposal: bool = True,
+    expected_proposal_mode: str = "",
 ) -> list[str]:
     contract = get_greenfield_model_profile(profile)
     issues: list[str] = []
@@ -494,7 +736,9 @@ def _host_native_flow_observation_issues(
         issues.append("retained host-native observation has missing or unsupported fields")
     if retained.get("version") != HOST_NATIVE_MATRIX_OBSERVATION_VERSION:
         issues.append("retained host-native observation version is invalid")
-    if retained.get("status") != "passed" or retained.get("stage") != "propose":
+    if retained.get("stage") != "propose":
+        issues.append("retained host-native flow did not finish proposal successfully")
+    if require_successful_proposal and retained.get("status") != "passed":
         issues.append("retained host-native flow did not finish proposal successfully")
     if retained.get("model_profile_id") != profile:
         issues.append("retained host-native model profile does not match the assigned release profile")
@@ -515,6 +759,7 @@ def _host_native_flow_observation_issues(
             issues.append(f"retained host-native {field} is not true")
     for field in (
         "contract_sha256", "source_sha256", "candidate_schema_sha256", "candidate_sha256",
+        "candidate_raw_sha256", "proposal_stdout_sha256", "proposal_stderr_sha256",
     ):
         if not _is_sha256(retained.get(field)):
             issues.append(f"retained host-native {field} is invalid")
@@ -526,6 +771,22 @@ def _host_native_flow_observation_issues(
     for field in ("host_stdout_bytes", "host_stderr_bytes"):
         if type(retained.get(field)) is not int or int(retained.get(field) or 0) < 0:
             issues.append(f"retained host-native {field} is invalid")
+    if type(retained.get("candidate_raw_bytes")) is not int or retained.get("candidate_raw_bytes", 0) <= 0:
+        issues.append("retained host-native candidate raw bytes are invalid")
+    if type(retained.get("proposal_returncode")) is not int or retained.get("proposal_returncode", -1) < 0:
+        issues.append("retained host-native proposal return code is invalid")
+    elif require_successful_proposal and retained.get("proposal_returncode") != 0:
+        issues.append("retained host-native successful proposal has a nonzero return code")
+    if retained.get("proposal_mode") not in {
+        "product_create_transaction", "clarification_required", "error", "invalid",
+    }:
+        issues.append("retained host-native proposal mode is invalid")
+    elif expected_proposal_mode and retained.get("proposal_mode") != expected_proposal_mode:
+        issues.append("retained host-native proposal mode does not match the evaluated outcome")
+    if retained.get("candidate_review_status") not in {
+        "unreported", "admitted", "denied", "clarification_required",
+    }:
+        issues.append("retained host-native candidate-review outcome is invalid")
     elapsed = _positive_float(retained.get("elapsed_seconds"))
     if elapsed is None or elapsed >= contract.operational_timeout_seconds:
         issues.append("retained host-native elapsed time lacks operational-timeout proof")
@@ -777,7 +1038,7 @@ def _model_stage_observation_evidence(
                     if isinstance(rejected_authored, GreenfieldModelAuthoredIntent)
                     else ()
                 ),
-                admissible=False,
+                expected_outcome="denied",
             ))
             prior_elapsed += _float_value(rejected_review.get("elapsed_seconds"))
 
@@ -815,15 +1076,15 @@ def _model_stage_observation_evidence(
                 issues.append("retained candidate revision elapsed time exceeds the remaining model window")
 
             rejected_verdict = _mapping(rejected_review.get("response"))
-            review_issues = rejected_verdict.get("issues")
+            review_issue = _mapping(rejected_verdict.get("issue"))
             revision_response = _mapping(revision.get("response"))
             try:
-                if not isinstance(review_issues, list) or len(review_issues) != 1:
+                if set(review_issue) != {"path", "reason"}:
                     raise ValueError("missing denial witness")
                 expected_revision_request = candidate_revision_payload(
                     authoring_payload=expected_remainder_request,
                     rejected_candidate=remainder_response,
-                    review_issue=_mapping(review_issues[0]),
+                    review_issue=review_issue,
                 )
                 if revision.get("request") != expected_revision_request:
                     raise ValueError("revision request mismatch")
@@ -855,7 +1116,7 @@ def _model_stage_observation_evidence(
             candidate=_mapping(_mapping(retained.get("joined_candidate")).get("result")),
             shared_timeout=shared_timeout, prior_elapsed=prior_elapsed,
             source_spans=authored.source_spans if isinstance(authored, GreenfieldModelAuthoredIntent) else (),
-            admissible=True,
+            expected_outcome="admitted",
         ))
     elif normalized_call_count != 2:
         issues.append("clarification response must record exactly two semantic calls")
@@ -880,9 +1141,9 @@ def _candidate_review_observation_issues(
     profile: str, *, review: Mapping[str, Any], request: Mapping[str, Any],
     candidate: Mapping[str, Any], shared_timeout: float | None,
     prior_elapsed: float, source_spans: Sequence[Mapping[str, Any]],
-    admissible: bool,
+    expected_outcome: str,
 ) -> tuple[str, ...]:
-    """Check the current binary observation, not a historical repair protocol.
+    """Check the current closed v5 reviewer outcome, not a repair protocol.
 
     Native observations carry no protocol ID or sealed review receipt. Exact
     current payload equality binds both authorities without inventing either.
@@ -900,19 +1161,32 @@ def _candidate_review_observation_issues(
     if review.get("dispatched") is not True:
         issues.append("retained candidate review was not dispatched")
     verdict = _mapping(review.get("response"))
-    expected_issue_count = 0 if admissible else 1
-    if (set(verdict) != {"admissible", "issues"}
-            or verdict.get("admissible") is not admissible
-            or type(verdict.get("issues")) is not list
-            or len(verdict["issues"]) != expected_issue_count
-            or any(
-                not isinstance(issue, Mapping)
-                or set(issue) != {"path", "reason"}
-                or any(not isinstance(issue[key], str) or not issue[key].strip() for key in issue)
-                for issue in verdict.get("issues", ())
-            )):
-        outcome = "admitted" if admissible else "denied"
-        issues.append(f"retained candidate review lacks a valid {outcome} binary verdict")
+    valid_outcome = expected_outcome in {
+        "admitted", "denied", "clarification_required",
+    }
+    valid_verdict = set(verdict) == {"outcome", "issue", "clarification"}
+    valid_verdict = valid_verdict and verdict.get("outcome") == expected_outcome
+    issue = verdict.get("issue")
+    clarification = verdict.get("clarification")
+    if expected_outcome == "admitted":
+        valid_verdict = valid_verdict and issue is None and clarification is None
+    elif expected_outcome == "denied":
+        valid_verdict = valid_verdict and clarification is None and (
+            isinstance(issue, Mapping)
+            and set(issue) == {"path", "reason"}
+            and all(isinstance(issue[key], str) and issue[key].strip() for key in issue)
+        )
+    elif expected_outcome == "clarification_required":
+        valid_verdict = valid_verdict and issue is None and (
+            isinstance(clarification, Mapping)
+            and set(clarification) == {"material_dimension"}
+            and clarification.get("material_dimension") in MATERIAL_DIMENSIONS
+        )
+    if not valid_outcome or not valid_verdict:
+        issues.append(
+            "retained candidate review lacks a valid "
+            f"{expected_outcome} v5 tri-state verdict"
+        )
     source = request.get("evidence")
     try:
         if not isinstance(source, str) or not source.strip():

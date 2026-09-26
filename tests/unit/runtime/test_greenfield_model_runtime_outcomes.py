@@ -61,11 +61,19 @@ def _run(tmp_path, monkeypatch, capsys, *, failure, command, output_format):
         _response(evidence),
         evidence_text=evidence,
     )
-    reviewer = FailureProvider({"admissible": True, "issues": []}, failure, clock)
+    reviewer = FailureProvider(
+        {"outcome": "admitted", "issue": None, "clarification": None},
+        failure,
+        clock,
+    )
     if failure == "malformed":
         reviewer.response = None
     if failure == "denied":
-        reviewer.response = {"admissible": False, "issues": [{"path": "facts", "reason": "Unsupported meaning"}]}
+        reviewer.response = {
+            "outcome": "denied",
+            "issue": {"path": "facts", "reason": "Unsupported meaning"},
+            "clarification": None,
+        }
 
     def resolve(*_args, **_kwargs):
         if failure == "absent":

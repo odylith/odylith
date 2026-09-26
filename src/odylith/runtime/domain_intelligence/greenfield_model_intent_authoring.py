@@ -38,6 +38,9 @@ from odylith.runtime.domain_intelligence.greenfield_event_ordering import (
     SOURCE_PRECEDENCE_SCHEMA,
     validate_source_precedence,
 )
+from odylith.runtime.domain_intelligence.greenfield_material_clarification import (
+    MATERIAL_DIMENSIONS,
+)
 from odylith.runtime.domain_intelligence.greenfield_model_atomic_projection import (
     derive_model_atomic_claims,
 )
@@ -129,19 +132,6 @@ _SOURCE_FACT_FIELDS = tuple(
 _SOURCE_REQUIRED_FIELDS = frozenset(
     (*_SOURCE_FACT_FIELDS, "component_responsibilities")
 )
-_MATERIAL_DIMENSIONS = frozenset(
-    {
-        "human_actors",
-        "first_path",
-        "visible_result",
-        "product_boundary",
-        "external_systems",
-        "proof_boundary",
-        "operational_constraints",
-        "non_goals",
-        "component_ownership",
-    }
-)
 _CONSISTENCY_STATUSES = (
     "consistent",
     "non_material_ambiguity",
@@ -162,9 +152,11 @@ class GreenfieldAuthoringClarification:
     effective_timeout_seconds: float
     consistency_status: str
     consistency_source_spans: tuple[dict[str, Any], ...]
+    clarification_basis: str = ""
     effective_model_window_seconds: float = 0.0
     participant_selection: dict[str, Any] = field(default_factory=dict)
     remaining_candidate_authoring: dict[str, Any] = field(default_factory=dict)
+    candidate_review: dict[str, Any] = field(default_factory=dict)
     semantic_model_call_count: int = 0
 
 
@@ -374,7 +366,7 @@ def _validated_clarification(response: Mapping[str, Any]) -> tuple[str, ...]:
     if set(clarification) != {"material_dimension"}:
         raise GreenfieldModelAuthoringError("Greenfield authoring returned an invalid clarification; no records were created.")
     dimension = str(clarification.get("material_dimension") or "")
-    if dimension not in _MATERIAL_DIMENSIONS:
+    if dimension not in MATERIAL_DIMENSIONS:
         raise GreenfieldModelAuthoringError("Greenfield authoring did not identify one material clarification; no records were created.")
     return (dimension,)
 
@@ -839,7 +831,7 @@ _CLARIFICATION_RESULT_SCHEMA: dict[str, Any] = {
             "properties": {
                 "material_dimension": {
                     "type": "string",
-                    "enum": sorted(_MATERIAL_DIMENSIONS),
+                    "enum": sorted(MATERIAL_DIMENSIONS),
                     "description": MATERIALITY_DECISION_CONTRACT,
                 },
             },

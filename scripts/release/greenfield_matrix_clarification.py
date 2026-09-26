@@ -118,6 +118,8 @@ def clarification_contract_issues(
     expected_question: str = "",
     expected_model_profile_id: str = "",
     stage_observation: Mapping[str, Any] | None = None,
+    reviewer_observation: Mapping[str, Any] | None = None,
+    expected_reviewer_candidate_sha256: str = "",
     expected_source: str = "",
 ) -> tuple[str, ...]:
     """Require exactly the small, host-neutral clarification payload and no writes."""
@@ -147,6 +149,12 @@ def clarification_contract_issues(
     )
     if stage_observation is not None:
         if host_native:
+            clarification_origin = (
+                "reviewer"
+                if stage_observation.get("response_kind") == "authored"
+                and stage_observation.get("proposal_mode") == CLARIFICATION_REQUIRED_EXPECTATION
+                else "host_candidate"
+            )
             issues.extend(host_native_clarification_stage_observation_issues(
                 expected_model_profile_id,
                 stage_observation=stage_observation,
@@ -155,6 +163,9 @@ def clarification_contract_issues(
                     if expected_source
                     else ""
                 ),
+                clarification_origin=clarification_origin,
+                reviewer_observation=reviewer_observation,
+                expected_reviewer_candidate_sha256=expected_reviewer_candidate_sha256,
             ))
         else:
             issues.extend(_clarification_identity_issues(
@@ -206,8 +217,15 @@ def clarification_contract_issues(
             issues.append("clarification model_profile must match the selected pre-call profile")
     consistency = clarification.get("consistency_assessment")
     consistency = consistency if isinstance(consistency, Mapping) else {}
-    if set(consistency) != {"status", "source_spans"}:
-        issues.append("clarification consistency_assessment must contain only status and source_spans")
+    allowed_consistency_fields = {"status", "source_spans"}
+    basis = consistency.get("basis")
+    complete_source_missingness = basis == "complete_source_missingness"
+    if complete_source_missingness:
+        allowed_consistency_fields.add("basis")
+    if set(consistency) != allowed_consistency_fields:
+        issues.append(
+            "clarification consistency_assessment has missing or unsupported fields"
+        )
     consistency_status = str(consistency.get("status") or "").strip()
     raw_consistency_spans = consistency.get("source_spans")
     consistency_spans = (
@@ -218,13 +236,17 @@ def clarification_contract_issues(
     )
     if consistency_status == "consistent" and consistency_spans:
         issues.append("consistent clarification must not claim conflicting source spans")
-    elif consistency_status == "material_ambiguity" and (
-        not consistency_source_span_receipts_valid(
+    elif consistency_status == "material_ambiguity":
+        if complete_source_missingness:
+            if consistency_spans:
+                issues.append(
+                    "complete-source missingness clarification must not invent source spans"
+                )
+        elif not consistency_source_span_receipts_valid(
             consistency_spans,
             minimum=1,
-        )
-    ):
-        issues.append("material ambiguity clarification requires at least one valid source-bound span")
+        ):
+            issues.append("material ambiguity clarification requires at least one valid source-bound span")
     elif consistency_status == "material_contradiction" and (
         not consistency_source_span_receipts_valid(
             consistency_spans,

@@ -1,6 +1,26 @@
 # Release
 Last updated: 2026-09-25
 
+## Denied host-candidate evidence custody (2026-09-25)
+
+Release proof retains the exact structured host candidate and proposal streams,
+proposal return code, and terminal outcome before deleting temporary
+workspaces. The existing parent-granted private proof descriptor retains the
+full independent review receipt, including source, canonical candidate,
+decision, model-profile, and timing custody. Reviewer-selected clarification
+also remains safely visible without exposing that private metadata: the
+retained host response is authored, the proposal is a typed clarification, and
+the public consistency receipt names `complete_source_missingness` with no
+fabricated span. Admitted, clarified, and denied host-native results share one
+custody family; none may fall into retired participant-selection or
+remaining-author diagnostics. Raw candidate content remains private retained
+evidence and is never exposed in public CLI receipts.
+
+The v19 public campaign is terminal failed after seven passing cases and one
+correct independent denial. Its protected holdout was not touched. A new exact
+distribution may restart public qualification only after failed-candidate
+retention, outcome classification, and no-write clarification controls pass.
+
 ## Direct final-holdout interruption custody (2026-09-25)
 
 The direct Greenfield release runner now writes interruption results outside

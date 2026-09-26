@@ -46,11 +46,21 @@ def model_authoring_receipt(
                 ),
             }
             if isinstance(authored, GreenfieldModelAuthoredIntent)
-            else {}
+            else (
+                {"candidate_review": deepcopy(authored.candidate_review)}
+                if authored.candidate_review
+                else {}
+            )
         ),
         "consistency_assessment": {
             "status": authored.consistency_status,
             "source_spans": [dict(span) for span in consistency_spans],
+            **(
+                {"basis": authored.clarification_basis}
+                if isinstance(authored, GreenfieldAuthoringClarification)
+                and authored.clarification_basis
+                else {}
+            ),
         },
     }
 

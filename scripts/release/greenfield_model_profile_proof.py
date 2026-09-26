@@ -537,6 +537,27 @@ def _profile_observation_issues(
 ) -> tuple[str, ...]:
     observed = _mapping(profile_evidence.get("observed"))
     stages = _mapping(profile_evidence.get("stage_observation"))
+    summary = _mapping(profile_evidence.get("stage_observation_summary"))
+    if summary.get("origin") == "host_native" and summary.get("clarification_origin"):
+        if expectation != CLARIFICATION_REQUIRED_EXPECTATION:
+            return ("host-native clarification does not match the declared case outcome",)
+        if observed:
+            return ("host-native clarification carries contradictory authored observations",)
+        if summary.get("clarification_origin") == "reviewer":
+            if summary.get("reviewer_receipt_verified") is not True:
+                return ("host-native reviewer clarification lacks verified private proof receipt",)
+            # The full reviewer receipt is private evidence.  Its source, candidate,
+            # outcome, dimension, and profile bindings were already fail-closed by
+            # model_profile_evidence before this public aggregate is formed.
+            return ()
+        return host_native_clarification_stage_observation_issues(
+            profile_id,
+            stage_observation=stages,
+            expected_source_sha256=str(
+                profile_evidence.get("expected_source_sha256") or ""
+            ),
+            clarification_origin=str(summary.get("clarification_origin") or ""),
+        )
     if observed.get("origin") == "host_native":
         if expectation != TRANSACTION_COMMITTED_EXPECTATION:
             return ("host-native reviewed candidate does not match the declared case outcome",)

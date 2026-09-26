@@ -3,16 +3,22 @@
 from __future__ import annotations
 
 import json
+import os
 from copy import deepcopy
 
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_proposals_cli
+from odylith.runtime.domain_intelligence import (
+    greenfield_host_candidate_materialization,
+)
 from odylith.runtime.domain_intelligence.greenfield_authored_relation_validation import (
     GreenfieldAuthoredSemanticsError,
 )
 from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
     HOST_CANDIDATE_CONTRACT_VERSION,
+    admit_greenfield_host_candidate,
+    canonical_greenfield_reviewer_candidate_sha256,
 )
 from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
     REVIEW_PROMPT,
@@ -22,6 +28,9 @@ from odylith.runtime.domain_intelligence.greenfield_event_ordering import (
 )
 from odylith.runtime.domain_intelligence.greenfield_host_candidate_materialization import (
     materialize_host_authored_intent,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_proof_observation import (
+    GREENFIELD_MODEL_PROOF_FD_ENV,
 )
 from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import (
     HOST_CANDIDATE_FORMAT_VERSION,
@@ -196,7 +205,35 @@ def test_host_candidate_uses_shared_validator_reviewer_and_custody(tmp_path) -> 
     )
 
 
-def test_host_candidate_clarification_never_dispatches_review(tmp_path) -> None:  # type: ignore[no-untyped-def]
+def test_canonical_reviewer_hash_matches_receipt_and_changes_with_candidate() -> None:
+    source = _source()
+    evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
+    response = _host_response(evidence)
+    authored, _receipt = admit_greenfield_host_candidate(
+        response,
+        evidence_text=evidence,
+        review_provider_factory=AdmittingReviewProvider,
+    )
+
+    expected = canonical_greenfield_reviewer_candidate_sha256(
+        response,
+        evidence_text=evidence,
+    )
+    assert getattr(authored, "candidate_review", {})["candidate_sha256"] == expected
+
+    mutated = deepcopy(response)
+    mutated["result"]["provisional_design"]["first_run"]["rationale"] += (
+        " Keep the decision provisional."
+    )
+    assert canonical_greenfield_reviewer_candidate_sha256(
+        mutated,
+        evidence_text=evidence,
+    ) != expected
+
+
+def test_host_candidate_clarification_never_dispatches_review(
+    tmp_path, monkeypatch,
+) -> None:  # type: ignore[no-untyped-def]
     source = "Draft a product-first greenfield proposal for an assay drift model."
     response = _host_clarification(clarification_response(
         question="",
@@ -208,18 +245,93 @@ def test_host_candidate_clarification_never_dispatches_review(tmp_path) -> None:
         raise AssertionError("clarification must not dispatch candidate review")
 
     receipt: dict[str, object] = {}
-    with pytest.raises(GreenfieldClarificationRequired) as raised:
-        materialize_host_authored_intent(
-            prompt=source,
-            repo_root=tmp_path,
-            host_candidate=response,
-            review_provider_factory=forbidden_review,
-            authoring_receipt=receipt,
-        )
+    proof_path = tmp_path / "direct-host-clarification-proof.json"
+    descriptor = os.open(proof_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    monkeypatch.setenv(GREENFIELD_MODEL_PROOF_FD_ENV, str(descriptor))
+    try:
+        with pytest.raises(GreenfieldClarificationRequired) as raised:
+            materialize_host_authored_intent(
+                prompt=source,
+                repo_root=tmp_path,
+                host_candidate=response,
+                review_provider_factory=forbidden_review,
+                authoring_receipt=receipt,
+            )
+    finally:
+        os.close(descriptor)
 
     assert raised.value.required_fields == ("first_path",)
     assert receipt["runtime_semantic_model_call_count"] == 0
     assert "candidate_review" not in receipt
+    assert "basis" not in receipt["consistency_assessment"]
+    assert proof_path.read_bytes() == b""
+
+
+def test_reviewer_source_insufficiency_becomes_a_bound_first_path_question(
+    tmp_path, monkeypatch, capsys,
+) -> None:  # type: ignore[no-untyped-def]
+    """A civic-style first-path gap stops before any candidate can be staged."""
+
+    source = _source()
+    evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
+    reviewer = StructuredAuthoringProvider({
+        "outcome": "clarification_required",
+        "issue": None,
+        "clarification": {"material_dimension": "first_path"},
+    })
+
+    def forbidden_stage(**_kwargs: object) -> object:
+        raise AssertionError("reviewer clarification must stop before staging")
+
+    monkeypatch.setattr(
+        greenfield_host_candidate_materialization,
+        "stage_validated_authored_intent",
+        forbidden_stage,
+    )
+    receipt: dict[str, object] = {}
+    proof_path = tmp_path / "host-reviewer-clarification-proof.json"
+    descriptor = os.open(proof_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    monkeypatch.setenv(GREENFIELD_MODEL_PROOF_FD_ENV, str(descriptor))
+    try:
+        with pytest.raises(GreenfieldClarificationRequired) as raised:
+            materialize_host_authored_intent(
+                prompt=source,
+                repo_root=tmp_path,
+                host_candidate=_host_response(evidence),
+                review_provider_factory=lambda: reviewer,
+                authoring_receipt=receipt,
+            )
+    finally:
+        os.close(descriptor)
+
+    assert raised.value.required_fields == ("first_path",)
+    assert receipt["candidate_review"]["status"] == "clarification_required"
+    assert receipt["candidate_review"]["source_sha256"] == receipt["host_candidate"]["source_sha256"]
+    assert len(receipt["candidate_review"]["candidate_sha256"]) == 64
+    assert receipt["consistency_assessment"] == {
+        "status": "material_ambiguity",
+        "source_spans": [],
+        "basis": "complete_source_missingness",
+    }
+    retained = json.loads(proof_path.read_text(encoding="utf-8"))
+    assert retained["origin"] == "host_native"
+    assert retained["host_candidate"] == receipt["host_candidate"]
+    assert retained["candidate_review"] == receipt["candidate_review"]
+    assert set(retained["candidate_review"]) == {
+        "version", "status", "source_sha256", "candidate_sha256",
+        "model_profile", "elapsed_seconds", "clarification",
+    }
+    greenfield_proposals_cli._print_greenfield_clarification(
+        raised.value,
+        as_json=True,
+    )
+    public = json.loads(capsys.readouterr().out)
+    assert set(public) == {"mode", "clarification"}
+    assert public["clarification"]["consistency_assessment"] == receipt[
+        "consistency_assessment"
+    ]
+    assert "candidate_review" not in public["clarification"]
+    assert reviewer.calls == 1
 
 
 def test_host_candidate_receipt_fails_closed_when_origin_is_rewritten(tmp_path) -> None:  # type: ignore[no-untyped-def]
@@ -844,11 +956,12 @@ def test_public_propose_exposes_one_typed_candidate_review_denial(
         encoding="utf-8",
     )
     reviewer = StructuredAuthoringProvider({
-        "admissible": False,
-        "issues": [{
+        "outcome": "denied",
+        "issue": {
             "path": "candidate.accepted_source.events[0]",
             "reason": "The selected event assigns the action to the wrong actor.",
-        }],
+        },
+        "clarification": None,
     })
 
     monkeypatch.setattr(

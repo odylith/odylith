@@ -9,6 +9,7 @@ from typing import Any
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_model_intent_authoring
+from odylith.runtime.domain_intelligence import greenfield_model_intent_materialization
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
     GreenfieldAuthoringClarification,
@@ -19,6 +20,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_outcomes import (
     GreenfieldModelRuntimeError,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
+    GreenfieldClarificationRequired,
     materialize_model_authored_intent,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
@@ -438,7 +440,7 @@ def test_three_calls_receive_only_the_shared_deadlines_remaining_time():
         duration=3.0,
     )
     reviewer = _TimedProvider(
-        {"admissible": True, "issues": []},
+        {"outcome": "admitted", "issue": None, "clarification": None},
         clock=clock,
         duration=1.0,
     )
@@ -458,6 +460,48 @@ def test_three_calls_receive_only_the_shared_deadlines_remaining_time():
     ] == [10.0, 8.0, 5.0]
     assert result.elapsed_seconds == 6.0
     assert result.effective_model_window_seconds == 10.0
+
+
+def test_reviewer_clarification_stops_participant_authoring_before_staging(
+    tmp_path, monkeypatch,
+):
+    complete = _complete_response()
+    selector = ParticipantSelectionProvider(complete)
+    author = _RevisionAuthorProvider([complete])
+    reviewer = _SequenceReviewProvider([{
+        "outcome": "clarification_required",
+        "issue": None,
+        "clarification": {"material_dimension": "first_path"},
+    }])
+
+    def forbidden_stage(**_kwargs: object) -> object:
+        raise AssertionError("reviewer clarification must not stage a package")
+
+    monkeypatch.setattr(
+        greenfield_model_intent_materialization,
+        "stage_validated_authored_intent",
+        forbidden_stage,
+    )
+    receipt: dict[str, Any] = {}
+    with pytest.raises(GreenfieldClarificationRequired) as raised:
+        materialize_model_authored_intent(
+            prompt=_source(),
+            repo_root=tmp_path,
+            authoring_provider=author,
+            participant_provider_factory=lambda: selector,
+            review_provider_factory=lambda: reviewer,
+            authoring_receipt=receipt,
+            clock=lambda: 0.0,
+        )
+
+    assert raised.value.required_fields == ("first_path",)
+    assert receipt["candidate_review"]["status"] == "clarification_required"
+    assert receipt["consistency_assessment"] == {
+        "status": "material_ambiguity",
+        "source_spans": [],
+        "basis": "complete_source_missingness",
+    }
+    assert reviewer.calls == 1
 
 
 def test_denial_gets_one_revision_and_fresh_review_within_shared_deadline(
@@ -482,15 +526,14 @@ def test_denial_gets_one_revision_and_fresh_review_within_shared_deadline(
     reviewer = _SequenceReviewProvider(
         [
             {
-                "admissible": False,
-                "issues": [
-                    {
-                        "path": "candidate.accepted_source.facts.opportunity",
-                        "reason": "The selected action is not a complete improvement.",
-                    }
-                ],
+                "outcome": "denied",
+                "issue": {
+                    "path": "candidate.accepted_source.facts.opportunity",
+                    "reason": "The selected action is not a complete improvement.",
+                },
+                "clarification": None,
             },
-            {"admissible": True, "issues": []},
+            {"outcome": "admitted", "issue": None, "clarification": None},
         ],
         clock=clock,
         durations=[3.0, 5.0],
@@ -535,10 +578,9 @@ def test_denial_gets_one_revision_and_fresh_review_within_shared_deadline(
         "joined_candidate", "candidate_review",
     }
     assert retained["semantic_model_call_count"] == 5
-    assert retained["rejected_candidate_review"]["response"]["admissible"] is False
+    assert retained["rejected_candidate_review"]["response"]["outcome"] == "denied"
     assert retained["candidate_review"]["response"] == {
-        "admissible": True,
-        "issues": [],
+        "outcome": "admitted", "issue": None, "clarification": None,
     }
 
 
@@ -550,13 +592,14 @@ def test_revision_receipts_reach_the_staged_candidate_without_expanding_sealed_r
     author = _RevisionAuthorProvider([complete, complete])
     reviewer = _SequenceReviewProvider([
         {
-            "admissible": False,
-            "issues": [{
+            "outcome": "denied",
+            "issue": {
                 "path": "candidate.accepted_source.facts.opportunity",
                 "reason": "The selected action is not a complete improvement.",
-            }],
+            },
+            "clarification": None,
         },
-        {"admissible": True, "issues": []},
+        {"outcome": "admitted", "issue": None, "clarification": None},
     ])
     receipt: dict[str, Any] = {}
 
@@ -587,12 +630,14 @@ def test_repeated_review_denial_fails_closed_without_a_second_revision():
     reviewer = _SequenceReviewProvider(
         [
             {
-                "admissible": False,
-                "issues": [{"path": "candidate.accepted_source.facts.opportunity", "reason": "Invalid."}],
+                "outcome": "denied",
+                "issue": {"path": "candidate.accepted_source.facts.opportunity", "reason": "Invalid."},
+                "clarification": None,
             },
             {
-                "admissible": False,
-                "issues": [{"path": "candidate.accepted_source.source_precedence", "reason": "Still invalid."}],
+                "outcome": "denied",
+                "issue": {"path": "candidate.accepted_source.source_precedence", "reason": "Still invalid."},
+                "clarification": None,
             },
         ]
     )

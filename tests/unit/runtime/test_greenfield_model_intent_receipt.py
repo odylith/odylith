@@ -188,7 +188,7 @@ def _approved_revised_model_authoring(profile_id: str) -> dict[str, Any]:
         "effective_timeout_seconds"
     ] = profile.model_timeout_seconds - 1.0
     receipt["rejected_candidate_review"] = {
-        "version": "odylith.greenfield.candidate-review.v4",
+        "version": "odylith.greenfield.candidate-review.v5",
         "status": "denied",
         "source_sha256": "0" * 64,
         "candidate_sha256": "3" * 64,
@@ -321,6 +321,18 @@ def test_quality_approval_rejects_retired_semantic_validation_version() -> None:
     semantic_compiler = manifest["semantic_compiler"]
     assert isinstance(semantic_compiler, dict)
     semantic_compiler["version"] = "odylith.greenfield.authored-semantic-validation.v3"
+
+    with pytest.raises(ValueError, match="quality manifest is not approved"):
+        greenfield_create_transaction.require_product_create_transaction_quality_approved(
+            manifest
+        )
+
+
+def test_quality_approval_rejects_retired_binary_candidate_review_receipt() -> None:
+    manifest = approved_authored_quality_manifest_fixture()
+    review = manifest["model_authoring"]["candidate_review"]
+    assert isinstance(review, dict)
+    review["version"] = "odylith.greenfield.candidate-review.v4"
 
     with pytest.raises(ValueError, match="quality manifest is not approved"):
         greenfield_create_transaction.require_product_create_transaction_quality_approved(

@@ -53,7 +53,10 @@ def _flow(tmp_path: Path, *, candidate: object, contract: object):
         proposal_paths.append(path)
         assert path.is_file()
         assert json.loads(path.read_text(encoding="utf-8")) == candidate
-        return _completed(["odylith", "greenfield", "propose"])
+        return _completed(
+            ["odylith", "greenfield", "propose"],
+            stdout=json.dumps({"mode": "product_create_transaction"}),
+        )
 
     return (
         host_module.HostCandidateFlow(
@@ -168,6 +171,14 @@ def test_host_candidate_happy_path_is_one_shot_and_cleans_candidate_file(
             allow_nan=False,
         ).encode("utf-8")
     ).hexdigest()
+    raw_candidate = json.dumps(
+        {"version": "candidate", "result": {"status": "authored"}},
+    ).encode("utf-8")
+    assert observations[-1]["candidate_raw_sha256"] == hashlib.sha256(raw_candidate).hexdigest()
+    assert observations[-1]["candidate_raw_bytes"] == len(raw_candidate)
+    assert observations[-1]["proposal_returncode"] == 0
+    assert observations[-1]["proposal_mode"] == "product_create_transaction"
+    assert observations[-1]["candidate_review_status"] == "unreported"
     assert not host_calls[0][3].exists()
     assert "candidate" not in observations[-1]
 
@@ -288,6 +299,51 @@ def test_host_candidate_clarification_candidate_is_passed_unchanged_to_propose(
     assert observations[-1]["candidate_temp_cleaned"] is True
 
 
+def test_host_candidate_retains_raw_candidate_and_denied_proposal_before_cleanup(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    candidate = {"version": "candidate", "result": {"status": "authored"}}
+    flow, host_run, _installed, _host_calls, proposal_paths, _repo = _flow(
+        tmp_path, contract={"version": "contract"}, candidate=candidate,
+    )
+    retained: dict[str, bytes] = {}
+    observations: list[dict[str, object]] = []
+
+    def denied(_path: Path, _timeout: float):
+        return _completed(
+            ["odylith", "greenfield", "propose"],
+            stdout=json.dumps({"mode": "error", "candidate_review": {"status": "denied"}}),
+            returncode=2,
+        )
+
+    flow = host_module.HostCandidateFlow(
+        **{
+            **flow.__dict__,
+            "invoke_propose": denied,
+            "observe": observations.append,
+            "retain_candidate_bytes": lambda value: retained.setdefault("candidate", value),
+            "retain_proposal_bytes": lambda stream, value: retained.setdefault(stream, value),
+        }
+    )
+    monkeypatch.setattr(host_module.subprocess, "run", host_run)
+
+    with pytest.raises(host_module.HostCandidateFlowError, match="proposal command returned nonzero"):
+        host_module.run_host_candidate_flow(flow)
+
+    assert proposal_paths == []
+    assert retained["candidate"] == json.dumps(candidate).encode("utf-8")
+    assert json.loads(retained["stdout"]) == {
+        "mode": "error", "candidate_review": {"status": "denied"},
+    }
+    assert retained["stderr"] == b""
+    observation = observations[-1]
+    assert observation["candidate_raw_sha256"] == hashlib.sha256(retained["candidate"]).hexdigest()
+    assert observation["proposal_returncode"] == 2
+    assert observation["proposal_mode"] == "error"
+    assert observation["candidate_review_status"] == "denied"
+    assert observation["candidate_temp_cleaned"] is True
+
+
 @pytest.mark.parametrize(
     ("host_behavior", "expected_fragment"),
     (
@@ -328,6 +384,30 @@ def test_host_candidate_failures_are_fail_closed_and_do_not_propose(
     assert len(host_calls) == 0
     assert proposal_calls == []
     assert proposal_paths == []
+
+
+def test_malformed_host_output_is_retained_before_parse_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    flow, _host_run, _installed, _host_calls, _proposal_paths, _repo = _flow(
+        tmp_path, contract={"version": "contract"}, candidate={"version": "candidate"},
+    )
+    retained: list[bytes] = []
+    malformed = b'{"first": true}\n{"second": true}\n'
+
+    def host_run(command, **_kwargs):
+        return _completed(list(command), stdout=malformed.decode("utf-8"))
+
+    flow = host_module.HostCandidateFlow(
+        **{**flow.__dict__, "retain_candidate_bytes": retained.append}
+    )
+    monkeypatch.setattr(host_module.subprocess, "run", host_run)
+
+    with pytest.raises(host_module.HostCandidateFlowError, match="failed closed") as raised:
+        host_module.run_host_candidate_flow(flow)
+
+    assert retained == [malformed]
+    assert "candidate" not in raised.value.observation
 
 
 def test_contract_command_failure_stops_before_host_invocation(tmp_path: Path) -> None:

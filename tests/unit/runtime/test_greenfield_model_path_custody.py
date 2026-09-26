@@ -296,8 +296,12 @@ def test_wrong_state_anchor_is_reviewed_at_its_selected_location_not_rebound() -
     }
     provider = RemainingCandidateProvider(response)
     reviewer = StructuredAuthoringProvider({
-        "admissible": False,
-        "issues": ["facts.state_object: selected text is a training subject, not managed state."],
+        "outcome": "denied",
+        "issue": {
+            "path": "candidate.accepted_source.facts.state_object",
+            "reason": "Selected text is a training subject, not managed state.",
+        },
+        "clarification": None,
     })
 
     with pytest.raises(GreenfieldModelAuthoringError):

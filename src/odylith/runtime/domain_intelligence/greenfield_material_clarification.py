@@ -15,6 +15,7 @@ _QUESTION_LABELS = {
     "operational_constraints": "operational or safety boundary",
     "non_goals": "accepted non-goal",
 }
+MATERIAL_DIMENSIONS = frozenset(_QUESTION_LABELS) | {"component_ownership"}
 
 
 @dataclass(frozen=True)
@@ -58,4 +59,8 @@ def _material_unknown_question(labels: tuple[str, ...]) -> str:
     return f"Could you specify the {field_text} for this project?"
 
 
-__all__ = ["MaterialClarification", "material_clarification_for_fields"]
+__all__ = [
+    "MATERIAL_DIMENSIONS",
+    "MaterialClarification",
+    "material_clarification_for_fields",
+]

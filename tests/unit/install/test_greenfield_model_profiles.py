@@ -43,6 +43,9 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
     supported_greenfield_model_profile_ids,
     supported_greenfield_model_repair_tiers,
 )
+from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
+    CANDIDATE_REVIEW_VERSION,
+)
 
 
 def test_assignment_is_balanced_by_outcome_and_does_not_consult_prompt_text() -> None:
@@ -406,6 +409,47 @@ def test_host_native_profile_evidence_rejects_forged_safe_argv_receipt(
     assert any("retained host-native" in issue for issue in evidence["issues"])
 
 
+@pytest.mark.parametrize(
+    ("mutation", "expected_issue"),
+    (
+        ("candidate_hash", "retained host-native candidate_sha256 is invalid"),
+        ("source_hash", "retained host-native expected source hash is invalid"),
+        ("returncode", "retained host-native proposal return code is invalid"),
+    ),
+)
+def test_denied_host_candidate_stays_in_one_call_custody(
+    mutation: str, expected_issue: str,
+) -> None:
+    stage = _host_native_stage(candidate_sha256="1" * 64)
+    stage.update(
+        status="failed",
+        proposal_returncode=2,
+        proposal_mode="error",
+        candidate_review_status="denied",
+    )
+    if mutation == "candidate_hash":
+        stage["candidate_sha256"] = "forged"
+    elif mutation == "source_hash":
+        stage["source_sha256"] = "forged"
+    else:
+        stage["proposal_returncode"] = "2"
+
+    evidence = model_profile_evidence(
+        STANDARD_PROFILE_ID,
+        model_profile_environment(STANDARD_PROFILE_ID, {}),
+        observed={},
+        stage_observation=stage,
+    )
+
+    assert evidence["status"] == "failed"
+    assert expected_issue in evidence["issues"]
+    assert not any(
+        "participant_selection" in issue or "remaining_candidate_authoring" in issue
+        for issue in evidence["issues"]
+    )
+    assert evidence["stage_observation_summary"]["origin"] == "host_native"
+
+
 def test_host_native_result_binding_matches_retained_candidate_to_commit_receipt() -> None:
     source = "Extension publishers assemble release notes."
     source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
@@ -421,7 +465,7 @@ def test_host_native_result_binding_matches_retained_candidate_to_commit_receipt
                     "candidate_sha256": candidate_sha256,
                 },
                 "candidate_review": {
-                    "version": "odylith.greenfield.candidate-review.v4",
+                    "version": CANDIDATE_REVIEW_VERSION,
                     "status": "admitted",
                     "source_sha256": source_sha256,
                 },
@@ -673,10 +717,10 @@ def test_revision_observation_rejects_a_witness_not_bound_to_the_revision_reques
     (("remaining_candidate_authoring", "request", "frozen_human_actors"), []),
     (("remaining_candidate_authoring", "response", "result", "facts", "human_actors"), []),
     (("candidate_review", "response"), None),
-    (("candidate_review", "response"), {"admissible": 1, "issues": []}),
-    (("candidate_review", "response"), {"admissible": False, "issues": [{"path": "facts", "reason": "unsupported"}]}),
-    (("candidate_review", "response"), {"admissible": True, "issues": [{}]}),
-    (("candidate_review", "response"), {"admissible": True, "issues": [], "repair": {}}),
+    (("candidate_review", "response"), {"outcome": "admitted", "issue": None, "clarification": {}}),
+    (("candidate_review", "response"), {"outcome": "denied", "issue": {"path": "facts", "reason": "unsupported"}, "clarification": {}}),
+    (("candidate_review", "response"), {"outcome": "admitted", "issue": {}, "clarification": None}),
+    (("candidate_review", "response"), {"outcome": "admitted", "issue": None, "clarification": None, "repair": {}}),
     (("candidate_review", "request", "source"), "Different source"),
     (("candidate_review", "request", "candidate", "accepted_source", "events"), []),
     (("candidate_review", "request", "candidate", "proposed_decisions", "provisional_design"), {}),
@@ -900,7 +944,7 @@ def _create_payload_for_stage(stage: dict[str, object], *, source: str) -> dict[
         "commit_manifest": {
             "model_authoring": {
                 "candidate_review": {
-                    "version": "odylith.greenfield.candidate-review.v4",
+                    "version": CANDIDATE_REVIEW_VERSION,
                     "status": "admitted",
                     "source_sha256": hashlib.sha256(source.encode("utf-8")).hexdigest(),
                     "candidate_sha256": hashlib.sha256(encoded).hexdigest(),
@@ -942,7 +986,14 @@ def _host_native_stage(*, candidate_sha256: str) -> dict[str, object]:
         "host_stderr_bytes": 0,
         "response_kind": "authored",
         "candidate_sha256": candidate_sha256,
+        "candidate_raw_sha256": "9" * 64,
+        "candidate_raw_bytes": 100,
         "candidate_temp_outside_repo": True,
+        "proposal_returncode": 0,
+        "proposal_stdout_sha256": "a" * 64,
+        "proposal_stderr_sha256": "b" * 64,
+        "proposal_mode": "product_create_transaction",
+        "candidate_review_status": "unreported",
         "elapsed_seconds": 80.0,
     }
 

@@ -1,6 +1,6 @@
 - Bug ID: CB-324
 
-- Status: FixedPendingRelease
+- Status: InProgress
 
 - Created: 2026-08-09
 
@@ -67,3 +67,23 @@
 - Public Response: pending
 
 - Code References: - src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py
+
+## Host-Native V19 Reopen (2026-09-25)
+
+The exact v19 public campaign reproduced this failure class through the current
+host-native boundary. Astra returned an authored candidate for a source-only
+civic-tech topic whose repository description invited people to catalog
+projects but did not establish a product actor or complete product path. The
+independent reviewer correctly denied the candidate at
+`candidate.accepted_source.events[0].actor_fact`; proposal exited `2` after
+`67.461s`, and the write audit proved zero staged or governed writes.
+
+The earlier product-only evidence-view fix did not survive the mechanism shift
+to one external host candidate plus one independent review. The bounded
+replacement is not another parser or prompt cascade: the existing independent
+review returns one typed outcome—admit, material clarification, or deny. A
+source-insufficient candidate terminates as the canonical no-write
+clarification; a source-sufficient but incorrect candidate remains denied. No
+candidate revision, retry, repair, fallback, or additional model call is
+permitted. CB-329 owns the separate raw-response retention and release-evaluator
+classification defects exposed by the same case.

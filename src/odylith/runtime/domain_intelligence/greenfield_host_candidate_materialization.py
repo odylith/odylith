@@ -110,12 +110,18 @@ def _host_authoring_receipt(
         "host_candidate": deepcopy(dict(host_receipt)),
         **(
             {"candidate_review": deepcopy(authored.candidate_review)}
-            if isinstance(authored, GreenfieldModelAuthoredIntent)
+            if authored.candidate_review
             else {}
         ),
         "consistency_assessment": {
             "status": authored.consistency_status,
             "source_spans": [dict(span) for span in consistency_spans],
+            **(
+                {"basis": authored.clarification_basis}
+                if isinstance(authored, GreenfieldAuthoringClarification)
+                and authored.clarification_basis
+                else {}
+            ),
         },
     }
 

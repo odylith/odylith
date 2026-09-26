@@ -87,6 +87,21 @@ def _result(module, *, name: str, passed: bool = True):
     )
 
 
+def test_run_matrix_release_rejects_missing_host_native_argv_before_execution(
+    tmp_path: Path,
+) -> None:
+    module = _module()
+
+    with pytest.raises(RuntimeError, match="explicit exact host-candidate argv"):
+        module.run_matrix(
+            dist_dir=tmp_path / "dist",
+            version="0.1.15",
+            temp_parent=tmp_path,
+            cases=(_case(module, "release gate"),),
+            proof_tier="release",
+        )
+
+
 class _Server:
     def shutdown(self) -> None:
         return None

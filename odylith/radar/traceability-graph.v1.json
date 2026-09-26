@@ -9,7 +9,7 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "63ef921e26ba52931a532dfd81529d0a028b34a07ef1f6f720fdd19e3e56e472",
+    "digest": "32f8107e089015e2789da095be7f7fa6dfb7f89b53ed67030b813fd2aa3991e9",
     "file_count": 317,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
@@ -14452,14 +14452,10 @@
         "B-142"
       ],
       "component_names": [
-        "Source-grounded participant selection",
-        "Remaining source and design author",
-        "Deterministic custody and ordering",
-        "Binary candidate admission",
-        "Deterministic governed projections",
-        "Pre-confirm package sealing",
-        "Commit and immutable publication",
-        "Independent release evidence"
+        "Host-native candidate author",
+        "Independent tri-state reviewer",
+        "Deterministic custody and projections",
+        "Sealed confirmation boundary"
       ],
       "related_component_ids": []
     },
@@ -14505,12 +14501,8 @@
         "B-142"
       ],
       "component_names": [
-        "Host-native source-cited evidence graph",
-        "Source precedence and proposed first run",
-        "Provisional delivery design",
-        "Read-only candidate admission",
-        "Shared deterministic projections",
-        "Sealed persistence and readback"
+        "Independent tri-state candidate review",
+        "Failed-candidate custody"
       ],
       "related_component_ids": []
     },
@@ -26295,5 +26287,5 @@
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-09-26 02:27:20Z"
+  "generated_utc": "2026-09-26 05:32:33Z"
 }

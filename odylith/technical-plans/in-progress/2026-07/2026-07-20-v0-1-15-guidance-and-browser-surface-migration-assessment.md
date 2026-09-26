@@ -708,3 +708,27 @@ upgrade.
 The assessment is complete when the migration gate recognizes the final
 fingerprints, consumer-owned source is unchanged by managed refresh paths, and
 the governed workstream and plan bindings validate.
+
+## Exact V19 Public Reopen (2026-09-25)
+
+The exact clean distribution passed seven public host-native cases before the
+fail-fast gate stopped on a source-only civic-tech request. The host returned an
+authored candidate within the `90s` advisory target; independent review denied
+unsupported product-as-performer meaning, and zero writes occurred. The release
+harness then lost the raw candidate and obscured the one useful denial behind
+retired two-role diagnostics.
+
+The active implementation wave is deliberately bounded:
+
+1. make the existing independent review choose admitted, typed material
+   clarification, or denied without revising candidate content;
+2. retain exact host candidate and proposal bytes before cleanup and bind the
+   full reviewer receipt through the existing private proof descriptor;
+3. classify every host-native outcome through the same custody owner;
+4. prove the disclosed civic-tech failure, a source-sufficient denial, a direct
+   host clarification, and tamper controls;
+5. rebuild immutable bytes and restart the public campaign from case one.
+
+No parser, regex, vocabulary rule, retry, repair, fallback candidate, model
+ladder, or extra semantic call is admissible. The protected holdout remains
+untouched until the full public gate and independent strong review pass.

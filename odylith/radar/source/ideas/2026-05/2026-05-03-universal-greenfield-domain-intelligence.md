@@ -3143,3 +3143,29 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
 - This is source qualification, not release proof. Build one clean immutable
   V31 distribution and restart the unchanged public campaign from case one.
   The blind holdout remains sealed.
+
+## V19 Public Fail-Fast And Tri-State Review Wave (2026-09-25)
+
+- Exact distribution `0c12bff00` passed seven public cases with four Radar
+  workstreams, four Registry components, five Atlas diagrams, browser proof,
+  and zero package issues before the first civic-tech clarification case failed
+  closed. Authentication, host argv custody, and timing were healthy; Astra
+  authored from repository-purpose metadata, and independent review correctly
+  denied unsupported product ownership.
+- Replace binary candidate admission with one typed independent-review outcome:
+  admitted, material clarification, or denied. Material clarification maps to
+  the existing canonical field question before staging. Denial remains terminal
+  for a bad candidate when the source is sufficient. This reuses the existing
+  reviewer and adds no parser, regex, candidate revision, retry, repair,
+  fallback, or model call.
+- Seal exact host candidate and proposal bytes before temporary cleanup and
+  bind the full reviewer receipt through the existing parent-granted private
+  proof descriptor. Identify reviewer-selected clarification from that receipt,
+  the authored host response, its typed public question, and the
+  complete-source-missingness basis. Eliminate legacy
+  two-role diagnostics for every host-native outcome and require the exact host
+  argv before release-tier execution. Prove the disclosed failure plus an
+  independent positive and direct clarification control before rebuilding
+  immutable bytes and restarting the public campaign from case one. Do not
+  touch the protected holdout until the complete public gate and independent
+  semantic review pass.

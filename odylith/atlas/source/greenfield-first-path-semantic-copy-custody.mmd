@@ -17,8 +17,10 @@ flowchart LR
       validator["Deterministic validator and custody compiler<br/>Schema, citations, relations, completeness and invariants"]
       complete{"Complete and<br/>source-grounded?"}
       clarify["One focused clarification<br/>No review, package or governed write"]
-      review["Independent semantic review<br/>One immutable complete-candidate decision"]
-      denied["Rejected or unavailable<br/>No repair, retry or fallback ladder"]
+      review["Independent tri-state review<br/>One immutable decision: admit, clarify, or deny"]
+      review_clarify["Reviewer-selected material clarification<br/>Retain review receipt; one focused question<br/>No package or governed write"]
+      denied["Denied after completed review<br/>Retain exact candidate and review receipt<br/>No repair, retry, or fallback ladder"]
+      review_failure["Reviewer unavailable or late<br/>Fail closed; retain attempt and failure custody only<br/>No review receipt or governed write"]
       canonical["Canonical Product Intent envelope<br/>Reviewed candidate admitted unchanged"]
     end
 
@@ -47,7 +49,9 @@ flowchart LR
     complete -- "no" --> clarify
     complete -- "yes" --> review
     review -- "admitted unchanged" --> canonical
-    review -- "denied, unavailable or late" --> denied
+    review -- "material source gap" --> review_clarify
+    review -- "source-sufficient semantic defect" --> denied
+    review -- "unavailable or late" --> review_failure
     canonical --> project
     canonical --> radar
     canonical --> registry
@@ -70,7 +74,7 @@ flowchart LR
     class request,edit,contract,host,candidate evidence;
     class validator,review,canonical,project,radar,registry,atlas,compass semantic;
     class seal,decision,confirm,revise,reject,readback governance;
-    class complete,clarify,denied constraint;
+    class complete,clarify,review_clarify,denied,review_failure constraint;
 
     style evidence_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#293D52
     style host_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#293D52

@@ -42,6 +42,9 @@ from greenfield_matrix_case_file import load_case_file  # noqa: E402
 from greenfield_matrix_case_file import ungrounded_required_terms  # noqa: E402
 from greenfield_matrix_clarification import clarification_contract_issues, clarification_quality_verdict, run_expected_clarification  # noqa: E402
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import prepare_model_authoring_evidence
+from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
+    canonical_greenfield_reviewer_candidate_sha256,
+)
 from greenfield_matrix_write_audit import begin_installed_write_audit  # noqa: E402
 from greenfield_matrix_corpus_provenance import GreenfieldReleaseAudit  # noqa: E402
 from greenfield_matrix_corpus_provenance import discovery_corpus_summary  # noqa: E402
@@ -86,6 +89,7 @@ from greenfield_matrix_release_artifacts import begin_retained_case_evidence  # 
 from greenfield_matrix_release_artifacts import finalize_retained_case_evidence  # noqa: E402
 from greenfield_matrix_release_artifacts import prepare_retained_evidence_output_dir  # noqa: E402
 from greenfield_matrix_release_artifacts import record_retained_case_json  # noqa: E402
+from greenfield_matrix_release_artifacts import record_retained_case_bytes  # noqa: E402
 from greenfield_matrix_release_artifacts import record_retained_case_text  # noqa: E402
 from greenfield_matrix_release_artifacts import retained_case_evidence_fd  # noqa: E402
 from greenfield_matrix_release_artifacts import retained_evidence_manifest_path  # noqa: E402
@@ -345,6 +349,35 @@ def run_matrix(
         stop_after_cluster_failures=positive_int(stop_after_cluster_failures),
         required_stressors=tuple(required_stressors),
     )
+    if campaign_config.proof_tier == "release" and install_mode != "full":
+        # Invalid install posture should retain the complete operator-facing policy
+        # diagnosis.  A valid full install instead reaches exact host custody before
+        # corpus or audit work below.
+        _raise_for_invalid_campaign_policy(
+            config=campaign_config,
+            install_mode=install_mode,
+            include_browser_proof=include_browser_proof,
+            include_commit_recovery_proof=True,
+            allow_skipped_browser_proof=False,
+            allow_partial_stressor_coverage=allow_partial_stressor_coverage,
+            release_corpus_issues=(
+                evaluate_release_corpus(
+                    selected_cases,
+                    release_audits,
+                    repo_root=release_audit_repo_root,
+                ).issues
+                if not semantic_annotations_file
+                else ()
+            ),
+            semantic_annotations_file=semantic_annotations_file,
+            evaluation_split_manifest=evaluation_split_manifest,
+        )
+    if campaign_config.proof_tier == "release":
+        if not host_candidate_argv:
+            raise RuntimeError(
+                "release proof requires an explicit exact host-candidate argv"
+            )
+        host_candidate_argv = _require_profile_argv_template(host_candidate_argv)
     _raise_for_invalid_campaign_policy(
         config=campaign_config,
         install_mode=install_mode,
@@ -974,6 +1007,18 @@ def _raise_for_invalid_campaign_policy(
         raise RuntimeError("invalid greenfield release proof policy: " + "; ".join(violations))
 
 
+def _raise_for_release_full_install_mode(
+    config: MatrixCampaignConfig,
+    install_mode: str,
+) -> None:
+    """Keep the actionable full-install diagnostic ahead of release corpus work."""
+
+    if config.proof_tier == "release" and install_mode != "full":
+        raise RuntimeError(
+            "invalid greenfield release proof policy: release proof must use full install mode"
+        )
+
+
 def _validated_install_mode(value: str) -> str:
     mode = str(value or "full").strip().casefold()
     if mode not in INSTALL_MODES:
@@ -1234,6 +1279,7 @@ def _run_case(
     manifest = _as_mapping(payload.get("commit_manifest"))
     package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
     stage_observation = _retained_model_stage_observation(retained_case)
+    reviewer_observation = _retained_host_native_reviewer_observation(retained_case)
     profile_evidence = model_profile_evidence(
         profile,
         env,
@@ -1242,6 +1288,10 @@ def _run_case(
             create_payload=payload,
         ),
         stage_observation=stage_observation,
+        reviewer_observation=reviewer_observation,
+        expected_source=prepare_model_authoring_evidence(
+            prompt=case.prompt, edit_evidence=str(case.confirmed_intent_markdown or ""),
+        ).evidence_source,
     )
     model_result_issues = authored_model_result_binding_issues(
         stage_observation=stage_observation, create_payload=payload,
@@ -1444,11 +1494,23 @@ def _run_host_candidate_propose(
         )
 
     observe = None
+    retain_candidate_bytes = None
+    retain_proposal_bytes = None
     if retained_case is not None:
         observe = lambda payload: record_retained_case_json(
             retained_case,
             "semantic/host-authoring-observation.v1.json",
             dict(payload),
+        )
+        retain_candidate_bytes = lambda value: record_retained_case_bytes(
+            retained_case,
+            "semantic/host-candidate.raw.v1.json",
+            value,
+        )
+        retain_proposal_bytes = lambda stream, value: record_retained_case_bytes(
+            retained_case,
+            f"semantic/host-proposal.{stream}.raw.v1",
+            value,
         )
     profile_id = str(env.get("ODYLITH_GREENFIELD_MODEL_PROFILE") or "").strip()
     profile = get_greenfield_model_profile(profile_id)
@@ -1468,6 +1530,8 @@ def _run_host_candidate_propose(
             invoke_propose=invoke_propose,
             installed_command=base_command,
             observe=observe,
+            retain_candidate_bytes=retain_candidate_bytes,
+            retain_proposal_bytes=retain_proposal_bytes,
         )
     )
 
@@ -1584,6 +1648,7 @@ def _run_expected_clarification_case(
     )
     payload = execution.payload
     stage_observation = _retained_model_stage_observation(retained_case)
+    reviewer_observation = _retained_host_native_reviewer_observation(retained_case)
     expected_source = prepare_model_authoring_evidence(
         prompt=case.prompt,
         edit_evidence=str(case.confirmed_intent_markdown or ""),
@@ -1591,6 +1656,11 @@ def _run_expected_clarification_case(
     profile_id = str(env.get("ODYLITH_GREENFIELD_MODEL_PROFILE") or "").strip()
     if not profile_id:
         profile_id = model_profile_id_for_repair_tier(repair_tier)
+    expected_reviewer_candidate_sha256 = _retained_reviewer_candidate_sha256(
+        retained_case,
+        evidence_text=expected_source,
+        profile_id=profile_id,
+    )
     issues = list(clarification_contract_issues(
         execution,
         expected_fields=(
@@ -1603,6 +1673,8 @@ def _run_expected_clarification_case(
         ).strip(),
         expected_model_profile_id=profile_id,
         stage_observation=stage_observation,
+        reviewer_observation=reviewer_observation,
+        expected_reviewer_candidate_sha256=expected_reviewer_candidate_sha256,
         expected_source=expected_source,
     ))
     package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
@@ -1612,6 +1684,8 @@ def _run_expected_clarification_case(
         env,
         observed=sealed_model_profile_observation(create_payload=payload),
         stage_observation=stage_observation,
+        reviewer_observation=reviewer_observation,
+        expected_reviewer_candidate_sha256=expected_reviewer_candidate_sha256,
         expected_source=expected_source,
     )
     issues.extend(str(issue) for issue in profile_evidence.get("issues", ()))
@@ -2238,6 +2312,46 @@ def _retained_model_stage_observation(
     )
 
 
+def _retained_host_native_reviewer_observation(
+    retained_case: RetainedEvidenceCase | None,
+) -> Mapping[str, Any]:
+    """Read private proof-FD evidence only for release-custody validation."""
+
+    if retained_case is None:
+        return {}
+    return _read_json_mapping(
+        retained_case.staging_root / "semantic" / "model-authoring-observation.v1.json"
+    )
+
+
+def _retained_reviewer_candidate_sha256(
+    retained_case: RetainedEvidenceCase | None,
+    *,
+    evidence_text: str,
+    profile_id: str,
+) -> str:
+    """Derive the product-owned reviewer hash from exact retained host bytes."""
+
+    if retained_case is None:
+        return ""
+    candidate_path = retained_case.staging_root / "semantic" / "host-candidate.raw.v1.json"
+    try:
+        raw = candidate_path.read_bytes()
+        candidate = json.loads(raw.decode("utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return ""
+    if not isinstance(candidate, Mapping):
+        return ""
+    try:
+        return canonical_greenfield_reviewer_candidate_sha256(
+            candidate,
+            evidence_text=evidence_text,
+            profile_id=profile_id,
+        )
+    except (RuntimeError, TypeError, ValueError):
+        return ""
+
+
 def _parse_json_object(value: str) -> Mapping[str, Any]:
     try:
         payload = json.loads(value)
@@ -2642,6 +2756,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         stop_after_cluster_failures=positive_int(args.stop_after_cluster_failures),
         required_stressors=required_stressors,
     )
+    _raise_for_release_full_install_mode(campaign_config, str(args.install_mode))
     if include_default_cases:
         violations = []
         if not any(str(value or "").strip() for value in (args.case_file or ())):
@@ -2678,6 +2793,15 @@ def main(argv: Sequence[str] | None = None) -> int:
             allow_partial_stressor_coverage=bool(args.allow_partial_stressor_coverage),
             semantic_annotations_file=str(args.semantic_annotations_file or ""),
             evaluation_split_manifest=str(args.evaluation_split_manifest or ""),
+        )
+    if campaign_config.proof_tier == "release" and hasattr(args, "host_candidate_arg"):
+        args.host_candidate_arg = list(
+            _require_profile_argv_template(
+                tuple(
+                    str(value)
+                    for value in (getattr(args, "host_candidate_arg", None) or ())
+                )
+            )
         )
     _require_sealed_release_input_root(
         proof_tier=str(args.proof_tier),
@@ -2725,18 +2849,6 @@ def main(argv: Sequence[str] | None = None) -> int:
                 ),
                 temp_parent=Path(args.temp_parent),
             )
-    if (
-        campaign_config.proof_tier == "release"
-        and hasattr(args, "host_candidate_arg")
-    ):
-        args.host_candidate_arg = list(
-            _require_profile_argv_template(
-                tuple(
-                    str(value)
-                    for value in (getattr(args, "host_candidate_arg", None) or ())
-                )
-            )
-        )
     final_holdout_run = _final_holdout_run_from_args(args, sealed_input_root=sealed_input_root)
     if final_holdout_run is not None:
         install_script = Path(args.dist_dir).expanduser().resolve() / "install.sh"

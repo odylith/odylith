@@ -24,6 +24,8 @@ from tests.unit.runtime.greenfield_model_authoring_fixtures import (
 )
 from tests.unit.runtime.test_greenfield_model_path_custody import _response, _source
 
+ADMITTED = {"outcome": "admitted", "issue": None, "clarification": None}
+
 
 class Clock:
     value = 0.0
@@ -108,7 +110,7 @@ def test_partition_preserves_every_value_and_binds_complete_candidate():
     assert "does not establish a performing actor" in participant_role
     assert "Do not turn an activity or output purpose into a person." in payload["role_definitions"]["customer"]
     clock = Clock()
-    provider = Reviewer({"admissible": True, "issues": []}, clock, 7.0)
+    provider = Reviewer(ADMITTED, clock, 7.0)
     receipt = run_review(provider, clock)
     assert candidate == original
     assert receipt["source_sha256"] == hashlib.sha256(source.encode()).hexdigest()
@@ -121,7 +123,7 @@ def test_partition_preserves_every_value_and_binds_complete_candidate():
 
 def test_review_request_makes_selected_source_location_authoritative():
     clock = Clock()
-    provider = Reviewer({"admissible": True, "issues": []}, clock)
+    provider = Reviewer(ADMITTED, clock)
     run_review(provider, clock)
 
     prompt = provider.requests[0].system_prompt
@@ -132,7 +134,7 @@ def test_review_request_makes_selected_source_location_authoritative():
 
 def test_review_request_does_not_invent_events_for_unowned_timing_conditions():
     clock = Clock()
-    provider = Reviewer({"admissible": True, "issues": []}, clock)
+    provider = Reviewer(ADMITTED, clock)
     run_review(provider, clock)
 
     prompt = provider.requests[0].system_prompt
@@ -253,7 +255,7 @@ def test_title_actor_address_stays_hash_bound_before_canonical_product_translati
         candidate=response["result"],
         source_spans=authored.source_spans,
         profile_id=STANDARD_PROFILE_ID,
-        provider_factory=lambda: Reviewer({"admissible": True, "issues": []}, clock),
+        provider_factory=lambda: Reviewer(ADMITTED, clock),
         deadline=55.0,
         clock=clock,
         observation={},
@@ -354,7 +356,7 @@ def test_overlapping_source_spans_remain_distinct_context_rows():
 def test_malformed_or_mutated_source_spans_fail_before_provider_dispatch(mutation):
     source = _source()
     span = _span(source, "training coordinators") | mutation
-    provider = Reviewer({"admissible": True, "issues": []}, Clock())
+    provider = Reviewer(ADMITTED, Clock())
     with pytest.raises(ValueError, match="source span"):
         review.review_greenfield_candidate(
             evidence_text=source, candidate=_response(source)["result"], source_spans=(span,),
@@ -382,6 +384,32 @@ def test_denial_or_malformed_verdict_never_repairs_or_retries(verdict):
     assert observation["dispatched"] is True
 
 
+def test_source_insufficient_wrong_actor_authorship_maps_to_first_path_clarification() -> None:
+    clock = Clock()
+    provider = Reviewer(
+        {
+            "outcome": "clarification_required",
+            "issue": None,
+            "clarification": {"material_dimension": "first_path"},
+        },
+        clock,
+    )
+    with pytest.raises(review.GreenfieldCandidateClarificationRequired) as raised:
+        run_review(provider, clock)
+
+    assert raised.value.material_dimension == "first_path"
+    assert raised.value.receipt["status"] == "clarification_required"
+    assert set(raised.value.receipt) >= {"source_sha256", "candidate_sha256"}
+    assert provider.calls == 1
+    assert "first decide whether the source supplies the actor and usable-task facts" in (
+        provider.requests[0].system_prompt
+    )
+    assert "candidate that misrepresents them is\n`denied`" in provider.requests[0].system_prompt
+    assert "select `first_path`; do not select `component_ownership`" in (
+        provider.requests[0].system_prompt
+    )
+
+
 @pytest.mark.parametrize("scope", ["source", "resolved_source_custody", "accepted_source", "proposed_decisions"])
 def test_review_cannot_mutate_evidence_or_either_authority(scope):
     def mutate(payload):
@@ -392,7 +420,7 @@ def test_review_cannot_mutate_evidence_or_either_authority(scope):
         else:
             payload["candidate"][scope]["extra"] = "New authority"
     clock = Clock()
-    provider = Reviewer({"admissible": True, "issues": []}, clock, mutation=mutate)
+    provider = Reviewer(ADMITTED, clock, mutation=mutate)
     with pytest.raises(RuntimeError, match="changed"):
         run_review(provider, clock)
 
@@ -400,7 +428,7 @@ def test_review_cannot_mutate_evidence_or_either_authority(scope):
 def test_reviewer_setup_and_dispatch_use_remaining_absolute_deadline():
     clock = Clock()
     clock.value = 45.0
-    provider = Reviewer({"admissible": True, "issues": []}, clock, 5.0)
+    provider = Reviewer(ADMITTED, clock, 5.0)
     def factory():
         clock.value += 2.0
         return provider
@@ -412,7 +440,7 @@ def test_reviewer_setup_and_dispatch_use_remaining_absolute_deadline():
 
 def test_reviewer_dispatch_elapsed_excludes_setup_but_keeps_shared_deadline():
     clock = Clock()
-    provider = Reviewer({"admissible": True, "issues": []}, clock, 3.0)
+    provider = Reviewer(ADMITTED, clock, 3.0)
     observation = {}
 
     def factory():
@@ -432,7 +460,7 @@ def test_reviewer_dispatch_elapsed_excludes_setup_but_keeps_shared_deadline():
 def test_no_budget_means_no_review_dispatch(setup):
     clock = Clock()
     clock.value = 54.5 if not setup else 53.0
-    provider = Reviewer({"admissible": True, "issues": []}, clock)
+    provider = Reviewer(ADMITTED, clock)
     def factory():
         clock.value += 1.5
         return provider
@@ -445,7 +473,7 @@ def test_no_budget_means_no_review_dispatch(setup):
 
 def test_review_can_use_more_than_twenty_seconds_inside_the_shared_deadline():
     clock = Clock()
-    provider = Reviewer({"admissible": True, "issues": []}, clock, 23.0)
+    provider = Reviewer(ADMITTED, clock, 23.0)
     receipt = run_review(provider, clock)
     assert receipt["elapsed_seconds"] == 23.0
     assert provider.requests[0].timeout_seconds == 55.0
@@ -454,14 +482,14 @@ def test_review_can_use_more_than_twenty_seconds_inside_the_shared_deadline():
 @pytest.mark.parametrize("duration", [55.001, 60.0])
 def test_late_response_fails_after_one_actual_call(duration):
     clock = Clock()
-    provider = Reviewer({"admissible": True, "issues": []}, clock, duration)
+    provider = Reviewer(ADMITTED, clock, duration)
     with pytest.raises(RuntimeError, match="time window"):
         run_review(provider, clock)
     assert provider.calls == 1
 
 
 @pytest.mark.parametrize("started,duration", [(0.0, 55.001), (45.0, 10.001)])
-@pytest.mark.parametrize("response", [None, {"admissible": True, "issues": []}])
+@pytest.mark.parametrize("response", [None, ADMITTED])
 def test_late_review_retains_provider_evidence_without_admitting_or_retrying(started, duration, response):
     clock = Clock()
     clock.value = started
@@ -486,7 +514,7 @@ def test_native_author_requires_admission_and_preserves_source_and_design():
     clock = Clock()
     provider = RemainingCandidateProvider(response)
     participant = provider.participant_provider()
-    reviewer = Reviewer({"admissible": True, "issues": []}, clock, 4.0)
+    reviewer = Reviewer(ADMITTED, clock, 4.0)
     result = participant_authoring.author_greenfield_intent(
         evidence_text=source, provider=provider,
         participant_provider_factory=lambda: participant,
@@ -526,7 +554,7 @@ def test_structural_validation_cannot_change_the_reviewed_candidate(monkeypatch)
 
 def test_review_postvalidation_deadline_is_enforced(monkeypatch):
     clock = Clock()
-    provider = Reviewer({"admissible": True, "issues": []}, clock, 19.0)
+    provider = Reviewer(ADMITTED, clock, 19.0)
     validate = review.require_greenfield_model_profile_observation
     def slow_validation(**kwargs):
         result = validate(**kwargs)
@@ -542,7 +570,7 @@ def test_review_postvalidation_deadline_is_enforced(monkeypatch):
 def test_review_finalization_cannot_admit_a_late_role():
     ticks = iter((0.0, 0.0, 54.9, 54.9, 54.9, 55.1))
     clock = lambda: next(ticks, 55.1)
-    provider = StructuredAuthoringProvider({"admissible": True, "issues": []})
+    provider = StructuredAuthoringProvider(ADMITTED)
     observation = {}
     with pytest.raises(RuntimeError, match="exceeded its model time window"):
         run_review(provider, clock, observation=observation)
@@ -559,7 +587,7 @@ def test_actual_dispatch_count_survives_provider_exception(monkeypatch, role):
     observations = []
     monkeypatch.setattr(
         participant_authoring,
-        "_emit_release_proof_observation",
+        "emit_greenfield_model_proof_observation",
         lambda **kwargs: observations.append(kwargs),
     )
     provider = (

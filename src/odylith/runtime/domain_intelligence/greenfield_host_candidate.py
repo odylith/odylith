@@ -17,6 +17,8 @@ from time import monotonic
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
+    GreenfieldCandidateClarificationRequired,
+    candidate_review_payload,
     review_greenfield_candidate,
 )
 from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import (
@@ -30,6 +32,12 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring impor
     GreenfieldModelAuthoredIntent,
     greenfield_authoring_payload,
     validate_greenfield_authoring_response,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_json import (
+    encode_greenfield_model_value,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_proof_observation import (
+    emit_greenfield_model_proof_observation,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_outcomes import (
     GreenfieldModelRuntimeError,
@@ -125,6 +133,44 @@ def load_greenfield_host_candidate_file(path: Path) -> dict[str, Any]:
     return dict(value)
 
 
+def canonical_greenfield_reviewer_candidate_sha256(
+    response: Mapping[str, Any],
+    *,
+    evidence_text: str,
+    profile_id: str = STANDARD_PROFILE_ID,
+) -> str:
+    """Reproduce the review payload's canonical candidate hash without a model call."""
+
+    profile = get_greenfield_model_profile(profile_id)
+    canonical_response = canonical_greenfield_host_candidate(
+        response,
+        evidence_text=evidence_text,
+    )
+    authored = validate_greenfield_authoring_response(
+        canonical_response,
+        evidence_text=evidence_text,
+        elapsed_seconds=0.0,
+        provider={
+            "provider": "host-native",
+            "model": "outside-runtime-custody",
+            "reasoning_effort": "not-observed",
+        },
+        profile_id=profile_id,
+        effective_timeout_seconds=profile.model_timeout_seconds,
+        semantic_model_call_count=0,
+        allow_zero_semantic_calls=True,
+        event_citations_are_event_owned=True,
+    )
+    if isinstance(authored, GreenfieldAuthoringClarification):
+        raise ValueError("Greenfield host candidate has no authored reviewer payload")
+    payload = candidate_review_payload(
+        evidence_text,
+        canonical_response["result"],
+        source_spans=authored.source_spans,
+    )
+    return hashlib.sha256(encode_greenfield_model_value(payload["candidate"])).hexdigest()
+
+
 def admit_greenfield_host_candidate(
     response: Mapping[str, Any],
     *,
@@ -186,16 +232,49 @@ def admit_greenfield_host_candidate(
     if isinstance(authored, GreenfieldAuthoringClarification):
         return authored, base_receipt
 
-    review = review_greenfield_candidate(
-        evidence_text=evidence_text,
-        candidate=canonical_response["result"],
-        profile_id=profile_id,
-        source_spans=authored.source_spans,
-        provider_factory=review_provider_factory,
-        deadline=model_deadline,
-        clock=clock,
-        observation={},
-    )
+    try:
+        review = review_greenfield_candidate(
+            evidence_text=evidence_text,
+            candidate=canonical_response["result"],
+            profile_id=profile_id,
+            source_spans=authored.source_spans,
+            provider_factory=review_provider_factory,
+            deadline=model_deadline,
+            clock=clock,
+            observation={},
+        )
+    except GreenfieldCandidateClarificationRequired as clarification:
+        emit_greenfield_model_proof_observation(
+            evidence_text=evidence_text,
+            semantic_model_call_count=1,
+            participant_selection=None,
+            remaining_candidate_authoring=None,
+            rejected_candidate=None,
+            rejected_candidate_review=None,
+            candidate_revision=None,
+            joined_candidate=None,
+            candidate_review=clarification.receipt,
+            failure=None,
+            origin="host_native",
+            host_candidate=base_receipt,
+        )
+        return (
+            GreenfieldAuthoringClarification(
+                required_fields=(clarification.material_dimension,),
+                elapsed_seconds=max(0.0, clock() - started),
+                tier=authored.tier,
+                provider=deepcopy(authored.provider),
+                profile_id=authored.profile_id,
+                effective_timeout_seconds=authored.effective_timeout_seconds,
+                consistency_status="material_ambiguity",
+                consistency_source_spans=(),
+                clarification_basis="complete_source_missingness",
+                effective_model_window_seconds=effective_window,
+                candidate_review=deepcopy(dict(clarification.receipt)),
+                semantic_model_call_count=1,
+            ),
+            base_receipt,
+        )
     if _canonical_candidate_bytes(response) != frozen:
         raise RuntimeError("Greenfield host-candidate review changed the candidate")
     if _canonical_candidate_bytes(canonical_response) != canonical_frozen:
@@ -247,6 +326,7 @@ __all__ = [
     "HOST_CANDIDATE_RECEIPT_VERSION",
     "MAX_HOST_CANDIDATE_BYTES",
     "admit_greenfield_host_candidate",
+    "canonical_greenfield_reviewer_candidate_sha256",
     "greenfield_host_candidate_contract",
     "load_greenfield_host_candidate_file",
 ]
