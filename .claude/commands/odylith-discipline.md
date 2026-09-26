@@ -1,6 +1,6 @@
 ---
 description: Validate Odylith Discipline contracts and zero-credit pressure behavior.
-argument-hint: [status|check|explain|validate] [--case-id CASE_ID] [--json]
+argument-hint: "[status|check|explain|validate] [--case-id CASE_ID] [--json]"
 ---
 
 Validate Odylith Discipline contracts and zero-credit pressure behavior.

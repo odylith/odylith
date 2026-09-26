@@ -1,6 +1,6 @@
 ---
 description: Build a bounded Odylith plan before implementation.
-argument-hint: [<slice-anchor>] (optional workstream id, component, or bug id)
+argument-hint: "[<slice-anchor>] (optional workstream id, component, or bug id)"
 ---
 
 Build a bounded Odylith plan before implementation.

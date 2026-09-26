@@ -1,6 +1,6 @@
 ---
 description: Render Atlas diagrams from the Mermaid catalog without a full governance sync.
-argument-hint: [forwarded atlas render flags]
+argument-hint: "[forwarded atlas render flags]"
 ---
 
 Render Atlas diagrams from the Mermaid catalog without a full governance sync.

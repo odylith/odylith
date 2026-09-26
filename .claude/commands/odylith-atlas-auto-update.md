@@ -1,6 +1,6 @@
 ---
 description: Refresh Atlas diagrams from change-watch metadata.
-argument-hint: [--dry-run] [forwarded atlas auto-update flags]
+argument-hint: "[--dry-run] [forwarded atlas auto-update flags]"
 ---
 
 Refresh Atlas diagrams from change-watch metadata.

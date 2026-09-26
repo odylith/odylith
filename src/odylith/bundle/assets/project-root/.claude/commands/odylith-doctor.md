@@ -1,6 +1,6 @@
 ---
 description: Verify the current Odylith install and optionally repair it in place.
-argument-hint: [--repair] [--reset-local-state]
+argument-hint: "[--repair] [--reset-local-state]"
 ---
 
 Verify the current Odylith install and optionally repair it in place.
