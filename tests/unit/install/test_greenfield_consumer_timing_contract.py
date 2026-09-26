@@ -29,7 +29,7 @@ import greenfield_matrix_quality_scoring as scoring
 from greenfield_matrix_quality_scoring import completion_issues, proposal_time_issues
 from greenfield_matrix_types import GreenfieldArtifactCounts
 
-TIERS = (("standard", 90.0), ("rescue", 120.0), ("deep", 150.0))
+TIERS = (("standard", 90.0),)
 HISTORICAL_V12_PROFILES = (
     ("standard", 60.0, "greenfield-standard-terra-low-complete-author-review-v12"),
     ("rescue", 90.0, "greenfield-rescue-terra-medium-complete-author-review-v12"),
@@ -137,9 +137,12 @@ def test_declared_target_requires_exact_numeric_tier_binding(target):
 
 @pytest.mark.parametrize("tier,budget,profile_id", HISTORICAL_V12_PROFILES)
 def test_old_v12_receipts_are_not_upgraded_or_mutated(tier, budget, profile_id):
-    manifest = _manifest(tier)
+    manifest = _manifest("standard")
+    manifest["requested_repair_tier"] = tier
+    manifest["repair_tier"] = tier
     manifest["target_seconds"] = budget
     receipt = manifest["model_authoring"]
+    receipt["tier"] = tier
     for role in ("participant_selection", "remaining_candidate_authoring", "candidate_review"):
         receipt[role]["model_profile"]["profile_id"] = profile_id
     original = deepcopy(manifest)

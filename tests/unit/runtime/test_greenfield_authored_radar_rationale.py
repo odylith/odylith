@@ -28,7 +28,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring impor
     GreenfieldModelAuthoringError,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
-    RESCUE_PROFILE_ID,
+    STANDARD_PROFILE_ID,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     PRODUCT_INTENT_AUTHORITY_KEY,
@@ -107,7 +107,7 @@ def _authored_proposal(
         repo_root=tmp_path,
         authoring_provider=provider,
         authoring_timeout_seconds=84.0,
-        authoring_profile_id=RESCUE_PROFILE_ID,
+        authoring_profile_id=STANDARD_PROFILE_ID,
         participant_provider_factory=provider.participant_provider,
         review_provider_factory=AdmittingReviewProvider,
     )

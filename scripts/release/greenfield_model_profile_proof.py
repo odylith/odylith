@@ -8,8 +8,11 @@ import hashlib
 import json
 from typing import Any
 
+from greenfield_model_profiles import DEEP_PROFILE_ID
+from greenfield_model_profiles import LOWER_CAPABILITY_CONTROL_PROFILES
 from greenfield_model_profiles import MODEL_PROFILES
 from greenfield_model_profiles import UNAVAILABLE_PROVIDER_PROFILE
+from greenfield_model_profiles import host_native_clarification_stage_observation_issues
 from greenfield_model_profiles import host_native_model_stage_observation_issues
 from greenfield_model_profiles import model_stage_observation_issues
 from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
@@ -21,7 +24,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 
 
-MODEL_PROFILE_PROOF_VERSION = "odylith.greenfield.installed-model-profile-proof.v3"
+MODEL_PROFILE_PROOF_VERSION = "odylith.greenfield.installed-model-profile-proof.v4"
 UNAVAILABLE_PROVIDER_FAILURE_TEXT = "model authoring is unavailable"
 TRANSACTION_COMMITTED_EXPECTATION = "transaction_committed"
 CLARIFICATION_REQUIRED_EXPECTATION = "clarification_required"
@@ -191,15 +194,21 @@ def model_profile_release_proof(
     *,
     require_complete: bool,
 ) -> dict[str, Any]:
-    """Require installed semantic success and strict latency for each profile."""
+    """Require Astra success plus one Luna clarification/no-write control."""
 
-    rows: dict[str, list[Any]] = {profile_id: [] for profile_id in MODEL_PROFILES}
+    qualified_profile_ids = (*MODEL_PROFILES, *LOWER_CAPABILITY_CONTROL_PROFILES)
+    rows: dict[str, list[Any]] = {profile_id: [] for profile_id in qualified_profile_ids}
     validation_issues: list[str] = []
     coverage_issues: list[str] = []
     for result in results:
         evidence = _mapping(getattr(result, "evidence", None))
         profile_evidence = _mapping(evidence.get("model_profile"))
         profile_id = str(profile_evidence.get("profile_id") or "").strip()
+        if profile_id == DEEP_PROFILE_ID:
+            validation_issues.append(
+                "Sol-high is an unsupported diagnostic and cannot count toward release success"
+            )
+            continue
         if profile_id not in rows:
             validation_issues.append(
                 f"matrix result `{getattr(result, 'name', '')}` lacks a supported observed model profile"
@@ -226,42 +235,41 @@ def model_profile_release_proof(
                 f"{contract.operational_timeout_seconds:g}s installed operational-timeout proof"
             )
         expectation = _result_expectation(result)
+        lower_capability_control = profile_id in LOWER_CAPABILITY_CONTROL_PROFILES
         if expectation not in {TRANSACTION_COMMITTED_EXPECTATION, CLARIFICATION_REQUIRED_EXPECTATION}:
             validation_issues.append(
                 f"model profile `{profile_id}` lacks a declared supported case expectation"
             )
-        elif expectation == CLARIFICATION_REQUIRED_EXPECTATION and not _result_proves_clarification_no_write(
-            result,
-            profile_id,
-        ):
+        elif lower_capability_control and expectation != CLARIFICATION_REQUIRED_EXPECTATION:
+            validation_issues.append(
+                f"lower-capability control `{profile_id}` must clarify without writing"
+            )
+        elif expectation == CLARIFICATION_REQUIRED_EXPECTATION and not _result_proves_clarification_no_write(result, profile_id):
             validation_issues.append(
                 f"model profile `{profile_id}` clarification row lacks source-bound no-write proof"
             )
     if require_complete:
-        for profile_id, profile_results in rows.items():
+        for profile_id in MODEL_PROFILES:
+            profile_results = rows[profile_id]
             if not profile_results:
-                coverage_issues.append(f"release proof is missing model profile `{profile_id}`")
+                coverage_issues.append(f"release proof is missing success profile `{profile_id}`")
             elif not any(_result_proves_committed_case(result, profile_id) for result in profile_results):
                 coverage_issues.append(
                     f"release proof is missing a committed positive case for model profile `{profile_id}`"
                 )
 
-    lower_profile_ids = tuple(
-        profile_id
-        for profile_id in MODEL_PROFILES
-        if get_greenfield_model_profile(profile_id).lower_capability
-    )
+    lower_profile_ids = LOWER_CAPABILITY_CONTROL_PROFILES
     if not lower_profile_ids:
-        validation_issues.append("supported model profiles do not declare a lower-capability semantic member")
+        validation_issues.append("release contract does not declare a lower-capability control")
     for profile_id in lower_profile_ids:
         profile_results = rows[profile_id]
-        if not any(_result_proves_committed_case(result, profile_id) for result in profile_results):
-            coverage_issues.append(
-                f"lower-capability model profile `{profile_id}` lacks an observed committed positive case"
+        if len(profile_results) > 1:
+            validation_issues.append(
+                f"lower-capability control `{profile_id}` must contain exactly one result"
             )
         if not any(_result_proves_clarification_no_write(result, profile_id) for result in profile_results):
             coverage_issues.append(
-                f"lower-capability model profile `{profile_id}` lacks an observed "
+                f"lower-capability control `{profile_id}` lacks an observed "
                 "source-bound clarification/no-write control"
             )
 
@@ -269,11 +277,11 @@ def model_profile_release_proof(
     for profile_id, profile_results in rows.items():
         contract = get_greenfield_model_profile(profile_id)
         host_native = bool(profile_results) and all(
-            _mapping(
+            _profile_evidence_is_host_native(
                 _mapping(
                     _mapping(getattr(result, "evidence", None)).get("model_profile")
-                ).get("observed")
-            ).get("origin") == "host_native"
+                )
+            )
             for result in profile_results
         )
         elapsed_values = [
@@ -297,8 +305,16 @@ def model_profile_release_proof(
             "remaining_candidate_authoring_reasoning_effort": (
                 "outside_runtime_custody" if host_native else contract.reasoning_effort
             ),
-            "candidate_review_model": contract.review_model,
-            "candidate_review_reasoning_effort": contract.review_reasoning_effort,
+            "candidate_review_model": (
+                "not_applicable"
+                if profile_id in LOWER_CAPABILITY_CONTROL_PROFILES
+                else contract.review_model
+            ),
+            "candidate_review_reasoning_effort": (
+                "not_applicable"
+                if profile_id in LOWER_CAPABILITY_CONTROL_PROFILES
+                else contract.review_reasoning_effort
+            ),
             "maximum_semantic_model_calls": 1 if host_native else 5,
             "performance_target_seconds": contract.performance_target_seconds,
             "operational_timeout_seconds": contract.operational_timeout_seconds,
@@ -308,7 +324,7 @@ def model_profile_release_proof(
             ),
             "lower_capability": contract.lower_capability,
             "lower_capability_role": (
-                ("candidate_review" if host_native else "remaining_candidate_authoring")
+                ("host_candidate" if host_native else "remaining_candidate_authoring")
                 if contract.lower_capability
                 else "not_applicable"
             ),
@@ -326,6 +342,13 @@ def model_profile_release_proof(
                 "passed"
                 if profile_results
                 and all(_result_proves_valid_case(result, profile_id) for result in profile_results)
+                and (
+                    profile_id not in LOWER_CAPABILITY_CONTROL_PROFILES
+                    or all(
+                        _result_expectation(result) == CLARIFICATION_REQUIRED_EXPECTATION
+                        for result in profile_results
+                    )
+                )
                 else "missing"
                 if not profile_results
                 else "failed"
@@ -470,67 +493,39 @@ def _lower_capability_scope(
     rows: Mapping[str, Sequence[Any]],
     lower_profile_ids: Sequence[str],
 ) -> dict[str, Any]:
-    """Report only profile identity actually observed in valid installed rows."""
+    """Report the source-bound lower-capability clarification control."""
 
     observed_profiles: list[dict[str, Any]] = []
     complete = bool(lower_profile_ids)
     for profile_id in lower_profile_ids:
         profile_results = rows.get(profile_id, ())
-        valid_results = [
-            result for result in profile_results if _result_proves_profile(result, profile_id)
-        ]
-        positive_count = sum(
-            _result_proves_committed_case(result, profile_id) for result in profile_results
-        )
-        clarification_count = sum(
-            _result_proves_clarification_no_write(result, profile_id)
+        controls = [
+            result
             for result in profile_results
-        )
-        if not valid_results:
+            if _result_proves_clarification_no_write(result, profile_id)
+        ]
+        if not controls:
             complete = False
             continue
-        evidence = _mapping(getattr(valid_results[0], "evidence", None))
-        observed = _mapping(_mapping(evidence.get("model_profile")).get("observed"))
-        host_native = observed.get("origin") == "host_native"
-        remaining_observation = _mapping(
-            observed.get("candidate_review" if host_native else "remaining_candidate_authoring")
-        )
+        contract = get_greenfield_model_profile(profile_id)
         observed_profiles.append(
             {
-                key: remaining_observation.get(key)
-                for key in (
-                    "profile_id",
-                    "provider",
-                    "model",
-                    "reasoning_effort",
-                    "effective_timeout_seconds",
-                    "authoring_tier",
-                )
-            }
-            | {
-                "committed_positive_case_count": positive_count,
-                "clarification_no_write_control_count": clarification_count,
+                "profile_id": profile_id,
+                "provider": contract.provider,
+                "model": contract.model,
+                "reasoning_effort": contract.reasoning_effort,
+                "authoring_tier": contract.repair_tier,
+                "qualification": "direct_codex_argv_and_source_bound_no_write",
+                "committed_positive_case_count": 0,
+                "clarification_no_write_control_count": len(controls),
             }
         )
-        complete = complete and positive_count > 0 and clarification_count > 0
+        complete = complete and bool(controls)
     return {
         "status": "passed" if complete else "unproven",
         "observed_profiles": observed_profiles,
-        "role": (
-            "candidate_review"
-            if observed_profiles and all(
-                _mapping(
-                    _mapping(
-                        _mapping(getattr(result, "evidence", None)).get("model_profile")
-                    ).get("observed")
-                ).get("origin") == "host_native"
-                for profile_id in lower_profile_ids
-                for result in rows.get(profile_id, ())
-                if _result_proves_profile(result, profile_id)
-            )
-            else "remaining_candidate_authoring"
-        ),
-        "requirement": "installed_committed_positive_and_source_bound_clarification_no_write",
+        "role": "host_candidate",
+        "requirement": "installed_source_bound_clarification_no_write_only",
     }
 
 
@@ -541,6 +536,7 @@ def _profile_observation_issues(
     expectation: str,
 ) -> tuple[str, ...]:
     observed = _mapping(profile_evidence.get("observed"))
+    stages = _mapping(profile_evidence.get("stage_observation"))
     if observed.get("origin") == "host_native":
         if expectation != TRANSACTION_COMMITTED_EXPECTATION:
             return ("host-native reviewed candidate does not match the declared case outcome",)
@@ -548,6 +544,18 @@ def _profile_observation_issues(
             profile_id,
             observed=observed,
             stage_observation=_mapping(profile_evidence.get("stage_observation")),
+        )
+    if stages.get("response_kind") == CLARIFICATION_REQUIRED_EXPECTATION:
+        if expectation != CLARIFICATION_REQUIRED_EXPECTATION:
+            return ("host-native clarification does not match the declared case outcome",)
+        if observed:
+            return ("host-native clarification carries contradictory authored observations",)
+        return host_native_clarification_stage_observation_issues(
+            profile_id,
+            stage_observation=stages,
+            expected_source_sha256=str(
+                profile_evidence.get("expected_source_sha256") or ""
+            ),
         )
     if set(observed) != {"participant_selection", "remaining_candidate_authoring"}:
         return ("lacks the two stable six-field request observations",)
@@ -575,7 +583,6 @@ def _profile_observation_issues(
                 request_role=role,
             )
         )
-    stages = _mapping(profile_evidence.get("stage_observation"))
     issues.extend(model_stage_observation_issues(
         profile_id, observed=observed, stage_observation=stages,
     ))
@@ -588,6 +595,15 @@ def _profile_observation_issues(
     ).get("status") != expected_status:
         issues.append("retained model response does not match the declared case outcome")
     return tuple(issues)
+
+
+def _profile_evidence_is_host_native(profile_evidence: Mapping[str, Any]) -> bool:
+    observed = _mapping(profile_evidence.get("observed"))
+    summary = _mapping(profile_evidence.get("stage_observation_summary"))
+    return (
+        observed.get("origin") == "host_native"
+        or summary.get("origin") == "host_native"
+    )
 
 
 def _nested_mapping(value: Mapping[str, Any], *path: str) -> Mapping[str, Any]:

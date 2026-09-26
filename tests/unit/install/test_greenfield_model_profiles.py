@@ -59,14 +59,14 @@ def test_assignment_is_balanced_by_outcome_and_does_not_consult_prompt_text() ->
         tuple(replace(case, prompt=f"Completely different evidence {index}") for index, case in enumerate(cases))
     )
 
-    assert profile_counts(assigned) == {profile: 3 for profile in MODEL_PROFILES}
+    assert profile_counts(assigned) == {STANDARD_PROFILE_ID: 9}
     assert [case_model_profile(case) for case in assigned] == [
         case_model_profile(case) for case in changed_prompts
     ]
     for profile in MODEL_PROFILES:
         profile_cases = [case for case in assigned if case_model_profile(case) == profile]
-        assert sum(case.expectation == "transaction_committed" for case in profile_cases) == 2
-        assert sum(case.expectation == "clarification_required" for case in profile_cases) == 1
+        assert sum(case.expectation == "transaction_committed" for case in profile_cases) == 6
+        assert sum(case.expectation == "clarification_required" for case in profile_cases) == 3
 
 
 def test_assignment_balances_repeated_input_styles_across_profiles() -> None:
@@ -81,10 +81,10 @@ def test_assignment_balances_repeated_input_styles_across_profiles() -> None:
     coverage = profile_coverage(assign_model_profiles(cases))
 
     assert coverage["input_style"]["direct_request"] == {
-        profile: 1 for profile in MODEL_PROFILES
+        STANDARD_PROFILE_ID: 3
     }
     assert coverage["input_style"]["pasted_brief"] == {
-        profile: 1 for profile in MODEL_PROFILES
+        STANDARD_PROFILE_ID: 3
     }
 
 
@@ -109,19 +109,17 @@ def test_assignment_preserves_one_valid_explicit_profile_and_rejects_bad_tags() 
         )
 
 
-def test_profile_registry_pins_preselected_standard_rescue_and_deep_requests() -> None:
-    assert supported_greenfield_model_profile_ids() == (
-        STANDARD_PROFILE_ID,
-        RESCUE_PROFILE_ID,
-        DEEP_PROFILE_ID,
-    )
-    assert supported_greenfield_model_repair_tiers() == ("standard", "rescue", "deep")
+def test_profile_registry_separates_release_success_from_controls_and_diagnostics() -> None:
+    assert supported_greenfield_model_profile_ids() == (STANDARD_PROFILE_ID,)
+    assert supported_greenfield_model_repair_tiers() == ("standard",)
     assert model_profile_id_for_repair_tier("standard") == STANDARD_PROFILE_ID
     assert model_profile_id_for_repair_tier("auto") == STANDARD_PROFILE_ID
     assert model_profile_id_for_repair_tier("") == STANDARD_PROFILE_ID
     assert model_profile_id_for_repair_tier("default") == STANDARD_PROFILE_ID
-    assert model_profile_id_for_repair_tier("rescue") == RESCUE_PROFILE_ID
-    assert model_profile_id_for_repair_tier("deep") == DEEP_PROFILE_ID
+    with pytest.raises(ValueError, match="not release-qualified"):
+        model_profile_id_for_repair_tier("rescue")
+    with pytest.raises(ValueError, match="not release-qualified"):
+        model_profile_id_for_repair_tier("deep")
     assert normalize_greenfield_model_repair_tier("default") == "auto"
     assert normalize_greenfield_model_repair_tier("rescue") == "rescue"
     with pytest.raises(ValueError, match="unsupported Greenfield repair tier"):
@@ -361,6 +359,51 @@ def test_host_native_profile_evidence_binds_one_host_candidate_and_runtime_revie
     proof = model_profile_release_proof((result,), require_complete=False)
     assert proof["status"] == "passed", proof["issues"]
     assert proof["profiles"][STANDARD_PROFILE_ID]["maximum_semantic_model_calls"] == 1
+
+
+@pytest.mark.parametrize("mutation", ("executable", "model", "effort", "output_schema"))
+def test_host_native_profile_evidence_rejects_forged_safe_argv_receipt(
+    mutation: str,
+) -> None:
+    profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
+    candidate_sha256 = "1" * 64
+    stage = _host_native_stage(candidate_sha256=candidate_sha256)
+    receipt = stage["host_request"]
+    if mutation == "executable":
+        receipt["executable_sha256"] = "not-a-hash"
+    elif mutation == "model":
+        receipt["model"] = "gpt-5.6-sol"
+    elif mutation == "effort":
+        receipt["reasoning_effort"] = "high"
+    else:
+        receipt["output_schema_present"] = False
+    observed = {
+        "origin": "host_native",
+        "host_candidate": {
+            "version": "odylith.greenfield.host-candidate.v1",
+            "contract_version": "odylith.greenfield.intent-authoring.v68",
+            "source_sha256": "2" * 64,
+            "candidate_sha256": candidate_sha256,
+        },
+        "candidate_review": {
+            "profile_id": STANDARD_PROFILE_ID,
+            "provider": profile.provider,
+            "model": profile.review_model,
+            "reasoning_effort": profile.review_reasoning_effort,
+            "effective_timeout_seconds": 120.0,
+            "authoring_tier": profile.repair_tier,
+        },
+    }
+
+    evidence = model_profile_evidence(
+        STANDARD_PROFILE_ID,
+        model_profile_environment(STANDARD_PROFILE_ID, {}),
+        observed=observed,
+        stage_observation=stage,
+    )
+
+    assert evidence["status"] == "failed"
+    assert any("retained host-native" in issue for issue in evidence["issues"])
 
 
 def test_host_native_result_binding_matches_retained_candidate_to_commit_receipt() -> None:
@@ -872,21 +915,32 @@ def _create_payload_for_stage(stage: dict[str, object], *, source: str) -> dict[
 
 def _host_native_stage(*, candidate_sha256: str) -> dict[str, object]:
     return {
-        "version": "odylith.greenfield.host-native-matrix-observation.v1",
+        "version": "odylith.greenfield.host-native-matrix-observation.v3",
         "status": "passed",
         "host_invocations": 1,
         "contract_command_invocations": 1,
         "proposal_command_invocations": 1,
-        "host_argv": {"executable": "codex", "argument_count": 3},
+        "model_profile_id": STANDARD_PROFILE_ID,
+        "host_request": {
+            "version": "odylith.greenfield.host-argv-receipt.v1",
+            "executable_sha256": "7" * 64,
+            "argument_count": 14,
+            "model": "gpt-6-astra",
+            "reasoning_effort": "medium",
+            "output_schema_present": True,
+            "argv_shape_sha256": "8" * 64,
+        },
         "candidate_temp_cleaned": True,
         "host_workspace_cleaned": True,
         "stage": "propose",
         "contract_returncode": 0,
         "contract_sha256": "5" * 64,
+        "source_sha256": "2" * 64,
         "candidate_schema_sha256": "6" * 64,
         "host_returncode": 0,
         "host_stdout_bytes": 100,
         "host_stderr_bytes": 0,
+        "response_kind": "authored",
         "candidate_sha256": candidate_sha256,
         "candidate_temp_outside_repo": True,
         "elapsed_seconds": 80.0,

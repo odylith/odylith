@@ -12029,3 +12029,29 @@ Current proposal/confirmation/recovery operations and versioned semantic/timing 
   identical-span positive and partial-overlap negative controls stay green. If
   this wording does not eliminate the class, stop and reconsider citation
   representation rather than stacking another instruction.
+
+## Public-v12 Decisive Release Gate (2026-09-25)
+
+- Freeze host contract v18, compact candidate v9, canonical authoring v68, the
+  independent semantic reviewer, and transaction laws. The event-overlap class
+  is closed; do not add more wording, schemas, semantic owners, retries, repairs,
+  fallbacks, parsers, or regex extraction.
+- Use model-profile contract v23 and operating-envelope v5. Astra medium is the
+  sole release-success author. Luna medium supplies exactly one separately
+  identified source-bound clarification/no-write control. Sol high remains
+  diagnostic evidence and cannot count toward success. Direct Codex argv must
+  prove the selected model and reasoning effort; wrappers and environment labels
+  alone do not qualify.
+- Keep the audited 36-case, 12-domain disclosed corpus semantically unchanged:
+  24 commit cases and 12 explicitly annotated clarification cases. Run it from
+  one pushed immutable distribution with browser normal/fallback/error proof,
+  mandatory commit recovery, retained raw evidence, temp cleanup, and the 100%
+  acceptance floor. Stop at the first new independent failure class.
+- If the disclosed campaign passes, require independent strong semantic review
+  of the exact retained outputs. Only then commission exactly one fresh untouched
+  blind holdout. Completion remains unclaimed until both gates pass; the holdout
+  is never used for mechanism development.
+- Shipping stop condition: if a new failure merely repeats a known class or can
+  be fixed only by another local rule, do not patch the example. Reopen the
+  owning abstraction, compare one bounded alternative, and remove the losing
+  path. If no new class appears, do not expand architecture or scope.

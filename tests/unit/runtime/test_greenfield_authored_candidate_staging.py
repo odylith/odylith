@@ -21,7 +21,7 @@ from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring 
     author_greenfield_intent,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
-    RESCUE_PROFILE_ID,
+    STANDARD_PROFILE_ID,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     PRODUCT_FACTS_HASH_KEY,
@@ -97,7 +97,7 @@ def _authored_stage_inputs(repo_root: Path) -> tuple[dict[str, object], dict[str
         evidence_text=evidence,
         provider=provider,
         participant_provider_factory=provider.participant_provider,
-        model_profile_id=RESCUE_PROFILE_ID,
+        model_profile_id=STANDARD_PROFILE_ID,
         clock=lambda: 0.0,
     )
     authored_intent: dict[str, object] = {

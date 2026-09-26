@@ -29,6 +29,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     DEEP_PROFILE_ID,
     RESCUE_PROFILE_ID,
+    STANDARD_PROFILE_ID,
     get_greenfield_model_profile,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
@@ -480,7 +481,7 @@ def test_source_bound_nonmaterial_conflict_increases_sealed_ambiguity(
         authoring_provider=provider,
         participant_provider_factory=provider.participant_provider,
         authoring_timeout_seconds=84,
-        authoring_profile_id=RESCUE_PROFILE_ID,
+        authoring_profile_id=STANDARD_PROFILE_ID,
     )
 
     envelope = candidate["product_intent_authority"]["operating_envelope"]

@@ -24,7 +24,7 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 from greenfield_matrix_types import GreenfieldMatrixResult
 
 
-STATISTICS_VERSION = "odylith.greenfield.matrix.statistics.v3"
+STATISTICS_VERSION = "odylith.greenfield.matrix.statistics.v4"
 STATISTICAL_CONFIDENCE_VERSION = "odylith.greenfield.statistical-confidence.v1"
 _Z_95 = 1.959963984540054
 _MINIMUM_RELEASE_SLICE_SAMPLES = 4

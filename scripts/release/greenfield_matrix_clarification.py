@@ -14,6 +14,10 @@ from greenfield_matrix_quality_scoring import INDEPENDENT_SEMANTIC_LENS_DIMENSIO
 from greenfield_matrix_quality_scoring import QUALITY_SCORE_DIMENSIONS
 from greenfield_matrix_quality_scoring import UNSCORED_QUALITY_SCORE
 from greenfield_matrix_types import GreenfieldQualityVerdict
+from greenfield_matrix_host_candidate import HOST_NATIVE_MATRIX_OBSERVATION_VERSION
+from greenfield_model_profiles import (
+    host_native_clarification_stage_observation_issues,
+)
 from odylith.runtime.domain_intelligence.greenfield_pending_transaction_store import (
     GREENFIELD_PENDING_TRANSACTION_ROOT,
     GREENFIELD_RUNTIME_ROOT,
@@ -137,50 +141,69 @@ def clarification_contract_issues(
     if "product_create_transaction" in payload:
         issues.append("clarification proposal must not include ProductCreateTransaction")
     clarification = payload.get("clarification") if isinstance(payload.get("clarification"), Mapping) else {}
+    host_native = (
+        stage_observation is not None
+        and stage_observation.get("version") == HOST_NATIVE_MATRIX_OBSERVATION_VERSION
+    )
     if stage_observation is not None:
-        issues.extend(_clarification_identity_issues(
-            clarification, stage_observation, expected_source=expected_source,
-        ))
-    if set(clarification) != {
-        "question",
-        "required_fields",
-        "model_profile",
-        "consistency_assessment",
-    }:
+        if host_native:
+            issues.extend(host_native_clarification_stage_observation_issues(
+                expected_model_profile_id,
+                stage_observation=stage_observation,
+                expected_source_sha256=(
+                    hashlib.sha256(expected_source.encode("utf-8")).hexdigest()
+                    if expected_source
+                    else ""
+                ),
+            ))
+        else:
+            issues.extend(_clarification_identity_issues(
+                clarification, stage_observation, expected_source=expected_source,
+            ))
+    expected_clarification_fields = {
+        "question", "required_fields", "consistency_assessment",
+    }
+    if not host_native:
+        expected_clarification_fields.add("model_profile")
+    if set(clarification) != expected_clarification_fields:
         issues.append(
-            "clarification payload must contain only question, required_fields, model_profile, "
+            "host-native clarification payload must contain only question, required_fields, "
             "and consistency_assessment"
+            if host_native
+            else "clarification payload must contain only question, required_fields, "
+            "model_profile, and consistency_assessment"
         )
-    model_profile = clarification.get("model_profile")
-    model_profile = model_profile if isinstance(model_profile, Mapping) else {}
-    roles = ("participant_selection", "remaining_candidate_authoring")
-    if set(model_profile) != set(roles):
-        issues.append("clarification model_profile must contain exactly both pre-review role observations")
-    observed_profile_ids = set()
-    for role in roles:
-        observation = model_profile.get(role)
-        if not isinstance(observation, Mapping) or set(observation) != {
-            "profile_id", "provider", "model", "reasoning_effort",
-            "effective_timeout_seconds", "authoring_tier",
-        }:
-            issues.append(f"clarification {role} must contain the stable six-field request observation")
-            continue
-        profile_id = str(observation["profile_id"] or "").strip()
-        observed_profile_ids.add(profile_id)
-        try:
-            profile = get_greenfield_model_profile(profile_id)
-            role_issues = greenfield_model_profile_observation_issues(
-                **observation, request_role=role,
-            )
-            if not profile.supported_success or observation["authoring_tier"] != profile.repair_tier:
-                role_issues += ("unsupported authoring tier or profile",)
-        except ValueError:
-            role_issues = ("unsupported profile",)
-        issues.extend(f"clarification {role}: {issue}" for issue in role_issues)
-    if len(observed_profile_ids) != 1 or (
-        expected_model_profile_id and observed_profile_ids != {expected_model_profile_id}
-    ):
-        issues.append("clarification model_profile must match the selected pre-call profile")
+    if not host_native:
+        model_profile = clarification.get("model_profile")
+        model_profile = model_profile if isinstance(model_profile, Mapping) else {}
+        roles = ("participant_selection", "remaining_candidate_authoring")
+        if set(model_profile) != set(roles):
+            issues.append("clarification model_profile must contain exactly both pre-review role observations")
+        observed_profile_ids = set()
+        for role in roles:
+            observation = model_profile.get(role)
+            if not isinstance(observation, Mapping) or set(observation) != {
+                "profile_id", "provider", "model", "reasoning_effort",
+                "effective_timeout_seconds", "authoring_tier",
+            }:
+                issues.append(f"clarification {role} must contain the stable six-field request observation")
+                continue
+            profile_id = str(observation["profile_id"] or "").strip()
+            observed_profile_ids.add(profile_id)
+            try:
+                profile = get_greenfield_model_profile(profile_id)
+                role_issues = greenfield_model_profile_observation_issues(
+                    **observation, request_role=role,
+                )
+                if not profile.supported_success or observation["authoring_tier"] != profile.repair_tier:
+                    role_issues += ("unsupported authoring tier or profile",)
+            except ValueError:
+                role_issues = ("unsupported profile",)
+            issues.extend(f"clarification {role}: {issue}" for issue in role_issues)
+        if len(observed_profile_ids) != 1 or (
+            expected_model_profile_id and observed_profile_ids != {expected_model_profile_id}
+        ):
+            issues.append("clarification model_profile must match the selected pre-call profile")
     consistency = clarification.get("consistency_assessment")
     consistency = consistency if isinstance(consistency, Mapping) else {}
     if set(consistency) != {"status", "source_spans"}:

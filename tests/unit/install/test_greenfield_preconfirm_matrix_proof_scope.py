@@ -281,6 +281,7 @@ def _write_supplement(
     case_id: str,
     tags: tuple[str, ...],
     include_leakage: bool = True,
+    expectation: str = "transaction_committed",
 ) -> Path:
     row = {
         "case_id": case_id,
@@ -288,6 +289,7 @@ def _write_supplement(
         "prompt": "Create a greenfield proposal for museum conservation queue review.",
         "required_terms": ["museum", "conservation", "queue"],
         "tags": list(tags),
+        "expectation": expectation,
     }
     if include_leakage:
         row["leakage_terms"] = ["museum conservation queue"]
@@ -573,11 +575,11 @@ def test_include_default_cases_preserves_native_assignments_before_appending_sup
     tmp_path: Path,
 ) -> None:
     module = _module()
-    rescue = module.model_profile_id_for_repair_tier("rescue")
+    standard = module.model_profile_id_for_repair_tier("standard")
     case_file = _write_supplement(
         tmp_path / "supplement.json",
         case_id="supplemental-museum-clarification",
-        tags=(f"model-profile:{rescue}",),
+        tags=(f"model-profile:{standard}",),
     )
     captured: dict[str, object] = {}
     monkeypatch.setattr(module, "_execute_matrix_campaign", lambda **kwargs: captured.update(kwargs) or 0)
@@ -594,7 +596,226 @@ def test_include_default_cases_preserves_native_assignments_before_appending_sup
     assert selected[: len(native)] == native
     assert module.assign_model_profiles(selected) == selected
     assert tuple(captured["planned_cases"]) == selected
-    assert module.case_model_profile(selected[-1]) == rescue
+    assert module.case_model_profile(selected[-1]) == standard
+
+
+def test_lower_capability_control_is_separate_and_profile_bound(
+    tmp_path: Path,
+) -> None:
+    module = _module()
+    case_file = _write_supplement(
+        tmp_path / "luna-control.json",
+        case_id="supplemental-luna-control",
+        tags=(),
+        expectation="clarification_required",
+    )
+
+    control = module._load_lower_capability_control_case(str(case_file))  # noqa: SLF001
+
+    assert control is not None
+    assert module.case_expectation(control) == "clarification_required"
+    assert module.case_model_profile(control) == module.LOWER_CAPABILITY_CONTROL_PROFILES[0]
+
+
+def test_lower_capability_control_rejects_commit_expectation(tmp_path: Path) -> None:
+    module = _module()
+    case_file = _write_supplement(
+        tmp_path / "invalid-control.json",
+        case_id="invalid-luna-control",
+        tags=(),
+    )
+
+    with pytest.raises(RuntimeError, match="must require clarification"):
+        module._load_lower_capability_control_case(str(case_file))  # noqa: SLF001
+
+
+def test_lower_capability_control_rejects_non_luna_profile_tag(tmp_path: Path) -> None:
+    module = _module()
+    case_file = _write_supplement(
+        tmp_path / "invalid-profile-control.json",
+        case_id="invalid-profile-control",
+        tags=(f"model-profile:{module.model_profile_id_for_repair_tier('standard')}",),
+        expectation="clarification_required",
+    )
+
+    with pytest.raises(RuntimeError, match="only the Luna control profile"):
+        module._load_lower_capability_control_case(str(case_file))  # noqa: SLF001
+
+
+def test_host_argv_template_resolves_exact_profile_tokens_and_rejects_missing_tokens() -> None:
+    module = _module()
+    template = (
+        "codex", "exec", "--model", "{model}", "--config",
+        "{reasoning_effort}", "-",
+    )
+    with pytest.raises(RuntimeError, match="reasoning_effort"):
+        module._require_profile_argv_template(template)  # noqa: SLF001
+    exact_template = (
+        "codex", "exec", "--ephemeral", "--ignore-user-config",
+        "--skip-git-repo-check", "--sandbox", "read-only",
+        "--model", "{model}", "--config",
+        "model_reasoning_effort={reasoning_effort}", "--output-schema",
+        "{candidate_schema}", "-",
+    )
+    module._require_profile_argv_template(exact_template)  # noqa: SLF001
+    resolved = module._host_candidate_argv_for_profile(  # noqa: SLF001
+        exact_template,
+        profile_id=module.LOWER_CAPABILITY_CONTROL_PROFILES[0],
+    )
+    assert resolved[8] == "gpt-5.6-luna"
+    assert resolved[10] == "model_reasoning_effort=medium"
+
+
+def test_luna_host_control_uses_standard_product_compiler_route(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    module = _module()
+    repo_root = tmp_path / "repo"
+    _write(repo_root / ".odylith/bin/odylith", "")
+    profile_id = module.LOWER_CAPABILITY_CONTROL_PROFILES[0]
+    host_argv = (
+        "codex", "exec", "--ephemeral", "--ignore-user-config",
+        "--skip-git-repo-check", "--sandbox", "read-only",
+        "--model", "gpt-5.6-luna", "--config",
+        "model_reasoning_effort=medium", "--output-schema",
+        "{candidate_schema}", "-",
+    )
+    captured: dict[str, object] = {}
+
+    monkeypatch.setattr(module, "_local_release_env", lambda **_kwargs: {})
+    monkeypatch.setattr(
+        module,
+        "_run_expected_clarification_case",
+        lambda **kwargs: captured.update(kwargs) or _passing_matrix_result(module),
+    )
+
+    result = module._run_case(  # noqa: SLF001
+        case=module.GreenfieldMatrixCase(
+            case_id="supplemental-luna-control",
+            name="supplemental Luna control",
+            prompt="Ask one source-bound question before proceeding.",
+            required_terms=(),
+            expectation="clarification_required",
+            tags=(f"model-profile:{profile_id}",),
+        ),
+        repo_root=repo_root,
+        install_script=tmp_path / "install.sh",
+        base_url="http://127.0.0.1",
+        version="0.0.0",
+        skip_install=True,
+        host_candidate_argv=host_argv,
+    )
+
+    assert result.status == "passed"
+    assert captured["repair_tier"] == "standard"
+    assert captured["host_candidate_argv"] == host_argv
+    assert captured["env"]["ODYLITH_GREENFIELD_MODEL_PROFILE"] == profile_id
+
+
+@pytest.mark.parametrize("failure_mode", ("malformed_argv", "contaminated_corpus"))
+def test_release_preflight_rejects_before_holdout_claim_or_matrix_execution(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    failure_mode: str,
+) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/bin/sh\nexit 0\n")
+    args = module.argparse.Namespace(
+        include_default_cases=False,
+        evidence_output_dir=str(tmp_path / "evidence"),
+        release_audit_repo_root="",
+        required_stressor=(),
+        require_high_variance_stressors=False,
+        campaign_phase="gate",
+        proof_tier="release",
+        telemetry_jsonl="",
+        stop_after_failures=0,
+        stop_after_cluster_failures=0,
+        sealed_release_input_root=str(tmp_path / "sealed"),
+        install_mode="full",
+        include_browser_proof=False,
+        include_commit_recovery_proof=False,
+        allow_skipped_browser_proof=False,
+        allow_partial_stressor_coverage=False,
+        semantic_annotations_file=str(tmp_path / "sealed/annotations.json"),
+        evaluation_split_manifest=str(tmp_path / "sealed/splits.json"),
+        final_holdout_run_ledger=str(tmp_path / "run-ledger.json"),
+        implementation_revision="a" * 40,
+        distribution_provenance_file=str(tmp_path / "sealed/provenance.json"),
+        case_file=(str(tmp_path / "sealed/cases.json"),),
+        release_audit_file="",
+        temp_parent=str(tmp_path / "work"),
+        dist_dir=str(dist_dir),
+        output_json=str(tmp_path / "result.json"),
+        host_candidate_arg=["codex", "exec"],
+        lower_capability_control_file=str(tmp_path / "sealed/luna-control.json"),
+    )
+
+    class HoldoutRun:
+        claimed = False
+
+        def claim(self) -> None:
+            self.claimed = True
+
+    holdout = HoldoutRun()
+    factory_calls: list[bool] = []
+    monkeypatch.setattr(module, "_parse_args", lambda _argv: args)
+    monkeypatch.setattr(module, "_require_sealed_release_input_root", lambda **_kwargs: None)
+    monkeypatch.setattr(module, "_raise_for_invalid_campaign_policy", lambda **_kwargs: None)
+    monkeypatch.setattr(module, "validate_retained_evidence_output_dir", lambda **_kwargs: None)
+    monkeypatch.setattr(module, "browser_runtime_preflight_issues", lambda: ())
+    monkeypatch.setattr(
+        module,
+        "_final_holdout_run_from_args",
+        lambda *_args, **_kwargs: factory_calls.append(True) or holdout,
+    )
+    monkeypatch.setattr(
+        module,
+        "acquire_matrix_run_lease",
+        lambda **_kwargs: pytest.fail("lease acquired before release preflight finished"),
+    )
+    monkeypatch.setattr(
+        module,
+        "run_matrix",
+        lambda **_kwargs: pytest.fail("matrix executed before release preflight finished"),
+    )
+    if failure_mode == "malformed_argv":
+        monkeypatch.setattr(
+            module,
+            "_require_profile_argv_template",
+            lambda _argv: (_ for _ in ()).throw(RuntimeError("malformed host argv")),
+        )
+        expected = "malformed host argv"
+    else:
+        monkeypatch.setattr(
+            module,
+            "_require_profile_argv_template",
+            lambda _argv: ("/trusted/codex", "exec"),
+        )
+        control_profile = module.LOWER_CAPABILITY_CONTROL_PROFILES[0]
+        monkeypatch.setattr(
+            module,
+            "_load_cli_case_files",
+            lambda *_args, **_kwargs: (
+                module.GreenfieldMatrixCase(
+                    case_id="contaminated-main-case",
+                    name="contaminated main case",
+                    prompt="Clarify the first result.",
+                    required_terms=(),
+                    expectation="clarification_required",
+                    tags=(f"model-profile:{control_profile}",),
+                ),
+            ),
+        )
+        expected = "main release corpus cannot contain Luna control profile tags"
+
+    with pytest.raises(RuntimeError, match=expected):
+        module.main([])
+
+    assert holdout.claimed is False
+    assert factory_calls == ([] if failure_mode == "malformed_argv" else [True])
 
 
 @pytest.mark.parametrize("case_args", ((), ("--case-file", "")))
@@ -620,7 +841,10 @@ def test_include_default_cases_requires_one_supported_explicit_profile(
     profile_mode: str,
 ) -> None:
     module = _module()
-    profiles = tuple(module.model_profile_id_for_repair_tier(tier) for tier in ("standard", "rescue"))
+    profiles = (
+        module.model_profile_id_for_repair_tier("standard"),
+        module.LOWER_CAPABILITY_CONTROL_PROFILES[0],
+    )
     tags = {
         "absent": (),
         "unknown": ("model-profile:unknown",),
@@ -648,7 +872,7 @@ def test_include_default_cases_rejects_normalized_duplicate_ids_before_execution
     case_ids: tuple[str, ...],
 ) -> None:
     module = _module()
-    profile = module.model_profile_id_for_repair_tier("rescue")
+    profile = module.model_profile_id_for_repair_tier("standard")
     paths = tuple(
         _write_supplement(
             tmp_path / f"supplement-{index}.json",
@@ -671,7 +895,7 @@ def test_include_default_cases_keeps_strict_lexical_controls(
     tmp_path: Path,
 ) -> None:
     module = _module()
-    profile = module.model_profile_id_for_repair_tier("rescue")
+    profile = module.model_profile_id_for_repair_tier("standard")
     case_file = _write_supplement(
         tmp_path / "supplement.json",
         case_id="supplement",
@@ -1125,6 +1349,147 @@ def test_release_campaign_forwards_the_evaluated_audit_binding_to_commit_recover
     assert payload["commit_recovery_proof"]["recovery_case"]["binding_scope"] == "release-confirmed-intent-v1"
 
 
+def test_release_campaign_keeps_luna_control_separate_from_corpus_acceptance(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    module = _module()
+    standard_id = module.model_profile_id_for_repair_tier("standard")
+    luna_id = module.LOWER_CAPABILITY_CONTROL_PROFILES[0]
+    main_case = replace(
+        module.default_cases()[0],
+        tags=(f"model-profile:{standard_id}",),
+    )
+    control_case = module.GreenfieldMatrixCase(
+        case_id="supplemental-luna-control",
+        name="supplemental Luna control",
+        prompt="Ask one question about the first complete result.",
+        required_terms=(),
+        expectation="clarification_required",
+        tags=(f"model-profile:{luna_id}",),
+    )
+    main_result = _passing_profile_result(module, standard_id, 20.0)
+    control_result = _passing_clarification_profile_result(module, luna_id, 20.0)
+    evidence_dir = tmp_path / "evidence"
+    evidence_dir.mkdir()
+    manifest = module.retained_evidence_manifest_path(evidence_dir)
+    _write(manifest, "{}\n")
+    args = module.argparse.Namespace(
+        dist_dir=str(tmp_path / "dist"),
+        version="0.1.15",
+        include_browser_proof=True,
+        install_mode="full",
+        allow_partial_stressor_coverage=False,
+        include_commit_recovery_proof=False,
+        json_output=True,
+        attempt_ledger_jsonl=None,
+        semantic_annotations_file=str(tmp_path / "annotations.json"),
+        evaluation_split_manifest=str(tmp_path / "splits.json"),
+        evidence_output_dir=str(evidence_dir),
+        host_candidate_arg=(
+            "/trusted/codex", "exec", "--ephemeral", "--ignore-user-config",
+            "--skip-git-repo-check", "--sandbox", "read-only",
+            "--model", "{model}", "--config",
+            "model_reasoning_effort={reasoning_effort}", "--output-schema",
+            "{candidate_schema}", "-",
+        ),
+        lower_capability_control_file=str(tmp_path / "luna-control.json"),
+    )
+    config = module.MatrixCampaignConfig(
+        phase=module.campaign_phase_from_value("gate"),
+        proof_tier=module.proof_tier_from_value("release"),
+        telemetry_jsonl=None,
+        stop_after_failures=0,
+        stop_after_cluster_failures=0,
+        required_stressors=(),
+    )
+    lease = type(
+        "Lease",
+        (),
+        {
+            "temp_namespace": tmp_path / "work",
+            "to_dict": lambda self: {"temporary_namespace": str(self.temp_namespace)},
+        },
+    )()
+    run_calls: list[dict[str, object]] = []
+    profile_inputs: list[object] = []
+    browser_inputs: list[object] = []
+    metamorphic_inputs: list[dict[str, object]] = []
+    semantic_inputs: list[dict[str, object]] = []
+
+    def fake_run_matrix(**kwargs):
+        run_calls.append(kwargs)
+        return (control_result,) if kwargs["cases"] == (control_case,) else (main_result,)
+
+    monkeypatch.setattr(module, "run_matrix", fake_run_matrix)
+    monkeypatch.setattr(module, "_require_profile_argv_template", lambda argv: tuple(argv))
+    monkeypatch.setattr(module, "run_unavailable_provider_proof", lambda **_kwargs: {"status": "passed"})
+    monkeypatch.setattr(
+        module,
+        "model_profile_release_proof",
+        lambda results, **_kwargs: profile_inputs.append(tuple(results)) or {
+            "status": "passed",
+            "lower_capability_scope": {"status": "passed"},
+        },
+    )
+    monkeypatch.setattr(
+        module,
+        "browser_proof_summary",
+        lambda results, **_kwargs: browser_inputs.append(tuple(results)) or {"status": "passed"},
+    )
+    monkeypatch.setattr(module, "_platform_leakage_proof_summary", lambda _results: {"status": "passed"})
+    monkeypatch.setattr(module, "temp_cleanup_proof", lambda _path: {"status": "passed"})
+    monkeypatch.setattr(
+        module,
+        "_semantic_release_report",
+        lambda **kwargs: semantic_inputs.append(kwargs) or {"status": "passed"},
+    )
+    monkeypatch.setattr(
+        module,
+        "evaluate_metamorphic_outputs",
+        lambda **kwargs: metamorphic_inputs.append(kwargs) or {"passed": True},
+    )
+    monkeypatch.setattr(
+        module,
+        "build_onboarding_quality_scorecard",
+        lambda **_kwargs: {"status": "passed", "score": 10},
+    )
+    monkeypatch.setattr(module, "retained_evidence_manifest_issues", lambda *_args, **_kwargs: ())
+
+    exit_code = module._execute_matrix_campaign(
+        args=args,
+        selected_cases=(main_case,),
+        planned_cases=(main_case,),
+        release_audits=(),
+        campaign_config=config,
+        corpus_provenance={"status": "passed"},
+        output_path=None,
+        lease=lease,
+        lower_capability_control_case=control_case,
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["version"] == "greenfield-preconfirm-installed-matrix-v2"
+    assert len(run_calls) == 2
+    assert run_calls[0]["cases"] == (main_case,)
+    assert run_calls[1]["cases"] == (control_case,)
+    assert run_calls[1]["include_browser_proof"] is False
+    assert run_calls[1]["proof_tier"] == "discovery"
+    assert str(run_calls[1]["evidence_output_dir"]).endswith("-lower-capability-control")
+    assert profile_inputs == [(main_result, control_result)]
+    assert browser_inputs == [(main_result,)]
+    assert semantic_inputs[0]["cases"] == (main_case,)
+    assert semantic_inputs[0]["results"] == (main_result,)
+    assert metamorphic_inputs[0]["cases"] == (main_case,)
+    assert metamorphic_inputs[0]["results"] == (main_result,)
+    assert len(payload["results"]) == 1
+    assert payload["lower_capability_control_proof"]["status"] == "passed"
+    assert payload["lower_capability_control_proof"]["case_count"] == 1
+    assert payload["lower_capability_control_proof"]["profile_id"] == luna_id
+
+
 def test_semantic_release_campaign_uses_sealed_case_binding_for_commit_recovery(
     monkeypatch, tmp_path: Path, capsys
 ) -> None:
@@ -1347,49 +1712,25 @@ def test_temp_cleanup_proof_finds_unavailable_provider_leftovers(tmp_path: Path)
     assert str(leftover) in proof["remaining_paths"]
 
 
-def test_model_profile_release_proof_requires_all_tiers_under_strict_budgets() -> None:
+def test_model_profile_release_proof_requires_astra_and_a_separate_luna_control() -> None:
     module = _module()
-    results = tuple(
-        _passing_profile_result(module, profile_id, elapsed)
-        for profile_id, elapsed in zip(
-            tuple(module.model_profile_id_for_repair_tier(tier) for tier in ("standard", "rescue", "deep")),
-            (59.9, 89.9, 119.9),
-            strict=True,
-        )
+    standard_id = module.model_profile_id_for_repair_tier("standard")
+    results = (
+        _passing_profile_result(module, standard_id, 89.9),
     )
 
     positives_only = module.model_profile_release_proof(results, require_complete=True)
     assert positives_only["status"] == "failed"
     assert positives_only["lower_capability_scope"]["status"] == "unproven"
     assert any("clarification/no-write control" in issue for issue in positives_only["issues"])
-
-    lower_profile_id = module.model_profile_id_for_repair_tier("rescue")
-    clarifications = tuple(
-        _passing_clarification_profile_result(module, module.model_profile_id_for_repair_tier(tier), 20.0)
-        for tier in ("standard", "rescue")
-    )
-    complete_results = (*results, *clarifications)
-    proof = module.model_profile_release_proof(complete_results, require_complete=True)
-    assert proof["status"] == "passed"
-    assert proof["profiles"][lower_profile_id]["lower_capability"] is True
-    assert proof["profiles"][lower_profile_id]["committed_positive_case_count"] == 1
-    assert proof["profiles"][lower_profile_id]["clarification_no_write_control_count"] == 1
-    assert proof["lower_capability_scope"]["status"] == "passed"
-    assert len(proof["lower_capability_scope"]["observed_profiles"]) == 1
-    assert proof["lower_capability_scope"]["observed_profiles"][0]["model"] == "gpt-5.6-luna"
-    assert module.model_profile_release_proof(
-        (*results[:-1], *clarifications),
-        require_complete=True,
-    )["status"] == "failed"
     breached = replace(
         results[0],
         proposal_seconds=module.get_greenfield_model_profile(
-            module.model_profile_id_for_repair_tier("standard")
+            standard_id
         ).operational_timeout_seconds,
     )
     assert module.model_profile_release_proof(
-        (breached, *results[1:], *clarifications),
-        require_complete=True,
+        (breached,), require_complete=False,
     )["status"] == "failed"
 
 
@@ -1415,13 +1756,10 @@ def test_model_profile_release_proof_rejects_obsolete_review_demoted_clarificati
 
 def test_model_profile_release_proof_reports_missing_lower_profile_as_unproven() -> None:
     module = _module()
-    results = tuple(
+    results = (
         _passing_profile_result(
-            module,
-            module.model_profile_id_for_repair_tier(tier),
-            20.0,
-        )
-        for tier in ("deep",)
+            module, module.model_profile_id_for_repair_tier("standard"), 20.0,
+        ),
     )
 
     proof = module.model_profile_release_proof(results, require_complete=False)
@@ -1431,8 +1769,8 @@ def test_model_profile_release_proof_reports_missing_lower_profile_as_unproven()
     assert proof["lower_capability_scope"] == {
         "status": "unproven",
         "observed_profiles": [],
-        "role": "remaining_candidate_authoring",
-        "requirement": "installed_committed_positive_and_source_bound_clarification_no_write",
+        "role": "host_candidate",
+        "requirement": "installed_source_bound_clarification_no_write_only",
     }
     assert module.model_profile_release_proof(results, require_complete=True)["status"] == "failed"
 
@@ -1467,7 +1805,7 @@ def test_model_profile_aggregate_rechecks_private_roles_despite_passed_label(mut
     assert proof["profiles"][profile_id]["committed_positive_case_count"] == 0
 
 
-@pytest.mark.parametrize("tier", ["standard", "deep"])
+@pytest.mark.parametrize("tier", ["standard"])
 def test_model_profile_release_proof_ignores_forged_lower_metadata_and_missing_provider(tier) -> None:
     module = _module()
     profile_id = module.model_profile_id_for_repair_tier(tier)
@@ -1507,15 +1845,14 @@ def test_model_profile_release_proof_ignores_forged_lower_metadata_and_missing_p
 
 def test_model_profile_release_proof_rejects_unbound_or_writeful_lower_control() -> None:
     module = _module()
-    rescue_id = module.model_profile_id_for_repair_tier("rescue")
-    positive = _passing_profile_result(module, rescue_id, 20.0)
+    rescue_id = module.LOWER_CAPABILITY_CONTROL_PROFILES[0]
     control = _passing_clarification_profile_result(module, rescue_id, 20.0)
     evidence = dict(control.evidence or {})
     evidence["case"] = {**evidence["case"], "prompt_sha256": "not-source-bound"}
     evidence["no_write"] = {**evidence["no_write"], "write_attempts": ["open"]}
 
     proof = module.model_profile_release_proof(
-        (positive, replace(control, evidence=evidence)),
+        (replace(control, evidence=evidence),),
         require_complete=False,
     )
 
@@ -1526,11 +1863,11 @@ def test_model_profile_release_proof_rejects_unbound_or_writeful_lower_control()
 
 def test_model_profile_release_proof_rejects_elapsed_tier_relabeling() -> None:
     module = _module()
-    rescue_id = module.model_profile_id_for_repair_tier("rescue")
-    result = _passing_profile_result(module, rescue_id, 30.0)
+    standard_id = module.model_profile_id_for_repair_tier("standard")
+    result = _passing_profile_result(module, standard_id, 30.0)
     evidence = dict(result.evidence or {})
     profile_evidence = dict(evidence["model_profile"])
-    profile_evidence["observed"]["remaining_candidate_authoring"]["authoring_tier"] = "standard"
+    profile_evidence["observed"]["remaining_candidate_authoring"]["authoring_tier"] = "rescue"
     evidence["model_profile"] = profile_evidence
 
     proof = module.model_profile_release_proof(

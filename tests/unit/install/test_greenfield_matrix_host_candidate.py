@@ -20,11 +20,16 @@ def _flow(tmp_path: Path, *, candidate: object, contract: object):
     repo = tmp_path / "consumer"
     repo.mkdir()
     temp_parent = tmp_path / "evidence"
+    trusted_codex = tmp_path / "trusted/bin/codex"
+    trusted_codex.parent.mkdir(parents=True)
+    trusted_codex.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    trusted_codex.chmod(0o755)
     installed_calls: list[tuple[list[str], float]] = []
     host_calls: list[tuple[list[str], str, float, Path]] = []
     proposal_paths: list[Path] = []
     contract_payload = dict(contract)
     contract_payload.setdefault("candidate_schema", {})
+    contract_payload.setdefault("request", {"evidence": "Create a reviewable plan."})
 
     def installed(command, timeout):
         installed_calls.append((list(command), timeout))
@@ -39,7 +44,7 @@ def _flow(tmp_path: Path, *, candidate: object, contract: object):
                 Path(kwargs["cwd"]),
             )
         )
-        schema_path = Path(command[command.index("--schema") + 1])
+        schema_path = Path(command[command.index("--output-schema") + 1])
         assert schema_path.is_file()
         assert schema_path.parent == Path(kwargs["cwd"])
         return _completed(list(command), stdout=json.dumps(candidate))
@@ -55,15 +60,31 @@ def _flow(tmp_path: Path, *, candidate: object, contract: object):
             repo_root=repo,
             temp_parent=temp_parent,
             host_argv=(
-                "host-author",
-                "--json",
-                "--schema",
+                str(trusted_codex),
+                "exec",
+                "--ephemeral",
+                "--ignore-user-config",
+                "--skip-git-repo-check",
+                "--sandbox",
+                "read-only",
+                "--model",
+                "gpt-6-astra",
+                "--config",
+                "model_reasoning_effort=medium",
+                "--output-schema",
                 "{candidate_schema}",
+                "-",
             ),
             prompt="Create a reviewable plan.",
             edit_evidence="Keep the source path.",
             timeout=5.0,
-            env={"PATH": "/usr/bin"},
+            env={
+                "PATH": str(trusted_codex.parent),
+                "ODYLITH_GREENFIELD_MODEL_PROFILE": "greenfield-standard-v1",
+            },
+            trusted_codex_executable=str(trusted_codex),
+            expected_model="gpt-6-astra",
+            expected_reasoning_effort="medium",
             invoke_installed=installed,
             invoke_propose=propose,
         ),
@@ -78,7 +99,11 @@ def _flow(tmp_path: Path, *, candidate: object, contract: object):
 def test_host_candidate_happy_path_is_one_shot_and_cleans_candidate_file(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    contract_text = json.dumps({"version": "contract", "candidate_schema": {}})
+    contract_text = json.dumps({
+        "version": "contract",
+        "candidate_schema": {},
+        "request": {"evidence": "Create a reviewable plan."},
+    })
     flow, host_run, installed_calls, host_calls, proposal_paths, repo = _flow(
         tmp_path,
         contract=json.loads(contract_text),
@@ -104,7 +129,12 @@ def test_host_candidate_happy_path_is_one_shot_and_cleans_candidate_file(
         "Keep the source path.",
     ]
     assert len(host_calls) == 1
-    assert host_calls[0][0][:3] == ["host-author", "--json", "--schema"]
+    assert host_calls[0][0][:4] == [
+        str((tmp_path / "trusted/bin/codex").resolve()),
+        "exec",
+        "--ephemeral",
+        "--ignore-user-config",
+    ]
     assert "{candidate_schema}" not in host_calls[0][0]
     assert host_calls[0][1] == contract_text
     assert len(proposal_paths) == 1
@@ -113,6 +143,20 @@ def test_host_candidate_happy_path_is_one_shot_and_cleans_candidate_file(
     assert list(repo.iterdir()) == []
     assert observations[-1]["status"] == "passed"
     assert observations[-1]["host_invocations"] == 1
+    assert observations[-1]["model_profile_id"] == "greenfield-standard-v1"
+    assert observations[-1]["source_sha256"] == hashlib.sha256(
+        b"Create a reviewable plan."
+    ).hexdigest()
+    assert observations[-1]["response_kind"] == "authored"
+    request = observations[-1]["host_request"]
+    assert set(request) == {
+        "version", "executable_sha256", "argument_count", "model",
+        "reasoning_effort", "output_schema_present", "argv_shape_sha256",
+    }
+    assert request["model"] == "gpt-6-astra"
+    assert request["reasoning_effort"] == "medium"
+    assert request["output_schema_present"] is True
+    assert "host_argv" not in observations[-1]
     assert observations[-1]["candidate_temp_cleaned"] is True
     assert observations[-1]["host_workspace_cleaned"] is True
     assert observations[-1]["candidate_sha256"] == hashlib.sha256(
@@ -125,24 +169,123 @@ def test_host_candidate_happy_path_is_one_shot_and_cleans_candidate_file(
         ).encode("utf-8")
     ).hexdigest()
     assert not host_calls[0][3].exists()
+    assert "candidate" not in observations[-1]
+
+
+def test_host_candidate_qualification_rejects_renamed_wrapper_and_secret_config(
+    tmp_path: Path,
+) -> None:
+    trusted = tmp_path / "trusted/codex"
+    wrapper = tmp_path / "wrapper/codex"
+    for path in (trusted, wrapper):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+        path.chmod(0o755)
+    base = (
+        str(trusted), "exec", "--ephemeral", "--ignore-user-config",
+        "--skip-git-repo-check", "--sandbox", "read-only",
+        "--model", "gpt-6-astra", "--config",
+        "model_reasoning_effort=medium", "--output-schema", "{candidate_schema}", "-",
+    )
+
+    with pytest.raises(ValueError, match="trusted Codex binary directly"):
+        host_module.qualify_host_candidate_argv(
+            (str(wrapper), *base[1:]),
+            trusted_codex_executable=str(trusted),
+            expected_model="gpt-6-astra",
+            expected_reasoning_effort="medium",
+            expected_output_schema="{candidate_schema}",
+        )
+    with pytest.raises(ValueError, match="configured Codex executable"):
+        host_module.resolve_trusted_codex_executable(
+            environ={
+                "PATH": str(trusted.parent),
+                "ODYLITH_REASONING_CODEX_BIN": str(wrapper),
+            }
+        )
+
+    secret = "sk-private-do-not-retain"
+    contaminated = (*base[:-3], "--config", f"api_key={secret}", *base[-3:])
+    with pytest.raises(ValueError) as raised:
+        host_module.qualify_host_candidate_argv(
+            contaminated,
+            trusted_codex_executable=str(trusted),
+            expected_model="gpt-6-astra",
+            expected_reasoning_effort="medium",
+            expected_output_schema="{candidate_schema}",
+        )
+    assert "canonical release argv contract" in str(raised.value)
+    assert secret not in str(raised.value)
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    (
+        ("--profile", "override"),
+        ("--sandbox", "workspace-write"),
+        ("--dangerously-bypass-approvals-and-sandbox",),
+        ("--oss",),
+        ("--local-provider", "ollama"),
+        ("--image", "/tmp/input.png"),
+        ("--cd", "/tmp"),
+        ("--add-dir", "/tmp"),
+        ("--json",),
+        ("--output-last-message", "/tmp/message"),
+        ("--enable", "feature"),
+        ("review",),
+        ("extra-positional",),
+        ("-",),
+    ),
+)
+def test_host_candidate_qualification_rejects_every_noncanonical_token(
+    tmp_path: Path,
+    mutation: tuple[str, ...],
+) -> None:
+    trusted = tmp_path / "trusted/codex"
+    trusted.parent.mkdir(parents=True)
+    trusted.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    trusted.chmod(0o755)
+    canonical = (
+        str(trusted), "exec", "--ephemeral", "--ignore-user-config",
+        "--skip-git-repo-check", "--sandbox", "read-only",
+        "--model", "gpt-6-astra", "--config",
+        "model_reasoning_effort=medium", "--output-schema", "{candidate_schema}", "-",
+    )
+    contaminated = (*canonical[:-1], *mutation, canonical[-1])
+
+    with pytest.raises(ValueError, match="canonical release argv contract"):
+        host_module.qualify_host_candidate_argv(
+            contaminated,
+            trusted_codex_executable=str(trusted),
+            expected_model="gpt-6-astra",
+            expected_reasoning_effort="medium",
+            expected_output_schema="{candidate_schema}",
+        )
 
 
 def test_host_candidate_clarification_candidate_is_passed_unchanged_to_propose(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     candidate = {
-        "mode": "clarification_required",
-        "clarification": {"required_fields": ["first_path"]},
+        "version": "candidate",
+        "result": {
+            "status": "clarification_required",
+            "clarification": {"required_fields": ["first_path"]},
+        },
     }
     flow, host_run, _installed, host_calls, proposal_paths, _repo = _flow(
         tmp_path, contract={"version": "contract"}, candidate=candidate,
     )
+    observations: list[dict[str, object]] = []
+    flow = host_module.HostCandidateFlow(**{**flow.__dict__, "observe": observations.append})
     monkeypatch.setattr(host_module.subprocess, "run", host_run)
     result = host_module.run_host_candidate_flow(flow)
 
     assert result.returncode == 0
     assert len(host_calls) == 1
     assert len(proposal_paths) == 1
+    assert observations[-1]["response_kind"] == "clarification_required"
+    assert observations[-1]["candidate_temp_cleaned"] is True
 
 
 @pytest.mark.parametrize(
@@ -205,7 +348,9 @@ def test_contract_command_failure_stops_before_host_invocation(tmp_path: Path) -
 
 def test_host_timeout_budget_includes_contract_and_host_work(tmp_path: Path, monkeypatch) -> None:
     flow, host_run, installed_calls, host_calls, _proposal_paths, _repo = _flow(
-        tmp_path, contract={"version": "contract"}, candidate={"version": "candidate"},
+        tmp_path,
+        contract={"version": "contract"},
+        candidate={"version": "candidate", "result": {"status": "authored"}},
     )
     monkeypatch.setattr(host_module.subprocess, "run", host_run)
 
@@ -214,7 +359,11 @@ def test_host_timeout_budget_includes_contract_and_host_work(tmp_path: Path, mon
         time.sleep(0.02)
         return _completed(
             list(command),
-            stdout=json.dumps({"version": "contract", "candidate_schema": {}}),
+            stdout=json.dumps({
+                "version": "contract",
+                "candidate_schema": {},
+                "request": {"evidence": "Create a reviewable plan."},
+            }),
         )
 
     flow = host_module.HostCandidateFlow(**{**flow.__dict__, "invoke_installed": slow_contract})

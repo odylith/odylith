@@ -32,8 +32,10 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 )
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     DEEP_PROFILE_ID,
+    GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION,
     RESCUE_PROFILE_ID,
     STANDARD_PROFILE_ID,
+    UNAVAILABLE_PROVIDER_PROFILE_ID,
     get_greenfield_model_profile,
 )
 
@@ -74,7 +76,10 @@ def test_published_operating_envelope_matches_the_runtime_contract() -> None:
         profile = get_greenfield_model_profile(profile_id)
         assert profile_id in published
         assert f"{int(profile.performance_target_seconds)}-second" in published
-        assert "180-second operational timeout" in published
+    assert "sole release-success profile" in published
+    assert "lower-capability clarification/no-write control" in published
+    assert "negative and\n  diagnostic profile" in published
+    assert "180-second operational timeout" in published
 
 
 def test_greenfield_operating_envelope_accepts_one_bounded_governance_product() -> None:
@@ -101,7 +106,20 @@ def test_greenfield_operating_envelope_accepts_one_bounded_governance_product() 
     assert receipt["filesystem_contract"]["package_visibility"] == (
         "journaled_recovery_not_atomic_generation_pointer"
     )
-    assert RESCUE_PROFILE_ID in receipt["model_contract"]["profiles"]
+    assert receipt["model_contract"] == {
+        "contract_version": GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION,
+        "declared_profiles": [
+            STANDARD_PROFILE_ID,
+            RESCUE_PROFILE_ID,
+            DEEP_PROFILE_ID,
+        ],
+        "release_success_profiles": [STANDARD_PROFILE_ID],
+        "lower_capability_control_profiles": [RESCUE_PROFILE_ID],
+        "unavailable_provider_proof_profile": UNAVAILABLE_PROVIDER_PROFILE_ID,
+        "authority": "candidate_hypothesis_only",
+        "lower_capability_behavior": "clarify_or_fail_safe_without_invention",
+        "observed": _model_observation(),
+    }
     assert receipt["evidence_contract"]["public_input_formats"] == list(SUPPORTED_PUBLIC_INPUT_FORMATS)
     assert set(receipt["evidence_contract"]["public_input_formats"]).isdisjoint(
         receipt["evidence_contract"]["internal_custody_formats"]
@@ -251,6 +269,35 @@ def test_timeout_never_invents_a_missing_model_profile_before_the_call() -> None
     assert provider.calls == 0
 
 
+def test_cli_exposes_only_release_success_tiers_and_labels_other_profiles() -> None:
+    args = greenfield_proposals_cli._parse_args(
+        [
+            "propose",
+            "--prompt",
+            "Create one bounded product.",
+            "--candidate-file",
+            "/tmp/candidate.json",
+            "--repair-tier",
+            "standard",
+        ]
+    )
+    assert args.repair_tier == "standard"
+    assert "Luna clarification/no-write control" in greenfield_proposals_cli._REPAIR_TIER_TIMING_HELP
+    assert "Sol negative diagnostic" in greenfield_proposals_cli._REPAIR_TIER_TIMING_HELP
+    with pytest.raises(SystemExit):
+        greenfield_proposals_cli._parse_args(
+            [
+                "propose",
+                "--prompt",
+                "Create one bounded product.",
+                "--candidate-file",
+                "/tmp/candidate.json",
+                "--repair-tier",
+                "rescue",
+            ]
+        )
+
+
 def test_public_compile_rejects_oversize_before_provider_discovery(monkeypatch, tmp_path) -> None:  # type: ignore[no-untyped-def]
     provider_discovery_calls = 0
 
@@ -298,7 +345,7 @@ def test_edit_read_time_reduces_the_provider_window_before_discovery(monkeypatch
             prompt="Create one bounded product.",
             edit_evidence="A bounded edit.",
             release_selector="",
-            repair_tier="rescue",
+            repair_tier="standard",
             started_at=0.0,
             host_candidate={},
         )
@@ -515,6 +562,43 @@ def test_public_envelope_rejects_partial_or_cross_profile_role_observations() ->
     )
     assert crossed_receipt["status"] == "unsupported"
     assert crossed_receipt["issues"] == ["model_authoring_observation_mismatch"]
+
+
+@pytest.mark.parametrize("profile_id", [RESCUE_PROFILE_ID, DEEP_PROFILE_ID])
+def test_public_envelope_rejects_control_and_diagnostic_profiles_as_success(
+    profile_id: str,
+) -> None:
+    receipt = greenfield_operating_envelope_receipt(
+        facts={},
+        source_format="operator_prompt",
+        source_size_bytes=120,
+        model_authoring=_model_observation(profile_id),
+    )
+
+    assert receipt["status"] == "unsupported"
+    assert receipt["issues"] == ["model_authoring_observation_mismatch"]
+    with pytest.raises(ValueError, match="outside the declared operating envelope"):
+        require_supported_greenfield_operating_envelope(receipt)
+
+
+def test_validator_rejects_v4_receipt_and_v22_model_contract() -> None:
+    receipt = greenfield_operating_envelope_receipt(
+        facts={},
+        source_format="operator_prompt",
+        source_size_bytes=120,
+        model_authoring=_model_observation(),
+    )
+    old_envelope = copy.deepcopy(receipt)
+    old_envelope["version"] = "odylith.greenfield-operating-envelope.v4"
+    with pytest.raises(ValueError, match="version is unsupported"):
+        require_supported_greenfield_operating_envelope(old_envelope)
+
+    old_profile_contract = copy.deepcopy(receipt)
+    old_profile_contract["model_contract"][
+        "contract_version"
+    ] = "odylith.greenfield.model-profile-contract.v22"
+    with pytest.raises(ValueError, match="model contract is unsupported"):
+        require_supported_greenfield_operating_envelope(old_profile_contract)
 
 
 def test_internal_custody_cannot_claim_model_observations() -> None:

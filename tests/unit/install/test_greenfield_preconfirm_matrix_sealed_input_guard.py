@@ -30,6 +30,7 @@ def _require_release_inputs(*, root: Path, case_file: Path) -> None:
         sealed_root=str(root),
         semantic_annotations_file=str(_write(root / "final-holdout.json")),
         evaluation_split_manifest=str(_write(root / "evaluation-splits.json")),
+        lower_capability_control_file=str(_write(root / "luna-control.json")),
     )
 
 
@@ -43,6 +44,7 @@ def _final_holdout_args(*, ledger: Path, provenance: Path, output: Path) -> Simp
         semantic_annotations_file=str(output.parent / "final-holdout.json"),
         evaluation_split_manifest=str(output.parent / "evaluation-splits.json"),
         case_file=(),
+        lower_capability_control_file=str(output.parent / "luna-control.json"),
     )
 
 

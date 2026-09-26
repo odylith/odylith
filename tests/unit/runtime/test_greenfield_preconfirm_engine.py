@@ -297,8 +297,6 @@ def test_authored_quality_failure_is_immediate_and_unrepaired(
     (
         ("auto", "standard", 90.0, False),
         ("standard", "standard", 90.0, False),
-        ("rescue", "rescue", 120.0, True),
-        ("deep", "deep", 150.0, True),
     ),
 )
 def test_profiles_keep_advisory_targets_and_one_operational_timeout(
@@ -327,6 +325,27 @@ def test_profiles_keep_advisory_targets_and_one_operational_timeout(
     assert f"target {target:g}s is advisory" in result.manifest["repair_tier_policy"][authored]
 
 
+@pytest.mark.parametrize("tier", ["rescue", "deep"])
+def test_unqualified_profile_tiers_fail_closed_before_prewrite(
+    monkeypatch: pytest.MonkeyPatch,
+    tier: str,
+) -> None:
+    _install_authored_gate(monkeypatch, report=_report(passed=True))
+    calls: list[object] = []
+
+    with pytest.raises(ValueError, match="not release-qualified"):
+        engine.run_greenfield_preconfirm_engine(
+            proposal={"projection_origin": "model_authored_typed_intent"},
+            release_selector="0.0.1",
+            build_prewrite=lambda *_args: calls.append(object()),
+            proposal_ready=True,
+            repair_tier=tier,
+            model_authoring_tier=tier,
+        )
+
+    assert calls == []
+
+
 def test_profile_mismatch_is_rejected_before_prewrite(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -339,8 +358,8 @@ def test_profile_mismatch_is_rejected_before_prewrite(
             release_selector="0.0.1",
             build_prewrite=lambda *_args: calls.append(object()),
             proposal_ready=True,
-            repair_tier="rescue",
-            model_authoring_tier="standard",
+            repair_tier="standard",
+            model_authoring_tier="rescue",
         )
 
     assert calls == []

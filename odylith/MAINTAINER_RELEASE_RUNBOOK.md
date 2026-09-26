@@ -273,22 +273,23 @@ Run the targets in this order.
 - `make release-preflight` must also fail closed unless the built local dist
   passes the installed Greenfield pre-confirm compilation and commit-only
   release matrix. The matrix is part of shared release proof and must cover at
-  least ten high-variance standard cases. Its model-profile proof must separately
-  bind the pinned v18 standard, rescue, and deep profiles to their exact participant
-  selection, remaining-candidate authoring, and final-review requests. The
-  90-, 120-, and 150-second proposal targets are advisory performance guidelines,
-  not admission gates. All three profiles share a 165-second model window within
-  a strict 180-second operational timeout; each later role receives only the
-  remaining shared time, without a separate stage cap or retry. The 60-second
-  normal-case proposal target is also advisory; commit-only publication retains
-  its separate strict limit below 60 seconds. Do not relabel old-profile receipts
-  or historical failures as new-profile proof.
-  Default or `auto` is standard; elapsed time and failure may not relabel or
-  extend it into rescue or deep. Rescue and deep are explicit pre-call choices.
-  The lower-capability profile must either meet the same semantic floor, ask the
-  one material clarification, or fail safely without writes, and provider
-  unavailability must have its own fast no-write proof. Synthetic rescue probes
-  and post-hoc tier relabeling are not release evidence.
+  least ten high-variance standard cases. Model-profile contract v23 qualifies
+  only the pinned Astra-medium standard profile for successful consumer release
+  claims. One separately identified Luna-medium host control must return the
+  expected source-bound clarification without writes; it is excluded from corpus
+  acceptance statistics and cannot count as a committed positive. Sol-high is
+  negative diagnostic evidence only, and unavailable-provider behavior retains
+  its separate fast no-write proof. The host receipt must bind the exact direct
+  `codex exec` model and reasoning-effort argv; environment labels and wrappers
+  are not release evidence.
+  The 90-, 120-, and 150-second values remain advisory performance observations,
+  not admission gates. Declared profiles share a 165-second model window inside
+  the strict 180-second operational timeout, while commit-only publication keeps
+  its separate strict limit below 60 seconds. Default or `auto` is standard.
+  Public `rescue` and `deep` success selection fails before provider execution;
+  elapsed time or failure never promotes a standard request into another model
+  path. Do not relabel v22 receipts, old envelopes, or historical failures as
+  v23 proof, and do not add retries, repairs, fallbacks, or a model ladder.
 - The same matrix must run per-case headless generated browser state proof for
   Radar, Registry, Atlas, Compass, Casebook, and tooling-shell surfaces,
   including normal shell routes, invalid-query recovery, and Casebook

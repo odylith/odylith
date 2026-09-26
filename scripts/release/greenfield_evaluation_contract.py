@@ -42,7 +42,7 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 
 
-EVALUATION_SPLIT_VERSION = "odylith.greenfield.evaluation-splits.v6"
+EVALUATION_SPLIT_VERSION = "odylith.greenfield.evaluation-splits.v7"
 FINAL_HOLDOUT_VERSION = "odylith.greenfield.final-holdout.v7"
 STRUCTURAL_FLOORS_VERSION = "odylith.greenfield.structural-floors.v4"
 ATOMIC_CATEGORIES = (

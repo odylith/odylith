@@ -605,18 +605,35 @@ def test_compile_transaction_uses_host_native_candidate_when_configured(tmp_path
         )
 
     monkeypatch.setattr(module, "run_host_candidate_flow", fake_host_flow)
+    monkeypatch.setattr(
+        module,
+        "resolve_trusted_codex_executable",
+        lambda **_kwargs: "/trusted/codex",
+    )
     monkeypatch.setattr(module, "_run", fake_run)
 
     compiled = module._compile_transaction(  # noqa: SLF001
         repo_root=tmp_path,
         env={"PATH": "/usr/bin"},
         case=case,
-        host_candidate_argv=("host", "--schema", "{candidate_schema}"),
+        host_candidate_argv=(
+            "/trusted/codex", "exec", "--ephemeral", "--ignore-user-config",
+            "--skip-git-repo-check", "--sandbox", "read-only",
+            "--model", "gpt-6-astra", "--config",
+            "model_reasoning_effort=medium", "--output-schema",
+            "{candidate_schema}", "-",
+        ),
     )
 
     assert compiled.transaction_hash == "a" * 64
     flow = captured["flow"]
-    assert flow.host_argv == ("host", "--schema", "{candidate_schema}")
+    assert flow.host_argv == (
+        "/trusted/codex", "exec", "--ephemeral", "--ignore-user-config",
+        "--skip-git-repo-check", "--sandbox", "read-only",
+        "--model", "gpt-6-astra", "--config",
+        "model_reasoning_effort=medium", "--output-schema",
+        "{candidate_schema}", "-",
+    )
     command = captured["command"]
     assert command[command.index("--candidate-file") + 1] == str(tmp_path.parent / "candidate.json")
 

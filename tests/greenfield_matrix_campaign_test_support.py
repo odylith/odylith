@@ -172,7 +172,7 @@ def write_semantic_release_fixture(*, repo_root: Path, temp_root: Path) -> tuple
     manifest_path.write_text(
         json.dumps(
             {
-                "version": "odylith.greenfield.evaluation-splits.v6",
+                "version": "odylith.greenfield.evaluation-splits.v7",
                 "tracked_corpus": {
                     "path": "tests/fixtures/tracked.json",
                     "sha256": hashlib.sha256(tracked_path.read_bytes()).hexdigest(),
@@ -200,7 +200,7 @@ def write_semantic_release_fixture(*, repo_root: Path, temp_root: Path) -> tuple
                     "evidence_formats": list(SUPPORTED_PUBLIC_INPUT_FORMATS),
                     "models": list(supported_greenfield_model_profile_ids()),
                     "model_assignment": {
-                        "version": "case-id-balanced-sha256-v1",
+                        "version": "release-success-astra-only-v2",
                         "seed": "f1e5a66a5cce578b0bd9f56d96f08887358632627231769667c432933b9dfe6f",
                     },
                 },

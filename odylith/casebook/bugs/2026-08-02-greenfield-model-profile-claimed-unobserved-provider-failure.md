@@ -139,3 +139,27 @@
 - Code References: - scripts/release/greenfield_model_profiles.py
 - scripts/release/greenfield_model_profile_proof.py
 - scripts/release/greenfield_preconfirm_matrix.py
+
+## V23 Release-Success And Control Separation (2026-09-25)
+
+- Paired public evidence falsifies Sol high as a release-success path: the same
+  case passed on Astra medium and failed semantic admission on Sol high. Luna
+  has not earned the 36-case success floor. Profile labels must not override
+  those observations.
+- Model-profile contract v23 therefore makes Astra medium the sole
+  release-success profile. Luna medium remains an explicit lower-capability
+  source-bound clarification/no-write control. Sol high remains declared only
+  for negative diagnostic evidence, and unavailable-provider proof remains a
+  separate no-write control. Luna or Sol positives cannot repair Astra coverage
+  or expand the success set.
+- `auto` and `standard` are the only consumer success selections. Explicit
+  `rescue` and `deep` success selection fails closed before provider execution;
+  neither silently aliases to Astra and neither creates a retry, fallback, or
+  model ladder. The 90/120/150-second values remain advisory observations under
+  the unchanged 180-second operational safety timeout.
+- Qualified host-native proof must retain the direct Codex model and reasoning
+  argv, exact source hash, response kind, one-call count, cleanup state, and
+  elapsed time. Environment labels, wrapper names, cached summaries, or forged
+  response kinds cannot establish model identity or lower-capability safety.
+  Old v22 receipts and v4 operating envelopes require rebuilding; they are not
+  reinterpreted as v23/v5 evidence.

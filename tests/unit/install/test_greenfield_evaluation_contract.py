@@ -632,7 +632,7 @@ def test_exact_prompt_identity_crossing_is_rejected_without_a_similarity_thresho
     )
 
 
-def test_frozen_contract_verifies_v6_acceptance_confidence_and_samples(tmp_path: Path) -> None:
+def test_frozen_contract_verifies_v7_acceptance_confidence_and_samples(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     corpus_path = repo_root / "tests/fixtures/corpus.json"
     corpus_path.parent.mkdir(parents=True)
@@ -659,7 +659,7 @@ def test_frozen_contract_verifies_v6_acceptance_confidence_and_samples(tmp_path:
                     else ""
                 ),
             ),
-            tags=(f"model-profile:{MODEL_PROFILES[(index - 1) // 12]}",),
+            tags=(f"model-profile:{MODEL_PROFILES[0]}",),
         )
         for index in range(1, 37)
     )

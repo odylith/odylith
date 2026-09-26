@@ -1,6 +1,6 @@
 # Greenfield Operating Envelope
 
-Version: `odylith.greenfield-operating-envelope.v4`
+Version: `odylith.greenfield-operating-envelope.v5`
 
 Profile: `single-product-governance-onboarding`
 
@@ -53,15 +53,18 @@ preview. It adds no schema, stage, retry, or repair mechanism. The sealed-byte
 `create` CLI remains a separate commit-only interface. Native automatic delivery
 and visible completion require their own proof.
 
-Release evaluation covers three pinned candidate success profiles; their identity
-does not itself establish qualification:
+Model-profile contract v23 declares three pinned real-model profiles, but only
+one is qualified to support a successful release claim:
 
 - `greenfield-standard-participant-first-astra-medium-v19`: the default and
-  `auto` path, with a 90-second advisory performance target.
-- `greenfield-rescue-participant-first-luna-medium-v19`: the explicit rescue
-  path, with a 120-second advisory performance target.
-- `greenfield-deep-participant-first-sol-high-v18`: the explicit deep path,
-  with a 150-second advisory performance target.
+  `auto` path, the sole release-success profile, with a 90-second advisory
+  performance target.
+- `greenfield-rescue-participant-first-luna-medium-v19`: an explicit
+  lower-capability clarification/no-write control with a 120-second advisory
+  target. It is declared but is not success-qualified.
+- `greenfield-deep-participant-first-sol-high-v18`: an unsupported negative and
+  diagnostic profile with a 150-second advisory target. It is declared but is
+  not success-qualified.
 
 All three profiles use one 180-second operational timeout and one 165-second
 shared model window, leaving 15 seconds for deterministic completion. Meeting or
@@ -69,50 +72,44 @@ missing the selected 90/120/150-second target is recorded as performance evidenc
 not used as an admission gate. Proposal elapsed time must remain strictly below
 the operational timeout. Sixty seconds remains an advisory normal-case target.
 The separate commit-only step must still finish strictly below 60 seconds.
-Profile contract v21 changes only the rescue remaining author from Terra medium
-to Luna medium after the retained Terra clarification control invented an
-unsupported product path and the unchanged Luna comparison returned the required
-source-bound material clarification. Profile contract v19's default Astra author,
-Participant ownership, advisory targets, finite timeout, final reviewer, semantic
-requirements and transaction laws are unchanged. This selection requires fresh
-integrated qualification; the deep identity is unchanged.
+Profile contract v23 separates declared profiles, the release-success profile,
+and the lower-capability control instead of treating evidence profiles as
+interchangeable success routes. The advisory targets, finite timeout, semantic
+requirements, and transaction laws are unchanged.
 Historical observations keep their original limits and verdicts; old sealed
-v12/v13/v14/v15/v16/v17 transactions are not relabeled as current. Retired standard
-v18 authoring receipts are not relabeled as v19, and retired rescue Terra v18
-receipts are not relabeled as Luna v19. Fresh
-per-profile evidence is required for qualification.
+v12/v13/v14/v15/v16/v17 transactions and v22 model-profile receipts are not
+relabeled as current. Retired standard v18 authoring receipts are not relabeled
+as v19, and retired rescue Terra v18 receipts are not relabeled as Luna v19.
+Fresh profile evidence is required for any qualification.
 
 The selected profile is fixed before the model request. Elapsed time or a failed
-attempt never relabels or extends a standard request into rescue or deep.
-Every profile first uses Astra/medium to select source-grounded participants and
-their exact source locations. Standard then uses Astra medium, rescue uses Luna
-medium, and deep uses Sol high to author the remaining candidate around that
-immutable participant set. An authored result requires one final read-only
-Astra/medium review of the complete joined candidate using only the shared model
-window's remaining time. The deterministic join is not a model call, and neither
-rewrites source evidence nor repairs either model response. There is no separate
-stage cap. Setup, validation and finalization remain inside the shared deadline.
-No fixed stage reserve, retry, repair call or tier promotion follows. Selector
-failure stops after one call; material clarification after remaining-candidate
-authoring stops after two calls and does not invoke final review.
+attempt never relabels or extends a standard request into rescue or deep. The
+normal `auto` and `standard` routes expose only Astra medium. Legacy explicit
+`rescue` or `deep` success selection fails closed before provider execution; it
+does not alias either tier to Astra. Luna remains available only for the bounded
+lower-capability clarification/no-write control, while Sol remains available
+only for negative diagnostic comparison. No fallback, retry, repair call, model
+ladder, or tier promotion follows.
 These are bounded candidate profiles, not claims about every provider model.
 Host-model output is candidate evidence only. Every profile must clarify or fail
 safely instead of inventing product truth. Provider unavailability is separately
 proven as a fast, no-write environment outcome and is not a supported-success
 profile.
 
-This mechanism is an unreleased integration candidate, not production
-qualification. Two fresh external comparisons produced complete governance
-packages in 76.165 and 77.288 seconds, each with three calls, independent
-acceptance without P0/P1 findings, and 32 passing desktop/mobile browser states.
-These disclosed development cases select the mechanism for integration; they do
-not estimate reliability or qualify installed behavior, rescue/deep, unseen
-inputs, or release readiness. Earlier failed attempts retain their own verdicts.
+Historical three-call comparisons produced complete governance packages in
+76.165 and 77.288 seconds with independent acceptance and 32 passing
+desktop/mobile browser states. Those receipts preserve learning only; the
+three-call selector/author/join mechanism is retired and cannot qualify the
+current host-owned path. They do not estimate current reliability or qualify
+installed behavior, controls, unseen inputs, or release readiness. Earlier
+failed attempts retain their own verdicts.
 
-Rescue retains a lower-capability remaining-candidate author. Release proof
-requires each profile's observed committed positive case and a source-bound material
-clarification with no writes, separately from unavailable-provider behavior.
-No other model earns a proof claim without its own observed request evidence.
+Luna retains the explicit lower-capability control obligation: source-bound
+material clarification or a safe no-write outcome, separately from unavailable-
+provider behavior. That control cannot contribute a committed success case.
+Astra release proof requires observed committed positive cases and source-bound
+material clarifications with no writes. Sol diagnostic evidence cannot qualify a
+release-success profile.
 
 Authoring v68 returns either a reviewed source-and-design candidate or the
 existing material clarification result. Source facts, actions and relationships
@@ -134,20 +131,18 @@ automatic occurrence repair. Review v2 binds the unchanged source and candidate;
 the release checker reconstructs the same view through canonical validation.
 It may admit or deny with one substantiated witness, never rewrite the candidate.
 Practical proposed choices remain advisory unless materially incompatible or unsafe.
-Private proof retains all three actual requests, responses, profiles, caps and
-elapsed times. It also retains the selector's ordered, source-resolved participant
-list and the full deterministic joined candidate. Successful native receipts
-require exactly three calls and bind final admission to that complete candidate
-and the sealed source/intent hashes. One- or two-call success observations cannot
-qualify these profiles. Admission is not proof of universal entailment.
-Independent semantic, transaction and UX adjudication remains a release gate,
-including regression examples previously caught by the retired source reviewer.
-This candidate has not earned a release or universal-success claim. Exact
+Private proof retains the one direct host-candidate request, exact resolved model
+and reasoning-effort argv, response hash, source hash, call count, cleanup state,
+and elapsed time. An authored candidate then receives one independent read-only
+Astra review inside the selected standard window; a host clarification ends after
+the one host call and writes nothing. There is no participant selector,
+remaining-candidate author, deterministic join, repair, retry, or fallback lane.
+Admission is not proof of universal entailment. Independent semantic,
+transaction, browser, recovery, and UX adjudication remains a release gate,
+including regression examples previously caught by retired mechanisms. Exact
 citations and a passed structural quality manifest are not an entailment
-guarantee. The operating receipt records both participant selection and
-remaining-candidate authoring observations under the same selected profile;
-neither role alone represents all accepted source facts. Final review remains
-separately bound to the complete candidate and sealed Product Intent authority.
+guarantee. The sealed host-candidate and review receipts remain bound to the
+complete source, candidate, and Product Intent authority.
 
 Identical quote bytes at a different location do not prove the selected role.
 Participant and state-object selectors use exact prefix/quote anchors and strict

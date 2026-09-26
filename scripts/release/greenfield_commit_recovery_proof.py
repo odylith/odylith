@@ -39,6 +39,7 @@ from greenfield_commit_recovery_generation import (
 )
 from greenfield_matrix_release_artifacts import is_sha256
 from greenfield_matrix_host_candidate import HostCandidateFlow
+from greenfield_matrix_host_candidate import resolve_trusted_codex_executable
 from greenfield_matrix_host_candidate import run_host_candidate_flow
 from greenfield_model_profiles import STANDARD_PROFILE_ID
 from greenfield_model_profiles import model_profile_environment
@@ -896,6 +897,11 @@ def _compile_transaction(
                 edit_evidence=confirmed_intent,
                 timeout=COMMAND_TIMEOUT_SECONDS,
                 env=env,
+                trusted_codex_executable=resolve_trusted_codex_executable(environ=env),
+                expected_model=str(env.get("ODYLITH_REASONING_MODEL") or ""),
+                expected_reasoning_effort=str(
+                    env.get("ODYLITH_REASONING_CODEX_REASONING_EFFORT") or ""
+                ),
                 invoke_installed=invoke_installed,
                 invoke_propose=invoke_propose,
                 observe=observe,

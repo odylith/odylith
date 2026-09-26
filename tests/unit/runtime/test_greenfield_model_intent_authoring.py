@@ -43,7 +43,6 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization
     materialize_model_authored_intent,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
-    RESCUE_PROFILE_ID,
     STANDARD_PROFILE_ID,
     get_greenfield_model_profile,
 )
@@ -104,14 +103,14 @@ def test_model_authored_intent_reaches_staged_product_intent_without_parser_reco
         authoring_provider=provider,
         participant_provider_factory=participant_factory,
         authoring_timeout_seconds=84,
-        authoring_profile_id=RESCUE_PROFILE_ID,
+        authoring_profile_id=STANDARD_PROFILE_ID,
         authoring_receipt=receipt,
     )
 
     assert candidate["first_path"] == _AUTHORED_FIRST_PATH
     assert candidate["human_actors"] == ["Dock attendant Ivo"]
     assert candidate["internal_systems"] == ["Berth map"]
-    assert receipt["tier"] == "rescue"
+    assert receipt["tier"] == "standard"
     assert receipt["authoring_version"] == GREENFIELD_INTENT_AUTHORING_VERSION
     assert receipt["semantic_model_call_count"] == 3
     assert candidate["authored_semantics"]["first_path_relations"][0]["action_verb_quote"] == "enters"
@@ -124,7 +123,7 @@ def test_model_authored_intent_reaches_staged_product_intent_without_parser_reco
     envelope = candidate["product_intent_authority"]["operating_envelope"]
     observed_evidence = envelope["evidence_contract"]["observed"]
     observed_model = envelope["model_contract"]["observed"]
-    profile = get_greenfield_model_profile(RESCUE_PROFILE_ID)
+    profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
     assert observed_evidence == {
         "format": "operator_prompt",
         "source_kind": "public_evidence",
@@ -138,20 +137,20 @@ def test_model_authored_intent_reaches_staged_product_intent_without_parser_reco
         "remaining_candidate_authoring": receipt["remaining_candidate_authoring"]["model_profile"],
     }
     assert observed_model["participant_selection"] == {
-        "profile_id": RESCUE_PROFILE_ID,
+        "profile_id": STANDARD_PROFILE_ID,
         "provider": profile.provider,
         "model": profile.participant_model,
         "reasoning_effort": profile.participant_reasoning_effort,
         "effective_timeout_seconds": pytest.approx(84.0, abs=0.01),
-        "authoring_tier": "rescue",
+        "authoring_tier": "standard",
     }
     assert observed_model["remaining_candidate_authoring"] == {
-        "profile_id": RESCUE_PROFILE_ID,
+        "profile_id": STANDARD_PROFILE_ID,
         "provider": profile.provider,
         "model": profile.model,
         "reasoning_effort": profile.reasoning_effort,
         "effective_timeout_seconds": pytest.approx(84.0, abs=0.01),
-        "authoring_tier": "rescue",
+        "authoring_tier": "standard",
     }
 
 
@@ -216,7 +215,7 @@ def test_edit_evidence_reauthors_one_new_complete_candidate(tmp_path) -> None:  
         authoring_provider=provider,
         participant_provider_factory=provider.participant_provider,
         authoring_timeout_seconds=84,
-        authoring_profile_id=RESCUE_PROFILE_ID,
+        authoring_profile_id=STANDARD_PROFILE_ID,
     )
 
     assert candidate["title"] == "Harbor Desk Plus"
@@ -341,7 +340,7 @@ def test_model_authored_multi_component_events_bind_to_exact_source_owned_system
         authoring_provider=provider,
         participant_provider_factory=participant_factory,
         authoring_timeout_seconds=84,
-        authoring_profile_id=RESCUE_PROFILE_ID,
+        authoring_profile_id=STANDARD_PROFILE_ID,
     )
 
     proposal = build_confirmed_greenfield_proposal(
@@ -1439,7 +1438,7 @@ def test_sealed_semantics_drop_all_provider_fact_indices(tmp_path) -> None:  # t
         authoring_provider=provider,
         participant_provider_factory=participant_factory,
         authoring_timeout_seconds=84,
-        authoring_profile_id=RESCUE_PROFILE_ID,
+        authoring_profile_id=STANDARD_PROFILE_ID,
     )
     serialized = json.dumps(candidate["authored_semantics"], ensure_ascii=False, sort_keys=True)
 

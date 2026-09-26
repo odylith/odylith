@@ -13,6 +13,7 @@ from typing import Any
 
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 from greenfield_preconfirm_matrix_cases import case_expectation
+from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_RECEIPT_VERSION
 from greenfield_matrix_host_candidate import HOST_NATIVE_MATRIX_OBSERVATION_VERSION
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     DEEP_PROFILE_ID,
@@ -20,8 +21,10 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
     RESCUE_PROFILE_ID,
     STANDARD_PROFILE_ID,
     UNAVAILABLE_PROVIDER_PROFILE_ID,
+    declared_greenfield_model_profile_ids,
     get_greenfield_model_profile,
     greenfield_model_profile_observation_issues,
+    lower_capability_control_greenfield_model_profile_ids,
     supported_greenfield_model_profile_ids,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
@@ -43,9 +46,12 @@ from odylith.runtime.domain_intelligence.greenfield_candidate_revision import (
 )
 
 
-MODEL_PROFILE_ASSIGNMENT_VERSION = "case-id-balanced-sha256-v1"
+MODEL_PROFILE_ASSIGNMENT_VERSION = "release-success-astra-only-v2"
 MODEL_PROFILE_ASSIGNMENT_SEED = "f1e5a66a5cce578b0bd9f56d96f08887358632627231769667c432933b9dfe6f"
 MODEL_PROFILES = supported_greenfield_model_profile_ids()
+LOWER_CAPABILITY_CONTROL_PROFILES = lower_capability_control_greenfield_model_profile_ids()
+DECLARED_MODEL_PROFILES = declared_greenfield_model_profile_ids()
+_ASSIGNABLE_PROFILE_IDS = (*MODEL_PROFILES, *LOWER_CAPABILITY_CONTROL_PROFILES)
 UNAVAILABLE_PROVIDER_PROFILE = UNAVAILABLE_PROVIDER_PROFILE_ID
 _TAG_PREFIX = "model-profile:"
 _PROFILE_ENV_KEYS = (
@@ -63,6 +69,17 @@ _PROFILE_ENV_KEYS = (
     "ODYLITH_REASONING_CLAUDE_REASONING_EFFORT",
 )
 _TIME_TOLERANCE_SECONDS = 1e-6
+_HOST_NATIVE_STAGE_FIELDS = frozenset(
+    {
+        "version", "status", "host_invocations", "contract_command_invocations",
+        "proposal_command_invocations", "model_profile_id", "host_request",
+        "candidate_temp_cleaned", "host_workspace_cleaned", "stage",
+        "contract_returncode", "contract_sha256", "source_sha256",
+        "candidate_schema_sha256", "host_returncode", "host_stdout_bytes",
+        "host_stderr_bytes", "response_kind", "candidate_sha256",
+        "candidate_temp_outside_repo", "elapsed_seconds",
+    }
+)
 
 
 def assign_model_profiles(cases: Sequence[GreenfieldMatrixCase]) -> tuple[GreenfieldMatrixCase, ...]:
@@ -82,13 +99,21 @@ def assign_model_profiles(cases: Sequence[GreenfieldMatrixCase]) -> tuple[Greenf
         stratum = case_expectation(case)
         input_style = str(case.input_style or "unspecified")
         explicit = _explicit_profiles(case)
-        if len(explicit) > 1 or (explicit and explicit[0] not in MODEL_PROFILES):
+        if len(explicit) > 1 or (explicit and explicit[0] not in _ASSIGNABLE_PROFILE_IDS):
             raise ValueError(f"Greenfield case `{_case_id(case)}` has an invalid model profile")
         if explicit:
+            if (
+                explicit[0] in LOWER_CAPABILITY_CONTROL_PROFILES
+                and case_expectation(case) != "clarification_required"
+            ):
+                raise ValueError(
+                    f"Greenfield control case `{_case_id(case)}` must require clarification"
+                )
             assignments[index] = explicit[0]
-            counts[explicit[0]] += 1
-            stratum_counts[stratum][explicit[0]] += 1
-            input_style_counts[input_style][explicit[0]] += 1
+            if explicit[0] in MODEL_PROFILES:
+                counts[explicit[0]] += 1
+                stratum_counts[stratum][explicit[0]] += 1
+                input_style_counts[input_style][explicit[0]] += 1
             continue
         identity = _case_id(case)
         digest = hashlib.sha256(f"{MODEL_PROFILE_ASSIGNMENT_SEED}:{identity}".encode("utf-8")).hexdigest()
@@ -116,8 +141,13 @@ def case_model_profile(case: GreenfieldMatrixCase) -> str:
     """Return the one validated profile assigned to a release case."""
 
     profiles = _explicit_profiles(case)
-    if len(profiles) != 1 or profiles[0] not in MODEL_PROFILES:
+    if len(profiles) != 1 or profiles[0] not in _ASSIGNABLE_PROFILE_IDS:
         raise ValueError(f"Greenfield case `{_case_id(case)}` lacks one supported model profile")
+    if (
+        profiles[0] in LOWER_CAPABILITY_CONTROL_PROFILES
+        and case_expectation(case) != "clarification_required"
+    ):
+        raise ValueError(f"Greenfield control case `{_case_id(case)}` must require clarification")
     return profiles[0]
 
 
@@ -129,7 +159,7 @@ def model_profile_environment(
 ) -> dict[str, str]:
     """Return an isolated real provider request for one pinned profile."""
 
-    if profile not in (*MODEL_PROFILES, UNAVAILABLE_PROVIDER_PROFILE):
+    if profile not in (*DECLARED_MODEL_PROFILES, UNAVAILABLE_PROVIDER_PROFILE):
         raise ValueError(f"unsupported Greenfield model profile: {profile}")
     contract = get_greenfield_model_profile(profile)
     values = dict(environ)
@@ -163,6 +193,7 @@ def model_profile_evidence(
     *,
     observed: Mapping[str, Any] | None = None,
     stage_observation: Mapping[str, Any] | None = None,
+    expected_source: str = "",
 ) -> dict[str, Any]:
     """Bind configured and retained author/reviewer evidence to a pinned profile."""
 
@@ -188,12 +219,30 @@ def model_profile_evidence(
         issues.append("configured reasoning effort does not match the assigned release profile")
     if configured["maximum_model_timeout_seconds"] != contract.model_timeout_seconds:
         issues.append("configured timeout does not match the assigned release profile")
+    retained_stage = dict(stage_observation or {})
+    expected_source_sha256 = (
+        hashlib.sha256(expected_source.encode("utf-8")).hexdigest()
+        if expected_source
+        else ""
+    )
     host_native = observation.get("origin") == "host_native"
+    host_native_clarification = (
+        not observation
+        and retained_stage.get("version") == HOST_NATIVE_MATRIX_OBSERVATION_VERSION
+        and retained_stage.get("response_kind") == "clarification_required"
+    )
     if host_native:
         stage_summary = _host_native_stage_observation_evidence(
             profile,
             sealed_observation=observation,
-            stage_observation=dict(stage_observation or {}),
+            stage_observation=retained_stage,
+        )
+        issues.extend(str(issue) for issue in stage_summary["issues"])
+    elif host_native_clarification:
+        stage_summary = _host_native_clarification_stage_observation_evidence(
+            profile,
+            stage_observation=retained_stage,
+            expected_source_sha256=expected_source_sha256,
         )
         issues.extend(str(issue) for issue in stage_summary["issues"])
     elif observation:
@@ -219,7 +268,7 @@ def model_profile_evidence(
             )
     elif profile != UNAVAILABLE_PROVIDER_PROFILE:
         issues.append("sealed model profile observation is missing")
-    stage_summary = stage_summary if host_native else (
+    stage_summary = stage_summary if host_native or host_native_clarification else (
         _model_stage_observation_evidence(
             profile,
             sealed_observation=observation,
@@ -231,6 +280,18 @@ def model_profile_evidence(
     if stage_summary is not None:
         issues.extend(str(issue) for issue in stage_summary["issues"])
     issues = list(dict.fromkeys(issues))
+    if host_native:
+        semantic_authority = "host_native_candidate_and_preconfirm_tribunal"
+        sealed_request_roles = ["host_candidate", "candidate_review"]
+        lower_capability_scope = "candidate_review"
+    elif host_native_clarification:
+        semantic_authority = "host_native_clarification"
+        sealed_request_roles = ["host_candidate"]
+        lower_capability_scope = "not_applicable"
+    else:
+        semantic_authority = "typed_evidence_and_preconfirm_tribunal"
+        sealed_request_roles = ["participant_selection", "remaining_candidate_authoring"]
+        lower_capability_scope = "remaining_candidate_authoring"
     return {
         "contract_version": GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION,
         "assignment_version": MODEL_PROFILE_ASSIGNMENT_VERSION,
@@ -239,23 +300,18 @@ def model_profile_evidence(
         "performance_target_seconds": contract.performance_target_seconds,
         "operational_timeout_seconds": contract.operational_timeout_seconds,
         "lower_capability": contract.lower_capability,
-        "semantic_authority": (
-            "host_native_candidate_and_preconfirm_tribunal"
-            if host_native
-            else "typed_evidence_and_preconfirm_tribunal"
-        ),
-        "sealed_request_roles": (
-            ["host_candidate", "candidate_review"]
-            if host_native
-            else ["participant_selection", "remaining_candidate_authoring"]
-        ),
+        "semantic_authority": semantic_authority,
+        "sealed_request_roles": sealed_request_roles,
         "lower_capability_scope": (
-            ("candidate_review" if host_native else "remaining_candidate_authoring")
+            lower_capability_scope
             if contract.lower_capability
             else "not_applicable"
         ),
-        "maximum_semantic_model_calls": 1 if host_native else 5,
+        "maximum_semantic_model_calls": (
+            1 if host_native or host_native_clarification else 5
+        ),
         "configured": configured,
+        "expected_source_sha256": expected_source_sha256,
         "observed": observation,
         "stage_observation": (
             dict(stage_observation or {})
@@ -265,7 +321,7 @@ def model_profile_evidence(
         "stage_observation_summary": stage_summary,
         "status": (
             "passed"
-            if observation and not issues
+            if (observation or host_native_clarification) and not issues
             else "unobserved"
             if profile == UNAVAILABLE_PROVIDER_PROFILE and not observation
             else "failed"
@@ -306,7 +362,6 @@ def _host_native_stage_observation_evidence(
 ) -> dict[str, Any]:
     """Bind one external host candidate and one runtime review to sealed custody."""
 
-    contract = get_greenfield_model_profile(profile)
     observed = _mapping(sealed_observation)
     retained = _mapping(stage_observation)
     issues: list[str] = []
@@ -351,20 +406,100 @@ def _host_native_stage_observation_evidence(
         except (TypeError, ValueError, OverflowError):
             issues.append("sealed candidate_review observation is invalid")
 
-    expected_stage_fields = {
-        "version", "status", "host_invocations", "contract_command_invocations",
-        "proposal_command_invocations", "host_argv", "candidate_temp_cleaned",
-        "host_workspace_cleaned", "stage", "contract_returncode", "contract_sha256",
-        "candidate_schema_sha256", "host_returncode", "host_stdout_bytes",
-        "host_stderr_bytes", "candidate_sha256", "candidate_temp_outside_repo",
-        "elapsed_seconds",
+    issues.extend(_host_native_flow_observation_issues(
+        profile,
+        retained=retained,
+        expected_response_kind="authored",
+        expected_source_sha256=str(candidate.get("source_sha256") or ""),
+    ))
+    if (
+        _is_sha256(candidate.get("candidate_sha256"))
+        and retained.get("candidate_sha256") != candidate.get("candidate_sha256")
+    ):
+        issues.append("retained host candidate does not match the sealed receipt")
+    host_request = _mapping(retained.get("host_request"))
+    return {
+        "observation_version": str(retained.get("version") or ""),
+        "origin": "host_native",
+        "semantic_model_call_count": 1,
+        "request_roles": {
+            "host_candidate": {
+                "executable_sha256": str(host_request.get("executable_sha256") or ""),
+                "candidate_sha256": str(retained.get("candidate_sha256") or ""),
+            },
+            "candidate_review": dict(review),
+        },
+        "status": "passed" if not issues else "failed",
+        "issues": list(dict.fromkeys(issues)),
     }
-    if set(retained) != expected_stage_fields:
+
+
+def host_native_clarification_stage_observation_issues(
+    profile: str,
+    *,
+    stage_observation: Mapping[str, Any],
+    expected_source_sha256: str,
+) -> tuple[str, ...]:
+    """Validate one source-bound host clarification without public model metadata."""
+
+    return tuple(_host_native_flow_observation_issues(
+        profile,
+        retained=_mapping(stage_observation),
+        expected_response_kind="clarification_required",
+        expected_source_sha256=expected_source_sha256,
+    ))
+
+
+def _host_native_clarification_stage_observation_evidence(
+    profile: str,
+    *,
+    stage_observation: Mapping[str, Any],
+    expected_source_sha256: str,
+) -> dict[str, Any]:
+    retained = _mapping(stage_observation)
+    issues = _host_native_flow_observation_issues(
+        profile,
+        retained=retained,
+        expected_response_kind="clarification_required",
+        expected_source_sha256=expected_source_sha256,
+    )
+    host_request = _mapping(retained.get("host_request"))
+    return {
+        "observation_version": str(retained.get("version") or ""),
+        "origin": "host_native",
+        "semantic_model_call_count": 1,
+        "response_kind": str(retained.get("response_kind") or ""),
+        "source_sha256": str(retained.get("source_sha256") or ""),
+        "request_roles": {
+            "host_candidate": {
+                "executable_sha256": str(host_request.get("executable_sha256") or ""),
+                "candidate_sha256": str(retained.get("candidate_sha256") or ""),
+            },
+        },
+        "status": "passed" if not issues else "failed",
+        "issues": list(dict.fromkeys(issues)),
+    }
+
+
+def _host_native_flow_observation_issues(
+    profile: str,
+    *,
+    retained: Mapping[str, Any],
+    expected_response_kind: str,
+    expected_source_sha256: str = "",
+) -> list[str]:
+    contract = get_greenfield_model_profile(profile)
+    issues: list[str] = []
+    if set(retained) != _HOST_NATIVE_STAGE_FIELDS:
         issues.append("retained host-native observation has missing or unsupported fields")
     if retained.get("version") != HOST_NATIVE_MATRIX_OBSERVATION_VERSION:
         issues.append("retained host-native observation version is invalid")
     if retained.get("status") != "passed" or retained.get("stage") != "propose":
         issues.append("retained host-native flow did not finish proposal successfully")
+    if retained.get("model_profile_id") != profile:
+        issues.append("retained host-native model profile does not match the assigned release profile")
+    if retained.get("response_kind") != expected_response_kind:
+        issues.append("retained host-native response kind does not match the evaluated outcome")
     for field in (
         "host_invocations", "contract_command_invocations", "proposal_command_invocations",
     ):
@@ -378,43 +513,52 @@ def _host_native_stage_observation_evidence(
     ):
         if retained.get(field) is not True:
             issues.append(f"retained host-native {field} is not true")
-    for field in ("contract_sha256", "candidate_schema_sha256", "candidate_sha256"):
+    for field in (
+        "contract_sha256", "source_sha256", "candidate_schema_sha256", "candidate_sha256",
+    ):
         if not _is_sha256(retained.get(field)):
             issues.append(f"retained host-native {field} is invalid")
-    if (
-        _is_sha256(candidate.get("candidate_sha256"))
-        and retained.get("candidate_sha256") != candidate.get("candidate_sha256")
-    ):
-        issues.append("retained host candidate does not match the sealed receipt")
-    host_argv = _mapping(retained.get("host_argv"))
-    if (
-        set(host_argv) != {"executable", "argument_count"}
-        or not str(host_argv.get("executable") or "").strip()
-        or type(host_argv.get("argument_count")) is not int
-        or int(host_argv.get("argument_count") or 0) <= 0
-    ):
-        issues.append("retained host-native argv shape is invalid")
+    if not _is_sha256(expected_source_sha256):
+        issues.append("retained host-native expected source hash is invalid")
+    elif retained.get("source_sha256") != expected_source_sha256:
+        issues.append("retained host-native source does not match the evaluated source")
+    issues.extend(_host_native_argv_issues(profile, retained.get("host_request")))
     for field in ("host_stdout_bytes", "host_stderr_bytes"):
         if type(retained.get(field)) is not int or int(retained.get(field) or 0) < 0:
             issues.append(f"retained host-native {field} is invalid")
     elapsed = _positive_float(retained.get("elapsed_seconds"))
     if elapsed is None or elapsed >= contract.operational_timeout_seconds:
         issues.append("retained host-native elapsed time lacks operational-timeout proof")
+    return issues
 
-    return {
-        "observation_version": str(retained.get("version") or ""),
-        "origin": "host_native",
-        "semantic_model_call_count": 1,
-        "request_roles": {
-            "host_candidate": {
-                "external_host": str(host_argv.get("executable") or ""),
-                "candidate_sha256": str(retained.get("candidate_sha256") or ""),
-            },
-            "candidate_review": dict(review),
-        },
-        "status": "passed" if not issues else "failed",
-        "issues": list(dict.fromkeys(issues)),
+
+def _host_native_argv_issues(profile: str, value: Any) -> tuple[str, ...]:
+    """Validate the safe receipt derived from the exact executed Codex argv."""
+
+    receipt = _mapping(value)
+    expected_fields = {
+        "version", "executable_sha256", "argument_count", "model",
+        "reasoning_effort", "output_schema_present", "argv_shape_sha256",
     }
+    if set(receipt) != expected_fields:
+        return ("retained host-native argv receipt shape is invalid",)
+    issues: list[str] = []
+    if receipt.get("version") != HOST_NATIVE_ARGV_RECEIPT_VERSION:
+        issues.append("retained host-native argv receipt version is invalid")
+    if not _is_sha256(receipt.get("executable_sha256")):
+        issues.append("retained host-native executable identity is invalid")
+    if not _is_sha256(receipt.get("argv_shape_sha256")):
+        issues.append("retained host-native argv shape fingerprint is invalid")
+    if type(receipt.get("argument_count")) is not int or int(receipt.get("argument_count") or 0) < 7:
+        issues.append("retained host-native argument count is invalid")
+    if receipt.get("output_schema_present") is not True:
+        issues.append("retained host-native output schema proof is missing")
+    contract = get_greenfield_model_profile(profile)
+    if receipt.get("model") != contract.model:
+        issues.append("retained host-native argv model does not match the assigned profile")
+    if receipt.get("reasoning_effort") != contract.reasoning_effort:
+        issues.append("retained host-native argv reasoning effort does not match the assigned profile")
+    return tuple(dict.fromkeys(issues))
 
 
 def model_stage_observation_issues(
@@ -803,7 +947,8 @@ def _candidate_review_observation_issues(
 def profile_counts(cases: Sequence[GreenfieldMatrixCase]) -> dict[str, int]:
     counts = {profile: 0 for profile in MODEL_PROFILES}
     for case in cases:
-        counts[case_model_profile(case)] += 1
+        profile = case_model_profile(case)
+        counts[profile] = counts.get(profile, 0) + 1
     return counts
 
 
@@ -823,7 +968,7 @@ def profile_coverage(cases: Sequence[GreenfieldMatrixCase]) -> dict[str, dict[st
                 value,
                 {item: 0 for item in MODEL_PROFILES},
             )
-            counts[profile] += 1
+            counts[profile] = counts.get(profile, 0) + 1
     return coverage
 
 
@@ -940,6 +1085,8 @@ def _request_role_summary(observation: Mapping[str, Any]) -> dict[str, Any]:
 
 __all__ = [
     "MODEL_PROFILES",
+    "DECLARED_MODEL_PROFILES",
+    "LOWER_CAPABILITY_CONTROL_PROFILES",
     "MODEL_PROFILE_ASSIGNMENT_SEED",
     "MODEL_PROFILE_ASSIGNMENT_VERSION",
     "DEEP_PROFILE_ID",
@@ -948,6 +1095,7 @@ __all__ = [
     "UNAVAILABLE_PROVIDER_PROFILE",
     "assign_model_profiles",
     "case_model_profile",
+    "host_native_clarification_stage_observation_issues",
     "model_profile_environment",
     "model_profile_evidence",
     "host_native_model_stage_observation_issues",

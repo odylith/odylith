@@ -4756,3 +4756,23 @@ projection coherence, confirmation, and readback.
   and out-of-range typed-owner selectors. Exact immutable distribution and
   release-corpus qualification remain required before this boundary is
   release-qualified.
+
+## Greenfield Release Model Boundary (2026-09-25)
+
+- Domain Intelligence keeps a provider-free host-candidate contract: one active
+  host authors one typed, source-cited hypothesis; deterministic custody and one
+  independent semantic review decide admission. Product meaning is not split
+  across profile-specific schemas or repair paths.
+- Model-profile contract v23 separates declared evidence profiles from successful
+  consumer support. Astra medium is the sole release-success profile. Luna medium
+  is a lower-capability clarification/no-write control only, Sol high is negative
+  diagnostic evidence only, and provider unavailability is a separate no-write
+  control. `auto` and `standard` are the only successful public selections;
+  `rescue` and `deep` fail before provider execution.
+- Private qualification evidence binds the direct host model/effort argv, exact
+  source hash, response kind, call count, elapsed time, and cleanup. Public
+  clarification stays limited to the canonical question, required field, and
+  consistency receipt; it exposes no model metadata or raw candidate.
+- The 90/120/150-second values remain advisory profile observations under one
+  180-second operational safety timeout. No elapsed-time promotion, fallback,
+  retry, repair, parser, regex stack, or alternate model ladder is allowed.

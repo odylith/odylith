@@ -19,9 +19,13 @@ from greenfield_matrix_clarification import ClarificationExecution
 from greenfield_matrix_clarification import clarification_contract_issues
 from greenfield_matrix_clarification import clarification_quality_verdict
 from greenfield_model_profiles import model_profile_environment
+from greenfield_model_profiles import model_profile_evidence
+from greenfield_model_profile_proof import model_profile_release_proof
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    DEEP_PROFILE_ID,
     RESCUE_PROFILE_ID,
     STANDARD_PROFILE_ID,
+    get_greenfield_model_profile,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import validate_greenfield_authoring_response
 from odylith.runtime.domain_intelligence.greenfield_material_clarification import material_clarification_for_fields
@@ -482,7 +486,7 @@ def test_clarification_case_binds_two_call_stage_to_public_decision(
     retained = _retained_case(module, tmp_path, "clarification")
     prompt = "Mara needs a first workflow clarified."
     stage = production_stage_observation(
-        RESCUE_PROFILE_ID, response_kind="clarification_required",
+        STANDARD_PROFILE_ID, response_kind="clarification_required",
         evidence_text=prepare_model_authoring_evidence(prompt=prompt, edit_evidence=edit).evidence_source,
     )
     _write_stage_observation(retained, stage)
@@ -509,11 +513,14 @@ def test_clarification_case_binds_two_call_stage_to_public_decision(
                 error="",
             )
 
-    def profile_evidence(profile, environ, *, observed, stage_observation):  # noqa: ANN001
+    def profile_evidence(  # noqa: ANN001
+        profile, environ, *, observed, stage_observation, expected_source,
+    ):
         captured.update(
             profile=profile,
             observed=observed,
             stage_observation=stage_observation,
+            expected_source=expected_source,
         )
         return {"status": "passed", "issues": []}
 
@@ -543,9 +550,9 @@ def test_clarification_case_binds_two_call_stage_to_public_decision(
             expected_clarification_question=question,
         ),
         repo_root=repo_root,
-        env=model_profile_environment(RESCUE_PROFILE_ID, {}),
+        env=model_profile_environment(STANDARD_PROFILE_ID, {}),
         timeout=90,
-        repair_tier="rescue",
+        repair_tier="standard",
         install_script=tmp_path / "install.sh",
         version="0.0.0",
         install_mode="full",
@@ -553,8 +560,9 @@ def test_clarification_case_binds_two_call_stage_to_public_decision(
     )
 
     assert result.status == ("failed" if mismatch else "passed")
-    assert captured["profile"] == RESCUE_PROFILE_ID
+    assert captured["profile"] == STANDARD_PROFILE_ID
     assert captured["stage_observation"] == stage
+    assert captured["expected_source"] == stage["request"]["evidence"]
 
 
 def _source_bound_clarification_execution(stage):
@@ -601,6 +609,439 @@ def test_clarification_proof_binds_exact_source_and_public_decision(mutation):
         stage_observation=stage, expected_source=source,
     )
     assert bool(issues) is (mutation != "none")
+
+
+def _host_native_clarification_stage(
+    source: str,
+    *,
+    profile_id: str = STANDARD_PROFILE_ID,
+) -> dict[str, object]:
+    profile = get_greenfield_model_profile(profile_id)
+    return {
+        "version": "odylith.greenfield.host-native-matrix-observation.v3",
+        "status": "passed",
+        "host_invocations": 1,
+        "contract_command_invocations": 1,
+        "proposal_command_invocations": 1,
+        "model_profile_id": profile_id,
+        "host_request": {
+            "version": "odylith.greenfield.host-argv-receipt.v1",
+            "executable_sha256": "7" * 64,
+            "argument_count": 14,
+            "model": profile.model,
+            "reasoning_effort": profile.reasoning_effort,
+            "output_schema_present": True,
+            "argv_shape_sha256": "8" * 64,
+        },
+        "candidate_temp_cleaned": True,
+        "host_workspace_cleaned": True,
+        "stage": "propose",
+        "contract_returncode": 0,
+        "contract_sha256": "1" * 64,
+        "source_sha256": hashlib.sha256(source.encode("utf-8")).hexdigest(),
+        "candidate_schema_sha256": "2" * 64,
+        "host_returncode": 0,
+        "host_stdout_bytes": 200,
+        "host_stderr_bytes": 0,
+        "response_kind": "clarification_required",
+        "candidate_sha256": "3" * 64,
+        "candidate_temp_outside_repo": True,
+        "elapsed_seconds": 18.02,
+    }
+
+
+def _host_native_clarification_execution(source: str) -> ClarificationExecution:
+    decision = material_clarification_for_fields(
+        ("first_path",), consistency_status="material_ambiguity",
+    )
+    execution = _clarification_execution(
+        question=decision.question,
+        required_fields=decision.required_fields,
+    )
+    clarification = execution.payload["clarification"]
+    clarification.pop("model_profile")
+    clarification["consistency_assessment"] = {
+        "status": "material_ambiguity",
+        "source_spans": [_consistency_span(source, start=0)],
+    }
+    return execution
+
+
+def test_host_native_clarification_uses_private_one_call_custody() -> None:
+    source = "The first complete task remains materially ambiguous."
+    stage = _host_native_clarification_stage(source)
+    execution = _host_native_clarification_execution(source)
+    public = execution.payload["clarification"]
+
+    assert "model_profile" not in public
+    assert clarification_contract_issues(
+        execution,
+        expected_fields=("first_path",),
+        expected_question=public["question"],
+        expected_model_profile_id=STANDARD_PROFILE_ID,
+        stage_observation=stage,
+        expected_source=source,
+    ) == ()
+    evidence = model_profile_evidence(
+        STANDARD_PROFILE_ID,
+        model_profile_environment(STANDARD_PROFILE_ID, {}),
+        observed={},
+        stage_observation=stage,
+        expected_source=source,
+    )
+    assert evidence["status"] == "passed", evidence["issues"]
+    assert evidence["sealed_request_roles"] == ["host_candidate"]
+    assert evidence["maximum_semantic_model_calls"] == 1
+
+
+def _host_native_clarification_profile_evidence(
+    source: str,
+    *,
+    profile_id: str = STANDARD_PROFILE_ID,
+) -> dict[str, object]:
+    return model_profile_evidence(
+        profile_id,
+        model_profile_environment(profile_id, {}),
+        observed={},
+        stage_observation=_host_native_clarification_stage(
+            source,
+            profile_id=profile_id,
+        ),
+        expected_source=source,
+    )
+
+
+def _host_native_authored_profile_evidence(
+    source: str,
+    *,
+    profile_id: str = STANDARD_PROFILE_ID,
+) -> dict[str, object]:
+    profile = get_greenfield_model_profile(profile_id)
+    stage = _host_native_clarification_stage(source, profile_id=profile_id)
+    stage["response_kind"] = "authored"
+    observed = {
+        "origin": "host_native",
+        "host_candidate": {
+            "version": "odylith.greenfield.host-candidate.v1",
+            "contract_version": "odylith.greenfield.intent-authoring.v68",
+            "source_sha256": stage["source_sha256"],
+            "candidate_sha256": stage["candidate_sha256"],
+        },
+        "candidate_review": {
+            "profile_id": profile_id,
+            "provider": profile.provider,
+            "model": profile.review_model,
+            "reasoning_effort": profile.review_reasoning_effort,
+            "effective_timeout_seconds": 120.0,
+            "authoring_tier": profile.repair_tier,
+        },
+    }
+    return model_profile_evidence(
+        profile_id,
+        model_profile_environment(profile_id, {}),
+        observed=observed,
+        stage_observation=stage,
+        expected_source=source,
+    )
+
+
+def _host_native_clarification_aggregate_result(
+    source: str,
+    *,
+    profile_evidence: dict[str, object],
+) -> SimpleNamespace:
+    execution = _host_native_clarification_execution(source)
+    public = execution.payload["clarification"]
+    return SimpleNamespace(
+        name="host-native clarification",
+        status="passed",
+        proposal_seconds=18.02,
+        quality=clarification_quality_verdict(()),
+        evidence={
+            "case": {
+                "expectation": "clarification_required",
+                "prompt_sha256": hashlib.sha256(b"prompt").hexdigest(),
+                "expected_clarification": {
+                    "field": "first_path",
+                    "question": public["question"],
+                },
+            },
+            "clarification": {
+                "mode": "clarification_required",
+                "question": public["question"],
+                "required_fields": ["first_path"],
+                "returncode": 0,
+            },
+            "no_write": {
+                "before_record_count": 0,
+                "after_record_count": 0,
+                "changed_records": [],
+                "staged_transaction_present": False,
+                "write_audit_active": True,
+                "write_attempts": [],
+                "write_audit_error": "",
+            },
+            "model_profile": profile_evidence,
+        },
+    )
+
+
+def _host_native_committed_aggregate_result(
+    *,
+    profile_evidence: dict[str, object],
+) -> SimpleNamespace:
+    return SimpleNamespace(
+        name="host-native committed",
+        status="passed",
+        proposal_seconds=18.02,
+        quality=SimpleNamespace(passed=True),
+        evidence={
+            "case": {
+                "expectation": "transaction_committed",
+                "prompt_sha256": hashlib.sha256(b"prompt").hexdigest(),
+            },
+            "model_profile": profile_evidence,
+        },
+    )
+
+
+def test_host_native_clarification_passes_aggregate_profile_proof() -> None:
+    source = "The first complete task remains materially ambiguous."
+    profile_evidence = _host_native_clarification_profile_evidence(source)
+    result = _host_native_clarification_aggregate_result(
+        source,
+        profile_evidence=profile_evidence,
+    )
+
+    proof = model_profile_release_proof((result,), require_complete=False)
+
+    assert proof["status"] == "passed", proof["issues"]
+    assert proof["profiles"][STANDARD_PROFILE_ID]["maximum_semantic_model_calls"] == 1
+
+
+def test_release_profile_proof_requires_astra_success_and_luna_no_write_control() -> None:
+    source = "The first complete task remains materially ambiguous."
+    clarification = _host_native_clarification_aggregate_result(
+        source,
+        profile_evidence=_host_native_clarification_profile_evidence(
+            source,
+            profile_id=RESCUE_PROFILE_ID,
+        ),
+    )
+    authored_evidence = _host_native_authored_profile_evidence(
+        source,
+        profile_id=STANDARD_PROFILE_ID,
+    )
+    assert authored_evidence["status"] == "passed", authored_evidence["issues"]
+    committed = _host_native_committed_aggregate_result(
+        profile_evidence=authored_evidence,
+    )
+    proof = model_profile_release_proof((committed, clarification), require_complete=True)
+
+    assert proof["status"] == "passed", proof["issues"]
+    assert proof["lower_capability_scope"]["status"] == "passed"
+    assert proof["lower_capability_scope"]["role"] == "host_candidate"
+    observed = proof["lower_capability_scope"]["observed_profiles"]
+    assert len(observed) == 1
+    assert observed[0]["profile_id"] == RESCUE_PROFILE_ID
+    assert observed[0]["model"] == get_greenfield_model_profile(
+        RESCUE_PROFILE_ID
+    ).model
+    assert observed[0]["committed_positive_case_count"] == 0
+    assert observed[0]["clarification_no_write_control_count"] == 1
+
+
+def test_complete_release_profile_proof_fails_without_astra_or_luna_control() -> None:
+    source = "The first complete task remains materially ambiguous."
+    astra = _host_native_committed_aggregate_result(
+        profile_evidence=_host_native_authored_profile_evidence(source),
+    )
+    luna = _host_native_clarification_aggregate_result(
+        source,
+        profile_evidence=_host_native_clarification_profile_evidence(
+            source,
+            profile_id=RESCUE_PROFILE_ID,
+        ),
+    )
+
+    missing_luna = model_profile_release_proof((astra,), require_complete=True)
+    missing_astra = model_profile_release_proof((luna,), require_complete=True)
+
+    assert missing_luna["status"] == "failed"
+    assert any("clarification/no-write control" in issue for issue in missing_luna["issues"])
+    assert missing_astra["status"] == "failed"
+    assert any("missing success profile" in issue for issue in missing_astra["issues"])
+
+
+def test_release_profile_proof_rejects_duplicate_luna_controls() -> None:
+    source = "The first complete task remains materially ambiguous."
+    committed = _host_native_committed_aggregate_result(
+        profile_evidence=_host_native_authored_profile_evidence(source),
+    )
+    clarification = _host_native_clarification_aggregate_result(
+        source,
+        profile_evidence=_host_native_clarification_profile_evidence(
+            source,
+            profile_id=RESCUE_PROFILE_ID,
+        ),
+    )
+
+    proof = model_profile_release_proof(
+        (committed, clarification, clarification),
+        require_complete=True,
+    )
+
+    assert proof["status"] == "failed"
+    assert any("exactly one result" in issue for issue in proof["issues"])
+
+
+def test_luna_or_sol_positive_result_cannot_qualify_release_success() -> None:
+    source = "The first complete task remains materially ambiguous."
+    luna_positive = _host_native_committed_aggregate_result(
+        profile_evidence=_host_native_authored_profile_evidence(
+            source,
+            profile_id=RESCUE_PROFILE_ID,
+        ),
+    )
+    sol_evidence = _host_native_authored_profile_evidence(source)
+    sol_evidence["profile_id"] = DEEP_PROFILE_ID
+    sol_positive = _host_native_committed_aggregate_result(
+        profile_evidence=sol_evidence,
+    )
+
+    luna_proof = model_profile_release_proof((luna_positive,), require_complete=False)
+    sol_proof = model_profile_release_proof((sol_positive,), require_complete=False)
+
+    assert luna_proof["status"] == "failed"
+    assert any("must clarify without writing" in issue for issue in luna_proof["issues"])
+    assert sol_proof["status"] == "failed"
+    assert any("unsupported diagnostic" in issue for issue in sol_proof["issues"])
+
+
+def test_aggregate_clarification_rejects_contradictory_authored_observations() -> None:
+    source = "The first complete task remains materially ambiguous."
+    profile_evidence = _host_native_clarification_profile_evidence(source)
+    profile_evidence["observed"] = {
+        "participant_selection": {},
+        "remaining_candidate_authoring": {},
+    }
+    result = _host_native_clarification_aggregate_result(
+        source,
+        profile_evidence=profile_evidence,
+    )
+
+    proof = model_profile_release_proof((result,), require_complete=False)
+
+    assert proof["status"] == "failed"
+    assert any("contradictory authored observations" in issue for issue in proof["issues"])
+
+
+def test_aggregate_authored_evidence_cannot_be_reclassified_by_response_kind() -> None:
+    source = "The first complete task remains materially ambiguous."
+    profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
+    stage = _host_native_clarification_stage(source)
+    stage["response_kind"] = "authored"
+    candidate_sha256 = str(stage["candidate_sha256"])
+    observed = {
+        "origin": "host_native",
+        "host_candidate": {
+            "version": "odylith.greenfield.host-candidate.v1",
+            "contract_version": "odylith.greenfield.intent-authoring.v68",
+            "source_sha256": stage["source_sha256"],
+            "candidate_sha256": candidate_sha256,
+        },
+        "candidate_review": {
+            "profile_id": STANDARD_PROFILE_ID,
+            "provider": profile.provider,
+            "model": profile.review_model,
+            "reasoning_effort": profile.review_reasoning_effort,
+            "effective_timeout_seconds": 120.0,
+            "authoring_tier": profile.repair_tier,
+        },
+    }
+    profile_evidence = model_profile_evidence(
+        STANDARD_PROFILE_ID,
+        model_profile_environment(STANDARD_PROFILE_ID, {}),
+        observed=observed,
+        stage_observation=stage,
+        expected_source=source,
+    )
+    assert profile_evidence["status"] == "passed", profile_evidence["issues"]
+    profile_evidence["stage_observation"]["response_kind"] = "clarification_required"
+    result = _host_native_clarification_aggregate_result(
+        source,
+        profile_evidence=profile_evidence,
+    )
+
+    proof = model_profile_release_proof((result,), require_complete=False)
+
+    assert proof["status"] == "failed"
+    assert any("reviewed candidate does not match" in issue for issue in proof["issues"])
+
+
+def test_aggregate_clarification_revalidates_retained_expected_source_hash() -> None:
+    source = "The first complete task remains materially ambiguous."
+    profile_evidence = _host_native_clarification_profile_evidence(source)
+    profile_evidence["stage_observation"]["source_sha256"] = "4" * 64
+    result = _host_native_clarification_aggregate_result(
+        source,
+        profile_evidence=profile_evidence,
+    )
+
+    proof = model_profile_release_proof((result,), require_complete=False)
+
+    assert proof["status"] == "failed"
+    assert any("source does not match" in issue for issue in proof["issues"])
+
+
+@pytest.mark.parametrize(
+    "elapsed",
+    (180.0, 180.001, None, True, "18.0", 0.0, -1.0, float("nan"), float("inf")),
+)
+def test_aggregate_clarification_rejects_expired_or_invalid_elapsed(elapsed: object) -> None:
+    source = "The first complete task remains materially ambiguous."
+    profile_evidence = _host_native_clarification_profile_evidence(source)
+    profile_evidence["stage_observation"]["elapsed_seconds"] = elapsed
+    result = _host_native_clarification_aggregate_result(
+        source,
+        profile_evidence=profile_evidence,
+    )
+
+    proof = model_profile_release_proof((result,), require_complete=False)
+
+    assert proof["status"] == "failed"
+    assert any("operational-timeout proof" in issue for issue in proof["issues"])
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    ("source", "response_kind", "call_count", "cleanup", "profile"),
+)
+def test_host_native_clarification_rejects_broken_private_custody(mutation: str) -> None:
+    source = "The first complete task remains materially ambiguous."
+    stage = _host_native_clarification_stage(source)
+    if mutation == "source":
+        stage["source_sha256"] = "4" * 64
+    elif mutation == "response_kind":
+        stage["response_kind"] = "authored"
+    elif mutation == "call_count":
+        stage["host_invocations"] = 2
+    elif mutation == "cleanup":
+        stage["candidate_temp_cleaned"] = False
+    else:
+        stage["model_profile_id"] = RESCUE_PROFILE_ID
+    execution = _host_native_clarification_execution(source)
+
+    issues = clarification_contract_issues(
+        execution,
+        expected_fields=("first_path",),
+        expected_question=execution.payload["clarification"]["question"],
+        expected_model_profile_id=STANDARD_PROFILE_ID,
+        stage_observation=stage,
+        expected_source=source,
+    )
+
+    assert issues
 
 
 def _retained_case(module, tmp_path: Path, case_id: str):  # noqa: ANN001, ANN202

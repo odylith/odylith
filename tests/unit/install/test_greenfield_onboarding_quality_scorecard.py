@@ -11,6 +11,10 @@ if str(SCRIPTS_ROOT) not in sys.path:
 
 from greenfield_onboarding_quality_scorecard import ONBOARDING_QUALITY_DIMENSIONS
 from greenfield_onboarding_quality_scorecard import build_onboarding_quality_scorecard
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    RESCUE_PROFILE_ID,
+    STANDARD_PROFILE_ID,
+)
 
 
 _COMMITTED_SCORES = {
@@ -27,9 +31,8 @@ _COMMITTED_SCORES = {
     "domain_expert": 10,
 }
 _PROFILE_IDS = {
-    "standard": "greenfield-standard-profile",
-    "rescue": "greenfield-rescue-profile",
-    "deep": "greenfield-deep-profile",
+    "standard": STANDARD_PROFILE_ID,
+    "rescue": RESCUE_PROFILE_ID,
 }
 
 
@@ -74,7 +77,7 @@ def test_scorecard_fails_when_visible_confirmation_or_navigation_is_not_proven()
 
 def test_scorecard_requires_one_semantic_floor_for_every_supported_profile() -> None:
     results = list(_passing_results())
-    results[1].quality.scores["semantic_manifest"] = 0
+    results[0].quality.scores["semantic_manifest"] = 0
 
     scorecard = build_onboarding_quality_scorecard(
         results=tuple(results),
@@ -88,7 +91,7 @@ def test_scorecard_requires_one_semantic_floor_for_every_supported_profile() -> 
 
     dimension = scorecard["dimensions"]["preconfirm_tribunal_accuracy"]
     assert dimension["status"] == "failed"
-    assert "rescue package: semantic_manifest is not 10" in dimension["issues"]
+    assert "standard package: semantic_manifest is not 10" in dimension["issues"]
 
 
 def test_scorecard_requires_lower_capability_clarification_and_unavailable_provider_proof() -> None:
@@ -117,8 +120,6 @@ def test_scorecard_requires_lower_capability_clarification_and_unavailable_provi
 def _passing_results() -> tuple[SimpleNamespace, ...]:
     return (
         _result("standard package", profile_id=_PROFILE_IDS["standard"]),
-        _result("rescue package", profile_id=_PROFILE_IDS["rescue"]),
-        _result("deep package", profile_id=_PROFILE_IDS["deep"]),
         _result(
             "rescue clarification",
             expectation="clarification_required",

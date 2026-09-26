@@ -5,6 +5,8 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import os
+import shutil
 import subprocess
 import tempfile
 import time
@@ -14,8 +16,9 @@ from pathlib import Path
 from typing import Any
 
 HOST_NATIVE_MATRIX_OBSERVATION_VERSION = (
-    "odylith.greenfield.host-native-matrix-observation.v1"
+    "odylith.greenfield.host-native-matrix-observation.v3"
 )
+HOST_NATIVE_ARGV_RECEIPT_VERSION = "odylith.greenfield.host-argv-receipt.v1"
 
 
 class HostCandidateFlowError(RuntimeError):
@@ -37,6 +40,9 @@ class HostCandidateFlow:
     edit_evidence: str
     timeout: float
     env: Mapping[str, str]
+    trusted_codex_executable: str
+    expected_model: str
+    expected_reasoning_effort: str
     invoke_installed: Callable[[Sequence[str], float], Any]
     invoke_propose: Callable[[Path, float], Any]
     installed_command: tuple[str, ...] = ("./.odylith/bin/odylith",)
@@ -51,7 +57,14 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
     receives only the remaining portion of one total timeout window.
     """
 
-    host_argv = _validated_host_argv(flow.host_argv)
+    host_argv, _ = qualify_host_candidate_argv(
+        flow.host_argv,
+        trusted_codex_executable=flow.trusted_codex_executable,
+        expected_model=flow.expected_model,
+        expected_reasoning_effort=flow.expected_reasoning_effort,
+        expected_output_schema="{candidate_schema}",
+        path_value=str(flow.env.get("PATH") or os.environ.get("PATH") or ""),
+    )
     timeout = _positive_timeout(flow.timeout)
     repo_root = Path(flow.repo_root).expanduser().resolve()
     temp_parent = Path(flow.temp_parent).expanduser().resolve()
@@ -65,7 +78,9 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
         "host_invocations": 0,
         "contract_command_invocations": 0,
         "proposal_command_invocations": 0,
-        "host_argv": _argv_shape(host_argv),
+        "model_profile_id": str(
+            flow.env.get("ODYLITH_GREENFIELD_MODEL_PROFILE") or ""
+        ).strip(),
         "candidate_temp_cleaned": False,
         "host_workspace_cleaned": False,
     }
@@ -86,6 +101,15 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
         contract_text = _text_stream(getattr(contract_result, "stdout", ""))
         contract = _single_json_object(contract_text, label="candidate contract")
         observation["contract_sha256"] = _sha256_text(contract_text)
+        request = contract.get("request")
+        source = request.get("evidence") if isinstance(request, Mapping) else None
+        if not isinstance(source, str) or not source.strip():
+            _fail(
+                "host-native candidate contract has no source evidence",
+                observation=observation,
+                stage="contract",
+            )
+        observation["source_sha256"] = _sha256_text(source)
         with tempfile.TemporaryDirectory(
             prefix="odylith-greenfield-host-candidate-",
             dir=str(temp_parent),
@@ -113,6 +137,15 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
                 host_argv,
                 candidate_schema_path=schema_path,
             )
+            resolved_host_argv, host_request = qualify_host_candidate_argv(
+                resolved_host_argv,
+                trusted_codex_executable=flow.trusted_codex_executable,
+                expected_model=flow.expected_model,
+                expected_reasoning_effort=flow.expected_reasoning_effort,
+                expected_output_schema=str(schema_path),
+                path_value=str(flow.env.get("PATH") or os.environ.get("PATH") or ""),
+            )
+            observation["host_request"] = host_request
             observation["candidate_schema_sha256"] = _sha256_text(
                 schema_path.read_text(encoding="utf-8")
             )
@@ -137,10 +170,22 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
                     "host-native candidate command returned nonzero",
                     observation=observation,
                     stage="host",
-                    detail=_stream_excerpt(host_result),
                 )
             candidate_text = _text_stream(getattr(host_result, "stdout", ""))
             candidate = _single_json_object(candidate_text, label="host candidate")
+            result = candidate.get("result")
+            response_kind = (
+                str(result.get("status") or "").strip()
+                if isinstance(result, Mapping)
+                else ""
+            )
+            if response_kind not in {"authored", "clarification_required"}:
+                _fail(
+                    "host-native candidate has an unsupported response kind",
+                    observation=observation,
+                    stage="host",
+                )
+            observation["response_kind"] = response_kind
             observation["candidate_sha256"] = hashlib.sha256(
                 json.dumps(
                     candidate,
@@ -191,7 +236,6 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
             f"host-native candidate flow failed closed: {type(exc).__name__}",
             observation=observation,
             stage=str(observation.get("stage") or "flow"),
-            detail=str(exc),
         )
     finally:
         observation.setdefault("elapsed_seconds", round(time.monotonic() - started, 3))
@@ -249,11 +293,114 @@ def _single_json_object(value: str, *, label: str) -> dict[str, Any]:
     return dict(payload)
 
 
-def _validated_host_argv(value: Sequence[str]) -> tuple[str, ...]:
+def resolve_trusted_codex_executable(
+    *,
+    environ: Mapping[str, str] | None = None,
+) -> str:
+    """Resolve the one PATH-trusted Codex executable used by release proof."""
+
+    values = dict(os.environ if environ is None else environ)
+    path_value = str(values.get("PATH") or "")
+    located = shutil.which("codex", path=path_value)
+    if not located:
+        raise ValueError("trusted Codex executable is unavailable")
+    trusted = _resolved_executable(located, path_value=path_value)
+    configured = str(values.get("ODYLITH_REASONING_CODEX_BIN") or "").strip()
+    if configured:
+        configured_path = _resolved_executable(configured, path_value=path_value)
+        if configured_path != trusted:
+            raise ValueError("configured Codex executable does not match the trusted Codex binary")
+    return str(trusted)
+
+
+def qualify_host_candidate_argv(
+    value: Sequence[str],
+    *,
+    trusted_codex_executable: str,
+    expected_model: str,
+    expected_reasoning_effort: str,
+    expected_output_schema: str,
+    path_value: str = "",
+) -> tuple[tuple[str, ...], dict[str, Any]]:
+    """Validate one direct Codex argv and return only a safe derived receipt."""
+
     argv = tuple(str(argument) for argument in value)
     if not argv or any(not argument for argument in argv):
         raise ValueError("host-native candidate command requires a non-empty argv")
-    return argv
+    trusted = _resolved_executable(
+        trusted_codex_executable,
+        path_value=path_value or str(os.environ.get("PATH") or ""),
+    )
+    executable = _resolved_executable(
+        argv[0],
+        path_value=path_value or str(os.environ.get("PATH") or ""),
+    )
+    if executable != trusted:
+        raise ValueError("host-native candidate command must invoke the trusted Codex binary directly")
+    tokens = argv[1:]
+    expected_tokens = (
+        "exec",
+        "--ephemeral",
+        "--ignore-user-config",
+        "--skip-git-repo-check",
+        "--sandbox",
+        "read-only",
+        "--model",
+        expected_model,
+        "--config",
+        f"model_reasoning_effort={expected_reasoning_effort}",
+        "--output-schema",
+        expected_output_schema,
+        "-",
+    )
+    if tokens != expected_tokens:
+        raise ValueError(
+            "host-native candidate command does not match the canonical release argv contract"
+        )
+    canonical_argv = (str(trusted), *tokens)
+    receipt = {
+        "version": HOST_NATIVE_ARGV_RECEIPT_VERSION,
+        "executable_sha256": _sha256_file(trusted),
+        "argument_count": len(canonical_argv),
+        "model": expected_model,
+        "reasoning_effort": expected_reasoning_effort,
+        "output_schema_present": True,
+        "argv_shape_sha256": hashlib.sha256(
+            json.dumps(
+                (
+                    "exec", "ephemeral", "ignore-user-config", "skip-git-repo-check",
+                    "sandbox:read-only", "model", "config:model_reasoning_effort",
+                    "output-schema", "stdin",
+                ),
+                separators=(",", ":"),
+            ).encode("utf-8")
+        ).hexdigest(),
+    }
+    return canonical_argv, receipt
+
+
+def _resolved_executable(value: str, *, path_value: str) -> Path:
+    token = str(value or "").strip()
+    candidate = Path(token).expanduser()
+    located = (
+        str(candidate)
+        if candidate.is_absolute() or token != candidate.name
+        else str(shutil.which(token, path=path_value) or "")
+    )
+    if not located:
+        raise ValueError("host-native candidate executable is unavailable")
+    resolved = Path(located).expanduser().resolve()
+    if not resolved.is_file() or not os.access(resolved, os.X_OK):
+        raise ValueError("host-native candidate executable is not executable")
+    return resolved
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def _resolved_host_argv(
@@ -311,13 +458,6 @@ def _sha256_text(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
-def _argv_shape(argv: Sequence[str]) -> dict[str, Any]:
-    return {
-        "argument_count": len(argv),
-        "executable": Path(argv[0]).name,
-    }
-
-
 def _emit_observation(
     observe: Callable[[Mapping[str, Any]], None] | None,
     observation: Mapping[str, Any],
@@ -341,7 +481,10 @@ def _fail(
 
 __all__ = [
     "HOST_NATIVE_MATRIX_OBSERVATION_VERSION",
+    "HOST_NATIVE_ARGV_RECEIPT_VERSION",
     "HostCandidateFlow",
     "HostCandidateFlowError",
+    "qualify_host_candidate_argv",
+    "resolve_trusted_codex_executable",
     "run_host_candidate_flow",
 ]

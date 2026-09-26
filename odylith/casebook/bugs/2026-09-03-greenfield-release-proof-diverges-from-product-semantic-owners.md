@@ -189,3 +189,21 @@
   now says Release Targets and Plan rather than Program and Wave. This resolves
   the source-level admission defect; immutable installed browser and scorer
   parity remain required before closing the release-proof defect.
+
+## Host-Native Clarification Proof Parity (2026-09-25)
+
+- The product correctly returned one source-bound no-write clarification, but
+  the release evaluator still required retired participant-selection and
+  remaining-author observations plus public model metadata. The public payload
+  is now judged by its product-owned clarification shape; model, source, call,
+  cleanup, response-kind, and timing custody remain private release evidence.
+- Aggregate proof revalidates raw source and elapsed evidence, rejects
+  contradictory authored-and-reviewed custody, and cannot turn an authored
+  result into a clarification by mutating `response_kind`. Mixed clarification
+  and authored lower-capability rows derive reviewer identity from the authored
+  row independent of input order.
+- Focused evaluator proof passes `323/323`, and independent adversarial review
+  reproduces the old source-hash and authored-custody attacks as fail-closed.
+  The exact installed clarification previously passed the corrected path at
+  `18.633s` with zero writes; one post-v23 installed replay and the full public
+  matrix remain required before this defect can close.

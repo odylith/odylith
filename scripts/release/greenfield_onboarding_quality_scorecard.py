@@ -5,6 +5,11 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    lower_capability_control_greenfield_model_profile_ids,
+    release_success_greenfield_model_profile_ids,
+)
+
 
 ONBOARDING_QUALITY_RUBRIC_VERSION = "greenfield-onboarding-quality-v1"
 ONBOARDING_QUALITY_DIMENSIONS = (
@@ -104,7 +109,7 @@ def build_onboarding_quality_scorecard(
                 and unavailable_provider_passed
             ),
             evidence=(
-                "standard, rescue, and deep profiles passed one committed semantic-manifest floor"
+                "Astra passed the committed semantic-manifest floor"
                 if not profile_issues
                 else "one or more installed profile obligations did not pass",
                 "the lower-capability profile returned a passed no-write clarification"
@@ -193,39 +198,30 @@ def _profile_evidence_issues(
         issues.append("installed model-profile proof did not pass")
     profile_value = model_profile_proof.get("profiles")
     profiles = profile_value if isinstance(profile_value, Mapping) else {}
-    lower_capability_profile_ids: list[str] = []
-    for tier in ("standard", "rescue", "deep"):
-        matching_profiles = tuple(
-            (str(profile_id), summary)
-            for profile_id, summary in profiles.items()
-            if isinstance(summary, Mapping) and str(summary.get("repair_tier") or "").strip() == tier
-        )
-        if len(matching_profiles) != 1:
-            issues.append(f"installed model-profile proof does not identify one {tier} profile")
+    for profile_id in release_success_greenfield_model_profile_ids():
+        summary = profiles.get(profile_id)
+        if not isinstance(summary, Mapping):
+            issues.append(f"installed model-profile proof does not identify success profile `{profile_id}`")
             continue
-        profile_id, summary = matching_profiles[0]
         if str(summary.get("status") or "").strip() != "passed":
-            issues.append(f"installed {tier} model profile did not pass")
+            issues.append(f"installed success profile `{profile_id}` did not pass")
         profile_results = tuple(
             result
             for result in transaction_results
             if _result_profile_id(result) == profile_id
         )
         if not profile_results:
-            issues.append(f"installed {tier} model profile has no committed semantic-floor case")
+            issues.append(f"installed success profile `{profile_id}` has no committed semantic-floor case")
         else:
             issues.extend(_missing_transaction_scores(profile_results, "semantic_manifest"))
-        if bool(summary.get("lower_capability")):
-            lower_capability_profile_ids.append(profile_id)
+    lower_capability_profile_ids = list(lower_capability_control_greenfield_model_profile_ids())
     safe_clarifications = tuple(
         result
         for result in clarification_results
         if _result_profile_id(result) in lower_capability_profile_ids
         and _quality_passed(result)
     )
-    if not lower_capability_profile_ids:
-        issues.append("installed model-profile proof does not identify a lower-capability profile")
-    elif not safe_clarifications:
+    if not safe_clarifications:
         issues.append("lower-capability profile lacks a passed no-write clarification case")
     return tuple(dict.fromkeys(issues))
 

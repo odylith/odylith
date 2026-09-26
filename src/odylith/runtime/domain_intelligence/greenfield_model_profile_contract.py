@@ -1,8 +1,8 @@
-"""Pinned model profiles for the supported Greenfield operating envelope.
+"""Pinned success, control, and diagnostic Greenfield model profiles.
 
-Profiles bind participant selection, remaining authoring and read-only review
-to one shared model window inside the consumer deadline. The unavailable-provider profile is
-outside the supported-success set and proves fail-closed, no-write behavior.
+The Astra profile is the sole release-success route. Luna is a release-harness
+clarification/no-write control, Sol is an unsupported diagnostic, and the
+unavailable-provider profile proves fail-closed no-write behavior.
 """
 
 from __future__ import annotations
@@ -11,7 +11,7 @@ import math
 from dataclasses import dataclass
 from types import MappingProxyType
 
-GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION = "odylith.greenfield.model-profile-contract.v22"
+GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION = "odylith.greenfield.model-profile-contract.v23"
 GREENFIELD_NORMAL_CASE_TARGET_SECONDS = 90.0
 GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS = 180.0
 # The shared model window leaves finite headroom for compilation, sealing and staging.
@@ -65,6 +65,7 @@ _PROFILES = MappingProxyType(
             operational_timeout_seconds=GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS,
             model_timeout_seconds=GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS - _COMPLETION_RESERVE_SECONDS,
             lower_capability=True,
+            supported_success=False,
         ),
         DEEP_PROFILE_ID: GreenfieldModelProfile(
             profile_id=DEEP_PROFILE_ID,
@@ -75,6 +76,7 @@ _PROFILES = MappingProxyType(
             performance_target_seconds=150.0,
             operational_timeout_seconds=GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS,
             model_timeout_seconds=GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS - _COMPLETION_RESERVE_SECONDS,
+            supported_success=False,
         ),
         UNAVAILABLE_PROVIDER_PROFILE_ID: GreenfieldModelProfile(
             profile_id=UNAVAILABLE_PROVIDER_PROFILE_ID,
@@ -92,10 +94,16 @@ _PROFILES = MappingProxyType(
     }
 )
 
-_SUPPORTED_PROFILE_IDS = (
+GREENFIELD_DECLARED_PROFILE_IDS = (
     STANDARD_PROFILE_ID,
     RESCUE_PROFILE_ID,
     DEEP_PROFILE_ID,
+)
+GREENFIELD_RELEASE_SUCCESS_PROFILE_IDS = (
+    STANDARD_PROFILE_ID,
+)
+GREENFIELD_LOWER_CAPABILITY_CONTROL_PROFILE_IDS = (
+    RESCUE_PROFILE_ID,
 )
 
 
@@ -109,16 +117,39 @@ def get_greenfield_model_profile(profile_id: str) -> GreenfieldModelProfile:
         raise ValueError(f"unsupported Greenfield model profile: {normalized or '<empty>'}") from exc
 
 
+def declared_greenfield_model_profile_ids() -> tuple[str, ...]:
+    """Return pinned real-model profiles, including controls and diagnostics."""
+
+    return GREENFIELD_DECLARED_PROFILE_IDS
+
+
+def release_success_greenfield_model_profile_ids() -> tuple[str, ...]:
+    """Return profiles qualified to support a successful consumer release claim."""
+
+    return GREENFIELD_RELEASE_SUCCESS_PROFILE_IDS
+
+
+def lower_capability_control_greenfield_model_profile_ids() -> tuple[str, ...]:
+    """Return declared lower-capability clarification/no-write controls."""
+
+    return GREENFIELD_LOWER_CAPABILITY_CONTROL_PROFILE_IDS
+
+
 def supported_greenfield_model_profile_ids() -> tuple[str, ...]:
     """Return profiles allowed to support successful operating-envelope claims."""
 
-    return _SUPPORTED_PROFILE_IDS
+    return GREENFIELD_RELEASE_SUCCESS_PROFILE_IDS
 
 
 def supported_greenfield_model_repair_tiers() -> tuple[str, ...]:
     """Return the distinct authored tiers backed by supported real profiles."""
 
-    return tuple(dict.fromkeys(_PROFILES[profile_id].repair_tier for profile_id in _SUPPORTED_PROFILE_IDS))
+    return tuple(
+        dict.fromkeys(
+            _PROFILES[profile_id].repair_tier
+            for profile_id in GREENFIELD_RELEASE_SUCCESS_PROFILE_IDS
+        )
+    )
 
 
 def normalize_greenfield_model_repair_tier(repair_tier: str) -> str:
@@ -140,21 +171,27 @@ def normalize_greenfield_model_repair_tier(repair_tier: str) -> str:
 
 
 def model_profile_id_for_repair_tier(repair_tier: str) -> str:
-    """Select the pre-call profile from the requested repair tier.
+    """Select the sole qualified success profile or reject control tiers.
 
     The unqualified consumer path is the pinned standard request. Rescue and
-    deep are explicit pre-call choices; elapsed time never relabels the
-    provider request after execution.
+    deep remain declared for harness control/diagnostic evidence only and
+    cannot select a successful consumer execution route.
     """
 
     normalized = normalize_greenfield_model_repair_tier(repair_tier)
-    if normalized in {"auto", "standard"}:
-        return STANDARD_PROFILE_ID
-    if normalized == "rescue":
-        return RESCUE_PROFILE_ID
-    if normalized == "deep":
-        return DEEP_PROFILE_ID
-    raise ValueError(f"unsupported Greenfield repair tier: {repair_tier}")
+    profile_ids_by_tier = {
+        "auto": STANDARD_PROFILE_ID,
+        "standard": STANDARD_PROFILE_ID,
+        "rescue": RESCUE_PROFILE_ID,
+        "deep": DEEP_PROFILE_ID,
+    }
+    profile_id = profile_ids_by_tier[normalized]
+    if profile_id not in GREENFIELD_RELEASE_SUCCESS_PROFILE_IDS:
+        raise ValueError(
+            "Greenfield repair tier is not release-qualified for successful execution: "
+            f"{normalized}"
+        )
+    return profile_id
 
 
 def greenfield_model_profile_observation_issues(
@@ -243,17 +280,23 @@ def require_greenfield_model_profile_observation(
 
 __all__ = [
     "DEEP_PROFILE_ID",
+    "GREENFIELD_DECLARED_PROFILE_IDS",
+    "GREENFIELD_LOWER_CAPABILITY_CONTROL_PROFILE_IDS",
     "GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION",
     "GREENFIELD_NORMAL_CASE_TARGET_SECONDS",
     "GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS",
+    "GREENFIELD_RELEASE_SUCCESS_PROFILE_IDS",
     "RESCUE_PROFILE_ID",
     "STANDARD_PROFILE_ID",
     "UNAVAILABLE_PROVIDER_PROFILE_ID",
     "GreenfieldModelProfile",
+    "declared_greenfield_model_profile_ids",
     "get_greenfield_model_profile",
     "greenfield_model_profile_observation_issues",
+    "lower_capability_control_greenfield_model_profile_ids",
     "model_profile_id_for_repair_tier",
     "normalize_greenfield_model_repair_tier",
+    "release_success_greenfield_model_profile_ids",
     "require_greenfield_model_profile_observation",
     "supported_greenfield_model_profile_ids",
     "supported_greenfield_model_repair_tiers",

@@ -2848,3 +2848,26 @@
   reproducing the prior counterexamples and nine raw-field mutations. CB-303
   remains open until an exact immutable build passes the disclosed public floor
   and exactly one new blind holdout.
+
+## Public-v12 Profile Adjudication (2026-09-25)
+
+- Exact distribution v18 closed the partial event-citation overlap class. The
+  first unchanged public positive then passed the complete `10/10` package gate
+  with Astra medium in `86.114s`, including the required 4-5 Radar workstreams,
+  4-5 Registry components, and 5+ Atlas diagrams.
+- The identical source, candidate contract, and schema failed safely with Sol
+  high in `127.723s`: it promoted an ordinary workflow capability into an
+  operational constraint and invented unsupported precedence. Independent
+  Astra review denied that meaning. The existing schema and review contract
+  already state the governing distinction, so another wording rule, enum,
+  parser, regex, retry, repair, fallback, or model stage is not admitted.
+- The next clarification case returned the canonical `first_path` question in
+  `18.633s`, with no staged transaction, governed write, or changed record. Its
+  initial matrix failure was evaluator and corpus-authority drift, not a product
+  defect: the old harness still expected retired two-role observations and the
+  disclosed corpus omitted its exact clarification annotation.
+- The 36-case public corpus is preserved byte-for-byte in meaning and now has an
+  independently audited annotation layer: 10 `first_path` and 2
+  `product_boundary` clarifications, with zero missing, extra, or duplicate
+  annotations. Full immutable public qualification remains pending; this
+  checkpoint does not claim release success or completion.

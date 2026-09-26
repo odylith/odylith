@@ -9,6 +9,7 @@ from odylith.runtime.domain_intelligence import (
 )
 
 PROFILE_IDS = profiles.supported_greenfield_model_profile_ids()
+DECLARED_PROFILE_IDS = profiles.declared_greenfield_model_profile_ids()
 ROLES = (
     "participant_selection", "remaining_candidate_authoring", "candidate_revision",
     "candidate_review",
@@ -35,48 +36,68 @@ def _observation(profile_id, role):
     }
 
 
-def test_v22_profiles_separate_performance_targets_from_operational_timeouts():
-    assert profiles.GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION == "odylith.greenfield.model-profile-contract.v22"
+def test_v23_profiles_separate_release_success_from_controls_and_diagnostics():
+    assert profiles.GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION == "odylith.greenfield.model-profile-contract.v23"
     assert profiles.GREENFIELD_NORMAL_CASE_TARGET_SECONDS == 90.0
     assert profiles.GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS == 180.0
     assert PROFILE_IDS == (
         "greenfield-standard-participant-first-astra-medium-v19",
+    )
+    assert DECLARED_PROFILE_IDS == (
+        "greenfield-standard-participant-first-astra-medium-v19",
         "greenfield-rescue-participant-first-luna-medium-v19",
         "greenfield-deep-participant-first-sol-high-v18",
     )
-    assert profiles.supported_greenfield_model_repair_tiers() == ("standard", "rescue", "deep")
+    assert profiles.release_success_greenfield_model_profile_ids() == PROFILE_IDS
+    assert profiles.lower_capability_control_greenfield_model_profile_ids() == (
+        profiles.RESCUE_PROFILE_ID,
+    )
+    assert profiles.supported_greenfield_model_repair_tiers() == ("standard",)
     assert [
         (
             p.model, p.reasoning_effort, p.model_timeout_seconds,
             p.performance_target_seconds, p.operational_timeout_seconds,
         )
-        for p in map(profiles.get_greenfield_model_profile, PROFILE_IDS)
+        for p in map(
+            profiles.get_greenfield_model_profile,
+            (profiles.STANDARD_PROFILE_ID, profiles.RESCUE_PROFILE_ID, profiles.DEEP_PROFILE_ID),
+        )
     ] == [
         ("gpt-6-astra", "medium", 165.0, 90.0, 180.0),
         ("gpt-5.6-luna", "medium", 165.0, 120.0, 180.0),
         ("gpt-5.6-sol", "high", 165.0, 150.0, 180.0),
     ]
-    for profile_id in PROFILE_IDS:
+    for profile_id in (
+        profiles.STANDARD_PROFILE_ID,
+        profiles.RESCUE_PROFILE_ID,
+        profiles.DEEP_PROFILE_ID,
+    ):
         profile = profiles.get_greenfield_model_profile(profile_id)
         assert (profile.participant_model, profile.participant_reasoning_effort) == (
             "gpt-6-astra", "medium",
         )
         assert (profile.review_model, profile.review_reasoning_effort) == ("gpt-6-astra", "medium")
-        assert profile.supported_success
         assert profile.operational_timeout_seconds - profile.model_timeout_seconds == 15.0
-    assert not profiles.get_greenfield_model_profile(profiles.STANDARD_PROFILE_ID).lower_capability
-    assert profiles.get_greenfield_model_profile(profiles.RESCUE_PROFILE_ID).lower_capability
+    standard = profiles.get_greenfield_model_profile(profiles.STANDARD_PROFILE_ID)
+    rescue = profiles.get_greenfield_model_profile(profiles.RESCUE_PROFILE_ID)
+    deep = profiles.get_greenfield_model_profile(profiles.DEEP_PROFILE_ID)
+    assert standard.supported_success and not standard.lower_capability
+    assert rescue.lower_capability and not rescue.supported_success
+    assert not deep.lower_capability and not deep.supported_success
 
 
 @pytest.mark.parametrize("tier,expected", [
     ("auto", profiles.STANDARD_PROFILE_ID),
     ("standard", profiles.STANDARD_PROFILE_ID),
-    ("rescue", profiles.RESCUE_PROFILE_ID),
-    ("deep", profiles.DEEP_PROFILE_ID),
-    ("premium", profiles.DEEP_PROFILE_ID),
 ])
 def test_profile_is_selected_before_calls_and_never_from_elapsed_time(tier, expected):
     assert profiles.model_profile_id_for_repair_tier(tier) == expected
+
+
+@pytest.mark.parametrize("tier", ["rescue", "deep", "premium", "deep-repair", "ci"])
+def test_unqualified_repair_tiers_fail_closed_instead_of_aliasing_to_astra(tier):
+    with pytest.raises(ValueError, match="not release-qualified"):
+        profiles.model_profile_id_for_repair_tier(tier)
 
 
 @pytest.mark.parametrize("profile_id", PROFILE_IDS)
@@ -180,6 +201,7 @@ def test_unavailable_profile_remains_unsupported_and_review_cannot_extend_its_mo
     profile_id = profiles.UNAVAILABLE_PROVIDER_PROFILE_ID
     profile = profiles.get_greenfield_model_profile(profile_id)
     assert profile_id not in PROFILE_IDS
+    assert profile_id not in DECLARED_PROFILE_IDS
     assert not profile.supported_success
     assert profile.model_timeout_seconds == 1.0
     assert profile.performance_target_seconds == 120.0

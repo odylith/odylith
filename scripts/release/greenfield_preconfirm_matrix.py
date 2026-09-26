@@ -70,6 +70,7 @@ from greenfield_model_profiles import case_model_profile  # noqa: E402
 from greenfield_model_profiles import model_profile_environment  # noqa: E402
 from greenfield_model_profiles import model_profile_evidence  # noqa: E402
 from greenfield_model_profiles import profile_counts  # noqa: E402
+from greenfield_model_profiles import LOWER_CAPABILITY_CONTROL_PROFILES  # noqa: E402
 from greenfield_model_profiles import UNAVAILABLE_PROVIDER_PROFILE  # noqa: E402
 from greenfield_model_profile_proof import model_profile_release_proof  # noqa: E402
 from greenfield_model_profile_proof import authored_model_result_binding_issues  # noqa: E402
@@ -109,6 +110,8 @@ from greenfield_process import CommandLifecycleObserverError  # noqa: E402
 from greenfield_process import command_lifecycle_observer  # noqa: E402
 from greenfield_matrix_host_candidate import (  # noqa: E402
     HostCandidateFlow,
+    qualify_host_candidate_argv,
+    resolve_trusted_codex_executable,
     run_host_candidate_flow,
 )
 
@@ -131,6 +134,7 @@ from greenfield_matrix_quality_scoring import command_excerpt  # noqa: E402
 from greenfield_tooling_payload_reader import read_tooling_payload_js  # noqa: E402
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (  # noqa: E402
     get_greenfield_model_profile,
+    STANDARD_PROFILE_ID,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (  # noqa: E402
     model_profile_id_for_repair_tier,
@@ -139,7 +143,7 @@ from odylith.runtime.domain_intelligence.greenfield_text import text_values  # n
 
 
 COMMAND_TIMEOUT_SECONDS = 300
-QUALITY_MATRIX_VERSION = "greenfield-preconfirm-installed-matrix-v1"
+QUALITY_MATRIX_VERSION = "greenfield-preconfirm-installed-matrix-v2"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 NON_ARTIFACT_MARKDOWN_FILES = {"AGENTS.md", "CLAUDE.md", "INDEX.md", "README.md"}
 EVIDENCE_EXCERPT_CHARS = 280
@@ -165,6 +169,7 @@ class _FinalHoldoutRun:
     case_paths: tuple[Path, ...]
     implementation_revision: str
     distribution_provenance_sha256: str
+    lower_capability_control_path: Path | None = None
     claimed: bool = False
     run_id: str = ""
 
@@ -185,6 +190,11 @@ class _FinalHoldoutRun:
                     f"case_file_{index:03d}": path
                     for index, path in enumerate(self.case_paths, start=1)
                 },
+                **(
+                    {"lower_capability_control": self.lower_capability_control_path}
+                    if self.lower_capability_control_path is not None
+                    else {}
+                ),
             },
         )
 
@@ -551,7 +561,10 @@ def run_matrix(
                         require_write_audit=True,
                         include_lexical_custody_proof=not semantic_release_requested,
                         retained_case=retained_case,
-                        host_candidate_argv=host_candidate_argv,
+                        host_candidate_argv=_host_candidate_argv_for_profile(
+                            host_candidate_argv,
+                            profile_id=case_model_profile(case),
+                        ),
                     )
                 if not semantic_release_requested:
                     result = _with_case_platform_leakage_issues(result=result, release_dir=release_dir)
@@ -1161,12 +1174,17 @@ def _run_case(
     if case_expectation(case) == CLARIFICATION_REQUIRED_EXPECTATION:
         if not require_write_audit:
             raise ValueError("clarification matrix cases require the installed write audit")
+        proposal_repair_tier = (
+            get_greenfield_model_profile(STANDARD_PROFILE_ID).repair_tier
+            if host_candidate_argv and profile in LOWER_CAPABILITY_CONTROL_PROFILES
+            else profile_contract.repair_tier
+        )
         result = _run_expected_clarification_case(
             case=case,
             repo_root=repo_root,
             env=env,
             timeout=int(profile_contract.operational_timeout_seconds),
-            repair_tier=profile_contract.repair_tier,
+            repair_tier=proposal_repair_tier,
             install_script=install_script,
             version=version,
             install_mode=install_mode,
@@ -1432,6 +1450,8 @@ def _run_host_candidate_propose(
             "semantic/host-authoring-observation.v1.json",
             dict(payload),
         )
+    profile_id = str(env.get("ODYLITH_GREENFIELD_MODEL_PROFILE") or "").strip()
+    profile = get_greenfield_model_profile(profile_id)
     return run_host_candidate_flow(
         HostCandidateFlow(
             repo_root=repo_root,
@@ -1441,12 +1461,56 @@ def _run_host_candidate_propose(
             edit_evidence=edit_evidence,
             timeout=timeout,
             env=env,
+            trusted_codex_executable=resolve_trusted_codex_executable(environ=env),
+            expected_model=profile.model,
+            expected_reasoning_effort=profile.reasoning_effort,
             invoke_installed=invoke_installed,
             invoke_propose=invoke_propose,
             installed_command=base_command,
             observe=observe,
         )
     )
+
+
+def _host_candidate_argv_for_profile(
+    argv: Sequence[str],
+    *,
+    profile_id: str,
+) -> tuple[str, ...]:
+    """Resolve exact model tokens for one preselected profile without inference."""
+
+    contract = get_greenfield_model_profile(profile_id)
+    replacements = {
+        "{model}": contract.model,
+        "model_reasoning_effort={reasoning_effort}": (
+            f"model_reasoning_effort={contract.reasoning_effort}"
+        ),
+    }
+    return tuple(replacements.get(str(token), str(token)) for token in argv)
+
+
+def _require_profile_argv_template(argv: Sequence[str]) -> tuple[str, ...]:
+    tokens = tuple(str(token) for token in argv)
+    for placeholder in (
+        "{model}",
+        "model_reasoning_effort={reasoning_effort}",
+    ):
+        if tokens.count(placeholder) != 1:
+            raise RuntimeError(
+                "release host candidate argv requires exactly one " + placeholder + " token"
+            )
+    trusted = resolve_trusted_codex_executable()
+    try:
+        qualified, _receipt = qualify_host_candidate_argv(
+            tokens,
+            trusted_codex_executable=trusted,
+            expected_model="{model}",
+            expected_reasoning_effort="{reasoning_effort}",
+            expected_output_schema="{candidate_schema}",
+        )
+    except ValueError as exc:
+        raise RuntimeError(str(exc)) from exc
+    return qualified
 
 
 def _run_expected_clarification_case(
@@ -1520,6 +1584,13 @@ def _run_expected_clarification_case(
     )
     payload = execution.payload
     stage_observation = _retained_model_stage_observation(retained_case)
+    expected_source = prepare_model_authoring_evidence(
+        prompt=case.prompt,
+        edit_evidence=str(case.confirmed_intent_markdown or ""),
+    ).evidence_source
+    profile_id = str(env.get("ODYLITH_GREENFIELD_MODEL_PROFILE") or "").strip()
+    if not profile_id:
+        profile_id = model_profile_id_for_repair_tier(repair_tier)
     issues = list(clarification_contract_issues(
         execution,
         expected_fields=(
@@ -1530,20 +1601,18 @@ def _run_expected_clarification_case(
         expected_question=str(
             getattr(case, "expected_clarification_question", "") or ""
         ).strip(),
-        expected_model_profile_id=model_profile_id_for_repair_tier(repair_tier),
+        expected_model_profile_id=profile_id,
         stage_observation=stage_observation,
-        expected_source=prepare_model_authoring_evidence(
-            prompt=case.prompt, edit_evidence=str(case.confirmed_intent_markdown or ""),
-        ).evidence_source,
+        expected_source=expected_source,
     ))
     package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
     counts = collect_artifact_counts(repo_root=repo_root, package=package, required_terms=case.required_terms)
-    profile_id = model_profile_id_for_repair_tier(repair_tier)
     profile_evidence = model_profile_evidence(
         profile_id,
         env,
         observed=sealed_model_profile_observation(create_payload=payload),
         stage_observation=stage_observation,
+        expected_source=expected_source,
     )
     issues.extend(str(issue) for issue in profile_evidence.get("issues", ()))
     quality = clarification_quality_verdict(issues)
@@ -2369,7 +2438,18 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         default=None,
         help=(
             "Explicitly enable host-native Greenfield authoring. Repeat once per exact argv entry; "
-            "the configured command receives the complete candidate contract on stdin."
+            "release proof requires exactly: codex exec --ephemeral --ignore-user-config "
+            "--skip-git-repo-check --sandbox read-only --model {model} --config "
+            "model_reasoning_effort={reasoning_effort} --output-schema {candidate_schema} -. "
+            "The configured command receives the complete candidate contract on stdin."
+        ),
+    )
+    parser.add_argument(
+        "--lower-capability-control-file",
+        default="",
+        help=(
+            "One sealed supplemental clarification case for the explicit Luna no-write control. "
+            "Required for release proof and excluded from corpus acceptance statistics."
         ),
     )
     parser.add_argument("--json", action="store_true", dest="json_output")
@@ -2431,6 +2511,7 @@ def _require_sealed_release_input_root(
     sealed_root: str,
     semantic_annotations_file: str,
     evaluation_split_manifest: str,
+    lower_capability_control_file: str = "",
 ) -> None:
     if proof_tier_from_value(proof_tier) != "release":
         return
@@ -2443,7 +2524,12 @@ def _require_sealed_release_input_root(
     root = unresolved_root.resolve()
     if not root.is_dir():
         raise RuntimeError("release proof sealed input root does not exist")
-    values = (*case_files, semantic_annotations_file, evaluation_split_manifest)
+    values = (
+        *case_files,
+        semantic_annotations_file,
+        evaluation_split_manifest,
+        lower_capability_control_file,
+    )
     if not all(str(value or "").strip() for value in values):
         raise RuntimeError("release proof requires sealed case, annotation, and evaluation-manifest inputs")
     for value in values:
@@ -2523,6 +2609,11 @@ def _final_holdout_run_from_args(
             Path(str(value)).expanduser().resolve()
             for value in (getattr(args, "case_file", ()) or ())
         ),
+        lower_capability_control_path=(
+            Path(str(args.lower_capability_control_file)).expanduser().resolve()
+            if str(getattr(args, "lower_capability_control_file", "") or "").strip()
+            else None
+        ),
         implementation_revision=revision,
         distribution_provenance_sha256=str(provenance["sha256"]),
     )
@@ -2568,6 +2659,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "final_holdout_run_ledger",
                 "implementation_revision",
                 "distribution_provenance_file",
+                "lower_capability_control_file",
             )
             if str(getattr(args, name, "") or "").strip()
         )
@@ -2595,6 +2687,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         sealed_root=sealed_input_root,
         semantic_annotations_file=str(args.semantic_annotations_file or ""),
         evaluation_split_manifest=str(args.evaluation_split_manifest or ""),
+        lower_capability_control_file=str(
+            getattr(args, "lower_capability_control_file", "") or ""
+        ),
     )
     release_audit_repo_root = release_audit_repo_root.resolve()
     _raise_for_invalid_campaign_policy(
@@ -2622,6 +2717,26 @@ def main(argv: Sequence[str] | None = None) -> int:
                 output_dir=evidence_path.with_name(evidence_path.name + "-commit-recovery"),
                 temp_parent=Path(args.temp_parent),
             )
+        if campaign_config.proof_tier == "release":
+            evidence_path = Path(evidence_output_token)
+            validate_retained_evidence_output_dir(
+                output_dir=evidence_path.with_name(
+                    evidence_path.name + "-lower-capability-control"
+                ),
+                temp_parent=Path(args.temp_parent),
+            )
+    if (
+        campaign_config.proof_tier == "release"
+        and hasattr(args, "host_candidate_arg")
+    ):
+        args.host_candidate_arg = list(
+            _require_profile_argv_template(
+                tuple(
+                    str(value)
+                    for value in (getattr(args, "host_candidate_arg", None) or ())
+                )
+            )
+        )
     final_holdout_run = _final_holdout_run_from_args(args, sealed_input_root=sealed_input_root)
     if final_holdout_run is not None:
         install_script = Path(args.dist_dir).expanduser().resolve() / "install.sh"
@@ -2630,6 +2745,44 @@ def main(argv: Sequence[str] | None = None) -> int:
         browser_issues = browser_runtime_preflight_issues() if bool(args.include_browser_proof) else ()
         if browser_issues:
             raise RuntimeError("final holdout browser preflight failed: " + "; ".join(browser_issues))
+    selected_cases = _load_cli_case_files(
+        args.case_file or (),
+        enforce_lexical_controls=(
+            True if include_default_cases else final_holdout_run is None
+        ),
+    )
+    if include_default_cases:
+        try:
+            tuple(case_model_profile(case) for case in selected_cases)
+        except ValueError as error:
+            raise RuntimeError(
+                "--include-default-cases supplements require exactly one supported explicit model profile"
+            ) from error
+        planned_cases = (*assign_model_profiles(default_cases()), *selected_cases)
+        identities = tuple(_retained_case_id(case).casefold() for case in planned_cases)
+        duplicates = sorted(
+            identity for identity, count in Counter(identities).items() if count > 1
+        )
+        if duplicates:
+            raise RuntimeError(
+                "--include-default-cases has duplicate case IDs: " + ", ".join(duplicates)
+            )
+        selected_cases = planned_cases
+    else:
+        planned_cases = selected_cases or default_cases()
+    _reject_control_profiles_in_main_corpus(planned_cases)
+    lower_capability_control_case = _load_lower_capability_control_case(
+        str(getattr(args, "lower_capability_control_file", "") or ""),
+        enforce_lexical_controls=final_holdout_run is None,
+    )
+    if (
+        lower_capability_control_case is not None
+        and _retained_case_id(lower_capability_control_case).casefold()
+        in {_retained_case_id(case).casefold() for case in planned_cases}
+    ):
+        raise RuntimeError(
+            "lower-capability control must have an identity separate from the corpus"
+        )
     output_path = (
         Path(str(args.output_json)).expanduser().resolve()
         if str(args.output_json or "").strip()
@@ -2643,31 +2796,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         try:
             if final_holdout_run is not None:
                 final_holdout_run.claim()
-            selected_cases = _load_cli_case_files(
-                args.case_file or (),
-                enforce_lexical_controls=(
-                    True if include_default_cases else final_holdout_run is None
-                ),
-            )
-            if include_default_cases:
-                try:
-                    tuple(case_model_profile(case) for case in selected_cases)
-                except ValueError as error:
-                    raise RuntimeError(
-                        "--include-default-cases supplements require exactly one supported explicit model profile"
-                    ) from error
-                planned_cases = (*assign_model_profiles(default_cases()), *selected_cases)
-                identities = tuple(_retained_case_id(case).casefold() for case in planned_cases)
-                duplicates = sorted(
-                    identity for identity, count in Counter(identities).items() if count > 1
-                )
-                if duplicates:
-                    raise RuntimeError(
-                        "--include-default-cases has duplicate case IDs: " + ", ".join(duplicates)
-                    )
-                selected_cases = planned_cases
-            else:
-                planned_cases = selected_cases or default_cases()
             release_audits = (
                 load_release_audit_file(
                     Path(str(args.release_audit_file)),
@@ -2713,6 +2841,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 retained_evidence_run_id=(
                     final_holdout_run.run_id if final_holdout_run is not None else ""
                 ),
+                lower_capability_control_case=lower_capability_control_case,
             )
             if final_holdout_run is not None and final_holdout_run.claimed:
                 if output_path is None or not output_path.is_file():
@@ -2757,6 +2886,7 @@ def _execute_matrix_campaign(
     finalize_lease: bool = False,
     before_product_execution: Callable[[], None] | None = None,
     retained_evidence_run_id: str = "",
+    lower_capability_control_case: GreenfieldMatrixCase | None = None,
 ) -> int:
     """Run one fully isolated proof campaign under its output lease."""
 
@@ -2818,6 +2948,39 @@ def _execute_matrix_campaign(
             host_candidate_argv=tuple(str(value) for value in (getattr(args, "host_candidate_arg", None) or ())),
             before_product_execution=before_product_execution,
         )
+        lower_capability_control_results: tuple[GreenfieldMatrixResult, ...] = ()
+        control_lane_required = (
+            campaign_config.proof_tier == "release"
+            and hasattr(args, "lower_capability_control_file")
+        )
+        if control_lane_required:
+            if lower_capability_control_case is None:
+                raise RuntimeError("release proof requires one lower-capability control case")
+            raw_host_argv = tuple(
+                str(value)
+                for value in (getattr(args, "host_candidate_arg", None) or ())
+            )
+            _require_profile_argv_template(raw_host_argv)
+            control_evidence_path = Path(str(args.evidence_output_dir)).with_name(
+                Path(str(args.evidence_output_dir)).name
+                + "-lower-capability-control"
+            )
+            lower_capability_control_results = run_matrix(
+                dist_dir=Path(args.dist_dir),
+                version=str(args.version),
+                temp_parent=temp_parent,
+                cases=(lower_capability_control_case,),
+                include_browser_proof=False,
+                install_mode=str(args.install_mode),
+                campaign_phase="single-matrix",
+                proof_tier="discovery",
+                stop_after_failures=1,
+                evidence_output_dir=control_evidence_path,
+                retained_evidence_run_id=retained_evidence_run_id,
+                host_candidate_argv=raw_host_argv,
+            )
+            if len(lower_capability_control_results) != 1:
+                raise RuntimeError("release proof must execute exactly one lower-capability control")
         commit_recovery = (
             run_installed_commit_recovery_proof(
                 dist_dir=Path(args.dist_dir),
@@ -2836,9 +2999,12 @@ def _execute_matrix_campaign(
                     and isinstance(approved_audit_bindings.get(recovery_case.case_id), Mapping)
                     else None
                 ),
-                host_candidate_argv=tuple(
-                    str(value)
-                    for value in (getattr(args, "host_candidate_arg", None) or ())
+                host_candidate_argv=_host_candidate_argv_for_profile(
+                    tuple(
+                        str(value)
+                        for value in (getattr(args, "host_candidate_arg", None) or ())
+                    ),
+                    profile_id=case_model_profile(profiled_cases[0]),
                 ),
             )
             if bool(args.include_commit_recovery_proof)
@@ -2906,9 +3072,28 @@ def _execute_matrix_campaign(
                 "run_namespace_cleanup": "passed",
             }
     profile_proof = model_profile_release_proof(
-        results,
+        (*results, *lower_capability_control_results),
         require_complete=campaign_config.proof_tier == "release",
     )
+    lower_capability_control_proof = {
+        "status": (
+            "passed"
+            if len(lower_capability_control_results) == 1
+            and lower_capability_control_results[0].quality.passed
+            and case_expectation(lower_capability_control_case)
+            == CLARIFICATION_REQUIRED_EXPECTATION
+            else "not_requested"
+            if not control_lane_required
+            else "failed"
+        ),
+        "case_count": len(lower_capability_control_results),
+        "profile_id": (
+            case_model_profile(lower_capability_control_case)
+            if lower_capability_control_case is not None
+            else ""
+        ),
+        "results": [result.to_dict() for result in lower_capability_control_results],
+    }
     browser_status = str(browser_proof.get("status") or "").strip()
     browser_passed = browser_status == "passed" or (
         browser_status == "skipped"
@@ -2928,7 +3113,7 @@ def _execute_matrix_campaign(
         semantic_digests=semantic_digests,
     )
     onboarding_quality_scorecard = build_onboarding_quality_scorecard(
-        results=results,
+        results=(*results, *lower_capability_control_results),
         browser_proof=browser_proof,
         platform_leakage_proof=platform_leakage_proof,
         metamorphic_output=metamorphic_output,
@@ -2940,6 +3125,7 @@ def _execute_matrix_campaign(
     passed = (
         all(result.quality.passed for result in results)
         and profile_proof.get("status") == "passed"
+        and lower_capability_control_proof.get("status") in {"not_requested", "passed"}
         and unavailable_provider.get("status") in {"not_requested", "passed"}
         and (commit_recovery is None or commit_recovery.passed)
         and browser_passed
@@ -3007,6 +3193,7 @@ def _execute_matrix_campaign(
         "temp_cleanup_proof": cleanup_proof,
         "onboarding_quality_scorecard": onboarding_quality_scorecard,
         "model_profile_proof": profile_proof,
+        "lower_capability_control_proof": lower_capability_control_proof,
         "unavailable_provider_proof": unavailable_provider,
         "semantic_release": semantic_release,
         "retained_evidence": retained_evidence,
@@ -3120,6 +3307,66 @@ def _load_cli_case_files(
                 )
             )
     return tuple(cases)
+
+
+def _load_lower_capability_control_case(
+    case_file: str,
+    *,
+    enforce_lexical_controls: bool = True,
+) -> GreenfieldMatrixCase | None:
+    token = str(case_file or "").strip()
+    if not token:
+        return None
+    cases = load_case_file(
+        Path(token),
+        enforce_lexical_controls=enforce_lexical_controls,
+    )
+    if len(cases) != 1:
+        raise RuntimeError("lower-capability control file must contain exactly one case")
+    if len(LOWER_CAPABILITY_CONTROL_PROFILES) != 1:
+        raise RuntimeError("release contract must declare exactly one lower-capability control profile")
+    case = cases[0]
+    if case_expectation(case) != CLARIFICATION_REQUIRED_EXPECTATION:
+        raise RuntimeError("lower-capability control case must require clarification")
+    declared_profiles = tuple(
+        str(tag).removeprefix("model-profile:")
+        for tag in case.tags
+        if str(tag).startswith("model-profile:")
+    )
+    if declared_profiles and declared_profiles != LOWER_CAPABILITY_CONTROL_PROFILES:
+        raise RuntimeError(
+            "lower-capability control file may declare only the Luna control profile"
+        )
+    tags = tuple(
+        tag for tag in case.tags if not str(tag).startswith("model-profile:")
+    )
+    return replace(
+        case,
+        tags=(
+            *tags,
+            f"model-profile:{LOWER_CAPABILITY_CONTROL_PROFILES[0]}",
+        ),
+    )
+
+
+def _reject_control_profiles_in_main_corpus(
+    cases: Sequence[GreenfieldMatrixCase],
+) -> None:
+    control_profiles = set(LOWER_CAPABILITY_CONTROL_PROFILES)
+    contaminated = tuple(
+        _retained_case_id(case)
+        for case in cases
+        if any(
+            str(tag).removeprefix("model-profile:") in control_profiles
+            for tag in case.tags
+            if str(tag).startswith("model-profile:")
+        )
+    )
+    if contaminated:
+        raise RuntimeError(
+            "main release corpus cannot contain Luna control profile tags: "
+            + ", ".join(contaminated)
+        )
 
 
 if __name__ == "__main__":

@@ -6,6 +6,7 @@ Last updated (UTC): 2026-09-26
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-344 | 2026-09-26 | Greenfield dashboard publication proof serialized an unbounded generated asset t | P1 | dashboard | Open | [2026-09-26-greenfield-dashboard-publication-proof-serialized-an-unbounded-generated-asset-t.md](2026-09-26-greenfield-dashboard-publication-proof-serialized-an-unbounded-generated-asset-t.md) |
 | CB-343 | 2026-09-23 | Greenfield confirmation did not carry execution and intervention handoff proof | P2 | domain-intelligence-greenfield | Open | [2026-09-23-greenfield-confirmation-did-not-carry-execution-and-intervention-handoff-proof.md](2026-09-23-greenfield-confirmation-did-not-carry-execution-and-intervention-handoff-proof.md) |
 | CB-342 | 2026-09-23 | Greenfield coding readiness projection drops repeated source facts 2 | P2 | domain-intelligence | Open | [2026-09-23-greenfield-coding-readiness-projection-drops-repeated-source-facts-2.md](2026-09-23-greenfield-coding-readiness-projection-drops-repeated-source-facts-2.md) |
 | CB-341 | 2026-09-23 | Greenfield coding readiness projection drops repeated source facts | P2 | domain-intelligence | Open | [2026-09-23-greenfield-coding-readiness-projection-drops-repeated-source-facts.md](2026-09-23-greenfield-coding-readiness-projection-drops-repeated-source-facts.md) |

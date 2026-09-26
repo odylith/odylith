@@ -39,8 +39,11 @@ from odylith.runtime.domain_intelligence.greenfield_model_outcomes import (
     GreenfieldModelRuntimeError,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    DEEP_PROFILE_ID,
     GREENFIELD_NORMAL_CASE_TARGET_SECONDS,
     GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS,
+    RESCUE_PROFILE_ID,
+    STANDARD_PROFILE_ID,
     get_greenfield_model_profile,
     model_profile_id_for_repair_tier,
 )
@@ -60,13 +63,14 @@ _PUBLIC_INTENT_AUTHORITY_SUMMARY_KEYS = (
     "materiality_status",
 )
 _REPAIR_TIER_TIMING_HELP = (
-    "Proposal performance targets: "
-    + "; ".join(
-        f"{'auto/standard' if tier == 'standard' else tier}: "
-        f"{get_greenfield_model_profile(model_profile_id_for_repair_tier(tier)).performance_target_seconds:g}s advisory"
-        for tier in ("standard", "rescue", "deep")
-    )
-    + f". Operational safety timeout: {GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS:g}s for every tier."
+    "Release-success proposal target: auto/standard "
+    f"{get_greenfield_model_profile(STANDARD_PROFILE_ID).performance_target_seconds:g}s advisory. "
+    "Declared non-success evidence profiles: Luna clarification/no-write control "
+    f"{get_greenfield_model_profile(RESCUE_PROFILE_ID).performance_target_seconds:g}s advisory; "
+    "Sol negative diagnostic "
+    f"{get_greenfield_model_profile(DEEP_PROFILE_ID).performance_target_seconds:g}s advisory. "
+    "Control and diagnostic profiles are not executable success choices."
+    + f" Operational safety timeout: {GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS:g}s for every profile."
     + f" Normal-case target: {GREENFIELD_NORMAL_CASE_TARGET_SECONDS:g}s (advisory)."
 )
 

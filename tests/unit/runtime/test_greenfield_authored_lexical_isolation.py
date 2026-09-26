@@ -9,6 +9,8 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
+import pytest
+
 from odylith.runtime.domain_intelligence import (
     greenfield_proposals_cli,
 )
@@ -167,10 +169,12 @@ def test_public_authored_propose_seals_exact_non_latin_customer(
     assert manifest["rescue_activated"] is False
 
 
-def test_public_authored_rescue_tier_seals_the_120_second_target(
+@pytest.mark.parametrize("tier", ["rescue", "deep"])
+def test_public_authored_unqualified_tier_fails_closed_before_review_or_staging(
     tmp_path: Path,
     monkeypatch: Any,
     capsys: Any,
+    tier: str,
 ) -> None:
     now = {"time": 0.0}
     monkeypatch.setattr(
@@ -178,28 +182,18 @@ def test_public_authored_rescue_tier_seals_the_120_second_target(
         "time",
         SimpleNamespace(perf_counter=lambda: now["time"]),
     )
-    rc, payload, reviewer = _public_propose(
-        tmp_path=tmp_path,
-        monkeypatch=monkeypatch,
-        capsys=capsys,
-        intent=_authored_intent(),
-        repair_tier="rescue",
-    )
+    with pytest.raises(SystemExit) as exc_info:
+        _public_propose(
+            tmp_path=tmp_path,
+            monkeypatch=monkeypatch,
+            capsys=capsys,
+            intent=_authored_intent(),
+            repair_tier=tier,
+        )
 
-    assert rc == 0, payload
-    assert reviewer.calls == 1
-    transaction = json.loads((tmp_path / payload["transaction_file"]).read_text(encoding="utf-8"))
-    manifest = transaction["quality_manifest"]
-    assert manifest["requested_repair_tier"] == "rescue"
-    assert manifest["repair_tier"] == "rescue"
-    assert manifest["target_seconds"] == 120.0
-    assert manifest["operational_timeout_seconds"] == 180.0
-    assert manifest["rescue_activated"] is True
-    assert manifest["model_authoring"]["tier"] == "rescue"
-    assert manifest["model_authoring"]["runtime_semantic_model_call_count"] == 1
-    assert reviewer.requests[0].timeout_seconds == 165.0
-    assert manifest["model_authoring"]["effective_model_window_seconds"] == 165.0
-    assert "remaining_candidate_authoring" not in manifest["model_authoring"]
+    assert exc_info.value.code == 2
+    assert f"invalid choice: '{tier}'" in capsys.readouterr().err
+    assert not list(tmp_path.rglob("product-create-transaction.v1.json"))
 
 
 def test_public_authored_propose_seals_exact_non_latin_product_title(
@@ -264,7 +258,7 @@ def test_public_authored_propose_seals_exact_repeated_brand_without_rewriting(
     assert transaction["proposal"]["intent"]["title"] == "Miu Miu"
 
 
-def test_public_authored_deep_tier_stays_structural_and_seals_exact_unicode_custody(
+def test_public_authored_standard_tier_stays_structural_and_seals_exact_unicode_custody(
     tmp_path: Path,
     monkeypatch: Any,
     capsys: Any,
@@ -278,19 +272,18 @@ def test_public_authored_deep_tier_stays_structural_and_seals_exact_unicode_cust
         monkeypatch=monkeypatch,
         capsys=capsys,
         intent=intent,
-        repair_tier="deep",
     )
 
     assert rc == 0, payload
     assert reviewer.calls == 1
     transaction = json.loads((tmp_path / payload["transaction_file"]).read_text(encoding="utf-8"))
     manifest = transaction["quality_manifest"]
-    assert manifest["requested_repair_tier"] == "deep"
-    assert manifest["repair_tier"] == "deep"
-    assert manifest["target_seconds"] == 150.0
+    assert manifest["requested_repair_tier"] == "auto"
+    assert manifest["repair_tier"] == "standard"
+    assert manifest["target_seconds"] == 90.0
     assert manifest["operational_timeout_seconds"] == 180.0
     assert reviewer.requests[0].timeout_seconds == 165.0
-    assert manifest["rescue_activated"] is True
+    assert manifest["rescue_activated"] is False
     assert manifest["semantic_compiler"] == {
         "version": "odylith.greenfield.authored-semantic-validation.v4",
         "status": "passed",

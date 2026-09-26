@@ -127,8 +127,6 @@ def test_release_statistics_use_sealed_slices_instead_of_spoofable_tags() -> Non
         ("evidence_format", "operator_prompt"),
         ("evidence_format", "operator_prompt_with_edit_evidence"),
         ("model_profile", STANDARD_PROFILE_ID),
-        ("model_profile", RESCUE_PROFILE_ID),
-        ("model_profile", DEEP_PROFILE_ID),
     }
     assert not any(
         row["value"] in {"spoofed-band", "spoofed-profile"}
@@ -141,7 +139,6 @@ def test_release_statistics_use_sealed_slices_instead_of_spoofable_tags() -> Non
     (
         ("complexity_band", "high"),
         ("evidence_format", "operator_prompt_with_edit_evidence"),
-        ("model_profile", STANDARD_PROFILE_ID),
     ),
 )
 def test_each_published_release_axis_fails_independently_when_coverage_is_missing(
@@ -233,7 +230,7 @@ def test_release_statistics_reject_unknown_or_narrowed_slice_contracts() -> None
     narrowed = {
         "complexity_band": ("bounded", "moderate"),
         "evidence_format": ("operator_prompt", "operator_prompt_with_edit_evidence"),
-        "model_profile": (STANDARD_PROFILE_ID, RESCUE_PROFILE_ID, DEEP_PROFILE_ID),
+        "model_profile": (STANDARD_PROFILE_ID,),
         "invented_dimension": ("invented",),
     }
 
@@ -284,17 +281,17 @@ def _complete_release_matrix() -> tuple[
 ]:
     base_specifications = (
         ("bounded-operator", "bounded", False, STANDARD_PROFILE_ID),
-        ("bounded-edit", "bounded", True, RESCUE_PROFILE_ID),
-        ("bounded-operator-deep", "bounded", False, DEEP_PROFILE_ID),
+        ("bounded-edit", "bounded", True, STANDARD_PROFILE_ID),
+        ("bounded-operator-deep", "bounded", False, STANDARD_PROFILE_ID),
         ("bounded-edit-standard", "bounded", True, STANDARD_PROFILE_ID),
-        ("moderate-operator", "moderate", False, RESCUE_PROFILE_ID),
-        ("moderate-edit", "moderate", True, DEEP_PROFILE_ID),
+        ("moderate-operator", "moderate", False, STANDARD_PROFILE_ID),
+        ("moderate-edit", "moderate", True, STANDARD_PROFILE_ID),
         ("moderate-operator-standard", "moderate", False, STANDARD_PROFILE_ID),
-        ("moderate-edit-rescue", "moderate", True, RESCUE_PROFILE_ID),
-        ("high-operator", "high", False, DEEP_PROFILE_ID),
+        ("moderate-edit-rescue", "moderate", True, STANDARD_PROFILE_ID),
+        ("high-operator", "high", False, STANDARD_PROFILE_ID),
         ("high-edit", "high", True, STANDARD_PROFILE_ID),
-        ("high-operator-rescue", "high", False, RESCUE_PROFILE_ID),
-        ("high-edit-deep", "high", True, DEEP_PROFILE_ID),
+        ("high-operator-rescue", "high", False, STANDARD_PROFILE_ID),
+        ("high-edit-deep", "high", True, STANDARD_PROFILE_ID),
     )
     specifications = tuple(
         (f"{case_id}-{cycle}", band, edit, profile)

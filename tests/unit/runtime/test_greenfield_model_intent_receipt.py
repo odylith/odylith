@@ -328,36 +328,38 @@ def test_quality_approval_rejects_retired_semantic_validation_version() -> None:
         )
 
 
-def test_quality_approval_accepts_explicit_deep_profile() -> None:
-    greenfield_create_transaction.require_product_create_transaction_quality_approved(
-        approved_authored_quality_manifest_fixture(
-            requested_repair_tier="deep",
-            repair_tier="deep",
-            target_seconds=150.0,
-            operational_timeout_seconds=180.0,
-            elapsed_seconds=101.0,
-            model_authoring=_approved_model_authoring(
-                DEEP_PROFILE_ID,
-                elapsed_seconds=100.0,
-            ),
+def test_quality_approval_rejects_explicit_deep_diagnostic_as_success() -> None:
+    with pytest.raises(ValueError, match="quality manifest is not approved"):
+        greenfield_create_transaction.require_product_create_transaction_quality_approved(
+            approved_authored_quality_manifest_fixture(
+                requested_repair_tier="deep",
+                repair_tier="deep",
+                target_seconds=150.0,
+                operational_timeout_seconds=180.0,
+                elapsed_seconds=101.0,
+                model_authoring=_approved_model_authoring(
+                    DEEP_PROFILE_ID,
+                    elapsed_seconds=100.0,
+                ),
+            )
         )
-    )
 
 
-def test_quality_approval_accepts_explicit_rescue_profile() -> None:
-    greenfield_create_transaction.require_product_create_transaction_quality_approved(
-        approved_authored_quality_manifest_fixture(
-            requested_repair_tier="rescue",
-            repair_tier="rescue",
-            target_seconds=120.0,
-            operational_timeout_seconds=180.0,
-            elapsed_seconds=81.0,
-            model_authoring=_approved_model_authoring(
-                RESCUE_PROFILE_ID,
-                elapsed_seconds=80.0,
-            ),
+def test_quality_approval_rejects_lower_capability_control_as_success() -> None:
+    with pytest.raises(ValueError, match="quality manifest is not approved"):
+        greenfield_create_transaction.require_product_create_transaction_quality_approved(
+            approved_authored_quality_manifest_fixture(
+                requested_repair_tier="rescue",
+                repair_tier="rescue",
+                target_seconds=120.0,
+                operational_timeout_seconds=180.0,
+                elapsed_seconds=81.0,
+                model_authoring=_approved_model_authoring(
+                    RESCUE_PROFILE_ID,
+                    elapsed_seconds=80.0,
+                ),
+            )
         )
-    )
 
 
 def test_quality_approval_rejects_default_route_relabelled_as_rescue() -> None:

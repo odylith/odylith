@@ -23,6 +23,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization
 )
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     RESCUE_PROFILE_ID,
+    STANDARD_PROFILE_ID,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     build_product_intent_envelope,
@@ -543,7 +544,7 @@ def test_materialization_preserves_exact_event_fact_bytes(tmp_path) -> None:  # 
         authoring_provider=provider,
         participant_provider_factory=provider.participant_provider,
         authoring_timeout_seconds=84,
-        authoring_profile_id=RESCUE_PROFILE_ID,
+        authoring_profile_id=STANDARD_PROFILE_ID,
         review_provider_factory=AdmittingReviewProvider,
     )
 

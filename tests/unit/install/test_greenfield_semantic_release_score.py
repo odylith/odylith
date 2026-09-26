@@ -454,7 +454,6 @@ def test_release_required_slices_fail_closed_on_missing_coverage() -> None:
     } == {
         "release evidence lacks complexity_band",
         "release evidence lacks evidence_format",
-        "release evidence lacks model_profile",
     }
     assert {
         issue for issue in report["release_coverage_issues"]
