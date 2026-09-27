@@ -1,8 +1,10 @@
 - Bug ID: CB-348
 
-- Status: InProgress
+- Status: FixedPendingRelease
 
 - Created: 2026-09-27
+
+- Fixed: Pending
 
 - Severity: P1
 
@@ -26,7 +28,7 @@
 
 - Ownership: Greenfield release matrix journey and preconfirm campaign harness
 
-- Timeline: Captured 2026-09-27 through `odylith bug capture`. The V39 exact one-case replay proved the callable-selection repair reached the installed proposal command, then failed because the discovery-tier direct path omitted the required `--candidate-file` contract. V40 commit `ce11ecc03` removed that stale route, built and passed clean-install smoke, and reached the canonical host-native candidate flow. The exact replay then failed closed after 180.317 seconds because discovery runs did not allocate the private proof-capture case that release runs use; the evaluator therefore compared the sealed host receipt with empty retained observations and reported 39 derivative custody issues plus one separate scoring issue. The scoring issue treated deliberately optional discovery browser proof as a required unscored dimension even though release proof still requires the full browser matrix. This stale-evaluator recurrence is linked to CB-347.
+- Timeline: Captured 2026-09-27 through `odylith bug capture`. The V39 exact one-case replay proved the callable-selection repair reached the installed proposal command, then failed because the discovery-tier direct path omitted the required `--candidate-file` contract. V40 commit `ce11ecc03` removed that stale route, built and passed clean-install smoke, and reached the canonical host-native candidate flow. The exact replay then failed closed after 180.317 seconds because discovery runs did not allocate the private proof-capture case that release runs use; the evaluator therefore compared the sealed host receipt with empty retained observations and reported 39 derivative custody issues plus one separate scoring issue. The scoring issue treated deliberately optional discovery browser proof as a required unscored dimension even though release proof still requires the full browser matrix. V41 commit `60bc713b2` built successfully, passed clean-install smoke, passed the exact V40 case at 10/10 with zero issues, and then passed the original seven-case failed subset at 7/7 with zero failures or clusters. This stale-evaluator recurrence is linked to CB-347.
 
 - Blast Radius: All discovery-tier matrix runs that use the direct installed proposal path without host candidate argv
 
@@ -44,7 +46,7 @@
 
 - Rollback/Forward Fix: Forward fix only; the immutable V38 distribution remains rejected and must be rebuilt after proof.
 
-- Verification: Focused regression proves every campaign tier carries the canonical host-candidate command, missing custody fails before product execution, and discovery tiers capture host-authoring plus private reviewer evidence ephemerally when no evidence destination is requested. Quality scoring passes an otherwise complete discovery case with browser proof explicitly not required while still failing an otherwise identical release case with browser proof required and not attempted. The focused custody/scoring suite passes 274 tests, and the full Greenfield install/release suite passes 1,230 tests. A rebuilt immutable distribution must still complete the exact one-case replay before the seven-case replay resumes. V40 evidence is retained at `/Users/freedom/.codex/odylith-greenfield-public-v40-one-case-evidence.x1oSXH`; it is a falsification, not release proof.
+- Verification: Focused regression proves every campaign tier carries the canonical host-candidate command, missing custody fails before product execution, and discovery tiers capture host-authoring plus private reviewer evidence ephemerally when no evidence destination is requested. Quality scoring passes an otherwise complete discovery case with browser proof explicitly not required while still failing an otherwise identical release case with browser proof required and not attempted. The focused custody/scoring suite passes 274 tests, and the full Greenfield install/release suite passes 1,230 tests. Immutable V41 passed clean-install smoke, the exact V40 replay case at 10/10 with zero issues, and the original seven-case subset at 7/7 with zero failures or failure clusters. Evidence is retained at `/Users/freedom/.codex/odylith-greenfield-public-v41-one-case-evidence.FSgBI9` and `/Users/freedom/.codex/odylith-greenfield-public-v41-seven-case-evidence.Hzt1lm`. These are public-regression and discovery proofs; final release qualification remains pending.
 
 - Prevention: Ban conditional expressions that return lambdas in release execution ownership, do not retain a direct proposal fallback after the candidate-file contract becomes mandatory, and keep proof capture separate from proof publication. Assert every campaign tier reaches proposal only through the canonical host-candidate flow and has the private observations required to evaluate that flow.
 
@@ -55,6 +57,8 @@
 - Regression Tests Added: `test_run_matrix_rejects_missing_host_native_argv_before_product_execution`, `test_run_case_invokes_only_host_candidate_runner_with_process_evidence`, `test_discovery_campaign_commands_carry_canonical_host_candidate_argv`, `test_discovery_uses_ephemeral_case_proof_without_publishing_release_evidence`, optional-versus-required browser-score regressions, clarification host-custody regressions, and candidate-file enforcement.
 
 - Version/Build: 0.1.15 V38 commit 6200e214f48b635ede7cb7153752f63a1fecbefa
+
+- Fixed In: 0.1.15
 
 - Config/Flags: failed-subset tier; one worker; direct installed proposal path; browser proof skipped by discovery contract
 

@@ -36,12 +36,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 692,
-    "mapped_workstream_evidence_count": 646,
+    "explicit_event_count": 693,
+    "mapped_workstream_evidence_count": 647,
     "recent_path_match_count": 0,
     "spec_history_event_count": 19,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 692
+    "timeline_event_count": 693
   },
   "name": "Atlas",
   "path_prefixes": [
@@ -51,6 +51,43 @@
   ],
   "spec_ref": "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "sha256:745602d25d1853ac58f30f1708adb342fa657952a7efd21415a28c1791fcc25f",
+        "sha256:5384a81637a1144153af61017331494b9972e1f46109d709e6f2074c6189affd",
+        "odylith/casebook/bugs/2026-09-27-greenfield-failed-subset-runner-returns-a-function-instead-of-proposal-execution.md"
+      ],
+      "confidence": "high",
+      "event_index": 1367,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-09-27T10:50:12-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 2,
       "artifacts": [
