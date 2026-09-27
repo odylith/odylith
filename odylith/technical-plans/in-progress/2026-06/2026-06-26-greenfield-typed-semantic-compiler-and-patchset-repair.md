@@ -61,6 +61,49 @@ disclosed public qualification and independent semantic/UX review, then verify
 frozen hashes and consume the untouched holdout exactly once. Do not add
 features or reinterpret protected evidence between these gates.
 
+The V33 public/final proof boundary and risk-scope comparison are now settled in
+the existing owners. Public audited qualification accepts an exact-member,
+repo-contained live subset of its audited parent corpus and the identified Luna
+clarification control. Protected final-holdout qualification alone requires
+sealed annotations, the frozen manifest, one-shot ledger, implementation
+revision, and distribution provenance. The campaign now reports recovery and
+unavailable-provider checks as `not-run` after a failed primary candidate, with
+zero secondary host calls; recovery runs only from an admitted sealed
+transaction.
+
+The risk alternative replaced duplicate host-authored event/component/workstream
+scope with one host-authored `scope_paths` graph relation per risk. Each path is
+validated against the selected event, component, and workstream graph; the
+canonical risk row then derives every projection scope. The host still owns risk
+meaning, trigger, mitigation, and verification. A frozen canonical risk-row
+authority binds every `risk_ref` before projection, so a syntactically valid
+path cannot substitute another risk row. The serialized package carries no
+derived scope to be reinterpreted downstream.
+
+Development proof covers the positive multi-event, negative unmapped-event,
+unrelated-risk, substituted-valid-path, malformed-reference, and projection
+parity controls. The final focused semantic/projection slice passes `292/292`;
+release-boundary tests pass `51/51` and no-secondary-call/public-entry tests
+pass `15/15`. Independent re-review found no P0/P1 after the canonical-row and
+single-membership-owner closures. This is source-local mechanism evidence, not
+public qualification.
+
+A structural audit found one P2 duplicate `risk_ref` decoder after that review.
+It is consolidated into one exact canonical decoder; leading-zero references
+are rejected rather than accepted by a compatibility interpretation. Focused
+decoder/component proof passes `17/17`, combined boundary proof passes
+`722/722`, wider Greenfield runtime proof passes `2,044/2,044`, and Greenfield
+install proof passes `1,254/1,254`. This remains a bounded authority cleanup,
+not evidence for release or holdout completion.
+
+Next: commit the bounded checkpoint, build from a clean committed tree, prove
+the clean installed distribution, then run the audited public parent/subset
+campaign with retained evidence, browser and recovery proof. Require an
+independent semantic/UX review of that retained public output before verifying
+the protected inputs and consuming the untouched final holdout exactly once.
+Do not reopen a parser, regex, retry, repair author, fallback candidate, model
+ladder, or alternate campaign owner.
+
 ### V32 fresh public result and bounded release-entrypoint repair
 
 The clean immutable `76548dc22` distribution passed one new retained public

@@ -28,6 +28,49 @@ def _sha256(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
+def test_release_subset_membership_normalizes_only_source_file() -> None:
+    corpus, cases_module = _modules()
+    parent = cases_module.GreenfieldMatrixCase(
+        name="audited parent case",
+        prompt="Create an audited parent case.",
+        required_terms=("audited",),
+        case_id="audited-parent",
+        source_file="parent.json",
+    )
+    exact_subset = replace(parent, source_file="live-subset.json")
+    drifted_subset = replace(exact_subset, prompt="Create a changed case.")
+    assert not corpus.release_subset_membership_issues(
+        selected_cases=(exact_subset,),
+        parent_cases=(parent,),
+    )
+    assert corpus.release_subset_membership_issues(
+        selected_cases=(drifted_subset,),
+        parent_cases=(parent,),
+    ) == (
+        "live release case `audited-parent` diverges from its audited parent-corpus record",
+    )
+
+
+def test_release_subset_membership_fails_closed_on_missing_and_duplicate_ids() -> None:
+    corpus, cases_module = _modules()
+    missing_id = cases_module.GreenfieldMatrixCase(
+        name="missing id",
+        prompt="Create a missing identity case.",
+        required_terms=("identity",),
+    )
+    identified = replace(missing_id, case_id="duplicate-id")
+
+    assert corpus.release_subset_membership_issues(
+        selected_cases=(missing_id, identified, identified),
+        parent_cases=(missing_id, identified, identified),
+    ) == (
+        "audited parent corpus contains a case without case_id",
+        "audited parent corpus contains duplicate case_id `duplicate-id`",
+        "live release subset contains a case without case_id",
+        "live release subset contains duplicate case_id `duplicate-id`",
+    )
+
+
 def _release_corpus(tmp_path: Path, *, reviewer_count: int = 8):
     provenance, cases_module = _modules()
     cases = []

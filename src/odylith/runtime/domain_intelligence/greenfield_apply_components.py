@@ -101,6 +101,7 @@ def _preview_authored_component(*, root: Path, row: Mapping[str, Any]) -> dict[s
     spec_ref = str(registry_entry["spec_ref"])
     public_authoring_input = dict(row)
     public_authoring_input.pop("source_custody", None)
+    public_authoring_input.pop("risk_scope_authority", None)
     return {
         "component_id": component_id,
         "label": str(row.get("label") or ""),

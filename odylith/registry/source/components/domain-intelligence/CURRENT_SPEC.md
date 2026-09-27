@@ -4,6 +4,37 @@ Last updated: 2026-09-27
 
 ## Overview
 
+### V34 canonical risk-scope graph authority (2026-09-27)
+
+Provisional design v5 replaces independently authored risk event orders,
+component keys, and workstream keys with one nonempty `scope_paths` relation.
+Each path is an exact `(event_order, component_key, workstream_key)` triple:
+the component must support the cited source event, the workstream must own that
+component, and the workstream must verify that event. Domain Intelligence
+derives the affected event, component, and workstream sets only from those
+validated graph paths; risk rows do not carry a second, mutable derived-scope
+authority.
+
+At component projection, a transient verified authority freezes the accepted
+design after custody and parity validation. Every rendered allocation must
+resolve its canonical `risk_ref` to that frozen risk row and must carry an
+exactly equal risk item. Malformed or out-of-range references, a substituted
+valid path, a changed risk row, or a projection-parity mismatch fail closed.
+The transient authority and any derived scope are stripped from serialized
+output, so public allocations retain only their canonical reference and the
+unchanged risk item. Dashboard, Radar, package, and component rendering derive
+their views on demand from the validated design.
+
+Canonical authoring v73, host candidate format v12, host contract v24, and
+candidate review v12 bind this one graph authority across admission and
+projection. The mechanism adds no regex extraction, parser pass, selector,
+repair loop, retry, fallback author, or alternate model path. Focused
+semantic/projection proof passes `292/292`; the combined runtime and release
+boundary suite passes `722/722`, including the shared exact `risk_ref` decoder
+regression. This is a source-contract correction, not
+release qualification: clean installed public evidence, independent semantic
+review, and an untouched protected holdout remain required.
+
 ### V33 typed design, exact review custody, and release-proof boundary (2026-09-27)
 
 Greenfield keeps one host-authored candidate and one independent semantic

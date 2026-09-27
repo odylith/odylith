@@ -10,6 +10,7 @@ from collections.abc import Mapping, Sequence
 from copy import deepcopy
 import datetime as dt
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
@@ -19,11 +20,83 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 from odylith.runtime.domain_intelligence.greenfield_authored_proposal import authored_projection_parity_issues
 from odylith.runtime.domain_intelligence.greenfield_apply_diagrams import allocated_diagram_ids
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
+    derive_risk_scope, provisional_design_from_intent,
+)
 from odylith.runtime.domain_intelligence.greenfield_provisional_package import (
     PROVISIONAL_DESIGN_ROOT, provisional_delivery_acceptance_text, provisional_exchange_text,
     provisional_risk_text,
 )
 from odylith.runtime.governance import artifact_tribunal
+
+
+_RISK_SCOPE_AUTHORITY_ATTESTATION = object()
+
+
+class _VerifiedRiskScopeAuthority:
+    """Immutable in-process design authority for component risk rendering."""
+
+    __slots__ = ("_attestation", "_design")
+
+    def __init__(self, design: Mapping[str, Any], *, attestation: object) -> None:
+        self._design = _freeze_risk_design(design)
+        self._attestation = attestation
+
+    def __deepcopy__(self, _memo: dict[int, Any]) -> _VerifiedRiskScopeAuthority:
+        return self
+
+    def scope_for(self, allocation: Mapping[str, Any]) -> dict[str, Any]:
+        return derive_risk_scope(self._design, self._canonical_risk(allocation))
+
+    def text_for(self, allocation: Mapping[str, Any]) -> str:
+        canonical_allocation = {
+            "risk_ref": allocation.get("risk_ref"),
+            "risk_item": self._canonical_risk(allocation),
+        }
+        return provisional_risk_text(canonical_allocation, design=self._design)
+
+    def _canonical_risk(self, allocation: Mapping[str, Any]) -> Mapping[str, Any]:
+        risk_ref = allocation.get("risk_ref")
+        risks = self._design["risk_posture"]["items"]
+        index = _canonical_risk_index(risk_ref)
+        if index >= len(risks):
+            raise ValueError("Registry component risk reference is outside canonical design")
+        canonical = _thaw_risk_design(risks[index])
+        supplied = allocation.get("risk_item")
+        if not isinstance(supplied, Mapping) or dict(supplied) != canonical:
+            raise ValueError("Registry component risk differs from its canonical design row")
+        return canonical
+
+
+def _freeze_risk_design(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        return MappingProxyType({key: _freeze_risk_design(item) for key, item in value.items()})
+    if isinstance(value, list):
+        return tuple(_freeze_risk_design(item) for item in value)
+    return value
+
+
+def _thaw_risk_design(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        return {key: _thaw_risk_design(item) for key, item in value.items()}
+    if isinstance(value, tuple):
+        return [_thaw_risk_design(item) for item in value]
+    return value
+
+
+def _canonical_risk_index(value: Any) -> int:
+    """Decode one exact canonical design risk reference."""
+
+    prefix = f"{PROVISIONAL_DESIGN_ROOT}/risk_posture/items/"
+    index_text = value.removeprefix(prefix) if isinstance(value, str) else ""
+    if (
+        not isinstance(value, str)
+        or not value.startswith(prefix)
+        or not index_text.isdecimal()
+        or str(int(index_text)) != index_text
+    ):
+        raise ValueError("Registry component has an invalid canonical risk reference")
+    return int(index_text)
 
 
 def is_authored_component_projection(proposal: Mapping[str, Any]) -> bool:
@@ -50,6 +123,10 @@ def build_authored_component_authoring_inputs(
     if not isinstance(intent, Mapping) or not isinstance(authority, Mapping):
         raise ValueError("model-authored component projection is missing sealed Product Intent authority")
     source_custody = authored_source_custody(intent=intent, authority=authority)
+    risk_scope_authority = _VerifiedRiskScopeAuthority(
+        provisional_design_from_intent(intent),
+        attestation=_RISK_SCOPE_AUTHORITY_ATTESTATION,
+    )
     workstreams_by_component, workstream_titles, delivery_links = _component_workstream_links(
         proposal=proposal, backlog_result=backlog_result,
     )
@@ -78,6 +155,7 @@ def build_authored_component_authoring_inputs(
                 "release_selector": str(release_selector or "").strip(),
             },
             "source_custody": source_custody,
+            "risk_scope_authority": risk_scope_authority,
         }
         _provisional_component_contract(row)
         rows.append(row)
@@ -112,6 +190,7 @@ def build_authored_component_spec(row: Mapping[str, Any]) -> str:
 
     _require_authored_custody(row)
     contract = _provisional_component_contract(row)
+    risk_scope_authority = _require_risk_scope_authority(row)
     component = contract["provisional_component"]
     workstreams, diagrams = _required_sequence(row, "workstreams"), _required_sequence(row, "diagrams")
     lines = [
@@ -145,7 +224,10 @@ def build_authored_component_spec(row: Mapping[str, Any]) -> str:
     lines.extend([
         "## Proposed risks", "",
         *(
-            [_evidence_block(provisional_risk_text(risk)) for risk in contract["risk_items"]]
+            [
+                _evidence_block(risk_scope_authority.text_for(allocation))
+                for allocation in contract["risk_allocations"]
+            ]
             or ["The reviewed provisional design identified no material risk for this component."]
         ),
         "",
@@ -175,7 +257,7 @@ def _provisional_component_contract(row: Mapping[str, Any]) -> Mapping[str, Any]
     contract = row.get("component_contract")
     fields = {
         "authority_kind", "design_ref", "provisional_component", "support_event_refs",
-        "supporting_events", "exchanges", "delivery_workstreams", "risk_refs", "risk_items",
+        "supporting_events", "exchanges", "delivery_workstreams", "risk_allocations",
     }
     if (
         row.get("projection_origin") != AUTHORED_PROJECTION_ORIGIN
@@ -231,27 +313,51 @@ def _provisional_component_contract(row: Mapping[str, Any]) -> Mapping[str, Any]
         raise ValueError("Registry component drifted from its proposed exchanges")
     if row.get("dependencies") != []:
         raise ValueError("Registry component cannot infer dependencies from proposed exchanges")
-    risks = contract.get("risk_items")
-    if not isinstance(risks, list) or any(not isinstance(item, Mapping) for item in risks):
+    risk_allocations = contract.get("risk_allocations")
+    if not isinstance(risk_allocations, list) or any(
+        not isinstance(item, Mapping) for item in risk_allocations
+    ):
         raise ValueError("Registry component has malformed proposed risks")
-    if list(row.get("risks") or ()) != [provisional_risk_text(item) for item in risks]:
-        raise ValueError("Registry component drifted from its proposed risks")
-    if any(component.get("key") not in item.get("component_keys", ()) for item in risks):
-        raise ValueError("Registry component inherited an unrelated proposed risk")
-    risk_refs = contract.get("risk_refs")
-    risk_prefix = f"{PROVISIONAL_DESIGN_ROOT}/risk_posture/items/"
     if (
-        not isinstance(risk_refs, list)
-        or len(risk_refs) != len(risks)
-        or len(set(risk_refs)) != len(risk_refs)
-        or any(
-            not isinstance(reference, str)
-            or not reference.startswith(risk_prefix)
-            or not reference.removeprefix(risk_prefix).isdecimal()
-            for reference in risk_refs
+        any(
+            set(allocation) != {
+                "risk_ref", "risk_item",
+            }
+            or not isinstance(allocation.get("risk_item"), Mapping)
+            or set(allocation["risk_item"]) != {
+                "key", "category", "statement", "trigger", "mitigation",
+                "verification", "scope_paths",
+            }
+            for allocation in risk_allocations
         )
     ):
         raise ValueError("Registry component has invalid proposed risk references")
+    try:
+        risk_indices = [
+            _canonical_risk_index(allocation.get("risk_ref"))
+            for allocation in risk_allocations
+        ]
+    except ValueError as error:
+        raise ValueError("Registry component has invalid proposed risk references") from error
+    if len(set(risk_indices)) != len(risk_indices):
+        raise ValueError("Registry component has invalid proposed risk references")
+    if risk_allocations:
+        risk_scope_authority = _require_risk_scope_authority(row)
+        derived_scopes = [
+            risk_scope_authority.scope_for(allocation)
+            for allocation in risk_allocations
+        ]
+        if list(row.get("risks") or ()) != [
+            risk_scope_authority.text_for(item) for item in risk_allocations
+        ]:
+            raise ValueError("Registry component drifted from its proposed risks")
+        if any(
+            component.get("key") not in scope.get("component_keys", ())
+            for scope in derived_scopes
+        ):
+            raise ValueError("Registry component inherited an unrelated proposed risk")
+    elif row.get("risks"):
+        raise ValueError("Registry component drifted from its proposed risks")
     events, orders = contract.get("supporting_events"), component.get("supported_event_orders")
     if not isinstance(events, list) or any(not isinstance(event, Mapping) for event in events):
         raise ValueError("Registry component has malformed source-event support")
@@ -296,6 +402,16 @@ def _require_authored_custody(row: Mapping[str, Any]) -> None:
     custody = row.get("source_custody")
     if not isinstance(custody, Mapping) or not artifact_tribunal.source_custody_valid(custody):
         raise ValueError("authored component projection is missing its exact semantic custody contract")
+
+
+def _require_risk_scope_authority(row: Mapping[str, Any]) -> _VerifiedRiskScopeAuthority:
+    authority = row.get("risk_scope_authority")
+    if (
+        not isinstance(authority, _VerifiedRiskScopeAuthority)
+        or authority._attestation is not _RISK_SCOPE_AUTHORITY_ATTESTATION
+    ):
+        raise ValueError("Registry component is missing its verified risk-scope authority")
+    return authority
 
 
 def _required_scalar(row: Mapping[str, Any], key: str) -> str:

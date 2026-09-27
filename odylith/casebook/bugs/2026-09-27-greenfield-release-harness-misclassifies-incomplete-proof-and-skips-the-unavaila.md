@@ -80,6 +80,62 @@
   public matrix, clean-install/browser/recovery proof, and final adjudication
   pass; no harness score alone qualifies Greenfield.
 
+## V33 Public/Final Proof Boundary Recurrence (2026-09-27)
+
+- Read-only inspection of the maintained campaign path proved that every
+  `proof-tier=release` shard is still routed through final-holdout-only input
+  requirements. The public campaign supplies its disclosed case files,
+  matching audit, Luna clarification control, retained evidence, exact host
+  argv, browser proof, and recovery proof, but
+  `greenfield_preconfirm_matrix.py` unconditionally requires blinded
+  annotations, an evaluation manifest, final-run ledger, implementation
+  revision, and distribution provenance before provider invocation. Public
+  audited qualification and protected final-holdout consumption are distinct
+  proof phases; preserve their shared release floors without forcing public
+  evidence through one-shot protected-input custody.
+- The fresh disclosed lab control exposed a second harness violation. After
+  its first host candidate failed installed proposal, the unconditional commit
+  recovery lane invoked Astra again on the same source and authored a second
+  candidate in `113.546s`. That second proposal failed for the same risk-graph
+  class. A failed candidate is terminal and cannot become the seed for
+  transaction recovery proof. Do not rerun authoring after a primary case
+  failure. Recovery proof must run only from an already admitted sealed
+  transaction, or report `not run` with the primary failure as its reason.
+- Keep one campaign owner and one protected-holdout owner. Add an explicit
+  proof-phase boundary rather than an alternate wrapper, then prove that public
+  release shards reach the provider with audited repo-contained inputs while
+  protected holdout shards still claim and bind their immutable inputs before
+  opening them. Prove that a failed public case causes zero recovery host calls
+  and zero writes. The protected final holdout remains untouched.
+
+## V33 Public/Final Boundary And Terminal-Failure Closure (2026-09-27)
+
+- The existing matrix owner now separates public audited qualification from
+  protected final-holdout custody. Public runs receive an audited parent corpus,
+  an exact-member live subset, and the repo-contained Luna clarification
+  control. Protected-only annotations, manifest, ledger, revision, provenance,
+  and claim-before-open requirements remain exclusively on the final-holdout
+  path. Public proof therefore cannot consume protected inputs, while protected
+  proof cannot bypass its immutable custody gate.
+- Exact parent/subset membership has one shared deterministic owner. It rejects
+  missing or duplicate IDs in either file, an absent subset member, and any
+  member whose fields differ from its parent other than `source_file`. The
+  duplicate membership checks formerly carried by separate preconfirm and shard
+  paths were removed rather than left as competing interpretations.
+- A failed primary candidate is terminal. The release result marks commit
+  recovery and unavailable-provider checks `not-run` with the primary failure
+  reason, makes zero secondary host/model calls, and performs no recovery write.
+  Successful recovery remains limited to an already admitted sealed
+  transaction. This is a terminal-failure rule, not a recovery retry or an
+  alternate author path.
+- Focused release-boundary/corpus/sealed-input checks pass `51/51`; focused
+  public-entry, zero-secondary-call, and campaign checks pass `15/15`.
+  Independent re-review found no P0/P1 after the shared-membership closure.
+  No provider was called and neither public qualification nor the protected
+  holdout was run. CB-347 remains open until a clean immutable distribution
+  passes the full retained public matrix, clean-install/browser/recovery proof,
+  and final independent adjudication.
+
 - Preflight Checks: Verify release command policy, supported CLI arguments, relation schema parity, observed role parity and incomplete-campaign behavior before any new sealed input is authored.
 
 - Regression Tests Added: Added exact current-receipt relation parity, host-candidate/reviewer observation parity, incomplete/unscored severity suppression, and one-candidate provider-unavailable/no-write controls. The consumed holdout is not a regression fixture.

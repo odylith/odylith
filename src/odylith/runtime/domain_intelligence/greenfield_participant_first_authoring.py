@@ -146,6 +146,10 @@ actions the capability supports; they never transfer the original actor's work t
 the component. Support every source event and assign every component to work.
 Give each workstream a concrete deliverable, useful acceptance, component references
 and only necessary prerequisite workstream keys. Prerequisites must be acyclic.
+For every material risk, choose one or more exact scope_paths from the proposed graph.
+Each path binds an event_order to a component that supports it and a workstream that
+owns that component and verifies that event. Do not separately author event,
+component or workstream risk unions; deterministic runtime derives them from the paths.
 first_run proposes one coherent executable branch over a unique subset of source
 event identities. Include the selected terminal result and every cited
 source_precedence prerequisite on that branch. Do not concatenate mutually exclusive

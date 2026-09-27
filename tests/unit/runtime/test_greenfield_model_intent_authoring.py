@@ -95,6 +95,7 @@ def _cli_providers(response: dict[str, object], reviewer: object) -> tuple[Remai
 
 
 def test_model_authored_intent_reaches_staged_product_intent_without_parser_recovery(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    assert GREENFIELD_INTENT_AUTHORING_VERSION == "odylith.greenfield.intent-authoring.v73"
     source = _source()
     staged_evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
     receipt: dict[str, object] = {}

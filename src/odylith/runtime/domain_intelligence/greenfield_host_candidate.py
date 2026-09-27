@@ -49,7 +49,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v1"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v23"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v24"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
 
 
@@ -134,6 +134,14 @@ def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
                 "Propose 4-5 distinct useful components and 4-5 actionable workstreams without "
                 "padding. Across component supported_event_orders, cover every source event, "
                 "including human actions; support never transfers the actor's work to a component."
+            ),
+            (
+                "For each material risk, preserve its meaning in statement, trigger, mitigation and "
+                "verification, then select one or more exact scope_paths already present in the "
+                "provisional design graph. Each path binds one event_order to a component_key that "
+                "supports it and a workstream_key that owns that component and verifies that event. "
+                "Do not separately author component, workstream or event scope; Odylith derives "
+                "those ordered unions from the selected paths."
             ),
             "Return one material clarification when the usable path or product boundary is genuinely unresolved.",
             "Do not add a parser, regex extraction pass, repair attempt, fallback candidate, or hidden source interpretation.",

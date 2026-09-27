@@ -3107,3 +3107,123 @@
   distribution, a fresh public package passes independent semantic and UX
   review, and the untouched final holdout passes its frozen floors exactly
   once. This checkpoint is source-local repair evidence, not release success.
+
+## V33 Fresh Installed Public Qualification Stop (2026-09-27)
+
+- Pushed revision `a93f148a4c545b0af0cb2a0efb63a7ffbc7f924d` produced the
+  complete local distribution at `/private/tmp/odylith-v33-release.dIT2Co`.
+  The release manifest SHA-256 is
+  `14415143d82ada785136d47af0b4622f4f9b89814c693f390322694e29e47b2b`;
+  the wheel SHA-256 is
+  `bf96d2f8ecf67d5b05b157ba86f0545786e613875460b250ea2fd91ec948a8c5`.
+  The build passed its platform-domain leakage check. A fresh hosted-style
+  consumer install in `/private/tmp/odylith-v33-consumer.okLe5i` completed in
+  `26.442s`; `version` and `doctor` proved pinned `0.1.15`, managed-runtime
+  trust, full local memory, and a healthy bootstrap.
+- One new disclosed ArchiveRelay museum-loan custody request exercised four
+  human actors, three external authorities, one ordered first path, five
+  proposed responsibility components, five workstreams, five typed exchanges,
+  and proportional operational, security, privacy, accessibility, and
+  retention risks. The exact v23 contract is retained at
+  `/private/tmp/archive-relay-candidate-contract.v23.json` with SHA-256
+  `d5bb9de27ec04a9bd71c886bb72ba5b438018adcc48bb3966b50dc3f0cf623f8`.
+  The single host-authored v11 candidate is retained at
+  `/private/tmp/archive-relay-candidate.v11.json` with SHA-256
+  `f791ee63795d88eb37dfbb9db5ccbe44249d93dd029cfad6d6997931c8b397df`.
+- The installed `greenfield propose` invocation stopped after `9.695s` with
+  exit code `2` and the consumer-safe text `Greenfield candidate was not
+  admitted`. It created no pending transaction and no Radar, Registry, or
+  Atlas source records. The attempt is terminal: do not rerun this candidate,
+  add a repair candidate, or weaken admission. Default text output did not
+  retain the typed candidate-review issue that JSON mode would have exposed,
+  so the exact denial reason was not attributable from the product evidence
+  alone. That missing retained denial receipt remains a release-diagnosis gap.
+- Independent source-first Astra xHigh adjudication returned `deny` with a P1
+  source-preservation failure and no P0 or material clarification need. The
+  first defensible rejection is
+  `$.result.facts.operational_constraints`: the candidate named the collection
+  management system, insurer portal, and courier tracking service, but omitted
+  the source-stated obligation to integrate with them while they remain
+  external authorities. It also omitted the complete five-component,
+  five-workstream, and at-least-five-diagram delivery obligation and the
+  explicit prohibition on programs or waves. Proposed adapters and artifact
+  counts do not substitute for accepted source obligations. A repeated-quote
+  citation also supplied null context despite the v23 unique-locator rule, and
+  the accepted encryption obligation lacked explicit implementation and
+  verification ownership. Other actor, event, terminal-result, precedence,
+  provisional-design, and risk surfaces were source-grounded. The denial was
+  therefore correct; this is a candidate-authoring qualification failure, not
+  evidence for a runtime exception or weaker review policy.
+- Preserve the one-author/one-reviewer mechanism and the ban on parsers,
+  regexes, retries, repairs, fallback candidates, vocabulary branches, and
+  model ladders. Proceed with a different fresh disclosed public case through
+  the canonical installed release harness and retain its typed JSON review
+  receipt. Do not author a second ArchiveRelay candidate or rerun this one.
+  The protected final holdout remains untouched.
+
+## V33 Fresh Disclosed Lab Control Stop (2026-09-27)
+
+- A different installed public control, `public-v11-lab-sample-intake-04`,
+  ran from the same V33 distribution with the exact 14-argument Codex host
+  command, Astra medium, full install, retained evidence, and no semantic
+  fallback. The selected case file SHA-256 is
+  `3989e1cb665b252b4d47e5e5dd5bdad7e632dfe392cb4cfe786501dea18e0ddb`.
+  The first host call completed in `132.632s`, returned candidate SHA-256
+  `a1076211237a578e0ed3e607d4d0d41060166dd2520514a54c5517dcf448b8c2`,
+  and reached installed proposal exactly once before the proposal failed
+  closed with `Greenfield provisional risk has incoherent
+  component/workstream allocation; no records were created.`
+- The candidate preserved the source boundary, roles, first accepted branch,
+  five components, five workstreams, five detailed Atlas deliverables, and
+  explicit operational constraints. Its `self-approval` risk cited event
+  orders `1, 2, 3` while allocating only `custody-review` and `intake-state`
+  components plus the `review` workstream. Event 1 is owned by registration,
+  so the deterministic graph validator correctly rejected the allocation.
+  This is a duplicate-authority defect in the host-authored risk graph, not a
+  reason to weaken graph validation or add a case rule. Compare one bounded
+  alternative that derives component and workstream risk scope from the
+  already selected typed event graph while keeping the host responsible for
+  risk meaning, mitigation, and verification. Retain the simpler mechanism
+  only if positive, negative, and unrelated-risk controls prove exact scope.
+- Retained evidence manifest SHA-256 is
+  `3d9a0e43d773a292d11c251cf18fd04c11fa80cddf51520b3ee968ea20f684ad`.
+  No governed package was staged or published, and the protected final
+  holdout remains untouched. Do not rerun either failed candidate or add a
+  parser, regex, retry, repair author, fallback candidate, vocabulary rule, or
+  alternate model ladder.
+
+## V33 Canonical Risk-Scope Authority Closure (2026-09-27)
+
+- The lab failure confirmed a duplicate-authority defect: one host candidate
+  independently selected risk event orders, component keys, and workstream
+  keys, leaving valid local fields but an invalid combined graph. The rejected
+  path was not repaired with a wording rule, an enumerated key list, a parser,
+  regex, retry, repair author, fallback candidate, or extra model call.
+- Provisional design v5 replaces those three independently authored scope lists
+  with nonempty typed `scope_paths`. Every path carries exactly one selected
+  event order, its supporting component key, and that component's owning
+  workstream key. Deterministic validation requires the event/component/
+  workstream triple to exist in the accepted design. Component, workstream, and
+  event scope are derived only from those verified paths; the host retains risk
+  statement, trigger, mitigation, and verification ownership.
+- Independent review found two residual admission paths and both are closed.
+  Derived scope is no longer serialized where downstream code could treat it as
+  independent meaning. Before any projection, a frozen authority resolves a
+  canonical `risk_ref`, requires exact equality with the carried risk row, and
+  rejects malformed, out-of-range, and valid-but-substituted references. This
+  prevents a path that is graph-valid for one risk from being reused for another.
+- Positive multi-event, negative unmapped-event, unrelated-risk, valid-path
+  substitution, malformed-reference, and projection-parity controls pass. The
+  final semantic/projection slice passes `292/292`; an independent re-review
+  reports no P0/P1. The public candidate and protected holdout were not rerun or
+  inspected. CB-303 remains open pending clean immutable distribution evidence,
+  a retained public package that passes independent semantic/UX review, and the
+  one permitted untouched final holdout.
+- A structural audit then found a P2 duplicate `risk_ref` decoder. The
+  implementation now has one exact decoder and rejects leading-zero references
+  as noncanonical; no compatibility reader or second interpretation path
+  remains. Focused decoder/component proof passes `17/17`, combined boundary
+  proof passes `722/722`, wider Greenfield runtime proof passes `2,044/2,044`,
+  and Greenfield install proof passes `1,254/1,254`. This strengthens the same
+  canonical-risk authority only; it does not qualify a public run or the final
+  holdout.

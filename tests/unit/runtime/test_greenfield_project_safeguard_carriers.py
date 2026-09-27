@@ -6,7 +6,9 @@ from pathlib import Path
 
 import pytest
 
-from odylith.runtime.domain_intelligence import greenfield_apply_components, proposal_tribunal
+from odylith.runtime.domain_intelligence import (
+    greenfield_apply_components, greenfield_authored_component_spec, proposal_tribunal,
+)
 from odylith.runtime.domain_intelligence.greenfield_apply_prewrite import (
     preview_accepted_project_memory,
     preview_project_dashboard_payload,
@@ -131,8 +133,27 @@ def test_project_carriers_preserve_advisory_safeguards_without_source_promotion(
     response_risk = proposal["intent"]["authored_semantics"]["provisional_design"][
         "risk_posture"
     ]["items"][0]
+    assert set(response_risk) == {
+        "key", "category", "statement", "trigger", "mitigation", "verification",
+        "scope_paths",
+    }
     assert proposal["risks"] == [response_risk]
     assert response_risk["statement"] == RISK_STATEMENT
+    allocation = proposal["components"][0]["component_contract"]["risk_allocations"][0]
+    assert set(allocation) == {"risk_ref", "risk_item"}
+    assert allocation["risk_item"] == response_risk
+    assert all(
+        not row["component_contract"]["risk_allocations"]
+        for row in proposal["components"][1:]
+    )
+    assert all(
+        RISK_STATEMENT not in row["radar_sections"]["Risks"]
+        for row in proposal["backlog"][1:]
+    )
+    assert all(
+        RISK_STATEMENT not in rendered_specs[row["label"]]
+        for row in proposal["components"][1:]
+    )
     assert proposal["security_compliance"] == {
         "authority_kind": "provisional_design",
         "status": "material_risks_identified",
@@ -163,6 +184,114 @@ def test_project_carriers_preserve_advisory_safeguards_without_source_promotion(
     assert SAFEGUARD_ASSUMPTION not in proposal["intent"]["evidence_requirements"]
 
 
+def test_component_spec_recomputes_risk_scope_and_rejects_synchronized_tampering(
+    tmp_path: Path,
+) -> None:
+    proposal = _proposal(tmp_path)
+    rows = greenfield_authored_component_spec.build_authored_component_authoring_inputs(
+        root=tmp_path,
+        proposal=proposal,
+        release_selector="0.0.1",
+        backlog_result=_backlog_result(proposal),
+    )
+    forged = deepcopy(rows[0])
+    forged_path = forged["component_contract"]["risk_allocations"][0]["risk_item"][
+        "scope_paths"
+    ][0]
+    forged_path["event_order"] = 32
+    forged_path["workstream_key"] = "invented-work"
+    forged["risks"] = tuple(
+        risk.replace("workstreams [test-work-1]", "workstreams [invented-work]").replace(
+            "source events [1]", "source events [32]"
+        )
+        for risk in forged["risks"]
+    )
+
+    with pytest.raises(ValueError, match="risk differs from its canonical design row"):
+        greenfield_authored_component_spec.build_authored_component_spec(forged)
+
+
+def test_component_spec_rejects_valid_path_substitution_with_synchronized_text(
+    tmp_path: Path,
+) -> None:
+    proposal = _proposal(tmp_path)
+    rows = greenfield_authored_component_spec.build_authored_component_authoring_inputs(
+        root=tmp_path,
+        proposal=proposal,
+        release_selector="0.0.1",
+        backlog_result=_backlog_result(proposal),
+    )
+    forged = deepcopy(rows[0])
+    forged["component_contract"]["risk_allocations"][0]["risk_item"]["scope_paths"][0][
+        "event_order"
+    ] = 2
+    forged["risks"] = tuple(
+        risk.replace("source events [1]", "source events [2]") for risk in forged["risks"]
+    )
+
+    with pytest.raises(ValueError, match="risk differs from its canonical design row"):
+        greenfield_authored_component_spec.build_authored_component_spec(forged)
+
+
+def test_component_spec_rejects_out_of_range_canonical_risk_reference(
+    tmp_path: Path,
+) -> None:
+    proposal = _proposal(tmp_path)
+    rows = greenfield_authored_component_spec.build_authored_component_authoring_inputs(
+        root=tmp_path,
+        proposal=proposal,
+        release_selector="0.0.1",
+        backlog_result=_backlog_result(proposal),
+    )
+    forged = deepcopy(rows[0])
+    forged["component_contract"]["risk_allocations"][0]["risk_ref"] = (
+        "/authored_semantics/provisional_design/risk_posture/items/99"
+    )
+
+    with pytest.raises(ValueError, match="risk reference is outside canonical design"):
+        greenfield_authored_component_spec.build_authored_component_spec(forged)
+
+
+def test_component_spec_rejects_noncanonical_risk_reference_index(
+    tmp_path: Path,
+) -> None:
+    proposal = _proposal(tmp_path)
+    rows = greenfield_authored_component_spec.build_authored_component_authoring_inputs(
+        root=tmp_path,
+        proposal=proposal,
+        release_selector="0.0.1",
+        backlog_result=_backlog_result(proposal),
+    )
+    forged = deepcopy(rows[0])
+    forged["component_contract"]["risk_allocations"][0]["risk_ref"] = (
+        "/authored_semantics/provisional_design/risk_posture/items/00"
+    )
+
+    with pytest.raises(ValueError, match="invalid proposed risk references"):
+        greenfield_authored_component_spec.build_authored_component_spec(forged)
+
+
+def test_synchronized_risk_scope_tampering_breaks_projection_parity(tmp_path: Path) -> None:
+    proposal = deepcopy(_proposal(tmp_path))
+    forged_path = proposal["components"][0]["component_contract"]["risk_allocations"][0][
+        "risk_item"
+    ]["scope_paths"][0]
+    forged_path["event_order"] = 32
+    forged_path["workstream_key"] = "invented-work"
+    proposal["components"][0]["risks"] = [
+        risk.replace("workstreams [test-work-1]", "workstreams [invented-work]").replace(
+            "source events [1]", "source events [32]"
+        )
+        for risk in proposal["components"][0]["risks"]
+    ]
+
+    decision = proposal_tribunal.run_greenfield_tribunal(
+        proposal, release_selector="0.0.1",
+    )
+
+    assert not decision.passed
+
+
 def test_empty_assumptions_keep_project_carriers_empty(tmp_path: Path) -> None:
     proposal = _proposal(tmp_path, include_assumption=False)
 
@@ -183,7 +312,7 @@ def test_empty_assumptions_keep_project_carriers_empty(tmp_path: Path) -> None:
     (
         lambda proposal: proposal["risks"].clear(),
         lambda proposal: proposal["security_compliance"]["risk_refs"].clear(),
-        lambda proposal: proposal["components"][0]["component_contract"]["risk_items"].clear(),
+        lambda proposal: proposal["components"][0]["component_contract"]["risk_allocations"].clear(),
         lambda proposal: proposal["backlog"][0]["radar_sections"].update(
             {"Risks": "No material risks were identified."}
         ),
@@ -221,9 +350,11 @@ def _proposal(tmp_path: Path, *, include_assumption: bool = True) -> dict[str, o
                 "trigger": "A user without an intake assignment requests the record.",
                 "mitigation": "Require assignment-scoped authorization before disclosure.",
                 "verification": RISK_VERIFICATION,
-                "component_keys": ["test-boundary-1"],
-                "workstream_keys": ["test-work-1"],
-                "related_event_orders": [1],
+                "scope_paths": [{
+                    "event_order": 1,
+                    "component_key": "test-boundary-1",
+                    "workstream_key": "test-work-1",
+                }],
             }
         ],
     }

@@ -162,8 +162,7 @@ def test_authored_typed_projection_passes_structural_tribunal() -> None:
         "supporting_events",
         "exchanges",
         "delivery_workstreams",
-        "risk_refs",
-        "risk_items",
+        "risk_allocations",
     }
     semantics = proposal["intent"][AUTHORED_SEMANTICS_KEY]
     assert component["component_id"] == "test-boundary-1"

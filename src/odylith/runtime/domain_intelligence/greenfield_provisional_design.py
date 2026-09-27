@@ -16,7 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_event_ordering import (
     validate_first_run,
 )
 
-PROVISIONAL_DESIGN_VERSION = "odylith.greenfield.provisional-design.v4"
+PROVISIONAL_DESIGN_VERSION = "odylith.greenfield.provisional-design.v5"
 PROVISIONAL_DESIGN_AUTHORITY_KIND = "provisional_design"
 _TEXT = {"type": "string", "minLength": 1, "maxLength": 4000}
 _KEY = {"type": "string", "minLength": 1, "maxLength": 80, "pattern": "^[a-z][a-z0-9-]*$"}
@@ -78,11 +78,24 @@ _RISK_ITEM_FIELDS = {
     "trigger": _TEXT,
     "mitigation": _TEXT,
     "verification": _TEXT,
-    "component_keys": {"type": "array", "minItems": 1, "maxItems": 5, "items": _KEY},
-    "workstream_keys": {"type": "array", "minItems": 1, "maxItems": 5, "items": _KEY},
-    "related_event_orders": {
-        "type": "array", "minItems": 0, "maxItems": 32,
-        "items": {"type": "integer", "minimum": 1, "maximum": 32},
+    "scope_paths": {
+        "description": (
+            "Exact existing design-graph paths affected by this risk. Each path must bind "
+            "one source event to a component that supports it and a workstream that owns "
+            "that component and verifies the event. Structural scope is derived from these "
+            "paths; do not separately author component or workstream scope."
+        ),
+        "type": "array", "minItems": 1, "maxItems": 64,
+        "items": {
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["event_order", "component_key", "workstream_key"],
+            "properties": {
+                "event_order": {"type": "integer", "minimum": 1, "maximum": 32},
+                "component_key": _KEY,
+                "workstream_key": _KEY,
+            },
+        },
     },
 }
 _RISK_POSTURE_SCHEMA = {
@@ -245,15 +258,8 @@ def validate_provisional_design(
         seen_exchanges.add(edge)
     _validate_risk_posture(
         value["risk_posture"],
-        component_keys=component_keys,
-        workstream_keys=workstream_keys,
-        component_keys_by_workstream={
-            row["key"]: set(row["component_keys"]) for row in workstreams
-        },
-        supported_orders_by_component={
-            row["key"]: set(row["supported_event_orders"]) for row in components
-        },
-        accepted_orders=accepted_orders,
+        components=components,
+        workstreams=workstreams,
     )
     return deepcopy(dict(value))
 
@@ -261,11 +267,8 @@ def validate_provisional_design(
 def _validate_risk_posture(
     value: Any,
     *,
-    component_keys: set[str],
-    workstream_keys: set[str],
-    component_keys_by_workstream: Mapping[str, set[str]],
-    supported_orders_by_component: Mapping[str, set[int]],
-    accepted_orders: set[int],
+    components: Sequence[Mapping[str, Any]],
+    workstreams: Sequence[Mapping[str, Any]],
 ) -> None:
     if not isinstance(value, Mapping) or set(value) != {"status", "rationale", "items"}:
         raise ValueError("Greenfield provisional risk posture has invalid fields")
@@ -280,43 +283,89 @@ def _validate_risk_posture(
     for row in items:
         if row["category"] not in _RISK_CATEGORIES:
             raise ValueError("Greenfield provisional risk has an invalid category")
+        _derive_risk_scope(components=components, workstreams=workstreams, risk=row)
+
+
+def derive_risk_scope(
+    design: Mapping[str, Any], risk: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Derive ordered structural risk scope from one validated graph-path authority."""
+
+    components = design.get("components")
+    workstreams = design.get("workstreams")
+    if (
+        not isinstance(components, Sequence)
+        or isinstance(components, (str, bytes, bytearray))
+        or not isinstance(workstreams, Sequence)
+        or isinstance(workstreams, (str, bytes, bytearray))
+    ):
+        raise ValueError("Greenfield provisional risk scope requires a valid design graph")
+    return _derive_risk_scope(
+        components=components, workstreams=workstreams, risk=risk,
+    )
+
+
+def _derive_risk_scope(
+    *,
+    components: Sequence[Mapping[str, Any]],
+    workstreams: Sequence[Mapping[str, Any]],
+    risk: Mapping[str, Any],
+) -> dict[str, Any]:
+    component_by_key = {row["key"]: row for row in components}
+    workstream_by_key = {row["key"]: row for row in workstreams}
+    raw_paths = risk.get("scope_paths")
+    if (
+        not isinstance(raw_paths, list)
+        or not 1 <= len(raw_paths) <= 64
+    ):
+        raise ValueError("Greenfield provisional risk requires bounded graph paths")
+    paths: list[dict[str, Any]] = []
+    identities: set[tuple[int, str, str]] = set()
+    for raw_path in raw_paths:
         if (
-            len(set(row["component_keys"])) != len(row["component_keys"])
-            or not set(row["component_keys"]) <= component_keys
-            or len(set(row["workstream_keys"])) != len(row["workstream_keys"])
-            or not set(row["workstream_keys"]) <= workstream_keys
+            not isinstance(raw_path, Mapping)
+            or set(raw_path) != {"event_order", "component_key", "workstream_key"}
         ):
-            raise ValueError("Greenfield provisional risk has invalid design references")
-        risk_component_keys = set(row["component_keys"])
-        risk_workstream_keys = set(row["workstream_keys"])
-        owned_risk_components = {
-            component_key
-            for workstream_key in risk_workstream_keys
-            for component_key in component_keys_by_workstream[workstream_key]
-            if component_key in risk_component_keys
-        }
+            raise ValueError("Greenfield provisional risk has an invalid graph path")
+        event_order = raw_path.get("event_order")
+        component_key = raw_path.get("component_key")
+        workstream_key = raw_path.get("workstream_key")
+        if type(event_order) is not int or not 1 <= event_order <= 32:
+            raise ValueError("Greenfield provisional risk has an invalid graph path")
+        _require_key(component_key)
+        _require_key(workstream_key)
+        identity = (event_order, component_key, workstream_key)
+        if identity in identities:
+            raise ValueError("Greenfield provisional risk contains a duplicate graph path")
+        identities.add(identity)
+        component = component_by_key.get(component_key)
+        workstream = workstream_by_key.get(workstream_key)
         if (
-            owned_risk_components != risk_component_keys
-            or any(
-                not component_keys_by_workstream[workstream_key] & risk_component_keys
-                for workstream_key in risk_workstream_keys
-            )
+            component is None
+            or workstream is None
+            or event_order not in component["supported_event_orders"]
+            or component_key not in workstream["component_keys"]
+            or event_order not in workstream["verification_event_orders"]
         ):
-            raise ValueError(
-                "Greenfield provisional risk has incoherent component/workstream allocation"
-            )
-        event_orders = row["related_event_orders"]
-        if len(set(event_orders)) != len(event_orders) or not set(event_orders) <= accepted_orders:
-            raise ValueError("Greenfield provisional risk has invalid source-event references")
-        supported_risk_orders = {
-            event_order
-            for component_key in risk_component_keys
-            for event_order in supported_orders_by_component[component_key]
-        }
-        if not set(event_orders) <= supported_risk_orders:
-            raise ValueError(
-                "Greenfield provisional risk source events are not supported by its components"
-            )
+            raise ValueError("Greenfield provisional risk path is not present in the design graph")
+        paths.append({
+            "event_order": event_order,
+            "component_key": component_key,
+            "workstream_key": workstream_key,
+        })
+    event_orders = sorted({path["event_order"] for path in paths})
+    selected_components = {path["component_key"] for path in paths}
+    selected_workstreams = {path["workstream_key"] for path in paths}
+    return {
+        "authority_kind": "deterministic_graph_projection",
+        "event_orders": event_orders,
+        "component_keys": [
+            row["key"] for row in components if row["key"] in selected_components
+        ],
+        "workstream_keys": [
+            row["key"] for row in workstreams if row["key"] in selected_workstreams
+        ],
+    }
 
 
 def provisional_design_from_intent(intent: Mapping[str, Any]) -> dict[str, Any]:
@@ -364,6 +413,13 @@ def _design_rows(
             elif schema["items"]["type"] == "integer":
                 if any(type(item) is not int or not 1 <= item <= 32 for item in raw):
                     raise ValueError("Greenfield provisional design has invalid source-event orders")
+            elif schema["items"]["type"] == "object":
+                if any(
+                    not isinstance(item, Mapping)
+                    or set(item) != set(schema["items"]["required"])
+                    for item in raw
+                ):
+                    raise ValueError(f"Greenfield provisional {name}.{field} has invalid rows")
             else:
                 for item in raw:
                     _require_key(item)
@@ -398,6 +454,7 @@ __all__ = [
     "PROVISIONAL_DESIGN_AUTHORITY_KIND",
     "PROVISIONAL_DESIGN_SCHEMA",
     "PROVISIONAL_DESIGN_VERSION",
+    "derive_risk_scope",
     "provisional_design_from_intent",
     "validate_provisional_design",
 ]

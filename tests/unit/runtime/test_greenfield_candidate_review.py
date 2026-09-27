@@ -64,6 +64,7 @@ def run_review(provider, clock, *, deadline=55.0, observation=None, factory=None
 
 
 def test_partition_preserves_every_value_and_binds_complete_candidate():
+    assert review.CANDIDATE_REVIEW_VERSION == "odylith.greenfield.candidate-review.v12"
     source = _source()
     candidate = _response(source)["result"]
     original = deepcopy(candidate)

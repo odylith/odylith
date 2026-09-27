@@ -28,7 +28,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     first_path_relations_from_intent,
 )
 from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
-    provisional_design_from_intent,
+    derive_risk_scope, provisional_design_from_intent,
 )
 
 
@@ -42,13 +42,13 @@ def build_provisional_components(
 
     design = provisional_design_from_intent(intent)
     events = {row["order"]: row for row in first_path_relations_from_intent(intent)}
+    risk_allocations = build_provisional_risk_allocations(design)
     rows: list[dict[str, Any]] = []
     for index, component in enumerate(design["components"]):
         key = component["key"]
         allocated_risks = [
-            (risk_index, deepcopy(risk))
-            for risk_index, risk in enumerate(design["risk_posture"]["items"])
-            if key in risk["component_keys"]
+            deepcopy(allocation) for allocation in risk_allocations
+            if key in derive_risk_scope(design, allocation["risk_item"])["component_keys"]
         ]
         exchanges = [
             deepcopy(row) for row in design["exchanges"]
@@ -75,11 +75,7 @@ def build_provisional_components(
             ],
             "exchanges": exchanges,
             "delivery_workstreams": deliveries,
-            "risk_refs": [
-                f"{PROVISIONAL_DESIGN_ROOT}/risk_posture/items/{risk_index}"
-                for risk_index, _risk in allocated_risks
-            ],
-            "risk_items": [risk for _risk_index, risk in allocated_risks],
+            "risk_allocations": allocated_risks,
         }
         rows.append({
             "component_id": key,
@@ -95,7 +91,10 @@ def build_provisional_components(
                 provisional_delivery_acceptance_text(delivery["provisional_workstream"])
                 for delivery in deliveries
             ]],
-            "risks": [provisional_risk_text(risk) for _risk_index, risk in allocated_risks],
+            "risks": [
+                provisional_risk_text(allocation, design=design)
+                for allocation in allocated_risks
+            ],
             "status": "planned",
             "qualification": "candidate",
             "evidence_tier": "user_intent",
@@ -125,6 +124,7 @@ def build_provisional_backlog(
     components = {row["key"]: row for row in design["components"]}
     workstreams = {row["key"]: row for row in design["workstreams"]}
     events = {row["order"]: row for row in first_path_relations_from_intent(intent)}
+    risk_allocations = build_provisional_risk_allocations(design)
     rows: list[dict[str, Any]] = []
     for index, workstream in enumerate(design["workstreams"]):
         component_keys = workstream["component_keys"]
@@ -133,9 +133,9 @@ def build_provisional_backlog(
         })
         supporting_events = [deepcopy(events[order]) for order in event_orders]
         allocated_risks = [
-            (risk_index, deepcopy(risk))
-            for risk_index, risk in enumerate(design["risk_posture"]["items"])
-            if workstream["key"] in risk["workstream_keys"]
+            deepcopy(allocation) for allocation in risk_allocations
+            if workstream["key"]
+            in derive_risk_scope(design, allocation["risk_item"])["workstream_keys"]
         ]
         event_scope = [
             f"Event {event['order']}\n{authored_event_display_text(event)}"
@@ -192,8 +192,9 @@ def build_provisional_backlog(
             "Non-Goals": "Project-level non-goals remain governed by the Product Intent.",
             "Risks": _bullets(
                 provisional_risk_posture_texts(
+                    design=design,
                     risk_posture=design["risk_posture"],
-                    allocated_risks=[risk for _risk_index, risk in allocated_risks],
+                    allocated_risks=allocated_risks,
                     scope_kind="workstream",
                 ),
             ),
@@ -259,11 +260,7 @@ def build_provisional_backlog(
                 ],
                 "supporting_events": supporting_events,
                 "exchanges": exchanges,
-                "risk_refs": [
-                    f"{PROVISIONAL_DESIGN_ROOT}/risk_posture/items/{risk_index}"
-                    for risk_index, _risk in allocated_risks
-                ],
-                "risk_items": [risk for _risk_index, risk in allocated_risks],
+                "risk_allocations": allocated_risks,
             },
             "radar_sections": sections,
         })
@@ -285,24 +282,43 @@ def provisional_exchange_text(exchange: Mapping[str, Any]) -> str:
     )
 
 
-def provisional_risk_text(risk: Mapping[str, Any]) -> str:
+def build_provisional_risk_allocations(
+    design: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    """Bind unchanged risk meaning to its canonical design reference."""
+
+    return [
+        {
+            "risk_ref": f"{PROVISIONAL_DESIGN_ROOT}/risk_posture/items/{index}",
+            "risk_item": deepcopy(risk),
+        }
+        for index, risk in enumerate(design["risk_posture"]["items"])
+    ]
+
+
+def provisional_risk_text(
+    allocation: Mapping[str, Any], *, design: Mapping[str, Any],
+) -> str:
     """Render one reviewed proposed risk without promoting it to accepted fact."""
 
+    risk = allocation["risk_item"]
+    scope = derive_risk_scope(design, risk)
     return (
         f"Proposed risk — {risk['statement']}\n"
         f"Category: {risk['category']}\nTrigger: {risk['trigger']}\n"
         f"Mitigation: {risk['mitigation']}\nVerification: {risk['verification']}\n"
         "Scope: "
-        f"components [{', '.join(risk['component_keys'])}]; "
-        f"workstreams [{', '.join(risk['workstream_keys'])}]; "
+        f"components [{', '.join(scope['component_keys'])}]; "
+        f"workstreams [{', '.join(scope['workstream_keys'])}]; "
         "source events ["
-        + ", ".join(str(order) for order in risk["related_event_orders"])
+        + ", ".join(str(order) for order in scope["event_orders"])
         + "]."
     )
 
 
 def provisional_risk_posture_texts(
     *,
+    design: Mapping[str, Any],
     risk_posture: Mapping[str, Any],
     allocated_risks: Sequence[Mapping[str, Any]],
     scope_kind: str,
@@ -310,7 +326,10 @@ def provisional_risk_posture_texts(
     """Keep reviewed risk meaning visible for material and no-material scopes."""
 
     if allocated_risks:
-        return [provisional_risk_text(risk) for risk in allocated_risks]
+        return [
+            provisional_risk_text(allocation, design=design)
+            for allocation in allocated_risks
+        ]
     rationale = str(risk_posture["rationale"])
     if risk_posture["status"] == "no_material_risks_identified":
         return [f"Reviewed no-material-risk posture — {rationale}"]

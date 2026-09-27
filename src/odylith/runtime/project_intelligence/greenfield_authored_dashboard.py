@@ -29,7 +29,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import 
     decision_copy,
 )
 from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
-    provisional_design_from_intent,
+    derive_risk_scope, provisional_design_from_intent,
 )
 from odylith.runtime.project_intelligence.product_story_contract import (
     PRODUCT_STORY_CARD_SLOTS,
@@ -93,7 +93,7 @@ def build_authored_greenfield_payload(
         proposal.get("open_questions"),
         keys=("question", "statement"),
     )
-    risk_items = _authored_risk_rows(provisional_design["risk_posture"])
+    risk_items = _authored_risk_rows(provisional_design)
     actors = authored_actor_rows(human_actors=human_actors, relations=first_run_relations)
     jobs = _job_rows(backlog=backlog, accepted=accepted)
     governance_titles = _governance_titles(
@@ -479,9 +479,12 @@ def _job_rows(
     return rows
 
 
-def _authored_risk_rows(value: Any) -> list[dict[str, str]]:
+def _authored_risk_rows(design: Any) -> list[dict[str, str]]:
     """Project the complete validated risk posture without flattening typed fields."""
 
+    if not isinstance(design, Mapping):
+        return []
+    value = design.get("risk_posture")
     if not isinstance(value, Mapping):
         return []
     status = _first_text(value, "status")
@@ -501,11 +504,12 @@ def _authored_risk_rows(value: Any) -> list[dict[str, str]]:
         trigger = _required_text(item, "trigger")
         mitigation = _required_text(item, "mitigation")
         verification = _required_text(item, "verification")
+        derived_scope = derive_risk_scope(design, item)
         scope = (
-            "Components: " + ", ".join(_text_values(item.get("component_keys")))
-            + "; workstreams: " + ", ".join(_text_values(item.get("workstream_keys")))
+            "Components: " + ", ".join(derived_scope["component_keys"])
+            + "; workstreams: " + ", ".join(derived_scope["workstream_keys"])
             + "; source events: "
-            + ", ".join(str(order) for order in _sequence(item.get("related_event_orders")))
+            + ", ".join(str(order) for order in derived_scope["event_orders"])
             + "."
         )
         rows.append({

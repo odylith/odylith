@@ -1184,6 +1184,200 @@ def test_main_fails_when_installed_commit_recovery_proof_fails(monkeypatch, tmp_
     assert payload["commit_recovery_proof"]["issues"] == ["installed recovery failed"]
 
 
+def test_primary_candidate_failure_makes_no_secondary_host_calls(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    module = _module()
+    release_case = module.GreenfieldMatrixCase(
+        name="audited public case",
+        prompt="Create an audited public release case.",
+        required_terms=("audited",),
+        case_id="audited-public-case",
+    )
+    lower_control = module.GreenfieldMatrixCase(
+        name="lower control",
+        prompt="Clarify the missing tenant boundary.",
+        required_terms=("tenant",),
+        case_id="lower-control",
+        tags=(f"model-profile:{module.LOWER_CAPABILITY_CONTROL_PROFILES[0]}",),
+        expectation=module.CLARIFICATION_REQUIRED_EXPECTATION,
+    )
+    failed = module.GreenfieldMatrixResult(
+        name=release_case.name,
+        status="failed",
+        proposal_seconds=1.0,
+        create_seconds=0.0,
+        counts=_full_counts(module),
+        quality=module.GreenfieldQualityVerdict(
+            passed=False,
+            issues=("candidate authoring failed before proposal admission",),
+            lenses={},
+            scores={},
+            score=0,
+            score_explanation=("primary authoring failed",),
+        ),
+        failure_detail="candidate authoring failed before proposal admission",
+        evidence={"case": {"id": release_case.case_id}},
+    )
+    calls: list[str] = []
+
+    def primary_only(**_kwargs):
+        calls.append("primary")
+        return (failed,)
+
+    def unexpected_secondary(**_kwargs):
+        calls.append("secondary")
+        raise AssertionError("a failed primary must not make another host/model call")
+
+    monkeypatch.setattr(module, "run_matrix", primary_only)
+    monkeypatch.setattr(module, "select_recovery_case", lambda *_args, **_kwargs: release_case)
+    monkeypatch.setattr(module, "run_installed_commit_recovery_proof", unexpected_secondary)
+    monkeypatch.setattr(module, "run_unavailable_provider_proof", unexpected_secondary)
+    monkeypatch.setattr(
+        module,
+        "retained_evidence_result",
+        lambda *_args, **_kwargs: {"status": "failed", "issues": ["primary failed"]},
+    )
+    args = module.argparse.Namespace(
+        dist_dir=str(tmp_path / "dist"),
+        version="0.1.15",
+        include_browser_proof=True,
+        install_mode="full",
+        attempt_ledger_jsonl="",
+        allow_partial_stressor_coverage=False,
+        semantic_annotations_file="",
+        evaluation_split_manifest="",
+        evidence_output_dir=str(tmp_path / "evidence"),
+        host_candidate_arg=(),
+        include_commit_recovery_proof=True,
+        lower_capability_control_file=str(tmp_path / "lower-control.json"),
+        json_output=True,
+    )
+    config = module.MatrixCampaignConfig(
+        phase=module.campaign_phase_from_value("gate"),
+        proof_tier=module.proof_tier_from_value("release"),
+        telemetry_jsonl=None,
+        stop_after_failures=0,
+        stop_after_cluster_failures=0,
+        required_stressors=(),
+    )
+    lease = type(
+        "Lease",
+        (),
+        {
+            "temp_namespace": tmp_path,
+            "to_dict": lambda self: {"temporary_namespace": str(tmp_path)},
+        },
+    )()
+
+    exit_code = module._execute_matrix_campaign(
+        args=args,
+        selected_cases=(release_case,),
+        planned_cases=(release_case,),
+        release_audits=(),
+        campaign_config=config,
+        corpus_provenance={"status": "passed"},
+        output_path=None,
+        lease=lease,
+        lower_capability_control_case=lower_control,
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 1
+    assert calls == ["primary"]
+    assert payload["commit_recovery_proof"]["status"] == "not-run"
+    assert "candidate authoring failed" in payload["commit_recovery_proof"]["issues"][0]
+    assert payload["lower_capability_control_proof"]["status"] == "failed"
+    assert payload["unavailable_provider_proof"]["status"] == "not-run"
+
+
+def test_audited_public_release_reaches_execution_without_holdout_inputs(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    module = _module()
+    public_case = module.GreenfieldMatrixCase(
+        name="public qualification",
+        prompt="Create a public audited qualification case.",
+        required_terms=("public",),
+        case_id="public-qualification",
+    )
+    args = module.argparse.Namespace(
+        include_default_cases=False,
+        evidence_output_dir=str(tmp_path / "evidence"),
+        release_audit_repo_root=str(tmp_path),
+        required_stressor=(),
+        require_high_variance_stressors=False,
+        campaign_phase="gate",
+        proof_tier="release",
+        telemetry_jsonl="",
+        stop_after_failures=0,
+        stop_after_cluster_failures=0,
+        sealed_release_input_root="",
+        install_mode="full",
+        include_browser_proof=True,
+        include_commit_recovery_proof=True,
+        allow_skipped_browser_proof=False,
+        allow_partial_stressor_coverage=False,
+        semantic_annotations_file="",
+        evaluation_split_manifest="",
+        final_holdout_run_ledger="",
+        implementation_revision="",
+        distribution_provenance_file="",
+        case_file=(str(tmp_path / "public-subset.json"),),
+        release_parent_case_file=(),
+        release_audit_file=str(tmp_path / "public-audit.json"),
+        lower_capability_control_file=str(tmp_path / "lower-control.json"),
+        host_candidate_arg=("trusted-host", "--profile", "{profile_id}"),
+        temp_parent=str(tmp_path / "work"),
+        dist_dir=str(tmp_path / "dist"),
+        output_json=str(tmp_path / "result.json"),
+    )
+    reached: dict[str, object] = {}
+
+    class Lease:
+        released = False
+        temp_namespace = tmp_path / "lease"
+
+        def release(self) -> None:
+            self.released = True
+
+    lease = Lease()
+    monkeypatch.setattr(module, "_parse_args", lambda _argv: args)
+    monkeypatch.setattr(module, "_require_profile_argv_template", lambda argv: argv)
+    monkeypatch.setattr(module, "validate_retained_evidence_output_dir", lambda **_kwargs: None)
+    monkeypatch.setattr(
+        module,
+        "_load_planned_cases_and_control",
+        lambda **_kwargs: ((public_case,), (public_case,), public_case),
+    )
+    monkeypatch.setattr(module, "load_release_audit_file", lambda *_args, **_kwargs: (object(),))
+    monkeypatch.setattr(
+        module,
+        "evaluate_release_corpus",
+        lambda *_args, **_kwargs: type(
+            "Evaluation",
+            (),
+            {"issues": (), "summary": {"approved_audit_bindings": {}}},
+        )(),
+    )
+    monkeypatch.setattr(module, "acquire_matrix_run_lease", lambda **_kwargs: lease)
+
+    def execute(**kwargs):
+        reached.update(kwargs)
+        lease.release()
+        return 0
+
+    monkeypatch.setattr(module, "_execute_matrix_campaign", execute)
+
+    assert module.main([]) == 0
+    assert reached["planned_cases"] == (public_case,)
+    assert reached["retained_evidence_run_id"] == ""
+    assert not (tmp_path / "run-ledger.json").exists()
+
+
 def test_main_binds_commit_recovery_to_the_selected_external_case(monkeypatch, tmp_path: Path, capsys) -> None:
     module = _module()
     dist_dir = tmp_path / "dist"

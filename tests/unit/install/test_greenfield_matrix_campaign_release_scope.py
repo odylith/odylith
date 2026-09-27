@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections import Counter
+from dataclasses import replace
 import json
 import subprocess
 import sys
@@ -8,6 +10,7 @@ from pathlib import Path
 import pytest
 
 from tests.greenfield_matrix_campaign_test_support import command_arg
+from tests.greenfield_matrix_campaign_test_support import load_module
 from tests.greenfield_matrix_campaign_test_support import matrix_campaign_runner_module
 from tests.greenfield_matrix_campaign_test_support import write_case_file
 from tests.greenfield_matrix_campaign_test_support import write_payload
@@ -23,6 +26,43 @@ def _write_lower_capability_control(tmp_path: Path) -> Path:
         stressors=(),
     )
     return path
+
+
+def test_repo_public_subset_is_exact_balanced_member_set_of_audited_parent() -> None:
+    matrix_campaign_runner_module("greenfield_matrix_campaign_runner_public_fixture_contract")
+    shard_runner = sys.modules["greenfield_matrix_campaign_shard_runner"]
+    repo_root = Path(__file__).resolve().parents[3]
+    matrix = load_module(
+        repo_root / "scripts/release/greenfield_preconfirm_matrix.py",
+        "greenfield_preconfirm_matrix_public_fixture_contract",
+    )
+    fixture_root = repo_root / "tests/fixtures/greenfield-release-corpus"
+    parent_path = fixture_root / "greenfield-release-source-provenanced.v3.json"
+    audit_path = fixture_root / "audit-evidence-v15/greenfield-release-audit.v9.json"
+    subset_path = fixture_root / "live-subsets/greenfield-release-public-live-subset.v1.json"
+    control_path = fixture_root / "controls/greenfield-release-luna-clarification-control.v1.json"
+
+    parent = shard_runner.load_case_file(parent_path)
+    subset = shard_runner.load_case_file(subset_path)
+    audits = shard_runner.load_release_audit_file(audit_path, repo_root=repo_root)
+    evaluation = shard_runner.evaluate_release_corpus(parent, audits, repo_root=repo_root)
+    parent_by_id = {case.case_id: replace(case, source_file="") for case in parent}
+
+    assert evaluation.passed
+    assert len(parent) == 200
+    assert len(subset) == 10
+    assert all(replace(case, source_file="") == parent_by_id[case.case_id] for case in subset)
+    assert len({case.provenance.source_family for case in subset}) == 10
+    assert len({case.input_style for case in subset}) == 5
+    assert Counter(matrix.case_expectation(case) for case in subset) == {
+        "transaction_committed": 5,
+        "clarification_required": 5,
+    }
+    assert len({stressor for case in subset for stressor in case.stressors}) == 11
+    control = matrix._load_lower_capability_control_case(str(control_path))  # noqa: SLF001
+    assert control is not None
+    assert matrix.case_model_profile(control) == matrix.LOWER_CAPABILITY_CONTROL_PROFILES[0]
+    assert matrix.case_expectation(control) == matrix.CLARIFICATION_REQUIRED_EXPECTATION
 
 
 def test_matrix_command_separates_discovery_and_release_policy(tmp_path: Path) -> None:
@@ -48,6 +88,7 @@ def test_matrix_command_separates_discovery_and_release_policy(tmp_path: Path) -
         stop_after_cluster_failures=0,
         require_high_variance_stressors=True,
         required_stressors=(),
+        release_parent_case_file=tmp_path / "public-parent-200.json",
         release_input_snapshot_root=tmp_path / "sealed-release-inputs",
         evidence_output_dir=tmp_path / "evidence",
         lower_capability_control_file=tmp_path / "lower-capability-control.v1.json",
@@ -84,6 +125,9 @@ def test_matrix_command_separates_discovery_and_release_policy(tmp_path: Path) -
     assert "--include-browser-proof" in release_command
     assert "--include-commit-recovery-proof" in release_command
     assert command_arg(release_command, "--install-mode") == "full"
+    assert command_arg(release_command, "--release-parent-case-file") == str(
+        tmp_path / "public-parent-200.json"
+    )
     assert "--stop-after-failures" not in release_command
     assert "--allow-partial-stressor-coverage" not in release_command
     assert command_arg(release_command, "--sealed-release-input-root") == str(
@@ -306,6 +350,68 @@ def test_partial_semantic_release_contract_still_requires_a_source_corpus_audit(
     assert failure is not None
     assert failure.payload_status == "release-corpus-invalid"
     assert "release proof requires --release-audit-file" in failure.stderr_excerpt
+
+
+def test_public_release_shard_rejects_missing_live_case_id_before_execution(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = matrix_campaign_runner_module("greenfield_matrix_campaign_runner_parent_subset_identity")
+    shard_runner = sys.modules["greenfield_matrix_campaign_shard_runner"]
+    cases_module = sys.modules["greenfield_preconfirm_matrix_cases"]
+    parent_file = tmp_path / "parent.json"
+    subset_file = tmp_path / "subset.json"
+    audit_file = tmp_path / "audit.json"
+    for path in (parent_file, subset_file, audit_file):
+        path.write_text("{}\n", encoding="utf-8")
+    parent_case = cases_module.GreenfieldMatrixCase(
+        name="parent case",
+        prompt="Create a parent case.",
+        required_terms=("parent",),
+        case_id="parent-case",
+        source_file=str(parent_file),
+    )
+    missing_id_case = cases_module.GreenfieldMatrixCase(
+        name="missing identity",
+        prompt="Create a missing identity case.",
+        required_terms=("identity",),
+        source_file=str(subset_file),
+    )
+    monkeypatch.setattr(
+        shard_runner,
+        "load_case_file",
+        lambda path: (parent_case,) if Path(path) == parent_file else (missing_id_case,),
+    )
+    monkeypatch.setattr(shard_runner, "load_release_audit_file", lambda *_args, **_kwargs: ())
+    monkeypatch.setattr(
+        shard_runner,
+        "evaluate_release_corpus",
+        lambda *_args, **_kwargs: type("Evaluation", (), {"passed": True, "issues": ()})(),
+    )
+    shard = module.CampaignShard(
+        tier="release-proof",
+        case_file=subset_file,
+        proof_tier="release",
+        install_mode="full",
+        include_browser_proof=True,
+        stop_after_failures=0,
+        stop_after_cluster_failures=0,
+        require_high_variance_stressors=False,
+        required_stressors=(),
+        release_audit_file=audit_file,
+        release_parent_case_file=parent_file,
+    )
+
+    failure = shard_runner._tier_case_file_preflight_failure(  # noqa: SLF001
+        shards=(shard,),
+        output_dir=tmp_path / "out",
+        telemetry_dir=tmp_path / "telemetry",
+        temp_parent=tmp_path / "tmp",
+    )
+
+    assert failure is not None
+    assert failure.payload_status == "release-corpus-invalid"
+    assert "live release subset contains a case without case_id" in failure.stderr_excerpt
 
 
 def test_campaign_starts_semantic_child_before_any_protected_input_read(

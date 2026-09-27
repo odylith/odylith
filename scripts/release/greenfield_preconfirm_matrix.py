@@ -50,6 +50,7 @@ from greenfield_matrix_corpus_provenance import GreenfieldReleaseAudit  # noqa: 
 from greenfield_matrix_corpus_provenance import discovery_corpus_summary  # noqa: E402
 from greenfield_matrix_corpus_provenance import evaluate_release_corpus  # noqa: E402
 from greenfield_matrix_corpus_provenance import load_release_audit_file  # noqa: E402
+from greenfield_matrix_corpus_provenance import release_subset_membership_issues  # noqa: E402
 from greenfield_evaluation_contract import evaluate_frozen_evaluation_contract  # noqa: E402
 from greenfield_evaluation_contract import validate_atomic_annotations  # noqa: E402
 from greenfield_final_holdout_guard import bind_final_holdout_inputs  # noqa: E402
@@ -323,6 +324,7 @@ def run_matrix(
     attempt_ledger_jsonl: Path | None = None,
     allow_partial_stressor_coverage: bool = False,
     release_audits: Sequence[GreenfieldReleaseAudit] = (),
+    release_corpus_cases: Sequence[GreenfieldMatrixCase] = (),
     release_audit_repo_root: Path | None = None,
     semantic_annotations_file: str = "",
     evaluation_split_manifest: str = "",
@@ -364,13 +366,14 @@ def run_matrix(
             allow_partial_stressor_coverage=allow_partial_stressor_coverage,
             release_corpus_issues=(
                 evaluate_release_corpus(
-                    selected_cases,
+                    tuple(release_corpus_cases) or selected_cases,
                     release_audits,
                     repo_root=release_audit_repo_root,
                 ).issues
                 if not semantic_annotations_file
                 else ()
             ),
+            release_audit_present=bool(release_audits),
             semantic_annotations_file=semantic_annotations_file,
             evaluation_split_manifest=evaluation_split_manifest,
         )
@@ -390,13 +393,14 @@ def run_matrix(
         allow_partial_stressor_coverage=allow_partial_stressor_coverage,
         release_corpus_issues=(
             evaluate_release_corpus(
-                selected_cases,
+                tuple(release_corpus_cases) or selected_cases,
                 release_audits,
                 repo_root=release_audit_repo_root,
             ).issues
             if campaign_config.proof_tier == "release" and not semantic_annotations_file
             else ()
         ),
+        release_audit_present=bool(release_audits),
         semantic_annotations_file=semantic_annotations_file,
         evaluation_split_manifest=evaluation_split_manifest,
     )
@@ -980,6 +984,7 @@ def _raise_for_invalid_campaign_policy(
     allow_skipped_browser_proof: bool,
     allow_partial_stressor_coverage: bool = False,
     release_corpus_issues: Sequence[str] = (),
+    release_audit_present: bool = False,
     semantic_annotations_file: str = "",
     evaluation_split_manifest: str = "",
 ) -> None:
@@ -1000,10 +1005,18 @@ def _raise_for_invalid_campaign_policy(
         violations.append("release proof cannot stop after a failure threshold")
     if config.stop_after_cluster_failures:
         violations.append("release proof cannot stop after a cluster threshold")
-    if not str(semantic_annotations_file or "").strip():
-        violations.append("release proof requires blinded semantic annotations")
-    if not str(evaluation_split_manifest or "").strip():
-        violations.append("release proof requires a frozen evaluation split manifest")
+    annotations_present = bool(str(semantic_annotations_file or "").strip())
+    split_manifest_present = bool(str(evaluation_split_manifest or "").strip())
+    semantic_release_requested = annotations_present or split_manifest_present
+    if semantic_release_requested:
+        if not annotations_present:
+            violations.append("protected final-holdout proof requires blinded semantic annotations")
+        if not split_manifest_present:
+            violations.append("protected final-holdout proof requires a frozen evaluation split manifest")
+    elif not release_audit_present:
+        violations.append(
+            "release proof requires audited disclosed inputs or protected final-holdout inputs"
+        )
     violations.extend(str(issue) for issue in release_corpus_issues if str(issue).strip())
     if violations:
         raise RuntimeError("invalid greenfield release proof policy: " + "; ".join(violations))
@@ -2484,6 +2497,15 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--release-parent-case-file",
+        action="append",
+        default=None,
+        help=(
+            "Audited disclosed parent corpus used for static release qualification. "
+            "Every executed --case-file row must be an exact member."
+        ),
+    )
+    parser.add_argument(
         "--include-default-cases",
         action="store_true",
         help=(
@@ -2668,15 +2690,20 @@ def _require_sealed_release_input_root(
 ) -> None:
     if proof_tier_from_value(proof_tier) != "release":
         return
+    if not (
+        str(semantic_annotations_file or "").strip()
+        or str(evaluation_split_manifest or "").strip()
+    ):
+        return
     if not sealed_root.strip():
-        raise RuntimeError("release proof requires --sealed-release-input-root")
+        raise RuntimeError("protected final-holdout proof requires --sealed-release-input-root")
     unresolved_root = _release_path_without_symlink_segments(
         sealed_root,
         label="sealed input root",
     )
     root = unresolved_root.resolve()
     if not root.is_dir():
-        raise RuntimeError("release proof sealed input root does not exist")
+        raise RuntimeError("protected final-holdout sealed input root does not exist")
     values = (
         *case_files,
         semantic_annotations_file,
@@ -2684,7 +2711,10 @@ def _require_sealed_release_input_root(
         lower_capability_control_file,
     )
     if not all(str(value or "").strip() for value in values):
-        raise RuntimeError("release proof requires sealed case, annotation, and evaluation-manifest inputs")
+        raise RuntimeError(
+            "protected final-holdout proof requires sealed case, annotation, "
+            "evaluation-manifest, and lower-control inputs"
+        )
     for value in values:
         unresolved_path = _release_path_without_symlink_segments(
             str(value),
@@ -2721,18 +2751,48 @@ def _final_holdout_run_from_args(
 ) -> _FinalHoldoutRun | None:
     if proof_tier_from_value(str(args.proof_tier)) != "release":
         return None
+    annotations_token = str(
+        getattr(args, "semantic_annotations_file", "") or ""
+    ).strip()
+    manifest_token = str(
+        getattr(args, "evaluation_split_manifest", "") or ""
+    ).strip()
     ledger_token = str(getattr(args, "final_holdout_run_ledger", "") or "").strip()
     revision = str(getattr(args, "implementation_revision", "") or "").strip().casefold()
-    output_token = str(getattr(args, "output_json", "") or "").strip()
+    provenance_token = str(
+        getattr(args, "distribution_provenance_file", "") or ""
+    ).strip()
+    if not any((annotations_token, manifest_token, ledger_token)):
+        return None
+    if not annotations_token:
+        raise RuntimeError(
+            "protected final-holdout proof requires --semantic-annotations-file"
+        )
+    if not manifest_token:
+        raise RuntimeError(
+            "protected final-holdout proof requires --evaluation-split-manifest"
+        )
+    if not str(sealed_input_root or "").strip():
+        raise RuntimeError(
+            "protected final-holdout proof requires --sealed-release-input-root"
+        )
     if not ledger_token:
-        raise RuntimeError("release proof requires --final-holdout-run-ledger")
+        raise RuntimeError(
+            "protected final-holdout proof requires --final-holdout-run-ledger"
+        )
     if len(revision) != 40 or any(character not in "0123456789abcdef" for character in revision):
-        raise RuntimeError("release proof requires a full --implementation-revision")
+        raise RuntimeError(
+            "protected final-holdout proof requires a full --implementation-revision"
+        )
+    output_token = str(getattr(args, "output_json", "") or "").strip()
     if not output_token:
-        raise RuntimeError("release proof requires --output-json for terminal holdout evidence")
-    provenance_token = str(getattr(args, "distribution_provenance_file", "") or "").strip()
+        raise RuntimeError(
+            "protected final-holdout proof requires --output-json for terminal holdout evidence"
+        )
     if not provenance_token:
-        raise RuntimeError("release proof requires --distribution-provenance-file")
+        raise RuntimeError(
+            "protected final-holdout proof requires --distribution-provenance-file"
+        )
     ledger_path = _release_path_without_symlink_segments(
         ledger_token,
         label="final holdout run ledger",
@@ -2756,8 +2816,8 @@ def _final_holdout_run_from_args(
         raise RuntimeError("final holdout run ledger must live outside the sealed input root")
     return _FinalHoldoutRun(
         ledger_path=ledger_path,
-        holdout_path=Path(str(args.semantic_annotations_file)).expanduser().resolve(),
-        evaluation_manifest_path=Path(str(args.evaluation_split_manifest)).expanduser().resolve(),
+        holdout_path=Path(annotations_token).expanduser().resolve(),
+        evaluation_manifest_path=Path(manifest_token).expanduser().resolve(),
         case_paths=tuple(
             Path(str(value)).expanduser().resolve()
             for value in (getattr(args, "case_file", ()) or ())
@@ -2858,6 +2918,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             name
             for name in (
                 "release_audit_file",
+                "release_parent_case_file",
                 "release_audit_repo_root",
                 "sealed_release_input_root",
                 "semantic_annotations_file",
@@ -2882,6 +2943,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             include_commit_recovery_proof=bool(args.include_commit_recovery_proof),
             allow_skipped_browser_proof=bool(args.allow_skipped_browser_proof),
             allow_partial_stressor_coverage=bool(args.allow_partial_stressor_coverage),
+            release_audit_present=bool(str(args.release_audit_file or "").strip()),
             semantic_annotations_file=str(args.semantic_annotations_file or ""),
             evaluation_split_manifest=str(args.evaluation_split_manifest or ""),
         )
@@ -2914,6 +2976,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         include_commit_recovery_proof=bool(args.include_commit_recovery_proof),
         allow_skipped_browser_proof=bool(args.allow_skipped_browser_proof),
         allow_partial_stressor_coverage=bool(args.allow_partial_stressor_coverage),
+        release_audit_present=bool(str(args.release_audit_file or "").strip()),
         semantic_annotations_file=str(args.semantic_annotations_file or ""),
         evaluation_split_manifest=str(args.evaluation_split_manifest or ""),
     )
@@ -2950,6 +3013,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             raise RuntimeError("final holdout browser preflight failed: " + "; ".join(browser_issues))
     selected_cases: tuple[GreenfieldMatrixCase, ...] = ()
     planned_cases: tuple[GreenfieldMatrixCase, ...] = ()
+    release_parent_cases: tuple[GreenfieldMatrixCase, ...] = ()
     lower_capability_control_case: GreenfieldMatrixCase | None = None
     if final_holdout_run is None:
         selected_cases, planned_cases, lower_capability_control_case = (
@@ -2962,6 +3026,24 @@ def main(argv: Sequence[str] | None = None) -> int:
                 enforce_lexical_controls=True,
             )
         )
+        release_parent_paths = tuple(
+            str(value)
+            for value in (getattr(args, "release_parent_case_file", None) or ())
+            if str(value or "").strip()
+        )
+        if campaign_config.proof_tier == "release" and release_parent_paths:
+            release_parent_cases = _load_cli_case_files(
+                release_parent_paths,
+                enforce_lexical_controls=True,
+            )
+            membership_issues = release_subset_membership_issues(
+                selected_cases=planned_cases,
+                parent_cases=release_parent_cases,
+            )
+            if membership_issues:
+                raise RuntimeError(
+                    "invalid disclosed release subset: " + "; ".join(membership_issues)
+                )
     output_path = (
         Path(str(args.output_json)).expanduser().resolve()
         if str(args.output_json or "").strip()
@@ -2993,11 +3075,17 @@ def main(argv: Sequence[str] | None = None) -> int:
                 if str(args.release_audit_file or "").strip()
                 else ()
             )
-            if campaign_config.proof_tier == "release":
+            if final_holdout_run is not None:
                 corpus_provenance = evaluate_frozen_evaluation_contract(
                     repo_root=Path(sealed_input_root),
                     manifest_path=Path(str(args.evaluation_split_manifest)),
                     final_holdout_path=Path(str(args.semantic_annotations_file)),
+                )
+            elif campaign_config.proof_tier == "release":
+                corpus_provenance = evaluate_release_corpus(
+                    release_parent_cases or planned_cases,
+                    release_audits,
+                    repo_root=release_audit_repo_root,
                 )
             else:
                 corpus_provenance = discovery_corpus_summary(planned_cases)
@@ -3009,10 +3097,16 @@ def main(argv: Sequence[str] | None = None) -> int:
                 allow_skipped_browser_proof=bool(args.allow_skipped_browser_proof),
                 allow_partial_stressor_coverage=bool(args.allow_partial_stressor_coverage),
                 release_corpus_issues=(
-                    tuple(corpus_provenance.get("issues") or ())
-                    if campaign_config.proof_tier == "release" and isinstance(corpus_provenance, Mapping)
+                    tuple(
+                        corpus_provenance.get("issues")
+                        if isinstance(corpus_provenance, Mapping)
+                        else getattr(corpus_provenance, "issues", ())
+                        or ()
+                    )
+                    if campaign_config.proof_tier == "release"
                     else ()
                 ),
+                release_audit_present=bool(str(args.release_audit_file or "").strip()),
                 semantic_annotations_file=str(args.semantic_annotations_file or ""),
                 evaluation_split_manifest=str(args.evaluation_split_manifest or ""),
             )
@@ -3031,6 +3125,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     final_holdout_run.run_id if final_holdout_run is not None else ""
                 ),
                 lower_capability_control_case=lower_capability_control_case,
+                release_corpus_cases=release_parent_cases,
             )
             if final_holdout_run is not None and final_holdout_run.claimed:
                 if output_path is None or not output_path.is_file():
@@ -3076,6 +3171,7 @@ def _execute_matrix_campaign(
     before_product_execution: Callable[[], None] | None = None,
     retained_evidence_run_id: str = "",
     lower_capability_control_case: GreenfieldMatrixCase | None = None,
+    release_corpus_cases: tuple[GreenfieldMatrixCase, ...] = (),
 ) -> int:
     """Run one fully isolated proof campaign under its output lease."""
 
@@ -3125,6 +3221,7 @@ def _execute_matrix_campaign(
             ),
             allow_partial_stressor_coverage=bool(args.allow_partial_stressor_coverage),
             release_audits=release_audits,
+            release_corpus_cases=release_corpus_cases,
             release_audit_repo_root=release_audit_repo_root,
             semantic_annotations_file=str(getattr(args, "semantic_annotations_file", "") or ""),
             evaluation_split_manifest=str(getattr(args, "evaluation_split_manifest", "") or ""),
@@ -3137,12 +3234,38 @@ def _execute_matrix_campaign(
             host_candidate_argv=tuple(str(value) for value in (getattr(args, "host_candidate_arg", None) or ())),
             before_product_execution=before_product_execution,
         )
+        primary_failure_reason = ""
+        failed_primary = next(
+            (
+                result
+                for result in results
+                if str(result.status or "").strip() != "passed"
+                or not result.quality.passed
+            ),
+            None,
+        )
+        if failed_primary is not None:
+            failure_detail = next(
+                (
+                    str(value).strip()
+                    for value in (
+                        *failed_primary.quality.issues,
+                        failed_primary.failure_detail,
+                        failed_primary.status,
+                    )
+                    if str(value or "").strip()
+                ),
+                "primary candidate/proposal did not pass",
+            )
+            primary_failure_reason = (
+                f"primary matrix case `{failed_primary.name}` failed: {failure_detail}"
+            )
         lower_capability_control_results: tuple[GreenfieldMatrixResult, ...] = ()
         control_lane_required = (
             campaign_config.proof_tier == "release"
             and hasattr(args, "lower_capability_control_file")
         )
-        if control_lane_required:
+        if control_lane_required and not primary_failure_reason:
             if lower_capability_control_case is None:
                 raise RuntimeError("release proof requires one lower-capability control case")
             raw_host_argv = tuple(
@@ -3170,8 +3293,19 @@ def _execute_matrix_campaign(
             )
             if len(lower_capability_control_results) != 1:
                 raise RuntimeError("release proof must execute exactly one lower-capability control")
-        commit_recovery = (
-            run_installed_commit_recovery_proof(
+        if bool(args.include_commit_recovery_proof) and primary_failure_reason:
+            commit_recovery = GreenfieldInstalledCommitRecoveryProof(
+                status="not-run",
+                issues=(
+                    "installed commit recovery was not run because "
+                    + primary_failure_reason,
+                ),
+                recovery_case=(
+                    case_evidence(recovery_case) if recovery_case is not None else {}
+                ),
+            )
+        elif bool(args.include_commit_recovery_proof):
+            commit_recovery = run_installed_commit_recovery_proof(
                 dist_dir=Path(args.dist_dir),
                 version=str(args.version),
                 temp_parent=temp_parent,
@@ -3196,11 +3330,18 @@ def _execute_matrix_campaign(
                     profile_id=case_model_profile(profiled_cases[0]),
                 ),
             )
-            if bool(args.include_commit_recovery_proof)
-            else None
-        )
-        unavailable_provider = (
-            run_unavailable_provider_proof(
+        else:
+            commit_recovery = None
+        if campaign_config.proof_tier == "release" and primary_failure_reason:
+            unavailable_provider = {
+                "status": "not-run",
+                "issues": [
+                    "unavailable-provider proof was not run because "
+                    + primary_failure_reason
+                ],
+            }
+        elif campaign_config.proof_tier == "release":
+            unavailable_provider = run_unavailable_provider_proof(
                 dist_dir=Path(args.dist_dir),
                 version=str(args.version),
                 temp_parent=temp_parent,
@@ -3220,9 +3361,8 @@ def _execute_matrix_campaign(
                     profile_id=STANDARD_PROFILE_ID,
                 ),
             )
-            if campaign_config.proof_tier == "release"
-            else {"status": "not_requested", "issues": []}
-        )
+        else:
+            unavailable_provider = {"status": "not_requested", "issues": []}
     evidence_output_token = str(getattr(args, "evidence_output_dir", "") or "").strip()
     retained_evidence_required = campaign_config.proof_tier == "release" and hasattr(args, "evidence_output_dir")
     retained_manifest = (
@@ -3268,6 +3408,14 @@ def _execute_matrix_campaign(
             else "not_requested"
             if not control_lane_required
             else "failed"
+        ),
+        "issues": (
+            [
+                "lower-capability control was not run because "
+                + primary_failure_reason
+            ]
+            if control_lane_required and primary_failure_reason
+            else []
         ),
         "case_count": len(lower_capability_control_results),
         "profile_id": (
@@ -3349,7 +3497,11 @@ def _execute_matrix_campaign(
                 else "failed"
             ),
             "commit_recovery_path": (
-                COMMIT_RECOVERY_PROOF_SCOPE if commit_recovery is not None else "not_requested"
+                "not-run-after-primary-failure"
+                if commit_recovery is not None and commit_recovery.status == "not-run"
+                else COMMIT_RECOVERY_PROOF_SCOPE
+                if commit_recovery is not None
+                else "not_requested"
             ),
             "browser_surface_proof": (
                 BROWSER_SURFACE_PROOF_SCOPE if bool(args.include_browser_proof) else "not_requested"

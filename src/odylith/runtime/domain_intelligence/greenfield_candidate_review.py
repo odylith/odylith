@@ -27,7 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-CANDIDATE_REVIEW_VERSION = "odylith.greenfield.candidate-review.v11"
+CANDIDATE_REVIEW_VERSION = "odylith.greenfield.candidate-review.v12"
 STATE_OBJECT_ROLE_DEFINITION = (
     "One source-cited subject, entity, record, work item, case, artifact, or status "
     "whose state the workflow changes or reviews. The subject may be a person; never "
@@ -149,7 +149,9 @@ governed system and outcome, not by isolated words.
 For every provisional component and workstream, judge whether its verification
 text can test the responsibility, deliverable, referenced source events, and
 terminal proof it claims to cover. Review every risk-posture item for proportionality,
-affected design scope, trigger, mitigation, and verification. A no-material-risk
+trigger, mitigation, and verification. Judge whether its selected scope_paths identify
+the exact existing event-component-workstream graph paths affected by that risk; the
+runtime derives displayed event, component, and workstream unions from those paths. A no-material-risk
 posture is valid only when its rationale is credible for the complete requested
 operating context; deny it when material product, operational, security, privacy,
 abuse, accessibility, retention, or compliance exposure remains.

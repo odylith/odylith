@@ -18,6 +18,36 @@ label or substituting a valid-looking command receipt. Live public controls must
 cleanup so proposal failures remain attributable. This changes release-evidence
 discipline, not the Greenfield authoring topology, so Atlas remains unchanged.
 
+## V34 public campaign and protected-holdout custody split (2026-09-27)
+
+Release proof distinguishes an audited public campaign from final-holdout
+custody. A public release subset may qualify only as exact members of one
+audited parent corpus; it does not enter protected final-holdout sealing,
+ledger, annotation, manifest, or claim-before-open custody. The protected
+final holdout retains those stricter obligations and remains unopened until
+all public gates pass.
+
+One provenance owner compares selected and parent cases structurally, ignoring
+only each case's `source_file`. It fails closed on missing or duplicate parent
+or subset identities, absent membership, and any field drift. Both direct
+preconfirm and campaign-shard paths use that same owner, with the public parent
+file explicitly forwarded through the campaign wrapper.
+
+After a primary candidate or proposal failure, the harness makes no secondary
+host or model call. The lower-capability control, commit recovery, and
+unavailable-provider paths are reported `not-run` with the primary failure
+reason; the aggregate proof fails rather than converting incomplete evidence
+into a recovery result. This is a release-harness safety boundary, not a
+second Greenfield mechanism and not permission to retry, repair, or substitute
+another author.
+
+Focused corpus/sealed-input/release-scope proof passes `51/51`, zero-secondary
+and campaign-entry controls pass `15/15`, and the combined runtime and release
+boundary suite passes `722/722`. No provider or protected holdout was invoked
+for this checkpoint. A clean immutable distribution, installed public campaign,
+browser and retained-output review, and only then one fresh protected holdout
+remain required for release qualification.
+
 ## V28 source-custody qualification stop (2026-09-26)
 
 Immutable V28 passed the first 30 disclosed cases, then failed the archive

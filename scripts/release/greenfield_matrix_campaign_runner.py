@@ -75,6 +75,7 @@ def run_campaign(
     volume_case_files: Sequence[Path] = (),
     deep_volume_case_files: Sequence[Path] = (),
     release_case_files: Sequence[Path] = (),
+    release_parent_case_file: Path | None = None,
     discovery_max_workers: int = 0,
     failed_subset_max_workers: int | None = None,
     regression_max_workers: int | None = None,
@@ -142,7 +143,10 @@ def run_campaign(
         []
         if semantic_release_requested
         else _release_proof_input_manifest(
-            case_files=release_case_files,
+            case_files=(
+                *((release_parent_case_file,) if release_parent_case_file is not None else ()),
+                *release_case_files,
+            ),
             release_audit_file=release_audit_file,
             lower_capability_control_file=lower_capability_control_file,
         )
@@ -153,14 +157,24 @@ def run_campaign(
         None
         if semantic_release_requested
         else _seal_release_proof_inputs(
-            case_files=release_case_files,
+            case_files=(
+                *((release_parent_case_file,) if release_parent_case_file is not None else ()),
+                *release_case_files,
+            ),
             release_audit_file=release_audit_file,
             lower_capability_control_file=lower_capability_control_file,
             repo_root=REPO_ROOT,
             temp_parent=temp_parent,
         )
     )
-    sealed_release_case_files = release_snapshot.case_files if release_snapshot is not None else release_case_files
+    if release_snapshot is not None and release_parent_case_file is not None:
+        sealed_release_parent_case_file = release_snapshot.case_files[0]
+        sealed_release_case_files = release_snapshot.case_files[1:]
+    else:
+        sealed_release_parent_case_file = release_parent_case_file
+        sealed_release_case_files = (
+            release_snapshot.case_files if release_snapshot is not None else release_case_files
+        )
     sealed_release_audit_file = release_snapshot.audit_file if release_snapshot is not None else release_audit_file
     sealed_lower_capability_control_file = (
         release_snapshot.lower_capability_control_file
@@ -230,6 +244,7 @@ def run_campaign(
             required_stressors=normalized_required_stressors,
             release_audit_file=sealed_release_audit_file,
             release_audit_repo_root=sealed_release_audit_repo_root,
+            release_parent_case_file=sealed_release_parent_case_file,
             release_input_snapshot_root=semantic_release_input_root or sealed_release_audit_repo_root,
             semantic_annotations_file=sealed_semantic_annotations,
             evaluation_split_manifest=sealed_evaluation_manifest,
@@ -422,6 +437,7 @@ def _release_tier(
     required_stressors: Sequence[str],
     release_audit_file: Path | None = None,
     release_audit_repo_root: Path | None = None,
+    release_parent_case_file: Path | None = None,
     release_input_snapshot_root: Path | None = None,
     semantic_annotations_file: Path | None = None,
     evaluation_split_manifest: Path | None = None,
@@ -445,6 +461,11 @@ def _release_tier(
             release_audit_file=Path(release_audit_file).expanduser().resolve() if release_audit_file else None,
             release_audit_repo_root=(
                 Path(release_audit_repo_root).expanduser().resolve() if release_audit_repo_root else None
+            ),
+            release_parent_case_file=(
+                Path(release_parent_case_file).expanduser().resolve()
+                if release_parent_case_file
+                else None
             ),
             release_input_snapshot_root=(
                 Path(release_input_snapshot_root).expanduser().resolve()
@@ -775,6 +796,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     parser.add_argument("--volume-case-file", action="append", default=None)
     parser.add_argument("--deep-volume-case-file", action="append", default=None)
     parser.add_argument("--release-case-file", action="append", default=None)
+    parser.add_argument("--release-parent-case-file", default="")
     parser.add_argument("--release-audit-file", default="")
     parser.add_argument("--semantic-annotations-file", default="")
     parser.add_argument("--evaluation-split-manifest", default="")
@@ -845,6 +867,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         volume_case_files=_paths(args.volume_case_file or ()),
         deep_volume_case_files=_paths(args.deep_volume_case_file or ()),
         release_case_files=_paths(args.release_case_file or ()),
+        release_parent_case_file=(
+            Path(str(args.release_parent_case_file)).expanduser().resolve()
+            if str(args.release_parent_case_file or "").strip()
+            else None
+        ),
         discovery_max_workers=max(0, int(args.discovery_max_workers)),
         failed_subset_max_workers=_optional_positive_int(args.failed_subset_max_workers),
         regression_max_workers=_optional_positive_int(args.regression_max_workers),

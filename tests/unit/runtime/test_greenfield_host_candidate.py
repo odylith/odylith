@@ -457,6 +457,13 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
     assert rc == 0
     assert payload["version"] == HOST_CANDIDATE_CONTRACT_VERSION
     assert payload["candidate_version"] == HOST_CANDIDATE_FORMAT_VERSION
+    assert payload["version"] == "odylith.greenfield.host-candidate-contract.v24"
+    assert payload["candidate_version"] == "odylith.greenfield.host-candidate-format.v12"
+    assert any(
+        "exact scope_paths" in requirement
+        and "Odylith derives" in requirement
+        for requirement in payload["requirements"]
+    )
     assert any(
         "must otherwise be disjoint exact clauses" in requirement
         and "never use partially overlapping event citations" in requirement
@@ -478,6 +485,13 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
     )
     assert payload["candidate_schema"]["additionalProperties"] is False
     authored = payload["candidate_schema"]["properties"]["result"]["anyOf"][0]
+    risk_item = authored["properties"]["provisional_design"]["properties"][
+        "risk_posture"
+    ]["properties"]["items"]["items"]
+    assert set(risk_item["properties"]) == {
+        "key", "category", "statement", "trigger", "mitigation", "verification",
+        "scope_paths",
+    }
     assert (
         authored["properties"]["facts"]["properties"]["product_story"][
             "description"

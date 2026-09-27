@@ -410,7 +410,7 @@ def structural_design_fixture(
         for index in range(1, 5)
     ]
     return {
-        "version": "odylith.greenfield.provisional-design.v4",
+        "version": "odylith.greenfield.provisional-design.v5",
         "authority_kind": "provisional_design",
         "first_run": {
             "event_orders": list(first_run_event_orders) if first_run_event_orders is not None else orders,

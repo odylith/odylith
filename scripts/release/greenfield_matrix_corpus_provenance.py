@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections import Counter
 from collections.abc import Mapping, Sequence
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 import json
 from math import ceil
 from pathlib import Path
@@ -133,6 +133,42 @@ class ReleaseCorpusEvaluation:
             "issues": list(self.issues),
             "summary": dict(self.summary),
         }
+
+
+def release_subset_membership_issues(
+    *,
+    selected_cases: Sequence[Any],
+    parent_cases: Sequence[Any],
+) -> tuple[str, ...]:
+    """Require every live disclosed case to be one exact parent-corpus member."""
+
+    issues: list[str] = []
+    parent_by_id: dict[str, Any] = {}
+    for case in parent_cases:
+        case_id = _case_id(case)
+        if not case_id:
+            issues.append("audited parent corpus contains a case without case_id")
+        elif case_id in parent_by_id:
+            issues.append(f"audited parent corpus contains duplicate case_id `{case_id}`")
+        else:
+            parent_by_id[case_id] = replace(case, source_file="")
+
+    selected_ids: set[str] = set()
+    for case in selected_cases:
+        case_id = _case_id(case)
+        if not case_id:
+            issues.append("live release subset contains a case without case_id")
+            continue
+        if case_id in selected_ids:
+            issues.append(f"live release subset contains duplicate case_id `{case_id}`")
+            continue
+        selected_ids.add(case_id)
+        parent = parent_by_id.get(case_id)
+        if parent is None:
+            issues.append(f"live release case `{case_id}` is absent from the audited parent corpus")
+        elif replace(case, source_file="") != parent:
+            issues.append(f"live release case `{case_id}` diverges from its audited parent-corpus record")
+    return tuple(issues)
 
 
 def case_provenance_from_mapping(value: Any) -> GreenfieldCaseProvenance:
@@ -968,5 +1004,6 @@ __all__ = [
     "discovery_corpus_summary",
     "evaluate_release_corpus",
     "load_release_audit_file",
+    "release_subset_membership_issues",
     "source_span_is_valid",
 ]

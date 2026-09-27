@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -45,6 +46,55 @@ def _final_holdout_args(*, ledger: Path, provenance: Path, output: Path) -> Simp
         evaluation_split_manifest=str(output.parent / "evaluation-splits.json"),
         case_file=(),
         lower_capability_control_file=str(output.parent / "luna-control.json"),
+    )
+
+
+def test_audited_public_release_does_not_enter_protected_holdout_custody(
+    tmp_path: Path,
+) -> None:
+    args = SimpleNamespace(
+        proof_tier="release",
+        final_holdout_run_ledger="",
+        implementation_revision="",
+        output_json=str(tmp_path / "result.json"),
+        distribution_provenance_file="",
+        semantic_annotations_file="",
+        evaluation_split_manifest="",
+    )
+
+    matrix._require_sealed_release_input_root(  # noqa: SLF001
+        proof_tier="release",
+        case_files=(str(tmp_path / "public-cases.json"),),
+        release_audit_file=str(tmp_path / "public-audit.json"),
+        release_audit_repo_root=tmp_path,
+        sealed_root="",
+        semantic_annotations_file="",
+        evaluation_split_manifest="",
+    )
+
+    assert matrix._final_holdout_run_from_args(args, sealed_input_root="") is None  # noqa: SLF001
+
+
+def test_disclosed_live_subset_must_exactly_match_its_audited_parent() -> None:
+    parent = matrix.GreenfieldMatrixCase(
+        name="audited parent case",
+        prompt="Create an audited parent case.",
+        required_terms=("audited",),
+        case_id="audited-parent",
+        source_file="parent.json",
+    )
+    exact_subset = replace(parent, source_file="live-subset.json")
+    drifted_subset = replace(exact_subset, prompt="Create a changed case.")
+
+    assert not matrix.release_subset_membership_issues(
+        selected_cases=(exact_subset,),
+        parent_cases=(parent,),
+    )
+    assert matrix.release_subset_membership_issues(
+        selected_cases=(drifted_subset,),
+        parent_cases=(parent,),
+    ) == (
+        "live release case `audited-parent` diverges from its audited parent-corpus record",
     )
 
 

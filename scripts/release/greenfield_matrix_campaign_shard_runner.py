@@ -36,6 +36,7 @@ from greenfield_matrix_case_file import load_case_file  # noqa: E402
 from greenfield_matrix_attempt_ledger import initialize_attempt_ledger  # noqa: E402
 from greenfield_matrix_corpus_provenance import evaluate_release_corpus  # noqa: E402
 from greenfield_matrix_corpus_provenance import load_release_audit_file  # noqa: E402
+from greenfield_matrix_corpus_provenance import release_subset_membership_issues  # noqa: E402
 from greenfield_matrix_failure_response import write_synthetic_shard_payload  # noqa: E402
 from greenfield_final_holdout_guard import complete_final_holdout_run  # noqa: E402
 from greenfield_final_holdout_guard import read_final_holdout_run  # noqa: E402
@@ -58,6 +59,7 @@ class CampaignShard:
     required_stressors: tuple[str, ...]
     release_audit_file: Path | None = None
     release_audit_repo_root: Path | None = None
+    release_parent_case_file: Path | None = None
     release_input_snapshot_root: Path | None = None
     semantic_annotations_file: Path | None = None
     evaluation_split_manifest: Path | None = None
@@ -956,6 +958,8 @@ def _matrix_command(
         command.extend(["--release-audit-file", str(shard.release_audit_file)])
     if shard.release_audit_repo_root is not None:
         command.extend(["--release-audit-repo-root", str(shard.release_audit_repo_root)])
+    if shard.release_parent_case_file is not None:
+        command.extend(["--release-parent-case-file", str(shard.release_parent_case_file)])
     if shard.release_input_snapshot_root is not None:
         command.extend(["--sealed-release-input-root", str(shard.release_input_snapshot_root)])
     if shard.semantic_annotations_file is not None:
@@ -1039,33 +1043,55 @@ def _tier_case_file_preflight_failure(
                 if audit_repo_root is not None
                 else load_release_audit_file(audit_file)
             )
-            individual_failure: tuple[CampaignShard, Any] | None = None
-            for shard in release_shards:
-                shard_cases = load_case_file(shard.case_file)
-                shard_case_ids = {case.case_id for case in shard_cases}
-                shard_audits = tuple(audit for audit in audits if audit.case_id in shard_case_ids)
+            parent_file = release_shards[0].release_parent_case_file
+            if parent_file is not None:
+                if any(shard.release_parent_case_file != parent_file for shard in release_shards):
+                    raise RuntimeError("release shards must bind one audited parent corpus")
+                parent_cases = load_case_file(parent_file)
                 evaluation = (
-                    evaluate_release_corpus(shard_cases, shard_audits, repo_root=audit_repo_root)
+                    evaluate_release_corpus(parent_cases, audits, repo_root=audit_repo_root)
                     if audit_repo_root is not None
-                    else evaluate_release_corpus(shard_cases, shard_audits)
+                    else evaluate_release_corpus(parent_cases, audits)
                 )
-                if not evaluation.passed and individual_failure is None:
-                    individual_failure = (shard, evaluation)
-            if individual_failure is not None:
-                shard, evaluation = individual_failure
-                return _release_corpus_preflight_failure(
-                    shard=shard,
-                    output_dir=output_dir,
-                    telemetry_dir=telemetry_dir,
-                    temp_parent=temp_parent,
-                    detail="invalid greenfield release case file: " + "; ".join(evaluation.issues),
+                selected_cases = tuple(
+                    case
+                    for shard in release_shards
+                    for case in load_case_file(shard.case_file)
                 )
-            cases = tuple(case for shard in release_shards for case in load_case_file(shard.case_file))
-            evaluation = (
-                evaluate_release_corpus(cases, audits, repo_root=audit_repo_root)
-                if audit_repo_root is not None
-                else evaluate_release_corpus(cases, audits)
-            )
+                membership_issues = release_subset_membership_issues(
+                    selected_cases=selected_cases,
+                    parent_cases=parent_cases,
+                )
+                if membership_issues:
+                    raise RuntimeError("; ".join(membership_issues))
+            else:
+                individual_failure: tuple[CampaignShard, Any] | None = None
+                for shard in release_shards:
+                    shard_cases = load_case_file(shard.case_file)
+                    shard_case_ids = {case.case_id for case in shard_cases}
+                    shard_audits = tuple(audit for audit in audits if audit.case_id in shard_case_ids)
+                    evaluation = (
+                        evaluate_release_corpus(shard_cases, shard_audits, repo_root=audit_repo_root)
+                        if audit_repo_root is not None
+                        else evaluate_release_corpus(shard_cases, shard_audits)
+                    )
+                    if not evaluation.passed and individual_failure is None:
+                        individual_failure = (shard, evaluation)
+                if individual_failure is not None:
+                    shard, evaluation = individual_failure
+                    return _release_corpus_preflight_failure(
+                        shard=shard,
+                        output_dir=output_dir,
+                        telemetry_dir=telemetry_dir,
+                        temp_parent=temp_parent,
+                        detail="invalid greenfield release case file: " + "; ".join(evaluation.issues),
+                    )
+                cases = tuple(case for shard in release_shards for case in load_case_file(shard.case_file))
+                evaluation = (
+                    evaluate_release_corpus(cases, audits, repo_root=audit_repo_root)
+                    if audit_repo_root is not None
+                    else evaluate_release_corpus(cases, audits)
+                )
         except RuntimeError as exc:
             return _release_corpus_preflight_failure(
                 shard=release_shards[0],
