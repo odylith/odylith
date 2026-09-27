@@ -952,6 +952,9 @@ This section captures synchronized requirement and contract signals derived from
 
 <!-- registry-requirements:start -->
 - **2026-09-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-failed-subset-runner-returns-a-function-instead-of-proposal-execution.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
+- **2026-09-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-001
   - Evidence: `odylith/casebook/bugs/2026-05-07-release-smoke-omitted-greenfield-create-journey.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
 - **2026-09-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 1 verifiable artifact reference.
@@ -966,9 +969,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-26 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `tests/unit/install/test_greenfield_matrix_leakage_contract.py`
-- **2026-09-26 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_candidate_review.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
