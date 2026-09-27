@@ -35,6 +35,12 @@ def _write(path: Path, text: str) -> None:
     path.write_text(text, encoding="utf-8")
 
 
+def _host_candidate_argv() -> tuple[str, ...]:
+    return sys.modules[
+        "greenfield_matrix_host_candidate"
+    ].canonical_host_candidate_argv_template()
+
+
 def _case(module, name: str, *, stressors: tuple[str, ...] = ()):
     return module.GreenfieldMatrixCase(
         name=name,
@@ -87,39 +93,34 @@ def _result(module, *, name: str, passed: bool = True):
     )
 
 
-def test_run_matrix_release_rejects_missing_host_native_argv_before_execution(
+def test_run_matrix_rejects_missing_host_native_argv_before_product_execution(
     tmp_path: Path,
 ) -> None:
     module = _module()
+    product_execution: list[str] = []
 
     with pytest.raises(RuntimeError, match="explicit exact host-candidate argv"):
         module.run_matrix(
             dist_dir=tmp_path / "dist",
             version="0.1.15",
             temp_parent=tmp_path,
-            cases=(_case(module, "release gate"),),
-            proof_tier="release",
+            cases=(_case(module, "discovery gate"),),
+            proof_tier="discovery",
+            before_product_execution=lambda: product_execution.append("started"),
         )
 
+    assert product_execution == []
 
-@pytest.mark.parametrize(
-    ("host_candidate_argv", "expected_runner"),
-    (
-        pytest.param((), "direct", id="direct-proposal"),
-        pytest.param(("codex", "exec"), "host", id="host-native-proposal"),
-    ),
-)
-def test_run_case_invokes_selected_proposal_runner_with_process_evidence(
+
+def test_run_case_invokes_only_host_candidate_runner_with_process_evidence(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
-    host_candidate_argv: tuple[str, ...],
-    expected_runner: str,
 ) -> None:
     module = _module()
     repo_root = tmp_path / "repo"
     _write(repo_root / ".odylith/bin/odylith", "")
     completed = subprocess.CompletedProcess(
-        args=(expected_runner,), returncode=0, stdout='{"status":"ready"}', stderr="",
+        args=("host",), returncode=0, stdout='{"status":"ready"}', stderr="",
     )
     calls: list[str] = []
     proposal_results: list[subprocess.CompletedProcess[str]] = []
@@ -135,7 +136,9 @@ def test_run_case_invokes_selected_proposal_runner_with_process_evidence(
     monkeypatch.setattr(module, "_local_release_env", lambda **_kwargs: {})
     monkeypatch.setattr(
         module, "_run_greenfield_propose",
-        lambda **_kwargs: run_proposal("direct"),
+        lambda **_kwargs: (_ for _ in ()).throw(
+            AssertionError("direct proposal runner must not be selected")
+        ),
     )
     monkeypatch.setattr(
         module, "_run_host_candidate_propose",
@@ -151,14 +154,35 @@ def test_run_case_invokes_selected_proposal_runner_with_process_evidence(
             base_url="http://127.0.0.1",
             version="0.0.0",
             skip_install=True,
-            host_candidate_argv=host_candidate_argv,
+            host_candidate_argv=("codex", "exec"),
         )
 
     assert proposal_results == [completed]
     assert proposal_results[0].returncode == 0
     assert proposal_results[0].stdout
     assert proposal_results[0].stderr == ""
-    assert calls == [expected_runner]
+    assert calls == ["host"]
+
+
+def test_direct_propose_requires_candidate_file_before_command_execution(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    module = _module()
+    monkeypatch.setattr(
+        module,
+        "_run",
+        lambda **_kwargs: pytest.fail("proposal command must not run without candidate custody"),
+    )
+
+    with pytest.raises(RuntimeError, match="requires a candidate file"):
+        module._run_greenfield_propose(  # noqa: SLF001
+            repo_root=tmp_path,
+            env={},
+            prompt="Create a source-grounded product.",
+            timeout=90,
+            candidate_file="",
+        )
 
 
 class _Server:
@@ -208,6 +232,7 @@ def test_run_matrix_writes_incremental_telemetry_and_stops_on_failure_threshold(
         stop_after_failures=1,
         required_stressors=("modal-expert-lens",),
         incremental_output_json=incremental_output,
+        host_candidate_argv=_host_candidate_argv(),
     )
 
     rows = [json.loads(line) for line in telemetry_path.read_text(encoding="utf-8").splitlines()]
@@ -259,6 +284,7 @@ def test_run_matrix_emits_redacted_process_lifecycle_events(tmp_path: Path, monk
         install_mode="full",
         telemetry_jsonl=telemetry_path,
         proof_tier="discovery",
+        host_candidate_argv=_host_candidate_argv(),
     )
 
     rows = [json.loads(line) for line in telemetry_path.read_text(encoding="utf-8").splitlines()]
@@ -304,6 +330,7 @@ def test_seeded_matrix_emits_lifecycle_events_for_prepare_and_clone_subprocesses
         install_mode="seeded",
         telemetry_jsonl=telemetry_path,
         proof_tier="discovery",
+        host_candidate_argv=_host_candidate_argv(),
     )
 
     rows = [json.loads(line) for line in telemetry_path.read_text(encoding="utf-8").splitlines()]
@@ -350,6 +377,7 @@ def test_run_matrix_reports_terminal_telemetry_failure_without_mislabeling_the_c
         install_mode="full",
         telemetry_jsonl=telemetry_path,
         proof_tier="discovery",
+        host_candidate_argv=_host_candidate_argv(),
     )
 
     assert results[0].status == "command-lifecycle-telemetry-failed"
@@ -387,6 +415,7 @@ def test_run_matrix_emits_failed_case_completion_when_run_case_raises(
         campaign_phase="volume-discovery",
         proof_tier="discovery",
         incremental_output_json=incremental_output,
+        host_candidate_argv=_host_candidate_argv(),
     )
 
     rows = [json.loads(line) for line in telemetry_path.read_text(encoding="utf-8").splitlines()]
@@ -460,6 +489,7 @@ def test_run_matrix_applies_platform_leakage_before_live_stop(
         proof_tier="discovery",
         stop_after_failures=1,
         incremental_output_json=incremental_output,
+        host_candidate_argv=_host_candidate_argv(),
     )
 
     rows = [json.loads(line) for line in telemetry_path.read_text(encoding="utf-8").splitlines()]
@@ -507,6 +537,7 @@ def test_run_matrix_flushes_failed_incremental_payload_before_cleanup_abort(
         campaign_phase="failed-subset",
         proof_tier="discovery",
         incremental_output_json=incremental_output,
+        host_candidate_argv=_host_candidate_argv(),
     )
 
     rows = [json.loads(line) for line in telemetry_path.read_text(encoding="utf-8").splitlines()]
@@ -572,10 +603,14 @@ def test_main_persists_campaign_summary_for_discovery_runs(
             "60-case-regression",
             "--telemetry-jsonl",
             str(telemetry_path),
-                "--stop-after-failures",
-                "2",
-                "--include-commit-recovery-proof",
-                "--allow-skipped-browser-proof",
+            "--stop-after-failures",
+            "2",
+            "--include-commit-recovery-proof",
+            "--allow-skipped-browser-proof",
+            *(
+                f"--host-candidate-arg={argument}"
+                for argument in _host_candidate_argv()
+            ),
             "--json",
         ]
     )

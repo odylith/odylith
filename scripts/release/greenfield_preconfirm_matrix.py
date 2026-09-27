@@ -377,12 +377,11 @@ def run_matrix(
             semantic_annotations_file=semantic_annotations_file,
             evaluation_split_manifest=evaluation_split_manifest,
         )
-    if campaign_config.proof_tier == "release":
-        if not host_candidate_argv:
-            raise RuntimeError(
-                "release proof requires an explicit exact host-candidate argv"
-            )
-        host_candidate_argv = _require_profile_argv_template(host_candidate_argv)
+    if not host_candidate_argv:
+        raise RuntimeError(
+            "matrix execution requires an explicit exact host-candidate argv"
+        )
+    host_candidate_argv = _require_profile_argv_template(host_candidate_argv)
     _raise_for_invalid_campaign_policy(
         config=campaign_config,
         install_mode=install_mode,
@@ -432,9 +431,8 @@ def run_matrix(
         "stop_after_cluster_failures": campaign_config.stop_after_cluster_failures,
         "required_stressors": list(campaign_config.required_stressors),
         "model_profile_counts": profile_counts(selected_cases),
+        "host_native_candidate": True,
     }
-    if host_candidate_argv:
-        run_started_payload["host_native_candidate"] = True
     telemetry.emit("run_started", run_started_payload)
     _flush_incremental_matrix_payload(
         output_json=incremental_output_json,
@@ -1244,7 +1242,7 @@ def _run_case(
             raise ValueError("clarification matrix cases require the installed write audit")
         proposal_repair_tier = (
             get_greenfield_model_profile(STANDARD_PROFILE_ID).repair_tier
-            if host_candidate_argv and profile in LOWER_CAPABILITY_CONTROL_PROFILES
+            if profile in LOWER_CAPABILITY_CONTROL_PROFILES
             else profile_contract.repair_tier
         )
         result = _run_expected_clarification_case(
@@ -1266,24 +1264,16 @@ def _run_case(
     raw_streams: dict[str, str] = {}
     raw_streams["input.prompt"] = case.prompt
     raw_streams["input.edit-evidence"] = str(case.confirmed_intent_markdown or "")
-    if host_candidate_argv:
-        invoke_propose = lambda timeout: _run_host_candidate_propose(
-            repo_root=repo_root,
-            env=env,
-            prompt=case.prompt,
-            edit_evidence=str(case.confirmed_intent_markdown or ""),
-            repair_tier=profile_contract.repair_tier,
-            timeout=timeout,
-            host_candidate_argv=host_candidate_argv,
-            retained_case=retained_case,
-        )
-    else:
-        invoke_propose = lambda timeout: _run_greenfield_propose(
-            repo_root=repo_root, env=env, prompt=case.prompt,
-            edit_evidence=str(case.confirmed_intent_markdown or ""),
-            repair_tier=profile_contract.repair_tier, timeout=timeout,
-            retained_case=retained_case,
-        )
+    invoke_propose = lambda timeout: _run_host_candidate_propose(
+        repo_root=repo_root,
+        env=env,
+        prompt=case.prompt,
+        edit_evidence=str(case.confirmed_intent_markdown or ""),
+        repair_tier=profile_contract.repair_tier,
+        timeout=timeout,
+        host_candidate_argv=host_candidate_argv,
+        retained_case=retained_case,
+    )
     execution = run_compiled_greenfield_journey(
         repo_root=repo_root,
         env=env,
@@ -1612,7 +1602,7 @@ def _require_profile_argv_template(argv: Sequence[str]) -> tuple[str, ...]:
     ):
         if tokens.count(placeholder) != 1:
             raise RuntimeError(
-                "release host candidate argv requires exactly one " + placeholder + " token"
+                "matrix host candidate argv requires exactly one " + placeholder + " token"
             )
     trusted = resolve_trusted_codex_executable()
     try:
@@ -1652,31 +1642,17 @@ def _run_expected_clarification_case(
             runtime_python=repo_root / ".odylith/runtime/current/bin/python",
             arguments=(),
         )
-        proposed = (
-            _run_host_candidate_propose(
-                repo_root=repo_root,
-                env=audit_env,
-                prompt=case.prompt,
-                edit_evidence=str(case.confirmed_intent_markdown or ""),
-                repair_tier=repair_tier,
-                timeout=timeout,
-                host_candidate_argv=host_candidate_argv,
-                retained_case=retained_case,
-                installed_command=installed_command,
-                pass_fds=audit.pass_fds,
-            )
-            if host_candidate_argv
-            else _run_greenfield_propose(
-                repo_root=repo_root,
-                env=audit_env,
-                prompt=case.prompt,
-                edit_evidence=str(case.confirmed_intent_markdown or ""),
-                timeout=timeout,
-                repair_tier=repair_tier,
-                command=installed_command,
-                pass_fds=audit.pass_fds,
-                retained_case=retained_case,
-            )
+        proposed = _run_host_candidate_propose(
+            repo_root=repo_root,
+            env=audit_env,
+            prompt=case.prompt,
+            edit_evidence=str(case.confirmed_intent_markdown or ""),
+            repair_tier=repair_tier,
+            timeout=timeout,
+            host_candidate_argv=host_candidate_argv,
+            retained_case=retained_case,
+            installed_command=installed_command,
+            pass_fds=audit.pass_fds,
         )
         raw_streams["propose.stdout"] = str(getattr(proposed, "stdout", "") or "")
         raw_streams["propose.stderr"] = str(getattr(proposed, "stderr", "") or "")
@@ -1809,8 +1785,12 @@ def _run_greenfield_propose(
     command: Sequence[str] | None = None,
     pass_fds: tuple[int, ...] = (),
     retained_case: RetainedEvidenceCase | None = None,
-    candidate_file: str = "",
+    candidate_file: str,
 ) -> Any:
+    if not str(candidate_file or "").strip():
+        raise RuntimeError(
+            "greenfield propose requires a candidate file from the host-candidate flow"
+        )
     propose_command = list(command) if command is not None else ["./.odylith/bin/odylith"]
     propose_command.extend(
         _greenfield_propose_arguments(

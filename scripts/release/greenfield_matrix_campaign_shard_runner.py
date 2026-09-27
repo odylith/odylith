@@ -934,9 +934,8 @@ def _matrix_command(
     ]
     if attempt_ledger_jsonl is not None:
         command.extend(["--attempt-ledger-jsonl", str(attempt_ledger_jsonl)])
-    if shard.proof_tier == "release":
-        for argument in canonical_host_candidate_argv_template():
-            command.append(f"--host-candidate-arg={argument}")
+    for argument in canonical_host_candidate_argv_template():
+        command.append(f"--host-candidate-arg={argument}")
     if shard.include_browser_proof:
         command.append("--include-browser-proof")
     else:

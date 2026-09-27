@@ -137,7 +137,11 @@ def test_matrix_command_separates_discovery_and_release_policy(tmp_path: Path) -
     assert command_arg(discovery_command, "--required-stressor") == "modal-expert-lens"
     assert "--allow-partial-stressor-coverage" in discovery_command
     assert command_arg(discovery_command, "--install-mode") == "seeded"
-    assert not any(value.startswith("--host-candidate-arg=") for value in discovery_command)
+    assert tuple(
+        value.removeprefix("--host-candidate-arg=")
+        for value in discovery_command
+        if value.startswith("--host-candidate-arg=")
+    ) == sys.modules["greenfield_matrix_host_candidate"].canonical_host_candidate_argv_template()
     assert "--lower-capability-control-file" not in discovery_command
     assert "--evidence-output-dir" not in discovery_command
     assert command_arg(release_command, "--proof-tier") == "release"
@@ -161,6 +165,42 @@ def test_matrix_command_separates_discovery_and_release_policy(tmp_path: Path) -
         tmp_path / "lower-capability-control.v1.json"
     )
     assert command_arg(release_command, "--evidence-output-dir") == str(tmp_path / "evidence")
+
+
+@pytest.mark.parametrize("tier", ("failed-subset", "volume-discovery"))
+def test_discovery_campaign_commands_carry_canonical_host_candidate_argv(
+    tmp_path: Path,
+    tier: str,
+) -> None:
+    module = matrix_campaign_runner_module(
+        f"greenfield_matrix_campaign_runner_{tier.replace('-', '_')}_custody_test"
+    )
+    shard = module.CampaignShard(
+        tier=tier,
+        case_file=tmp_path / f"{tier}.json",
+        proof_tier="discovery",
+        install_mode="seeded",
+        include_browser_proof=False,
+        stop_after_failures=1,
+        stop_after_cluster_failures=1,
+        require_high_variance_stressors=False,
+        required_stressors=(),
+    )
+
+    command = module._matrix_command(  # noqa: SLF001
+        shard=shard,
+        dist_dir=tmp_path / "dist",
+        version="0.1.15",
+        temp_parent=tmp_path / "tmp",
+        output_json=tmp_path / "out.json",
+        telemetry_jsonl=tmp_path / "out.jsonl",
+    )
+
+    assert tuple(
+        value.removeprefix("--host-candidate-arg=")
+        for value in command
+        if value.startswith("--host-candidate-arg=")
+    ) == sys.modules["greenfield_matrix_host_candidate"].canonical_host_candidate_argv_template()
 
 
 def test_each_release_shard_requires_commit_recovery_proof(tmp_path: Path) -> None:

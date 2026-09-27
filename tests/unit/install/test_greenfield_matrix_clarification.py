@@ -578,7 +578,18 @@ def test_clarification_case_binds_two_call_stage_to_public_decision(
         return {"status": "passed", "issues": []}
 
     monkeypatch.setattr(module, "begin_installed_write_audit", lambda **_kwargs: Audit())
-    monkeypatch.setattr(module, "_run_greenfield_propose", lambda **_kwargs: SimpleNamespace(stdout="", stderr=""))
+    monkeypatch.setattr(
+        module,
+        "_run_greenfield_propose",
+        lambda **_kwargs: (_ for _ in ()).throw(
+            AssertionError("clarification must not use direct proposal execution")
+        ),
+    )
+    monkeypatch.setattr(
+        module,
+        "_run_host_candidate_propose",
+        lambda **_kwargs: SimpleNamespace(stdout="", stderr=""),
+    )
     monkeypatch.setattr(
         module,
         "run_expected_clarification",
@@ -610,6 +621,7 @@ def test_clarification_case_binds_two_call_stage_to_public_decision(
         version="0.0.0",
         install_mode="full",
         retained_case=retained,
+        host_candidate_argv=("codex", "exec"),
     )
 
     assert result.status == ("failed" if mismatch else "passed")
@@ -664,7 +676,18 @@ def test_runner_passes_retained_reviewer_observation_to_expected_clarification(
         return {"status": "passed", "issues": []}
 
     monkeypatch.setattr(module, "begin_installed_write_audit", lambda **_kwargs: Audit())
-    monkeypatch.setattr(module, "_run_greenfield_propose", lambda **_kwargs: SimpleNamespace(stdout="", stderr=""))
+    monkeypatch.setattr(
+        module,
+        "_run_greenfield_propose",
+        lambda **_kwargs: (_ for _ in ()).throw(
+            AssertionError("clarification must not use direct proposal execution")
+        ),
+    )
+    monkeypatch.setattr(
+        module,
+        "_run_host_candidate_propose",
+        lambda **_kwargs: SimpleNamespace(stdout="", stderr=""),
+    )
     monkeypatch.setattr(module, "run_expected_clarification", lambda **kwargs: (kwargs["invoke"](), execution)[1])
     monkeypatch.setattr(module, "collect_artifact_package", lambda **_kwargs: SimpleNamespace())
     monkeypatch.setattr(module, "collect_artifact_counts", lambda **_kwargs: module.GreenfieldArtifactCounts())
@@ -690,6 +713,7 @@ def test_runner_passes_retained_reviewer_observation_to_expected_clarification(
         repo_root=tmp_path / "repo", env=model_profile_environment(STANDARD_PROFILE_ID, {}),
         timeout=90, repair_tier="standard", install_script=tmp_path / "install.sh",
         version="0.0.0", install_mode="full", retained_case=retained,
+        host_candidate_argv=("codex", "exec"),
     )
 
     assert result.status == "passed", result.quality.issues

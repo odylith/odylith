@@ -26,7 +26,7 @@
 
 - Ownership: Greenfield release matrix journey and preconfirm campaign harness
 
-- Timeline: Captured 2026-09-27 through `odylith bug capture`.
+- Timeline: Captured 2026-09-27 through `odylith bug capture`. The V39 exact one-case replay proved the callable-selection repair reached the installed proposal command, then failed because the discovery-tier direct path omitted the required `--candidate-file` contract.
 
 - Blast Radius: All discovery-tier matrix runs that use the direct installed proposal path without host candidate argv
 
@@ -38,19 +38,21 @@
 
 - Invariant Violated: Every selected campaign case must execute one real proposal command or fail with an explicit provider or transaction outcome, never pass a callable in place of process evidence
 
-- Root Cause: Conditional-expression precedence in _run_case constructed one outer lambda whose false branch returned another lambda; the direct proposal path therefore yielded a function object.
+- Root Cause: Conditional-expression precedence in _run_case constructed one outer lambda whose false branch returned another lambda; the direct proposal path therefore yielded a function object. After that was repaired, the exact replay exposed that discovery tiers still selected an obsolete direct `greenfield propose` path even though all successful proposals now require one host-authored candidate from `candidate-contract`.
 
-- Solution: Select the host-native or direct proposal callable explicitly before invoking run_compiled_greenfield_journey, with a regression covering the empty host_candidate_argv path.
+- Solution: Remove the obsolete direct proposal route from campaign execution. Every campaign tier must pass the canonical host-candidate command, and matrix execution must fail closed before product work when that command is absent. Keep `_run_greenfield_propose` only as the candidate-file-bound commit step inside the host-candidate flow.
 
 - Rollback/Forward Fix: Forward fix only; the immutable V38 distribution remains rejected and must be rebuilt after proof.
 
-- Verification: Focused regression must prove direct and host-native callable branches; fast release harness suites must pass; a rebuilt immutable distribution must complete the exact one-case replay before the seven-case replay resumes.
+- Verification: Focused regression must prove every campaign tier carries the canonical host-candidate command and missing custody fails before product execution; fast release harness suites must pass; a rebuilt immutable distribution must complete the exact one-case replay before the seven-case replay resumes.
 
-- Prevention: Ban conditional expressions that return lambdas in release execution ownership; assert the journey receives process-like proposal evidence on both branches.
+- Prevention: Ban conditional expressions that return lambdas in release execution ownership, and do not retain a direct proposal fallback after the candidate-file contract becomes mandatory. Assert every campaign tier reaches proposal only through the canonical host-candidate flow.
 
 - Agent Guardrails: Do not retry a packaged provider campaign after a deterministic harness exception; capture evidence, fix the owner, rebuild, and replay the exact failed case.
 
 - Preflight Checks: Run the no-host-candidate regression and compileall before any provider-backed campaign.
+
+- Regression Tests Added: `test_run_matrix_rejects_missing_host_native_argv_before_product_execution`, `test_run_case_invokes_only_host_candidate_runner_with_process_evidence`, `test_discovery_campaign_commands_carry_canonical_host_candidate_argv`, clarification host-custody regressions, and candidate-file enforcement.
 
 - Version/Build: 0.1.15 V38 commit 6200e214f48b635ede7cb7153752f63a1fecbefa
 
