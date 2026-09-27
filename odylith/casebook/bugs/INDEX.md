@@ -6,6 +6,7 @@ Last updated (UTC): 2026-09-27
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-346 | 2026-09-27 | One shot greenfield holdout aborts when a valid host candidate exceeds the model | P1 | domain-intelligence | Open | [2026-09-27-one-shot-greenfield-holdout-aborts-when-a-valid-host-candidate-exceeds-the-model.md](2026-09-27-one-shot-greenfield-holdout-aborts-when-a-valid-host-candidate-exceeds-the-model.md) |
 | CB-345 | 2026-09-26 | Greenfield projects source custody directives into product governance | P1 | domain-intelligence | FixedPendingRelease | [2026-09-26-greenfield-projects-source-custody-directives-into-product-governance.md](2026-09-26-greenfield-projects-source-custody-directives-into-product-governance.md) |
 | CB-344 | 2026-09-26 | Greenfield dashboard publication proof serialized an unbounded generated asset t | P1 | dashboard | Open | [2026-09-26-greenfield-dashboard-publication-proof-serialized-an-unbounded-generated-asset-t.md](2026-09-26-greenfield-dashboard-publication-proof-serialized-an-unbounded-generated-asset-t.md) |
 | CB-343 | 2026-09-23 | Greenfield confirmation did not carry execution and intervention handoff proof | P2 | domain-intelligence-greenfield | Open | [2026-09-23-greenfield-confirmation-did-not-carry-execution-and-intervention-handoff-proof.md](2026-09-23-greenfield-confirmation-did-not-carry-execution-and-intervention-handoff-proof.md) |

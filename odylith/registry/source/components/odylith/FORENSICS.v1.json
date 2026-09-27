@@ -45,12 +45,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 941,
-    "mapped_workstream_evidence_count": 690,
+    "explicit_event_count": 942,
+    "mapped_workstream_evidence_count": 691,
     "recent_path_match_count": 0,
     "spec_history_event_count": 34,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 941
+    "timeline_event_count": 942
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -93,6 +93,42 @@
       "summary": "Component evidence linked this component to governed work.",
       "ts_iso": "2026-09-27T03:33:04Z",
       "workstreams": []
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-09-27-one-shot-greenfield-holdout-aborts-when-a-valid-host-candidate-exceeds-the-model.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 1336,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
+      "ts_iso": "2026-09-27T00:18:51-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifact_count": 0,

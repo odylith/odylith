@@ -1,8 +1,36 @@
 # Domain Intelligence
-Last updated: 2026-09-26
+Last updated: 2026-09-27
 
 
 ## Overview
+
+### V31 rejects release on host-candidate tail latency (2026-09-27)
+
+Immutable V30 passed all 36 disclosed cases at `10/10`, with complete
+4-5 Radar / 4-5 Registry / 5 Atlas packages for every commit outcome, no-write
+clarification for every material gap, clean browser and recovery proof, and an
+independent review of all `4,823/4,823` retained artifact hashes.
+
+The newly blind V31 holdout was sealed after five independent annotation
+reviews and consumed exactly once against the unchanged V30 distribution. Its
+first 16 cases passed at `10/10`. Eight full creation cases completed in
+`122.613-140.529s`; eight clarification cases completed in `7.389-12.029s`.
+The ninth full creation case exceeded the standard host-model window and
+returned no candidate. Release proof recorded a timeout with returncode `124`,
+failed closed, and did not execute the final three cases. No governed write was
+accepted for the failure; commit recovery and cleanup still passed.
+
+CB-346 therefore keeps Greenfield unqualified. The consumed holdout is terminal
+evidence and cannot be replayed or mined for a case-specific fix. The next
+bounded mechanism decision compares Sol-high authoring with Astra-medium on
+public controls while reserving Astra for independent final semantic
+adjudication. A winner must improve tail latency without reducing semantic
+fidelity and must pass one fresh immutable public campaign before any new blind
+holdout is commissioned. The one-candidate contract, deterministic citation
+and relation validation, typed custody, transaction law, and `90/120/150`
+advisory targets under the `180s` operational timeout remain fixed. There is no
+regex, parser, retry, repair, fallback author, alternate model ladder, or
+protected-case rule.
 
 ### Evidence audience is not automatically a product participant (2026-09-26)
 

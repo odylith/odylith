@@ -1,5 +1,36 @@
 Status: In progress
 
+## V31 One-Shot Holdout Rejection (2026-09-27)
+
+Immutable V30 passed the complete 36-case disclosed campaign at `10/10`: all
+25 committed packages carried 4-5 Radar workstreams, 4-5 Registry components,
+5 Atlas sources, 10 Atlas renders, and 5 implementation prompts; all 11
+clarification cases wrote no governed package. Browser normal, empty,
+degraded, error, recovery, and commit-recovery proof passed. Independent review
+verified all `4,823/4,823` retained hashes and approved V30 for one blind
+holdout.
+
+The independently authored and five-way reviewed V31 holdout was then consumed
+exactly once against commit `2c88b068a262b5195c37e545f3fd550ba11539cf`.
+The first 16 executed cases passed at `10/10`; eight full creation cases
+completed in `122.613-140.529s`, and eight clarification cases completed in
+`7.389-12.029s`. The ninth full creation case returned no candidate before the
+host-model deadline. The matrix recorded `command_timed_out`/returncode `124`,
+failed closed, and left the final three cases unexecuted. Commit-recovery and
+temporary-cleanup proof still passed. Preserve this holdout and its ledger as
+terminal evidence; never rerun it or tune against its protected content.
+
+CB-346 owns the blocker. This evidence rejects release qualification, not the
+single-candidate architecture: no semantic defect was observed in the 16
+completed cases. Run one bounded public comparison of Sol-high authoring versus
+the frozen Astra-medium profile, with Astra retained as the independent final
+semantic adjudicator. Predict that Sol-high reduces tail latency without
+reducing semantic fidelity. Keep the winner only after positive, negative,
+equivalent-source, browser, recovery, and retained-output review pass on one
+immutable build; then commission one newly blind holdout. Add no regex, parser,
+retry, repair, fallback author, alternate ladder, schema expansion, or
+protected-case rule. Completion remains unclaimed.
+
 ## V29 Authoring-Audience Checkpoint (2026-09-26)
 
 Immutable V29 completed 30 disclosed cases with 29 passes. Case 30 stopped
