@@ -15,6 +15,8 @@ from tests.greenfield_matrix_campaign_test_support import SCRIPTS_ROOT
 if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
+from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_ARGUMENT_COUNT
+from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_SHAPE_SHA256
 from greenfield_model_profiles import MODEL_PROFILES
 from greenfield_model_profiles import DEEP_PROFILE_ID
 from greenfield_model_profiles import RESCUE_PROFILE_ID
@@ -96,12 +98,13 @@ def test_assignment_preserves_one_valid_explicit_profile_and_rejects_bad_tags() 
     diagnostic = replace(_case("diagnostic"), tags=(f"model-profile:{DEEP_PROFILE_ID}",))
 
     assert case_model_profile(assign_model_profiles((explicit,))[0]) == MODEL_PROFILES[0]
-    assert case_model_profile(assign_model_profiles((diagnostic,))[0]) == DEEP_PROFILE_ID
     assert all(
         case_model_profile(case) != DEEP_PROFILE_ID
         for case in assign_model_profiles(tuple(_case(f"automatic-{index}") for index in range(6)))
     )
 
+    with pytest.raises(ValueError, match="invalid model profile"):
+        assign_model_profiles((diagnostic,))
     with pytest.raises(ValueError, match="invalid model profile"):
         assign_model_profiles((replace(_case("bad"), tags=("model-profile:unknown",)),))
     with pytest.raises(ValueError, match="invalid model profile"):
@@ -1081,11 +1084,11 @@ def _host_native_stage(*, candidate_sha256: str) -> dict[str, object]:
         "host_request": {
             "version": "odylith.greenfield.host-argv-receipt.v1",
             "executable_sha256": "7" * 64,
-            "argument_count": 14,
+            "argument_count": HOST_NATIVE_ARGV_ARGUMENT_COUNT,
             "model": "gpt-6-astra",
             "reasoning_effort": "medium",
             "output_schema_present": True,
-            "argv_shape_sha256": "8" * 64,
+            "argv_shape_sha256": HOST_NATIVE_ARGV_SHAPE_SHA256,
         },
         "candidate_temp_cleaned": True,
         "host_workspace_cleaned": True,

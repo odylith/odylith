@@ -1,37 +1,39 @@
 Status: In progress
 
-## Public author comparison gate (2026-09-27)
+## Retained public qualification gate (2026-09-27)
 
-The release harness now separates explicit diagnostic execution from release
-qualification. Sol-high can be selected only by an explicit case tag; automatic
-assignment remains Astra-medium only. A valid Sol result is reported under a
-diagnostic section with zero release credit, while complete qualification still
-requires the Astra success profile and the Luna clarification/no-write control.
-The aggregate gate also rechecks host-native profile identity across configured
-model metadata, the sealed stage, the host argv receipt, and the reviewer
-observation, preventing a top-level profile relabel from passing.
+The first public Astra-medium attempt reached an admitted host candidate and then
+failed in the installed proposal/reviewer stage. The discovery invocation had no
+external evidence directory, so cleanup discarded the proposal streams and host
+observation; the exact reviewer, provider, or compiler cause cannot be recovered.
+The paired Sol-high attempt used retained evidence and stopped before authoring
+because the product contract deliberately rejects `deep` as a successful route.
+Neither outcome compares model quality.
 
-The bounded proof passes `341/341` release-harness tests, and the governed UX
-passes `109/109` browser checks across normal, empty/fallback, degraded, error,
-layout, density, sorting, and selection-race states. Next, freeze and push
-one immutable build, then run the same disclosed source bytes once under
-Astra-medium and once under Sol-high. Compare semantic score, reviewer outcome,
-consumer-visible package quality, request-to-preview latency, cleanup, browser,
-and recovery evidence. Retain Astra as the only release-qualified author unless
-the complete public qualification contract is deliberately changed and rerun.
-Do not inspect or rerun V31, add a retry or repair path, or treat a diagnostic
-pass as holdout authorization.
+Remove the partial explicit-Sol assignment/proof path instead of adding a hidden
+diagnostic success mode. Preserve the independent host-native binding checks that
+prevent configured, stage, exact argv-shape/count, sealed executable-identity, or
+reviewer relabeling. The bounded implementation passes all `1,194` Greenfield
+install/release-harness tests, and independent re-adjudication reports no P0/P1.
+Rebuild one immutable
+checkpoint and run a fresh public Astra control with external retained evidence,
+telemetry, and attempt custody enabled. If that control passes, continue to full
+immutable qualification; if it fails, use the retained stage evidence to repair
+the owning boundary before any new holdout. Do not inspect or rerun V31, add a
+retry or repair path, or make the abandoned Sol comparison a release gate.
 
 `scripts/release/greenfield_model_profiles.py` is a pre-existing oversized
-maintainer helper at 1,568 lines. This checkpoint carries a narrow
-safety-critical exception: the file grows by ten net lines solely to separate
-explicit diagnostic selection from Astra-only automatic assignment. Do not add
-further feature growth there. Before the next unrelated profile feature,
+maintainer helper at 1,561 lines. This checkpoint carries a narrow
+safety-critical exception and shrinks the file by seven lines from the pushed
+pre-diagnostic baseline:
+the file is touched only to remove the failed explicit diagnostic route and
+restore the single supported assignment contract. Do not add further feature
+growth there. Before the next unrelated profile feature,
 extract profile assignment/catalog ownership from model-observation validation
 behind one imported contract, move the existing callers in the same change,
 and retain the current assignment, environment, observation, and aggregate
-proof tests. Do not perform that decomposition inside the live author comparison
-because it would change more release machinery than this gate needs.
+proof tests. Do not perform that decomposition inside the live release repair
+because it would change more machinery than this gate needs.
 
 ## V31 One-Shot Holdout Rejection (2026-09-27)
 

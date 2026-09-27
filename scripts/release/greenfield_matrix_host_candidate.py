@@ -21,6 +21,43 @@ HOST_NATIVE_MATRIX_OBSERVATION_VERSION = (
 HOST_NATIVE_ARGV_RECEIPT_VERSION = "odylith.greenfield.host-argv-receipt.v1"
 
 
+def _canonical_host_candidate_tokens(
+    *, model: str, reasoning_effort: str, output_schema: str
+) -> tuple[str, ...]:
+    """Return the exact direct-Codex token contract used by release authoring."""
+
+    return (
+        "exec",
+        "--ephemeral",
+        "--ignore-user-config",
+        "--skip-git-repo-check",
+        "--sandbox",
+        "read-only",
+        "--model",
+        model,
+        "--config",
+        f"model_reasoning_effort={reasoning_effort}",
+        "--output-schema",
+        output_schema,
+        "-",
+    )
+
+
+HOST_NATIVE_ARGV_ARGUMENT_COUNT = 1 + len(
+    _canonical_host_candidate_tokens(model="", reasoning_effort="", output_schema="")
+)
+HOST_NATIVE_ARGV_SHAPE_SHA256 = hashlib.sha256(
+    json.dumps(
+        (
+            "exec", "ephemeral", "ignore-user-config", "skip-git-repo-check",
+            "sandbox:read-only", "model", "config:model_reasoning_effort",
+            "output-schema", "stdin",
+        ),
+        separators=(",", ":"),
+    ).encode("utf-8")
+).hexdigest()
+
+
 class HostCandidateFlowError(RuntimeError):
     """A host-native candidate flow failed closed before publication."""
 
@@ -370,20 +407,10 @@ def qualify_host_candidate_argv(
     if executable != trusted:
         raise ValueError("host-native candidate command must invoke the trusted Codex binary directly")
     tokens = argv[1:]
-    expected_tokens = (
-        "exec",
-        "--ephemeral",
-        "--ignore-user-config",
-        "--skip-git-repo-check",
-        "--sandbox",
-        "read-only",
-        "--model",
-        expected_model,
-        "--config",
-        f"model_reasoning_effort={expected_reasoning_effort}",
-        "--output-schema",
-        expected_output_schema,
-        "-",
+    expected_tokens = _canonical_host_candidate_tokens(
+        model=expected_model,
+        reasoning_effort=expected_reasoning_effort,
+        output_schema=expected_output_schema,
     )
     if tokens != expected_tokens:
         raise ValueError(
@@ -393,20 +420,11 @@ def qualify_host_candidate_argv(
     receipt = {
         "version": HOST_NATIVE_ARGV_RECEIPT_VERSION,
         "executable_sha256": _sha256_file(trusted),
-        "argument_count": len(canonical_argv),
+        "argument_count": HOST_NATIVE_ARGV_ARGUMENT_COUNT,
         "model": expected_model,
         "reasoning_effort": expected_reasoning_effort,
         "output_schema_present": True,
-        "argv_shape_sha256": hashlib.sha256(
-            json.dumps(
-                (
-                    "exec", "ephemeral", "ignore-user-config", "skip-git-repo-check",
-                    "sandbox:read-only", "model", "config:model_reasoning_effort",
-                    "output-schema", "stdin",
-                ),
-                separators=(",", ":"),
-            ).encode("utf-8")
-        ).hexdigest(),
+        "argv_shape_sha256": HOST_NATIVE_ARGV_SHAPE_SHA256,
     }
     return canonical_argv, receipt
 
@@ -528,8 +546,10 @@ def _fail(
 
 
 __all__ = [
+    "HOST_NATIVE_ARGV_ARGUMENT_COUNT",
     "HOST_NATIVE_MATRIX_OBSERVATION_VERSION",
     "HOST_NATIVE_ARGV_RECEIPT_VERSION",
+    "HOST_NATIVE_ARGV_SHAPE_SHA256",
     "HostCandidateFlow",
     "HostCandidateFlowError",
     "qualify_host_candidate_argv",

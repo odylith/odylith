@@ -13,7 +13,9 @@ from typing import Any
 
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 from greenfield_preconfirm_matrix_cases import case_expectation
+from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_ARGUMENT_COUNT
 from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_RECEIPT_VERSION
+from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_SHAPE_SHA256
 from greenfield_matrix_host_candidate import HOST_NATIVE_MATRIX_OBSERVATION_VERSION
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     DEEP_PROFILE_ID,
@@ -50,21 +52,12 @@ from odylith.runtime.domain_intelligence.greenfield_candidate_revision import (
 )
 
 
-MODEL_PROFILE_ASSIGNMENT_VERSION = "release-success-astra-only-v3"
+MODEL_PROFILE_ASSIGNMENT_VERSION = "release-success-astra-only-v4"
 MODEL_PROFILE_ASSIGNMENT_SEED = "f1e5a66a5cce578b0bd9f56d96f08887358632627231769667c432933b9dfe6f"
 MODEL_PROFILES = supported_greenfield_model_profile_ids()
 LOWER_CAPABILITY_CONTROL_PROFILES = lower_capability_control_greenfield_model_profile_ids()
 DECLARED_MODEL_PROFILES = declared_greenfield_model_profile_ids()
-DIAGNOSTIC_MODEL_PROFILES = tuple(
-    profile_id
-    for profile_id in DECLARED_MODEL_PROFILES
-    if profile_id not in (*MODEL_PROFILES, *LOWER_CAPABILITY_CONTROL_PROFILES)
-)
-_EXPLICIT_PROFILE_IDS = (
-    *MODEL_PROFILES,
-    *LOWER_CAPABILITY_CONTROL_PROFILES,
-    *DIAGNOSTIC_MODEL_PROFILES,
-)
+_ASSIGNABLE_PROFILE_IDS = (*MODEL_PROFILES, *LOWER_CAPABILITY_CONTROL_PROFILES)
 UNAVAILABLE_PROVIDER_PROFILE = UNAVAILABLE_PROVIDER_PROFILE_ID
 _TAG_PREFIX = "model-profile:"
 _PROFILE_ENV_KEYS = (
@@ -114,7 +107,7 @@ def assign_model_profiles(cases: Sequence[GreenfieldMatrixCase]) -> tuple[Greenf
         stratum = case_expectation(case)
         input_style = str(case.input_style or "unspecified")
         explicit = _explicit_profiles(case)
-        if len(explicit) > 1 or (explicit and explicit[0] not in _EXPLICIT_PROFILE_IDS):
+        if len(explicit) > 1 or (explicit and explicit[0] not in _ASSIGNABLE_PROFILE_IDS):
             raise ValueError(f"Greenfield case `{_case_id(case)}` has an invalid model profile")
         if explicit:
             if (
@@ -153,10 +146,10 @@ def assign_model_profiles(cases: Sequence[GreenfieldMatrixCase]) -> tuple[Greenf
 
 
 def case_model_profile(case: GreenfieldMatrixCase) -> str:
-    """Return the one validated profile explicitly or automatically assigned to a case."""
+    """Return the one validated profile assigned to a release case."""
 
     profiles = _explicit_profiles(case)
-    if len(profiles) != 1 or profiles[0] not in _EXPLICIT_PROFILE_IDS:
+    if len(profiles) != 1 or profiles[0] not in _ASSIGNABLE_PROFILE_IDS:
         raise ValueError(f"Greenfield case `{_case_id(case)}` lacks one supported model profile")
     if (
         profiles[0] in LOWER_CAPABILITY_CONTROL_PROFILES
@@ -861,7 +854,7 @@ def _host_native_flow_observation_issues(
         issues.append("retained host-native expected source hash is invalid")
     elif retained.get("source_sha256") != expected_source_sha256:
         issues.append("retained host-native source does not match the evaluated source")
-    issues.extend(_host_native_argv_issues(profile, retained.get("host_request")))
+    issues.extend(host_native_argv_receipt_issues(profile, retained.get("host_request")))
     for field in ("host_stdout_bytes", "host_stderr_bytes"):
         if type(retained.get(field)) is not int or int(retained.get(field) or 0) < 0:
             issues.append(f"retained host-native {field} is invalid")
@@ -887,7 +880,7 @@ def _host_native_flow_observation_issues(
     return issues
 
 
-def _host_native_argv_issues(profile: str, value: Any) -> tuple[str, ...]:
+def host_native_argv_receipt_issues(profile: str, value: Any) -> tuple[str, ...]:
     """Validate the safe receipt derived from the exact executed Codex argv."""
 
     receipt = _mapping(value)
@@ -902,9 +895,9 @@ def _host_native_argv_issues(profile: str, value: Any) -> tuple[str, ...]:
         issues.append("retained host-native argv receipt version is invalid")
     if not _is_sha256(receipt.get("executable_sha256")):
         issues.append("retained host-native executable identity is invalid")
-    if not _is_sha256(receipt.get("argv_shape_sha256")):
+    if receipt.get("argv_shape_sha256") != HOST_NATIVE_ARGV_SHAPE_SHA256:
         issues.append("retained host-native argv shape fingerprint is invalid")
-    if type(receipt.get("argument_count")) is not int or int(receipt.get("argument_count") or 0) < 7:
+    if receipt.get("argument_count") != HOST_NATIVE_ARGV_ARGUMENT_COUNT:
         issues.append("retained host-native argument count is invalid")
     if receipt.get("output_schema_present") is not True:
         issues.append("retained host-native output schema proof is missing")
@@ -1548,7 +1541,6 @@ def _request_role_summary(observation: Mapping[str, Any]) -> dict[str, Any]:
 __all__ = [
     "MODEL_PROFILES",
     "DECLARED_MODEL_PROFILES",
-    "DIAGNOSTIC_MODEL_PROFILES",
     "LOWER_CAPABILITY_CONTROL_PROFILES",
     "MODEL_PROFILE_ASSIGNMENT_SEED",
     "MODEL_PROFILE_ASSIGNMENT_VERSION",
@@ -1558,6 +1550,7 @@ __all__ = [
     "UNAVAILABLE_PROVIDER_PROFILE",
     "assign_model_profiles",
     "case_model_profile",
+    "host_native_argv_receipt_issues",
     "host_native_clarification_stage_observation_issues",
     "model_profile_environment",
     "model_profile_evidence",

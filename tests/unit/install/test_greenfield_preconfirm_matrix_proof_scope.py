@@ -1779,22 +1779,22 @@ def test_model_profile_release_proof_reports_missing_lower_profile_as_unproven()
     assert module.model_profile_release_proof(results, require_complete=True)["status"] == "failed"
 
 
-def test_model_profile_release_proof_reports_sol_as_diagnostic_without_release_credit() -> None:
+def test_model_profile_release_proof_rejects_sol_as_an_unsupported_diagnostic() -> None:
     module = _module()
     diagnostic = _passing_profile_result(module, DEEP_PROFILE_ID, 80.0)
 
     discovery = module.model_profile_release_proof((diagnostic,), require_complete=False)
 
-    assert discovery["status"] == "passed", discovery["issues"]
+    assert discovery["status"] == "failed"
     assert DEEP_PROFILE_ID not in discovery["profiles"]
-    assert discovery["diagnostics"][DEEP_PROFILE_ID]["status"] == "passed"
-    assert discovery["diagnostics"][DEEP_PROFILE_ID]["qualification"] == "diagnostic_only"
-    assert discovery["diagnostics"][DEEP_PROFILE_ID]["release_credit"] is False
+    assert "diagnostics" not in discovery
+    assert any("unsupported diagnostic" in issue for issue in discovery["issues"])
     assert discovery["profiles"][module.STANDARD_PROFILE_ID]["committed_positive_case_count"] == 0
 
     release = module.model_profile_release_proof((diagnostic,), require_complete=True)
 
     assert release["status"] == "failed"
+    assert any("unsupported diagnostic" in issue for issue in release["issues"])
     assert any("missing success profile" in issue for issue in release["issues"])
 
 

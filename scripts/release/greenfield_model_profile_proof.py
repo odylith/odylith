@@ -8,10 +8,11 @@ import hashlib
 import json
 from typing import Any
 
-from greenfield_model_profiles import DIAGNOSTIC_MODEL_PROFILES
+from greenfield_model_profiles import DEEP_PROFILE_ID
 from greenfield_model_profiles import LOWER_CAPABILITY_CONTROL_PROFILES
 from greenfield_model_profiles import MODEL_PROFILES
 from greenfield_model_profiles import UNAVAILABLE_PROVIDER_PROFILE
+from greenfield_model_profiles import host_native_argv_receipt_issues
 from greenfield_model_profiles import host_native_clarification_stage_observation_issues
 from greenfield_model_profiles import model_stage_observation_issues
 from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
@@ -23,7 +24,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 
 
-MODEL_PROFILE_PROOF_VERSION = "odylith.greenfield.installed-model-profile-proof.v5"
+MODEL_PROFILE_PROOF_VERSION = "odylith.greenfield.installed-model-profile-proof.v6"
 UNAVAILABLE_PROVIDER_FAILURE_TEXT = "model authoring is unavailable"
 TRANSACTION_COMMITTED_EXPECTATION = "transaction_committed"
 CLARIFICATION_REQUIRED_EXPECTATION = "clarification_required"
@@ -247,14 +248,18 @@ def model_profile_release_proof(
     """Require Astra success plus one Luna clarification/no-write control."""
 
     qualified_profile_ids = (*MODEL_PROFILES, *LOWER_CAPABILITY_CONTROL_PROFILES)
-    observed_profile_ids = (*qualified_profile_ids, *DIAGNOSTIC_MODEL_PROFILES)
-    rows: dict[str, list[Any]] = {profile_id: [] for profile_id in observed_profile_ids}
+    rows: dict[str, list[Any]] = {profile_id: [] for profile_id in qualified_profile_ids}
     validation_issues: list[str] = []
     coverage_issues: list[str] = []
     for result in results:
         evidence = _mapping(getattr(result, "evidence", None))
         profile_evidence = _mapping(evidence.get("model_profile"))
         profile_id = str(profile_evidence.get("profile_id") or "").strip()
+        if profile_id == DEEP_PROFILE_ID:
+            validation_issues.append(
+                "Sol-high is an unsupported diagnostic and cannot count toward release success"
+            )
+            continue
         if profile_id not in rows:
             validation_issues.append(
                 f"matrix result `{getattr(result, 'name', '')}` lacks a supported observed model profile"
@@ -409,24 +414,12 @@ def model_profile_release_proof(
         if cleaned_validation_issues or (require_complete and cleaned_coverage_issues)
         else "passed"
     )
-    diagnostic_summaries = {
-        profile_id: {
-            **profile_summaries[profile_id],
-            "qualification": "diagnostic_only",
-            "release_credit": False,
-        }
-        for profile_id in DIAGNOSTIC_MODEL_PROFILES
-    }
     return {
         "version": MODEL_PROFILE_PROOF_VERSION,
         "status": status,
         "coverage_status": "passed" if not cleaned_coverage_issues else "incomplete",
         "required_complete_coverage": bool(require_complete),
-        "profiles": {
-            profile_id: profile_summaries[profile_id]
-            for profile_id in qualified_profile_ids
-        },
-        "diagnostics": diagnostic_summaries,
+        "profiles": profile_summaries,
         "lower_capability_scope": lower_capability_scope,
         "issues": list(cleaned_issues),
     }
@@ -708,12 +701,19 @@ def _host_native_profile_binding_issues(
         issues.append("host-native configured model does not match the claimed profile")
     if stages.get("model_profile_id") != profile_id:
         issues.append("host-native stage identifies a different model profile")
-    host_request = _mapping(stages.get("host_request"))
-    if (
-        host_request.get("model") != contract.model
-        or host_request.get("reasoning_effort") != contract.reasoning_effort
-    ):
-        issues.append("host-native request does not match the claimed model profile")
+    issues.extend(
+        host_native_argv_receipt_issues(profile_id, stages.get("host_request"))
+    )
+    stage_host_request = _mapping(stages.get("host_request"))
+    summary_request_roles = _mapping(summary.get("request_roles"))
+    sealed_host_candidate = _mapping(summary_request_roles.get("host_candidate"))
+    sealed_executable_sha256 = sealed_host_candidate.get("executable_sha256")
+    if not _is_sha256(sealed_executable_sha256):
+        issues.append("host-native sealed executable identity is missing")
+    elif stage_host_request.get("executable_sha256") != sealed_executable_sha256:
+        issues.append(
+            "host-native executable identity does not match the sealed observation"
+        )
 
     review = _mapping(observed.get("candidate_review"))
     if review:

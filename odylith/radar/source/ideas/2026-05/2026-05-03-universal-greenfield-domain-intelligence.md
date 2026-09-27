@@ -60,22 +60,25 @@ supersedes:
 
 superseded_by: 
 
-## V31 Diagnostic Author Comparison Gate (2026-09-27)
+## V31 Retained Public Qualification Gate (2026-09-27)
 
 - Keep Astra-medium as the sole automatically assigned and release-qualified
-  success profile. Permit Sol-high only through an explicit disclosed diagnostic
-  tag so the same public source bytes can compare semantic fidelity and tail
-  latency without silently changing the production mechanism.
-- Report diagnostic results separately with zero release credit. Recheck the
-  configured model, sealed stage profile, host argv receipt and reviewer
-  observation against the claimed profile; a top-level relabel must fail closed.
-- The bounded release-harness proof passes `341/341`, including independent
-  mutation of every host-native profile binding; governed UX passes `109/109`
-  browser checks. Push one immutable build,
-  run the identical-input Astra/Sol comparison, then retain the simplest profile
-  that meets quality and timing evidence. V31 remains consumed and must not be
-  inspected, rerun or used as tuning data. No retry, repair, fallback, parser,
-  regex, model ladder or second candidate is permitted.
+  success profile. The attempted Sol-high comparison exposed an incomplete
+  diagnostic route: `deep` is intentionally barred from successful execution,
+  so accepting its case tag in only the assignment and aggregate layers was a
+  transitional state, not a valid comparison mechanism. Remove that path rather
+  than adding a hidden deep-success mode.
+- Preserve the independent host-native profile binding checks across configured
+  model, sealed stage, exact host argv shape/count, sealed executable identity,
+  and reviewer observation. Require external
+  retained evidence for the next live public control so a proposal-stage failure
+  cannot be reduced to a generic nonzero outcome after cleanup.
+- The bounded repair passes all `1,194` Greenfield install/release-harness tests;
+  independent release-proof re-adjudication reports no P0/P1.
+- Rebuild from the clean pushed checkpoint, run one fresh retained Astra public
+  control, then proceed to full immutable release qualification. V31 remains
+  consumed and must not be inspected, rerun, or used as tuning data. No retry,
+  repair, fallback, parser, regex, model ladder, or second candidate is permitted.
 
 ## V28 Source-Custody Release Gate (2026-09-26)
 

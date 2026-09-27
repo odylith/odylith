@@ -18,6 +18,8 @@ if str(SCRIPTS_ROOT) not in sys.path:
 from greenfield_matrix_clarification import ClarificationExecution
 from greenfield_matrix_clarification import clarification_contract_issues
 from greenfield_matrix_clarification import clarification_quality_verdict
+from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_ARGUMENT_COUNT
+from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_SHAPE_SHA256
 from greenfield_model_profiles import model_profile_environment
 from greenfield_model_profiles import model_profile_evidence
 from greenfield_model_profile_proof import model_profile_release_proof
@@ -758,11 +760,11 @@ def _host_native_clarification_stage(
         "host_request": {
             "version": "odylith.greenfield.host-argv-receipt.v1",
             "executable_sha256": "7" * 64,
-            "argument_count": 14,
+            "argument_count": HOST_NATIVE_ARGV_ARGUMENT_COUNT,
             "model": profile.model,
             "reasoning_effort": profile.reasoning_effort,
             "output_schema_present": True,
-            "argv_shape_sha256": "8" * 64,
+            "argv_shape_sha256": HOST_NATIVE_ARGV_SHAPE_SHA256,
         },
         "candidate_temp_cleaned": True,
         "host_workspace_cleaned": True,
@@ -1283,16 +1285,15 @@ def test_luna_or_sol_positive_result_cannot_qualify_release_success() -> None:
 
     assert luna_proof["status"] == "failed"
     assert any("must clarify without writing" in issue for issue in luna_proof["issues"])
-    assert sol_proof["status"] == "passed", sol_proof["issues"]
-    assert sol_proof["diagnostics"][DEEP_PROFILE_ID]["status"] == "passed"
-    assert sol_proof["diagnostics"][DEEP_PROFILE_ID]["release_credit"] is False
+    assert sol_proof["status"] == "failed"
+    assert any("unsupported diagnostic" in issue for issue in sol_proof["issues"])
     assert sol_proof["profiles"][STANDARD_PROFILE_ID]["committed_positive_case_count"] == 0
 
 
-def test_sol_diagnostic_rejects_a_forged_profile_relabel() -> None:
+def test_supported_profile_rejects_a_forged_profile_relabel() -> None:
     source = "The first complete task remains materially ambiguous."
     forged = _host_native_authored_profile_evidence(source)
-    forged["profile_id"] = DEEP_PROFILE_ID
+    forged["profile_id"] = RESCUE_PROFILE_ID
 
     proof = model_profile_release_proof(
         (_host_native_committed_aggregate_result(profile_evidence=forged),),
@@ -1305,24 +1306,44 @@ def test_sol_diagnostic_rejects_a_forged_profile_relabel() -> None:
 
 @pytest.mark.parametrize(
     "binding",
-    ("configured", "stage", "host_model", "host_effort", "review"),
+    (
+        "configured_provider", "configured_model", "configured_effort", "stage",
+        "host_executable", "host_shape", "host_argument_count", "host_output_schema",
+        "host_model", "host_effort", "review_profile", "review_provider",
+        "review_model", "review_effort",
+    ),
 )
-def test_sol_diagnostic_rechecks_each_host_native_profile_binding(binding: str) -> None:
+def test_supported_profile_rechecks_each_host_native_profile_binding(binding: str) -> None:
     source = "The first complete task remains materially ambiguous."
-    evidence = _host_native_authored_profile_evidence(
-        source,
-        profile_id=DEEP_PROFILE_ID,
-    )
-    if binding == "configured":
-        evidence["configured"]["model"] = "gpt-6-astra"
+    evidence = _host_native_authored_profile_evidence(source)
+    if binding == "configured_provider":
+        evidence["configured"]["provider"] = "anthropic-cli"
+    elif binding == "configured_model":
+        evidence["configured"]["model"] = "gpt-5.6-sol"
+    elif binding == "configured_effort":
+        evidence["configured"]["reasoning_effort"] = "high"
     elif binding == "stage":
-        evidence["stage_observation"]["model_profile_id"] = STANDARD_PROFILE_ID
+        evidence["stage_observation"]["model_profile_id"] = RESCUE_PROFILE_ID
+    elif binding == "host_executable":
+        evidence["stage_observation"]["host_request"]["executable_sha256"] = "a" * 64
+    elif binding == "host_shape":
+        evidence["stage_observation"]["host_request"]["argv_shape_sha256"] = "b" * 64
+    elif binding == "host_argument_count":
+        evidence["stage_observation"]["host_request"]["argument_count"] = 15
+    elif binding == "host_output_schema":
+        evidence["stage_observation"]["host_request"]["output_schema_present"] = False
     elif binding == "host_model":
-        evidence["stage_observation"]["host_request"]["model"] = "gpt-6-astra"
+        evidence["stage_observation"]["host_request"]["model"] = "gpt-5.6-sol"
     elif binding == "host_effort":
-        evidence["stage_observation"]["host_request"]["reasoning_effort"] = "medium"
+        evidence["stage_observation"]["host_request"]["reasoning_effort"] = "high"
+    elif binding == "review_profile":
+        evidence["observed"]["candidate_review"]["profile_id"] = RESCUE_PROFILE_ID
+    elif binding == "review_provider":
+        evidence["observed"]["candidate_review"]["provider"] = "anthropic-cli"
+    elif binding == "review_model":
+        evidence["observed"]["candidate_review"]["model"] = "gpt-5.6-sol"
     else:
-        evidence["observed"]["candidate_review"]["profile_id"] = STANDARD_PROFILE_ID
+        evidence["observed"]["candidate_review"]["reasoning_effort"] = "high"
 
     proof = model_profile_release_proof(
         (_host_native_committed_aggregate_result(profile_evidence=evidence),),
@@ -1330,7 +1351,23 @@ def test_sol_diagnostic_rechecks_each_host_native_profile_binding(binding: str) 
     )
 
     assert proof["status"] == "failed"
-    assert any("host-native" in issue for issue in proof["issues"])
+    expected_issue = {
+        "configured_provider": "host-native configured model",
+        "configured_model": "host-native configured model",
+        "configured_effort": "host-native configured model",
+        "stage": "host-native stage identifies a different model profile",
+        "host_executable": "host-native executable identity does not match the sealed observation",
+        "host_shape": "retained host-native argv shape fingerprint is invalid",
+        "host_argument_count": "retained host-native argument count is invalid",
+        "host_output_schema": "retained host-native output schema proof is missing",
+        "host_model": "retained host-native argv model does not match",
+        "host_effort": "retained host-native argv reasoning effort does not match",
+        "review_profile": "host-native candidate review identifies a different model profile",
+        "review_provider": "observed provider does not match",
+        "review_model": "observed model does not match",
+        "review_effort": "observed reasoning_effort does not match",
+    }[binding]
+    assert any(expected_issue in issue for issue in proof["issues"])
 
 
 def test_aggregate_clarification_rejects_contradictory_authored_observations() -> None:

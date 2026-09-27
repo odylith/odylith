@@ -1,23 +1,22 @@
 # Release
 Last updated: 2026-09-27
 
-## Diagnostic model comparison custody (2026-09-27)
+## Model-profile evidence custody (2026-09-27)
 
-Release qualification distinguishes supported success profiles, lower-capability
-controls, and diagnostic-only profiles. Automatic Greenfield case assignment
-uses only the supported Astra-medium success profile. Sol-high may be selected
-only by an explicit disclosed case tag for a bounded comparison; its results are
-validated and reported separately with zero release credit. A complete release
-proof still requires Astra success plus the Luna clarification/no-write control.
+Release qualification keeps Astra-medium as the sole successful Greenfield
+profile and Luna as the clarification/no-write control. Sol-high remains an
+unsupported diagnostic; it is not an explicitly assignable successful matrix
+route and cannot receive release credit. The abandoned partial route changed
+only assignment and aggregation while the product runtime correctly rejected
+`deep`, so it is removed rather than extended into a second success mechanism.
 
 Host-native aggregate proof independently binds the claimed profile to the
-configured provider/model/effort, sealed stage profile, host argv model/effort,
-and reviewer observation. A result cannot qualify—or even pass as a diagnostic—
-by changing only its public profile label. This changes release-evidence
-classification, not the Greenfield authoring topology, so no Atlas diagram
-changes. The bounded contract passes `341/341` tests and the governed UX passes
-`109/109` browser checks; identical-input installed
-comparison and immutable public qualification remain open.
+configured provider/model/effort, sealed stage profile, exact canonical host
+argv shape/count, executable identity sealed into the stage summary, and
+reviewer observation. A result cannot qualify by changing its public profile
+label or substituting a valid-looking command receipt. Live public controls must retain external stage evidence before
+cleanup so proposal failures remain attributable. This changes release-evidence
+discipline, not the Greenfield authoring topology, so Atlas remains unchanged.
 
 ## V28 source-custody qualification stop (2026-09-26)
 
