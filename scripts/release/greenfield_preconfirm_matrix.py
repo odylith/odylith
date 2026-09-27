@@ -114,6 +114,7 @@ from greenfield_process import CommandLifecycleObserverError  # noqa: E402
 from greenfield_process import command_lifecycle_observer  # noqa: E402
 from greenfield_matrix_host_candidate import (  # noqa: E402
     HostCandidateFlow,
+    HostCandidateFlowError,
     qualify_host_candidate_argv,
     resolve_trusted_codex_executable,
     run_host_candidate_flow,
@@ -1082,6 +1083,7 @@ def run_unavailable_provider_proof(
     version: str,
     temp_parent: Path,
     case: GreenfieldMatrixCase,
+    host_candidate_argv: Sequence[str],
 ) -> dict[str, Any]:
     """Prove installed model authoring fails closed when its provider is absent."""
 
@@ -1096,6 +1098,7 @@ def run_unavailable_provider_proof(
         repo_root = run_root / "consumer-repo"
         repo_root.mkdir()
         base_env = _local_release_env(base_url=base_url, version=version)
+        host_env = model_profile_environment(STANDARD_PROFILE_ID, base_env)
         env = model_profile_environment(
             UNAVAILABLE_PROVIDER_PROFILE,
             base_env,
@@ -1122,18 +1125,24 @@ def run_unavailable_provider_proof(
         attempt: dict[str, Any] = {}
 
         def invoke() -> Any:
-            completed = _run_greenfield_propose(
+            audit_env = audit.environment()
+            completed = _run_host_candidate_propose(
                 repo_root=repo_root,
-                env={**env, **audit.environment()},
+                env={**host_env, **audit_env},
+                proposal_env={**env, **audit_env},
                 prompt=case.prompt,
                 edit_evidence=str(case.confirmed_intent_markdown or ""),
-                timeout=90,
-                repair_tier="rescue",
-                command=audit.command(
+                timeout=get_greenfield_model_profile(
+                    STANDARD_PROFILE_ID
+                ).operational_timeout_seconds,
+                repair_tier=get_greenfield_model_profile(STANDARD_PROFILE_ID).repair_tier,
+                host_candidate_argv=host_candidate_argv,
+                installed_command=audit.command(
                     runtime_python=repo_root / ".odylith/runtime/current/bin/python",
                     arguments=(),
                 ),
                 pass_fds=audit.pass_fds,
+                return_failed_proposal=True,
             )
             attempt["completed"] = completed
             return completed
@@ -1475,6 +1484,8 @@ def _run_host_candidate_propose(
     retained_case: RetainedEvidenceCase | None = None,
     installed_command: Sequence[str] | None = None,
     pass_fds: tuple[int, ...] = (),
+    proposal_env: Mapping[str, str] | None = None,
+    return_failed_proposal: bool = False,
 ) -> Any:
     base_command = tuple(
         str(value)
@@ -1492,10 +1503,12 @@ def _run_host_candidate_propose(
             kwargs["pass_fds"] = pass_fds
         return _run(**kwargs)
 
+    proposal_attempt: dict[str, Any] = {}
+
     def invoke_propose(candidate_path: Path, remaining: float) -> Any:
-        return _run_greenfield_propose(
+        completed = _run_greenfield_propose(
             repo_root=repo_root,
-            env=env,
+            env=proposal_env if proposal_env is not None else env,
             prompt=prompt,
             edit_evidence=edit_evidence,
             repair_tier=repair_tier,
@@ -1505,6 +1518,8 @@ def _run_host_candidate_propose(
             candidate_file=str(candidate_path),
             retained_case=retained_case,
         )
+        proposal_attempt["completed"] = completed
+        return completed
 
     observe = None
     retain_candidate_bytes = None
@@ -1527,26 +1542,36 @@ def _run_host_candidate_propose(
         )
     profile_id = str(env.get("ODYLITH_GREENFIELD_MODEL_PROFILE") or "").strip()
     profile = get_greenfield_model_profile(profile_id)
-    return run_host_candidate_flow(
-        HostCandidateFlow(
-            repo_root=repo_root,
-            temp_parent=repo_root.parent,
-            host_argv=tuple(host_candidate_argv),
-            prompt=prompt,
-            edit_evidence=edit_evidence,
-            timeout=timeout,
-            env=env,
-            trusted_codex_executable=resolve_trusted_codex_executable(environ=env),
-            expected_model=profile.model,
-            expected_reasoning_effort=profile.reasoning_effort,
-            invoke_installed=invoke_installed,
-            invoke_propose=invoke_propose,
-            installed_command=base_command,
-            observe=observe,
-            retain_candidate_bytes=retain_candidate_bytes,
-            retain_proposal_bytes=retain_proposal_bytes,
+    try:
+        return run_host_candidate_flow(
+            HostCandidateFlow(
+                repo_root=repo_root,
+                temp_parent=repo_root.parent,
+                host_argv=tuple(host_candidate_argv),
+                prompt=prompt,
+                edit_evidence=edit_evidence,
+                timeout=timeout,
+                env=env,
+                trusted_codex_executable=resolve_trusted_codex_executable(environ=env),
+                expected_model=profile.model,
+                expected_reasoning_effort=profile.reasoning_effort,
+                invoke_installed=invoke_installed,
+                invoke_propose=invoke_propose,
+                installed_command=base_command,
+                observe=observe,
+                retain_candidate_bytes=retain_candidate_bytes,
+                retain_proposal_bytes=retain_proposal_bytes,
+            )
         )
-    )
+    except HostCandidateFlowError:
+        completed = proposal_attempt.get("completed")
+        if (
+            return_failed_proposal
+            and completed is not None
+            and int(getattr(completed, "returncode", 0)) != 0
+        ):
+            return completed
+        raise
 
 
 def _host_candidate_argv_for_profile(
@@ -3147,6 +3172,13 @@ def _execute_matrix_campaign(
                         if case_expectation(case) != CLARIFICATION_REQUIRED_EXPECTATION
                     ),
                     profiled_cases[0],
+                ),
+                host_candidate_argv=_host_candidate_argv_for_profile(
+                    tuple(
+                        str(value)
+                        for value in (getattr(args, "host_candidate_arg", None) or ())
+                    ),
+                    profile_id=STANDARD_PROFILE_ID,
                 ),
             )
             if campaign_config.proof_tier == "release"

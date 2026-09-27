@@ -382,24 +382,23 @@ def _release_result(
     )
 
 
-def _model_authoring_observations(profile_id: str) -> dict[str, dict[str, object]]:
+def _model_authoring_observations(profile_id: str) -> dict[str, object]:
     profile = get_greenfield_model_profile(profile_id)
-    common = {
-        "profile_id": profile.profile_id,
-        "provider": profile.provider,
-        "effective_timeout_seconds": profile.model_timeout_seconds,
-        "authoring_tier": profile.repair_tier,
-    }
     return {
-        "participant_selection": {
-            **common,
-            "model": profile.participant_model,
-            "reasoning_effort": profile.participant_reasoning_effort,
+        "origin": "host_native",
+        "host_candidate": {
+            "version": "odylith.greenfield.host-candidate-receipt.test.v1",
+            "contract_version": "odylith.greenfield.host-candidate-contract.test.v1",
+            "source_sha256": "a" * 64,
+            "candidate_sha256": "b" * 64,
         },
-        "remaining_candidate_authoring": {
-            **common,
-            "model": profile.model,
-            "reasoning_effort": profile.reasoning_effort,
+        "candidate_review": {
+            "profile_id": profile.profile_id,
+            "provider": profile.provider,
+            "model": profile.review_model,
+            "reasoning_effort": profile.review_reasoning_effort,
+            "effective_timeout_seconds": profile.model_timeout_seconds,
+            "authoring_tier": profile.repair_tier,
         },
     }
 

@@ -20,17 +20,35 @@ returned no candidate. Release proof recorded a timeout with returncode `124`,
 failed closed, and did not execute the final three cases. No governed write was
 accepted for the failure; commit recovery and cleanup still passed.
 
-CB-346 therefore keeps Greenfield unqualified. The consumed holdout is terminal
-evidence and cannot be replayed or mined for a case-specific fix. The next
-bounded mechanism decision compares Sol-high authoring with Astra-medium on
-public controls while reserving Astra for independent final semantic
-adjudication. A winner must improve tail latency without reducing semantic
-fidelity and must pass one fresh immutable public campaign before any new blind
-holdout is commissioned. The one-candidate contract, deterministic citation
-and relation validation, typed custody, transaction law, and `90/120/150`
-advisory targets under the `180s` operational timeout remain fixed. There is no
-regex, parser, retry, repair, fallback author, alternate model ladder, or
-protected-case rule.
+CB-346 therefore keeps Greenfield unqualified. CB-347 also records that the
+release harness did not produce valid final adjudication: its provider-negative
+control stopped in argument parsing, and stale relation/model-observation
+schemas converted incomplete proof into false semantic P0/P1 findings. Those
+evaluator outputs do not override the 16 completed 10/10 case results. The
+consumed holdout is terminal evidence and cannot be replayed or mined for a
+case-specific fix.
+
+Repair the qualification harness on public controls first. The next bounded
+mechanism decision then compares Sol-high authoring with Astra-medium while
+reserving Astra for independent final semantic adjudication. A winner must
+improve tail latency without reducing semantic fidelity and must pass one fresh
+immutable public campaign before any new blind holdout is commissioned. The
+one-candidate contract, deterministic citation and relation validation, typed
+custody, transaction law, and `90/120/150` advisory targets under the `180s`
+operational timeout remain fixed. There is no regex, parser, retry, repair,
+fallback author, alternate model ladder, or protected-case rule.
+
+The CB-347 working checkpoint repairs only the qualification boundary.
+Unavailable-provider proof now authors one standard host candidate before
+making the installed independent reviewer unavailable, preserving one-candidate
+custody and proving no write. The semantic evaluator now includes
+`source_precedence`, validates current `host_candidate` and `candidate_review`
+receipts, and returns `incomplete`/`unscored` without P0/P1 assignment or
+release credit when cases are missing. Focused and adjacent tests pass
+`153/153`. The full install suite passes `1,715/1,716`; its sole failure is an
+unrelated existing customer-guidance byte-budget assertion in untouched code.
+No Greenfield prompt, schema, authoring algorithm, transaction law, retry, or
+fallback changed.
 
 ### Evidence audience is not automatically a product participant (2026-09-26)
 

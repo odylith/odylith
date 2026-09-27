@@ -40,9 +40,9 @@
 
 - Workaround: None for the consumed holdout. Preserve it as terminal evidence and keep completion unclaimed.
 
-- Root Cause: Bounded diagnosis: the host-native candidate call exceeded the standard profile model deadline. The release evaluator then correctly withheld complete model-profile and semantic-release credit because the campaign stopped early. No semantic defect in the 16 passed cases is established by this failure.
+- Root Cause: The host-native candidate call exceeded the standard profile model deadline and caused the case-loop abort. Separate release-harness defects tracked by CB-347 then produced invalid qualification output: unavailable-provider proof stopped in argument parsing, and stale relation/model-observation schemas converted incomplete proof into false semantic P0/P1 findings. No semantic defect in the 16 passed cases is established by either failure.
 
-- Solution: Compare one bounded public control under Sol-high authoring versus the current Astra-medium authoring profile, retaining Astra as independent final semantic adjudicator. Select only a profile that improves tail latency without reducing semantic fidelity; then fully requalify public evidence and commission one newly blind holdout. Do not add retries, repair, fallback authors, parser rules or protected-case patches.
+- Solution: First close CB-347 so public comparisons produce trustworthy evidence. Then compare one bounded public control under Sol-high authoring versus the current Astra-medium authoring profile, retaining Astra as independent final semantic adjudicator. Select only a profile that improves tail latency without reducing semantic fidelity; fully requalify public evidence and commission one newly blind holdout. Do not add retries, repair, fallback authors, parser rules or protected-case patches.
 
 - Rollback/Forward Fix: Forward-fix only; the V31 holdout is consumed and terminal.
 
@@ -64,7 +64,7 @@
 
 - Customer Comms: Release remains unclaimed; no consumer package is promoted from this evidence.
 
-- Related Incidents/Bugs: CB-303, B-142
+- Related Incidents/Bugs: CB-347, CB-303, B-142
 
 - GitHub Status: confirmed
 

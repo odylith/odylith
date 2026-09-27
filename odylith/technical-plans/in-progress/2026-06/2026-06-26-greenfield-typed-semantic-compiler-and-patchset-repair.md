@@ -20,16 +20,34 @@ failed closed, and left the final three cases unexecuted. Commit-recovery and
 temporary-cleanup proof still passed. Preserve this holdout and its ledger as
 terminal evidence; never rerun it or tune against its protected content.
 
-CB-346 owns the blocker. This evidence rejects release qualification, not the
-single-candidate architecture: no semantic defect was observed in the 16
-completed cases. Run one bounded public comparison of Sol-high authoring versus
-the frozen Astra-medium profile, with Astra retained as the independent final
-semantic adjudicator. Predict that Sol-high reduces tail latency without
-reducing semantic fidelity. Keep the winner only after positive, negative,
+CB-346 owns the timeout. CB-347 separately owns three release-harness defects:
+the sealed command carried release-forbidden stop flags; unavailable-provider
+proof failed in argument parsing before exercising provider unavailability;
+and semantic/model-profile scoring expected retired relation fields and model
+roles, inflating incomplete proof into false P0/P1 findings. Those findings are
+evaluator-invalid and do not establish defects in the 16 completed cases.
+
+Repair and prove CB-347 on public evidence before comparing authors. Then run
+one bounded public comparison of Sol-high authoring versus the frozen
+Astra-medium profile, with Astra retained as the independent final semantic
+adjudicator. Predict that Sol-high reduces tail latency without reducing
+semantic fidelity. Keep the winner only after positive, negative,
 equivalent-source, browser, recovery, and retained-output review pass on one
 immutable build; then commission one newly blind holdout. Add no regex, parser,
 retry, repair, fallback author, alternate ladder, schema expansion, or
 protected-case rule. Completion remains unclaimed.
+
+The bounded CB-347 code repair now restores evaluator parity without touching
+the Greenfield authoring mechanism. Unavailable-provider proof authors exactly
+one standard host candidate, then exercises installed independent review under
+the unavailable profile and verifies fail-closed no-write behavior. Relation
+scoring accepts the current `source_precedence` authority input; model-profile
+scoring accepts current `host_candidate`/`candidate_review` receipts; partial
+campaigns return `incomplete`/`unscored` with zero assigned semantic severity
+and no release credit. Focused and adjacent proof passes `153/153`. The full
+install suite passes `1,715/1,716`; the only failure is an unrelated pre-existing
+customer-guidance byte-budget assertion in untouched code. Public immutable
+qualification remains the next gate.
 
 ## V29 Authoring-Audience Checkpoint (2026-09-26)
 

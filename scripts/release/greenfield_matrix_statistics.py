@@ -50,6 +50,17 @@ _AUTHORING_OBSERVATION_ROLES = (
     "participant_selection",
     "remaining_candidate_authoring",
 )
+_HOST_NATIVE_OBSERVATION_FIELDS = {
+    "origin",
+    "host_candidate",
+    "candidate_review",
+}
+_HOST_CANDIDATE_FIELDS = {
+    "version",
+    "contract_version",
+    "source_sha256",
+    "candidate_sha256",
+}
 _MODEL_OBSERVATION_FIELDS = {
     "profile_id",
     "provider",
@@ -687,6 +698,41 @@ def _model_profile_from_observations(
     observed: Mapping[str, Any],
 ) -> tuple[str, tuple[str, ...]]:
     issues: list[str] = []
+    if observed.get("origin") == "host_native":
+        if set(observed) != _HOST_NATIVE_OBSERVATION_FIELDS:
+            return "", ("host-native model observations have an invalid closed schema",)
+        candidate = _mapping(observed.get("host_candidate"))
+        review = _mapping(observed.get("candidate_review"))
+        if (
+            set(candidate) != _HOST_CANDIDATE_FIELDS
+            or not all(
+                isinstance(candidate.get(field), str) and candidate.get(field)
+                for field in ("version", "contract_version")
+            )
+            or not all(
+                _is_sha256(candidate.get(field))
+                for field in ("source_sha256", "candidate_sha256")
+            )
+        ):
+            issues.append("host_candidate lacks the exact sealed receipt")
+        if set(review) != _MODEL_OBSERVATION_FIELDS:
+            issues.append("candidate_review lacks the exact request observation")
+        else:
+            profile_id = str(review.get("profile_id") or "").strip()
+            try:
+                require_greenfield_model_profile_observation(
+                    profile_id=profile_id,
+                    provider=str(review.get("provider") or ""),
+                    model=str(review.get("model") or ""),
+                    reasoning_effort=str(review.get("reasoning_effort") or ""),
+                    effective_timeout_seconds=review.get("effective_timeout_seconds"),
+                    authoring_tier=str(review.get("authoring_tier") or ""),
+                    request_role="candidate_review",
+                )
+            except (KeyError, ValueError):
+                issues.append("candidate_review does not match a supported model profile")
+            return (profile_id if not issues else ""), tuple(dict.fromkeys(issues))
+        return "", tuple(dict.fromkeys(issues))
     if set(observed) != set(_AUTHORING_OBSERVATION_ROLES):
         return "", ("model observations have missing or unsupported request roles",)
     profile_ids: set[str] = set()
@@ -713,6 +759,14 @@ def _model_profile_from_observations(
         issues.append("model observations do not share one profile")
     profile_id = next(iter(profile_ids)) if len(profile_ids) == 1 else ""
     return (profile_id if not issues else ""), tuple(dict.fromkeys(issues))
+
+
+def _is_sha256(value: Any) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == 64
+        and not set(value) - set("0123456789abcdef")
+    )
 
 
 def _case_id(case: Any) -> str:

@@ -108,6 +108,36 @@ def test_structural_release_passes_exact_commit_and_clarification() -> None:
     assert len(report["normalized_semantic_digests"]["commit"]) == 64
 
 
+def test_incomplete_campaign_is_unscored_before_semantic_severity_assignment() -> None:
+    completed = _case("completed", expectation="transaction_committed")
+    missing = _case("missing", expectation="transaction_committed")
+    incomplete_result = _commit_result(completed)
+    del incomplete_result.evidence["preconfirm_dry_run"]["semantic_snapshot"][
+        "authored_semantics"
+    ]["source_precedence"]
+
+    report = score_module.evaluate_semantic_release(
+        cases=(completed, missing),
+        annotations={
+            completed.case_id: _commit_annotation(),
+            missing.case_id: _commit_annotation(),
+        },
+        results=(incomplete_result,),
+        floors=FLOORS,
+    )
+
+    assert report["status"] == "incomplete"
+    assert report["scoring_status"] == "unscored"
+    assert report["passed"] is False
+    assert report["sample_count"] == 0
+    assert report["missing_case_ids"] == [missing.case_id]
+    assert report["p0_findings"] == []
+    assert report["p1_findings"] == []
+    assert report["metrics"]["relation_fidelity"]["status"] == "not_applicable"
+    assert report["acceptance_checks"] == []
+    assert report["model_profiles"] == []
+
+
 def test_structural_release_accepts_the_runtime_authored_atomic_schema(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -403,21 +433,24 @@ def test_release_evidence_fails_closed_on_missing_unknown_or_mismatched_slices(
     assert any(expected_issue in issue for issue in report["release_evidence_issues"])
 
 
-@pytest.mark.parametrize("damage", ("missing_role", "extra_role", "discordant_roles"))
+@pytest.mark.parametrize(
+    "damage",
+    ("missing_candidate_review", "extra_role", "discordant_candidate_review"),
+)
 def test_unsealed_clarification_rejects_inexact_authoring_observations(
     damage: str,
 ) -> None:
     case = _case(f"clarification-{damage}", expectation="clarification_required")
     result = _clarification_result(case)
     observed = result.evidence["model_profile"]["observed"]
-    if damage == "missing_role":
-        observed.pop("participant_selection")
+    if damage == "missing_candidate_review":
+        observed.pop("candidate_review")
     elif damage == "extra_role":
-        observed["legacy_authoring"] = deepcopy(observed["remaining_candidate_authoring"])
+        observed["legacy_authoring"] = deepcopy(observed["candidate_review"])
     else:
-        observed["remaining_candidate_authoring"] = _model_authoring_observations(
+        observed["candidate_review"] = _model_authoring_observations(
             RESCUE_PROFILE_ID
-        )["remaining_candidate_authoring"]
+        )["candidate_review"]
 
     report = score_module.evaluate_semantic_release(
         cases=(case,),
@@ -943,6 +976,7 @@ def _commit_result(
                         first_path_context_relations=semantics[
                             "first_path_context_relations"
                         ],
+                        source_precedence=semantics["source_precedence"],
                         provisional_design=semantics["provisional_design"],
                     ),
                 },
@@ -993,6 +1027,7 @@ def _authored_semantics(
         "first_path_relations": relations,
         "first_path_context_relations": [],
         "component_responsibility_relations": [],
+        "source_precedence": [],
         "provisional_design": provisional_design,
     }
 
@@ -1075,24 +1110,23 @@ def _model_result_evidence(profile_id: str) -> dict[str, object]:
     }
 
 
-def _model_authoring_observations(profile_id: str) -> dict[str, dict[str, object]]:
+def _model_authoring_observations(profile_id: str) -> dict[str, object]:
     profile = get_greenfield_model_profile(profile_id)
-    common = {
-        "profile_id": profile.profile_id,
-        "provider": profile.provider,
-        "effective_timeout_seconds": profile.model_timeout_seconds,
-        "authoring_tier": profile.repair_tier,
-    }
     return {
-        "participant_selection": {
-            **common,
-            "model": profile.participant_model,
-            "reasoning_effort": profile.participant_reasoning_effort,
+        "origin": "host_native",
+        "host_candidate": {
+            "version": "odylith.greenfield.host-candidate-receipt.test.v1",
+            "contract_version": "odylith.greenfield.host-candidate-contract.test.v1",
+            "source_sha256": "a" * 64,
+            "candidate_sha256": "b" * 64,
         },
-        "remaining_candidate_authoring": {
-            **common,
-            "model": profile.model,
-            "reasoning_effort": profile.reasoning_effort,
+        "candidate_review": {
+            "profile_id": profile.profile_id,
+            "provider": profile.provider,
+            "model": profile.review_model,
+            "reasoning_effort": profile.review_reasoning_effort,
+            "effective_timeout_seconds": profile.model_timeout_seconds,
+            "authoring_tier": profile.repair_tier,
         },
     }
 
@@ -1286,6 +1320,7 @@ def _rich_relation_bundle(
                 "responsibility_source": "accepted_fact",
             }
         ],
+        "source_precedence": [],
         "provisional_design": provisional_design,
     }
     result = _commit_result(case, atoms=actual_atoms, facts=facts)
@@ -1323,6 +1358,7 @@ def _refresh_relation_hash(result: GreenfieldMatrixResult) -> None:
         semantics["first_path_relations"],
         semantics["component_responsibility_relations"],
         first_path_context_relations=semantics["first_path_context_relations"],
+        source_precedence=semantics["source_precedence"],
         provisional_design=semantics["provisional_design"],
     )
 
@@ -1387,6 +1423,7 @@ def _repeated_relation_evidence() -> tuple[GreenfieldMatrixCase, dict[str, objec
         "first_path_relations": semantic_events,
         "first_path_context_relations": [],
         "component_responsibility_relations": [],
+        "source_precedence": [],
         "provisional_design": provisional_design,
     }
     snapshot = {
@@ -1400,6 +1437,7 @@ def _repeated_relation_evidence() -> tuple[GreenfieldMatrixCase, dict[str, objec
             semantic_events,
             semantics["component_responsibility_relations"],
             first_path_context_relations=[],
+            source_precedence=semantics["source_precedence"],
             provisional_design=provisional_design,
         ),
     }

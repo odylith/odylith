@@ -80,6 +80,17 @@ def test_relation_fidelity_reports_exact_family_and_worst_slice_evidence() -> No
     }
 
 
+def test_snapshot_accepts_current_authored_semantics_source_precedence() -> None:
+    case, _annotation, result = _rich_relation_bundle("current-source-precedence")
+    snapshot = result.evidence["preconfirm_dry_run"]["semantic_snapshot"]
+
+    evidence = snapshot_relation_evidence(case=case, snapshot=snapshot)
+
+    assert snapshot["authored_semantics"]["source_precedence"] == []
+    assert evidence.issues == ()
+    assert evidence.sample_count == 8
+
+
 def test_empty_source_component_family_is_not_credited_as_ownership_evidence() -> None:
     case = _case("optional-source-components", expectation="transaction_committed")
     annotation = _commit_annotation()

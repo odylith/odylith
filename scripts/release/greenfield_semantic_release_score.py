@@ -30,7 +30,7 @@ from greenfield_relation_fidelity import annotation_relation_evidence
 from greenfield_relation_fidelity import snapshot_relation_evidence
 
 
-SEMANTIC_RELEASE_SCORE_VERSION = "odylith.greenfield.semantic-release-score.v6"
+SEMANTIC_RELEASE_SCORE_VERSION = "odylith.greenfield.semantic-release-score.v7"
 NORMALIZED_SEMANTIC_DIGEST_VERSION = "odylith.greenfield.normalized-semantics.v1"
 _SCORED_ROLE = "scored"
 _REFERENCE_ROLE = "reference_only"
@@ -57,6 +57,28 @@ def evaluate_semantic_release(
         for case_id, result in zip(result_ids, results, strict=False)
         if case_id
     }
+    missing_case_ids = list(
+        dict.fromkeys(
+            case_id
+            for case_id in case_ids
+            if case_id not in annotations or case_id not in results_by_id
+        )
+    )
+    if (
+        missing_case_ids
+        or set(annotations) != set(case_ids)
+        or duplicate_case_ids
+        or duplicate_result_ids
+    ):
+        return _incomplete_semantic_release_report(
+            selected_case_count=len(cases),
+            missing_case_ids=missing_case_ids,
+            duplicate_case_ids=duplicate_case_ids,
+            duplicate_result_ids=duplicate_result_ids,
+            annotations_match=set(annotations) == set(case_ids),
+            floors=floors,
+            release_required_slices=release_required_slices,
+        )
     metric_counts: dict[str, list[int]] = {
         "atomic_semantic_fidelity": [0, 0],
         "relation_fidelity": [0, 0],
@@ -66,14 +88,12 @@ def evaluate_semantic_release(
     case_outcomes: list[dict[str, Any]] = []
     p0_findings: list[dict[str, str]] = []
     p1_findings: list[dict[str, str]] = []
-    missing_case_ids: list[str] = []
     for case in cases:
         case_id = _case_id(case)
         annotation = annotations.get(case_id)
         result = results_by_id.get(case_id)
-        if annotation is None or result is None:
-            missing_case_ids.append(case_id)
-            continue
+        if annotation is None or result is None:  # pragma: no cover - completeness preflight
+            raise AssertionError("semantic release completeness changed during scoring")
         outcome = _score_case(
             case=case,
             case_id=case_id,
@@ -236,6 +256,7 @@ def evaluate_semantic_release(
     return {
         "version": SEMANTIC_RELEASE_SCORE_VERSION,
         "status": "passed" if not issues else "failed",
+        "scoring_status": "scored",
         "passed": not issues,
         "sample_count": sample_count,
         "selected_case_count": len(cases),
@@ -284,6 +305,113 @@ def evaluate_semantic_release(
             }
             for row in case_outcomes
         ],
+    }
+
+
+def _incomplete_semantic_release_report(
+    *,
+    selected_case_count: int,
+    missing_case_ids: Sequence[str],
+    duplicate_case_ids: Sequence[str],
+    duplicate_result_ids: Sequence[str],
+    annotations_match: bool,
+    floors: Mapping[str, Any],
+    release_required_slices: Mapping[str, Sequence[str]] | None,
+) -> dict[str, Any]:
+    """Fail closed without assigning semantic severity to partial evidence."""
+
+    metrics = {
+        name: _metric(name, 0, 0)
+        for name in (
+            "atomic_semantic_fidelity",
+            "relation_fidelity",
+            "clarification_identity",
+            "unnecessary_question_rate",
+        )
+    }
+    relation_metric = metrics["relation_fidelity"]
+    relation_metric.update(
+        {
+            "sample_count": 0,
+            "correct_count": 0,
+            "incorrect_count": 0,
+            "point_estimate": None,
+            "evidence": "semantic scoring is unscored until the campaign is complete",
+        }
+    )
+    overall = _metric("overall_case_success", 0, 0)
+    required_slices = _required_release_slices(release_required_slices)
+    release_minimum_samples = release_slice_minimum_sample_contract()
+    confidence_contract = _mapping(floors.get("statistical_confidence"))
+    confidence_contract_issues = release_statistical_confidence_contract_issues(
+        confidence_contract,
+        minimum_samples=_mapping(floors.get("release_slice_minimum_samples")),
+    )
+    minimum_sample_contract_issues = (
+        release_slice_minimum_sample_contract_issues(
+            floors.get("release_slice_minimum_samples")
+        )
+        if release_required_slices is not None
+        else []
+    )
+    issues: list[str] = []
+    if missing_case_ids:
+        issues.append("semantic release results are incomplete")
+    if not annotations_match:
+        issues.append("semantic release annotations do not exactly match selected cases")
+    if duplicate_case_ids:
+        issues.append("semantic release cases contain duplicate IDs")
+    if duplicate_result_ids:
+        issues.append("semantic release results contain duplicate IDs")
+    if release_required_slices is not None and (
+        set(release_required_slices) != set(RELEASE_SLICE_DIMENSIONS)
+        or required_slices != release_slice_contract()
+    ):
+        issues.append(
+            "semantic release slice contract does not match the published operating envelope"
+        )
+    issues.extend(minimum_sample_contract_issues)
+    issues.extend(confidence_contract_issues)
+    return {
+        "version": SEMANTIC_RELEASE_SCORE_VERSION,
+        "status": "incomplete",
+        "scoring_status": "unscored",
+        "passed": False,
+        "sample_count": 0,
+        "selected_case_count": selected_case_count,
+        "missing_case_ids": list(missing_case_ids),
+        "duplicate_case_ids": list(duplicate_case_ids),
+        "duplicate_result_ids": list(duplicate_result_ids),
+        "metrics": metrics,
+        "relation_sample_count": 0,
+        "relation_fidelity_by_family": _relation_family_metrics(()),
+        "relation_slices": [],
+        "worst_relation_slice": {},
+        "least_confident_relation_slice": {},
+        "overall_case_success": overall,
+        "worst_slice": {},
+        "least_confident_slice": {},
+        "slices": [],
+        "p0_count": 0,
+        "p0_findings": [],
+        "p1_count": 0,
+        "p1_findings": [],
+        "acceptance_checks": [],
+        "confidence_contract": confidence_contract,
+        "confidence_contract_issues": confidence_contract_issues,
+        "confidence_checks": [],
+        "issues": list(dict.fromkeys(issues)),
+        "release_required_slices": required_slices,
+        "release_minimum_samples": (
+            release_minimum_samples if release_required_slices is not None else {}
+        ),
+        "release_minimum_sample_contract_issues": minimum_sample_contract_issues,
+        "release_evidence_issues": [],
+        "relation_evidence_issues": [],
+        "normalized_semantic_digests": {},
+        "release_coverage_issues": [],
+        "model_profiles": [],
+        "case_outcomes": [],
     }
 
 

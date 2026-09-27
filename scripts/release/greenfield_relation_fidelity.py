@@ -42,6 +42,7 @@ _SEMANTICS_FIELDS = frozenset(
         "first_path_relations",
         "first_path_context_relations",
         "component_responsibility_relations",
+        "source_precedence",
         "provisional_design",
     }
 )
@@ -203,13 +204,15 @@ def snapshot_relation_evidence(
     events = _mapping_rows(semantics.get("first_path_relations"))
     contexts = _mapping_rows(semantics.get("first_path_context_relations"))
     components = _mapping_rows(semantics.get("component_responsibility_relations"))
-    if events is None or contexts is None or components is None:
+    precedence = _mapping_rows(semantics.get("source_precedence"))
+    if events is None or contexts is None or components is None or precedence is None:
         return _empty_evidence("sealed authored_semantics contains malformed relation rows")
     try:
         digest = authored_relation_set_sha256(
             events,
             components,
             first_path_context_relations=contexts,
+            source_precedence=precedence,
             provisional_design=semantics.get("provisional_design"),
         )
     except (TypeError, ValueError):

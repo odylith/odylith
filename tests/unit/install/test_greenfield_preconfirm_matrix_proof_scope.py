@@ -4,6 +4,7 @@ import importlib
 import importlib.util
 import json
 import sys
+import time
 from dataclasses import replace
 from pathlib import Path
 
@@ -1913,6 +1914,127 @@ def test_unavailable_provider_proof_requires_fast_no_write_failure() -> None:
     assert module.unavailable_provider_proof_issues(**values) == ()
     assert module.unavailable_provider_proof_issues(**{**values, "returncode": 0})
     assert module.unavailable_provider_proof_issues(**{**values, "write_attempts": ("open",)})
+
+
+def test_unavailable_provider_proof_reaches_provider_failure_with_one_candidate(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/bin/sh\nexit 0\n")
+    host_argv = ("codex", "exec", "--model", "gpt-6-astra")
+    servers: list[object] = []
+    host_flows: list[object] = []
+    proposals: list[dict[str, object]] = []
+
+    class Server:
+        shutdown_called = False
+        close_called = False
+
+        def shutdown(self) -> None:
+            self.shutdown_called = True
+
+        def server_close(self) -> None:
+            self.close_called = True
+
+    class Audit:
+        pass_fds: tuple[int, ...] = ()
+
+        def environment(self) -> dict[str, str]:
+            return {"ODYLITH_GREENFIELD_WRITE_AUDIT_TEST": "active"}
+
+        def command(self, **_kwargs) -> list[str]:
+            return ["audit-python"]
+
+        def finish(self):
+            return module.SimpleNamespace(
+                active=True,
+                write_attempts=(),
+                subprocess_attempts=("subprocess.Popen",),
+                error="",
+            )
+
+    def serve_directory(_release_dir: Path):
+        server = Server()
+        servers.append(server)
+        return server, "http://127.0.0.1:12345"
+
+    def run_command(**_kwargs):
+        return module.SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    def run_propose(**kwargs):
+        proposals.append(kwargs)
+        time.sleep(0.005)
+        return module.SimpleNamespace(
+            returncode=1,
+            stdout='{"error":"MODEL_UNAVAILABLE_NO_WRITE"}',
+            stderr=(
+                "Greenfield model authoring is unavailable; no records were created. "
+                "Check the configured provider and try again."
+            ),
+        )
+
+    def run_host_flow(flow):
+        host_flows.append(flow)
+        candidate_path = flow.temp_parent / "candidate.json"
+        candidate_path.write_text('{"result":{"status":"authored"}}\n', encoding="utf-8")
+        completed = flow.invoke_propose(candidate_path, 90.0)
+        assert completed.returncode == 1
+        raise module.HostCandidateFlowError(
+            "host-native candidate proposal command returned nonzero",
+            observation={"stage": "propose", "proposal_command_invocations": 1},
+        )
+
+    monkeypatch.setattr(module, "_serve_directory", serve_directory)
+    monkeypatch.setattr(module, "_local_release_env", lambda **_kwargs: {"PATH": "/trusted"})
+    monkeypatch.setattr(module, "_run", run_command)
+    monkeypatch.setattr(module, "begin_installed_write_audit", lambda **_kwargs: Audit())
+    monkeypatch.setattr(module, "resolve_trusted_codex_executable", lambda **_kwargs: "/trusted/codex")
+    monkeypatch.setattr(module, "_run_greenfield_propose", run_propose)
+    monkeypatch.setattr(module, "run_host_candidate_flow", run_host_flow)
+
+    proof = module.run_unavailable_provider_proof(
+        dist_dir=dist_dir,
+        version="0.0.0",
+        temp_parent=tmp_path / "work",
+        case=module.GreenfieldMatrixCase(
+            name="provider negative control",
+            prompt="Create one source-grounded product proposal.",
+            required_terms=(),
+        ),
+        host_candidate_argv=host_argv,
+    )
+
+    assert proof["status"] == "passed"
+    assert proof["returncode"] == 1
+    assert "model authoring is unavailable" in proof["failure_detail"].casefold()
+    assert proof["no_write"] == {
+        "before_record_count": 0,
+        "after_record_count": 0,
+        "changed_records": [],
+        "staged_transaction_present": False,
+        "write_audit_active": True,
+        "write_attempts": [],
+        "subprocess_attempts": ["subprocess.Popen"],
+        "write_audit_error": "",
+    }
+    assert len(host_flows) == 1
+    assert host_flows[0].host_argv == host_argv
+    assert host_flows[0].env["ODYLITH_GREENFIELD_MODEL_PROFILE"] == module.STANDARD_PROFILE_ID
+    assert "ODYLITH_REASONING_CODEX_BIN" not in host_flows[0].env
+    assert len(proposals) == 1
+    assert proposals[0]["repair_tier"] == "standard"
+    assert proposals[0]["candidate_file"]
+    assert (
+        proposals[0]["env"]["ODYLITH_GREENFIELD_MODEL_PROFILE"]
+        == module.UNAVAILABLE_PROVIDER_PROFILE
+    )
+    assert proposals[0]["env"]["ODYLITH_REASONING_CODEX_BIN"].endswith(
+        "/missing-codex-provider"
+    )
+    assert servers[0].shutdown_called is True
+    assert servers[0].close_called is True
 
 
 def test_commit_manifest_summary_uses_last_repair_patchset_for_clean_final_pass() -> None:
