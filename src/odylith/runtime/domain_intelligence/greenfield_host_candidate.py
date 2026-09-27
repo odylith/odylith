@@ -49,7 +49,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v1"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v24"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v25"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
 
 
@@ -76,6 +76,20 @@ def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
                 "deliverables, acceptance, verification or exchanges. Do not apply that exclusion to "
                 "a requested product workflow that manages evidence, provenance or source identity as "
                 "domain data. Classify by the directive's actual governed system and outcome."
+            ),
+            (
+                "Interpret each part of the evidence by its semantic role, independent of label order "
+                "or shared vocabulary. When the evidence supplies a complete requested workflow with "
+                "a source-supported participant or task owner, usable task and visible result, that "
+                "workflow remains the product-intent authority. Separately identified reference "
+                "provenance—including a source artifact, repository or reference-system description—"
+                "is grounding context, not a competing product boundary, unless the request explicitly "
+                "assigns that reference an owned role, dependency, constraint or result in the requested "
+                "workflow. A thematic difference between the requested workflow and reference context "
+                "is not material ambiguity by itself. Ask for product_boundary only when the source itself "
+                "leaves materially competing or unclear inside-versus-outside responsibility, dependency "
+                "or scope limits that cannot safely remain an explicit assumption; the workflow need not "
+                "be incomplete for that boundary to be material."
             ),
             (
                 "For every accepted source fact, copy quote and locator context byte-for-byte "

@@ -273,7 +273,7 @@ def test_greenfield_install_smoke_requires_read_only_candidate_contract(
         assert kwargs["env"]["audit"] == "enabled" and kwargs["pass_fds"] == (42,)
         time.sleep(0.002)
         payload = {
-            "version": "odylith.greenfield.host-candidate-contract.v24",
+            "version": "odylith.greenfield.host-candidate-contract.v25",
             "candidate_version": "odylith.greenfield.host-candidate.v24",
             "canonical_version": "odylith.greenfield.canonical-meaning.v1",
             "request": {

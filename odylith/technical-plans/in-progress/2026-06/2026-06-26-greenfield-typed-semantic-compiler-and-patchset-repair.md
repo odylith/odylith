@@ -1,5 +1,34 @@
 Status: In progress
 
+## V42 product-intent and reference-provenance boundary (2026-09-27)
+
+The immutable V41 strict public campaign passed nine of ten cases at the full
+release floor. `release-research-165-source` failed closed before transaction
+staging because the single Astra-medium host candidate treated a complete
+explicit operator workflow and a trailing repository description as competing
+product scope, then asked an unnecessary `product_boundary` question. The
+retained failure extends CB-289; it is not a transaction, evaluator, reviewer,
+or custody regression, and the protected holdout remains untouched.
+
+Change only the one host authoring contract. Contract v25 makes a complete
+source-supported requested workflow authoritative product intent and treats
+separately identified reference material as grounding context unless the
+request explicitly binds that reference into an owned role, dependency,
+constraint, or result. Preserve one genuine `product_boundary` question when
+inside-versus-outside responsibility, dependency, or scope remains materially
+unresolved, even if the workflow is complete. Add no parser, regex, vocabulary
+list, retry, repair, fallback author, model ladder, schema expansion, or model
+call.
+
+Focused contract and installed-smoke proof passes `83/83`; the complete
+Greenfield install/release unit surface passes `1,275/1,275`. Before release
+qualification, run independent positive, paraphrased, reordered,
+explicit-binding, and genuinely ambiguous one-shot controls against a fresh
+immutable distribution. Then replay only the exact failed case and rerun the
+unchanged ten-case public campaign. Do not inspect, hash, or execute the
+protected final holdout until those gates and independent semantic/UX review
+are green.
+
 ## V37 retained public-campaign repair boundary (2026-09-27)
 
 The clean pushed `c32856414` distribution passed complete lifecycle smoke and

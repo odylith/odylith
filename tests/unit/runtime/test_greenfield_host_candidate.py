@@ -457,7 +457,7 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
     assert rc == 0
     assert payload["version"] == HOST_CANDIDATE_CONTRACT_VERSION
     assert payload["candidate_version"] == HOST_CANDIDATE_FORMAT_VERSION
-    assert payload["version"] == "odylith.greenfield.host-candidate-contract.v24"
+    assert payload["version"] == "odylith.greenfield.host-candidate-contract.v25"
     assert payload["candidate_version"] == "odylith.greenfield.host-candidate-format.v12"
     assert any(
         "exact scope_paths" in requirement
@@ -474,6 +474,17 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
         and "inputs to this authoring transaction" in requirement
         and "do not cite, restate or paraphrase them" in requirement
         and "manages evidence, provenance or source identity as domain data" in requirement
+        for requirement in payload["requirements"]
+    )
+    assert any(
+        "complete requested workflow" in requirement
+        and "remains the product-intent authority" in requirement
+        and "reference provenance" in requirement
+        and "not a competing product boundary" in requirement
+        and "explicitly assigns that reference" in requirement
+        and "inside-versus-outside responsibility" in requirement
+        and "cannot safely remain an explicit assumption" in requirement
+        and "workflow need not be incomplete" in requirement
         for requirement in payload["requirements"]
     )
     assert any(

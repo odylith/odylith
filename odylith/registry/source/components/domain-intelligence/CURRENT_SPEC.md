@@ -4,6 +4,26 @@ Last updated: 2026-09-27
 
 ## Overview
 
+### V42 explicit product intent versus reference provenance (2026-09-27)
+
+Greenfield host-candidate contract v25 assigns one semantic boundary before
+candidate authoring. A complete source-supported requested workflow remains
+the product-intent authority regardless of label order or vocabulary shared
+with separately identified reference material. A source artifact, repository,
+or reference-system description remains grounding context unless the request
+explicitly binds it into the workflow as an owned role, dependency,
+constraint, or result.
+
+The same contract preserves genuine material questions: when the source itself
+leaves inside-versus-outside responsibility, dependency, or scope materially
+unresolved and that uncertainty cannot safely remain an assumption, the host
+returns one `product_boundary` clarification even if the workflow is otherwise
+complete. This changes no candidate schema, deterministic compiler, reviewer,
+transaction law, parser, regex, vocabulary list, retry, repair, fallback
+author, model ladder, or model-call count. Focused contract and installed-smoke
+proof passes `83/83`; immutable behavior proof and public release
+qualification remain open.
+
 ### V38 shared title semantic-role custody (2026-09-27)
 
 Greenfield authoring and independent candidate review use one title semantic

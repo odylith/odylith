@@ -68,5 +68,14 @@
 
 - Public Response: pending
 
-- Code References: - src/odylith/runtime/domain_intelligence/greenfield_confirmed_prompt_source.py
-- src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py
+- Code References: - src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py
+- src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py
+- src/odylith/runtime/domain_intelligence/greenfield_candidate_review.py
+
+- V41 Strict-Release Recurrence (2026-09-27): The frozen ten-case public release campaign passed nine cases at the full release floor and reproduced this failure on `release-research-165-source`. The request supplied an explicit `User intent` actor/action/result workflow before labelled `Source repository` and `Source evidence` provenance. The single host-native candidate call (`gpt-6-astra`, medium) nevertheless returned `clarification_required` for `product_boundary`; no transaction or governed write was produced. Retained evidence lives at `/Users/freedom/.codex/odylith-greenfield-public-v41-release-evidence.bu20uB/retained-evidence/release-proof-greenfield-release-public-live-subset.v1/release-research-165-source`, and the exact failed-subset replay is `/Users/freedom/.codex/odylith-greenfield-public-v41-release-evidence.bu20uB/failed-subset-replay/failed-subset-001.cases.json`.
+
+- Revised Root Cause (2026-09-27): The earlier deterministic prompt-intent recovery fix correctly prevents source-tail prose from becoming the compiled first path, but the host-native candidate contract still presents provenance and explicit product intent without a sufficiently strong semantic ownership boundary. A cautious host can therefore treat a repository description as competing product scope and ask a false material question before deterministic recovery or independent review can run.
+
+- Rejected Mechanisms (2026-09-27): Do not add another source-label parser, regex, vocabulary list, retry, repair turn, fallback author, participant selector, or stronger-model ladder. Do not weaken genuine `product_boundary` clarification. The bounded candidate is a domain-neutral authoring-contract correction: a complete explicit user workflow remains authoritative product intent, while labelled repository/source material remains provenance unless the user explicitly binds it into the owned product path. Prove that distinction across independent positive, paraphrased, reordered, and genuinely ambiguous negative controls before replaying the failed subset.
+
+- Required V42 Proof: Contract-focused tests must show that unrelated labelled provenance cannot override a complete explicit workflow, while ambiguity that changes owned versus external responsibility still yields one `product_boundary` clarification. Then run focused and broad Greenfield suites, build a fresh immutable distribution, replay only the exact failed subset, and rerun the unchanged ten-case public release campaign before any protected holdout access.
