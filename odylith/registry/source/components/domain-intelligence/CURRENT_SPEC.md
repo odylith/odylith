@@ -4,6 +4,28 @@ Last updated: 2026-09-27
 
 ## Overview
 
+### V43 shared author-review provenance semantics (2026-09-27)
+
+Greenfield host authoring and independent candidate review now consume one
+semantic-role contract for complete requested product intent versus separately
+identified reference provenance. The reviewer applies that role classification
+before completeness: it must not deny an omitted repository, artifact, or
+reference-system responsibility that the source leaves unbound to the requested
+workflow, but it must still deny omission of any responsibility explicitly
+bound as an owned role, dependency, constraint, event, or result. Shared
+vocabulary, descriptive capability, or thematic relevance alone does not create
+that binding.
+
+Candidate-review v14 is the only changed runtime version. Host contract v25,
+candidate schema, custody validation, typed admission witness, transaction laws,
+model profiles, and call topology remain unchanged. The correction adds no
+parser, regex, label vocabulary, retry, repair, fallback author or reviewer, or
+alternate model ladder. Direct author/reviewer proof passes `104/104`; the
+affected semantic, receipt, install, and local-release pack passes `305/305`;
+and the broad Greenfield unit/install frontier passes `3,322/3,322`. Immutable
+installed controls, the exact failed-subset replay, and the unchanged strict
+public campaign remain release gates.
+
 ### V42 explicit product intent versus reference provenance (2026-09-27)
 
 Greenfield host-candidate contract v25 assigns one semantic boundary before
@@ -1477,6 +1499,9 @@ semantic/design findings.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_candidate_review.py`, `src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py`
 - **2026-09-26 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-09-26-greenfield-projects-source-custody-directives-into-product-governance.md`, `src/odylith/runtime/domain_intelligence/greenfield_candidate_review.py`
@@ -1492,9 +1517,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_candidate_review.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py`
-- **2026-09-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_candidate_review.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_proof_observation.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

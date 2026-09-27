@@ -19,6 +19,7 @@ from typing import Any
 from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
     GreenfieldCandidateClarificationRequired,
     GreenfieldCandidateRejected,
+    REFERENCE_PROVENANCE_ROLE_CONTRACT,
     candidate_review_payload,
     review_greenfield_candidate,
 )
@@ -77,20 +78,7 @@ def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
                 "a requested product workflow that manages evidence, provenance or source identity as "
                 "domain data. Classify by the directive's actual governed system and outcome."
             ),
-            (
-                "Interpret each part of the evidence by its semantic role, independent of label order "
-                "or shared vocabulary. When the evidence supplies a complete requested workflow with "
-                "a source-supported participant or task owner, usable task and visible result, that "
-                "workflow remains the product-intent authority. Separately identified reference "
-                "provenance—including a source artifact, repository or reference-system description—"
-                "is grounding context, not a competing product boundary, unless the request explicitly "
-                "assigns that reference an owned role, dependency, constraint or result in the requested "
-                "workflow. A thematic difference between the requested workflow and reference context "
-                "is not material ambiguity by itself. Ask for product_boundary only when the source itself "
-                "leaves materially competing or unclear inside-versus-outside responsibility, dependency "
-                "or scope limits that cannot safely remain an explicit assumption; the workflow need not "
-                "be incomplete for that boundary to be material."
-            ),
+            REFERENCE_PROVENANCE_ROLE_CONTRACT,
             (
                 "For every accepted source fact, copy quote and locator context byte-for-byte "
                 "from the source; never normalize or rewrite either value. "

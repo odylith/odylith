@@ -22,6 +22,7 @@ from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
 )
 from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
     PRODUCT_STORY_ROLE_DEFINITION,
+    REFERENCE_PROVENANCE_ROLE_CONTRACT,
     REVIEW_PROMPT,
 )
 from odylith.runtime.domain_intelligence.greenfield_event_ordering import (
@@ -487,6 +488,7 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
         and "workflow need not be incomplete" in requirement
         for requirement in payload["requirements"]
     )
+    assert REFERENCE_PROVENANCE_ROLE_CONTRACT in payload["requirements"]
     assert any(
         "complete source action owned by its actor" in requirement
         and "full joined action phrase" in requirement
@@ -914,7 +916,10 @@ def test_host_candidate_unifies_event_identity_without_promoting_human_work() ->
 
 
 def test_candidate_review_requires_complete_accepted_component_custody() -> None:
-    assert "Preserve every explicit source-stated" in REVIEW_PROMPT
+    assert "Preserve and require every responsibility" in REVIEW_PROMPT
+    assert "explicitly binds to the requested product" in REVIEW_PROMPT
+    assert "owned role, dependency, constraint, event\nor result" in REVIEW_PROMPT
+    assert "omits separately identified,\nunbound reference provenance" in REVIEW_PROMPT
     assert "accepted_source.components" in REVIEW_PROMPT
     assert "cannot substitute for accepted custody" in REVIEW_PROMPT
 

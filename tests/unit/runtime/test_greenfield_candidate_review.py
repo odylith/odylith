@@ -64,7 +64,7 @@ def run_review(provider, clock, *, deadline=55.0, observation=None, factory=None
 
 
 def test_partition_preserves_every_value_and_binds_complete_candidate():
-    assert review.CANDIDATE_REVIEW_VERSION == "odylith.greenfield.candidate-review.v13"
+    assert review.CANDIDATE_REVIEW_VERSION == "odylith.greenfield.candidate-review.v14"
     source = _source()
     candidate = _response(source)["result"]
     original = deepcopy(candidate)
@@ -197,6 +197,26 @@ def test_review_request_keeps_source_custody_out_of_product_meaning():
     assert "restates or\nparaphrases it as an assumption, component, workstream" in prompt
     assert "product workflows that manage evidence" in prompt
     assert "actual\ngoverned system and outcome" in prompt
+
+
+def test_review_request_shares_reference_provenance_role_with_host_contract():
+    clock = Clock()
+    provider = Reviewer(ADMITTED, clock)
+    run_review(provider, clock)
+
+    prompt = provider.requests[0].system_prompt
+    assert review.REFERENCE_PROVENANCE_ROLE_CONTRACT in prompt
+    assert "complete requested workflow" in prompt
+    assert "workflow remains the product-intent authority" in prompt
+    assert "reference-system description" in prompt
+    assert "not a competing product boundary" in prompt
+    assert "explicitly assigns that reference" in prompt
+    assert "inside-versus-outside responsibility" in prompt
+    assert "workflow need not be incomplete" in prompt
+    assert "semantic-role classification before accepted-source completeness" in prompt
+    assert "omits separately identified,\nunbound reference provenance" in prompt
+    assert "owned role, dependency, constraint, event\nor result" in prompt
+    assert "Shared vocabulary, descriptive capabilities or\nthematic relevance" in prompt
 
 
 def test_human_subject_state_object_keeps_source_and_performer_custody_separate():

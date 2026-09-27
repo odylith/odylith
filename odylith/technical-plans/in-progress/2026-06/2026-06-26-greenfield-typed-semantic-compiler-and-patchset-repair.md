@@ -1,5 +1,35 @@
 Status: In progress
 
+## V43 author-review semantic-role parity (2026-09-27)
+
+The immutable V42 mechanism passed all five independent boundary controls and
+the exact V41 failed-subset replay. In the unchanged strict ten-case public
+campaign, the first eight cases passed at `10/10`; case nine then failed closed
+before staging because the independent reviewer required repository-background
+responsibilities that the V42 authoring contract correctly treated as unbound
+reference provenance. The Astra-medium author completed in `83.31s`; no
+transaction or governed write was produced. This is author-review contract
+drift, not a model, custody, schema, transaction, or product-boundary failure.
+
+Use one shared semantic-role contract at both boundaries. Apply it before
+accepted-component completeness: unbound repository, artifact, or reference-
+system descriptions remain provenance, while every source responsibility
+explicitly bound to the requested product as an owned role, dependency,
+constraint, event, or result remains mandatory accepted custody. Preserve the
+existing genuine `product_boundary` clarification. Change only candidate-review
+v13 to v14; keep host contract v25 and every schema, validator, model profile,
+call limit, transaction law, and projection unchanged. Add no parser, regex,
+label vocabulary, retry, repair, fallback author/reviewer, or model ladder.
+
+Direct author/reviewer proof passes `104/104`; the affected semantic, receipt,
+install, and local-release pack passes `305/305`; and the broad Greenfield
+unit/install frontier passes `3,322/3,322`. After governance settlement, commit
+and push this semantic checkpoint, build one fresh immutable V43 distribution,
+rerun the five controls, replay only the exact V42 failed subset, and rerun the
+unchanged strict ten-case campaign with browser, recovery, host-argv, cleanup,
+and Luna clarification proof. Require independent strong semantic review before
+any protected final-holdout access; completion remains unclaimed.
+
 ## V42 product-intent and reference-provenance boundary (2026-09-27)
 
 The immutable V41 strict public campaign passed nine of ten cases at the full
