@@ -50,12 +50,21 @@ from odylith.runtime.domain_intelligence.greenfield_candidate_revision import (
 )
 
 
-MODEL_PROFILE_ASSIGNMENT_VERSION = "release-success-astra-only-v2"
+MODEL_PROFILE_ASSIGNMENT_VERSION = "release-success-astra-only-v3"
 MODEL_PROFILE_ASSIGNMENT_SEED = "f1e5a66a5cce578b0bd9f56d96f08887358632627231769667c432933b9dfe6f"
 MODEL_PROFILES = supported_greenfield_model_profile_ids()
 LOWER_CAPABILITY_CONTROL_PROFILES = lower_capability_control_greenfield_model_profile_ids()
 DECLARED_MODEL_PROFILES = declared_greenfield_model_profile_ids()
-_ASSIGNABLE_PROFILE_IDS = (*MODEL_PROFILES, *LOWER_CAPABILITY_CONTROL_PROFILES)
+DIAGNOSTIC_MODEL_PROFILES = tuple(
+    profile_id
+    for profile_id in DECLARED_MODEL_PROFILES
+    if profile_id not in (*MODEL_PROFILES, *LOWER_CAPABILITY_CONTROL_PROFILES)
+)
+_EXPLICIT_PROFILE_IDS = (
+    *MODEL_PROFILES,
+    *LOWER_CAPABILITY_CONTROL_PROFILES,
+    *DIAGNOSTIC_MODEL_PROFILES,
+)
 UNAVAILABLE_PROVIDER_PROFILE = UNAVAILABLE_PROVIDER_PROFILE_ID
 _TAG_PREFIX = "model-profile:"
 _PROFILE_ENV_KEYS = (
@@ -105,7 +114,7 @@ def assign_model_profiles(cases: Sequence[GreenfieldMatrixCase]) -> tuple[Greenf
         stratum = case_expectation(case)
         input_style = str(case.input_style or "unspecified")
         explicit = _explicit_profiles(case)
-        if len(explicit) > 1 or (explicit and explicit[0] not in _ASSIGNABLE_PROFILE_IDS):
+        if len(explicit) > 1 or (explicit and explicit[0] not in _EXPLICIT_PROFILE_IDS):
             raise ValueError(f"Greenfield case `{_case_id(case)}` has an invalid model profile")
         if explicit:
             if (
@@ -144,10 +153,10 @@ def assign_model_profiles(cases: Sequence[GreenfieldMatrixCase]) -> tuple[Greenf
 
 
 def case_model_profile(case: GreenfieldMatrixCase) -> str:
-    """Return the one validated profile assigned to a release case."""
+    """Return the one validated profile explicitly or automatically assigned to a case."""
 
     profiles = _explicit_profiles(case)
-    if len(profiles) != 1 or profiles[0] not in _ASSIGNABLE_PROFILE_IDS:
+    if len(profiles) != 1 or profiles[0] not in _EXPLICIT_PROFILE_IDS:
         raise ValueError(f"Greenfield case `{_case_id(case)}` lacks one supported model profile")
     if (
         profiles[0] in LOWER_CAPABILITY_CONTROL_PROFILES
@@ -1539,6 +1548,7 @@ def _request_role_summary(observation: Mapping[str, Any]) -> dict[str, Any]:
 __all__ = [
     "MODEL_PROFILES",
     "DECLARED_MODEL_PROFILES",
+    "DIAGNOSTIC_MODEL_PROFILES",
     "LOWER_CAPABILITY_CONTROL_PROFILES",
     "MODEL_PROFILE_ASSIGNMENT_SEED",
     "MODEL_PROFILE_ASSIGNMENT_VERSION",

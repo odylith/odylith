@@ -26,7 +26,7 @@
 
 - Ownership: Greenfield release qualification harness and evaluator contract parity.
 
-- Timeline: 2026-09-27: V31 stopped on a real host timeout after 16 passes; post-run review proved the sealed receipt command was policy-invalid, unavailable-provider proof never reached the provider, and semantic/model-profile evaluators were stale relative to current receipts.
+- Timeline: 2026-09-27: V31 stopped on a real host timeout after 16 passes; post-run review proved the sealed receipt command was policy-invalid, unavailable-provider proof never reached the provider, and semantic/model-profile evaluators were stale relative to current receipts. The bounded repair then exposed a fourth proof defect: rejecting every Sol result had masked that a host-native result could relabel only its top-level profile ID without rechecking the sealed stage, host request, configured model, and reviewer observation.
 
 - Blast Radius: Every release-tier Greenfield campaign using current participant-first receipts; incomplete campaigns are especially misleading, but stale receipt schemas can invalidate complete campaigns too.
 
@@ -42,11 +42,11 @@
 
 - Root Cause: Release harness evolution lagged the current single-host-candidate plus independent-review architecture: command packaging retained forbidden stop flags, the negative control retained an unsupported repair-tier argument, relation scoring omitted source_precedence, and model-slice scoring expected retired participant-selection/remaining-authoring roles.
 
-- Solution: Implemented in the working checkpoint: unavailable-provider proof now authors exactly one standard host candidate and exercises installed independent review under the unavailable profile; current `source_precedence` and host-candidate/reviewer receipts are accepted by the closed evaluator schemas; incomplete campaigns return `incomplete`/`unscored` with no semantic severity assignment or release credit. Release command-package validation remains a required pre-seal check. No floor is weakened and diagnostic profiles receive no release credit.
+- Solution: Implemented in the working checkpoint: unavailable-provider proof now authors exactly one standard host candidate and exercises installed independent review under the unavailable profile; current `source_precedence` and host-candidate/reviewer receipts are accepted by the closed evaluator schemas; incomplete campaigns return `incomplete`/`unscored` with no semantic severity assignment or release credit. Explicit Sol-high cases are now admitted only as diagnostics, are never assigned automatically, and remain excluded from release-success coverage. The aggregate proof independently rechecks the claimed profile against configured provider/model/effort, sealed stage identity, host argv receipt, and reviewer observation so a relabeled result fails closed. Release command-package validation remains a required pre-seal check. No floor is weakened and diagnostic profiles receive no release credit.
 
 - Rollback/Forward Fix: Forward-fix the harness; never rerun the consumed V31 holdout.
 
-- Verification: `153/153` focused and adjacent harness tests pass. The complete install suite reaches `1,715/1,716`; its sole failure is the pre-existing customer-bootstrap guidance byte budget (`17,127 < 17,000`) in untouched `test_manager.py`, unrelated to this patch. Public discovery and full release qualification on an immutable build remain required before sealing a new holdout.
+- Verification: The original harness repair passes `153/153` focused and adjacent tests. The diagnostic-profile and profile-binding extension passes `341/341` focused release-harness tests, including valid explicit Sol discovery, zero Sol release credit, no automatic Sol assignment, forged top-level profile relabel rejection, and independent mutations of every configured, stage, argv, and reviewer profile binding. Governance browser proof passes `109/109` across Radar, Registry, Casebook, and Compass normal, empty/fallback, degraded, error, density, layout, sorting, and selection-race states. The complete install suite previously reached `1,715/1,716`; its sole failure is the pre-existing customer-bootstrap guidance byte budget (`17,127 < 17,000`) in untouched `test_manager.py`, unrelated to this patch. An identical-input public Astra-medium versus Sol-high comparison and full immutable release qualification remain required before sealing a new holdout.
 
 - Prevention: Version evaluator schemas with the canonical receipt contracts and make package preflight execute the same policy validator as the release harness before a ledger can be sealed.
 
@@ -74,5 +74,7 @@
 - scripts/release/greenfield_semantic_release_score.py
 - scripts/release/greenfield_relation_fidelity.py
 - scripts/release/greenfield_matrix_statistics.py
+- scripts/release/greenfield_model_profiles.py
+- scripts/release/greenfield_model_profile_proof.py
 
 - Runbook References: - odylith/MAINTAINER_RELEASE_RUNBOOK.md

@@ -8,7 +8,7 @@ import hashlib
 import json
 from typing import Any
 
-from greenfield_model_profiles import DEEP_PROFILE_ID
+from greenfield_model_profiles import DIAGNOSTIC_MODEL_PROFILES
 from greenfield_model_profiles import LOWER_CAPABILITY_CONTROL_PROFILES
 from greenfield_model_profiles import MODEL_PROFILES
 from greenfield_model_profiles import UNAVAILABLE_PROVIDER_PROFILE
@@ -23,7 +23,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 
 
-MODEL_PROFILE_PROOF_VERSION = "odylith.greenfield.installed-model-profile-proof.v4"
+MODEL_PROFILE_PROOF_VERSION = "odylith.greenfield.installed-model-profile-proof.v5"
 UNAVAILABLE_PROVIDER_FAILURE_TEXT = "model authoring is unavailable"
 TRANSACTION_COMMITTED_EXPECTATION = "transaction_committed"
 CLARIFICATION_REQUIRED_EXPECTATION = "clarification_required"
@@ -247,18 +247,14 @@ def model_profile_release_proof(
     """Require Astra success plus one Luna clarification/no-write control."""
 
     qualified_profile_ids = (*MODEL_PROFILES, *LOWER_CAPABILITY_CONTROL_PROFILES)
-    rows: dict[str, list[Any]] = {profile_id: [] for profile_id in qualified_profile_ids}
+    observed_profile_ids = (*qualified_profile_ids, *DIAGNOSTIC_MODEL_PROFILES)
+    rows: dict[str, list[Any]] = {profile_id: [] for profile_id in observed_profile_ids}
     validation_issues: list[str] = []
     coverage_issues: list[str] = []
     for result in results:
         evidence = _mapping(getattr(result, "evidence", None))
         profile_evidence = _mapping(evidence.get("model_profile"))
         profile_id = str(profile_evidence.get("profile_id") or "").strip()
-        if profile_id == DEEP_PROFILE_ID:
-            validation_issues.append(
-                "Sol-high is an unsupported diagnostic and cannot count toward release success"
-            )
-            continue
         if profile_id not in rows:
             validation_issues.append(
                 f"matrix result `{getattr(result, 'name', '')}` lacks a supported observed model profile"
@@ -413,12 +409,24 @@ def model_profile_release_proof(
         if cleaned_validation_issues or (require_complete and cleaned_coverage_issues)
         else "passed"
     )
+    diagnostic_summaries = {
+        profile_id: {
+            **profile_summaries[profile_id],
+            "qualification": "diagnostic_only",
+            "release_credit": False,
+        }
+        for profile_id in DIAGNOSTIC_MODEL_PROFILES
+    }
     return {
         "version": MODEL_PROFILE_PROOF_VERSION,
         "status": status,
         "coverage_status": "passed" if not cleaned_coverage_issues else "incomplete",
         "required_complete_coverage": bool(require_complete),
-        "profiles": profile_summaries,
+        "profiles": {
+            profile_id: profile_summaries[profile_id]
+            for profile_id in qualified_profile_ids
+        },
+        "diagnostics": diagnostic_summaries,
         "lower_capability_scope": lower_capability_scope,
         "issues": list(cleaned_issues),
     }
@@ -588,6 +596,12 @@ def _profile_observation_issues(
     observed = _mapping(profile_evidence.get("observed"))
     stages = _mapping(profile_evidence.get("stage_observation"))
     summary = _mapping(profile_evidence.get("stage_observation_summary"))
+    host_native_binding_issues = _host_native_profile_binding_issues(
+        profile_evidence,
+        profile_id,
+    )
+    if host_native_binding_issues:
+        return host_native_binding_issues
     if summary.get("origin") == "host_native" and summary.get("clarification_origin"):
         if expectation != CLARIFICATION_REQUIRED_EXPECTATION:
             return ("host-native clarification does not match the declared case outcome",)
@@ -666,6 +680,58 @@ def _profile_observation_issues(
     ).get("status") != expected_status:
         issues.append("retained model response does not match the declared case outcome")
     return tuple(issues)
+
+
+def _host_native_profile_binding_issues(
+    profile_evidence: Mapping[str, Any],
+    profile_id: str,
+) -> tuple[str, ...]:
+    """Recheck public host-native evidence against the claimed pinned profile."""
+
+    observed = _mapping(profile_evidence.get("observed"))
+    stages = _mapping(profile_evidence.get("stage_observation"))
+    summary = _mapping(profile_evidence.get("stage_observation_summary"))
+    if not (
+        observed.get("origin") == "host_native"
+        or summary.get("origin") == "host_native"
+    ):
+        return ()
+
+    contract = get_greenfield_model_profile(profile_id)
+    issues: list[str] = []
+    configured = _mapping(profile_evidence.get("configured"))
+    if (
+        configured.get("provider") != contract.provider
+        or configured.get("model") != contract.model
+        or configured.get("reasoning_effort") != contract.reasoning_effort
+    ):
+        issues.append("host-native configured model does not match the claimed profile")
+    if stages.get("model_profile_id") != profile_id:
+        issues.append("host-native stage identifies a different model profile")
+    host_request = _mapping(stages.get("host_request"))
+    if (
+        host_request.get("model") != contract.model
+        or host_request.get("reasoning_effort") != contract.reasoning_effort
+    ):
+        issues.append("host-native request does not match the claimed model profile")
+
+    review = _mapping(observed.get("candidate_review"))
+    if review:
+        if review.get("profile_id") != profile_id:
+            issues.append("host-native candidate review identifies a different model profile")
+        else:
+            issues.extend(
+                greenfield_model_profile_observation_issues(
+                    profile_id=profile_id,
+                    provider=str(review.get("provider") or ""),
+                    model=str(review.get("model") or ""),
+                    reasoning_effort=str(review.get("reasoning_effort") or ""),
+                    effective_timeout_seconds=review.get("effective_timeout_seconds"),
+                    authoring_tier=str(review.get("authoring_tier") or ""),
+                    request_role="candidate_review",
+                )
+            )
+    return tuple(dict.fromkeys(issues))
 
 
 def _profile_evidence_is_host_native(profile_evidence: Mapping[str, Any]) -> bool:

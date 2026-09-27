@@ -1,6 +1,24 @@
 # Release
 Last updated: 2026-09-27
 
+## Diagnostic model comparison custody (2026-09-27)
+
+Release qualification distinguishes supported success profiles, lower-capability
+controls, and diagnostic-only profiles. Automatic Greenfield case assignment
+uses only the supported Astra-medium success profile. Sol-high may be selected
+only by an explicit disclosed case tag for a bounded comparison; its results are
+validated and reported separately with zero release credit. A complete release
+proof still requires Astra success plus the Luna clarification/no-write control.
+
+Host-native aggregate proof independently binds the claimed profile to the
+configured provider/model/effort, sealed stage profile, host argv model/effort,
+and reviewer observation. A result cannot qualify—or even pass as a diagnostic—
+by changing only its public profile label. This changes release-evidence
+classification, not the Greenfield authoring topology, so no Atlas diagram
+changes. The bounded contract passes `341/341` tests and the governed UX passes
+`109/109` browser checks; identical-input installed
+comparison and immutable public qualification remain open.
+
 ## V28 source-custody qualification stop (2026-09-26)
 
 Immutable V28 passed the first 30 disclosed cases, then failed the archive
@@ -867,6 +885,9 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 1 verifiable artifact reference.
+  - Scope: B-142
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`
 - **2026-09-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
@@ -882,9 +903,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_candidate_review.py`
-- **2026-09-25 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_profile_contract.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

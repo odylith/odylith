@@ -11,6 +11,9 @@ from pathlib import Path
 import pytest
 
 from tests.greenfield_model_profile_test_support import sealed_profile_observation
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    DEEP_PROFILE_ID,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SCRIPTS_ROOT = REPO_ROOT / "scripts" / "release"
@@ -1774,6 +1777,25 @@ def test_model_profile_release_proof_reports_missing_lower_profile_as_unproven()
         "requirement": "installed_source_bound_clarification_no_write_only",
     }
     assert module.model_profile_release_proof(results, require_complete=True)["status"] == "failed"
+
+
+def test_model_profile_release_proof_reports_sol_as_diagnostic_without_release_credit() -> None:
+    module = _module()
+    diagnostic = _passing_profile_result(module, DEEP_PROFILE_ID, 80.0)
+
+    discovery = module.model_profile_release_proof((diagnostic,), require_complete=False)
+
+    assert discovery["status"] == "passed", discovery["issues"]
+    assert DEEP_PROFILE_ID not in discovery["profiles"]
+    assert discovery["diagnostics"][DEEP_PROFILE_ID]["status"] == "passed"
+    assert discovery["diagnostics"][DEEP_PROFILE_ID]["qualification"] == "diagnostic_only"
+    assert discovery["diagnostics"][DEEP_PROFILE_ID]["release_credit"] is False
+    assert discovery["profiles"][module.STANDARD_PROFILE_ID]["committed_positive_case_count"] == 0
+
+    release = module.model_profile_release_proof((diagnostic,), require_complete=True)
+
+    assert release["status"] == "failed"
+    assert any("missing success profile" in issue for issue in release["issues"])
 
 
 @pytest.mark.parametrize("mutation", ["missing", "author_model", "author_timeout", "review_path", "outcome"])

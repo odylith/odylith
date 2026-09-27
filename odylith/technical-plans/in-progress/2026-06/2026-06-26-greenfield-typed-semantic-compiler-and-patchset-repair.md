@@ -1,5 +1,27 @@
 Status: In progress
 
+## Public author comparison gate (2026-09-27)
+
+The release harness now separates explicit diagnostic execution from release
+qualification. Sol-high can be selected only by an explicit case tag; automatic
+assignment remains Astra-medium only. A valid Sol result is reported under a
+diagnostic section with zero release credit, while complete qualification still
+requires the Astra success profile and the Luna clarification/no-write control.
+The aggregate gate also rechecks host-native profile identity across configured
+model metadata, the sealed stage, the host argv receipt, and the reviewer
+observation, preventing a top-level profile relabel from passing.
+
+The bounded proof passes `341/341` release-harness tests, and the governed UX
+passes `109/109` browser checks across normal, empty/fallback, degraded, error,
+layout, density, sorting, and selection-race states. Next, freeze and push
+one immutable build, then run the same disclosed source bytes once under
+Astra-medium and once under Sol-high. Compare semantic score, reviewer outcome,
+consumer-visible package quality, request-to-preview latency, cleanup, browser,
+and recovery evidence. Retain Astra as the only release-qualified author unless
+the complete public qualification contract is deliberately changed and rerun.
+Do not inspect or rerun V31, add a retry or repair path, or treat a diagnostic
+pass as holdout authorization.
+
 ## V31 One-Shot Holdout Rejection (2026-09-27)
 
 Immutable V30 passed the complete 36-case disclosed campaign at `10/10`: all

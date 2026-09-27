@@ -93,8 +93,14 @@ def test_assignment_balances_repeated_input_styles_across_profiles() -> None:
 
 def test_assignment_preserves_one_valid_explicit_profile_and_rejects_bad_tags() -> None:
     explicit = replace(_case("explicit"), tags=(f"model-profile:{MODEL_PROFILES[0]}",))
+    diagnostic = replace(_case("diagnostic"), tags=(f"model-profile:{DEEP_PROFILE_ID}",))
 
     assert case_model_profile(assign_model_profiles((explicit,))[0]) == MODEL_PROFILES[0]
+    assert case_model_profile(assign_model_profiles((diagnostic,))[0]) == DEEP_PROFILE_ID
+    assert all(
+        case_model_profile(case) != DEEP_PROFILE_ID
+        for case in assign_model_profiles(tuple(_case(f"automatic-{index}") for index in range(6)))
+    )
 
     with pytest.raises(ValueError, match="invalid model profile"):
         assign_model_profiles((replace(_case("bad"), tags=("model-profile:unknown",)),))

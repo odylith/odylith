@@ -1270,8 +1270,10 @@ def test_luna_or_sol_positive_result_cannot_qualify_release_success() -> None:
             profile_id=RESCUE_PROFILE_ID,
         ),
     )
-    sol_evidence = _host_native_authored_profile_evidence(source)
-    sol_evidence["profile_id"] = DEEP_PROFILE_ID
+    sol_evidence = _host_native_authored_profile_evidence(
+        source,
+        profile_id=DEEP_PROFILE_ID,
+    )
     sol_positive = _host_native_committed_aggregate_result(
         profile_evidence=sol_evidence,
     )
@@ -1281,8 +1283,54 @@ def test_luna_or_sol_positive_result_cannot_qualify_release_success() -> None:
 
     assert luna_proof["status"] == "failed"
     assert any("must clarify without writing" in issue for issue in luna_proof["issues"])
-    assert sol_proof["status"] == "failed"
-    assert any("unsupported diagnostic" in issue for issue in sol_proof["issues"])
+    assert sol_proof["status"] == "passed", sol_proof["issues"]
+    assert sol_proof["diagnostics"][DEEP_PROFILE_ID]["status"] == "passed"
+    assert sol_proof["diagnostics"][DEEP_PROFILE_ID]["release_credit"] is False
+    assert sol_proof["profiles"][STANDARD_PROFILE_ID]["committed_positive_case_count"] == 0
+
+
+def test_sol_diagnostic_rejects_a_forged_profile_relabel() -> None:
+    source = "The first complete task remains materially ambiguous."
+    forged = _host_native_authored_profile_evidence(source)
+    forged["profile_id"] = DEEP_PROFILE_ID
+
+    proof = model_profile_release_proof(
+        (_host_native_committed_aggregate_result(profile_evidence=forged),),
+        require_complete=False,
+    )
+
+    assert proof["status"] == "failed"
+    assert any("different model profile" in issue for issue in proof["issues"])
+
+
+@pytest.mark.parametrize(
+    "binding",
+    ("configured", "stage", "host_model", "host_effort", "review"),
+)
+def test_sol_diagnostic_rechecks_each_host_native_profile_binding(binding: str) -> None:
+    source = "The first complete task remains materially ambiguous."
+    evidence = _host_native_authored_profile_evidence(
+        source,
+        profile_id=DEEP_PROFILE_ID,
+    )
+    if binding == "configured":
+        evidence["configured"]["model"] = "gpt-6-astra"
+    elif binding == "stage":
+        evidence["stage_observation"]["model_profile_id"] = STANDARD_PROFILE_ID
+    elif binding == "host_model":
+        evidence["stage_observation"]["host_request"]["model"] = "gpt-6-astra"
+    elif binding == "host_effort":
+        evidence["stage_observation"]["host_request"]["reasoning_effort"] = "medium"
+    else:
+        evidence["observed"]["candidate_review"]["profile_id"] = STANDARD_PROFILE_ID
+
+    proof = model_profile_release_proof(
+        (_host_native_committed_aggregate_result(profile_evidence=evidence),),
+        require_complete=False,
+    )
+
+    assert proof["status"] == "failed"
+    assert any("host-native" in issue for issue in proof["issues"])
 
 
 def test_aggregate_clarification_rejects_contradictory_authored_observations() -> None:

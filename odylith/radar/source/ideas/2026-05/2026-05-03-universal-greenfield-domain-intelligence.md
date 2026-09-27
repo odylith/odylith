@@ -60,6 +60,23 @@ supersedes:
 
 superseded_by: 
 
+## V31 Diagnostic Author Comparison Gate (2026-09-27)
+
+- Keep Astra-medium as the sole automatically assigned and release-qualified
+  success profile. Permit Sol-high only through an explicit disclosed diagnostic
+  tag so the same public source bytes can compare semantic fidelity and tail
+  latency without silently changing the production mechanism.
+- Report diagnostic results separately with zero release credit. Recheck the
+  configured model, sealed stage profile, host argv receipt and reviewer
+  observation against the claimed profile; a top-level relabel must fail closed.
+- The bounded release-harness proof passes `341/341`, including independent
+  mutation of every host-native profile binding; governed UX passes `109/109`
+  browser checks. Push one immutable build,
+  run the identical-input Astra/Sol comparison, then retain the simplest profile
+  that meets quality and timing evidence. V31 remains consumed and must not be
+  inspected, rerun or used as tuning data. No retry, repair, fallback, parser,
+  regex, model ladder or second candidate is permitted.
+
 ## V28 Source-Custody Release Gate (2026-09-26)
 
 - Immutable V28 passed 30 disclosed cases, then committed the archive control
