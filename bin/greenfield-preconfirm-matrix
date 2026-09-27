@@ -4,7 +4,7 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_odylith.sh"
 
 requested_version="${1:-${VERSION:-$(current_source_version)}}"
 dist_arg="${2:-${DIST:-}}"
-temp_parent="${TEMP_PARENT:-${TMPDIR:-/tmp}}"
+temp_parent="${TEMP_PARENT:-${TMPDIR:-$(cd /tmp && pwd -P)}}"
 require_version "$requested_version"
 
 if [[ -z "$dist_arg" ]]; then

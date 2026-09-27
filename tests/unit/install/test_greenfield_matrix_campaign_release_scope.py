@@ -59,6 +59,12 @@ def test_repo_public_subset_is_exact_balanced_member_set_of_audited_parent() -> 
         "clarification_required": 5,
     }
     assert len({stressor for case in subset for stressor in case.stressors}) == 11
+    recovery_case = matrix.select_recovery_case(
+        subset,
+        proof_tier="release",
+        approved_audit_bindings=evaluation.summary["approved_audit_bindings"],
+    )
+    assert recovery_case.case_id == "release-accessibility-007-source"
     control = matrix._load_lower_capability_control_case(str(control_path))  # noqa: SLF001
     assert control is not None
     assert matrix.case_model_profile(control) == matrix.LOWER_CAPABILITY_CONTROL_PROFILES[0]

@@ -1,5 +1,34 @@
 Status: In progress
 
+## V36 public campaign entry contract (2026-09-27)
+
+The exact clean V36 distribution passed installed lifecycle smoke, then the
+public campaign exposed two pre-provider release-entry defects. On macOS the
+campaign wrapper's literal `/tmp` fallback crosses the operating system's
+`/tmp -> /private/tmp` symlink and is correctly rejected by retained-evidence
+safety. The maintained campaign and direct-preconfirm wrappers now resolve only
+that trusted hardcoded fallback to its physical path when neither
+`TEMP_PARENT` nor `TMPDIR` is supplied. Caller-supplied paths remain lexical and
+subject to the unchanged symlink rejection contract.
+
+The disclosed ten-case subset also passed its balance assertions while lacking
+the audited edited-confirmation case required to seed commit-recovery proof.
+Select exact audited parent member `release-accessibility-007-source` and
+rebalance with exact parent member `release-research-165-source`; retain ten
+families, all five input styles, five committed and five clarification outcomes,
+and all eleven stressors. The fixture contract must call the actual recovery
+selector and bind case `007`, so operational release readiness cannot be
+inferred from coverage counts alone.
+
+Focused proof passes `130/130`, the complete Greenfield install/release harness
+passes `1,257/1,257`, and the governance browser matrix passes `144/144` across
+normal, empty/fallback, degraded/error, density, layout, sorting, and
+selection-race states. Both failures stopped before model invocation and
+protected-input access. Commit this bounded harness/fixture checkpoint, rebuild
+one clean distribution, repeat lifecycle smoke, and restart the public campaign
+with retained evidence. Do not change Greenfield semantics, add an author,
+retry, fallback, parser, regex rule, or model ladder.
+
 ## Retained public qualification gate (2026-09-27)
 
 The first public Astra-medium attempt reached an admitted host candidate and then

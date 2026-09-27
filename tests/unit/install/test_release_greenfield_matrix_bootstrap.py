@@ -19,6 +19,7 @@ def _run_greenfield_preconfirm_matrix(
     *,
     overrides: dict[str, str],
     fake_python_body: str | None = None,
+    use_default_temp_parent: bool = False,
 ) -> subprocess.CompletedProcess[str]:
     dist_dir = tmp_path / "dist"
     dist_dir.mkdir()
@@ -61,12 +62,62 @@ def _run_greenfield_preconfirm_matrix(
             "ODYLITH_PYTHON": str(fake_python),
             "ODYLITH_REPO_ROOT_OVERRIDE": str(REPO_ROOT),
             "REAL_PYTHON": sys.executable,
-            "TEMP_PARENT": str(tmp_path),
-            **overrides,
         }
     )
+    if use_default_temp_parent:
+        environment.pop("TEMP_PARENT", None)
+        environment.pop("TMPDIR", None)
+    else:
+        environment["TEMP_PARENT"] = str(tmp_path)
+    environment.update(overrides)
     return subprocess.run(
         [str(REPO_ROOT / "bin" / "greenfield-preconfirm-matrix"), "0.1.15", str(dist_dir)],
+        cwd=REPO_ROOT,
+        env=environment,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+
+def _run_greenfield_matrix_campaign(
+    tmp_path: Path,
+    *,
+    temp_parent: str | None,
+    tmpdir: str | None = None,
+) -> subprocess.CompletedProcess[str]:
+    dist_dir = tmp_path / "dist"
+    dist_dir.mkdir()
+    (dist_dir / "install.sh").write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+    case_file = tmp_path / "cases.json"
+    case_file.write_text('{"cases": []}\n', encoding="utf-8")
+    fake_python = tmp_path / "fake-python"
+    fake_python.write_text(
+        "#!/usr/bin/env bash\n"
+        "printf '%s\\n' \"$*\" >> \"$FAKE_PYTHON_LOG\"\n",
+        encoding="utf-8",
+    )
+    fake_python.chmod(0o755)
+
+    environment = os.environ.copy()
+    environment.update(
+        {
+            "FAKE_PYTHON_LOG": str(tmp_path / "fake-python.log"),
+            "GREENFIELD_MATRIX_FAILED_CASE_FILES": str(case_file),
+            "ODYLITH_PYTHON": str(fake_python),
+            "ODYLITH_REPO_ROOT_OVERRIDE": str(REPO_ROOT),
+        }
+    )
+    if tmpdir is None:
+        environment.pop("TMPDIR", None)
+    else:
+        environment["TMPDIR"] = tmpdir
+    if temp_parent is None:
+        environment.pop("TEMP_PARENT", None)
+    else:
+        environment["TEMP_PARENT"] = temp_parent
+    return subprocess.run(
+        [str(REPO_ROOT / "bin" / "greenfield-matrix-campaign"), "0.1.15", str(dist_dir)],
         cwd=REPO_ROOT,
         env=environment,
         check=False,
@@ -161,7 +212,7 @@ def test_greenfield_preconfirm_matrix_target_runs_installed_release_gate() -> No
     assert "greenfield-preconfirm-matrix:" in makefile
     assert './bin/greenfield-preconfirm-matrix "$(VERSION)" "$(DIST)"' in makefile
     assert 'requested_version="${1:-${VERSION:-$(current_source_version)}}"' in text
-    assert 'temp_parent="${TEMP_PARENT:-${TMPDIR:-/tmp}}"' in text
+    assert 'temp_parent="${TEMP_PARENT:-${TMPDIR:-$(cd /tmp && pwd -P)}}"' in text
     assert 'PYTHONPATH="$odylith_repo_root/src${PYTHONPATH:+:$PYTHONPATH}"' in text
     assert 'scripts/release/greenfield_preconfirm_matrix.py \\' in text
     assert 'extra_args=()' in text
@@ -347,6 +398,43 @@ def test_greenfield_preconfirm_matrix_without_release_intent_runs_discovery_proo
     assert not list(tmp_path.glob("odylith-greenfield-wrapper-run.*"))
 
 
+def test_greenfield_preconfirm_matrix_uses_physical_default_temp_parent(tmp_path: Path) -> None:
+    result = _run_greenfield_preconfirm_matrix(
+        tmp_path,
+        overrides={"BROWSER_PROOF": "0", "COMMIT_RECOVERY_PROOF": "0"},
+        use_default_temp_parent=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    invocation = (tmp_path / "fake-python.log").read_text(encoding="utf-8")
+    wrapper_temp_root = invocation.split("--temp-parent ", 1)[1].split()[0]
+    assert Path(wrapper_temp_root).parent == Path("/tmp").resolve()
+
+
+def test_greenfield_preconfirm_matrix_preserves_explicit_tmpdir_for_validation(
+    tmp_path: Path,
+) -> None:
+    real_temp_parent = tmp_path / "real-temp"
+    real_temp_parent.mkdir()
+    linked_temp_parent = tmp_path / "linked-temp"
+    linked_temp_parent.symlink_to(real_temp_parent, target_is_directory=True)
+
+    result = _run_greenfield_preconfirm_matrix(
+        tmp_path,
+        overrides={
+            "BROWSER_PROOF": "0",
+            "COMMIT_RECOVERY_PROOF": "0",
+            "TMPDIR": str(linked_temp_parent),
+        },
+        use_default_temp_parent=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    invocation = (tmp_path / "fake-python.log").read_text(encoding="utf-8")
+    wrapper_temp_root = invocation.split("--temp-parent ", 1)[1].split()[0]
+    assert Path(wrapper_temp_root).parent == linked_temp_parent
+
+
 def test_greenfield_preconfirm_matrix_release_intent_runs_release_proof_without_audit(tmp_path: Path) -> None:
     overrides = _release_input_overrides(tmp_path)
 
@@ -489,6 +577,7 @@ def test_greenfield_matrix_campaign_target_runs_tiered_harness() -> None:
     assert "greenfield-matrix-campaign:" in makefile
     assert './bin/greenfield-matrix-campaign "$(VERSION)" "$(DIST)"' in makefile
     assert 'requested_version="${1:-${VERSION:-$(current_source_version)}}"' in text
+    assert 'temp_parent="${TEMP_PARENT:-${TMPDIR:-$(cd /tmp && pwd -P)}}"' in text
     assert 'scripts/release/greenfield_matrix_campaign_runner.py \\' in text
     assert 'GREENFIELD_MATRIX_FAILED_CASE_FILES' in text
     assert 'GREENFIELD_MATRIX_REGRESSION_CASE_FILES' in text
@@ -513,6 +602,51 @@ def test_greenfield_matrix_campaign_target_runs_tiered_harness() -> None:
     assert "merged campaign progress" in help_text
     assert "compact live progress lines" in help_text
     assert "GREENFIELD_MATRIX_QUIET_PROGRESS=1" in help_text
+
+
+def test_greenfield_matrix_campaign_uses_physical_default_temp_parent(tmp_path: Path) -> None:
+    result = _run_greenfield_matrix_campaign(tmp_path, temp_parent=None)
+
+    assert result.returncode == 0, result.stderr
+    invocation = (tmp_path / "fake-python.log").read_text(encoding="utf-8")
+    assert f"--temp-parent {Path('/tmp').resolve()}" in invocation
+
+
+def test_greenfield_matrix_campaign_preserves_explicit_temp_parent_for_validation(
+    tmp_path: Path,
+) -> None:
+    real_temp_parent = tmp_path / "real-temp"
+    real_temp_parent.mkdir()
+    linked_temp_parent = tmp_path / "linked-temp"
+    linked_temp_parent.symlink_to(real_temp_parent, target_is_directory=True)
+
+    result = _run_greenfield_matrix_campaign(
+        tmp_path,
+        temp_parent=str(linked_temp_parent),
+    )
+
+    assert result.returncode == 0, result.stderr
+    invocation = (tmp_path / "fake-python.log").read_text(encoding="utf-8")
+    assert f"--temp-parent {linked_temp_parent}" in invocation
+
+
+def test_greenfield_matrix_campaign_preserves_explicit_tmpdir_for_validation(
+    tmp_path: Path,
+) -> None:
+    real_temp_parent = tmp_path / "real-temp"
+    real_temp_parent.mkdir()
+    linked_temp_parent = tmp_path / "linked-temp"
+    linked_temp_parent.symlink_to(real_temp_parent, target_is_directory=True)
+
+    result = _run_greenfield_matrix_campaign(
+        tmp_path,
+        temp_parent=None,
+        tmpdir=str(linked_temp_parent),
+    )
+
+    assert result.returncode == 0, result.stderr
+    invocation = (tmp_path / "fake-python.log").read_text(encoding="utf-8")
+    assert f"--temp-parent {linked_temp_parent}" in invocation
 
 
 def test_release_candidate_is_pr_safe_non_publishing_current_checkout_lane() -> None:

@@ -252,6 +252,14 @@ def test_retained_evidence_output_rejects_temp_overlap_and_symlink_escape(tmp_pa
             temp_parent=temp_parent,
         )
 
+    linked_temp_parent = tmp_path / "linked-temp"
+    linked_temp_parent.symlink_to(temp_parent, target_is_directory=True)
+    with pytest.raises(RuntimeError, match="matrix temp parent crosses a symlink"):
+        prepare_retained_evidence_output_dir(
+            output_dir=tmp_path / "retained-evidence",
+            temp_parent=linked_temp_parent,
+        )
+
 
 def test_retained_case_rejects_symlinked_generation_artifact(tmp_path: Path) -> None:
     temp_parent = tmp_path / "temp"

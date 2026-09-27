@@ -1,6 +1,25 @@
 # Release
 Last updated: 2026-09-27
 
+## Public campaign entry preflight (2026-09-27)
+
+The Release component requires a disclosed public subset to be executable, not
+only balanced. When commit-recovery proof is enabled, at least one selected
+committed case must carry edited confirmed intent and a matching approved audit
+binding. The repository fixture contract invokes the production recovery-case
+selector and binds the expected audited member, while the existing exact-parent
+membership owner still rejects drift. Coverage assertions continue to require
+ten source families, all five input styles, five committed and five
+clarification outcomes, and all eleven stressors.
+
+Retained-evidence temp roots remain symlink-free. The two maintained Greenfield
+release wrappers physicalize only their trusted `/tmp` fallback when both
+`TEMP_PARENT` and `TMPDIR` are absent, which makes the default portable on
+macOS without canonicalizing explicit operator paths. Explicit symlinked paths
+still reach the unchanged fail-closed validator. This is release-entry
+portability and proof-fixture custody; it does not change the Greenfield
+authoring mechanism, recovery state machine, or protected-holdout boundary.
+
 ## Model-profile evidence custody (2026-09-27)
 
 Release qualification keeps Astra-medium as the sole successful Greenfield

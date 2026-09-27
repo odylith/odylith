@@ -136,6 +136,36 @@
   passes the full retained public matrix, clean-install/browser/recovery proof,
   and final independent adjudication.
 
+## V36 Public Campaign Preflight Closure (2026-09-27)
+
+- The first full retained public-campaign invocation stopped before a provider
+  call because its disclosed ten-case subset contained no case satisfying the
+  commit-recovery intersection: committed outcome, non-empty edited confirmed
+  intent, and approved audit binding. The audited parent contained exactly one
+  qualifying case, `release-accessibility-007-source`, but the live subset did
+  not select it. The selector correctly failed closed; the fixture contract did
+  not prove that recovery preflight was executable.
+- The subset now selects that exact audited parent member and replaces one
+  second committed member with `release-research-165-source`. This preserves
+  ten source families, all five input styles, five committed and five
+  clarification outcomes, and all eleven required stressors. The fixture test
+  now executes the real recovery selector and requires case `007`, preventing a
+  balanced-looking but operationally unusable release subset.
+- A preceding invocation exposed a separate macOS entrypoint defect:
+  `greenfield-matrix-campaign` defaulted to lexical `/tmp`, while retained
+  evidence correctly rejects symlinked temp roots and macOS maps `/tmp` to
+  `/private/tmp`. Both maintained Greenfield wrappers now physicalize only
+  their hardcoded fallback when `TEMP_PARENT` and `TMPDIR` are absent. Explicit
+  caller paths remain untouched and still fail closed on symlink crossings; no
+  retained-evidence safety rule was relaxed.
+- Focused wrapper, retained-evidence, public-subset, and recovery-selection
+  proof passes `130/130`; the complete Greenfield install/release harness passes
+  `1,257/1,257`. Fresh governance browser proof passes `144/144` across normal,
+  empty/fallback, degraded/error, density, layout, sorting, and selection-race
+  states. Both preflight failures occurred before model invocation and before
+  protected-input access. Public qualification remains pending on a new clean
+  distribution; CB-347 stays open.
+
 - Preflight Checks: Verify release command policy, supported CLI arguments, relation schema parity, observed role parity and incomplete-campaign behavior before any new sealed input is authored.
 
 - Regression Tests Added: Added exact current-receipt relation parity, host-candidate/reviewer observation parity, incomplete/unscored severity suppression, and one-candidate provider-unavailable/no-write controls. The consumed holdout is not a regression fixture.
