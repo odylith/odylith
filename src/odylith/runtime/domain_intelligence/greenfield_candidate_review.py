@@ -27,7 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-CANDIDATE_REVIEW_VERSION = "odylith.greenfield.candidate-review.v9"
+CANDIDATE_REVIEW_VERSION = "odylith.greenfield.candidate-review.v10"
 STATE_OBJECT_ROLE_DEFINITION = (
     "One source-cited subject, entity, record, work item, case, artifact, or status "
     "whose state the workflow changes or reviews. The subject may be a person; never "
@@ -73,9 +73,13 @@ HUMAN_ACTOR_ROLE_DEFINITION = (
     "Source-stated people or human roles participating in the product, including "
     "source-stated beneficiaries and explicit output recipients outside the first path. "
     "Participation does not establish a performing actor or direct product operator; "
-    "do not assign those roles without source support. Use an empty list when no "
-    "human participant is stated. An activity, artifact, or output-purpose modifier "
-    "is not a human participant."
+    "do not assign those roles without source support. The audience for a request, brief, "
+    "report, proposal, or other authoring deliverable is not thereby a product participant; "
+    "include that audience only when the source separately states that it uses, benefits from, "
+    "participates in, or receives an output from the requested product. When a direct workflow "
+    "names its actor, do not promote a broader authoring audience into that workflow. Use an "
+    "empty list when no human participant is stated. An activity, artifact, or output-purpose "
+    "modifier is not a human participant."
 )
 PRODUCT_STORY_ROLE_DEFINITION = (
     "A complete source span about product behavior or outcome, excluding the operator "

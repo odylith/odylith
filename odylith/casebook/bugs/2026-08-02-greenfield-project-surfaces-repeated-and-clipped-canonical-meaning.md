@@ -1,5 +1,33 @@
 - Bug ID: CB-303
 
+- V29 authoring-audience recurrence (2026-09-26): Immutable V29 completed 30
+  disclosed cases with 29 passes, then stopped before transaction staging on
+  `public-v11-security-183-description`. The host author promoted `security
+  team` from `Project brief for a security team` into `human_actors`, while the
+  source separately named `program lead` as the workflow actor. Independent
+  candidate-review v9 correctly denied that unsupported participant at
+  `candidate.accepted_source.facts.human_actors[1]`; no governed package was
+  published. Retain
+  `/private/tmp/odylith-v29-public-rerun.HKpYMa` and
+  `/private/tmp/odylith-v29-evidence-rerun.m253WH` as terminal failed evidence.
+- The failure belongs to the shared human-participant role contract, not a
+  parser, citation matcher, or projection. Authoring v72, host contract v23,
+  and candidate-review v10 now distinguish evidence-authoring audience from
+  product participation: an audience becomes a participant only when the
+  source separately states product use, benefit, participation, or output
+  receipt; a direct workflow actor is not broadened from document audience.
+  The one-author/one-reviewer mechanism, candidate schema, transaction path,
+  model profile, and timing laws are unchanged. No regex, vocabulary
+  whitelist, retry, repair, fallback, model ladder, or additional call was
+  added.
+- Focused proof passes `437/437`; independent bounded review returns `SHIP`
+  with no P0/P1 code finding. Fresh Astra controls exclude the authoring-only
+  audience while preserving a separately source-stated product audience, but
+  their temporary proposal files lacked an active immutable generation and do
+  not count as release proof. Build fresh immutable bytes and require the full
+  36-case replay to retain reviewer-v10 admission receipts. Independent
+  retained-output review and exactly one untouched holdout remain mandatory.
+
 - V27 first-run branch-conflation recurrence (2026-09-26): Immutable V27
   passed 30 disclosed cases at `10/10`, then stopped before transaction staging
   on `public-v11-archive-custody-01`. The candidate retained all four source

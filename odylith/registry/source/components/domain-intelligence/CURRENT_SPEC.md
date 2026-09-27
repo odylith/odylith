@@ -4,6 +4,30 @@ Last updated: 2026-09-26
 
 ## Overview
 
+### Evidence audience is not automatically a product participant (2026-09-26)
+
+Immutable V29 completed 30 disclosed cases with 29 passes before the host
+candidate promoted `security team` from the evidence heading `Project brief
+for a security team` into `human_actors`. The source separately named `program
+lead` as the workflow actor. Independent candidate review correctly denied the
+unsupported participant, and no governed package was published.
+
+Domain Intelligence now keeps one shared human-participant role across the
+host schema and independent review: a role named only by the evidence's
+authoring context is not product truth. It becomes a participant only when the
+source separately states product use, benefit, participation, or output
+receipt. A direct workflow actor is not broadened from a document audience.
+Authoring v72, host contract v23, and candidate-review v10 version this same
+boundary; candidate shape, custody, transaction publication, model profile,
+and timing contracts remain unchanged. This adds no parser, regex, vocabulary
+whitelist, retry, repair, fallback, alternate author, or extra model call.
+
+Focused proof passes `437/437`, and independent bounded review returns `SHIP`
+with no P0/P1 code finding. Fresh Astra development controls preserve the
+distinction in both directions. Release qualification still requires one fresh
+immutable 36-case replay with retained reviewer-v10 receipts, independent
+retained-output review, and exactly one untouched holdout.
+
 ### Source-custody controls stay outside product meaning (2026-09-26)
 
 Immutable V28 passed its first 30 disclosed cases at `10/10`, then committed a

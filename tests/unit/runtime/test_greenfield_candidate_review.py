@@ -129,6 +129,9 @@ def test_partition_preserves_every_value_and_binds_complete_candidate():
     assert participant_role == author._AUTHORED_FACTS_SCHEMA["properties"]["human_actors"]["description"]
     assert "source-stated beneficiaries" in participant_role
     assert "does not establish a performing actor" in participant_role
+    assert "audience for a request, brief, report, proposal" in participant_role
+    assert "separately states that it uses, benefits from, participates in" in participant_role
+    assert "direct workflow names its actor" in participant_role
     assert "Do not turn an activity or output purpose into a person." in payload["role_definitions"]["customer"]
     clock = Clock()
     provider = Reviewer(ADMITTED, clock, 7.0)

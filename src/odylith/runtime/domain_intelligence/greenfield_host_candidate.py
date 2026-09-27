@@ -49,7 +49,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v1"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v22"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v23"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
 
 
@@ -118,7 +118,10 @@ def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
                 "or explicit product/system task owner; one usable task event; and one source-supported "
                 "terminal result event. A product title cannot act as a fabricated user, but a source-"
                 "supported product or internal system may own its bound task. Assumptions or provisional "
-                "design cannot supply any missing witness part. When the source lacks one of those facts, "
+                "design cannot supply any missing witness part. Treat the audience for a request, brief, "
+                "report, proposal, or other authoring deliverable as contextual unless the source "
+                "separately states that audience's product participation or benefit; a direct workflow "
+                "actor outranks a broader authoring audience. When the source lacks one of those facts, "
                 "return clarification_required for first_path instead of authoring a package."
             ),
             (

@@ -570,9 +570,17 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
         "source-supported participant, beneficiary" in requirement
         and "explicit product/system task owner" in requirement
         and "source-supported terminal result event" in requirement
+        and "authoring deliverable as contextual" in requirement
+        and "direct workflow actor outranks a broader authoring audience" in requirement
         and "clarification_required for first_path" in requirement
         for requirement in payload["requirements"]
     )
+    participant_role = authored["properties"]["facts"]["properties"][
+        "human_actors"
+    ]["description"]
+    assert "audience for a request, brief, report, proposal" in participant_role
+    assert "separately states that it uses, benefits from, participates in" in participant_role
+    assert "direct workflow names its actor" in participant_role
     assert any(
         "copy quote and locator context byte-for-byte" in requirement
         and "never normalize or rewrite either value" in requirement

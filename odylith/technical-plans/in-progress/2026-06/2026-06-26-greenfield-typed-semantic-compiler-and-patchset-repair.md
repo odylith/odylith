@@ -1,5 +1,36 @@
 Status: In progress
 
+## V29 Authoring-Audience Checkpoint (2026-09-26)
+
+Immutable V29 completed 30 disclosed cases with 29 passes. Case 30 stopped
+before staging because the host candidate treated `security team` from
+`Project brief for a security team` as a product participant even though the
+source separately named `program lead` as the workflow actor. Independent
+review denied the unsupported second human actor, so no governed package was
+published. Preserve the V29 campaign and retained evidence as terminal; do not
+resume that build or touch the protected holdout.
+
+Keep the existing one-author/one-independent-reviewer mechanism. The bounded
+correction changes one shared semantic role rather than adding a phrase rule:
+evidence-authoring audience is contextual unless the source separately states
+that the role uses, benefits from, participates in, or receives output from the
+requested product. A direct workflow actor must not be broadened from document
+audience. Authoring v72, host contract v23, and candidate-review v10 version the
+same boundary. Candidate shape, deterministic custody, transaction mechanics,
+profiles, and `90/120/150` advisory targets under the `180s` safety timeout are
+unchanged. Add no parser, regex, vocabulary whitelist, retry, repair, fallback,
+model ladder, or additional call.
+
+Focused proof passes `437/437`, and independent bounded review returns `SHIP`
+with no P0/P1 code finding. The two fresh Astra controls discriminate an
+authoring-only audience from a separately stated product audience, but they are
+development evidence only because the temporary repos had no active immutable
+generation. Next: commit and push the checkpoint, build one fresh immutable
+distribution, and restart all 36 disclosed cases from case one. Require exact
+retained reviewer-v10 receipts, package/browser/recovery proof, independent
+retained-output semantic qualification, and then exactly one untouched holdout.
+Completion remains unclaimed.
+
 ## V28 Source-Custody Checkpoint (2026-09-26)
 
 Immutable V28 passed 30 disclosed cases before `public-v11-archive-custody-01`
