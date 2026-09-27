@@ -646,7 +646,7 @@ def _automated_unscored_dimensions(scores: Mapping[str, int]) -> tuple[str, ...]
     return tuple(
         dimension
         for dimension in _unscored_dimensions(scores)
-        if dimension not in INDEPENDENT_SEMANTIC_LENS_DIMENSIONS
+        if dimension not in (*INDEPENDENT_SEMANTIC_LENS_DIMENSIONS, "browser_surface_proof")
     )
 
 

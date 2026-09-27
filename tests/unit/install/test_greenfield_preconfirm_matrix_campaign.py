@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import json
 import subprocess
@@ -8,6 +9,11 @@ from dataclasses import replace
 from pathlib import Path
 
 import pytest
+
+from tests.unit.install.test_greenfield_model_profiles import (
+    _host_native_private_admission,
+    _host_native_stage,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -110,6 +116,132 @@ def test_run_matrix_rejects_missing_host_native_argv_before_product_execution(
         )
 
     assert product_execution == []
+
+
+def test_discovery_uses_ephemeral_case_proof_without_publishing_release_evidence(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
+    published_evidence = tmp_path / "published-evidence"
+    observations: dict[str, object] = {}
+
+    monkeypatch.setattr(module, "matrix_preflight_failures", lambda **_kwargs: ())
+    monkeypatch.setattr(module, "_platform_baseline_required_terms", lambda **_kwargs: ())
+    monkeypatch.setattr(
+        module,
+        "_serve_directory",
+        lambda _release_dir: (_Server(), "http://127.0.0.1:8123"),
+    )
+    monkeypatch.setattr(
+        module,
+        "write_retained_evidence_manifest",
+        lambda **_kwargs: pytest.fail("discovery must not publish retained release evidence"),
+    )
+
+    def fake_run_case(**kwargs):
+        retained_case = kwargs["retained_case"]
+        observations["retained_case"] = retained_case
+        case = kwargs["case"]
+        profile_id = module.case_model_profile(case)
+        profile = module.get_greenfield_model_profile(profile_id)
+        source = module.prepare_model_authoring_evidence(
+            prompt=case.prompt,
+            edit_evidence=str(case.confirmed_intent_markdown or ""),
+        ).evidence_source
+        source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
+        candidate_sha256 = "1" * 64
+        reviewer_candidate_sha256 = "3" * 64
+        observed = {
+            "origin": "host_native",
+            "host_candidate": {
+                "version": "odylith.greenfield.host-candidate.v1",
+                "contract_version": "odylith.greenfield.intent-authoring.v74",
+                "source_sha256": source_sha256,
+                "candidate_sha256": candidate_sha256,
+            },
+            "candidate_review": {
+                "profile_id": profile_id,
+                "provider": profile.provider,
+                "model": profile.review_model,
+                "reasoning_effort": profile.review_reasoning_effort,
+                "effective_timeout_seconds": 120.0,
+                "authoring_tier": profile.repair_tier,
+            },
+        }
+        stage = _host_native_stage(candidate_sha256=candidate_sha256)
+        stage["source_sha256"] = source_sha256
+        reviewer = _host_native_private_admission(
+            observed=observed,
+            source=source,
+            reviewer_candidate_sha256=reviewer_candidate_sha256,
+        )
+        module.record_retained_case_json(
+            retained_case,
+            "semantic/host-authoring-observation.v1.json",
+            stage,
+        )
+        module.record_retained_case_json(
+            retained_case,
+            "semantic/model-authoring-observation.v1.json",
+            reviewer,
+        )
+        observations["stage"] = module._retained_model_stage_observation(retained_case)
+        observations["reviewer"] = module._retained_host_native_reviewer_observation(retained_case)
+        profile_evidence = module.model_profile_evidence(
+            profile_id,
+            module.model_profile_environment(profile_id, {}),
+            observed=observed,
+            stage_observation=observations["stage"],
+            reviewer_observation=observations["reviewer"],
+            expected_reviewer_candidate_sha256=reviewer_candidate_sha256,
+            expected_source=source,
+        )
+        sealed_review = dict(reviewer["candidate_review"])
+        sealed_review["product_facts_sha256"] = "5" * 64
+        binding_issues = module.authored_model_result_binding_issues(
+            stage_observation=observations["stage"],
+            reviewer_observation=observations["reviewer"],
+            create_payload={
+                "commit_manifest": {
+                    "model_authoring": {
+                        "authoring_origin": "host_native",
+                        "host_candidate": observed["host_candidate"],
+                        "candidate_review": sealed_review,
+                    }
+                }
+            },
+            expected_source=source,
+        )
+        observations["profile_evidence"] = profile_evidence
+        observations["binding_issues"] = binding_issues
+        return _result(module, name=kwargs["case"].name)
+
+    monkeypatch.setattr(module, "_run_case", fake_run_case)
+
+    results = module.run_matrix(
+        dist_dir=dist_dir,
+        version="0.1.15",
+        temp_parent=tmp_path,
+        cases=(_case(module, "discovery proof capture"),),
+        proof_tier="discovery",
+        host_candidate_argv=_host_candidate_argv(),
+    )
+
+    retained_case = observations["retained_case"]
+    assert retained_case is not None
+    assert retained_case.staging_root.parent.name == "private-proof"
+    assert retained_case.staging_root.parent.parent.name.startswith("odylith-greenfield-matrix-")
+    assert observations["profile_evidence"]["status"] == "passed"
+    assert observations["profile_evidence"]["maximum_semantic_model_calls"] == 1
+    assert observations["binding_issues"] == ()
+    assert "participant_selection" not in json.dumps(observations["profile_evidence"])
+    assert "remaining_candidate_authoring" not in json.dumps(observations["profile_evidence"])
+    assert results[0].status == "passed"
+    assert not retained_case.staging_root.exists()
+    assert not published_evidence.exists()
 
 
 def test_run_case_invokes_only_host_candidate_runner_with_process_evidence(

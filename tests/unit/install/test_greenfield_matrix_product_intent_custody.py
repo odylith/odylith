@@ -318,3 +318,50 @@ def test_unscored_independent_lenses_do_not_claim_release_quality() -> None:
     )
     assert explanation[0].startswith("automated contract passed; independent semantic review remains required")
     assert all("all release-quality dimensions" not in line for line in explanation)
+
+
+def test_optional_discovery_browser_proof_remains_not_applicable() -> None:
+    scoring = _scoring_module()
+    scores = {dimension: 10 for dimension in scoring.QUALITY_SCORE_DIMENSIONS}
+    scores["browser_surface_proof"] = scoring._browser_surface_proof_score(  # noqa: SLF001
+        create_returncode=0,
+        browser_surface_proof_attempted=False,
+        browser_surface_proof_required=False,
+    )
+
+    assert scores["browser_surface_proof"] == scoring.UNSCORED_QUALITY_SCORE
+    assert scoring._automated_unscored_dimensions(scores) == ()  # noqa: SLF001
+    assert scoring._score_basis(scores) == "volume_discovery_without_browser_surface_proof"  # noqa: SLF001
+    assert scoring._final_quality_score(  # noqa: SLF001
+        scores=scores,
+        manifest=_authored_structural_manifest(),
+        create_returncode=0,
+        rendered_issues=(),
+        prompt_issues=(),
+    ) == 10
+
+
+def test_required_unattempted_browser_proof_still_fails_release_scoring() -> None:
+    scoring = _scoring_module()
+    scores = {dimension: 10 for dimension in scoring.QUALITY_SCORE_DIMENSIONS}
+    scores["browser_surface_proof"] = scoring._browser_surface_proof_score(  # noqa: SLF001
+        create_returncode=0,
+        browser_surface_proof_attempted=False,
+        browser_surface_proof_required=True,
+    )
+
+    assert scores["browser_surface_proof"] == 0
+    assert scoring._browser_surface_proof_issues(  # noqa: SLF001
+        create_returncode=0,
+        browser_surface_proof_attempted=False,
+        browser_surface_proof_required=True,
+    ) == (
+        "browser surface proof was not attempted; premium release scoring requires headless rendered-surface proof",
+    )
+    assert scoring._final_quality_score(  # noqa: SLF001
+        scores=scores,
+        manifest=_authored_structural_manifest(),
+        create_returncode=0,
+        rendered_issues=(),
+        prompt_issues=(),
+    ) == 0

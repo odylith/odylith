@@ -511,6 +511,9 @@ def run_matrix(
     )
     run_root = Path(temp_parent).expanduser().resolve() / f"odylith-greenfield-matrix-{uuid.uuid4().hex[:8]}"
     run_root.mkdir(parents=True, exist_ok=False)
+    case_evidence_root = retained_evidence_root or (run_root / "private-proof")
+    if retained_evidence_root is None:
+        case_evidence_root.mkdir(mode=0o700)
     server, base_url = _serve_directory(release_dir)
     stopped_reason = ""
     try:
@@ -574,11 +577,9 @@ def run_matrix(
             repo_root = run_root / f"odylith-sim-{case.slug}-{uuid.uuid4().hex[:8]}"
             retained_case = (
                 begin_retained_case_evidence(
-                    evidence_root=retained_evidence_root,
+                    evidence_root=case_evidence_root,
                     case_id=_retained_case_id(case),
                 )
-                if retained_evidence_root is not None
-                else None
             )
             try:
                 if seed_repo is not None:
@@ -633,7 +634,7 @@ def run_matrix(
                 status="failed" if reason else "running",
                 stopped_reason=reason,
             )
-            if retained_case is not None:
+            if retained_evidence_root is not None:
                 try:
                     finalize_retained_case_evidence(
                         case=retained_case,
