@@ -225,9 +225,19 @@ def test_run_reports_timeout_with_command_and_cwd(monkeypatch, tmp_path: Path) -
 
 @pytest.mark.parametrize(
     "defect",
-    ["", "success", "wrong_error", "wrong_outcome", "legacy_payload", "write", "staged", "attempt", "missing_audit"],
+    [
+        "",
+        "nonzero",
+        "invalid_json",
+        "wrong_version",
+        "missing_evidence",
+        "bad_schema",
+        "attempt",
+        "subprocess",
+        "missing_audit",
+    ],
 )
-def test_greenfield_install_smoke_requires_author_unavailable_without_writes(
+def test_greenfield_install_smoke_requires_read_only_candidate_contract(
     monkeypatch, tmp_path: Path, defect: str,
 ) -> None:
     module = _module()
@@ -243,7 +253,7 @@ def test_greenfield_install_smoke_requires_author_unavailable_without_writes(
         finish=lambda: finished.append(True) or SimpleNamespace(
             active=defect != "missing_audit", error="",
             write_attempts=("open:odylith/radar/source/transient.json",) if defect == "attempt" else (),
-            subprocess_attempts=(),
+            subprocess_attempts=("subprocess.Popen",) if defect == "subprocess" else (),
         ),
     )
     monkeypatch.setattr(module, "begin_installed_write_audit", lambda **kwargs: audit)
@@ -258,46 +268,52 @@ def test_greenfield_install_smoke_requires_author_unavailable_without_writes(
         commands.append(command)
         if "show" in command:
             return SimpleNamespace(returncode=0, stdout="Odylith read this repo\n", stderr="")
-        assert "propose" in command and "create" not in command
+        assert "candidate-contract" in command and "propose" not in command
         assert kwargs["env"]["ODYLITH_REASONING_MODE"] == "disabled"
         assert kwargs["env"]["audit"] == "enabled" and kwargs["pass_fds"] == (42,)
-        if defect in {"write", "staged"}:
-            relative = (
-                "odylith/radar/source/unexpected.json" if defect == "write"
-                else ".odylith/runtime/greenfield/pending/unexpected/product-create-transaction.v1.json"
-            )
-            path = repo_root / relative
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text("{}\n", encoding="utf-8")
         time.sleep(0.002)
         payload = {
-            "mode": "error",
-            "error": "model authoring is unavailable; no records were created",
-            "outcome": {
-                "kind": "environment",
-                "code": "MODEL_UNAVAILABLE_NO_WRITE",
+            "version": "odylith.greenfield.host-candidate-contract.v24",
+            "candidate_version": "odylith.greenfield.host-candidate.v24",
+            "canonical_version": "odylith.greenfield.canonical-meaning.v1",
+            "request": {
+                "version": "odylith.greenfield.intent-authoring.v73",
+                "evidence": module._CANDIDATE_CONTRACT_SMOKE_PROMPT,
+            },
+            "requirements": ["Return exactly one candidate."],
+            "task": "Author one source-grounded candidate.",
+            "candidate_schema": {
+                "type": "object",
+                "required": ["version", "result"],
             },
         }
-        if defect == "wrong_error":
-            payload["error"] = "unrelated installation error"
-        elif defect == "wrong_outcome":
-            payload["outcome"] = {"kind": "environment", "code": "MODEL_TIMEOUT_NO_WRITE"}
-        elif defect == "legacy_payload":
-            payload.pop("outcome")
-        return SimpleNamespace(returncode=0 if defect == "success" else 2, stdout=json.dumps(payload), stderr="")
+        if defect == "wrong_version":
+            payload["version"] = "legacy-contract"
+        elif defect == "missing_evidence":
+            payload["request"]["evidence"] = "different evidence"
+        elif defect == "bad_schema":
+            payload["candidate_schema"] = {"type": "object", "required": ["version"]}
+        stdout = "not-json" if defect == "invalid_json" else json.dumps(payload)
+        return SimpleNamespace(
+            returncode=2 if defect == "nonzero" else 0,
+            stdout=stdout,
+            stderr="candidate-contract failed" if defect == "nonzero" else "",
+        )
 
     monkeypatch.setattr(module, "_run", fake_run)
     monkeypatch.setattr(module, "run_command_with_group_timeout", fake_run)
     env = module._force_deterministic_reasoning_env({"ODYLITH_VERSION": "0.1.15"})
     if defect:
-        with pytest.raises(RuntimeError, match="unavailable"):
-            module._greenfield_unavailable_author_smoke(repo_root=repo_root, odylith=odylith, env=env)
+        with pytest.raises(RuntimeError, match="candidate[- ]contract"):
+            module._greenfield_candidate_contract_smoke(repo_root=repo_root, odylith=odylith, env=env)
     else:
-        module._greenfield_unavailable_author_smoke(repo_root=repo_root, odylith=odylith, env=env)
+        module._greenfield_candidate_contract_smoke(repo_root=repo_root, odylith=odylith, env=env)
     assert finished == [True]
-    assert baseline_checks == [repo_root]
+    assert baseline_checks[0] == repo_root
+    if not defect:
+        assert baseline_checks == [repo_root, repo_root]
     assert commands[0] == (str(odylith), "show", "--repo-root", ".")
-    assert len(commands) == 2 and "propose" in commands[1] and "--confirm" not in commands[1]
+    assert len(commands) == 2 and "candidate-contract" in commands[1]
 
 
 def test_install_smoke_does_not_claim_positive_greenfield_qualification() -> None:
@@ -552,7 +568,7 @@ def test_upgrade_cycle_proves_dashboard_refresh_after_each_target_activation(
     monkeypatch.setattr(module, "_seed_legacy_compass_archive_fixture", lambda **kwargs: history_checks.append("seed"))
     monkeypatch.setattr(module, "_require_compass_history_layout", lambda **kwargs: history_checks.append("check"))
     monkeypatch.setattr(
-        module, "_greenfield_unavailable_author_smoke",
+        module, "_greenfield_candidate_contract_smoke",
         lambda **kwargs: commands.append(("greenfield-ready",)),
     )
     monkeypatch.setattr(
@@ -650,7 +666,7 @@ def test_greenfield_smoke_cannot_repair_a_missing_baseline_before_readiness(
     monkeypatch.setattr(module, "_run", lambda **kwargs: pytest.fail("must not run show or repair"))
     monkeypatch.setattr(module, "begin_installed_write_audit", lambda **kwargs: pytest.fail("must not propose"))
     with pytest.raises(RuntimeError, match="no active immutable generation"):
-        module._greenfield_unavailable_author_smoke(
+        module._greenfield_candidate_contract_smoke(
             repo_root=tmp_path, odylith=tmp_path / ".odylith/bin/odylith", env={},
         )
 

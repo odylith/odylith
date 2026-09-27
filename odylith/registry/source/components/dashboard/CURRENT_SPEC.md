@@ -521,6 +521,9 @@ artifacts to that header.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-001
+  - Evidence: `odylith/casebook/bugs/2026-05-07-release-smoke-omitted-greenfield-create-journey.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
 - **2026-09-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 1 verifiable artifact reference.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`
@@ -536,9 +539,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-26 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_candidate_review.py`
-- **2026-09-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_candidate_review.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_proof_observation.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

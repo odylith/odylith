@@ -6,7 +6,7 @@
   and release-proof claims before allowing stronger completion language.
 - False proof clearance, false visible-UX claims, and public product claims
   without benchmark proof are release-blocking failures for v0.1.11.
-Last updated: 2026-09-14
+Last updated: 2026-09-27
 
 
 ## Purpose
@@ -24,6 +24,7 @@ diagnosis surfaces, and answer-time claim language.
 - the `live_proof_lanes` runtime-ledger section under
   `.odylith/runtime/odylith-proof-surfaces.v1.json`
 - repeated-fingerprint falsification memory and same-lane reuse policy
+- ordered proof-event consumption and its internal per-lane stream cursor
 - proof-drift detection and shared control-panel shaping
 - claim-guard shaping for status language such as `fixed`, `cleared`, and
   `resolved`
@@ -79,7 +80,10 @@ diagnosis surfaces, and answer-time claim language.
 - `.odylith/runtime/odylith-proof-surfaces.v1.json`
   The existing proof-surfaces runtime ledger gains `live_proof_lanes`, keyed
   by `lane_id`, for last live run result, repeated-fingerprint count,
-  deployment truth, and last falsification.
+  deployment truth, and last falsification. Each event-backed lane also carries
+  an internal `event_stream_cursor` with the consumed event count and the
+  SHA-256 of that exact ordered prefix. The cursor is ledger memory, not part of
+  the normalized consumer-facing `proof_state` payload.
 
 ## Proof-State Contract
 When one lane resolves cleanly, `proof_state` is additive and must include:
@@ -121,6 +125,14 @@ When one lane resolves cleanly, `proof_state` is additive and must include:
   prior failing phase.
 - Reproducing the same failure fingerprint after a claimed fix marks the prior
   blocker-resolution hypothesis as falsified in runtime state.
+- An unchanged tracked event prefix is never replayed. A valid cursor applies
+  only appended events; a missing, changed, reordered, or truncated prefix
+  rebuilds repeated-fingerprint, recent-work, and last-falsification memory
+  once from the current lane stream.
+- Fingerprint-free events may advance status, phase, evidence, deployment, or
+  work-category memory, but they never count as repeated failures. Recurrence
+  increments only when the current event carries an explicit fingerprint equal
+  to the preceding lane fingerprint.
 
 ### Recorded identity versus live checkout observation
 - Persisted Delivery snapshots contain recorded deployment identity. Missing
@@ -173,6 +185,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-09-27: Made tracked proof-event consumption idempotent with one exact per-lane ordered-prefix cursor. Legacy inflated counters rebuild once, unchanged Delivery refreshes remain byte-stable, and fingerprint-free events no longer fabricate repeated failures. (Casebook: CB-077) (Plan: [B-062](odylith/radar/radar.html?view=plan&workstream=B-062))
 - 2026-09-08: Separated recorded Delivery proof identity from live Context checkout observation and included proof memory in both Delivery refresh caches. Real Git commit, ledger-change, linked-source and Context controls preserve the boundary. Full Greenfield and native intervention qualification remain separate. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-04-09: Bound proof-state blocker posture into Delivery Intelligence's shared Scope Signal Ladder so live frontier or unsafe-closeout truth can outrank ordinary activity across Compass, Radar, Registry, Atlas, and shell consumers. (Plan: [B-071](odylith/radar/radar.html?view=plan&workstream=B-071))
 - 2026-04-08: Promoted the live-proof blocker frontier, falsification memory, and claim-tier contract into a first-class Registry component so delivery, diagnosis, packets, shell, Compass, Registry, and chatter can share one authoritative proof-state lane. (Plan: [B-062](odylith/radar/radar.html?view=plan&workstream=B-062))

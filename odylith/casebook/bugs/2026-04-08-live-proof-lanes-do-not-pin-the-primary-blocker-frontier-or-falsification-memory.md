@@ -105,6 +105,35 @@
   src/odylith/runtime/context_engine/odylith_context_engine_projection_surface_runtime.py`
   now reports `diagram_watch_gap_count: 0`; and `git diff --check` passed.
 
+- 2026-09-27 Stream-Replay Recurrence: Greenfield release settlement exposed a
+  proof-state idempotency defect beneath strict governed sync. Every Delivery
+  Intelligence rebuild replays the complete tracked Compass proof-event stream
+  onto the already persisted live lane. Events without an explicit fingerprint
+  inherit the lane fingerprint and increment `repeated_fingerprint_count`, so
+  one forced sync moved `greenfield-release` from 1,330 to 1,381 and the next
+  read-only rebuild moved it to 1,381 again in generated output while the
+  committed artifact remained at 1,330. The only 29 payload differences were
+  `generated_utc` plus that false counter across scopes. This makes a successful
+  sync immediately stale and corrupts the operator meaning of repeated live
+  failure. Add one deterministic per-lane stream cursor over the exact ordered
+  proof-event prefix; apply only appended events, rebuild event-derived counters
+  once when the prefix is absent or changed, and increment repetition only for
+  an explicit repeated fingerprint. Do not ignore freshness, strip proof memory,
+  loop sync, or special-case Greenfield. No protected holdout or provider was
+  invoked.
+
+- 2026-09-27 Stream-Replay Resolution: Proof State now records one internal
+  count-plus-SHA-256 cursor for each lane's exact ordered event prefix, applies
+  only appended events, and rebuilds its bounded accumulators once when that
+  prefix changes or truncates. Only an event carrying an explicit fingerprint
+  can increment recurrence. The legacy migration reduced
+  `greenfield-release` from the corrupt count of 1,381 to zero; across 72
+  cursor-backed lanes, only three retain evidence-derived repeat counts
+  (`1`, `1`, and `2`). Proof includes `21/21` focused Proof State tests,
+  `50/50` Delivery/sync consumer tests, two consecutive strict standalone sync
+  checks, and identical before/after SHA-256 values for both the proof ledger
+  and Delivery artifact. No provider or protected holdout was invoked.
+
 - Prevention: Any live-proof lane must show one explicit current blocker,
   failure fingerprint, first failing phase, clearance condition, evidence tier,
   and last falsification instead of letting each consumer infer those fields

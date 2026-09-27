@@ -14,12 +14,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 739,
-    "mapped_workstream_evidence_count": 630,
+    "explicit_event_count": 740,
+    "mapped_workstream_evidence_count": 631,
     "recent_path_match_count": 0,
     "spec_history_event_count": 66,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 739
+    "timeline_event_count": 740
   },
   "name": "Release",
   "path_prefixes": [
@@ -48,6 +48,74 @@
   ],
   "spec_ref": "odylith/registry/source/components/release/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-05-07-release-smoke-omitted-greenfield-create-journey.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 1352,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
+      "ts_iso": "2026-09-27T06:45:23-07:00",
+      "workstreams": [
+        "B-001"
+      ]
+    },
     {
       "artifact_count": 3,
       "artifacts": [

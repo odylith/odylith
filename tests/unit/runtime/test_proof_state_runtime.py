@@ -8,6 +8,7 @@ from odylith.runtime.context_engine import odylith_context_engine_projection_ent
 from odylith.runtime.context_engine import odylith_context_engine_store as context_engine_store
 from odylith.runtime.governance import proof_state
 from odylith.runtime.governance import sync_casebook_bug_index
+from odylith.runtime.governance.proof_state import ledger as proof_state_ledger
 from odylith.runtime.governance.proof_state import resolver as proof_state_resolver
 
 
@@ -75,6 +76,13 @@ def _write_stream_event(repo_root: Path, payload: dict[str, object]) -> None:
     stream_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
 
 
+def _append_stream_event(repo_root: Path, payload: dict[str, object]) -> None:
+    stream_path = repo_root / "odylith" / "compass" / "runtime" / "codex-stream.v1.jsonl"
+    stream_path.parent.mkdir(parents=True, exist_ok=True)
+    with stream_path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(payload) + "\n")
+
+
 def _scope() -> dict[str, object]:
     return {
         "scope_key": "workstream:B-062",
@@ -116,6 +124,7 @@ def test_annotate_scopes_with_proof_state_merges_live_falsification_and_persists
                 "lane_id": "proof-state-control-plane",
                 "failure_fingerprint": "aws:lambda:Permission doesn't support update",
                 "recent_work_categories": ["observability"],
+                "repeated_fingerprint_count": 1381,
             }
         },
     )
@@ -145,6 +154,7 @@ def test_annotate_scopes_with_proof_state_merges_live_falsification_and_persists
     assert resolved["proof_status"] == "falsified_live"
     assert resolved["frontier_phase"] == "manifests-deploy"
     assert resolved["repeated_fingerprint_count"] == 1
+    assert "event_stream_cursor" not in resolved
     assert resolved["deployment_truth"] == {
         "local_head": "unknown",
         "pushed_head": "def456",
@@ -157,11 +167,104 @@ def test_annotate_scopes_with_proof_state_merges_live_falsification_and_persists
 
     live_lanes = proof_state.load_live_proof_lanes(repo_root=tmp_path)
     assert live_lanes["proof-state-control-plane"]["repeated_fingerprint_count"] == 1
+    assert live_lanes["proof-state-control-plane"]["event_stream_cursor"]["count"] == 1
     assert live_lanes["proof-state-control-plane"]["last_falsification"] == {
         "recorded_at": "2026-04-08T18:42:00Z",
         "failure_fingerprint": "aws:lambda:Permission doesn't support update",
         "frontier_phase": "manifests-deploy",
     }
+
+    ledger_path = proof_state_ledger.proof_surfaces_path(repo_root=tmp_path)
+    first_ledger = ledger_path.read_text(encoding="utf-8")
+    repeated = proof_state.annotate_scopes_with_proof_state(repo_root=tmp_path, scopes=[_scope()])
+    assert repeated[0]["proof_state"]["repeated_fingerprint_count"] == 1
+    assert ledger_path.read_text(encoding="utf-8") == first_ledger
+
+
+def test_proof_event_cursor_applies_fingerprint_free_append_once(tmp_path: Path) -> None:
+    _write_casebook_bug(tmp_path)
+    _write_stream_event(
+        tmp_path,
+        {
+            "proof_lane": "proof-state-control-plane",
+            "proof_fingerprint": "aws:lambda:Permission doesn't support update",
+            "proof_status": "falsified_live",
+            "work_category": "primary_blocker",
+        },
+    )
+    proof_state.annotate_scopes_with_proof_state(repo_root=tmp_path, scopes=[_scope()])
+    _append_stream_event(
+        tmp_path,
+        {
+            "proof_lane": "proof-state-control-plane",
+            "proof_status": "unit_tested",
+            "proof_phase": "bounded-repair",
+            "work_category": "test_hardening",
+        },
+    )
+
+    first = proof_state.annotate_scopes_with_proof_state(repo_root=tmp_path, scopes=[_scope()])[0]
+    ledger_path = proof_state_ledger.proof_surfaces_path(repo_root=tmp_path)
+    first_ledger = ledger_path.read_text(encoding="utf-8")
+    second = proof_state.annotate_scopes_with_proof_state(repo_root=tmp_path, scopes=[_scope()])[0]
+
+    assert first["proof_state"]["repeated_fingerprint_count"] == 1
+    assert first["proof_state"]["frontier_phase"] == "bounded-repair"
+    assert second == first
+    assert ledger_path.read_text(encoding="utf-8") == first_ledger
+
+
+def test_proof_event_cursor_counts_explicit_repeat_once(tmp_path: Path) -> None:
+    _write_casebook_bug(tmp_path)
+    event = {
+        "proof_lane": "proof-state-control-plane",
+        "proof_fingerprint": "aws:lambda:Permission doesn't support update",
+        "proof_status": "falsified_live",
+    }
+    _write_stream_event(tmp_path, event)
+    proof_state.annotate_scopes_with_proof_state(repo_root=tmp_path, scopes=[_scope()])
+    _append_stream_event(tmp_path, event)
+
+    first = proof_state.annotate_scopes_with_proof_state(repo_root=tmp_path, scopes=[_scope()])[0]
+    second = proof_state.annotate_scopes_with_proof_state(repo_root=tmp_path, scopes=[_scope()])[0]
+
+    assert first["proof_state"]["repeated_fingerprint_count"] == 2
+    assert second == first
+
+
+def test_proof_event_cursor_rebuilds_changed_prefix_once(tmp_path: Path) -> None:
+    _write_casebook_bug(tmp_path)
+    original = {
+        "proof_lane": "proof-state-control-plane",
+        "proof_fingerprint": "aws:lambda:Permission doesn't support update",
+        "proof_status": "falsified_live",
+        "work_category": "primary_blocker",
+    }
+    _write_stream_event(tmp_path, original)
+    _append_stream_event(tmp_path, original)
+    before = proof_state.annotate_scopes_with_proof_state(repo_root=tmp_path, scopes=[_scope()])[0]
+    assert before["proof_state"]["repeated_fingerprint_count"] == 2
+
+    _write_stream_event(
+        tmp_path,
+        {
+            "proof_lane": "proof-state-control-plane",
+            "proof_fingerprint": "replacement-fingerprint",
+            "proof_status": "unit_tested",
+            "proof_phase": "replacement-proof",
+            "work_category": "test_hardening",
+        },
+    )
+    rebuilt = proof_state.annotate_scopes_with_proof_state(repo_root=tmp_path, scopes=[_scope()])[0]
+    ledger_path = proof_state_ledger.proof_surfaces_path(repo_root=tmp_path)
+    rebuilt_ledger = ledger_path.read_text(encoding="utf-8")
+    repeated = proof_state.annotate_scopes_with_proof_state(repo_root=tmp_path, scopes=[_scope()])[0]
+
+    assert rebuilt["proof_state"].get("repeated_fingerprint_count", 0) == 0
+    assert rebuilt["proof_state"]["failure_fingerprint"] == "replacement-fingerprint"
+    assert rebuilt["proof_state"]["frontier_phase"] == "replacement-proof"
+    assert repeated == rebuilt
+    assert ledger_path.read_text(encoding="utf-8") == rebuilt_ledger
 
 
 def test_claim_enforcement_rewrites_unqualified_resolution_terms() -> None:

@@ -105,7 +105,48 @@ correctly teaches `candidate-contract`, one schema-matching candidate,
 the existing smoke owner and its real-guidance regression; do not rewrite clear
 consumer guidance merely to satisfy the stale literal.
 
-Next: rebuild from the corrected clean commit, prove the clean installed
+Checkpoint `aef26e07b` is pushed and the corrected full distribution has clean
+`dirty=false` provenance. The guidance guard now passes. The next smoke stage
+exposed a second stale owner: deterministic install smoke still calls
+`greenfield propose` without the required `--candidate-file`, so argparse exits
+before the intended provider boundary. A retained reproduction proves the
+installed CLI rejected the obsolete invocation with zero writes and zero child
+subprocesses. Replace that duplicate probe with deterministic read-only
+`candidate-contract` proof across fresh install and upgrade. Keep the release
+matrix's existing one-host-candidate unavailable-provider control as the sole
+review-provider failure owner; do not add a fixture candidate or hidden model
+call to install smoke.
+
+The bounded ownership correction now passes 38 focused harness tests, 1,254
+Greenfield install tests, and the full fresh-install/upgrade/stale-residue smoke
+against clean distribution `/private/tmp/odylith-v35-release.4dJ8o1`. The smoke
+proves the installed versioned contract, exact prompt custody, candidate schema,
+and zero writes or child subprocesses. The public release campaign still owns
+the actual one-candidate unavailable-reviewer control and has not yet run.
+
+The governed checkpoint then exposed CB-077 proof-stream replay debt: each
+Delivery Intelligence build reapplies the full tracked proof-event stream to
+the persisted lane, including counting fingerprint-free events as repeated
+failures. That makes strict sync immediately stale and inflated the
+`greenfield-release` repeat count by 51 per rebuild. Repair the shared proof
+state owner with an exact per-lane stream prefix cursor and explicit-fingerprint
+counting; add idempotent rebuild and append-only-event controls. This is a
+bounded release-blocking governance repair, not a new Greenfield feature.
+
+The shared owner now persists one exact ordered-prefix cursor per proof lane,
+applies only an appended suffix, rebuilds accumulators once for a changed or
+truncated prefix, and counts recurrence only when the current event explicitly
+carries the same fingerprint. The legacy ledger migration reduced
+`greenfield-release` from 1,381 false repeats to zero; only three of 72
+cursor-backed lanes retain evidence-derived repeats. Proof passes `21/21`
+focused Proof State tests and `50/50` Delivery/sync consumer tests. Two strict
+standalone sync checks pass consecutively, while the proof-ledger and Delivery
+artifact hashes remain byte-stable across the second check. This closes the
+CB-077 release blocker without a Greenfield special case or a second event
+processor.
+
+Next: checkpoint the deterministic smoke and governed-sync repairs, rebuild
+from the corrected clean commit, re-prove the clean installed
 distribution, then run the audited public parent/subset campaign with retained
 evidence, browser and recovery proof. Require an independent semantic/UX review
 of that retained public output before verifying the protected inputs and

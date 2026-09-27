@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -28,6 +29,7 @@ _PLAN_METADATA_RE = re.compile(r"^([A-Za-z0-9/() _.`'-]+):\s*(.*)$")
 _WORKSTREAM_RE = re.compile(r"\bB-\d{3,}\b")
 _BUG_ID_RE = re.compile(r"\bCB-\d{3,}\b")
 _SOURCE_PRECEDENCE = {"casebook": 0, "plan": 1, "inferred": 2}
+_EVENT_STREAM_CURSOR_KEY = "event_stream_cursor"
 
 
 def _parse_bug_fields(lines: Sequence[str]) -> dict[str, str]:
@@ -201,6 +203,57 @@ def _match_lane_id_from_event(event: Mapping[str, Any], source_rows: Sequence[Ma
     return ""
 
 
+def _event_prefix_sha256(events: Sequence[Mapping[str, Any]]) -> str:
+    payload = json.dumps(
+        [dict(event) for event in events],
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _event_cursor_start(
+    lane: Mapping[str, Any],
+    events: Sequence[Mapping[str, Any]],
+) -> int | None:
+    cursor = lane.get(_EVENT_STREAM_CURSOR_KEY)
+    if not isinstance(cursor, Mapping):
+        return None
+    count = cursor.get("count")
+    expected = _normalize_token(cursor.get("prefix_sha256"))
+    if isinstance(count, bool) or not isinstance(count, int) or count < 0 or count > len(events) or not expected:
+        return None
+    if _event_prefix_sha256(events[:count]) != expected:
+        return None
+    return count
+
+
+def _source_failure_fingerprint(
+    lane_id: str,
+    source_rows: Sequence[Mapping[str, Any]],
+) -> str:
+    lane_rows = [
+        row
+        for row in source_rows
+        if normalize_proof_lane_id(row.get("lane_id")) == lane_id
+    ]
+    lane_rows.sort(
+        key=lambda row: (
+            _SOURCE_PRECEDENCE.get(_normalize_token(row.get("source")), 99),
+            _normalize_token(row.get("source_path")),
+        )
+    )
+    return next(
+        (
+            _normalize_token(row.get("failure_fingerprint"))
+            for row in lane_rows
+            if _normalize_token(row.get("failure_fingerprint"))
+        ),
+        "",
+    )
+
+
 def _merge_live_proof_lanes(
     *,
     existing: Mapping[str, Mapping[str, Any]],
@@ -227,76 +280,90 @@ def _merge_live_proof_lanes(
                 }
             )
         merged[lane_id] = lane
+    events_by_lane: dict[str, list[Mapping[str, Any]]] = {}
     for event in events:
         lane_id = _match_lane_id_from_event(event, source_rows)
         if not lane_id:
             continue
+        events_by_lane.setdefault(lane_id, []).append(event)
+    cursor_lane_ids = {
+        lane_id
+        for lane_id, lane in merged.items()
+        if isinstance(lane.get(_EVENT_STREAM_CURSOR_KEY), Mapping)
+    }
+    for lane_id in sorted(set(events_by_lane) | cursor_lane_ids):
         lane = dict(merged.get(lane_id, {}))
-        proof_status = _normalize_token(event.get("proof_status"))
-        fingerprint = _normalize_token(event.get("proof_fingerprint")) or _normalize_token(lane.get("failure_fingerprint"))
-        if proof_status in PROOF_STATUSES:
-            lane["proof_status"] = proof_status
-        if fingerprint:
-            previous_fingerprint = _normalize_token(lane.get("failure_fingerprint"))
-            if previous_fingerprint and previous_fingerprint == fingerprint:
-                lane["repeated_fingerprint_count"] = int(lane.get("repeated_fingerprint_count", 0) or 0) + 1
-            lane["failure_fingerprint"] = fingerprint
-        phase = _normalize_token(event.get("proof_phase"))
-        if phase:
-            lane["frontier_phase"] = phase
-        evidence_tier = _normalize_token(event.get("evidence_tier"))
-        if evidence_tier:
-            lane["evidence_tier"] = evidence_tier
-        work_category = _normalize_token(event.get("work_category"))
-        if work_category in WORK_CATEGORIES:
-            recent = [
+        lane_events = events_by_lane.get(lane_id, [])
+        start = _event_cursor_start(lane, lane_events)
+        previous_explicit_fingerprint = _normalize_token(lane.get("failure_fingerprint"))
+        if start is None:
+            start = 0
+            lane.pop("repeated_fingerprint_count", None)
+            lane.pop("recent_work_categories", None)
+            lane.pop("last_falsification", None)
+            previous_explicit_fingerprint = _source_failure_fingerprint(lane_id, source_rows)
+        for event in lane_events[start:]:
+            proof_status = _normalize_token(event.get("proof_status"))
+            explicit_fingerprint = _normalize_token(event.get("proof_fingerprint"))
+            fingerprint = explicit_fingerprint or _normalize_token(lane.get("failure_fingerprint"))
+            if proof_status in PROOF_STATUSES:
+                lane["proof_status"] = proof_status
+            if explicit_fingerprint:
+                if previous_explicit_fingerprint == explicit_fingerprint:
+                    lane["repeated_fingerprint_count"] = int(lane.get("repeated_fingerprint_count", 0) or 0) + 1
+                lane["failure_fingerprint"] = explicit_fingerprint
+                previous_explicit_fingerprint = explicit_fingerprint
+            phase = _normalize_token(event.get("proof_phase"))
+            if phase:
+                lane["frontier_phase"] = phase
+            evidence_tier = _normalize_token(event.get("evidence_tier"))
+            if evidence_tier:
+                lane["evidence_tier"] = evidence_tier
+            work_category = _normalize_token(event.get("work_category"))
+            if work_category in WORK_CATEGORIES:
+                recent = list(lane.get("recent_work_categories", [])) if isinstance(lane.get("recent_work_categories"), list) else []
+                lane["recent_work_categories"] = [*recent, work_category][-6:]
+            event_workstreams = [
                 _normalize_token(token)
-                for token in lane.get("recent_work_categories", [])
-                if _normalize_token(token) in WORK_CATEGORIES
-            ] if isinstance(lane.get("recent_work_categories"), list) else []
-            recent.append(work_category)
-            lane["recent_work_categories"] = recent[-6:]
-        event_workstreams = [
-            _normalize_token(token)
-            for token in event.get("workstreams", [])
-            if _normalize_token(token)
-        ] if isinstance(event.get("workstreams"), list) else []
-        if event_workstreams:
-            existing_workstreams = lane.get("workstreams", []) if isinstance(lane.get("workstreams"), list) else []
-            lane["workstreams"] = sorted(
-                {
-                    _normalize_token(token)
-                    for token in [*existing_workstreams, *event_workstreams]
-                    if _normalize_token(token)
-                }
-            )
-        existing_truth = normalize_deployment_truth(lane.get("deployment_truth"))
-        event_truth = normalize_deployment_truth(event.get("deployment_truth"))
-        merged_truth = {
-            field: (
-                event_truth[field]
-                if event_truth[field] != "unknown"
-                else existing_truth[field]
-            )
-            for field in event_truth
-        }
-        if proof_status == "falsified_live" and merged_truth.get("last_live_failing_commit") == "unknown":
-            merged_truth["last_live_failing_commit"] = next(
-                (
-                    merged_truth[field]
-                    for field in ("published_source_commit", "pushed_head", "local_head")
-                    if merged_truth.get(field) not in {"", "unknown"}
-                ),
-                "unknown",
-            )
-        if any(value != "unknown" for value in merged_truth.values()):
-            lane["deployment_truth"] = merged_truth
-        if proof_status == "falsified_live":
-            lane["last_falsification"] = {
-                "recorded_at": _normalize_token(event.get("ts_iso")),
-                "failure_fingerprint": fingerprint,
-                "frontier_phase": phase,
+                for token in event.get("workstreams", [])
+                if _normalize_token(token)
+            ] if isinstance(event.get("workstreams"), list) else []
+            if event_workstreams:
+                existing_workstreams = lane.get("workstreams", []) if isinstance(lane.get("workstreams"), list) else []
+                lane["workstreams"] = sorted(
+                    {
+                        _normalize_token(token)
+                        for token in [*existing_workstreams, *event_workstreams]
+                        if _normalize_token(token)
+                    }
+                )
+            existing_truth = normalize_deployment_truth(lane.get("deployment_truth"))
+            event_truth = normalize_deployment_truth(event.get("deployment_truth"))
+            merged_truth = {
+                field: event_truth[field] if event_truth[field] != "unknown" else existing_truth[field]
+                for field in event_truth
             }
+            if proof_status == "falsified_live" and merged_truth.get("last_live_failing_commit") == "unknown":
+                merged_truth["last_live_failing_commit"] = next(
+                    (
+                        merged_truth[field]
+                        for field in ("published_source_commit", "pushed_head", "local_head")
+                        if merged_truth.get(field) not in {"", "unknown"}
+                    ),
+                    "unknown",
+                )
+            if any(value != "unknown" for value in merged_truth.values()):
+                lane["deployment_truth"] = merged_truth
+            if proof_status == "falsified_live":
+                lane["last_falsification"] = {
+                    "recorded_at": _normalize_token(event.get("ts_iso")),
+                    "failure_fingerprint": fingerprint,
+                    "frontier_phase": phase,
+                }
+        lane[_EVENT_STREAM_CURSOR_KEY] = {
+            "count": len(lane_events),
+            "prefix_sha256": _event_prefix_sha256(lane_events),
+        }
         merged[lane_id] = lane
     return merged
 

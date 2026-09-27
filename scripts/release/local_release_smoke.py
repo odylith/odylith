@@ -1,4 +1,4 @@
-"""Prove deterministic installation and unavailable-author safety, not Greenfield success."""
+"""Prove deterministic installation and candidate-contract safety, not Greenfield success."""
 
 from __future__ import annotations
 
@@ -19,9 +19,7 @@ from urllib import error as urllib_error
 
 from odylith.install.release_assets import fetch_release
 from odylith.install.state import AUTHORITATIVE_RELEASE_REPO
-from greenfield_matrix_clarification import run_expected_clarification
 from greenfield_matrix_write_audit import begin_installed_write_audit
-from greenfield_model_profile_proof import unavailable_provider_proof_issues
 from greenfield_process import run_command_with_group_timeout
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -31,10 +29,9 @@ _TEMP_ROOT_CLEANUP_RETRYABLE_ERRNOS = {errno.EACCES, errno.EBUSY, errno.ENOTEMPT
 _TEMP_ROOT_CLEANUP_SETTLE_COUNT = 3
 _TEMP_ROOT_CLEANUP_SETTLE_DELAY_SECONDS = 0.05
 _COMMAND_TIMEOUT_SECONDS = 300
-_UNAVAILABLE_PROVIDER_OUTCOME = {
-    "kind": "environment",
-    "code": "MODEL_UNAVAILABLE_NO_WRITE",
-}
+_CANDIDATE_CONTRACT_SMOKE_PROMPT = (
+    "Create a project governance package for a first-time user."
+)
 
 
 def _run(*, cwd: Path, env: dict[str, str], command: list[str]) -> subprocess.CompletedProcess[str]:
@@ -567,57 +564,85 @@ def _install_and_smoke(*, repo_root: Path, install_script: Path, env: dict[str, 
     doctor = _run(cwd=repo_root, env=env, command=[str(odylith), "doctor", "--repo-root", "."]).stdout
     _require_output_contains(output=doctor, expected="Context engine mode: full_local_memory", label="odylith doctor")
     _require_output_contains(output=doctor, expected="Context engine pack: installed", label="odylith doctor")
-    _greenfield_unavailable_author_smoke(repo_root=repo_root, odylith=odylith, env=env)
+    _greenfield_candidate_contract_smoke(repo_root=repo_root, odylith=odylith, env=env)
     _run(cwd=repo_root, env=env, command=[str(odylith), "sync", "--repo-root", ".", "--force"])
     _require_greenfield_surfaces(repo_root=repo_root, label="fresh install baseline")
     _require_greenfield_baseline(repo_root=repo_root, env=env)
 
 
-def _greenfield_unavailable_author_smoke(*, repo_root: Path, odylith: Path, env: dict[str, str]) -> None:
+def _greenfield_candidate_contract_smoke(*, repo_root: Path, odylith: Path, env: dict[str, str]) -> None:
     _require_greenfield_baseline(repo_root=repo_root, env=env)
     show = _run(cwd=repo_root, env=env, command=[str(odylith), "show", "--repo-root", "."]).stdout
     _require_output_contains(output=show, expected="Odylith read this repo", label="odylith show")
     audit = begin_installed_write_audit(repo_root=repo_root)
     try:
-        execution = run_expected_clarification(
-            repo_root=repo_root,
-            parse_payload=json.loads,
-            invoke=lambda: run_command_with_group_timeout(
-                cwd=repo_root,
-                env={**env, **audit.environment()},
-                command=audit.command(
-                    runtime_python=repo_root / ".odylith/runtime/current/bin/python",
-                    arguments=("greenfield", "propose", "--repo-root", ".", "--prompt",
-                               "warehouse dispatch planning app", "--format", "json"),
+        completed = run_command_with_group_timeout(
+            cwd=repo_root,
+            env={**env, **audit.environment()},
+            command=audit.command(
+                runtime_python=repo_root / ".odylith/runtime/current/bin/python",
+                arguments=(
+                    "greenfield", "candidate-contract", "--repo-root", ".",
+                    "--prompt", _CANDIDATE_CONTRACT_SMOKE_PROMPT,
                 ),
-                timeout=90,
-                pass_fds=audit.pass_fds,
             ),
+            timeout=90,
+            pass_fds=audit.pass_fds,
         )
     finally:
         observed = audit.finish()
-    payload = execution.payload
-    if (
-        not isinstance(payload, dict)
-        or payload.get("mode") != "error"
-        or set(payload) != {"mode", "error", "outcome"}
-        or payload.get("outcome") != _UNAVAILABLE_PROVIDER_OUTCOME
-        or not isinstance(payload.get("error"), str)
-    ):
-        raise RuntimeError("unavailable-author smoke did not return the bounded refusal payload")
-    issues = unavailable_provider_proof_issues(
-        returncode=execution.returncode,
-        proposal_seconds=execution.seconds,
-        detail=str(payload["error"]),
-        write_audit_active=observed.active,
-        write_audit_error=observed.error,
-        write_attempts=observed.write_attempts,
-        subprocess_attempts=observed.subprocess_attempts,
-        changed_records=execution.changed_records,
-        staged_transaction_present=execution.staged_transaction_present,
+    if completed.returncode != 0:
+        raise RuntimeError(
+            "\n".join(
+                (
+                    "candidate-contract smoke command failed",
+                    str(completed.stdout or "").strip(),
+                    str(completed.stderr or "").strip(),
+                )
+            ).strip()
+        )
+    try:
+        payload = json.loads(str(completed.stdout or ""))
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(
+            "candidate-contract smoke returned invalid JSON: "
+            + str(completed.stderr or "").strip()
+        ) from exc
+    request = payload.get("request") if isinstance(payload, dict) else None
+    candidate_schema = payload.get("candidate_schema") if isinstance(payload, dict) else None
+    schema_required = (
+        set(candidate_schema.get("required") or ())
+        if isinstance(candidate_schema, dict)
+        else set()
     )
+    issues: list[str] = []
+    if not isinstance(payload, dict):
+        issues.append("candidate contract is not a JSON object")
+    elif not str(payload.get("version") or "").startswith(
+        "odylith.greenfield.host-candidate-contract."
+    ):
+        issues.append("candidate contract has no versioned public identity")
+    if not isinstance(request, dict) or _CANDIDATE_CONTRACT_SMOKE_PROMPT not in str(
+        request.get("evidence") or ""
+    ):
+        issues.append("candidate contract did not preserve the exact prompt evidence")
+    if (
+        not isinstance(candidate_schema, dict)
+        or candidate_schema.get("type") != "object"
+        or not {"version", "result"}.issubset(schema_required)
+    ):
+        issues.append("candidate contract did not return the required candidate schema")
+    if observed.active is not True:
+        issues.append("candidate-contract smoke did not activate the installed write audit")
+    if observed.error:
+        issues.append("candidate-contract smoke could not complete the installed write audit")
+    if observed.write_attempts:
+        issues.append("candidate-contract smoke attempted repository writes")
+    if observed.subprocess_attempts:
+        issues.append("candidate-contract smoke attempted child subprocesses")
     if issues:
-        raise RuntimeError("unavailable-author smoke failed: " + "; ".join(issues))
+        raise RuntimeError("candidate-contract smoke failed: " + "; ".join(issues))
+    _require_greenfield_baseline(repo_root=repo_root, env=env)
 
 
 def _install_previous_release(*, repo_root: Path, install_script: Path, previous_version: str) -> None:
@@ -685,7 +710,7 @@ def _upgrade_cycle(
         local_env=local_env,
     )
     odylith = repo_root / ".odylith" / "bin" / "odylith"
-    _greenfield_unavailable_author_smoke(repo_root=repo_root, odylith=odylith, env=local_env)
+    _greenfield_candidate_contract_smoke(repo_root=repo_root, odylith=odylith, env=local_env)
     _run(cwd=repo_root, env=local_env, command=[str(odylith), "dashboard", "refresh", "--repo-root", "."])
     _require_greenfield_baseline(repo_root=repo_root, env=local_env)
     _require_compass_history_layout(repo_root=repo_root)
@@ -696,7 +721,7 @@ def _upgrade_cycle(
     )
     _seed_legacy_compass_archive_fixture(repo_root=repo_root)
     _run(cwd=_install_cwd(repo_root), env=local_env, command=["bash", str(install_script)])
-    _greenfield_unavailable_author_smoke(repo_root=repo_root, odylith=odylith, env=local_env)
+    _greenfield_candidate_contract_smoke(repo_root=repo_root, odylith=odylith, env=local_env)
     _run(cwd=repo_root, env=local_env, command=[str(odylith), "dashboard", "refresh", "--repo-root", "."])
     _require_greenfield_baseline(repo_root=repo_root, env=local_env)
     _require_compass_history_layout(repo_root=repo_root)
@@ -713,7 +738,7 @@ def _upgrade_cycle(
         local_env=local_env,
     )
     odylith = repo_root / ".odylith" / "bin" / "odylith"
-    _greenfield_unavailable_author_smoke(repo_root=repo_root, odylith=odylith, env=local_env)
+    _greenfield_candidate_contract_smoke(repo_root=repo_root, odylith=odylith, env=local_env)
     _run(cwd=repo_root, env=local_env, command=[str(odylith), "dashboard", "refresh", "--repo-root", "."])
     _require_greenfield_baseline(repo_root=repo_root, env=local_env)
     _require_compass_history_layout(repo_root=repo_root)
@@ -762,7 +787,7 @@ def _stale_uninstall_residue_cycle(
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=(
-        "Prove installation, upgrade and unavailable-author no-write behavior. "
+        "Prove installation, upgrade and the read-only candidate-contract boundary. "
         "This does not qualify a successful Greenfield request; the required installed matrix owns that proof."
     ))
     parser.add_argument("--version", required=True, help="Release version, for example 0.1.0.")
