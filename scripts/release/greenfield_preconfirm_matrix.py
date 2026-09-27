@@ -1266,8 +1266,8 @@ def _run_case(
     raw_streams: dict[str, str] = {}
     raw_streams["input.prompt"] = case.prompt
     raw_streams["input.edit-evidence"] = str(case.confirmed_intent_markdown or "")
-    invoke_propose = (
-        lambda timeout: _run_host_candidate_propose(
+    if host_candidate_argv:
+        invoke_propose = lambda timeout: _run_host_candidate_propose(
             repo_root=repo_root,
             env=env,
             prompt=case.prompt,
@@ -1277,14 +1277,13 @@ def _run_case(
             host_candidate_argv=host_candidate_argv,
             retained_case=retained_case,
         )
-        if host_candidate_argv
-        else lambda timeout: _run_greenfield_propose(
+    else:
+        invoke_propose = lambda timeout: _run_greenfield_propose(
             repo_root=repo_root, env=env, prompt=case.prompt,
             edit_evidence=str(case.confirmed_intent_markdown or ""),
             repair_tier=profile_contract.repair_tier, timeout=timeout,
             retained_case=retained_case,
         )
-    )
     execution = run_compiled_greenfield_journey(
         repo_root=repo_root,
         env=env,

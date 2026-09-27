@@ -102,6 +102,65 @@ def test_run_matrix_release_rejects_missing_host_native_argv_before_execution(
         )
 
 
+@pytest.mark.parametrize(
+    ("host_candidate_argv", "expected_runner"),
+    (
+        pytest.param((), "direct", id="direct-proposal"),
+        pytest.param(("codex", "exec"), "host", id="host-native-proposal"),
+    ),
+)
+def test_run_case_invokes_selected_proposal_runner_with_process_evidence(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    host_candidate_argv: tuple[str, ...],
+    expected_runner: str,
+) -> None:
+    module = _module()
+    repo_root = tmp_path / "repo"
+    _write(repo_root / ".odylith/bin/odylith", "")
+    completed = subprocess.CompletedProcess(
+        args=(expected_runner,), returncode=0, stdout='{"status":"ready"}', stderr="",
+    )
+    calls: list[str] = []
+    proposal_results: list[subprocess.CompletedProcess[str]] = []
+
+    def run_proposal(runner: str):
+        calls.append(runner)
+        return completed
+
+    def run_journey(**kwargs):
+        proposal_results.append(kwargs["invoke_propose"](87))
+        raise RuntimeError("stop after proposal selection")
+
+    monkeypatch.setattr(module, "_local_release_env", lambda **_kwargs: {})
+    monkeypatch.setattr(
+        module, "_run_greenfield_propose",
+        lambda **_kwargs: run_proposal("direct"),
+    )
+    monkeypatch.setattr(
+        module, "_run_host_candidate_propose",
+        lambda **_kwargs: run_proposal("host"),
+    )
+    monkeypatch.setattr(module, "run_compiled_greenfield_journey", run_journey)
+
+    with pytest.raises(RuntimeError, match="stop after proposal selection"):
+        module._run_case(  # noqa: SLF001
+            case=_case(module, "proposal runner selection"),
+            repo_root=repo_root,
+            install_script=tmp_path / "install.sh",
+            base_url="http://127.0.0.1",
+            version="0.0.0",
+            skip_install=True,
+            host_candidate_argv=host_candidate_argv,
+        )
+
+    assert proposal_results == [completed]
+    assert proposal_results[0].returncode == 0
+    assert proposal_results[0].stdout
+    assert proposal_results[0].stderr == ""
+    assert calls == [expected_runner]
+
+
 class _Server:
     def shutdown(self) -> None:
         return None
