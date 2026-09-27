@@ -22,6 +22,17 @@ the complete public qualification contract is deliberately changed and rerun.
 Do not inspect or rerun V31, add a retry or repair path, or treat a diagnostic
 pass as holdout authorization.
 
+`scripts/release/greenfield_model_profiles.py` is a pre-existing oversized
+maintainer helper at 1,568 lines. This checkpoint carries a narrow
+safety-critical exception: the file grows by ten net lines solely to separate
+explicit diagnostic selection from Astra-only automatic assignment. Do not add
+further feature growth there. Before the next unrelated profile feature,
+extract profile assignment/catalog ownership from model-observation validation
+behind one imported contract, move the existing callers in the same change,
+and retain the current assignment, environment, observation, and aggregate
+proof tests. Do not perform that decomposition inside the live author comparison
+because it would change more release machinery than this gate needs.
+
 ## V31 One-Shot Holdout Rejection (2026-09-27)
 
 Immutable V30 passed the complete 36-case disclosed campaign at `10/10`: all
