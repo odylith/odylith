@@ -336,6 +336,15 @@ def test_release_smoke_requires_read_only_proposal_and_separate_direct_create(tm
         raise AssertionError("stale installed guidance should fail release smoke")
 
 
+def test_release_smoke_accepts_current_candidate_contract_guidance() -> None:
+    module = _module()
+
+    module._require_greenfield_guidance_uses_confirmed_create(
+        repo_root=REPO_ROOT,
+        label="maintained source",
+    )
+
+
 def test_release_smoke_rejects_old_unqualified_public_decision_offer(tmp_path: Path) -> None:
     module = _module()
     repo_root = tmp_path / "repo"

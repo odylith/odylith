@@ -96,13 +96,22 @@ decoder/component proof passes `17/17`, combined boundary proof passes
 install proof passes `1,254/1,254`. This remains a bounded authority cleanup,
 not evidence for release or holdout completion.
 
-Next: commit the bounded checkpoint, build from a clean committed tree, prove
-the clean installed distribution, then run the audited public parent/subset
-campaign with retained evidence, browser and recovery proof. Require an
-independent semantic/UX review of that retained public output before verifying
-the protected inputs and consuming the untouched final holdout exactly once.
-Do not reopen a parser, regex, retry, repair author, fallback candidate, model
-ladder, or alternate campaign owner.
+Checkpoint `685442de5` is pushed and its full distribution has clean
+`dirty=false` provenance. Deterministic fresh-install smoke then exposed a
+stale validator literal: it still requires contiguous `proposal JSON` wording
+from the retired proposal-authoring regime even though the installed guidance
+correctly teaches `candidate-contract`, one schema-matching candidate,
+`--candidate-file`, and no hand-authored proposal or transaction JSON. Update
+the existing smoke owner and its real-guidance regression; do not rewrite clear
+consumer guidance merely to satisfy the stale literal.
+
+Next: rebuild from the corrected clean commit, prove the clean installed
+distribution, then run the audited public parent/subset campaign with retained
+evidence, browser and recovery proof. Require an independent semantic/UX review
+of that retained public output before verifying the protected inputs and
+consuming the untouched final holdout exactly once. Do not reopen a parser,
+regex, retry, repair author, fallback candidate, model ladder, or alternate
+campaign owner.
 
 ### V32 fresh public result and bounded release-entrypoint repair
 

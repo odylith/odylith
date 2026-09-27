@@ -287,8 +287,25 @@ _GREENFIELD_PROPOSAL_FIRST_GUIDANCE_CONCEPTS = (
             "no model, generation or repair",
         ),
     ),
-    ("proposal JSON boundary", ("proposal JSON",)),
-    ("schema-loop silence", ("parser/schema retries", "parser retries", "schema retries", "narrate retries")),
+    (
+        "candidate and transaction JSON boundary",
+        (
+            "JSON candidate matching the returned schema",
+            "candidate matching the returned schema",
+            "proposal or transaction JSON",
+            "proposal JSON",
+        ),
+    ),
+    (
+        "schema-loop silence",
+        (
+            "parser/schema retries",
+            "parser retries",
+            "schema retries",
+            "narrate retries",
+            "narrate internal schema failures",
+        ),
+    ),
 )
 _FORBIDDEN_CONSUMER_MAINTAINER_RESTRICTION_TOKENS = (
     "freedom-research",
