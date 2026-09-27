@@ -17,8 +17,39 @@ from greenfield_matrix_release_artifacts import (
     RetainedEvidenceCase, begin_retained_case_evidence, finalize_retained_case_evidence,
     prepare_retained_evidence_output_dir, record_retained_case_bytes,
     record_retained_case_json, record_retained_case_text, retained_case_evidence_fd,
-    retained_evidence_manifest_issues, sha256_file, write_retained_evidence_manifest,
+    repo_artifact_path, retained_evidence_manifest_issues, sha256_file,
+    write_retained_evidence_manifest,
 )
+
+
+RECOVERY_EVIDENCE_CASE_IDS = ("proposal", "sigkill", "operator-conflict", "fsync")
+_MAX_COMMAND_STREAM_BYTES = 256 * 1024
+_REQUIRED_PHASE_ARTIFACTS = {
+    "sigkill": (
+        "commands/crash.stdout", "commands/crash.stderr", "commands/crash.json",
+        "commands/recovery.stdout", "commands/recovery.stderr", "commands/recovery.json",
+        "commands/retry.stdout", "commands/retry.stderr", "commands/retry.json",
+        "recovery/journal-after-crash.state.v1.json",
+        "recovery/journal-after-recovery.state.v1.json",
+        "semantic/journal-observations.json", "semantic/receipt-observations.json",
+        "semantic/generation-observations.json", "semantic/phase-binding.json",
+    ),
+    "operator-conflict": (
+        "commands/conflict.stdout", "commands/conflict.stderr",
+        "semantic/conflict-observation.json", "semantic/conflict-binding.json",
+        "recovery/pre-injection.bin", "recovery/injected.bin",
+    ),
+    "fsync": (
+        "commands/failure.stdout", "commands/failure.stderr", "commands/failure.json",
+        "commands/retry.stdout", "commands/retry.stderr", "commands/retry.json",
+        "commands/same-hash-retry.stdout", "commands/same-hash-retry.stderr",
+        "commands/same-hash-retry.json", "semantic/journal-observations.json",
+        "recovery/journal-after-failure.state.v1.json",
+        "recovery/journal-after-retry.state.v1.json",
+        "semantic/receipt-observations.json", "semantic/generation-observations.json",
+        "semantic/phase-binding.json",
+    ),
+}
 
 
 def begin_proposal(*, output_dir: Path, temp_parent: Path) -> RetainedEvidenceCase:
@@ -63,6 +94,48 @@ def finish_proposal(*, evidence: RetainedEvidenceCase, repo_root: Path, status: 
         write_retained_evidence_manifest(root=evidence.final_root.parent, expected_case_ids=("proposal",), run_id=run_id)
 
 
+def seal_recovery_phase(
+    *, proposal: RetainedEvidenceCase, phase: str, repo_root: Path,
+    command_results: Mapping[str, tuple[list[str], Any]],
+    journal_observations: Mapping[str, Any], journal_bytes: Mapping[str, bytes],
+    receipt_observations: Mapping[str, Any],
+    generation_observations: Mapping[str, Any], binding: Mapping[str, Any],
+) -> None:
+    """Seal one successful fault phase before its installed fixture is removed."""
+
+    if phase not in {"sigkill", "fsync"}:
+        raise RuntimeError("unsupported retained recovery phase")
+    case = begin_retained_case_evidence(evidence_root=proposal.final_root.parent, case_id=phase)
+    for name, (command, result) in command_results.items():
+        for stream in ("stdout", "stderr"):
+            value = getattr(result, stream, "") or ""
+            payload = value if isinstance(value, bytes) else str(value).encode("utf-8")
+            if len(payload) > _MAX_COMMAND_STREAM_BYTES:
+                raise RuntimeError(f"{phase} {name} {stream} exceeds the retained evidence bound")
+            record_retained_case_bytes(case, f"commands/{name}.{stream}", payload)
+        record_retained_case_json(case, f"commands/{name}.json", {
+            "command": list(command), "returncode": getattr(result, "returncode", None),
+        })
+    for name, payload in journal_bytes.items():
+        record_retained_case_bytes(case, f"recovery/journal-{name}.state.v1.json", payload)
+    record_retained_case_json(case, "semantic/journal-observations.json", dict(journal_observations))
+    record_retained_case_json(case, "semantic/receipt-observations.json", dict(receipt_observations))
+    record_retained_case_json(case, "semantic/generation-observations.json", dict(generation_observations))
+    record_retained_case_json(case, "semantic/phase-binding.json", dict(binding))
+    finalize_retained_case_evidence(
+        case=case, repo_root=repo_root, result_payload={"status": "passed", "phase": phase},
+    )
+
+
+def seal_recovery_manifest(*, proposal: RetainedEvidenceCase, run_id: str = "") -> dict[str, str]:
+    manifest = write_retained_evidence_manifest(
+        root=proposal.final_root.parent,
+        expected_case_ids=RECOVERY_EVIDENCE_CASE_IDS,
+        run_id=run_id,
+    )
+    return {"manifest": str(manifest), "sha256": sha256_file(manifest), "run_id": run_id}
+
+
 def journal_inventory(journal_root: Path) -> dict[str, dict[str, Any]]:
     """Bind directories and regular bytes without following recovery symlinks."""
     inventory: dict[str, dict[str, Any]] = {}
@@ -105,10 +178,8 @@ def seal_conflict(
     record_retained_case_text(case, "commands/conflict.stdout", result.stdout)
     record_retained_case_text(case, "commands/conflict.stderr", result.stderr)
     finalize_retained_case_evidence(case=case, repo_root=repo_root, result_payload={"status": "passed"})
-    manifest = write_retained_evidence_manifest(
-        root=proposal.final_root.parent, expected_case_ids=("proposal", "operator-conflict"), run_id=run_id,
-    )
-    receipt = {"manifest": str(manifest), "sha256": sha256_file(manifest), "run_id": run_id}
+    manifest = case.final_root / "case-evidence-manifest.v1.json"
+    receipt = {"case_manifest": str(manifest), "sha256": sha256_file(manifest), "run_id": run_id}
     issues = retained_conflict_issues(receipt, expected_binding=binding, run_id=run_id)
     if issues:
         raise RuntimeError("conflict evidence failed custody: " + "; ".join(issues))
@@ -118,19 +189,120 @@ def seal_conflict(
 def retained_conflict_issues(
     receipt: Mapping[str, Any], *, expected_binding: Mapping[str, Any] | None = None, run_id: str = "",
 ) -> list[str]:
-    manifest = Path(str(receipt.get("manifest") or ""))
-    issues = list(retained_evidence_manifest_issues(
-        manifest, expected_case_ids=("proposal", "operator-conflict"), require_passed_cases=True, expected_run_id=run_id,
-    ))
+    root_manifest = Path(str(receipt.get("manifest") or ""))
+    case_manifest = Path(str(receipt.get("case_manifest") or ""))
+    if str(receipt.get("manifest") or ""):
+        issues = list(retained_evidence_manifest_issues(
+            root_manifest, expected_case_ids=RECOVERY_EVIDENCE_CASE_IDS,
+            require_passed_cases=True, expected_run_id=run_id,
+        ))
+        manifest = root_manifest
+        binding_path = manifest.parent / "operator-conflict/semantic/conflict-binding.json"
+    else:
+        issues = _retained_conflict_case_issues(case_manifest)
+        manifest = case_manifest
+        binding_path = manifest.parent / "semantic/conflict-binding.json"
+        if run_id and receipt.get("run_id") != run_id:
+            issues.append("recovery evidence belongs to a different final holdout run")
     if not issues and receipt.get("sha256") != sha256_file(manifest):
         issues.append("recovery evidence manifest digest changed")
     if not issues and expected_binding is not None:
-        binding_path = manifest.parent / "operator-conflict/semantic/conflict-binding.json"
         try:
             if json.loads(binding_path.read_text(encoding="utf-8")) != dict(expected_binding):
                 issues.append("recovery evidence belongs to a different transaction or case")
         except (OSError, ValueError):
             issues.append("recovery evidence is missing its conflict binding")
+    return issues
+
+
+def _retained_conflict_case_issues(manifest: Path) -> list[str]:
+    try:
+        payload = json.loads(manifest.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        return [f"retained conflict case manifest is missing or invalid: {exc}"]
+    if not isinstance(payload, Mapping) or payload.get("case_id") != "operator-conflict":
+        return ["retained conflict case manifest has the wrong identity"]
+    issues: list[str] = []
+    artifacts = payload.get("artifacts")
+    if not isinstance(artifacts, list):
+        return ["retained conflict case manifest has invalid artifact coverage"]
+    by_path = {str(row.get("path") or ""): row for row in artifacts if isinstance(row, Mapping)}
+    for relative, row in by_path.items():
+        artifact = repo_artifact_path(manifest.parent, relative)
+        if artifact is None or not artifact.is_file() or row.get("sha256") != sha256_file(artifact):
+            issues.append(f"retained operator-conflict evidence is missing or mutated: {relative}")
+    for relative in _REQUIRED_PHASE_ARTIFACTS["operator-conflict"]:
+        row = as_mapping(by_path.get(relative))
+        artifact = repo_artifact_path(manifest.parent, relative)
+        if artifact is None or not artifact.is_file() or row.get("sha256") != sha256_file(artifact):
+            issues.append(f"retained operator-conflict evidence is missing or mutated: {relative}")
+    return issues
+
+
+def retained_recovery_evidence_issues(
+    receipt: Mapping[str, Any], *, facts: Mapping[str, Any], run_id: str = "",
+) -> list[str]:
+    """Verify unified custody plus exact aggregate-to-phase binding."""
+
+    manifest = Path(str(receipt.get("manifest") or ""))
+    issues = list(retained_evidence_manifest_issues(
+        manifest, expected_case_ids=RECOVERY_EVIDENCE_CASE_IDS,
+        require_passed_cases=True, expected_run_id=run_id,
+    ))
+    if issues:
+        return issues
+    if receipt.get("sha256") != sha256_file(manifest):
+        issues.append("recovery evidence manifest digest changed")
+        return issues
+    case = as_mapping(facts.get("recovery_case"))
+    common = {
+        "transaction_hash": facts.get("transaction_hash"),
+        "repository_write_set_hash": facts.get("repository_write_set_hash"),
+        "product_facts_sha256": facts.get("product_facts_sha256"),
+        "case_id": case.get("id"),
+        "prompt_sha256": case.get("prompt_sha256"),
+    }
+    phase_expected = {
+        "sigkill": {
+            "returncodes": {
+                "crash": facts.get("sigkill_returncode"),
+                "recovery": facts.get("recovery_returncode"),
+                "retry": facts.get("same_hash_retry_returncode"),
+            },
+            "journal_states": {
+                "after_crash": facts.get("journal_state_after_crash"),
+                "after_recovery": facts.get("journal_state_after_recovery"),
+            },
+        },
+        "fsync": {
+            "returncodes": {
+                "failure": facts.get("fsync_failure_returncode"),
+                "retry": facts.get("fsync_retry_returncode"),
+                "same_hash_retry": facts.get("fsync_same_hash_retry_returncode"),
+            },
+            "journal_states": {
+                "after_failure": facts.get("fsync_journal_state_after_failure"),
+                "after_retry": facts.get("fsync_journal_state_after_retry"),
+            },
+        },
+    }
+    for phase, required_paths in _REQUIRED_PHASE_ARTIFACTS.items():
+        for relative in required_paths:
+            artifact = repo_artifact_path(manifest.parent / phase, relative)
+            if artifact is None or not artifact.is_file():
+                issues.append(f"retained {phase} evidence is missing: {relative}")
+        if phase not in phase_expected:
+            continue
+        binding_path = manifest.parent / phase / "semantic/phase-binding.json"
+        try:
+            binding = json.loads(binding_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            issues.append(f"retained {phase} evidence is missing its phase binding")
+            continue
+        expected = {"phase": phase, **common, **phase_expected[phase]}
+        for key, value in expected.items():
+            if not value or binding.get(key) != value:
+                issues.append(f"retained {phase} evidence did not bind {key}")
     return issues
 
 
@@ -228,7 +400,12 @@ def missing_required_evidence(facts: Mapping[str, Any], *, run_id: str = "") -> 
     }.items():
         if not expected or binding.get(key) != expected:
             missing.append(f"installed conflict evidence did not bind {key}")
-    missing.extend(retained_conflict_issues(as_mapping(resolution.get("evidence")), expected_binding=binding, run_id=run_id))
+    missing.extend(retained_conflict_issues(
+        as_mapping(resolution.get("evidence")), expected_binding=binding, run_id=run_id,
+    ))
+    missing.extend(retained_recovery_evidence_issues(
+        as_mapping(facts.get("retained_recovery_evidence")), facts=facts, run_id=run_id,
+    ))
     required_values = {
         "journal_state_after_crash": "projecting",
         "journal_state_after_recovery": "closed",

@@ -81,11 +81,6 @@ def render_prompt_bundle_payload(
         delivery_channel="system_message_and_additional_context",
         delivery_status="assistant_render_required",
     )
-    replay = host_intervention_support.preferred_live_replay_markdown(
-        repo_root=repo_path,
-        host_family="claude",
-        session_id=session_id,
-    )
     summary = claude_host_prompt_context.render_prompt_context(
         repo_root=repo_path,
         prompt=prompt,
@@ -98,12 +93,8 @@ def render_prompt_bundle_payload(
         session_id=session_id,
         conversation_bundle_override=bundle,
     )
-    summary = (
-        host_intervention_support.join_sections(replay, summary)
-        if replay
-        else host_intervention_support.join_sections(summary, decision.developer_context)
-    )
-    system_message = replay or decision.visible_markdown or system_message
+    summary = host_intervention_support.join_sections(summary, decision.developer_context)
+    system_message = decision.visible_markdown or system_message
     if decision.visible_markdown or decision.developer_context:
         host_surface_runtime.append_visible_intervention_events(
             repo_root=repo_path,

@@ -113,11 +113,9 @@ def test_every_delivery_has_local_scope_and_keeps_canonical_decision_refs(tmp_pa
             for order in components[key]["supported_event_orders"]
         })
         assigned_events = [events[order] for order in event_orders]
-        assert row["problem"] == (
-            "Unimplemented assigned source-event support — "
-            + ", ".join(f"Event {order}" for order in event_orders)
-            + "."
-        )
+        assert row["problem"] == authored["problem"]
+        assert "Unimplemented assigned source-event support" not in row["problem"]
+        assert all(f"Event {order}" not in row["problem"] for order in event_orders)
         assert row["customer"] == f"Customer or beneficiary — {intent['customer']}"
         assert all(
             event["actor_fact_quote"] not in row["customer"]
@@ -179,6 +177,7 @@ def test_every_delivery_has_local_scope_and_keeps_canonical_decision_refs(tmp_pa
             "does not transfer the original actor's ownership."
         )
     assert len({row["deliverable"] for row in rows}) == 4
+    assert len({row["problem"] for row in rows}) == 4
     assert len({row["opportunity"] for row in rows}) == 4
     assert len({row["product_view"] for row in rows}) == 4
     assert len({tuple(row["validation"]) for row in rows}) == 4

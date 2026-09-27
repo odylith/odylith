@@ -20,6 +20,18 @@ import greenfield_commit_recovery_evidence as evidence
 import greenfield_matrix_release_artifacts as artifacts
 
 
+def test_recovery_transaction_preparation_has_one_bounded_owner() -> None:
+    orchestrator = (SCRIPTS_ROOT / "greenfield_commit_recovery_proof.py").read_text(encoding="utf-8")
+    transaction_owner = (SCRIPTS_ROOT / "greenfield_commit_recovery_transaction.py").read_text(
+        encoding="utf-8"
+    )
+
+    assert len(orchestrator.splitlines()) < 1200
+    assert "def compile_transaction(" not in orchestrator
+    assert "def compile_transaction(" in transaction_owner
+    assert "recovery_transaction.prepare_recovery_seed(" in orchestrator
+
+
 @pytest.mark.parametrize("outcome", ("success", "failure", "timeout"))
 def test_proposal_custody_keeps_native_descriptor_and_raw_streams(tmp_path: Path, outcome: str) -> None:
     case = evidence.begin_proposal(output_dir=tmp_path / "evidence", temp_parent=tmp_path / "fixtures")
@@ -129,6 +141,103 @@ def test_conflict_evidence_binds_snapshot_structure_before_retraction(tmp_path: 
     assert (journal / "snapshot/data").read_bytes() == b"snapshot\x00\xff"
 
 
+def _complete_recovery_evidence(tmp_path: Path) -> tuple[dict[str, str], dict[str, object]]:
+    fixtures = tmp_path / "fixtures"
+    repo = fixtures / "repo"
+    repo.mkdir(parents=True)
+    proposal = evidence.begin_proposal(output_dir=tmp_path / "evidence", temp_parent=fixtures)
+    artifacts.record_retained_case_text(proposal, "commands/propose.stdout", "sealed")
+    artifacts.record_retained_case_json(proposal, "semantic/transaction.json", {"sealed": True})
+    evidence.finish_proposal(evidence=proposal, repo_root=repo, status="passed", issues=[])
+    common = {
+        "transaction_hash": "a" * 64, "repository_write_set_hash": "b" * 64,
+        "product_facts_sha256": "c" * 64, "case_id": "case",
+        "prompt_sha256": "d" * 64,
+    }
+    generation = {"before": {}, "after": {}}
+    evidence.seal_recovery_phase(
+        proposal=proposal, phase="sigkill", repo_root=repo,
+        command_results={name: (["create"], SimpleNamespace(returncode=code, stdout=name, stderr=""))
+                         for name, code in (("crash", -9), ("recovery", 0), ("retry", 0))},
+        journal_observations={"after_crash": {"state": "projecting"}, "after_recovery": {"state": "closed"}},
+        journal_bytes={"after-crash": b'{"state":"projecting"}', "after-recovery": b'{"state":"closed"}'},
+        receipt_observations={"recovery": {"receipt": 1}, "retry": {"receipt": 1}},
+        generation_observations=generation,
+        binding={"phase": "sigkill", **common,
+                 "returncodes": {"crash": -9, "recovery": 0, "retry": 0},
+                 "journal_states": {"after_crash": "projecting", "after_recovery": "closed"}},
+    )
+    journal = repo / "journal"
+    journal.mkdir()
+    (journal / "state.v1.json").write_text('{"state":"projecting"}')
+    selected = repo / "selected"
+    selected.write_bytes(b"original")
+    original_stat = selected.stat()
+    selected.write_bytes(b"injected")
+    conflict_binding = {**common, "command": ["create"], "returncode": 2}
+    evidence.seal_conflict(
+        proposal=proposal, repo_root=repo, journal_root=journal, selected_path=selected,
+        original_bytes=b"original", original_stat=original_stat, operator_bytes=b"injected",
+        result=SimpleNamespace(stdout="conflict", stderr=""), facts={}, binding=conflict_binding,
+    )
+    evidence.seal_recovery_phase(
+        proposal=proposal, phase="fsync", repo_root=repo,
+        command_results={name: (["create"], SimpleNamespace(returncode=code, stdout=name, stderr=""))
+                         for name, code in (("failure", 2), ("retry", 0), ("same-hash-retry", 0))},
+        journal_observations={"after_failure": {"state": "aborted"}, "after_retry": {"state": "closed"}},
+        journal_bytes={"after-failure": b'{"state":"aborted"}', "after-retry": b'{"state":"closed"}'},
+        receipt_observations={"failure": {"error": 1}, "retry": {"receipt": 1}, "same_hash_retry": {"receipt": 1}},
+        generation_observations=generation,
+        binding={"phase": "fsync", **common,
+                 "returncodes": {"failure": 2, "retry": 0, "same_hash_retry": 0},
+                 "journal_states": {"after_failure": "aborted", "after_retry": "closed"}},
+    )
+    receipt = evidence.seal_recovery_manifest(proposal=proposal, run_id="e" * 64)
+    facts: dict[str, object] = {
+        **common, "recovery_case": {"id": "case", "prompt_sha256": "d" * 64},
+        "sigkill_returncode": -9, "recovery_returncode": 0, "same_hash_retry_returncode": 0,
+        "journal_state_after_crash": "projecting", "journal_state_after_recovery": "closed",
+        "fsync_failure_returncode": 2, "fsync_retry_returncode": 0,
+        "fsync_same_hash_retry_returncode": 0, "fsync_journal_state_after_failure": "aborted",
+        "fsync_journal_state_after_retry": "closed",
+    }
+    return receipt, facts
+
+
+@pytest.mark.parametrize("relative", (
+    "sigkill/commands/crash.stderr",
+    "fsync/semantic/receipt-observations.json",
+))
+def test_unified_recovery_manifest_rejects_mutated_or_absent_raw_phase_evidence(
+    tmp_path: Path, relative: str,
+) -> None:
+    receipt, facts = _complete_recovery_evidence(tmp_path)
+    assert not evidence.retained_recovery_evidence_issues(receipt, facts=facts, run_id="e" * 64)
+    target = Path(receipt["manifest"]).parent / relative
+    if "sigkill" in relative:
+        target.write_bytes(b"mutated")
+    else:
+        target.unlink()
+    assert evidence.retained_recovery_evidence_issues(receipt, facts=facts, run_id="e" * 64)
+
+
+def test_unified_recovery_manifest_rejects_missing_phase_and_binding_mismatch(tmp_path: Path) -> None:
+    fixtures = tmp_path / "fixtures"
+    repo = fixtures / "repo"
+    repo.mkdir(parents=True)
+    proposal = evidence.begin_proposal(output_dir=tmp_path / "incomplete", temp_parent=fixtures)
+    artifacts.record_retained_case_text(proposal, "commands/propose.stdout", "sealed")
+    artifacts.record_retained_case_json(proposal, "semantic/transaction.json", {"sealed": True})
+    evidence.finish_proposal(evidence=proposal, repo_root=repo, status="passed", issues=[])
+    with pytest.raises(RuntimeError, match="missing or unsafe"):
+        evidence.seal_recovery_manifest(proposal=proposal)
+
+    receipt, facts = _complete_recovery_evidence(tmp_path / "complete")
+    facts["fsync_retry_returncode"] = 7
+    assert any("fsync evidence did not bind returncodes" in issue for issue in
+               evidence.retained_recovery_evidence_issues(receipt, facts=facts, run_id="e" * 64))
+
+
 def test_journal_inventory_rejects_symlink_and_includes_empty_directories(tmp_path: Path) -> None:
     journal = tmp_path / "journal"
     (journal / "empty").mkdir(parents=True)
@@ -167,7 +276,11 @@ def test_interrupted_wrapper_preserves_fixture_even_without_nonterminal_journal(
     def interrupted_seed(**kwargs):
         (kwargs["run_root"] / "required-diagnostic").write_bytes(b"retain me")
         raise KeyboardInterrupt()
-    monkeypatch.setattr(module, "_prepare_recovery_seed", interrupted_seed)
+    monkeypatch.setattr(
+        module.recovery_transaction,
+        "prepare_recovery_seed",
+        interrupted_seed,
+    )
     with pytest.raises(KeyboardInterrupt):
         module.run_installed_commit_recovery_proof(
             dist_dir=dist, version="0.1.15", temp_parent=tmp_path / "fixtures",

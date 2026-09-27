@@ -552,7 +552,11 @@ def _project_brief(
     assumption_values = assumption_preview_values(assumptions)
     proof_is_provisional = any(row["applies_to"] == "proof_boundary" for row in assumptions)
     sections = [
-        _brief_section("Source excerpt", product_story, "Exact source wording, not an independently authored statement."),
+        _brief_section(
+            "Accepted evidence excerpt",
+            product_story,
+            "Exact accepted user evidence, not an independently authored statement.",
+        ),
         _brief_section(
             "User problem",
             problem_statement,
@@ -642,13 +646,21 @@ def _project_intelligence(
         "schema_version": "odylith.greenfield.project_intelligence.v1",
         "projection_origin": AUTHORED_PROJECTION_ORIGIN,
         "project_name": title,
-        "purpose": f"Source excerpt: “{product_story}”",
+        "purpose": f"Accepted evidence excerpt: “{product_story}”",
         "coding_posture": "",
         "control_surface_summary": _unique(
             [problem, customer, opportunity, product_view, first_path, visible_result]
         ),
         "customization_flow": [],
-        "intent": _unique([f"Source excerpt: “{product_story}”", problem, customer, opportunity, product_view]),
+        "intent": _unique(
+            [
+                f"Accepted evidence excerpt: “{product_story}”",
+                problem,
+                customer,
+                opportunity,
+                product_view,
+            ]
+        ),
         "scope": [first_path],
         "ontology": _unique([title, state_object, *internal_systems, *external_systems]),
         "state": [state_object],

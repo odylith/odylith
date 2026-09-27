@@ -350,7 +350,8 @@ def test_boundary_free_source_keeps_complete_structural_design_projection(
         "Proposed Capability Support and Source Facts",
     ]
     project = proposal["backlog"][0]
-    assert project["problem"].startswith("Unimplemented assigned source-event support — Event ")
+    design = proposal["intent"]["authored_semantics"]["provisional_design"]
+    assert project["problem"] == design["workstreams"][0]["problem"]
     assert proposal["intent"]["product_story"] == "Dock attendants receive a reviewable berth receipt."
     assert project["product_view"].startswith("Proposed workstream outcome — ")
     assert "Berth requests are hard to review." not in project["problem"]
@@ -415,6 +416,7 @@ def test_structured_source_projects_distinct_canonical_design_with_source_custod
 
     assert [row["workstream_role"] for row in backlog] == ["provisional_design"] * 4
     assert len({row["title"] for row in backlog}) == 4
+    assert len({row["problem"] for row in backlog}) == 4
     assert [row["component_focus"] for row in backlog] == [
         row["component_keys"] for row in design["workstreams"]
     ]
@@ -429,7 +431,8 @@ def test_structured_source_projects_distinct_canonical_design_with_source_custod
         "Receipt Ledger publishes a signed cargo receipt",
     ]
     for row, workstream in zip(backlog, design["workstreams"], strict=True):
-        assert row["problem"].startswith("Unimplemented assigned source-event support — Event ")
+        assert row["problem"] == workstream["problem"]
+        assert "Unimplemented assigned source-event support" not in row["problem"]
         assert row["customer"] == f"Customer or beneficiary — {intent['customer']}"
         assert row["opportunity"].startswith("Proposed component scope:\n\n")
         assert row["product_view"] == f"Proposed workstream outcome — {workstream['deliverable']}"

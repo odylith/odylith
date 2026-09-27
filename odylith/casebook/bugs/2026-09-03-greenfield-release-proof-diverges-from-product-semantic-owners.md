@@ -1,5 +1,33 @@
 - Bug ID: CB-329
 
+- V43 Independent-Review Sequencing And Coverage Reopen (2026-09-27): The
+  immutable V43 public run completed all ten selected cases with zero product
+  failures, retained every package and browser byte, and passed browser,
+  recovery, provider, model-profile, leakage, cleanup, and metamorphic gates.
+  Release proof still cannot qualify it. The aggregate onboarding scorecard
+  incorrectly converts the four intentionally unperformed independent package
+  lenses from `-1` into product-quality failures even though CB-329's V23
+  correction explicitly requires them to remain unscored until independent
+  review. There is no maintained post-execution finalizer that can bind a
+  strong review to the immutable result and retained evidence without rerunning
+  the product. A second latent escape also exists: the release pass expression
+  does not require `campaign.outcome_statistics.status == passed`. The V43
+  ten-case evidence has perfect point acceptance but correctly fails the frozen
+  coverage and confidence floors because the selected corpus contains no
+  moderate or high complexity cases and only one edit-evidence case. Do not
+  promote structural validation into expert review, lower statistical floors,
+  relabel bounded cases, or rerun the product merely to attach review. Add one
+  provider-free detached finalizer that verifies the immutable result,
+  retained root and case manifests, reviewed artifacts and screenshots, source
+  hashes, and explicit product-manager, architect, engineer, and domain-expert
+  verdicts. Final status must also require every existing automated gate and
+  the frozen outcome-statistics floor. Then expand disclosed public evidence
+  with genuinely moderate/high and edit-evidence cases before any protected
+  holdout access. Evidence: result SHA-256
+  `aa5c81c5ba0b207d81c1bd520f632ccc07c3848c71cd1e52c162ef5f3d3de233`;
+  retained manifest SHA-256
+  `75887fd865e0673caa99ed3e1aa3b380696ea457c8349cc9222cc89d437dc144`.
+
 - Runner-Native Outcome-Adjudication Gate (2026-09-25): Evaluation-splits v6
   and final-holdout v7 now reject a protected package unless every exact case
   has a hash-bound independent annotation review. A commit expectation must be

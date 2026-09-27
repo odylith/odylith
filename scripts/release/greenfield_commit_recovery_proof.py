@@ -7,18 +7,15 @@ from dataclasses import dataclass, field
 import hashlib
 import json
 from pathlib import Path
-import shutil
 import signal
 from typing import Any
 import uuid
 
-from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
-    combined_prompt_evidence_source,
-)
 from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
 from odylith.runtime.surfaces.compass_standup_brief_maintenance_worker import maintenance_worker_pids
 
 import greenfield_commit_recovery_evidence as recovery_evidence
+import greenfield_commit_recovery_transaction as recovery_transaction
 from greenfield_commit_recovery_evidence import as_mapping
 
 from greenfield_process import run_command_with_group_timeout as _run
@@ -38,9 +35,6 @@ from greenfield_commit_recovery_generation import (
     require_published_generation_boundary as _require_published_generation_boundary,
 )
 from greenfield_matrix_release_artifacts import is_sha256
-from greenfield_matrix_host_candidate import HostCandidateFlow
-from greenfield_matrix_host_candidate import resolve_trusted_codex_executable
-from greenfield_matrix_host_candidate import run_host_candidate_flow
 from greenfield_model_profiles import STANDARD_PROFILE_ID
 from greenfield_model_profiles import model_profile_environment
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
@@ -49,7 +43,7 @@ from local_release_smoke import _local_release_env
 from local_release_smoke import _serve_directory
 
 
-COMMAND_TIMEOUT_SECONDS = 300
+COMMAND_TIMEOUT_SECONDS = recovery_transaction.COMMAND_TIMEOUT_SECONDS
 PROOF_SCOPE = "real_installed_additive_write_sigkill_recovery_conflict_same_hash_retry_and_fsync_rollback"
 _GOVERNED_ROOTS = ("odylith", "src/odylith/bundle/assets/odylith")
 
@@ -89,6 +83,7 @@ class GreenfieldInstalledCommitRecoveryProof:
     fsync_generation_observations: Mapping[str, Any] = field(default_factory=dict)
     recovery_case: Mapping[str, Any] = field(default_factory=dict)
     retained_recovery_roots: Mapping[str, str] = field(default_factory=dict)
+    retained_recovery_evidence: Mapping[str, str] = field(default_factory=dict)
     operator_conflict_resolution: Mapping[str, Any] = field(default_factory=dict)
 
     @property
@@ -130,27 +125,9 @@ class GreenfieldInstalledCommitRecoveryProof:
             "fsync_generation_observations": dict(self.fsync_generation_observations),
             "recovery_case": dict(self.recovery_case),
             "retained_recovery_roots": dict(self.retained_recovery_roots),
+            "retained_recovery_evidence": dict(self.retained_recovery_evidence),
             "operator_conflict_resolution": dict(self.operator_conflict_resolution),
         }
-
-
-@dataclass(frozen=True)
-class _CompiledRecoveryTransaction:
-    """Sealed transaction identity and the authority that bound its input evidence."""
-
-    transaction_file: str
-    transaction_hash: str
-    product_facts_hash: str
-    write_set_hash: str
-    intent_authority: Mapping[str, Any]
-
-
-@dataclass(frozen=True)
-class _RecoverySeed:
-    """One installed baseline and one sealed transaction reused by every fault phase."""
-
-    repo_root: Path
-    transaction: _CompiledRecoveryTransaction
 
 
 def run_installed_commit_recovery_proof(
@@ -192,7 +169,7 @@ def run_installed_commit_recovery_proof(
         run_root.mkdir(parents=True, exist_ok=False)
         server, base_url = _serve_directory(release_dir)
         env = _installed_release_env(base_url=base_url, version=version)
-        seed = _prepare_recovery_seed(
+        seed = recovery_transaction.prepare_recovery_seed(
             run_root=run_root,
             install_script=install_script,
             env=env,
@@ -209,6 +186,7 @@ def run_installed_commit_recovery_proof(
             version=version,
             case=recovery_case,
             seed=seed,
+            evidence=proposal_evidence,
         )
         facts.update(sigkill_facts)
         operator_conflict_facts = _run_operator_conflict_recovery_phase(
@@ -227,6 +205,7 @@ def run_installed_commit_recovery_proof(
             env=env,
             case=recovery_case,
             seed=seed,
+            evidence=proposal_evidence,
         )
         facts.update(fsync_facts)
         product_facts_hashes_by_phase = {
@@ -247,6 +226,14 @@ def run_installed_commit_recovery_proof(
         facts["product_facts_sha256"] = product_facts_sha256
         facts["product_facts_hashes_by_phase"] = product_facts_hashes_by_phase
         facts["product_facts_hash_sources_by_phase"] = product_facts_hash_sources_by_phase
+        retained = recovery_evidence.seal_recovery_manifest(
+            proposal=proposal_evidence,
+            run_id=retained_evidence_run_id,
+        )
+        facts["retained_recovery_evidence"] = retained
+        resolution = dict(as_mapping(facts.get("operator_conflict_resolution")))
+        resolution["evidence"] = retained
+        facts["operator_conflict_resolution"] = resolution
         issues.extend(recovery_evidence.missing_required_evidence(facts, run_id=retained_evidence_run_id))
     except (OSError, RuntimeError, ValueError, json.JSONDecodeError) as exc:
         issues.append(str(exc))
@@ -305,6 +292,7 @@ def run_installed_commit_recovery_proof(
         fsync_generation_observations=as_mapping(facts.get("fsync_generation_observations")),
         recovery_case=as_mapping(facts.get("recovery_case")),
         retained_recovery_roots=as_mapping(facts.get("retained_recovery_roots")),
+        retained_recovery_evidence=as_mapping(facts.get("retained_recovery_evidence")),
         operator_conflict_resolution=as_mapping(facts.get("operator_conflict_resolution")),
     )
 
@@ -344,9 +332,10 @@ def _run_sigkill_recovery_phase(
     env: Mapping[str, str],
     version: str,
     case: GreenfieldMatrixCase,
-    seed: _RecoverySeed | None = None,
+    seed: recovery_transaction.RecoverySeed | None = None,
+    evidence: recovery_evidence.RetainedEvidenceCase | None = None,
 ) -> dict[str, Any]:
-    repo_root, compiled = _phase_repo_and_transaction(
+    repo_root, compiled = recovery_transaction.phase_repo_and_transaction(
         run_root=run_root,
         phase_name="sigkill-same-hash",
         install_script=install_script,
@@ -370,7 +359,7 @@ def _run_sigkill_recovery_phase(
     if crashed.returncode != -signal.SIGKILL:
         raise RuntimeError(
             "installed create did not terminate with SIGKILL after its first sealed write: "
-            + _command_detail(crashed)
+            + recovery_transaction.command_detail(crashed)
         )
     after_crash = _governed_fingerprint(repo_root)
     if not after_crash or after_crash == before:
@@ -388,11 +377,15 @@ def _run_sigkill_recovery_phase(
         label="SIGKILL",
     )
     journal = _journal_state(repo_root=repo_root, transaction_hash=compiled.transaction_hash)
+    journal_after_crash_bytes = (_journal_root(repo_root, compiled.transaction_hash) / "state.v1.json").read_bytes()
     if journal.get("state") != "projecting":
         raise RuntimeError("SIGKILL proof did not leave the installed commit journal in projecting state")
     _require_journal_generation_binding(journal=journal, observation=generation_after_crash)
     recovered = _run(cwd=repo_root, env=dict(env), command=command, timeout=COMMAND_TIMEOUT_SECONDS)
-    recovery_payload = _require_success_payload(recovered, label="installed SIGKILL recovery create")
+    recovery_payload = recovery_transaction.require_success_payload(
+        recovered,
+        label="installed SIGKILL recovery create",
+    )
     recovered_product_facts_hash = _require_receipt_identity(
         recovery_payload,
         transaction_hash=compiled.transaction_hash,
@@ -403,6 +396,7 @@ def _run_sigkill_recovery_phase(
     if not after_recovery or after_recovery == before:
         raise RuntimeError("installed SIGKILL recovery did not materialize the sealed governed package")
     completed_journal = _journal_state(repo_root=repo_root, transaction_hash=compiled.transaction_hash)
+    journal_after_recovery_bytes = (_journal_root(repo_root, compiled.transaction_hash) / "state.v1.json").read_bytes()
     if completed_journal.get("state") != "closed":
         raise RuntimeError("installed SIGKILL recovery did not produce a closed durable receipt")
     generation_after_recovery = _installed_generation_observation(
@@ -421,7 +415,10 @@ def _run_sigkill_recovery_phase(
     if any(path.exists() or path.is_symlink() for path in (journal_root / "snapshot", journal_root / "staging")):
         raise RuntimeError("installed SIGKILL recovery retained rollback artifacts after durable commit")
     retried = _run(cwd=repo_root, env=dict(env), command=command, timeout=COMMAND_TIMEOUT_SECONDS)
-    retry_payload = _require_success_payload(retried, label="installed same-hash retry")
+    retry_payload = recovery_transaction.require_success_payload(
+        retried,
+        label="installed same-hash retry",
+    )
     retry_product_facts_hash = _require_receipt_identity(
         retry_payload,
         transaction_hash=compiled.transaction_hash,
@@ -434,7 +431,7 @@ def _run_sigkill_recovery_phase(
         raise RuntimeError("installed same-hash retry did not return the durable commit receipt")
     if _governed_fingerprint(repo_root) != after_recovery:
         raise RuntimeError("installed same-hash retry rewrote the committed governed package")
-    return {
+    facts = {
         "sigkill_returncode": crashed.returncode,
         "recovery_returncode": recovered.returncode,
         "same_hash_retry_returncode": retried.returncode,
@@ -450,6 +447,40 @@ def _run_sigkill_recovery_phase(
         "product_facts_hash_source": "success_receipt",
         **runtime_identity,
     }
+    if evidence is None:
+        raise RuntimeError("SIGKILL recovery requires external retained evidence")
+    binding = {
+        "phase": "sigkill",
+        "transaction_hash": compiled.transaction_hash,
+        "repository_write_set_hash": compiled.write_set_hash,
+        "product_facts_sha256": recovered_product_facts_hash,
+        "case_id": recovery_case_evidence(case)["id"],
+        "prompt_sha256": hashlib.sha256(case.prompt.encode("utf-8")).hexdigest(),
+        "command": command,
+        "returncodes": {
+            "crash": crashed.returncode,
+            "recovery": recovered.returncode,
+            "retry": retried.returncode,
+        },
+        "journal_states": {
+            "after_crash": journal.get("state"),
+            "after_recovery": completed_journal.get("state"),
+        },
+    }
+    recovery_evidence.seal_recovery_phase(
+        proposal=evidence, phase="sigkill", repo_root=repo_root,
+        command_results={
+            "crash": (command, crashed), "recovery": (command, recovered), "retry": (command, retried),
+        },
+        journal_observations={"after_crash": journal, "after_recovery": completed_journal},
+        journal_bytes={
+            "after-crash": journal_after_crash_bytes,
+            "after-recovery": journal_after_recovery_bytes,
+        },
+        receipt_observations={"recovery": recovery_payload, "retry": retry_payload},
+        generation_observations=facts["sigkill_generation_observations"], binding=binding,
+    )
+    return facts
 
 
 def _run_operator_conflict_recovery_phase(
@@ -460,11 +491,11 @@ def _run_operator_conflict_recovery_phase(
     case: GreenfieldMatrixCase,
     evidence: recovery_evidence.RetainedEvidenceCase,
     run_id: str = "",
-    seed: _RecoverySeed | None = None,
+    seed: recovery_transaction.RecoverySeed | None = None,
 ) -> dict[str, Any]:
     """Prove recovery preserves a later operator mutation instead of restoring over it."""
 
-    repo_root, compiled = _phase_repo_and_transaction(
+    repo_root, compiled = recovery_transaction.phase_repo_and_transaction(
         run_root=run_root,
         phase_name="operator-conflict",
         install_script=install_script,
@@ -487,7 +518,7 @@ def _run_operator_conflict_recovery_phase(
     if crashed.returncode != -signal.SIGKILL:
         raise RuntimeError(
             "installed conflict proof did not terminate with SIGKILL after its first sealed write: "
-            + _command_detail(crashed)
+            + recovery_transaction.command_detail(crashed)
         )
     generation_after_crash = _installed_generation_observation(
         repo_root=repo_root,
@@ -600,7 +631,10 @@ def _run_operator_conflict_recovery_phase(
         or recovery_evidence.journal_inventory(journal_root) != inventory):
         raise RuntimeError("conflict retraction did not restore only the injected mutation")
     recovered = _run(cwd=repo_root, env=dict(env), command=command, timeout=COMMAND_TIMEOUT_SECONDS)
-    receipt = _require_success_payload(recovered, label="installed conflict settlement")
+    receipt = recovery_transaction.require_success_payload(
+        recovered,
+        label="installed conflict settlement",
+    )
     _require_receipt_identity(receipt, transaction_hash=compiled.transaction_hash,
         product_facts_hash=compiled.product_facts_hash, write_set_hash=compiled.write_set_hash)
     completed = _journal_state(repo_root=repo_root, transaction_hash=compiled.transaction_hash)
@@ -615,7 +649,10 @@ def _run_operator_conflict_recovery_phase(
     settled_fingerprint = _governed_fingerprint(repo_root, include_directories=True)
     settled_journal_inventory = recovery_evidence.journal_inventory(journal_root)
     retry = _run(cwd=repo_root, env=dict(env), command=command, timeout=COMMAND_TIMEOUT_SECONDS)
-    if (_require_success_payload(retry, label="installed conflict same-hash retry") != receipt
+    if (recovery_transaction.require_success_payload(
+        retry,
+        label="installed conflict same-hash retry",
+    ) != receipt
         or _governed_fingerprint(repo_root, include_directories=True) != settled_fingerprint):
         raise RuntimeError("installed conflict same-hash retry changed the receipt or governed tree")
     if (recovery_evidence.journal_inventory(journal_root) != settled_journal_inventory
@@ -636,9 +673,10 @@ def _run_fsync_rollback_phase(
     install_script: Path,
     env: Mapping[str, str],
     case: GreenfieldMatrixCase,
-    seed: _RecoverySeed | None = None,
+    seed: recovery_transaction.RecoverySeed | None = None,
+    evidence: recovery_evidence.RetainedEvidenceCase | None = None,
 ) -> dict[str, Any]:
-    repo_root, compiled = _phase_repo_and_transaction(
+    repo_root, compiled = recovery_transaction.phase_repo_and_transaction(
         run_root=run_root,
         phase_name="fsync-rollback",
         install_script=install_script,
@@ -668,6 +706,7 @@ def _run_fsync_rollback_phase(
     if _governed_fingerprint(repo_root) != before:
         raise RuntimeError("installed fsync failure left partial governed writes after rollback")
     failed_journal = _journal_state(repo_root=repo_root, transaction_hash=compiled.transaction_hash)
+    journal_after_failure_bytes = (_journal_root(repo_root, compiled.transaction_hash) / "state.v1.json").read_bytes()
     if failed_journal.get("state") != "aborted":
         raise RuntimeError("installed fsync failure did not persist an aborted journal state")
     generation_after_failure = _installed_generation_observation(
@@ -685,7 +724,10 @@ def _run_fsync_rollback_phase(
     if any(path.exists() or path.is_symlink() for path in (journal_root / "snapshot", journal_root / "staging")):
         raise RuntimeError("installed fsync failure retained rollback artifacts after cleanup")
     retried = _run(cwd=repo_root, env=dict(env), command=command, timeout=COMMAND_TIMEOUT_SECONDS)
-    retry_payload = _require_success_payload(retried, label="installed fsync rollback retry")
+    retry_payload = recovery_transaction.require_success_payload(
+        retried,
+        label="installed fsync rollback retry",
+    )
     retry_product_facts_hash = _require_receipt_identity(
         retry_payload,
         transaction_hash=compiled.transaction_hash,
@@ -696,6 +738,7 @@ def _run_fsync_rollback_phase(
     if not after_retry:
         raise RuntimeError("installed fsync rollback retry did not materialize the sealed governed package")
     completed_journal = _journal_state(repo_root=repo_root, transaction_hash=compiled.transaction_hash)
+    journal_after_retry_bytes = (_journal_root(repo_root, compiled.transaction_hash) / "state.v1.json").read_bytes()
     if completed_journal.get("state") != "closed":
         raise RuntimeError("installed fsync rollback retry did not produce a closed durable receipt")
     generation_after_retry = _installed_generation_observation(
@@ -713,7 +756,10 @@ def _run_fsync_rollback_phase(
     if any(path.exists() or path.is_symlink() for path in (journal_root / "snapshot", journal_root / "staging")):
         raise RuntimeError("installed fsync rollback retry retained rollback artifacts after durable commit")
     same_hash_retry = _run(cwd=repo_root, env=dict(env), command=command, timeout=COMMAND_TIMEOUT_SECONDS)
-    same_hash_payload = _require_success_payload(same_hash_retry, label="installed fsync same-hash retry")
+    same_hash_payload = recovery_transaction.require_success_payload(
+        same_hash_retry,
+        label="installed fsync same-hash retry",
+    )
     same_hash_product_facts_hash = _require_receipt_identity(
         same_hash_payload,
         transaction_hash=compiled.transaction_hash,
@@ -726,7 +772,7 @@ def _run_fsync_rollback_phase(
         raise RuntimeError("installed fsync same-hash retry did not return the durable commit receipt")
     if _governed_fingerprint(repo_root) != after_retry:
         raise RuntimeError("installed fsync same-hash retry rewrote the committed governed package")
-    return {
+    facts = {
         "fsync_failure_returncode": failed.returncode,
         "fsync_retry_returncode": retried.returncode,
         "fsync_same_hash_retry_returncode": same_hash_retry.returncode,
@@ -741,233 +787,43 @@ def _run_fsync_rollback_phase(
         "product_facts_sha256": retry_product_facts_hash,
         "product_facts_hash_source": "retry_success_receipt",
     }
-
-
-def _install_repo(*, repo_root: Path, install_script: Path, env: Mapping[str, str]) -> None:
-    repo_root.mkdir(parents=True, exist_ok=False)
-    initialized = _run(cwd=repo_root, env=dict(env), command=["git", "init"], timeout=60)
-    _require_success(initialized, label="installed commit recovery git init")
-    installed = _run(
-        cwd=repo_root,
-        env=dict(env),
-        command=["bash", str(install_script)],
-        timeout=COMMAND_TIMEOUT_SECONDS,
+    if evidence is None:
+        raise RuntimeError("fsync recovery requires external retained evidence")
+    binding = {
+        "phase": "fsync",
+        "transaction_hash": compiled.transaction_hash,
+        "repository_write_set_hash": compiled.write_set_hash,
+        "product_facts_sha256": retry_product_facts_hash,
+        "case_id": recovery_case_evidence(case)["id"],
+        "prompt_sha256": hashlib.sha256(case.prompt.encode("utf-8")).hexdigest(),
+        "command": command,
+        "returncodes": {
+            "failure": failed.returncode,
+            "retry": retried.returncode,
+            "same_hash_retry": same_hash_retry.returncode,
+        },
+        "journal_states": {
+            "after_failure": failed_journal.get("state"),
+            "after_retry": completed_journal.get("state"),
+        },
+    }
+    recovery_evidence.seal_recovery_phase(
+        proposal=evidence, phase="fsync", repo_root=repo_root,
+        command_results={
+            "failure": (command, failed), "retry": (command, retried),
+            "same-hash-retry": (command, same_hash_retry),
+        },
+        journal_observations={"after_failure": failed_journal, "after_retry": completed_journal},
+        journal_bytes={
+            "after-failure": journal_after_failure_bytes,
+            "after-retry": journal_after_retry_bytes,
+        },
+        receipt_observations={
+            "failure": failure_payload, "retry": retry_payload, "same_hash_retry": same_hash_payload,
+        },
+        generation_observations=facts["fsync_generation_observations"], binding=binding,
     )
-    _require_success(installed, label="installed commit recovery install")
-
-
-def _prepare_recovery_seed(
-    *,
-    run_root: Path,
-    install_script: Path,
-    env: Mapping[str, str],
-    case: GreenfieldMatrixCase,
-    evidence: recovery_evidence.RetainedEvidenceCase | None = None,
-    host_candidate_argv: Sequence[str] = (),
-) -> _RecoverySeed:
-    """Compile once so recovery phases exercise identical sealed bytes."""
-
-    repo_root = run_root / "sealed-transaction-seed"
-    _install_repo(repo_root=repo_root, install_script=install_script, env=env)
-    transaction = _compile_transaction(
-        repo_root=repo_root,
-        env=env,
-        case=case,
-        evidence=evidence,
-        host_candidate_argv=host_candidate_argv,
-    )
-    return _RecoverySeed(repo_root=repo_root, transaction=transaction)
-
-
-def _phase_repo_and_transaction(
-    *,
-    run_root: Path,
-    phase_name: str,
-    install_script: Path,
-    env: Mapping[str, str],
-    case: GreenfieldMatrixCase,
-    seed: _RecoverySeed | None,
-) -> tuple[Path, _CompiledRecoveryTransaction]:
-    repo_root = run_root / phase_name
-    if seed is None:
-        _install_repo(repo_root=repo_root, install_script=install_script, env=env)
-        return repo_root, _compile_transaction(repo_root=repo_root, env=env, case=case)
-    _clone_recovery_seed_repo(seed_repo=seed.repo_root, repo_root=repo_root)
-    return repo_root, _transaction_for_phase(seed=seed)
-
-
-def _clone_recovery_seed_repo(*, seed_repo: Path, repo_root: Path) -> None:
-    """Copy one installed seed while keeping its managed runtime phase-local."""
-
-    seed_runtime_root = seed_repo / ".odylith/runtime"
-    seed_versions_root = seed_runtime_root / "versions"
-    seed_current = seed_runtime_root / "current"
-    if not seed_current.is_symlink():
-        raise RuntimeError("installed recovery seed does not have an active runtime symlink")
-    try:
-        active_relative = seed_current.resolve(strict=True).relative_to(seed_versions_root.resolve(strict=True))
-    except (OSError, ValueError) as exc:
-        raise RuntimeError("installed recovery seed active runtime is outside its managed versions") from exc
-    if len(active_relative.parts) != 1:
-        raise RuntimeError("installed recovery seed active runtime is not one managed version")
-
-    shutil.copytree(seed_repo, repo_root, symlinks=True)
-    cloned_runtime_root = repo_root / ".odylith/runtime"
-    cloned_current = cloned_runtime_root / "current"
-    cloned_current.unlink()
-    cloned_current.symlink_to(Path("versions") / active_relative, target_is_directory=True)
-
-
-def _transaction_for_phase(*, seed: _RecoverySeed) -> _CompiledRecoveryTransaction:
-    transaction = seed.transaction
-    transaction_path = Path(transaction.transaction_file).expanduser()
-    if transaction_path.is_absolute():
-        try:
-            transaction_file = str(transaction_path.resolve().relative_to(seed.repo_root.resolve()))
-        except ValueError as exc:
-            raise RuntimeError("installed recovery transaction file is outside its sealed seed repo") from exc
-    else:
-        transaction_file = str(transaction_path)
-    return _CompiledRecoveryTransaction(
-        transaction_file=transaction_file,
-        transaction_hash=transaction.transaction_hash,
-        product_facts_hash=transaction.product_facts_hash,
-        write_set_hash=transaction.write_set_hash,
-        intent_authority=transaction.intent_authority,
-    )
-
-
-def _compile_transaction(
-    *,
-    repo_root: Path,
-    env: Mapping[str, str],
-    case: GreenfieldMatrixCase,
-    evidence: recovery_evidence.RetainedEvidenceCase | None = None,
-    host_candidate_argv: Sequence[str] = (),
-) -> _CompiledRecoveryTransaction:
-    command = [
-        "./.odylith/bin/odylith",
-        "greenfield",
-        "propose",
-        "--repo-root",
-        ".",
-        "--prompt",
-        case.prompt,
-        "--format",
-        "json",
-    ]
-    confirmed_intent = str(case.confirmed_intent_markdown or "").strip()
-    if confirmed_intent:
-        command.extend(["--edit", confirmed_intent])
-    if host_candidate_argv:
-        confirmed_intent = str(case.confirmed_intent_markdown or "").strip()
-
-        def invoke_installed(installed_command: Sequence[str], timeout: float) -> Any:
-            return _run(
-                cwd=repo_root,
-                env=dict(env),
-                command=list(installed_command),
-                timeout=timeout,
-            )
-
-        def invoke_propose(candidate_path: Path, timeout: float) -> Any:
-            candidate_command = [*command, "--candidate-file", str(candidate_path)]
-            return recovery_evidence.run_proposal(
-                evidence=evidence,
-                runner=_run,
-                cwd=repo_root,
-                env=dict(env),
-                command=candidate_command,
-                timeout=timeout,
-            )
-
-        observe = None
-        if evidence is not None:
-            observe = lambda payload: recovery_evidence.record_retained_case_json(
-                evidence,
-                "semantic/host-authoring-observation.v1.json",
-                dict(payload),
-            )
-        proposed = run_host_candidate_flow(
-            HostCandidateFlow(
-                repo_root=repo_root,
-                temp_parent=repo_root.parent,
-                host_argv=tuple(str(value) for value in host_candidate_argv),
-                prompt=case.prompt,
-                edit_evidence=confirmed_intent,
-                timeout=COMMAND_TIMEOUT_SECONDS,
-                env=env,
-                trusted_codex_executable=resolve_trusted_codex_executable(environ=env),
-                expected_model=str(env.get("ODYLITH_REASONING_MODEL") or ""),
-                expected_reasoning_effort=str(
-                    env.get("ODYLITH_REASONING_CODEX_REASONING_EFFORT") or ""
-                ),
-                invoke_installed=invoke_installed,
-                invoke_propose=invoke_propose,
-                observe=observe,
-            )
-        )
-    else:
-        proposed = recovery_evidence.run_proposal(
-            evidence=evidence, runner=_run,
-            cwd=repo_root,
-            env=dict(env),
-            command=command,
-            timeout=COMMAND_TIMEOUT_SECONDS,
-        )
-    payload = _require_success_payload(proposed, label="installed commit recovery propose")
-    transaction = as_mapping(payload.get("product_create_transaction"))
-    transaction_hash = str(transaction.get("transaction_hash") or "").strip()
-    transaction_file = str(payload.get("transaction_file") or "").strip()
-    if not transaction_hash or not transaction_file:
-        raise RuntimeError("installed greenfield propose did not return a sealed transaction file and hash")
-    transaction_path = Path(transaction_file).expanduser()
-    if not transaction_path.is_absolute():
-        transaction_path = repo_root / transaction_path
-    sealed_transaction = _json_mapping(
-        transaction_path.read_text(encoding="utf-8"),
-        label="installed compiled Greenfield transaction",
-    )
-    sealed_hash = str(sealed_transaction.get("transaction_hash") or "").strip()
-    sealed_package = as_mapping(sealed_transaction.get("prewrite_package"))
-    sealed_write_set = as_mapping(sealed_package.get("repository_write_set"))
-    write_set_hash = str(sealed_write_set.get("write_set_hash") or "").strip()
-    intent_authority = as_mapping(sealed_transaction.get("intent_authority"))
-    product_facts_hash = str(intent_authority.get("product_facts_sha256") or "").strip()
-    if sealed_hash != transaction_hash or not write_set_hash or not is_sha256(product_facts_hash):
-        raise RuntimeError("installed greenfield propose returned an inconsistent sealed transaction identity")
-    if str(transaction.get("product_facts_sha256") or "").strip() != product_facts_hash:
-        raise RuntimeError("installed greenfield propose did not return the sealed Product Intent facts hash")
-    _require_case_evidence_bound_to_transaction(case=case, intent_authority=intent_authority)
-    if evidence is not None:
-        recovery_evidence.record_retained_case_bytes(evidence, "semantic/product-create-transaction.v1.json", transaction_path.read_bytes())
-    return _CompiledRecoveryTransaction(
-        transaction_file=transaction_file,
-        transaction_hash=transaction_hash,
-        product_facts_hash=product_facts_hash,
-        write_set_hash=write_set_hash,
-        intent_authority=intent_authority,
-    )
-
-
-def _require_case_evidence_bound_to_transaction(
-    *,
-    case: GreenfieldMatrixCase,
-    intent_authority: Mapping[str, Any],
-) -> None:
-    """Prove the sealed transaction authority contains the exact recovery inputs."""
-
-    confirmed_intent = str(case.confirmed_intent_markdown or "").strip()
-    expected_source_format = "operator_prompt_with_edit_evidence" if confirmed_intent else "operator_prompt"
-    if str(intent_authority.get("source_format") or "").strip() != expected_source_format:
-        raise RuntimeError("installed greenfield transaction authority did not record the expected input format")
-    expected_evidence = combined_prompt_evidence_source(
-        prompt=case.prompt,
-        edit_evidence=confirmed_intent,
-    )
-    expected_hash = hashlib.sha256(expected_evidence.encode("utf-8")).hexdigest()
-    if str(intent_authority.get("markdown_source_sha256") or "").strip() != expected_hash:
-        raise RuntimeError("installed greenfield transaction authority did not bind the exact prompt and edit evidence")
+    return facts
 
 
 def _run_faulted_create(*, repo_root: Path, env: Mapping[str, str], command: list[str], fault_script: str):
@@ -1010,7 +866,10 @@ def _installed_runtime_identity(*, repo_root: Path, env: Mapping[str, str], vers
         ],
         timeout=COMMAND_TIMEOUT_SECONDS,
     )
-    payload = _require_success_payload(identity, label="installed runtime identity")
+    payload = recovery_transaction.require_success_payload(
+        identity,
+        label="installed runtime identity",
+    )
     module_path = Path(str(payload.get("module_path") or "")).expanduser().resolve()
     runtime_root = (repo_root / ".odylith" / "runtime").resolve()
     try:
@@ -1051,7 +910,10 @@ def _installed_generation_observation(
         ],
         timeout=COMMAND_TIMEOUT_SECONDS,
     )
-    return _require_success_payload(observed, label="installed generation observation")
+    return recovery_transaction.require_success_payload(
+        observed,
+        label="installed generation observation",
+    )
 
 
 def _create_command(*, transaction_file: str, transaction_hash: str) -> list[str]:
@@ -1078,7 +940,10 @@ def _journal_state(*, repo_root: Path, transaction_hash: str) -> Mapping[str, An
     state_path = _journal_root(repo_root, transaction_hash) / "state.v1.json"
     if not state_path.is_file():
         raise RuntimeError("installed create did not persist a recovery journal state")
-    return _json_mapping(state_path.read_text(encoding="utf-8"), label="installed create journal state")
+    return recovery_transaction.json_mapping(
+        state_path.read_text(encoding="utf-8"),
+        label="installed create journal state",
+    )
 
 
 def _governed_fingerprint(repo_root: Path, *, include_directories: bool = False) -> dict[str, str]:
@@ -1133,20 +998,10 @@ def _file_fingerprint(path: Path) -> str:
     return f"{stat_result.st_mode:o}:{stat_result.st_mtime_ns}:{digest}"
 
 
-def _require_success(result: Any, *, label: str) -> None:
-    if result.returncode != 0:
-        raise RuntimeError(f"{label} failed: {_command_detail(result)}")
-
-
-def _require_success_payload(result: Any, *, label: str) -> Mapping[str, Any]:
-    _require_success(result, label=label)
-    return _json_mapping(result.stdout, label=label)
-
-
 def _require_error_payload(result: Any, *, label: str) -> Mapping[str, Any]:
     if result.returncode == 0:
         raise RuntimeError(f"{label} unexpectedly succeeded")
-    payload = _json_mapping(result.stdout, label=label)
+    payload = recovery_transaction.json_mapping(result.stdout, label=label)
     if str(payload.get("mode") or "") != "error":
         raise RuntimeError(f"{label} did not return a commit error payload")
     return payload
@@ -1215,20 +1070,3 @@ def _receipt_product_facts_hash(
     if str(write_transaction.get("repository_write_set_hash") or "") != write_set_hash:
         raise RuntimeError("installed create manifest does not identify the sealed repository write set")
     return observed_product_facts_hash
-
-
-def _json_mapping(value: str, *, label: str) -> Mapping[str, Any]:
-    try:
-        parsed = json.loads(value)
-    except json.JSONDecodeError as exc:
-        raise RuntimeError(f"{label} did not return JSON: {value[-600:]!r}") from exc
-    if not isinstance(parsed, Mapping):
-        raise RuntimeError(f"{label} did not return a JSON object")
-    return parsed
-
-
-def _command_detail(result: Any) -> str:
-    stdout = str(getattr(result, "stdout", "") or "").strip()
-    stderr = str(getattr(result, "stderr", "") or "").strip()
-    output = "\n".join(part for part in (stdout, stderr) if part)
-    return f"returncode={result.returncode}; output={output[-1000:]!r}"

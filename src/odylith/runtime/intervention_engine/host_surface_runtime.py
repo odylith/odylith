@@ -320,12 +320,12 @@ def compose_checkpoint_system_message(
 ) -> str:
     live = visible_delivery_runtime.canonical_visible_delivery_text(live_intervention)
     governance = _normalize_block_string(governance_status)
-    if _governance_status_requires_attention(governance):
+    if governance_status_requires_attention(governance):
         return governance
     return live or governance
 
 
-def _governance_status_requires_attention(value: str) -> bool:
+def governance_status_requires_attention(value: str) -> bool:
     lowered = _normalize_string(value).casefold()
     return any(token in lowered for token in ("failed", "failure", "error", "skipped"))
 
@@ -376,15 +376,11 @@ def codex_prompt_payload(
     return payload
 
 
-def stop_payload(*, system_message: str = "", block_for_visible_delivery: bool = False) -> dict[str, Any]:
+def stop_payload(*, system_message: str = "") -> dict[str, Any]:
     message = visible_delivery_runtime.canonical_visible_delivery_text(system_message)
     if not message:
         return {}
-    payload: dict[str, Any] = {"systemMessage": message}
-    if block_for_visible_delivery:
-        payload["decision"] = "block"
-        payload["reason"] = visible_delivery_runtime.stop_visible_delivery_reason(message)
-    return payload
+    return {"systemMessage": message}
 
 
 def claude_post_tool_payload(

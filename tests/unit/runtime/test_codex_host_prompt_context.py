@@ -123,7 +123,7 @@ def test_codex_prompt_system_message_hard_fails_visible_for_zero_signals(tmp_pat
     assert observation["tribunal_summary"]["source"] == "intervention_alignment_context"
 
 
-def test_codex_prompt_system_message_replays_pending_chat_block(tmp_path: Path) -> None:
+def test_codex_prompt_system_message_does_not_replay_prior_turn_block(tmp_path: Path) -> None:
     surface_runtime.stream_state.append_intervention_event(
         repo_root=tmp_path,
         kind="intervention_card",
@@ -143,9 +143,7 @@ def test_codex_prompt_system_message_replays_pending_chat_block(tmp_path: Path) 
         session_id="codex-prompt-replay",
     )
 
-    assert rendered == (
-        "---\n\n**Odylith Observation:** Prompt must carry this pending block.\n\n---"
-    )
+    assert rendered == ""
 
 
 def test_codex_prompt_system_message_suppresses_help_fast_path_replay(tmp_path: Path) -> None:
@@ -171,7 +169,7 @@ def test_codex_prompt_system_message_suppresses_help_fast_path_replay(tmp_path: 
     assert rendered == ""
 
 
-def test_codex_prompt_system_message_prefers_pending_ambient_risk_over_observation(tmp_path: Path) -> None:
+def test_codex_prompt_system_message_does_not_replay_prior_ambient_bundle(tmp_path: Path) -> None:
     surface_runtime.stream_state.append_intervention_event(
         repo_root=tmp_path,
         kind="intervention_card",
@@ -203,13 +201,7 @@ def test_codex_prompt_system_message_prefers_pending_ambient_risk_over_observati
         session_id="codex-prompt-ambient",
     )
 
-    assert rendered == (
-        "---\n\n"
-        "**Odylith Risks:** Prompt should surface this branded ambient beat first.\n"
-        "\n"
-        "**Odylith Observation:** Prompt should not hide the stronger ambient beat.\n"
-        "\n---"
-    )
+    assert rendered == ""
 
 
 def test_main_writes_user_prompt_hook_json(monkeypatch, tmp_path: Path, capsys) -> None:

@@ -546,19 +546,6 @@ def render_prompt_system_message(
         include_closeout=include_closeout,
         developer_include_closeout=include_closeout,
     )
-    replay = preferred_live_replay_markdown(
-        repo_root=root,
-        host_family=normalized_host,
-        session_id=session_id,
-        include_assist=True,
-    )
-    if replay:
-        closeout_text = conversation_surface.render_closeout_text(bundle, markdown=True)
-        return merge_replay_with_closeout(
-            replay=replay,
-            closeout_text=closeout_text,
-            supplemental_inside_live_with_assist=True,
-        )
     visible = decision.visible_markdown or conversation_surface.render_live_text(
         bundle,
         markdown=False,

@@ -34,6 +34,12 @@ _PROFILE_IDS = {
     "standard": STANDARD_PROFILE_ID,
     "rescue": RESCUE_PROFILE_ID,
 }
+_INDEPENDENT_LENSES = (
+    "product_manager",
+    "architect",
+    "engineer",
+    "domain_expert",
+)
 
 
 def test_scorecard_requires_every_explicit_onboarding_dimension() -> None:
@@ -45,12 +51,41 @@ def test_scorecard_requires_every_explicit_onboarding_dimension() -> None:
         model_profile_proof=_passing_profile_proof(),
         unavailable_provider_proof={"status": "passed"},
         commit_recovery_proof={"status": "passed"},
+        validated_independent_reviews=_validated_reviews(),
     )
 
     assert scorecard["status"] == "passed"
     assert scorecard["score"] == 10
     assert tuple(scorecard["dimensions"]) == ONBOARDING_QUALITY_DIMENSIONS
     assert all(row["score"] == 10 for row in scorecard["dimensions"].values())
+
+
+def test_scorecard_accepts_serialized_results_for_post_run_finalization() -> None:
+    serialized = tuple(
+        {
+            "name": result.name,
+            "evidence": result.evidence,
+            "quality": {
+                "passed": result.quality.passed,
+                "scores": dict(result.quality.scores),
+            },
+        }
+        for result in _passing_results()
+    )
+
+    scorecard = build_onboarding_quality_scorecard(
+        results=serialized,
+        browser_proof={"status": "passed"},
+        platform_leakage_proof={"status": "passed"},
+        metamorphic_output={"passed": True},
+        model_profile_proof=_passing_profile_proof(),
+        unavailable_provider_proof={"status": "passed"},
+        commit_recovery_proof={"status": "passed"},
+        validated_independent_reviews=_validated_reviews(),
+    )
+
+    assert scorecard["status"] == "passed"
+    assert scorecard["score"] == 10
 
 
 def test_scorecard_fails_when_visible_confirmation_or_navigation_is_not_proven() -> None:
@@ -66,6 +101,7 @@ def test_scorecard_fails_when_visible_confirmation_or_navigation_is_not_proven()
         model_profile_proof=_passing_profile_proof(),
         unavailable_provider_proof={"status": "passed"},
         commit_recovery_proof={"status": "passed"},
+        validated_independent_reviews=_validated_reviews(),
     )
 
     dimension = scorecard["dimensions"]["confirmation_and_post_success_ux_clarity"]
@@ -117,6 +153,97 @@ def test_scorecard_requires_lower_capability_clarification_and_unavailable_provi
     assert "unavailable-provider fast no-write proof did not pass" in dimension["issues"]
 
 
+def test_scorecard_keeps_absent_independent_reviews_unproven() -> None:
+    results = list(_passing_results())
+
+    scorecard = build_onboarding_quality_scorecard(
+        results=tuple(results),
+        browser_proof={"status": "passed"},
+        platform_leakage_proof={"status": "passed"},
+        metamorphic_output={"passed": True},
+        model_profile_proof=_passing_profile_proof(),
+        unavailable_provider_proof={"status": "passed"},
+        commit_recovery_proof={"status": "passed"},
+    )
+
+    assert scorecard["status"] == "awaiting-independent-review"
+    assert scorecard["score"] is None
+    assert scorecard["dimensions"]["actor_action_state_object_extraction"]["status"] == "unproven"
+    assert scorecard["dimensions"]["cross_artifact_consistency"]["score"] is None
+
+
+def test_embedded_failed_independent_review_remains_a_blocker() -> None:
+    results = list(_passing_results())
+    results[0].quality.scores["product_manager"] = 0
+
+    scorecard = build_onboarding_quality_scorecard(
+        results=tuple(results),
+        browser_proof={"status": "passed"},
+        platform_leakage_proof={"status": "passed"},
+        metamorphic_output={"passed": True},
+        model_profile_proof=_passing_profile_proof(),
+        unavailable_provider_proof={"status": "passed"},
+        commit_recovery_proof={"status": "passed"},
+        validated_independent_reviews=_validated_reviews(),
+    )
+
+    dimension = scorecard["dimensions"]["actor_action_state_object_extraction"]
+    assert scorecard["status"] == "failed"
+    assert dimension["status"] == "failed"
+    assert "standard package: product_manager independent review failed" in dimension["issues"]
+
+
+def test_validated_independent_reviews_finalize_unproven_lenses() -> None:
+    results = list(_passing_results())
+    for lens in _INDEPENDENT_LENSES:
+        results[0].quality.scores[lens] = -1
+
+    scorecard = build_onboarding_quality_scorecard(
+        results=tuple(results),
+        browser_proof={"status": "passed"},
+        platform_leakage_proof={"status": "passed"},
+        metamorphic_output={"passed": True},
+        model_profile_proof=_passing_profile_proof(),
+        unavailable_provider_proof={"status": "passed"},
+        commit_recovery_proof={"status": "passed"},
+        validated_independent_reviews={
+            "standard package": {lens: "passed" for lens in _INDEPENDENT_LENSES}
+        },
+    )
+
+    assert scorecard["status"] == "passed"
+    assert scorecard["score"] == 10
+
+
+def test_failed_review_or_automated_gate_cannot_be_promoted_by_other_reviews() -> None:
+    results = list(_passing_results())
+    for lens in _INDEPENDENT_LENSES:
+        results[0].quality.scores[lens] = -1
+    results[0].quality.scores["copy_semantic_clarity"] = 0
+
+    scorecard = build_onboarding_quality_scorecard(
+        results=tuple(results),
+        browser_proof={"status": "passed"},
+        platform_leakage_proof={"status": "passed"},
+        metamorphic_output={"passed": True},
+        model_profile_proof=_passing_profile_proof(),
+        unavailable_provider_proof={"status": "passed"},
+        commit_recovery_proof={"status": "passed"},
+        validated_independent_reviews={
+            "standard package": {
+                **{lens: "passed" for lens in _INDEPENDENT_LENSES},
+                "product_manager": "failed",
+            }
+        },
+    )
+
+    assert scorecard["status"] == "failed"
+    dimension = scorecard["dimensions"]["actor_action_state_object_extraction"]
+    assert dimension["status"] == "failed"
+    assert "standard package: copy_semantic_clarity is not 10" in dimension["issues"]
+    assert "standard package: product_manager independent review failed" in dimension["issues"]
+
+
 def _passing_results() -> tuple[SimpleNamespace, ...]:
     return (
         _result("standard package", profile_id=_PROFILE_IDS["standard"]),
@@ -142,6 +269,15 @@ def _passing_profile_proof() -> dict[str, object]:
     }
 
 
+def _validated_reviews() -> dict[str, dict[str, str]]:
+    return {
+        "standard package": {
+            lens: "passed"
+            for lens in _INDEPENDENT_LENSES
+        }
+    }
+
+
 def _result(
     name: str,
     *,
@@ -151,7 +287,7 @@ def _result(
     return SimpleNamespace(
         name=name,
         evidence={
-            "case": {"expectation": expectation},
+            "case": {"id": name, "expectation": expectation},
             "model_profile": {"profile_id": profile_id},
         },
         quality=SimpleNamespace(passed=True, scores=dict(_COMMITTED_SCORES)),

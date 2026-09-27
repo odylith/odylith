@@ -234,6 +234,7 @@ def _authored_input():
         ],
         "workstreams": [
             {"key": f"work-{index}", "title": f"Implement boundary {index}",
+             "problem": f"Users cannot yet rely on the reviewed request boundary {index}.",
              "component_keys": [f"boundary-{index}"], "depends_on": [],
              "deliverable": "Reviewed requests.", "verification": "Inspect a recorded review.",
              "verification_event_orders": [min(index, 3)]}

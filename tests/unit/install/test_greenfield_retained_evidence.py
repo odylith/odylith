@@ -31,7 +31,18 @@ from greenfield_matrix_release_artifacts import seal_interrupted_retained_eviden
 from greenfield_matrix_release_artifacts import write_retained_evidence_manifest
 
 
-def test_retained_evidence_survives_temp_cleanup_and_detects_tampering(tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    "tampered_relative",
+    (
+        "semantic/product-create-transaction.v1.json",
+        "retained-navigation.v1.json",
+        "generated/odylith/atlas/source/system.svg",
+    ),
+)
+def test_retained_evidence_survives_temp_cleanup_and_detects_tampering(
+    tmp_path: Path,
+    tampered_relative: str,
+) -> None:
     temp_parent = tmp_path / "temp"
     temp_parent.mkdir()
     repo = temp_parent / "sim"
@@ -50,6 +61,11 @@ def test_retained_evidence_survives_temp_cleanup_and_detects_tampering(tmp_path:
     case = begin_retained_case_evidence(evidence_root=evidence_root, case_id="GFH-001")
     for name in ("propose.stdout", "propose.stderr", "create.stdout", "create.stderr"):
         record_retained_case_text(case, f"commands/{name}", f"{name}\n")
+    decide_stdout = (
+        b"Published transaction. Open file:///private/tmp/release-proof/odylith/index.html?tab=project\n"
+    )
+    decide_sha256 = hashlib.sha256(decide_stdout).hexdigest()
+    record_retained_case_bytes(case, "commands/decide.stdout", decide_stdout)
     record_retained_case_json(case, "semantic/proposal-payload.v1.json", {"mode": "product_create_transaction"})
     record_retained_case_json(case, "semantic/dry-run-receipt.v2.json", {"status": "compiled"})
     record_retained_case_json(case, "semantic/create-payload.v1.json", {"status": "passed"})
@@ -69,7 +85,7 @@ def test_retained_evidence_survives_temp_cleanup_and_detects_tampering(tmp_path:
     finalize_retained_case_evidence(case=case, repo_root=repo, result_payload=result)
     manifest = write_retained_evidence_manifest(root=evidence_root, expected_case_ids=("GFH-001",))
 
-    shutil.rmtree(repo)
+    shutil.rmtree(temp_parent)
     assert retained_evidence_manifest_issues(manifest, expected_case_ids=("GFH-001",)) == ()
     retained_atlas = evidence_root / "gfh-001/generated/odylith/atlas/source/system.svg"
     assert retained_atlas.read_text(encoding="utf-8") == "<svg></svg>\n"
@@ -99,13 +115,27 @@ def test_retained_evidence_survives_temp_cleanup_and_detects_tampering(tmp_path:
     ]
     operator_result = retained_evidence_result(manifest, expected_case_ids=("GFH-001",))
     assert operator_result["status"] == "passed"
-    assert operator_result["project_navigation"][0]["open"].endswith(
+    project_url = operator_result["project_navigation"][0]["open"]
+    assert project_url.endswith(
         "/gfh-001/generated/odylith/index.html?tab=project"
     )
+    handoff = operator_result["completion_handoffs"][0]
+    assert handoff == {
+        "case_id": "GFH-001",
+        "transaction_hash": transaction_hash,
+        "open": project_url,
+        "visible_markdown": f"Published transaction `{transaction_hash}`. Review the committed governance package in the retained [Project dashboard]({project_url}).",
+    }
+    retained_decide = evidence_root / "gfh-001/commands/decide.stdout"
+    assert retained_decide.read_bytes() == decide_stdout
+    assert hashlib.sha256(retained_decide.read_bytes()).hexdigest() == decide_sha256
     assert not (evidence_root / "gfh-001/generated/wrong.txt").exists()
 
-    retained_atlas.write_text("tampered\n", encoding="utf-8")
-    assert "retained case evidence hash changed" in " ".join(retained_evidence_manifest_issues(manifest))
+    (evidence_root / "gfh-001" / tampered_relative).write_text("tampered\n", encoding="utf-8")
+    assert retained_evidence_manifest_issues(manifest)
+    failed_result = retained_evidence_result(manifest, expected_case_ids=("GFH-001",))
+    assert failed_result["status"] == "failed"
+    assert failed_result["completion_handoffs"] == []
 
 
 @pytest.mark.parametrize(
@@ -199,12 +229,15 @@ def test_retained_project_route_renders_after_temporary_workspace_deletion(tmp_p
     )
     shutil.rmtree(temp_parent)
     operator_result = retained_evidence_result(manifest, expected_case_ids=("GFH-render",))
+    handoff = operator_result["completion_handoffs"][0]
+    assert handoff["transaction_hash"] == "a" * 64
+    assert handoff["open"] in handoff["visible_markdown"]
 
     with playwright.sync_playwright() as runtime:
         browser = runtime.chromium.launch(headless=True)
         try:
             page = browser.new_page()
-            page.goto(operator_result["project_navigation"][0]["open"])
+            page.goto(handoff["open"])
             assert page.locator("#project").inner_text() == "Project dashboard"
             assert page.url.endswith("/gfh-render/generated/odylith/index.html?tab=project")
         finally:
@@ -417,6 +450,7 @@ def test_passing_evidence_validation_rejects_empty_or_failed_case_packages(tmp_p
     assert "is not passed" in " ".join(
         retained_evidence_manifest_issues(failed_manifest, require_passed_cases=True)
     )
+    assert retained_evidence_result(failed_manifest)["completion_handoffs"] == []
 
 
 def _published_case(*, repo: Path, staged_root: Path, transaction_hash: str) -> dict[str, str]:

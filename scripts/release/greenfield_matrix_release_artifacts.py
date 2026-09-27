@@ -473,43 +473,44 @@ def retained_evidence_result(
     required: bool = False,
 ) -> dict[str, Any]:
     """Return the operator-facing retained proof and durable Project routes."""
-
-    issues = (
-        retained_evidence_manifest_issues(
+    issues: tuple[str, ...] = ()
+    if manifest_path is not None:
+        issues = retained_evidence_manifest_issues(
             manifest_path,
             expected_case_ids=expected_case_ids,
             expected_run_id=expected_run_id,
         )
-        if manifest_path is not None
-        else ("release proof did not retain external evidence",)
-        if required
-        else ()
-    )
+    elif required:
+        issues = ("release proof did not retain external evidence",)
     navigation: list[dict[str, str]] = []
+    completion_handoffs: list[dict[str, str]] = []
     if manifest_path is not None and not issues:
         payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+        case_manifests = {str(row.get("case_id") or ""): row for row in payload["case_manifests"]}
         for row in payload.get("project_navigation", ()):
             if not isinstance(row, Mapping):
                 continue
             entrypoint = repo_artifact_path(manifest_path.parent.resolve(), str(row.get("entrypoint") or ""))
             if entrypoint is None:
                 continue
+            case_id = str(row.get("case_id") or "")
             route = str(row.get("route") or "")
-            navigation.append(
-                {
-                    "case_id": str(row.get("case_id") or ""),
-                    "entrypoint": str(entrypoint),
-                    "route": route,
-                    "open": entrypoint.as_uri() + route,
-                }
-            )
+            open_target = entrypoint.as_uri() + route
+            navigation.append({
+                "case_id": case_id, "entrypoint": str(entrypoint), "route": route, "open": open_target,
+            })
+            transaction = case_manifests[case_id]["semantic_bindings"]["transaction"]
+            transaction_hash = str(transaction.get("transaction_hash") or "")
+            completion_handoffs.append({
+                "case_id": case_id, "transaction_hash": transaction_hash, "open": open_target,
+                "visible_markdown": f"Published transaction `{transaction_hash}`. Review the committed governance package in the retained [Project dashboard]({open_target}).",
+            })
     return {
-        "status": "passed" if manifest_path is not None and not issues else "not_requested"
-        if manifest_path is None and not required
-        else "failed",
+        "status": "passed" if manifest_path is not None and not issues else "not_requested" if manifest_path is None and not required else "failed",
         "manifest": str(manifest_path) if manifest_path is not None else "",
         "manifest_sha256": sha256_file(manifest_path) if manifest_path is not None and manifest_path.is_file() else "",
         "project_navigation": navigation,
+        "completion_handoffs": completion_handoffs,
         "issues": list(issues),
     }
 

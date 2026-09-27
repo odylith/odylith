@@ -395,7 +395,7 @@ def test_main_does_not_mask_governance_failure_with_stop_assist(
     assert "decision" not in payload
 
 
-def test_main_replays_pending_chat_blocks_before_stop_assist(
+def test_main_keeps_pending_chat_blocks_out_of_stop_output(
     monkeypatch,
     tmp_path: Path,
 ) -> None:
@@ -453,15 +453,7 @@ def test_main_replays_pending_chat_blocks_before_stop_assist(
     exit_code = codex_host_stop_summary.main(["--repo-root", str(tmp_path)])
 
     assert exit_code == 0
-    payload = json.loads(buffer.getvalue())
-    assert payload["systemMessage"] == (
-        "---\n\n"
-        "**Odylith Observation:** Stop must replay this before Assist.\n"
-        "\n---\n\n"
-        "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract."
-        )
-    assert payload["decision"] == "block"
-    assert "Show the Odylith note below once" in payload["reason"]
+    assert buffer.getvalue() == ""
 
 
 def test_main_suppresses_cli_help_stop_replay(monkeypatch, tmp_path: Path) -> None:

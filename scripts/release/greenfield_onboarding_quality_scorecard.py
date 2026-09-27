@@ -35,6 +35,7 @@ def build_onboarding_quality_scorecard(
     model_profile_proof: Mapping[str, Any],
     unavailable_provider_proof: Mapping[str, Any],
     commit_recovery_proof: Any | None,
+    validated_independent_reviews: Mapping[str, Mapping[str, str]] | None = None,
 ) -> dict[str, Any]:
     """Return a strict ten-dimension scorecard for the installed onboarding corpus.
 
@@ -55,6 +56,11 @@ def build_onboarding_quality_scorecard(
     )
     unavailable_provider_passed = _mapping_status(unavailable_provider_proof) == "passed"
     recovery_passed = _proof_passed(commit_recovery_proof)
+    independent_reviews = (
+        validated_independent_reviews
+        if isinstance(validated_independent_reviews, Mapping)
+        else {}
+    )
 
     dimensions = {
         "consumer_utility_and_comprehension": _dimension(
@@ -73,15 +79,26 @@ def build_onboarding_quality_scorecard(
             ),
             missing=_missing_transaction_scores(transaction_results, "semantic_manifest"),
         ),
-        "actor_action_state_object_extraction": _dimension(
-            passed=bool(transaction_results) and all_transaction_scores("copy_semantic_clarity", "product_manager", "domain_expert"),
-            evidence=("copy, product, and domain quality lenses passed for every committed first path",),
-            missing=_missing_transaction_scores(transaction_results, "copy_semantic_clarity", "product_manager", "domain_expert"),
+        "actor_action_state_object_extraction": _review_dimension(
+            automated_passed=bool(transaction_results) and all_transaction_scores("copy_semantic_clarity"),
+            evidence=("copy-semantic validation passed; product and domain judgment is supplied by independent review",),
+            automated_missing=_missing_transaction_scores(transaction_results, "copy_semantic_clarity"),
+            review_scores=_independent_review_scores(
+                transaction_results,
+                independent_reviews,
+                "product_manager",
+                "domain_expert",
+            ),
         ),
-        "first_path_completeness_and_coherence": _dimension(
-            passed=bool(transaction_results) and all_transaction_scores("completion", "copy_semantic_clarity", "product_manager"),
-            evidence=("every committed case passed completion, copy-semantic, and product-manager gates",),
-            missing=_missing_transaction_scores(transaction_results, "completion", "copy_semantic_clarity", "product_manager"),
+        "first_path_completeness_and_coherence": _review_dimension(
+            automated_passed=bool(transaction_results) and all_transaction_scores("completion", "copy_semantic_clarity"),
+            evidence=("completion and copy-semantic validation passed; product utility is supplied by independent review",),
+            automated_missing=_missing_transaction_scores(transaction_results, "completion", "copy_semantic_clarity"),
+            review_scores=_independent_review_scores(
+                transaction_results,
+                independent_reviews,
+                "product_manager",
+            ),
         ),
         "clarification_quality_and_assumption_discipline": _dimension(
             passed=bool(clarification_results) and all(_quality_passed(result) for result in clarification_results),
@@ -91,15 +108,25 @@ def build_onboarding_quality_scorecard(
             ),
             missing=() if clarification_results else ("corpus has no material-ambiguity clarification case",),
         ),
-        "cross_artifact_consistency": _dimension(
-            passed=bool(transaction_results) and all_transaction_scores("traceability", "architect"),
-            evidence=("every committed package passed traceability and architecture consistency gates",),
-            missing=_missing_transaction_scores(transaction_results, "traceability", "architect"),
+        "cross_artifact_consistency": _review_dimension(
+            automated_passed=bool(transaction_results) and all_transaction_scores("traceability"),
+            evidence=("traceability validation passed; architecture consistency is supplied by independent review",),
+            automated_missing=_missing_transaction_scores(transaction_results, "traceability"),
+            review_scores=_independent_review_scores(
+                transaction_results,
+                independent_reviews,
+                "architect",
+            ),
         ),
-        "absence_of_generic_or_ai_shaped_output": _dimension(
-            passed=bool(transaction_results) and all_transaction_scores("copy_semantic_clarity", "domain_expert"),
-            evidence=("rendered-copy and domain-expert gates found no scored generic or semantically thin output",),
-            missing=_missing_transaction_scores(transaction_results, "copy_semantic_clarity", "domain_expert"),
+        "absence_of_generic_or_ai_shaped_output": _review_dimension(
+            automated_passed=bool(transaction_results) and all_transaction_scores("copy_semantic_clarity"),
+            evidence=("rendered-copy validation passed; domain-specific quality is supplied by independent review",),
+            automated_missing=_missing_transaction_scores(transaction_results, "copy_semantic_clarity"),
+            review_scores=_independent_review_scores(
+                transaction_results,
+                independent_reviews,
+                "domain_expert",
+            ),
         ),
         "preconfirm_tribunal_accuracy": _dimension(
             passed=(
@@ -125,13 +152,21 @@ def build_onboarding_quality_scorecard(
                 *(() if unavailable_provider_passed else ("unavailable-provider fast no-write proof did not pass",)),
             ),
         ),
-        "confirm_time_atomicity_readback_retry_and_recovery": _dimension(
-            passed=bool(transaction_results) and all_transaction_scores("completion", "engineer") and recovery_passed,
+        "confirm_time_atomicity_readback_retry_and_recovery": _review_dimension(
+            automated_passed=bool(transaction_results) and all_transaction_scores("completion") and recovery_passed,
             evidence=(
-                "every committed case passed commit-only completion and engineering custody gates",
+                "every committed case passed commit-only completion; engineering judgment is supplied by independent review",
                 "installed crash, retry, rollback, and readback recovery proof passed" if recovery_passed else "installed recovery proof did not pass",
             ),
-            missing=_missing_transaction_scores(transaction_results, "completion", "engineer"),
+            automated_missing=(
+                *_missing_transaction_scores(transaction_results, "completion"),
+                *(() if recovery_passed else ("installed recovery proof did not pass",)),
+            ),
+            review_scores=_independent_review_scores(
+                transaction_results,
+                independent_reviews,
+                "engineer",
+            ),
         ),
         "confirmation_and_post_success_ux_clarity": _dimension(
             passed=bool(transaction_results) and all_transaction_scores("confirmation_ux") and browser_passed,
@@ -142,10 +177,18 @@ def build_onboarding_quality_scorecard(
             missing=_missing_transaction_scores(transaction_results, "confirmation_ux"),
         ),
     }
-    score = min(int(dimension["score"]) for dimension in dimensions.values()) if dimensions else 0
+    failed = any(dimension["status"] == "failed" for dimension in dimensions.values())
+    unproven = any(dimension["status"] == "unproven" for dimension in dimensions.values())
+    score: int | None = 0 if failed else None if unproven else 10
     return {
         "version": ONBOARDING_QUALITY_RUBRIC_VERSION,
-        "status": "passed" if score == 10 else "failed",
+        "status": (
+            "failed"
+            if failed
+            else "awaiting-independent-review"
+            if unproven
+            else "passed"
+        ),
         "score": score,
         "score_scope": "versioned installed Greenfield corpus and explicit transaction contract only",
         "dimensions": dimensions,
@@ -162,6 +205,76 @@ def _dimension(*, passed: bool, evidence: Sequence[str], missing: Sequence[str])
     }
 
 
+def _review_dimension(
+    *,
+    automated_passed: bool,
+    evidence: Sequence[str],
+    automated_missing: Sequence[str],
+    review_scores: Sequence[tuple[str, int]],
+) -> dict[str, Any]:
+    automated_issues = tuple(
+        dict.fromkeys(str(issue).strip() for issue in automated_missing if str(issue).strip())
+    )
+    failed_reviews = tuple(label for label, score in review_scores if score == 0)
+    unproven_reviews = tuple(label for label, score in review_scores if score < 0)
+    if not automated_passed or automated_issues or failed_reviews:
+        issues = (*automated_issues, *(f"{label} independent review failed" for label in failed_reviews))
+        return {
+            "score": 0,
+            "status": "failed",
+            "evidence": [str(item) for item in evidence if str(item).strip()],
+            "issues": list(dict.fromkeys(issues)),
+        }
+    if unproven_reviews:
+        return {
+            "score": None,
+            "status": "unproven",
+            "evidence": [str(item) for item in evidence if str(item).strip()],
+            "issues": [
+                f"{label} independent review is unproven"
+                for label in unproven_reviews
+            ],
+        }
+    return {
+        "score": 10,
+        "status": "passed",
+        "evidence": [str(item) for item in evidence if str(item).strip()],
+        "issues": [],
+    }
+
+
+def _independent_review_scores(
+    results: Sequence[Any],
+    validated_reviews: Mapping[str, Mapping[str, str]],
+    *lenses: str,
+) -> tuple[tuple[str, int], ...]:
+    scores: list[tuple[str, int]] = []
+    for result in results:
+        case_id = _case_id(result)
+        result_name = str(_field(result, "name", "unnamed case"))
+        overrides = validated_reviews.get(case_id)
+        override_map = overrides if isinstance(overrides, Mapping) else {}
+        result_scores = _field(_field(result, "quality", {}), "scores", {})
+        score_map = result_scores if isinstance(result_scores, Mapping) else {}
+        for lens in lenses:
+            status = str(override_map.get(lens) or "").strip().casefold()
+            embedded = score_map.get(lens, -1)
+            if embedded == 0 and not isinstance(embedded, bool):
+                score = 0
+            elif status:
+                score = 10 if status == "passed" else 0 if status == "failed" else -1
+            else:
+                score = -1
+            scores.append((f"{result_name}: {lens}", score))
+    return tuple(scores)
+
+
+def _case_id(result: Any) -> str:
+    evidence = _field(result, "evidence", {})
+    case = evidence.get("case") if isinstance(evidence, Mapping) else {}
+    return str(case.get("id") or "").strip() if isinstance(case, Mapping) else ""
+
+
 def _all_scores(results: Sequence[Any], *names: str) -> bool:
     return bool(results) and not _missing_transaction_scores(results, *names)
 
@@ -169,22 +282,22 @@ def _all_scores(results: Sequence[Any], *names: str) -> bool:
 def _missing_transaction_scores(results: Sequence[Any], *names: str) -> tuple[str, ...]:
     issues: list[str] = []
     for result in results:
-        scores = getattr(getattr(result, "quality", None), "scores", {})
+        scores = _field(_field(result, "quality", {}), "scores", {})
         score_map = scores if isinstance(scores, Mapping) else {}
         for name in names:
             if int(score_map.get(name, 0)) != 10:
-                issues.append(f"{getattr(result, 'name', 'unnamed case')}: {name} is not 10")
+                issues.append(f"{_field(result, 'name', 'unnamed case')}: {name} is not 10")
     return tuple(issues)
 
 
 def _expectation(result: Any) -> str:
-    evidence = getattr(result, "evidence", {})
+    evidence = _field(result, "evidence", {})
     case = evidence.get("case") if isinstance(evidence, Mapping) else {}
     return str(case.get("expectation") or "transaction_committed").strip() if isinstance(case, Mapping) else "transaction_committed"
 
 
 def _quality_passed(result: Any) -> bool:
-    return bool(getattr(getattr(result, "quality", None), "passed", False))
+    return bool(_field(_field(result, "quality", {}), "passed", False))
 
 
 def _profile_evidence_issues(
@@ -227,9 +340,15 @@ def _profile_evidence_issues(
 
 
 def _result_profile_id(result: Any) -> str:
-    evidence = getattr(result, "evidence", {})
+    evidence = _field(result, "evidence", {})
     profile = evidence.get("model_profile") if isinstance(evidence, Mapping) else {}
     return str(profile.get("profile_id") or "").strip() if isinstance(profile, Mapping) else ""
+
+
+def _field(value: Any, key: str, default: Any) -> Any:
+    if isinstance(value, Mapping):
+        return value.get(key, default)
+    return getattr(value, key, default)
 
 
 def _mapping_status(value: Mapping[str, Any]) -> str:

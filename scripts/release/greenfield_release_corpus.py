@@ -20,6 +20,7 @@ for import_root in (SCRIPT_DIR, SRC_ROOT):
 from greenfield_matrix_case_file import canonical_case_text  # noqa: E402
 from greenfield_matrix_case_file import load_case_file  # noqa: E402
 from greenfield_matrix_corpus_provenance import CASE_PROVENANCE_VERSION  # noqa: E402
+from greenfield_matrix_corpus_provenance import release_subset_membership_issues  # noqa: E402
 from greenfield_matrix_input_axes import RELEASE_INPUT_STYLES  # noqa: E402
 from greenfield_matrix_release_audit import select_release_audit_cases  # noqa: E402
 from greenfield_matrix_release_audit_evidence import audit_request_for_case  # noqa: E402
@@ -29,6 +30,7 @@ from greenfield_release_audit_verification import AUDIT_REQUEST_PLAN_VERSION  # 
 from greenfield_release_audit_verification import capture_audit_source_verifications  # noqa: E402
 from greenfield_release_audit_verification import rebind_audit_source_verifications  # noqa: E402
 from greenfield_release_audit_writer import write_release_audit_bundle  # noqa: E402
+from greenfield_matrix_release_artifacts import sha256_file  # noqa: E402
 from greenfield_matrix_stressors import DEFAULT_HIGH_VARIANCE_STRESSORS  # noqa: E402
 from greenfield_release_source_capture import DEFAULT_ARTIFACTS_PER_FAMILY  # noqa: E402
 from greenfield_release_source_capture import SOURCE_FAMILIES  # noqa: E402
@@ -48,6 +50,7 @@ from greenfield_release_source_capture import write_new_json_atomically  # noqa:
 
 SOURCE_CASE_FILE_VERSION = "odylith.greenfield.matrix.case-file.v1"
 DEFAULT_PAIRED_ARTIFACTS_PER_FAMILY = 2
+DISCLOSED_PUBLIC_LIVE_SUBSET_CLAIM_CLASS = "disclosed-public-live-subset"
 USER_INTENT_PATHS: tuple[tuple[str, tuple[str, ...]], ...] = (
     (
         "A service coordinator opens an intake request, assigns a resolution owner, and verifies a decision receipt.",
@@ -128,16 +131,40 @@ def build_release_audit_request_plan(
     output_json: Path,
     repo_root: Path = REPO_ROOT,
     audit_count: int = 40,
+    audit_selection_file: Path | None = None,
 ) -> dict[str, Any]:
     """Produce review requests without creating approval evidence or release status."""
 
     root = Path(repo_root).expanduser().resolve()
     case_path = Path(source_case_file).expanduser().resolve()
     source_cases = load_case_file(case_path)
-    selected = ensure_confirmed_intent_audit_coverage(
-        select_release_audit_cases(source_cases, int(audit_count)),
-        available_cases=source_cases,
-    )
+    selection_path = Path(audit_selection_file).expanduser().resolve() if audit_selection_file else None
+    if selection_path is None:
+        selected = ensure_confirmed_intent_audit_coverage(
+            select_release_audit_cases(source_cases, int(audit_count)),
+            available_cases=source_cases,
+        )
+    else:
+        selection_payload = load_json_object(selection_path)
+        source_relative = repo_relative(case_path, root)
+        if selection_payload.get("version") != SOURCE_CASE_FILE_VERSION:
+            raise RuntimeError("audit selection file has an unsupported case-file version")
+        if selection_payload.get("claim_class") != DISCLOSED_PUBLIC_LIVE_SUBSET_CLAIM_CLASS:
+            raise RuntimeError("audit selection file must declare the disclosed public subset claim")
+        if single_line(selection_payload.get("parent_corpus")) != source_relative:
+            raise RuntimeError("audit selection file does not bind the source parent corpus")
+        selected = load_case_file(selection_path)
+        if len(selected) != int(audit_count):
+            raise RuntimeError("audit selection file does not contain the requested audit count")
+        membership_issues = release_subset_membership_issues(
+            selected_cases=selected,
+            parent_cases=source_cases,
+        )
+        if membership_issues:
+            raise RuntimeError("audit selection is not an exact parent subset: " + "; ".join(membership_issues))
+        covered = ensure_confirmed_intent_audit_coverage(selected, available_cases=source_cases)
+        if tuple(case.case_id for case in covered) != tuple(case.case_id for case in selected):
+            raise RuntimeError("audit selection lacks required intent or clarification coverage")
     requests: list[dict[str, Any]] = []
     for case in selected:
         provenance = case.provenance
@@ -158,6 +185,13 @@ def build_release_audit_request_plan(
         "requested_audit_count": len(requests),
         "requests": requests,
     }
+    if selection_path is not None:
+        payload.update(
+            {
+                "audit_selection_file": repo_relative(selection_path, root),
+                "audit_selection_file_sha256": sha256_file(selection_path),
+            }
+        )
     write_new_json_atomically(Path(output_json), payload, "release audit request plan")
     return payload
 
@@ -441,6 +475,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     audit_plan.add_argument("--output-json", required=True)
     audit_plan.add_argument("--repo-root", default=str(REPO_ROOT))
     audit_plan.add_argument("--audit-count", type=int, default=40)
+    audit_plan.add_argument("--audit-selection-file", default="")
     verify_sources = commands.add_parser(
         "audit-verify-sources", help="Capture source verification records without review approvals."
     )
@@ -490,6 +525,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             output_json=Path(args.output_json),
             repo_root=Path(args.repo_root),
             audit_count=int(args.audit_count),
+            audit_selection_file=Path(args.audit_selection_file) if args.audit_selection_file else None,
         )
     elif args.command == "audit-verify-sources":
         payload = capture_audit_source_verifications(

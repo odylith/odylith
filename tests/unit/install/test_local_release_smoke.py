@@ -277,7 +277,7 @@ def test_greenfield_install_smoke_requires_read_only_candidate_contract(
             "candidate_version": "odylith.greenfield.host-candidate.v24",
             "canonical_version": "odylith.greenfield.canonical-meaning.v1",
             "request": {
-                "version": "odylith.greenfield.intent-authoring.v74",
+                "version": "odylith.greenfield.intent-authoring.v75",
                 "evidence": module._CANDIDATE_CONTRACT_SMOKE_PROMPT,
             },
             "requirements": ["Return exactly one candidate."],

@@ -54,6 +54,7 @@ def _design(*, event_orders: tuple[int, ...] = (1, 2), count: int = 4) -> dict[s
         "workstreams": [
             {
                 "key": f"delivery-{index}", "title": f"Deliver capability {index}",
+                "problem": f"Users cannot yet rely on capability {index} for this path.",
                 "component_keys": [f"capability-{index}"],
                 "depends_on": [f"delivery-{index - 1}"] if index else [],
                 "deliverable": f"A working capability {index} boundary.",
@@ -119,6 +120,8 @@ def test_valid_design_is_copied_without_rewriting_provisional_text(count: int) -
         (("workstreams",), _design(count=6)["workstreams"]),
         (("workstreams", 1, "key"), " DELIVERY-0 "),
         (("workstreams", 1, "title"), " deliver   capability 0 "),
+        (("workstreams", 1, "problem"), " users   cannot yet rely on capability 0 for this path. "),
+        (("workstreams", 0, "problem"), ""),
         (("workstreams", 0, "deliverable"), ""),
         (("workstreams", 0, "verification"), None),
         (("workstreams", 0, "component_keys"), []),

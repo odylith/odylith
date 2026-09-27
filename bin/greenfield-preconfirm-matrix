@@ -125,18 +125,18 @@ if [[ "$release_intent" == "1" ]]; then
     --lower-capability-control-file "$lower_capability_control_file"
     --evidence-output-dir "$evidence_output_dir"
   )
-  host_candidate_args=()
-  while IFS= read -r argument; do
-    host_candidate_args+=("$argument")
-  done < <(
-    PYTHONPATH="$odylith_repo_root/scripts/release${PYTHONPATH:+:$PYTHONPATH}" \
-      "$odylith_python" scripts/release/greenfield_matrix_host_candidate.py --print-argv-template
-  )
-  [[ "${#host_candidate_args[@]}" == "14" ]] || die "canonical host-candidate argv emission failed"
-  for argument in "${host_candidate_args[@]}"; do
-    extra_args+=(--host-candidate-arg="$argument")
-  done
 fi
+host_candidate_args=()
+while IFS= read -r argument; do
+  host_candidate_args+=("$argument")
+done < <(
+  PYTHONPATH="$odylith_repo_root/scripts/release${PYTHONPATH:+:$PYTHONPATH}" \
+    "$odylith_python" scripts/release/greenfield_matrix_host_candidate.py --print-argv-template
+)
+[[ "${#host_candidate_args[@]}" == "14" ]] || die "canonical host-candidate argv emission failed"
+for argument in "${host_candidate_args[@]}"; do
+  extra_args+=(--host-candidate-arg="$argument")
+done
 if [[ -n "${GREENFIELD_MATRIX_INSTALL_MODE:-}" ]]; then
   extra_args+=(--install-mode "$GREENFIELD_MATRIX_INSTALL_MODE")
 fi

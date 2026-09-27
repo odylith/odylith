@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict
 from collections.abc import Mapping, Sequence
+import hashlib
 from math import sqrt
 from typing import Any
 
@@ -22,6 +23,8 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 )
 
 from greenfield_matrix_types import GreenfieldMatrixResult
+from greenfield_model_profile_proof import model_profile_release_proof
+from greenfield_preconfirm_matrix_cases import case_evidence
 
 
 STATISTICS_VERSION = "odylith.greenfield.matrix.statistics.v4"
@@ -104,9 +107,16 @@ def outcome_statistics(
         rows.append({"case_id": case_id, "passed": passed})
         slices = _case_slices(case)
         if release:
+            safe_clarification = _safe_unsealed_clarification(case=case, result=result)
             sealed_slices, sealed_issues = release_slice_evidence(
                 case=case,
                 result=result,
+                annotated_complexity=(
+                    expected_case_source_complexity(case)
+                    if safe_clarification
+                    else None
+                ),
+                allow_unsealed_clarification=safe_clarification,
             )
             evidence_issues.extend(
                 f"case `{case_id}` {issue}"
@@ -511,7 +521,14 @@ def release_slice_evidence(
         issues.append("claims an unknown model profile")
     if sealed_profile and sealed_profile != observed_profile:
         issues.append("observed model profile does not match the sealed operating envelope")
-    if not sealed_profile and observed_profile:
+    if (
+        not sealed_profile
+        and observed_profile
+        and allow_unsealed_clarification
+        and _safe_unsealed_clarification(case=case, result=result)
+    ):
+        sealed_profile = observed_profile
+    elif not sealed_profile and observed_profile:
         observed = _mapping(model_evidence.get("observed"))
         observed_request_profile, observation_issues = _model_profile_from_observations(
             observed
@@ -530,6 +547,38 @@ def release_slice_evidence(
         if not value:
             issues.append(f"lacks release slice `{dimension}`")
     return slices, tuple(dict.fromkeys(issues))
+
+
+def _safe_unsealed_clarification(*, case: Any, result: GreenfieldMatrixResult) -> bool:
+    expected_case = case_evidence(case)
+    observed_case = _mapping(_mapping(result.evidence).get("case"))
+    if expected_case.get("expectation") != "clarification_required":
+        return False
+    if result.status != "passed" or not result.quality.passed:
+        return False
+    for key in (
+        "id",
+        "expectation",
+        "prompt_sha256",
+        "confirmed_intent_sha256",
+        "expected_clarification",
+    ):
+        if observed_case.get(key) != expected_case.get(key):
+            return False
+    source = combined_prompt_evidence_source(
+        prompt=str(getattr(case, "prompt", "") or ""),
+        edit_evidence=str(getattr(case, "confirmed_intent_markdown", "") or "").strip(),
+    )
+    expected_source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
+    profile_evidence = _mapping(_mapping(result.evidence).get("model_profile"))
+    if profile_evidence.get("expected_source_sha256") != expected_source_sha256:
+        return False
+    proof = model_profile_release_proof((result,), require_complete=False)
+    return (
+        proof.get("status") == "passed"
+        and proof.get("version")
+        and profile_evidence.get("semantic_authority") == "host_native_clarification"
+    )
 
 
 def wilson_interval(successes: int, sample_count: int) -> tuple[float, float]:

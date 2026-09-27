@@ -150,11 +150,7 @@ def build_provisional_backlog(
             if row["from_component"] in component_keys or row["to_component"] in component_keys
         ]
         deliverable = f"Proposed deliverable — {workstream['deliverable']}"
-        local_problem = (
-            "Unimplemented assigned source-event support — "
-            + ", ".join(f"Event {order}" for order in event_orders)
-            + "."
-        )
+        local_problem = workstream["problem"]
         local_customer = f"Customer or beneficiary — {decision_copy(intent, 'customer')}"
         local_opportunity = "Proposed component scope:\n\n" + _bullets(component_scope)
         product_view = f"Proposed workstream outcome — {workstream['deliverable']}"

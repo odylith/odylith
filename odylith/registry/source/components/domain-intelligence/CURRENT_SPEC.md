@@ -4,6 +4,74 @@ Last updated: 2026-09-27
 
 ## Overview
 
+### V43 accepted-evidence label disambiguation (2026-09-27)
+
+`product_story` remains an exact citation from accepted user evidence. Product
+Intent preview, Project, Brief, Atlas, project intelligence, and accepted
+memory present that quote as `Accepted evidence excerpt`, not the ambiguous
+`Source excerpt`. The label identifies citation authority without implying
+that a separately referenced repository, document, or research source authored
+the proposed product.
+
+Reference material remains grounding context unless the accepted request
+explicitly binds it to an owned role, dependency, constraint, event, or result.
+The label change preserves canonical bytes, source spans, semantic roles,
+review, schema shape, and transaction ownership; it adds no parser, regex,
+classifier, model call, repair, retry, fallback, or second projection path.
+
+### V43 typed System Context product-boundary connectivity (2026-09-27)
+
+The authored System Context projection keeps source ownership and product
+boundary membership separate. A typed human or external-system performer
+connects to its exact grouped source events with `performs`; that action group
+then connects to the candidate product through one non-owning `first-path
+interaction` boundary edge. The second edge states only that these accepted
+events participate in the requested product path. It does not assert execution
+direction, temporal order, implementation ownership, or a new source fact.
+
+Product performers already resolve to a component or product node inside the
+product boundary, so their action groups do not receive a redundant boundary
+edge. Named participants without accepted events retain their dotted
+`participant context; no action assigned` link. Construction remains entirely
+driven by the existing typed actor/action relations and sealed view authority;
+there is no diagram-text parser, regex, vocabulary rule, inferred performer,
+repair, retry, fallback, or parallel renderer.
+
+### V43 reviewed workstream-problem ownership (2026-09-27)
+
+The canonical provisional design owns one concise local problem for each of
+its four to five workstreams. The field is a proposed, consumer-facing
+consequence grounded in the accepted project problem and the workstream's
+typed source-event support. It must be distinct across workstreams and must not
+describe generator status, opaque event identifiers, missing implementation,
+or merely negate the proposed deliverable.
+
+The existing host author writes this field in the same bounded candidate and
+the existing independent semantic reviewer adjudicates it with the rest of the
+design. Deterministic Radar projection copies the reviewed value without
+reparsing, template synthesis, or prose repair. Exact source events remain in
+the separate Source Event Support custody section; project-level Problem,
+Customer, Opportunity, Product View, and Proof retain their own canonical
+owners. This boundary adds no parser, regex, vocabulary list, retry, repair,
+fallback author, model ladder, or model call.
+
+### V43 clarification evidence and independent review boundary (2026-09-27)
+
+A material-question outcome has no canonical package to seal, but it still
+carries release-relevant semantic evidence. Domain Intelligence contributes
+that case's frozen prompt/edit format, source-size dimensions, and exact
+observed model profile only after the existing one-call host-native
+clarification custody and no-write contract pass. It cannot infer structural
+actors, systems, ambiguities, or safety boundaries that the clarification did
+not resolve, and it cannot manufacture moderate or high complexity credit.
+
+Product-manager, architect, engineer, and domain-expert judgments remain
+independent post-execution evidence. Automated semantic, custody, traceability,
+copy, transaction, and browser checks do not promote those lenses. A detached
+review sidecar may supply them only after exact source, transaction, retained
+manifest, artifact, and screenshot bindings validate. The original candidate,
+transaction, quality record, and scorecard remain immutable.
+
 ### V43 shared author-review provenance semantics (2026-09-27)
 
 Greenfield host authoring and independent candidate review now consume one

@@ -31,7 +31,7 @@ from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
 )
 
 AUTHORED_ATLAS_AUTHORITY_KEY = "authored_atlas_view_authority"
-AUTHORED_ATLAS_AUTHORITY_VERSION = "odylith.greenfield.authored-atlas-view.v2"
+AUTHORED_ATLAS_AUTHORITY_VERSION = "odylith.greenfield.authored-atlas-view.v3"
 SOURCE_GROUNDED_AUTHORITY_KIND = "source_grounded"
 AUTHORED_ATLAS_ROLES = (
     "context",
@@ -121,7 +121,9 @@ def build_authored_atlas_diagrams(
             "read_guide": (
                 "People are source-stated participants, not necessarily product users. "
                 "Each performing person, product system, or external system connects to its "
-                "own exact events; dotted participant-context links assign no action. The first-run view shows "
+                "own exact events. Human and external-system action groups connect to the candidate "
+                "product through a non-owning first-path interaction boundary; dotted participant-context "
+                "links assign no action. The first-run view shows "
                 "one proposed walkthrough, not source-list chronology. Registry links identify proposed "
                 "support, not replacement of source ownership."
             ),
@@ -460,6 +462,10 @@ def _context_view(
         )
         lines.append(f'  {action_id}["{event_label}"]')
         lines.append(f'  {owner_id} -->|"performs"| {action_id}')
+        if identity[0] != "product":
+            lines.append(
+                f'  {action_id} ---|"first-path interaction"| product'
+            )
         boxes.append(
             _box(
                 action_id, "\n".join(events), "Grouped first-path actions",
@@ -582,7 +588,14 @@ def _product_boundary_projection(
     if not components:
         return (
             [f'  product["{_mermaid_label(title)}"]'],
-            [_box("product", title, "Source excerpt", f"Source excerpt: “{product_story}”")],
+            [
+                _box(
+                    "product",
+                    title,
+                    "Accepted evidence excerpt",
+                    f"Accepted evidence excerpt: “{product_story}”",
+                )
+            ],
             (),
         )
     rows = tuple(

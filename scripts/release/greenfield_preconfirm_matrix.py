@@ -3136,6 +3136,19 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
 
 
+def _release_outcome_statistics_passed(
+    *,
+    proof_tier: str,
+    outcome_statistics: Mapping[str, Any],
+) -> bool:
+    """Require the release statistics decision and its explicit boolean proof."""
+
+    return proof_tier != "release" or (
+        outcome_statistics.get("status") == "passed"
+        and outcome_statistics.get("passed") is True
+    )
+
+
 def _execute_matrix_campaign(
     *,
     args: argparse.Namespace,
@@ -3423,6 +3436,18 @@ def _execute_matrix_campaign(
         results=results,
         semantic_digests=semantic_digests,
     )
+    campaign = campaign_summary(
+        cases=planned_cases,
+        results=results,
+        config=campaign_config,
+        stopped_reason=stop_reason(results, campaign_config),
+        semantic_digests=semantic_digests,
+    )
+    outcome_statistics = _as_mapping(campaign.get("outcome_statistics"))
+    outcome_statistics_passed = _release_outcome_statistics_passed(
+        proof_tier=campaign_config.proof_tier,
+        outcome_statistics=outcome_statistics,
+    )
     onboarding_quality_scorecard = build_onboarding_quality_scorecard(
         results=(*results, *lower_capability_control_results),
         browser_proof=browser_proof,
@@ -3444,6 +3469,7 @@ def _execute_matrix_campaign(
         and cleanup_passed
         and bool(metamorphic_output.get("passed"))
         and semantic_release_passed
+        and outcome_statistics_passed
         and (
             not retained_evidence_required
             or retained_evidence.get("status") == "passed"
@@ -3495,13 +3521,7 @@ def _execute_matrix_campaign(
             else corpus_provenance
         ),
         "results": [result.to_dict() for result in results],
-        "campaign": campaign_summary(
-            cases=planned_cases,
-            results=results,
-            config=campaign_config,
-            stopped_reason=stop_reason(results, campaign_config),
-            semantic_digests=semantic_digests,
-        ),
+        "campaign": campaign,
         "metamorphic_output": metamorphic_output,
         "browser_surface_proof": browser_proof,
         "platform_domain_leakage_proof": platform_leakage_proof,

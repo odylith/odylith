@@ -58,6 +58,51 @@ def _shared_checkpoint_bundle() -> dict[str, object]:
     }
 
 
+def test_prompt_hooks_never_replay_a_stale_multi_item_bundle_as_the_answer(tmp_path: Path) -> None:
+    stale_blocks = (
+        "**Odylith Insight:** Compass is carrying the sharper operator risk.",
+        "**Odylith Insight:** B-001 is an active Radar lane.",
+        "**Odylith Insight:** `execution-engine` is the live Registry boundary.",
+        "**Odylith Risks:** Capture the final reviewed checkpoint for B-002.",
+        "**Odylith Assist:** updating affected governance contracts, then keeping the slice bounded.",
+    )
+    for host_family, session_id, turn_phase in (
+        ("codex", "codex-stale-wall", "post_bash_checkpoint"),
+        ("claude", "claude-stale-wall", "post_edit_checkpoint"),
+    ):
+        for index, display in enumerate(stale_blocks):
+            stream_state.append_intervention_event(
+                repo_root=tmp_path,
+                kind="assist_closeout" if "Assist" in display else "ambient_signal",
+                summary=f"Stale replay row {index}.",
+                session_id=session_id,
+                host_family=host_family,
+                intervention_key=f"{session_id}-{index}",
+                turn_phase=turn_phase,
+                display_markdown=display,
+                delivery_channel="system_message_and_assistant_fallback",
+                delivery_status="assistant_fallback_ready",
+            )
+
+    prompt = "How are we doing against the Greenfield goal?"
+    rendered = (
+        codex_host_prompt_context.render_codex_prompt_system_message(
+            repo_root=str(tmp_path),
+            prompt=prompt,
+            session_id="codex-stale-wall",
+        ),
+        claude_host_prompt_context.render_prompt_system_message(
+            repo_root=tmp_path,
+            prompt=prompt,
+            session_id="claude-stale-wall",
+        ),
+    )
+
+    for message in rendered:
+        assert all(stale not in message for stale in stale_blocks)
+        assert message.count("**Odylith ") <= 1
+
+
 def test_cross_host_prompt_teaser_rendering_stays_consistent() -> None:
     prompt = "Design a conversation observation engine with governed proposal flow."
     intervention = {

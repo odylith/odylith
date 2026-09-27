@@ -48,6 +48,9 @@ def test_authoring_prompt_requires_every_transaction_material_fact() -> None:
     assert "improvement worth pursuing" in prompt
     assert "concrete experience" in prompt
     assert "Give the decision itself, not commentary" in prompt
+    assert "distinct, consumer-facing problem" in prompt
+    assert "do not describe implementation status" in prompt
+    assert "opaque event identifiers" in prompt
     assert "Include the explicit actor with its action and object in the first citation" in prompt
     assert "For state_object only, supply prefix, quote and anchor_occurrence" in prompt
     assert "selected quote is at the end of the anchor" in prompt

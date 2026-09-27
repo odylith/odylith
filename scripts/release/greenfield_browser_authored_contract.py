@@ -155,6 +155,8 @@ def project_state_assertion_issues(
         issues.append("browser surface project pane overflows horizontally")
     if rendered_story_body_count != 5:
         issues.append("browser surface project did not render all five Product Story bodies")
+    if distinct_story_body_count != 5:
+        issues.append("browser surface project repeats Product Story card bodies")
     rows = [row for row in story_rows if isinstance(row, dict)] if isinstance(story_rows, (list, tuple)) else []
     issues.extend(project_story_binding_issues(rows, authored_facts=payload_authored_facts))
     expected_rows = (

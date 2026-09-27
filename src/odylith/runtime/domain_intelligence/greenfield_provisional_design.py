@@ -16,7 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_event_ordering import (
     validate_first_run,
 )
 
-PROVISIONAL_DESIGN_VERSION = "odylith.greenfield.provisional-design.v5"
+PROVISIONAL_DESIGN_VERSION = "odylith.greenfield.provisional-design.v6"
 PROVISIONAL_DESIGN_AUTHORITY_KIND = "provisional_design"
 _TEXT = {"type": "string", "minLength": 1, "maxLength": 4000}
 _KEY = {"type": "string", "minLength": 1, "maxLength": 80, "pattern": "^[a-z][a-z0-9-]*$"}
@@ -48,6 +48,16 @@ _COMPONENT_FIELDS = {
 _WORKSTREAM_FIELDS = {
     "key": _KEY,
     "title": _TEXT,
+    "problem": {
+        "description": (
+            "One concise, consumer-facing difficulty or consequence this workstream "
+            "addresses. Ground it in the accepted project problem and the workstream's "
+            "supported source events. Describe the user's problem, not implementation "
+            "status, an opaque event identifier, a component gap, or a negated deliverable. "
+            "Every workstream problem must be meaningfully distinct."
+        ),
+        **_TEXT,
+    },
     "component_keys": {"type": "array", "minItems": 1, "maxItems": 5, "items": _KEY},
     "depends_on": {"type": "array", "minItems": 0, "maxItems": 4, "items": _KEY},
     "deliverable": _TEXT,
@@ -187,6 +197,9 @@ def validate_provisional_design(
     exchanges = _design_rows(value, "exchanges", _EXCHANGE_FIELDS, minimum=0, maximum=32)
     _require_unique_identities(components, display_field="name", label="component")
     _require_unique_identities(workstreams, display_field="title", label="workstream")
+    _require_unique_identities(
+        workstreams, display_field="problem", label="workstream problem"
+    )
     component_keys = {row["key"] for row in components}
     workstream_keys = {row["key"] for row in workstreams}
     accepted_orders = set(event_orders)

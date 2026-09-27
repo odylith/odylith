@@ -124,7 +124,7 @@ def _provisional_design(*, event_orders: tuple[int, ...] = (1, 2, 3)) -> dict[st
     ]
     assigned_orders.append(list(event_orders))
     return {
-        "version": "odylith.greenfield.provisional-design.v5",
+        "version": "odylith.greenfield.provisional-design.v6",
         "authority_kind": "provisional_design",
         "first_run": {
             "event_orders": list(event_orders),
@@ -168,6 +168,7 @@ def _provisional_design(*, event_orders: tuple[int, ...] = (1, 2, 3)) -> dict[st
             {
                 "key": "intake",
                 "title": "Deliver vessel intake",
+                "problem": "Harbor staff cannot reliably retain a submitted vessel tag.",
                 "component_keys": ["vessel-intake"],
                 "depends_on": [],
                 "deliverable": "Working vessel-tag intake.",
@@ -177,6 +178,7 @@ def _provisional_design(*, event_orders: tuple[int, ...] = (1, 2, 3)) -> dict[st
             {
                 "key": "occupancy",
                 "title": "Deliver occupancy recording",
+                "problem": "Harbor staff cannot reliably connect berth occupancy to the submitted vessel.",
                 "component_keys": ["occupancy-record"],
                 "depends_on": ["intake"],
                 "deliverable": "Working berth-occupancy recording.",
@@ -186,6 +188,7 @@ def _provisional_design(*, event_orders: tuple[int, ...] = (1, 2, 3)) -> dict[st
             {
                 "key": "placement",
                 "title": "Deliver the placement view",
+                "problem": "Harbor staff cannot see the recorded berth placement in one reviewable view.",
                 "component_keys": ["placement-view"],
                 "depends_on": ["occupancy"],
                 "deliverable": "Working berth-placement view.",
@@ -195,6 +198,7 @@ def _provisional_design(*, event_orders: tuple[int, ...] = (1, 2, 3)) -> dict[st
             {
                 "key": "evidence",
                 "title": "Deliver placement evidence",
+                "problem": "Reviewers cannot trace a displayed placement to its supporting path.",
                 "component_keys": ["placement-evidence"],
                 "depends_on": ["placement"],
                 "deliverable": "Working placement-evidence record.",
@@ -256,6 +260,10 @@ def test_context_distinguishes_performers_from_contextual_participants() -> None
     )
     assert "actor1 --> product" not in context["mermaid_source"]
     assert (
+        'actor1_actions ---|"first-path interaction"| product'
+        in context["mermaid_source"]
+    )
+    assert (
         'actor2 -. "participant context; no action assigned" .-> product'
         in context["mermaid_source"]
     )
@@ -289,6 +297,10 @@ def test_context_groups_five_exact_events_under_one_human_performer() -> None:
     boxes = {row["node_id"]: row for row in context["diagram_boxes"]}
 
     assert 'actor1 -->|"performs"| actor1_actions' in context["mermaid_source"]
+    assert (
+        'actor1_actions ---|"first-path interaction"| product'
+        in context["mermaid_source"]
+    )
     assert context["mermaid_source"].count('actor1_actions["') == 1
     assert boxes["actor1_actions"]["label"] == "\n".join(events)
     assert [line for line in boxes["actor1_actions"]["label"].splitlines()] == list(events)
@@ -432,6 +444,7 @@ def test_product_only_context_retains_five_exact_events_without_empty_people() -
     assert set(boxes) == {"product", "product_actions"}
     assert boxes["product_actions"]["label"] == "\n".join(events)
     assert 'product -->|"performs"| product_actions' in context["mermaid_source"]
+    assert 'product_actions ---|"first-path interaction"| product' not in context["mermaid_source"]
     assert 'subgraph people[' not in context["mermaid_source"]
     assert 'subgraph external_systems[' not in context["mermaid_source"]
     assert not any(row["role"] in {"Participant", "First-path actor"} for row in boxes.values())
@@ -464,6 +477,8 @@ def test_context_preserves_a_single_exact_event_for_each_typed_performer(
     assert boxes[f"{node_id}_actions"]["label"] == event
     assert f'{node_id} -->|"performs"| {node_id}_actions' in context["mermaid_source"]
     assert context["mermaid_source"].count('|"performs"|') == 1
+    boundary_edge = f'{node_id}_actions ---|"first-path interaction"| product'
+    assert (boundary_edge in context["mermaid_source"]) == (actor_kind != "product")
     assert ("people" in boxes) == bool(humans)
 
 
@@ -503,6 +518,10 @@ def test_context_groups_mixed_typed_performers_without_cross_assignment() -> Non
     assert 'external2 -->|"performs"|' not in context["mermaid_source"]
     for action_id in expected:
         assert f'{action_id.removesuffix("_actions")} -->|"performs"| {action_id}' in context["mermaid_source"]
+    assert 'actor1_actions ---|"first-path interaction"| product' in context["mermaid_source"]
+    assert 'external1_actions ---|"first-path interaction"| product' in context["mermaid_source"]
+    assert 'component1_actions ---|"first-path interaction"| product' not in context["mermaid_source"]
+    assert 'component2_actions ---|"first-path interaction"| product' not in context["mermaid_source"]
     assert "external1 -.-> component2" in context["mermaid_source"]
     assert "external1 -.-> component1" not in context["mermaid_source"]
     assert "external2 -.-> product" in context["mermaid_source"]

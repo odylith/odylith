@@ -280,9 +280,9 @@ def test_recovery_phases_reuse_one_sealed_transaction(tmp_path: Path, monkeypatc
     transaction_path = seed_root / ".odylith/runtime/greenfield/pending/hash/product-create-transaction.v1.json"
     transaction_path.parent.mkdir(parents=True)
     transaction_path.write_text("{}\n", encoding="utf-8")
-    seed = module._RecoverySeed(  # noqa: SLF001
+    seed = module.recovery_transaction.RecoverySeed(
         repo_root=seed_root,
-        transaction=module._CompiledRecoveryTransaction(  # noqa: SLF001
+        transaction=module.recovery_transaction.RecoveryTransaction(
             transaction_file=str(transaction_path),
             transaction_hash="a" * 64,
             product_facts_hash="c" * 64,
@@ -291,17 +291,17 @@ def test_recovery_phases_reuse_one_sealed_transaction(tmp_path: Path, monkeypatc
         ),
     )
     monkeypatch.setattr(
-        module,
+        module.recovery_transaction,
         "_install_repo",
         lambda **_kwargs: (_ for _ in ()).throw(AssertionError("seeded phase must not reinstall")),
     )
     monkeypatch.setattr(
-        module,
-        "_compile_transaction",
+        module.recovery_transaction,
+        "compile_transaction",
         lambda **_kwargs: (_ for _ in ()).throw(AssertionError("seeded phase must not re-author")),
     )
 
-    repo_root, transaction = module._phase_repo_and_transaction(  # noqa: SLF001
+    repo_root, transaction = module.recovery_transaction.phase_repo_and_transaction(
         run_root=tmp_path,
         phase_name="phase",
         install_script=tmp_path / "install.sh",
@@ -332,7 +332,10 @@ def test_recovery_seed_clone_rejects_runtime_outside_managed_versions(tmp_path: 
     seed_current.symlink_to(outside_runtime, target_is_directory=True)
 
     try:
-        module._clone_recovery_seed_repo(seed_repo=seed_root, repo_root=tmp_path / "phase")  # noqa: SLF001
+        module.recovery_transaction.clone_recovery_seed_repo(
+            seed_repo=seed_root,
+            repo_root=tmp_path / "phase",
+        )
     except RuntimeError as exc:
         assert str(exc) == "installed recovery seed active runtime is outside its managed versions"
     else:
@@ -499,7 +502,7 @@ def test_compile_transaction_uses_the_exact_case_prompt_and_confirmed_intent(tmp
                     "source_format": "operator_prompt_with_edit_evidence",
                     "product_facts_sha256": "c" * 64,
                     "markdown_source_sha256": module.hashlib.sha256(
-                        module.combined_prompt_evidence_source(
+                        module.recovery_transaction.combined_prompt_evidence_source(
                             prompt="Create the exact recovery-bound product.",
                             edit_evidence="# Confirmed Recovery Intent\n\n## State\nA durable record.",
                         ).encode("utf-8")
@@ -512,7 +515,7 @@ def test_compile_transaction_uses_the_exact_case_prompt_and_confirmed_intent(tmp
     )
     captured: dict[str, object] = {}
     monkeypatch.setattr(
-        module,
+        module.recovery_transaction,
         "_run",
         lambda **kwargs: captured.update(kwargs)
         or SimpleNamespace(
@@ -536,7 +539,7 @@ def test_compile_transaction_uses_the_exact_case_prompt_and_confirmed_intent(tmp
         confirmed_intent_markdown="# Confirmed Recovery Intent\n\n## State\nA durable record.",
     )
 
-    compiled = module._compile_transaction(  # noqa: SLF001
+    compiled = module.recovery_transaction.compile_transaction(
         repo_root=tmp_path,
         env={"PATH": "/usr/bin"},
         case=case,
@@ -559,7 +562,7 @@ def test_compile_transaction_uses_host_native_candidate_when_configured(tmp_path
         required_terms=("recovery",),
     )
     source_hash = module.hashlib.sha256(
-        module.combined_prompt_evidence_source(
+        module.recovery_transaction.combined_prompt_evidence_source(
             prompt=case.prompt,
             edit_evidence="",
         ).encode("utf-8")
@@ -604,15 +607,15 @@ def test_compile_transaction_uses_host_native_candidate_when_configured(tmp_path
             stderr="",
         )
 
-    monkeypatch.setattr(module, "run_host_candidate_flow", fake_host_flow)
+    monkeypatch.setattr(module.recovery_transaction, "run_host_candidate_flow", fake_host_flow)
     monkeypatch.setattr(
-        module,
+        module.recovery_transaction,
         "resolve_trusted_codex_executable",
         lambda **_kwargs: "/trusted/codex",
     )
-    monkeypatch.setattr(module, "_run", fake_run)
+    monkeypatch.setattr(module.recovery_transaction, "_run", fake_run)
 
-    compiled = module._compile_transaction(  # noqa: SLF001
+    compiled = module.recovery_transaction.compile_transaction(
         repo_root=tmp_path,
         env={"PATH": "/usr/bin"},
         case=case,
@@ -658,7 +661,7 @@ def test_compile_transaction_rejects_an_authority_that_does_not_bind_edit_eviden
         encoding="utf-8",
     )
     monkeypatch.setattr(
-        module,
+        module.recovery_transaction,
         "_run",
         lambda **_kwargs: SimpleNamespace(
             returncode=0,
@@ -682,7 +685,11 @@ def test_compile_transaction_rejects_an_authority_that_does_not_bind_edit_eviden
     )
 
     try:
-        module._compile_transaction(repo_root=tmp_path, env={"PATH": "/usr/bin"}, case=case)  # noqa: SLF001
+        module.recovery_transaction.compile_transaction(
+            repo_root=tmp_path,
+            env={"PATH": "/usr/bin"},
+            case=case,
+        )
     except RuntimeError as exc:
         assert "did not bind the exact prompt and edit evidence" in str(exc)
     else:
@@ -806,6 +813,7 @@ def test_recovery_proof_payload_is_a_falsifiable_release_record() -> None:
         },
         "recovery_case": recovery_case,
         "retained_recovery_roots": {},
+        "retained_recovery_evidence": {},
         "operator_conflict_resolution": {},
     }
 
@@ -872,9 +880,9 @@ def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: P
         evidence = kwargs["evidence"]
         module.recovery_evidence.record_retained_case_text(evidence, "commands/propose.stdout", "{}")
         module.recovery_evidence.record_retained_case_json(evidence, "semantic/transaction.json", {})
-        return module._RecoverySeed(  # noqa: SLF001
+        return module.recovery_transaction.RecoverySeed(
             repo_root=tmp_path / "seed",
-            transaction=module._CompiledRecoveryTransaction(  # noqa: SLF001
+            transaction=module.recovery_transaction.RecoveryTransaction(
                 transaction_file=".odylith/runtime/greenfield/product-create-transaction.v1.json",
                 transaction_hash="a" * 64,
                 product_facts_hash="c" * 64,
@@ -883,7 +891,17 @@ def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: P
             ),
         )
 
-    monkeypatch.setattr(module, "_prepare_recovery_seed", prepare_seed)
+    monkeypatch.setattr(
+        module.recovery_transaction,
+        "prepare_recovery_seed",
+        prepare_seed,
+    )
+    monkeypatch.setattr(
+        module.recovery_evidence,
+        "seal_recovery_manifest",
+        lambda **_kwargs: {"manifest": "/retained/manifest.json", "sha256": "e" * 64},
+    )
+    monkeypatch.setattr(module.recovery_evidence, "missing_required_evidence", lambda *_args, **_kwargs: [])
 
     def sigkill_phase(**kwargs):  # noqa: ANN001
         captured_cases.append(kwargs["case"])
@@ -987,6 +1005,7 @@ def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: P
 
     assert proof.passed
     assert not proof.retained_recovery_roots
+    assert proof.retained_recovery_evidence["sha256"] == "e" * 64
     assert not tuple((tmp_path / "fixtures").iterdir())
     assert proof.product_facts_sha256 == "c" * 64
     assert proof.product_facts_hashes_by_phase == {
@@ -1067,11 +1086,15 @@ def test_installed_conflict_phase_preserves_operator_mutation_and_snapshot(
     journal_root = module._journal_root(repo_root, transaction_hash)  # noqa: SLF001
     (journal_root / "snapshot").mkdir(parents=True)
 
-    monkeypatch.setattr(module, "_install_repo", lambda **_kwargs: repo_root.mkdir(exist_ok=True))
     monkeypatch.setattr(
-        module,
-        "_compile_transaction",
-        lambda **_kwargs: module._CompiledRecoveryTransaction(  # noqa: SLF001
+        module.recovery_transaction,
+        "_install_repo",
+        lambda **_kwargs: repo_root.mkdir(exist_ok=True),
+    )
+    monkeypatch.setattr(
+        module.recovery_transaction,
+        "compile_transaction",
+        lambda **_kwargs: module.recovery_transaction.RecoveryTransaction(
             transaction_file=".odylith/runtime/greenfield/product-create-transaction.v1.json",
             transaction_hash=transaction_hash,
             product_facts_hash="c" * 64,
@@ -1223,16 +1246,20 @@ def test_sigkill_phase_reports_the_observed_success_receipt_hash(
 ) -> None:
     module = _module()
     repo_root = tmp_path / "sigkill-same-hash"
-    compiled = module._CompiledRecoveryTransaction(  # noqa: SLF001
+    compiled = module.recovery_transaction.RecoveryTransaction(
         transaction_file=".odylith/runtime/greenfield/product-create-transaction.v1.json",
         transaction_hash="a" * 64,
         product_facts_hash="c" * 64,
         write_set_hash="b" * 64,
         intent_authority={},
     )
-    monkeypatch.setattr(module, "_install_repo", lambda **_kwargs: repo_root.mkdir(exist_ok=True))
+    monkeypatch.setattr(
+        module.recovery_transaction,
+        "_install_repo",
+        lambda **_kwargs: repo_root.mkdir(exist_ok=True),
+    )
     monkeypatch.setattr(module, "_installed_runtime_identity", lambda **_kwargs: {})
-    monkeypatch.setattr(module, "_compile_transaction", lambda **_kwargs: compiled)
+    monkeypatch.setattr(module.recovery_transaction, "compile_transaction", lambda **_kwargs: compiled)
     fingerprints = iter(({"before": "1"}, {"partial": "1"}, {"after": "1"}, {"after": "1"}))
     monkeypatch.setattr(module, "_governed_fingerprint", lambda _root: next(fingerprints))
     monkeypatch.setattr(
@@ -1246,7 +1273,14 @@ def test_sigkill_phase_reports_the_observed_success_receipt_hash(
             {"state": "closed"},
         )
     )
-    monkeypatch.setattr(module, "_journal_state", lambda **_kwargs: next(journal_states))
+    def journal_state(**_kwargs):  # noqa: ANN001
+        state = next(journal_states)
+        path = module._journal_root(repo_root, compiled.transaction_hash) / "state.v1.json"  # noqa: SLF001
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(state), encoding="utf-8")
+        return state
+
+    monkeypatch.setattr(module, "_journal_state", journal_state)
     sigkill_observations = iter(
         (
             _generation_observation(),
@@ -1271,6 +1305,7 @@ def test_sigkill_phase_reports_the_observed_success_receipt_hash(
         return "d" * 64
 
     monkeypatch.setattr(module, "_require_receipt_identity", observed_receipt)
+    monkeypatch.setattr(module.recovery_evidence, "seal_recovery_phase", lambda **_kwargs: None)
 
     if dangling_artifact:
         artifact = module._journal_root(repo_root, compiled.transaction_hash) / dangling_artifact  # noqa: SLF001
@@ -1286,6 +1321,7 @@ def test_sigkill_phase_reports_the_observed_success_receipt_hash(
             prompt="Create the exact recovery-bound product.",
             required_terms=("recovery",),
         ),
+        evidence=SimpleNamespace(),
     )
     if dangling_artifact:
         with pytest.raises(RuntimeError, match="retained rollback artifacts"):
@@ -1301,15 +1337,19 @@ def test_sigkill_phase_reports_the_observed_success_receipt_hash(
 def test_fsync_phase_reports_the_observed_retry_receipt_hash(tmp_path: Path, monkeypatch) -> None:
     module = _module()
     repo_root = tmp_path / "fsync-rollback"
-    compiled = module._CompiledRecoveryTransaction(  # noqa: SLF001
+    compiled = module.recovery_transaction.RecoveryTransaction(
         transaction_file=".odylith/runtime/greenfield/product-create-transaction.v1.json",
         transaction_hash="a" * 64,
         product_facts_hash="c" * 64,
         write_set_hash="b" * 64,
         intent_authority={},
     )
-    monkeypatch.setattr(module, "_install_repo", lambda **_kwargs: repo_root.mkdir(exist_ok=True))
-    monkeypatch.setattr(module, "_compile_transaction", lambda **_kwargs: compiled)
+    monkeypatch.setattr(
+        module.recovery_transaction,
+        "_install_repo",
+        lambda **_kwargs: repo_root.mkdir(exist_ok=True),
+    )
+    monkeypatch.setattr(module.recovery_transaction, "compile_transaction", lambda **_kwargs: compiled)
     fingerprints = iter(({"before": "1"}, {"before": "1"}, {"after": "1"}, {"after": "1"}))
     monkeypatch.setattr(module, "_governed_fingerprint", lambda _root: next(fingerprints))
     monkeypatch.setattr(
@@ -1325,7 +1365,14 @@ def test_fsync_phase_reports_the_observed_retry_receipt_hash(tmp_path: Path, mon
         ),
     )
     journal_states = iter(({"state": "aborted"}, {"state": "closed"}))
-    monkeypatch.setattr(module, "_journal_state", lambda **_kwargs: next(journal_states))
+    def journal_state(**_kwargs):  # noqa: ANN001
+        state = next(journal_states)
+        path = module._journal_root(repo_root, compiled.transaction_hash) / "state.v1.json"  # noqa: SLF001
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(state), encoding="utf-8")
+        return state
+
+    monkeypatch.setattr(module, "_journal_state", journal_state)
     fsync_observations = iter(
         (
             _generation_observation(),
@@ -1350,6 +1397,7 @@ def test_fsync_phase_reports_the_observed_retry_receipt_hash(tmp_path: Path, mon
         return "d" * 64
 
     monkeypatch.setattr(module, "_require_receipt_identity", observed_receipt)
+    monkeypatch.setattr(module.recovery_evidence, "seal_recovery_phase", lambda **_kwargs: None)
 
     facts = module._run_fsync_rollback_phase(  # noqa: SLF001
         run_root=tmp_path,
@@ -1360,6 +1408,7 @@ def test_fsync_phase_reports_the_observed_retry_receipt_hash(tmp_path: Path, mon
             prompt="Create the exact recovery-bound product.",
             required_terms=("recovery",),
         ),
+        evidence=SimpleNamespace(),
     )
 
     assert facts["product_facts_sha256"] == "d" * 64

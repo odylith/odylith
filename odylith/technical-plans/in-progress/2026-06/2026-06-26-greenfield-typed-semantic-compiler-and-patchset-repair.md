@@ -1,5 +1,182 @@
 Status: In progress
 
+## V43 maintained matrix invocation closure (2026-09-27)
+
+Keep one host-authoring command contract across every maintained matrix entry
+path. The direct wrapper must emit the existing canonical 14-argument argv for
+discovery and terminal release proof alike because the matrix owner rejects
+missing host custody in both modes. Do not weaken that rejection or add a
+second shell grammar, provider route, retry, repair, fallback candidate, or
+model ladder.
+
+The discovery wrapper regression now verifies the exact forwarded command
+shape. The focused wrapper, campaign, and host-candidate suite passes 91 tests,
+and the complete changed-test surface passes 1,216 tests. This closes source
+wiring only; immutable installed public qualification remains the next gate.
+
+## V43 browser differentiation gate closure (2026-09-27)
+
+Keep the generated Project release gate aligned with current product truth.
+Desktop and mobile checks require the canonical `Accepted evidence excerpt:`
+label, and the per-case installed browser owner must reject five Product Story
+cards unless their five visible bodies are distinct. The runner already
+measures this count; enforce it instead of introducing a second evaluator.
+
+Focused proof passes 123 tests across browser proof selection and summary,
+Project normal/blank/degraded desktop and mobile states, completion handoff,
+Atlas label rendering, retained navigation after workspace deletion,
+no-program generation, and exact committed-dashboard opening. A fresh public
+installed campaign remains required before release qualification.
+
+## V43 immutable audit-lineage closure (2026-09-27)
+
+Preserve the exact pre-rebind source-verification artifact as an immutable
+tracked predecessor. The rebound manifest must identify that distinct path and
+its exact SHA-256; a self-reference or missing predecessor fails the repository
+fixture contract. Rebuild v16 from the corrected manifest so the audit binds
+the new source-verification digest and all 40 review-evidence paths identify
+the final durable directory rather than a staging alias.
+
+The predecessor and current manifest hashes are
+`94e47d6d6a85f25c71afdf6ba92999f764e126e16f9234c4c096a73899c19250`
+and `c736c40b912b6a5b1f81bacb921aee65732c7ba639d90cfb2601d8468f477ec1`.
+The regenerated v16 audit hash is
+`9cb64c4d71c252b4c2389bbf481c9d308f59b3e2389d5aee05e14e101dc7bfc2`,
+the focused audit suite passes 77 tests, and independent re-adjudication
+reports no remaining P0/P1/P2 in the repaired custody slice.
+
+## V43 release-proof ownership closure (2026-09-27)
+
+Resolve the two checkpoint-review P2 findings before building another
+distribution. Decompose `greenfield_commit_recovery_proof.py` at a real phase
+boundary so orchestration no longer owns all retained recovery evidence and
+the original module returns below the 1,200-line ceiling. Split
+`test_greenfield_matrix_clarification.py` by semantic proof responsibility so
+every touched test module remains within the 1,500-line ceiling while exact
+test collection and behavior stay unchanged.
+
+Do not compress whitespace, create a helper dump, retain a compatibility
+facade, or duplicate normalization. Prove the focused recovery and
+clarification suites, collection equality, compilation, file-size limits, and
+`git diff --check` before checkpointing. The split does not authorize new
+Greenfield interpretation, repair, retry, fallback, provider, or holdout work.
+
+## V43 retained completion handoff (2026-09-27)
+
+Close the remaining release-evidence UX gap without changing Greenfield's
+consumer transaction path. Extend the validated retained-evidence result with
+one same-case completion handoff containing the sealed transaction hash and
+the absolute durable Project route. Compose the visible line from those typed
+fields only. Keep the raw decision transcript immutable and keep failed,
+clarification, interrupted, or semantically unbound packages from emitting a
+completion claim. Prove exact transcript preservation, workspace teardown,
+tamper fail-closure, and Chromium rendering through the projected route.
+
+## V43 audited operating-envelope topology (2026-09-27)
+
+Regenerate the public audit trail with the 200-case source-provenanced corpus
+as source truth and the already reviewed 40-case operating envelope as an
+explicit selection. Reuse exact parent/subset membership validation and bind
+the selection path and SHA-256 into the existing request plan. Fail before
+writing when its claim class, parent, case count, or case bytes differ. Keep
+the current audit writer and evaluator claim classes unchanged; no alternate
+selector, review inference, or release-floor exception is allowed.
+
+## V43 accepted-evidence label disambiguation (2026-09-27)
+
+The retained V43 packages preserve an exact cited `product_story`, but five
+consumer projections call it `Source excerpt`. Source-backed cases also carry
+separately identified repository evidence, so that label makes valid operator
+evidence look like a claim that the repository authored the requested product.
+
+Rename the presentation role to `Accepted evidence excerpt` across Product
+Intent preview, Project, Brief, Atlas, project intelligence, and accepted
+memory. Keep the exact quote, canonical custody, and reference-provenance rules
+unchanged. Do not force unbound repository background into product meaning and
+do not add a parser, regex, classifier, schema field, model call, repair,
+retry, fallback, or alternate projection owner. Require exact cross-surface
+tests and fresh normal/fallback/degraded browser proof before qualification.
+
+## V43 typed System Context product-boundary connectivity (2026-09-27)
+
+Independent architect review of all five retained V43 packages found one
+shared D-001 P1: exact typed performers connect to their exact action groups,
+but each non-product action group is detached from the candidate product. The
+old projection therefore preserves ownership while failing to answer the
+System Context question of how the first-path work meets the product boundary.
+
+Change only the existing typed context projection. Preserve each performer to
+action-group edge and add one non-owning `first-path interaction` boundary edge
+from every human or external-system action group to the candidate product.
+Product-owned action groups already sit inside that boundary and receive no
+duplicate edge. Preserve dotted no-action participant context, exact event
+text, actor kind, source order neutrality, component ownership, and sealed
+view custody. Do not add a direct person-to-product arrow, parser, regex,
+vocabulary rule, inferred action, repair, retry, fallback, or second renderer.
+
+Prove human, external-system, mixed-owner, nonperformer, and product-only
+controls; bump the sealed authored-Atlas authority version; then require fresh
+rendered D-001 evidence and independent architect requalification before the
+next public package can count toward release. V43 remains immutable failed
+historical evidence.
+
+## V43 consumer-owned Radar problem projection (2026-09-27)
+
+Independent review of the five retained V43 packages found one product P1:
+all twenty child workstreams render an internal generator gap and opaque event
+numbers as their Problem. The exact typed events, provisional components,
+workstreams, acceptance checks, and risks otherwise remain available and the
+domain-expert lens passes every package. This reopens CB-197 and blocks reuse of
+the immutable V43 packages as product-manager-qualified evidence.
+
+Move local-problem ownership into the existing one-call provisional design.
+Each of the four to five workstreams must carry one concise, distinct,
+consumer-facing problem grounded in the accepted project problem and its typed
+event support. The existing independent candidate review judges that meaning;
+the deterministic package projection copies the reviewed value exactly. Delete
+the event-number generator sentence. Do not create a parser, regex, vocabulary
+list, deterministic prose synthesizer, repair/retry path, fallback author, or
+additional model call.
+
+Prove the closed schema, exact projection, distinct problems, event-custody
+separation, field differentiation, and high-variance behavior before producing
+a new immutable distribution. V43 remains failed historical evidence. A fresh
+public package and independent product-manager review must show the P1 is gone;
+browser normal, fallback, degraded, desktop, and mobile proof remains part of
+the later release gate.
+
+## V43 independent package review and operating-envelope gate (2026-09-27)
+
+The immutable V43 public run completed all ten selected cases with zero product
+failures and retained every package, transaction, and browser byte. Release
+qualification correctly remains open: its ten cases contain no genuinely
+moderate or high structural-complexity evidence, only one edited-intent case,
+and insufficient worst-slice confidence. The execution-time onboarding
+scorecard also treated four intentionally unperformed independent review lenses
+as product failures, while no maintained post-run path could bind review to the
+immutable evidence.
+
+Repair the release owner, not Greenfield semantics. Release status must require
+the frozen outcome-statistics floor. A no-write clarification may contribute
+its source-derived evidence format, source-size complexity, and exact observed
+model profile only when its one-call host-native clarification custody has
+already passed; it does not manufacture a sealed transaction. Keep absent
+product-manager, architect, engineer, and domain-expert lenses unproven until a
+provider-free detached finalizer verifies the exact result, retained root and
+case manifests, source and transaction hashes, reviewed artifacts and
+screenshots, reviewer rationale, and explicit lens verdicts. The finalizer
+recomputes the scorecard without mutating or trusting the original result.
+
+Focused release-harness proof passes `130/130`, and the immutable V43 retained
+manifest revalidates with zero custody issues. Its truthful current state is
+still failed solely on campaign coverage/statistics, with independent review
+and the finalized scorecard awaiting. Complete the bounded independent package
+review, then construct a disclosed, independently audited public corpus with
+genuine bounded, moderate, high, direct-prompt, and edited-intent coverage
+before any protected holdout access. Do not lower floors, relabel cases, add a
+parser, regex, retry, repair, fallback author or reviewer, or rerun V43 merely
+to attach review.
+
 ## V43 author-review semantic-role parity (2026-09-27)
 
 The immutable V42 mechanism passed all five independent boundary controls and

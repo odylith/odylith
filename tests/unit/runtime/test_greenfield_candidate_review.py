@@ -64,7 +64,7 @@ def run_review(provider, clock, *, deadline=55.0, observation=None, factory=None
 
 
 def test_partition_preserves_every_value_and_binds_complete_candidate():
-    assert review.CANDIDATE_REVIEW_VERSION == "odylith.greenfield.candidate-review.v14"
+    assert review.CANDIDATE_REVIEW_VERSION == "odylith.greenfield.candidate-review.v15"
     source = _source()
     candidate = _response(source)["result"]
     original = deepcopy(candidate)
@@ -197,6 +197,19 @@ def test_review_request_keeps_source_custody_out_of_product_meaning():
     assert "restates or\nparaphrases it as an assumption, component, workstream" in prompt
     assert "product workflows that manage evidence" in prompt
     assert "actual\ngoverned system and outcome" in prompt
+
+
+def test_review_request_adjudicates_consumer_owned_workstream_problems():
+    clock = Clock()
+    provider = Reviewer(ADMITTED, clock)
+    run_review(provider, clock)
+
+    prompt = provider.requests[0].system_prompt
+    assert "consumer-facing local difficulty or consequence" in prompt
+    assert "accepted project\nproblem" in prompt
+    assert "opaque event identifiers" in prompt
+    assert "duplicate workstream problems" in prompt
+    assert "Do not rewrite the problem" in prompt
 
 
 def test_review_request_shares_reference_provenance_role_with_host_contract():

@@ -1401,7 +1401,7 @@ def test_render_tooling_dashboard_rebuilds_when_greenfield_project_is_accepted(
     payload_js = (tmp_path / "odylith" / "tooling-payload.v1.js").read_text(encoding="utf-8")
 
     assert "Project overview" in html
-    assert "Source excerpt:" in html
+    assert "Accepted evidence excerpt:" in html
     assert "Commerce Launch System" in payload_js
     assert "Project not defined yet" not in html
 

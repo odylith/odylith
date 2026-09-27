@@ -137,7 +137,7 @@ def render_candidate_intent_markdown(intent: Mapping[str, Any]) -> str:
     lines = [
         f"# {title} - Product Intent Confirmation",
         "",
-        "## Source excerpt",
+        "## Accepted evidence excerpt",
         f'“{_text_fact(intent, "product_story")}”',
         "",
         *(["## Source-stated decisions", *decisions, ""] if decisions else []),

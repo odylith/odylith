@@ -1,6 +1,101 @@
 # Release
 Last updated: 2026-09-27
 
+## V43 maintained matrix invocation contract (2026-09-27)
+
+Every maintained direct Greenfield matrix invocation carries the same exact
+host-native argv obtained from the canonical host-candidate owner. Discovery
+and terminal release proof differ in evidence custody and qualification, not
+in whether a host-authoring command exists. An empty command fails closed;
+callers must not compensate with a second grammar, provider, retry, repair,
+fallback candidate, or model ladder.
+
+## V43 browser differentiation contract (2026-09-27)
+
+The installed Greenfield browser gate treats cross-surface differentiation as
+a release law, not an advisory fixture assertion. Project normal-state proof
+requires five rendered Product Story cards and five distinct visible bodies;
+any repeated body fails the generated case. Desktop and mobile assertions use
+the canonical `Accepted evidence excerpt:` label owned by current product and
+package truth. The gate reuses the browser-visible body count already captured
+by the release runner and adds no prose interpreter or alternate evaluator.
+
+## V43 immutable audit-lineage contract (2026-09-27)
+
+Source-verification rebinding retains its predecessor as an immutable tracked
+artifact. The current manifest's `rebound_from` path must exist, must not
+resolve to the current manifest, and must hash exactly to
+`rebound_from_sha256`. Final audit evidence binds the current verification
+manifest digest and final durable review-evidence paths. Current validity does
+not substitute for reproducible predecessor custody.
+
+## V43 recovery-proof ownership contract (2026-09-27)
+
+Release recovery proof keeps top-level phase orchestration separate from the
+phase evidence owner. The orchestration module selects and sequences recovery
+scenarios; a focused sibling owns immutable phase observations and validation
+without reparsing prose, changing the transaction state machine, or adding a
+second interpretation path. The split must preserve existing imports,
+receipts, manifests, and fail-closed mutation checks while keeping maintained
+source and tests within repository size limits.
+
+## V43 retained completion-handoff contract (2026-09-27)
+
+Release evidence owns one explicit operator-facing completion projection after
+the retained manifest is fully validated. Each handoff binds a case ID, the
+same case's sealed transaction hash, and the absolute retained Project route.
+Its Markdown is derived directly from those typed fields. Raw command
+transcripts remain immutable evidence and are never reparsed or rewritten to
+manufacture a durable route. Invalid or incomplete retained evidence emits no
+completion handoff.
+
+## V43 audited operating-envelope selection contract (2026-09-27)
+
+The Release component keeps source-provenanced parent truth separate from the
+disclosed live operating envelope. An audit request plan may name one explicit
+selection file only when it declares the disclosed-subset claim, binds the
+same parent corpus, contains the requested number of unique cases, and passes
+the canonical exact-membership validator. The plan seals the selection path
+and SHA-256 while continuing to bind the parent as `source_case_file`; audit
+bundle and evaluator claim classes remain unchanged.
+
+## V43 accepted-evidence readback contract (2026-09-27)
+
+Release package readback requires the exact `Accepted evidence excerpt`
+section and quoted value produced by Domain Intelligence. This replaces the
+ambiguous presentation label `Source excerpt` without changing the accepted
+`product_story`, its source span, semantic authority, or transaction bytes.
+Readback still checks the structured Brief projection and its exact rendered
+line; it does not infer, parse, repair, or reclassify evidence. Separately
+identified repository or document provenance remains governed by its existing
+audit bindings rather than being conflated with the user-evidence quote.
+
+## V43 detached package review and statistical release gate (2026-09-27)
+
+Greenfield release qualification requires the campaign's frozen outcome
+statistics to pass. Perfect point acceptance cannot override missing
+structural-complexity or evidence-format coverage, insufficient per-slice
+samples, or a failing worst-slice confidence floor. Safe no-write clarification
+cases may contribute only source-derived evidence format and source-size
+complexity plus their exact observed profile, and only after the one-call
+host-native clarification proof has passed. They never claim a sealed package
+or transaction.
+
+Independent product-manager, architect, engineer, and domain-expert judgments
+are post-execution evidence. Execution keeps them unproven. The provider-free
+onboarding-review finalizer binds each verdict to the immutable matrix result,
+retained root and case manifests, exact source and transaction hashes, and the
+specific artifact and screenshot hashes inspected by the reviewer. It writes a
+detached immutable sidecar, recomputes the ten-dimension scorecard from the
+original automated evidence plus validated verdicts, and never mutates the
+result, calls a provider, or reruns Greenfield.
+
+The V43 retained evidence passes byte validation with zero custody issues, but
+release remains failed on its published coverage/statistics floor. Independent
+review and a broader genuinely representative disclosed corpus are required
+before protected-holdout qualification. No statistical floor may be lowered
+and no bounded case may be relabeled to manufacture coverage.
+
 ## V38 frozen clarification-oracle custody (2026-09-27)
 
 For an audited disclosed public subset, every clarification-required case

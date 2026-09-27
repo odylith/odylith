@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
+import hashlib
 import sys
 
 import pytest
@@ -17,10 +18,16 @@ from greenfield_matrix_statistics import release_slice_minimum_sample_contract_i
 from greenfield_matrix_statistics import release_statistical_confidence_contract
 from greenfield_matrix_statistics import release_statistical_confidence_contract_issues
 from greenfield_matrix_statistics import wilson_interval
+from greenfield_matrix_clarification import clarification_quality_verdict
+from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_ARGUMENT_COUNT
+from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_SHAPE_SHA256
 from greenfield_matrix_types import GreenfieldArtifactCounts
 from greenfield_matrix_types import GreenfieldMatrixResult
 from greenfield_matrix_types import GreenfieldQualityVerdict
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
+from greenfield_preconfirm_matrix_cases import case_evidence
+from greenfield_model_profiles import model_profile_environment
+from greenfield_model_profiles import model_profile_evidence
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     combined_prompt_evidence_source,
 )
@@ -132,6 +139,85 @@ def test_release_statistics_use_sealed_slices_instead_of_spoofable_tags() -> Non
         row["value"] in {"spoofed-band", "spoofed-profile"}
         for row in report["slices"]
     )
+
+
+def test_release_statistics_count_a_verified_no_write_clarification_without_a_sealed_package() -> None:
+    question = "Which result must the operator see first?"
+    case = replace(
+        _case("clarification-case", stressor="material-ambiguity"),
+        expectation="clarification_required",
+        expected_clarification_field="first_path",
+        expected_clarification_question=question,
+    )
+    result = _host_native_clarification_result(case)
+
+    report = outcome_statistics(cases=(case,), results=(result,), release=True)
+
+    assert report["release_evidence_issues"] == []
+    assert {
+        (row["dimension"], row["value"])
+        for row in report["slices"]
+    } >= {
+        ("complexity_band", "bounded"),
+        ("evidence_format", "operator_prompt"),
+        ("model_profile", STANDARD_PROFILE_ID),
+    }
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    (
+        "stage_status",
+        "stage_model_call_count",
+        "frozen_source_hash",
+        "frozen_clarification",
+    ),
+)
+def test_release_statistics_reject_a_clarification_with_broken_host_custody(
+    mutation: str,
+) -> None:
+    question = "Which result must the operator see first?"
+    case = replace(
+        _case("broken-clarification", stressor="material-ambiguity"),
+        expectation="clarification_required",
+        expected_clarification_field="first_path",
+        expected_clarification_question=question,
+    )
+    result = _host_native_clarification_result(case)
+    model_profile = dict(result.evidence["model_profile"])
+    if mutation == "frozen_clarification":
+        observed_case = dict(result.evidence["case"])
+        observed_case["expected_clarification"] = {
+            "field": "proof_boundary",
+            "question": case.expected_clarification_question,
+        }
+        result = replace(
+            result,
+            evidence={**result.evidence, "case": observed_case},
+        )
+    elif mutation == "stage_status":
+        model_profile["stage_observation"] = {
+            **model_profile["stage_observation"],
+            "status": "failed",
+        }
+    else:
+        if mutation == "stage_model_call_count":
+            model_profile["stage_observation"] = {
+                **model_profile["stage_observation"],
+                "host_invocations": 2,
+            }
+        else:
+            model_profile["expected_source_sha256"] = "9" * 64
+    if mutation != "frozen_clarification":
+        result = replace(
+            result,
+            evidence={**result.evidence, "model_profile": model_profile},
+        )
+
+    report = outcome_statistics(cases=(case,), results=(result,), release=True)
+
+    assert report["release_evidence_issues"]
+    assert report["status"] == "failed"
 
 
 @pytest.mark.parametrize(
@@ -307,6 +393,88 @@ def _complete_release_matrix() -> tuple[
         for case, (_case_id, band, _edit, profile) in zip(cases, specifications, strict=True)
     )
     return cases, results
+
+
+def _host_native_clarification_result(
+    case: GreenfieldMatrixCase,
+) -> GreenfieldMatrixResult:
+    source = combined_prompt_evidence_source(
+        prompt=case.prompt,
+        edit_evidence=case.confirmed_intent_markdown,
+    )
+    profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
+    stage = {
+        "version": "odylith.greenfield.host-native-matrix-observation.v3",
+        "status": "passed",
+        "host_invocations": 1,
+        "contract_command_invocations": 1,
+        "proposal_command_invocations": 1,
+        "model_profile_id": STANDARD_PROFILE_ID,
+        "host_request": {
+            "version": "odylith.greenfield.host-argv-receipt.v1",
+            "executable_sha256": "7" * 64,
+            "argument_count": HOST_NATIVE_ARGV_ARGUMENT_COUNT,
+            "model": profile.model,
+            "reasoning_effort": profile.reasoning_effort,
+            "output_schema_present": True,
+            "argv_shape_sha256": HOST_NATIVE_ARGV_SHAPE_SHA256,
+        },
+        "candidate_temp_cleaned": True,
+        "host_workspace_cleaned": True,
+        "stage": "propose",
+        "contract_returncode": 0,
+        "contract_sha256": "1" * 64,
+        "source_sha256": hashlib.sha256(source.encode("utf-8")).hexdigest(),
+        "candidate_schema_sha256": "2" * 64,
+        "host_returncode": 0,
+        "host_stdout_bytes": 200,
+        "host_stderr_bytes": 0,
+        "response_kind": "clarification_required",
+        "candidate_sha256": "3" * 64,
+        "candidate_raw_sha256": "4" * 64,
+        "candidate_raw_bytes": 200,
+        "candidate_temp_outside_repo": True,
+        "proposal_returncode": 0,
+        "proposal_stdout_sha256": "5" * 64,
+        "proposal_stderr_sha256": "6" * 64,
+        "proposal_mode": "clarification_required",
+        "candidate_review_status": "unreported",
+        "elapsed_seconds": 18.02,
+    }
+    profile_evidence = model_profile_evidence(
+        STANDARD_PROFILE_ID,
+        model_profile_environment(STANDARD_PROFILE_ID, {}),
+        observed={},
+        stage_observation=stage,
+        expected_source=source,
+    )
+    return GreenfieldMatrixResult(
+        name=case.name,
+        status="passed",
+        create_seconds=18.02,
+        proposal_seconds=18.02,
+        counts=GreenfieldArtifactCounts(),
+        quality=clarification_quality_verdict(()),
+        evidence={
+            "case": case_evidence(case),
+            "clarification": {
+                "mode": "clarification_required",
+                "question": case.expected_clarification_question,
+                "required_fields": ["first_path"],
+                "returncode": 0,
+            },
+            "no_write": {
+                "before_record_count": 0,
+                "after_record_count": 0,
+                "staged_transaction_present": False,
+                "changed_records": [],
+                "write_audit_active": True,
+                "write_attempts": [],
+                "write_audit_error": "",
+            },
+            "model_profile": profile_evidence,
+        },
+    )
 
 
 def _release_slice_value(

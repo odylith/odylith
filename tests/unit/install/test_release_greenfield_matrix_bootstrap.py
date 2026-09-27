@@ -259,6 +259,8 @@ def test_greenfield_preconfirm_matrix_target_runs_installed_release_gate() -> No
     assert '--final-holdout-run-ledger "$final_holdout_run_ledger"' in text
     assert '--implementation-revision "$implementation_revision"' in text
     assert '--distribution-provenance-file "$distribution_provenance_file"' in text
+    assert 'greenfield_matrix_host_candidate.py --print-argv-template' in text
+    assert 'extra_args+=(--host-candidate-arg="$argument")' in text
     assert 'ensure_playwright_chromium' in text
     assert '"$odylith_python" -m playwright install chromium >/dev/null' in shared
     assert 'proof_json="${GREENFIELD_MATRIX_OUTPUT_JSON:-$dist_dir/greenfield-preconfirm-matrix.v1.json}"' in text
@@ -395,6 +397,11 @@ def test_greenfield_preconfirm_matrix_without_release_intent_runs_discovery_proo
     assert "--semantic-annotations-file" not in invocations
     assert "--evaluation-split-manifest" not in invocations
     assert "--final-holdout-run-ledger" not in invocations
+    assert invocations.count("--host-candidate-arg=") == 14
+    assert "--host-candidate-arg=codex" in invocations
+    assert "--host-candidate-arg={model}" in invocations
+    assert "--host-candidate-arg=model_reasoning_effort={reasoning_effort}" in invocations
+    assert "--host-candidate-arg={candidate_schema}" in invocations
     assert not list(tmp_path.glob("odylith-greenfield-wrapper-run.*"))
 
 
@@ -495,6 +502,9 @@ def test_greenfield_preconfirm_matrix_preserves_its_outer_temp_root_after_nonzer
         overrides={"TEMP_PARENT": str(temp_parent)},
         fake_python_body=(
             '#!/usr/bin/env bash\n'
+            'if [[ "$*" == *"greenfield_matrix_host_candidate.py --print-argv-template"* ]]; then\n'
+            '  exec "$REAL_PYTHON" "$@"\n'
+            'fi\n'
             'if [[ "$*" == *"greenfield_preconfirm_matrix.py"* ]]; then\n'
             '  kill -KILL "$$"\n'
             'fi\n'
@@ -524,6 +534,8 @@ def test_greenfield_preconfirm_matrix_preserves_its_outer_temp_root_after_interr
         "import signal\n"
         "import sys\n"
         "\n"
+        "if any(arg.endswith('greenfield_matrix_host_candidate.py') for arg in sys.argv[1:]):\n"
+        "    os.execv(os.environ['REAL_PYTHON'], [os.environ['REAL_PYTHON'], *sys.argv[1:]])\n"
         "if any(arg.endswith('greenfield_preconfirm_matrix.py') for arg in sys.argv[1:]):\n"
         "    Path(os.environ['FAKE_CONTROLLER_READY_FILE']).write_text('ready', encoding='utf-8')\n"
         "    signal.signal(signal.SIGINT, lambda _signal, _frame: sys.exit(130))\n"
@@ -538,6 +550,7 @@ def test_greenfield_preconfirm_matrix_preserves_its_outer_temp_root_after_interr
             "ODYLITH_REPO_ROOT_OVERRIDE": str(REPO_ROOT),
             "TEMP_PARENT": str(temp_parent),
             "FAKE_CONTROLLER_READY_FILE": str(ready_file),
+            "REAL_PYTHON": sys.executable,
         }
     )
     process = subprocess.Popen(

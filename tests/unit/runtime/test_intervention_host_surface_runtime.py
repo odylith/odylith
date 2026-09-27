@@ -327,15 +327,28 @@ def test_stop_payload_is_empty_without_message() -> None:
     assert host_surface_runtime.stop_payload(system_message="") == {}
 
 
-def test_stop_payload_blocks_for_visible_delivery_continuation() -> None:
+def test_stop_payload_never_forces_a_follow_up_assistant_turn() -> None:
     payload = host_surface_runtime.stop_payload(
         system_message="**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract.",
-        block_for_visible_delivery=True,
     )
 
     assert payload["systemMessage"] == "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract."
-    assert payload["decision"] == "block"
-    assert "Show the Odylith note below once" in payload["reason"]
+    assert "decision" not in payload
+    assert "reason" not in payload
+
+
+def test_visible_delivery_fallback_cannot_replace_the_user_answer() -> None:
+    payload = host_surface_runtime.codex_prompt_payload(
+        additional_context="**Odylith Insight:** B-001 might be relevant.",
+        system_message="**Odylith Insight:** B-001 might be relevant.",
+    )
+
+    context = payload["hookSpecificOutput"]["additionalContext"]
+    assert "Answer the user's current request directly and completely first." in context
+    assert "integrate at most one concise line after the answer" in context
+    assert "Never reproduce the block wholesale or let it replace the answer." in context
+    assert "Omit stale, unrelated, conflicting, or already visible material." in context
+    assert "wording intact" not in context
 def test_normalized_session_id_falls_back_when_host_payload_is_missing() -> None:
     token = host_surface_runtime.normalized_session_id("", host_family="codex")
     assert token

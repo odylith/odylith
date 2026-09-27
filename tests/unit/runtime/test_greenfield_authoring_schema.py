@@ -50,6 +50,12 @@ def test_authoring_schema_structurally_separates_participants_authored_and_clari
     assert "minItems" not in participant_schema["properties"]["human_actors"]
 
     authored_properties = authored_branch["properties"]
+    workstream_problem = authored_properties["provisional_design"]["properties"][
+        "workstreams"
+    ]["items"]["properties"]["problem"]
+    assert workstream_problem["type"] == "string"
+    assert "consumer-facing difficulty" in workstream_problem["description"]
+    assert "opaque event identifier" in workstream_problem["description"]
     terminal, absent_terminal = authored_properties["terminal"]["anyOf"]
     assert absent_terminal == {"type": "null"}
     assert "terminal" in authored_branch["required"]

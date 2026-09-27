@@ -1,5 +1,108 @@
 - Bug ID: CB-347
 
+## V43 maintained matrix invocation recurrence (2026-09-27)
+
+Final release-path inspection found that `run_matrix()` correctly rejected an
+empty host-candidate command, while the direct maintained wrapper emitted the
+canonical 14-argument host command only for terminal release intent. The
+ordinary `release-candidate` discovery path therefore reached the same matrix
+without the mandatory one-host authoring contract and could never complete
+honestly.
+
+The wrapper now obtains the command once from the existing canonical argv
+owner and forwards it for both discovery and terminal release proof. There is
+no second grammar, provider, retry, repair, fallback candidate, or model
+ladder. A direct wrapper regression proves all 14 arguments reach the
+discovery controller, and the focused release-wrapper/campaign/host suite
+passes 91 tests; the complete changed-test surface passes 1,216 tests.
+
+## V43 browser differentiation proof gap (2026-09-27)
+
+The deterministic Greenfield browser gate exposed two release-proof defects.
+Its desktop and mobile Project checks still expected the superseded `Source
+excerpt:` label even though current runtime and package truth consistently
+render `Accepted evidence excerpt:`. Separately, the installed browser runner
+measured the number of distinct Product Story bodies but never rejected a
+repeated body, so five rendered cards could satisfy the release gate while
+repeating canonical meaning.
+
+Align the browser expectation with the accepted-evidence presentation contract
+and fail the per-generated-case gate unless all five Product Story bodies are
+distinct. This changes only proof ownership; it does not add prose generation,
+parsing, regexes, repair, retries, or another quality mechanism. The complete
+focused browser matrix now passes 123 tests across desktop/mobile normal,
+blank, degraded, handoff, Atlas, retained-route, no-program, and completion
+opening behavior.
+
+## V43 audit predecessor-custody self-link (2026-09-27)
+
+Independent checkpoint review found that the regenerated source-verification
+manifest named its own current path as `rebound_from` while carrying the hash
+of an unretained predecessor. The final audit still loaded because lineage
+metadata was not part of the repository fixture proof. This made the review
+chain impossible to reproduce even though every current source response and
+case binding remained valid.
+
+Retain the original 41-file verification artifact under a distinct immutable
+path, rebind the current manifest from that artifact, and require the declared
+predecessor path to exist, differ from the current manifest, and hash exactly
+to `rebound_from_sha256`. Regenerate the final audit bundle from the corrected
+manifest so every one of its 40 review-evidence paths names the durable v16
+directory. Focused audit proof passes 77 tests. Do not omit, rewrite, or infer
+lineage merely because current evidence independently validates.
+Independent re-adjudication verified all 40 predecessor records and all final
+source/review paths and reports no remaining P0/P1/P2 in this slice.
+
+## V43 release-proof ownership debt (2026-09-27)
+
+Independent checkpoint review found two structural release blockers after the
+behavioral P0/P1 findings were closed. The commit-recovery proof grew to 1,324
+lines while mixing orchestration with retained evidence materialization, and
+the clarification test module reached 1,535 lines. Both exceed the maintained
+source or test limits and make the next release repair harder to attribute.
+
+Close this debt before the checkpoint. Move one real recovery-proof phase to a
+focused owner with no compatibility wrapper, alias wall, duplicated coercion,
+or changed public behavior. Split clarification tests by semantic proof
+ownership while preserving exact collection and assertions. Require the
+focused recovery and clarification suites, source compilation, collection
+equality, line-count enforcement, and a clean diff check. This is structural
+convergence only; it must not add a parser, regex, model call, retry, repair,
+fallback, or alternate release interpretation.
+
+## V43 retained completion-handoff recurrence (2026-09-27)
+
+The retained release package validates and preserves the committed Project
+dashboard, but its operator result exposes only a machine-oriented navigation
+row. The immutable `commands/decide.stdout` transcript truthfully retains the
+temporary consumer-session URL and must not be rewritten after capture. Once
+that temporary workspace is removed, the release result therefore lacks one
+explicit transaction-bound handoff to the durable retained dashboard even
+though the underlying bytes and route are valid.
+
+Project a completion handoff only after the retained manifest, same-case
+semantic bindings, and navigation row validate. Bind it to the sealed
+transaction hash and absolute retained Project route already owned by the
+manifest. Preserve the raw transcript byte-for-byte; do not parse it, add a
+regex, introduce another renderer, or change the real consumer completion
+handoff. Any retained-evidence failure must suppress the completion claim.
+
+## V43 public audit-plan topology mismatch (2026-09-27)
+
+The independently reviewed 40-case operating-envelope subset cannot currently
+produce a valid audit bundle. Its request plan names the disclosed subset as
+the source case file, while release provenance correctly requires the
+`source-provenanced-discovery` parent corpus. Rebuilding the plan from the
+parent alone selects a different deterministic sample and discards the exact
+reviewed operating-envelope membership.
+
+Keep the 200-case parent as audit source truth. Extend the existing audit-plan
+writer with one optional, explicit selection file that must declare the
+disclosed-subset claim, name that parent, contain exactly the requested count,
+and pass the existing exact parent-membership validator. Bind the selection
+path and digest into the request plan. Do not weaken the audit loader, relabel
+the subset, add a second selector, or replace independent reviews.
+
 ## V37 clarification-oracle and replay-custody defect (2026-09-27)
 
 The retained V37 campaign executed three clarification cases correctly: each

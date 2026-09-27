@@ -410,7 +410,7 @@ def structural_design_fixture(
         for index in range(1, 5)
     ]
     return {
-        "version": "odylith.greenfield.provisional-design.v5",
+        "version": "odylith.greenfield.provisional-design.v6",
         "authority_kind": "provisional_design",
         "first_run": {
             "event_orders": list(first_run_event_orders) if first_run_event_orders is not None else orders,
@@ -421,6 +421,7 @@ def structural_design_fixture(
             {
                 "key": f"test-work-{index}",
                 "title": f"Implement structural test boundary {index}",
+                "problem": f"Users cannot yet rely on the distinct test boundary {index}.",
                 "component_keys": [row["key"]],
                 "depends_on": [f"test-work-{index - 1}"] if index > 1 else [],
                 "deliverable": f"Implement the exact-value boundary {index}.",

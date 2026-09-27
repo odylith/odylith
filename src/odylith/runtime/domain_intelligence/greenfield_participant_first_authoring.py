@@ -145,7 +145,11 @@ supported_event_orders are one-based indexes into your source events. They ident
 actions the capability supports; they never transfer the original actor's work to
 the component. Support every source event and assign every component to work.
 Give each workstream a concrete deliverable, useful acceptance, component references
-and only necessary prerequisite workstream keys. Prerequisites must be acyclic.
+and only necessary prerequisite workstream keys. Give every workstream one concise,
+distinct, consumer-facing problem grounded in the accepted project problem and that
+workstream's supported source events. State the user's local difficulty or consequence;
+do not describe implementation status, component gaps, opaque event identifiers, or
+merely negate the proposed deliverable. Prerequisites must be acyclic.
 For every material risk, choose one or more exact scope_paths from the proposed graph.
 Each path binds an event_order to a component that supports it and a workstream that
 owns that component and verifies that event. Do not separately author event,

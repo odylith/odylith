@@ -176,11 +176,6 @@ def main(argv: list[str] | None = None) -> int:
         include_closeout=True,
         developer_include_closeout=True,
     )
-    replay = host_intervention_support.preferred_live_replay_markdown(
-        repo_root=args.repo_root,
-        host_family="codex",
-        session_id=session_id,
-    )
     summary = render_codex_prompt_context(
         args.repo_root,
         prompt=prompt,
@@ -193,12 +188,8 @@ def main(argv: list[str] | None = None) -> int:
         session_id=session_id,
         conversation_bundle_override=bundle,
     )
-    summary = (
-        host_intervention_support.join_sections(replay, summary)
-        if replay
-        else host_intervention_support.join_sections(summary, decision.developer_context)
-    )
-    system_message = replay or decision.visible_markdown or system_message
+    summary = host_intervention_support.join_sections(summary, decision.developer_context)
+    system_message = decision.visible_markdown or system_message
     if not summary and not system_message:
         return 0
     host_surface_runtime.append_visible_intervention_events(

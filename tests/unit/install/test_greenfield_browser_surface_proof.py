@@ -343,6 +343,7 @@ def test_project_state_assertion_requires_persisted_prompt_state() -> None:
     assert "browser surface project payload contains empty implementation prompt text" in issues
     assert "browser surface project rendered fewer than five implementation prompt cards" in issues
     assert "browser surface project rendered the blank project state after commit-only create" in issues
+    assert "browser surface project repeats Product Story card bodies" in issues
     assert "browser surface project clips visible text" in issues
 
 
@@ -479,7 +480,7 @@ def test_project_state_assertion_compares_shared_source_facts_to_typed_payload()
         {"label": "First Path", "semantic_slot": "first_path", "body": "One accepted path.\nThen another."},
         {"label": "Product Boundary", "semantic_slot": "product_boundary", "body": "One boundary."},
         {"label": "Proposed Capabilities", "semantic_slot": "owned_capabilities", "body": "One capability."},
-        {"label": "Proof", "semantic_slot": "proof", "body": "One accepted path. Then another."},
+        {"label": "Proof", "semantic_slot": "proof", "body": "One accepted proof obligation."},
     ]
     rendered_rows = [dict(row) for row in rows]
     rendered_rows[1]["body"] = "One accepted path. Then another."
@@ -495,7 +496,7 @@ def test_project_state_assertion_compares_shared_source_facts_to_typed_payload()
         max_prompt_overflow=0,
         pane_overflow=0,
         rendered_story_body_count=5,
-        distinct_story_body_count=4,
+        distinct_story_body_count=5,
         story_rows=rendered_rows,
         payload_story_rows=rows,
     )
@@ -520,6 +521,26 @@ def test_project_state_assertion_compares_shared_source_facts_to_typed_payload()
     )
 
     assert "browser surface project Product Story cards drifted from the sealed payload" in issues
+
+
+def test_project_state_assertion_rejects_repeated_story_bodies() -> None:
+    module = _module()
+
+    issues = module._project_state_assertion_issues(
+        payload_origin=module.AUTHORED_PROJECTION_ORIGIN,
+        payload_prompt_count=5,
+        empty_payload_prompts=0,
+        rendered_prompt_count=5,
+        has_prompt_grid=True,
+        has_blank_state=False,
+        has_implementation_prompts=True,
+        max_prompt_overflow=0,
+        pane_overflow=0,
+        rendered_story_body_count=5,
+        distinct_story_body_count=4,
+    )
+
+    assert issues == ("browser surface project repeats Product Story card bodies",)
 
 
 def test_project_state_assertion_rejects_confusable_uppercase_story_label() -> None:

@@ -1,5 +1,41 @@
 - Bug ID: CB-303
 
+- V43 evidence-label ambiguity (2026-09-27): Retained Project, Brief, Atlas,
+  project-intelligence, and memory views label the accepted `product_story`
+  citation as `Source excerpt`. In source-backed requests, reviewers reasonably
+  read `source` as the referenced repository or document and concluded that the
+  package was presenting operator intent as repository evidence. The canonical
+  quote is valid exact accepted evidence; the defect is the ambiguous
+  presentation label, not missing custody or permission to import unbound
+  repository background into the product.
+- Use `Accepted evidence excerpt` consistently across those five projections.
+  Explain that it is exact accepted user evidence and keep separately identified
+  reference repositories as grounding context unless the request explicitly
+  binds them to an owned role, dependency, constraint, event, or result. Change
+  no canonical fact, citation, span, reviewer boundary, schema shape, parser,
+  regex, model call, repair, retry, fallback, or publication path. Prove the
+  exact cross-surface label and quote plus fresh rendered Project/Atlas views.
+
+- V43 system-context boundary recurrence (2026-09-27): Independent review of
+  all five retained committed packages found the same architect P1. Each D-001
+  preserves the exact typed performer and its complete action group, but every
+  non-product action group is detached from the candidate product boundary.
+  Three packages leave the product node wholly orphaned; two connect only a
+  passive no-action participant. The earlier performer-group correction fixed
+  invented ownership and product-only omission, but its ban on fake direct
+  person-to-product arrows also left the accepted first-path interaction
+  visually unrepresented.
+- Correct this at the existing typed context projector. Keep the performer to
+  exact-action edge, then connect each human or external-system action group to
+  the candidate product with one explicitly non-owning `first-path interaction`
+  boundary edge. Product performers already reside inside the boundary and need
+  no second edge; nonperforming participants retain the dotted no-action link.
+  The edge projects the accepted first-path membership, not direction, event
+  order, implementation, or new source meaning. Add no text parser, regex,
+  vocabulary rule, inferred performer, duplicate renderer, repair, retry, or
+  fallback path. Require typed human, external, product-only, mixed-owner, and
+  sealed-authority regression proof plus fresh rendered-package adjudication.
+
 - V37 public-campaign recurrence (2026-09-27): The clean immutable public
   campaign stopped after seven cases with two product-quality classes. Three
   committed packages passed transaction, artifact-depth, semantic, and normal

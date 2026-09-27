@@ -60,7 +60,7 @@ def build_authored_greenfield_payload(
     title = _required_text(intent, "title")
     provisional_design = provisional_design_from_intent(intent)
     product_story = _required_text(intent, "product_story")
-    source_excerpt = f"Source excerpt: “{product_story}”"
+    accepted_evidence_excerpt = f"Accepted evidence excerpt: “{product_story}”"
     first_path = authored_first_run_text(intent)
     source_proof_boundary = str(intent.get("proof_boundary") or "")
     proof_boundary = decision_copy(intent, "proof_boundary")
@@ -119,7 +119,9 @@ def build_authored_greenfield_payload(
         open_label = "Assumptions"
     else:
         open_label = "Open questions"
-    known = _unique([source_excerpt, first_path, visible_result, proof_boundary])
+    known = _unique(
+        [accepted_evidence_excerpt, first_path, visible_result, proof_boundary]
+    )
     unknown = questions
     contradictions = ["No source-backed implementation state exists yet."]
     delta = ["This projection begins from the model-authored product intent."]
@@ -139,7 +141,7 @@ def build_authored_greenfield_payload(
     return {
         "eyebrow": "Project type: greenfield",
         "title": title,
-        "intro": source_excerpt,
+        "intro": accepted_evidence_excerpt,
         "chips": [
             "greenfield",
             "accepted greenfield project" if accepted_project else "greenfield proposal",
@@ -347,7 +349,10 @@ def _product_story(
     return {
         "headline": title,
         "standfirst": "",
-        "paragraphs": [f"Source excerpt: “{product_story}”", *event_quotes],
+        "paragraphs": [
+            f"Accepted evidence excerpt: “{product_story}”",
+            *event_quotes,
+        ],
         "supporting_records": [],
         "release_contract": [
             {
@@ -549,7 +554,7 @@ def _claim_evidence(
 ) -> list[dict[str, str]]:
     values = [
         ("Project identity", title),
-        ("Source excerpt", product_story),
+        ("Accepted evidence excerpt", product_story),
         ("Proposed first run", first_path),
     ]
     values.extend(

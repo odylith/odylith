@@ -485,6 +485,11 @@ claiming ML calibration.
   `hookSpecificOutput.additionalContext` with fallback instructions, while
   `prompt-teaser` prints the earned teaser as a best-effort stdout source when
   the host exposes it.
+- Prompt `systemMessage` is owned only by the current prompt decision. Pending
+  blocks from earlier turns remain available to explicit status/manual
+  visibility surfaces but must not be replayed wholesale into a later prompt:
+  host/session identity alone does not prove relevance to the user's new
+  request.
 - Codex live-ready posture must not be inferred from `codex debug
   prompt-input` alone. That probe proves repo guidance reaches model context.
   The intervention engine requires `features.codex_hooks = true`,
@@ -497,16 +502,13 @@ claiming ML calibration.
 - `stop_summary`
   May upgrade to a full `Odylith Observation` when corroboration exists, even
   when proposal readiness is still too low to surface `Odylith Proposal` yet.
-  In shipped Codex and Claude host lanes, stop-summary is the fallback visible
-  surface rather than the primary intervention moment. It should recover a
-  missed late Observation and may pair that with a shared closeout Assist line
-  when the closeout-side bundle is eligible.
-  Claude Stop must never use the blocking visible-delivery payload path for
-  this recovery lane: Claude renders that path as Stop-hook failure/control
-  transcript noise instead of a clean product beat. Claude Stop may return a
-  `systemMessage` for host context, but visibility fallback proof still needs
-  normal assistant-rendered Markdown or a host-visible channel that is proven
-  visible in the active session.
+  Stop-summary is a continuity and logging surface, not a license to create a
+  second assistant turn. Neither Codex nor Claude Stop may use a blocking
+  visible-delivery payload: a blocking continuation can displace the user's
+  next request with stale or unrelated governance narration. Stop may return a
+  `systemMessage` for host context, but visibility proof still needs normal
+  assistant-rendered Markdown or a host-visible channel proven visible in the
+  active session.
 - `post_edit_checkpoint` and `post_bash_checkpoint`
   are the primary visible intervention lanes. They may upgrade an earned
   observation into a proposal by attaching concrete changed-path evidence and
@@ -556,8 +558,11 @@ claiming ML calibration.
   non-visible context such as Assist closeout state or anchor summaries. This
   keeps hidden hook paths useful without turning invisible intervention
   delivery into avoidable model-context token burn. The fallback instruction
-  itself should stay compact; the signal, not framework prose, deserves the
-  token budget.
+  itself must require a complete direct answer to the current user request
+  before any Odylith note, permit at most one relevant concise line afterward,
+  and suppress stale, unrelated, conflicting, or already-visible material. A
+  fallback note must never replace the requested answer. The instruction stays
+  compact; the signal, not framework prose, deserves the token budget.
 - `odylith codex visible-intervention` and `odylith claude
   visible-intervention` render plain Markdown fallback output for the assistant
   to show directly when host hook display is unproven or hidden.
@@ -592,16 +597,16 @@ claiming ML calibration.
   `claude_visible_intervention` when older events lack an explicit
   `host_family`, so status does not undercount visible fallback rows during
   v0.1.10 to v0.1.11 migration.
-- Stop-summary hooks may block once with a continuation reason when a real
-  Observation or `Odylith Assist:` closeout was generated but is not already
-  visible in the last assistant message. The `stop_hook_active` guard prevents
-  loops.
-- Stop-summary is also the hard visibility fallback for earlier live beats.
+- Stop-summary hooks must never block with a continuation reason. The
+  `stop_hook_active` guard still prevents recursive execution, but nonblocking
+  behavior is the user-turn ownership invariant.
+- Stop-summary may retain bounded continuity for earlier live beats.
   If a prompt/checkpoint generated an Ambient Highlight, `Odylith Observation`,
   or `Odylith Proposal` through a host path that may have stayed hidden, Stop
-  may replay the bounded set of distinct unconfirmed live beats before the
-  Assist line and send the combined text through the same one-shot continuation
-  mechanism. Manual-visible, best-effort, and Stop-continuation rows remain
+  may preserve the bounded set of distinct unconfirmed live beats beside the
+  Assist line for a later relevant prompt/checkpoint or manual visibility
+  command, but it must not force a new assistant turn. Manual-visible,
+  best-effort, and Stop-continuation rows remain
   replayable until exact transcript confirmation proves the assistant message
   actually carried the Markdown.
 - Stop-summary Assist may use concrete validation/pass signals from the

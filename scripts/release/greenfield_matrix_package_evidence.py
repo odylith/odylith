@@ -144,7 +144,7 @@ def _authored_project_brief_findings(
     sections = tuple(mapping_rows(brief.get("blueprint_sections")))
     labels = tuple(normalize_string(row.get("section")) for row in sections)
     required_labels = [
-        "Source excerpt",
+        "Accepted evidence excerpt",
         "User problem",
         "First path",
     ]
@@ -204,7 +204,7 @@ def _persisted_project_brief_structure_findings(
     expected_brief = "\n".join((
         f"- outcome: {_brief_text(brief.get('project_outcome'))}",
         _typed_brief_fact_line(
-            "Source excerpt", _brief_text(brief.get("operating_principle"))
+            "Accepted evidence excerpt", _brief_text(brief.get("operating_principle"))
         ),
     ))
     if sections.get("brief", "") != expected_brief:
@@ -213,7 +213,7 @@ def _persisted_project_brief_structure_findings(
         )
     for label, value in (
         ("outcome", "project_outcome"),
-        ("Source excerpt", "operating_principle"),
+        ("Accepted evidence excerpt", "operating_principle"),
     ):
         expected = _typed_brief_fact_line(label, _brief_text(brief.get(value)))
         if not _brief_text(brief.get(value)) or expected not in sections.get("brief", ""):
@@ -296,7 +296,11 @@ def _brief_text(value: Any) -> str:
 
 
 def _typed_brief_fact_line(label: str, value: str) -> str:
-    return f"- {label}: “{value}”" if label == "Source excerpt" else f"- {label}: {value}"
+    return (
+        f"- {label}: “{value}”"
+        if label == "Accepted evidence excerpt"
+        else f"- {label}: {value}"
+    )
 
 
 def _governance_package_findings(record_text: str, brief: Mapping[str, Any]) -> list[PackageEvidenceFinding]:

@@ -197,7 +197,10 @@ def _proof_brief(*, proposed: bool) -> tuple[dict[str, object], dict[str, object
     statement = "Review one visible accepted decision."
     proof = f"Assumption — {statement}" if proposed else "The accepted decision has exact readback."
     rows: list[dict[str, str]] = [
-        {"section": "Source excerpt", "must_capture": "A reviewer can inspect an accepted decision."},
+        {
+            "section": "Accepted evidence excerpt",
+            "must_capture": "A reviewer can inspect an accepted decision.",
+        },
         {"section": "User problem", "must_capture": "Accepted decisions need review."},
         {"section": "First path", "must_capture": "A reviewer records and inspects one decision."},
     ]
@@ -237,13 +240,17 @@ def _proof_brief_record(brief: dict[str, object]) -> str:
         "",
         "## Brief",
         f"- outcome: {brief['project_outcome']}",
-        "- Source excerpt: “A reviewer can inspect an accepted decision.”",
+        "- Accepted evidence excerpt: “A reviewer can inspect an accepted decision.”",
         "",
         "## Project Design Board",
     ]
     for row in brief["blueprint_sections"]:
         label, value = row["section"], row["must_capture"]
-        lines.append(f"- {label}: “{value}”" if label == "Source excerpt" else f"- {label}: {value}")
+        lines.append(
+            f"- {label}: “{value}”"
+            if label == "Accepted evidence excerpt"
+            else f"- {label}: {value}"
+        )
     return "\n".join(lines)
 
 

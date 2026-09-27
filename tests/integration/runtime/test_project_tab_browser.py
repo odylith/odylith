@@ -222,7 +222,7 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
     page.locator(".project-host-handoff").wait_for(timeout=15000)
     surface_text = page.locator(".project-surface").inner_text()
     assert "Project overview" in surface_text
-    assert "Source excerpt:" in surface_text
+    assert "Accepted evidence excerpt:" in surface_text
     assert "Risks" in surface_text
     assert "Reviewed typed risk posture from the model-authored provisional design." in surface_text
     assert "Reviewed no-material-risk posture" in surface_text

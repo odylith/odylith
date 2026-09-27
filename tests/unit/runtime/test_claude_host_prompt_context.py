@@ -127,7 +127,7 @@ def test_claude_prompt_system_message_hard_fails_visible_for_zero_signals(tmp_pa
     assert observation["tribunal_summary"]["source"] == "intervention_alignment_context"
 
 
-def test_claude_prompt_system_message_replays_pending_chat_block(tmp_path: Path) -> None:
+def test_claude_prompt_system_message_does_not_replay_prior_turn_block(tmp_path: Path) -> None:
     surface_runtime.stream_state.append_intervention_event(
         repo_root=tmp_path,
         kind="intervention_card",
@@ -147,9 +147,7 @@ def test_claude_prompt_system_message_replays_pending_chat_block(tmp_path: Path)
         session_id="claude-prompt-replay",
     )
 
-    assert rendered == (
-        "---\n\n**Odylith Observation:** Claude prompt must carry this pending block.\n\n---"
-    )
+    assert rendered == ""
 
 
 def test_claude_prompt_system_message_suppresses_help_fast_path_replay(tmp_path: Path) -> None:
@@ -175,7 +173,7 @@ def test_claude_prompt_system_message_suppresses_help_fast_path_replay(tmp_path:
     assert rendered == ""
 
 
-def test_claude_prompt_system_message_prefers_pending_ambient_history_over_observation(tmp_path: Path) -> None:
+def test_claude_prompt_system_message_does_not_replay_prior_ambient_bundle(tmp_path: Path) -> None:
     surface_runtime.stream_state.append_intervention_event(
         repo_root=tmp_path,
         kind="intervention_card",
@@ -207,13 +205,7 @@ def test_claude_prompt_system_message_prefers_pending_ambient_history_over_obser
         session_id="claude-prompt-ambient",
     )
 
-    assert rendered == (
-        "---\n\n"
-        "**Odylith History:** Claude prompt should surface this branded ambient beat first.\n"
-        "\n"
-        "**Odylith Observation:** Claude prompt should not hide the stronger ambient beat.\n"
-        "\n---"
-    )
+    assert rendered == ""
 
 
 def test_render_prompt_context_falls_back_to_relevant_docs_when_no_targets() -> None:
@@ -268,6 +260,50 @@ def test_main_runs_context_command_for_first_anchor(monkeypatch, tmp_path: Path,
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
     assert "Odylith anchor B-088: primary target src/foo.py." in payload["hookSpecificOutput"]["additionalContext"]
     assert "systemMessage" not in payload
+
+
+def test_split_prompt_context_does_not_replay_stale_multi_item_wall(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    stale_blocks = (
+        "**Odylith Insight:** Compass is carrying the sharper operator risk.",
+        "**Odylith Insight:** B-001 is an active Radar lane.",
+        "**Odylith Insight:** `execution-engine` is the live Registry boundary.",
+        "**Odylith Risks:** Capture the final reviewed checkpoint for B-002.",
+        "**Odylith Assist:** updating affected governance contracts, then keeping the slice bounded.",
+    )
+    for index, display in enumerate(stale_blocks):
+        surface_runtime.stream_state.append_intervention_event(
+            repo_root=tmp_path,
+            kind="assist_closeout" if "Assist" in display else "ambient_signal",
+            summary=f"Stale replay row {index}.",
+            session_id="claude-split-stale-wall",
+            host_family="claude",
+            intervention_key=f"claude-split-stale-wall-{index}",
+            turn_phase="post_edit_checkpoint",
+            display_markdown=display,
+            delivery_channel="system_message_and_assistant_fallback",
+            delivery_status="assistant_fallback_ready",
+        )
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO(
+            json.dumps(
+                {
+                    "prompt": "How are we doing against the Greenfield goal?",
+                    "session_id": "claude-split-stale-wall",
+                }
+            )
+        ),
+    )
+
+    exit_code = claude_host_prompt_context.main(["--repo-root", str(tmp_path)])
+
+    assert exit_code == 0
+    rendered = capsys.readouterr().out
+    assert all(stale not in rendered for stale in stale_blocks)
 
 
 def test_main_prints_nothing_for_help_fast_path_even_with_pending_replay(

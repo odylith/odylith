@@ -27,7 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-CANDIDATE_REVIEW_VERSION = "odylith.greenfield.candidate-review.v14"
+CANDIDATE_REVIEW_VERSION = "odylith.greenfield.candidate-review.v15"
 TITLE_ROLE_DEFINITION = (
     "A source-cited name or concise label for the requested product, workflow, or "
     "product state. Identify what the request asks to create, operate, or review; "
@@ -185,6 +185,11 @@ runtime derives displayed event, component, and workstream unions from those pat
 posture is valid only when its rationale is credible for the complete requested
 operating context; deny it when material product, operational, security, privacy,
 abuse, accessibility, retention, or compliance exposure remains.
+For every provisional workstream, judge whether problem is a distinct,
+consumer-facing local difficulty or consequence grounded in the accepted project
+problem and the workstream's referenced source events. Deny internal generator or
+implementation-status language, opaque event identifiers, a mere negation of the
+deliverable, or duplicate workstream problems. Do not rewrite the problem.
 Report only substantive unsupported, contradictory or missing source meaning or
 unresolved material uncertainty. Do not demand implementation detail, alternative
 wording or facts absent from the source. Admission is not an exhaustive defect report.
