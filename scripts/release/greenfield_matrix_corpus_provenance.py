@@ -151,7 +151,7 @@ def release_subset_membership_issues(
         elif case_id in parent_by_id:
             issues.append(f"audited parent corpus contains duplicate case_id `{case_id}`")
         else:
-            parent_by_id[case_id] = replace(case, source_file="")
+            parent_by_id[case_id] = _source_case_record(case)
 
     selected_ids: set[str] = set()
     for case in selected_cases:
@@ -166,9 +166,33 @@ def release_subset_membership_issues(
         parent = parent_by_id.get(case_id)
         if parent is None:
             issues.append(f"live release case `{case_id}` is absent from the audited parent corpus")
-        elif replace(case, source_file="") != parent:
+        elif _source_case_record(case) != parent:
             issues.append(f"live release case `{case_id}` diverges from its audited parent-corpus record")
+        expected_field = str(getattr(case, "expected_clarification_field", "") or "").strip()
+        expected_question = str(
+            getattr(case, "expected_clarification_question", "") or ""
+        ).strip()
+        if str(getattr(case, "expectation", "") or "").strip() == "clarification_required":
+            if not expected_field or not expected_question:
+                issues.append(
+                    f"live release clarification case `{case_id}` lacks a complete frozen clarification oracle"
+                )
+        elif expected_field or expected_question:
+            issues.append(
+                f"live release commit case `{case_id}` must not declare a clarification oracle"
+            )
     return tuple(issues)
+
+
+def _source_case_record(case: Any) -> Any:
+    """Exclude subset-only evaluation truth from exact audited source equality."""
+
+    return replace(
+        case,
+        source_file="",
+        expected_clarification_field="",
+        expected_clarification_question="",
+    )
 
 
 def case_provenance_from_mapping(value: Any) -> GreenfieldCaseProvenance:

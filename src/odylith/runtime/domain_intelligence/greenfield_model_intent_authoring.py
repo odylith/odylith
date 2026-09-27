@@ -34,6 +34,7 @@ from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
     PRODUCT_STORY_ROLE_DEFINITION,
     PROOF_BOUNDARY_ROLE_DEFINITION,
     STATE_OBJECT_ROLE_DEFINITION,
+    TITLE_ROLE_DEFINITION,
 )
 from odylith.runtime.domain_intelligence.greenfield_event_ordering import (
     SOURCE_PRECEDENCE_SCHEMA,
@@ -73,7 +74,7 @@ from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
     validate_provisional_design,
 )
 
-GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v73"
+GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v74"
 MATERIALITY_DECISION_CONTRACT = (
     "Ask only when a missing or conflicting choice materially changes the target "
     "user, usable path, visible outcome, product/dependency boundary, source constraint, "
@@ -681,7 +682,10 @@ _AUTHORED_FACTS_SCHEMA: dict[str, Any] = {
     **_TYPED_FACTS_SCHEMA,
     "properties": {
         **_TYPED_FACTS_SCHEMA["properties"],
-        "title": _CITATION_SCHEMA,
+        "title": {
+            **_CITATION_SCHEMA,
+            "description": TITLE_ROLE_DEFINITION,
+        },
         "product_story": {
             **_CITATION_SCHEMA,
             "description": PRODUCT_STORY_ROLE_DEFINITION,

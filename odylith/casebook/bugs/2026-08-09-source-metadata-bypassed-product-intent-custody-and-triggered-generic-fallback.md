@@ -1,5 +1,32 @@
 - Bug ID: CB-324
 
+## V37 source-repository title recurrence (2026-09-27)
+
+The retained V37 mobility case completed its one host-author call in
+`82.733s`, produced a schema-valid candidate, and reached independent review.
+The candidate selected `bluesky` from the source-repository metadata as the
+accepted product title even though the source explicitly requested a program
+lead's readiness-dossier workflow. Independent review correctly denied
+`candidate.accepted_source.facts.title`; proposal exited `2`, no transaction
+was staged, and all retained artifact hashes verified.
+
+This is the host-native form of the existing source-metadata custody defect,
+not a provider, timeout, citation-parser, or transaction failure. The author
+schema gives `title` no semantic role while the reviewer already judges that
+role. Move the product-title meaning into one shared author/reviewer contract:
+the title identifies the requested product, workflow, or owned state, and a
+repository or evidence artifact is eligible only when the source explicitly
+makes it the product identity. Preserve exact citation custody and the
+independent denial. Do not add lexical exclusions, repository-name rules,
+regexes, retries, repair, fallback, or another model call.
+
+V38 now shares one title-role definition between the author schema and the
+read-only reviewer and versions those contracts as intent-authoring v74 and
+candidate-review v13. The complete Greenfield runtime family passes 2,011
+tests and deterministic author/reviewer contract proof is green. This record
+stays in progress until a fresh provider-backed replay proves that the
+mobility-shaped recurrence no longer reaches reviewer denial.
+
 - Status: InProgress
 
 - Created: 2026-08-09

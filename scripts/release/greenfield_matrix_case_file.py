@@ -8,10 +8,12 @@ import json
 from pathlib import Path
 from typing import Any
 
-from greenfield_matrix_leakage import term_present
+from greenfield_matrix_clarification import focused_material_question
+from greenfield_matrix_clarification import material_question_field_issues
 from greenfield_matrix_corpus_provenance import case_provenance_from_mapping
 from greenfield_matrix_input_axes import normalize_axis_token
 from greenfield_matrix_input_axes import normalize_input_style
+from greenfield_matrix_leakage import term_present
 from greenfield_preconfirm_matrix_cases import DEFAULT_CASE_EXPECTATION
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 from greenfield_preconfirm_matrix_cases import VALID_CASE_EXPECTATIONS
@@ -35,7 +37,11 @@ def load_case_file(
     cases = _case_rows(raw)
     if not cases:
         raise RuntimeError(f"greenfield case file {case_path} must define at least one case")
-    expected_clarifications = _expected_clarifications_by_case(raw)
+    expected_clarifications = _expected_clarifications_by_case(
+        raw,
+        case_rows=cases,
+        source=case_path,
+    )
     compiled = tuple(
         _case_from_row(
             row,
@@ -153,27 +159,71 @@ def _case_from_row(
     )
 
 
-def _expected_clarifications_by_case(raw: Any) -> dict[str, tuple[str, str]]:
+def _expected_clarifications_by_case(
+    raw: Any,
+    *,
+    case_rows: Sequence[Mapping[str, Any]],
+    source: Path,
+) -> dict[str, tuple[str, str]]:
     if not isinstance(raw, Mapping):
         return {}
     annotations = raw.get("annotations")
-    if not isinstance(annotations, Sequence) or isinstance(annotations, (str, bytes, bytearray)):
+    if annotations is None:
         return {}
+    if not isinstance(annotations, Sequence) or isinstance(
+        annotations,
+        (str, bytes, bytearray),
+    ):
+        raise RuntimeError(f"{source} annotations must be a JSON array")
+    case_expectations = {
+        case_id: _optional_text(row.get("expectation")).casefold()
+        or DEFAULT_CASE_EXPECTATION
+        for row in case_rows
+        if (case_id := _optional_text(row.get("case_id")) or _optional_text(row.get("id")))
+    }
     clarifications: dict[str, tuple[str, str]] = {}
-    for row in annotations:
+    annotation_ids: set[str] = set()
+    for index, row in enumerate(annotations, 1):
         if not isinstance(row, Mapping):
-            continue
+            raise RuntimeError(f"{source} annotation {index} must be a JSON object")
         case_id = _optional_text(row.get("case_id"))
+        if not case_id:
+            raise RuntimeError(f"{source} annotation {index} must define case_id")
+        if case_id in annotation_ids:
+            raise RuntimeError(f"{source} has duplicate annotation for `{case_id}`")
+        annotation_ids.add(case_id)
+        if case_id not in case_expectations:
+            raise RuntimeError(f"{source} has orphan annotation for `{case_id}`")
         expected = row.get("expected_clarification")
-        if not case_id or expected is None:
+        if expected is None:
             continue
         if not isinstance(expected, Mapping):
+            raise RuntimeError(f"annotation `{case_id}` has invalid expected_clarification")
+        if set(expected) != {"field", "question"}:
             raise RuntimeError(f"annotation `{case_id}` has invalid expected_clarification")
         field = _optional_text(expected.get("field"))
         question = _optional_block_text(expected.get("question"))
         if not field or not question:
             raise RuntimeError(f"annotation `{case_id}` has incomplete expected_clarification")
+        if material_question_field_issues((field,), source_texts=()) or not focused_material_question(
+            question,
+            required_fields=(field,),
+        ):
+            raise RuntimeError(f"annotation `{case_id}` has invalid expected_clarification")
+        if case_expectations[case_id] != "clarification_required":
+            raise RuntimeError(
+                f"annotation `{case_id}` declares expected_clarification for a non-clarification case"
+            )
         clarifications[case_id] = (field, question)
+    missing = sorted(
+        case_id
+        for case_id, expectation in case_expectations.items()
+        if expectation == "clarification_required" and case_id not in clarifications
+    )
+    if missing:
+        raise RuntimeError(
+            f"{source} lacks expected_clarification annotations for: {', '.join(missing)}"
+        )
     return clarifications
 
 

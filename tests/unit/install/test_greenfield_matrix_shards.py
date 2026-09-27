@@ -147,6 +147,209 @@ def test_shard_builder_preserves_explicit_input_style_and_metamorphic_pair(tmp_p
     assert generated[0].metamorphic_transform == "source_excerpt"
 
 
+def test_shard_builder_preserves_clarification_expectation_and_oracle(tmp_path: Path) -> None:
+    module = _module()
+    case_file = tmp_path / "clarification-cases.json"
+    question = (
+        "Who uses this product first, what complete task do they finish, "
+        "and what result do they see?"
+    )
+    case_file.write_text(
+        json.dumps(
+            {
+                "annotations": [
+                    {
+                        "case_id": "clarification-001",
+                        "expected_clarification": {
+                            "field": "first_path",
+                            "question": question,
+                        },
+                    }
+                ],
+                "cases": [
+                    {
+                        "case_id": "clarification-001",
+                        "name": "clarification evidence review",
+                        "prompt": "Create a clarification evidence review.",
+                        "required_terms": ["clarification", "evidence"],
+                        "leakage_terms": ["clarification evidence"],
+                        "expectation": "clarification_required",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    failed_result = tmp_path / "failed.json"
+    failed_result.write_text(
+        json.dumps(
+            {
+                "results": [
+                    {
+                        "status": "failed",
+                        "evidence": {"case": {"id": "clarification-001"}},
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    payload = module.build_shards(
+        case_files=(case_file,),
+        output_dir=tmp_path / "shards",
+        failed_result_jsons=(failed_result,),
+        failed_subset_only=True,
+    )
+    shard_path = Path(payload["tiers"]["failed-subset"]["files"][0])
+    shard_payload = json.loads(shard_path.read_text(encoding="utf-8"))
+    loaded = module.load_case_file(shard_path)[0]
+
+    assert shard_payload["cases"][0]["expectation"] == "clarification_required"
+    assert shard_payload["annotations"][0]["expected_clarification"] == {
+        "field": "first_path",
+        "question": question,
+    }
+    assert loaded.expectation == "clarification_required"
+    assert loaded.expected_clarification_field == "first_path"
+    assert loaded.expected_clarification_question == question
+
+
+def test_shard_builder_rejects_clarification_without_oracle(tmp_path: Path) -> None:
+    module = _module()
+    case_file = tmp_path / "clarification-without-oracle.json"
+    case_file.write_text(
+        json.dumps(
+            {
+                "cases": [
+                    {
+                        "case_id": "clarification-001",
+                        "name": "clarification evidence review",
+                        "prompt": "Create a clarification evidence review.",
+                        "required_terms": ["clarification", "evidence"],
+                        "leakage_terms": ["clarification evidence"],
+                        "expectation": "clarification_required",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(RuntimeError, match="clarification oracle is required"):
+        module.build_shards(
+            case_files=(case_file,),
+            output_dir=tmp_path / "shards",
+            regression_size=1,
+            volume_size=1,
+            deep_volume_size=1,
+            release_size=1,
+        )
+
+
+@pytest.mark.parametrize(
+    ("annotations", "match"),
+    (
+        ([], "lacks expected_clarification annotations"),
+        (
+            [
+                {
+                    "case_id": "orphan",
+                    "expected_clarification": {
+                        "field": "first_path",
+                        "question": "What is the first complete path?",
+                    },
+                }
+            ],
+            "orphan annotation",
+        ),
+        (
+            [
+                {
+                    "case_id": "clarification-001",
+                    "expected_clarification": {
+                        "field": "first_path",
+                        "question": "What is the first complete path?",
+                    },
+                },
+                {
+                    "case_id": "clarification-001",
+                    "expected_clarification": {
+                        "field": "first_path",
+                        "question": "What is the first complete path?",
+                    },
+                },
+            ],
+            "duplicate annotation",
+        ),
+        (
+            [
+                {
+                    "case_id": "clarification-001",
+                    "expected_clarification": {
+                        "field": "first_path",
+                        "question": "",
+                    },
+                }
+            ],
+            "incomplete expected_clarification",
+        ),
+        (
+            [
+                {
+                    "case_id": "clarification-001",
+                    "expected_clarification": {
+                        "field": "unbounded_field",
+                        "question": "What should happen next?",
+                    },
+                }
+            ],
+            "invalid expected_clarification",
+        ),
+        (
+            [
+                {
+                    "case_id": "clarification-001",
+                    "expected_clarification": {
+                        "field": "first_path",
+                        "question": "Tell me the first complete path.",
+                    },
+                }
+            ],
+            "invalid expected_clarification",
+        ),
+    ),
+)
+def test_load_case_file_rejects_invalid_clarification_annotation_sets(
+    tmp_path: Path,
+    annotations: object,
+    match: str,
+) -> None:
+    module = _module()
+    case_file = tmp_path / "invalid-clarifications.json"
+    case_file.write_text(
+        json.dumps(
+            {
+                "annotations": annotations,
+                "cases": [
+                    {
+                        "case_id": "clarification-001",
+                        "name": "clarification evidence review",
+                        "prompt": "Create a clarification evidence review.",
+                        "required_terms": ["clarification", "evidence"],
+                        "leakage_terms": ["clarification evidence"],
+                        "expectation": "clarification_required",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(RuntimeError, match=match):
+        module.load_case_file(case_file)
+
+
 def test_shard_builder_rejects_a_source_provenance_span_the_release_gate_cannot_resolve() -> None:
     module = _module()
     provenance = importlib.import_module("greenfield_matrix_corpus_provenance")

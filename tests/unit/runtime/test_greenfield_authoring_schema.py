@@ -1,5 +1,8 @@
 """Split-schema contract for participant-first Greenfield authoring."""
 
+from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
+    TITLE_ROLE_DEFINITION,
+)
 from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring import (
     author_greenfield_intent,
 )
@@ -26,6 +29,13 @@ def test_authoring_schema_structurally_separates_participants_authored_and_clari
     authored_branch, clarification_branch = authoring_schema["properties"]["result"]["anyOf"]
     typed_facts = authored_branch["properties"]["facts"]
     assert typed_facts["additionalProperties"] is False
+    title_role = typed_facts["properties"]["title"]["description"]
+    assert title_role == TITLE_ROLE_DEFINITION
+    assert "requested product, workflow, or product state" in title_role
+    assert "metadata alongside a distinct requested workflow" in title_role
+    assert "title the requested workflow instead" in title_role
+    assert "repository or artifact name remains valid" in title_role
+    assert "itself the requested product identity" in title_role
     assert typed_facts["properties"]["state_object"]["type"] == "object"
     assert "subject may be a person" in typed_facts["properties"]["state_object"]["description"]
     assert "An activity, workflow stage, goal, product label" in typed_facts["properties"]["proof_boundary"]["description"]

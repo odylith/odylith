@@ -41,7 +41,7 @@ from odylith.runtime.domain_intelligence.greenfield_repository_write_set import 
 
 CLARIFICATION_REQUIRED_EXPECTATION = "clarification_required"
 FOCUSED_FIRST_PATH_QUESTION = (
-    "What is the first complete task the product should help a person finish, and what result should they see?"
+    "Who uses this product first, what complete task do they finish, and what result do they see?"
 )
 _NO_WRITE_ROOTS = tuple(
     Path(value)

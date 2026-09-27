@@ -1,5 +1,34 @@
 - Bug ID: CB-303
 
+- V37 public-campaign recurrence (2026-09-27): The clean immutable public
+  campaign stopped after seven cases with two product-quality classes. Three
+  committed packages passed transaction, artifact-depth, semantic, and normal
+  browser checks, but both desktop and compact Project degraded-state checks
+  failed because the authored Greenfield payload carried meaningful `delta`,
+  `contradictions`, and `degraded_state` rows while omitting the existing
+  `trust` section that renders them. The normal and degraded screenshots were
+  byte-identical, so this is a deterministic projection-contract gap rather
+  than load timing or selector drift. Reuse the existing presenter and expose
+  the already-authored trust boundary; do not add markup, a second renderer,
+  or a longer timeout.
+- The same campaign produced one source-sufficient mobility candidate whose
+  title cited the source repository name instead of the requested
+  readiness-dossier product. Independent review correctly denied the candidate
+  before staging. Align authoring and review through one shared semantic title
+  role that prefers the requested product, workflow, or state identity and
+  treats repository metadata as a title only when the source explicitly makes
+  it the product. Preserve the one-author/one-reviewer mechanism. Add no parser,
+  regex, vocabulary list, retry, repair, fallback, model ladder, or additional
+  call. Fresh source tests and a new immutable public campaign are required;
+  the V37 evidence remains terminal and the protected holdout remains sealed.
+- V38 repair proof (2026-09-27): The authored Project payload now enables the
+  existing trust section with complete human-visible heading, note, and row
+  labels before the host handoff. Independent review caught and closed the
+  initially empty-heading gap. Current proof is 2,011 complete Greenfield
+  runtime tests, 26 Project/publication browser tests, 29 Compass/Project
+  handoff browser tests, and 52 focused shard/Project/browser tests, all green.
+  Provider-backed replay remains a separate release gate.
+
 - V29 authoring-audience recurrence (2026-09-26): Immutable V29 completed 30
   disclosed cases with 29 passes, then stopped before transaction staging on
   `public-v11-security-183-description`. The host author promoted `security

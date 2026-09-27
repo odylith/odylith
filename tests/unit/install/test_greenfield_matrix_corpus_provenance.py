@@ -51,6 +51,35 @@ def test_release_subset_membership_normalizes_only_source_file() -> None:
     )
 
 
+def test_release_subset_membership_validates_oracle_separately_from_source_case() -> None:
+    corpus, cases_module = _modules()
+    parent = cases_module.GreenfieldMatrixCase(
+        name="audited clarification case",
+        prompt="Create an audited clarification case.",
+        required_terms=("audited",),
+        case_id="audited-clarification",
+        source_file="parent.json",
+        expectation="clarification_required",
+    )
+    subset = replace(
+        parent,
+        source_file="live-subset.json",
+        expected_clarification_field="first_path",
+        expected_clarification_question="What is the first complete path?",
+    )
+
+    assert not corpus.release_subset_membership_issues(
+        selected_cases=(subset,),
+        parent_cases=(parent,),
+    )
+    assert corpus.release_subset_membership_issues(
+        selected_cases=(replace(subset, expected_clarification_question=""),),
+        parent_cases=(parent,),
+    ) == (
+        "live release clarification case `audited-clarification` lacks a complete frozen clarification oracle",
+    )
+
+
 def test_release_subset_membership_fails_closed_on_missing_and_duplicate_ids() -> None:
     corpus, cases_module = _modules()
     missing_id = cases_module.GreenfieldMatrixCase(

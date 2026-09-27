@@ -1,5 +1,8 @@
 """Outgoing author instructions and the state-only source address contract."""
 
+from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
+    TITLE_ROLE_DEFINITION,
+)
 from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring import (
     author_greenfield_intent,
 )
@@ -49,6 +52,13 @@ def test_authoring_prompt_requires_every_transaction_material_fact() -> None:
     assert "For state_object only, supply prefix, quote and anchor_occurrence" in prompt
     assert "selected quote is at the end of the anchor" in prompt
     assert "Prefix is only a locator, never state meaning or projected text" in prompt
+    assert "Select title, product_story, state_object and first_path according to their schema" in prompt
+    title_schema = provider.requests[0].output_schema["properties"]["result"]["anyOf"][0][
+        "properties"
+    ]["facts"]["properties"]["title"]
+    assert title_schema["description"] == TITLE_ROLE_DEFINITION
+    assert "metadata alongside a distinct requested workflow" in title_schema["description"]
+    assert "repository or artifact name remains valid" in title_schema["description"]
 
 
 def test_only_state_object_uses_the_anchored_address_schema() -> None:

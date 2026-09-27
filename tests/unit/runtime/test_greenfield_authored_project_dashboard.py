@@ -450,6 +450,30 @@ def test_authored_dashboard_bypasses_legacy_projection_and_preserves_exact_facts
         **{f"D-{index:03d}": row["title"] for index, row in enumerate(proposal["diagrams"], 701)},
     }
     assert payload["projection"]["origin"] == AUTHORED_PROJECTION_ORIGIN
+    assert payload["sections"] == [
+        "product_story",
+        "participants",
+        "risks",
+        "jobs",
+        "trust",
+        "next",
+    ]
+    assert payload["delta"] == [
+        "This projection begins from the model-authored product intent."
+    ]
+    assert payload["contradictions"] == [
+        "No source-backed implementation state exists yet."
+    ]
+    assert payload["degraded_state"] == [
+        "Implementation claims remain unavailable until source and validation evidence exist."
+    ]
+    assert payload["trust_title"] == "What can this Project view claim?"
+    assert payload["trust_note"] == (
+        "The proposal carries product intent, but no implementation evidence yet."
+    )
+    assert payload["delta_label"] == "What this proposal adds"
+    assert payload["contradictions_label"] == "What is not yet evidenced"
+    assert payload["degraded_label"] == "What remains unavailable"
     assert payload["authored_facts"]["first_path"] == FIRST_PATH
     assert payload["authored_facts"]["source_precedence"] == []
     assert payload["authored_facts"]["human_actors"] == [

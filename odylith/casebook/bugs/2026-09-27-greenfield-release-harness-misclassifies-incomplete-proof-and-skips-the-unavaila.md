@@ -1,5 +1,37 @@
 - Bug ID: CB-347
 
+## V37 clarification-oracle and replay-custody defect (2026-09-27)
+
+The retained V37 campaign executed three clarification cases correctly: each
+returned the canonical `first_path` question, performed zero writes or child
+subprocesses, left no staged transaction, and preserved the before/after
+governance record count. Release scoring nevertheless failed all three because
+the disclosed live subset carried no independently frozen clarification
+annotations. The evaluator correctly refuses to infer its oracle from the
+observed model output; the fixture and preflight contract were incomplete.
+
+The bounded repair adds one case-ID-bound `expected_clarification` annotation
+for every disclosed clarification case while keeping the audited parent bytes
+and provenance hashes unchanged. Source-case membership remains exact after
+excluding only evaluation metadata, which is validated separately before any
+provider invocation. Shard and failed-subset replay serialization must retain
+`expectation` plus clarification-oracle custody; V37 dropped those fields and
+therefore cannot serve as a faithful replay input. Reject missing, duplicate,
+orphaned, incomplete, and commit-case annotations before execution. Do not
+weaken the evaluator, self-score from observed output, or add a model call,
+retry, repair, fallback, parser, or regex rule. V37 remains evaluator-invalid
+and receives no release credit; its no-write receipts remain positive product
+behavior evidence only.
+
+V38 repair proof (2026-09-27): Case loading now rejects malformed fields and
+unbounded or non-question oracle text, release membership rejects missing or
+commit-case oracle data, and shard serialization rejects clarification cases
+whose complete oracle custody is absent. Independent review found and closed
+the initial shard fail-open path before checkpointing. Current proof includes
+112 corpus/shard tests, 977 non-provider release/install tests, and 292
+lifecycle tests, all green. A fresh failed-subset replay is still required;
+the protected holdout remains untouched.
+
 - Status: Open
 
 - Created: 2026-09-27

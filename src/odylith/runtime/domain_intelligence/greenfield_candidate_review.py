@@ -27,7 +27,17 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-CANDIDATE_REVIEW_VERSION = "odylith.greenfield.candidate-review.v12"
+CANDIDATE_REVIEW_VERSION = "odylith.greenfield.candidate-review.v13"
+TITLE_ROLE_DEFINITION = (
+    "A source-cited name or concise label for the requested product, workflow, or "
+    "product state. Identify what the request asks to create, operate, or review; "
+    "do not substitute source or evidence metadata such as a repository, fixture, "
+    "dataset, or artifact merely because it is named. When source evidence names "
+    "such metadata alongside a distinct requested workflow, title the requested "
+    "workflow instead. A repository or artifact name remains valid when the source "
+    "explicitly makes that named repository or artifact itself the requested product "
+    "identity, rather than evidence for a different requested product."
+)
 STATE_OBJECT_ROLE_DEFINITION = (
     "One source-cited subject, entity, record, work item, case, artifact, or status "
     "whose state the workflow changes or reviews. The subject may be a person; never "
@@ -280,6 +290,7 @@ REVIEW_SCHEMA = {
 }
 
 _ROLE_DEFINITIONS = {
+    "title": TITLE_ROLE_DEFINITION,
     "state_object": STATE_OBJECT_ROLE_DEFINITION,
     "proof_boundary": PROOF_BOUNDARY_ROLE_DEFINITION,
     "problem": "A complete source statement of the user's unmet need or current difficulty, not the product name or a proposed capability.",

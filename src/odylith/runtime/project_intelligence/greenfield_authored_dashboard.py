@@ -121,6 +121,11 @@ def build_authored_greenfield_payload(
         open_label = "Open questions"
     known = _unique([source_excerpt, first_path, visible_result, proof_boundary])
     unknown = questions
+    contradictions = ["No source-backed implementation state exists yet."]
+    delta = ["This projection begins from the model-authored product intent."]
+    degraded_state = [
+        "Implementation claims remain unavailable until source and validation evidence exist."
+    ]
     sections = ["product_story"]
     if actors:
         sections.append("participants")
@@ -128,6 +133,7 @@ def build_authored_greenfield_payload(
         sections.append("risks")
     if jobs:
         sections.append("jobs")
+    sections.append("trust")
     sections.append("next")
 
     return {
@@ -251,13 +257,16 @@ def build_authored_greenfield_payload(
         ),
         "artifact_coverage": list(governance_titles),
         "topology_spine": _unique([*internal_systems, *external_systems]),
-        "contradictions": ["No source-backed implementation state exists yet."],
-        "delta": ["This projection begins from the model-authored product intent."],
+        "contradictions": contradictions,
+        "delta": delta,
+        "trust_title": "What can this Project view claim?",
+        "trust_note": "The proposal carries product intent, but no implementation evidence yet.",
+        "delta_label": "What this proposal adds",
+        "contradictions_label": "What is not yet evidenced",
+        "degraded_label": "What remains unavailable",
         "risk_classes": risk_items,
         "audience_emphasis": list(human_actors),
-        "degraded_state": [
-            "Implementation claims remain unavailable until source and validation evidence exist."
-        ],
+        "degraded_state": degraded_state,
         "known": known,
         "unknown": unknown,
         "confidence": "Medium",

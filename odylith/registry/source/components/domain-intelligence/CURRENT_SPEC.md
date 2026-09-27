@@ -4,6 +4,24 @@ Last updated: 2026-09-27
 
 ## Overview
 
+### V38 shared title semantic-role custody (2026-09-27)
+
+Greenfield authoring and independent candidate review use one title semantic
+role. A title is a source-cited name or concise label for the requested
+product, workflow, or product state: it identifies what the request asks to
+create, operate, or review. Source or evidence metadata—such as a repository,
+fixture, dataset, or artifact—cannot replace that identity merely because it
+is named. Such a name remains valid only when the source explicitly makes it
+the requested product identity rather than evidence for a distinct requested
+product.
+
+The author schema exposes that same role and the reviewer applies it at the
+existing read-only admission boundary. The reviewer may deny a mismatched
+candidate but never rewrites its title. Citation custody, one host-authored
+candidate, one independent review, sealed transaction law, and clarification
+behavior remain unchanged; this adds no parser, vocabulary list, retry,
+repair, fallback author, model ladder, or extra model call.
+
 ### V34 canonical risk-scope graph authority (2026-09-27)
 
 Provisional design v5 replaces independently authored risk event orders,

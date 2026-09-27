@@ -46,17 +46,30 @@ def test_repo_public_subset_is_exact_balanced_member_set_of_audited_parent() -> 
     subset = shard_runner.load_case_file(subset_path)
     audits = shard_runner.load_release_audit_file(audit_path, repo_root=repo_root)
     evaluation = shard_runner.evaluate_release_corpus(parent, audits, repo_root=repo_root)
-    parent_by_id = {case.case_id: replace(case, source_file="") for case in parent}
 
     assert evaluation.passed
     assert len(parent) == 200
     assert len(subset) == 10
-    assert all(replace(case, source_file="") == parent_by_id[case.case_id] for case in subset)
+    assert not shard_runner.release_subset_membership_issues(
+        selected_cases=subset,
+        parent_cases=parent,
+    )
     assert len({case.provenance.source_family for case in subset}) == 10
     assert len({case.input_style for case in subset}) == 5
     assert Counter(matrix.case_expectation(case) for case in subset) == {
         "transaction_committed": 5,
         "clarification_required": 5,
+    }
+    clarification_cases = tuple(
+        case
+        for case in subset
+        if matrix.case_expectation(case) == "clarification_required"
+    )
+    assert {case.expected_clarification_field for case in clarification_cases} == {
+        "first_path"
+    }
+    assert {case.expected_clarification_question for case in clarification_cases} == {
+        sys.modules["greenfield_matrix_clarification"].FOCUSED_FIRST_PATH_QUESTION
     }
     assert len({stressor for case in subset for stressor in case.stressors}) == 11
     recovery_case = matrix.select_recovery_case(

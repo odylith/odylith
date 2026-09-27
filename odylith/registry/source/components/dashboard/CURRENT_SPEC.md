@@ -23,6 +23,22 @@ from source responsibility relations or hide the proposed-authority label.
 Browser proof checks these visible values and source actors on desktop/mobile;
 unit or DOM-count success does not establish complete-package human quality.
 
+### V38 Greenfield Project trust projection
+
+Dashboard's Project view renders the authored Greenfield trust section whenever
+the payload supplies its trust signals. The section makes the projection's
+material delta, absence of source-backed implementation state, and degraded
+condition visible under complete human-readable headings before the host
+handoff at desktop and compact widths. These
+rows are authored project posture, not implementation facts, and they remain
+readable rather than being hidden when the normal and degraded Project views
+would otherwise look identical.
+
+Dashboard only projects this existing payload boundary. It does not create a
+second trust model, infer implementation evidence, alter Project semantics, or
+change the presenter, handoff, or browser-route ownership. Normal, empty or
+fallback, and degraded/error Project rendering remain proof obligations.
+
 ## Scope And Non-Goals
 ### Complete open-item text
 The Project open-items card preserves every supplied item and its complete text.

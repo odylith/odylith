@@ -64,7 +64,7 @@ def run_review(provider, clock, *, deadline=55.0, observation=None, factory=None
 
 
 def test_partition_preserves_every_value_and_binds_complete_candidate():
-    assert review.CANDIDATE_REVIEW_VERSION == "odylith.greenfield.candidate-review.v12"
+    assert review.CANDIDATE_REVIEW_VERSION == "odylith.greenfield.candidate-review.v13"
     source = _source()
     candidate = _response(source)["result"]
     original = deepcopy(candidate)
@@ -77,6 +77,14 @@ def test_partition_preserves_every_value_and_binds_complete_candidate():
     assert {**payload["candidate"]["accepted_source"], **payload["candidate"]["proposed_decisions"]} == original
     assert payload["source"] == source
     assert payload["resolved_source_custody"]
+    title_role = payload["role_definitions"]["title"]
+    assert title_role == review.TITLE_ROLE_DEFINITION
+    assert title_role == author._AUTHORED_FACTS_SCHEMA["properties"]["title"]["description"]
+    assert "requested product, workflow, or product state" in title_role
+    assert "source or evidence metadata" in title_role
+    assert "metadata alongside a distinct requested workflow" in title_role
+    assert "repository or artifact name remains valid" in title_role
+    assert "itself the requested product identity" in title_role
     state_object_role = payload["role_definitions"]["state_object"]
     assert state_object_role == review.STATE_OBJECT_ROLE_DEFINITION
     assert state_object_role == author._AUTHORED_FACTS_SCHEMA["properties"][

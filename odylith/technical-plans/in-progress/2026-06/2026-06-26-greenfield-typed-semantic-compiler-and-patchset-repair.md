@@ -1,5 +1,42 @@
 Status: In progress
 
+## V37 retained public-campaign repair boundary (2026-09-27)
+
+The clean pushed `c32856414` distribution passed complete lifecycle smoke and
+then ran the exact disclosed ten-case public subset with retained evidence.
+Seven cases executed before the fail-fast threshold: three clarification cases
+returned the correct single `first_path` question with zero writes; three
+committed packages passed semantic, transaction, artifact-depth, and normal
+browser checks but hid their authored trust/degraded rows; one mobility
+candidate was correctly denied because it promoted a source repository name
+into product title. There was no 401, provider outage, retry, fallback, second
+author, or protected-input access.
+
+Repair only the three demonstrated owners. Freeze clarification oracles as
+separate evaluation metadata and preserve them through shard/replay
+serialization; expose the existing Greenfield Project trust section; and share
+one semantic product-title role between the author schema and independent
+review. Preserve the reviewer, exact citation custody, one-candidate topology,
+sealed transaction law, and release floors. Add no regex, vocabulary filter,
+parser, retry, repair, fallback, model ladder, schema expansion, or broad
+architecture.
+
+Run focused contract tests first. If they pass, rebuild one immutable clean
+distribution and replay only the exact failed disclosed subset once. Continue
+to the full ten-case public campaign only after that replay passes, followed by
+independent semantic/UX review. Do not inspect, hash, or consume the protected
+final holdout until every public, browser, recovery, clean-install, and
+adjudication gate is green.
+
+V38 local convergence proof (2026-09-27): independent review exposed two
+remaining release-owner gaps before checkpointing—missing-oracle replay could
+still serialize and the Project trust rows had empty headings. Both are now
+fail-closed and visibly labeled. The complete non-holdout evidence is green:
+2,011 Greenfield runtime tests, 977 release/install tests, 292 lifecycle tests,
+26 Project/publication browser tests, 29 Compass/Project handoff browser tests,
+and 112 focused corpus/shard tests. The next falsifiable gate is a clean V38
+distribution followed by replay of only the exact failed disclosed cases.
+
 ## V36 public campaign entry contract (2026-09-27)
 
 The exact clean V36 distribution passed installed lifecycle smoke, then the

@@ -1,6 +1,24 @@
 # Release
 Last updated: 2026-09-27
 
+## V38 frozen clarification-oracle custody (2026-09-27)
+
+For an audited disclosed public subset, every clarification-required case
+carries a complete frozen clarification oracle: the expected material field and
+canonical question. This oracle is subset-only evaluation metadata, separate
+from the exact parent-source case record. Exact parent membership therefore
+continues to compare source case truth while allowing the public subset to
+retain its frozen evaluation expectation.
+
+The common release-subset membership owner fails closed when a clarification
+case lacks either oracle value, or when a committed case declares one. Campaign
+case loading rejects unsupported material fields and malformed or unbounded
+question text. Shard serialization preserves complete oracle annotations and
+rejects a missing or partial annotation; replay uses the same retained public
+expectation. This does not
+relax public-parent provenance, expose or inspect protected-holdout inputs, or
+create a second clarification, authoring, retry, repair, or fallback path.
+
 ## Public campaign entry preflight (2026-09-27)
 
 The Release component requires a disclosed public subset to be executable, not

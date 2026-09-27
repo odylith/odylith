@@ -26,6 +26,7 @@ from greenfield_matrix_stressors import variance_evaluation
 from greenfield_matrix_case_file import load_case_file
 from greenfield_matrix_corpus_provenance import case_provenance_to_dict
 from greenfield_matrix_corpus_provenance import source_span_is_valid
+from greenfield_preconfirm_matrix_cases import DEFAULT_CASE_EXPECTATION
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 
 
@@ -377,6 +378,11 @@ def _write_tier_shards(
             "case_count": len(shard_cases),
             "cases": [_case_to_dict(case) for case in shard_cases],
         }
+        annotations = [_clarification_annotation(case) for case in shard_cases]
+        if any(annotation is not None for annotation in annotations):
+            payload["annotations"] = [
+                annotation for annotation in annotations if annotation is not None
+            ]
         path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         files.append(path)
     return tuple(files)
@@ -397,6 +403,8 @@ def _case_to_dict(case: GreenfieldMatrixCase) -> dict[str, Any]:
     }
     if case.case_id:
         row["case_id"] = case.case_id
+    if str(case.expectation or DEFAULT_CASE_EXPECTATION) != DEFAULT_CASE_EXPECTATION:
+        row["expectation"] = str(case.expectation)
     if case.confirmed_intent_markdown:
         row["confirmed_intent_markdown"] = case.confirmed_intent_markdown
     if case.input_style_declared:
@@ -408,6 +416,28 @@ def _case_to_dict(case: GreenfieldMatrixCase) -> dict[str, Any]:
     if provenance and provenance.get("corpus_tier") != "synthetic_regression":
         row["provenance"] = provenance
     return row
+
+
+def _clarification_annotation(case: GreenfieldMatrixCase) -> dict[str, Any] | None:
+    field = str(getattr(case, "expected_clarification_field", "") or "").strip()
+    question = str(getattr(case, "expected_clarification_question", "") or "").strip()
+    if not field and not question:
+        if str(case.expectation or DEFAULT_CASE_EXPECTATION) == "clarification_required":
+            raise RuntimeError(
+                f"{case.case_id or case.name}: clarification oracle is required for shard serialization"
+            )
+        return None
+    if not case.case_id or not field or not question:
+        raise RuntimeError(
+            f"{case.case_id or case.name}: clarification oracle is incomplete for shard serialization"
+        )
+    return {
+        "case_id": case.case_id,
+        "expected_clarification": {
+            "field": field,
+            "question": question,
+        },
+    }
 
 
 def _case_matches_any(

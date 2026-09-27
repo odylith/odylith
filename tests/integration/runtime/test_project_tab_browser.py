@@ -250,6 +250,25 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
     assert page.locator(".project-scenario").count() == 0
     assert page.locator(".project-risks").count() == 1
     assert page.locator(".project-risk-card").count() == 1
+    signal_grid = page.locator(".project-signal-grid")
+    assert signal_grid.count() == 1
+    assert signal_grid.locator("xpath=../div[contains(@class, 'project-panel-head')]/h2").inner_text() == (
+        "What can this Project view claim?"
+    )
+    assert signal_grid.locator("article h3").all_inner_texts() == [
+        "What this proposal adds",
+        "What is not yet evidenced",
+        "What remains unavailable",
+    ]
+    assert signal_grid.locator("article li").all_inner_texts() == [
+        "This projection begins from the model-authored product intent.",
+        "No source-backed implementation state exists yet.",
+        "Implementation claims remain unavailable until source and validation evidence exist.",
+    ]
+    signal_box = signal_grid.bounding_box()
+    handoff_box = page.locator(".project-host-handoff").bounding_box()
+    assert signal_box is not None and handoff_box is not None
+    assert signal_box["y"] < handoff_box["y"]
     assert page.locator(".project-answer-strip").count() == 0
     assert page.locator('.project-job-card a[href*="tab=radar"][href*="workstream="]').count() >= 1
     assert page.locator(".project-job-card em").count() == 0
@@ -397,7 +416,10 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
     assert story_layout["firstRowColumns"] != ""
     assert int(story_layout["scrollDelta"]) <= 4
 
-    _assert_project_sections_do_not_overflow(page, [".project-product-story", ".project-host-handoff"])
+    _assert_project_sections_do_not_overflow(
+        page,
+        [".project-product-story", ".project-signal-grid", ".project-host-handoff"],
+    )
 
 
 def _assert_project_sections_do_not_overflow(page, selectors: list[str]) -> None:  # noqa: ANN001

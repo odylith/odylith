@@ -367,6 +367,33 @@ def test_source_fixture_keeps_explicit_intent_and_source_only_cases_separate() -
     assert clarification_case.get("confirmed_intent_markdown") is None
 
 
+def test_public_live_subset_freezes_every_clarification_oracle_outside_source_cases() -> None:
+    payload = json.loads(
+        (
+            REPO_ROOT
+            / "tests/fixtures/greenfield-release-corpus/live-subsets/greenfield-release-public-live-subset.v1.json"
+        ).read_text(encoding="utf-8")
+    )
+    clarification_ids = {
+        case["case_id"]
+        for case in payload["cases"]
+        if case.get("expectation") == "clarification_required"
+    }
+    annotations = payload["annotations"]
+
+    assert len(clarification_ids) == len(annotations) == 5
+    assert {annotation["case_id"] for annotation in annotations} == clarification_ids
+    assert {
+        annotation["expected_clarification"]["field"] for annotation in annotations
+    } == {"first_path"}
+    assert {
+        annotation["expected_clarification"]["question"] for annotation in annotations
+    } == {
+        "Who uses this product first, what complete task do they finish, and what result do they see?"
+    }
+    assert all("expected_clarification" not in case for case in payload["cases"])
+
+
 def test_shipped_release_audit_fixture_is_hash_bound_and_evaluable() -> None:
     _module()
     corpus_root = REPO_ROOT / "tests/fixtures/greenfield-release-corpus"
