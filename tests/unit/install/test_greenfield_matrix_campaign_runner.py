@@ -731,6 +731,8 @@ def test_campaign_fails_release_proof_when_required_stressors_are_missing(
     module = _module()
     release_case_file = tmp_path / "release.json"
     _write_case_file(release_case_file, name="release easy case", stressors=("modal-expert-lens",))
+    lower_control_file = tmp_path / "lower-capability-control.json"
+    _write_case_file(lower_control_file, name="lower capability control", stressors=())
     calls: list[list[str]] = []
 
     def fake_run(**kwargs):  # noqa: ANN001
@@ -747,6 +749,7 @@ def test_campaign_fails_release_proof_when_required_stressors_are_missing(
         telemetry_dir=tmp_path / "telemetry",
         release_case_files=(release_case_file,),
         evidence_output_dir=tmp_path / "evidence",
+        lower_capability_control_file=lower_control_file,
         discovery_max_workers=1,
         require_high_variance_stressors=False,
         required_stressors=("modal-expert-lens", "registry-contract-pressure"),
@@ -1084,6 +1087,8 @@ def test_campaign_refuses_release_execution_when_inputs_cannot_be_sealed(tmp_pat
     audit_file = tmp_path / "audit.json"
     case_file.write_text('{"cases": []}\n', encoding="utf-8")
     audit_file.write_text("{}\n", encoding="utf-8")
+    lower_control_file = tmp_path / "lower-capability-control.json"
+    lower_control_file.write_text('{"cases": []}\n', encoding="utf-8")
 
     with pytest.raises(RuntimeError, match="release proof inputs could not be sealed"):
         module.run_campaign(
@@ -1093,8 +1098,9 @@ def test_campaign_refuses_release_execution_when_inputs_cannot_be_sealed(tmp_pat
             output_dir=tmp_path / "out",
             telemetry_dir=tmp_path / "telemetry",
             release_case_files=(case_file,),
-            release_audit_file=audit_file,
-            evidence_output_dir=tmp_path / "evidence",
+                release_audit_file=audit_file,
+                evidence_output_dir=tmp_path / "evidence",
+                lower_capability_control_file=lower_control_file,
         )
 
 
@@ -1121,6 +1127,7 @@ def test_semantic_release_inputs_are_forwarded_by_path_without_parent_sealing(tm
         case_files=(holdout_path,),
         semantic_annotations_file=holdout_path,
         evaluation_split_manifest=manifest_path,
+        lower_capability_control_file=tmp_path / "lower-capability-control.v1.json",
     )
 
     assert release_root == tmp_path
@@ -1135,6 +1142,7 @@ def test_semantic_release_inputs_are_forwarded_by_path_without_parent_sealing(tm
         final_holdout_run_ledger=tmp_path / "final-holdout-run-ledger.json",
         implementation_revision="a" * 40,
         distribution_provenance_file=provenance_path,
+        lower_capability_control_file=tmp_path / "lower-capability-control.v1.json",
     )[0]
     command = module._matrix_command(  # noqa: SLF001
         shard=shard,
@@ -1188,10 +1196,13 @@ def test_release_proof_input_manifest_binds_transitive_audit_trail(tmp_path: Pat
             shutil.copy2(source, destination)
     case_file = copied_root / "greenfield-release-source-provenanced.v3.json"
     audit_file = copied_root / "audit-evidence-v15/greenfield-release-audit.v9.json"
+    lower_control_file = tmp_path / "lower-capability-control.json"
+    _write_case_file(lower_control_file, name="lower capability control", stressors=())
 
     references = module._release_proof_input_manifest(  # noqa: SLF001
         case_files=(case_file,),
         release_audit_file=audit_file,
+        lower_capability_control_file=lower_control_file,
         repo_root=tmp_path / "repo",
     )
 
@@ -1201,6 +1212,7 @@ def test_release_proof_input_manifest_binds_transitive_audit_trail(tmp_path: Pat
         "release-audit-request-plan",
         "release-audit-source-verifications",
         "release-audit-review-results",
+        "lower-capability-control-file",
     }
     assert any(reference["kind"].startswith("release-source-artifact:") for reference in references)
     snapshot = module._seal_release_proof_inputs(  # noqa: SLF001
@@ -1208,6 +1220,7 @@ def test_release_proof_input_manifest_binds_transitive_audit_trail(tmp_path: Pat
         release_audit_file=audit_file,
         repo_root=tmp_path / "repo",
         temp_parent=tmp_path / "snapshots",
+        lower_capability_control_file=lower_control_file,
     )
     assert snapshot is not None
     snapshot_manifest = json.loads(snapshot.manifest_path.read_text(encoding="utf-8"))
@@ -1219,6 +1232,9 @@ def test_release_proof_input_manifest_binds_transitive_audit_trail(tmp_path: Pat
         "tests/fixtures/greenfield-release-corpus/audit-evidence-v15/greenfield-release-audit.v9.json"
     )
     assert snapshot_manifest["input_references"]
+    assert snapshot.lower_capability_control_file == (
+        snapshot.root / "supplemental/lower-capability-control.v1.json"
+    )
     source_case = json.loads(case_file.read_text(encoding="utf-8"))["cases"][0]
     source_artifact = (tmp_path / "repo") / source_case["provenance"]["source_artifact_path"]
     snapshot_artifact = snapshot.root / source_case["provenance"]["source_artifact_path"]
@@ -1246,6 +1262,8 @@ def test_campaign_builds_failed_subset_replays_from_sealed_release_cases(tmp_pat
         REPO_ROOT / "tests/fixtures/greenfield-release-corpus/audit-evidence-v15/greenfield-release-audit.v9.json"
     )
     captured: dict[str, object] = {}
+    lower_control_file = tmp_path / "lower-capability-control.json"
+    _write_case_file(lower_control_file, name="lower capability control", stressors=())
 
     def fake_run_tier(**kwargs):  # noqa: ANN001
         shard = kwargs["shards"][0]
@@ -1275,6 +1293,7 @@ def test_campaign_builds_failed_subset_replays_from_sealed_release_cases(tmp_pat
         release_case_files=(case_file,),
         release_audit_file=audit_file,
         evidence_output_dir=tmp_path / "evidence",
+        lower_capability_control_file=lower_control_file,
     )
 
     replay_sources = tuple(captured["source_case_files"])

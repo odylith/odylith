@@ -21,6 +21,10 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     product_intent_authority_snapshot_hash,
 )
+from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
+    PRODUCT_INTENT_AUTHORITY_VERSION,
+    REVIEWED_CANDIDATE_SHA256_KEY,
+)
 from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import atomic_fact_ledger_hash
 from odylith.runtime.domain_intelligence.greenfield_authored_proposal import build_authored_greenfield_proposal
 from tests.unit.runtime.greenfield_proposal_fixtures import compiled_greenfield_package_fixture
@@ -72,7 +76,7 @@ def test_product_create_transaction_carries_confirmed_intent_authority_block(tmp
     payload = product_create_transaction_to_dict(transaction)
 
     persisted = payload["intent_authority"]
-    assert persisted["version"] == "odylith.product-intent-authority.v11"
+    assert persisted["version"] == PRODUCT_INTENT_AUTHORITY_VERSION
     assert persisted["origin"] == "verified_typed_envelope"
     assert persisted["decision"] == "confirmed_intent_accepted"
     assert persisted["fact_authority"] == "product_facts"
@@ -87,6 +91,9 @@ def test_product_create_transaction_carries_confirmed_intent_authority_block(tmp
     assert persisted["atomic_ledger_version"] == "odylith.product-intent-atomic-facts.v3"
     assert persisted["atomic_facts"]
     assert persisted["atomic_custody_sha256"] == atomic_fact_ledger_hash(persisted["atomic_facts"])
+    assert persisted[REVIEWED_CANDIDATE_SHA256_KEY] == authority[
+        REVIEWED_CANDIDATE_SHA256_KEY
+    ]
     assert persisted["operating_envelope"]["status"] == "supported"
     assert persisted["authority_snapshot_sha256"] == product_intent_authority_snapshot_hash(persisted)
     assert persisted["material_fields"]["first_path"]["custody_state"] == "accepted_fact"

@@ -9,6 +9,9 @@ import pytest
 from odylith.runtime.domain_intelligence import greenfield_create_transaction as transactions
 from odylith.runtime.domain_intelligence import greenfield_commit_transaction as commits
 from odylith.runtime.domain_intelligence import greenfield_preconfirm_engine as engine
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_RELATION_SET_SHA256_KEY,
+)
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
 from tests.unit.runtime.greenfield_authored_proposal_fixtures import (
     _canonical_model_authored_greenfield_fixture,
@@ -94,7 +97,12 @@ def test_review_dispatch_window_cannot_exceed_remaining_shared_window() -> None:
         (("model_authoring", "candidate_review", "elapsed_seconds"), -0.001),
     ] + [
         (("model_authoring", "candidate_review", field), value)
-        for field in ("source_sha256", "candidate_sha256", "product_facts_sha256")
+        for field in (
+            "source_sha256",
+            "candidate_sha256",
+            "product_facts_sha256",
+            AUTHORED_RELATION_SET_SHA256_KEY,
+        )
         for value in (None, "a" * 63, "g" * 64, "A" * 64)
     ] + [
         (path, value)
@@ -218,7 +226,15 @@ def test_serialized_receipt_keeps_all_timing_and_requires_no_model_on_readback(
     assert committed.commit_manifest_preview == compiled_transaction.quality_manifest
 
 
-@pytest.mark.parametrize("field", ["source_sha256", "product_facts_sha256"])
+@pytest.mark.parametrize(
+    "field",
+    [
+        "source_sha256",
+        "candidate_sha256",
+        "product_facts_sha256",
+        AUTHORED_RELATION_SET_SHA256_KEY,
+    ],
+)
 def test_replayed_review_fails_even_with_recomputed_transaction_hash(
     compiled_transaction, tmp_path: Path, field: str,
 ) -> None:

@@ -209,8 +209,10 @@ def test_product_only_path_builds_complete_source_bound_proposal_without_a_fake_
         semantics = row["provisional_workstream_contract"]
         assert semantics["decision_refs"]["customer"] == customer_ref
         assert row["customer"] == (
-            "Assumption — Service owners are the primary beneficiaries of feed health receipts."
+            "Customer or beneficiary — Assumption — Service owners are the primary "
+            "beneficiaries of feed health receipts."
         )
+        assert "Receipt Engine" not in row["customer"]
     context = next(
         row for row in proposal["diagrams"] if row["slug"].endswith("system-context")
     )

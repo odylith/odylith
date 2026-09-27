@@ -7,6 +7,12 @@ from pathlib import Path
 from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
+    CANDIDATE_REVIEW_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_RELATION_SET_SHA256_KEY,
+)
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
 )
@@ -17,6 +23,9 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
     STANDARD_PROFILE_ID,
     get_greenfield_model_profile,
 )
+from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
+    REVIEWED_CANDIDATE_SHA256_KEY,
+)
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import (
     PRECONFIRM_ENGINE_VERSION,
     PRECONFIRM_QUALITY_MANIFEST_VERSION,
@@ -24,6 +33,7 @@ from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import (
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
     RemainingCandidateProvider,
+    admitted_review_response,
     authored_response,
 )
 
@@ -87,16 +97,19 @@ def approved_authored_quality_manifest_fixture(
                 },
             },
             "candidate_review": {
-                "version": "odylith.greenfield.candidate-review.v10",
+                "version": CANDIDATE_REVIEW_VERSION,
                 "status": "admitted",
                 "source_sha256": authority.get("markdown_source_sha256", "0" * 64),
-                "candidate_sha256": "1" * 64,
+                "candidate_sha256": authority.get(
+                    REVIEWED_CANDIDATE_SHA256_KEY, "1" * 64
+                ),
                 "product_facts_sha256": authority.get("product_facts_sha256", "2" * 64),
-                "admission_witness": {
-                    "participant_fact": {"field": "human_actors", "row": 1},
-                    "task_event_order": 1,
-                    "result_event_order": 1,
-                },
+                AUTHORED_RELATION_SET_SHA256_KEY: authority.get(
+                    AUTHORED_RELATION_SET_SHA256_KEY, "3" * 64
+                ),
+                "admission_witness": admitted_review_response(
+                    result_event_order=1
+                )["admission_witness"],
                 "elapsed_seconds": 0.25,
                 "model_profile": {
                     "profile_id": profile.profile_id,

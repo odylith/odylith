@@ -22,6 +22,8 @@ def test_provenance_matches_only_enforces_generation_when_requested(tmp_path: Pa
     actual = dict(expected)
     actual["sync_generation"] = 1
 
+    assert expected["repo_root"] == "."
+
     assert derivation_provenance.provenance_matches(
         actual=actual,
         expected=expected,
@@ -32,6 +34,19 @@ def test_provenance_matches_only_enforces_generation_when_requested(tmp_path: Pa
         expected=expected,
         require_generation=True,
     )
+
+
+def test_surface_runtime_contract_uses_repo_relative_output_path(tmp_path: Path) -> None:
+    contract = derivation_provenance.build_surface_runtime_contract(
+        repo_root=tmp_path,
+        surface="radar",
+        runtime_mode="standalone",
+        built_from="test",
+        cache_hit=False,
+        output_path=tmp_path / "odylith/radar/radar.html",
+    )
+
+    assert contract["output_path"] == "odylith/radar/radar.html"
 
 
 def test_governed_sync_session_persists_debug_manifest(tmp_path: Path) -> None:

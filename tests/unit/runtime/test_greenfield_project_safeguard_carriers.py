@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+from copy import deepcopy
 import json
 from pathlib import Path
 
-from odylith.runtime.domain_intelligence import greenfield_apply_components
+import pytest
+
+from odylith.runtime.domain_intelligence import greenfield_apply_components, proposal_tribunal
 from odylith.runtime.domain_intelligence.greenfield_apply_prewrite import (
     preview_accepted_project_memory,
     preview_project_dashboard_payload,
@@ -36,6 +39,8 @@ SAFEGUARD_ASSUMPTION = (
 )
 COMPONENT_VERIFICATION = "Read back the exact test value assigned to boundary 1."
 WORKSTREAM_VERIFICATION = "An independent read returns the test value from boundary 1."
+RISK_STATEMENT = "Sensitive household information could be exposed outside assigned intake staff."
+RISK_VERIFICATION = "Verify unassigned users cannot read the household record."
 
 
 def test_project_carriers_preserve_advisory_safeguards_without_source_promotion(
@@ -106,8 +111,11 @@ def test_project_carriers_preserve_advisory_safeguards_without_source_promotion(
     assert first_workstream["radar_sections"]["Test Strategy"] != (
         first_workstream["radar_sections"]["Validation"]
     )
-    assert SAFEGUARD_ASSUMPTION in first_workstream["radar_sections"]["Assumptions"]
+    assert "Assumptions" not in first_workstream["radar_sections"]
+    assert SAFEGUARD_ASSUMPTION not in json.dumps(first_workstream)
+    assert RISK_STATEMENT in first_workstream["radar_sections"]["Risks"]
     assert COMPONENT_VERIFICATION in rendered_specs["Structural test boundary 1"]
+    assert RISK_STATEMENT in rendered_specs["Structural test boundary 1"]
     assert WORKSTREAM_VERIFICATION in next_steps["implementation_prompt"]
     assert any(
         row["title"] == "Proposed Delivery Dependencies and Acceptance"
@@ -120,8 +128,37 @@ def test_project_carriers_preserve_advisory_safeguards_without_source_promotion(
         for row in proposal["diagrams"]
     )
 
-    assert proposal["risks"] == []
-    assert proposal["security_compliance"] == {}
+    response_risk = proposal["intent"]["authored_semantics"]["provisional_design"][
+        "risk_posture"
+    ]["items"][0]
+    assert proposal["risks"] == [response_risk]
+    assert response_risk["statement"] == RISK_STATEMENT
+    assert proposal["security_compliance"] == {
+        "authority_kind": "provisional_design",
+        "status": "material_risks_identified",
+        "rationale": "The proposed household-data path has a material access boundary.",
+        "risk_refs": [
+            "/authored_semantics/provisional_design/risk_posture/items/0"
+        ],
+    }
+    assert dashboard["risk_items"] == [{
+        "risk": "Privacy risk",
+        "meaning": (
+            f"{RISK_STATEMENT}\nCategory: privacy\n"
+            "Trigger: A user without an intake assignment requests the record.\n"
+            "Mitigation: Require assignment-scoped authorization before disclosure.\n"
+            f"Verification: {RISK_VERIFICATION}\nScope: Components: test-boundary-1; "
+            "workstreams: test-work-1; source events: 1."
+        ),
+        "status": "material_risks_identified",
+        "category": "privacy",
+        "trigger": "A user without an intake assignment requests the record.",
+        "mitigation": "Require assignment-scoped authorization before disclosure.",
+        "verification": RISK_VERIFICATION,
+        "scope": (
+            "Components: test-boundary-1; workstreams: test-work-1; source events: 1."
+        ),
+    }]
     assert SAFEGUARD_ASSUMPTION not in proposal["intent"]["operational_constraints"]
     assert SAFEGUARD_ASSUMPTION not in proposal["intent"]["evidence_requirements"]
 
@@ -141,6 +178,30 @@ def test_empty_assumptions_keep_project_carriers_empty(tmp_path: Path) -> None:
     )
 
 
+@pytest.mark.parametrize(
+    "mutate",
+    (
+        lambda proposal: proposal["risks"].clear(),
+        lambda proposal: proposal["security_compliance"]["risk_refs"].clear(),
+        lambda proposal: proposal["components"][0]["component_contract"]["risk_items"].clear(),
+        lambda proposal: proposal["backlog"][0]["radar_sections"].update(
+            {"Risks": "No material risks were identified."}
+        ),
+    ),
+)
+def test_material_risk_projection_cannot_be_dropped_or_rewritten(
+    tmp_path: Path, mutate,
+) -> None:
+    proposal = deepcopy(_proposal(tmp_path))
+    mutate(proposal)
+
+    decision = proposal_tribunal.run_greenfield_tribunal(
+        proposal, release_selector="0.0.1",
+    )
+
+    assert not decision.passed
+
+
 def _proposal(tmp_path: Path, *, include_assumption: bool = True) -> dict[str, object]:
     source = _source()
     response = _response(source)
@@ -149,6 +210,23 @@ def _proposal(tmp_path: Path, *, include_assumption: bool = True) -> dict[str, o
         if include_assumption
         else []
     )
+    response["result"]["provisional_design"]["risk_posture"] = {
+        "status": "material_risks_identified",
+        "rationale": "The proposed household-data path has a material access boundary.",
+        "items": [
+            {
+                "key": "household-access",
+                "category": "privacy",
+                "statement": RISK_STATEMENT,
+                "trigger": "A user without an intake assignment requests the record.",
+                "mitigation": "Require assignment-scoped authorization before disclosure.",
+                "verification": RISK_VERIFICATION,
+                "component_keys": ["test-boundary-1"],
+                "workstream_keys": ["test-work-1"],
+                "related_event_orders": [1],
+            }
+        ],
+    }
     provider = RemainingCandidateProvider(response)
     candidate = materialize_model_authored_intent(
         prompt=source,

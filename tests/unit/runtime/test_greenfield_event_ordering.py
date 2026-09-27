@@ -228,16 +228,23 @@ def _authored_input():
         "version": PROVISIONAL_DESIGN_VERSION, "authority_kind": "provisional_design",
         "components": [
             {"key": f"boundary-{index}", "name": f"Boundary {index}", "responsibility": "Review requests.",
-             "supported_event_orders": [min(index, 3)], "verification": "Inspect reviewed requests."}
+             "supported_event_orders": [min(index, 3)], "verification": "Inspect reviewed requests.",
+             "verification_event_orders": [min(index, 3)]}
             for index in range(1, 5)
         ],
         "workstreams": [
             {"key": f"work-{index}", "title": f"Implement boundary {index}",
              "component_keys": [f"boundary-{index}"], "depends_on": [],
-             "deliverable": "Reviewed requests.", "verification": "Inspect a recorded review."}
+             "deliverable": "Reviewed requests.", "verification": "Inspect a recorded review.",
+             "verification_event_orders": [min(index, 3)]}
             for index in range(1, 5)
         ],
         "exchanges": [], "first_run": _walk(),
+        "risk_posture": {
+            "status": "no_material_risks_identified",
+            "rationale": "This ordering fixture carries no product-domain risk claim.",
+            "items": [],
+        },
     }
     response = {
         "version": author.GREENFIELD_INTENT_AUTHORING_VERSION,

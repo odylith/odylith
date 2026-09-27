@@ -46,6 +46,7 @@ def _design(*, event_orders: tuple[int, ...] = (1, 2), count: int = 4) -> dict[s
                 "responsibility": f"Own proposed responsibility {index}.",
                 "supported_event_orders": list(event_orders),
                 "verification": f"Verify the boundary outcome for capability {index}.",
+                "verification_event_orders": list(event_orders),
             }
             for index in range(count)
         ],
@@ -56,6 +57,7 @@ def _design(*, event_orders: tuple[int, ...] = (1, 2), count: int = 4) -> dict[s
                 "depends_on": [f"delivery-{index - 1}"] if index else [],
                 "deliverable": f"A working capability {index} boundary.",
                 "verification": f"Exercise acceptance for delivery {index}.",
+                "verification_event_orders": list(event_orders),
             }
             for index in range(count)
         ],
@@ -63,6 +65,11 @@ def _design(*, event_orders: tuple[int, ...] = (1, 2), count: int = 4) -> dict[s
             "from_component": "capability-0", "to_component": "capability-1",
             "contract": "The selected record and its validation result.",
         }],
+        "risk_posture": {
+            "status": "no_material_risks_identified",
+            "rationale": "This structural fixture carries no product-domain risk claim.",
+            "items": [],
+        },
     }
 
 
@@ -166,6 +173,159 @@ def test_every_source_action_and_proposed_component_has_delivery_support() -> No
         validate_provisional_design(design, event_orders=(1, 2))
 
 
+def test_verification_coverage_must_reach_every_supported_source_action() -> None:
+    design = _design()
+    for component in design["components"]:
+        component["verification_event_orders"] = [1]
+    with pytest.raises(ValueError, match="verify every source action"):
+        validate_provisional_design(design, event_orders=(1, 2))
+
+    design = _design()
+    for workstream in design["workstreams"]:
+        workstream["verification_event_orders"] = [1]
+    with pytest.raises(ValueError, match="verify every source action"):
+        validate_provisional_design(design, event_orders=(1, 2))
+
+
+def test_material_risk_posture_requires_closed_design_and_evidence_references() -> None:
+    design = _design()
+    risk = {
+        "key": "record-disclosure",
+        "category": "privacy",
+        "statement": "A record could be disclosed outside its intended boundary.",
+        "trigger": "An unassigned operator requests the record.",
+        "mitigation": "Require assignment-scoped authorization.",
+        "verification": "Verify an unassigned operator cannot retrieve the record.",
+        "component_keys": ["capability-0"],
+        "workstream_keys": ["delivery-0"],
+        "related_event_orders": [1],
+    }
+    design["risk_posture"] = {
+        "status": "material_risks_identified",
+        "rationale": "The proposed record path crosses an access boundary.",
+        "items": [risk],
+    }
+    assert validate_provisional_design(design, event_orders=(1, 2)) == design
+
+    design["risk_posture"]["items"][0]["component_keys"] = ["unknown"]
+    with pytest.raises(ValueError, match="invalid design references"):
+        validate_provisional_design(design, event_orders=(1, 2))
+
+
+def test_material_risk_allocation_can_span_multiple_components_and_workstreams() -> None:
+    design = _design()
+    design["workstreams"][0]["component_keys"] = ["capability-0", "capability-1"]
+    design["workstreams"][1]["component_keys"] = ["capability-1", "capability-2"]
+    design["risk_posture"] = {
+        "status": "material_risks_identified",
+        "rationale": "The proposed record path crosses several owned delivery boundaries.",
+        "items": [{
+            "key": "record-boundary-failure",
+            "category": "operational",
+            "statement": "A record could cross an incomplete delivery boundary.",
+            "trigger": "A partially processed record advances to the next component.",
+            "mitigation": "Require each owning workstream to reject incomplete records.",
+            "verification": "Verify every named component rejects an incomplete record.",
+            "component_keys": ["capability-0", "capability-1", "capability-2"],
+            "workstream_keys": ["delivery-0", "delivery-1"],
+            "related_event_orders": [1, 2],
+        }],
+    }
+
+    assert validate_provisional_design(design, event_orders=(1, 2)) == design
+
+
+def test_material_risk_events_may_span_selected_component_support() -> None:
+    design = _design()
+    design["components"][0]["supported_event_orders"] = [1]
+    design["components"][0]["verification_event_orders"] = [1]
+    design["components"][1]["supported_event_orders"] = [2]
+    design["components"][1]["verification_event_orders"] = [2]
+    design["workstreams"][0]["verification_event_orders"] = [1]
+    design["workstreams"][1]["verification_event_orders"] = [2]
+    design["risk_posture"] = {
+        "status": "material_risks_identified",
+        "rationale": "The proposed record path crosses two event-bearing boundaries.",
+        "items": [{
+            "key": "record-boundary-failure",
+            "category": "operational",
+            "statement": "A record could cross an incomplete delivery boundary.",
+            "trigger": "A partially processed record advances to the next component.",
+            "mitigation": "Require each owning workstream to reject incomplete records.",
+            "verification": "Verify every named component rejects an incomplete record.",
+            "component_keys": ["capability-0", "capability-1"],
+            "workstream_keys": ["delivery-0", "delivery-1"],
+            "related_event_orders": [1, 2],
+        }],
+    }
+
+    assert validate_provisional_design(design, event_orders=(1, 2)) == design
+
+
+def test_material_risk_rejects_event_not_supported_by_selected_components() -> None:
+    design = _design()
+    design["components"][0]["supported_event_orders"] = [1]
+    design["components"][0]["verification_event_orders"] = [1]
+    design["workstreams"][0]["verification_event_orders"] = [1]
+    design["risk_posture"] = {
+        "status": "material_risks_identified",
+        "rationale": "The proposed record path crosses an event-bearing boundary.",
+        "items": [{
+            "key": "record-boundary-failure",
+            "category": "operational",
+            "statement": "A record could cross an incomplete delivery boundary.",
+            "trigger": "A partially processed record advances to the next component.",
+            "mitigation": "Require the owning workstream to reject incomplete records.",
+            "verification": "Verify the named component rejects an incomplete record.",
+            "component_keys": ["capability-0"],
+            "workstream_keys": ["delivery-0"],
+            "related_event_orders": [2],
+        }],
+    }
+
+    with pytest.raises(ValueError, match="source events are not supported by its components"):
+        validate_provisional_design(design, event_orders=(1, 2))
+
+
+@pytest.mark.parametrize(
+    ("risk_component_keys", "risk_workstream_keys"),
+    [
+        (["capability-0", "capability-1"], ["delivery-0"]),
+        (["capability-0"], ["delivery-0", "delivery-1"]),
+        (["capability-0", "capability-1"], ["delivery-2", "delivery-3"]),
+    ],
+)
+def test_material_risk_rejects_crossed_component_workstream_allocation(
+    risk_component_keys: list[str], risk_workstream_keys: list[str],
+) -> None:
+    design = _design()
+    design["risk_posture"] = {
+        "status": "material_risks_identified",
+        "rationale": "The proposed record path crosses several owned delivery boundaries.",
+        "items": [{
+            "key": "record-boundary-failure",
+            "category": "operational",
+            "statement": "A record could cross an incomplete delivery boundary.",
+            "trigger": "A partially processed record advances to the next component.",
+            "mitigation": "Require each owning workstream to reject incomplete records.",
+            "verification": "Verify every named component rejects an incomplete record.",
+            "component_keys": risk_component_keys,
+            "workstream_keys": risk_workstream_keys,
+            "related_event_orders": [1, 2],
+        }],
+    }
+
+    with pytest.raises(ValueError, match="incoherent component/workstream allocation"):
+        validate_provisional_design(design, event_orders=(1, 2))
+
+
+def test_no_material_risk_posture_requires_an_explicit_empty_reviewed_result() -> None:
+    design = _design()
+    design["risk_posture"]["items"] = [{"key": "unexpected"}]
+    with pytest.raises(ValueError):
+        validate_provisional_design(design, event_orders=(1, 2))
+
+
 def test_duplicate_exchanges_are_rejected_without_banning_distinct_contracts() -> None:
     design = _design()
     duplicate = deepcopy(design["exchanges"][0])
@@ -243,6 +403,11 @@ def test_model_schema_declares_the_same_closed_authority_boundary() -> None:
         row_schema = properties[owner]["items"]
         assert row_schema["additionalProperties"] is False
         assert set(row_schema["required"]) == set(_design()[owner][0])
+    assert properties["risk_posture"]["additionalProperties"] is False
+    assert set(properties["risk_posture"]["required"]) == set(_design()["risk_posture"])
+    assert properties["risk_posture"]["properties"]["items"]["items"][
+        "additionalProperties"
+    ] is False
 
 
 def _enveloped_intent() -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
@@ -305,6 +470,7 @@ def _enveloped_intent() -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]
     )
     envelope = build_product_intent_envelope(
         intent, source_text=source, source_path="evidence.md", source_format="typed_envelope_json",
+        reviewed_candidate_sha256="a" * 64,
         authored_source_spans=spans, authored_atomic_claims=claims,
         authored_source_sha256=hashlib.sha256(source.encode()).hexdigest(),
     )

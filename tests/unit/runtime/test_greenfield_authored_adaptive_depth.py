@@ -6,6 +6,9 @@ from pathlib import Path
 from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
+    authored_first_run_text,
+)
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
     materialize_model_authored_intent,
 )
@@ -347,10 +350,14 @@ def test_boundary_free_source_keeps_complete_structural_design_projection(
         "Proposed Capability Support and Source Facts",
     ]
     project = proposal["backlog"][0]
-    assert "Berth requests are hard to review." in project["problem"]
+    assert project["problem"].startswith("Unimplemented assigned source-event support — Event ")
     assert proposal["intent"]["product_story"] == "Dock attendants receive a reviewable berth receipt."
-    assert "Harbor Desk records one berth request and shows its receipt." in project["product_view"]
-    assert "A dock attendant sees a signed berth receipt." in project["radar_sections"]["Source Success Metrics"]
+    assert project["product_view"].startswith("Proposed workstream outcome — ")
+    assert "Berth requests are hard to review." not in project["problem"]
+    assert "Harbor Desk records one berth request and shows its receipt." not in project["product_view"]
+    assert project["radar_sections"]["Source Success Metrics"] == (
+        "Project-level success metrics remain governed by the Product Intent."
+    )
     _assert_structural_design_projection_preserves_source(proposal)
     workstream_titles = [row["title"] for row in proposal["backlog"]]
     assert all(
@@ -422,16 +429,20 @@ def test_structured_source_projects_distinct_canonical_design_with_source_custod
         "Receipt Ledger publishes a signed cargo receipt",
     ]
     for row, workstream in zip(backlog, design["workstreams"], strict=True):
-        assert row["problem"] == f"Source fact — {intent['problem']}"
-        assert row["customer"] == f"Source fact — {intent['customer']}"
-        assert row["opportunity"] == f"Source fact — {intent['opportunity']}"
-        assert row["product_view"] == (
-            f"Source fact — {intent['product_view']}\n\n"
-            f"Proposed workstream view — {workstream['deliverable']}"
-        )
-        assert all(value in row["radar_sections"]["Non-Goals"] for value in intent["non_goals"])
+        assert row["problem"].startswith("Unimplemented assigned source-event support — Event ")
+        assert row["customer"] == f"Customer or beneficiary — {intent['customer']}"
+        assert row["opportunity"].startswith("Proposed component scope:\n\n")
+        assert row["product_view"] == f"Proposed workstream outcome — {workstream['deliverable']}"
+        for field in ("problem", "customer", "opportunity", "product_view"):
+            assert row["provisional_workstream_contract"]["decision_refs"][field] == f"/{field}"
+            rendered = "\n".join([
+                row["problem"], row["customer"], row["opportunity"], row["product_view"],
+                *row["radar_sections"].values(),
+            ])
+            assert (intent[field] in rendered) is (field == "customer")
+        assert all(value not in row["radar_sections"]["Non-Goals"] for value in intent["non_goals"])
         assert all(
-            value in row["radar_sections"]["Operational Constraints"]
+            value not in row["radar_sections"]["Operational Constraints"]
             for value in intent["operational_constraints"]
         )
     rendered_support = "\n".join(
@@ -545,20 +556,20 @@ def test_direct_evidence_graph_material_facts_survive_structural_design_projecti
 
     backlog = proposal["backlog"]
     assert [row["workstream_role"] for row in backlog] == ["provisional_design"] * 4
-    workstreams = proposal["intent"]["authored_semantics"]["provisional_design"]["workstreams"]
-    for row, workstream in zip(backlog, workstreams, strict=True):
+    for row in backlog:
         for index, (field, statement) in enumerate(decisions.items()):
-            expected = f"Assumption — {statement}"
-            if field == "product_view":
-                expected += f"\n\nProposed workstream view — {workstream['deliverable']}"
-            assert row[field] == expected
+            rendered = "\n".join([
+                row["problem"], row["customer"], row["opportunity"], row["product_view"],
+                *row["radar_sections"].values(),
+            ])
+            assert (statement in rendered) is (field == "customer")
             assert row["provisional_workstream_contract"]["decision_refs"][field] == (
                 f"/assumptions/{index}"
             )
         assert "Assumptions" not in row["radar_sections"]
-        assert "Do not override a safety hold." in row["radar_sections"]["Non-Goals"]
-        assert "Preserve the release decision." in row["radar_sections"]["Operational Constraints"]
-        assert "Keep inspection evidence reviewable." in row["radar_sections"]["Operational Constraints"]
+        assert "Do not override a safety hold." not in row["radar_sections"]["Non-Goals"]
+        assert "Preserve the release decision." not in row["radar_sections"]["Operational Constraints"]
+        assert "Keep inspection evidence reviewable." not in row["radar_sections"]["Operational Constraints"]
     brief_sections = {
         section["section"]: section["must_capture"]
         for section in proposal["project_brief"]["blueprint_sections"]
@@ -658,13 +669,7 @@ def test_authored_service_readiness_keeps_nonapproval_as_a_safety_boundary(
         "Automatic operational approval is outside the first release."
     ]
     first_path_contract = proposal["semantic_model"]["first_path_contract"]
-    assert first_path_contract["raw_path"] == "Proposed first run:\n" + "\n".join(
-        (
-            "Coordinator records service capacity evidence",
-            "Readiness Ledger records review status",
-            "Readiness Board shows a reviewable readiness report",
-        )
-    )
+    assert first_path_contract["raw_path"] == authored_first_run_text(proposal["intent"])
     assert first_path_contract["visible_result"] == "reviewable readiness report"
     assert "automatic operational approval" not in str(first_path_contract).casefold()
 
@@ -740,13 +745,7 @@ def test_authored_solar_path_keeps_user_outcome_distinct_from_meta_proof(
     )
 
     first_path_contract = proposal["semantic_model"]["first_path_contract"]
-    assert first_path_contract["raw_path"] == "Proposed first run:\n" + "\n".join(
-        (
-            "Homeowner connects a solar inverter and battery",
-            "Forecast Engine computes a forecast-driven dispatch schedule",
-            f"Plan Board shows {visible_result}",
-        )
-    )
+    assert first_path_contract["raw_path"] == authored_first_run_text(proposal["intent"])
     assert first_path_contract["visible_result"] == visible_result
     assert proof_boundary == proposal["intent"]["proof_boundary"]
     assert "Release proof succeeds" not in first_path_contract["raw_path"]

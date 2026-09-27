@@ -115,6 +115,7 @@ def _authored_stage_inputs(repo_root: Path) -> tuple[dict[str, object], dict[str
         source_text=evidence,
         source_path=paths.evidence_markdown.relative_to(repo_root),
         source_format="operator_prompt",
+        reviewed_candidate_sha256=result.candidate_review["candidate_sha256"],
         model_authoring={
             role: getattr(result, role)["model_profile"]
             for role in ("participant_selection", "remaining_candidate_authoring")

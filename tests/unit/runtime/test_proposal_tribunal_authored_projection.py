@@ -146,7 +146,12 @@ def test_authored_typed_projection_passes_structural_tribunal() -> None:
             "responsibility": "Owns release boundary, rollback, and promotion readiness.",
         },
     )
-    assert proposal["security_compliance"] == {}
+    assert proposal["security_compliance"] == {
+        "authority_kind": "provisional_design",
+        "status": "no_material_risks_identified",
+        "rationale": "This structural fixture carries no product-domain risk claim.",
+        "risk_refs": [],
+    }
     assert len(proposal["components"]) == 4
     component = proposal["components"][0]
     assert set(component["component_contract"]) == {
@@ -157,6 +162,8 @@ def test_authored_typed_projection_passes_structural_tribunal() -> None:
         "supporting_events",
         "exchanges",
         "delivery_workstreams",
+        "risk_refs",
+        "risk_items",
     }
     semantics = proposal["intent"][AUTHORED_SEMANTICS_KEY]
     assert component["component_id"] == "test-boundary-1"

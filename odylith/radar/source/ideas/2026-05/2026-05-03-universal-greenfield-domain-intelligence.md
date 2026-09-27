@@ -80,6 +80,49 @@ superseded_by:
   consumed and must not be inspected, rerun, or used as tuning data. No retry,
   repair, fallback, parser, regex, model ladder, or second candidate is permitted.
 
+## V33 Source-Local Release Frontier (2026-09-27)
+
+- The bounded V32 repair is implemented without a new semantic mechanism.
+  Typed provisional design now owns verification and proportional risk posture;
+  one presenter owns actor-aware event copy across Project, Radar, and Atlas;
+  retained evidence binds the exact semantic publication chain; browser proof
+  covers portable retained navigation and real mobile diagram interaction; and
+  the one-shot holdout ledger is claimed before any protected input is opened.
+- Exact reviewer custody now binds source, product facts, canonical candidate,
+  authored relations, provisional design coverage, and the sealed authority.
+  Independent transaction re-adjudication finds no P0/P1. The settled source
+  passes `1,826/1,826` fast, `292/292` lifecycle, `1,745/1,745` install, and
+  `6/6` direct Project browser integration tests.
+- Next gate is delivery, not feature expansion: build one complete immutable
+  distribution, prove clean install and the full generated-repository browser
+  matrix, run one fresh disclosed public qualification with independent
+  semantic/UX review, and only then verify the frozen hashes and consume the
+  untouched final holdout once. No regex/parser stack, retry, repair author,
+  fallback candidate, model ladder, or protected-case tuning is permitted.
+
+## V32 Fresh Public Control And Entrypoint Gate (2026-09-27)
+
+- Immutable build `76548dc22f782f77e538d30c45b80d72bcbc3be1` passed one genuinely new disclosed
+  Astra-medium control on the first attempt with zero automated findings, 4 Radar
+  workstreams, 4 Registry components, 5 Atlas diagrams, 14 trace nodes, 5
+  implementation prompts, and complete desktop/mobile browser-state proof.
+  The exact host and reviewer receipts plus every generated artifact and
+  screenshot are retained outside the work namespace. Proposal time was
+  `128.096s`: inside the safety window, above the advisory standard target.
+- Independent semantic and UX review then blocked release on general product and
+  proof-oracle defects: incomplete handoff/signature acceptance, empty proposed
+  risk posture, repeated Radar project copy, visible subjectless event fragments,
+  false date-only conversion, non-durable retained navigation, ephemeral report
+  paths, and absent per-diagram mobile readability evidence. Transaction review
+  remains clean. Remove these P1 classes before another immutable qualification;
+  do not treat the self-reported `10/10` as release acceptance.
+- Before the full immutable qualification, align the maintained wrapper and
+  campaign shard command with the already-enforced exact host-native argv and
+  retained-evidence contract. Keep one candidate and one independent review;
+  add no retry, parser, regex, repair, fallback, or model ladder. Then run the
+  disclosed matrix, recovery/host/browser gates, and only after those pass seal
+  a new blind holdout.
+
 ## V28 Source-Custody Release Gate (2026-09-26)
 
 - Immutable V28 passed 30 disclosed cases, then committed the archive control

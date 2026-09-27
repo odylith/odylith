@@ -17,6 +17,7 @@ from greenfield_model_profiles import host_native_clarification_stage_observatio
 from greenfield_model_profiles import model_stage_observation_issues
 from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
     CANDIDATE_REVIEW_VERSION,
+    candidate_review_admission_witness_shape_issues,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     get_greenfield_model_profile,
@@ -173,30 +174,11 @@ def _host_native_result_binding_issues(
         issues.append("sealed candidate-review candidate hash is invalid")
     if not _is_sha256(review.get("product_facts_sha256")):
         issues.append("sealed candidate-review product-facts hash is invalid")
-    if not _valid_admission_witness(review.get("admission_witness")):
+    if candidate_review_admission_witness_shape_issues(
+        review.get("admission_witness")
+    ):
         issues.append("sealed candidate-review admission witness is invalid")
     return tuple(dict.fromkeys(issues))
-
-
-def _valid_admission_witness(value: Any) -> bool:
-    if not isinstance(value, Mapping) or set(value) != {
-        "participant_fact", "task_event_order", "result_event_order",
-    }:
-        return False
-    participant = value.get("participant_fact")
-    return bool(
-        isinstance(participant, Mapping)
-        and set(participant) == {"field", "row"}
-        and participant.get("field") in {
-            "customer", "external_systems", "human_actors", "internal_systems", "title",
-        }
-        and type(participant.get("row")) is int
-        and participant["row"] >= 1
-        and type(value.get("task_event_order")) is int
-        and value["task_event_order"] >= 1
-        and type(value.get("result_event_order")) is int
-        and value["result_event_order"] >= 1
-    )
 
 
 def sealed_model_profile_observation(

@@ -108,7 +108,7 @@ def test_authored_fact_view_preserves_unseen_typed_facts_without_prose_parsing()
     view = authored_fact_presenter.authored_fact_view(_project())
 
     assert view is not None
-    assert [(event.order, event.text) for event in view.events] == [
+    assert [(event.order, event.event_quote) for event in view.events] == [
         (1, EVENTS[0]),
         (2, EVENTS[1]),
         (3, EVENTS[2]),
@@ -155,6 +155,9 @@ def test_authored_fact_presenter_renders_repeated_nodes_in_exact_order() -> None
 
     assert focus.count("data-authored-fact-item") == 3
     assert "Proposed first run:" in focus
+    assert focus.count("data-authored-event-actor-label") == 3
+    assert focus.count("data-authored-event-quote") == 3
+    assert "Quartz Keeper — Quartz Keeper" not in focus
     assert 'data-authority-kind="provisional_design"' in focus
     assert focus.index(EVENTS[0]) < focus.index(EVENTS[1]) < focus.index(EVENTS[2])
     assert actors is not None
@@ -245,7 +248,7 @@ def test_result_first_inventory_displays_only_proposed_order_with_stable_source_
 
     view = authored_fact_presenter.authored_fact_view(project)
     assert view is not None
-    assert [(event.order, event.text) for event in view.events] == [
+    assert [(event.order, event.event_quote) for event in view.events] == [
         (2, EVENTS[0]), (3, EVENTS[1]), (1, EVENTS[2]),
     ]
     for rendered in (
@@ -272,7 +275,7 @@ def test_authored_fact_presenter_retains_actions_after_the_result() -> None:
     view = authored_fact_presenter.authored_fact_view(project)
 
     assert view is not None
-    assert [(event.order, event.text) for event in view.events] == list(enumerate(EVENTS, 1))
+    assert [(event.order, event.event_quote) for event in view.events] == list(enumerate(EVENTS, 1))
     rendered = authored_fact_presenter.render_authored_focus(project, render_text=_render_text)
     assert rendered.index(EVENTS[1]) < rendered.index(EVENTS[2])
 

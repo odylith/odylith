@@ -21,6 +21,7 @@ from odylith.runtime.domain_intelligence.greenfield_apply_diagrams import alloca
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
 from odylith.runtime.domain_intelligence.greenfield_provisional_package import (
     PROVISIONAL_DESIGN_ROOT, provisional_delivery_acceptance_text, provisional_exchange_text,
+    provisional_risk_text,
 )
 from odylith.runtime.governance import artifact_tribunal
 
@@ -65,7 +66,8 @@ def build_authored_component_authoring_inputs(
             "path": _required_scalar(component, "intended_path"),
             "category": "application", "owner": "repo", "product_layer": "application",
             "sources": (AUTHORED_SEMANTIC_ROOT,),
-            "workstreams": workstreams, "diagrams": diagrams, "risks": (),
+            "workstreams": workstreams, "diagrams": diagrams,
+            "risks": tuple(component.get("risks") or ()),
             "delivery_workstream_links": {
                 delivery["design_ref"]: dict(delivery_links[delivery["design_ref"]])
                 for delivery in component["component_contract"]["delivery_workstreams"]
@@ -141,6 +143,14 @@ def build_authored_component_spec(row: Mapping[str, Any]) -> str:
                 "Shared acceptance across " + ", ".join(f"`{key}`" for key in workstream["component_keys"]) + ".", "",
             ])
     lines.extend([
+        "## Proposed risks", "",
+        *(
+            [_evidence_block(provisional_risk_text(risk)) for risk in contract["risk_items"]]
+            or ["The reviewed provisional design identified no material risk for this component."]
+        ),
+        "",
+    ])
+    lines.extend([
         "## Source-event support", "",
         "These exact source events support the design; their actors retain ownership of their actions.", "",
     ])
@@ -165,7 +175,7 @@ def _provisional_component_contract(row: Mapping[str, Any]) -> Mapping[str, Any]
     contract = row.get("component_contract")
     fields = {
         "authority_kind", "design_ref", "provisional_component", "support_event_refs",
-        "supporting_events", "exchanges", "delivery_workstreams",
+        "supporting_events", "exchanges", "delivery_workstreams", "risk_refs", "risk_items",
     }
     if (
         row.get("projection_origin") != AUTHORED_PROJECTION_ORIGIN
@@ -221,6 +231,27 @@ def _provisional_component_contract(row: Mapping[str, Any]) -> Mapping[str, Any]
         raise ValueError("Registry component drifted from its proposed exchanges")
     if row.get("dependencies") != []:
         raise ValueError("Registry component cannot infer dependencies from proposed exchanges")
+    risks = contract.get("risk_items")
+    if not isinstance(risks, list) or any(not isinstance(item, Mapping) for item in risks):
+        raise ValueError("Registry component has malformed proposed risks")
+    if list(row.get("risks") or ()) != [provisional_risk_text(item) for item in risks]:
+        raise ValueError("Registry component drifted from its proposed risks")
+    if any(component.get("key") not in item.get("component_keys", ()) for item in risks):
+        raise ValueError("Registry component inherited an unrelated proposed risk")
+    risk_refs = contract.get("risk_refs")
+    risk_prefix = f"{PROVISIONAL_DESIGN_ROOT}/risk_posture/items/"
+    if (
+        not isinstance(risk_refs, list)
+        or len(risk_refs) != len(risks)
+        or len(set(risk_refs)) != len(risk_refs)
+        or any(
+            not isinstance(reference, str)
+            or not reference.startswith(risk_prefix)
+            or not reference.removeprefix(risk_prefix).isdecimal()
+            for reference in risk_refs
+        )
+    ):
+        raise ValueError("Registry component has invalid proposed risk references")
     events, orders = contract.get("supporting_events"), component.get("supported_event_orders")
     if not isinstance(events, list) or any(not isinstance(event, Mapping) for event in events):
         raise ValueError("Registry component has malformed source-event support")

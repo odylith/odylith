@@ -13,13 +13,15 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
     DECISION_FIELDS,
-    assumption_preview_values,
     assumption_targets,
     decision_copy,
     require_decision_assumptions,
 )
 from odylith.runtime.domain_intelligence.greenfield_authored_radar_ordering import (
     build_authored_ordering_decision,
+)
+from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
+    authored_event_display_text,
 )
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
@@ -43,6 +45,11 @@ def build_provisional_components(
     rows: list[dict[str, Any]] = []
     for index, component in enumerate(design["components"]):
         key = component["key"]
+        allocated_risks = [
+            (risk_index, deepcopy(risk))
+            for risk_index, risk in enumerate(design["risk_posture"]["items"])
+            if key in risk["component_keys"]
+        ]
         exchanges = [
             deepcopy(row) for row in design["exchanges"]
             if key in (row["from_component"], row["to_component"])
@@ -68,6 +75,11 @@ def build_provisional_components(
             ],
             "exchanges": exchanges,
             "delivery_workstreams": deliveries,
+            "risk_refs": [
+                f"{PROVISIONAL_DESIGN_ROOT}/risk_posture/items/{risk_index}"
+                for risk_index, _risk in allocated_risks
+            ],
+            "risk_items": [risk for _risk_index, risk in allocated_risks],
         }
         rows.append({
             "component_id": key,
@@ -83,6 +95,7 @@ def build_provisional_components(
                 provisional_delivery_acceptance_text(delivery["provisional_workstream"])
                 for delivery in deliveries
             ]],
+            "risks": [provisional_risk_text(risk) for _risk_index, risk in allocated_risks],
             "status": "planned",
             "qualification": "candidate",
             "evidence_tier": "user_intent",
@@ -99,19 +112,12 @@ def build_provisional_backlog(
     intent: Mapping[str, Any],
     diagram_slugs: Mapping[str, str],
 ) -> list[dict[str, Any]]:
-    """Give every proposed delivery canonical decisions and distinct acceptance."""
+    """Give every proposed delivery local scope and canonical decision references."""
 
     require_decision_assumptions(intent)
     design = provisional_design_from_intent(intent)
     assumptions = intent.get("assumptions", [])
     assumption_refs = assumption_targets(assumptions)
-    general_assumptions = [
-        row for row in assumptions if row["applies_to"] == "general"
-    ]
-    decisions = {
-        field: (f"Source fact — {intent[field]}" if intent.get(field) else decision_copy(intent, field))
-        for field in DECISION_FIELDS
-    }
     decision_refs = {
         field: f"/{field}" if intent.get(field) else assumption_refs[field]
         for field in DECISION_FIELDS
@@ -126,12 +132,32 @@ def build_provisional_backlog(
             order for key in component_keys for order in components[key]["supported_event_orders"]
         })
         supporting_events = [deepcopy(events[order]) for order in event_orders]
+        allocated_risks = [
+            (risk_index, deepcopy(risk))
+            for risk_index, risk in enumerate(design["risk_posture"]["items"])
+            if workstream["key"] in risk["workstream_keys"]
+        ]
+        event_scope = [
+            f"Event {event['order']}\n{authored_event_display_text(event)}"
+            for event in supporting_events
+        ]
+        component_scope = [
+            f"{components[key]['name']} — {components[key]['responsibility']}"
+            for key in component_keys
+        ]
         exchanges = [
             deepcopy(row) for row in design["exchanges"]
             if row["from_component"] in component_keys or row["to_component"] in component_keys
         ]
         deliverable = f"Proposed deliverable — {workstream['deliverable']}"
-        product_view = f"{decisions['product_view']}\n\nProposed workstream view — {workstream['deliverable']}"
+        local_problem = (
+            "Unimplemented assigned source-event support — "
+            + ", ".join(f"Event {order}" for order in event_orders)
+            + "."
+        )
+        local_customer = f"Customer or beneficiary — {decision_copy(intent, 'customer')}"
+        local_opportunity = "Proposed component scope:\n\n" + _bullets(component_scope)
+        product_view = f"Proposed workstream outcome — {workstream['deliverable']}"
         verification = [f"Proposed acceptance — {workstream['verification']}"]
         dependencies = [workstreams[key]["title"] for key in workstream["depends_on"]]
         dependents = [
@@ -153,33 +179,43 @@ def build_provisional_backlog(
         ]
         interfaces = [provisional_exchange_text(row) for row in exchanges]
         design_ref = f"{PROVISIONAL_DESIGN_ROOT}/workstreams/{index}"
+        proof_section = (
+            "Source Proof Boundary"
+            if intent.get("proof_boundary")
+            else "Proposed Proof Checkpoint"
+        )
         sections = {
             "Proposed Solution": deliverable,
             "Scope": "Proposed logical responsibilities:\n\n" + _bullets([
                 components[key]["responsibility"] for key in component_keys
             ]),
-            "Non-Goals": _bullets(intent.get("non_goals", []), empty="No source-stated non-goals."),
-            "Risks": "No separate risk assessment has been accepted; provisional design is not a claim of risk-free implementation.",
+            "Non-Goals": "Project-level non-goals remain governed by the Product Intent.",
+            "Risks": _bullets(
+                provisional_risk_posture_texts(
+                    risk_posture=design["risk_posture"],
+                    allocated_risks=[risk for _risk_index, risk in allocated_risks],
+                    scope_kind="workstream",
+                ),
+            ),
             "Dependencies": _bullets(dependencies, empty="No proposed delivery dependencies."),
             "Validation": _bullets(verification),
             "Rollout": rollout,
-            "Why Now": decisions["opportunity"],
+            "Why Now": local_opportunity,
             "Impacted Components": _bullets([components[key]["name"] for key in component_keys]),
             "Interface Changes": _bullets(interfaces, empty="No proposed component exchanges."),
             "Migration/Compatibility": "Provisional greenfield design; no existing implementation or migration is asserted.",
             "Test Strategy": _bullets(component_checks),
-            "Open Questions": _bullets(intent.get("ambiguities", []), empty="No unresolved material question."),
-            **({
-                "Assumptions": _bullets(assumption_preview_values(general_assumptions)),
-            } if general_assumptions else {}),
-            "Operational Constraints": _bullets(intent.get("operational_constraints", []), empty="No source-stated operating constraints."),
-            "Source Success Metrics": _bullets(intent.get("success_metrics", [])),
-            ("Source Proof Boundary" if intent.get("proof_boundary") else "Proposed Proof Checkpoint"):
-                decision_copy(intent, "proof_boundary"),
-            "Source Event Support": _bullets([
-                f"Event {event['order']} — {event['event_quote']}"
-                for event in supporting_events
-            ]),
+            "Open Questions": "Project-level questions remain governed by the Product Intent.",
+            "Operational Constraints": (
+                "Project-level operating constraints remain governed by the Product Intent."
+            ),
+            "Source Success Metrics": (
+                "Project-level success metrics remain governed by the Product Intent."
+            ),
+            proof_section: (
+                "The project proof decision remains governed by the Product Intent."
+            ),
+            "Source Event Support": _bullets(event_scope),
             "Design Authority": (
                 "This workstream and its component ownership, exchanges, deliverable, and acceptance "
                 "are provisional design. Source-event support does not transfer the original actor's ownership."
@@ -189,7 +225,9 @@ def build_provisional_backlog(
             "title": workstream["title"],
             "workstream_type": "standalone",
             "workstream_role": "provisional_design",
-            **decisions,
+            "problem": local_problem,
+            "customer": local_customer,
+            "opportunity": local_opportunity,
             "product_view": product_view,
             "success_metrics": verification,
             "priority": "P1",
@@ -206,9 +244,9 @@ def build_provisional_backlog(
             "authority_kind": "provisional_design",
             "projection_origin": AUTHORED_PROJECTION_ORIGIN,
             "ordering_decision": build_authored_ordering_decision(
-                why_now=decisions["opportunity"],
+                why_now=local_opportunity,
                 expected_outcome=deliverable,
-                deferred_scope=intent.get("non_goals", []),
+                deferred_scope=[],
                 ranking_basis=f"Proposed dependency order — {prerequisite_reason} {dependent_reason}",
             ),
             "provisional_workstream_contract": {
@@ -221,6 +259,11 @@ def build_provisional_backlog(
                 ],
                 "supporting_events": supporting_events,
                 "exchanges": exchanges,
+                "risk_refs": [
+                    f"{PROVISIONAL_DESIGN_ROOT}/risk_posture/items/{risk_index}"
+                    for risk_index, _risk in allocated_risks
+                ],
+                "risk_items": [risk for _risk_index, risk in allocated_risks],
             },
             "radar_sections": sections,
         })
@@ -240,6 +283,41 @@ def provisional_exchange_text(exchange: Mapping[str, Any]) -> str:
         f"Proposed exchange — {exchange['from_component']} → {exchange['to_component']}: "
         f"{exchange['contract']}"
     )
+
+
+def provisional_risk_text(risk: Mapping[str, Any]) -> str:
+    """Render one reviewed proposed risk without promoting it to accepted fact."""
+
+    return (
+        f"Proposed risk — {risk['statement']}\n"
+        f"Category: {risk['category']}\nTrigger: {risk['trigger']}\n"
+        f"Mitigation: {risk['mitigation']}\nVerification: {risk['verification']}\n"
+        "Scope: "
+        f"components [{', '.join(risk['component_keys'])}]; "
+        f"workstreams [{', '.join(risk['workstream_keys'])}]; "
+        "source events ["
+        + ", ".join(str(order) for order in risk["related_event_orders"])
+        + "]."
+    )
+
+
+def provisional_risk_posture_texts(
+    *,
+    risk_posture: Mapping[str, Any],
+    allocated_risks: Sequence[Mapping[str, Any]],
+    scope_kind: str,
+) -> list[str]:
+    """Keep reviewed risk meaning visible for material and no-material scopes."""
+
+    if allocated_risks:
+        return [provisional_risk_text(risk) for risk in allocated_risks]
+    rationale = str(risk_posture["rationale"])
+    if risk_posture["status"] == "no_material_risks_identified":
+        return [f"Reviewed no-material-risk posture — {rationale}"]
+    return [
+        f"No reviewed material risk is allocated to this {scope_kind}. "
+        f"Overall reviewed posture — {rationale}"
+    ]
 
 
 def _bullets(values: Sequence[str], *, empty: str = "") -> str:

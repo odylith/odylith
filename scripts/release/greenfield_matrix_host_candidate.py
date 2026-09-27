@@ -8,6 +8,7 @@ import math
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 import time
 from collections.abc import Callable, Mapping, Sequence
@@ -40,6 +41,19 @@ def _canonical_host_candidate_tokens(
         "--output-schema",
         output_schema,
         "-",
+    )
+
+
+def canonical_host_candidate_argv_template() -> tuple[str, ...]:
+    """Return the one placeholder argv accepted by Greenfield release proof."""
+
+    return (
+        "codex",
+        *_canonical_host_candidate_tokens(
+            model="{model}",
+            reasoning_effort="{reasoning_effort}",
+            output_schema="{candidate_schema}",
+        ),
     )
 
 
@@ -552,7 +566,21 @@ __all__ = [
     "HOST_NATIVE_ARGV_SHAPE_SHA256",
     "HostCandidateFlow",
     "HostCandidateFlowError",
+    "canonical_host_candidate_argv_template",
     "qualify_host_candidate_argv",
     "resolve_trusted_codex_executable",
     "run_host_candidate_flow",
 ]
+
+
+def _main(argv: Sequence[str]) -> int:
+    """Expose the canonical template to maintained shell entrypoints."""
+
+    if tuple(argv) != ("--print-argv-template",):
+        raise SystemExit("usage: greenfield_matrix_host_candidate.py --print-argv-template")
+    print("\n".join(canonical_host_candidate_argv_template()))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(_main(sys.argv[1:]))

@@ -39,6 +39,7 @@ from greenfield_matrix_corpus_provenance import load_release_audit_file  # noqa:
 from greenfield_matrix_failure_response import write_synthetic_shard_payload  # noqa: E402
 from greenfield_final_holdout_guard import complete_final_holdout_run  # noqa: E402
 from greenfield_final_holdout_guard import read_final_holdout_run  # noqa: E402
+from greenfield_matrix_host_candidate import canonical_host_candidate_argv_template  # noqa: E402
 from greenfield_matrix_release_artifacts import retained_evidence_manifest_issues  # noqa: E402
 from greenfield_matrix_release_artifacts import seal_interrupted_retained_evidence  # noqa: E402
 from greenfield_matrix_release_artifacts import sha256_file  # noqa: E402
@@ -64,6 +65,7 @@ class CampaignShard:
     implementation_revision: str = ""
     distribution_provenance_file: Path | None = None
     evidence_output_dir: Path | None = None
+    lower_capability_control_file: Path | None = None
 
     @property
     def name(self) -> str:
@@ -930,6 +932,9 @@ def _matrix_command(
     ]
     if attempt_ledger_jsonl is not None:
         command.extend(["--attempt-ledger-jsonl", str(attempt_ledger_jsonl)])
+    if shard.proof_tier == "release":
+        for argument in canonical_host_candidate_argv_template():
+            command.append(f"--host-candidate-arg={argument}")
     if shard.include_browser_proof:
         command.append("--include-browser-proof")
     else:
@@ -965,6 +970,10 @@ def _matrix_command(
         command.extend(["--distribution-provenance-file", str(shard.distribution_provenance_file)])
     if shard.evidence_output_dir is not None:
         command.extend(["--evidence-output-dir", str(shard.evidence_output_dir)])
+    if shard.lower_capability_control_file is not None:
+        command.extend(
+            ["--lower-capability-control-file", str(shard.lower_capability_control_file)]
+        )
     if shard.proof_tier == "discovery" and shard.required_stressors:
         command.append("--allow-partial-stressor-coverage")
     return command

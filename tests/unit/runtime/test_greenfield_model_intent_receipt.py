@@ -3,12 +3,25 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from copy import deepcopy
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_create_transaction
+from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
+    CANDIDATE_REVIEW_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_RELATION_SET_SHA256_KEY,
+    AUTHORED_SEMANTICS_KEY,
+    authored_relation_set_sha256,
+    component_responsibility_relations_from_intent,
+    first_path_context_relations_from_intent,
+    first_path_relations_from_intent,
+)
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
     build_product_create_transaction,
 )
@@ -28,6 +41,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     PRODUCT_INTENT_AUTHORITY_KEY,
+    product_facts_hash,
 )
 from tests.unit.runtime.greenfield_authored_proposal_fixtures import (
     _canonical_model_authored_greenfield_fixture,
@@ -178,6 +192,18 @@ def test_quality_approval_accepts_two_author_calls_and_one_candidate_review() ->
     )
 
 
+def test_materialized_review_receipt_binds_the_sealed_authored_design(
+    tmp_path: Path,
+) -> None:
+    proposal = _canonical_model_authored_greenfield_fixture(tmp_path)
+    receipt = proposal["_test_model_authoring_receipt"]
+    authority = proposal[PRODUCT_INTENT_AUTHORITY_KEY]
+
+    assert receipt["candidate_review"][AUTHORED_RELATION_SET_SHA256_KEY] == authority[
+        AUTHORED_RELATION_SET_SHA256_KEY
+    ]
+
+
 def _approved_revised_model_authoring(profile_id: str) -> dict[str, Any]:
     profile = get_greenfield_model_profile(profile_id)
     receipt = _approved_model_authoring(
@@ -188,7 +214,7 @@ def _approved_revised_model_authoring(profile_id: str) -> dict[str, Any]:
         "effective_timeout_seconds"
     ] = profile.model_timeout_seconds - 1.0
     receipt["rejected_candidate_review"] = {
-        "version": "odylith.greenfield.candidate-review.v10",
+        "version": CANDIDATE_REVIEW_VERSION,
         "status": "denied",
         "source_sha256": "0" * 64,
         "candidate_sha256": "3" * 64,
@@ -268,8 +294,16 @@ def test_call_count_claim_without_review_never_approves_a_transaction(call_count
         )
 
 
-@pytest.mark.parametrize("replayed_field", [None, "source_sha256", "product_facts_sha256"])
-def test_native_receipt_must_bind_both_source_and_product_facts(
+@pytest.mark.parametrize(
+    "replayed_field",
+    [
+        None,
+        "source_sha256",
+        "product_facts_sha256",
+        AUTHORED_RELATION_SET_SHA256_KEY,
+    ],
+)
+def test_native_receipt_must_bind_source_facts_and_authored_design(
     tmp_path: Path, replayed_field: str | None,
 ) -> None:
     proposal = _canonical_model_authored_greenfield_fixture(tmp_path)
@@ -300,7 +334,159 @@ def test_native_receipt_must_bind_both_source_and_product_facts(
         reviewed = persisted["quality_manifest"]["model_authoring"]["candidate_review"]
         assert reviewed["source_sha256"] == authority["markdown_source_sha256"]
         assert reviewed["product_facts_sha256"] == authority["product_facts_sha256"]
+        assert reviewed[AUTHORED_RELATION_SET_SHA256_KEY] == authority[
+            AUTHORED_RELATION_SET_SHA256_KEY
+        ]
         assert persisted["quality_manifest"]["model_authoring"]["semantic_model_call_count"] == 3
+
+
+def test_transaction_rejects_same_facts_receipt_from_a_different_reviewed_design(
+    tmp_path: Path,
+) -> None:
+    proposal = _canonical_model_authored_greenfield_fixture(tmp_path)
+    authority = proposal[PRODUCT_INTENT_AUTHORITY_KEY]
+    package = compiled_greenfield_package_fixture(proposal, repo_root=tmp_path)
+    other_intent = deepcopy(proposal["intent"])
+    semantics = other_intent[AUTHORED_SEMANTICS_KEY]
+    semantics["provisional_design"]["components"][0]["verification"] = (
+        "Verify a deliberately different component outcome."
+    )
+    other_relation_hash = authored_relation_set_sha256(
+        first_path_relations_from_intent(other_intent),
+        component_responsibility_relations_from_intent(other_intent),
+        first_path_context_relations=first_path_context_relations_from_intent(
+            other_intent
+        ),
+        source_precedence=semantics["source_precedence"],
+        provisional_design=semantics["provisional_design"],
+    )
+    assert other_relation_hash != authority[AUTHORED_RELATION_SET_SHA256_KEY]
+    assert product_facts_hash(other_intent) == authority["product_facts_sha256"]
+
+    receipt = _approved_model_authoring(
+        STANDARD_PROFILE_ID,
+        elapsed_seconds=12.0,
+        intent_authority=authority,
+    )
+    receipt["candidate_review"][AUTHORED_RELATION_SET_SHA256_KEY] = (
+        other_relation_hash
+    )
+    manifest = approved_authored_quality_manifest_fixture(
+        intent_authority=authority,
+        model_authoring=receipt,
+        elapsed_seconds=13.0,
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="candidate review does not match its sealed Product Intent authority",
+    ):
+        build_product_create_transaction(
+            proposal=proposal,
+            release_selector="0.0.1",
+            validation_gate={"status": "passed", "issues": []},
+            prewrite_package=package,
+            backlog_result=package.backlog_result or {},
+            intent_authority=authority,
+            quality_manifest=manifest,
+            repo_root=tmp_path,
+        )
+
+
+def test_transaction_rejects_forged_candidate_and_cross_design_witness(
+    tmp_path: Path,
+) -> None:
+    proposal = _canonical_model_authored_greenfield_fixture(tmp_path)
+    authority = proposal[PRODUCT_INTENT_AUTHORITY_KEY]
+    package = compiled_greenfield_package_fixture(proposal, repo_root=tmp_path)
+    receipt = _approved_model_authoring(
+        STANDARD_PROFILE_ID,
+        elapsed_seconds=12.0,
+        intent_authority=authority,
+    )
+    review = receipt["candidate_review"]
+    review["candidate_sha256"] = "f" * 64
+    coverage = review["admission_witness"]["design_coverage"]
+    coverage["component_verification_keys"] = list(
+        reversed(coverage["component_verification_keys"])
+    )
+    manifest = approved_authored_quality_manifest_fixture(
+        intent_authority=authority,
+        model_authoring=receipt,
+        elapsed_seconds=13.0,
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="candidate review does not match its sealed Product Intent authority",
+    ):
+        build_product_create_transaction(
+            proposal=proposal,
+            release_selector="0.0.1",
+            validation_gate={"status": "passed", "issues": []},
+            prewrite_package=package,
+            backlog_result=package.backlog_result or {},
+            intent_authority=authority,
+            quality_manifest=manifest,
+            repo_root=tmp_path,
+        )
+
+
+def test_commit_only_rehydration_rejects_rehashed_cross_design_receipt(
+    tmp_path: Path,
+) -> None:
+    proposal = _canonical_model_authored_greenfield_fixture(tmp_path)
+    authority = proposal[PRODUCT_INTENT_AUTHORITY_KEY]
+    package = compiled_greenfield_package_fixture(proposal, repo_root=tmp_path)
+    receipt = _approved_model_authoring(
+        STANDARD_PROFILE_ID,
+        elapsed_seconds=12.0,
+        intent_authority=authority,
+    )
+    manifest = approved_authored_quality_manifest_fixture(
+        intent_authority=authority,
+        model_authoring=receipt,
+        elapsed_seconds=13.0,
+    )
+    transaction = build_product_create_transaction(
+        proposal=proposal,
+        release_selector="0.0.1",
+        validation_gate={"status": "passed", "issues": []},
+        prewrite_package=package,
+        backlog_result=package.backlog_result or {},
+        intent_authority=authority,
+        quality_manifest=manifest,
+        repo_root=tmp_path,
+    )
+    assert greenfield_create_transaction.product_create_transaction_from_dict(
+        greenfield_create_transaction.product_create_transaction_to_dict(transaction)
+    ).transaction_hash == transaction.transaction_hash
+
+    forged_manifest = deepcopy(manifest)
+    forged_review = forged_manifest["model_authoring"]["candidate_review"]
+    forged_review[AUTHORED_RELATION_SET_SHA256_KEY] = "e" * 64
+    forged_review["admission_witness"]["design_coverage"][
+        "workstream_verification_keys"
+    ].reverse()
+    forged = replace(
+        transaction,
+        quality_manifest=forged_manifest,
+        transaction_hash="",
+    )
+    forged = replace(
+        forged,
+        transaction_hash=greenfield_create_transaction.product_create_transaction_hash(
+            forged
+        ),
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="candidate review does not match its sealed Product Intent authority",
+    ):
+        greenfield_create_transaction.product_create_transaction_from_dict(
+            greenfield_create_transaction.product_create_transaction_to_dict(forged)
+        )
 
 
 @pytest.mark.parametrize("invalid_count", (True, False, 0, 1, 2, 4, 5, 6, 3.0, "3"))

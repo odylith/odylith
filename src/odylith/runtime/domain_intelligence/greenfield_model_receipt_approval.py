@@ -8,6 +8,10 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
     CANDIDATE_REVIEW_VERSION,
+    candidate_review_admission_witness_shape_issues,
+)
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_RELATION_SET_SHA256_KEY,
 )
 from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
     HOST_CANDIDATE_RECEIPT_VERSION,
@@ -169,6 +173,7 @@ def _candidate_review_approved(
         "source_sha256",
         "candidate_sha256",
         "product_facts_sha256",
+        AUTHORED_RELATION_SET_SHA256_KEY,
         "elapsed_seconds",
         "model_profile",
         "admission_witness",
@@ -176,27 +181,17 @@ def _candidate_review_approved(
         return False
     if review.get("version") != CANDIDATE_REVIEW_VERSION or review.get("status") != "admitted":
         return False
-    for key in ("source_sha256", "candidate_sha256", "product_facts_sha256"):
+    for key in (
+        "source_sha256",
+        "candidate_sha256",
+        "product_facts_sha256",
+        AUTHORED_RELATION_SET_SHA256_KEY,
+    ):
         if not _is_sha256(review.get(key)):
             return False
     witness = review.get("admission_witness")
-    participant = witness.get("participant_fact") if isinstance(witness, Mapping) else None
     if (
-        not isinstance(witness, Mapping)
-        or set(witness) != {
-            "participant_fact", "task_event_order", "result_event_order",
-        }
-        or not isinstance(participant, Mapping)
-        or set(participant) != {"field", "row"}
-        or participant.get("field") not in {
-            "customer", "external_systems", "human_actors", "internal_systems", "title",
-        }
-        or type(participant.get("row")) is not int
-        or participant["row"] < 1
-        or type(witness.get("task_event_order")) is not int
-        or witness["task_event_order"] < 1
-        or type(witness.get("result_event_order")) is not int
-        or witness["result_event_order"] < 1
+        candidate_review_admission_witness_shape_issues(witness)
     ):
         return False
     if not _authoring_role_approved(

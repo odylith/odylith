@@ -16,10 +16,14 @@ from odylith.runtime.domain_intelligence.greenfield_event_ordering import (
     validate_first_run,
 )
 
-PROVISIONAL_DESIGN_VERSION = "odylith.greenfield.provisional-design.v3"
+PROVISIONAL_DESIGN_VERSION = "odylith.greenfield.provisional-design.v4"
 PROVISIONAL_DESIGN_AUTHORITY_KIND = "provisional_design"
 _TEXT = {"type": "string", "minLength": 1, "maxLength": 4000}
 _KEY = {"type": "string", "minLength": 1, "maxLength": 80, "pattern": "^[a-z][a-z0-9-]*$"}
+_EVENT_ORDERS = {
+    "type": "array", "minItems": 1, "maxItems": 32,
+    "items": {"type": "integer", "minimum": 1, "maximum": 32},
+}
 _COMPONENT_FIELDS = {
     "key": _KEY,
     "name": _TEXT,
@@ -30,10 +34,16 @@ _COMPONENT_FIELDS = {
             "components, cover every source event exactly as authored, including human "
             "actions; support does not transfer a human action to the component."
         ),
-        "type": "array", "minItems": 1, "maxItems": 32,
-        "items": {"type": "integer", "minimum": 1, "maximum": 32},
+        **_EVENT_ORDERS,
     },
     "verification": _TEXT,
+    "verification_event_orders": {
+        "description": (
+            "Source-event identities whose outcome this component verification checks. "
+            "They must be supported by this component and remain proposed verification scope."
+        ),
+        **_EVENT_ORDERS,
+    },
 }
 _WORKSTREAM_FIELDS = {
     "key": _KEY,
@@ -42,8 +52,67 @@ _WORKSTREAM_FIELDS = {
     "depends_on": {"type": "array", "minItems": 0, "maxItems": 4, "items": _KEY},
     "deliverable": _TEXT,
     "verification": _TEXT,
+    "verification_event_orders": {
+        "description": (
+            "Source-event identities whose outcome this workstream acceptance checks. "
+            "They must be supported by one of the workstream's components."
+        ),
+        **_EVENT_ORDERS,
+    },
 }
 _EXCHANGE_FIELDS = {"from_component": _KEY, "to_component": _KEY, "contract": _TEXT}
+_RISK_CATEGORIES = (
+    "abuse",
+    "accessibility",
+    "compliance",
+    "data_retention",
+    "operational",
+    "privacy",
+    "product",
+    "security",
+)
+_RISK_ITEM_FIELDS = {
+    "key": _KEY,
+    "category": {"type": "string", "enum": list(_RISK_CATEGORIES)},
+    "statement": _TEXT,
+    "trigger": _TEXT,
+    "mitigation": _TEXT,
+    "verification": _TEXT,
+    "component_keys": {"type": "array", "minItems": 1, "maxItems": 5, "items": _KEY},
+    "workstream_keys": {"type": "array", "minItems": 1, "maxItems": 5, "items": _KEY},
+    "related_event_orders": {
+        "type": "array", "minItems": 0, "maxItems": 32,
+        "items": {"type": "integer", "minimum": 1, "maximum": 32},
+    },
+}
+_RISK_POSTURE_SCHEMA = {
+    "type": "object",
+    "description": (
+        "A proportional reviewed implementation-risk posture. Identify material product, "
+        "operational, security, privacy, abuse, accessibility, retention, or compliance "
+        "exposure when present; otherwise explain why none is material for this project."
+    ),
+    "additionalProperties": False,
+    "required": ["status", "rationale", "items"],
+    "properties": {
+        "status": {
+            "type": "string",
+            "enum": ["material_risks_identified", "no_material_risks_identified"],
+        },
+        "rationale": _TEXT,
+        "items": {
+            "type": "array",
+            "minItems": 0,
+            "maxItems": 8,
+            "items": {
+                "type": "object",
+                "additionalProperties": False,
+                "required": list(_RISK_ITEM_FIELDS),
+                "properties": deepcopy(_RISK_ITEM_FIELDS),
+            },
+        },
+    },
+}
 
 
 def _row_schema(fields: Mapping[str, Any], *, minimum: int, maximum: int) -> dict[str, Any]:
@@ -59,7 +128,10 @@ def _row_schema(fields: Mapping[str, Any], *, minimum: int, maximum: int) -> dic
 PROVISIONAL_DESIGN_SCHEMA = {
     "type": "object",
     "additionalProperties": False,
-    "required": ["version", "authority_kind", "components", "workstreams", "exchanges", "first_run"],
+    "required": [
+        "version", "authority_kind", "components", "workstreams", "exchanges", "first_run",
+        "risk_posture",
+    ],
     "properties": {
         "version": {"type": "string", "const": PROVISIONAL_DESIGN_VERSION},
         "authority_kind": {"type": "string", "const": PROVISIONAL_DESIGN_AUTHORITY_KIND},
@@ -67,6 +139,7 @@ PROVISIONAL_DESIGN_SCHEMA = {
         "workstreams": _row_schema(_WORKSTREAM_FIELDS, minimum=4, maximum=5),
         "exchanges": _row_schema(_EXCHANGE_FIELDS, minimum=0, maximum=32),
         "first_run": FIRST_RUN_SCHEMA,
+        "risk_posture": _RISK_POSTURE_SCHEMA,
     },
 }
 
@@ -105,14 +178,26 @@ def validate_provisional_design(
     workstream_keys = {row["key"] for row in workstreams}
     accepted_orders = set(event_orders)
     supported_orders: set[int] = set()
+    component_verified_orders: set[int] = set()
+    components_by_key = {row["key"]: row for row in components}
     for row in components:
         orders = row["supported_event_orders"]
         if len(set(orders)) != len(orders) or not set(orders) <= accepted_orders:
             raise ValueError("Greenfield provisional component has invalid source-event references")
+        verification_orders = row["verification_event_orders"]
+        if (
+            len(set(verification_orders)) != len(verification_orders)
+            or not set(verification_orders) <= set(orders)
+        ):
+            raise ValueError("Greenfield provisional component has invalid verification references")
         supported_orders.update(orders)
+        component_verified_orders.update(verification_orders)
     if supported_orders != accepted_orders:
         raise ValueError("Greenfield provisional design does not support every source action")
+    if component_verified_orders != accepted_orders:
+        raise ValueError("Greenfield provisional design does not verify every source action")
     assigned_components: set[str] = set()
+    workstream_verified_orders: set[int] = set()
     prerequisites: dict[str, list[str]] = {}
     for row in workstreams:
         keys, dependencies = row["component_keys"], row["depends_on"]
@@ -123,10 +208,28 @@ def validate_provisional_design(
             or not set(dependencies) <= workstream_keys - {row["key"]}
         ):
             raise ValueError("Greenfield provisional workstream has invalid prerequisite references")
+        verification_orders = row["verification_event_orders"]
+        supported_by_workstream = {
+            order for key in keys for order in components_by_key[key]["supported_event_orders"]
+        }
+        if (
+            len(set(verification_orders)) != len(verification_orders)
+            or not set(verification_orders) <= supported_by_workstream
+        ):
+            raise ValueError("Greenfield provisional workstream has invalid verification references")
         assigned_components.update(keys)
+        workstream_verified_orders.update(verification_orders)
         prerequisites[row["key"]] = dependencies
     if assigned_components != component_keys:
         raise ValueError("Greenfield provisional design leaves a component without delivery work")
+    if workstream_verified_orders != accepted_orders:
+        raise ValueError("Greenfield provisional workstreams do not verify every source action")
+    proof_event_order = result_event_order or value["first_run"]["event_orders"][-1]
+    if (
+        proof_event_order not in component_verified_orders
+        or proof_event_order not in workstream_verified_orders
+    ):
+        raise ValueError("Greenfield provisional design does not verify its proof outcome")
     try:
         tuple(TopologicalSorter(prerequisites).static_order())
     except CycleError as exc:
@@ -140,7 +243,80 @@ def validate_provisional_design(
         if edge in seen_exchanges:
             raise ValueError("Greenfield provisional design contains a duplicate exchange")
         seen_exchanges.add(edge)
+    _validate_risk_posture(
+        value["risk_posture"],
+        component_keys=component_keys,
+        workstream_keys=workstream_keys,
+        component_keys_by_workstream={
+            row["key"]: set(row["component_keys"]) for row in workstreams
+        },
+        supported_orders_by_component={
+            row["key"]: set(row["supported_event_orders"]) for row in components
+        },
+        accepted_orders=accepted_orders,
+    )
     return deepcopy(dict(value))
+
+
+def _validate_risk_posture(
+    value: Any,
+    *,
+    component_keys: set[str],
+    workstream_keys: set[str],
+    component_keys_by_workstream: Mapping[str, set[str]],
+    supported_orders_by_component: Mapping[str, set[int]],
+    accepted_orders: set[int],
+) -> None:
+    if not isinstance(value, Mapping) or set(value) != {"status", "rationale", "items"}:
+        raise ValueError("Greenfield provisional risk posture has invalid fields")
+    status = value.get("status")
+    if status not in {"material_risks_identified", "no_material_risks_identified"}:
+        raise ValueError("Greenfield provisional risk posture has an invalid status")
+    _require_text(value.get("rationale"), maximum=4000)
+    items = _design_rows(value, "items", _RISK_ITEM_FIELDS, minimum=0, maximum=8)
+    if (status == "material_risks_identified") != bool(items):
+        raise ValueError("Greenfield provisional risk posture status does not match its items")
+    _require_unique_identities(items, display_field="statement", label="risk")
+    for row in items:
+        if row["category"] not in _RISK_CATEGORIES:
+            raise ValueError("Greenfield provisional risk has an invalid category")
+        if (
+            len(set(row["component_keys"])) != len(row["component_keys"])
+            or not set(row["component_keys"]) <= component_keys
+            or len(set(row["workstream_keys"])) != len(row["workstream_keys"])
+            or not set(row["workstream_keys"]) <= workstream_keys
+        ):
+            raise ValueError("Greenfield provisional risk has invalid design references")
+        risk_component_keys = set(row["component_keys"])
+        risk_workstream_keys = set(row["workstream_keys"])
+        owned_risk_components = {
+            component_key
+            for workstream_key in risk_workstream_keys
+            for component_key in component_keys_by_workstream[workstream_key]
+            if component_key in risk_component_keys
+        }
+        if (
+            owned_risk_components != risk_component_keys
+            or any(
+                not component_keys_by_workstream[workstream_key] & risk_component_keys
+                for workstream_key in risk_workstream_keys
+            )
+        ):
+            raise ValueError(
+                "Greenfield provisional risk has incoherent component/workstream allocation"
+            )
+        event_orders = row["related_event_orders"]
+        if len(set(event_orders)) != len(event_orders) or not set(event_orders) <= accepted_orders:
+            raise ValueError("Greenfield provisional risk has invalid source-event references")
+        supported_risk_orders = {
+            event_order
+            for component_key in risk_component_keys
+            for event_order in supported_orders_by_component[component_key]
+        }
+        if not set(event_orders) <= supported_risk_orders:
+            raise ValueError(
+                "Greenfield provisional risk source events are not supported by its components"
+            )
 
 
 def provisional_design_from_intent(intent: Mapping[str, Any]) -> dict[str, Any]:
@@ -176,7 +352,10 @@ def _design_rows(
         for field, schema in fields.items():
             raw = row[field]
             if schema["type"] == "string":
-                if schema["maxLength"] == 80:
+                if "enum" in schema:
+                    if raw not in schema["enum"]:
+                        raise ValueError(f"Greenfield provisional {name}.{field} has an invalid value")
+                elif schema["maxLength"] == 80:
                     _require_key(raw)
                 else:
                     _require_text(raw, maximum=schema["maxLength"])

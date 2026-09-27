@@ -543,6 +543,16 @@ def test_host_native_result_binding_matches_retained_candidate_to_commit_receipt
         "participant_fact": {"field": "human_actors", "row": 1},
         "task_event_order": 1,
         "result_event_order": 1,
+        "design_coverage": {
+            "component_verification_keys": [
+                "test-boundary-1", "test-boundary-2", "test-boundary-3", "test-boundary-4",
+            ],
+            "workstream_verification_keys": [
+                "test-work-1", "test-work-2", "test-work-3", "test-work-4",
+            ],
+            "risk_keys": [],
+            "risk_posture_status": "no_material_risks_identified",
+        },
     }
     review_profile = {
         "profile_id": STANDARD_PROFILE_ID,
@@ -1125,6 +1135,16 @@ def _host_native_private_admission(
         "participant_fact": {"field": "human_actors", "row": 1},
         "task_event_order": 1,
         "result_event_order": 1,
+        "design_coverage": {
+            "component_verification_keys": [
+                "test-boundary-1", "test-boundary-2", "test-boundary-3", "test-boundary-4",
+            ],
+            "workstream_verification_keys": [
+                "test-work-1", "test-work-2", "test-work-3", "test-work-4",
+            ],
+            "risk_keys": [],
+            "risk_posture_status": "no_material_risks_identified",
+        },
     }
     return {
         "version": "odylith.greenfield.model-proof-observation.v4",

@@ -19,6 +19,9 @@ from odylith.runtime.domain_intelligence import (
 from odylith.runtime.domain_intelligence.greenfield_authored_proposal import (
     build_authored_greenfield_proposal,
 )
+from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
+    authored_first_run_text,
+)
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     combined_prompt_evidence_source,
 )
@@ -454,8 +457,8 @@ def test_two_document_path_materializes_exact_source_and_structural_design_custo
         release_selector="",
         confirmed_intent=candidate,
     )
-    assert proposal["semantic_model"]["first_path_contract"]["raw_path"] == "Proposed first run:\n" + "\n".join(
-        segments
+    assert proposal["semantic_model"]["first_path_contract"]["raw_path"] == (
+        authored_first_run_text(proposal["intent"])
     )
     assert proposal["project_brief"]["external_systems"] == ["Tide Authority API"]
     assert proposal["project_brief"]["operational_constraints"] == [

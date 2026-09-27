@@ -70,14 +70,15 @@ def test_customer_bootstrap_guidance_carries_live_proof_claim_gate() -> None:
     assert "typed custody facts to gate ProductCreateTransaction" in guidance
     assert "Read-only preview" in guidance
     assert "Chat/hooks provide no qualified confirmation interface" in guidance
-    assert "Do not append chat decision commands, offer publication, or run create from a chat approval" in guidance
+    assert "do not run create from a chat approval" in guidance
     assert "odylith greenfield decide --repo-root PATH CONFIRM|EDIT|REJECT HASH" in guidance
-    assert "CONFIRM/REJECT: one owner, no compiler/model" in guidance
-    assert "EDIT verifies retained hash and compiles sealed source + correction at original tier" in guidance
-    assert "verifies receipt/hash/preconditions" in guidance
-    assert "without model reasoning, generation or repair" in guidance
+    assert "CONFIRM/REJECT use one owner and no compiler/model" in guidance
+    assert "For EDIT, rerun `candidate-contract` with `--transaction-hash`" in guidance
+    assert "author one new candidate from the sealed source plus correction" in guidance
+    assert "verifies receipt, hash, and preconditions" in guidance
+    assert "without model reasoning, generation, or repair" in guidance
     assert "Markdown is a view, never product truth" in guidance
-    assert "Report target overruns as timing evidence, not failures alone" in guidance
+    assert "90/120/150 seconds as advisory targets under the separate 180-second operational safety timeout" in guidance
     assert "confirmed-intent.json" not in guidance
     assert "greenfield compile-transaction" not in guidance
     assert "ProductCreateTransaction" in guidance

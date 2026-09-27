@@ -3053,3 +3053,57 @@
   `product_boundary` clarifications, with zero missing, extra, or duplicate
   annotations. Full immutable public qualification remains pending; this
   checkpoint does not claim release success or completion.
+
+## V32 Independent Package Rejection (2026-09-27)
+
+- Immutable build `76548dc22` passed the fresh Harbor Sample Relay control on
+  its first Astra-medium attempt and the transaction reviewer independently
+  verified all `185` retained hashes, all `114` sealed repository files, the
+  closed publication journal, exact-byte readback, and byte-identical
+  idempotent retry. That is strong transaction evidence, not release acceptance.
+- Independent semantic and UX review rejected the generated package with no P0
+  and six mechanism-level P1 classes: typed source facts preserve product-owned
+  handoff verification and the signed receipt, but actionable component and
+  workstream verification does not; the authored projection hard-codes empty
+  risk/security posture; Radar repeats project-level copy across four otherwise
+  distinct workstreams; Project brief first-path copy exposes subjectless event
+  fragments; Radar date-only values shift back one Pacific day; and Atlas proof
+  loads all diagrams without proving readable per-diagram mobile presentation.
+  A generated traceability report also retains the ephemeral simulation root
+  and reports zero ideas after four workstreams were accepted, while retained
+  completion output points to a dashboard removed with the test workspace.
+- Repair the owning typed design and deterministic projection boundaries, not
+  this fixture: carry proposed risk obligations through the one candidate and
+  independent review; derive workstream audience and copy from each workstream's
+  typed event/component allocation; render complete event sentences from typed
+  actor/action relations without changing source quotations; preserve date-only
+  calendar values; and make release browser/evidence proof verify durable
+  navigation plus readable diagrams. Add no prose parser, regex classifier,
+  vocabulary list, retry, repair author, fallback, model ladder, or post-confirm
+  generation. CB-303 remains open until these P1 classes are removed and a fresh
+  independent package review ships.
+
+## V33 Source-Local Repair And Re-adjudication (2026-09-27)
+
+- The V32 P1 classes are now corrected at their typed owners. Provisional
+  design v4 carries component and workstream verification coverage plus a
+  proportional risk posture; risk allocation must match the selected
+  component/workstream/event graph. Radar preserves the canonical customer and
+  derives local copy from each typed workstream. Project, Radar, and both Atlas
+  paths share one actor-aware event presenter, with exact source quotations
+  separate from display text. Reviewed no-material-risk rationale remains
+  visible instead of being silently dropped.
+- Browser and retained-evidence proof now cover durable Project navigation,
+  portable Compass links without staging-root leakage, normal/empty/degraded/
+  error responsive states, and real mobile Atlas touch movement. No parser,
+  regex classifier, prefix stripper, vocabulary branch, retry, repair author,
+  fallback candidate, or model ladder was added.
+- Current source proof passes `1,826/1,826` fast Greenfield tests,
+  `292/292` lifecycle tests, `1,745/1,745` install tests, and `6/6` direct
+  Project browser integration tests. Independent transaction re-adjudication
+  reports no P0/P1 after exact candidate/design custody, retained semantic
+  chain, risk traceability, and holdout claim ordering were tested directly.
+- CB-303 remains open until the settled source is built into a clean immutable
+  distribution, a fresh public package passes independent semantic and UX
+  review, and the untouched final holdout passes its frozen floors exactly
+  once. This checkpoint is source-local repair evidence, not release success.

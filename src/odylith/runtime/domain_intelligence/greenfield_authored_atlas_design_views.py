@@ -10,6 +10,9 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
+    authored_event_display_text,
+)
 from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
     PROVISIONAL_DESIGN_AUTHORITY_KIND,
     validate_provisional_design,
@@ -301,8 +304,8 @@ def _capability_support_view(
     ))
     for order, event in sorted(events.items()):
         action = (
-            f"Source action {order} · {event['actor_kind']}: "
-            f"{event['actor_fact_quote']}\n{event['event_quote']}"
+            f"Source action {order} · {event['actor_kind']}\n"
+            f"{authored_event_display_text(event)}"
         )
         label = "<br/>".join(mermaid_label(line, width=44) for line in action.splitlines())
         lines.append(f'    source_action{order}["{label}"]')

@@ -91,7 +91,7 @@ class ReleaseRecord:
             "aliases": [str(token).strip() for token in aliases if str(token).strip()],
             "active_workstreams": [str(token).strip() for token in active_workstreams if str(token).strip()],
             "completed_workstreams": [str(token).strip() for token in completed_workstreams if str(token).strip()],
-            "source_path": str(self.source_path),
+            "source_path": RELEASES_REGISTRY_PATH.as_posix(),
             "terminal": self.terminal,
         }
 

@@ -21,6 +21,20 @@ def _runtime_paths(runtime_dir: Path) -> tuple[Path, Path, Path, Path, Path]:
     )
 
 
+def test_compass_surface_hrefs_do_not_retain_distinct_staging_roots(tmp_path: Path) -> None:
+    output = tmp_path / "simulation-root" / "repo" / "odylith" / "compass" / "compass.html"
+    target = tmp_path / "prewrite-root" / "repo" / "odylith" / "radar" / "traceability-graph.v1.json"
+    target.parent.mkdir(parents=True)
+    target.write_text("{}\n", encoding="utf-8")
+
+    href = render_compass_dashboard._versioned_href(output_path=output, target=target)  # noqa: SLF001
+
+    assert href.startswith("../radar/traceability-graph.v1.json?v=")
+    assert str(tmp_path) not in href
+    assert "simulation-root" not in href
+    assert "prewrite-root" not in href
+
+
 def _refresh_kwargs(repo_root: Path, runtime_dir: Path) -> dict[str, object]:
     return {
         "repo_root": repo_root,

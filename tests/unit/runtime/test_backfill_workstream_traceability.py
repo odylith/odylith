@@ -222,6 +222,7 @@ def test_backfill_report_generated_utc_stable_when_no_content_changes(tmp_path: 
     second_mtime_ns = report_path.stat().st_mtime_ns
 
     assert first["generated_utc"] == second["generated_utc"]
+    assert first["repo_root"] == second["repo_root"] == "."
     assert first_mtime_ns == second_mtime_ns
 
 

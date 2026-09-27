@@ -13,6 +13,23 @@ from odylith.runtime.surfaces import render_registry_dashboard as renderer
 ROOT = Path(__file__).resolve().parents[3]
 
 
+def test_public_feature_history_omits_internal_resolved_paths() -> None:
+    rows = renderer._public_feature_history(  # noqa: SLF001
+        [{
+            "date": "2026-09-27",
+            "summary": "Linked work",
+            "plan_refs": [{
+                "workstream_id": "B-001",
+                "repo_path": "odylith/radar/radar.html?view=plan&workstream=B-001",
+                "resolved_path": "/private/tmp/prewrite/odylith/radar/radar.html",
+                "valid": True,
+            }],
+        }]
+    )
+
+    assert "resolved_path" not in rows[0]["plan_refs"][0]
+
+
 def _extract_generated_utc(payload_js: str) -> str:
     match = re.search(r'"generated_utc"\s*:\s*"([^"]+)"', payload_js)
     assert match is not None

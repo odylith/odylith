@@ -70,6 +70,7 @@ def test_decision_assumptions_keep_their_type_and_custody() -> None:
         intent,
         source_text=source,
         source_path="evidence.txt",
+        reviewed_candidate_sha256=authored.candidate_review["candidate_sha256"],
         authored_source_spans=authored.source_spans,
         authored_atomic_claims=authored.atomic_claims,
         authored_source_sha256=authored.source_sha256,
@@ -148,11 +149,10 @@ def test_radar_required_decisions_point_to_assumptions_not_missing_facts() -> No
         for index, decision in enumerate(_DECISIONS):
             field = decision["applies_to"]
             assert refs[field] == f"/assumptions/{index}"
-            expected = f"Assumption — {decision['statement']}"
-            if field == "product_view":
-                expected += f"\n\nProposed workstream view — {workstream['deliverable']}"
-            assert row[field] == expected
+            assert (decision["statement"] in row[field]) is (field == "customer")
+            assert row[field]
             assert "Assumptions" not in row["radar_sections"]
+        assert workstream["deliverable"] in row["product_view"]
     assert "Validate this gap" not in str(proposal)
     assert proposal["project_brief"]["purpose"] == decision_copy(intent, "problem")
     customer_index = next(
@@ -165,10 +165,9 @@ def test_radar_required_decisions_point_to_assumptions_not_missing_facts() -> No
         semantics = row["provisional_workstream_contract"]
         assert semantics["decision_refs"]["customer"] == customer_ref
         assert row["customer"] == (
-            "Assumption — Marine operations leaders are the primary beneficiaries "
-            "of the berth record."
+            "Customer or beneficiary — Assumption — Marine operations leaders are the "
+            "primary beneficiaries of the berth record."
         )
-        assert row["customer"] != "Dock attendant Ivo"
 
 
 @pytest.mark.parametrize("rows", [

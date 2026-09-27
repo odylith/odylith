@@ -4,6 +4,34 @@ Last updated: 2026-09-27
 
 ## Overview
 
+### V33 typed design, exact review custody, and release-proof boundary (2026-09-27)
+
+Greenfield keeps one host-authored candidate and one independent semantic
+review. Candidate-review v11 now admits only an exact source-bound design
+witness. Product Intent authority v12 and envelope v12 seal the reviewed
+candidate digest, product facts, authored relation set, and provisional design;
+custody ledger v9 and commit-only rehydration require exact equality without
+calling a model or recomputing product meaning after confirmation.
+
+Provisional design v4 owns component and workstream verification-event coverage
+plus a proportional risk posture. Every accepted source event must be supported
+and verified, the proof outcome must be verified, and each material risk must
+map coherently to selected components, their owning workstreams, and only the
+events those components support. Projection remains deterministic: the
+canonical customer is not replaced by a product actor, and one typed presenter
+serves Project, Radar, and both Atlas paths while keeping exact source quotes as
+custody evidence rather than visible sentence fragments.
+
+Release proof now requires the exact transaction-to-compiler-receipt-to-active-
+generation-to-manifest chain, durable retained Project navigation, portable
+browser routes, responsive degraded/empty/error states, and real mobile Atlas
+touch movement. Final-holdout execution claims and hash-binds protected inputs
+before opening them and terminalizes every later failure. Source proof passes
+`1,826/1,826` fast, `292/292` lifecycle, `1,745/1,745` install, and `6/6`
+direct Project browser tests; independent transaction review reports no P0/P1.
+Immutable clean-install, public semantic/UX, and untouched final-holdout
+qualification remain release gates.
+
 ### V31 rejects release on host-candidate tail latency (2026-09-27)
 
 Immutable V30 passed all 36 disclosed cases at `10/10`, with complete

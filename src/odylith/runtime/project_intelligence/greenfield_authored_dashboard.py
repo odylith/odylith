@@ -58,6 +58,7 @@ def build_authored_greenfield_payload(
         )
 
     title = _required_text(intent, "title")
+    provisional_design = provisional_design_from_intent(intent)
     product_story = _required_text(intent, "product_story")
     source_excerpt = f"Source excerpt: “{product_story}”"
     first_path = authored_first_run_text(intent)
@@ -92,7 +93,7 @@ def build_authored_greenfield_payload(
         proposal.get("open_questions"),
         keys=("question", "statement"),
     )
-    risk_items = _authored_risk_rows(proposal.get("risks"))
+    risk_items = _authored_risk_rows(provisional_design["risk_posture"])
     actors = authored_actor_rows(human_actors=human_actors, relations=first_run_relations)
     jobs = _job_rows(backlog=backlog, accepted=accepted)
     governance_titles = _governance_titles(
@@ -162,7 +163,7 @@ def build_authored_greenfield_payload(
         ),
         "answers": [],
         "risk_title": "Risks",
-        "risk_note": "Only risks explicitly present in the model-authored proposal appear here.",
+        "risk_note": "Reviewed typed risk posture from the model-authored provisional design.",
         "risk_items": risk_items,
         "scenario": [
             "Proposed first run",
@@ -276,7 +277,7 @@ def build_authored_greenfield_payload(
         "governance_titles": governance_titles,
         "sources": {
             "proposal": _first_text(accepted, "source_path")
-            or str(Path(repo_root) / "odylith/runtime/source/accepted-project.v1.json")
+            or "odylith/runtime/source/accepted-project.v1.json"
         },
         "authored_facts": {
             "title": title,
@@ -298,7 +299,7 @@ def build_authored_greenfield_payload(
             "source_precedence": [dict(row) for row in intent[AUTHORED_SEMANTICS_KEY]["source_precedence"]],
             "first_path_context_relations": [dict(row) for row in context_relations],
             "component_responsibility_relations": [dict(row) for row in component_relations],
-            "provisional_design": provisional_design_from_intent(intent),
+            "provisional_design": provisional_design,
             "validation_strategy": validation,
         },
     }
@@ -479,18 +480,47 @@ def _job_rows(
 
 
 def _authored_risk_rows(value: Any) -> list[dict[str, str]]:
+    """Project the complete validated risk posture without flattening typed fields."""
+
+    if not isinstance(value, Mapping):
+        return []
+    status = _first_text(value, "status")
+    rationale = _first_text(value, "rationale")
+    if status == "no_material_risks_identified":
+        return [{
+            "risk": "Reviewed no-material-risk posture",
+            "meaning": rationale,
+            "status": status,
+            "scope": "Complete provisional design.",
+        }]
+
     rows: list[dict[str, str]] = []
-    for item in _sequence(value):
-        if isinstance(item, Mapping):
-            title = _first_text(item, "title", "risk") or "Authored risk"
-            meaning = _first_text(item, "statement", "description", "risk", "trigger")
-        elif isinstance(item, str):
-            title = "Authored risk"
-            meaning = item
-        else:
-            continue
-        if meaning:
-            rows.append({"risk": title, "meaning": meaning})
+    for item in _mapping_rows(value.get("items")):
+        category = _required_text(item, "category")
+        statement = _required_text(item, "statement")
+        trigger = _required_text(item, "trigger")
+        mitigation = _required_text(item, "mitigation")
+        verification = _required_text(item, "verification")
+        scope = (
+            "Components: " + ", ".join(_text_values(item.get("component_keys")))
+            + "; workstreams: " + ", ".join(_text_values(item.get("workstream_keys")))
+            + "; source events: "
+            + ", ".join(str(order) for order in _sequence(item.get("related_event_orders")))
+            + "."
+        )
+        rows.append({
+            "risk": f"{category.capitalize()} risk",
+            "meaning": (
+                f"{statement}\nCategory: {category}\nTrigger: {trigger}\n"
+                f"Mitigation: {mitigation}\nVerification: {verification}\nScope: {scope}"
+            ),
+            "status": status,
+            "category": category,
+            "trigger": trigger,
+            "mitigation": mitigation,
+            "verification": verification,
+            "scope": scope,
+        })
     return rows
 
 

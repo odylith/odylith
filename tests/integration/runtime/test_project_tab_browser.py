@@ -223,7 +223,10 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
     surface_text = page.locator(".project-surface").inner_text()
     assert "Project overview" in surface_text
     assert "Source excerpt:" in surface_text
-    assert "Risks" not in surface_text
+    assert "Risks" in surface_text
+    assert "Reviewed typed risk posture from the model-authored provisional design." in surface_text
+    assert "Reviewed no-material-risk posture" in surface_text
+    assert "This structural fixture carries no product-domain risk claim." in surface_text
     assert "Project not defined yet" not in surface_text
     assert "Current orienting work" not in surface_text
     assert "Mockrepo" not in surface_text
@@ -245,8 +248,8 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
     assert "Who uses it?" not in surface_text
     assert page.locator(".project-state-grid").count() == 0
     assert page.locator(".project-scenario").count() == 0
-    assert page.locator(".project-risks").count() == 0
-    assert page.locator(".project-risk-card").count() == 0
+    assert page.locator(".project-risks").count() == 1
+    assert page.locator(".project-risk-card").count() == 1
     assert page.locator(".project-answer-strip").count() == 0
     assert page.locator('.project-job-card a[href*="tab=radar"][href*="workstream="]').count() >= 1
     assert page.locator(".project-job-card em").count() == 0
@@ -517,7 +520,13 @@ def test_project_tab_result_first_source_renders_labeled_proposed_order_at_both_
         source_launch_context=_source_launch_context(proposal=proposal, root=tmp_path),
     )
     _write_project_page(tmp_path / "index.html", payload)
-    expected_events = PROPOSED_FIRST_RUN.splitlines()[1:]
+    facts = payload["authored_facts"]
+    relations = {
+        row["order"]: row for row in facts["first_path_relations"]
+    }
+    proposed_orders = facts["provisional_design"]["first_run"]["event_orders"]
+    expected_actors = [relations[order]["actor_fact_quote"] for order in proposed_orders]
+    expected_events = [relations[order]["event_quote"] for order in proposed_orders]
     with _static_server(root=tmp_path) as base_url:
         for _pw, browser in _browser():
             for viewport in ({"width": 1440, "height": 1100}, {"width": 430, "height": 932}):
@@ -530,7 +539,18 @@ def test_project_tab_result_first_source_renders_labeled_proposed_order_at_both_
                             sequence = page.locator(f'[data-authored-fact-list="{key}"]')
                             assert sequence.get_attribute("data-authority-kind") == "provisional_design"
                             items = sequence.locator("[data-authored-fact-item]")
-                            assert items.all_text_contents() == expected_events
+                            assert items.locator(
+                                ":scope > [data-authored-event-actor] "
+                                "> [data-authored-event-actor-label]"
+                            ).all_text_contents() == ["Actor:"] * len(expected_events)
+                            assert items.locator(
+                                ":scope > [data-authored-event-actor] "
+                                "> [data-authored-event-actor-value]"
+                            ).all_text_contents() == expected_actors
+                            assert items.locator(
+                                ":scope > [data-authored-event-quote]"
+                            ).all_text_contents() == expected_events
+                            assert all(" — " not in text for text in items.all_text_contents())
                             assert items.evaluate_all("nodes => nodes.map(node => node.dataset.eventOrder)") == ["2", "1"]
                         assert page.locator("[data-proposed-first-run-label]").all_text_contents() == [
                             "Proposed first run:", "Proposed first run:",

@@ -58,6 +58,7 @@ class ReleaseProofInputSnapshot:
     root: Path
     case_files: tuple[Path, ...]
     audit_file: Path | None
+    lower_capability_control_file: Path | None
     manifest_path: Path
     input_references: tuple[dict[str, str], ...]
 
@@ -90,6 +91,7 @@ def run_campaign(
     final_holdout_run_ledger: Path | None = None,
     implementation_revision: str = "",
     evidence_output_dir: Path | None = None,
+    lower_capability_control_file: Path | None = None,
     progress_jsonl: Path | None = None,
     progress_json: Path | None = None,
     failed_subset_replay_dir: Path | None = None,
@@ -100,6 +102,8 @@ def run_campaign(
     started = time.perf_counter()
     if release_case_files and evidence_output_dir is None:
         raise RuntimeError("release proof requires an external evidence output directory")
+    if release_case_files and lower_capability_control_file is None:
+        raise RuntimeError("release proof requires a lower-capability control file")
     output_dir = Path(output_dir).expanduser().resolve()
     telemetry_dir = Path(telemetry_dir).expanduser().resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -140,6 +144,7 @@ def run_campaign(
         else _release_proof_input_manifest(
             case_files=release_case_files,
             release_audit_file=release_audit_file,
+            lower_capability_control_file=lower_capability_control_file,
         )
     )
     if distribution_provenance is not None:
@@ -150,12 +155,18 @@ def run_campaign(
         else _seal_release_proof_inputs(
             case_files=release_case_files,
             release_audit_file=release_audit_file,
+            lower_capability_control_file=lower_capability_control_file,
             repo_root=REPO_ROOT,
             temp_parent=temp_parent,
         )
     )
     sealed_release_case_files = release_snapshot.case_files if release_snapshot is not None else release_case_files
     sealed_release_audit_file = release_snapshot.audit_file if release_snapshot is not None else release_audit_file
+    sealed_lower_capability_control_file = (
+        release_snapshot.lower_capability_control_file
+        if release_snapshot is not None
+        else lower_capability_control_file
+    )
     sealed_release_audit_repo_root = release_snapshot.root if release_snapshot is not None else None
     sealed_semantic_annotations = semantic_annotations_file
     sealed_evaluation_manifest = evaluation_split_manifest
@@ -164,6 +175,7 @@ def run_campaign(
             case_files=sealed_release_case_files,
             semantic_annotations_file=sealed_semantic_annotations,
             evaluation_split_manifest=sealed_evaluation_manifest,
+            lower_capability_control_file=sealed_lower_capability_control_file,
         )
         if semantic_release_requested
         else None
@@ -225,6 +237,7 @@ def run_campaign(
             implementation_revision=implementation_revision,
             distribution_provenance_file=distribution_provenance_path,
             evidence_output_dir=retained_evidence_root,
+            lower_capability_control_file=sealed_lower_capability_control_file,
         ),
     )
     selected_shard_count = sum(len(shards) for shards in tiers)
@@ -416,6 +429,7 @@ def _release_tier(
     implementation_revision: str = "",
     distribution_provenance_file: Path | None = None,
     evidence_output_dir: Path | None = None,
+    lower_capability_control_file: Path | None = None,
 ) -> tuple[CampaignShard, ...]:
     return tuple(
         CampaignShard(
@@ -463,6 +477,11 @@ def _release_tier(
                 if evidence_output_dir
                 else None
             ),
+            lower_capability_control_file=(
+                Path(lower_capability_control_file).expanduser().resolve()
+                if lower_capability_control_file
+                else None
+            ),
         )
         for case_file in case_files
     )
@@ -473,6 +492,7 @@ def _path_only_semantic_release_root(
     case_files: Sequence[Path],
     semantic_annotations_file: Path | None,
     evaluation_split_manifest: Path | None,
+    lower_capability_control_file: Path | None = None,
 ) -> Path:
     """Return an existing containment root without opening protected inputs."""
 
@@ -483,7 +503,14 @@ def _path_only_semantic_release_root(
     if case_paths != (annotation_path,):
         raise RuntimeError("semantic release proof must run the complete holdout as one unsharded case file")
     manifest_path = Path(evaluation_split_manifest).expanduser().resolve()
-    common_path = Path(os.path.commonpath((str(annotation_path), str(manifest_path))))
+    if lower_capability_control_file is None:
+        raise RuntimeError("semantic release proof requires a lower-capability control file")
+    lower_control_path = Path(lower_capability_control_file).expanduser().resolve()
+    common_path = Path(
+        os.path.commonpath(
+            (str(annotation_path), str(manifest_path), str(lower_control_path))
+        )
+    )
     if common_path == Path(common_path.anchor) or not common_path.is_dir():
         raise RuntimeError("semantic release inputs must share an explicit non-root directory")
     return common_path
@@ -529,6 +556,7 @@ def _release_proof_input_manifest(
     *,
     case_files: Sequence[Path],
     release_audit_file: Path | None,
+    lower_capability_control_file: Path | None = None,
     repo_root: Path = REPO_ROOT,
 ) -> list[dict[str, str]]:
     """Bind every release-proof input so a later mutation cannot retain a valid claim."""
@@ -552,6 +580,11 @@ def _release_proof_input_manifest(
         ):
             if not any(existing["path"] == reference["path"] for existing in references):
                 references.append(reference)
+    if lower_capability_control_file is not None:
+        append_reference(
+            "lower-capability-control-file",
+            Path(lower_capability_control_file),
+        )
     return references
 
 
@@ -607,6 +640,7 @@ def _seal_release_proof_inputs(
     release_audit_file: Path | None,
     repo_root: Path,
     temp_parent: Path,
+    lower_capability_control_file: Path | None = None,
 ) -> ReleaseProofInputSnapshot | None:
     """Copy stable release inputs before execution so proof cannot observe later mutations."""
 
@@ -622,6 +656,7 @@ def _seal_release_proof_inputs(
         _release_proof_input_manifest(
             case_files=case_files,
             release_audit_file=audit_path,
+            lower_capability_control_file=lower_capability_control_file,
             repo_root=root,
         )
     )
@@ -632,18 +667,33 @@ def _seal_release_proof_inputs(
     snapshot_parent.mkdir(parents=True, exist_ok=True)
     snapshot_root = Path(tempfile.mkdtemp(prefix="odylith-release-inputs-", dir=snapshot_parent))
     copied_paths: dict[Path, Path] = {}
+    lower_control_path = (
+        Path(lower_capability_control_file).expanduser().resolve()
+        if lower_capability_control_file is not None
+        else None
+    )
     try:
         for source_path in source_paths:
-            try:
-                relative_path = source_path.relative_to(root)
-            except ValueError as exc:
-                raise RuntimeError(f"release proof input is outside the repository: {source_path}") from exc
-            destination = snapshot_root / relative_path
+            if source_path == lower_control_path:
+                destination = snapshot_root / "supplemental/lower-capability-control.v1.json"
+            else:
+                try:
+                    relative_path = source_path.relative_to(root)
+                except ValueError as exc:
+                    raise RuntimeError(
+                        f"release proof input is outside the repository: {source_path}"
+                    ) from exc
+                destination = snapshot_root / relative_path
             _copy_hash_bound_release_input(source_path, destination)
             copied_paths[source_path] = destination
         snapshot_audit = copied_paths[audit_path]
         snapshot_bundle = load_release_audit_file(snapshot_audit, repo_root=snapshot_root)
         snapshot_cases = tuple(copied_paths[Path(path).expanduser().resolve()] for path in case_files)
+        snapshot_lower_control = (
+            copied_paths[Path(lower_capability_control_file).expanduser().resolve()]
+            if lower_capability_control_file is not None
+            else None
+        )
         source_case_path = repo_artifact_path(snapshot_root, snapshot_bundle.source_case_file)
         if source_case_path is None or source_case_path not in snapshot_cases:
             raise RuntimeError("release proof case files do not match the sealed audit bundle")
@@ -655,6 +705,7 @@ def _seal_release_proof_inputs(
             root=snapshot_root,
             case_files=snapshot_cases,
             audit_file=snapshot_audit,
+            lower_capability_control_file=snapshot_lower_control,
             manifest_path=write_release_proof_input_snapshot_manifest(
                 root=snapshot_root,
                 case_files=snapshot_cases,
@@ -729,6 +780,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     parser.add_argument("--evaluation-split-manifest", default="")
     parser.add_argument("--final-holdout-run-ledger", default="")
     parser.add_argument("--implementation-revision", default="")
+    parser.add_argument("--lower-capability-control-file", default="")
     parser.add_argument(
         "--evidence-output-dir",
         default="",
@@ -780,6 +832,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     if args.release_case_file and not str(args.evidence_output_dir or "").strip():
         raise RuntimeError("release proof requires --evidence-output-dir")
+    if args.release_case_file and not str(args.lower_capability_control_file or "").strip():
+        raise RuntimeError("release proof requires --lower-capability-control-file")
     payload = run_campaign(
         dist_dir=Path(args.dist_dir),
         version=str(args.version),
@@ -816,6 +870,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         implementation_revision=str(args.implementation_revision or ""),
         evidence_output_dir=Path(str(args.evidence_output_dir)).expanduser().resolve()
         if str(args.evidence_output_dir or "").strip()
+        else None,
+        lower_capability_control_file=Path(
+            str(args.lower_capability_control_file)
+        ).expanduser().resolve()
+        if str(args.lower_capability_control_file or "").strip()
         else None,
         progress_jsonl=Path(str(args.progress_jsonl)).expanduser().resolve()
         if str(args.progress_jsonl or "").strip()

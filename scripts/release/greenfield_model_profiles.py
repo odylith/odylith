@@ -42,6 +42,8 @@ from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring 
 )
 from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
     CANDIDATE_REVIEW_VERSION,
+    candidate_review_admission_witness_issues,
+    candidate_review_admission_witness_shape_issues,
     candidate_review_payload,
 )
 from odylith.runtime.domain_intelligence.greenfield_material_clarification import (
@@ -547,7 +549,7 @@ def _host_native_reviewer_admission_issues(
         issues.append("private host-native reviewer admission candidate hash is invalid")
     if _mapping(receipt.get("model_profile")) != dict(sealed_review_profile):
         issues.append("private host-native reviewer admission profile is not sealed")
-    if _candidate_review_admission_witness_shape_issues(
+    if candidate_review_admission_witness_shape_issues(
         receipt.get("admission_witness")
     ):
         issues.append("private host-native reviewer admission witness is invalid")
@@ -1263,9 +1265,9 @@ def _candidate_review_observation_issues(
             valid_verdict
             and issue is None
             and clarification is None
-            and not _candidate_review_admission_witness_issues(
-                candidate,
+            and not candidate_review_admission_witness_issues(
                 admission_witness,
+                candidate=candidate,
             )
         )
     elif expected_outcome == "denied":
@@ -1283,7 +1285,7 @@ def _candidate_review_observation_issues(
     if not valid_outcome or not valid_verdict:
         issues.append(
             "retained candidate review lacks a valid "
-            f"{expected_outcome} v7 tri-state verdict"
+            f"{expected_outcome} current-contract verdict"
         )
     source = request.get("evidence")
     try:
@@ -1314,89 +1316,6 @@ def _candidate_review_observation_issues(
     ):
         issues.append("retained candidate review elapsed time exceeds its timeout")
     return tuple(issues)
-
-
-def _candidate_review_admission_witness_issues(
-    candidate: Mapping[str, Any],
-    value: Any,
-) -> tuple[str, ...]:
-    """Bind an admitted release observation to existing typed path facts."""
-
-    shape_issues = _candidate_review_admission_witness_shape_issues(value)
-    if shape_issues:
-        return shape_issues
-    assert isinstance(value, Mapping)
-    participant = value.get("participant_fact")
-    assert isinstance(participant, Mapping)
-    field, row = participant.get("field"), participant.get("row")
-    assert isinstance(field, str) and type(row) is int
-    facts = _mapping(candidate.get("facts"))
-    selected = facts.get(field)
-    if field in {"customer", "title"}:
-        participant_exists = row == 1 and isinstance(selected, Mapping)
-    else:
-        participant_exists = (
-            isinstance(selected, Sequence)
-            and not isinstance(selected, (str, bytes, bytearray))
-            and row <= len(selected)
-            and isinstance(selected[row - 1], Mapping)
-        )
-    events = candidate.get("events")
-    task_order = value.get("task_event_order")
-    result_order = value.get("result_event_order")
-    terminal = candidate.get("terminal")
-    task_event = (
-        events[task_order - 1]
-        if isinstance(events, Sequence)
-        and not isinstance(events, (str, bytes, bytearray))
-        and type(task_order) is int
-        and 1 <= task_order <= len(events)
-        and isinstance(events[task_order - 1], Mapping)
-        else None
-    )
-    task_owner = task_event.get("actor_fact") if isinstance(task_event, Mapping) else None
-    if (
-        not participant_exists
-        or not isinstance(events, Sequence)
-        or isinstance(events, (str, bytes, bytearray))
-        or type(task_order) is not int
-        or not 1 <= task_order <= len(events)
-        or task_event is None
-        or (
-            field in {"title", "internal_systems"}
-            and task_owner != {"field": field, "row": row}
-        )
-        or type(result_order) is not int
-        or not 1 <= result_order <= len(events)
-        or not isinstance(terminal, Mapping)
-        or terminal.get("event_order") != result_order
-    ):
-        return ("admission witness does not bind a complete typed first path",)
-    return ()
-
-
-def _candidate_review_admission_witness_shape_issues(value: Any) -> tuple[str, ...]:
-    """Validate the stable witness shape when candidate bytes live elsewhere."""
-
-    if not isinstance(value, Mapping) or set(value) != {
-        "participant_fact", "task_event_order", "result_event_order",
-    }:
-        return ("admission witness shape is invalid",)
-    participant = value.get("participant_fact")
-    if not isinstance(participant, Mapping) or set(participant) != {"field", "row"}:
-        return ("admission participant witness is invalid",)
-    if participant.get("field") not in {
-        "customer", "human_actors", "external_systems", "internal_systems", "title",
-    } or type(participant.get("row")) is not int or participant["row"] < 1:
-        return ("admission participant witness is invalid",)
-    if (
-        type(value.get("task_event_order")) is not int
-        or value["task_event_order"] < 1
-        or type(value.get("result_event_order")) is not int
-        or value["result_event_order"] < 1
-    ):
-        return ("admission event witness is invalid",)
-    return ()
 
 
 def profile_counts(cases: Sequence[GreenfieldMatrixCase]) -> dict[str, int]:

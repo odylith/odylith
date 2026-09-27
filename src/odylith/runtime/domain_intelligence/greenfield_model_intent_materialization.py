@@ -16,7 +16,9 @@ from time import monotonic
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_RELATION_SET_SHA256_KEY,
     AUTHORED_SEMANTICS_KEY,
+    authored_relation_set_sha256,
     authored_semantics_mapping,
     combined_prompt_evidence_source,
 )
@@ -194,6 +196,8 @@ def stage_validated_authored_intent(
 ) -> dict[str, Any]:
     """Seal one validated candidate through the shared custody path."""
 
+    if not isinstance(review := receipt.get("candidate_review"), dict) or review.get("status") != "admitted":
+        raise ValueError("Greenfield admitted candidate is missing its review receipt")
     intent = deepcopy(dict(authored.intent))
     intent[AUTHORED_SEMANTICS_KEY] = authored_semantics_mapping(
         authored.first_path_relations,
@@ -211,6 +215,7 @@ def stage_validated_authored_intent(
         source_format=prepared.source_format,
         source_document_count=prepared.source_document_count,
         source_language=prepared.source_language,
+        reviewed_candidate_sha256=str(review.get("candidate_sha256") or ""),
         model_authoring=envelope_authoring_observation(receipt),
         authored_source_spans=authored.source_spans,
         authored_atomic_claims=authored.atomic_claims,
@@ -230,6 +235,16 @@ def stage_validated_authored_intent(
         markdown_source_path=paths.evidence_markdown.relative_to(root),
     )
     require_product_intent_authority(authority)
+    reviewed_relation_hash = authored_relation_set_sha256(
+        authored.first_path_relations,
+        authored.component_responsibility_relations,
+        first_path_context_relations=authored.first_path_context_relations,
+        source_precedence=authored.source_precedence,
+        provisional_design=authored.provisional_design,
+    )
+    if reviewed_relation_hash != authority[AUTHORED_RELATION_SET_SHA256_KEY]:
+        raise ValueError("Greenfield candidate review does not match its sealed authored design")
+    review[AUTHORED_RELATION_SET_SHA256_KEY] = reviewed_relation_hash
     receipt["candidate_review"]["product_facts_sha256"] = authority["product_facts_sha256"]
     candidate = stage_candidate_intent(
         repo_root=root,

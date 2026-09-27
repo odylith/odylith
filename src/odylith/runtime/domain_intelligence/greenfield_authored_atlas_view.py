@@ -23,6 +23,9 @@ from odylith.runtime.domain_intelligence.greenfield_authored_atlas_design_views 
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
 )
+from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
+    authored_event_display_text,
+)
 from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
     PROVISIONAL_DESIGN_AUTHORITY_KIND,
 )
@@ -494,11 +497,12 @@ def _sequence_view(
         performer = _required_string(
             relation.get("actor_fact_quote"), "first-path actor fact"
         )
-        lines.append(f'  event{index}["{_mermaid_label(event_quote)}"]')
+        event_display = authored_event_display_text(relation)
+        lines.append(f'  event{index}["{_mermaid_label(event_display)}"]')
         boxes.append(
             _box(
                 f"event{index}",
-                event_quote,
+                event_display,
                 f"{actor_kind} event",
                 f"Source action {index}, performed by {performer}: {event_quote}",
             )

@@ -27,7 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-CANDIDATE_REVIEW_VERSION = "odylith.greenfield.candidate-review.v10"
+CANDIDATE_REVIEW_VERSION = "odylith.greenfield.candidate-review.v11"
 STATE_OBJECT_ROLE_DEFINITION = (
     "One source-cited subject, entity, record, work item, case, artifact, or status "
     "whose state the workflow changes or reviews. The subject may be a person; never "
@@ -146,6 +146,13 @@ paraphrases it as an assumption, component, workstream, deliverable, acceptance,
 verification or exchange. Preserve requested product workflows that manage evidence,
 provenance, or source identity as domain data; classify by the directive's actual
 governed system and outcome, not by isolated words.
+For every provisional component and workstream, judge whether its verification
+text can test the responsibility, deliverable, referenced source events, and
+terminal proof it claims to cover. Review every risk-posture item for proportionality,
+affected design scope, trigger, mitigation, and verification. A no-material-risk
+posture is valid only when its rationale is credible for the complete requested
+operating context; deny it when material product, operational, security, privacy,
+abuse, accessibility, retention, or compliance exposure remains.
 Report only substantive unsupported, contradictory or missing source meaning or
 unresolved material uncertainty. Do not demand implementation detail, alternative
 wording or facts absent from the source. Admission is not an exhaustive defect report.
@@ -168,7 +175,9 @@ contradictory candidate is `denied`.
 An `admitted` outcome must identify one typed admission_witness from the
 candidate's accepted source: a source-supported participant, beneficiary, or
 explicit task-owner fact; a task event; and the source-supported terminal result
-event. A customer, human actor, or external system must participate in or benefit
+event. It must also identify every provisional component verification, workstream
+verification, and risk item reviewed in design_coverage; those key lists must match
+the candidate exactly. A customer, human actor, or external system must participate in or benefit
 from the witnessed path. A product title or internal system is valid only as an
 explicit task owner when the task event binds that same accepted fact; it never
 acts as a fabricated user. Event orders are the candidate's existing one-based
@@ -209,6 +218,7 @@ REVIEW_SCHEMA = {
                 "participant_fact",
                 "task_event_order",
                 "result_event_order",
+                "design_coverage",
             ],
             "properties": {
                 "participant_fact": {
@@ -231,6 +241,37 @@ REVIEW_SCHEMA = {
                 },
                 "task_event_order": {"type": "integer", "minimum": 1},
                 "result_event_order": {"type": "integer", "minimum": 1},
+                "design_coverage": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": [
+                        "component_verification_keys",
+                        "workstream_verification_keys",
+                        "risk_keys",
+                        "risk_posture_status",
+                    ],
+                    "properties": {
+                        "component_verification_keys": {
+                            "type": "array", "minItems": 4, "maxItems": 5,
+                            "items": {"type": "string"},
+                        },
+                        "workstream_verification_keys": {
+                            "type": "array", "minItems": 4, "maxItems": 5,
+                            "items": {"type": "string"},
+                        },
+                        "risk_keys": {
+                            "type": "array", "minItems": 0, "maxItems": 8,
+                            "items": {"type": "string"},
+                        },
+                        "risk_posture_status": {
+                            "type": "string",
+                            "enum": [
+                                "material_risks_identified",
+                                "no_material_risks_identified",
+                            ],
+                        },
+                    },
+                },
             },
         },
     },
@@ -444,20 +485,13 @@ def _validated_admission_witness(
 ) -> dict[str, Any]:
     """Bind admission to accepted participant, task, and result facts."""
 
-    if not isinstance(value, Mapping) or set(value) != {
-        "participant_fact", "task_event_order", "result_event_order",
-    }:
+    if candidate_review_admission_witness_shape_issues(value):
         raise RuntimeError("Greenfield candidate review returned an invalid admission witness")
+    assert isinstance(value, Mapping)
     participant = value.get("participant_fact")
-    if not isinstance(participant, Mapping) or set(participant) != {"field", "row"}:
-        raise RuntimeError("Greenfield candidate review returned an invalid admission witness")
+    assert isinstance(participant, Mapping)
     field, row = participant.get("field"), participant.get("row")
-    if field not in {
-        "customer", "human_actors", "external_systems", "internal_systems", "title",
-    } or (
-        type(row) is not int or row < 1
-    ):
-        raise RuntimeError("Greenfield candidate review returned an invalid admission witness")
+    assert isinstance(field, str) and type(row) is int
     facts = candidate.get("facts")
     if not isinstance(facts, Mapping):
         raise RuntimeError("Greenfield candidate review returned an invalid admission witness")
@@ -475,6 +509,7 @@ def _validated_admission_witness(
     task_order = value.get("task_event_order")
     result_order = value.get("result_event_order")
     terminal = candidate.get("terminal")
+    design_coverage = value.get("design_coverage")
     task_event = (
         events[task_order - 1]
         if isinstance(events, Sequence)
@@ -500,10 +535,134 @@ def _validated_admission_witness(
         or not 1 <= result_order <= len(events)
         or not isinstance(terminal, Mapping)
         or terminal.get("event_order") != result_order
+        or not _valid_design_coverage(
+            design_coverage,
+            design=candidate.get("provisional_design"),
+        )
     ):
         raise RuntimeError("Greenfield candidate review returned an invalid admission witness")
     return {
         "participant_fact": {"field": field, "row": row},
         "task_event_order": task_order,
         "result_event_order": result_order,
+        "design_coverage": deepcopy(dict(design_coverage)),
     }
+
+
+def candidate_review_admission_witness_issues(
+    value: Any,
+    *,
+    candidate: Mapping[str, Any],
+) -> tuple[str, ...]:
+    """Expose the one admission-witness validator to retained-proof readers."""
+
+    try:
+        _validated_admission_witness(value, candidate=candidate)
+    except RuntimeError:
+        return ("admission witness does not bind the current reviewed design",)
+    return ()
+
+
+def candidate_review_design_coverage_issues(
+    value: Any,
+    *,
+    provisional_design: Any,
+) -> tuple[str, ...]:
+    """Require a retained witness to cover the exact sealed provisional design."""
+
+    shape_issues = candidate_review_admission_witness_shape_issues(value)
+    if shape_issues:
+        return shape_issues
+    assert isinstance(value, Mapping)
+    if not _valid_design_coverage(
+        value.get("design_coverage"),
+        design=provisional_design,
+    ):
+        return ("admission witness does not bind the current reviewed design",)
+    return ()
+
+
+def candidate_review_admission_witness_shape_issues(value: Any) -> tuple[str, ...]:
+    """Validate a retained witness when its reviewed candidate is stored elsewhere."""
+
+    if not isinstance(value, Mapping) or set(value) != {
+        "participant_fact", "task_event_order", "result_event_order", "design_coverage",
+    }:
+        return ("admission witness shape is invalid",)
+    participant = value.get("participant_fact")
+    if (
+        not isinstance(participant, Mapping)
+        or set(participant) != {"field", "row"}
+        or participant.get("field")
+        not in {"customer", "human_actors", "external_systems", "internal_systems", "title"}
+        or type(participant.get("row")) is not int
+        or participant["row"] < 1
+        or type(value.get("task_event_order")) is not int
+        or value["task_event_order"] < 1
+        or type(value.get("result_event_order")) is not int
+        or value["result_event_order"] < 1
+    ):
+        return ("admission path witness is invalid",)
+    coverage = value.get("design_coverage")
+    if not isinstance(coverage, Mapping) or set(coverage) != {
+        "component_verification_keys",
+        "workstream_verification_keys",
+        "risk_keys",
+        "risk_posture_status",
+    }:
+        return ("admission design-coverage witness is invalid",)
+    for key, minimum, maximum in (
+        ("component_verification_keys", 4, 5),
+        ("workstream_verification_keys", 4, 5),
+        ("risk_keys", 0, 8),
+    ):
+        rows = coverage.get(key)
+        if (
+            not isinstance(rows, list)
+            or not minimum <= len(rows) <= maximum
+            or not all(isinstance(row, str) and row.strip() for row in rows)
+            or len(set(rows)) != len(rows)
+        ):
+            return ("admission design-coverage witness is invalid",)
+    if coverage.get("risk_posture_status") not in {
+        "material_risks_identified", "no_material_risks_identified",
+    }:
+        return ("admission design-coverage witness is invalid",)
+    return ()
+
+
+def _valid_design_coverage(value: Any, *, design: Any) -> bool:
+    if (
+        not isinstance(value, Mapping)
+        or set(value) != {
+            "component_verification_keys",
+            "workstream_verification_keys",
+            "risk_keys",
+            "risk_posture_status",
+        }
+        or not isinstance(design, Mapping)
+    ):
+        return False
+    components = design.get("components")
+    workstreams = design.get("workstreams")
+    risk_posture = design.get("risk_posture")
+    if (
+        not isinstance(components, Sequence)
+        or isinstance(components, (str, bytes, bytearray))
+        or not isinstance(workstreams, Sequence)
+        or isinstance(workstreams, (str, bytes, bytearray))
+        or not isinstance(risk_posture, Mapping)
+    ):
+        return False
+    risks = risk_posture.get("items")
+    if not isinstance(risks, Sequence) or isinstance(risks, (str, bytes, bytearray)):
+        return False
+    return (
+        value.get("component_verification_keys")
+        == [row.get("key") for row in components if isinstance(row, Mapping)]
+        and value.get("workstream_verification_keys")
+        == [row.get("key") for row in workstreams if isinstance(row, Mapping)]
+        and value.get("risk_keys")
+        == [row.get("key") for row in risks if isinstance(row, Mapping)]
+        and value.get("risk_posture_status") == risk_posture.get("status")
+    )

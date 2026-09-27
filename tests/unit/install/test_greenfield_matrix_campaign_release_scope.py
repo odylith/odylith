@@ -14,6 +14,17 @@ from tests.greenfield_matrix_campaign_test_support import write_payload
 from tests.greenfield_matrix_campaign_test_support import write_semantic_release_fixture
 
 
+def _write_lower_capability_control(tmp_path: Path) -> Path:
+    path = tmp_path / "lower-capability-control.v1.json"
+    write_case_file(
+        path,
+        name="lower capability control",
+        case_id="lower-capability-control",
+        stressors=(),
+    )
+    return path
+
+
 def test_matrix_command_separates_discovery_and_release_policy(tmp_path: Path) -> None:
     module = matrix_campaign_runner_module("greenfield_matrix_campaign_runner_release_scope_test")
     discovery = module.CampaignShard(
@@ -38,6 +49,8 @@ def test_matrix_command_separates_discovery_and_release_policy(tmp_path: Path) -
         require_high_variance_stressors=True,
         required_stressors=(),
         release_input_snapshot_root=tmp_path / "sealed-release-inputs",
+        evidence_output_dir=tmp_path / "evidence",
+        lower_capability_control_file=tmp_path / "lower-capability-control.v1.json",
     )
 
     discovery_command = module._matrix_command(  # noqa: SLF001
@@ -64,6 +77,9 @@ def test_matrix_command_separates_discovery_and_release_policy(tmp_path: Path) -
     assert command_arg(discovery_command, "--required-stressor") == "modal-expert-lens"
     assert "--allow-partial-stressor-coverage" in discovery_command
     assert command_arg(discovery_command, "--install-mode") == "seeded"
+    assert not any(value.startswith("--host-candidate-arg=") for value in discovery_command)
+    assert "--lower-capability-control-file" not in discovery_command
+    assert "--evidence-output-dir" not in discovery_command
     assert command_arg(release_command, "--proof-tier") == "release"
     assert "--include-browser-proof" in release_command
     assert "--include-commit-recovery-proof" in release_command
@@ -73,6 +89,15 @@ def test_matrix_command_separates_discovery_and_release_policy(tmp_path: Path) -
     assert command_arg(release_command, "--sealed-release-input-root") == str(
         (tmp_path / "sealed-release-inputs").resolve()
     )
+    assert tuple(
+        value.removeprefix("--host-candidate-arg=")
+        for value in release_command
+        if value.startswith("--host-candidate-arg=")
+    ) == sys.modules["greenfield_matrix_host_candidate"].canonical_host_candidate_argv_template()
+    assert command_arg(release_command, "--lower-capability-control-file") == str(
+        tmp_path / "lower-capability-control.v1.json"
+    )
+    assert command_arg(release_command, "--evidence-output-dir") == str(tmp_path / "evidence")
 
 
 def test_each_release_shard_requires_commit_recovery_proof(tmp_path: Path) -> None:
@@ -122,6 +147,7 @@ def test_campaign_never_promotes_release_without_an_audited_source_corpus(tmp_pa
         volume_case_files=(tmp_path / "volume-01.json",),
         release_case_files=(tmp_path / "release.json",),
         evidence_output_dir=tmp_path / "evidence",
+        lower_capability_control_file=_write_lower_capability_control(tmp_path),
         discovery_max_workers=2,
     )
 
@@ -409,6 +435,7 @@ def test_campaign_starts_semantic_child_before_any_protected_input_read(
         final_holdout_run_ledger=tmp_path / "final-holdout-run.v1.json",
         implementation_revision="a" * 40,
         evidence_output_dir=tmp_path / "evidence",
+        lower_capability_control_file=tmp_path / "lower-capability-control.v1.json",
         require_release_readiness=True,
         require_high_variance_stressors=True,
     )
@@ -564,6 +591,7 @@ def test_campaign_rejects_individually_inadequate_release_case_files_before_unio
         release_case_files=(first, second),
         release_audit_file=tmp_path / "audit.json",
         evidence_output_dir=tmp_path / "evidence",
+        lower_capability_control_file=_write_lower_capability_control(tmp_path),
     )
 
     assert evaluated_case_counts == [1, 1]
@@ -621,6 +649,7 @@ def test_campaign_filters_union_audits_for_each_release_shard_before_union_valid
         release_case_files=(first, second),
         release_audit_file=audit_file,
         evidence_output_dir=tmp_path / "evidence",
+        lower_capability_control_file=_write_lower_capability_control(tmp_path),
     )
 
     assert evaluations == [
@@ -657,6 +686,7 @@ def test_campaign_finishes_discovery_tiers_before_rejecting_an_unproven_release(
         deep_volume_case_files=(tmp_path / "deep-volume-01.json", tmp_path / "deep-volume-02.json"),
         release_case_files=(tmp_path / "release.json",),
         evidence_output_dir=tmp_path / "evidence",
+        lower_capability_control_file=_write_lower_capability_control(tmp_path),
         discovery_max_workers=1,
         regression_max_workers=2,
         volume_max_workers=3,

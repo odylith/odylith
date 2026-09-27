@@ -27,9 +27,10 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 
 
 PRODUCT_INTENT_AUTHORITY_KEY = "product_intent_authority"
-PRODUCT_INTENT_AUTHORITY_VERSION = "odylith.product-intent-authority.v11"
-PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION = "odylith.product-intent-envelope.v11"
-PRODUCT_INTENT_LEDGER_VERSION = "odylith.product-intent-custody-ledger.v8"
+PRODUCT_INTENT_AUTHORITY_VERSION = "odylith.product-intent-authority.v12"
+PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION = "odylith.product-intent-envelope.v12"
+PRODUCT_INTENT_LEDGER_VERSION = "odylith.product-intent-custody-ledger.v9"
+REVIEWED_CANDIDATE_SHA256_KEY = "reviewed_candidate_sha256"
 _AUTHORITY_VERSION_CONTRACTS = {
     PRODUCT_INTENT_AUTHORITY_VERSION: (
         PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION,
@@ -60,6 +61,7 @@ _PRODUCT_INTENT_AUTHORITY_FIELDS = frozenset(
         "atomic_facts",
         "atomic_custody_sha256",
         AUTHORED_RELATION_SET_SHA256_KEY,
+        REVIEWED_CANDIDATE_SHA256_KEY,
         "authority_snapshot_sha256",
     }
 )
@@ -177,6 +179,7 @@ def _require_exact_authority_fields(authority: Mapping[str, Any]) -> None:
         "product_facts_sha256",
         "markdown_source_sha256",
         AUTHORED_RELATION_SET_SHA256_KEY,
+        REVIEWED_CANDIDATE_SHA256_KEY,
     ):
         if not _is_sha256(authority.get(key)):
             raise ValueError("ProductCreateTransaction sealed Product Intent authority custody hash mismatch")
@@ -276,6 +279,7 @@ def _authority_snapshot_payload(authority: Mapping[str, Any]) -> dict[str, Any]:
         "atomic_facts": authority.get("atomic_facts"),
         "atomic_custody_sha256": authority.get("atomic_custody_sha256"),
         AUTHORED_RELATION_SET_SHA256_KEY: authority.get(AUTHORED_RELATION_SET_SHA256_KEY),
+        REVIEWED_CANDIDATE_SHA256_KEY: authority.get(REVIEWED_CANDIDATE_SHA256_KEY),
     }
 
 
@@ -356,6 +360,7 @@ __all__ = [
     "PRODUCT_INTENT_AUTHORITY_VERSION",
     "PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION",
     "PRODUCT_INTENT_LEDGER_VERSION",
+    "REVIEWED_CANDIDATE_SHA256_KEY",
     "STRUCTURED_SOURCE_FORMATS",
     "TYPED_SOURCE_FORMATS",
     "product_intent_authority_snapshot_hash",

@@ -3,9 +3,13 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_PROJECTION_ORIGIN,
+)
 from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
     provisional_proof_assumption,
     require_provisional_proof_decision,
@@ -16,7 +20,7 @@ from odylith.runtime.domain_intelligence.greenfield_provisional_design import va
 
 AUTHORED_STRUCTURE_EXPRESSION = """(node) => {
   const visibleText = (item) => item?.checkVisibility({checkOpacity: true, checkVisibilityCSS: true})
-    ? String(item.innerText || "").trim() : "";
+    ? String(item.innerText || "").trim().replace(/\\s+/g, " ") : "";
   const eventRows = (selector) => Array.from(node.querySelectorAll(selector)).map((item) => ({
     order: Number(item.dataset.eventOrder || "0"), text: visibleText(item)
   }));
@@ -55,6 +59,31 @@ AUTHORED_STRUCTURE_EXPRESSION = """(node) => {
   };
 }"""
 
+_GENERATED_TEXT_SUFFIXES = frozenset({".css", ".html", ".js", ".json", ".md", ".mmd", ".txt"})
+
+
+def generated_tree_path_leak_issues(repo_root: Path) -> tuple[str, ...]:
+    """Reject generated text that retains its simulation or prewrite root."""
+
+    root = Path(repo_root).expanduser().resolve()
+    generated_root = root / "odylith"
+    if not generated_root.is_dir():
+        return ("browser surface proof generated tree is unavailable",)
+    root_tokens = tuple(dict.fromkeys((str(root), str(root).lstrip("/"), root.as_uri())))
+    issues: list[str] = []
+    for path in generated_root.rglob("*"):
+        if not path.is_file() or path.is_symlink() or path.suffix.casefold() not in _GENERATED_TEXT_SUFFIXES:
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeError):
+            continue
+        if any(token and token in text for token in root_tokens):
+            issues.append(
+                f"generated text exposes its temporary repository root: {path.relative_to(root).as_posix()}"
+            )
+    return tuple(issues)
+
 
 def story_rows_match_payload(
     rendered_rows: list[dict[str, Any]],
@@ -82,6 +111,120 @@ def story_rows_match_payload(
         if _browser_visible_text(rendered.get("body")) != _browser_visible_text(expected.get("body")):
             return False
     return True
+
+
+def project_state_assertion_issues(
+    *,
+    payload_origin: str,
+    payload_prompt_count: int,
+    empty_payload_prompts: int,
+    rendered_prompt_count: int,
+    has_prompt_grid: bool,
+    has_blank_state: bool,
+    has_implementation_prompts: bool,
+    max_prompt_overflow: int,
+    pane_overflow: int,
+    rendered_story_body_count: int = 5,
+    distinct_story_body_count: int = 5,
+    clipped_text_count: int = 0,
+    story_rows: Any = (),
+    payload_story_rows: Any = (),
+    authored_structure: Any = None,
+    payload_authored_facts: Any = None,
+) -> tuple[str, ...]:
+    """Require persisted Project payload, layout, and exact authored-fact bindings."""
+
+    issues: list[str] = []
+    if payload_origin != AUTHORED_PROJECTION_ORIGIN:
+        issues.append("browser surface project payload is not accepted greenfield project state")
+    if payload_prompt_count < 5:
+        issues.append("browser surface project payload exposes fewer than five implementation prompts")
+    if empty_payload_prompts:
+        issues.append("browser surface project payload contains empty implementation prompt text")
+    if rendered_prompt_count < 5:
+        issues.append("browser surface project rendered fewer than five implementation prompt cards")
+    if not has_prompt_grid:
+        issues.append("browser surface project did not render the implementation prompt grid")
+    if has_blank_state:
+        issues.append("browser surface project rendered the blank project state after commit-only create")
+    if not has_implementation_prompts:
+        issues.append("browser surface project did not render the expected implementation prompt labels")
+    if max_prompt_overflow > 4:
+        issues.append("browser surface project implementation prompt cards overflow their containers")
+    if pane_overflow > 4:
+        issues.append("browser surface project pane overflows horizontally")
+    if rendered_story_body_count != 5:
+        issues.append("browser surface project did not render all five Product Story bodies")
+    rows = [row for row in story_rows if isinstance(row, dict)] if isinstance(story_rows, (list, tuple)) else []
+    issues.extend(project_story_binding_issues(rows, authored_facts=payload_authored_facts))
+    expected_rows = (
+        [row for row in payload_story_rows if isinstance(row, dict)]
+        if isinstance(payload_story_rows, (list, tuple))
+        else []
+    )
+    structured_slots = (
+        ("first_path", "product_boundary", "owned_capabilities")
+        if isinstance(authored_structure, dict) and isinstance(payload_authored_facts, dict)
+        else ()
+    )
+    if expected_rows and not story_rows_match_payload(rows, expected_rows, structured_slots=structured_slots):
+        issues.append("browser surface project Product Story cards drifted from the sealed payload")
+    if payload_origin == AUTHORED_PROJECTION_ORIGIN and (
+        authored_structure is not None or payload_authored_facts is not None
+    ):
+        issues.extend(authored_structure_issues(authored_structure, payload_authored_facts))
+    if clipped_text_count:
+        issues.append("browser surface project clips visible text")
+    return tuple(issues)
+
+
+def project_story_binding_issues(
+    rows: list[dict[str, Any]], *, authored_facts: Any = None
+) -> tuple[str, ...]:
+    """Check exact rendered card bindings without interpreting prose."""
+
+    proof_label, proof_body = "Proof", None
+    if authored_facts is not None:
+        try:
+            proof_label, proof_body = expected_proof_card(authored_facts)
+        except ValueError as exc:
+            return (f"greenfield Project Product Story has invalid proof authority: {exc}",)
+    expected = {
+        "user problem": ("User Problem", "user_problem"),
+        "first path": ("First Path", "first_path"),
+        "product boundary": ("Product Boundary", "product_boundary"),
+        "proposed capabilities": ("Proposed Capabilities", "owned_capabilities"),
+        proof_label.casefold(): (proof_label, "proof"),
+    }
+    issues: list[str] = []
+    seen: set[str] = set()
+    for row in rows:
+        raw_label = str(row.get("label") or "").strip()
+        label_key = raw_label.casefold()
+        expected_row = expected.get(label_key)
+        if expected_row is None:
+            issues.append(f"greenfield Project Product Story card has an unexpected semantic label: `{raw_label}`")
+            continue
+        canonical_label, expected_slot = expected_row
+        seen.add(label_key)
+        actual_slot = str(row.get("semantic_slot") or "").strip()
+        if actual_slot != expected_slot:
+            issues.append(
+                "greenfield Project Product Story card is bound to the wrong semantic slot: "
+                f"`{canonical_label}` uses `{actual_slot}` instead of `{expected_slot}`"
+            )
+        body = str(row.get("body") or "").strip()
+        if not body:
+            issues.append(f"greenfield Project Product Story `{canonical_label}` card is empty")
+        elif expected_slot == "proof" and proof_body is not None and (
+            " ".join(body.split()) != " ".join(proof_body.split())
+        ):
+            issues.append("greenfield Project Product Story proof card drifted from typed authority")
+    if rows:
+        for key, (canonical_label, _slot) in expected.items():
+            if key not in seen:
+                issues.append(f"greenfield Project Product Story is missing its `{canonical_label}` card")
+    return tuple(issues)
 
 
 def _browser_visible_text(value: Any) -> str:
@@ -165,7 +308,10 @@ def authored_structure_issues(rendered: Any, authored_facts: Any) -> tuple[str, 
     events_by_order = {row["order"]: row for row in raw_events}
     event_rows = [events_by_order[order] for order in design["first_run"]["event_orders"]]
     expected_events = [
-        {"order": row["order"], "text": _browser_visible_text(row["event_quote"])}
+        {
+            "order": row["order"],
+            "text": _browser_visible_text(f"Actor: {row['actor_fact_quote']} {row['event_quote']}"),
+        }
         for row in event_rows
     ]
     issues: list[str] = []
@@ -196,8 +342,8 @@ def authored_structure_issues(rendered: Any, authored_facts: Any) -> tuple[str, 
     expected_actors = []
     for actor in human_actors:
         actor_events = [
-            expected
-            for expected, source in zip(expected_events, event_rows, strict=True)
+            {"order": source["order"], "text": _browser_visible_text(source["event_quote"])}
+            for source in event_rows
             if source.get("actor_kind") == "human"
             and source.get("actor_fact_quote") == actor
         ]
@@ -307,6 +453,37 @@ def atlas_diagram_coverage_issues(
     return ("browser surface atlas did not visit every emitted diagram in list order",)
 
 
+def atlas_readability_assertion_issues(
+    *,
+    zoom_text: str,
+    stage_tab_index: int,
+    stage_focused: bool,
+    displayed_diagram: str,
+    expected_diagram: str,
+    pan_input: str,
+    pan_changed_transform: bool,
+) -> tuple[str, ...]:
+    """Require native-size reading and an input-appropriate pan interaction."""
+
+    issues: list[str] = []
+    if str(zoom_text or "").strip() != "Zoom 100%":
+        issues.append("browser surface atlas diagram is not readable at native scale")
+    input_token = str(pan_input or "").strip().casefold()
+    if stage_tab_index != 0 or (input_token == "keyboard" and not stage_focused):
+        issues.append("browser surface atlas native-size stage is not keyboard focused")
+    if str(displayed_diagram or "").strip().upper() != str(expected_diagram or "").strip().upper():
+        issues.append("browser surface atlas native-size reading changed diagram identity")
+    if input_token not in {"keyboard", "touch-pointer"}:
+        issues.append("browser surface atlas native-size proof has no supported interaction")
+    elif not pan_changed_transform:
+        issues.append(
+            "browser surface atlas native-size stage is not touch draggable"
+            if input_token == "touch-pointer"
+            else "browser surface atlas native-size stage is not keyboard pannable"
+        )
+    return tuple(issues)
+
+
 def atlas_degraded_state_assertion_issues(
     *,
     image_src: str,
@@ -348,8 +525,12 @@ __all__ = [
     "atlas_degraded_state_assertion_issues",
     "atlas_diagram_coverage_issues",
     "atlas_error_state_assertion_issues",
+    "atlas_readability_assertion_issues",
     "atlas_state_assertion_issues",
     "authored_structure_issues",
     "expected_proof_card",
+    "generated_tree_path_leak_issues",
+    "project_state_assertion_issues",
+    "project_story_binding_issues",
     "story_rows_match_payload",
 ]

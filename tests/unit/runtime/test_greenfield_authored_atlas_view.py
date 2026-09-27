@@ -20,6 +20,9 @@ from odylith.runtime.domain_intelligence import greenfield_deferral_predicates
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
 )
+from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
+    authored_event_display_text,
+)
 from odylith.runtime.surfaces import atlas_box_explanations
 from odylith.runtime.surfaces import atlas_diagram_intelligence
 from odylith.runtime.surfaces import render_mermaid_catalog
@@ -121,7 +124,7 @@ def _provisional_design(*, event_orders: tuple[int, ...] = (1, 2, 3)) -> dict[st
     ]
     assigned_orders.append(list(event_orders))
     return {
-        "version": "odylith.greenfield.provisional-design.v3",
+        "version": "odylith.greenfield.provisional-design.v4",
         "authority_kind": "provisional_design",
         "first_run": {
             "event_orders": list(event_orders),
@@ -134,6 +137,7 @@ def _provisional_design(*, event_orders: tuple[int, ...] = (1, 2, 3)) -> dict[st
                 "responsibility": "Capture the proposed vessel tag.",
                 "supported_event_orders": assigned_orders[0],
                 "verification": "A submitted vessel tag remains available for occupancy work.",
+                "verification_event_orders": assigned_orders[0],
             },
             {
                 "key": "occupancy-record",
@@ -141,6 +145,7 @@ def _provisional_design(*, event_orders: tuple[int, ...] = (1, 2, 3)) -> dict[st
                 "responsibility": "Record proposed berth occupancy.",
                 "supported_event_orders": assigned_orders[1],
                 "verification": "Recorded berth occupancy remains available to the placement view.",
+                "verification_event_orders": assigned_orders[1],
             },
             {
                 "key": "placement-view",
@@ -148,6 +153,7 @@ def _provisional_design(*, event_orders: tuple[int, ...] = (1, 2, 3)) -> dict[st
                 "responsibility": "Show the proposed berth placement.",
                 "supported_event_orders": assigned_orders[2],
                 "verification": "The placement view shows the recorded berth placement.",
+                "verification_event_orders": assigned_orders[2],
             },
             {
                 "key": "placement-evidence",
@@ -155,6 +161,7 @@ def _provisional_design(*, event_orders: tuple[int, ...] = (1, 2, 3)) -> dict[st
                 "responsibility": "Retain proposed evidence for the placement path.",
                 "supported_event_orders": assigned_orders[3],
                 "verification": "Placement evidence identifies the supported source events.",
+                "verification_event_orders": assigned_orders[3],
             },
         ],
         "workstreams": [
@@ -165,6 +172,7 @@ def _provisional_design(*, event_orders: tuple[int, ...] = (1, 2, 3)) -> dict[st
                 "depends_on": [],
                 "deliverable": "Working vessel-tag intake.",
                 "verification": "Submit a vessel tag and verify its saved value.",
+                "verification_event_orders": assigned_orders[0],
             },
             {
                 "key": "occupancy",
@@ -173,6 +181,7 @@ def _provisional_design(*, event_orders: tuple[int, ...] = (1, 2, 3)) -> dict[st
                 "depends_on": ["intake"],
                 "deliverable": "Working berth-occupancy recording.",
                 "verification": "Record occupancy and verify the saved berth state.",
+                "verification_event_orders": assigned_orders[1],
             },
             {
                 "key": "placement",
@@ -181,6 +190,7 @@ def _provisional_design(*, event_orders: tuple[int, ...] = (1, 2, 3)) -> dict[st
                 "depends_on": ["occupancy"],
                 "deliverable": "Working berth-placement view.",
                 "verification": "Open the view and verify the recorded placement appears.",
+                "verification_event_orders": assigned_orders[2],
             },
             {
                 "key": "evidence",
@@ -189,6 +199,7 @@ def _provisional_design(*, event_orders: tuple[int, ...] = (1, 2, 3)) -> dict[st
                 "depends_on": ["placement"],
                 "deliverable": "Working placement-evidence record.",
                 "verification": "Verify the evidence identifies every supported source event.",
+                "verification_event_orders": assigned_orders[3],
             },
         ],
         "exchanges": [
@@ -208,6 +219,11 @@ def _provisional_design(*, event_orders: tuple[int, ...] = (1, 2, 3)) -> dict[st
                 "contract": "Proposed placement result",
             },
         ],
+        "risk_posture": {
+            "status": "no_material_risks_identified",
+            "rationale": "This Atlas fixture carries no product-domain risk claim.",
+            "items": [],
+        },
     }
 
 
@@ -737,7 +753,9 @@ def test_single_human_event_sequence_preserves_typed_performer_edge() -> None:
 
     assert boxes["performer1"]["label"] == "extension publishers"
     assert boxes["performer1"]["role"] == "Typed event performer"
-    assert boxes["event1"]["label"] == event
+    assert boxes["event1"]["label"] == authored_event_display_text(
+        _relation(1, "extension publishers", event)
+    )
     assert 'performer1 -->|"performs"| event1' in sequence["mermaid_source"]
     assert 'event1 -. "proposed support" .-> proposed_component1' in sequence["mermaid_source"]
     assert (
@@ -801,8 +819,8 @@ def test_capability_support_displays_each_full_source_action_once(event_count: i
     boxes = {box["node_id"]: box for box in support["diagram_boxes"]}
     for relation in relations:
         complete = (
-            f"Source action {relation['order']} · {relation['actor_kind']}: "
-            f"{relation['actor_fact_quote']}\n{relation['event_quote']}"
+            f"Source action {relation['order']} · {relation['actor_kind']}\n"
+            f"{authored_event_display_text(relation)}"
         )
         assert sum(complete in box["label"] for box in boxes.values()) == 1
     for index, component in enumerate(design["components"], 1):
@@ -820,8 +838,8 @@ def test_capability_support_keeps_source_events_and_proposed_ownership_distinct(
 
     assert boxes["component1_actions"]["label"] == "Source action 1"
     assert boxes["source_action1"]["label"] == (
-        "Source action 1 · human: Dock attendant Ivo\n"
-        "Dock attendant Ivo enters a vessel tag"
+        "Source action 1 · human\nActor: Dock attendant Ivo\n"
+        "Source event: Dock attendant Ivo enters a vessel tag"
     )
     assert boxes["component1_actions"]["role"] == "Supported source actions"
     assert boxes["component1"]["role"] == "Proposed component"
@@ -876,8 +894,8 @@ def test_capability_support_local_groups_preserve_exact_many_to_many_references(
     assert ".->" not in inventory
     for order, event in by_order.items():
         action = (
-            f"Source action {order} · {event['actor_kind']}: "
-            f"{event['actor_fact_quote']}\n{event['event_quote']}"
+            f"Source action {order} · {event['actor_kind']}\n"
+            f"{authored_event_display_text(event)}"
         )
         assert boxes[f"source_action{order}"]["label"] == action
         label = "<br/>".join(mermaid_label(line, width=44) for line in action.splitlines())

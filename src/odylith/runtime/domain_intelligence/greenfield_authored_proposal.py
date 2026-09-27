@@ -100,6 +100,7 @@ def build_authored_greenfield_proposal(
     evidence_requirements = _strings(confirmed_intent.get("evidence_requirements"))
     success_metrics = _strings(confirmed_intent.get("success_metrics"))
     provisional_design = provisional_design_from_intent(confirmed_intent)
+    risk_posture = copy.deepcopy(provisional_design["risk_posture"])
     visible_result = authored_checkpoint_text(confirmed_intent)
     source_components = _source_components(
         title=title,
@@ -195,8 +196,16 @@ def build_authored_greenfield_proposal(
             *({"applies_to": "general", "statement": value} for value in ambiguities),
         ]),
         "open_questions": [],
-        "risks": [],
-        "security_compliance": {},
+        "risks": copy.deepcopy(risk_posture["items"]),
+        "security_compliance": {
+            "authority_kind": "provisional_design",
+            "status": risk_posture["status"],
+            "rationale": risk_posture["rationale"],
+            "risk_refs": [
+                f"/authored_semantics/provisional_design/risk_posture/items/{index}"
+                for index, _row in enumerate(risk_posture["items"])
+            ],
+        },
         "validation_strategy": validation_strategy,
         "project_brief": _project_brief(
             title=title,

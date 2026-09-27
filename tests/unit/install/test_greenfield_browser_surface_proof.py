@@ -37,6 +37,13 @@ def _authored_contract_module():
     )
 
 
+def _atlas_readability_module():
+    return _load_module(
+        SCRIPTS_ROOT / "greenfield_browser_atlas_readability.py",
+        "greenfield_browser_atlas_readability",
+    )
+
+
 def test_browser_surface_proof_scope_is_generated_state_matrix() -> None:
     module = _module()
 
@@ -46,6 +53,12 @@ def test_browser_surface_proof_scope_is_generated_state_matrix() -> None:
         surface for _viewport, surface, _state in module.BROWSER_REQUIRED_COVERAGE
     } == {"project", "radar", "registry", "casebook", "atlas", "compass", "shell"}
     assert ("mobile", "casebook", "empty") in module.BROWSER_REQUIRED_COVERAGE
+    assert ("mobile", "project", "degraded") in module.BROWSER_REQUIRED_COVERAGE
+    assert ("mobile", "radar", "empty") in module.BROWSER_REQUIRED_COVERAGE
+    assert ("mobile", "radar", "degraded") in module.BROWSER_REQUIRED_COVERAGE
+    assert ("mobile", "registry", "empty") in module.BROWSER_REQUIRED_COVERAGE
+    assert ("mobile", "registry", "degraded") in module.BROWSER_REQUIRED_COVERAGE
+    assert ("mobile", "compass", "degraded") in module.BROWSER_REQUIRED_COVERAGE
     assert ("mobile", "atlas", "degraded") in module.BROWSER_REQUIRED_COVERAGE
     assert ("mobile", "atlas", "error") in module.BROWSER_REQUIRED_COVERAGE
     assert ("mobile", "shell", "invalid-recovery") in module.BROWSER_REQUIRED_COVERAGE
@@ -199,6 +212,58 @@ def test_atlas_proof_requires_every_emitted_diagram_in_list_order() -> None:
         ("D-001", "D-002", "D-003"),
         ("D-001", "D-003"),
     ) == ("browser surface atlas did not visit every emitted diagram in list order",)
+
+
+def test_atlas_readability_requires_native_scale_focus_identity_and_keyboard_pan() -> None:
+    module = _authored_contract_module()
+
+    assert module.atlas_readability_assertion_issues(
+        zoom_text="Zoom 100%",
+        stage_tab_index=0,
+        stage_focused=True,
+        displayed_diagram="D-004",
+        expected_diagram="D-004",
+        pan_input="keyboard",
+        pan_changed_transform=True,
+    ) == ()
+    assert module.atlas_readability_assertion_issues(
+        zoom_text="Zoom 29%",
+        stage_tab_index=-1,
+        stage_focused=False,
+        displayed_diagram="D-003",
+        expected_diagram="D-004",
+        pan_input="keyboard",
+        pan_changed_transform=False,
+    ) == (
+        "browser surface atlas diagram is not readable at native scale",
+        "browser surface atlas native-size stage is not keyboard focused",
+        "browser surface atlas native-size reading changed diagram identity",
+        "browser surface atlas native-size stage is not keyboard pannable",
+    )
+
+    assert module.atlas_readability_assertion_issues(
+        zoom_text="Zoom 100%", stage_tab_index=0, stage_focused=False,
+        displayed_diagram="D-004", expected_diagram="D-004",
+        pan_input="touch-pointer", pan_changed_transform=True,
+    ) == ()
+    assert module.atlas_readability_assertion_issues(
+        zoom_text="Zoom 100%", stage_tab_index=0, stage_focused=False,
+        displayed_diagram="D-004", expected_diagram="D-004",
+        pan_input="touch-pointer", pan_changed_transform=False,
+    ) == ("browser surface atlas native-size stage is not touch draggable",)
+
+
+def test_generated_tree_path_scan_rejects_simulation_root_leak(tmp_path: Path) -> None:
+    module = _authored_contract_module()
+    generated = tmp_path / "odylith" / "compass" / "compass-payload.v1.js"
+    generated.parent.mkdir(parents=True)
+    generated.write_text(f'window.payload = {{"source": "{tmp_path}/prewrite"}};\n', encoding="utf-8")
+
+    assert module.generated_tree_path_leak_issues(tmp_path) == (
+        "generated text exposes its temporary repository root: odylith/compass/compass-payload.v1.js",
+    )
+    generated.write_text('window.payload = {"source": "odylith/compass"};\n', encoding="utf-8")
+    assert module.generated_tree_path_leak_issues(tmp_path) == ()
 
 
 def test_atlas_degraded_state_requires_loaded_png_fallback() -> None:
@@ -542,8 +607,8 @@ def _source_design_structure() -> tuple[dict, dict]:
         "provisional_design": design,
     }
     events = [
-        {"order": 1, "text": "Keeper signals amber ferry"},
-        {"order": 2, "text": "Relay writes blue receipt"},
+        {"order": 1, "text": "Actor: Keeper Keeper signals amber ferry"},
+        {"order": 2, "text": "Actor: Relay Relay writes blue receipt"},
     ]
     rendered = {
         "focus": events,
@@ -552,7 +617,7 @@ def _source_design_structure() -> tuple[dict, dict]:
         "focus_label": "Proposed first run:",
         "first_path_authority": "provisional_design",
         "first_path_label": "Proposed first run:",
-        "actors": [{"actor": "Keeper", "events": events[:1]}],
+        "actors": [{"actor": "Keeper", "events": [{"order": 1, "text": "Keeper signals amber ferry"}]}],
         "capabilities_authority": "provisional_design",
         "capabilities_label": "Proposed capabilities:",
         "capabilities": [
@@ -630,11 +695,18 @@ def _result_first_structure() -> tuple[dict, dict]:
     ]
     facts["provisional_design"] = structural_design_fixture((1, 2, 3), first_run_event_orders=(2, 3, 1))
     events = [
-        {"order": 2, "text": "Relay writes blue receipt"},
-        {"order": 3, "text": "Keeper reviews blue receipt"},
-        {"order": 1, "text": "Keeper publishes blue receipt"},
+        {"order": 2, "text": "Actor: Relay Relay writes blue receipt"},
+        {"order": 3, "text": "Actor: Keeper Keeper reviews blue receipt"},
+        {"order": 1, "text": "Actor: Keeper Keeper publishes blue receipt"},
     ]
-    rendered.update(focus=events, first_path=events, actors=[{"actor": "Keeper", "events": events[1:]}])
+    rendered.update(
+        focus=events,
+        first_path=events,
+        actors=[{"actor": "Keeper", "events": [
+            {"order": 3, "text": "Keeper reviews blue receipt"},
+            {"order": 1, "text": "Keeper publishes blue receipt"},
+        ]}],
+    )
     return rendered, facts
 
 
@@ -727,8 +799,12 @@ def _post_result_structure() -> tuple[dict, dict]:
     ]
     facts["source_precedence"] = [{"before_event": 1, "after_event": 2, "constraint_index": 1}]
     facts["operational_constraints"] = ["The Keeper publishes before archiving receipt evidence."]
-    events = [{"order": order, "text": quote} for order, quote in enumerate(quotes, 1)]
-    rendered.update(focus=events, first_path=events, actors=[{"actor": "Keeper", "events": events}])
+    events = [
+        {"order": order, "text": f"Actor: Keeper {quote}"}
+        for order, quote in enumerate(quotes, 1)
+    ]
+    actor_events = [{"order": order, "text": quote} for order, quote in enumerate(quotes, 1)]
+    rendered.update(focus=events, first_path=events, actors=[{"actor": "Keeper", "events": actor_events}])
     return rendered, facts
 
 
@@ -798,6 +874,56 @@ def authored_contract_browser():
         browser.close()
 
 
+@pytest.mark.parametrize("viewport", ["desktop", "mobile"])
+def test_atlas_native_reading_uses_real_keyboard_or_touch_pointer_pan(
+    authored_contract_browser, viewport: str,
+) -> None:
+    from odylith.runtime.surfaces.atlas_viewer_viewport_runtime import VIEWPORT_RUNTIME_JS
+
+    module = _atlas_readability_module()
+    mobile = viewport == "mobile"
+    context = authored_contract_browser.new_context(
+        viewport={"width": 430, "height": 932} if mobile else {"width": 1440, "height": 1100},
+        has_touch=mobile,
+        is_mobile=mobile,
+    )
+    page = context.new_page()
+    try:
+        page.set_content(f"""<!doctype html>
+          <style>
+            #viewerStage {{ position: relative; width: 360px; height: 480px; touch-action: none; overflow: hidden; }}
+            #viewerImage {{ position: absolute; left: 50%; top: 50%; width: 600px; height: 400px; }}
+          </style>
+          <button id="zoomIn"></button><button id="zoomOut"></button>
+          <button id="fit"></button><button id="reset"></button>
+          <span id="zoomReadout"></span><span id="diagramId">D-004</span>
+          <div id="viewerStage" tabindex="0"><img id="viewerImage" alt="diagram"></div>
+          <script>{VIEWPORT_RUNTIME_JS}
+            const viewport = createAtlasViewport({{
+              stageEl: document.querySelector('#viewerStage'),
+              imageEl: document.querySelector('#viewerImage'),
+              zoomReadoutEl: document.querySelector('#zoomReadout'),
+              controls: {{
+                zoomIn: document.querySelector('#zoomIn'), zoomOut: document.querySelector('#zoomOut'),
+                fit: document.querySelector('#fit'), reset: document.querySelector('#reset')
+              }}
+            }});
+            viewport.setDiagram({{svg_viewbox_width: 600, svg_viewbox_height: 400}});
+            viewport.imageLoaded();
+          </script>""")
+
+        issues = module.prove_atlas_native_reading(
+            page=page, frame=page, expected_diagram="D-004", timeout_ms=5000,
+            screenshot_output_dir=None, coverage_cell=(viewport, "atlas", "normal"),
+        )
+
+        assert issues == ()
+        if mobile:
+            assert "- 80px" in page.locator("#viewerImage").get_attribute("style")
+    finally:
+        context.close()
+
+
 def _authored_contract_html(facts: dict) -> str:
     from odylith.runtime.project_intelligence.authored_fact_presenter import (
         render_authored_actor_cards, render_authored_focus, render_product_story_contract,
@@ -838,7 +964,8 @@ def test_authored_dom_oracle_preserves_publication_and_post_result_archiving(
         assert module.authored_structure_issues(actual, facts) == ()
         for surface in ("focus", "first_path"):
             assert [row["text"] for row in actual[surface]] == [
-                "Keeper publishes blue receipt", "Keeper archives receipt evidence",
+                "Actor: Keeper Keeper publishes blue receipt",
+                "Actor: Keeper Keeper archives receipt evidence",
             ]
     finally:
         page.close()

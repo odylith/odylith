@@ -717,8 +717,8 @@ def test_luna_host_control_uses_standard_product_compiler_route(
     assert captured["env"]["ODYLITH_GREENFIELD_MODEL_PROFILE"] == profile_id
 
 
-@pytest.mark.parametrize("failure_mode", ("malformed_argv", "contaminated_corpus"))
-def test_release_preflight_rejects_before_holdout_claim_or_matrix_execution(
+@pytest.mark.parametrize("failure_mode", ("malformed_argv", "post_claim_validation"))
+def test_release_preflight_and_protected_input_claim_order(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
     failure_mode: str,
@@ -757,19 +757,66 @@ def test_release_preflight_rejects_before_holdout_claim_or_matrix_execution(
         lower_capability_control_file=str(tmp_path / "sealed/luna-control.json"),
     )
 
-    class HoldoutRun:
-        claimed = False
-
-        def claim(self) -> None:
-            self.claimed = True
-
-    holdout = HoldoutRun()
     factory_calls: list[bool] = []
     monkeypatch.setattr(module, "_parse_args", lambda _argv: args)
     monkeypatch.setattr(module, "_require_sealed_release_input_root", lambda **_kwargs: None)
     monkeypatch.setattr(module, "_raise_for_invalid_campaign_policy", lambda **_kwargs: None)
     monkeypatch.setattr(module, "validate_retained_evidence_output_dir", lambda **_kwargs: None)
     monkeypatch.setattr(module, "browser_runtime_preflight_issues", lambda: ())
+    if failure_mode == "malformed_argv":
+        class HoldoutRun:
+            claimed = False
+
+            def claim(self) -> None:
+                self.claimed = True
+
+        holdout = HoldoutRun()
+        monkeypatch.setattr(
+            module,
+            "_final_holdout_run_from_args",
+            lambda *_args, **_kwargs: factory_calls.append(True) or holdout,
+        )
+        monkeypatch.setattr(
+            module,
+            "acquire_matrix_run_lease",
+            lambda **_kwargs: pytest.fail("lease acquired before release preflight finished"),
+        )
+        monkeypatch.setattr(
+            module,
+            "_require_profile_argv_template",
+            lambda _argv: (_ for _ in ()).throw(RuntimeError("malformed host argv")),
+        )
+        with pytest.raises(RuntimeError, match="malformed host argv"):
+            module.main([])
+
+        assert holdout.claimed is False
+        assert factory_calls == []
+        return
+
+    standard_profile = module.model_profile_id_for_repair_tier("standard")
+    control_profile = module.LOWER_CAPABILITY_CONTROL_PROFILES[0]
+    _write_supplement(
+        Path(args.case_file[0]),
+        case_id="release-main-case",
+        tags=(f"model-profile:{standard_profile}",),
+    )
+    _write_supplement(
+        Path(args.lower_capability_control_file),
+        case_id="release-control-case",
+        tags=(f"model-profile:{control_profile}",),
+        expectation="clarification_required",
+    )
+    _write(Path(args.semantic_annotations_file), "{}\n")
+    _write(Path(args.evaluation_split_manifest), "{}\n")
+    holdout = module._FinalHoldoutRun(
+        ledger_path=Path(args.final_holdout_run_ledger),
+        holdout_path=Path(args.semantic_annotations_file),
+        evaluation_manifest_path=Path(args.evaluation_split_manifest),
+        case_paths=tuple(Path(value) for value in args.case_file),
+        lower_capability_control_path=Path(args.lower_capability_control_file),
+        implementation_revision="a" * 40,
+        distribution_provenance_sha256="b" * 64,
+    )
     monkeypatch.setattr(
         module,
         "_final_holdout_run_from_args",
@@ -777,49 +824,50 @@ def test_release_preflight_rejects_before_holdout_claim_or_matrix_execution(
     )
     monkeypatch.setattr(
         module,
-        "acquire_matrix_run_lease",
-        lambda **_kwargs: pytest.fail("lease acquired before release preflight finished"),
+        "_require_profile_argv_template",
+        lambda _argv: ("/trusted/codex", "exec"),
     )
+    events: list[str] = []
+    load_cases = module._load_cli_case_files
+    load_control = module._load_lower_capability_control_case
+
+    def assert_claimed(event: str) -> None:
+        claim = json.loads(holdout.ledger_path.read_text(encoding="utf-8"))
+        assert holdout.claimed is True
+        assert claim["status"] == "claimed"
+        assert claim["protected_inputs_bound"] is True
+        events.append(event)
+
+    def load_claimed_cases(*loader_args, **loader_kwargs):
+        assert_claimed("cases")
+        return load_cases(*loader_args, **loader_kwargs)
+
+    def load_claimed_control(*loader_args, **loader_kwargs):
+        assert_claimed("control")
+        return load_control(*loader_args, **loader_kwargs)
+
+    def reject_after_protected_loads(**_kwargs):
+        assert_claimed("evaluation")
+        raise RuntimeError("post-claim contract validation failed")
+
+    monkeypatch.setattr(module, "_load_cli_case_files", load_claimed_cases)
+    monkeypatch.setattr(module, "_load_lower_capability_control_case", load_claimed_control)
+    monkeypatch.setattr(module, "evaluate_frozen_evaluation_contract", reject_after_protected_loads)
     monkeypatch.setattr(
         module,
-        "run_matrix",
-        lambda **_kwargs: pytest.fail("matrix executed before release preflight finished"),
+        "_execute_matrix_campaign",
+        lambda **_kwargs: pytest.fail("matrix executed after failed release validation"),
     )
-    if failure_mode == "malformed_argv":
-        monkeypatch.setattr(
-            module,
-            "_require_profile_argv_template",
-            lambda _argv: (_ for _ in ()).throw(RuntimeError("malformed host argv")),
-        )
-        expected = "malformed host argv"
-    else:
-        monkeypatch.setattr(
-            module,
-            "_require_profile_argv_template",
-            lambda _argv: ("/trusted/codex", "exec"),
-        )
-        control_profile = module.LOWER_CAPABILITY_CONTROL_PROFILES[0]
-        monkeypatch.setattr(
-            module,
-            "_load_cli_case_files",
-            lambda *_args, **_kwargs: (
-                module.GreenfieldMatrixCase(
-                    case_id="contaminated-main-case",
-                    name="contaminated main case",
-                    prompt="Clarify the first result.",
-                    required_terms=(),
-                    expectation="clarification_required",
-                    tags=(f"model-profile:{control_profile}",),
-                ),
-            ),
-        )
-        expected = "main release corpus cannot contain Luna control profile tags"
 
-    with pytest.raises(RuntimeError, match=expected):
+    with pytest.raises(RuntimeError, match="post-claim contract validation failed"):
         module.main([])
 
+    terminal = json.loads(holdout.ledger_path.read_text(encoding="utf-8"))
+    assert factory_calls == [True]
+    assert events == ["cases", "control", "evaluation"]
+    assert terminal["status"] == "interrupted"
+    assert terminal["protected_inputs_bound"] is True
     assert holdout.claimed is False
-    assert factory_calls == ([] if failure_mode == "malformed_argv" else [True])
 
 
 @pytest.mark.parametrize("case_args", ((), ("--case-file", "")))
@@ -1459,7 +1507,17 @@ def test_release_campaign_keeps_luna_control_separate_from_corpus_acceptance(
         "build_onboarding_quality_scorecard",
         lambda **_kwargs: {"status": "passed", "score": 10},
     )
-    monkeypatch.setattr(module, "retained_evidence_manifest_issues", lambda *_args, **_kwargs: ())
+    monkeypatch.setattr(
+        module,
+        "retained_evidence_result",
+        lambda *_args, **_kwargs: {
+            "status": "passed",
+            "manifest": str(evidence_dir / "retained-evidence-manifest.v1.json"),
+            "manifest_sha256": "a" * 64,
+            "project_navigation": [],
+            "issues": [],
+        },
+    )
 
     exit_code = module._execute_matrix_campaign(
         args=args,

@@ -168,6 +168,12 @@ def write_semantic_release_fixture(*, repo_root: Path, temp_root: Path) -> tuple
         ),
         encoding="utf-8",
     )
+    write_case_file(
+        temp_root / "lower-capability-control.v1.json",
+        name="lower capability control",
+        case_id="lower-capability-control",
+        stressors=(),
+    )
     manifest_path = repo_root / "evaluation-splits.json"
     manifest_path.write_text(
         json.dumps(

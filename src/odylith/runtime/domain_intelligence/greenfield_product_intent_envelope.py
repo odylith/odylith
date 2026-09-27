@@ -38,6 +38,7 @@ from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_author
     PRODUCT_INTENT_AUTHORITY_VERSION,
     PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION,
     PRODUCT_INTENT_LEDGER_VERSION,
+    REVIEWED_CANDIDATE_SHA256_KEY,
     product_intent_authority_snapshot_hash as _sealed_product_intent_authority_snapshot_hash,
     product_intent_material_custody_hash,
     require_product_intent_authority_structure,
@@ -95,7 +96,11 @@ def is_product_intent_envelope(value: object) -> bool:
     if value.get("schema_version") != PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION:
         return False
     ledger = value.get("custody_ledger")
-    return bool(isinstance(ledger, Mapping) and _is_sha256(ledger.get(AUTHORED_RELATION_SET_SHA256_KEY)))
+    return bool(
+        isinstance(ledger, Mapping)
+        and _is_sha256(ledger.get(AUTHORED_RELATION_SET_SHA256_KEY))
+        and _is_sha256(ledger.get(REVIEWED_CANDIDATE_SHA256_KEY))
+    )
 
 
 def product_facts_from_envelope(value: object, *, source_text: str = "") -> dict[str, Any] | None:
@@ -212,6 +217,7 @@ def build_product_intent_envelope(
     source_format: str = "",
     source_document_count: int = 1,
     source_language: str = "en",
+    reviewed_candidate_sha256: str,
     model_authoring: Mapping[str, Any] | None = None,
     authored_source_spans: Sequence[Mapping[str, Any]] | None = None,
     authored_atomic_claims: Sequence[Mapping[str, Any]] | None = None,
@@ -222,6 +228,10 @@ def build_product_intent_envelope(
     if AUTHORED_SEMANTICS_KEY not in intent:
         raise ValueError(
             "Product Intent envelope construction requires sealed model-authored semantics"
+        )
+    if not _is_sha256(reviewed_candidate_sha256):
+        raise ValueError(
+            "Product Intent envelope requires exact reviewed-candidate custody"
         )
     authored_relations = first_path_relations_from_intent(intent)
     first_path_context_relations = first_path_context_relations_from_intent(intent)
@@ -295,6 +305,7 @@ def build_product_intent_envelope(
         "custody_ledger": {
             "version": PRODUCT_INTENT_LEDGER_VERSION,
             AUTHORED_RELATION_SET_SHA256_KEY: authored_relation_set_sha256_value,
+            REVIEWED_CANDIDATE_SHA256_KEY: reviewed_candidate_sha256,
             "fields": fields,
             "atomic_facts": atomic_facts,
             "ignored_instructions": [],
@@ -616,6 +627,9 @@ def product_intent_authority_from_envelope(
         "atomic_custody_sha256": atomic_fact_ledger_hash(atomic_facts),
         AUTHORED_RELATION_SET_SHA256_KEY: _exact_text(
             custody_ledger.get(AUTHORED_RELATION_SET_SHA256_KEY)
+        ),
+        REVIEWED_CANDIDATE_SHA256_KEY: _exact_text(
+            custody_ledger.get(REVIEWED_CANDIDATE_SHA256_KEY)
         ),
     }
     authority["authority_snapshot_sha256"] = product_intent_authority_snapshot_hash(authority)

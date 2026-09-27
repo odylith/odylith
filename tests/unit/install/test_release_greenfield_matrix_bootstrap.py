@@ -5,6 +5,7 @@ from pathlib import Path
 import shutil
 import signal
 import subprocess
+import sys
 import time
 
 import pytest
@@ -24,7 +25,14 @@ def _run_greenfield_preconfirm_matrix(
     (dist_dir / "install.sh").write_text("#!/usr/bin/env bash\n", encoding="utf-8")
     fake_python = tmp_path / "fake-python"
     fake_python.write_text(
-        fake_python_body or "#!/usr/bin/env bash\nprintf '%s\\n' \"$*\" >> \"$FAKE_PYTHON_LOG\"\n",
+        fake_python_body
+        or (
+            "#!/usr/bin/env bash\n"
+            "if [[ \"$*\" == *\"greenfield_matrix_host_candidate.py --print-argv-template\"* ]]; then\n"
+            "  exec \"$REAL_PYTHON\" \"$@\"\n"
+            "fi\n"
+            "printf '%s\\n' \"$*\" >> \"$FAKE_PYTHON_LOG\"\n"
+        ),
         encoding="utf-8",
     )
     fake_python.chmod(0o755)
@@ -38,6 +46,8 @@ def _run_greenfield_preconfirm_matrix(
         "GREENFIELD_MATRIX_EVALUATION_SPLIT_MANIFEST",
         "GREENFIELD_MATRIX_FINAL_HOLDOUT_RUN_LEDGER",
         "GREENFIELD_MATRIX_IMPLEMENTATION_REVISION",
+        "GREENFIELD_MATRIX_LOWER_CAPABILITY_CONTROL_FILE",
+        "GREENFIELD_MATRIX_EVIDENCE_OUTPUT_DIR",
         "GREENFIELD_MATRIX_RELEASE_AUDIT_FILE",
         "GREENFIELD_MATRIX_RELEASE_AUDIT_REPO_ROOT",
         "GREENFIELD_MATRIX_RELEASE_INTENT",
@@ -50,6 +60,7 @@ def _run_greenfield_preconfirm_matrix(
             "FAKE_PYTHON_LOG": str(tmp_path / "fake-python.log"),
             "ODYLITH_PYTHON": str(fake_python),
             "ODYLITH_REPO_ROOT_OVERRIDE": str(REPO_ROOT),
+            "REAL_PYTHON": sys.executable,
             "TEMP_PARENT": str(tmp_path),
             **overrides,
         }
@@ -71,7 +82,8 @@ def _release_input_overrides(tmp_path: Path) -> dict[str, str]:
     annotations_file = sealed_root / "annotations.json"
     manifest_file = sealed_root / "evaluation-manifest.json"
     provenance_file = tmp_path / "build-provenance.v1.json"
-    for path in (case_file, annotations_file, manifest_file, provenance_file):
+    lower_control_file = sealed_root / "lower-capability-control.json"
+    for path in (case_file, annotations_file, manifest_file, provenance_file, lower_control_file):
         path.write_text("{}\n", encoding="utf-8")
     return {
         "GREENFIELD_MATRIX_CASE_FILE": str(case_file),
@@ -81,6 +93,8 @@ def _release_input_overrides(tmp_path: Path) -> dict[str, str]:
         "GREENFIELD_MATRIX_FINAL_HOLDOUT_RUN_LEDGER": str(tmp_path / "final-holdout-ledger.json"),
         "GREENFIELD_MATRIX_IMPLEMENTATION_REVISION": "a" * 40,
         "GREENFIELD_MATRIX_DISTRIBUTION_PROVENANCE_FILE": str(provenance_file),
+        "GREENFIELD_MATRIX_LOWER_CAPABILITY_CONTROL_FILE": str(lower_control_file),
+        "GREENFIELD_MATRIX_EVIDENCE_OUTPUT_DIR": str(tmp_path / "retained-evidence"),
     }
 
 
@@ -215,7 +229,7 @@ def test_greenfield_preconfirm_matrix_target_runs_installed_release_gate() -> No
     assert "make greenfield-preconfirm-matrix" in help_text
     assert "write greenfield-preconfirm-matrix.v1.json" in help_text
     assert "per-case browser surface state" in help_text
-    assert "three-stage participant-first authoring" in help_text
+    assert "one host-authored candidate plus independent semantic review" in help_text
     assert "one-call model-first authoring" not in help_text
     assert "does not qualify terminal decisions or native chat confirmation through a create-only run" in help_text
     assert "Proposal timing targets are advisory; operational timeouts remain separate" in help_text
@@ -254,6 +268,14 @@ def test_greenfield_preconfirm_matrix_target_runs_installed_release_gate() -> No
         (
             "GREENFIELD_MATRIX_DISTRIBUTION_PROVENANCE_FILE",
             "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_DISTRIBUTION_PROVENANCE_FILE",
+        ),
+        (
+            "GREENFIELD_MATRIX_LOWER_CAPABILITY_CONTROL_FILE",
+            "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_LOWER_CAPABILITY_CONTROL_FILE",
+        ),
+        (
+            "GREENFIELD_MATRIX_EVIDENCE_OUTPUT_DIR",
+            "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_EVIDENCE_OUTPUT_DIR",
         ),
     ),
 )

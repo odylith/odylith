@@ -141,7 +141,7 @@ def _authored_proposal(
         ),
     ),
 )
-def test_explicit_decision_pointer_survives_equal_story_or_path_bytes(
+def test_explicit_decision_pointer_survives_without_workstream_prose_fanout(
     tmp_path: Path,
     field: str,
     source_field: str,
@@ -157,7 +157,8 @@ def test_explicit_decision_pointer_survives_equal_story_or_path_bytes(
 
     assert proposal["intent"][field] == proposal["intent"][source_field] == shared_value
     assert semantics["decision_refs"][field] == f"/{field}"
-    assert shared_value in project[field]
+    assert shared_value not in project[field]
+    assert project[field]
     authority = proposal[PRODUCT_INTENT_AUTHORITY_KEY]
     source_bound_paths = {
         link["path"]
@@ -222,7 +223,7 @@ def test_authored_backlog_rationale_reaches_rendering_without_placeholder_copy(
 
     assert decision["version"] == AUTHORED_ORDERING_DECISION_VERSION
     assert decision["tradeoff"] == ""
-    assert decision["deferred_scope"] == [non_goal]
+    assert decision["deferred_scope"] == []
     expected_basis = (
         "Proposed dependency order — No prerequisites. "
         f"Enables {proposal['backlog'][1]['title']}."
@@ -230,17 +231,19 @@ def test_authored_backlog_rationale_reaches_rendering_without_placeholder_copy(
     assert decision["ranking_basis"] == expected_basis
     assert decision["ranking_basis"] != first["recommended_first_slice"]
     assert row_args.ordering_rationale == decision["ranking_basis"]
-    assert rationale_lines[0] == "- why now: Source fact — Provide one reviewable berth workflow."
+    assert rationale_lines[0] == f"- why now: {first['opportunity']}"
     assert rationale_lines[1] == f"- expected outcome: {first['recommended_first_slice']}"
-    assert rationale_lines[2] == f"- deferred for now: {non_goal}"
-    assert rationale_lines[3] == (
+    assert rationale_lines[2] == (
         f"- ranking basis: {decision['priority']} first-release ordering for the accepted first path: "
         f"{expected_basis}"
     )
     assert "TBD" not in "\n".join(rationale_lines)
     sections = first["radar_sections"]
     assert [row["workstream_role"] for row in proposal["backlog"]] == ["provisional_design"] * 4
-    assert non_goal in sections["Non-Goals"]
+    assert sections["Non-Goals"] == (
+        "Project-level non-goals remain governed by the Product Intent."
+    )
+    assert non_goal not in sections["Non-Goals"]
     assert non_goal not in sections["Risks"]
     assert non_goal not in sections["Migration/Compatibility"]
 
@@ -288,7 +291,8 @@ def test_authored_backlog_rationale_reaches_rendering_without_placeholder_copy(
     )
 
     assert "TBD" not in rendered_index
-    assert non_goal in rendered_index
+    assert non_goal not in rendered_index
+    assert "Structural test boundary 1" in rendered_index
 
 
 def test_authored_backlog_rationale_omits_absent_optional_lines(tmp_path: Path) -> None:

@@ -5,6 +5,7 @@ from copy import deepcopy
 import pytest
 
 from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
+    authored_event_display_text,
     authored_first_run_relations,
     authored_first_run_text,
 )
@@ -176,7 +177,10 @@ def test_citation_identity_survives_proposed_reordering_and_sealed_custody(order
 
 def test_project_and_semantic_views_use_the_labeled_proposed_run(ordered_package):
     _, candidate, proposal, events = ordered_package
-    proposed = "Proposed first run:\n" + "\n".join(events[index - 1]["event_quote"] for index in (2, 3, 1))
+    proposed = "Proposed first run:\n" + "\n".join(
+        f"Event {relation['order']}\n{authored_event_display_text(relation)}"
+        for relation in authored_first_run_relations(candidate)
+    )
     assert authored_first_run_text(candidate) == proposed
     assert proposal["project_intelligence"]["scope"] == [proposed]
     assert any(row["must_capture"] == proposed for row in proposal["project_brief"]["blueprint_sections"])

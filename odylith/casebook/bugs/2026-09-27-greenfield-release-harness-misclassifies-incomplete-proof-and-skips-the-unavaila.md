@@ -48,9 +48,37 @@
 
 - Verification: All `45` Greenfield install/release-harness test files pass `1,194/1,194`; the focused model-profile pack passes `377/377`. Mutation coverage rejects configured, stage, exact argv-shape, argument-count, executable-identity, model/effort, output-schema, and reviewer substitutions. Independent re-adjudication returns SHIP with no P0/P1. Fresh governance browser proof passes `105/105` across Radar, Registry, Casebook, and Compass normal, empty/fallback, degraded, error, density, layout, sorting, and selection-race states. The complete install suite previously reached `1,715/1,716`; its sole failure is the pre-existing customer-bootstrap guidance byte budget (`17,127 < 17,000`) in untouched `test_manager.py`, unrelated to this patch. Public prompt SHA-256 `f6e0f5a60a057df3573db26b0c2b847faf6177a573a8dcf242520426d660ea1d` produced no model-quality comparison: Astra reached installed propose and failed opaquely, while Sol was rejected before authoring by the supported-success guard. A fresh retained Astra public control and full immutable release qualification remain required before sealing a new holdout; the Sol comparison is not a release gate.
 
+- Fresh Retained Public Control (2026-09-27): Immutable build `76548dc22f782f77e538d30c45b80d72bcbc3be1` passed the new disclosed `public-v32-harbor-sample-relay-001` control on its first and only Astra-medium attempt. The retained result reports one host invocation, one proposal invocation, verified reviewer custody, zero issues, a `10/10` automated contract score, 4 Radar workstreams, 4 Registry components, 5 Atlas sources, 10 Atlas renders, 14 trace nodes, 5 implementation prompts, and clean desktop/mobile normal, empty, degraded, error, and invalid-recovery browser proof. Proposal time was `128.096s`, inside the `165s` model window and `180s` operational limit but above the advisory `90s` standard target. Retained evidence manifest verification passes with no issues at `/private/tmp/odylith-v32-public.DG2npZ/astra-evidence/retained-evidence-manifest.v1.json`. The same pass exposed one repeatability defect still owned by CB-347: `greenfield_preconfirm_matrix.py` correctly requires exact host-native argv plus external evidence for release proof, but `bin/greenfield-preconfirm-matrix` and the campaign shard command do not forward that contract. Fix the maintained entrypoints before full qualification; do not bypass them with a second interpretation path, retry, fallback, or model ladder.
+
+- V32 Independent Re-adjudication (2026-09-27): The transaction/security reviewer independently matched all `185` retained artifacts and all `114` sealed repository files and found no P0/P1 transaction defect. Semantic and UX reviewers nevertheless blocked release on product-quality and proof-oracle defects: missing actionable handoff/signature verification, empty proportional risk posture, repeated Radar copy, visible subjectless first-path fragments, false one-day-back Radar dates, ephemeral retained navigation, temporary-path traceability output, and no per-diagram mobile-readability proof. The automated `10/10` and aggregate browser pass therefore overstate release quality. CB-303 owns the semantic/projection corrections; CB-347 owns wrapper forwarding and strengthening retained/browser evidence so these classes cannot score as complete.
+
 - Prevention: Version evaluator schemas with the canonical receipt contracts and make package preflight execute the same policy validator as the release harness before a ledger can be sealed.
 
 - Agent Guardrails: Do not interpret evaluator-invalid P0/P1 output as product semantics, do not relax semantic floors, do not patch protected cases, and do not add retries, repair, fallback authors, parser rules or regex classifiers.
+
+## V33 Source-Local Harness Closure (2026-09-27)
+
+- The maintained matrix paths now preserve the one exact host-native argv and
+  retained-evidence contract. Passed compiled cases require the canonical
+  transaction, compiler receipt, active publication, and immutable generation
+  manifest to exist and agree by identity and hash. Operator results expose a
+  durable retained Project route, and Chromium proves it after workspace
+  teardown.
+- The final-holdout child now acquires its lease and atomically claims and binds
+  exact protected hashes before opening protected corpus, annotation, or lower
+  control content. Every post-claim failure terminalizes the ledger. Synthetic
+  ordering and interruption proof passes `68/68`; the real protected holdout
+  remains untouched.
+- Browser proof now exercises responsive normal, empty/fallback, degraded,
+  error, and invalid-recovery states, including real mobile Atlas touch/pointer
+  movement. Generated-tree scanning rejects simulation/prewrite root leakage.
+  The installed customer guidance also returns below its byte budget at
+  `16,906` bytes without weakening the current candidate contract.
+- Source-local release proof is green at `1,826/1,826` fast, `292/292`
+  lifecycle, and `1,745/1,745` install tests. Independent transaction review
+  reports no P0/P1. CB-347 stays open until the complete immutable distribution,
+  public matrix, clean-install/browser/recovery proof, and final adjudication
+  pass; no harness score alone qualifies Greenfield.
 
 - Preflight Checks: Verify release command policy, supported CLI arguments, relation schema parity, observed role parity and incomplete-campaign behavior before any new sealed input is authored.
 

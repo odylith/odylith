@@ -4,6 +4,9 @@ from pathlib import Path
 
 import pytest
 
+from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
+    authored_first_run_text,
+)
 from odylith.runtime.domain_intelligence.greenfield_experience import (
     _implementation_prompt,
     build_next_steps,
@@ -32,7 +35,7 @@ def test_implementation_handoff_preserves_exact_authored_release_requirements(
     )
 
     prompt = next_steps["implementation_prompt"]
-    assert proposal["intent"]["first_path"] in prompt
+    assert authored_first_run_text(proposal["intent"]) in prompt
     assert proposal["intent"]["proof_boundary"] in prompt
     assert "first_wave" not in next_steps
     assert "program" not in " ".join(next_steps["operator_sequence"]).casefold()

@@ -47,8 +47,13 @@ from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_
 from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_ENGINE_VERSION
 from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_QUALITY_MANIFEST_VERSION
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_RELATION_SET_SHA256_KEY,
+    AUTHORED_SEMANTICS_KEY,
     AUTHORED_PROJECTION_ORIGIN,
     require_relation_authority_parity,
+)
+from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
+    candidate_review_design_coverage_issues,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_receipt_approval import (
     greenfield_model_authoring_receipt_approved,
@@ -60,6 +65,9 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     PRODUCT_INTENT_AUTHORITY_KEY,
+)
+from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
+    REVIEWED_CANDIDATE_SHA256_KEY,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_FACTS_HASH_KEY
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_facts_hash
@@ -169,7 +177,11 @@ def build_product_create_transaction(
         authored_projection_verified=authored_projection_verified,
     )
     if authored_projection_verified:
-        _require_candidate_review_authority_binding(quality_manifest, authority)
+        _require_candidate_review_authority_binding(
+            quality_manifest,
+            authority,
+            proposal=proposal,
+        )
     transaction = ProductCreateTransaction(
         version=PRODUCT_CREATE_TRANSACTION_VERSION,
         release_selector=release_text,
@@ -319,12 +331,26 @@ def require_product_create_transaction_quality_approved(
 
 
 def _require_candidate_review_authority_binding(
-    quality_manifest: Mapping[str, Any], authority: Mapping[str, Any],
+    quality_manifest: Mapping[str, Any],
+    authority: Mapping[str, Any],
+    *,
+    proposal: Mapping[str, Any],
 ) -> None:
     review = quality_manifest["model_authoring"]["candidate_review"]
+    intent = proposal.get("intent")
+    semantics = intent.get(AUTHORED_SEMANTICS_KEY) if isinstance(intent, Mapping) else None
+    design = semantics.get("provisional_design") if isinstance(semantics, Mapping) else None
     if (
         review["source_sha256"] != authority.get("markdown_source_sha256")
         or review["product_facts_sha256"] != authority.get(PRODUCT_FACTS_HASH_KEY)
+        or review[AUTHORED_RELATION_SET_SHA256_KEY]
+        != authority.get(AUTHORED_RELATION_SET_SHA256_KEY)
+        or review["candidate_sha256"]
+        != authority.get(REVIEWED_CANDIDATE_SHA256_KEY)
+        or candidate_review_design_coverage_issues(
+            review.get("admission_witness"),
+            provisional_design=design,
+        )
     ):
         raise ValueError("ProductCreateTransaction candidate review does not match its sealed Product Intent authority")
 
@@ -359,7 +385,11 @@ def require_product_create_transaction_hash_verified(transaction: ProductCreateT
         transaction.quality_manifest, authored_projection_verified=authored,
     )
     if authored:
-        _require_candidate_review_authority_binding(transaction.quality_manifest, transaction.intent_authority)
+        _require_candidate_review_authority_binding(
+            transaction.quality_manifest,
+            transaction.intent_authority,
+            proposal=transaction.proposal,
+        )
 
 
 def _require_proposal_intent_authority_binding(

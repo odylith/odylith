@@ -13,17 +13,26 @@ from pathlib import Path
 import re
 import shutil
 import tempfile
-from typing import Any, Iterator
-from typing import Mapping
+from typing import Any, Iterator, Mapping
 
+from odylith.runtime.domain_intelligence import greenfield_generation_state
+from odylith.runtime.domain_intelligence import greenfield_generation_store
 
 _SAFE_ARTIFACT_IDENTIFIER = re.compile(r"[a-z0-9][a-z0-9-]{0,127}\Z")
 RELEASE_PROOF_INPUT_SNAPSHOT_VERSION = "odylith.greenfield.release-input-snapshot.v1"
 RELEASE_PROOF_INPUT_SNAPSHOT_FILENAME = "release-proof-input-snapshot.v1.json"
-RETAINED_EVIDENCE_VERSION = "odylith.greenfield.retained-evidence.v1"
-RETAINED_CASE_EVIDENCE_VERSION = "odylith.greenfield.retained-case-evidence.v1"
+RETAINED_EVIDENCE_VERSION = "odylith.greenfield.retained-evidence.v2"
+RETAINED_CASE_EVIDENCE_VERSION = "odylith.greenfield.retained-case-evidence.v2"
 RETAINED_EVIDENCE_FILENAME = "retained-evidence-manifest.v1.json"
 RETAINED_CASE_EVIDENCE_FILENAME = "case-evidence-manifest.v1.json"
+RETAINED_NAVIGATION_VERSION = "odylith.greenfield.retained-navigation.v1"
+RETAINED_NAVIGATION_FILENAME = "retained-navigation.v1.json"
+_RETAINED_SEMANTIC_PATHS = {
+    "transaction": "semantic/product-create-transaction.v1.json",
+    "compiler_receipt": "semantic/product-create-transaction.compiler-receipt.v1.json",
+    "active_generation": "semantic/active-generation-entry.v1.html",
+    "generation_manifest": "semantic/generation-manifest.v1.json",
+}
 
 
 @dataclass(frozen=True)
@@ -260,11 +269,12 @@ def finalize_retained_case_evidence(
     root = _safe_directory(case.staging_root, label="retained case staging root")
     # Failed sealing preserves raw staging evidence for diagnosis.
     record_retained_case_json(case, "case-result.v1.json", dict(result_payload))
-    _retain_greenfield_repository_evidence(
+    semantic_bindings = _retain_greenfield_repository_evidence(
         case=case,
         repo_root=repo_root,
         result_payload=result_payload,
     )
+    navigation = _write_retained_navigation(case) if semantic_bindings else {}
     entries = _retained_case_entries(root)
     required_kinds = _required_case_evidence_kinds(result_payload)
     present_kinds = {str(entry["kind"]) for entry in entries}
@@ -276,6 +286,8 @@ def finalize_retained_case_evidence(
         "case_id": case.case_id,
         "case_status": str(result_payload.get("status") or ""),
         "required_kinds": sorted(required_kinds),
+        "semantic_bindings": semantic_bindings,
+        "navigation": navigation,
         "artifacts": entries,
     }
     _write_case_bytes(
@@ -311,11 +323,19 @@ def write_retained_evidence_manifest(
         issues = _retained_case_evidence_issues(manifest, expected_case_id=case_id)
         if issues:
             raise RuntimeError("retained case evidence failed validation: " + "; ".join(issues))
+        case_payload = json.loads(manifest.read_text(encoding="utf-8"))
+        navigation = _qualified_retained_navigation(
+            case_id=case_id,
+            case_root=manifest.parent.relative_to(evidence_root).as_posix(),
+            navigation=case_payload.get("navigation"),
+        )
         case_manifests.append(
             {
                 "case_id": case_id,
                 "path": manifest.relative_to(evidence_root).as_posix(),
                 "sha256": sha256_file(manifest),
+                "semantic_bindings": dict(case_payload.get("semantic_bindings") or {}),
+                "navigation": navigation,
             }
         )
     extras = [
@@ -333,6 +353,11 @@ def write_retained_evidence_manifest(
         "run_id": run_binding,
         "case_ids": list(expected),
         "case_manifests": case_manifests,
+        "project_navigation": [
+            dict(row["navigation"])
+            for row in case_manifests
+            if row.get("navigation")
+        ],
     }
     _exclusive_write_bytes(
         manifest_path,
@@ -382,6 +407,7 @@ def retained_evidence_manifest_issues(
         issues.append("retained evidence manifest has invalid case manifest coverage")
         manifests = []
     bound_roots: set[str] = set()
+    expected_navigation: list[dict[str, str]] = []
     for index, row in enumerate(manifests):
         if not isinstance(row, Mapping):
             issues.append("retained evidence manifest has an invalid case reference")
@@ -402,14 +428,29 @@ def retained_evidence_manifest_issues(
             continue
         if not is_sha256(expected_hash) or sha256_file(artifact) != expected_hash:
             issues.append(f"retained evidence case manifest hash changed: {case_id}")
-        issues.extend(
-            _retained_case_evidence_issues(
-                artifact,
-                expected_case_id=case_id,
-                expected_case_status="passed" if require_passed_cases else "",
-            )
+        case_issues = _retained_case_evidence_issues(
+            artifact,
+            expected_case_id=case_id,
+            expected_case_status="passed" if require_passed_cases else "",
         )
+        issues.extend(case_issues)
+        if not case_issues:
+            case_payload = json.loads(artifact.read_text(encoding="utf-8"))
+            semantic_bindings = dict(case_payload.get("semantic_bindings") or {})
+            if row.get("semantic_bindings") != semantic_bindings:
+                issues.append(f"retained evidence semantic bindings changed: {case_id}")
+            navigation = _qualified_retained_navigation(
+                case_id=case_id,
+                case_root=artifact.parent.relative_to(root).as_posix(),
+                navigation=case_payload.get("navigation"),
+            )
+            if row.get("navigation") != navigation:
+                issues.append(f"retained evidence project navigation changed: {case_id}")
+            if navigation:
+                expected_navigation.append(navigation)
         bound_roots.add(relative.split("/", 1)[0])
+    if payload.get("project_navigation") != expected_navigation:
+        issues.append("retained evidence project navigation coverage is invalid")
     try:
         actual_roots = {
             path.name
@@ -424,47 +465,125 @@ def retained_evidence_manifest_issues(
     return tuple(dict.fromkeys(issues))
 
 
+def retained_evidence_result(
+    manifest_path: Path | None,
+    *,
+    expected_case_ids: Sequence[str] = (),
+    expected_run_id: str = "",
+    required: bool = False,
+) -> dict[str, Any]:
+    """Return the operator-facing retained proof and durable Project routes."""
+
+    issues = (
+        retained_evidence_manifest_issues(
+            manifest_path,
+            expected_case_ids=expected_case_ids,
+            expected_run_id=expected_run_id,
+        )
+        if manifest_path is not None
+        else ("release proof did not retain external evidence",)
+        if required
+        else ()
+    )
+    navigation: list[dict[str, str]] = []
+    if manifest_path is not None and not issues:
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+        for row in payload.get("project_navigation", ()):
+            if not isinstance(row, Mapping):
+                continue
+            entrypoint = repo_artifact_path(manifest_path.parent.resolve(), str(row.get("entrypoint") or ""))
+            if entrypoint is None:
+                continue
+            route = str(row.get("route") or "")
+            navigation.append(
+                {
+                    "case_id": str(row.get("case_id") or ""),
+                    "entrypoint": str(entrypoint),
+                    "route": route,
+                    "open": entrypoint.as_uri() + route,
+                }
+            )
+    return {
+        "status": "passed" if manifest_path is not None and not issues else "not_requested"
+        if manifest_path is None and not required
+        else "failed",
+        "manifest": str(manifest_path) if manifest_path is not None else "",
+        "manifest_sha256": sha256_file(manifest_path) if manifest_path is not None and manifest_path.is_file() else "",
+        "project_navigation": navigation,
+        "issues": list(issues),
+    }
+
+
+def _requires_bound_semantic_evidence(result_payload: Mapping[str, Any]) -> bool:
+    evidence = result_payload.get("evidence")
+    receipt = evidence.get("preconfirm_dry_run") if isinstance(evidence, Mapping) else None
+    return (
+        str(result_payload.get("status") or "") == "passed"
+        and isinstance(receipt, Mapping)
+        and receipt.get("status") == "compiled"
+    )
+
+
+def _required_repo_file(root: Path, relative: str, *, label: str) -> Path:
+    source = repo_artifact_path(root, relative)
+    if source is None:
+        raise RuntimeError(f"passed compiled evidence {label} path is unsafe")
+    try:
+        return _safe_file_without_symlinks(source, label=f"passed compiled evidence {label}")
+    except RuntimeError as exc:
+        raise RuntimeError(f"passed compiled evidence is missing its exact {label} file") from exc
+
+
+def _json_object_file(path: Path, *, label: str) -> dict[str, Any]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"{label} is unreadable") from exc
+    if not isinstance(payload, Mapping):
+        raise RuntimeError(f"{label} must be an object")
+    return dict(payload)
+
+
 def _retain_greenfield_repository_evidence(
     *,
     case: RetainedEvidenceCase,
     repo_root: Path,
     result_payload: Mapping[str, Any],
-) -> None:
+) -> dict[str, Any]:
     source_root = Path(repo_root).expanduser().resolve()
     evidence = result_payload.get("evidence")
     evidence = evidence if isinstance(evidence, Mapping) else {}
     receipt = evidence.get("preconfirm_dry_run")
     receipt = receipt if isinstance(receipt, Mapping) else {}
-    transaction_file = str(receipt.get("transaction_file") or "").strip()
-    compiler_receipt_file = str(receipt.get("compiler_receipt_file") or "").strip()
-    write_set_hash = str(receipt.get("repository_write_set_hash") or "").strip()
-    for relative, destination in (
-        (transaction_file, "semantic/product-create-transaction.v1.json"),
-        (compiler_receipt_file, "semantic/product-create-transaction.compiler-receipt.v1.json"),
-        (
-            ".odylith/runtime/greenfield/active-generation.v1.json",
-            "semantic/active-generation.v1.json",
-        ),
-    ):
-        if not relative:
-            continue
-        source = repo_artifact_path(source_root, relative)
-        if source is not None and source.exists():
-            _copy_case_source(case, source_root=source_root, source=source, destination=destination)
-    if not is_sha256(write_set_hash):
-        return
-    generation = source_root / ".odylith/runtime/greenfield/generations" / write_set_hash
-    manifest = generation / "generation-manifest.v1.json"
-    if manifest.exists():
-        _copy_case_source(
-            case,
+    if _requires_bound_semantic_evidence(result_payload):
+        semantic_bindings, generation = _retain_compiled_semantic_evidence(
+            case=case,
             source_root=source_root,
-            source=manifest,
-            destination="semantic/generation-manifest.v1.json",
+            receipt=receipt,
         )
+    else:
+        semantic_bindings = {}
+        generation = None
+        for relative, destination in (
+            (str(receipt.get("transaction_file") or "").strip(), _RETAINED_SEMANTIC_PATHS["transaction"]),
+            (
+                str(receipt.get("compiler_receipt_file") or "").strip(),
+                _RETAINED_SEMANTIC_PATHS["compiler_receipt"],
+            ),
+        ):
+            if not relative:
+                continue
+            source = repo_artifact_path(source_root, relative)
+            if source is not None and source.exists():
+                _copy_case_source(case, source_root=source_root, source=source, destination=destination)
+        write_set_hash = str(receipt.get("repository_write_set_hash") or "").strip()
+        if is_sha256(write_set_hash):
+            generation = source_root / ".odylith/runtime/greenfield/generations" / write_set_hash
+    if generation is None:
+        return semantic_bindings
     repository = generation / "repository"
     if not repository.exists():
-        return
+        return semantic_bindings
     _safe_directory(repository, label="immutable Greenfield generation repository")
     for source in sorted(repository.rglob("*")):
         if source.is_symlink():
@@ -477,6 +596,166 @@ def _retain_greenfield_repository_evidence(
                 source=source,
                 destination=f"generated/{relative}",
             )
+    return semantic_bindings
+
+
+def _retain_compiled_semantic_evidence(
+    *,
+    case: RetainedEvidenceCase,
+    source_root: Path,
+    receipt: Mapping[str, Any],
+) -> tuple[dict[str, Any], Path]:
+    """Retain the exact already-verified semantic custody chain, without rebuilding it."""
+
+    transaction_hash = str(receipt.get("transaction_hash") or "").strip()
+    write_set_hash = str(receipt.get("repository_write_set_hash") or "").strip()
+    transaction_sha256 = str(receipt.get("transaction_file_sha256") or "").strip()
+    compiler_sha256 = str(receipt.get("compiler_receipt_sha256") or "").strip()
+    publication_sha256 = str(receipt.get("publication_sha256") or "").strip()
+    if not all(
+        is_sha256(value)
+        for value in (
+            transaction_hash,
+            write_set_hash,
+            transaction_sha256,
+            compiler_sha256,
+            publication_sha256,
+        )
+    ):
+        raise RuntimeError("passed compiled evidence is missing its exact semantic digests")
+    if str(receipt.get("transaction_body_sha256") or "").strip() != transaction_hash:
+        raise RuntimeError("passed compiled evidence is not transaction-bound")
+    if str(receipt.get("compiler_receipt_transaction_hash") or "").strip() != transaction_hash:
+        raise RuntimeError("passed compiled evidence compiler receipt is not transaction-bound")
+
+    transaction_relative = (
+        f".odylith/runtime/greenfield/pending/{transaction_hash}/product-create-transaction.v1.json"
+    )
+    compiler_relative = transaction_relative + ".compiler-receipt.v1.json"
+    if str(receipt.get("transaction_file") or "").strip() != transaction_relative:
+        raise RuntimeError("passed compiled evidence names the wrong transaction file")
+    if str(receipt.get("compiler_receipt_file") or "").strip() != compiler_relative:
+        raise RuntimeError("passed compiled evidence names the wrong compiler receipt file")
+    transaction = _required_repo_file(source_root, transaction_relative, label="transaction")
+    compiler_receipt = _required_repo_file(source_root, compiler_relative, label="compiler receipt")
+    if sha256_file(transaction) != transaction_sha256:
+        raise RuntimeError("passed compiled transaction bytes differ from the pre-confirm receipt")
+    if sha256_file(compiler_receipt) != compiler_sha256:
+        raise RuntimeError("passed compiled compiler receipt bytes differ from the pre-confirm receipt")
+    transaction_payload = _json_object_file(transaction, label="passed compiled transaction")
+    compiler_payload = _json_object_file(compiler_receipt, label="passed compiled compiler receipt")
+    if str(transaction_payload.get("transaction_hash") or "").strip() != transaction_hash:
+        raise RuntimeError("passed compiled transaction file carries the wrong transaction hash")
+    if str(compiler_payload.get("transaction_hash") or "").strip() != transaction_hash:
+        raise RuntimeError("passed compiled compiler receipt carries the wrong transaction hash")
+    if str(compiler_payload.get("transaction_file_sha256") or "").strip() != transaction_sha256:
+        raise RuntimeError("passed compiled compiler receipt carries the wrong transaction digest")
+
+    try:
+        active = greenfield_generation_state.active_generation_identity(source_root)
+        pinned = greenfield_generation_store.pin_active_greenfield_generation(source_root)
+    except (OSError, RuntimeError, ValueError) as exc:
+        raise RuntimeError("passed compiled evidence has no valid active generation") from exc
+    expected_active = {
+        "status": greenfield_generation_state.ACTIVE,
+        "write_set_hash": write_set_hash,
+        "generation_manifest_sha256": pinned.manifest_sha256,
+        "publication_sha256": publication_sha256,
+    }
+    if active != expected_active or pinned.write_set_hash != write_set_hash:
+        raise RuntimeError("passed compiled active generation differs from the pre-confirm receipt")
+    active_entry = _required_repo_file(source_root, "odylith/index.html", label="active generation")
+    generation_manifest = _required_repo_file(
+        source_root,
+        pinned.generation_root.relative_to(source_root).joinpath("generation-manifest.v1.json").as_posix(),
+        label="generation manifest",
+    )
+    if sha256_file(active_entry) != publication_sha256:
+        raise RuntimeError("passed compiled active-generation bytes differ from the pre-confirm receipt")
+    if sha256_file(generation_manifest) != pinned.manifest_sha256:
+        raise RuntimeError("passed compiled generation manifest differs from the active generation")
+
+    for source, destination in (
+        (transaction, _RETAINED_SEMANTIC_PATHS["transaction"]),
+        (compiler_receipt, _RETAINED_SEMANTIC_PATHS["compiler_receipt"]),
+        (active_entry, _RETAINED_SEMANTIC_PATHS["active_generation"]),
+        (generation_manifest, _RETAINED_SEMANTIC_PATHS["generation_manifest"]),
+    ):
+        _copy_case_source(case, source_root=source_root, source=source, destination=destination)
+    return (
+        {
+            "transaction": {
+                "path": _RETAINED_SEMANTIC_PATHS["transaction"],
+                "sha256": transaction_sha256,
+                "transaction_hash": transaction_hash,
+            },
+            "compiler_receipt": {
+                "path": _RETAINED_SEMANTIC_PATHS["compiler_receipt"],
+                "sha256": compiler_sha256,
+                "transaction_hash": transaction_hash,
+                "transaction_file_sha256": transaction_sha256,
+            },
+            "active_generation": {
+                "path": _RETAINED_SEMANTIC_PATHS["active_generation"],
+                "sha256": publication_sha256,
+                "write_set_hash": write_set_hash,
+                "generation_manifest_sha256": pinned.manifest_sha256,
+            },
+            "generation_manifest": {
+                "path": _RETAINED_SEMANTIC_PATHS["generation_manifest"],
+                "sha256": pinned.manifest_sha256,
+                "write_set_hash": write_set_hash,
+            },
+        },
+        pinned.generation_root,
+    )
+
+
+def _write_retained_navigation(case: RetainedEvidenceCase) -> dict[str, str]:
+    """Bind a durable project-dashboard entrypoint inside the retained package."""
+
+    root = _safe_directory(case.staging_root, label="retained case staging root")
+    target = root / "generated/odylith/index.html"
+    if not target.is_file():
+        return {}
+    navigation = {
+        "version": RETAINED_NAVIGATION_VERSION,
+        "entrypoint": "generated/odylith/index.html",
+        "route": "?tab=project",
+        "open": "generated/odylith/index.html?tab=project",
+    }
+    record_retained_case_json(
+        case,
+        RETAINED_NAVIGATION_FILENAME,
+        navigation,
+    )
+    return navigation
+
+
+def _qualified_retained_navigation(
+    *,
+    case_id: str,
+    case_root: str,
+    navigation: object,
+) -> dict[str, str]:
+    if not isinstance(navigation, Mapping) or not navigation:
+        return {}
+    entrypoint = str(navigation.get("entrypoint") or "")
+    route = str(navigation.get("route") or "")
+    if (
+        navigation.get("version") != RETAINED_NAVIGATION_VERSION
+        or entrypoint != "generated/odylith/index.html"
+        or route != "?tab=project"
+        or str(navigation.get("open") or "") != entrypoint + route
+    ):
+        return {}
+    qualified = f"{case_root}/{entrypoint}"
+    return {
+        "case_id": case_id,
+        "entrypoint": qualified,
+        "route": route,
+        "open": qualified + route,
+    }
 
 
 def _copy_case_source(
@@ -508,6 +787,7 @@ def _required_case_evidence_kinds(result_payload: Mapping[str, Any]) -> set[str]
     if str(result_payload.get("status") or "") == "passed" and receipt.get("status") == "compiled":
         required.add("generated_artifact")
         required.add("rendered_atlas_asset")
+        required.add("retained_navigation")
     if browser.get("required") is True and browser.get("attempted") is True:
         required.add("browser_screenshot")
     return required
@@ -535,6 +815,8 @@ def _retained_case_entries(root: Path) -> list[dict[str, Any]]:
 def _retained_artifact_kind(relative_path: str) -> str:
     if relative_path == "case-result.v1.json":
         return "case_result"
+    if relative_path == RETAINED_NAVIGATION_FILENAME:
+        return "retained_navigation"
     if relative_path.startswith("commands/"):
         return "command_stream"
     if relative_path.startswith("browser/") and relative_path.endswith(".png"):
@@ -546,6 +828,84 @@ def _retained_artifact_kind(relative_path: str) -> str:
     if relative_path.startswith("generated/"):
         return "generated_artifact"
     return "supporting_evidence"
+
+
+def _retained_semantic_binding_issues(
+    *,
+    root: Path,
+    bindings: object,
+    required: bool,
+) -> tuple[str, ...]:
+    if not required:
+        return () if bindings in ({}, None) else ("non-passing retained evidence declares semantic bindings",)
+    if not isinstance(bindings, Mapping) or set(bindings) != set(_RETAINED_SEMANTIC_PATHS):
+        return ("passed compiled retained evidence has invalid exact semantic bindings",)
+    issues: list[str] = []
+    rows = {key: value if isinstance(value, Mapping) else {} for key, value in bindings.items()}
+    paths: dict[str, Path] = {}
+    for key, expected_path in _RETAINED_SEMANTIC_PATHS.items():
+        row = rows[key]
+        relative = str(row.get("path") or "")
+        if relative != expected_path:
+            issues.append(f"retained {key.replace('_', ' ')} path is not exact")
+            continue
+        path = repo_artifact_path(root, relative)
+        try:
+            safe = _safe_file_without_symlinks(path, label=f"retained {key.replace('_', ' ')}") if path else None
+        except RuntimeError:
+            safe = None
+        if safe is None:
+            issues.append(f"retained {key.replace('_', ' ')} is missing")
+            continue
+        if not is_sha256(str(row.get("sha256") or "")) or sha256_file(safe) != row.get("sha256"):
+            issues.append(f"retained {key.replace('_', ' ')} digest is invalid")
+        paths[key] = safe
+    if set(paths) != set(_RETAINED_SEMANTIC_PATHS):
+        return tuple(dict.fromkeys(issues))
+
+    transaction_hash = str(rows["transaction"].get("transaction_hash") or "")
+    transaction_sha256 = str(rows["transaction"].get("sha256") or "")
+    write_set_hash = str(rows["generation_manifest"].get("write_set_hash") or "")
+    manifest_sha256 = str(rows["generation_manifest"].get("sha256") or "")
+    if not is_sha256(transaction_hash) or not is_sha256(write_set_hash):
+        issues.append("retained semantic bindings contain invalid identities")
+        return tuple(dict.fromkeys(issues))
+    try:
+        transaction = _json_object_file(paths["transaction"], label="retained transaction")
+        compiler = _json_object_file(paths["compiler_receipt"], label="retained compiler receipt")
+        generation_manifest = _json_object_file(
+            paths["generation_manifest"], label="retained generation manifest"
+        )
+    except RuntimeError as exc:
+        issues.append(str(exc))
+        return tuple(dict.fromkeys(issues))
+    if str(transaction.get("transaction_hash") or "") != transaction_hash:
+        issues.append("retained transaction content has the wrong transaction hash")
+    if (
+        str(rows["compiler_receipt"].get("transaction_hash") or "") != transaction_hash
+        or str(compiler.get("transaction_hash") or "") != transaction_hash
+    ):
+        issues.append("retained compiler receipt has the wrong transaction hash")
+    if (
+        str(rows["compiler_receipt"].get("transaction_file_sha256") or "") != transaction_sha256
+        or str(compiler.get("transaction_file_sha256") or "") != transaction_sha256
+    ):
+        issues.append("retained compiler receipt has the wrong transaction digest")
+    if (
+        str(rows["active_generation"].get("write_set_hash") or "") != write_set_hash
+        or str(rows["active_generation"].get("generation_manifest_sha256") or "") != manifest_sha256
+        or str(generation_manifest.get("write_set_hash") or "") != write_set_hash
+    ):
+        issues.append("retained active generation and generation manifest identities differ")
+    try:
+        greenfield_generation_state.require_sealed_greenfield_publication_entry(
+            paths["active_generation"].read_text(encoding="utf-8"),
+            write_set_hash=write_set_hash,
+            generation_manifest_sha256=manifest_sha256,
+        )
+    except (OSError, UnicodeDecodeError, ValueError):
+        issues.append("retained active generation is not sealed to the retained generation manifest")
+    return tuple(dict.fromkeys(issues))
 
 
 def _retained_case_evidence_issues(
@@ -570,6 +930,8 @@ def _retained_case_evidence_issues(
     if expected_case_status and str(payload.get("case_status") or "") != expected_case_status:
         issues.append(f"retained case evidence for {expected_case_id} is not passed")
     required = payload.get("required_kinds")
+    semantic_bindings = payload.get("semantic_bindings")
+    navigation_payload = payload.get("navigation")
     artifacts = payload.get("artifacts")
     if not isinstance(required, list) or not all(isinstance(value, str) and value for value in required):
         issues.append("retained case evidence manifest has invalid required kinds")
@@ -615,6 +977,50 @@ def _retained_case_evidence_issues(
         issues.append("retained case evidence contains a symlink")
     if actual_paths != bound_paths:
         issues.append("retained case evidence contains unbound or missing artifacts")
+    case_result: dict[str, Any] = {}
+    try:
+        case_result = _json_object_file(root / "case-result.v1.json", label="retained case result")
+    except RuntimeError as exc:
+        issues.append(str(exc))
+    else:
+        if str(case_result.get("status") or "") != str(payload.get("case_status") or ""):
+            issues.append("retained case status differs from its exact case result")
+        expected_required = _required_case_evidence_kinds(case_result)
+        if set(required) != expected_required:
+            issues.append("retained case required kinds differ from its exact case result")
+        issues.extend(
+            _retained_semantic_binding_issues(
+                root=root,
+                bindings=semantic_bindings,
+                required=_requires_bound_semantic_evidence(case_result),
+            )
+        )
+    navigation = root / RETAINED_NAVIGATION_FILENAME
+    if navigation.is_file():
+        try:
+            navigation_file_payload = json.loads(navigation.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            issues.append("retained navigation is unreadable")
+        else:
+            if navigation_file_payload != navigation_payload:
+                issues.append("retained navigation differs from its case manifest")
+            qualified = _qualified_retained_navigation(
+                case_id=expected_case_id,
+                case_root=".",
+                navigation=navigation_file_payload,
+            )
+            if not qualified:
+                issues.append("retained navigation contract is invalid")
+            entrypoint = repo_artifact_path(
+                root,
+                str(navigation_file_payload.get("entrypoint") or "")
+                if isinstance(navigation_file_payload, Mapping)
+                else "",
+            )
+            if entrypoint is None or not entrypoint.is_file():
+                issues.append("retained navigation target is missing")
+    elif navigation_payload:
+        issues.append("retained navigation file is missing")
     missing = sorted(set(required) - kinds)
     if missing:
         issues.append("retained case evidence is missing required kinds: " + ", ".join(missing))

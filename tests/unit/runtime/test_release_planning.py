@@ -425,6 +425,7 @@ def test_release_authoring_json_output_renders_list_and_show(
     assert list_payload["command"] == "list"
     assert list_payload["releases"][0]["release_id"] == "release-0-1-11"
     assert list_payload["releases"][0]["aliases"] == ["current"]
+    assert list_payload["releases"][0]["source_path"] == "odylith/radar/source/releases/releases.v1.json"
 
     assert release_planning_authoring.main(["--repo-root", str(tmp_path), "show", "--json", "current"]) == 0
     show_payload = json.loads(capsys.readouterr().out)

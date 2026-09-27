@@ -117,6 +117,23 @@ def _display_spec_markdown(markdown: str) -> str:
     return "\n".join(lines).strip()
 
 
+def _public_feature_history(history: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
+    """Project portable feature-history facts without internal resolved paths."""
+
+    rows: list[dict[str, Any]] = []
+    for item in history:
+        row = dict(item)
+        plan_refs = row.get("plan_refs")
+        if isinstance(plan_refs, list):
+            row["plan_refs"] = [
+                {key: value for key, value in dict(ref).items() if key != "resolved_path"}
+                for ref in plan_refs
+                if isinstance(ref, Mapping)
+            ]
+        rows.append(row)
+    return rows
+
+
 def _build_feature_history_timeline_rows(
     *,
     spec_snapshot: registry.ComponentSpecSnapshot,
@@ -295,7 +312,7 @@ def _build_payload(
                 "spec_href": spec_href,
                 "spec_title": spec_snapshot.title,
                 "spec_last_updated": spec_snapshot.last_updated,
-                "spec_feature_history": list(spec_snapshot.feature_history),
+                "spec_feature_history": _public_feature_history(spec_snapshot.feature_history),
                 "spec_markdown": _display_spec_markdown(spec_snapshot.markdown),
                 "spec_runbooks": surface_path_helpers.path_links(
                     repo_root=repo_root,

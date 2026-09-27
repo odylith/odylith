@@ -475,3 +475,23 @@ def test_matrix_host_candidate_argv_is_explicit_and_repeatable(tmp_path: Path) -
     )
 
     assert args.host_candidate_arg == ["host-author", "--json"]
+
+
+def test_canonical_host_candidate_argv_template_is_the_exact_release_grammar() -> None:
+    assert host_module.canonical_host_candidate_argv_template() == (
+        "codex",
+        "exec",
+        "--ephemeral",
+        "--ignore-user-config",
+        "--skip-git-repo-check",
+        "--sandbox",
+        "read-only",
+        "--model",
+        "{model}",
+        "--config",
+        "model_reasoning_effort={reasoning_effort}",
+        "--output-schema",
+        "{candidate_schema}",
+        "-",
+    )
+    assert host_module.HOST_NATIVE_ARGV_ARGUMENT_COUNT == 14

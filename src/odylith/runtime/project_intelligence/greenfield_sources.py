@@ -56,7 +56,7 @@ def _proposal_from_file(path: Path) -> dict[str, Any]:
             "origin": sentence(raw.get("origin"), "greenfield"),
             "evidence_tier": sentence(raw.get("evidence_tier"), "user_intent"),
             "created": dict_value(raw.get("created")),
-            "source_path": str(path),
+            "source_path": f"odylith/runtime/source/{path.name}",
             "validation_gate": dict_value(raw.get("validation_gate") or raw.get("tribunal")),
         }
         enriched["_source_launch"] = dict_value(raw.get("source_launch"))

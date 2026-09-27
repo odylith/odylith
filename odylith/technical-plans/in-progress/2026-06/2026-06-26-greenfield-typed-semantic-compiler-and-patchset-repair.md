@@ -35,6 +35,64 @@ and retain the current assignment, environment, observation, and aggregate
 proof tests. Do not perform that decomposition inside the live release repair
 because it would change more machinery than this gate needs.
 
+### V33 source-local release-gate settlement
+
+The bounded repair is now source-local green. Provisional design v4 carries
+typed verification-event coverage and proportional risk posture; exact risk
+allocation is checked against the selected component/workstream/event graph.
+Canonical customer meaning stays distinct from product actors, and one typed
+event presenter owns Project, Radar, and both Atlas paths without reparsing or
+prefix stripping. Retained evidence binds the exact transaction, compiler
+receipt, active publication, generation manifest, and durable Project route.
+
+Transaction hardening also closes the adversarial review findings. Product
+Intent authority v12 and envelope v12 seal the independently reviewed candidate
+digest and authored-relation/design hash; custody ledger v9 and commit-only
+rehydration require exact equality. Final-holdout execution claims and binds
+protected inputs before opening them and terminalizes all later failures.
+Independent re-adjudication reports no P0/P1.
+
+The settled source passes `1,826/1,826` fast Greenfield tests, `292/292`
+lifecycle tests, `1,745/1,745` install tests, and `6/6` direct Project browser
+integration tests. The next work is strictly the release sequence: commit this
+stable checkpoint, build the complete distribution, prove clean install plus
+the full generated-repository browser/recovery/host matrix, run a fresh
+disclosed public qualification and independent semantic/UX review, then verify
+frozen hashes and consume the untouched holdout exactly once. Do not add
+features or reinterpret protected evidence between these gates.
+
+### V32 fresh public result and bounded release-entrypoint repair
+
+The clean immutable `76548dc22` distribution passed one new retained public
+Astra-medium control in a single attempt. The candidate and automated review
+receipts bind the expected executable, exact 14-argument command shape, model,
+reasoning effort, source and candidate hashes. The complete package passed with
+zero automated findings and produced the target 4/4/5 Radar/Registry/Atlas depth plus all
+required rendered browser states. Proposal time was `128.096s`, within the
+`165s` model window and `180s` safety timeout but above the advisory standard
+target, so latency remains an observation rather than a release claim.
+
+Independent semantic and UX review rejected that package despite clean
+transaction evidence. Before the next immutable run, remove the bounded P1
+classes at their owners: carry product-owned handoff/signature proof into
+actionable acceptance, author proportional proposed risk obligations, project
+Radar from each typed workstream instead of repeating project copy, render
+complete typed actor/action event sentences, preserve date-only calendar truth,
+and strengthen retained/browser proof for durable navigation, portable reports,
+and every diagram's mobile readability. These are corrections to typed design,
+deterministic projections, and evidence oracles—not permission for a parser,
+regex stack, retry, repair author, fallback, model ladder, or broader redesign.
+
+The next bounded repair is release-harness wiring, not another semantic
+mechanism: the strict matrix owner requires exact host-native argv and external
+retained evidence, while the maintained shell wrapper and campaign shard
+command omit those inputs. Move both callers onto the one existing argv
+contract, add contract-focused tests, and keep the oversized shard runner change
+to a safety-critical forwarding cut only. Do not add a second command grammar,
+retry, repair, fallback, model ladder, parser, or semantic rule. After focused
+proof, rebuild once and run the disclosed immutable qualification before any
+new blind holdout.
+
 ## V31 One-Shot Holdout Rejection (2026-09-27)
 
 Immutable V30 passed the complete 36-case disclosed campaign at `10/10`: all

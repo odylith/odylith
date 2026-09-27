@@ -23,6 +23,7 @@ require_current_component_forensics
 "$odylith_python" scripts/release/platform_domain_leakage_check.py --repo-root "$odylith_repo_root" --dist-dir "$dist_dir"
 
 proof_json="${GREENFIELD_MATRIX_OUTPUT_JSON:-$dist_dir/greenfield-preconfirm-matrix.v1.json}"
+evidence_output_dir="${GREENFIELD_MATRIX_EVIDENCE_OUTPUT_DIR:-}"
 mkdir -p "$temp_parent"
 wrapper_temp_root="$(mktemp -d "$temp_parent/odylith-greenfield-wrapper-run.XXXXXX")"
 preserve_wrapper_temp_root=0
@@ -57,6 +58,7 @@ evaluation_split_manifest="${GREENFIELD_MATRIX_EVALUATION_SPLIT_MANIFEST:-}"
 final_holdout_run_ledger="${GREENFIELD_MATRIX_FINAL_HOLDOUT_RUN_LEDGER:-}"
 implementation_revision="${GREENFIELD_MATRIX_IMPLEMENTATION_REVISION:-}"
 distribution_provenance_file="${GREENFIELD_MATRIX_DISTRIBUTION_PROVENANCE_FILE:-}"
+lower_capability_control_file="${GREENFIELD_MATRIX_LOWER_CAPABILITY_CONTROL_FILE:-}"
 release_intent="${GREENFIELD_MATRIX_RELEASE_INTENT:-0}"
 if [[ "$release_intent" != "0" && "$release_intent" != "1" ]]; then
   die "GREENFIELD_MATRIX_RELEASE_INTENT must be 0 or 1"
@@ -70,6 +72,9 @@ if [[ "$release_intent" == "1" ]]; then
   [[ -n "$final_holdout_run_ledger" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_FINAL_HOLDOUT_RUN_LEDGER"
   [[ -n "$implementation_revision" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_IMPLEMENTATION_REVISION"
   [[ -n "$distribution_provenance_file" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_DISTRIBUTION_PROVENANCE_FILE"
+  [[ -n "$lower_capability_control_file" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_LOWER_CAPABILITY_CONTROL_FILE"
+  [[ -f "$lower_capability_control_file" ]] || die "GREENFIELD_MATRIX_LOWER_CAPABILITY_CONTROL_FILE is missing: $lower_capability_control_file"
+  [[ -n "$evidence_output_dir" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_EVIDENCE_OUTPUT_DIR"
   [[ "$browser_proof_enabled" == "1" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires BROWSER_PROOF=1"
   [[ "$commit_recovery_proof_enabled" == "1" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires COMMIT_RECOVERY_PROOF=1"
 elif [[ -n "$release_audit_file" && -z "$release_case_file" ]]; then
@@ -117,7 +122,20 @@ if [[ "$release_intent" == "1" ]]; then
     --final-holdout-run-ledger "$final_holdout_run_ledger"
     --implementation-revision "$implementation_revision"
     --distribution-provenance-file "$distribution_provenance_file"
+    --lower-capability-control-file "$lower_capability_control_file"
+    --evidence-output-dir "$evidence_output_dir"
   )
+  host_candidate_args=()
+  while IFS= read -r argument; do
+    host_candidate_args+=("$argument")
+  done < <(
+    PYTHONPATH="$odylith_repo_root/scripts/release${PYTHONPATH:+:$PYTHONPATH}" \
+      "$odylith_python" scripts/release/greenfield_matrix_host_candidate.py --print-argv-template
+  )
+  [[ "${#host_candidate_args[@]}" == "14" ]] || die "canonical host-candidate argv emission failed"
+  for argument in "${host_candidate_args[@]}"; do
+    extra_args+=(--host-candidate-arg="$argument")
+  done
 fi
 if [[ -n "${GREENFIELD_MATRIX_INSTALL_MODE:-}" ]]; then
   extra_args+=(--install-mode "$GREENFIELD_MATRIX_INSTALL_MODE")

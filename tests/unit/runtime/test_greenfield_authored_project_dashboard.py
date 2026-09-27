@@ -13,6 +13,9 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     GreenfieldAuthoredSemanticsError,
     authored_semantics_mapping,
 )
+from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
+    authored_first_run_text,
+)
 from odylith.runtime.domain_intelligence.greenfield_completion_types import (
     GreenfieldCompletionPackage,
 )
@@ -48,8 +51,10 @@ FIRST_PATH = (
     "Meridian Engine vitrifies the Æther packet into Ω-Receipt."
 )
 PROPOSED_FIRST_RUN = (
-    "Proposed first run:\nRegistry Custodian QuOrates one Æther packet.\n"
-    "Meridian Engine vitrifies the Æther packet into Ω-Receipt."
+    "Proposed first run:\nEvent 1\nActor: Registry Custodian\n"
+    "Source event: Registry Custodian QuOrates one Æther packet.\n"
+    "Event 2\nActor: Meridian Engine\n"
+    "Source event: Meridian Engine vitrifies the Æther packet into Ω-Receipt."
 )
 PRODUCT_STORY = (
     "People preserve APIv7 evidence while Ω-case casing remains source-authored."
@@ -263,7 +268,11 @@ def _result_first_proposal(*, include_actor_review: bool = False) -> dict[str, o
         context["source_start_byte"] = independent_start
         context["source_end_byte"] = independent_start + len(context["fact_quote"].encode("utf-8"))
         independent_start = context["source_end_byte"] + 1
-    return proposal
+    return build_authored_greenfield_proposal(
+        observed_source={"source_posture": "operator prompt evidence"},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
 
 
 def _pronoun_proposal() -> dict[str, object]:
@@ -396,6 +405,7 @@ def test_authored_dashboard_bypasses_legacy_projection_and_preserves_exact_facts
     assert payload["intro"] == f"Source excerpt: “{PRODUCT_STORY}”"
     assert payload["focus"] == PROPOSED_FIRST_RUN
     assert payload["desired"] == "Ω-Receipt"
+    assert payload["sources"]["proposal"] == "odylith/runtime/source/accepted-project.v1.json"
     assert payload["actors"] == [
         (
             "Human actor",
@@ -428,8 +438,13 @@ def test_authored_dashboard_bypasses_legacy_projection_and_preserves_exact_facts
         "Source-stated systems:\nMeridian Engine\nExternal systems:\nAPIv7 Archive\n"
         "Source-stated scope limits:\nBatch Æther migration"
     )
-    assert payload["risk_items"] == []
-    assert payload["risk_classes"] == []
+    assert payload["risk_items"] == [{
+        "risk": "Reviewed no-material-risk posture",
+        "meaning": "This structural fixture carries no product-domain risk claim.",
+        "status": "no_material_risks_identified",
+        "scope": "Complete provisional design.",
+    }]
+    assert payload["risk_classes"] == payload["risk_items"]
     assert payload["governance_titles"] == {
         **{f"B-{index:03d}": row["title"] for index, row in enumerate(proposal["backlog"], 701)},
         **{f"D-{index:03d}": row["title"] for index, row in enumerate(proposal["diagrams"], 701)},
@@ -578,18 +593,20 @@ def test_authored_dashboard_separates_proposed_walkthrough_from_result_first_sou
         root=tmp_path, proposal=proposal, accepted_project_preview=_accepted_preview(proposal=proposal, root=tmp_path),
         source_launch_context=_source_launch_context(proposal=proposal, root=tmp_path),
     )
+    proposed_run = authored_first_run_text(proposal["intent"])
+    assert proposed_run.index("Event 2") < proposed_run.index("Event 1")
 
-    assert payload["focus"] == PROPOSED_FIRST_RUN
-    assert payload["scenario_details"][0] == ("Proposed first run", PROPOSED_FIRST_RUN)
+    assert payload["focus"] == proposed_run
+    assert payload["scenario_details"][0] == ("Proposed first run", proposed_run)
     assert payload["desired"] == "Ω-Receipt"
     assert payload["authored_facts"]["first_path"] == source_intent["first_path"]
     assert payload["authored_facts"]["first_path_relations"] == source_intent["authored_semantics"]["first_path_relations"]
     assert payload["authored_facts"]["source_precedence"] == source_intent["authored_semantics"]["source_precedence"]
     assert [row["order"] for row in payload["authored_facts"]["first_path_relations"]] == [1, 2]
     cards = {row["semantic_slot"]: row["body"] for row in payload["product_story"]["release_contract"]}
-    assert cards["first_path"] == PROPOSED_FIRST_RUN
+    assert cards["first_path"] == proposed_run
     for prompt in payload["host_handoff_prompts"]:
-        assert prompt["contract"]["fact_bindings"]["accepted_first_path"] == PROPOSED_FIRST_RUN
+        assert prompt["contract"]["fact_bindings"]["accepted_first_path"] == proposed_run
     assert proposal["intent"] == source_intent
 
 
@@ -654,7 +671,10 @@ def test_authored_dashboard_preserves_archive_after_the_published_result(tmp_pat
         root=tmp_path, proposal=proposal, accepted_project_preview=_accepted_preview(proposal=proposal, root=tmp_path),
         source_launch_context=_source_launch_context(proposal=proposal, root=tmp_path),
     )
-    proposed_run = "Proposed first run:\n" + "\n".join(events)
+    proposed_run = "Proposed first run:\n" + "\n".join(
+        f"Event {index}\nActor: Coordinator\nSource event: {event}"
+        for index, event in enumerate(events, 1)
+    )
     assert payload["focus"] == proposed_run
     assert payload["desired"] == "report"
     assert payload["authored_facts"]["visible_result"] == "report"

@@ -147,7 +147,8 @@ def test_authored_projection_has_no_downstream_semantic_owner() -> None:
         "-. deferred .->",
     ):
         assert stale_local_claim not in projection
-    assert '"security_compliance": {}' in projection
+    assert '"security_compliance": {}' not in projection
+    assert 'risk_posture = copy.deepcopy(provisional_design["risk_posture"])' in projection
     assert len(projection.splitlines()) < 900
 
 

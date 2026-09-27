@@ -25,6 +25,9 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import (
 from odylith.runtime.domain_intelligence.greenfield_authored_proposal import (
     authored_projection_parity_issues,
 )
+from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
+    authored_first_run_text,
+)
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     authored_component_relation_facts,
     authored_semantics_mapping,
@@ -391,7 +394,12 @@ def test_model_authored_multi_component_events_bind_to_exact_source_owned_system
         assert workstream["workstream_role"] == "provisional_design"
         assert workstream["component_focus"] == proposed["component_keys"]
         assert workstream["provisional_workstream_contract"]["provisional_workstream"] == proposed
-    assert proposal["security_compliance"] == {}
+    assert proposal["security_compliance"] == {
+        "authority_kind": "provisional_design",
+        "status": "no_material_risks_identified",
+        "rationale": "This structural fixture carries no product-domain risk claim.",
+        "risk_refs": [],
+    }
     assert [
         event["owner_system"]
         for event in proposal["semantic_model"]["first_path_contract"]["events"]
@@ -460,7 +468,7 @@ def test_model_authored_project_seals_one_source_and_design_package(tmp_path, mo
     next_steps = transaction.prewrite_package.next_steps_preview
     assert next_steps is not None
     assert next_steps["coding_readiness_contract"]["source_facts"]["accepted_first_path"] == (
-        "Proposed first run:\n" + _AUTHORED_FIRST_PATH
+        authored_first_run_text(candidate)
     )
     assert [
         row["gate_id"] for row in next_steps["coding_readiness_contract"]["gates"]
@@ -1152,6 +1160,7 @@ def test_envelope_rejects_authored_spans_rebound_to_different_source_bytes() -> 
             sealed_intent,
             source_text=f"{source} unselected source B",
             source_format="operator_prompt",
+            reviewed_candidate_sha256=result.candidate_review["candidate_sha256"],
             authored_source_spans=result.source_spans,
             authored_atomic_claims=result.atomic_claims,
             authored_source_sha256=result.source_sha256,
@@ -1184,6 +1193,7 @@ def test_envelope_reverifies_atomic_claim_bytes_against_the_exact_source() -> No
             sealed_intent,
             source_text=source,
             source_format="operator_prompt",
+            reviewed_candidate_sha256=result.candidate_review["candidate_sha256"],
             authored_source_spans=result.source_spans,
             authored_atomic_claims=claims,
             authored_source_sha256=result.source_sha256,

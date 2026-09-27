@@ -90,7 +90,7 @@ def test_fresh_proposal_uses_one_design_without_promoting_support_to_ownership(t
     assert semantic_workstream_alignment_issues(proposal, proposal["semantic_model"]) == []
 
 
-def test_every_delivery_keeps_canonical_decisions_and_distinct_proposed_acceptance(tmp_path: Path) -> None:
+def test_every_delivery_has_local_scope_and_keeps_canonical_decision_refs(tmp_path: Path) -> None:
     proposal = _authored_proposal(tmp_path)
     intent = deepcopy(proposal["intent"])
     original_intent = deepcopy(intent)
@@ -99,19 +99,67 @@ def test_every_delivery_keeps_canonical_decisions_and_distinct_proposed_acceptan
     design = intent[AUTHORED_SEMANTICS_KEY]["provisional_design"]
     components = {row["key"]: row for row in design["components"]}
     workstreams = {row["key"]: row for row in design["workstreams"]}
+    events = {
+        row["order"]: row
+        for row in intent[AUTHORED_SEMANTICS_KEY]["first_path_relations"]
+    }
     for row, authored in zip(rows, design["workstreams"], strict=True):
         for field in ("problem", "customer", "opportunity"):
-            assert row[field] == f"Source fact — {intent[field]}"
             assert row["provisional_workstream_contract"]["decision_refs"][field] == f"/{field}"
-        assert row["product_view"] == (
-            f"Source fact — {intent['product_view']}\n\n"
-            f"Proposed workstream view — {authored['deliverable']}"
-        )
         assert row["provisional_workstream_contract"]["decision_refs"]["product_view"] == "/product_view"
+        event_orders = sorted({
+            order
+            for key in authored["component_keys"]
+            for order in components[key]["supported_event_orders"]
+        })
+        assigned_events = [events[order] for order in event_orders]
+        assert row["problem"] == (
+            "Unimplemented assigned source-event support — "
+            + ", ".join(f"Event {order}" for order in event_orders)
+            + "."
+        )
+        assert row["customer"] == f"Customer or beneficiary — {intent['customer']}"
+        assert all(
+            event["actor_fact_quote"] not in row["customer"]
+            for event in assigned_events
+            if event["actor_kind"] != "human"
+        )
+        assert row["opportunity"] == "Proposed component scope:\n\n" + "\n".join(
+            f"- {components[key]['name']} — {components[key]['responsibility']}"
+            for key in authored["component_keys"]
+        )
+        assert row["product_view"] == f"Proposed workstream outcome — {authored['deliverable']}"
         assert row["deliverable"] == authored["deliverable"]
         assert row["recommended_first_slice"] == f"Proposed deliverable — {authored['deliverable']}"
         assert row["validation"] == [f"Proposed acceptance — {authored['verification']}"]
         assert row["success_metrics"] == row["validation"]
+        contract = row["provisional_workstream_contract"]
+        assert contract["support_event_refs"] == [
+            f"/authored_semantics/first_path_relations/{order - 1}"
+            for order in event_orders
+        ]
+        assert contract["supporting_events"] == assigned_events
+        assert row["radar_sections"]["Source Event Support"] == "\n".join(
+            f"- Event {event['order']}\nActor: {event['actor_fact_quote']}\n"
+            f"Source event: {event['event_quote']}"
+            for event in assigned_events
+        )
+        local_rendering = "\n".join([
+            row["problem"], row["customer"], row["opportunity"], row["product_view"],
+            *row["radar_sections"].values(),
+        ])
+        for sibling_order in set(events) - set(event_orders):
+            assert events[sibling_order]["event_quote"] not in local_rendering
+        for project_fact in (
+            intent["problem"], intent["opportunity"], intent["product_view"],
+            *intent["non_goals"], *intent["operational_constraints"],
+            *intent["success_metrics"], intent["proof_boundary"],
+        ):
+            assert project_fact not in local_rendering
+        assert row["radar_sections"]["Source Proof Boundary"] == (
+            "The project proof decision remains governed by the Product Intent."
+        )
+        assert "`/" not in local_rendering
         dependencies = [workstreams[key]["title"] for key in authored["depends_on"]]
         if dependencies:
             expected_rollout = f"Proposed delivery sequence — Start after {', '.join(dependencies)}."
@@ -131,6 +179,9 @@ def test_every_delivery_keeps_canonical_decisions_and_distinct_proposed_acceptan
             "does not transfer the original actor's ownership."
         )
     assert len({row["deliverable"] for row in rows}) == 4
+    assert len({row["opportunity"] for row in rows}) == 4
+    assert len({row["product_view"] for row in rows}) == 4
+    assert len({tuple(row["validation"]) for row in rows}) == 4
 
 
 def test_ordering_rationale_explains_only_typed_delivery_dependencies(tmp_path: Path) -> None:
@@ -179,17 +230,20 @@ def test_exchange_direction_does_not_invent_component_dependencies(tmp_path: Pat
 
 
 @pytest.mark.parametrize("field", ["problem", "customer", "opportunity", "product_view"])
-def test_decision_assumptions_remain_visible_on_every_radar_row(tmp_path: Path, field: str) -> None:
+def test_decision_assumptions_remain_referenced_without_prose_fanout(tmp_path: Path, field: str) -> None:
     intent = deepcopy(_authored_proposal(tmp_path)["intent"])
     intent[field] = ""
     statement = f"The {field} remains a provisional decision, not source truth."
     intent["assumptions"] = [{"applies_to": field, "statement": statement}]
     rows = build_provisional_backlog(intent=intent, diagram_slugs={"context": "context"})
-    for row, authored in zip(rows, intent[AUTHORED_SEMANTICS_KEY]["provisional_design"]["workstreams"], strict=True):
-        expected = f"Assumption — {statement}"
-        if field == "product_view":
-            expected += f"\n\nProposed workstream view — {authored['deliverable']}"
-        assert row[field] == expected
+    for row in rows:
+        rendered = "\n".join([
+            row["problem"], row["customer"], row["opportunity"], row["product_view"],
+            *row["radar_sections"].values(),
+        ])
+        assert (statement in rendered) is (field == "customer")
+        if field == "customer":
+            assert row["customer"] == f"Customer or beneficiary — Assumption — {statement}"
         assert "Assumptions" not in row["radar_sections"]
         assert row["provisional_workstream_contract"]["decision_refs"][field] == "/assumptions/0"
     intent["assumptions"] = []

@@ -367,6 +367,7 @@ PY
   local matrix_temp_parent matrix_case_file release_audit_file release_audit_repo_root
   local sealed_release_input_root semantic_annotations_file evaluation_split_manifest
   local final_holdout_run_ledger implementation_revision distribution_provenance_file
+  local lower_capability_control_file evidence_output_dir
   matrix_temp_parent="${ODYLITH_GREENFIELD_MATRIX_TEMP_PARENT:-$(dirname "$dist_dir")}"
   matrix_case_file=""
   release_audit_file=""
@@ -377,6 +378,8 @@ PY
   final_holdout_run_ledger=""
   implementation_revision=""
   distribution_provenance_file=""
+  lower_capability_control_file=""
+  evidence_output_dir="${GREENFIELD_MATRIX_EVIDENCE_OUTPUT_DIR:-$dist_dir/greenfield-preconfirm-evidence}"
   if [[ "$matrix_gate_mode" == "terminal" && "$matrix_release_intent" == "1" ]]; then
     matrix_case_file="${GREENFIELD_MATRIX_CASE_FILE:-}"
     release_audit_file="${GREENFIELD_MATRIX_RELEASE_AUDIT_FILE:-}"
@@ -387,6 +390,7 @@ PY
     final_holdout_run_ledger="${GREENFIELD_MATRIX_FINAL_HOLDOUT_RUN_LEDGER:-}"
     implementation_revision="$(git -C "$odylith_repo_root" rev-parse HEAD)"
     distribution_provenance_file="$dist_dir/build-provenance.v1.json"
+    lower_capability_control_file="${GREENFIELD_MATRIX_LOWER_CAPABILITY_CONTROL_FILE:-}"
   else
     matrix_release_intent=0
   fi
@@ -401,6 +405,8 @@ PY
   GREENFIELD_MATRIX_FINAL_HOLDOUT_RUN_LEDGER="$final_holdout_run_ledger" \
   GREENFIELD_MATRIX_IMPLEMENTATION_REVISION="$implementation_revision" \
   GREENFIELD_MATRIX_DISTRIBUTION_PROVENANCE_FILE="$distribution_provenance_file" \
+  GREENFIELD_MATRIX_LOWER_CAPABILITY_CONTROL_FILE="$lower_capability_control_file" \
+  GREENFIELD_MATRIX_EVIDENCE_OUTPUT_DIR="$evidence_output_dir" \
   GREENFIELD_MATRIX_OUTPUT_JSON="$dist_dir/greenfield-preconfirm-matrix.v1.json" \
   BROWSER_PROOF=1 \
   COMMIT_RECOVERY_PROOF=1 \

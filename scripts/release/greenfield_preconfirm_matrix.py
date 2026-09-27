@@ -92,6 +92,7 @@ from greenfield_matrix_release_artifacts import record_retained_case_json  # noq
 from greenfield_matrix_release_artifacts import record_retained_case_bytes  # noqa: E402
 from greenfield_matrix_release_artifacts import record_retained_case_text  # noqa: E402
 from greenfield_matrix_release_artifacts import retained_case_evidence_fd  # noqa: E402
+from greenfield_matrix_release_artifacts import retained_evidence_result  # noqa: E402
 from greenfield_matrix_release_artifacts import retained_evidence_manifest_path  # noqa: E402
 from greenfield_matrix_release_artifacts import retained_evidence_manifest_issues  # noqa: E402
 from greenfield_matrix_release_artifacts import seal_interrupted_retained_evidence  # noqa: E402
@@ -2771,6 +2772,58 @@ def _final_holdout_run_from_args(
     )
 
 
+def _load_planned_cases_and_control(
+    *,
+    case_files: Sequence[str],
+    include_default_cases: bool,
+    lower_capability_control_file: str,
+    enforce_lexical_controls: bool,
+) -> tuple[
+    tuple[GreenfieldMatrixCase, ...],
+    tuple[GreenfieldMatrixCase, ...],
+    GreenfieldMatrixCase | None,
+]:
+    """Load and validate one corpus plus its separately scored control."""
+
+    selected_cases = _load_cli_case_files(
+        case_files,
+        enforce_lexical_controls=enforce_lexical_controls,
+    )
+    if include_default_cases:
+        try:
+            tuple(case_model_profile(case) for case in selected_cases)
+        except ValueError as error:
+            raise RuntimeError(
+                "--include-default-cases supplements require exactly one supported explicit model profile"
+            ) from error
+        planned_cases = (*assign_model_profiles(default_cases()), *selected_cases)
+        identities = tuple(_retained_case_id(case).casefold() for case in planned_cases)
+        duplicates = sorted(
+            identity for identity, count in Counter(identities).items() if count > 1
+        )
+        if duplicates:
+            raise RuntimeError(
+                "--include-default-cases has duplicate case IDs: " + ", ".join(duplicates)
+            )
+        selected_cases = planned_cases
+    else:
+        planned_cases = selected_cases or default_cases()
+    _reject_control_profiles_in_main_corpus(planned_cases)
+    lower_capability_control_case = _load_lower_capability_control_case(
+        lower_capability_control_file,
+        enforce_lexical_controls=enforce_lexical_controls,
+    )
+    if (
+        lower_capability_control_case is not None
+        and _retained_case_id(lower_capability_control_case).casefold()
+        in {_retained_case_id(case).casefold() for case in planned_cases}
+    ):
+        raise RuntimeError(
+            "lower-capability control must have an identity separate from the corpus"
+        )
+    return selected_cases, planned_cases, lower_capability_control_case
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     include_default_cases = bool(getattr(args, "include_default_cases", False))
@@ -2895,43 +2948,19 @@ def main(argv: Sequence[str] | None = None) -> int:
         browser_issues = browser_runtime_preflight_issues() if bool(args.include_browser_proof) else ()
         if browser_issues:
             raise RuntimeError("final holdout browser preflight failed: " + "; ".join(browser_issues))
-    selected_cases = _load_cli_case_files(
-        args.case_file or (),
-        enforce_lexical_controls=(
-            True if include_default_cases else final_holdout_run is None
-        ),
-    )
-    if include_default_cases:
-        try:
-            tuple(case_model_profile(case) for case in selected_cases)
-        except ValueError as error:
-            raise RuntimeError(
-                "--include-default-cases supplements require exactly one supported explicit model profile"
-            ) from error
-        planned_cases = (*assign_model_profiles(default_cases()), *selected_cases)
-        identities = tuple(_retained_case_id(case).casefold() for case in planned_cases)
-        duplicates = sorted(
-            identity for identity, count in Counter(identities).items() if count > 1
-        )
-        if duplicates:
-            raise RuntimeError(
-                "--include-default-cases has duplicate case IDs: " + ", ".join(duplicates)
+    selected_cases: tuple[GreenfieldMatrixCase, ...] = ()
+    planned_cases: tuple[GreenfieldMatrixCase, ...] = ()
+    lower_capability_control_case: GreenfieldMatrixCase | None = None
+    if final_holdout_run is None:
+        selected_cases, planned_cases, lower_capability_control_case = (
+            _load_planned_cases_and_control(
+                case_files=args.case_file or (),
+                include_default_cases=include_default_cases,
+                lower_capability_control_file=str(
+                    getattr(args, "lower_capability_control_file", "") or ""
+                ),
+                enforce_lexical_controls=True,
             )
-        selected_cases = planned_cases
-    else:
-        planned_cases = selected_cases or default_cases()
-    _reject_control_profiles_in_main_corpus(planned_cases)
-    lower_capability_control_case = _load_lower_capability_control_case(
-        str(getattr(args, "lower_capability_control_file", "") or ""),
-        enforce_lexical_controls=final_holdout_run is None,
-    )
-    if (
-        lower_capability_control_case is not None
-        and _retained_case_id(lower_capability_control_case).casefold()
-        in {_retained_case_id(case).casefold() for case in planned_cases}
-    ):
-        raise RuntimeError(
-            "lower-capability control must have an identity separate from the corpus"
         )
     output_path = (
         Path(str(args.output_json)).expanduser().resolve()
@@ -2946,6 +2975,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         try:
             if final_holdout_run is not None:
                 final_holdout_run.claim()
+                selected_cases, planned_cases, lower_capability_control_case = (
+                    _load_planned_cases_and_control(
+                        case_files=args.case_file or (),
+                        include_default_cases=include_default_cases,
+                        lower_capability_control_file=str(
+                            getattr(args, "lower_capability_control_file", "") or ""
+                        ),
+                        enforce_lexical_controls=False,
+                    )
+                )
             release_audits = (
                 load_release_audit_file(
                     Path(str(args.release_audit_file)),
@@ -3191,25 +3230,12 @@ def _execute_matrix_campaign(
         if evidence_output_token
         else None
     )
-    retained_issues = (
-        retained_evidence_manifest_issues(
-            retained_manifest,
-            expected_case_ids=tuple(_retained_case_id(case) for case in profiled_cases),
-            expected_run_id=retained_evidence_run_id,
-        )
-        if retained_manifest is not None
-        else ("release proof did not retain external evidence",)
-        if retained_evidence_required
-        else ()
+    retained_evidence = retained_evidence_result(
+        retained_manifest,
+        expected_case_ids=tuple(_retained_case_id(case) for case in profiled_cases),
+        expected_run_id=retained_evidence_run_id,
+        required=retained_evidence_required,
     )
-    retained_evidence = {
-        "status": "passed" if retained_manifest is not None and not retained_issues else "not_requested"
-        if retained_manifest is None and not retained_evidence_required
-        else "failed",
-        "manifest": str(retained_manifest) if retained_manifest is not None else "",
-        "manifest_sha256": _sha256_file(retained_manifest) if retained_manifest is not None else "",
-        "issues": list(retained_issues),
-    }
     browser_proof = browser_proof_summary(results, include_browser_proof=bool(args.include_browser_proof))
     platform_leakage_proof = _platform_leakage_proof_summary(results)
     cleanup_proof = temp_cleanup_proof(temp_parent)

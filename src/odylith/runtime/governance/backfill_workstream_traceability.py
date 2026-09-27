@@ -623,7 +623,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             modified_files.append(_as_repo_path(repo_root, path))
 
     report = {
-        "repo_root": str(repo_root),
+        "repo_root": ".",
         "dry_run": bool(args.dry_run),
         "force_overwrite": bool(args.force_overwrite),
         "modified_files": sorted(set(modified_files)),
@@ -655,7 +655,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         # new autofix activity. This preserves the last meaningful report
         # snapshot instead of rewriting it into an all-zero no-op payload.
         preserved_report = dict(existing_report)
-        preserved_report["repo_root"] = str(repo_root)
+        preserved_report["repo_root"] = "."
         preserved_report["dry_run"] = bool(args.dry_run)
         preserved_report["force_overwrite"] = bool(args.force_overwrite)
         report = preserved_report

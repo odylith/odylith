@@ -12,6 +12,7 @@ import argparse
 import datetime as dt
 from importlib import import_module
 import json
+import os
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 from zoneinfo import ZoneInfo
@@ -49,12 +50,27 @@ def _file_version_token(path: Path) -> str:
 
 
 def _versioned_href(*, output_path: Path, target: Path) -> str:
-    href = surface_path_helpers.relative_href(output_path=output_path, target=target)
+    href = _portable_surface_href(output_path=output_path, target=target)
     return dashboard_surface_bundle.append_query_param(
         href=href,
         name="v",
         value=_file_version_token(target),
     )
+
+
+def _portable_surface_href(*, output_path: Path, target: Path) -> str:
+    """Keep generated hrefs stable when output and inputs use different stage roots."""
+
+    def _surface_path(path: Path) -> Path | None:
+        parts = path.resolve().parts
+        indexes = [index for index, part in enumerate(parts) if part == "odylith"]
+        return Path(*parts[indexes[-1] :]) if indexes else None
+
+    logical_output = _surface_path(output_path)
+    logical_target = _surface_path(target)
+    if logical_output is not None and logical_target is not None:
+        return Path(os.path.relpath(logical_target, start=logical_output.parent)).as_posix()
+    return surface_path_helpers.relative_href(output_path=output_path, target=target)
 
 
 def _load_runtime_impl():
@@ -1056,7 +1072,7 @@ def render_compass_artifacts(
         "runtime_json_href": _versioned_href(output_path=output_path, target=current_json_path),
         "runtime_js_href": _versioned_href(output_path=output_path, target=current_js_path),
         "runtime_history_js_href": _versioned_href(output_path=output_path, target=history_js_path),
-        "runtime_history_base_href": surface_path_helpers.relative_href(output_path=output_path, target=history_index_path.parent),
+        "runtime_history_base_href": _portable_surface_href(output_path=output_path, target=history_index_path.parent),
         "history_index_href": _versioned_href(output_path=output_path, target=history_index_path),
         "consumer_truth_roots": dict(load_consumer_profile(repo_root=repo_root).get("truth_roots", {})),
         "brand_head_html": brand_assets.render_brand_head_html(repo_root=repo_root, output_path=output_path),

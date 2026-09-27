@@ -20,20 +20,12 @@ from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
     RemainingCandidateProvider,
     StructuredAuthoringProvider,
+    admitted_review_response,
     authored_response,
 )
 from tests.unit.runtime.test_greenfield_model_path_custody import _response, _source
 
-ADMITTED = {
-    "outcome": "admitted",
-    "issue": None,
-    "clarification": None,
-    "admission_witness": {
-        "participant_fact": {"field": "human_actors", "row": 1},
-        "task_event_order": 1,
-        "result_event_order": 3,
-    },
-}
+ADMITTED = admitted_review_response()
 
 
 class Clock:
@@ -305,11 +297,9 @@ def test_title_actor_address_stays_hash_bound_before_canonical_product_translati
     )
     clock = Clock()
     admitted = deepcopy(ADMITTED)
-    admitted["admission_witness"] = {
-        "participant_fact": {"field": "customer", "row": 1},
-        "task_event_order": 1,
-        "result_event_order": 1,
-    }
+    admitted["admission_witness"]["participant_fact"] = {"field": "customer", "row": 1}
+    admitted["admission_witness"]["task_event_order"] = 1
+    admitted["admission_witness"]["result_event_order"] = 1
     receipt = review.review_greenfield_candidate(
         evidence_text=source,
         candidate=response["result"],
@@ -336,6 +326,26 @@ def test_title_actor_address_stays_hash_bound_before_canonical_product_translati
     assert (relation["actor_kind"], relation["actor_fact_path"], relation["owner_system_path"]) == (
         "product", "/title", "/title",
     )
+
+
+@pytest.mark.parametrize(
+    ("field", "replacement"),
+    (
+        ("component_verification_keys", ["test-boundary-1"]),
+        ("workstream_verification_keys", ["test-work-1"]),
+        ("risk_keys", ["invented-risk"]),
+        ("risk_posture_status", "material_risks_identified"),
+    ),
+)
+def test_admission_witness_must_cover_the_exact_reviewed_design(
+    field: str,
+    replacement: object,
+) -> None:
+    clock = Clock()
+    admitted = deepcopy(ADMITTED)
+    admitted["admission_witness"]["design_coverage"][field] = replacement
+    with pytest.raises(RuntimeError, match="invalid admission witness"):
+        run_review(Reviewer(admitted, clock), clock)
 
 
 @pytest.mark.parametrize("constraint", [

@@ -107,6 +107,7 @@ class AdmittingReviewProvider(StructuredAuthoringProvider):
             facts = candidate.get("accepted_source", {}).get("facts") if isinstance(candidate, Mapping) else None
             terminal = candidate.get("accepted_source", {}).get("terminal") if isinstance(candidate, Mapping) else None
             events = candidate.get("accepted_source", {}).get("events") if isinstance(candidate, Mapping) else None
+            design = candidate.get("proposed_decisions", {}).get("provisional_design") if isinstance(candidate, Mapping) else None
             participant_field = "human_actors"
             participant_row = 1
             if isinstance(facts, Mapping):
@@ -134,6 +135,7 @@ class AdmittingReviewProvider(StructuredAuthoringProvider):
                 participant_field=participant_field,
                 participant_row=participant_row,
                 result_event_order=result_event_order,
+                provisional_design=design,
             )
         return super().generate_structured(request=request)
 
@@ -144,9 +146,12 @@ def admitted_review_response(
     participant_row: int = 1,
     task_event_order: int = 1,
     result_event_order: int = 3,
+    provisional_design: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Return one structurally grounded admitted-review fixture."""
 
+    design = provisional_design or structural_design_fixture((1, 2, 3))
+    risks = design["risk_posture"]["items"]
     return {
         "outcome": "admitted",
         "issue": None,
@@ -158,6 +163,12 @@ def admitted_review_response(
             },
             "task_event_order": task_event_order,
             "result_event_order": result_event_order,
+            "design_coverage": {
+                "component_verification_keys": [row["key"] for row in design["components"]],
+                "workstream_verification_keys": [row["key"] for row in design["workstreams"]],
+                "risk_keys": [row["key"] for row in risks],
+                "risk_posture_status": design["risk_posture"]["status"],
+            },
         },
     }
 
@@ -392,11 +403,14 @@ def structural_design_fixture(
             "responsibility": f"Retain the test value at boundary {index}.",
             "supported_event_orders": orders if index == 1 else [orders[(index - 1) % len(orders)]],
             "verification": f"Read back the exact test value assigned to boundary {index}.",
+            "verification_event_orders": (
+                orders if index == 1 else [orders[(index - 1) % len(orders)]]
+            ),
         }
         for index in range(1, 5)
     ]
     return {
-        "version": "odylith.greenfield.provisional-design.v3",
+        "version": "odylith.greenfield.provisional-design.v4",
         "authority_kind": "provisional_design",
         "first_run": {
             "event_orders": list(first_run_event_orders) if first_run_event_orders is not None else orders,
@@ -411,6 +425,7 @@ def structural_design_fixture(
                 "depends_on": [f"test-work-{index - 1}"] if index > 1 else [],
                 "deliverable": f"Implement the exact-value boundary {index}.",
                 "verification": f"An independent read returns the test value from boundary {index}.",
+                "verification_event_orders": list(row["verification_event_orders"]),
             }
             for index, row in enumerate(components, 1)
         ],
@@ -422,6 +437,11 @@ def structural_design_fixture(
             }
             for index in range(1, 4)
         ],
+        "risk_posture": {
+            "status": "no_material_risks_identified",
+            "rationale": "This structural fixture carries no product-domain risk claim.",
+            "items": [],
+        },
     }
 
 

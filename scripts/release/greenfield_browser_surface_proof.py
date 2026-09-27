@@ -1,11 +1,9 @@
 """Headless browser proof for generated greenfield governance surfaces."""
 
 from __future__ import annotations
-
 from pathlib import Path
 from typing import Any
-from urllib.parse import quote
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
 
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
@@ -20,9 +18,15 @@ from greenfield_browser_authored_contract import (
 from greenfield_browser_authored_contract import (
     authored_structure_issues,
     expected_proof_card,
+    generated_tree_path_leak_issues as _generated_tree_path_leak_issues,
+    project_state_assertion_issues as _project_state_assertion_issues,
+    project_story_binding_issues as _project_story_binding_issues,
     story_rows_match_payload,
 )
 from greenfield_browser_capture import capture_state_screenshot as _capture_state_screenshot
+from greenfield_browser_atlas_readability import prove_atlas_native_reading
+from greenfield_browser_layout import layout_assertion_issues as _layout_assertion_issues
+from greenfield_browser_layout import layout_issues as _layout_issues
 from greenfield_browser_selection_proof import prove_clicked_selection, prove_missing_selection, wait_for_selection_route
 from local_release_smoke import _serve_directory
 
@@ -40,12 +44,12 @@ BROWSER_SURFACE_EXPECTATIONS = (
     ("compass", "#frame-compass", "h1", "Executive Compass"),
 )
 BROWSER_REQUIRED_SURFACE_STATES = {
-    "project": ("normal",),
-    "radar": ("normal", "invalid-recovery"),
-    "registry": ("normal", "invalid-recovery"),
+    "project": ("normal", "degraded"),
+    "radar": ("normal", "empty", "degraded", "invalid-recovery"),
+    "registry": ("normal", "empty", "degraded", "invalid-recovery"),
     "casebook": ("normal", "empty", "invalid-recovery"),
     "atlas": ("normal", "degraded", "error", "invalid-recovery"),
-    "compass": ("normal", "invalid-recovery"),
+    "compass": ("normal", "degraded", "invalid-recovery"),
     "shell": ("normal", "invalid-recovery"),
 }
 BROWSER_REQUIRED_COVERAGE = frozenset(
@@ -69,8 +73,12 @@ def browser_runtime_preflight_issues() -> tuple[str, ...]:
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch(headless=True)
             try:
-                for viewport in BROWSER_VIEWPORTS.values():
-                    context = browser.new_context(viewport=viewport)
+                for viewport_name, viewport in BROWSER_VIEWPORTS.items():
+                    context = browser.new_context(
+                        viewport=viewport,
+                        has_touch=viewport_name == "mobile",
+                        is_mobile=viewport_name == "mobile",
+                    )
                     context.close()
             finally:
                 browser.close()
@@ -87,15 +95,16 @@ def browser_surface_proof_issues(
 ) -> tuple[str, ...]:
     """Return browser-level generated-surface state issues for a generated repo."""
 
+    root = Path(repo_root).expanduser().resolve()
+    path_issues = _generated_tree_path_leak_issues(root)
     try:
         from playwright.sync_api import Error as PlaywrightError  # type: ignore[import-not-found]
         from playwright.sync_api import sync_playwright  # type: ignore[import-not-found]
     except Exception as exc:  # pragma: no cover - environment-dependent release proof
-        return (f"Playwright is unavailable for browser surface proof: {type(exc).__name__}: {exc}",)
+        return (*path_issues, f"Playwright is unavailable for browser surface proof: {type(exc).__name__}: {exc}")
 
-    root = Path(repo_root).expanduser().resolve()
     server, base_url = _serve_directory(root)
-    issues: list[str] = []
+    issues: list[str] = list(path_issues)
     covered: set[tuple[str, str, str]] = set()
     if screenshot_output_dir is None:
         issues.append("browser surface proof requires a retained screenshot output directory")
@@ -105,7 +114,11 @@ def browser_surface_proof_issues(
                 browser = playwright.chromium.launch(headless=True)
                 try:
                     for viewport_name, viewport in BROWSER_VIEWPORTS.items():
-                        context = browser.new_context(viewport=viewport)
+                        context = browser.new_context(
+                            viewport=viewport,
+                            has_touch=viewport_name == "mobile",
+                            is_mobile=viewport_name == "mobile",
+                        )
                         try:
                             viewport_issues = _viewport_surface_issues(
                                 context=context,
@@ -149,6 +162,11 @@ def _viewport_surface_issues(
             covered=covered,
         )
     )
+    issues.extend(_project_degraded_state_issues(
+        context=context, base_url=base_url, timeout_ms=timeout_ms,
+        screenshot_output_dir=screenshot_output_dir,
+        coverage_cell=(viewport, "project", "degraded"), covered=covered,
+    ))
     for tab, frame_selector, heading_selector, heading_text in BROWSER_SURFACE_EXPECTATIONS:
         if tab == "atlas":
             continue
@@ -219,6 +237,29 @@ def _viewport_surface_issues(
             covered=covered,
         )
     )
+    for surface, frame_selector, heading, query, empty, rows, shard in (
+        ("radar", "#frame-radar", "Backlog Workstream Radar", "#query", "#detail-empty[role='status']", "button[data-idea-id]", "**/backlog-detail-shard-*.v1.js"),
+        ("registry", "#frame-registry", "Component Registry", "#search", "#detail .empty[role='status']", "button[data-component]", "**/registry-detail-shard-*.v1.js"),
+    ):
+        issues.extend(_surface_variant_issues(
+            context=context, base_url=base_url, surface=surface, frame_selector=frame_selector,
+            heading=heading, query_selector=query, empty_selector=empty,
+            row_selector=rows, shard_pattern=shard, state="empty", timeout_ms=timeout_ms,
+            screenshot_output_dir=screenshot_output_dir,
+            coverage_cell=(viewport, surface, "empty"), covered=covered,
+        ))
+        issues.extend(_surface_variant_issues(
+            context=context, base_url=base_url, surface=surface, frame_selector=frame_selector,
+            heading=heading, query_selector=query, empty_selector=empty,
+            row_selector=rows, shard_pattern=shard, state="degraded", timeout_ms=timeout_ms,
+            screenshot_output_dir=screenshot_output_dir,
+            coverage_cell=(viewport, surface, "degraded"), covered=covered,
+        ))
+    issues.extend(_compass_degraded_state_issues(
+        context=context, base_url=base_url, timeout_ms=timeout_ms,
+        screenshot_output_dir=screenshot_output_dir,
+        coverage_cell=(viewport, "compass", "degraded"), covered=covered,
+    ))
     return tuple(issues)
 
 
@@ -227,6 +268,119 @@ def _missing_coverage_issues(covered: set[tuple[str, str, str]]) -> tuple[str, .
         f"browser surface proof skipped required coverage cell: {'/'.join(cell)}"
         for cell in sorted(BROWSER_REQUIRED_COVERAGE - covered)
     )
+
+
+def _project_degraded_state_issues(
+    *, context: Any, base_url: str, timeout_ms: int, screenshot_output_dir: Path | None,
+    coverage_cell: tuple[str, str, str], covered: set[tuple[str, str, str]] | None,
+) -> tuple[str, ...]:
+    page, runtime_issues = _new_page(
+        context, issue_prefix="browser surface project degraded state",
+        screenshot_output_dir=screenshot_output_dir, coverage_cells=(coverage_cell,), covered=covered,
+    )
+    issues: list[str] = []
+    try:
+        response = page.goto(f"{base_url}/odylith/index.html?tab=project", wait_until="domcontentloaded")
+        if response is None or not response.ok:
+            return ("browser surface project degraded state did not load",)
+        _dismiss_shell_obstructions(page)
+        page.locator("#pane-project .project-signal-grid").wait_for(timeout=timeout_ms)
+        state = page.locator("#pane-project").evaluate(
+            """node => {
+              const rows = (window.__ODYLITH_TOOLING_DATA__?.project_intelligence?.degraded_state || [])
+                .map(value => String(value || "").trim())
+                .filter(value => value && !value.startsWith("No degraded source condition"));
+              return {rows, text: String(node.innerText || "")};
+            }"""
+        )
+        rows = state.get("rows", []) if isinstance(state, dict) else []
+        text = str(state.get("text", "") if isinstance(state, dict) else "")
+        if not rows or any(str(row) not in text for row in rows):
+            issues.append("browser surface project does not visibly explain its degraded proof boundary")
+        issues.extend(_layout_issues(page.locator("body"), label="project degraded state"))
+    except Exception as exc:
+        issues.append(f"browser surface project degraded state failed render: {type(exc).__name__}: {exc}")
+    finally:
+        issues.extend(runtime_issues())
+        page.close()
+    return tuple(issues)
+
+
+def _surface_variant_issues(
+    *, context: Any, base_url: str, surface: str, frame_selector: str, heading: str,
+    query_selector: str, empty_selector: str, row_selector: str, shard_pattern: str,
+    state: str, timeout_ms: int, screenshot_output_dir: Path | None,
+    coverage_cell: tuple[str, str, str], covered: set[tuple[str, str, str]] | None,
+) -> tuple[str, ...]:
+    page, runtime_issues = _new_page(
+        context, issue_prefix=f"browser surface {surface} {state} state",
+        screenshot_output_dir=screenshot_output_dir, coverage_cells=(coverage_cell,), covered=covered,
+    )
+    issues: list[str] = []
+    try:
+        if state == "degraded":
+            global_name = "__ODYLITH_BACKLOG_DETAIL_SHARDS__" if surface == "radar" else "__ODYLITH_REGISTRY_DETAIL_SHARDS__"
+            page.route(shard_pattern, lambda route: route.fulfill(
+                status=200, content_type="application/javascript",
+                body=f'window["{global_name}"] = window["{global_name}"] || {{}};',
+            ))
+        response = page.goto(f"{base_url}/odylith/index.html?tab={surface}", wait_until="domcontentloaded")
+        if response is None or not response.ok:
+            return (f"browser surface {surface} {state} state did not load",)
+        _dismiss_shell_obstructions(page)
+        frame = page.frame_locator(frame_selector)
+        frame.locator("h1", has_text=heading).wait_for(timeout=timeout_ms)
+        if state == "empty":
+            frame.locator(query_selector).fill("zzzzzz-no-generated-surface-match")
+            status = frame.locator(empty_selector)
+            status.wait_for(state="visible", timeout=timeout_ms)
+            if frame.locator(f"{row_selector}:visible").count() or len(status.inner_text().split()) < 3:
+                issues.append(f"browser surface {surface} does not expose an explanatory empty state")
+        else:
+            status = frame.locator("#detail [role='status']")
+            status.wait_for(state="visible", timeout=timeout_ms)
+            if "unavailable" not in status.inner_text().casefold():
+                issues.append(f"browser surface {surface} does not explain degraded detail availability")
+        issues.extend(_layout_issues(frame.locator("body"), label=f"{surface} {state} state"))
+    except Exception as exc:
+        issues.append(f"browser surface {surface} {state} state failed render: {type(exc).__name__}: {exc}")
+    finally:
+        issues.extend(runtime_issues())
+        page.close()
+    return tuple(issues)
+
+
+def _compass_degraded_state_issues(
+    *, context: Any, base_url: str, timeout_ms: int, screenshot_output_dir: Path | None,
+    coverage_cell: tuple[str, str, str], covered: set[tuple[str, str, str]] | None,
+) -> tuple[str, ...]:
+    page, runtime_issues = _new_page(
+        context, issue_prefix="browser surface compass degraded state",
+        screenshot_output_dir=screenshot_output_dir, coverage_cells=(coverage_cell,), covered=covered,
+    )
+    issues: list[str] = []
+    try:
+        page.route("**/compass/runtime/current.v1.js*", lambda route: route.fulfill(
+            status=200, content_type="application/javascript", body="window.__ODYLITH_COMPASS_RUNTIME__ = null;",
+        ))
+        page.route("**/compass/runtime/current.v1.json*", lambda route: route.fulfill(
+            status=200, content_type="application/json", body="null",
+        ))
+        response = page.goto(f"{base_url}/odylith/index.html?tab=compass", wait_until="domcontentloaded")
+        if response is None or not response.ok:
+            return ("browser surface compass degraded state did not load",)
+        _dismiss_shell_obstructions(page)
+        frame = page.frame_locator("#frame-compass")
+        fallback = frame.locator("#kpi-grid", has_text="Runtime Unavailable")
+        fallback.wait_for(timeout=timeout_ms)
+        frame.locator("#digest-list", has_text="Runtime data unavailable").wait_for(timeout=timeout_ms)
+        issues.extend(_layout_issues(frame.locator("body"), label="compass degraded state"))
+    except Exception as exc:
+        issues.append(f"browser surface compass degraded state failed render: {type(exc).__name__}: {exc}")
+    finally:
+        issues.extend(runtime_issues())
+        page.close()
+    return tuple(issues)
 
 
 def _route_surface_issues(
@@ -417,174 +571,6 @@ def _project_generated_state_issues(
     finally:
         issues.extend(runtime_issues())
         page.close()
-    return tuple(issues)
-
-
-def _project_state_assertion_issues(
-    *,
-    payload_origin: str,
-    payload_prompt_count: int,
-    empty_payload_prompts: int,
-    rendered_prompt_count: int,
-    has_prompt_grid: bool,
-    has_blank_state: bool,
-    has_implementation_prompts: bool,
-    max_prompt_overflow: int,
-    pane_overflow: int,
-    rendered_story_body_count: int = 5,
-    distinct_story_body_count: int = 5,
-    clipped_text_count: int = 0,
-    story_rows: Any = (),
-    payload_story_rows: Any = (),
-    authored_structure: Any = None,
-    payload_authored_facts: Any = None,
-) -> tuple[str, ...]:
-    issues: list[str] = []
-    if payload_origin != AUTHORED_PROJECTION_ORIGIN:
-        issues.append("browser surface project payload is not accepted greenfield project state")
-    if payload_prompt_count < 5:
-        issues.append("browser surface project payload exposes fewer than five implementation prompts")
-    if empty_payload_prompts:
-        issues.append("browser surface project payload contains empty implementation prompt text")
-    if rendered_prompt_count < 5:
-        issues.append("browser surface project rendered fewer than five implementation prompt cards")
-    if not has_prompt_grid:
-        issues.append("browser surface project did not render the implementation prompt grid")
-    if has_blank_state:
-        issues.append("browser surface project rendered the blank project state after commit-only create")
-    if not has_implementation_prompts:
-        issues.append("browser surface project did not render the expected implementation prompt labels")
-    if max_prompt_overflow > 4:
-        issues.append("browser surface project implementation prompt cards overflow their containers")
-    if pane_overflow > 4:
-        issues.append("browser surface project pane overflows horizontally")
-    if rendered_story_body_count != 5:
-        issues.append("browser surface project did not render all five Product Story bodies")
-    rows = [row for row in story_rows if isinstance(row, dict)] if isinstance(story_rows, (list, tuple)) else []
-    issues.extend(_project_story_binding_issues(rows, authored_facts=payload_authored_facts))
-    expected_rows = (
-        [row for row in payload_story_rows if isinstance(row, dict)]
-        if isinstance(payload_story_rows, (list, tuple))
-        else []
-    )
-    structured_slots = (
-        ("first_path", "product_boundary", "owned_capabilities")
-        if isinstance(authored_structure, dict) and isinstance(payload_authored_facts, dict)
-        else ()
-    )
-    if expected_rows and not story_rows_match_payload(
-        rows,
-        expected_rows,
-        structured_slots=structured_slots,
-    ):
-        issues.append("browser surface project Product Story cards drifted from the sealed payload")
-    if payload_origin == AUTHORED_PROJECTION_ORIGIN and (
-        authored_structure is not None or payload_authored_facts is not None
-    ):
-        issues.extend(
-            authored_structure_issues(
-                authored_structure,
-                payload_authored_facts,
-            )
-        )
-    if clipped_text_count:
-        issues.append("browser surface project clips visible text")
-    return tuple(issues)
-
-
-def _project_story_binding_issues(rows: list[dict[str, Any]], *, authored_facts: Any = None) -> tuple[str, ...]:
-    """Check exact rendered card bindings without interpreting prose."""
-
-    proof_label, proof_body = "Proof", None
-    if authored_facts is not None:
-        try:
-            proof_label, proof_body = expected_proof_card(authored_facts)
-        except ValueError as exc:
-            return (f"greenfield Project Product Story has invalid proof authority: {exc}",)
-    expected = {
-        "user problem": ("User Problem", "user_problem"),
-        "first path": ("First Path", "first_path"),
-        "product boundary": ("Product Boundary", "product_boundary"),
-        "proposed capabilities": ("Proposed Capabilities", "owned_capabilities"),
-        proof_label.casefold(): (proof_label, "proof"),
-    }
-    issues: list[str] = []
-    seen: set[str] = set()
-    for row in rows:
-        raw_label = str(row.get("label") or "").strip()
-        label_key = raw_label.casefold()
-        expected_row = expected.get(label_key)
-        if expected_row is None:
-            issues.append(
-                f"greenfield Project Product Story card has an unexpected semantic label: `{raw_label}`"
-            )
-            continue
-        canonical_label, expected_slot = expected_row
-        seen.add(label_key)
-        actual_slot = str(row.get("semantic_slot") or "").strip()
-        if actual_slot != expected_slot:
-            issues.append(
-                "greenfield Project Product Story card is bound to the wrong semantic slot: "
-                f"`{canonical_label}` uses `{actual_slot}` instead of `{expected_slot}`"
-            )
-        body = str(row.get("body") or "").strip()
-        if not body:
-            issues.append(f"greenfield Project Product Story `{canonical_label}` card is empty")
-        elif expected_slot == "proof" and proof_body is not None and (
-            " ".join(body.split()) != " ".join(proof_body.split())
-        ):
-            issues.append("greenfield Project Product Story proof card drifted from typed authority")
-    if rows:
-        for key, (canonical_label, _slot) in expected.items():
-            if key not in seen:
-                issues.append(f"greenfield Project Product Story is missing its `{canonical_label}` card")
-    return tuple(issues)
-
-
-def _layout_issues(root: Any, *, label: str) -> tuple[str, ...]:
-    """Check readable viewport fit without pixel snapshots or copy dictionaries."""
-
-    state = root.evaluate(
-        """(node) => {
-            const doc = node.ownerDocument;
-            const viewportWidth = doc.documentElement.clientWidth;
-            const text = String(node.innerText || "").trim();
-            const clipped = Array.from(node.querySelectorAll("h1, h2, h3, p, [role='status'], [role='alert']"))
-              .filter((item) => {
-                const style = doc.defaultView.getComputedStyle(item);
-                if (style.display === "none" || style.visibility === "hidden") return false;
-                const clipsX = style.overflowX === "hidden" || style.overflowX === "clip";
-                const clipsY = style.overflowY === "hidden" || style.overflowY === "clip";
-                const lineClamp = Number.parseInt(style.webkitLineClamp || "0", 10);
-                if (lineClamp > 0) return false;
-                return (clipsX && item.scrollWidth > item.clientWidth + 4)
-                  || (clipsY && item.scrollHeight > item.clientHeight + 4);
-              });
-            return {
-              horizontalOverflow: Math.max(0, node.scrollWidth - viewportWidth),
-              clippedTextCount: clipped.length,
-              visibleCopyLength: text.length
-            };
-        }"""
-    )
-    return _layout_assertion_issues(
-        label=label,
-        horizontal_overflow=int(state.get("horizontalOverflow", 0) if isinstance(state, dict) else 0),
-        clipped_text_count=int(state.get("clippedTextCount", 0) if isinstance(state, dict) else 0),
-        visible_copy_length=int(state.get("visibleCopyLength", 0) if isinstance(state, dict) else 0),
-    )
-
-
-def _layout_assertion_issues(
-    *, label: str, horizontal_overflow: int, clipped_text_count: int, visible_copy_length: int
-) -> tuple[str, ...]:
-    issues: list[str] = []
-    if horizontal_overflow > 4:
-        issues.append(f"browser surface {label} overflows the viewport horizontally")
-    if clipped_text_count:
-        issues.append(f"browser surface {label} clips visible status or content copy")
-    if visible_copy_length < 12:
-        issues.append(f"browser surface {label} does not expose meaningful visible copy")
     return tuple(issues)
 
 
@@ -900,6 +886,16 @@ def _atlas_generated_state_issues(
                     image_loaded=bool(image_state.get("loaded", False) if isinstance(image_state, dict) else False),
                 )
             )
+            issues.extend(
+                prove_atlas_native_reading(
+                    page=page,
+                    frame=frame,
+                    expected_diagram=expected,
+                    timeout_ms=timeout_ms,
+                    screenshot_output_dir=screenshot_output_dir,
+                    coverage_cell=coverage_cell,
+                )
+            )
             if degrade_svg:
                 issues.extend(
                     _atlas_degraded_state_assertion_issues(
@@ -1188,11 +1184,4 @@ def _is_expected_local_abort(*, url: str, error_text: str, resource_type: str) -
     return path.endswith(".v1.js") and any(marker in path for marker in detail_markers)
 
 
-__all__ = [
-    "BROWSER_REQUIRED_COVERAGE",
-    "BROWSER_REQUIRED_SURFACE_STATES",
-    "BROWSER_SURFACE_EXPECTATIONS",
-    "BROWSER_SURFACE_PROOF_SCOPE",
-    "BROWSER_VIEWPORTS",
-    "browser_surface_proof_issues",
-]
+__all__ = ["BROWSER_REQUIRED_COVERAGE", "BROWSER_REQUIRED_SURFACE_STATES", "BROWSER_SURFACE_EXPECTATIONS", "BROWSER_SURFACE_PROOF_SCOPE", "BROWSER_VIEWPORTS", "browser_surface_proof_issues"]
