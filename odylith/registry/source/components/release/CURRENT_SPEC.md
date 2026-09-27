@@ -1046,6 +1046,8 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-27 · Decision:** Decision evidence linked this component to governed work with 1 verifiable artifact reference.
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`
 - **2026-09-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-failed-subset-runner-returns-a-function-instead-of-proposal-execution.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
@@ -1061,9 +1063,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
-- **2026-09-26 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `tests/unit/install/test_greenfield_matrix_leakage_contract.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
