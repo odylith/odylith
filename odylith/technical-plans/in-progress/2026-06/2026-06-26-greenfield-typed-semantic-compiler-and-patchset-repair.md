@@ -1,5 +1,46 @@
 Status: In progress
 
+## V47 non-null operational-constraint custody convergence (2026-09-28)
+
+V46 is not release-qualified. Clean commit
+`858a9325c69404f81d1f0db829e18c2ffcc645a4` passed 3,324 frozen Greenfield
+unit/install tests, 67 real browser checks, governance validation, and bounded
+independent review, then failed closed on the single exact public replay. The
+reviewer denial path hash resolves to `candidate.accepted_source.components`;
+the reason remains intentionally unrecoverable hash-only evidence. No
+transaction or governed product write occurred.
+
+Keep one typed custody relation, but make every accepted operational constraint
+classify its ownership without `null`: `product_owned` carries a title or
+internal-system owner fact, `participant_only` carries a human or external actor
+fact, and `workflow_order` carries an existing precedence binding. Project only
+the product-owned variant into the existing canonical component responsibility
+relation. Do not change reviewer v15 or the canonical transaction schema, and
+do not add another author, parser, regex, repair, retry, fallback, vocabulary
+rule, or model ladder.
+
+Prove the three variants, rejected cross-kind facts, deterministic projection,
+and unchanged downstream canonical shape. Then require independent bounded
+review, build one fresh immutable distribution, and replay only the exact failed
+public case. The replay must advance beyond the accepted-components denial;
+otherwise retire this refinement instead of accumulating another patch. Run the
+unchanged 40-case public campaign only after that exact replay passes. The
+protected holdout remains untouched.
+
+Implemented as host contract v28 and host-candidate format v14. The old nullable
+wire field has no active compatibility path. Test conversion requires explicit
+custody for non-product, non-order constraints instead of guessing from an
+available event actor. The focused contract/cross-domain/install slice passes
+198 tests, and the complete frozen Greenfield runtime/install frontier passes
+3,326 tests. Reviewer v15, canonical authoring v76, and transaction truth remain
+unchanged. Ownership takes precedence over temporal form, so a product-owned
+obligation that also backs source precedence projects exactly once; only pure
+event ordering may use `workflow_order`. The installed-release smoke now pins
+contract v28, format v14, and the exact non-null title/internal-system and
+human/external selector unions. Independent review reports no P0/P1/P2 finding,
+and the frozen normal/fallback/degraded browser matrix passes 67 checks. The
+fresh immutable build and exact public replay are the next gates.
+
 ## V45/V46 typed operational-constraint ownership convergence (2026-09-28)
 
 The V44 prompt-only dual-custody instruction is falsified for release use. Its

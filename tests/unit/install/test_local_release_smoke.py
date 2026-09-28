@@ -230,8 +230,11 @@ def test_run_reports_timeout_with_command_and_cwd(monkeypatch, tmp_path: Path) -
         "nonzero",
         "invalid_json",
         "wrong_version",
+        "wrong_candidate_version",
         "missing_evidence",
         "bad_schema",
+        "bad_custody_schema",
+        "nullable_owner_fact",
         "attempt",
         "subprocess",
         "missing_audit",
@@ -272,9 +275,57 @@ def test_greenfield_install_smoke_requires_read_only_candidate_contract(
         assert kwargs["env"]["ODYLITH_REASONING_MODE"] == "disabled"
         assert kwargs["env"]["audit"] == "enabled" and kwargs["pass_fds"] == (42,)
         time.sleep(0.002)
+        def fact_selector(*fields: str) -> dict[str, object]:
+            return {
+                "anyOf": [
+                    {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "required": ["field", "row"],
+                        "properties": {
+                            "field": {"type": "string", "const": field},
+                            "row": (
+                                {"type": "integer", "const": 1}
+                                if field == "title"
+                                else {"type": "integer", "minimum": 1}
+                            ),
+                        },
+                    }
+                    for field in fields
+                ],
+            }
+
+        custody_branches = [
+            {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["kind", "owner_fact"],
+                "properties": {
+                    "kind": {"type": "string", "const": "product_owned"},
+                    "owner_fact": fact_selector("title", "internal_systems"),
+                },
+            },
+            {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["kind", "actor_fact"],
+                "properties": {
+                    "kind": {"type": "string", "const": "participant_only"},
+                    "actor_fact": fact_selector("human_actors", "external_systems"),
+                },
+            },
+            {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["kind"],
+                "properties": {
+                    "kind": {"type": "string", "const": "workflow_order"},
+                },
+            },
+        ]
         payload = {
-            "version": "odylith.greenfield.host-candidate-contract.v27",
-            "candidate_version": "odylith.greenfield.host-candidate.v24",
+            "version": "odylith.greenfield.host-candidate-contract.v28",
+            "candidate_version": "odylith.greenfield.host-candidate-format.v14",
             "canonical_version": "odylith.greenfield.canonical-meaning.v1",
             "request": {
                 "version": "odylith.greenfield.intent-authoring.v76",
@@ -285,14 +336,45 @@ def test_greenfield_install_smoke_requires_read_only_candidate_contract(
             "candidate_schema": {
                 "type": "object",
                 "required": ["version", "result"],
+                "properties": {
+                    "version": {"enum": ["odylith.greenfield.host-candidate-format.v14"]},
+                    "result": {
+                        "anyOf": [{
+                            "properties": {
+                                "facts": {
+                                    "properties": {
+                                        "operational_constraints": {
+                                            "items": {
+                                                "required": [
+                                                    "quote", "context", "constraint_custody",
+                                                ],
+                                                "properties": {
+                                                    "constraint_custody": {
+                                                        "anyOf": custody_branches,
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        }],
+                    },
+                },
             },
         }
         if defect == "wrong_version":
             payload["version"] = "legacy-contract"
+        elif defect == "wrong_candidate_version":
+            payload["candidate_version"] = "odylith.greenfield.host-candidate-format.v13"
         elif defect == "missing_evidence":
             payload["request"]["evidence"] = "different evidence"
         elif defect == "bad_schema":
             payload["candidate_schema"] = {"type": "object", "required": ["version"]}
+        elif defect == "bad_custody_schema":
+            custody_branches.pop()
+        elif defect == "nullable_owner_fact":
+            custody_branches[0]["properties"]["owner_fact"] = {"type": "null"}
         stdout = "not-json" if defect == "invalid_json" else json.dumps(payload)
         return SimpleNamespace(
             returncode=2 if defect == "nonzero" else 0,

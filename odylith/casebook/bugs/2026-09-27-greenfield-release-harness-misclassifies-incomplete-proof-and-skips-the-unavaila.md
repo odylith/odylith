@@ -1,5 +1,58 @@
 - Bug ID: CB-347
 
+## V46 live falsification and V47 bounded custody decision (2026-09-28)
+
+The clean immutable V46 checkpoint `858a9325c69404f81d1f0db829e18c2ffcc645a4`
+passed the complete frozen Greenfield unit/install frontier (`3324 passed`), the
+real browser matrix (`67 passed`), governance validation, and independent
+bounded review. Its one permitted replay of public case
+`release-accessibility-005-source` nevertheless failed closed after a successful
+single Astra-medium host author call. Installed proposal returned code 2, the
+independent reviewer denied the candidate, and no transaction or governed write
+occurred.
+
+The retained reviewer path hash maps exactly to
+`candidate.accepted_source.components`. The reason is model-authored free text
+and was retained only as a hash; it cannot be recovered from repository truth,
+so this record does not invent a missing clause or claim that the deterministic
+projection failed. The live evidence proves only that nullable
+`product_owner_fact` did not eliminate the accepted-component custody failure
+class.
+
+Retain typed constraint custody, but remove the nullable escape hatch. Replace
+it with one required discriminated `constraint_custody` value: `product_owned`
+with a title/internal-system owner, `participant_only` with an accepted human or
+external actor, or `workflow_order` with an existing precedence binding. Only
+`product_owned` projects into the existing canonical component-responsibility
+relation. The other variants remain globally accepted constraints and do not
+create component ownership. This is one relation refinement, not a parser,
+regex rule, repair, retry, fallback, model ladder, reviewer weakening, or second
+canonical interpretation.
+
+Falsifiable release prediction: the exact public case must classify the
+certification and draft-privacy constraints as product-owned by the title, the
+reviewer-only disposition restriction as participant-only, and must advance
+past the accepted-components denial. If the same path recurs, this mechanism is
+falsified and must be removed or replaced rather than patched with more prompt
+text. Do not rerun the case until the refined contract passes focused proof and
+independent review on a new immutable checkpoint.
+
+Implementation uses host contract v28 and host-candidate format v14. The old
+wire field and nullable branch are removed rather than accepted through a
+compatibility path. Test fixtures must now declare otherwise-unowned custody
+explicitly; they no longer select the first available actor. Focused contract,
+reviewer, cross-domain, parser-retirement, integration, and local-release proof
+passes 198 tests. The complete frozen Greenfield runtime/install frontier passes
+3,326 tests. Reviewer v15, canonical authoring v76, the transaction schema, and
+post-confirm execution remain unchanged. Ownership now explicitly takes
+precedence over temporal form: a product-owned obligation remains product-owned
+when it also backs source precedence, while `workflow_order` is limited to pure
+event ordering. Installed-release smoke pins contract v28, format v14, and the
+exact non-null nested custody selectors. Independent read-only review reports no
+P0/P1/P2 finding, and the frozen browser matrix passes 67 checks across normal,
+fallback, and degraded states. Immutable-build replay is still pending, so the
+bug remains open.
+
 ## V45/V46 typed operational-constraint ownership correction (2026-09-28)
 
 The V44 prompt-only dual-custody correction did not qualify. An exact immutable

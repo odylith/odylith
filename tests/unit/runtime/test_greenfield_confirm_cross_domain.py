@@ -16,6 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
     authored_response,
+    title_owned_constraint_custodies,
     write_host_candidate_fixture,
 )
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
@@ -379,6 +380,7 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
         tmp_path.parent / f"{tmp_path.name}-host-candidate.json",
         response,
         evidence_text=staged_evidence,
+        constraint_custodies=title_owned_constraint_custodies(response),
     )
     reviewer = AdmittingReviewProvider()
     monkeypatch.setattr(
@@ -448,7 +450,10 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
     accepted_intent = accepted["proposal"]["intent"]
     assert accepted_intent["first_path"] == intent["first_path"]
     assert accepted_intent["human_actors"] == intent["human_actors"]
-    assert accepted_intent["component_responsibilities"] == intent["component_responsibilities"]
+    assert accepted_intent["component_responsibilities"] == [
+        *intent["component_responsibilities"],
+        *intent["operational_constraints"],
+    ]
     design = accepted_intent["authored_semantics"]["provisional_design"]
     assert len(list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))) >= 2
     assert len(registry["components"]) == len(design["components"])

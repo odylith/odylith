@@ -174,7 +174,10 @@ def admitted_review_response(
 
 
 def host_candidate_response(
-    response: Mapping[str, Any], *, evidence_text: str,
+    response: Mapping[str, Any],
+    *,
+    evidence_text: str,
+    constraint_custodies: Mapping[int, Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Project a canonical test response into the public host-candidate shape."""
 
@@ -205,14 +208,18 @@ def host_candidate_response(
                 for row in value
             ]
             if field == "operational_constraints":
-                for citation, raw in zip(citations, value, strict=True):
+                for constraint_index, (citation, raw) in enumerate(
+                    zip(citations, value, strict=True), start=1
+                ):
                     owner_quote = constraint_owners.get(
                         json.dumps(raw, sort_keys=True), ""
                     )
-                    citation["product_owner_fact"] = (
-                        _fixture_owner_fact(source_facts, owner_quote)
-                        if owner_quote
-                        else None
+                    citation["constraint_custody"] = _fixture_constraint_custody(
+                        source_facts,
+                        source_precedence=result.get("source_precedence"),
+                        constraint_index=constraint_index,
+                        owner_quote=owner_quote,
+                        explicit=(constraint_custodies or {}).get(constraint_index),
                     )
             facts[field] = citations
         elif isinstance(value, Mapping):
@@ -235,7 +242,7 @@ def host_candidate_response(
     }
     operational_constraints = {
         json.dumps(
-            {key: value for key, value in row.items() if key != "product_owner_fact"},
+            {key: value for key, value in row.items() if key != "constraint_custody"},
             sort_keys=True,
         )
         for row in facts.get("operational_constraints", [])
@@ -277,6 +284,27 @@ def host_candidate_response(
     return candidate
 
 
+def title_owned_constraint_custodies(
+    response: Mapping[str, Any],
+) -> dict[int, dict[str, Any]]:
+    """Declare every canonical fixture constraint as product-owned by its title."""
+
+    result = response.get("result")
+    facts = result.get("facts") if isinstance(result, Mapping) else None
+    constraints = facts.get("operational_constraints") if isinstance(facts, Mapping) else None
+    if not isinstance(constraints, Sequence) or isinstance(
+        constraints, (str, bytes, bytearray)
+    ):
+        raise TypeError("canonical fixture operational constraints are invalid")
+    return {
+        index: {
+            "kind": "product_owned",
+            "owner_fact": {"field": "title", "row": 1},
+        }
+        for index in range(1, len(constraints) + 1)
+    }
+
+
 def _fixture_owner_fact(
     facts: Mapping[str, Any], owner_quote: str,
 ) -> dict[str, object]:
@@ -291,16 +319,50 @@ def _fixture_owner_fact(
     raise ValueError(f"canonical fixture has no product owner fact for {owner_quote!r}")
 
 
+def _fixture_constraint_custody(
+    facts: Mapping[str, Any],
+    *,
+    source_precedence: Any,
+    constraint_index: int,
+    owner_quote: str,
+    explicit: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    if owner_quote:
+        return {
+            "kind": "product_owned",
+            "owner_fact": _fixture_owner_fact(facts, owner_quote),
+        }
+    if isinstance(source_precedence, Sequence) and not isinstance(
+        source_precedence, (str, bytes, bytearray)
+    ) and any(
+        isinstance(row, Mapping) and row.get("constraint_index") == constraint_index
+        for row in source_precedence
+    ):
+        return {"kind": "workflow_order"}
+    if explicit is not None:
+        return copy.deepcopy(dict(explicit))
+    raise ValueError(
+        "canonical fixture requires explicit custody for an unowned non-order constraint"
+    )
+
+
 def write_host_candidate_fixture(
     path: Path,
     response: Mapping[str, Any],
     *,
     evidence_text: str,
+    constraint_custodies: Mapping[int, Mapping[str, Any]] | None = None,
 ) -> Path:
     """Write one public host candidate fixture and return its path."""
 
     path.write_text(
-        json.dumps(host_candidate_response(response, evidence_text=evidence_text)),
+        json.dumps(
+            host_candidate_response(
+                response,
+                evidence_text=evidence_text,
+                constraint_custodies=constraint_custodies,
+            )
+        ),
         encoding="utf-8",
     )
     return path

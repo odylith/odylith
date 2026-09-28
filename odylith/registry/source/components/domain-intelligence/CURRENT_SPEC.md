@@ -4,6 +4,45 @@ Last updated: 2026-09-28
 
 ## Overview
 
+### V47 discriminated operational-constraint custody (2026-09-28)
+
+The V46 nullable owner fact did not qualify on live public evidence. Clean
+commit `858a9325c69404f81d1f0db829e18c2ffcc645a4` passed 3,324 frozen
+Greenfield unit/install tests and 67 browser checks, but its one exact public
+replay was denied at `candidate.accepted_source.components`. The free-text
+reason was retained only as a hash, so component-custody failure is the proven
+boundary and any more specific explanation remains an inference.
+
+Domain Intelligence therefore keeps the typed relation while replacing null
+with one closed custody classification per operational constraint:
+`product_owned` binds a title or internal-system owner fact,
+`participant_only` binds an accepted human or external actor fact, and
+`workflow_order` binds an existing source-precedence relation. Only the
+product-owned variant projects into the existing canonical component
+responsibility relation. Participant and order constraints remain accepted
+globally without inventing product ownership. Reviewer v15 and the canonical
+transaction schema remain unchanged.
+
+This refinement must eliminate the accepted-components denial on the exact
+public case after focused and independent proof. Recurrence at the same path
+falsifies the mechanism. No parser, regex, heuristic inference, repair, retry,
+fallback, additional author, reviewer exception, or parallel canonical
+relation is permitted.
+
+Host contract v28 and host-candidate format v14 implement the closed relation.
+The old nullable wire field is removed with no compatibility parser. Test
+fixtures explicitly declare otherwise-unowned custody rather than inferring it
+from the first actor. Focused contract, reviewer, cross-domain, integration,
+parser-retirement, and local-release proof passes 198 tests; the complete frozen
+Greenfield runtime/install frontier passes 3,326 tests. Reviewer v15, canonical
+authoring v76, and transaction projection remain unchanged. Ownership takes
+precedence over temporal form: product-owned obligations still project exactly
+once when they back source precedence, and `workflow_order` is reserved for pure
+event ordering. Installed-release smoke pins v28/v14 and the exact non-null
+nested owner and participant selectors. Independent review reports no P0/P1/P2
+finding, and the frozen browser matrix passes 67 normal/fallback/degraded checks.
+The immutable public replay remains the next release gate.
+
 ### V45/V46 typed operational-constraint owner custody (2026-09-28)
 
 Domain Intelligence receives product-bound operational constraints through a
@@ -1616,6 +1655,9 @@ semantic/design findings.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-28 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
 - **2026-09-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_candidate_review.py`, `src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py`
@@ -1631,9 +1673,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-26 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_candidate_review.py`
-- **2026-09-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_candidate_review.py`, `src/odylith/runtime/domain_intelligence/greenfield_model_intent_authoring.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

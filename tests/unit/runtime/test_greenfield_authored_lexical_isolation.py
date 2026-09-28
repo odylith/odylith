@@ -20,6 +20,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
     authored_response,
+    title_owned_constraint_custodies,
     write_host_candidate_fixture,
 )
 from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
@@ -116,6 +117,7 @@ def _public_propose(
         tmp_path.parent / f"{tmp_path.name}-host-candidate.json",
         canonical,
         evidence_text=staged_evidence,
+        constraint_custodies=title_owned_constraint_custodies(canonical),
     )
     reviewer = AdmittingReviewProvider()
     assert staged_evidence

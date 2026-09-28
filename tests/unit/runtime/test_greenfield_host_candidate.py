@@ -45,9 +45,6 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization
 from odylith.runtime.domain_intelligence.greenfield_model_outcomes import (
     GreenfieldModelAuthoringError,
 )
-from odylith.runtime.domain_intelligence.greenfield_model_source_citations import (
-    resolve_source_citation,
-)
 from odylith.runtime.domain_intelligence.greenfield_model_receipt_approval import (
     greenfield_model_authoring_receipt_approved,
 )
@@ -65,123 +62,16 @@ from tests.unit.runtime.test_greenfield_model_path_custody import _response, _so
 
 
 def _host_response(evidence: str) -> dict[str, object]:
-    response = deepcopy(_response(evidence))
-    result = response["result"]
-    facts = result["facts"]
-    source_facts = deepcopy(facts)
-    constraint_owners = {
-        json.dumps(responsibility, sort_keys=True): component["owner_fact_quote"]
-        for component in result["components"]
-        for responsibility in component["responsibilities"]
-    }
-    for field, value in tuple(facts.items()):
-        if isinstance(value, list):
-            citations = [
-                _context_citation(evidence, citation)
-                for citation in value
-            ]
-            if field == "operational_constraints":
-                for citation, raw in zip(citations, value, strict=True):
-                    owner_quote = constraint_owners.get(
-                        json.dumps(raw, sort_keys=True), ""
-                    )
-                    citation["product_owner_fact"] = (
-                        _owner_fact(source_facts, owner_quote)
-                        if owner_quote
-                        else None
-                    )
-            facts[field] = citations
-        elif isinstance(value, dict):
-            facts[field] = _context_citation(
-                evidence,
-                value,
-                state_object=field == "state_object",
-            )
-    for component in result["components"]:
-        owner_quote = component.pop("owner_fact_quote")
-        title_quote = facts["title"]["quote"]
-        if owner_quote == title_quote:
-            component["owner_fact"] = {"field": "title", "row": 1}
-        else:
-            component["owner_fact"] = {
-                "field": "internal_systems",
-                "row": next(
-                    index
-                    for index, citation in enumerate(facts["internal_systems"], start=1)
-                    if citation["quote"] == owner_quote
-                ),
+    return host_candidate_response(
+        _response(evidence),
+        evidence_text=evidence,
+        constraint_custodies={
+            1: {
+                "kind": "product_owned",
+                "owner_fact": {"field": "title", "row": 1},
             }
-        component["additional_responsibilities"] = [
-            _context_citation(evidence, citation)
-            for citation in component["responsibilities"]
-        ]
-        component.pop("responsibilities")
-    path_citations = facts.pop("first_path")
-    for event, citation in zip(result["events"], path_citations, strict=True):
-        event["source_citation"] = citation
-        event["responsibility_citation"] = (
-            deepcopy(citation)
-            if event["actor_fact"]["field"] in {"title", "internal_systems"}
-            else None
-        )
-    event_responsibilities = [
-        event["responsibility_citation"]
-        for event in result["events"]
-        if event["responsibility_citation"] is not None
-    ]
-    operational_constraints = {
-        json.dumps(
-            {key: value for key, value in citation.items() if key != "product_owner_fact"},
-            sort_keys=True,
-        )
-        for citation in facts["operational_constraints"]
-    }
-    for component in result["components"]:
-        component["additional_responsibilities"] = [
-            responsibility
-            for responsibility in component["additional_responsibilities"]
-            if responsibility not in event_responsibilities
-            and json.dumps(responsibility, sort_keys=True) not in operational_constraints
-        ]
-    response["version"] = HOST_CANDIDATE_FORMAT_VERSION
-    return response
-
-
-def _owner_fact(facts: dict[str, object], owner_quote: str) -> dict[str, object]:
-    title = facts.get("title")
-    if isinstance(title, dict) and title.get("quote") == owner_quote:
-        return {"field": "title", "row": 1}
-    systems = facts.get("internal_systems")
-    if isinstance(systems, list):
-        for index, system in enumerate(systems, start=1):
-            if isinstance(system, dict) and system.get("quote") == owner_quote:
-                return {"field": "internal_systems", "row": index}
-    raise AssertionError(f"fixture has no product owner fact for {owner_quote!r}")
-
-
-def _context_citation(
-    evidence: str,
-    citation: dict[str, object],
-    *,
-    state_object: bool = False,
-) -> dict[str, str]:
-    evidence_bytes = evidence.encode("utf-8")
-    quote, start = resolve_source_citation(
-        evidence_bytes,
-        citation,
-        state_object=state_object,
+        },
     )
-    start_character = len(evidence_bytes[:start].decode("utf-8"))
-    end_character = start_character + len(quote)
-    for added in range(len(evidence) + 1):
-        for before in range(added + 1):
-            after = added - before
-            left = max(0, start_character - before)
-            right = min(len(evidence), end_character + after)
-            context = evidence[left:right]
-            if evidence.count(context) == 1 and context.count(quote) == 1:
-                return {"quote": quote, "context": context}
-    raise AssertionError("fixture could not derive unique citation context")
 
 
 def _host_clarification(response: dict[str, object]) -> dict[str, object]:
@@ -496,8 +386,8 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
     assert rc == 0
     assert payload["version"] == HOST_CANDIDATE_CONTRACT_VERSION
     assert payload["candidate_version"] == HOST_CANDIDATE_FORMAT_VERSION
-    assert payload["version"] == "odylith.greenfield.host-candidate-contract.v27"
-    assert payload["candidate_version"] == "odylith.greenfield.host-candidate-format.v13"
+    assert payload["version"] == "odylith.greenfield.host-candidate-contract.v28"
+    assert payload["candidate_version"] == "odylith.greenfield.host-candidate-format.v14"
     assert any(
         "exact scope_paths" in requirement
         and "Odylith derives" in requirement
@@ -535,12 +425,13 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
         for requirement in payload["requirements"]
     )
     assert any(
-        "Classify each accepted operational or safety constraint once" in requirement
-        and "product_owner_fact" in requirement
+        "one closed constraint_custody relation" in requirement
+        and "product_owned" in requirement
+        and "participant_only" in requirement
+        and "workflow_order" in requirement
         and "exact quoted clause explicitly binds" in requirement
-        and "use title" in requirement
         and "must be omitted from accepted facts entirely" in requirement
-        and "deterministically projects non-null custody" in requirement
+        and "projects only product_owned custody" in requirement
         and "never repeat an operational constraint" in requirement
         for requirement in payload["requirements"]
     )
@@ -549,7 +440,7 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
     ]["components"]
     assert "declared once on facts.operational_constraints" in components["description"]
     assert "projected here deterministically" in components["description"]
-    assert "product_owner_fact is non-null" in components["description"]
+    assert "only for product_owned custody" in components["description"]
     assert payload["candidate_schema"]["additionalProperties"] is False
     authored = payload["candidate_schema"]["properties"]["result"]["anyOf"][0]
     risk_item = authored["properties"]["provisional_design"]["properties"][
@@ -645,12 +536,16 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
     constraint_item = authored["properties"]["facts"]["properties"][
         "operational_constraints"
     ]["items"]
-    assert "product_owner_fact" in constraint_item["required"]
-    assert {"type": "null"} in constraint_item["properties"][
-        "product_owner_fact"
-    ]["anyOf"]
+    assert "constraint_custody" in constraint_item["required"]
+    custody = constraint_item["properties"]["constraint_custody"]
+    assert [branch["properties"]["kind"]["const"] for branch in custody["anyOf"]] == [
+        "product_owned", "participant_only", "workflow_order",
+    ]
+    assert [set(branch["properties"]) for branch in custody["anyOf"]] == [
+        {"kind", "owner_fact"}, {"kind", "actor_fact"}, {"kind"},
+    ]
     assert "must be omitted entirely" in constraint_item["properties"][
-        "product_owner_fact"
+        "constraint_custody"
     ]["description"]
     assert any(
         "Use exactly one proof authority" in requirement
@@ -726,23 +621,51 @@ def test_public_authoring_rejects_missing_candidate_before_provider_dispatch(
 
 
 def test_host_candidate_preserves_canonical_source_precedence() -> None:
-    evidence = combined_prompt_evidence_source(prompt=_source(), edit_evidence="")
-    response = _host_response(evidence)
+    old_source = _source()
+    old_constraint = "Retain source notes for seven years"
+    ordering_constraint = "The vessel-tag entry must precede berth-occupancy recording"
+    source = old_source.replace(old_constraint, ordering_constraint)
+    evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
+    response = deepcopy(_response(old_source))
+    response["result"]["facts"]["operational_constraints"][0] = {
+        "quote": ordering_constraint,
+        "occurrence": 1,
+    }
+    response["result"]["source_precedence"] = [
+        {"before_event": 1, "after_event": 2, "constraint_index": 1}
+    ]
+    response = host_candidate_response(response, evidence_text=evidence)
     expected = deepcopy(response["result"]["source_precedence"])
 
     canonical = canonical_greenfield_host_candidate(response, evidence_text=evidence)
 
+    assert response["result"]["facts"]["operational_constraints"][0][
+        "constraint_custody"
+    ] == {"kind": "workflow_order"}
     assert canonical["result"]["source_precedence"] == expected
+    assert all(
+        ordering_constraint not in [row["quote"] for row in component["responsibilities"]]
+        for component in canonical["result"]["components"]
+    )
 
 
 def test_host_candidate_preserves_duplicate_precedence_for_validator_rejection() -> None:
-    evidence = combined_prompt_evidence_source(prompt=_source(), edit_evidence="")
-    response = _host_response(evidence)
+    old_source = _source()
+    old_constraint = "Retain source notes for seven years"
+    ordering_constraint = "The vessel-tag entry must precede berth-occupancy recording"
+    source = old_source.replace(old_constraint, ordering_constraint)
+    evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
+    response = deepcopy(_response(old_source))
+    response["result"]["facts"]["operational_constraints"][0] = {
+        "quote": ordering_constraint,
+        "occurrence": 1,
+    }
     binding = {"before_event": 1, "after_event": 2, "constraint_index": 1}
     response["result"]["source_precedence"] = [
         binding,
         deepcopy(binding),
     ]
+    response = host_candidate_response(response, evidence_text=evidence)
 
     canonical = canonical_greenfield_host_candidate(response, evidence_text=evidence)
 
@@ -793,6 +716,7 @@ def test_host_candidate_preserves_same_owner_events_on_one_exact_source_fact(
         "Record berth occupancy",
         "the product records berth occupancy",
         "the berth map shows the placement",
+        "Retain source notes for seven years",
     ]
 
 
@@ -948,24 +872,36 @@ def test_host_candidate_rejects_unbound_typed_component_owner(
 
 
 @pytest.mark.parametrize(
-    "owner_fact",
+    ("custody", "error"),
     (
-        {"field": "title", "row": 2},
-        {"field": "human_actors", "row": 1},
-        {"field": "external_systems", "row": 1},
-        {"field": "internal_systems", "row": 99},
+        (None, "constraint custody is invalid"),
+        ({"kind": "unknown"}, "constraint custody is invalid"),
+        (
+            {"kind": "product_owned", "owner_fact": {"field": "human_actors", "row": 1}},
+            "unbound product owner",
+        ),
+        (
+            {"kind": "participant_only", "actor_fact": {"field": "title", "row": 1}},
+            "unbound participant actor",
+        ),
+        (
+            {"kind": "participant_only", "owner_fact": {"field": "title", "row": 1}},
+            "unbound participant actor",
+        ),
+        ({"kind": "workflow_order"}, "no existing source precedence edge"),
     ),
 )
-def test_host_candidate_rejects_unbound_typed_constraint_owner(
-    owner_fact: dict[str, object],
+def test_host_candidate_rejects_null_unmatched_or_cross_kind_constraint_custody(
+    custody: object,
+    error: str,
 ) -> None:
     evidence = combined_prompt_evidence_source(prompt=_source(), edit_evidence="")
     response = _host_response(evidence)
     response["result"]["facts"]["operational_constraints"][0][
-        "product_owner_fact"
-    ] = owner_fact
+        "constraint_custody"
+    ] = custody
 
-    with pytest.raises(ValueError, match="constraint has unbound product owner"):
+    with pytest.raises(ValueError, match=error):
         canonical_greenfield_host_candidate(response, evidence_text=evidence)
 
 
@@ -1026,6 +962,9 @@ def test_host_candidate_preserves_product_constraint_in_global_and_owner_custody
     )
 
     candidate = host_candidate_response(response, evidence_text=evidence)
+    assert candidate["result"]["facts"]["operational_constraints"][0][
+        "constraint_custody"
+    ] == {"kind": "product_owned", "owner_fact": {"field": "title", "row": 1}}
     canonical = canonical_greenfield_host_candidate(candidate, evidence_text=evidence)
 
     constraints = canonical["result"]["facts"]["operational_constraints"]
@@ -1066,11 +1005,14 @@ def test_host_candidate_projects_constraint_that_contains_a_human_event_conditio
             "responsibilities": [{"quote": privacy_constraint, "occurrence": 1}],
         }
     )
+    response["result"]["source_precedence"] = [
+        {"before_event": 1, "after_event": 2, "constraint_index": 1}
+    ]
 
     candidate = host_candidate_response(response, evidence_text=evidence)
     assert candidate["result"]["facts"]["operational_constraints"][0][
-        "product_owner_fact"
-    ] == {"field": "title", "row": 1}
+        "constraint_custody"
+    ] == {"kind": "product_owned", "owner_fact": {"field": "title", "row": 1}}
     canonical = canonical_greenfield_host_candidate(candidate, evidence_text=evidence)
     authored, _receipt = admit_greenfield_host_candidate(
         candidate,
@@ -1085,23 +1027,26 @@ def test_host_candidate_projects_constraint_that_contains_a_human_event_conditio
     )
     assert relation["owner_system_path"] == "/title"
     assert relation["first_path_event_order"] == 1
-    assert any(
+    assert sum(
         row["quote"] == privacy_constraint
         for component in canonical["result"]["components"]
         for row in component["responsibilities"]
-    )
+    ) == 1
+    assert canonical["result"]["source_precedence"] == [
+        {"before_event": 1, "after_event": 2, "constraint_index": 1}
+    ]
 
 
 def test_host_candidate_rejects_duplicate_operational_constraint_custody() -> None:
     evidence = combined_prompt_evidence_source(prompt=_source(), edit_evidence="")
     response = _host_response(evidence)
     constraint = deepcopy(response["result"]["facts"]["operational_constraints"][0])
-    constraint.pop("product_owner_fact")
+    constraint.pop("constraint_custody")
     response["result"]["components"][0]["additional_responsibilities"].append(
         constraint
     )
 
-    with pytest.raises(ValueError, match="must use product_owner_fact"):
+    with pytest.raises(ValueError, match="must use constraint_custody"):
         canonical_greenfield_host_candidate(response, evidence_text=evidence)
 
 
@@ -1118,7 +1063,26 @@ def test_host_candidate_keeps_human_restriction_and_authoring_control_out_of_com
         {"quote": human_restriction, "occurrence": 1}
     )
 
-    candidate = host_candidate_response(response, evidence_text=evidence)
+    candidate = host_candidate_response(
+        response,
+        evidence_text=evidence,
+        constraint_custodies={
+            1: {
+                "kind": "product_owned",
+                "owner_fact": {"field": "title", "row": 1},
+            },
+            2: {
+                "kind": "participant_only",
+                "actor_fact": {"field": "human_actors", "row": 1},
+            },
+        },
+    )
+    assert candidate["result"]["facts"]["operational_constraints"][-1][
+        "constraint_custody"
+    ] == {
+        "kind": "participant_only",
+        "actor_fact": {"field": "human_actors", "row": 1},
+    }
     canonical = canonical_greenfield_host_candidate(candidate, evidence_text=evidence)
 
     constraints = canonical["result"]["facts"]["operational_constraints"]
