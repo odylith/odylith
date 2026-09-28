@@ -50,8 +50,19 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v1"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v25"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v26"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
+PRODUCT_BOUND_CONSTRAINT_CUSTODY_CONTRACT = (
+    "A source-stated operational or safety constraint whose source context governs the "
+    "requested product or a named product-owned internal system has two accepted roles: "
+    "preserve its exact clause as a global operational constraint and under that selected "
+    "product owner's accepted component responsibilities. This dual custody does not apply "
+    "to a restriction stated only for a human or external actor, or to a source-custody "
+    "control governing evidence, a fixture, a candidate, or the authoring transaction. "
+    "Never infer product ownership from provisional design. Do not repeat an exact typed "
+    "product-event responsibility as an additional responsibility; related or separately "
+    "worded source clauses remain distinct."
+)
 
 
 def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
@@ -114,6 +125,7 @@ def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
                 "same owner is still a separate responsibility. Put every other explicit source-"
                 "stated product or component responsibility under its typed owner_fact there."
             ),
+            PRODUCT_BOUND_CONSTRAINT_CUSTODY_CONTRACT,
             "Keep accepted source facts separate from assumptions and provisional design decisions.",
             (
                 "An authored candidate must bind one source-supported participant, beneficiary, "

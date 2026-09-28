@@ -1,5 +1,47 @@
 - Bug ID: CB-347
 
+## V44 product-constraint owner-custody mismatch (2026-09-27)
+
+The first commit case in the fresh 40-case public operating-envelope campaign
+failed closed after one Astra-medium host author completed successfully. The
+candidate preserved the source clause requiring draft evidence to remain
+private in `facts.operational_constraints`, provisional component design,
+risk, acceptance, and verification. It omitted that separately worded clause
+from the title-owned accepted component responsibilities, so independent
+review correctly denied the candidate at `candidate.accepted_source.components`.
+No transaction or governed product write occurred.
+
+The failure exposes author/reviewer contract drift, not a parser or reviewer
+defect. Reviewer v15 already requires every constraint explicitly bound to the
+requested product to retain owner-bound accepted custody. Host contract v25,
+the participant-first authoring prompt, and the component schema describe
+additional responsibilities and capabilities without stating that a
+product-governing operational or safety constraint needs both global
+constraint custody and owner-bound component custody. Provisional design is
+not a substitute for either accepted role.
+
+Align those existing authoring descriptions and bump their semantic contract
+versions. Keep human-only restrictions and transaction/source-custody controls
+out of product component ownership, and continue deriving typed product-event
+responsibilities without duplicate citations. Add positive and negative
+contract controls, replay the exact failed public case on a fresh immutable
+build, then rerun the unchanged 40-case campaign only if that replay passes.
+Do not add a parser, regex, vocabulary rule, retry, repair, fallback author,
+schema field, model ladder, or reviewer exception.
+
+V44 source correction: host contract v26 and canonical authoring v76 now make
+that dual custody explicit while candidate-review v15 and its prompt remain
+byte-unchanged. The participant-first contract separately preserves one
+canonical responsibility citation across component and event relations, while
+the host shape continues to derive exact event responsibilities and excludes
+them from `additional_responsibilities`. Positive and negative projection
+controls prove product-constraint dual custody, human-only exclusion,
+authoring-control exclusion, and exact event deduplication. Focused proof passes
+179 tests, the complete Greenfield runtime frontier passes 2,017 tests, the
+Greenfield install frontier passes 1,298 tests, and independent bounded review
+reports no P0/P1/P2. Live closure still requires a fresh immutable-build replay
+of the exact failed public case.
+
 ## V43 maintained matrix invocation recurrence (2026-09-27)
 
 Final release-path inspection found that `run_matrix()` correctly rejected an

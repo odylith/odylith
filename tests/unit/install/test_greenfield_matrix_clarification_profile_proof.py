@@ -53,7 +53,7 @@ def _host_native_authored_profile_evidence(
         "origin": "host_native",
         "host_candidate": {
             "version": "odylith.greenfield.host-candidate.v1",
-            "contract_version": "odylith.greenfield.intent-authoring.v75",
+            "contract_version": "odylith.greenfield.intent-authoring.v76",
             "source_sha256": stage["source_sha256"],
             "candidate_sha256": stage["candidate_sha256"],
         },

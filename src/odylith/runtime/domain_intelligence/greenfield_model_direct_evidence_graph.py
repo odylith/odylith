@@ -811,7 +811,9 @@ MODEL_COMPONENT_SCHEMA: dict[str, Any] = {
                     "minItems": 1,
                     "description": (
                         "Every exact complete source clause that explicitly states the selected "
-                        "product owner's own responsibility, capability, or result. Preserve it here "
+                        "product owner's own responsibility, capability, result, or product-governing "
+                        "operational or safety constraint. Preserve a product-governing constraint "
+                        "both here and in global operational-constraint custody. Preserve it here "
                         "even when the same clause is also a typed product event; the accepted component "
                         "fact owns the responsibility while the event owns workflow order. Human-action "
                         "spans remain human-owned workflow events."
@@ -824,7 +826,10 @@ MODEL_COMPONENT_SCHEMA: dict[str, Any] = {
     "minItems": 0,
     "description": (
         "All explicitly source-stated product or component responsibilities, each cited once "
-        "and bound to its source-stated product owner. Preserve responsibilities repeated in "
+        "and bound to its source-stated product owner. Product-governing operational or safety "
+        "constraints retain both global constraint custody and owner-bound component custody; "
+        "human-only restrictions and authoring source-custody controls do not. Preserve "
+        "responsibilities repeated in "
         "typed product events; proposed design may reference but never replace accepted source "
         "custody. Return [] only when the source states no such responsibility. Never assign an "
         "output to a product merely because it ends the workflow."

@@ -158,7 +158,7 @@ def test_discovery_uses_ephemeral_case_proof_without_publishing_release_evidence
             "origin": "host_native",
             "host_candidate": {
                 "version": "odylith.greenfield.host-candidate.v1",
-                "contract_version": "odylith.greenfield.intent-authoring.v75",
+                "contract_version": "odylith.greenfield.intent-authoring.v76",
                 "source_sha256": source_sha256,
                 "candidate_sha256": candidate_sha256,
             },

@@ -38,6 +38,15 @@ def test_authoring_prompt_requires_every_transaction_material_fact() -> None:
         assert field in prompt
     assert "owner_fact_quote" in prompt
     assert "internal_systems fact or title" in prompt
+    assert "has two accepted roles" in prompt
+    assert "facts.operational_constraints" in prompt
+    assert "selected product owner's component responsibilities" in prompt
+    assert "restriction stated only for a human or external actor" in prompt
+    assert "source-custody control governing evidence" in prompt
+    assert "Never infer product ownership from provisional design" in prompt
+    assert "preserve its one citation in the owner group" in prompt
+    assert "event separately owns workflow order" in prompt
+    assert "Do not repeat that citation within the owner group" in prompt
     assert "explicitly source-stated operational exchange" in str(provider.requests[0].output_schema)
     assert "product_story is the shortest complete source span" in prompt
     assert "excluding the operator's request to create a proposal" in prompt

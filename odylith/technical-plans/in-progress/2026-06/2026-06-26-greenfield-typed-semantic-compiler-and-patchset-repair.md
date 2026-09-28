@@ -1,5 +1,38 @@
 Status: In progress
 
+## V44 product-governing constraint custody convergence (2026-09-27)
+
+The fresh public operating-envelope campaign stopped on its first commit case
+because one source-stated privacy constraint remained in global constraint
+custody and provisional design but not in the owning accepted component. The
+independent reviewer correctly refused to treat design prose as accepted
+source custody. Preserve that reviewer behavior.
+
+Make the smallest authoring-contract correction: state consistently in the
+public host contract, participant-first prompt, and existing component schema
+that a source clause explicitly assigning operational or safety behavior to
+the requested product or a named internal system must be cited both as an
+operational constraint and under that product owner. Exclude human-only
+restrictions and authoring/transaction source-custody controls; do not repeat
+an identical typed product-event responsibility. Bump the semantic contract
+versions, add positive and negative controls, and make no schema-shape change.
+
+Prove the focused author/candidate/reviewer boundary, the affected non-provider
+frontier, and a fresh immutable distribution. Replay only the exact failed
+public case first. If it passes without a new failure class, rerun the unchanged
+40-case public campaign. No parser, regex, vocabulary list, repair, retry,
+fallback author, alternate reviewer, or model ladder is permitted.
+
+Implementation proof: host contract v26 and canonical authoring v76 carry the
+new owner-custody instruction; reviewer v15 remains unchanged. Behavioral
+controls exercise actual host-to-canonical projection for product dual custody,
+human-only and authoring-control exclusion, and event-responsibility
+deduplication. Focused proof passes 179 tests, the complete Greenfield runtime
+frontier passes 2,017, the Greenfield install frontier passes 1,298, and
+independent bounded review reports no P0/P1/P2. Freeze this source checkpoint,
+then replay the exact public failure on a fresh immutable distribution before
+rerunning the complete public envelope.
+
 ## V43 maintained matrix invocation closure (2026-09-27)
 
 Keep one host-authoring command contract across every maintained matrix entry

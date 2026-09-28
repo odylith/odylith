@@ -4,6 +4,32 @@ Last updated: 2026-09-27
 
 ## Overview
 
+### V44 dual custody for product-governing constraints (2026-09-27)
+
+A source-stated operational or safety constraint has two accepted semantic
+roles when it explicitly assigns behavior to the requested product or a named
+internal system. Its global constraint citation preserves the boundary, while
+the same exact source clause also belongs to the selected product owner's
+accepted component responsibilities. Provisional design may implement or
+verify that boundary but never replaces either accepted-source role.
+
+This dual custody applies only when the source binds the product or internal
+system itself. A restriction stated only for a human actor remains human-owned;
+instructions governing evidence, fixtures, candidates, or the authoring
+transaction remain source-custody controls rather than product meaning. Typed
+product events continue to project their exact responsibility automatically,
+so an identical event citation is not repeated as an additional responsibility.
+The contract changes descriptions and versions only; it adds no parser, regex,
+schema field, repair, retry, fallback, or model stage.
+
+Host contract v26 and canonical authoring v76 implement this ownership rule;
+candidate-review v15 is unchanged. Actual projection controls prove the
+positive dual-custody case, human-only and authoring-control exclusions, and
+exact typed-event deduplication. The complete Greenfield runtime and install
+frontiers pass 2,017 and 1,298 tests respectively, and independent bounded
+review reports no P0/P1/P2. A fresh immutable replay of the exact failed public
+case remains the live qualification gate.
+
 ### V43 accepted-evidence label disambiguation (2026-09-27)
 
 `product_story` remains an exact citation from accepted user evidence. Product

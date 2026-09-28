@@ -146,7 +146,8 @@ def greenfield_host_candidate_schema() -> dict[str, Any]:
         "minItems": 0,
         "items": _context_citation_schema(),
         "description": (
-            "Every exact source-stated responsibility citation for this owner except a "
+            "Every exact source-stated responsibility, capability, result, or product-governing "
+            "operational or safety constraint citation for this owner except a "
             "citation identical to one of its typed product-event responsibility citations. Related "
             "wording, a shared target, or the same owner does not make two citations "
             "identical. Product events become accepted component responsibilities "
@@ -157,7 +158,10 @@ def greenfield_host_candidate_schema() -> dict[str, Any]:
         "Additional source-stated product or component responsibilities, grouped by "
         "their selected product owner. Typed product events establish their own "
         "exact accepted component responsibility automatically. Preserve separately "
-        "worded source responsibilities even when their meaning overlaps an event. "
+        "worded source responsibilities even when their meaning overlaps an event. A product-"
+        "governing operational or safety constraint remains in global constraint custody and "
+        "also appears here under its product owner; human-only restrictions and source-custody "
+        "controls do not. "
         "Return [] only when the source states no additional non-event responsibility."
     )
     return schema

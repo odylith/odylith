@@ -86,6 +86,14 @@ def test_authoring_schema_structurally_separates_participants_authored_and_clari
     }
     assert authored_properties["components"]["minItems"] == 0
     assert authored_properties["components"]["items"]["properties"]["responsibilities"]["minItems"] == 1
+    component_description = authored_properties["components"]["description"]
+    responsibility_description = authored_properties["components"]["items"]["properties"][
+        "responsibilities"
+    ]["description"]
+    assert "global constraint custody and owner-bound component custody" in component_description
+    assert "human-only restrictions and authoring source-custody controls do not" in component_description
+    assert "product-governing operational or safety constraint" in responsibility_description
+    assert "both here and in global operational-constraint custody" in responsibility_description
     component = authored_properties["components"]["items"]
     assert set(component["properties"]) == {"owner_fact_quote", "responsibilities"}
     assert set(component["properties"]["responsibilities"]["items"]["properties"]) == {"quote", "occurrence"}

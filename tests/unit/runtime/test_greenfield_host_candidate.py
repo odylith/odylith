@@ -58,6 +58,7 @@ from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
     StructuredAuthoringProvider,
     clarification_response,
+    host_candidate_response,
     structural_design_fixture,
 )
 from tests.unit.runtime.test_greenfield_model_path_custody import _response, _source
@@ -458,7 +459,7 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
     assert rc == 0
     assert payload["version"] == HOST_CANDIDATE_CONTRACT_VERSION
     assert payload["candidate_version"] == HOST_CANDIDATE_FORMAT_VERSION
-    assert payload["version"] == "odylith.greenfield.host-candidate-contract.v25"
+    assert payload["version"] == "odylith.greenfield.host-candidate-contract.v26"
     assert payload["candidate_version"] == "odylith.greenfield.host-candidate-format.v12"
     assert any(
         "exact scope_paths" in requirement
@@ -495,6 +496,25 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
         and "only one branch verb" in requirement
         and "truncated branch action is not admissible" in requirement
         for requirement in payload["requirements"]
+    )
+    assert any(
+        "has two accepted roles" in requirement
+        and "global operational constraint" in requirement
+        and "selected product owner's accepted component responsibilities" in requirement
+        and "restriction stated only for a human or external actor" in requirement
+        and "source-custody control governing evidence" in requirement
+        and "Never infer product ownership from provisional design" in requirement
+        and "Do not repeat an exact typed product-event responsibility" in requirement
+        for requirement in payload["requirements"]
+    )
+    components = payload["candidate_schema"]["properties"]["result"]["anyOf"][0][
+        "properties"
+    ]["components"]
+    assert "global constraint custody" in components["description"]
+    assert "also appears here under its product owner" in components["description"]
+    assert (
+        "human-only restrictions and source-custody controls do not"
+        in components["description"]
     )
     assert payload["candidate_schema"]["additionalProperties"] is False
     authored = payload["candidate_schema"]["properties"]["result"]["anyOf"][0]
@@ -913,6 +933,73 @@ def test_host_candidate_unifies_event_identity_without_promoting_human_work() ->
     ]
     assert responsibilities.count(first_path[1]) == 1
     assert first_path[0] not in responsibilities
+
+
+def test_host_candidate_preserves_product_constraint_in_global_and_owner_custody() -> None:
+    old_source = _source()
+    old_constraint = "Retain source notes for seven years"
+    product_constraint = "Harbor Desk keeps draft evidence private until publication"
+    evidence = combined_prompt_evidence_source(
+        prompt=old_source.replace(old_constraint, product_constraint),
+        edit_evidence="",
+    )
+    response = deepcopy(_response(old_source))
+    result = response["result"]
+    facts = result["facts"]
+    facts["operational_constraints"][0] = {
+        "quote": product_constraint,
+        "occurrence": 1,
+    }
+    result["components"].append(
+        {
+            "owner_fact_quote": "Harbor Desk",
+            "responsibilities": [
+                {"quote": product_constraint, "occurrence": 1}
+            ],
+        }
+    )
+
+    candidate = host_candidate_response(response, evidence_text=evidence)
+    canonical = canonical_greenfield_host_candidate(candidate, evidence_text=evidence)
+
+    constraints = canonical["result"]["facts"]["operational_constraints"]
+    assert [row["quote"] for row in constraints] == [product_constraint]
+    title_component = next(
+        row
+        for row in canonical["result"]["components"]
+        if row["owner_fact_quote"] == "Harbor Desk"
+    )
+    assert [row["quote"] for row in title_component["responsibilities"]] == [
+        product_constraint
+    ]
+
+
+def test_host_candidate_keeps_human_restriction_and_authoring_control_out_of_components() -> None:
+    source = _source()
+    human_restriction = "Dock attendant Ivo alone decides whether to publish draft evidence"
+    authoring_control = "Do not turn this authoring instruction into product meaning"
+    evidence = combined_prompt_evidence_source(
+        prompt=f"{source} {human_restriction}. {authoring_control}.",
+        edit_evidence="",
+    )
+    response = deepcopy(_response(source))
+    response["result"]["facts"]["operational_constraints"].append(
+        {"quote": human_restriction, "occurrence": 1}
+    )
+
+    candidate = host_candidate_response(response, evidence_text=evidence)
+    canonical = canonical_greenfield_host_candidate(candidate, evidence_text=evidence)
+
+    constraints = canonical["result"]["facts"]["operational_constraints"]
+    assert human_restriction in [row["quote"] for row in constraints]
+    responsibilities = [
+        citation["quote"]
+        for component in canonical["result"]["components"]
+        for citation in component["responsibilities"]
+    ]
+    assert human_restriction not in responsibilities
+    assert authoring_control not in responsibilities
+    assert authoring_control not in [row["quote"] for row in constraints]
 
 
 def test_candidate_review_requires_complete_accepted_component_custody() -> None:

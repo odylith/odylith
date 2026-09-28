@@ -213,11 +213,20 @@ constraint_index of its exact existing facts.operational_constraints citation.
 Select the whole source constraint there, including the actions and their ordering
 relationship. Reuse a constraint index when that same citation states multiple
 edges; cite each constraint once. Keep independent preparations unordered. Return []
-when no order is stated. Group each owner's exact responsibility citations under one
+when no order is stated.
+A source-stated operational or safety constraint whose source context governs the
+requested product or a named product-owned internal system has two accepted roles:
+preserve its exact clause in facts.operational_constraints and in the selected product
+owner's component responsibilities. Do not promote a restriction stated only for a human
+or external actor, or a source-custody control governing evidence, a fixture, a candidate
+or the authoring transaction. Never infer product ownership from provisional design.
+Group each owner's exact responsibility citations under one
 owner_fact_quote, which selects an internal_systems fact or title when no narrower
 system exists. A product responsibility belongs to one owner, not a human actor.
-Cite only capabilities not already represented by product_story or typed product
-events; do not duplicate those claims. Return components=[] when none remain. Never
+Cite every source-stated responsibility, capability, result, or product-governing constraint.
+When the same exact clause is a typed product event, preserve its one citation in the owner
+group as the canonical responsibility fact; the event separately owns workflow order. Do not
+repeat that citation within the owner group. Return components=[] when none remain. Never
 infer a product responsibility from a terminal result or use an empty owner group.
 The proposed design supplies implementation boundaries without creating accepted
 source capabilities.
