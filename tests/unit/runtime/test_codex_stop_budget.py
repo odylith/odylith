@@ -40,9 +40,7 @@ def _configure_stop(monkeypatch, tmp_path: Path, *, sleeps: dict[str, float], bu
         codex_host_shared, "load_payload",
         lambda: {"session_id": _SESSION_ID, "last_assistant_message": _MESSAGE},
     )
-    monkeypatch.setattr(codex_host_stop_summary, "_stop_intervention_bundle", lambda **kwargs: {})
     monkeypatch.setattr(codex_host_stop_summary.host_surface_runtime, "confirm_assistant_chat_delivery", lambda **kwargs: [])
-    monkeypatch.setattr(codex_host_stop_summary.visibility_replay, "replayable_chat_markdown", lambda **kwargs: "")
     return event_id
 
 
@@ -75,24 +73,21 @@ def test_stop_success_settles_events_and_runs_all_phases(monkeypatch, tmp_path: 
 
 def test_stop_logging_shares_remaining_budget_after_successful_sync(monkeypatch, tmp_path: Path, capsys) -> None:
     _configure_stop(monkeypatch, tmp_path, sleeps={"start": 0.1, "sync": 0.1, "compass": 30}, budget=1)
-    rendered = []
-    monkeypatch.setattr(codex_host_stop_summary, "_stop_intervention_bundle", lambda **kwargs: rendered.append(True))
     started = time.monotonic()
     assert codex_host_stop_summary.main(["--repo-root", str(tmp_path)]) == 0
     assert time.monotonic() - started < 2
     assert "deferred" in json.loads(capsys.readouterr().out)["systemMessage"]
     assert host_dirty_checkpoint.read_dirty_events(repo_root=tmp_path) == []
     assert (tmp_path / "phases.log").read_text().splitlines() == ["start", "sync", "compass"]
-    assert rendered == []
 
 
-@pytest.mark.parametrize("phase", ["load_payload", "render"])
+@pytest.mark.parametrize("phase", ["load_payload", "log"])
 def test_stop_whole_scope_interrupts_local_work(monkeypatch, tmp_path: Path, capsys, phase: str) -> None:
     _configure_stop(monkeypatch, tmp_path, sleeps={}, budget=0.4)
     if phase == "load_payload":
         monkeypatch.setattr(codex_host_shared, "load_payload", lambda: time.sleep(30))
     else:
-        monkeypatch.setattr(codex_host_stop_summary, "_stop_intervention_bundle", lambda **kwargs: time.sleep(30))
+        monkeypatch.setattr(codex_host_stop_summary, "log_codex_stop_summary", lambda *args, **kwargs: time.sleep(30))
     started = time.monotonic()
     assert codex_host_stop_summary.main(["--repo-root", str(tmp_path)]) == 0
     assert time.monotonic() - started < 1.5
