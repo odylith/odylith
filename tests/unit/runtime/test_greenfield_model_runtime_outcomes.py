@@ -13,7 +13,6 @@ from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     StructuredAuthoringProvider,
     admitted_review_response,
-    title_owned_constraint_custodies,
     write_host_candidate_fixture,
 )
 from tests.unit.runtime.test_greenfield_model_path_custody import _response, _source
@@ -63,10 +62,13 @@ def _run(tmp_path, monkeypatch, capsys, *, failure, command, output_format):
         tmp_path.parent / f"{tmp_path.name}-host-candidate.json",
         response,
         evidence_text=evidence,
-        constraint_custodies=title_owned_constraint_custodies(response),
     )
     reviewer = FailureProvider(
-        admitted_review_response(),
+        admitted_review_response(constraint_custody=[{
+            "constraint_index": 1,
+            "kind": "participant_only",
+            "actor_fact": {"field": "human_actors", "row": 1},
+        }]),
         failure,
         clock,
     )

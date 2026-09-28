@@ -119,7 +119,7 @@ def clarification_contract_issues(
     expected_model_profile_id: str = "",
     stage_observation: Mapping[str, Any] | None = None,
     reviewer_observation: Mapping[str, Any] | None = None,
-    expected_reviewer_candidate_sha256: str = "",
+    expected_review_input_candidate_sha256: str = "",
     expected_source: str = "",
 ) -> tuple[str, ...]:
     """Require exactly the small, host-neutral clarification payload and no writes."""
@@ -165,7 +165,7 @@ def clarification_contract_issues(
                 ),
                 clarification_origin=clarification_origin,
                 reviewer_observation=reviewer_observation,
-                expected_reviewer_candidate_sha256=expected_reviewer_candidate_sha256,
+                expected_review_input_candidate_sha256=expected_review_input_candidate_sha256,
             ))
         else:
             issues.extend(_clarification_identity_issues(

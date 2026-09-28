@@ -16,7 +16,6 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
     authored_response,
-    title_owned_constraint_custodies,
     write_host_candidate_fixture,
 )
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
@@ -356,7 +355,6 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
     expected_terms: tuple[str, ...],
     forbidden_terms: tuple[str, ...],
 ) -> None:
-    del name
     _seed_empty_governance_repo(tmp_path)
     activate_greenfield_baseline_fixture(tmp_path)
     source = _source(intent)
@@ -380,9 +378,21 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
         tmp_path.parent / f"{tmp_path.name}-host-candidate.json",
         response,
         evidence_text=staged_evidence,
-        constraint_custodies=title_owned_constraint_custodies(response),
     )
-    reviewer = AdmittingReviewProvider()
+    product_owned = name == "protocol-outcome"
+    reviewer = AdmittingReviewProvider(
+        constraint_custody=[
+            {
+                "constraint_index": 1,
+                "kind": "product_owned" if product_owned else "participant_only",
+                **(
+                    {"owner_fact": {"field": "title", "row": 1}}
+                    if product_owned
+                    else {"actor_fact": {"field": "human_actors", "row": 1}}
+                ),
+            }
+        ]
+    )
     monkeypatch.setattr(
         greenfield_proposals_cli,
         "_greenfield_review_provider",
@@ -452,7 +462,7 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
     assert accepted_intent["human_actors"] == intent["human_actors"]
     assert accepted_intent["component_responsibilities"] == [
         *intent["component_responsibilities"],
-        *intent["operational_constraints"],
+        *(intent["operational_constraints"] if product_owned else []),
     ]
     design = accepted_intent["authored_semantics"]["provisional_design"]
     assert len(list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))) >= 2

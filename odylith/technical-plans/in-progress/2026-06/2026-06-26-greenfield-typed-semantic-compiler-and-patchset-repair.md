@@ -1,5 +1,59 @@
 Status: In progress
 
+## V47 live falsification and bounded replacement gate (2026-09-28)
+
+Pushed commit `8c82bc52638b71d8d25695c4e2a3b353c12eede9` passed
+independent review, 3,326 frozen Greenfield tests, 67 browser checks, and
+governance commit readiness. The clean immutable replay of
+`release-accessibility-005-source` then failed closed after one Astra-medium
+author and one independent review. No transaction or governed write occurred.
+The retained path hash resolves exactly to
+`candidate.accepted_source.components[0].responsibilities`; the model-authored
+reason remains intentionally hash-only.
+
+Treat V47 as falsified rather than adding more instructions or another local
+classification rule. The replacement comparison must eliminate joint semantic
+ownership of product-constraint custody while preserving one author call, one
+independent semantic-review call, deterministic source validation, and the
+unchanged transaction laws. Reject prompt/schema accumulation and deterministic
+all-title projection up front because they repeat the failed owner or fabricate
+participant-only ownership. Require a bounded architecture review before
+implementation, delete the losing V47 wire path in the same change, and make
+the same exact public case the first falsification gate. Do not touch the
+protected holdout.
+
+Bounded architecture review selects reviewer-owned typed custody as V48. The
+host continues to author exact global constraint citations, events,
+non-constraint responsibilities, and provisional design, but no custody field.
+Reviewer v16 must classify every constraint exactly once inside the admitted
+witness. Deterministic code validates those typed facts or precedence bindings,
+projects only product-owned constraints, reruns canonical authoring validation,
+and seals only the projected candidate. The receipt binds both the unprojected
+review input and final projected candidate. Delete the V47 host schema,
+projection, fixture helpers, and reproducible-reviewer-hash helper; do not keep
+a compatibility branch. This adds no model call, retry, repair, parser, regex,
+fallback, or model ladder.
+
+V48 implementation now uses host contract v29, host-candidate format v15, and
+reviewer v16. Host-authored custody and projection are removed. The existing
+reviewer is the sole semantic owner of ordered typed custody, and deterministic
+code projects only product-owned constraints before the second canonical
+validation and every final authority hash. Both host-native and
+participant-first retained proof reconstruct the unprojected review-input hash
+and projected final-candidate hash exactly. The old candidate-revision module,
+second review, five-call receipt path, and release compatibility path are
+deleted rather than disabled.
+
+The complete frozen Greenfield frontier passes 3,336/3,336 tests; the maintained
+browser-surface matrix passes 80/80; and independent review reports PASS with no
+P0/P1/P2. Controls cover forged-but-valid final hashes, strict integer custody
+indexes, explicit source-owned fixture custody, exact-once product projection,
+participant exclusion, workflow precedence, denial/clarification fail-closed
+behavior, and the three-call maximum. Freeze this tree, refresh governance,
+build one immutable distribution, and run only the exact failed public case.
+Advance to the unchanged 40-case public campaign only if that replay passes.
+The protected holdout remains untouched.
+
 ## V47 non-null operational-constraint custody convergence (2026-09-28)
 
 V46 is not release-qualified. Clean commit

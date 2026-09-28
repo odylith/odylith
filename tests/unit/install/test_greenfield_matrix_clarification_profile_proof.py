@@ -17,6 +17,11 @@ from tests.unit.install.test_greenfield_matrix_clarification import (
     _host_native_reviewer_admission_observation,
     _host_native_reviewer_clarification_observation,
 )
+from tests.unit.install.test_greenfield_model_profiles import _review_input_candidate
+from odylith.runtime.domain_intelligence.greenfield_constraint_custody import (
+    candidate_review_sha256,
+    project_constraint_custody,
+)
 
 from greenfield_matrix_clarification import clarification_quality_verdict
 from greenfield_model_profile_proof import model_profile_release_proof
@@ -66,12 +71,17 @@ def _host_native_authored_profile_evidence(
             "authoring_tier": profile.repair_tier,
         },
     }
-    reviewer_candidate_sha256 = "9" * 64
+    review_input_candidate = _review_input_candidate()
+    review_input_candidate_sha256 = candidate_review_sha256(review_input_candidate)
+    final_candidate_sha256 = candidate_review_sha256(
+        project_constraint_custody(review_input_candidate, custody=[])
+    )
     reviewer = _host_native_reviewer_admission_observation(
         source,
         profile_id=profile_id,
         host_candidate_sha256=str(stage["candidate_sha256"]),
-        reviewer_candidate_sha256=reviewer_candidate_sha256,
+        review_input_candidate_sha256=review_input_candidate_sha256,
+        final_candidate_sha256=final_candidate_sha256,
     )
     return model_profile_evidence(
         profile_id,
@@ -79,7 +89,8 @@ def _host_native_authored_profile_evidence(
         observed=observed,
         stage_observation=stage,
         reviewer_observation=reviewer,
-        expected_reviewer_candidate_sha256=reviewer_candidate_sha256,
+        review_input_candidate=review_input_candidate,
+        expected_review_input_candidate_sha256=review_input_candidate_sha256,
         expected_source=source,
     )
 
@@ -159,7 +170,9 @@ def test_reviewer_selected_clarification_stays_host_native_without_reclassifying
         observed={},
         stage_observation=stage,
         reviewer_observation=reviewer,
-        expected_reviewer_candidate_sha256=str(review["candidate_sha256"]),
+        expected_review_input_candidate_sha256=str(
+            review["review_input_candidate_sha256"]
+        ),
         expected_source=source,
     )
 

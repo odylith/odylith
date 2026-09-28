@@ -18,13 +18,24 @@ def test_authoring_prompt_requires_every_transaction_material_fact() -> None:
     provider = RemainingCandidateProvider(_response(source))
     participant_provider = provider.participant_provider()
 
-    author_greenfield_intent(
-        review_provider_factory=AdmittingReviewProvider,
+    authored = author_greenfield_intent(
+        review_provider_factory=lambda: AdmittingReviewProvider(
+            constraint_custody=[
+                {
+                    "constraint_index": 1,
+                    "kind": "product_owned",
+                    "owner_fact": {"field": "title", "row": 1},
+                },
+            ],
+        ),
         evidence_text=source,
         provider=provider,
         participant_provider_factory=lambda: participant_provider,
         clock=lambda: 0.0,
     )
+    assert authored.intent["component_responsibilities"].count(
+        "Retain source notes for seven years"
+    ) == 1
     assert participant_provider.requests[0].schema_name == "greenfield_participant_selection"
     prompt = " ".join(str(getattr(provider.requests[0], "system_prompt", "")).split())
 
@@ -38,12 +49,11 @@ def test_authoring_prompt_requires_every_transaction_material_fact() -> None:
         assert field in prompt
     assert "owner_fact_quote" in prompt
     assert "internal_systems fact or title" in prompt
-    assert "has two accepted roles" in prompt
     assert "facts.operational_constraints" in prompt
-    assert "selected product owner's component responsibilities" in prompt
-    assert "restriction stated only for a human or external actor" in prompt
-    assert "source-custody control governing evidence" in prompt
-    assert "Never infer product ownership from provisional design" in prompt
+    assert "remains only in facts.operational_constraints during authoring" in prompt
+    assert "Do not copy any constraint into component responsibilities" in prompt
+    assert "Independent review classifies every accepted constraint" in prompt
+    assert "alone may project product-owned custody after admission" in prompt
     assert "preserve its one citation in the owner group" in prompt
     assert "event separately owns workflow order" in prompt
     assert "Do not repeat that citation within the owner group" in prompt

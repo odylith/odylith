@@ -4,6 +4,52 @@ Last updated: 2026-09-28
 
 ## Overview
 
+### V47 live falsification boundary (2026-09-28)
+
+The clean pushed V47 checkpoint
+`8c82bc52638b71d8d25695c4e2a3b353c12eede9` passed independent review,
+3,326 frozen Greenfield tests, 67 browser checks, and governance readiness, then
+failed closed on the one exact public replay. The reviewer path hash maps to
+`candidate.accepted_source.components[0].responsibilities`; the reason remains
+hash-only and no transaction or governed write occurred.
+
+The discriminated host-authored custody wire is not release-qualified. It
+narrowed but did not eliminate the accepted-component custody class because
+the author and reviewer still independently interpret product-constraint
+ownership. Domain Intelligence must not accumulate more wording, phrase rules,
+regexes, parsers, retries, repairs, fallbacks, or an all-title ownership rule.
+The next bounded change must assign semantic custody to one existing model
+decision, preserve deterministic validation and transaction laws, and remove
+the losing V47 path rather than keep two interpretations active. The exact
+public case remains the first replacement gate; the protected holdout remains
+untouched.
+
+V48 assigns operational-constraint custody to the existing independent review
+decision. Host candidates carry exact global constraint citations without a
+custody classification. An admitted reviewer v16 witness classifies every
+constraint exactly once; deterministic validation resolves the selected facts
+or precedence binding, projects only product-owned constraints, and reruns the
+canonical validator before authority sealing. The receipt binds the exact
+unprojected review input and the exact final projected candidate. Denial or
+clarification carries no custody and produces no projection. V47's host custody
+schema and projection are removed, not retained as a fallback or compatibility
+path.
+
+The implemented boundary is host contract v29, host-candidate format v15, and
+reviewer v16. The bounded revision module, second review, five-call receipt
+shape, and release-proof compatibility path are deleted. Admission carries an
+exact review-input hash plus an exact post-projection candidate hash. Retained
+proof reconstructs both hashes for host-native and participant-first lanes;
+Product Intent authority continues to seal only the final candidate, preserving
+the existing transaction and envelope schemas.
+
+Fresh validation passes 3,336/3,336 Greenfield runtime/install/integration
+tests and 80/80 maintained browser-surface checks. Independent review is PASS
+with no P0/P1/P2 finding. The remaining qualification boundary is external:
+freeze and build the immutable distribution, run the one exact public replay,
+then the unchanged 40-case campaign if it passes. The protected holdout is not
+opened before those gates.
+
 ### V47 discriminated operational-constraint custody (2026-09-28)
 
 The V46 nullable owner fact did not qualify on live public evidence. Clean
@@ -1655,6 +1701,12 @@ semantic/design findings.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-28 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `src/odylith/runtime/domain_intelligence/greenfield_constraint_custody.py`
+- **2026-09-28 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
 - **2026-09-28 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
@@ -1667,12 +1719,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-26 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py`, `tests/unit/runtime/test_greenfield_model_source_citations.py`
-- **2026-09-26 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_candidate_review.py`
-- **2026-09-26 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_candidate_review.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

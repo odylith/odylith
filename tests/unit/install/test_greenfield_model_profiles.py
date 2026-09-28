@@ -3,7 +3,6 @@ from __future__ import annotations
 from copy import deepcopy
 from dataclasses import replace
 import hashlib
-import json
 import sys
 from types import SimpleNamespace
 
@@ -47,6 +46,10 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
     CANDIDATE_REVIEW_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_constraint_custody import (
+    candidate_review_sha256,
+    project_constraint_custody,
 )
 
 
@@ -221,7 +224,7 @@ def test_profile_evidence_requires_sealed_observation_parity() -> None:
     assert "expected_source_review" not in evidence
     assert evidence["stage_observation"] == stage_observation
     assert evidence["stage_observation_summary"]["response_kind"] == "authored"
-    assert evidence["maximum_semantic_model_calls"] == 5
+    assert evidence["maximum_semantic_model_calls"] == 3
     assert evidence["stage_observation_summary"]["semantic_model_call_count"] == 3
     assert set(evidence["stage_observation_summary"]["request_roles"]) == {
         "participant_selection", "remaining_candidate_authoring", "candidate_review",
@@ -327,7 +330,11 @@ def test_authored_private_result_binds_to_actual_admitted_consumer_receipt() -> 
 def test_host_native_profile_evidence_binds_one_host_candidate_and_runtime_review() -> None:
     profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
     candidate_sha256 = "1" * 64
-    reviewer_candidate_sha256 = "3" * 64
+    review_input_candidate = _review_input_candidate()
+    review_input_candidate_sha256 = candidate_review_sha256(review_input_candidate)
+    final_candidate_sha256 = candidate_review_sha256(
+        project_constraint_custody(review_input_candidate, custody=[])
+    )
     source = "Extension publishers assemble release notes."
     source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
     observed = {
@@ -352,7 +359,8 @@ def test_host_native_profile_evidence_binds_one_host_candidate_and_runtime_revie
     reviewer_observation = _host_native_private_admission(
         observed=observed,
         source=source,
-        reviewer_candidate_sha256=reviewer_candidate_sha256,
+        review_input_candidate_sha256=review_input_candidate_sha256,
+        final_candidate_sha256=final_candidate_sha256,
     )
 
     evidence = model_profile_evidence(
@@ -361,7 +369,8 @@ def test_host_native_profile_evidence_binds_one_host_candidate_and_runtime_revie
         observed=observed,
         stage_observation=stage,
         reviewer_observation=reviewer_observation,
-        expected_reviewer_candidate_sha256=reviewer_candidate_sha256,
+        review_input_candidate=review_input_candidate,
+        expected_review_input_candidate_sha256=review_input_candidate_sha256,
         expected_source=source,
     )
 
@@ -388,7 +397,8 @@ def test_host_native_profile_evidence_binds_one_host_candidate_and_runtime_revie
     ("mutation", "expected_issue"),
     (
         ("missing", "private host-native reviewer admission observation is missing or malformed"),
-        ("candidate", "private host-native reviewer admission candidate hash is invalid"),
+        ("input_candidate", "private host-native reviewer admission input hash is invalid"),
+        ("final_candidate", "sealed final candidate hash does not match retained reviewer custody"),
         ("witness", "private host-native reviewer admission witness is invalid"),
         ("profile", "private host-native reviewer admission profile is not sealed"),
     ),
@@ -400,7 +410,11 @@ def test_host_native_profile_evidence_rejects_unbound_private_admission(
     profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
     source = "Extension publishers assemble release notes."
     source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
-    reviewer_candidate_sha256 = "3" * 64
+    review_input_candidate = _review_input_candidate()
+    review_input_candidate_sha256 = candidate_review_sha256(review_input_candidate)
+    final_candidate_sha256 = candidate_review_sha256(
+        project_constraint_custody(review_input_candidate, custody=[])
+    )
     observed = {
         "origin": "host_native",
         "host_candidate": {
@@ -423,11 +437,14 @@ def test_host_native_profile_evidence_rejects_unbound_private_admission(
     private = _host_native_private_admission(
         observed=observed,
         source=source,
-        reviewer_candidate_sha256=reviewer_candidate_sha256,
+        review_input_candidate_sha256=review_input_candidate_sha256,
+        final_candidate_sha256=final_candidate_sha256,
     )
     if mutation == "missing":
         private = {}
-    elif mutation == "candidate":
+    elif mutation == "input_candidate":
+        private["candidate_review"]["review_input_candidate_sha256"] = "5" * 64
+    elif mutation == "final_candidate":
         private["candidate_review"]["candidate_sha256"] = "4" * 64
     elif mutation == "witness":
         private["candidate_review"]["admission_witness"] = None
@@ -440,7 +457,8 @@ def test_host_native_profile_evidence_rejects_unbound_private_admission(
         observed=observed,
         stage_observation=stage,
         reviewer_observation=private,
-        expected_reviewer_candidate_sha256=reviewer_candidate_sha256,
+        review_input_candidate=review_input_candidate,
+        expected_review_input_candidate_sha256=review_input_candidate_sha256,
         expected_source=source,
     )
 
@@ -570,7 +588,11 @@ def test_host_native_result_binding_matches_retained_candidate_to_commit_receipt
     source = "Extension publishers assemble release notes."
     source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
     candidate_sha256 = "3" * 64
-    reviewer_candidate_sha256 = "4" * 64
+    review_input_candidate = _review_input_candidate()
+    review_input_candidate_sha256 = candidate_review_sha256(review_input_candidate)
+    final_candidate_sha256 = candidate_review_sha256(
+        project_constraint_custody(review_input_candidate, custody=[])
+    )
     witness = {
         "participant_fact": {"field": "human_actors", "row": 1},
         "task_event_order": 1,
@@ -585,6 +607,7 @@ def test_host_native_result_binding_matches_retained_candidate_to_commit_receipt
             "risk_keys": [],
             "risk_posture_status": "no_material_risks_identified",
         },
+        "constraint_custody": [],
     }
     review_profile = {
         "profile_id": STANDARD_PROFILE_ID,
@@ -608,7 +631,8 @@ def test_host_native_result_binding_matches_retained_candidate_to_commit_receipt
                     "version": CANDIDATE_REVIEW_VERSION,
                     "status": "admitted",
                     "source_sha256": source_sha256,
-                    "candidate_sha256": reviewer_candidate_sha256,
+                    "review_input_candidate_sha256": review_input_candidate_sha256,
+                    "candidate_sha256": final_candidate_sha256,
                     "product_facts_sha256": "5" * 64,
                     "elapsed_seconds": 1.0,
                     "model_profile": review_profile,
@@ -626,15 +650,33 @@ def test_host_native_result_binding_matches_retained_candidate_to_commit_receipt
     reviewer_observation = _host_native_private_admission(
         observed=observed,
         source=source,
-        reviewer_candidate_sha256=reviewer_candidate_sha256,
+        review_input_candidate_sha256=review_input_candidate_sha256,
+        final_candidate_sha256=final_candidate_sha256,
         witness=witness,
     )
     assert authored_model_result_binding_issues(
         stage_observation=_host_native_stage(candidate_sha256=candidate_sha256),
         reviewer_observation=reviewer_observation,
+        review_input_candidate=review_input_candidate,
         create_payload=payload,
         expected_source=source,
     ) == ()
+
+    forged_payload = deepcopy(payload)
+    forged_private = deepcopy(reviewer_observation)
+    forged_payload["commit_manifest"]["model_authoring"]["candidate_review"][
+        "candidate_sha256"
+    ] = "4" * 64
+    forged_private["candidate_review"]["candidate_sha256"] = "4" * 64
+    assert "sealed final candidate hash does not match retained reviewer custody" in (
+        authored_model_result_binding_issues(
+            stage_observation=_host_native_stage(candidate_sha256=candidate_sha256),
+            reviewer_observation=forged_private,
+            review_input_candidate=review_input_candidate,
+            create_payload=forged_payload,
+            expected_source=source,
+        )
+    )
 
     mismatched = _host_native_stage(candidate_sha256="4" * 64)
     assert "retained host candidate does not match the sealed receipt" in (
@@ -651,12 +693,13 @@ def test_host_native_result_binding_matches_retained_candidate_to_commit_receipt
     ("mutation", "expected_issue"),
     (
         ("expected_source", "retained private author request does not match the expected source"),
-        ("private_candidate", "retained private reviewed candidate does not match the sealed receipt"),
+        ("private_candidate", "retained private reviewed candidate does not match the sealed review input"),
         ("missing_private_review", "retained private candidate review is missing"),
         ("missing_receipt", "sealed candidate-review receipt is missing"),
         ("denied_receipt", "sealed candidate-review receipt is not admitted"),
         ("source_hash", "sealed candidate-review source hash does not match the expected source"),
         ("candidate_hash", "sealed candidate-review candidate hash is invalid"),
+        ("wrong_final_candidate_hash", "sealed final candidate hash does not match retained reviewer custody"),
     ),
 )
 def test_authored_private_result_binding_fails_closed(mutation, expected_issue) -> None:
@@ -679,6 +722,8 @@ def test_authored_private_result_binding_fails_closed(mutation, expected_issue) 
         receipt["source_sha256"] = "0" * 64
     elif mutation == "candidate_hash":
         receipt["candidate_sha256"] = "missing"
+    elif mutation == "wrong_final_candidate_hash":
+        receipt["candidate_sha256"] = "4" * 64
     else:
         raise AssertionError(f"unknown mutation: {mutation}")
 
@@ -752,7 +797,7 @@ def test_profile_evidence_fails_closed_without_retained_stage_observation() -> N
         ("response_version", "retained model response version is invalid"),
         ("response_kind", "retained model response kind is invalid"),
         ("bool_count", "retained semantic model call count is invalid"),
-        ("two_calls", "authored response must record exactly three or five semantic calls"),
+        ("two_calls", "authored response must record exactly three semantic calls"),
         ("forged_participant_role", "retained participant_selection request role is invalid"),
         ("forged_participant_model", "observed model does not match pinned Greenfield model profile"),
         ("participant_failure", "retained participant_selection provider metadata records a failure"),
@@ -795,7 +840,7 @@ def test_outcomes_require_their_exact_role_count(response_kind, count):
     issues = model_stage_observation_issues(
         RESCUE_PROFILE_ID, observed=_sealed_observation(RESCUE_PROFILE_ID), stage_observation=stage,
     )
-    expected = ("authored response must record exactly three or five semantic calls"
+    expected = ("authored response must record exactly three semantic calls"
                 if response_kind == "authored"
                 else "clarification response must record exactly two semantic calls")
     assert expected in issues
@@ -813,43 +858,21 @@ def test_current_production_observations_qualify_without_mutation(profile_id, re
 
 
 @pytest.mark.parametrize("profile_id", MODEL_PROFILES)
-def test_one_review_guided_revision_qualifies_as_a_five_call_observation(profile_id):
-    stage = _stage_observation(profile_id, revised=True)
+def test_five_call_revision_observation_is_not_an_active_compatibility_path(profile_id):
+    stage = _stage_observation(profile_id)
+    stage["semantic_model_call_count"] = 5
+    stage["rejected_candidate"] = {}
+    stage["rejected_candidate_review"] = {}
+    stage["candidate_revision"] = {}
 
-    assert stage["semantic_model_call_count"] == 5
-    assert model_stage_observation_issues(
+    issues = model_stage_observation_issues(
         profile_id,
         observed=_sealed_observation(profile_id),
         stage_observation=stage,
-    ) == ()
-    evidence = model_profile_evidence(
-        profile_id,
-        model_profile_environment(profile_id, {}),
-        observed=_sealed_observation(profile_id),
-        stage_observation=stage,
     )
-    assert evidence["status"] == "passed", evidence["issues"]
-    assert set(evidence["stage_observation_summary"]["request_roles"]) == {
-        "participant_selection",
-        "remaining_candidate_authoring",
-        "rejected_candidate_review",
-        "candidate_revision",
-        "candidate_review",
-    }
 
-
-def test_revision_observation_rejects_a_witness_not_bound_to_the_revision_request():
-    stage = _stage_observation(STANDARD_PROFILE_ID, revised=True)
-    stage["candidate_revision"]["request"]["review_issue"]["reason"] = "Different issue."
-
-    assert (
-        "retained candidate revision fails source-bound replacement validation"
-        in model_stage_observation_issues(
-            STANDARD_PROFILE_ID,
-            observed=_sealed_observation(STANDARD_PROFILE_ID),
-            stage_observation=stage,
-        )
-    )
+    assert "authored response must record exactly three semantic calls" in issues
+    assert "retained model observation has missing or unsupported fields" in issues
 
 
 @pytest.mark.parametrize(("path", "value"), [
@@ -1008,7 +1031,7 @@ def test_profile_aggregate_rejects_non_numeric_missing_or_expired_consumer_time(
     assert proof["status"] == "failed"
     assert any("operational-timeout proof" in issue for issue in proof["issues"])
     assert proof["profiles"][profile_id]["committed_positive_case_count"] == 0
-    assert proof["profiles"][profile_id]["maximum_semantic_model_calls"] == 5
+    assert proof["profiles"][profile_id]["maximum_semantic_model_calls"] == 3
 
 
 @pytest.mark.parametrize("profile_id", MODEL_PROFILES)
@@ -1088,16 +1111,21 @@ def _mutated_stage_observation(mutation: str) -> dict[str, object]:
 def _create_payload_for_stage(stage: dict[str, object], *, source: str) -> dict[str, object]:
     review = stage["candidate_review"]
     assert isinstance(review, dict)
-    request = review["request"]
-    assert isinstance(request, dict)
-    candidate = request["candidate"]
-    encoded = json.dumps(
-        candidate,
-        sort_keys=True,
-        ensure_ascii=False,
-        separators=(",", ":"),
-        allow_nan=False,
-    ).encode("utf-8")
+    response = review["response"]
+    assert isinstance(response, dict)
+    admission_witness = response["admission_witness"]
+    assert isinstance(admission_witness, dict)
+    joined = stage["joined_candidate"]
+    assert isinstance(joined, dict)
+    candidate = joined["result"]
+    assert isinstance(candidate, dict)
+    review_input_candidate_sha256 = candidate_review_sha256(candidate)
+    final_candidate_sha256 = candidate_review_sha256(
+        project_constraint_custody(
+            candidate,
+            custody=admission_witness["constraint_custody"],
+        )
+    )
     return {
         "commit_manifest": {
             "model_authoring": {
@@ -1105,10 +1133,12 @@ def _create_payload_for_stage(stage: dict[str, object], *, source: str) -> dict[
                     "version": CANDIDATE_REVIEW_VERSION,
                     "status": "admitted",
                     "source_sha256": hashlib.sha256(source.encode("utf-8")).hexdigest(),
-                    "candidate_sha256": hashlib.sha256(encoded).hexdigest(),
+                    "review_input_candidate_sha256": review_input_candidate_sha256,
+                    "candidate_sha256": final_candidate_sha256,
                     "product_facts_sha256": "2" * 64,
                     "elapsed_seconds": 1.0,
                     "model_profile": {},
+                    "admission_witness": deepcopy(admission_witness),
                 }
             }
         }
@@ -1158,11 +1188,26 @@ def _host_native_stage(*, candidate_sha256: str) -> dict[str, object]:
     }
 
 
+def _review_input_candidate() -> dict[str, object]:
+    stage = _stage_observation(STANDARD_PROFILE_ID)
+    review = stage["candidate_review"]
+    assert isinstance(review, dict)
+    request = review["request"]
+    assert isinstance(request, dict)
+    partitioned = request["candidate"]
+    assert isinstance(partitioned, dict)
+    accepted = partitioned["accepted_source"]
+    proposed = partitioned["proposed_decisions"]
+    assert isinstance(accepted, dict) and isinstance(proposed, dict)
+    return {**deepcopy(accepted), **deepcopy(proposed)}
+
+
 def _host_native_private_admission(
     *,
     observed: dict[str, object],
     source: str,
-    reviewer_candidate_sha256: str,
+    review_input_candidate_sha256: str,
+    final_candidate_sha256: str,
     witness: dict[str, object] | None = None,
 ) -> dict[str, object]:
     admission_witness = witness or {
@@ -1179,6 +1224,7 @@ def _host_native_private_admission(
             "risk_keys": [],
             "risk_posture_status": "no_material_risks_identified",
         },
+        "constraint_custody": [],
     }
     return {
         "version": "odylith.greenfield.model-proof-observation.v4",
@@ -1194,7 +1240,8 @@ def _host_native_private_admission(
             "version": CANDIDATE_REVIEW_VERSION,
             "status": "admitted",
             "source_sha256": hashlib.sha256(source.encode("utf-8")).hexdigest(),
-            "candidate_sha256": reviewer_candidate_sha256,
+            "review_input_candidate_sha256": review_input_candidate_sha256,
+            "candidate_sha256": final_candidate_sha256,
             "model_profile": deepcopy(observed["candidate_review"]),
             "elapsed_seconds": 1.0,
             "admission_witness": admission_witness,

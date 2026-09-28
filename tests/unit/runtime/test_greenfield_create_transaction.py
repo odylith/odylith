@@ -161,6 +161,13 @@ def _authored_supplier_proposal(repo_root: Path) -> tuple[dict[str, Any], dict[s
             },
         ],
         component_responsibility_owners=["Supplier Review Service"],
+        constraint_custody=[
+            {
+                "constraint_index": 1,
+                "kind": "product_owned",
+                "owner_fact": {"field": "internal_systems", "row": 1},
+            }
+        ],
     )
     authority = dict(candidate.pop(PRODUCT_INTENT_AUTHORITY_KEY))
     proposal = {

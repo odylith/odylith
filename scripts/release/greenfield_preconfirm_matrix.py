@@ -42,8 +42,11 @@ from greenfield_matrix_case_file import load_case_file  # noqa: E402
 from greenfield_matrix_case_file import ungrounded_required_terms  # noqa: E402
 from greenfield_matrix_clarification import clarification_contract_issues, clarification_quality_verdict, run_expected_clarification  # noqa: E402
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import prepare_model_authoring_evidence
-from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
-    canonical_greenfield_reviewer_candidate_sha256,
+from odylith.runtime.domain_intelligence.greenfield_constraint_custody import (
+    candidate_review_sha256,
+)
+from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import (
+    canonical_greenfield_host_candidate,
 )
 from greenfield_matrix_write_audit import begin_installed_write_audit  # noqa: E402
 from greenfield_matrix_corpus_provenance import GreenfieldReleaseAudit  # noqa: E402
@@ -1296,10 +1299,12 @@ def _run_case(
     expected_model_source = prepare_model_authoring_evidence(
         prompt=case.prompt, edit_evidence=str(case.confirmed_intent_markdown or ""),
     ).evidence_source
-    expected_reviewer_candidate_sha256 = _retained_reviewer_candidate_sha256(
+    review_input_candidate = _retained_review_input_candidate(
         retained_case,
         evidence_text=expected_model_source,
-        profile_id=profile,
+    )
+    expected_review_input_candidate_sha256 = _review_input_candidate_sha256(
+        review_input_candidate
     )
     profile_evidence = model_profile_evidence(
         profile,
@@ -1310,12 +1315,14 @@ def _run_case(
         ),
         stage_observation=stage_observation,
         reviewer_observation=reviewer_observation,
-        expected_reviewer_candidate_sha256=expected_reviewer_candidate_sha256,
+        review_input_candidate=review_input_candidate,
+        expected_review_input_candidate_sha256=expected_review_input_candidate_sha256,
         expected_source=expected_model_source,
     )
     model_result_issues = authored_model_result_binding_issues(
         stage_observation=stage_observation, create_payload=payload,
         reviewer_observation=reviewer_observation,
+        review_input_candidate=review_input_candidate,
         expected_source=expected_model_source,
     )
     counts = collect_artifact_counts(repo_root=repo_root, package=package, required_terms=case.required_terms)
@@ -1684,10 +1691,12 @@ def _run_expected_clarification_case(
     profile_id = str(env.get("ODYLITH_GREENFIELD_MODEL_PROFILE") or "").strip()
     if not profile_id:
         profile_id = model_profile_id_for_repair_tier(repair_tier)
-    expected_reviewer_candidate_sha256 = _retained_reviewer_candidate_sha256(
+    review_input_candidate = _retained_review_input_candidate(
         retained_case,
         evidence_text=expected_source,
-        profile_id=profile_id,
+    )
+    expected_review_input_candidate_sha256 = _review_input_candidate_sha256(
+        review_input_candidate
     )
     issues = list(clarification_contract_issues(
         execution,
@@ -1702,7 +1711,7 @@ def _run_expected_clarification_case(
         expected_model_profile_id=profile_id,
         stage_observation=stage_observation,
         reviewer_observation=reviewer_observation,
-        expected_reviewer_candidate_sha256=expected_reviewer_candidate_sha256,
+        expected_review_input_candidate_sha256=expected_review_input_candidate_sha256,
         expected_source=expected_source,
     ))
     package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
@@ -1713,7 +1722,7 @@ def _run_expected_clarification_case(
         observed=sealed_model_profile_observation(create_payload=payload),
         stage_observation=stage_observation,
         reviewer_observation=reviewer_observation,
-        expected_reviewer_candidate_sha256=expected_reviewer_candidate_sha256,
+        expected_review_input_candidate_sha256=expected_review_input_candidate_sha256,
         expected_source=expected_source,
     )
     issues.extend(str(issue) for issue in profile_evidence.get("issues", ()))
@@ -2356,30 +2365,37 @@ def _retained_host_native_reviewer_observation(
     )
 
 
-def _retained_reviewer_candidate_sha256(
+def _retained_review_input_candidate(
     retained_case: RetainedEvidenceCase | None,
     *,
     evidence_text: str,
-    profile_id: str,
-) -> str:
-    """Derive the product-owned reviewer hash from exact retained host bytes."""
+) -> Mapping[str, Any]:
+    """Rebuild the exact review input while preserving the raw host receipt."""
 
     if retained_case is None:
-        return ""
+        return {}
     candidate_path = retained_case.staging_root / "semantic" / "host-candidate.raw.v1.json"
     try:
         raw = candidate_path.read_bytes()
         candidate = json.loads(raw.decode("utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError):
-        return ""
+        return {}
     if not isinstance(candidate, Mapping):
-        return ""
+        return {}
     try:
-        return canonical_greenfield_reviewer_candidate_sha256(
+        canonical = canonical_greenfield_host_candidate(
             candidate,
             evidence_text=evidence_text,
-            profile_id=profile_id,
         )
+        result = canonical.get("result")
+        return dict(result) if isinstance(result, Mapping) else {}
+    except (RuntimeError, TypeError, ValueError):
+        return {}
+
+
+def _review_input_candidate_sha256(candidate: Mapping[str, Any]) -> str:
+    try:
+        return candidate_review_sha256(candidate)
     except (RuntimeError, TypeError, ValueError):
         return ""
 

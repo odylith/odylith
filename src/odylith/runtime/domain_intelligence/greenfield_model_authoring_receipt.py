@@ -36,14 +36,6 @@ def model_authoring_receipt(
         **(
             {
                 "candidate_review": deepcopy(authored.candidate_review),
-                **(
-                    {
-                        "candidate_revision": deepcopy(authored.candidate_revision),
-                        "rejected_candidate_review": deepcopy(authored.rejected_candidate_review),
-                    }
-                    if authored.candidate_revision
-                    else {}
-                ),
             }
             if isinstance(authored, GreenfieldModelAuthoredIntent)
             else (

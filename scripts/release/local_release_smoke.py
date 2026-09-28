@@ -32,59 +32,12 @@ _COMMAND_TIMEOUT_SECONDS = 300
 _CANDIDATE_CONTRACT_SMOKE_PROMPT = (
     "Create a project governance package for a first-time user."
 )
-_EXPECTED_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v28"
-_EXPECTED_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v14"
+_EXPECTED_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v29"
+_EXPECTED_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v15"
 
 
-def _has_exact_fact_selector(
-    selector: object,
-    *,
-    expected_fields: tuple[str, str],
-) -> bool:
-    if not isinstance(selector, dict):
-        return False
-    branches = selector.get("anyOf")
-    if not isinstance(branches, list) or len(branches) != len(expected_fields):
-        return False
-    observed: dict[str, dict[str, object]] = {}
-    for branch in branches:
-        if (
-            not isinstance(branch, dict)
-            or branch.get("type") != "object"
-            or branch.get("additionalProperties") is not False
-            or set(branch.get("required") or ()) != {"field", "row"}
-        ):
-            return False
-        properties = branch.get("properties")
-        if not isinstance(properties, dict) or set(properties) != {"field", "row"}:
-            return False
-        field_schema = properties.get("field")
-        row_schema = properties.get("row")
-        if (
-            not isinstance(field_schema, dict)
-            or field_schema.get("type") != "string"
-            or not isinstance(row_schema, dict)
-        ):
-            return False
-        field = field_schema.get("const")
-        if not isinstance(field, str) or field in observed:
-            return False
-        observed[field] = row_schema
-    if set(observed) != set(expected_fields):
-        return False
-    for field, row_schema in observed.items():
-        expected_row = (
-            {"type": "integer", "const": 1}
-            if field == "title"
-            else {"type": "integer", "minimum": 1}
-        )
-        if row_schema != expected_row:
-            return False
-    return True
-
-
-def _has_current_candidate_custody_schema(candidate_schema: object) -> bool:
-    """Require the exact non-null three-way custody union shipped by this release."""
+def _has_current_host_candidate_schema(candidate_schema: object) -> bool:
+    """Require the host schema to leave constraint custody to independent review."""
 
     try:
         schema = candidate_schema  # keep the structural walk explicit for release diagnosis
@@ -100,48 +53,16 @@ def _has_current_candidate_custody_schema(candidate_schema: object) -> bool:
         constraint = authored["properties"]["facts"]["properties"][
             "operational_constraints"
         ]["items"]
-        if "constraint_custody" not in set(constraint.get("required") or ()):
-            return False
-        branches = constraint["properties"]["constraint_custody"]["anyOf"]
     except (AssertionError, KeyError, IndexError, TypeError):
         return False
-    expected = {
-        "product_owned": ({"kind", "owner_fact"}, {"kind", "owner_fact"}),
-        "participant_only": ({"kind", "actor_fact"}, {"kind", "actor_fact"}),
-        "workflow_order": ({"kind"}, {"kind"}),
-    }
-    observed: dict[str, tuple[set[str], set[str]]] = {}
-    if not isinstance(branches, list) or len(branches) != len(expected):
-        return False
-    for branch in branches:
-        if (
-            not isinstance(branch, dict)
-            or branch.get("type") != "object"
-            or branch.get("additionalProperties") is not False
-        ):
-            return False
-        branch_properties = branch.get("properties")
-        if not isinstance(branch_properties, dict):
-            return False
-        kind_schema = branch_properties.get("kind")
-        kind = kind_schema.get("const") if isinstance(kind_schema, dict) else None
-        if not isinstance(kind, str) or kind in observed:
-            return False
-        if kind == "product_owned" and not _has_exact_fact_selector(
-            branch_properties.get("owner_fact"),
-            expected_fields=("title", "internal_systems"),
-        ):
-            return False
-        if kind == "participant_only" and not _has_exact_fact_selector(
-            branch_properties.get("actor_fact"),
-            expected_fields=("human_actors", "external_systems"),
-        ):
-            return False
-        observed[kind] = (
-            set(branch.get("required") or ()),
-            set(branch_properties),
-        )
-    return observed == expected
+    return bool(
+        isinstance(constraint, dict)
+        and constraint.get("type") == "object"
+        and constraint.get("additionalProperties") is False
+        and set(constraint.get("required") or ()) == {"quote", "context"}
+        and set(constraint.get("properties") or {}) == {"quote", "context"}
+        and "constraint_custody" not in constraint
+    )
 
 
 def _run(*, cwd: Path, env: dict[str, str], command: list[str]) -> subprocess.CompletedProcess[str]:
@@ -734,8 +655,8 @@ def _greenfield_candidate_contract_smoke(*, repo_root: Path, odylith: Path, env:
         request.get("evidence") or ""
     ):
         issues.append("candidate contract did not preserve the exact prompt evidence")
-    if not _has_current_candidate_custody_schema(candidate_schema):
-        issues.append("candidate contract did not return the current custody schema")
+    if not _has_current_host_candidate_schema(candidate_schema):
+        issues.append("candidate contract did not preserve reviewer-owned constraint custody")
     if observed.active is not True:
         issues.append("candidate-contract smoke did not activate the installed write audit")
     if observed.error:

@@ -43,7 +43,7 @@ def sealed_profile_observation(profile_id, *, shared_timeout=None):
 
 def production_stage_observation(
     profile_id, *, response_kind="authored", shared_timeout=None, reviewed=False,
-    evidence_text=None, revised=False,
+    evidence_text=None,
 ):
     """Capture the real author/review proof FD; historical negatives stay explicit."""
     if reviewed:
@@ -80,20 +80,7 @@ def production_stage_observation(
     class TimedRemainingProvider(RemainingCandidateProvider):
         def generate_structured(self, *, request):
             now[0] += 10.0
-            if not revised:
-                return super().generate_structured(request=request)
-            assert getattr(request, "schema_name", "") in {
-                "greenfield_remaining_candidate_authoring",
-                "greenfield_candidate_revision",
-            }
-            value = StructuredAuthoringProvider.generate_structured(
-                self, request=request,
-            )
-            if isinstance(value, dict):
-                result = value.get("result")
-                if isinstance(result, dict) and isinstance(result.get("facts"), dict):
-                    result["facts"].pop("human_actors", None)
-            return value
+            return super().generate_structured(request=request)
 
     class TimedParticipantProvider(ParticipantSelectionProvider):
         def generate_structured(self, *, request):
@@ -101,30 +88,17 @@ def production_stage_observation(
             return super().generate_structured(request=request)
 
     class TimedReviewProvider(AdmittingReviewProvider):
-        responses = (
-            {
-                "outcome": "denied",
-                "issue": {
-                    "path": "candidate.accepted_source.facts.opportunity",
-                    "reason": "The selected action is not a complete improvement.",
-                },
-                "clarification": None,
-                "admission_witness": None,
-            },
-            admitted_review_response(result_event_order=1),
-        )
-
         def __init__(self):
             StructuredAuthoringProvider.__init__(
                 self,
-                admitted_review_response(result_event_order=1),
+                admitted_review_response(
+                    result_event_order=1,
+                    constraint_custody=[],
+                ),
             )
 
         def generate_structured(self, *, request):
             now[0] += 1.0
-            if not revised:
-                return super().generate_structured(request=request)
-            self.response = self.responses[self.calls]
             return super().generate_structured(request=request)
 
     provider = TimedRemainingProvider(response)
@@ -140,9 +114,9 @@ def production_stage_observation(
         )
         output.seek(0)
         stage = json.load(output)
-    assert provider.calls == (2 if revised else 1)
+    assert provider.calls == 1
     assert participant.calls == 1
-    assert reviewer.calls == (2 if revised else 1 if response_kind == "authored" else 0)
+    assert reviewer.calls == (1 if response_kind == "authored" else 0)
     assert stage["semantic_model_call_count"] == result.semantic_model_call_count
     return stage
 

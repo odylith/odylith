@@ -13,6 +13,11 @@ import pytest
 from tests.unit.install.test_greenfield_model_profiles import (
     _host_native_private_admission,
     _host_native_stage,
+    _review_input_candidate,
+)
+from odylith.runtime.domain_intelligence.greenfield_constraint_custody import (
+    candidate_review_sha256,
+    project_constraint_custody,
 )
 
 
@@ -153,7 +158,11 @@ def test_discovery_uses_ephemeral_case_proof_without_publishing_release_evidence
         ).evidence_source
         source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
         candidate_sha256 = "1" * 64
-        reviewer_candidate_sha256 = "3" * 64
+        review_input_candidate = _review_input_candidate()
+        review_input_candidate_sha256 = candidate_review_sha256(review_input_candidate)
+        final_candidate_sha256 = candidate_review_sha256(
+            project_constraint_custody(review_input_candidate, custody=[])
+        )
         observed = {
             "origin": "host_native",
             "host_candidate": {
@@ -176,7 +185,8 @@ def test_discovery_uses_ephemeral_case_proof_without_publishing_release_evidence
         reviewer = _host_native_private_admission(
             observed=observed,
             source=source,
-            reviewer_candidate_sha256=reviewer_candidate_sha256,
+            review_input_candidate_sha256=review_input_candidate_sha256,
+            final_candidate_sha256=final_candidate_sha256,
         )
         module.record_retained_case_json(
             retained_case,
@@ -196,7 +206,8 @@ def test_discovery_uses_ephemeral_case_proof_without_publishing_release_evidence
             observed=observed,
             stage_observation=observations["stage"],
             reviewer_observation=observations["reviewer"],
-            expected_reviewer_candidate_sha256=reviewer_candidate_sha256,
+            review_input_candidate=review_input_candidate,
+            expected_review_input_candidate_sha256=review_input_candidate_sha256,
             expected_source=source,
         )
         sealed_review = dict(reviewer["candidate_review"])
@@ -204,6 +215,7 @@ def test_discovery_uses_ephemeral_case_proof_without_publishing_release_evidence
         binding_issues = module.authored_model_result_binding_issues(
             stage_observation=observations["stage"],
             reviewer_observation=observations["reviewer"],
+            review_input_candidate=review_input_candidate,
             create_payload={
                 "commit_manifest": {
                     "model_authoring": {

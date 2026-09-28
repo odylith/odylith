@@ -100,6 +100,7 @@ def approved_authored_quality_manifest_fixture(
                 "version": CANDIDATE_REVIEW_VERSION,
                 "status": "admitted",
                 "source_sha256": authority.get("markdown_source_sha256", "0" * 64),
+                "review_input_candidate_sha256": "4" * 64,
                 "candidate_sha256": authority.get(
                     REVIEWED_CANDIDATE_SHA256_KEY, "1" * 64
                 ),
@@ -108,7 +109,12 @@ def approved_authored_quality_manifest_fixture(
                     AUTHORED_RELATION_SET_SHA256_KEY, "3" * 64
                 ),
                 "admission_witness": admitted_review_response(
-                    result_event_order=1
+                    result_event_order=1,
+                    constraint_custody=[{
+                        "constraint_index": 1,
+                        "kind": "participant_only",
+                        "actor_fact": {"field": "human_actors", "row": 1},
+                    }],
                 )["admission_witness"],
                 "elapsed_seconds": 0.25,
                 "model_profile": {
@@ -132,6 +138,7 @@ def materialize_typed_intent_fixture(
     intent: Mapping[str, Any],
     first_path_relations: list[Mapping[str, Any]],
     component_responsibility_owners: list[str],
+    constraint_custody: list[Mapping[str, Any]],
     authoring_receipt: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Materialize explicit typed fixture data through the shipped custody path."""
@@ -155,7 +162,9 @@ def materialize_typed_intent_fixture(
         prompt=source,
         repo_root=repo_root,
         participant_provider_factory=provider.participant_provider,
-        review_provider_factory=AdmittingReviewProvider,
+        review_provider_factory=lambda: AdmittingReviewProvider(
+            constraint_custody=constraint_custody
+        ),
         authoring_provider=provider,
         authoring_timeout_seconds=54,
         authoring_profile_id=STANDARD_PROFILE_ID,
@@ -294,6 +303,18 @@ def canonical_model_authored_intent_fixture(
             "Storefront",
             "Checkout Orchestrator",
             "Catalog Boundary",
+        ],
+        constraint_custody=[
+            {
+                "constraint_index": 1,
+                "kind": "product_owned",
+                "owner_fact": {"field": "internal_systems", "row": 2},
+            },
+            {
+                "constraint_index": 2,
+                "kind": "product_owned",
+                "owner_fact": {"field": "title", "row": 1},
+            },
         ],
         authoring_receipt=authoring_receipt,
     )

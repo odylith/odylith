@@ -14,7 +14,6 @@ from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
     RemainingCandidateProvider,
     authored_response,
-    title_owned_constraint_custodies,
     write_host_candidate_fixture,
 )
 from tests.unit.runtime.greenfield_proposal_fixtures import HIIT_CONFIRMED_INTENT_TEXT
@@ -46,7 +45,6 @@ def test_hiit_structured_fixture_preserves_path_and_sealed_package_under_sixty_s
         tmp_path.parent / f"{tmp_path.name}-host-candidate.json",
         provider.response,
         evidence_text=evidence,
-        constraint_custodies=title_owned_constraint_custodies(provider.response),
     )
     reviewer = AdmittingReviewProvider()
 

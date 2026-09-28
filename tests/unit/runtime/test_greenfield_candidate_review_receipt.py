@@ -69,7 +69,8 @@ def test_review_dispatch_window_cannot_exceed_remaining_shared_window() -> None:
 @pytest.mark.parametrize(
     ("path", "value"),
     [
-        (("model_authoring", "semantic_model_call_count"), value) for value in (0, 1, 2, True, 3.0)
+        (("model_authoring", "semantic_model_call_count"), value)
+        for value in (0, 1, 2, 5, True, 3.0)
     ] + [
         (("semantic_compiler", "version"), "odylith.greenfield.authored-semantic-validation.v3"),
         (("semantic_compiler", "post_authoring_interpretation_calls"), 0),
@@ -99,6 +100,7 @@ def test_review_dispatch_window_cannot_exceed_remaining_shared_window() -> None:
         (("model_authoring", "candidate_review", field), value)
         for field in (
             "source_sha256",
+            "review_input_candidate_sha256",
             "candidate_sha256",
             "product_facts_sha256",
             AUTHORED_RELATION_SET_SHA256_KEY,

@@ -211,7 +211,7 @@ def greenfield_model_profile_observation_issues(
         expected_model = profile.participant_model
         expected_effort = profile.participant_reasoning_effort
         role_cap = profile.model_timeout_seconds
-    elif request_role in {"remaining_candidate_authoring", "candidate_revision"}:
+    elif request_role == "remaining_candidate_authoring":
         expected_model = profile.model
         expected_effort = profile.reasoning_effort
         role_cap = profile.model_timeout_seconds

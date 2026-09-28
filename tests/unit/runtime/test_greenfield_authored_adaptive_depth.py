@@ -37,6 +37,7 @@ def _proposal(
     intent: dict[str, Any],
     relations: list[dict[str, Any]],
     responsibility_owners: list[str],
+    constraint_custody: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     source = _source(intent)
     provider = RemainingCandidateProvider(
@@ -54,7 +55,13 @@ def _proposal(
         authoring_timeout_seconds=54,
         authoring_profile_id=STANDARD_PROFILE_ID,
         participant_provider_factory=provider.participant_provider,
-        review_provider_factory=AdmittingReviewProvider,
+        review_provider_factory=(
+            AdmittingReviewProvider
+            if constraint_custody is None
+            else lambda: AdmittingReviewProvider(
+                constraint_custody=constraint_custody,
+            )
+        ),
     )
     return greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
@@ -207,6 +214,18 @@ def _structured_proposal(tmp_path: Path) -> dict[str, Any]:
             },
         ],
         responsibility_owners=["Intake Router", "Receipt Ledger"],
+        constraint_custody=[
+            {
+                "constraint_index": 1,
+                "kind": "product_owned",
+                "owner_fact": {"field": "title", "row": 1},
+            },
+            {
+                "constraint_index": 2,
+                "kind": "product_owned",
+                "owner_fact": {"field": "title", "row": 1},
+            },
+        ],
     )
 
 
@@ -414,6 +433,9 @@ def test_structured_source_projects_distinct_canonical_design_with_source_custod
     intent = proposal["intent"]
     design = intent["authored_semantics"]["provisional_design"]
 
+    for constraint in intent["operational_constraints"]:
+        assert intent["component_responsibilities"].count(constraint) == 1
+
     assert [row["workstream_role"] for row in backlog] == ["provisional_design"] * 4
     assert len({row["title"] for row in backlog}) == 4
     assert len({row["problem"] for row in backlog}) == 4
@@ -514,7 +536,7 @@ def test_direct_evidence_graph_material_facts_survive_structural_design_projecti
             "Preserve the release decision.",
             "Keep inspection evidence reviewable.",
         ],
-        "component_responsibilities": ["Preserve the release decision."],
+        "component_responsibilities": [],
         "human_actors": ["Donor", "Volunteer", "Supervisor"],
         "external_systems": ["Safety Registry"],
         "internal_systems": [],
@@ -554,10 +576,24 @@ def test_direct_evidence_graph_material_facts_survive_structural_design_projecti
                 "visible_result_quote": "releases the batch",
             },
         ],
-        responsibility_owners=["Community Exchange"],
+        responsibility_owners=[],
+        constraint_custody=[
+            {
+                "constraint_index": 1,
+                "kind": "product_owned",
+                "owner_fact": {"field": "title", "row": 1},
+            },
+            {
+                "constraint_index": 2,
+                "kind": "product_owned",
+                "owner_fact": {"field": "title", "row": 1},
+            },
+        ],
     )
 
     backlog = proposal["backlog"]
+    for constraint in intent["operational_constraints"]:
+        assert proposal["intent"]["component_responsibilities"].count(constraint) == 1
     assert [row["workstream_role"] for row in backlog] == ["provisional_design"] * 4
     for row in backlog:
         for index, (field, statement) in enumerate(decisions.items()):

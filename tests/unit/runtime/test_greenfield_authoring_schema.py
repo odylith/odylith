@@ -17,13 +17,24 @@ def test_authoring_schema_structurally_separates_participants_authored_and_clari
     source = _source()
     provider = RemainingCandidateProvider(_response(source))
     participant = provider.participant_provider()
-    author_greenfield_intent(
-        review_provider_factory=AdmittingReviewProvider,
+    authored = author_greenfield_intent(
+        review_provider_factory=lambda: AdmittingReviewProvider(
+            constraint_custody=[
+                {
+                    "constraint_index": 1,
+                    "kind": "product_owned",
+                    "owner_fact": {"field": "title", "row": 1},
+                },
+            ],
+        ),
         evidence_text=source,
         provider=provider,
         participant_provider_factory=lambda: participant,
         clock=lambda: 0.0,
     )
+    assert authored.intent["component_responsibilities"].count(
+        "Retain source notes for seven years"
+    ) == 1
 
     authoring_schema = provider.requests[0].output_schema
     authored_branch, clarification_branch = authoring_schema["properties"]["result"]["anyOf"]
@@ -90,10 +101,10 @@ def test_authoring_schema_structurally_separates_participants_authored_and_clari
     responsibility_description = authored_properties["components"]["items"]["properties"][
         "responsibilities"
     ]["description"]
-    assert "global constraint custody and owner-bound component custody" in component_description
-    assert "human-only restrictions and authoring source-custody controls do not" in component_description
-    assert "product-governing operational or safety constraint" in responsibility_description
-    assert "both here and in global operational-constraint custody" in responsibility_description
+    assert "Operational constraints remain global until independent review" in component_description
+    assert "classifies and projects product-owned custody" in component_description
+    assert "Operational constraints remain global during authoring" in responsibility_description
+    assert "independent review alone may project a product-owned constraint" in responsibility_description
     component = authored_properties["components"]["items"]
     assert set(component["properties"]) == {"owner_fact_quote", "responsibilities"}
     assert set(component["properties"]["responsibilities"]["items"]["properties"]) == {"quote", "occurrence"}

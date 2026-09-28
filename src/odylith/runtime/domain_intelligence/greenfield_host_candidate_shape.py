@@ -18,10 +18,9 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     MAX_AUTHORED_FIELD_VALUE_CHARS,
 )
 
-HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v14"
+HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v15"
 HOST_EVENT_CITATION_FIELD = "source_citation"
 HOST_EVENT_RESPONSIBILITY_FIELD = "responsibility_citation"
-HOST_CONSTRAINT_CUSTODY_FIELD = "constraint_custody"
 
 
 def _context_citation_schema(*, description: str = "") -> dict[str, Any]:
@@ -84,78 +83,6 @@ def _product_owner_schema() -> dict[str, Any]:
     }
 
 
-def _participant_actor_fact_schema() -> dict[str, Any]:
-    return {
-        "description": (
-            "Select the exact accepted human or external participant constrained by this "
-            "citation. Never select title or an internal system."
-        ),
-        "anyOf": [
-            {
-                "type": "object",
-                "additionalProperties": False,
-                "required": ["field", "row"],
-                "properties": {
-                    "field": {"type": "string", "const": "human_actors"},
-                    "row": {"type": "integer", "minimum": 1},
-                },
-            },
-            {
-                "type": "object",
-                "additionalProperties": False,
-                "required": ["field", "row"],
-                "properties": {
-                    "field": {"type": "string", "const": "external_systems"},
-                    "row": {"type": "integer", "minimum": 1},
-                },
-            },
-        ],
-    }
-
-
-def _constraint_custody_schema() -> dict[str, Any]:
-    return {
-        "description": (
-            "Classify this accepted constraint exactly once. Ownership takes precedence over "
-            "temporal form: product_owned selects its title or internal-system owner even when "
-            "the same constraint backs source_precedence; participant_only selects its human or "
-            "external actor, including for a temporal participant obligation. workflow_order is "
-            "only for pure event ordering with no separately owned obligation and requires this "
-            "constraint's one-based index to be referenced by an existing source_precedence "
-            "edge. Source-custody and authoring controls are not accepted product facts and must "
-            "be omitted entirely."
-        ),
-        "anyOf": [
-            {
-                "type": "object",
-                "additionalProperties": False,
-                "required": ["kind", "owner_fact"],
-                "properties": {
-                    "kind": {"type": "string", "const": "product_owned"},
-                    "owner_fact": _product_owner_schema(),
-                },
-            },
-            {
-                "type": "object",
-                "additionalProperties": False,
-                "required": ["kind", "actor_fact"],
-                "properties": {
-                    "kind": {"type": "string", "const": "participant_only"},
-                    "actor_fact": _participant_actor_fact_schema(),
-                },
-            },
-            {
-                "type": "object",
-                "additionalProperties": False,
-                "required": ["kind"],
-                "properties": {
-                    "kind": {"type": "string", "const": "workflow_order"},
-                },
-            },
-        ],
-    }
-
-
 def greenfield_host_candidate_schema() -> dict[str, Any]:
     """Return the host shape with contextual, event-owned source citations."""
 
@@ -177,20 +104,12 @@ def greenfield_host_candidate_schema() -> dict[str, Any]:
         else:
             replacement = _context_citation_schema(description=description)
         facts["properties"][field] = replacement
-    operational_constraint = _context_citation_schema()
-    operational_constraint["required"] = [
-        *operational_constraint["required"],
-        HOST_CONSTRAINT_CUSTODY_FIELD,
-    ]
-    operational_constraint["properties"][HOST_CONSTRAINT_CUSTODY_FIELD] = (
-        _constraint_custody_schema()
+    facts["properties"]["operational_constraints"]["items"] = (
+        _context_citation_schema()
     )
-    facts["properties"]["operational_constraints"]["items"] = operational_constraint
     facts["properties"]["operational_constraints"]["description"] = (
         "Every exact source-stated operational, safety, ordering, or actor restriction. "
-        "Classify each citation with one closed constraint_custody relation, preserving owned "
-        "product or participant obligations even when they are temporal; workflow_order is only "
-        "for pure event ordering. Do not copy an operational constraint into "
+        "Keep each constraint global; do not copy an operational constraint into "
         "components.additional_responsibilities."
     )
     facts["required"] = [
@@ -254,8 +173,7 @@ def greenfield_host_candidate_schema() -> dict[str, Any]:
         "their selected product owner. Typed product events establish their own "
         "exact accepted component responsibility automatically. Preserve separately "
         "worded source responsibilities even when their meaning overlaps an event. Operational "
-        "constraint custody is declared once on facts.operational_constraints and projected "
-        "here deterministically only for product_owned custody. "
+        "constraints remain global at this host boundary and must not appear here. "
         "Return [] only when the source states no additional non-event responsibility."
     )
     return schema
@@ -304,44 +222,14 @@ def canonical_greenfield_host_candidate(
         raw_constraints, (str, bytes, bytearray)
     ):
         raise TypeError("Greenfield host candidate operational constraints must be an array")
-    constraint_responsibilities: list[tuple[str, dict[str, Any]]] = []
     canonical_constraints: list[dict[str, Any]] = []
-    constraint_fields = {"quote", "context", HOST_CONSTRAINT_CUSTODY_FIELD}
-    source_precedence = result.get("source_precedence")
-    for constraint_index, raw_constraint in enumerate(raw_constraints, start=1):
+    constraint_fields = {"quote", "context"}
+    for raw_constraint in raw_constraints:
         if not isinstance(raw_constraint, Mapping) or set(raw_constraint) != constraint_fields:
             raise ValueError("Greenfield host candidate operational constraint has invalid fields")
-        constraint = dict(raw_constraint)
-        custody = constraint.pop(HOST_CONSTRAINT_CUSTODY_FIELD)
-        citation = canonical_citation_from_host_selection(evidence, constraint)
-        canonical_constraints.append(citation)
-        if not isinstance(custody, Mapping):
-            raise ValueError("Greenfield host candidate constraint custody is invalid")
-        kind = custody.get("kind")
-        if kind == "participant_only":
-            if set(custody) != {"kind", "actor_fact"} or not _participant_actor_quote(
-                facts, custody.get("actor_fact")
-            ):
-                raise ValueError(
-                    "Greenfield host candidate constraint has unbound participant actor"
-                )
-            continue
-        if kind == "workflow_order":
-            if set(custody) != {"kind"} or not _constraint_has_source_precedence(
-                source_precedence,
-                constraint_index=constraint_index,
-            ):
-                raise ValueError(
-                    "Greenfield workflow constraint has no existing source precedence edge"
-                )
-            continue
-        if kind == "product_owned" and set(custody) == {"kind", "owner_fact"}:
-            owner_quote = _product_event_owner_quote(facts, custody.get("owner_fact"))
-            if owner_quote:
-                constraint_responsibilities.append((owner_quote, citation))
-                continue
-            raise ValueError("Greenfield host candidate constraint has unbound product owner")
-        raise ValueError("Greenfield host candidate constraint custody is invalid")
+        canonical_constraints.append(
+            canonical_citation_from_host_selection(evidence, raw_constraint)
+        )
     canonical_facts["operational_constraints"] = canonical_constraints
     canonical_events: list[dict[str, Any]] = []
     path_citations: list[Any] = []
@@ -430,11 +318,11 @@ def canonical_greenfield_host_candidate(
             for responsibility in component["responsibilities"]
         ):
             raise ValueError(
-                "Greenfield operational constraint custody must use constraint_custody"
+                "Greenfield operational constraints must remain global until review"
             )
         canonical_components.append(component)
         components_by_owner[owner_quote] = component
-    for owner_quote, citation in (*event_responsibilities, *constraint_responsibilities):
+    for owner_quote, citation in event_responsibilities:
         if any(
             other_owner != owner_quote and citation in other_component["responsibilities"]
             for other_owner, other_component in components_by_owner.items()
@@ -528,24 +416,6 @@ def _participant_actor_quote(
     return str(citation.get("quote") or "") if isinstance(citation, Mapping) else ""
 
 
-def _constraint_has_source_precedence(
-    source_precedence: Any,
-    *,
-    constraint_index: int,
-) -> bool:
-    """Return whether the current constraint backs an existing event edge."""
-
-    if not isinstance(source_precedence, Sequence) or isinstance(
-        source_precedence, (str, bytes, bytearray)
-    ):
-        return False
-    return any(
-        isinstance(binding, Mapping)
-        and binding.get("constraint_index") == constraint_index
-        for binding in source_precedence
-    )
-
-
 def _citation_contains(
     evidence: bytes,
     *,
@@ -585,7 +455,6 @@ def _canonical_fact_value(
 
 __all__ = [
     "HOST_CANDIDATE_FORMAT_VERSION",
-    "HOST_CONSTRAINT_CUSTODY_FIELD",
     "HOST_EVENT_CITATION_FIELD",
     "HOST_EVENT_RESPONSIBILITY_FIELD",
     "canonical_greenfield_host_candidate",

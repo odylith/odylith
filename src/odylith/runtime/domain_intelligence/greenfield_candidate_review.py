@@ -12,6 +12,15 @@ from collections.abc import Callable, Mapping, Sequence
 from copy import deepcopy
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_constraint_custody import (
+    CANDIDATE_PROPOSED_FIELDS,
+    CANDIDATE_SOURCE_FIELDS,
+    CONSTRAINT_CUSTODY_SCHEMA,
+    candidate_review_sha256,
+    candidate_review_value,
+    constraint_custody_shape_issues,
+    validated_constraint_custody,
+)
 from odylith.runtime.domain_intelligence.greenfield_material_clarification import (
     MATERIAL_DIMENSIONS,
 )
@@ -27,7 +36,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-CANDIDATE_REVIEW_VERSION = "odylith.greenfield.candidate-review.v15"
+CANDIDATE_REVIEW_VERSION = "odylith.greenfield.candidate-review.v16"
 TITLE_ROLE_DEFINITION = (
     "A source-cited name or concise label for the requested product, workflow, or "
     "product state. Identify what the request asks to create, operate, or review; "
@@ -109,13 +118,6 @@ REFERENCE_PROVENANCE_ROLE_CONTRACT = (
     "or scope limits that cannot safely remain an explicit assumption; the workflow need not "
     "be incomplete for that boundary to be material."
 )
-_SOURCE_FIELDS = frozenset((
-    "status", "facts", "events", "components", "terminal", "source_precedence",
-    "consistency", "ambiguities",
-))
-_PROPOSED_FIELDS = frozenset(("assumptions", "provisional_design"))
-
-
 class GreenfieldCandidateRejected(RuntimeError):
     """Carry one source-bound denial into the bounded pre-confirm revision path."""
 
@@ -144,11 +146,12 @@ proposed choices, not accepted source facts.
 Apply that semantic-role classification before accepted-source completeness. Do not deny
 a candidate merely because accepted_source.components omits separately identified,
 unbound reference provenance. Preserve and require every responsibility that the source
-explicitly binds to the requested product as an owned role, dependency, constraint, event
-or result in accepted_source.components. Shared vocabulary, descriptive capabilities or
-thematic relevance alone do not establish that binding,
-even when the same clause is also represented as a typed workflow event; provisional
-design may reference those responsibilities but cannot substitute for accepted custody.
+explicitly binds to the requested product as an owned role, dependency, event or result in
+accepted_source.components. Shared vocabulary, descriptive capabilities or thematic
+relevance alone do not establish that binding. Operational constraints remain global facts
+in the review input: classify each one exactly once in admission_witness.constraint_custody
+instead of requiring or accepting an author-owned duplicate component responsibility.
+Provisional design cannot substitute for accepted custody.
 source_precedence must preserve all explicit ordering requirements using the packet's existing event IDs and cited
 operational constraints; event array order alone is not source temporal authority.
 Require a precedence edge only when both ordered sides are source-supported
@@ -223,6 +226,13 @@ satisfy this witness. If the source lacks any witness part, require
 `first_path` clarification; if the source supplies it but the candidate omits or
 misrepresents it, deny the candidate. For `denied` or `clarification_required`,
 admission_witness must be null.
+For admitted constraint_custody, return one row per accepted operational constraint in
+the same one-based order. Use product_owned with owner_fact selecting title or an accepted
+internal_systems row when that product owner is governed; use participant_only with
+actor_fact selecting an accepted human_actors or external_systems row when only that
+participant is governed; use workflow_order only when the current constraint_index is
+referenced by source_precedence. Product or participant ownership takes precedence over
+temporal wording. Do not repeat precedence edge fields in the custody row.
 A clarification selects exactly one existing material_dimension and has no
 issue. Never return replacements, edits, or proposed design.
 AUTHORITY BOUNDARY
@@ -256,6 +266,7 @@ REVIEW_SCHEMA = {
                 "task_event_order",
                 "result_event_order",
                 "design_coverage",
+                "constraint_custody",
             ],
             "properties": {
                 "participant_fact": {
@@ -309,6 +320,7 @@ REVIEW_SCHEMA = {
                         },
                     },
                 },
+                "constraint_custody": deepcopy(CONSTRAINT_CUSTODY_SCHEMA),
             },
         },
     },
@@ -337,8 +349,7 @@ def candidate_review_payload(
     source_spans: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
     """Partition authority without dropping or reinterpreting a candidate value."""
-    if set(candidate) != _SOURCE_FIELDS | _PROPOSED_FIELDS:
-        raise ValueError("Greenfield candidate has unclassified or missing authority fields")
+    review_candidate = candidate_review_value(candidate)
     if not isinstance(source_spans, Sequence) or isinstance(source_spans, (str, bytes, bytearray)) or not source_spans:
         raise ValueError("Greenfield candidate review requires validated source spans")
     evidence_bytes = evidence_text.encode("utf-8")
@@ -371,10 +382,7 @@ def candidate_review_payload(
         "source": evidence_text,
         "resolved_source_custody": resolved_source_custody,
         "role_definitions": deepcopy(_ROLE_DEFINITIONS),
-        "candidate": {
-            "accepted_source": {key: deepcopy(candidate[key]) for key in sorted(_SOURCE_FIELDS)},
-            "proposed_decisions": {key: deepcopy(candidate[key]) for key in sorted(_PROPOSED_FIELDS)},
-        },
+        "candidate": review_candidate,
     }
 
 
@@ -441,9 +449,7 @@ def review_greenfield_candidate(
             "version": CANDIDATE_REVIEW_VERSION,
             "status": outcome,
             "source_sha256": hashlib.sha256(evidence_text.encode("utf-8")).hexdigest(),
-            "candidate_sha256": hashlib.sha256(
-                encode_greenfield_model_value(payload["candidate"])
-            ).hexdigest(),
+            "review_input_candidate_sha256": candidate_review_sha256(candidate),
             "model_profile": model_profile, "elapsed_seconds": max(0.0, clock() - dispatched_at),
         }
         if issue is not None:
@@ -548,6 +554,10 @@ def _validated_admission_witness(
     result_order = value.get("result_event_order")
     terminal = candidate.get("terminal")
     design_coverage = value.get("design_coverage")
+    constraint_custody = validated_constraint_custody(
+        value.get("constraint_custody"),
+        candidate=candidate,
+    )
     task_event = (
         events[task_order - 1]
         if isinstance(events, Sequence)
@@ -584,6 +594,7 @@ def _validated_admission_witness(
         "task_event_order": task_order,
         "result_event_order": result_order,
         "design_coverage": deepcopy(dict(design_coverage)),
+        "constraint_custody": [deepcopy(row) for row in constraint_custody],
     }
 
 
@@ -625,6 +636,7 @@ def candidate_review_admission_witness_shape_issues(value: Any) -> tuple[str, ..
 
     if not isinstance(value, Mapping) or set(value) != {
         "participant_fact", "task_event_order", "result_event_order", "design_coverage",
+        "constraint_custody",
     }:
         return ("admission witness shape is invalid",)
     participant = value.get("participant_fact")
@@ -666,6 +678,8 @@ def candidate_review_admission_witness_shape_issues(value: Any) -> tuple[str, ..
         "material_risks_identified", "no_material_risks_identified",
     }:
         return ("admission design-coverage witness is invalid",)
+    if constraint_custody_shape_issues(value.get("constraint_custody")):
+        return ("admission constraint-custody witness is invalid",)
     return ()
 
 

@@ -151,12 +151,9 @@ class _SequenceProvider(StructuredAuthoringProvider):
         return response
 
 
-class _RevisionAuthorProvider(_SequenceProvider):
+class _RemainingAuthorProvider(_SequenceProvider):
     def generate_structured(self, *, request: object) -> dict[str, Any] | None:
-        assert getattr(request, "schema_name", "") in {
-            "greenfield_remaining_candidate_authoring",
-            "greenfield_candidate_revision",
-        }
+        assert getattr(request, "schema_name", "") == "greenfield_remaining_candidate_authoring"
         response = super().generate_structured(request=request)
         if isinstance(response, dict):
             result = response.get("result")
@@ -270,7 +267,7 @@ def test_success_uses_three_roles_and_emits_recomputable_v4_proof(monkeypatch, t
 
     assert isinstance(result, GreenfieldModelAuthoredIntent)
     assert result.semantic_model_call_count == 3
-    assert MAX_GREENFIELD_SEMANTIC_CALLS == 5
+    assert MAX_GREENFIELD_SEMANTIC_CALLS == 3
     assert selector.calls == remaining.calls == reviewer.calls == 1
     assert selector.requests[0].schema_name == "greenfield_participant_selection"
     assert remaining.requests[0].schema_name == "greenfield_remaining_candidate_authoring"
@@ -441,7 +438,14 @@ def test_three_calls_receive_only_the_shared_deadlines_remaining_time():
         duration=3.0,
     )
     reviewer = _TimedProvider(
-        admitted_review_response(result_event_order=1),
+        admitted_review_response(
+            result_event_order=1,
+            constraint_custody=[{
+                "constraint_index": 1,
+                "kind": "participant_only",
+                "actor_fact": {"field": "human_actors", "row": 1},
+            }],
+        ),
         clock=clock,
         duration=1.0,
     )
@@ -468,7 +472,7 @@ def test_reviewer_clarification_stops_participant_authoring_before_staging(
 ):
     complete = _complete_response()
     selector = ParticipantSelectionProvider(complete)
-    author = _RevisionAuthorProvider([complete])
+    author = _RemainingAuthorProvider([complete])
     reviewer = _SequenceReviewProvider([{
         "outcome": "clarification_required",
         "issue": None,
@@ -506,147 +510,20 @@ def test_reviewer_clarification_stops_participant_authoring_before_staging(
     assert reviewer.calls == 1
 
 
-def test_denial_gets_one_revision_and_fresh_review_within_shared_deadline(
-    monkeypatch, tmp_path
-):
-    clock = _Clock()
-    complete = _complete_response()
-    revised = _complete_response()
-    revised["result"]["facts"]["opportunity"] = None
-    revised["result"]["assumptions"].append(
-        {
-            "applies_to": "opportunity",
-            "statement": "One reviewable berth record can improve berth coordination.",
-        }
-    )
-    selector = _TimedProvider(
-        ParticipantSelectionProvider(complete).response, clock=clock, duration=1.0
-    )
-    author = _RevisionAuthorProvider(
-        [complete, revised], clock=clock, durations=[2.0, 4.0]
-    )
-    reviewer = _SequenceReviewProvider(
-        [
-            {
-                "outcome": "denied",
-                "issue": {
-                    "path": "candidate.accepted_source.facts.opportunity",
-                    "reason": "The selected action is not a complete improvement.",
-                },
-                "clarification": None,
-                "admission_witness": None,
-            },
-            admitted_review_response(result_event_order=1),
-        ],
-        clock=clock,
-        durations=[3.0, 5.0],
-    )
-    proof_path = tmp_path / "proof.json"
-    with proof_path.open("w+b") as proof:
-        monkeypatch.setenv(GREENFIELD_MODEL_PROOF_FD_ENV, str(proof.fileno()))
-        result = author_greenfield_intent(
-            evidence_text=_source(),
-            provider=author,
-            participant_provider_factory=lambda: selector,
-            review_provider_factory=lambda: reviewer,
-            timeout_seconds=30.0,
-            clock=clock,
-        )
-        proof.flush()
-        proof.seek(0)
-        retained = json.loads(proof.read())
-
-    assert isinstance(result, GreenfieldModelAuthoredIntent)
-    assert result.semantic_model_call_count == 5
-    assert result.intent["opportunity"] == ""
-    assert result.rejected_candidate_review["status"] == "denied"
-    assert result.candidate_revision["elapsed_seconds"] == 4.0
-    assert result.candidate_review["status"] == "admitted"
-    assert selector.calls == 1
-    assert author.calls == reviewer.calls == 2
-    assert [request.timeout_seconds for request in author.requests] == [29.0, 24.0]
-    assert [request.timeout_seconds for request in reviewer.requests] == [27.0, 20.0]
-    revision_request = author.requests[1]
-    assert revision_request.prompt_payload["review_issue"]["path"].endswith(
-        ".opportunity"
-    )
-    assert revision_request.prompt_payload["rejected_candidate"]["result"]["facts"][
-        "opportunity"
-    ] is not None
-    assert "only revision attempt" in revision_request.system_prompt
-    assert set(retained) == {
-        "version", "authoring_version", "request", "semantic_model_call_count",
-        "participant_selection", "remaining_candidate_authoring",
-        "rejected_candidate", "rejected_candidate_review", "candidate_revision",
-        "joined_candidate", "candidate_review",
-    }
-    assert retained["semantic_model_call_count"] == 5
-    assert retained["rejected_candidate_review"]["response"]["outcome"] == "denied"
-    assert retained["candidate_review"]["response"] == admitted_review_response(
-        result_event_order=1,
-    )
-
-
-def test_revision_receipts_reach_the_staged_candidate_without_expanding_sealed_roles(
-    tmp_path,
-):
+def test_denial_fails_closed_without_revision_or_second_review():
     complete = _complete_response()
     selector = ParticipantSelectionProvider(complete)
-    author = _RevisionAuthorProvider([complete, complete])
-    reviewer = _SequenceReviewProvider([
-        {
-            "outcome": "denied",
-            "issue": {
-                "path": "candidate.accepted_source.facts.opportunity",
-                "reason": "The selected action is not a complete improvement.",
-            },
-            "clarification": None,
-            "admission_witness": None,
+    author = _RemainingAuthorProvider([complete])
+    reviewer = _SequenceReviewProvider([{
+        "outcome": "denied",
+        "issue": {
+            "path": "candidate.accepted_source.facts.opportunity",
+            "reason": "The selected action is not a complete improvement.",
         },
-        admitted_review_response(result_event_order=1),
-    ])
-    receipt: dict[str, Any] = {}
+        "clarification": None,
+        "admission_witness": None,
+    }])
 
-    candidate = materialize_model_authored_intent(
-        prompt=_source(),
-        repo_root=tmp_path,
-        authoring_provider=author,
-        participant_provider_factory=lambda: selector,
-        review_provider_factory=lambda: reviewer,
-        authoring_receipt=receipt,
-        clock=lambda: 0.0,
-    )
-
-    assert receipt["semantic_model_call_count"] == 5
-    assert receipt["rejected_candidate_review"]["status"] == "denied"
-    assert receipt["candidate_revision"]["model_profile"]["model"] == "gpt-6-astra"
-    assert receipt["candidate_review"]["status"] == "admitted"
-    observed = candidate["product_intent_authority"]["operating_envelope"][
-        "model_contract"
-    ]["observed"]
-    assert set(observed) == {"participant_selection", "remaining_candidate_authoring"}
-
-
-def test_repeated_review_denial_fails_closed_without_a_second_revision():
-    complete = _complete_response()
-    selector = ParticipantSelectionProvider(complete)
-    author = _RevisionAuthorProvider([complete, complete])
-    reviewer = _SequenceReviewProvider(
-        [
-            {
-                "outcome": "denied",
-                "issue": {"path": "candidate.accepted_source.facts.opportunity", "reason": "Invalid."},
-                "clarification": None,
-                "admission_witness": None,
-            },
-            {
-                "outcome": "denied",
-                "issue": {"path": "candidate.accepted_source.source_precedence", "reason": "Still invalid."},
-                "clarification": None,
-                "admission_witness": None,
-            },
-        ]
-    )
     with pytest.raises(GreenfieldModelAuthoringError, match="could not be verified"):
         author_greenfield_intent(
             evidence_text=_source(),
@@ -655,8 +532,34 @@ def test_repeated_review_denial_fails_closed_without_a_second_revision():
             review_provider_factory=lambda: reviewer,
             clock=lambda: 0.0,
         )
-    assert selector.calls == 1
-    assert author.calls == reviewer.calls == 2
+    assert selector.calls == author.calls == reviewer.calls == 1
+    assert [request.schema_name for request in author.requests] == [
+        "greenfield_remaining_candidate_authoring"
+    ]
+
+
+def test_denial_does_not_reach_staging(tmp_path, monkeypatch):
+    complete = _complete_response()
+    selector = ParticipantSelectionProvider(complete)
+    author = _RemainingAuthorProvider([complete])
+    reviewer = _SequenceReviewProvider([{
+        "outcome": "denied",
+        "issue": {"path": "candidate.accepted_source.facts.opportunity", "reason": "Invalid."},
+        "clarification": None,
+        "admission_witness": None,
+    }])
+    monkeypatch.setattr(
+        greenfield_model_intent_materialization,
+        "stage_validated_authored_intent",
+        lambda **_kwargs: (_ for _ in ()).throw(AssertionError("denial must not stage")),
+    )
+    with pytest.raises(GreenfieldModelAuthoringError, match="could not be verified"):
+        materialize_model_authored_intent(
+            prompt=_source(), repo_root=tmp_path, authoring_provider=author,
+        participant_provider_factory=lambda: selector,
+        review_provider_factory=lambda: reviewer,
+        clock=lambda: 0.0,
+        )
 
 
 def test_request_mutation_fails_closed_without_later_calls():
@@ -727,5 +630,5 @@ def test_missing_remaining_provider_fails_before_participant_selection(
 def test_old_two_call_orchestration_is_not_exported():
     assert not hasattr(greenfield_model_intent_authoring, "author_greenfield_intent")
     assert not hasattr(greenfield_model_intent_authoring, "GREENFIELD_MODEL_PROOF_FD_ENV")
-    assert MAX_GREENFIELD_SEMANTIC_CALLS == 5
+    assert MAX_GREENFIELD_SEMANTIC_CALLS == 3
     assert GREENFIELD_INTENT_AUTHORING_VERSION.endswith(".v76")

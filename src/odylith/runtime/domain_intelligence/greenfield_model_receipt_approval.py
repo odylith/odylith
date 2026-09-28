@@ -41,7 +41,6 @@ def greenfield_model_authoring_receipt_approved(
             requested_repair_tier=requested_repair_tier,
         )
 
-    revised = model_authoring.get("semantic_model_call_count") == 5
     expected_fields = {
         "authoring_version",
         "semantic_model_call_count",
@@ -52,8 +51,6 @@ def greenfield_model_authoring_receipt_approved(
         "remaining_candidate_authoring",
         "candidate_review",
     }
-    if revised:
-        expected_fields.update({"candidate_revision", "rejected_candidate_review"})
     return (
         set(model_authoring) == expected_fields
         and str(semantic_compiler.get("version", "")).strip()
@@ -76,33 +73,18 @@ def greenfield_model_authoring_receipt_approved(
             request_role="remaining_candidate_authoring",
             requested_repair_tier=requested_repair_tier,
         )
-        and (
-            not revised
-            or _authoring_role_approved(
-                model_authoring,
-                request_role="candidate_revision",
-                requested_repair_tier=requested_repair_tier,
-            )
-        )
-        and (
-            not revised
-            or _rejected_candidate_review_approved(
-                model_authoring,
-                requested_repair_tier=requested_repair_tier,
-            )
-        )
         and _candidate_review_approved(
             model_authoring,
             requested_repair_tier=requested_repair_tier,
         )
         and type(semantic_compiler.get("post_authoring_interpretation_calls")) is int
         and semantic_compiler.get("post_authoring_interpretation_calls")
-        == (2 if revised else 1)
+        == 1
     )
 
 
 def _semantic_model_call_count_approved(value: Any) -> bool:
-    return type(value) is int and value in {3, 5}
+    return type(value) is int and value == 3
 
 
 def _authoring_role_approved(
@@ -171,6 +153,7 @@ def _candidate_review_approved(
         "version",
         "status",
         "source_sha256",
+        "review_input_candidate_sha256",
         "candidate_sha256",
         "product_facts_sha256",
         AUTHORED_RELATION_SET_SHA256_KEY,
@@ -183,6 +166,7 @@ def _candidate_review_approved(
         return False
     for key in (
         "source_sha256",
+        "review_input_candidate_sha256",
         "candidate_sha256",
         "product_facts_sha256",
         AUTHORED_RELATION_SET_SHA256_KEY,
@@ -277,42 +261,8 @@ def _host_native_timing_approved(model_authoring: Mapping[str, Any]) -> bool:
     )
 
 
-def _rejected_candidate_review_approved(
-    model_authoring: Mapping[str, Any], *, requested_repair_tier: str,
-) -> bool:
-    review = model_authoring.get("rejected_candidate_review")
-    if not isinstance(review, Mapping) or set(review) != {
-        "version",
-        "status",
-        "source_sha256",
-        "candidate_sha256",
-        "elapsed_seconds",
-        "model_profile",
-        "issue",
-    }:
-        return False
-    issue = review.get("issue")
-    if (
-        review.get("version") != CANDIDATE_REVIEW_VERSION
-        or review.get("status") != "denied"
-        or not isinstance(issue, Mapping)
-        or set(issue) != {"path", "reason"}
-        or any(not isinstance(issue[key], str) or not issue[key].strip() for key in issue)
-        or not all(_is_sha256(review.get(key)) for key in ("source_sha256", "candidate_sha256"))
-    ):
-        return False
-    return _authoring_role_approved(
-        model_authoring,
-        requested_repair_tier=requested_repair_tier,
-        request_role="candidate_review",
-        receipt_key="rejected_candidate_review",
-    )
-
-
 def _sequential_model_receipts_approved(model_authoring: Mapping[str, Any]) -> bool:
     role_keys = ["participant_selection", "remaining_candidate_authoring"]
-    if model_authoring.get("semantic_model_call_count") == 5:
-        role_keys.extend(["rejected_candidate_review", "candidate_revision"])
     role_keys.append("candidate_review")
     receipts = [model_authoring.get(key) for key in role_keys]
     if any(not isinstance(receipt, Mapping) for receipt in receipts):

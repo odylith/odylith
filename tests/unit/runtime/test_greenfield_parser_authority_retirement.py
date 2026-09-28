@@ -156,7 +156,7 @@ from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_proposals_cli
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import combined_prompt_evidence_source
 from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
-from tests.unit.runtime.greenfield_model_authoring_fixtures import AdmittingReviewProvider, title_owned_constraint_custodies, write_host_candidate_fixture
+from tests.unit.runtime.greenfield_model_authoring_fixtures import AdmittingReviewProvider, write_host_candidate_fixture
 from tests.unit.runtime.test_greenfield_model_path_custody import _response, _source
 
 source = _source()
@@ -176,7 +176,6 @@ with tempfile.TemporaryDirectory(prefix="greenfield-parser-retirement-") as repo
         Path(repo_root) / "host-candidate.json",
         response,
         evidence_text=evidence,
-        constraint_custodies=title_owned_constraint_custodies(response),
     )
     result = greenfield_proposals_cli.main(
         ["propose", "--repo-root", repo_root, "--prompt", source, "--candidate-file", str(candidate_path), "--format", "json"]

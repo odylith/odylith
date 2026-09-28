@@ -73,6 +73,7 @@ def derive_model_relations(
     first_path: str,
     evidence_text: str,
     event_citations_are_event_owned: bool = False,
+    reviewer_projected_constraints: bool = False,
 ) -> DerivedModelRelations:
     """Compile the compact graph without adding a second semantic author."""
 
@@ -94,6 +95,7 @@ def derive_model_relations(
             components,
             selected_facts=selected_facts,
             first_path_relations=path_relations,
+            reviewer_projected_constraints=reviewer_projected_constraints,
         ),
         terminal_result_fact=terminal_fact,
     )
@@ -407,6 +409,7 @@ def _derive_component_relations(
     *,
     selected_facts: Sequence[Mapping[str, Any]],
     first_path_relations: Sequence[Mapping[str, Any]],
+    reviewer_projected_constraints: bool,
 ) -> tuple[dict[str, Any], ...]:
     model_rows = model_component_responsibility_rows(value)
     owner_facts = _selected_product_owner_facts(selected_facts)
@@ -415,12 +418,31 @@ def _derive_component_relations(
         for fact in selected_facts
         if str(fact.get("field") or "") == "component_responsibilities"
     )
+    constraint_locations = {
+        (
+            fact.get("source_start_byte"),
+            fact.get("source_end_byte"),
+        )
+        for fact in selected_facts
+        if str(fact.get("field") or "") == "operational_constraints"
+    }
     if len(model_rows) != len(responsibility_facts):
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authoring left component responsibilities without owners"
         )
     rows: list[dict[str, Any]] = []
     for raw, responsibility_fact in zip(model_rows, responsibility_facts, strict=True):
+        if (
+            not reviewer_projected_constraints
+            and (
+                responsibility_fact.get("source_start_byte"),
+                responsibility_fact.get("source_end_byte"),
+            )
+            in constraint_locations
+        ):
+            raise GreenfieldComponentOwnershipError(
+                "Greenfield authoring copied an operational constraint into component responsibilities"
+            )
         owner_fact = owner_facts.get(str(raw.get("owner_fact_quote") or ""))
         if owner_fact is None:
             raise GreenfieldAuthoredSemanticsError(
@@ -811,10 +833,10 @@ MODEL_COMPONENT_SCHEMA: dict[str, Any] = {
                     "minItems": 1,
                     "description": (
                         "Every exact complete source clause that explicitly states the selected "
-                        "product owner's own responsibility, capability, result, or product-governing "
-                        "operational or safety constraint. Preserve a product-governing constraint "
-                        "both here and in global operational-constraint custody. Preserve it here "
-                        "even when the same clause is also a typed product event; the accepted component "
+                        "product owner's own responsibility, capability, or result. Operational "
+                        "constraints remain global during authoring; independent review alone may "
+                        "project a product-owned constraint after admission. Preserve a responsibility "
+                        "here when the same clause is also a typed product event; the accepted component "
                         "fact owns the responsibility while the event owns workflow order. Human-action "
                         "spans remain human-owned workflow events."
                     ),
@@ -826,9 +848,8 @@ MODEL_COMPONENT_SCHEMA: dict[str, Any] = {
     "minItems": 0,
     "description": (
         "All explicitly source-stated product or component responsibilities, each cited once "
-        "and bound to its source-stated product owner. Product-governing operational or safety "
-        "constraints retain both global constraint custody and owner-bound component custody; "
-        "human-only restrictions and authoring source-custody controls do not. Preserve "
+        "and bound to its source-stated product owner. Operational constraints remain global "
+        "until independent review classifies and projects product-owned custody. Preserve "
         "responsibilities repeated in "
         "typed product events; proposed design may reference but never replace accepted source "
         "custody. Return [] only when the source states no such responsibility. Never assign an "

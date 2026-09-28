@@ -101,9 +101,25 @@ def test_post_result_action_survives_authoring_custody_and_all_projections(tmp_p
     candidate = materialize_model_authored_intent(
         prompt=source, repo_root=tmp_path, authoring_provider=provider,
         participant_provider_factory=provider.participant_provider,
-        review_provider_factory=AdmittingReviewProvider,
+        review_provider_factory=lambda: AdmittingReviewProvider(
+            constraint_custody=[
+                {
+                    "constraint_index": 1,
+                    "kind": "participant_only",
+                    "actor_fact": {"field": "human_actors", "row": 1},
+                },
+                {
+                    "constraint_index": 2,
+                    "kind": "product_owned",
+                    "owner_fact": {"field": "title", "row": 1},
+                },
+            ],
+        ),
     )
     assert provider.calls == 1
+    product_constraint = candidate["operational_constraints"][1]
+    assert candidate["component_responsibilities"].count(product_constraint) == 1
+    assert candidate["operational_constraints"][0] not in candidate["component_responsibilities"]
     relations = require_relation_authority_parity(candidate, candidate[PRODUCT_INTENT_AUTHORITY_KEY])
     assert relations[0]["visible_result_quote"] == "the review receipt"
     assert not relations[2]["visible_result_quote"]
@@ -137,9 +153,18 @@ def ordered_package(tmp_path):
     candidate = materialize_model_authored_intent(
         prompt=source, repo_root=tmp_path, authoring_provider=provider,
         participant_provider_factory=provider.participant_provider,
-        review_provider_factory=AdmittingReviewProvider,
+        review_provider_factory=lambda: AdmittingReviewProvider(
+            constraint_custody=[
+                {
+                    "constraint_index": 1,
+                    "kind": "participant_only",
+                    "actor_fact": {"field": "human_actors", "row": 1},
+                },
+            ],
+        ),
     )
     assert provider.calls == 1
+    assert not candidate.get("component_responsibilities", [])
     proposal = build_greenfield_proposal(
         repo_root=tmp_path, prompt=source, release_selector="0.0.1",
         confirmed_intent=candidate, require_completion_ready=False,

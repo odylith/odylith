@@ -94,8 +94,25 @@ class ParticipantSelectionProvider(StructuredAuthoringProvider):
 class AdmittingReviewProvider(StructuredAuthoringProvider):
     """Independent transport double for structurally valid positive wiring cases."""
 
-    def __init__(self) -> None:
-        super().__init__(admitted_review_response())
+    def __init__(
+        self,
+        *,
+        constraint_custody: Sequence[Mapping[str, Any]] | None = None,
+    ) -> None:
+        configured_custody = (
+            constraint_custody
+            if constraint_custody is not None
+            else (
+                {
+                    "constraint_index": 1,
+                    "kind": "participant_only",
+                    "actor_fact": {"field": "human_actors", "row": 1},
+                },
+            )
+        )
+        super().__init__(
+            admitted_review_response(constraint_custody=configured_custody)
+        )
 
     def generate_structured(self, *, request: object) -> Mapping[str, Any] | None:
         assert getattr(request, "schema_name", "") == "greenfield_candidate_review"
@@ -131,17 +148,33 @@ class AdmittingReviewProvider(StructuredAuthoringProvider):
             result_event_order = (
                 terminal.get("event_order") if isinstance(terminal, Mapping) else 1
             )
+            constraints = facts.get("operational_constraints") if isinstance(facts, Mapping) else []
+            witness = self.response.get("admission_witness")
+            configured_custody = (
+                witness.get("constraint_custody")
+                if isinstance(witness, Mapping)
+                else None
+            )
+            constraint_custody = (
+                []
+                if isinstance(constraints, Sequence)
+                and not isinstance(constraints, (str, bytes, bytearray))
+                and not constraints
+                else copy.deepcopy(configured_custody)
+            )
             self.response = admitted_review_response(
                 participant_field=participant_field,
                 participant_row=participant_row,
                 result_event_order=result_event_order,
                 provisional_design=design,
+                constraint_custody=constraint_custody,
             )
         return super().generate_structured(request=request)
 
 
 def admitted_review_response(
     *,
+    constraint_custody: Sequence[Mapping[str, Any]],
     participant_field: str = "human_actors",
     participant_row: int = 1,
     task_event_order: int = 1,
@@ -169,6 +202,9 @@ def admitted_review_response(
                 "risk_keys": [row["key"] for row in risks],
                 "risk_posture_status": design["risk_posture"]["status"],
             },
+            "constraint_custody": copy.deepcopy(
+                list(constraint_custody)
+            ),
         },
     }
 
@@ -177,7 +213,6 @@ def host_candidate_response(
     response: Mapping[str, Any],
     *,
     evidence_text: str,
-    constraint_custodies: Mapping[int, Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Project a canonical test response into the public host-candidate shape."""
 
@@ -191,13 +226,6 @@ def host_candidate_response(
     components = result.get("components")
     if not isinstance(facts, dict) or not isinstance(events, list) or not isinstance(components, list):
         raise TypeError("canonical fixture cannot be projected to a host candidate")
-    source_facts = copy.deepcopy(facts)
-    constraint_owners = {
-        json.dumps(responsibility, sort_keys=True): str(component.get("owner_fact_quote") or "")
-        for component in components
-        for responsibility in component.get("responsibilities", [])
-        if isinstance(responsibility, Mapping)
-    }
     first_path = facts.pop("first_path")
     if not isinstance(first_path, list) or len(first_path) != len(events):
         raise ValueError("canonical fixture event citations are incomplete")
@@ -207,20 +235,6 @@ def host_candidate_response(
                 _unique_context_citation(evidence_text, row)
                 for row in value
             ]
-            if field == "operational_constraints":
-                for constraint_index, (citation, raw) in enumerate(
-                    zip(citations, value, strict=True), start=1
-                ):
-                    owner_quote = constraint_owners.get(
-                        json.dumps(raw, sort_keys=True), ""
-                    )
-                    citation["constraint_custody"] = _fixture_constraint_custody(
-                        source_facts,
-                        source_precedence=result.get("source_precedence"),
-                        constraint_index=constraint_index,
-                        owner_quote=owner_quote,
-                        explicit=(constraint_custodies or {}).get(constraint_index),
-                    )
             facts[field] = citations
         elif isinstance(value, Mapping):
             facts[field] = _unique_context_citation(
@@ -242,8 +256,7 @@ def host_candidate_response(
     }
     operational_constraints = {
         json.dumps(
-            {key: value for key, value in row.items() if key != "constraint_custody"},
-            sort_keys=True,
+            row, sort_keys=True,
         )
         for row in facts.get("operational_constraints", [])
         if isinstance(row, Mapping)
@@ -284,84 +297,17 @@ def host_candidate_response(
     return candidate
 
 
-def title_owned_constraint_custodies(
-    response: Mapping[str, Any],
-) -> dict[int, dict[str, Any]]:
-    """Declare every canonical fixture constraint as product-owned by its title."""
-
-    result = response.get("result")
-    facts = result.get("facts") if isinstance(result, Mapping) else None
-    constraints = facts.get("operational_constraints") if isinstance(facts, Mapping) else None
-    if not isinstance(constraints, Sequence) or isinstance(
-        constraints, (str, bytes, bytearray)
-    ):
-        raise TypeError("canonical fixture operational constraints are invalid")
-    return {
-        index: {
-            "kind": "product_owned",
-            "owner_fact": {"field": "title", "row": 1},
-        }
-        for index in range(1, len(constraints) + 1)
-    }
-
-
-def _fixture_owner_fact(
-    facts: Mapping[str, Any], owner_quote: str,
-) -> dict[str, object]:
-    title = facts.get("title")
-    if isinstance(title, Mapping) and str(title.get("quote") or "") == owner_quote:
-        return {"field": "title", "row": 1}
-    systems = facts.get("internal_systems")
-    if isinstance(systems, Sequence) and not isinstance(systems, (str, bytes, bytearray)):
-        for index, system in enumerate(systems, start=1):
-            if isinstance(system, Mapping) and str(system.get("quote") or "") == owner_quote:
-                return {"field": "internal_systems", "row": index}
-    raise ValueError(f"canonical fixture has no product owner fact for {owner_quote!r}")
-
-
-def _fixture_constraint_custody(
-    facts: Mapping[str, Any],
-    *,
-    source_precedence: Any,
-    constraint_index: int,
-    owner_quote: str,
-    explicit: Mapping[str, Any] | None,
-) -> dict[str, Any]:
-    if owner_quote:
-        return {
-            "kind": "product_owned",
-            "owner_fact": _fixture_owner_fact(facts, owner_quote),
-        }
-    if isinstance(source_precedence, Sequence) and not isinstance(
-        source_precedence, (str, bytes, bytearray)
-    ) and any(
-        isinstance(row, Mapping) and row.get("constraint_index") == constraint_index
-        for row in source_precedence
-    ):
-        return {"kind": "workflow_order"}
-    if explicit is not None:
-        return copy.deepcopy(dict(explicit))
-    raise ValueError(
-        "canonical fixture requires explicit custody for an unowned non-order constraint"
-    )
-
-
 def write_host_candidate_fixture(
     path: Path,
     response: Mapping[str, Any],
     *,
     evidence_text: str,
-    constraint_custodies: Mapping[int, Mapping[str, Any]] | None = None,
 ) -> Path:
     """Write one public host candidate fixture and return its path."""
 
     path.write_text(
         json.dumps(
-            host_candidate_response(
-                response,
-                evidence_text=evidence_text,
-                constraint_custodies=constraint_custodies,
-            )
+            host_candidate_response(response, evidence_text=evidence_text)
         ),
         encoding="utf-8",
     )

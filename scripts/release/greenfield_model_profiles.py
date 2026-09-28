@@ -46,11 +46,12 @@ from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
     candidate_review_admission_witness_shape_issues,
     candidate_review_payload,
 )
+from odylith.runtime.domain_intelligence.greenfield_constraint_custody import (
+    candidate_review_sha256,
+    project_constraint_custody,
+)
 from odylith.runtime.domain_intelligence.greenfield_material_clarification import (
     MATERIAL_DIMENSIONS,
-)
-from odylith.runtime.domain_intelligence.greenfield_candidate_revision import (
-    candidate_revision_payload,
 )
 
 
@@ -205,7 +206,8 @@ def model_profile_evidence(
     observed: Mapping[str, Any] | None = None,
     stage_observation: Mapping[str, Any] | None = None,
     reviewer_observation: Mapping[str, Any] | None = None,
-    expected_reviewer_candidate_sha256: str = "",
+    review_input_candidate: Mapping[str, Any] | None = None,
+    expected_review_input_candidate_sha256: str = "",
     expected_source: str = "",
 ) -> dict[str, Any]:
     """Bind configured and retained author/reviewer evidence to a pinned profile."""
@@ -263,7 +265,8 @@ def model_profile_evidence(
             sealed_observation=observation,
             stage_observation=retained_stage,
             reviewer_observation=_mapping(reviewer_observation),
-            expected_reviewer_candidate_sha256=expected_reviewer_candidate_sha256,
+            review_input_candidate=_mapping(review_input_candidate),
+            expected_review_input_candidate_sha256=expected_review_input_candidate_sha256,
             expected_source_sha256=expected_source_sha256,
         )
         issues.extend(str(issue) for issue in stage_summary["issues"])
@@ -276,7 +279,7 @@ def model_profile_evidence(
                 "reviewer" if reviewer_host_clarification else "host_candidate"
             ),
             reviewer_observation=reviewer_observation,
-            expected_reviewer_candidate_sha256=expected_reviewer_candidate_sha256,
+            expected_review_input_candidate_sha256=expected_review_input_candidate_sha256,
         )
         issues.extend(str(issue) for issue in stage_summary["issues"])
     elif host_native_unadmitted:
@@ -353,7 +356,7 @@ def model_profile_evidence(
             else "not_applicable"
         ),
         "maximum_semantic_model_calls": (
-            1 if host_native or host_native_clarification or host_native_unadmitted else 5
+            1 if host_native or host_native_clarification or host_native_unadmitted else 3
         ),
         "configured": configured,
         "expected_source_sha256": expected_source_sha256,
@@ -405,7 +408,8 @@ def _host_native_stage_observation_evidence(
     sealed_observation: Mapping[str, Any],
     stage_observation: Mapping[str, Any],
     reviewer_observation: Mapping[str, Any] | None = None,
-    expected_reviewer_candidate_sha256: str = "",
+    review_input_candidate: Mapping[str, Any] | None = None,
+    expected_review_input_candidate_sha256: str = "",
     expected_source_sha256: str = "",
 ) -> dict[str, Any]:
     """Bind one external host candidate and one runtime review to sealed custody."""
@@ -468,9 +472,10 @@ def _host_native_stage_observation_evidence(
     reviewer_admission_issues = _host_native_reviewer_admission_issues(
         profile,
         reviewer_observation=_mapping(reviewer_observation),
+        review_input_candidate=_mapping(review_input_candidate),
         sealed_candidate=candidate,
         sealed_review_profile=review,
-        expected_reviewer_candidate_sha256=expected_reviewer_candidate_sha256,
+        expected_review_input_candidate_sha256=expected_review_input_candidate_sha256,
         expected_source_sha256=expected_source_sha256,
     )
     issues.extend(reviewer_admission_issues)
@@ -497,9 +502,10 @@ def _host_native_reviewer_admission_issues(
     profile: str,
     *,
     reviewer_observation: Mapping[str, Any],
+    review_input_candidate: Mapping[str, Any],
     sealed_candidate: Mapping[str, Any],
     sealed_review_profile: Mapping[str, Any],
-    expected_reviewer_candidate_sha256: str,
+    expected_review_input_candidate_sha256: str,
     expected_source_sha256: str,
 ) -> tuple[str, ...]:
     """Validate private admitted-review proof without exposing it publicly."""
@@ -533,8 +539,8 @@ def _host_native_reviewer_admission_issues(
 
     receipt = _mapping(private.get("candidate_review"))
     if set(receipt) != {
-        "version", "status", "source_sha256", "candidate_sha256", "model_profile",
-        "elapsed_seconds", "admission_witness",
+        "version", "status", "source_sha256", "review_input_candidate_sha256",
+        "candidate_sha256", "model_profile", "elapsed_seconds", "admission_witness",
     }:
         issues.append("private host-native reviewer admission receipt is missing or malformed")
     if receipt.get("version") != CANDIDATE_REVIEW_VERSION:
@@ -544,10 +550,19 @@ def _host_native_reviewer_admission_issues(
     if receipt.get("source_sha256") != expected_source_sha256:
         issues.append("private host-native reviewer admission source hash is invalid")
     if (
-        not _is_sha256(expected_reviewer_candidate_sha256)
-        or receipt.get("candidate_sha256") != expected_reviewer_candidate_sha256
+        not _is_sha256(expected_review_input_candidate_sha256)
+        or receipt.get("review_input_candidate_sha256")
+        != expected_review_input_candidate_sha256
     ):
-        issues.append("private host-native reviewer admission candidate hash is invalid")
+        issues.append("private host-native reviewer admission input hash is invalid")
+    if not _is_sha256(receipt.get("candidate_sha256")):
+        issues.append("private host-native reviewer admission final candidate hash is invalid")
+    issues.extend(
+        retained_admitted_candidate_hash_issues(
+            review_input_candidate=review_input_candidate,
+            receipt=receipt,
+        )
+    )
     if _mapping(receipt.get("model_profile")) != dict(sealed_review_profile):
         issues.append("private host-native reviewer admission profile is not sealed")
     if candidate_review_admission_witness_shape_issues(
@@ -561,6 +576,38 @@ def _host_native_reviewer_admission_issues(
     return tuple(dict.fromkeys(issues))
 
 
+def retained_admitted_candidate_hash_issues(
+    *,
+    review_input_candidate: Mapping[str, Any],
+    receipt: Mapping[str, Any],
+) -> tuple[str, ...]:
+    """Bind an admitted final hash to deterministic reviewer-owned projection."""
+
+    candidate = _mapping(review_input_candidate)
+    if not candidate:
+        return ("retained host-native reviewer input candidate is missing",)
+    issues: list[str] = []
+    try:
+        review_input_sha256 = candidate_review_sha256(candidate)
+    except (RuntimeError, TypeError, ValueError):
+        return ("retained host-native reviewer input candidate is invalid",)
+    if receipt.get("review_input_candidate_sha256") != review_input_sha256:
+        issues.append("retained reviewer input does not match the sealed review-input hash")
+    witness = _mapping(receipt.get("admission_witness"))
+    try:
+        projected = project_constraint_custody(
+            candidate,
+            custody=witness.get("constraint_custody"),
+        )
+        final_sha256 = candidate_review_sha256(projected)
+    except (RuntimeError, TypeError, ValueError):
+        issues.append("retained reviewer custody cannot produce a valid final candidate")
+    else:
+        if receipt.get("candidate_sha256") != final_sha256:
+            issues.append("sealed final candidate hash does not match retained reviewer custody")
+    return tuple(dict.fromkeys(issues))
+
+
 def host_native_clarification_stage_observation_issues(
     profile: str,
     *,
@@ -568,7 +615,7 @@ def host_native_clarification_stage_observation_issues(
     expected_source_sha256: str,
     clarification_origin: str = "host_candidate",
     reviewer_observation: Mapping[str, Any] | None = None,
-    expected_reviewer_candidate_sha256: str = "",
+    expected_review_input_candidate_sha256: str = "",
 ) -> tuple[str, ...]:
     """Validate one source-bound host clarification without public model metadata."""
 
@@ -587,7 +634,7 @@ def host_native_clarification_stage_observation_issues(
             stage_observation=_mapping(stage_observation),
             reviewer_observation=_mapping(reviewer_observation),
             expected_source_sha256=expected_source_sha256,
-            expected_reviewer_candidate_sha256=expected_reviewer_candidate_sha256,
+            expected_review_input_candidate_sha256=expected_review_input_candidate_sha256,
         ))
     return tuple(dict.fromkeys(issues))
 
@@ -599,7 +646,7 @@ def _host_native_clarification_stage_observation_evidence(
     expected_source_sha256: str,
     clarification_origin: str,
     reviewer_observation: Mapping[str, Any] | None,
-    expected_reviewer_candidate_sha256: str,
+    expected_review_input_candidate_sha256: str,
 ) -> dict[str, Any]:
     retained = _mapping(stage_observation)
     issues = _host_native_flow_observation_issues(
@@ -618,7 +665,7 @@ def _host_native_clarification_stage_observation_evidence(
             stage_observation=retained,
             reviewer_observation=_mapping(reviewer_observation),
             expected_source_sha256=expected_source_sha256,
-            expected_reviewer_candidate_sha256=expected_reviewer_candidate_sha256,
+            expected_review_input_candidate_sha256=expected_review_input_candidate_sha256,
         )
         issues.extend(reviewer_issues)
     host_request = _mapping(retained.get("host_request"))
@@ -647,7 +694,7 @@ def _host_native_reviewer_clarification_issues(
     stage_observation: Mapping[str, Any],
     reviewer_observation: Mapping[str, Any],
     expected_source_sha256: str,
-    expected_reviewer_candidate_sha256: str,
+    expected_review_input_candidate_sha256: str,
 ) -> list[str]:
     """Require the private FD receipt before treating a host result as reviewer-led."""
 
@@ -656,7 +703,7 @@ def _host_native_reviewer_clarification_issues(
         stage_observation=stage_observation,
         reviewer_observation=reviewer_observation,
         expected_source_sha256=expected_source_sha256,
-        expected_reviewer_candidate_sha256=expected_reviewer_candidate_sha256,
+        expected_review_input_candidate_sha256=expected_review_input_candidate_sha256,
     )
     return issues
 
@@ -667,7 +714,7 @@ def _host_native_reviewer_clarification_evidence(
     stage_observation: Mapping[str, Any],
     reviewer_observation: Mapping[str, Any],
     expected_source_sha256: str,
-    expected_reviewer_candidate_sha256: str,
+    expected_review_input_candidate_sha256: str,
 ) -> tuple[dict[str, Any], list[str]]:
     """Validate the private host-native reviewer receipt without publishing it."""
 
@@ -714,8 +761,8 @@ def _host_native_reviewer_clarification_evidence(
 
     review = _mapping(private.get("candidate_review"))
     expected_review_fields = {
-        "version", "status", "source_sha256", "candidate_sha256", "model_profile",
-        "elapsed_seconds", "clarification",
+        "version", "status", "source_sha256", "review_input_candidate_sha256",
+        "model_profile", "elapsed_seconds", "clarification",
     }
     if set(review) != expected_review_fields:
         issues.append("private host-native reviewer receipt is missing or malformed")
@@ -725,12 +772,15 @@ def _host_native_reviewer_clarification_evidence(
         issues.append("private host-native reviewer receipt is not a clarification")
     if review.get("source_sha256") != expected_source_sha256:
         issues.append("private host-native reviewer receipt source does not match the evaluated source")
-    if not _is_sha256(review.get("candidate_sha256")):
-        issues.append("private host-native reviewer receipt candidate hash is invalid")
-    if not _is_sha256(expected_reviewer_candidate_sha256):
-        issues.append("private host-native reviewer canonical candidate hash is unavailable")
-    elif review.get("candidate_sha256") != expected_reviewer_candidate_sha256:
-        issues.append("private host-native reviewer receipt does not match the canonical candidate")
+    if not _is_sha256(review.get("review_input_candidate_sha256")):
+        issues.append("private host-native reviewer receipt input hash is invalid")
+    if not _is_sha256(expected_review_input_candidate_sha256):
+        issues.append("private host-native reviewer input hash is unavailable")
+    elif (
+        review.get("review_input_candidate_sha256")
+        != expected_review_input_candidate_sha256
+    ):
+        issues.append("private host-native reviewer receipt does not match the review input")
     review_profile = _mapping(review.get("model_profile"))
     expected_profile_fields = {
         "profile_id", "provider", "model", "reasoning_effort",
@@ -990,17 +1040,12 @@ def _model_stage_observation_evidence(
     else:
         normalized_call_count = call_count
 
-    revised = response_kind == "authored" and normalized_call_count == 5
     expected_fields = {
         "version", "authoring_version", "request", "semantic_model_call_count",
         "participant_selection", "remaining_candidate_authoring",
     }
     if response_kind == "authored":
         expected_fields.update({"joined_candidate", "candidate_review"})
-    if revised:
-        expected_fields.update({
-            "rejected_candidate", "rejected_candidate_review", "candidate_revision",
-        })
     if set(retained) != expected_fields:
         issues.append("retained model observation has missing or unsupported fields")
 
@@ -1084,7 +1129,6 @@ def _model_stage_observation_evidence(
         issues.append("retained authoring stages exceed the shared model window")
 
     authored = None
-    rejected_authored = None
     expected_remainder_request: dict[str, Any] = {}
     if source:
         try:
@@ -1103,18 +1147,15 @@ def _model_stage_observation_evidence(
                 joined = join_frozen_greenfield_participants(
                     remainder_response, participant_citations,
                 )
-                retained_candidate_key = "rejected_candidate" if revised else "joined_candidate"
-                if retained.get(retained_candidate_key) != joined:
+                if retained.get("joined_candidate") != joined:
                     raise ValueError("joined candidate mismatch")
-                rejected_authored = validate_greenfield_authoring_response(
+                authored = validate_greenfield_authoring_response(
                     joined, evidence_text=source,
                     elapsed_seconds=_float_value(remainder.get("elapsed_seconds")),
                     provider=_mapping(remainder.get("provider")), profile_id=profile,
                     effective_timeout_seconds=_float_value(remainder.get("timeout_seconds")),
                     semantic_model_call_count=2,
                 )
-                if not revised:
-                    authored = rejected_authored
             elif response_kind == "clarification_required":
                 validate_greenfield_authoring_response(
                     remainder_response, evidence_text=source,
@@ -1127,92 +1168,8 @@ def _model_stage_observation_evidence(
             issues.append("retained participant-first response fails canonical source-bound validation")
 
     if response_kind == "authored":
-        if normalized_call_count not in {3, 5}:
-            issues.append("authored response must record exactly three or five semantic calls")
-        if revised:
-            rejected_review = _mapping(retained.get("rejected_candidate_review"))
-            request_roles["rejected_candidate_review"] = _request_role_summary(
-                rejected_review
-            )
-            issues.extend(_candidate_review_observation_issues(
-                profile, review=rejected_review, request=request,
-                candidate=_mapping(_mapping(retained.get("rejected_candidate")).get("result")),
-                shared_timeout=shared_timeout, prior_elapsed=prior_elapsed,
-                source_spans=(
-                    rejected_authored.source_spans
-                    if isinstance(rejected_authored, GreenfieldModelAuthoredIntent)
-                    else ()
-                ),
-                expected_outcome="denied",
-            ))
-            prior_elapsed += _float_value(rejected_review.get("elapsed_seconds"))
-
-            revision = _mapping(retained.get("candidate_revision"))
-            request_roles["candidate_revision"] = _request_role_summary(revision)
-            expected_revision_fields = {
-                "dispatched", "request_role", "profile_id", "timeout_seconds",
-                "elapsed_seconds", "model", "reasoning_effort", "request", "response",
-                "provider",
-            }
-            if set(revision) != expected_revision_fields:
-                issues.append("retained candidate revision has missing or unsupported fields")
-            if revision.get("dispatched") is not True:
-                issues.append("retained candidate revision was not dispatched")
-            try:
-                issues.extend(_request_role_issues(
-                    profile, request_role="candidate_revision", observation=revision,
-                ))
-            except (TypeError, ValueError, OverflowError):
-                issues.append("retained candidate revision request metadata is invalid")
-            revision_timeout = _positive_float(revision.get("timeout_seconds"))
-            revision_elapsed = _positive_float(revision.get("elapsed_seconds"))
-            remaining_window = (
-                shared_timeout - prior_elapsed if shared_timeout is not None else None
-            )
-            if revision_timeout is None:
-                issues.append("retained candidate revision timeout is invalid")
-            elif remaining_window is None or revision_timeout > remaining_window:
-                issues.append("retained candidate revision timeout exceeds the remaining model window")
-            if revision_elapsed is None:
-                issues.append("retained candidate revision elapsed time is invalid")
-            elif revision_timeout is not None and revision_elapsed > revision_timeout:
-                issues.append("retained candidate revision elapsed time exceeds its timeout")
-            elif remaining_window is None or revision_elapsed > remaining_window:
-                issues.append("retained candidate revision elapsed time exceeds the remaining model window")
-
-            rejected_verdict = _mapping(rejected_review.get("response"))
-            review_issue = _mapping(rejected_verdict.get("issue"))
-            revision_response = _mapping(revision.get("response"))
-            try:
-                if set(review_issue) != {"path", "reason"}:
-                    raise ValueError("missing denial witness")
-                expected_revision_request = candidate_revision_payload(
-                    authoring_payload=expected_remainder_request,
-                    rejected_candidate=remainder_response,
-                    review_issue=review_issue,
-                )
-                if revision.get("request") != expected_revision_request:
-                    raise ValueError("revision request mismatch")
-                if (
-                    revision_response.get("version") != GREENFIELD_INTENT_AUTHORING_VERSION
-                    or _mapping(revision_response.get("result")).get("status") != "authored"
-                ):
-                    raise ValueError("revision response mismatch")
-                revised_joined = join_frozen_greenfield_participants(
-                    revision_response, participant_citations,
-                )
-                if retained.get("joined_candidate") != revised_joined:
-                    raise ValueError("revised joined candidate mismatch")
-                authored = validate_greenfield_authoring_response(
-                    revised_joined, evidence_text=source,
-                    elapsed_seconds=_float_value(revision.get("elapsed_seconds")),
-                    provider=_mapping(revision.get("provider")), profile_id=profile,
-                    effective_timeout_seconds=_float_value(revision.get("timeout_seconds")),
-                    semantic_model_call_count=4,
-                )
-            except (GreenfieldModelAuthoringError, ValueError, TypeError, KeyError):
-                issues.append("retained candidate revision fails source-bound replacement validation")
-            prior_elapsed += _float_value(revision.get("elapsed_seconds"))
+        if normalized_call_count != 3:
+            issues.append("authored response must record exactly three semantic calls")
 
         review = _mapping(retained.get("candidate_review"))
         request_roles["candidate_review"] = _request_role_summary(review)

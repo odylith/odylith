@@ -12,6 +12,7 @@ import json
 import math
 from collections.abc import Callable, Mapping
 from copy import deepcopy
+from dataclasses import replace
 from pathlib import Path
 from time import monotonic
 from typing import Any
@@ -20,8 +21,11 @@ from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
     GreenfieldCandidateClarificationRequired,
     GreenfieldCandidateRejected,
     REFERENCE_PROVENANCE_ROLE_CONTRACT,
-    candidate_review_payload,
     review_greenfield_candidate,
+)
+from odylith.runtime.domain_intelligence.greenfield_constraint_custody import (
+    finalize_admitted_review,
+    project_constraint_custody,
 )
 from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import (
     HOST_CANDIDATE_FORMAT_VERSION,
@@ -35,9 +39,6 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring impor
     greenfield_authoring_payload,
     validate_greenfield_authoring_response,
 )
-from odylith.runtime.domain_intelligence.greenfield_model_json import (
-    encode_greenfield_model_value,
-)
 from odylith.runtime.domain_intelligence.greenfield_model_proof_observation import (
     emit_greenfield_model_proof_observation,
 )
@@ -50,28 +51,8 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v1"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v28"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v29"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
-PRODUCT_BOUND_CONSTRAINT_CUSTODY_CONTRACT = (
-    "Classify each accepted operational, safety, actor, or ordering constraint once on its "
-    "exact global citation with one closed constraint_custody relation. Ownership takes "
-    "precedence over temporal form: a product or system obligation remains product_owned even "
-    "when the same constraint also backs source_precedence. Use product_owned with "
-    "owner_fact selecting a named internal system only when the exact quoted clause explicitly "
-    "binds that narrower owner; otherwise select title when the constraint governs the requested "
-    "product. Use participant_only with actor_fact selecting the accepted human or external "
-    "actor when the restriction governs only that participant, including a temporal participant "
-    "obligation. Use workflow_order only for a pure event-ordering constraint with no separately "
-    "owned product, system, or participant obligation, and only when the current constraint's "
-    "one-based index is referenced by an existing source_precedence event edge; do not duplicate "
-    "that edge inside constraint_custody. "
-    "Source-custody controls governing evidence, a fixture, a candidate, or the authoring "
-    "transaction are not product meaning and must be omitted from accepted facts entirely. "
-    "Odylith deterministically projects only product_owned custody into that owner's accepted "
-    "component responsibilities. Never "
-    "infer product ownership from provisional design, and never repeat an operational "
-    "constraint in components.additional_responsibilities."
-)
 
 
 def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
@@ -134,7 +115,11 @@ def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
                 "same owner is still a separate responsibility. Put every other explicit source-"
                 "stated product or component responsibility under its typed owner_fact there."
             ),
-            PRODUCT_BOUND_CONSTRAINT_CUSTODY_CONTRACT,
+            (
+                "Keep every accepted operational constraint only in facts.operational_constraints. "
+                "Do not repeat one in components.additional_responsibilities; the independent "
+                "review decision owns any later typed relation."
+            ),
             "Keep accepted source facts separate from assumptions and provisional design decisions.",
             (
                 "An authored candidate must bind one source-supported participant, beneficiary, "
@@ -192,44 +177,6 @@ def load_greenfield_host_candidate_file(path: Path) -> dict[str, Any]:
     if not isinstance(value, Mapping):
         raise TypeError("Greenfield host candidate must be a JSON object")
     return dict(value)
-
-
-def canonical_greenfield_reviewer_candidate_sha256(
-    response: Mapping[str, Any],
-    *,
-    evidence_text: str,
-    profile_id: str = STANDARD_PROFILE_ID,
-) -> str:
-    """Reproduce the review payload's canonical candidate hash without a model call."""
-
-    profile = get_greenfield_model_profile(profile_id)
-    canonical_response = canonical_greenfield_host_candidate(
-        response,
-        evidence_text=evidence_text,
-    )
-    authored = validate_greenfield_authoring_response(
-        canonical_response,
-        evidence_text=evidence_text,
-        elapsed_seconds=0.0,
-        provider={
-            "provider": "host-native",
-            "model": "outside-runtime-custody",
-            "reasoning_effort": "not-observed",
-        },
-        profile_id=profile_id,
-        effective_timeout_seconds=profile.model_timeout_seconds,
-        semantic_model_call_count=0,
-        allow_zero_semantic_calls=True,
-        event_citations_are_event_owned=True,
-    )
-    if isinstance(authored, GreenfieldAuthoringClarification):
-        raise ValueError("Greenfield host candidate has no authored reviewer payload")
-    payload = candidate_review_payload(
-        evidence_text,
-        canonical_response["result"],
-        source_spans=authored.source_spans,
-    )
-    return hashlib.sha256(encode_greenfield_model_value(payload["candidate"])).hexdigest()
 
 
 def admit_greenfield_host_candidate(
@@ -311,9 +258,6 @@ def admit_greenfield_host_candidate(
             semantic_model_call_count=1,
             participant_selection=None,
             remaining_candidate_authoring=None,
-            rejected_candidate=None,
-            rejected_candidate_review=None,
-            candidate_revision=None,
             joined_candidate=None,
             candidate_review=rejection.receipt,
             failure=None,
@@ -327,9 +271,6 @@ def admit_greenfield_host_candidate(
             semantic_model_call_count=1,
             participant_selection=None,
             remaining_candidate_authoring=None,
-            rejected_candidate=None,
-            rejected_candidate_review=None,
-            candidate_revision=None,
             joined_candidate=None,
             candidate_review=clarification.receipt,
             failure=None,
@@ -353,14 +294,41 @@ def admit_greenfield_host_candidate(
             ),
             base_receipt,
         )
+    projected_response = deepcopy(canonical_response)
+    projected_response["result"] = project_constraint_custody(
+        canonical_response["result"],
+        custody=review["admission_witness"]["constraint_custody"],
+    )
+    projected_frozen = _canonical_candidate_bytes(projected_response)
+    projected_authored = validate_greenfield_authoring_response(
+        projected_response,
+        evidence_text=evidence_text,
+        elapsed_seconds=0.0,
+        provider={
+            "provider": "host-native",
+            "model": "outside-runtime-custody",
+            "reasoning_effort": "not-observed",
+        },
+        profile_id=profile_id,
+        effective_timeout_seconds=effective_window,
+        semantic_model_call_count=0,
+        allow_zero_semantic_calls=True,
+        event_citations_are_event_owned=True,
+        reviewer_projected_constraints=True,
+    )
+    if not isinstance(projected_authored, GreenfieldModelAuthoredIntent):
+        raise RuntimeError("Greenfield admitted review produced no final candidate")
+    if _canonical_candidate_bytes(projected_response) != projected_frozen:
+        raise RuntimeError("Greenfield final validation changed the projected candidate")
+    review = finalize_admitted_review(
+        review,
+        candidate=projected_response["result"],
+    )
     emit_greenfield_model_proof_observation(
         evidence_text=evidence_text,
         semantic_model_call_count=1,
         participant_selection=None,
         remaining_candidate_authoring=None,
-        rejected_candidate=None,
-        rejected_candidate_review=None,
-        candidate_revision=None,
         joined_candidate=None,
         candidate_review=review,
         failure=None,
@@ -372,26 +340,9 @@ def admit_greenfield_host_candidate(
     if _canonical_candidate_bytes(canonical_response) != canonical_frozen:
         raise RuntimeError("Greenfield host-candidate review changed the canonical projection")
     return (
-        GreenfieldModelAuthoredIntent(
-            intent=deepcopy(authored.intent),
-            first_path_relations=deepcopy(authored.first_path_relations),
-            first_path_context_relations=deepcopy(
-                authored.first_path_context_relations
-            ),
-            component_responsibility_relations=deepcopy(
-                authored.component_responsibility_relations
-            ),
-            atomic_claims=deepcopy(authored.atomic_claims),
-            source_spans=deepcopy(authored.source_spans),
-            source_sha256=authored.source_sha256,
-            provisional_design=deepcopy(authored.provisional_design),
-            source_precedence=deepcopy(authored.source_precedence),
+        replace(
+            projected_authored,
             elapsed_seconds=max(0.0, clock() - started),
-            tier=authored.tier,
-            provider=deepcopy(authored.provider),
-            profile_id=authored.profile_id,
-            effective_timeout_seconds=authored.effective_timeout_seconds,
-            consistency_status=authored.consistency_status,
             effective_model_window_seconds=effective_window,
             semantic_model_call_count=1,
             candidate_review=deepcopy(review),
@@ -418,7 +369,6 @@ __all__ = [
     "HOST_CANDIDATE_RECEIPT_VERSION",
     "MAX_HOST_CANDIDATE_BYTES",
     "admit_greenfield_host_candidate",
-    "canonical_greenfield_reviewer_candidate_sha256",
     "greenfield_host_candidate_contract",
     "load_greenfield_host_candidate_file",
 ]

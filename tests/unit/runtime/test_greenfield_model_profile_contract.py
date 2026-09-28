@@ -11,8 +11,7 @@ from odylith.runtime.domain_intelligence import (
 PROFILE_IDS = profiles.supported_greenfield_model_profile_ids()
 DECLARED_PROFILE_IDS = profiles.declared_greenfield_model_profile_ids()
 ROLES = (
-    "participant_selection", "remaining_candidate_authoring", "candidate_revision",
-    "candidate_review",
+    "participant_selection", "remaining_candidate_authoring", "candidate_review",
 )
 
 
@@ -21,7 +20,6 @@ def _observation(profile_id, role):
     identities = {
         "participant_selection": (profile.participant_model, profile.participant_reasoning_effort),
         "remaining_candidate_authoring": (profile.model, profile.reasoning_effort),
-        "candidate_revision": (profile.model, profile.reasoning_effort),
         "candidate_review": (profile.review_model, profile.review_reasoning_effort),
     }
     model, effort = identities[role]

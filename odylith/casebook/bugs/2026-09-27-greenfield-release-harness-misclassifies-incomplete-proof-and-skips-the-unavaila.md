@@ -1,5 +1,60 @@
 - Bug ID: CB-347
 
+## V47 live falsification (2026-09-28)
+
+Clean pushed commit `8c82bc52638b71d8d25695c4e2a3b353c12eede9`
+passed independent review with no P0/P1/P2 finding, 3,326 frozen Greenfield
+unit/install tests, 67 normal/fallback/degraded browser checks, and the complete
+governance commit-readiness gate. Its immutable `0.1.15` distribution then ran
+the one permitted replay of `release-accessibility-005-source`.
+
+The single Astra-medium author completed inside the 150-second advisory target,
+and proposal failed closed during the one independent review. The retained
+candidate hash is
+`e3ecfe9c0995a358101137402fac157dcb1397681084584e3ca9240ab6f1bf3b`.
+Reviewer path hash
+`a5bfc254382f6f75fb72fc33f188654ff5b73b21e2b61d12131c23778755fbe5`
+maps exactly to `candidate.accepted_source.components[0].responsibilities`.
+The reason remains hash-only as
+`499b3d8957e2f4f008dc7f7de56eef172af923719b2934574f99e8937a94e9da`;
+do not infer or reconstruct its free text. No transaction or governed product
+write occurred.
+
+V47 is therefore falsified for release use. Required typed custody narrowed the
+failure from the generic components boundary to one component responsibility
+array, but it still left product-constraint classification jointly owned by the
+host author and reviewer. Do not add more schema prose, a phrase rule, regex,
+parser, retry, repair, fallback, or deterministic all-title projection. Do not
+rerun this case or start the 40-case campaign on V47. Compare one bounded
+replacement that gives semantic custody to one existing model decision and
+deletes the losing host-custody path; the protected holdout remains untouched.
+
+Bounded comparison selects reviewer-owned typed custody for V48. Remove custody
+from the host candidate entirely. The existing independent reviewer must return
+one ordered typed custody witness for every accepted operational constraint on
+admission; deterministic code validates complete cardinality and fact or
+precedence bindings, projects only product-owned constraints, and revalidates
+the final canonical candidate before any authority hash or transaction is
+sealed. Denial and clarification carry no custody and perform no projection.
+This uses the existing single review call and removes the losing semantic owner
+instead of adding another stage. A recurrence at the same responsibility path
+falsifies V48.
+
+V48 is implemented as host contract v29, host-candidate format v15, and
+reviewer v16. The host custody field, host projection, bounded revision module,
+second-review path, five-call receipt approval, and release-proof compatibility
+path are deleted. Admission receipts bind the exact unprojected review input and
+the exact projected final candidate; retained release proof reconstructs both
+hashes for host-native and participant-first lanes. The canonical transaction,
+Product Intent authority, and post-confirm execution schemas remain unchanged.
+
+Fresh proof passes 3,336/3,336 frozen Greenfield runtime/install/integration
+tests and 80/80 maintained browser-surface checks. Independent review is PASS
+with no P0/P1/P2 finding after forged-final-hash, boolean-index, ownership,
+retry, fixture, and cross-lane controls were resolved. V48 is therefore ready
+for an immutable build and the one exact public falsification replay; it is not
+yet live-qualified, and the protected holdout remains untouched.
+
 ## V46 live falsification and V47 bounded custody decision (2026-09-28)
 
 The clean immutable V46 checkpoint `858a9325c69404f81d1f0db829e18c2ffcc645a4`

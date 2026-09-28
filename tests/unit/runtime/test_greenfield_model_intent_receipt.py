@@ -11,9 +11,6 @@ from typing import Any
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_create_transaction
-from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
-    CANDIDATE_REVIEW_VERSION,
-)
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_RELATION_SET_SHA256_KEY,
     AUTHORED_SEMANTICS_KEY,
@@ -204,78 +201,14 @@ def test_materialized_review_receipt_binds_the_sealed_authored_design(
     ]
 
 
-def _approved_revised_model_authoring(profile_id: str) -> dict[str, Any]:
-    profile = get_greenfield_model_profile(profile_id)
+def test_quality_approval_rejects_revision_or_second_review_receipts() -> None:
     receipt = _approved_model_authoring(
-        profile_id, elapsed_seconds=15.0, semantic_model_call_count=5
+        STANDARD_PROFILE_ID, elapsed_seconds=12.0, semantic_model_call_count=5
     )
-    receipt["remaining_candidate_authoring"].update(elapsed_seconds=4.0)
-    receipt["remaining_candidate_authoring"]["model_profile"][
-        "effective_timeout_seconds"
-    ] = profile.model_timeout_seconds - 1.0
-    receipt["rejected_candidate_review"] = {
-        "version": CANDIDATE_REVIEW_VERSION,
-        "status": "denied",
-        "source_sha256": "0" * 64,
-        "candidate_sha256": "3" * 64,
-        "elapsed_seconds": 2.0,
-        "model_profile": {
-            "profile_id": profile.profile_id,
-            "provider": profile.provider,
-            "model": profile.review_model,
-            "reasoning_effort": profile.review_reasoning_effort,
-            "effective_timeout_seconds": profile.model_timeout_seconds - 5.0,
-            "authoring_tier": profile.repair_tier,
-        },
-        "issue": {
-            "path": "candidate.accepted_source.facts.opportunity",
-            "reason": "The cited action is not a complete improvement.",
-        },
-    }
-    receipt["candidate_revision"] = {
-        "elapsed_seconds": 5.0,
-        "model_profile": {
-            "profile_id": profile.profile_id,
-            "provider": profile.provider,
-            "model": profile.model,
-            "reasoning_effort": profile.reasoning_effort,
-            "effective_timeout_seconds": profile.model_timeout_seconds - 7.0,
-            "authoring_tier": profile.repair_tier,
-        },
-    }
-    receipt["candidate_review"].update(
-        elapsed_seconds=3.0,
-        model_profile={
-            "profile_id": profile.profile_id,
-            "provider": profile.provider,
-            "model": profile.review_model,
-            "reasoning_effort": profile.review_reasoning_effort,
-            "effective_timeout_seconds": profile.model_timeout_seconds - 12.0,
-            "authoring_tier": profile.repair_tier,
-        },
-    )
-    return receipt
+    receipt["candidate_revision"] = {"elapsed_seconds": 1.0, "model_profile": {}}
+    receipt["rejected_candidate_review"] = {"status": "denied"}
+    manifest = approved_authored_quality_manifest_fixture(model_authoring=receipt)
 
-
-def test_quality_approval_accepts_one_denial_revision_and_re_review() -> None:
-    profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
-    manifest = approved_authored_quality_manifest_fixture(
-        model_authoring=_approved_revised_model_authoring(STANDARD_PROFILE_ID),
-        semantic_compiler={
-            "version": "odylith.greenfield.authored-semantic-validation.v4",
-            "status": "passed",
-            "semantic_owner": "validated_model_authored_intent",
-            "post_authoring_interpretation_calls": 2,
-        },
-        elapsed_seconds=16.0,
-        target_seconds=profile.performance_target_seconds,
-        operational_timeout_seconds=profile.operational_timeout_seconds,
-    )
-    greenfield_create_transaction.require_product_create_transaction_quality_approved(
-        manifest
-    )
-
-    manifest["model_authoring"]["rejected_candidate_review"]["issue"] = {}
     with pytest.raises(ValueError, match="quality manifest is not approved"):
         greenfield_create_transaction.require_product_create_transaction_quality_approved(
             manifest

@@ -15,6 +15,7 @@ from greenfield_model_profiles import UNAVAILABLE_PROVIDER_PROFILE
 from greenfield_model_profiles import host_native_argv_receipt_issues
 from greenfield_model_profiles import host_native_clarification_stage_observation_issues
 from greenfield_model_profiles import model_stage_observation_issues
+from greenfield_model_profiles import retained_admitted_candidate_hash_issues
 from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
     CANDIDATE_REVIEW_VERSION,
     candidate_review_admission_witness_shape_issues,
@@ -36,6 +37,7 @@ def authored_model_result_binding_issues(
     *,
     stage_observation: Mapping[str, Any],
     reviewer_observation: Mapping[str, Any] | None = None,
+    review_input_candidate: Mapping[str, Any] | None = None,
     create_payload: Mapping[str, Any],
     expected_source: str,
 ) -> tuple[str, ...]:
@@ -47,6 +49,7 @@ def authored_model_result_binding_issues(
         return _host_native_result_binding_issues(
             stage_observation=retained,
             reviewer_observation=_mapping(reviewer_observation),
+            review_input_candidate=_mapping(review_input_candidate),
             model_authoring=model_authoring,
             expected_source=expected_source,
         )
@@ -89,9 +92,9 @@ def authored_model_result_binding_issues(
     elif sealed_source_sha256 != expected_source_sha256:
         issues.append("sealed candidate-review source hash does not match the expected source")
 
-    sealed_candidate_sha256 = receipt.get("candidate_sha256")
-    if not _is_sha256(sealed_candidate_sha256):
-        issues.append("sealed candidate-review candidate hash is invalid")
+    sealed_review_input_sha256 = receipt.get("review_input_candidate_sha256")
+    if not _is_sha256(sealed_review_input_sha256):
+        issues.append("sealed candidate-review input hash is invalid")
     elif isinstance(private_candidate, Mapping):
         try:
             private_candidate_sha256 = hashlib.sha256(
@@ -106,10 +109,19 @@ def authored_model_result_binding_issues(
         except (TypeError, ValueError, OverflowError):
             issues.append("retained private reviewed candidate is not canonical JSON")
         else:
-            if private_candidate_sha256 != sealed_candidate_sha256:
+            if private_candidate_sha256 != sealed_review_input_sha256:
                 issues.append(
-                    "retained private reviewed candidate does not match the sealed receipt"
+                    "retained private reviewed candidate does not match the sealed review input"
                 )
+    if not _is_sha256(receipt.get("candidate_sha256")):
+        issues.append("sealed candidate-review candidate hash is invalid")
+    joined_candidate = _mapping(_mapping(retained.get("joined_candidate")).get("result"))
+    issues.extend(
+        retained_admitted_candidate_hash_issues(
+            review_input_candidate=joined_candidate,
+            receipt=receipt,
+        )
+    )
     return tuple(dict.fromkeys(issues))
 
 
@@ -117,6 +129,7 @@ def _host_native_result_binding_issues(
     *,
     stage_observation: Mapping[str, Any],
     reviewer_observation: Mapping[str, Any],
+    review_input_candidate: Mapping[str, Any],
     model_authoring: Mapping[str, Any],
     expected_source: str,
 ) -> tuple[str, ...]:
@@ -164,14 +177,25 @@ def _host_native_result_binding_issues(
         issues.append("retained private host-native admission source does not match expected source")
     if private_candidate != candidate:
         issues.append("retained private host candidate receipt does not match the sealed receipt")
-    for field in ("version", "status", "source_sha256", "candidate_sha256", "model_profile", "admission_witness"):
+    for field in (
+        "version", "status", "source_sha256", "review_input_candidate_sha256",
+        "candidate_sha256", "model_profile", "admission_witness",
+    ):
         if private_review.get(field) != review.get(field):
             issues.append(
                 "retained private host-native admission does not match the sealed reviewer receipt"
             )
             break
+    if not _is_sha256(review.get("review_input_candidate_sha256")):
+        issues.append("sealed candidate-review input hash is invalid")
     if not _is_sha256(review.get("candidate_sha256")):
         issues.append("sealed candidate-review candidate hash is invalid")
+    issues.extend(
+        retained_admitted_candidate_hash_issues(
+            review_input_candidate=review_input_candidate,
+            receipt=review,
+        )
+    )
     if not _is_sha256(review.get("product_facts_sha256")):
         issues.append("sealed candidate-review product-facts hash is invalid")
     if candidate_review_admission_witness_shape_issues(
@@ -348,7 +372,7 @@ def model_profile_release_proof(
                 if profile_id in LOWER_CAPABILITY_CONTROL_PROFILES
                 else contract.review_reasoning_effort
             ),
-            "maximum_semantic_model_calls": 1 if host_native else 5,
+            "maximum_semantic_model_calls": 1 if host_native else 3,
             "performance_target_seconds": contract.performance_target_seconds,
             "operational_timeout_seconds": contract.operational_timeout_seconds,
             "performance_target_met": (

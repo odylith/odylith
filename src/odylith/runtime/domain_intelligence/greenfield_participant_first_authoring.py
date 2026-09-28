@@ -18,9 +18,9 @@ from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
     HUMAN_ACTOR_ROLE_DEFINITION,
     review_greenfield_candidate,
 )
-from odylith.runtime.domain_intelligence.greenfield_candidate_revision import (
-    candidate_revision_payload,
-    candidate_revision_prompt,
+from odylith.runtime.domain_intelligence.greenfield_constraint_custody import (
+    finalize_admitted_review,
+    project_constraint_custody,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_json import (
     encode_greenfield_model_value,
@@ -61,7 +61,7 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-MAX_GREENFIELD_SEMANTIC_CALLS = 5
+MAX_GREENFIELD_SEMANTIC_CALLS = 3
 _PARTICIPANT_SELECTION_SCHEMA: dict[str, Any] = {
     "type": "object",
     "additionalProperties": False,
@@ -214,17 +214,15 @@ Select the whole source constraint there, including the actions and their orderi
 relationship. Reuse a constraint index when that same citation states multiple
 edges; cite each constraint once. Keep independent preparations unordered. Return []
 when no order is stated.
-A source-stated operational or safety constraint whose source context governs the
-requested product or a named product-owned internal system has two accepted roles:
-preserve its exact clause in facts.operational_constraints and in the selected product
-owner's component responsibilities. Do not promote a restriction stated only for a human
-or external actor, or a source-custody control governing evidence, a fixture, a candidate
-or the authoring transaction. Never infer product ownership from provisional design.
-Group each owner's exact responsibility citations under one
+A source-stated operational or safety constraint remains only in
+facts.operational_constraints during authoring. Do not copy any constraint into component
+responsibilities. Independent review classifies every accepted constraint and alone may
+project product-owned custody after admission. Group each remaining exact product
+responsibility citation under one
 owner_fact_quote, which selects an internal_systems fact or title when no narrower
 system exists. A product responsibility belongs to one owner, not a human actor.
-Cite every source-stated responsibility, capability, result, or product-governing constraint.
-When the same exact clause is a typed product event, preserve its one citation in the owner
+Cite every source-stated responsibility, capability, or result. When the same exact clause
+is a typed product event, preserve its one citation in the owner
 group as the canonical responsibility fact; the event separately owns workflow order. Do not
 repeat that citation within the owner group. Return components=[] when none remain. Never
 infer a product responsibility from a terminal result or use an empty owner group.
@@ -371,8 +369,7 @@ def author_greenfield_intent(
         emit_greenfield_model_proof_observation(
             evidence_text=text, semantic_model_call_count=0,
             participant_selection=None, remaining_candidate_authoring=None,
-            rejected_candidate=None, rejected_candidate_review=None,
-            candidate_revision=None, joined_candidate=None, candidate_review=None,
+            joined_candidate=None, candidate_review=None,
             failure={"stage": "provider_discovery", "code": "unavailable"},
         )
         raise GreenfieldModelRuntimeError("unavailable")
@@ -395,10 +392,7 @@ def author_greenfield_intent(
 
     participant_observation: dict[str, Any] = {}
     remaining_observation: dict[str, Any] = {}
-    rejected_review_observation: dict[str, Any] = {}
-    revision_observation: dict[str, Any] = {}
     review_observation: dict[str, Any] = {}
-    rejected_candidate: dict[str, Any] | None = None
     joined_candidate: dict[str, Any] | None = None
     failure: dict[str, Any] | None = None
     completed = False
@@ -522,10 +516,8 @@ def author_greenfield_intent(
                 provider_factory=review_provider_factory,
                 deadline=model_deadline,
                 clock=clock,
-                observation=rejected_review_observation,
+                observation=review_observation,
             )
-            review_observation = rejected_review_observation
-            rejected_review_observation = {}
         except GreenfieldCandidateClarificationRequired as clarification_required:
             clarification = True
             return _review_clarification(
@@ -538,84 +530,10 @@ def author_greenfield_intent(
                 elapsed_seconds=max(0.0, clock() - started),
                 semantic_model_call_count=3,
             )
-        except GreenfieldCandidateRejected as rejection:
-            rejected_candidate = deepcopy(joined_candidate)
-            rejected_review_receipt = deepcopy(dict(rejection.receipt))
-            current_stage = "candidate_revision"
-            revision_stage = dispatch_greenfield_model_stage(
-                role="candidate_revision",
-                schema_name="greenfield_candidate_revision",
-                system_prompt=candidate_revision_prompt(remaining_prompt),
-                output_schema=remaining_schema,
-                prompt_payload=candidate_revision_payload(
-                    authoring_payload=remaining_payload,
-                    rejected_candidate=remaining_stage.response,
-                    review_issue=rejected_review_receipt["issue"],
-                ),
-                provider_factory=(lambda: provider),
-                profile_id=profile.profile_id,
-                model=request_model,
-                reasoning_effort=request_effort,
-                deadline=model_deadline,
-                clock=clock,
-                observation=revision_observation,
-            )
-            if encode_greenfield_model_value(participant_citations) != frozen_participants:
-                raise GreenfieldModelAuthoringError(
-                    "Greenfield candidate revision changed frozen participants; no records were created."
-                )
-            joined_candidate = join_frozen_greenfield_participants(
-                revision_stage.response,
-                participant_citations,
-            )
-            frozen_joined = encode_greenfield_model_value(joined_candidate)
-            authored = validate_greenfield_authoring_response(
-                joined_candidate,
-                evidence_text=text,
-                elapsed_seconds=revision_stage.receipt["elapsed_seconds"],
-                provider=revision_observation["provider"],
-                profile_id=profile.profile_id,
-                effective_timeout_seconds=revision_stage.receipt["model_profile"][
-                    "effective_timeout_seconds"
-                ],
-                semantic_model_call_count=4,
-            )
-            if not isinstance(authored, GreenfieldModelAuthoredIntent):
-                raise GreenfieldModelAuthoringError(
-                    "Greenfield candidate revision returned an invalid result; no records were created."
-                )
-            if encode_greenfield_model_value(joined_candidate) != frozen_joined:
-                raise GreenfieldModelAuthoringError(
-                    "Greenfield revision validation changed its candidate; no records were created."
-            )
-            current_stage = "candidate_re_review"
-            try:
-                review = review_greenfield_candidate(
-                    evidence_text=text,
-                    candidate=joined_candidate["result"],
-                    profile_id=profile.profile_id,
-                    source_spans=authored.source_spans,
-                    provider_factory=review_provider_factory,
-                    deadline=model_deadline,
-                    clock=clock,
-                    observation=review_observation,
-                )
-            except GreenfieldCandidateClarificationRequired as clarification_required:
-                clarification = True
-                return _review_clarification(
-                    authored=authored,
-                    material_dimension=clarification_required.material_dimension,
-                    review_receipt=clarification_required.receipt,
-                    participant_receipt=participant_stage.receipt,
-                    remaining_receipt=remaining_stage.receipt,
-                    effective_model_window_seconds=effective_model_window_seconds,
-                    elapsed_seconds=max(0.0, clock() - started),
-                    semantic_model_call_count=5,
-                )
-            except GreenfieldCandidateRejected as exc:
-                raise GreenfieldModelAuthoringError(
-                    "A source-faithful Greenfield package could not be verified; no records were created."
-                ) from exc
+        except GreenfieldCandidateRejected as exc:
+            raise GreenfieldModelAuthoringError(
+                "A source-faithful Greenfield package could not be verified; no records were created."
+            ) from exc
         except GreenfieldModelRuntimeError:
             raise
         except TimeoutError as exc:
@@ -632,19 +550,40 @@ def author_greenfield_intent(
             raise GreenfieldModelAuthoringError(
                 "Greenfield review changed frozen participants; no records were created."
             )
+        joined_candidate = deepcopy(joined_candidate)
+        joined_candidate["result"] = project_constraint_custody(
+            joined_candidate["result"],
+            custody=review["admission_witness"]["constraint_custody"],
+        )
+        frozen_projected = encode_greenfield_model_value(joined_candidate)
+        final_call_count = 3
+        authored = validate_greenfield_authoring_response(
+            joined_candidate,
+            evidence_text=text,
+            elapsed_seconds=authored.elapsed_seconds,
+            provider=authored.provider,
+            profile_id=authored.profile_id,
+            effective_timeout_seconds=authored.effective_timeout_seconds,
+            semantic_model_call_count=final_call_count,
+            reviewer_projected_constraints=True,
+        )
+        if not isinstance(authored, GreenfieldModelAuthoredIntent):
+            raise GreenfieldModelAuthoringError(
+                "Greenfield admitted review produced no final candidate; no records were created."
+            )
+        if encode_greenfield_model_value(joined_candidate) != frozen_projected:
+            raise GreenfieldModelAuthoringError(
+                "Greenfield final validation changed the projected candidate; no records were created."
+            )
+        review = finalize_admitted_review(
+            review,
+            candidate=joined_candidate["result"],
+        )
         completed = True
         return replace(
             authored,
-            semantic_model_call_count=(5 if rejected_candidate is not None else 3),
+            semantic_model_call_count=final_call_count,
             candidate_review=review,
-            candidate_revision=(
-                deepcopy(revision_stage.receipt)
-                if rejected_candidate is not None
-                else {}
-            ),
-            rejected_candidate_review=(
-                rejected_review_receipt if rejected_candidate is not None else {}
-            ),
             effective_model_window_seconds=effective_model_window_seconds,
             participant_selection=deepcopy(participant_stage.receipt),
             remaining_candidate_authoring=deepcopy(remaining_stage.receipt),
@@ -664,20 +603,11 @@ def author_greenfield_intent(
                 for observation in (
                     participant_observation,
                     remaining_observation,
-                    rejected_review_observation,
-                    revision_observation,
                     review_observation,
                 )
             ),
             participant_selection=participant_observation or None,
             remaining_candidate_authoring=remaining_observation or None,
-            rejected_candidate=(
-                rejected_candidate if rejected_candidate is not None else None
-            ),
-            rejected_candidate_review=(
-                rejected_review_observation if rejected_candidate is not None else None
-            ),
-            candidate_revision=revision_observation or None,
             joined_candidate=joined_candidate if completed else None,
             candidate_review=review_observation or None,
             failure=None if completed or clarification else failure,

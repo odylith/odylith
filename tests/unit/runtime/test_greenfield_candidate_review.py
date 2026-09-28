@@ -25,7 +25,11 @@ from tests.unit.runtime.greenfield_model_authoring_fixtures import (
 )
 from tests.unit.runtime.test_greenfield_model_path_custody import _response, _source
 
-ADMITTED = admitted_review_response()
+ADMITTED = admitted_review_response(constraint_custody=[{
+    "constraint_index": 1,
+    "kind": "participant_only",
+    "actor_fact": {"field": "human_actors", "row": 1},
+}])
 
 
 class Clock:
@@ -64,7 +68,7 @@ def run_review(provider, clock, *, deadline=55.0, observation=None, factory=None
 
 
 def test_partition_preserves_every_value_and_binds_complete_candidate():
-    assert review.CANDIDATE_REVIEW_VERSION == "odylith.greenfield.candidate-review.v15"
+    assert review.CANDIDATE_REVIEW_VERSION == "odylith.greenfield.candidate-review.v16"
     source = _source()
     candidate = _response(source)["result"]
     original = deepcopy(candidate)
@@ -140,7 +144,8 @@ def test_partition_preserves_every_value_and_binds_complete_candidate():
     assert candidate == original
     assert receipt["source_sha256"] == hashlib.sha256(source.encode()).hexdigest()
     encoded = json.dumps(payload["candidate"], sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode()
-    assert receipt["candidate_sha256"] == hashlib.sha256(encoded).hexdigest()
+    assert receipt["review_input_candidate_sha256"] == hashlib.sha256(encoded).hexdigest()
+    assert "candidate_sha256" not in receipt
     assert receipt["elapsed_seconds"] == 7.0
     assert provider.calls == 1
     assert provider.requests[0].schema_name == "greenfield_candidate_review"
@@ -228,8 +233,9 @@ def test_review_request_shares_reference_provenance_role_with_host_contract():
     assert "workflow need not be incomplete" in prompt
     assert "semantic-role classification before accepted-source completeness" in prompt
     assert "omits separately identified,\nunbound reference provenance" in prompt
-    assert "owned role, dependency, constraint, event\nor result" in prompt
-    assert "Shared vocabulary, descriptive capabilities or\nthematic relevance" in prompt
+    assert "owned role, dependency, event or result" in prompt
+    assert "admission_witness.constraint_custody" in prompt
+    assert "Shared vocabulary, descriptive capabilities or thematic\nrelevance" in prompt
 
 
 def test_human_subject_state_object_keeps_source_and_performer_custody_separate():
@@ -342,6 +348,7 @@ def test_title_actor_address_stays_hash_bound_before_canonical_product_translati
     admitted["admission_witness"]["participant_fact"] = {"field": "customer", "row": 1}
     admitted["admission_witness"]["task_event_order"] = 1
     admitted["admission_witness"]["result_event_order"] = 1
+    admitted["admission_witness"]["constraint_custody"] = []
     receipt = review.review_greenfield_candidate(
         evidence_text=source,
         candidate=response["result"],
@@ -358,7 +365,7 @@ def test_title_actor_address_stays_hash_bound_before_canonical_product_translati
         "action_quote": "records",
         "target_quote": "a report",
     }]
-    assert receipt["candidate_sha256"] == hashlib.sha256(
+    assert receipt["review_input_candidate_sha256"] == hashlib.sha256(
         json.dumps(
             payload["candidate"], sort_keys=True, ensure_ascii=False, separators=(",", ":")
         ).encode()
@@ -513,7 +520,7 @@ def test_source_insufficient_actor_task_or_result_maps_to_first_path_clarificati
 
     assert raised.value.material_dimension == "first_path"
     assert raised.value.receipt["status"] == "clarification_required"
-    assert set(raised.value.receipt) >= {"source_sha256", "candidate_sha256"}
+    assert set(raised.value.receipt) >= {"source_sha256", "review_input_candidate_sha256"}
     assert provider.calls == 1
     prompt = provider.requests[0].system_prompt
     assert (

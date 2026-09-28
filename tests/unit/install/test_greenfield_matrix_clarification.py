@@ -34,6 +34,10 @@ from odylith.runtime.domain_intelligence.greenfield_material_clarification impor
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import combined_prompt_evidence_source
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import prepare_model_authoring_evidence
 from odylith.runtime.domain_intelligence.greenfield_candidate_review import CANDIDATE_REVIEW_VERSION
+from odylith.runtime.domain_intelligence.greenfield_constraint_custody import (
+    candidate_review_sha256,
+    project_constraint_custody,
+)
 from tests.greenfield_model_profile_test_support import (
     production_stage_observation,
     sealed_profile_observation,
@@ -387,13 +391,16 @@ def test_case_preserves_stage_observation_and_actual_terminal_diagnostics(
     source = prepare_model_authoring_evidence(prompt=prompt, edit_evidence=edit).evidence_source
     stage = production_stage_observation(STANDARD_PROFILE_ID, evidence_text=source)
     _write_stage_observation(retained, stage)
-    candidate = stage["candidate_review"]["request"]["candidate"]
+    candidate = stage["joined_candidate"]["result"]
+    admission_witness = stage["candidate_review"]["response"]["admission_witness"]
     receipt = {
         "version": CANDIDATE_REVIEW_VERSION, "status": "admitted",
         "source_sha256": hashlib.sha256(source.encode("utf-8")).hexdigest(),
-        "candidate_sha256": hashlib.sha256(json.dumps(
-            candidate, sort_keys=True, ensure_ascii=False, separators=(",", ":"), allow_nan=False,
-        ).encode("utf-8")).hexdigest(),
+        "review_input_candidate_sha256": candidate_review_sha256(candidate),
+        "candidate_sha256": candidate_review_sha256(project_constraint_custody(
+            candidate, custody=admission_witness["constraint_custody"],
+        )),
+        "admission_witness": admission_witness,
     }
     transaction_hash = "a" * 64
     create = SimpleNamespace(
@@ -441,7 +448,8 @@ def test_case_preserves_stage_observation_and_actual_terminal_diagnostics(
 
     def profile_evidence(  # noqa: ANN001
         profile, environ, *, observed, stage_observation,
-        reviewer_observation=None, expected_reviewer_candidate_sha256="",
+        reviewer_observation=None, review_input_candidate=None,
+        expected_review_input_candidate_sha256="",
         expected_source="",
     ):
         captured.update(
@@ -449,7 +457,8 @@ def test_case_preserves_stage_observation_and_actual_terminal_diagnostics(
             observed=observed,
             stage_observation=stage_observation,
             reviewer_observation=reviewer_observation,
-            expected_reviewer_candidate_sha256=expected_reviewer_candidate_sha256,
+            review_input_candidate=review_input_candidate,
+            expected_review_input_candidate_sha256=expected_review_input_candidate_sha256,
             expected_source=expected_source,
         )
         return {"status": "passed", "issues": []}
@@ -566,7 +575,7 @@ def test_clarification_case_binds_two_call_stage_to_public_decision(
 
     def profile_evidence(  # noqa: ANN001
         profile, environ, *, observed, stage_observation, expected_source,
-        reviewer_observation=None, expected_reviewer_candidate_sha256="",
+        reviewer_observation=None, expected_review_input_candidate_sha256="",
     ):
         captured.update(
             profile=profile,
@@ -666,7 +675,7 @@ def test_runner_passes_retained_reviewer_observation_to_expected_clarification(
 
     def profile_evidence(  # noqa: ANN001
         profile, environ, *, observed, stage_observation, expected_source,
-        reviewer_observation=None, expected_reviewer_candidate_sha256="",
+        reviewer_observation=None, expected_review_input_candidate_sha256="",
     ):
         captured.update(
             stage_observation=stage_observation,
@@ -696,8 +705,8 @@ def test_runner_passes_retained_reviewer_observation_to_expected_clarification(
     assert isinstance(review, dict)
     monkeypatch.setattr(
         module,
-        "_retained_reviewer_candidate_sha256",
-        lambda *_args, **_kwargs: str(review["candidate_sha256"]),
+        "_review_input_candidate_sha256",
+        lambda *_args, **_kwargs: str(review["review_input_candidate_sha256"]),
     )
     monkeypatch.setattr(module, "model_profile_evidence", profile_evidence)
     monkeypatch.setattr(module, "_case_evidence_manifest", lambda **_kwargs: {})
@@ -843,7 +852,7 @@ def _host_native_reviewer_clarification_observation(
             "version": CANDIDATE_REVIEW_VERSION,
             "status": "clarification_required",
             "source_sha256": source_sha256,
-            "candidate_sha256": candidate_sha256,
+            "review_input_candidate_sha256": candidate_sha256,
             "model_profile": {
                 "profile_id": profile_id,
                 "provider": profile.provider,
@@ -863,7 +872,8 @@ def _host_native_reviewer_admission_observation(
     *,
     profile_id: str = STANDARD_PROFILE_ID,
     host_candidate_sha256: str = "3" * 64,
-    reviewer_candidate_sha256: str = "9" * 64,
+    review_input_candidate_sha256: str = "9" * 64,
+    final_candidate_sha256: str = "8" * 64,
 ) -> dict[str, object]:
     profile = get_greenfield_model_profile(profile_id)
     source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
@@ -886,7 +896,8 @@ def _host_native_reviewer_admission_observation(
             "version": CANDIDATE_REVIEW_VERSION,
             "status": "admitted",
             "source_sha256": source_sha256,
-            "candidate_sha256": reviewer_candidate_sha256,
+            "review_input_candidate_sha256": review_input_candidate_sha256,
+            "candidate_sha256": final_candidate_sha256,
             "model_profile": {
                 "profile_id": profile_id,
                 "provider": profile.provider,
@@ -911,6 +922,7 @@ def _host_native_reviewer_admission_observation(
                     "risk_keys": [],
                     "risk_posture_status": "no_material_risks_identified",
                 },
+                "constraint_custody": [],
             },
         },
     }
@@ -987,8 +999,8 @@ def test_reviewer_selected_clarification_fails_closed_without_private_receipt() 
     ("mutation", "expected_issue"),
     (
         ("source", "private host-native reviewer receipt source does not match the evaluated source"),
-        ("candidate_hash", "private host-native reviewer receipt candidate hash is invalid"),
-        ("substituted_candidate_hash", "private host-native reviewer receipt does not match the canonical candidate"),
+        ("candidate_hash", "private host-native reviewer receipt input hash is invalid"),
+        ("substituted_candidate_hash", "private host-native reviewer receipt does not match the review input"),
         ("model", "does not match pinned"),
         ("missing_profile_field", "private host-native reviewer model profile is missing or malformed"),
         ("extra_profile_field", "private host-native reviewer model profile is missing or malformed"),
@@ -1008,13 +1020,13 @@ def test_reviewer_selected_clarification_rejects_forged_private_or_stage_custody
     reviewer = _host_native_reviewer_clarification_observation(source)
     review = reviewer["candidate_review"]
     assert isinstance(review, dict)
-    canonical_candidate_sha256 = str(review["candidate_sha256"])
+    review_input_candidate_sha256 = str(review["review_input_candidate_sha256"])
     if mutation == "source":
         review["source_sha256"] = "0" * 64
     elif mutation == "candidate_hash":
-        review["candidate_sha256"] = "forged"
+        review["review_input_candidate_sha256"] = "forged"
     elif mutation == "substituted_candidate_hash":
-        review["candidate_sha256"] = "f" * 64
+        review["review_input_candidate_sha256"] = "f" * 64
     elif mutation in {"elapsed_effective_timeout", "elapsed_shared_window"}:
         model_profile = review["model_profile"]
         assert isinstance(model_profile, dict)
@@ -1045,7 +1057,7 @@ def test_reviewer_selected_clarification_rejects_forged_private_or_stage_custody
         observed={},
         stage_observation=stage,
         reviewer_observation=reviewer,
-        expected_reviewer_candidate_sha256=canonical_candidate_sha256,
+        expected_review_input_candidate_sha256=review_input_candidate_sha256,
         expected_source=source,
     )
 
