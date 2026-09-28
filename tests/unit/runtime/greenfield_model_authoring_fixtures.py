@@ -188,15 +188,33 @@ def host_candidate_response(
     components = result.get("components")
     if not isinstance(facts, dict) or not isinstance(events, list) or not isinstance(components, list):
         raise TypeError("canonical fixture cannot be projected to a host candidate")
+    source_facts = copy.deepcopy(facts)
+    constraint_owners = {
+        json.dumps(responsibility, sort_keys=True): str(component.get("owner_fact_quote") or "")
+        for component in components
+        for responsibility in component.get("responsibilities", [])
+        if isinstance(responsibility, Mapping)
+    }
     first_path = facts.pop("first_path")
     if not isinstance(first_path, list) or len(first_path) != len(events):
         raise ValueError("canonical fixture event citations are incomplete")
     for field, value in tuple(facts.items()):
         if isinstance(value, list):
-            facts[field] = [
+            citations = [
                 _unique_context_citation(evidence_text, row)
                 for row in value
             ]
+            if field == "operational_constraints":
+                for citation, raw in zip(citations, value, strict=True):
+                    owner_quote = constraint_owners.get(
+                        json.dumps(raw, sort_keys=True), ""
+                    )
+                    citation["product_owner_fact"] = (
+                        _fixture_owner_fact(source_facts, owner_quote)
+                        if owner_quote
+                        else None
+                    )
+            facts[field] = citations
         elif isinstance(value, Mapping):
             facts[field] = _unique_context_citation(
                 evidence_text,
@@ -214,6 +232,14 @@ def host_candidate_response(
         json.dumps(event["responsibility_citation"], sort_keys=True)
         for event in events
         if event["responsibility_citation"] is not None
+    }
+    operational_constraints = {
+        json.dumps(
+            {key: value for key, value in row.items() if key != "product_owner_fact"},
+            sort_keys=True,
+        )
+        for row in facts.get("operational_constraints", [])
+        if isinstance(row, Mapping)
     }
     for component in components:
         owner_quote = str(component.pop("owner_fact_quote", ""))
@@ -243,9 +269,26 @@ def host_candidate_response(
             if json.dumps(
                 _unique_context_citation(evidence_text, row), sort_keys=True
             ) not in event_responsibilities
+            and json.dumps(
+                _unique_context_citation(evidence_text, row), sort_keys=True
+            ) not in operational_constraints
         ]
         component.pop("responsibilities")
     return candidate
+
+
+def _fixture_owner_fact(
+    facts: Mapping[str, Any], owner_quote: str,
+) -> dict[str, object]:
+    title = facts.get("title")
+    if isinstance(title, Mapping) and str(title.get("quote") or "") == owner_quote:
+        return {"field": "title", "row": 1}
+    systems = facts.get("internal_systems")
+    if isinstance(systems, Sequence) and not isinstance(systems, (str, bytes, bytearray)):
+        for index, system in enumerate(systems, start=1):
+            if isinstance(system, Mapping) and str(system.get("quote") or "") == owner_quote:
+                return {"field": "internal_systems", "row": index}
+    raise ValueError(f"canonical fixture has no product owner fact for {owner_quote!r}")
 
 
 def write_host_candidate_fixture(

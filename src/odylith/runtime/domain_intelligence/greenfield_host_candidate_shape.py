@@ -18,9 +18,10 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     MAX_AUTHORED_FIELD_VALUE_CHARS,
 )
 
-HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v12"
+HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v13"
 HOST_EVENT_CITATION_FIELD = "source_citation"
 HOST_EVENT_RESPONSIBILITY_FIELD = "responsibility_citation"
+HOST_CONSTRAINT_OWNER_FIELD = "product_owner_fact"
 
 
 def _context_citation_schema(*, description: str = "") -> dict[str, Any]:
@@ -51,6 +52,51 @@ def _context_citation_schema(*, description: str = "") -> dict[str, Any]:
     return schema
 
 
+def _product_owner_fact_schema(*, nullable: bool = False) -> dict[str, Any]:
+    owner_schema: dict[str, Any] = {
+        "description": (
+            "Select the exact accepted product owner by typed fact identity. Select an "
+            "internal system only when this relation's exact quoted clause explicitly binds "
+            "that narrower owner; otherwise use title for a "
+            "product-owned relation. Never select a human or external participant or infer "
+            "ownership from provisional design."
+        ),
+        "anyOf": [
+            {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["field", "row"],
+                "properties": {
+                    "field": {"type": "string", "const": "title"},
+                    "row": {"type": "integer", "const": 1},
+                },
+            },
+            {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["field", "row"],
+                "properties": {
+                    "field": {"type": "string", "const": "internal_systems"},
+                    "row": {"type": "integer", "minimum": 1},
+                },
+            },
+        ],
+    }
+    if nullable:
+        owner_schema["anyOf"].append({"type": "null"})
+        owner_schema["description"] = (
+            "Classify this constraint once at its source citation. Select an internal system "
+            "only when this constraint's exact quoted clause explicitly binds "
+            "that narrower owner; otherwise use title when the constraint governs the requested "
+            "product, or null "
+            "when an accepted constraint governs only a human, an external actor, or workflow "
+            "order. Source-custody and authoring controls are not accepted product facts and "
+            "must be omitted entirely. Canonical projection carries non-null custody into the "
+            "owner's accepted component responsibilities."
+        )
+    return owner_schema
+
+
 def greenfield_host_candidate_schema() -> dict[str, Any]:
     """Return the host shape with contextual, event-owned source citations."""
 
@@ -72,6 +118,20 @@ def greenfield_host_candidate_schema() -> dict[str, Any]:
         else:
             replacement = _context_citation_schema(description=description)
         facts["properties"][field] = replacement
+    operational_constraint = _context_citation_schema()
+    operational_constraint["required"] = [
+        *operational_constraint["required"],
+        HOST_CONSTRAINT_OWNER_FIELD,
+    ]
+    operational_constraint["properties"][HOST_CONSTRAINT_OWNER_FIELD] = (
+        _product_owner_fact_schema(nullable=True)
+    )
+    facts["properties"]["operational_constraints"]["items"] = operational_constraint
+    facts["properties"]["operational_constraints"]["description"] = (
+        "Every exact source-stated operational, safety, ordering, or actor restriction. "
+        "Classify product ownership on each citation with product_owner_fact; do not copy "
+        "an operational constraint into components.additional_responsibilities."
+    )
     facts["required"] = [
         field for field in facts["required"] if field != "first_path"
     ]
@@ -109,33 +169,7 @@ def greenfield_host_candidate_schema() -> dict[str, Any]:
         for field in component["required"]
     ]
     component["properties"].pop("owner_fact_quote")
-    component["properties"]["owner_fact"] = {
-        "description": (
-            "Select the exact accepted product owner by typed fact identity. Use title "
-            "when the source names no narrower internal system; never select a human or "
-            "external participant."
-        ),
-        "anyOf": [
-            {
-                "type": "object",
-                "additionalProperties": False,
-                "required": ["field", "row"],
-                "properties": {
-                    "field": {"type": "string", "const": "title"},
-                    "row": {"type": "integer", "const": 1},
-                },
-            },
-            {
-                "type": "object",
-                "additionalProperties": False,
-                "required": ["field", "row"],
-                "properties": {
-                    "field": {"type": "string", "const": "internal_systems"},
-                    "row": {"type": "integer", "minimum": 1},
-                },
-            },
-        ],
-    }
+    component["properties"]["owner_fact"] = _product_owner_fact_schema()
     responsibility = component["properties"].pop("responsibilities")
     component["required"] = [
         "additional_responsibilities" if field == "responsibilities" else field
@@ -146,9 +180,9 @@ def greenfield_host_candidate_schema() -> dict[str, Any]:
         "minItems": 0,
         "items": _context_citation_schema(),
         "description": (
-            "Every exact source-stated responsibility, capability, result, or product-governing "
-            "operational or safety constraint citation for this owner except a "
-            "citation identical to one of its typed product-event responsibility citations. Related "
+            "Every exact source-stated responsibility, capability, or result for this owner "
+            "except an operational constraint or a citation identical to one of its typed "
+            "product-event responsibility citations. Related "
             "wording, a shared target, or the same owner does not make two citations "
             "identical. Product events become accepted component responsibilities "
             "during canonical projection; do not repeat only those exact citations here."
@@ -158,10 +192,9 @@ def greenfield_host_candidate_schema() -> dict[str, Any]:
         "Additional source-stated product or component responsibilities, grouped by "
         "their selected product owner. Typed product events establish their own "
         "exact accepted component responsibility automatically. Preserve separately "
-        "worded source responsibilities even when their meaning overlaps an event. A product-"
-        "governing operational or safety constraint remains in global constraint custody and "
-        "also appears here under its product owner; human-only restrictions and source-custody "
-        "controls do not. "
+        "worded source responsibilities even when their meaning overlaps an event. Operational "
+        "constraint ownership is declared once on facts.operational_constraints and projected "
+        "here deterministically when product_owner_fact is non-null. "
         "Return [] only when the source states no additional non-event responsibility."
     )
     return schema
@@ -203,7 +236,30 @@ def canonical_greenfield_host_candidate(
             state_object=field == "state_object",
         )
         for field, value in facts.items()
+        if field != "operational_constraints"
     }
+    raw_constraints = facts.get("operational_constraints")
+    if not isinstance(raw_constraints, Sequence) or isinstance(
+        raw_constraints, (str, bytes, bytearray)
+    ):
+        raise TypeError("Greenfield host candidate operational constraints must be an array")
+    constraint_responsibilities: list[tuple[str, dict[str, Any]]] = []
+    canonical_constraints: list[dict[str, Any]] = []
+    constraint_fields = {"quote", "context", HOST_CONSTRAINT_OWNER_FIELD}
+    for raw_constraint in raw_constraints:
+        if not isinstance(raw_constraint, Mapping) or set(raw_constraint) != constraint_fields:
+            raise ValueError("Greenfield host candidate operational constraint has invalid fields")
+        constraint = dict(raw_constraint)
+        owner_fact = constraint.pop(HOST_CONSTRAINT_OWNER_FIELD)
+        citation = canonical_citation_from_host_selection(evidence, constraint)
+        canonical_constraints.append(citation)
+        if owner_fact is None:
+            continue
+        owner_quote = _product_event_owner_quote(facts, owner_fact)
+        if not owner_quote:
+            raise ValueError("Greenfield host candidate constraint has unbound product owner")
+        constraint_responsibilities.append((owner_quote, citation))
+    canonical_facts["operational_constraints"] = canonical_constraints
     canonical_events: list[dict[str, Any]] = []
     path_citations: list[Any] = []
     event_responsibilities: list[tuple[str, dict[str, Any]]] = []
@@ -286,9 +342,16 @@ def canonical_greenfield_host_candidate(
             canonical_citation_from_host_selection(evidence, responsibility)
             for responsibility in responsibilities
         ]
+        if any(
+            responsibility in canonical_constraints
+            for responsibility in component["responsibilities"]
+        ):
+            raise ValueError(
+                "Greenfield operational constraint custody must use product_owner_fact"
+            )
         canonical_components.append(component)
         components_by_owner[owner_quote] = component
-    for owner_quote, citation in event_responsibilities:
+    for owner_quote, citation in (*event_responsibilities, *constraint_responsibilities):
         if any(
             other_owner != owner_quote and citation in other_component["responsibilities"]
             for other_owner, other_component in components_by_owner.items()

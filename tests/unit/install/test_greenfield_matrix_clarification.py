@@ -775,7 +775,7 @@ def _host_native_clarification_stage(
 ) -> dict[str, object]:
     profile = get_greenfield_model_profile(profile_id)
     return {
-        "version": "odylith.greenfield.host-native-matrix-observation.v3",
+        "version": "odylith.greenfield.host-native-matrix-observation.v4",
         "status": "passed",
         "host_invocations": 1,
         "contract_command_invocations": 1,
@@ -810,6 +810,8 @@ def _host_native_clarification_stage(
         "proposal_stderr_sha256": "6" * 64,
         "proposal_mode": "clarification_required",
         "candidate_review_status": "unreported",
+        "candidate_review_issue_path_sha256": "",
+        "candidate_review_issue_reason_sha256": "",
         "elapsed_seconds": 18.02,
     }
 

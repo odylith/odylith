@@ -50,18 +50,21 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v1"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v26"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v27"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
 PRODUCT_BOUND_CONSTRAINT_CUSTODY_CONTRACT = (
-    "A source-stated operational or safety constraint whose source context governs the "
-    "requested product or a named product-owned internal system has two accepted roles: "
-    "preserve its exact clause as a global operational constraint and under that selected "
-    "product owner's accepted component responsibilities. This dual custody does not apply "
-    "to a restriction stated only for a human or external actor, or to a source-custody "
-    "control governing evidence, a fixture, a candidate, or the authoring transaction. "
-    "Never infer product ownership from provisional design. Do not repeat an exact typed "
-    "product-event responsibility as an additional responsibility; related or separately "
-    "worded source clauses remain distinct."
+    "Classify each accepted operational or safety constraint once on its exact global "
+    "citation. Set product_owner_fact to a named product-owned internal system only when the "
+    "constraint's exact quoted clause explicitly binds that narrower owner; use "
+    "title when the constraint governs the requested product without naming a narrower owner, "
+    "and set it to null "
+    "when the accepted restriction governs only a human or external actor or workflow order. "
+    "Source-custody controls governing evidence, a fixture, a candidate, or the authoring "
+    "transaction are not product meaning and must be omitted from accepted facts entirely. "
+    "Odylith deterministically "
+    "projects non-null custody into that owner's accepted component responsibilities. Never "
+    "infer product ownership from provisional design, and never repeat an operational "
+    "constraint in components.additional_responsibilities."
 )
 
 

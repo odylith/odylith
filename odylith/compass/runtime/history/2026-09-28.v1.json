@@ -150,10 +150,7 @@
         "Nothing moved in this window: B-004 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-005": [
-        "Completed in this window: Greenfield constraint custody is aligned. That closes a loose end in the release work.",
-        "Current execution: Release reset, full-stack packaging, and hosted-asset proof are complete. This lane does not need active implementation work.",
-        "Next planned: Capture the next verified checkpoint to keep the completed release and packaging work supported by current proof.",
-        "Risks to watch: No critical blockers are surfaced. The next checkpoint should confirm that clean status still holds."
+        "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
       ],
       "B-006": [
         "Nothing moved in this window: B-006 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
@@ -590,10 +587,7 @@
         "Nothing moved in this window: B-004 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-005": [
-        "Completed in this window: Greenfield work now binds V33 release quality and proof. That gives the finished release work a clearer evidence point.",
-        "Current execution: Release reset, full-stack packaging, and hosted-asset proof are complete. This lane is no longer awaiting implementation.",
-        "Next planned: Capture the next verified checkpoint so the completed lane keeps fresh, verifiable follow-through.",
-        "Risks to watch: No critical blockers are surfaced. The useful check is whether the next checkpoint is recorded and remains verifiable."
+        "Local runtime facts: Compass is showing local runtime facts; a narrated brief is not available for this view."
       ],
       "B-006": [
         "Nothing moved in this window: B-006 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
@@ -1624,131 +1618,27 @@
       },
       "B-005": {
         "schema_version": "v25",
-        "status": "ready",
-        "source": "cache",
+        "status": "unavailable",
+        "source": "unavailable",
         "fingerprint": "cbf26dd4bebdb86e797745e8338e2fbdae484823b740c9b616ce357670962361",
-        "generated_utc": "2026-09-28T18:27:06Z",
-        "sections": [
-          {
-            "key": "completed",
-            "label": "Completed in this window",
-            "bullets": [
-              {
-                "text": "Greenfield constraint custody is aligned. That closes a loose end in the release work.",
-                "fact_ids": [
-                  "F-001"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "current_execution",
-            "label": "Current execution",
-            "bullets": [
-              {
-                "text": "Release reset, full-stack packaging, and hosted-asset proof are complete. This lane does not need active implementation work.",
-                "fact_ids": [
-                  "F-004"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "next_planned",
-            "label": "Next planned",
-            "bullets": [
-              {
-                "text": "Capture the next verified checkpoint to keep the completed release and packaging work supported by current proof.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "risks_to_watch",
-            "label": "Risks to watch",
-            "bullets": [
-              {
-                "text": "No critical blockers are surfaced. The next checkpoint should confirm that clean status still holds.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          }
-        ],
-        "evidence_lookup": {
-          "F-001": {
-            "text": "Aligned Greenfield constraint custody.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-005"
-            ]
-          },
-          "F-002": {
-            "text": "Greenfield: align reviewer provenance semantics.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-005"
-            ]
-          },
-          "F-003": {
-            "text": "Nothing fully closed for Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005) in the last 24 hours.",
-            "section_key": "completed",
-            "kind": "window_summary",
-            "workstreams": [
-              "B-005"
-            ]
-          },
-          "F-004": {
-            "text": "Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005) is completed.",
-            "section_key": "current_execution",
-            "kind": "direction",
-            "workstreams": [
-              "B-005"
-            ]
-          },
-          "F-005": {
-            "text": "Checklist is 42/42; execution checklist closure is complete for the scoped plan.",
-            "section_key": "current_execution",
-            "kind": "checklist",
-            "workstreams": [
-              "B-005"
-            ]
-          },
-          "F-006": {
-            "text": "ETA is projected at roughly 0 days (high confidence).",
-            "section_key": "current_execution",
-            "kind": "timeline",
-            "workstreams": [
-              "B-005"
-            ]
-          },
-          "F-007": {
-            "text": "Immediate forcing function is to capture the next verified checkpoint for Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005).",
-            "section_key": "next_planned",
-            "kind": "fallback_next",
-            "workstreams": [
-              "B-005"
-            ]
-          },
-          "F-008": {
-            "text": "No critical blockers are currently surfaced.",
-            "section_key": "risks_to_watch",
-            "kind": "risk_posture",
-            "workstreams": [
-              "B-005"
-            ]
-          }
-        },
         "substrate_fingerprint": "cbf26dd4bebdb86e797745e8338e2fbdae484823b740c9b616ce357670962361",
-        "bundle_fingerprint": "8c4ab8d348a4c8dbe73e470403666d77f2bf7ebc30d57e1801508acdc38de98c",
-        "provider_decision": "cache_reuse",
-        "last_successful_narration_fingerprint": "cbf26dd4bebdb86e797745e8338e2fbdae484823b740c9b616ce357670962361",
-        "cache_mode": "exact"
+        "bundle_fingerprint": "",
+        "provider_decision": "provider_deferred",
+        "last_successful_narration_fingerprint": "",
+        "generated_utc": "2026-09-28T18:27:06Z",
+        "sections": [],
+        "diagnostics": {
+          "reason": "provider_deferred",
+          "title": "Local runtime facts",
+          "message": "Compass is showing local runtime facts; a narrated brief is not available for this view.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005) is completed.",
+            "Next: Immediate forcing function is to capture the next verified checkpoint for Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005).",
+            "Watch: No critical blockers are currently surfaced."
+          ]
+        },
+        "evidence_lookup": {}
       },
       "B-006": {
         "status": "unavailable",
@@ -3650,131 +3540,27 @@
       },
       "B-005": {
         "schema_version": "v25",
-        "status": "ready",
-        "source": "cache",
+        "status": "unavailable",
+        "source": "unavailable",
         "fingerprint": "040c357adc2be3d74d02cde462246f205a2cda331dfe258e83db8b062e7479a9",
-        "generated_utc": "2026-09-28T18:27:06Z",
-        "sections": [
-          {
-            "key": "completed",
-            "label": "Completed in this window",
-            "bullets": [
-              {
-                "text": "Greenfield work now binds V33 release quality and proof. That gives the finished release work a clearer evidence point.",
-                "fact_ids": [
-                  "F-001"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "current_execution",
-            "label": "Current execution",
-            "bullets": [
-              {
-                "text": "Release reset, full-stack packaging, and hosted-asset proof are complete. This lane is no longer awaiting implementation.",
-                "fact_ids": [
-                  "F-004"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "next_planned",
-            "label": "Next planned",
-            "bullets": [
-              {
-                "text": "Capture the next verified checkpoint so the completed lane keeps fresh, verifiable follow-through.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "risks_to_watch",
-            "label": "Risks to watch",
-            "bullets": [
-              {
-                "text": "No critical blockers are surfaced. The useful check is whether the next checkpoint is recorded and remains verifiable.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          }
-        ],
-        "evidence_lookup": {
-          "F-001": {
-            "text": "Greenfield: bind V33 release quality and proof.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-005"
-            ]
-          },
-          "F-002": {
-            "text": "Greenfield: close risk and release proof authorities.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-005"
-            ]
-          },
-          "F-003": {
-            "text": "Nothing fully closed for Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005) in the last 48 hours.",
-            "section_key": "completed",
-            "kind": "window_summary",
-            "workstreams": [
-              "B-005"
-            ]
-          },
-          "F-004": {
-            "text": "Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005) is completed.",
-            "section_key": "current_execution",
-            "kind": "direction",
-            "workstreams": [
-              "B-005"
-            ]
-          },
-          "F-005": {
-            "text": "Checklist is 42/42; execution checklist closure is complete for the scoped plan.",
-            "section_key": "current_execution",
-            "kind": "checklist",
-            "workstreams": [
-              "B-005"
-            ]
-          },
-          "F-006": {
-            "text": "ETA is projected at roughly 0 days (high confidence).",
-            "section_key": "current_execution",
-            "kind": "timeline",
-            "workstreams": [
-              "B-005"
-            ]
-          },
-          "F-007": {
-            "text": "Immediate forcing function is to capture the next verified checkpoint for Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005).",
-            "section_key": "next_planned",
-            "kind": "fallback_next",
-            "workstreams": [
-              "B-005"
-            ]
-          },
-          "F-008": {
-            "text": "No critical blockers are currently surfaced.",
-            "section_key": "risks_to_watch",
-            "kind": "risk_posture",
-            "workstreams": [
-              "B-005"
-            ]
-          }
-        },
         "substrate_fingerprint": "040c357adc2be3d74d02cde462246f205a2cda331dfe258e83db8b062e7479a9",
-        "bundle_fingerprint": "8c4ab8d348a4c8dbe73e470403666d77f2bf7ebc30d57e1801508acdc38de98c",
-        "provider_decision": "cache_reuse",
-        "last_successful_narration_fingerprint": "040c357adc2be3d74d02cde462246f205a2cda331dfe258e83db8b062e7479a9",
-        "cache_mode": "exact"
+        "bundle_fingerprint": "",
+        "provider_decision": "provider_deferred",
+        "last_successful_narration_fingerprint": "",
+        "generated_utc": "2026-09-28T18:27:06Z",
+        "sections": [],
+        "diagnostics": {
+          "reason": "provider_deferred",
+          "title": "Local runtime facts",
+          "message": "Compass is showing local runtime facts; a narrated brief is not available for this view.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005) is completed.",
+            "Next: Immediate forcing function is to capture the next verified checkpoint for Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005).",
+            "Watch: No critical blockers are currently surfaced."
+          ]
+        },
+        "evidence_lookup": {}
       },
       "B-006": {
         "status": "unavailable",

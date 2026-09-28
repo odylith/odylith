@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 HOST_NATIVE_MATRIX_OBSERVATION_VERSION = (
-    "odylith.greenfield.host-native-matrix-observation.v3"
+    "odylith.greenfield.host-native-matrix-observation.v4"
 )
 HOST_NATIVE_ARGV_RECEIPT_VERSION = "odylith.greenfield.host-argv-receipt.v1"
 
@@ -79,6 +79,32 @@ class HostCandidateFlowError(RuntimeError):
         super().__init__(message)
         self.observation = dict(observation)
 
+    def __str__(self) -> str:
+        diagnostic_keys = (
+            "stage",
+            "host_returncode",
+            "contract_sha256",
+            "candidate_schema_sha256",
+            "candidate_raw_sha256",
+            "candidate_raw_bytes",
+            "proposal_returncode",
+            "proposal_mode",
+            "proposal_stdout_sha256",
+            "candidate_review_status",
+            "candidate_review_issue_path_sha256",
+            "candidate_review_issue_reason_sha256",
+            "elapsed_seconds",
+        )
+        diagnostic = {
+            key: self.observation[key]
+            for key in diagnostic_keys
+            if key in self.observation
+        }
+        return (
+            f"{super().__str__()}; diagnostic="
+            f"{json.dumps(diagnostic, sort_keys=True, separators=(',', ':'))}"
+        )
+
 
 @dataclass(frozen=True)
 class HostCandidateFlow:
@@ -136,6 +162,8 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
         ).strip(),
         "candidate_temp_cleaned": False,
         "host_workspace_cleaned": False,
+        "candidate_review_issue_path_sha256": "",
+        "candidate_review_issue_reason_sha256": "",
     }
     candidate_path: Path | None = None
     host_workspace: Path | None = None
@@ -532,10 +560,19 @@ def _proposal_outcome(value: str) -> dict[str, str]:
     review = payload.get("candidate_review")
     review = review if isinstance(review, Mapping) else {}
     status = str(review.get("status") or "").strip()
-    return {
+    outcome = {
         "proposal_mode": str(payload.get("mode") or "").strip() or "invalid",
         "candidate_review_status": status or "unreported",
     }
+    issue = review.get("issue")
+    if isinstance(issue, Mapping):
+        path = str(issue.get("path") or "").strip()
+        reason = str(issue.get("reason") or "").strip()
+        if path:
+            outcome["candidate_review_issue_path_sha256"] = _sha256_text(path)
+        if reason:
+            outcome["candidate_review_issue_reason_sha256"] = _sha256_text(reason)
+    return outcome
 
 
 def _emit_observation(

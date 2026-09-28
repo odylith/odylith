@@ -308,11 +308,24 @@ def test_host_candidate_retains_raw_candidate_and_denied_proposal_before_cleanup
     )
     retained: dict[str, bytes] = {}
     observations: list[dict[str, object]] = []
+    denial_reason = "Missing source-bound privacy custody."
+    issue_path = "candidate.accepted_source.components USER_SOURCE_SECRET"
 
     def denied(_path: Path, _timeout: float):
         return _completed(
             ["odylith", "greenfield", "propose"],
-            stdout=json.dumps({"mode": "error", "candidate_review": {"status": "denied"}}),
+            stdout=json.dumps(
+                {
+                    "mode": "error",
+                    "candidate_review": {
+                        "status": "denied",
+                        "issue": {
+                            "path": issue_path,
+                            "reason": denial_reason,
+                        },
+                    },
+                }
+            ),
             returncode=2,
         )
 
@@ -327,13 +340,23 @@ def test_host_candidate_retains_raw_candidate_and_denied_proposal_before_cleanup
     )
     monkeypatch.setattr(host_module.subprocess, "run", host_run)
 
-    with pytest.raises(host_module.HostCandidateFlowError, match="proposal command returned nonzero"):
+    with pytest.raises(
+        host_module.HostCandidateFlowError,
+        match="proposal command returned nonzero",
+    ) as raised:
         host_module.run_host_candidate_flow(flow)
 
     assert proposal_paths == []
     assert retained["candidate"] == json.dumps(candidate).encode("utf-8")
     assert json.loads(retained["stdout"]) == {
-        "mode": "error", "candidate_review": {"status": "denied"},
+        "mode": "error",
+        "candidate_review": {
+            "status": "denied",
+            "issue": {
+                "path": issue_path,
+                "reason": denial_reason,
+            },
+        },
     }
     assert retained["stderr"] == b""
     observation = observations[-1]
@@ -341,7 +364,17 @@ def test_host_candidate_retains_raw_candidate_and_denied_proposal_before_cleanup
     assert observation["proposal_returncode"] == 2
     assert observation["proposal_mode"] == "error"
     assert observation["candidate_review_status"] == "denied"
+    assert observation["candidate_review_issue_path_sha256"] == hashlib.sha256(
+        issue_path.encode("utf-8")
+    ).hexdigest()
+    assert observation["candidate_review_issue_reason_sha256"] == hashlib.sha256(
+        denial_reason.encode("utf-8")
+    ).hexdigest()
     assert observation["candidate_temp_cleaned"] is True
+    diagnostic = str(raised.value)
+    assert issue_path not in diagnostic
+    assert "USER_SOURCE_SECRET" not in diagnostic
+    assert denial_reason not in diagnostic
 
 
 @pytest.mark.parametrize(

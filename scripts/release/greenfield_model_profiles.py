@@ -87,7 +87,8 @@ _HOST_NATIVE_STAGE_FIELDS = frozenset(
         "host_stderr_bytes", "response_kind", "candidate_sha256",
         "candidate_raw_sha256", "candidate_raw_bytes", "candidate_temp_outside_repo",
         "proposal_returncode", "proposal_stdout_sha256", "proposal_stderr_sha256",
-        "proposal_mode", "candidate_review_status", "elapsed_seconds",
+        "proposal_mode", "candidate_review_status", "candidate_review_issue_path_sha256",
+        "candidate_review_issue_reason_sha256", "elapsed_seconds",
     }
 )
 
@@ -872,10 +873,25 @@ def _host_native_flow_observation_issues(
         issues.append("retained host-native proposal mode is invalid")
     elif expected_proposal_mode and retained.get("proposal_mode") != expected_proposal_mode:
         issues.append("retained host-native proposal mode does not match the evaluated outcome")
-    if retained.get("candidate_review_status") not in {
+    review_status = retained.get("candidate_review_status")
+    if review_status not in {
         "unreported", "admitted", "denied", "clarification_required",
     }:
         issues.append("retained host-native candidate-review outcome is invalid")
+    diagnostic_hash_fields = (
+        "candidate_review_issue_path_sha256",
+        "candidate_review_issue_reason_sha256",
+    )
+    if review_status == "denied":
+        for field in diagnostic_hash_fields:
+            if not _is_sha256(retained.get(field)):
+                issues.append(f"retained host-native {field} is invalid")
+    else:
+        for field in diagnostic_hash_fields:
+            if retained.get(field) != "":
+                issues.append(
+                    f"retained host-native {field} must be empty without a denied review"
+                )
     elapsed = _positive_float(retained.get("elapsed_seconds"))
     if elapsed is None or elapsed >= contract.operational_timeout_seconds:
         issues.append("retained host-native elapsed time lacks operational-timeout proof")

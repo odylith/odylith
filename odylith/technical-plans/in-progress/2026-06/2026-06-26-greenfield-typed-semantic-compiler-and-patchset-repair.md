@@ -1,5 +1,34 @@
 Status: In progress
 
+## V45/V46 typed operational-constraint ownership convergence (2026-09-28)
+
+The V44 prompt-only dual-custody instruction is falsified for release use. Its
+clean immutable exact public replay from
+`1a36b0ec544b67a6981fef90c625eb84ecb9f0cf` used one successful Astra-medium
+author call and failed closed in installed proposal without a transaction or
+governed write. The retained result contains only a generic nonzero proposal
+outcome; raw reviewer reasoning was not retained, so no inferred cause may be
+recorded as fact.
+
+The active mechanism is host-boundary typed custody. Host candidate contract
+v27 and format v13 require a `product_owner_fact` for every authored
+operational constraint. It cites the exact `title` or `internal_systems` row
+that owns product behavior, or is null only for accepted human/external-only
+or workflow-order constraints. The existing canonical component responsibility
+relation receives the fact deterministically; `additional_responsibilities`
+does not become a competing owner. Source-custody, fixture, candidate, and
+authoring controls cannot enter accepted product meaning. Reviewer v15 and the
+canonical transaction schema do not change.
+
+Telemetry observation v4 records hashes, not raw reviewer path or reason, for
+denied reviews. Current proof is 337 focused implementation tests plus a
+375-test independent bounded review with no P0/P1/P2. Freeze this slice after
+governance validation, build a fresh immutable distribution, and replay only
+the exact failed public case. Run the unchanged 40-case campaign only after
+that replay passes. The protected holdout remains untouched. No parser, regex,
+heuristic owner inference, retry, repair, fallback, second author, model
+ladder, reviewer exception, or parallel canonical relation is permitted.
+
 ## V44 product-governing constraint custody convergence (2026-09-27)
 
 The fresh public operating-envelope campaign stopped on its first commit case

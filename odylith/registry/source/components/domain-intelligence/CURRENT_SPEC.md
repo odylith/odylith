@@ -1,8 +1,31 @@
 # Domain Intelligence
-Last updated: 2026-09-27
+Last updated: 2026-09-28
 
 
 ## Overview
+
+### V45/V46 typed operational-constraint owner custody (2026-09-28)
+
+Domain Intelligence receives product-bound operational constraints through a
+typed, source-located owner fact rather than a duplicated authoring
+instruction. Each host-authored constraint has `product_owner_fact` pointing
+to the exact `title` or `internal_systems` source row that owns it, or null
+only where the accepted restriction is human/external-only or describes
+workflow order. A non-null fact projects deterministically to the existing
+canonical component responsibility relation. The product constraint remains
+globally cited; the owner fact adds accepted component custody without creating
+a second canonical interpretation or duplicating it in
+`additional_responsibilities`.
+
+Evidence, fixture, candidate, and authoring controls are source-custody
+controls, not product facts. Reviewer v15 and the canonical transaction
+schema remain unchanged. Host candidate contract v27 and format v13 establish
+this boundary; observation v4 keeps denied-review diagnostics as hashes only,
+so untrusted reviewer text cannot cross into output or telemetry. Focused
+implementation proof passes 337 tests and independent bounded review passes
+375 focused tests with no P0/P1/P2. A fresh immutable replay of the exact
+failed public case is still required before the public campaign or release
+qualification can advance.
 
 ### V44 dual custody for product-governing constraints (2026-09-27)
 

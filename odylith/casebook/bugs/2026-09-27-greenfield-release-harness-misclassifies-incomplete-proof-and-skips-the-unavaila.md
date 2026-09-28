@@ -1,5 +1,36 @@
 - Bug ID: CB-347
 
+## V45/V46 typed operational-constraint ownership correction (2026-09-28)
+
+The V44 prompt-only dual-custody correction did not qualify. An exact immutable
+replay of the first failed public commit case from clean commit
+`1a36b0ec544b67a6981fef90c625eb84ecb9f0cf` completed its single Astra-medium
+author call, then failed closed during installed proposal with no transaction
+or governed product write. The retained replay outcome names only the generic
+nonzero host-native proposal result; its raw reviewer reason was not retained,
+so this record does not assert a more specific V45 rejection cause.
+
+V46 replaces prompt-only duplication with a typed host-boundary custody fact.
+Every host-authored operational constraint now carries a required
+`product_owner_fact`: either an exact `title` or `internal_systems` source
+location, or `null` only for an accepted human/external-only restriction or a
+workflow-order constraint. A non-null fact projects deterministically into the
+existing canonical component-responsibility relation. Source-custody,
+fixture, candidate, and authoring controls remain excluded from accepted
+product facts, and an operational constraint cannot be duplicated in
+`additional_responsibilities`. The canonical transaction shape and reviewer
+v15 remain unchanged.
+
+The host contract is v27 and host-candidate format is v13. Denied-review
+telemetry is now observation v4: it retains only hashes for reviewer path and
+reason, never untrusted raw diagnostic text. Focused implementation proof
+passes 337 tests, and independent bounded review passes 375 focused tests with
+no P0/P1/P2 finding. This is not release qualification: a fresh immutable
+exact public replay remains pending, followed by the unchanged public campaign
+only if that replay passes. Do not restore prompt-only wording, parsers,
+regexes, retries, repairs, fallbacks, alternate model ladders, or a second
+canonical interpretation.
+
 ## V44 product-constraint owner-custody mismatch (2026-09-27)
 
 The first commit case in the fresh 40-case public operating-envelope campaign

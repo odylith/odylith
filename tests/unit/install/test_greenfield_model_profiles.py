@@ -499,6 +499,14 @@ def test_host_native_profile_evidence_rejects_forged_safe_argv_receipt(
         ("candidate_hash", "retained host-native candidate_sha256 is invalid"),
         ("source_hash", "retained host-native expected source hash is invalid"),
         ("returncode", "retained host-native proposal return code is invalid"),
+        (
+            "issue_path_hash",
+            "retained host-native candidate_review_issue_path_sha256 is invalid",
+        ),
+        (
+            "issue_reason_hash",
+            "retained host-native candidate_review_issue_reason_sha256 is invalid",
+        ),
     ),
 )
 def test_denied_host_candidate_stays_in_one_call_custody(
@@ -510,13 +518,19 @@ def test_denied_host_candidate_stays_in_one_call_custody(
         proposal_returncode=2,
         proposal_mode="error",
         candidate_review_status="denied",
+        candidate_review_issue_path_sha256="c" * 64,
+        candidate_review_issue_reason_sha256="d" * 64,
     )
     if mutation == "candidate_hash":
         stage["candidate_sha256"] = "forged"
     elif mutation == "source_hash":
         stage["source_sha256"] = "forged"
-    else:
+    elif mutation == "returncode":
         stage["proposal_returncode"] = "2"
+    elif mutation == "issue_path_hash":
+        stage["candidate_review_issue_path_sha256"] = "not-a-hash"
+    else:
+        stage["candidate_review_issue_reason_sha256"] = "not-a-hash"
 
     evidence = model_profile_evidence(
         STANDARD_PROFILE_ID,
@@ -532,6 +546,24 @@ def test_denied_host_candidate_stays_in_one_call_custody(
         for issue in evidence["issues"]
     )
     assert evidence["stage_observation_summary"]["origin"] == "host_native"
+
+
+def test_successful_host_candidate_rejects_denial_only_diagnostic_hashes() -> None:
+    stage = _host_native_stage(candidate_sha256="1" * 64)
+    stage["candidate_review_issue_path_sha256"] = "c" * 64
+
+    evidence = model_profile_evidence(
+        STANDARD_PROFILE_ID,
+        model_profile_environment(STANDARD_PROFILE_ID, {}),
+        observed={},
+        stage_observation=stage,
+    )
+
+    assert evidence["status"] == "failed"
+    assert (
+        "retained host-native candidate_review_issue_path_sha256 must be empty without a denied review"
+        in evidence["issues"]
+    )
 
 
 def test_host_native_result_binding_matches_retained_candidate_to_commit_receipt() -> None:
@@ -1085,7 +1117,7 @@ def _create_payload_for_stage(stage: dict[str, object], *, source: str) -> dict[
 
 def _host_native_stage(*, candidate_sha256: str) -> dict[str, object]:
     return {
-        "version": "odylith.greenfield.host-native-matrix-observation.v3",
+        "version": "odylith.greenfield.host-native-matrix-observation.v4",
         "status": "passed",
         "host_invocations": 1,
         "contract_command_invocations": 1,
@@ -1120,6 +1152,8 @@ def _host_native_stage(*, candidate_sha256: str) -> dict[str, object]:
         "proposal_stderr_sha256": "b" * 64,
         "proposal_mode": "product_create_transaction",
         "candidate_review_status": "unreported",
+        "candidate_review_issue_path_sha256": "",
+        "candidate_review_issue_reason_sha256": "",
         "elapsed_seconds": 80.0,
     }
 

@@ -68,12 +68,29 @@ def _host_response(evidence: str) -> dict[str, object]:
     response = deepcopy(_response(evidence))
     result = response["result"]
     facts = result["facts"]
+    source_facts = deepcopy(facts)
+    constraint_owners = {
+        json.dumps(responsibility, sort_keys=True): component["owner_fact_quote"]
+        for component in result["components"]
+        for responsibility in component["responsibilities"]
+    }
     for field, value in tuple(facts.items()):
         if isinstance(value, list):
-            facts[field] = [
+            citations = [
                 _context_citation(evidence, citation)
                 for citation in value
             ]
+            if field == "operational_constraints":
+                for citation, raw in zip(citations, value, strict=True):
+                    owner_quote = constraint_owners.get(
+                        json.dumps(raw, sort_keys=True), ""
+                    )
+                    citation["product_owner_fact"] = (
+                        _owner_fact(source_facts, owner_quote)
+                        if owner_quote
+                        else None
+                    )
+            facts[field] = citations
         elif isinstance(value, dict):
             facts[field] = _context_citation(
                 evidence,
@@ -112,14 +129,34 @@ def _host_response(evidence: str) -> dict[str, object]:
         for event in result["events"]
         if event["responsibility_citation"] is not None
     ]
+    operational_constraints = {
+        json.dumps(
+            {key: value for key, value in citation.items() if key != "product_owner_fact"},
+            sort_keys=True,
+        )
+        for citation in facts["operational_constraints"]
+    }
     for component in result["components"]:
         component["additional_responsibilities"] = [
             responsibility
             for responsibility in component["additional_responsibilities"]
             if responsibility not in event_responsibilities
+            and json.dumps(responsibility, sort_keys=True) not in operational_constraints
         ]
     response["version"] = HOST_CANDIDATE_FORMAT_VERSION
     return response
+
+
+def _owner_fact(facts: dict[str, object], owner_quote: str) -> dict[str, object]:
+    title = facts.get("title")
+    if isinstance(title, dict) and title.get("quote") == owner_quote:
+        return {"field": "title", "row": 1}
+    systems = facts.get("internal_systems")
+    if isinstance(systems, list):
+        for index, system in enumerate(systems, start=1):
+            if isinstance(system, dict) and system.get("quote") == owner_quote:
+                return {"field": "internal_systems", "row": index}
+    raise AssertionError(f"fixture has no product owner fact for {owner_quote!r}")
 
 
 def _context_citation(
@@ -459,8 +496,8 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
     assert rc == 0
     assert payload["version"] == HOST_CANDIDATE_CONTRACT_VERSION
     assert payload["candidate_version"] == HOST_CANDIDATE_FORMAT_VERSION
-    assert payload["version"] == "odylith.greenfield.host-candidate-contract.v26"
-    assert payload["candidate_version"] == "odylith.greenfield.host-candidate-format.v12"
+    assert payload["version"] == "odylith.greenfield.host-candidate-contract.v27"
+    assert payload["candidate_version"] == "odylith.greenfield.host-candidate-format.v13"
     assert any(
         "exact scope_paths" in requirement
         and "Odylith derives" in requirement
@@ -498,24 +535,21 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
         for requirement in payload["requirements"]
     )
     assert any(
-        "has two accepted roles" in requirement
-        and "global operational constraint" in requirement
-        and "selected product owner's accepted component responsibilities" in requirement
-        and "restriction stated only for a human or external actor" in requirement
-        and "source-custody control governing evidence" in requirement
-        and "Never infer product ownership from provisional design" in requirement
-        and "Do not repeat an exact typed product-event responsibility" in requirement
+        "Classify each accepted operational or safety constraint once" in requirement
+        and "product_owner_fact" in requirement
+        and "exact quoted clause explicitly binds" in requirement
+        and "use title" in requirement
+        and "must be omitted from accepted facts entirely" in requirement
+        and "deterministically projects non-null custody" in requirement
+        and "never repeat an operational constraint" in requirement
         for requirement in payload["requirements"]
     )
     components = payload["candidate_schema"]["properties"]["result"]["anyOf"][0][
         "properties"
     ]["components"]
-    assert "global constraint custody" in components["description"]
-    assert "also appears here under its product owner" in components["description"]
-    assert (
-        "human-only restrictions and source-custody controls do not"
-        in components["description"]
-    )
+    assert "declared once on facts.operational_constraints" in components["description"]
+    assert "projected here deterministically" in components["description"]
+    assert "product_owner_fact is non-null" in components["description"]
     assert payload["candidate_schema"]["additionalProperties"] is False
     authored = payload["candidate_schema"]["properties"]["result"]["anyOf"][0]
     risk_item = authored["properties"]["provisional_design"]["properties"][
@@ -608,6 +642,16 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
     source_precedence = authored["properties"]["source_precedence"]
     assert "every explicit source-stated ordering requirement" in source_precedence["description"]
     assert "proposed first-run walkthrough" in source_precedence["description"]
+    constraint_item = authored["properties"]["facts"]["properties"][
+        "operational_constraints"
+    ]["items"]
+    assert "product_owner_fact" in constraint_item["required"]
+    assert {"type": "null"} in constraint_item["properties"][
+        "product_owner_fact"
+    ]["anyOf"]
+    assert "must be omitted entirely" in constraint_item["properties"][
+        "product_owner_fact"
+    ]["description"]
     assert any(
         "Use exactly one proof authority" in requirement
         and "cannot make an authored candidate admission-ready" in requirement
@@ -903,6 +947,28 @@ def test_host_candidate_rejects_unbound_typed_component_owner(
         canonical_greenfield_host_candidate(response, evidence_text=evidence)
 
 
+@pytest.mark.parametrize(
+    "owner_fact",
+    (
+        {"field": "title", "row": 2},
+        {"field": "human_actors", "row": 1},
+        {"field": "external_systems", "row": 1},
+        {"field": "internal_systems", "row": 99},
+    ),
+)
+def test_host_candidate_rejects_unbound_typed_constraint_owner(
+    owner_fact: dict[str, object],
+) -> None:
+    evidence = combined_prompt_evidence_source(prompt=_source(), edit_evidence="")
+    response = _host_response(evidence)
+    response["result"]["facts"]["operational_constraints"][0][
+        "product_owner_fact"
+    ] = owner_fact
+
+    with pytest.raises(ValueError, match="constraint has unbound product owner"):
+        canonical_greenfield_host_candidate(response, evidence_text=evidence)
+
+
 def test_host_candidate_rejects_responsibility_outside_its_event_source() -> None:
     evidence = combined_prompt_evidence_source(prompt=_source(), edit_evidence="")
     response = _host_response(evidence)
@@ -972,6 +1038,71 @@ def test_host_candidate_preserves_product_constraint_in_global_and_owner_custody
     assert [row["quote"] for row in title_component["responsibilities"]] == [
         product_constraint
     ]
+
+
+def test_host_candidate_projects_constraint_that_contains_a_human_event_condition() -> None:
+    old_source = _source()
+    old_path = (
+        "Dock attendant Ivo enters a vessel tag and the product records berth "
+        "occupancy before the berth map shows the placement"
+    )
+    privacy_constraint = (
+        "Harbor Desk keeps draft evidence private until Dock attendant Ivo enters a vessel tag"
+    )
+    new_path = (
+        f"{privacy_constraint}, and the product records berth occupancy before the berth map "
+        "shows the placement"
+    )
+    source = old_source.replace(old_path, new_path)
+    evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
+    response = deepcopy(_response(old_source))
+    response["result"]["facts"]["operational_constraints"][0] = {
+        "quote": privacy_constraint,
+        "occurrence": 1,
+    }
+    response["result"]["components"].append(
+        {
+            "owner_fact_quote": "Harbor Desk",
+            "responsibilities": [{"quote": privacy_constraint, "occurrence": 1}],
+        }
+    )
+
+    candidate = host_candidate_response(response, evidence_text=evidence)
+    assert candidate["result"]["facts"]["operational_constraints"][0][
+        "product_owner_fact"
+    ] == {"field": "title", "row": 1}
+    canonical = canonical_greenfield_host_candidate(candidate, evidence_text=evidence)
+    authored, _receipt = admit_greenfield_host_candidate(
+        candidate,
+        evidence_text=evidence,
+        review_provider_factory=AdmittingReviewProvider,
+    )
+
+    relation = next(
+        row
+        for row in authored.component_responsibility_relations
+        if row["responsibility_quote"] == privacy_constraint
+    )
+    assert relation["owner_system_path"] == "/title"
+    assert relation["first_path_event_order"] == 1
+    assert any(
+        row["quote"] == privacy_constraint
+        for component in canonical["result"]["components"]
+        for row in component["responsibilities"]
+    )
+
+
+def test_host_candidate_rejects_duplicate_operational_constraint_custody() -> None:
+    evidence = combined_prompt_evidence_source(prompt=_source(), edit_evidence="")
+    response = _host_response(evidence)
+    constraint = deepcopy(response["result"]["facts"]["operational_constraints"][0])
+    constraint.pop("product_owner_fact")
+    response["result"]["components"][0]["additional_responsibilities"].append(
+        constraint
+    )
+
+    with pytest.raises(ValueError, match="must use product_owner_fact"):
+        canonical_greenfield_host_candidate(response, evidence_text=evidence)
 
 
 def test_host_candidate_keeps_human_restriction_and_authoring_control_out_of_components() -> None:
