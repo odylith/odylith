@@ -1,5 +1,64 @@
 - Bug ID: CB-347
 
+## V49 bounded component-custody decision (2026-09-28)
+
+The architecture and evidence reviews select one bounded replacement for V48:
+the existing independent reviewer owns a closed typed component-custody witness;
+deterministic code validates and projects that witness into the unchanged
+canonical component shape. The author retains source facts, typed events,
+constraints, terminal identity, and provisional design, but no longer authors
+accepted `components`, `additional_responsibilities`, or event responsibility
+citations.
+
+An admitted witness must provide exactly one responsibility for each
+product-owned event, using that event's exact product-action citation, plus one
+additional responsibility for each non-event, non-constraint responsibility.
+Deterministic validation must bind every owner to an accepted title or internal
+system, require citation containment and canonical source resolution, and
+reject duplicates, cross-owner reuse, constraint overlap, and source-control
+citations before grouping facts into canonical components. Product-owned
+constraints remain V48's separate second projection. A denial or clarification
+has no component or constraint custody and performs no projection.
+
+This retains one author and one reviewer and adds no regex, parser, retry,
+repair, fallback, compatibility path, or model call. Remove V48's host-authored
+component/responsibility schema, host event-responsibility selection, automatic
+event merge, author-facing component prompt, and proof compatibility path in
+the replacement change. The release proof must reconstruct both reviewer-owned
+projections in the same order. The exact public replay must advance past
+`candidate.accepted_source.components` while retaining the four-to-five
+component and five-or-more diagram output floor. A recurrence at the component
+custody admission boundary or downstream component semantics across two
+independent public examples stops this line of replacement work; do not create
+V50 wording or rule patches.
+
+## V48 live falsification (2026-09-28)
+
+Clean pushed commit `6e8b7a834` passed independent review with no P0/P1/P2,
+3,336 frozen Greenfield tests, 80 maintained browser-surface checks, governance
+commit readiness, and the immutable multi-platform build. The one permitted
+replay of `release-accessibility-005-source` then failed closed after one host
+candidate and one independent review. No transaction or governed product write
+occurred; the 40-case campaign did not start and the protected holdout remains
+untouched.
+
+The retained candidate hash is
+`61c8bbd8055911ab98a93aa70e9abfa5a9de8be0c4c3240d752bb9d8ebc6618f`.
+Reviewer path hash
+`85541195fa16830f7b7a1bce1a7ee9f2ec2c23753f774422a19b846ccc62a4f0`
+maps exactly to `candidate.accepted_source.components`. The reason remains
+hash-only as
+`a07222617475d32572f0a914ea65a09742d3707e44adb34eb9fad83194706f5a`;
+do not infer its free text. The immutable result is retained at
+`/private/tmp/odylith-v48-6e8b7a834-work.6JczWo`.
+
+V48 is falsified for release use. Reviewer-owned operational-constraint custody
+removed the V47 duplicate owner but did not eliminate the broader accepted
+component-semantic disagreement. Do not retry V48, start the public campaign,
+or add prompt wording, regexes, parsers, repair, fallback, or a model ladder.
+Compare only bounded ownership changes that remove the remaining competing
+component interpretation, with explicit deletion of the losing V48 path.
+
 ## V47 live falsification (2026-09-28)
 
 Clean pushed commit `8c82bc52638b71d8d25695c4e2a3b353c12eede9`

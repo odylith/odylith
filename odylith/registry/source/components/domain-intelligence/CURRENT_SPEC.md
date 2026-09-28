@@ -4,6 +4,52 @@ Last updated: 2026-09-28
 
 ## Overview
 
+### V49 reviewer-owned component-custody boundary (2026-09-28)
+
+Domain Intelligence accepts component ownership only from the existing
+independent review decision. The host candidate supplies source facts, typed
+events, constraints, terminal identity, and provisional design, but no accepted
+components, additional responsibilities, or event responsibility citations.
+The admitted review witness supplies exactly one contained product-action
+responsibility for each product-owned event and one exact-cited responsibility
+for each non-event, non-constraint responsibility, each bound to an accepted
+title or internal system.
+
+Deterministic code must validate complete event cardinality, source resolution,
+citation containment, owner binding, duplicate and cross-owner exclusion,
+constraint non-overlap, and source-control exclusion before grouping the witness
+into the canonical component shape. V48's reviewed product-constraint
+projection remains a second, separate projection; denial and clarification
+perform neither projection. The final canonical validator, authority seal,
+transaction schema, and post-confirm boundary remain unchanged.
+
+The replacement deletes the host-authored component relation and its automatic
+event merge, author-facing component instructions, fixture ownership helpers,
+and V48 compatibility proof. It adds no parser, regex, repair, retry, fallback,
+or model call. V49 qualifies only if the exact public replay advances beyond
+the accepted-components denial while preserving the four-to-five component and
+five-or-more diagram output floor. A component-custody admission or downstream
+component-semantic recurrence across two independent public examples retires
+this line rather than extending it with V50 patches.
+
+### V48 live falsification boundary (2026-09-28)
+
+The clean pushed V48 checkpoint `6e8b7a834` passed independent review, 3,336
+frozen Greenfield tests, 80 maintained browser-surface checks, governance
+readiness, and immutable multi-platform build proof. Its one exact public replay
+failed closed during independent review. No transaction or governed write
+occurred; the broader campaign and protected holdout remain untouched.
+
+The retained path hash maps to `candidate.accepted_source.components`; the
+review reason remains hash-only and cannot justify a more specific claim. V48's
+reviewer-owned operational-constraint custody is not release-qualified because
+it did not eliminate the broader accepted-component semantic disagreement.
+Domain Intelligence must not retry this mechanism or add wording, parsing,
+regexes, repairs, fallbacks, or a model ladder. The next bounded comparison must
+move or remove ownership of the complete component/responsibility relation,
+preserve the product output floor and transaction laws, and delete the losing
+path rather than leave two interpretations active.
+
 ### V47 live falsification boundary (2026-09-28)
 
 The clean pushed V47 checkpoint

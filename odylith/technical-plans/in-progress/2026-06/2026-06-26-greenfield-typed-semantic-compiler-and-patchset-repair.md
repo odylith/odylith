@@ -1,5 +1,61 @@
 Status: In progress
 
+## V49 reviewer-owned component custody (2026-09-28)
+
+V48 is not retried. The bounded V49 comparison moves the remaining complete
+component/responsibility relation to the existing independent review decision,
+then deterministically projects its closed typed witness into the unchanged
+canonical component shape. The host continues to author source facts, typed
+events, constraints, terminal identity, and provisional design; it must not
+author accepted components, additional responsibilities, or event
+responsibility citations.
+
+The reviewer returns exactly one responsibility for every product-owned event
+with an exact contained product-action citation, and every non-event,
+non-constraint responsibility with an exact source citation and an accepted
+title or internal-system owner. Deterministic admission validates cardinality,
+source resolution, citation containment, owner binding, duplicate or
+cross-owner reuse, source-control exclusion, and non-overlap with constraints;
+it then groups these facts into components. V48's reviewed product-constraint
+projection runs second. The final canonical validator, relation derivation,
+authority seal, transaction schema, and confirmation kernel remain unchanged.
+Denial and clarification carry no custody and perform no projection.
+
+Delete host component fields and authoring, automatic event merging, the
+host-event responsibility selector, fixture helpers that author components,
+and V48 compatibility/proof paths. Keep one host author and one independent
+reviewer: no parser, regex, prompt-only patch, repair, retry, fallback, or
+model ladder is permitted. Add focused positive and negative custody controls,
+reconstruct both projections in release proof, then require the full frozen
+frontier, independent review, immutable build, and one exact replay before the
+campaign advances. If component-custody admission or downstream component
+semantics recur across two independent public cases, retire this approach rather
+than create V50.
+
+## V48 live falsification and next ownership boundary (2026-09-28)
+
+Pushed commit `6e8b7a834` passed 3,336 frozen Greenfield tests, 80 maintained
+browser-surface checks, independent PASS review, governance readiness, and an
+immutable multi-platform build. Its single permitted replay of
+`release-accessibility-005-source` failed closed during independent review. The
+candidate hash is
+`61c8bbd8055911ab98a93aa70e9abfa5a9de8be0c4c3240d752bb9d8ebc6618f`;
+path hash
+`85541195fa16830f7b7a1bce1a7ee9f2ec2c23753f774422a19b846ccc62a4f0`
+maps to `candidate.accepted_source.components`; and the reason is retained only
+as hash
+`a07222617475d32572f0a914ea65a09742d3707e44adb34eb9fad83194706f5a`.
+No transaction or governed write occurred. The 40-case campaign and protected
+holdout were not opened.
+
+Treat V48 as falsified. Moving only operational-constraint custody to the
+reviewer was too narrow to eliminate the recurring accepted-components
+disagreement. Do not retry, add prompt prose, or restore revision/re-review.
+Compare a bounded ownership move for the entire component/responsibility
+relation against eliminating that relation as accepted source truth, preserve
+the release output floor and transaction laws, select one falsifiable mechanism,
+and delete the losing V48 path in the same change.
+
 ## V47 live falsification and bounded replacement gate (2026-09-28)
 
 Pushed commit `8c82bc52638b71d8d25695c4e2a3b353c12eede9` passed
