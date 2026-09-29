@@ -1,5 +1,37 @@
 Status: In progress
 
+## V49 terminal public falsification and mechanism retirement (2026-09-29)
+
+Clean pushed commit `9c8bb2433ca3da7d92b4fbf6486d9e6ba2996b62`
+built the complete `0.1.15` multi-platform distribution and passed the platform
+domain-leakage gate. Its one permitted installed replay of
+`release-accessibility-005-source` failed closed after the host candidate
+completed successfully and the independent reviewer denied it during
+`propose`. The campaign stopped after that one case. No transaction or governed
+product write occurred; the 40-case campaign and protected holdout remained
+closed. Immutable evidence is rooted at
+`/private/tmp/odylith-v49-9c8bb2433-replay.5xHt1j/public-replay.v1.json`.
+
+The retained denial path hash
+`327b80167f67d9661aebf04b3b9af6a1372050ad6f0e92bb214561263e852978`
+resolves exactly to `candidate.accepted_source.terminal.event_order`. The
+reason remains hash-only and cannot support a more specific semantic claim.
+The run took `190.726s` including fresh installation; installed proposal review
+returned in `11.467s` after the successful host result. Release claims remain
+forbidden.
+
+This activates the predeclared replacement trigger: after components,
+component responsibilities, source precedence, and now terminal-event identity
+have each become a live reviewer disagreement, another field migration,
+instruction patch, schema variant, repair, retry, parser, regex, fallback, or
+model ladder would continue the same churn. Retire the current one-host-author
+plus one-full-candidate-reviewer semantic composition as a release candidate.
+Do not rerun this case or open the broader campaign under this mechanism. Any
+future Greenfield path must be a separately bounded product decision with a
+different ownership regime and explicit evidence that it can avoid
+cross-model reinterpretation of canonical meaning; it is not continuation work
+under this plan section.
+
 ## V49 immutable public falsification and final relation-ownership consolidation (2026-09-29)
 
 Clean pushed commit `8278cce69282cc4cde54c38bcdefe4dd95869d8c`

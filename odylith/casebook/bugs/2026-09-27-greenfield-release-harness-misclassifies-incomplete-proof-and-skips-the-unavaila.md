@@ -573,6 +573,32 @@ the protected holdout remains untouched.
 
 ## V49 Immutable Public Replay And Diagnosability Boundary (2026-09-29)
 
+### Terminal replay result
+
+- Clean pushed commit `9c8bb2433ca3da7d92b4fbf6486d9e6ba2996b62`
+  passed the final 3,362-test frontier and independent no-P0/P1/blocking-P2
+  review, then built the complete multi-platform `0.1.15` distribution with
+  platform-domain leakage proof.
+- The one permitted installed replay of `release-accessibility-005-source`
+  failed closed during independent review after a successful host candidate.
+  The campaign stopped after one case; no transaction or governed write
+  occurred. Total elapsed time was `190.726s`, including fresh installation.
+- Denial path hash
+  `327b80167f67d9661aebf04b3b9af6a1372050ad6f0e92bb214561263e852978`
+  resolves exactly to `candidate.accepted_source.terminal.event_order`.
+  The reason is retained only as
+  `584acdda66a8137b4efb7a8da67b72755fef9453292acd46dce44fbdc84413ff`;
+  no narrower semantic diagnosis is justified.
+- This is the terminal falsifier for the one-author/one-full-candidate-reviewer
+  composition. The disagreement migrated from responsibilities, components,
+  and precedence to another accepted-source relation after complete relation
+  consolidation. Do not add another field migration, prompt/schema patch,
+  parser, regex, repair, retry, fallback, or model ladder, and do not rerun the
+  public case under this mechanism.
+- Evidence:
+  `/private/tmp/odylith-v49-9c8bb2433-replay.5xHt1j/public-replay.v1.json` and
+  `/private/tmp/odylith-v49-9c8bb2433-replay.5xHt1j/telemetry/failed-subset/failed-subset-failed-subset-001-cases.telemetry.v1.jsonl`.
+
 - Clean pushed commit `8278cce69282cc4cde54c38bcdefe4dd95869d8c`
   passed `3,348/3,348` frozen Greenfield tests and independent no-P0/P1 review,
   then built the complete `0.1.15` distribution with platform-leakage validation.

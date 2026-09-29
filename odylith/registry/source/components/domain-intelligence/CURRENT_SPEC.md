@@ -4,6 +4,27 @@ Last updated: 2026-09-29
 
 ## Overview
 
+### V49 live falsification and retired release mechanism (2026-09-29)
+
+The clean pushed v31/v17/reviewer-v18 checkpoint passed 3,362 frozen
+Greenfield tests, independent review, multi-platform packaging, and platform
+domain-leakage proof. Its one permitted installed replay of
+`release-accessibility-005-source` still failed closed during independent
+review. The retained denial path resolves exactly to
+`candidate.accepted_source.terminal.event_order`; the reason remains hash-only.
+No transaction or governed product write occurred.
+
+The one-host-author plus one-full-candidate-reviewer semantic composition is
+therefore not release-qualified and is retired as a mechanism line. Accepted
+source disagreements migrated across component responsibilities, components,
+source precedence, and terminal-event identity despite moving complete relation
+custody to the reviewer. Domain Intelligence must not extend this line with
+another field migration, instruction/schema patch, compatibility path, parser,
+regex, repair, retry, fallback, or model ladder. The broader public campaign
+and protected holdout remain unopened. A future Greenfield mechanism requires
+a separately bounded ownership regime rather than another revision of this
+composition.
+
 ### V49 implemented reviewer custody and proof boundary (2026-09-29)
 
 The candidate contract is now v31, host-candidate format v17, and reviewer
@@ -1783,6 +1804,9 @@ semantic/design findings.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-29 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
 - **2026-09-29 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
@@ -1798,9 +1822,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_candidate_review.py`, `src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py`
-- **2026-09-26 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-09-26-greenfield-projects-source-custody-directives-into-product-governance.md`, `src/odylith/runtime/domain_intelligence/greenfield_candidate_review.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
