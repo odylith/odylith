@@ -6,15 +6,18 @@ Last updated: 2026-09-29
 
 ### V49 implemented reviewer custody and proof boundary (2026-09-29)
 
-The candidate contract is now v30, host-candidate format v16, and reviewer
-v17. Host authoring owns source facts, typed events, constraints, terminal
-identity, and provisional design; it does not own accepted components or
-responsibility citations. One independent review owns the closed component and
-constraint witnesses. Deterministic code validates their source bytes and
-typed owners, projects them into the unchanged final canonical shape, and
-retained release proof reconstructs both the unprojected and projected hashes.
-No compatibility author, parser, regex, repair, retry, fallback, or model
-ladder remains in this slice.
+The candidate contract is now v31, host-candidate format v17, and reviewer
+v18. Host authoring owns cited source facts, typed events, constraints,
+terminal identity, and provisional design; it does not own accepted
+components, responsibility citations, or source precedence. One independent
+review owns the closed component, constraint, and source-precedence witnesses.
+Deterministic code validates the complete precedence edge set before
+constraint custody, projects all three witnesses into the unchanged final
+canonical shape, reruns final validation, and seals distinct review-input and
+projected-final hashes. Retained release proof reconstructs both hashes and
+publishes only privacy-safe custody counts, digests, and projection status. No
+compatibility author, parser, regex, repair, retry, fallback, extra model call,
+or model ladder remains in this slice.
 
 Event source citations must be distinct and non-overlapping so one downstream
 event identity cannot silently stand for two actions. A source clause may still
@@ -23,11 +26,17 @@ operational constraint: both custody rows remain sealed, one identical final
 component responsibility is emitted, and any cross-owner reassignment fails
 closed. Additional responsibilities remain disjoint from constraints.
 
-The frozen Greenfield frontier passes 3,348/3,348 tests, including committed
-end-to-end dual-role admission proof. Independent re-review reports no P0/P1.
-Release qualification still requires the pushed immutable exact replay, the
+The frozen Greenfield frontier passes 3,362/3,362 tests. Independent patch
+review reports no P0, P1, or blocking P2 finding. The proof covers explicit
+accepted-event ordering, legitimate passive or unowned timing with no invented
+edge, duplicate/cycle/unknown-reference rejection, workflow custody without a
+binding rejection, incompatible first-run rejection, receipt/hash tamper
+rejection, and denial/clarification no-projection behavior. Release
+qualification still requires the pushed immutable exact public replay, the
 unchanged 40-case public campaign with complete browser and recovery proof, and
-final independent semantic adjudication before the protected holdout is opened.
+final independent semantic adjudication before the protected holdout is
+opened. Failure of the exact replay retires this one-author/one-reviewer
+composition instead of creating another schema or prompt variant.
 
 ### V49 reviewer-owned component-custody boundary (2026-09-28)
 
@@ -1774,6 +1783,9 @@ semantic/design findings.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-29 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
 - **2026-09-28 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `src/odylith/runtime/domain_intelligence/greenfield_constraint_custody.py`
@@ -1789,9 +1801,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-26 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-09-26-greenfield-projects-source-custody-directives-into-product-governance.md`, `src/odylith/runtime/domain_intelligence/greenfield_candidate_review.py`
-- **2026-09-26 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py`, `tests/unit/runtime/test_greenfield_model_source_citations.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

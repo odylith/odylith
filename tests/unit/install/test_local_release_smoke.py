@@ -286,8 +286,8 @@ def test_greenfield_install_smoke_requires_read_only_candidate_contract(
             },
         }
         payload = {
-            "version": "odylith.greenfield.host-candidate-contract.v30",
-            "candidate_version": "odylith.greenfield.host-candidate-format.v16",
+            "version": "odylith.greenfield.host-candidate-contract.v31",
+            "candidate_version": "odylith.greenfield.host-candidate-format.v17",
             "canonical_version": "odylith.greenfield.canonical-meaning.v1",
             "request": {
                 "version": "odylith.greenfield.intent-authoring.v76",
@@ -299,7 +299,7 @@ def test_greenfield_install_smoke_requires_read_only_candidate_contract(
                 "type": "object",
                 "required": ["version", "result"],
                 "properties": {
-                    "version": {"enum": ["odylith.greenfield.host-candidate-format.v16"]},
+                    "version": {"enum": ["odylith.greenfield.host-candidate-format.v17"]},
                     "result": {
                         "anyOf": [{
                             "properties": {

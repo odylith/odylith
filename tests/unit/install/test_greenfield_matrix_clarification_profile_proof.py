@@ -85,6 +85,7 @@ def _host_native_authored_profile_evidence(
                 "event_responsibilities": [],
                 "additional_responsibilities": [],
             },
+            source_precedence_custody=[],
             constraint_custody=[],
             evidence_text=source,
         )

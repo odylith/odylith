@@ -17,7 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     MAX_AUTHORED_FIELD_VALUE_CHARS,
 )
 
-HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v16"
+HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v17"
 HOST_EVENT_CITATION_FIELD = "source_citation"
 
 
@@ -94,9 +94,12 @@ def greenfield_host_candidate_schema() -> dict[str, Any]:
         ),
     }
     authored["required"] = [
-        field for field in authored["required"] if field != "components"
+        field
+        for field in authored["required"]
+        if field not in {"components", "source_precedence"}
     ]
     authored["properties"].pop("components")
+    authored["properties"].pop("source_precedence")
     return schema
 
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 from copy import deepcopy
 from dataclasses import replace
 import hashlib
+import json
 import sys
 from types import SimpleNamespace
 
@@ -28,6 +29,7 @@ from greenfield_model_profiles import model_profile_evidence
 from greenfield_model_profiles import model_stage_observation_issues
 from greenfield_model_profiles import profile_coverage
 from greenfield_model_profiles import profile_counts
+from greenfield_retained_candidate_proof import retained_admitted_candidate_hash_issues
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 from greenfield_model_profile_proof import authored_model_result_binding_issues
 from greenfield_model_profile_proof import model_profile_release_proof
@@ -337,6 +339,7 @@ def test_host_native_profile_evidence_binds_one_host_candidate_and_runtime_revie
         project_reviewed_custody(
             review_input_candidate,
             component_custody=_review_component_custody(),
+            source_precedence_custody=_review_source_precedence_custody(),
             constraint_custody=[],
             evidence_text=source,
         )
@@ -383,6 +386,27 @@ def test_host_native_profile_evidence_binds_one_host_candidate_and_runtime_revie
     assert evidence["sealed_request_roles"] == ["host_candidate", "candidate_review"]
     assert evidence["maximum_semantic_model_calls"] == 1
     assert evidence["stage_observation_summary"]["origin"] == "host_native"
+    hash_summary = evidence["stage_observation_summary"][
+        "retained_candidate_hash_summary"
+    ]
+    assert hash_summary == {
+        "review_input_candidate_sha256": review_input_candidate_sha256,
+        "final_candidate_sha256": final_candidate_sha256,
+        "review_input_source_precedence_present": False,
+        "source_precedence_custody_count": len(_review_source_precedence_custody()),
+        "source_precedence_custody_sha256": hashlib.sha256(
+            json.dumps(
+                _review_source_precedence_custody(),
+                sort_keys=True,
+                ensure_ascii=False,
+                separators=(",", ":"),
+                allow_nan=False,
+            ).encode("utf-8")
+        ).hexdigest(),
+        "source_precedence_projected": True,
+        "hashes_are_distinct": True,
+        "status": "passed",
+    }
     result = SimpleNamespace(
         name="host-native control",
         status="passed",
@@ -398,6 +422,51 @@ def test_host_native_profile_evidence_binds_one_host_candidate_and_runtime_revie
     assert proof["profiles"][STANDARD_PROFILE_ID]["maximum_semantic_model_calls"] == 1
 
 
+def test_retained_review_hashes_keep_unprojected_input_distinct_from_final_candidate() -> None:
+    source = _review_input_source()
+    review_input_candidate = _review_input_candidate()
+    precedence_custody = _review_source_precedence_custody()
+    assert "source_precedence" not in review_input_candidate
+    projected = project_reviewed_custody(
+        review_input_candidate,
+        component_custody=_review_component_custody(),
+        source_precedence_custody=precedence_custody,
+        constraint_custody=[],
+        evidence_text=source,
+    )
+    assert projected["source_precedence"] == precedence_custody
+    review_input_candidate_sha256 = candidate_review_sha256(review_input_candidate)
+    final_candidate_sha256 = candidate_review_sha256(projected)
+    assert review_input_candidate_sha256 != final_candidate_sha256
+    receipt = {
+        "review_input_candidate_sha256": review_input_candidate_sha256,
+        "candidate_sha256": final_candidate_sha256,
+        "admission_witness": {
+            "component_custody": _review_component_custody(),
+            "source_precedence_custody": precedence_custody,
+            "constraint_custody": [],
+        },
+    }
+
+    assert retained_admitted_candidate_hash_issues(
+        review_input_candidate=review_input_candidate,
+        receipt=receipt,
+        evidence_text=source,
+    ) == ()
+
+    swapped = deepcopy(receipt)
+    swapped["review_input_candidate_sha256"] = final_candidate_sha256
+    swapped["candidate_sha256"] = review_input_candidate_sha256
+    assert retained_admitted_candidate_hash_issues(
+        review_input_candidate=review_input_candidate,
+        receipt=swapped,
+        evidence_text=source,
+    ) == (
+        "retained reviewer input does not match the sealed review-input hash",
+        "sealed final candidate hash does not match retained reviewer custody",
+    )
+
+
 @pytest.mark.parametrize(
     ("mutation", "expected_issue"),
     (
@@ -405,6 +474,11 @@ def test_host_native_profile_evidence_binds_one_host_candidate_and_runtime_revie
         ("input_candidate", "private host-native reviewer admission input hash is invalid"),
         ("final_candidate", "sealed final candidate hash does not match retained reviewer custody"),
         ("witness", "private host-native reviewer admission witness is invalid"),
+        ("missing_precedence", "private host-native reviewer admission witness is invalid"),
+        (
+            "forged_precedence",
+            "retained reviewer custody cannot produce a valid final candidate",
+        ),
         ("review_version", "private host-native reviewer admission version is invalid"),
         ("profile", "private host-native reviewer admission profile is not sealed"),
     ),
@@ -422,6 +496,7 @@ def test_host_native_profile_evidence_rejects_unbound_private_admission(
         project_reviewed_custody(
             review_input_candidate,
             component_custody=_review_component_custody(),
+            source_precedence_custody=_review_source_precedence_custody(),
             constraint_custody=[],
             evidence_text=source,
         )
@@ -459,6 +534,14 @@ def test_host_native_profile_evidence_rejects_unbound_private_admission(
         private["candidate_review"]["candidate_sha256"] = "4" * 64
     elif mutation == "witness":
         private["candidate_review"]["admission_witness"] = None
+    elif mutation == "missing_precedence":
+        private["candidate_review"]["admission_witness"].pop(
+            "source_precedence_custody"
+        )
+    elif mutation == "forged_precedence":
+        private["candidate_review"]["admission_witness"][
+            "source_precedence_custody"
+        ] = [{"before_event": 1, "after_event": 1, "constraint_index": 1}]
     elif mutation == "review_version":
         private["candidate_review"]["version"] = "odylith.greenfield.candidate-review.v16"
     else:
@@ -607,6 +690,7 @@ def test_host_native_result_binding_matches_retained_candidate_to_commit_receipt
         project_reviewed_custody(
             review_input_candidate,
             component_custody=_review_component_custody(),
+            source_precedence_custody=_review_source_precedence_custody(),
             constraint_custody=[],
             evidence_text=source,
         )
@@ -626,6 +710,7 @@ def test_host_native_result_binding_matches_retained_candidate_to_commit_receipt
             "risk_posture_status": "no_material_risks_identified",
         },
         "component_custody": _review_component_custody(),
+        "source_precedence_custody": _review_source_precedence_custody(),
         "constraint_custody": [],
     }
     review_profile = {
@@ -1143,6 +1228,9 @@ def _create_payload_for_stage(stage: dict[str, object], *, source: str) -> dict[
         project_reviewed_custody(
             candidate,
             component_custody=admission_witness["component_custody"],
+            source_precedence_custody=admission_witness[
+                "source_precedence_custody"
+            ],
             constraint_custody=admission_witness["constraint_custody"],
             evidence_text=source,
         )
@@ -1243,6 +1331,19 @@ def _review_component_custody() -> dict[str, object]:
     return deepcopy(custody)
 
 
+def _review_source_precedence_custody() -> list[dict[str, object]]:
+    stage = _stage_observation(STANDARD_PROFILE_ID)
+    review = stage["candidate_review"]
+    assert isinstance(review, dict)
+    response = review["response"]
+    assert isinstance(response, dict)
+    witness = response["admission_witness"]
+    assert isinstance(witness, dict)
+    custody = witness["source_precedence_custody"]
+    assert isinstance(custody, list)
+    return deepcopy(custody)
+
+
 def _host_native_private_admission(
     *,
     observed: dict[str, object],
@@ -1271,6 +1372,7 @@ def _host_native_private_admission(
             if component_custody is not None
             else _review_component_custody()
         ),
+        "source_precedence_custody": _review_source_precedence_custody(),
         "constraint_custody": [],
     }
     return {

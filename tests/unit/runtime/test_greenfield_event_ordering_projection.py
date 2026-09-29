@@ -119,6 +119,7 @@ def test_post_result_action_survives_authoring_custody_and_all_projections(tmp_p
         participant_provider_factory=provider.participant_provider,
         review_provider_factory=lambda: AdmittingReviewProvider(
             component_custody=_reviewer_component_custody(response),
+            source_precedence_custody=response["result"]["source_precedence"],
             constraint_custody=[
                 {
                     "constraint_index": 1,
@@ -176,6 +177,7 @@ def ordered_package(tmp_path):
         participant_provider_factory=provider.participant_provider,
         review_provider_factory=lambda: AdmittingReviewProvider(
             component_custody=_reviewer_component_custody(response),
+            source_precedence_custody=response["result"]["source_precedence"],
             constraint_custody=[
                 {
                     "constraint_index": 1,

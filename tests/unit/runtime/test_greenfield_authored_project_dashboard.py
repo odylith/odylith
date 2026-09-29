@@ -685,7 +685,9 @@ def test_authored_dashboard_preserves_archive_after_the_published_result(tmp_pat
         authoring_provider=provider,
         authoring_timeout_seconds=60, authoring_profile_id=STANDARD_PROFILE_ID,
         participant_provider_factory=provider.participant_provider,
-        review_provider_factory=AdmittingReviewProvider,
+        review_provider_factory=lambda: AdmittingReviewProvider(
+            source_precedence_custody=precedence,
+        ),
     )
     proposal = build_authored_greenfield_proposal(
         observed_source={"source_posture": "operator prompt evidence"},

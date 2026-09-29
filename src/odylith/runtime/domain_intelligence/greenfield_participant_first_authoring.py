@@ -156,10 +156,11 @@ Each path binds an event_order to a component that supports it and a workstream 
 owns that component and verifies that event. Do not separately author event,
 component or workstream risk unions; deterministic runtime derives them from the paths.
 first_run proposes one coherent executable branch over a unique subset of source
-event identities. Include the selected terminal result and every cited
-source_precedence prerequisite on that branch. Do not concatenate mutually exclusive
-outcomes. Other source events remain retained and component-supported outside this
-first run. A non-null terminal.event_order identifies the source-stated result producer,
+event identities. Respect every explicit source-stated ordering requirement on that
+branch without returning a source_precedence field; independent review owns the complete
+accepted relation and will deny an incompatible first run. Do not concatenate mutually
+exclusive outcomes. Other source events remain retained and component-supported outside
+this first run. A non-null terminal.event_order identifies the source-stated result producer,
 independent of its walkthrough position. Explain the chosen sequence in its rationale.
 This is a provisional first run, not source fact or a model of all concurrency,
 alternate branches or loops. Never derive runtime order from workstream depends_on, which
@@ -207,14 +208,10 @@ occur within that selected fact's quote. result_occurrence counts only within th
 quote, not across the source document. The selected fact owns global source custody;
 the result inherits it. A source-stated result may come from a proof or story fact
 without occurring inside its producer event. A provisional proof assumption creates no
-terminal producer relation. source_precedence contains only source-stated ordering
-requirements, not a
-proposed workflow. Each edge names before_event, after_event and the one-based
-constraint_index of its exact existing facts.operational_constraints citation.
-Select the whole source constraint there, including the actions and their ordering
-relationship. Reuse a constraint index when that same citation states multiple
-edges; cite each constraint once. Keep independent preparations unordered. Return []
-when no order is stated.
+terminal producer relation. Preserve every complete source-stated ordering requirement in
+facts.operational_constraints. Do not return source_precedence; independent review owns
+that complete accepted relation between existing source-supported events. Passive or
+unowned timing remains a constraint without an invented event or precedence edge.
 A source-stated operational or safety constraint remains only in
 facts.operational_constraints during authoring. Do not copy any constraint into component
 responsibilities. Independent review classifies every accepted constraint and alone may
@@ -559,6 +556,7 @@ def author_greenfield_intent(
         final_candidate["result"] = project_reviewed_custody(
             joined_candidate["result"],
             component_custody=witness["component_custody"],
+            source_precedence_custody=witness["source_precedence_custody"],
             constraint_custody=witness["constraint_custody"],
             evidence_text=text,
         )
@@ -661,6 +659,8 @@ def _remaining_authoring_contract() -> tuple[dict[str, Any], str]:
         or "human_actors" not in facts_schema["required"]
         or "components" not in result_schema["properties"]
         or "components" not in result_schema["required"]
+        or "source_precedence" not in result_schema["properties"]
+        or "source_precedence" not in result_schema["required"]
     ):
         raise GreenfieldModelAuthoringError(
             "Greenfield remaining authoring schema ownership is invalid; no records were created."
@@ -669,6 +669,8 @@ def _remaining_authoring_contract() -> tuple[dict[str, Any], str]:
     facts_schema["required"].remove("human_actors")
     del result_schema["properties"]["components"]
     result_schema["required"].remove("components")
+    del result_schema["properties"]["source_precedence"]
+    result_schema["required"].remove("source_precedence")
     return schema, _REMAINING_AUTHORING_PROMPT
 
 

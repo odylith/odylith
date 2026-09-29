@@ -84,6 +84,7 @@ class Reviewer(StructuredAuthoringProvider):
 def _review_input(response):
     candidate = deepcopy(response["result"])
     candidate.pop("components", None)
+    candidate.pop("source_precedence", None)
     return candidate
 
 
@@ -105,7 +106,7 @@ def run_review(provider, clock, *, deadline=55.0, observation=None, factory=None
 
 
 def test_partition_preserves_every_value_and_binds_complete_candidate():
-    assert review.CANDIDATE_REVIEW_VERSION == "odylith.greenfield.candidate-review.v17"
+    assert review.CANDIDATE_REVIEW_VERSION == "odylith.greenfield.candidate-review.v18"
     source = _source()
     candidate = _review_input(_response(source))
     original = deepcopy(candidate)
@@ -205,6 +206,17 @@ def test_review_request_does_not_invent_events_for_unowned_timing_conditions():
     run_review(provider, clock)
 
     prompt = provider.requests[0].system_prompt
+    empty_precedence_contract = (
+        "Return [] when no edge is possible or required, including passive or unowned "
+        "timing whose ordered side is not an accepted event."
+    )
+    assert empty_precedence_contract in " ".join(prompt.split())
+    assert empty_precedence_contract in " ".join(
+        review.SOURCE_PRECEDENCE_SCHEMA["description"].split()
+    )
+    assert "between two existing accepted actor/action event IDs" in (
+        review.SOURCE_PRECEDENCE_SCHEMA["description"]
+    )
     assert "both ordered sides are source-supported" in prompt
     assert "accepted events with actor/action ownership" in prompt
     assert "lack such event ownership as operational constraints" in prompt
@@ -273,6 +285,7 @@ def test_review_request_shares_reference_provenance_role_with_host_contract():
     assert "event_responsibilities" in prompt
     assert "additional_responsibilities" in prompt
     assert "admission_witness.constraint_custody" in prompt
+    assert "source_precedence_custody" in prompt
     assert "Shared\nvocabulary, descriptive capabilities or thematic relevance" in prompt
 
 
@@ -551,6 +564,31 @@ def test_denial_or_malformed_verdict_never_repairs_or_retries(verdict):
     assert observation["dispatched"] is True
 
 
+def test_denial_has_no_custody_or_projection() -> None:
+    clock = Clock()
+    provider = Reviewer(
+        {
+            "outcome": "denied",
+            "issue": {
+                "path": "candidate.proposed_decisions.provisional_design.first_run",
+                "reason": "The proposed order contradicts accepted source timing.",
+            },
+            "clarification": None,
+            "admission_witness": None,
+        },
+        clock,
+    )
+
+    with pytest.raises(review.GreenfieldCandidateRejected) as raised:
+        run_review(provider, clock)
+
+    assert "admission_witness" not in raised.value.receipt
+    assert "candidate_sha256" not in raised.value.receipt
+    assert "source_precedence" not in (
+        provider.requests[0].prompt_payload["candidate"]["accepted_source"]
+    )
+
+
 def test_source_insufficient_actor_task_or_result_maps_to_first_path_clarification() -> None:
     clock = Clock()
     provider = Reviewer(
@@ -568,6 +606,8 @@ def test_source_insufficient_actor_task_or_result_maps_to_first_path_clarificati
     assert raised.value.material_dimension == "first_path"
     assert raised.value.receipt["status"] == "clarification_required"
     assert set(raised.value.receipt) >= {"source_sha256", "review_input_candidate_sha256"}
+    assert "admission_witness" not in raised.value.receipt
+    assert "candidate_sha256" not in raised.value.receipt
     assert provider.calls == 1
     prompt = provider.requests[0].system_prompt
     assert (
@@ -607,7 +647,6 @@ def test_climate_source_without_user_result_is_reviewed_as_first_path_clarificat
             {"actor_kind": "product", "action_quote": "analyze"},
         ],
         "terminal": None,
-        "source_precedence": [],
         "consistency": {"status": "consistent", "evidence_quotes": []},
         "ambiguities": ["The source does not state who uses the product or what result they see."],
         "assumptions": [],
@@ -667,7 +706,6 @@ def test_source_without_participant_or_terminal_cannot_be_admitted_by_fabricated
         },
         "events": [{"actor_kind": "product", "action_quote": "Unify"}],
         "terminal": None,
-        "source_precedence": [],
         "consistency": {"status": "consistent", "evidence_quotes": []},
         "ambiguities": [],
         "assumptions": [

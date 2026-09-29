@@ -51,6 +51,7 @@ def _remaining_response(response):
     if isinstance(facts, dict):
         facts.pop("human_actors", None)
         result.pop("components", None)
+        result.pop("source_precedence", None)
     return remaining
 
 

@@ -400,6 +400,9 @@ def test_case_preserves_stage_observation_and_actual_terminal_diagnostics(
         "candidate_sha256": candidate_review_sha256(project_reviewed_custody(
             candidate,
             component_custody=admission_witness["component_custody"],
+            source_precedence_custody=admission_witness[
+                "source_precedence_custody"
+            ],
             constraint_custody=admission_witness["constraint_custody"],
             evidence_text=source,
         )),
@@ -929,6 +932,7 @@ def _host_native_reviewer_admission_observation(
                     "event_responsibilities": [],
                     "additional_responsibilities": [],
                 },
+                "source_precedence_custody": [],
                 "constraint_custody": [],
             },
         },

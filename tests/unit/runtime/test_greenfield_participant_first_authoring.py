@@ -98,12 +98,14 @@ def _remaining_response() -> dict[str, Any]:
     response = _complete_response()
     del response["result"]["facts"]["human_actors"]
     del response["result"]["components"]
+    del response["result"]["source_precedence"]
     return response
 
 
 def _review_input_response() -> dict[str, Any]:
     response = _complete_response()
     del response["result"]["components"]
+    del response["result"]["source_precedence"]
     return response
 
 
@@ -166,6 +168,8 @@ class _RemainingAuthorProvider(_SequenceProvider):
             result = response.get("result")
             if isinstance(result, dict) and isinstance(result.get("facts"), dict):
                 result["facts"].pop("human_actors", None)
+                result.pop("components", None)
+                result.pop("source_precedence", None)
         return response
 
 
@@ -285,6 +289,8 @@ def test_success_uses_three_roles_and_emits_recomputable_v4_proof(monkeypatch, t
     assert "human_actors" not in facts_schema["required"]
     assert "components" not in result_schema["properties"]
     assert "components" not in result_schema["required"]
+    assert "source_precedence" not in result_schema["properties"]
+    assert "source_precedence" not in result_schema["required"]
     assert "frozen_human_actors list is the only participant selection" in remaining.requests[0].system_prompt
     assert "actor_fact` field `human_actors` and one-based" in remaining.requests[0].system_prompt
     assert "Bind performing human events to its exact quote values" not in remaining.requests[0].system_prompt
@@ -305,6 +311,7 @@ def test_success_uses_three_roles_and_emits_recomputable_v4_proof(monkeypatch, t
     assert retained["joined_candidate"] == _review_input_response()
     review_candidate = reviewer.requests[0].prompt_payload["candidate"]
     assert "components" not in review_candidate["accepted_source"]
+    assert "source_precedence" not in review_candidate["accepted_source"]
     assert result.component_responsibility_relations == ()
     citations, resolved = resolve_greenfield_participant_selection(
         _source(), retained["participant_selection"]["response"]
@@ -332,6 +339,7 @@ def test_review_projects_component_custody_before_product_owned_constraint() -> 
     remaining_response = deepcopy(complete)
     del remaining_response["result"]["facts"]["human_actors"]
     del remaining_response["result"]["components"]
+    del remaining_response["result"]["source_precedence"]
     reviewer = AdmittingReviewProvider(
         constraint_custody=[{
             "constraint_index": 1,

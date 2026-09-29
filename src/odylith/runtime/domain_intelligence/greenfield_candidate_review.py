@@ -12,6 +12,9 @@ from collections.abc import Callable, Mapping, Sequence
 from copy import deepcopy
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_event_ordering import (
+    SOURCE_PRECEDENCE_SCHEMA,
+)
 from odylith.runtime.domain_intelligence.greenfield_review_custody import (
     COMPONENT_CUSTODY_SCHEMA,
     CONSTRAINT_CUSTODY_SCHEMA,
@@ -21,8 +24,10 @@ from odylith.runtime.domain_intelligence.greenfield_review_custody import (
     candidate_review_value,
     component_custody_shape_issues,
     constraint_custody_shape_issues,
+    source_precedence_custody_shape_issues,
     validated_component_custody,
     validated_constraint_custody,
+    validated_source_precedence_custody,
 )
 from odylith.runtime.domain_intelligence.greenfield_material_clarification import (
     MATERIAL_DIMENSIONS,
@@ -39,7 +44,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-CANDIDATE_REVIEW_VERSION = "odylith.greenfield.candidate-review.v17"
+CANDIDATE_REVIEW_VERSION = "odylith.greenfield.candidate-review.v18"
 TITLE_ROLE_DEFINITION = (
     "A source-cited name or concise label for the requested product, workflow, or "
     "product state. Identify what the request asks to create, operate, or review; "
@@ -162,8 +167,10 @@ operational constraint, human-only responsibility, external-system responsibilit
 source-custody control in this collection. Do not repeat or reuse a citation across owners
 or collections. Operational constraints remain global facts in the review input: classify
 each one exactly once in admission_witness.constraint_custody.
-source_precedence must preserve all explicit ordering requirements using the packet's existing event IDs and cited
-operational constraints; event array order alone is not source temporal authority.
+On admission, return complete source_precedence_custody preserving every explicit ordering
+requirement using the packet's existing event IDs and cited operational constraints; event
+array order alone is not source temporal authority. Return [] when no edge is possible or
+required, including passive or unowned timing whose ordered side is not an accepted event.
 Require a precedence edge only when both ordered sides are source-supported
 accepted events with actor/action ownership. Preserve timing, approval, or
 readiness conditions that lack such event ownership as operational constraints;
@@ -180,7 +187,7 @@ executable branch. Deny it when it omits a source event required to complete tha
 branch or concatenates mutually exclusive outcomes. It may omit source events that
 belong only to alternate branches; those remain accepted-source and component-support
 obligations. The selected terminal result and every cited predecessor on the chosen
-branch must remain present.
+branch must remain present, and its event order must satisfy source_precedence_custody.
 Instructions that govern the supplied source evidence, fixture, or candidate as inputs
 to this authoring transaction—including their identity, metadata, handling, projection,
 or exclusion from product copy—are source-custody controls, not product meaning. Deny a
@@ -241,8 +248,8 @@ the same one-based order. Use product_owned with owner_fact selecting title or a
 internal_systems row when that product owner is governed; use participant_only with
 actor_fact selecting an accepted human_actors or external_systems row when only that
 participant is governed; use workflow_order only when the current constraint_index is
-referenced by source_precedence. Product or participant ownership takes precedence over
-temporal wording. Do not repeat precedence edge fields in the custody row.
+referenced by source_precedence_custody. Product or participant ownership takes
+precedence over temporal wording. Do not repeat precedence edge fields in the custody row.
 A clarification selects exactly one existing material_dimension and has no
 issue. Never return replacements, edits, or proposed design.
 AUTHORITY BOUNDARY
@@ -277,6 +284,7 @@ REVIEW_SCHEMA = {
                 "result_event_order",
                 "design_coverage",
                 "component_custody",
+                "source_precedence_custody",
                 "constraint_custody",
             ],
             "properties": {
@@ -332,6 +340,7 @@ REVIEW_SCHEMA = {
                     },
                 },
                 "component_custody": deepcopy(COMPONENT_CUSTODY_SCHEMA),
+                "source_precedence_custody": deepcopy(SOURCE_PRECEDENCE_SCHEMA),
                 "constraint_custody": deepcopy(CONSTRAINT_CUSTODY_SCHEMA),
             },
         },
@@ -562,9 +571,17 @@ def _validated_admission_witness(
     task_order = value["task_event_order"]
     result_order = value["result_event_order"]
     design_coverage = value.get("design_coverage")
+    source_precedence_custody = validated_source_precedence_custody(
+        value.get("source_precedence_custody"),
+        candidate=candidate,
+    )
+    projected_candidate = deepcopy(dict(candidate))
+    projected_candidate["source_precedence"] = [
+        deepcopy(row) for row in source_precedence_custody
+    ]
     constraint_custody = validated_constraint_custody(
         value.get("constraint_custody"),
-        candidate=candidate,
+        candidate=projected_candidate,
     )
     component_custody = validated_component_custody(
         value.get("component_custody"),
@@ -596,6 +613,9 @@ def _validated_admission_witness(
                 for row in component_custody["additional_responsibilities"]
             ],
         },
+        "source_precedence_custody": [
+            deepcopy(row) for row in source_precedence_custody
+        ],
         "constraint_custody": [deepcopy(row) for row in constraint_custody],
     }
 
@@ -613,9 +633,17 @@ def candidate_review_admission_witness_issues(
         assert isinstance(value, Mapping)
         if not _admission_witness_binds_candidate(value, candidate=candidate):
             raise RuntimeError("invalid path witness")
+        source_precedence_custody = validated_source_precedence_custody(
+            value.get("source_precedence_custody"),
+            candidate=candidate,
+        )
+        projected_candidate = deepcopy(dict(candidate))
+        projected_candidate["source_precedence"] = [
+            deepcopy(row) for row in source_precedence_custody
+        ]
         validated_constraint_custody(
             value.get("constraint_custody"),
-            candidate=candidate,
+            candidate=projected_candidate,
         )
     except RuntimeError:
         return ("admission witness does not bind the current reviewed design",)
@@ -646,7 +674,7 @@ def candidate_review_admission_witness_shape_issues(value: Any) -> tuple[str, ..
 
     if not isinstance(value, Mapping) or set(value) != {
         "participant_fact", "task_event_order", "result_event_order", "design_coverage",
-        "component_custody", "constraint_custody",
+        "component_custody", "source_precedence_custody", "constraint_custody",
     }:
         return ("admission witness shape is invalid",)
     participant = value.get("participant_fact")
@@ -690,6 +718,10 @@ def candidate_review_admission_witness_shape_issues(value: Any) -> tuple[str, ..
         return ("admission design-coverage witness is invalid",)
     if constraint_custody_shape_issues(value.get("constraint_custody")):
         return ("admission constraint-custody witness is invalid",)
+    if source_precedence_custody_shape_issues(
+        value.get("source_precedence_custody")
+    ):
+        return ("admission source-precedence witness is invalid",)
     if component_custody_shape_issues(value.get("component_custody")):
         return ("admission component-custody witness is invalid",)
     return ()

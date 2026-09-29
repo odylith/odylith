@@ -24,9 +24,6 @@ from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
     REFERENCE_PROVENANCE_ROLE_CONTRACT,
     REVIEW_PROMPT,
 )
-from odylith.runtime.domain_intelligence.greenfield_event_ordering import (
-    validate_source_precedence,
-)
 from odylith.runtime.domain_intelligence.greenfield_host_candidate_materialization import (
     materialize_host_authored_intent,
 )
@@ -406,8 +403,8 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
     assert rc == 0
     assert payload["version"] == HOST_CANDIDATE_CONTRACT_VERSION
     assert payload["candidate_version"] == HOST_CANDIDATE_FORMAT_VERSION
-    assert payload["version"] == "odylith.greenfield.host-candidate-contract.v30"
-    assert payload["candidate_version"] == "odylith.greenfield.host-candidate-format.v16"
+    assert payload["version"] == "odylith.greenfield.host-candidate-contract.v31"
+    assert payload["candidate_version"] == "odylith.greenfield.host-candidate-format.v17"
     assert any(
         "exact scope_paths" in requirement
         and "Odylith derives" in requirement
@@ -508,9 +505,8 @@ def test_candidate_contract_is_provider_free_and_supplies_the_canonical_schema(
             pending.extend((f"{path}.{key}", child) for key, child in value.items())
         elif isinstance(value, list):
             pending.extend((f"{path}[{index}]", child) for index, child in enumerate(value))
-    source_precedence = authored["properties"]["source_precedence"]
-    assert "every explicit source-stated ordering requirement" in source_precedence["description"]
-    assert "proposed first-run walkthrough" in source_precedence["description"]
+    assert "source_precedence" not in authored["properties"]
+    assert "source_precedence" not in authored["required"]
     constraint_item = authored["properties"]["facts"]["properties"][
         "operational_constraints"
     ]["items"]
@@ -588,7 +584,7 @@ def test_public_authoring_rejects_missing_candidate_before_provider_dispatch(
     assert raised.value.code == 2
 
 
-def test_host_candidate_preserves_canonical_source_precedence() -> None:
+def test_host_candidate_has_no_source_precedence_authority() -> None:
     old_source = _source()
     old_constraint = "Retain source notes for seven years"
     ordering_constraint = "The vessel-tag entry must precede berth-occupancy recording"
@@ -599,19 +595,16 @@ def test_host_candidate_preserves_canonical_source_precedence() -> None:
         "quote": ordering_constraint,
         "occurrence": 1,
     }
-    response["result"]["source_precedence"] = [
-        {"before_event": 1, "after_event": 2, "constraint_index": 1}
-    ]
     response = host_candidate_response(response, evidence_text=evidence)
-    expected = deepcopy(response["result"]["source_precedence"])
 
     canonical = canonical_greenfield_host_candidate(response, evidence_text=evidence)
 
-    assert canonical["result"]["source_precedence"] == expected
+    assert "source_precedence" not in response["result"]
+    assert "source_precedence" not in canonical["result"]
     assert "components" not in canonical["result"]
 
 
-def test_host_candidate_preserves_duplicate_precedence_for_validator_rejection() -> None:
+def test_host_candidate_rejects_source_precedence_without_compatibility() -> None:
     old_source = _source()
     old_constraint = "Retain source notes for seven years"
     ordering_constraint = "The vessel-tag entry must precede berth-occupancy recording"
@@ -622,25 +615,13 @@ def test_host_candidate_preserves_duplicate_precedence_for_validator_rejection()
         "quote": ordering_constraint,
         "occurrence": 1,
     }
-    binding = {"before_event": 1, "after_event": 2, "constraint_index": 1}
-    response["result"]["source_precedence"] = [
-        binding,
-        deepcopy(binding),
-    ]
     response = host_candidate_response(response, evidence_text=evidence)
-
-    canonical = canonical_greenfield_host_candidate(response, evidence_text=evidence)
-
-    assert canonical["result"]["source_precedence"] == [
-        binding,
-        binding,
+    response["result"]["source_precedence"] = [
+        {"before_event": 1, "after_event": 2, "constraint_index": 1}
     ]
-    with pytest.raises(ValueError, match="duplicate binding"):
-        validate_source_precedence(
-            canonical["result"]["source_precedence"],
-            event_orders=(1, 2),
-            operational_constraints=("Review before publish.",),
-        )
+
+    with pytest.raises(ValueError, match="invalid shape"):
+        canonical_greenfield_host_candidate(response, evidence_text=evidence)
 
 
 def test_host_candidate_rejects_reused_event_citation_across_actor_owners() -> None:
@@ -789,10 +770,6 @@ def test_host_candidate_projects_constraint_that_contains_a_human_event_conditio
         "quote": privacy_constraint,
         "occurrence": 1,
     }
-    response["result"]["source_precedence"] = [
-        {"before_event": 1, "after_event": 2, "constraint_index": 1}
-    ]
-
     candidate = host_candidate_response(response, evidence_text=evidence)
     canonical = canonical_greenfield_host_candidate(candidate, evidence_text=evidence)
     authored, _receipt = admit_greenfield_host_candidate(
@@ -801,6 +778,11 @@ def test_host_candidate_projects_constraint_that_contains_a_human_event_conditio
         review_provider_factory=lambda: StructuredAuthoringProvider(
             admitted_review_response(
                 component_custody=_base_component_custody(),
+                source_precedence_custody=[{
+                    "before_event": 1,
+                    "after_event": 2,
+                    "constraint_index": 1,
+                }],
                 constraint_custody=[{
                     "constraint_index": 1,
                     "kind": "product_owned",
@@ -818,7 +800,8 @@ def test_host_candidate_projects_constraint_that_contains_a_human_event_conditio
     assert relation["owner_system_path"] == "/title"
     assert relation["first_path_event_order"] == 1
     assert "components" not in canonical["result"]
-    assert canonical["result"]["source_precedence"] == [
+    assert "source_precedence" not in canonical["result"]
+    assert list(authored.source_precedence) == [
         {"before_event": 1, "after_event": 2, "constraint_index": 1}
     ]
 
@@ -830,6 +813,7 @@ def test_candidate_review_owns_complete_typed_component_custody() -> None:
     assert "source-custody control" in REVIEW_PROMPT
     assert "admission_witness.component_custody" in REVIEW_PROMPT
     assert "admission_witness.constraint_custody" in REVIEW_PROMPT
+    assert "source_precedence_custody" in REVIEW_PROMPT
     assert "cannot substitute for accepted custody" in REVIEW_PROMPT
 
 

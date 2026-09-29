@@ -571,6 +571,58 @@ the protected holdout remains untouched.
   protected-input access. Public qualification remains pending on a new clean
   distribution; CB-347 stays open.
 
+## V49 Immutable Public Replay And Diagnosability Boundary (2026-09-29)
+
+- Clean pushed commit `8278cce69282cc4cde54c38bcdefe4dd95869d8c`
+  passed `3,348/3,348` frozen Greenfield tests and independent no-P0/P1 review,
+  then built the complete `0.1.15` distribution with platform-leakage validation.
+  Its first and only exact replay of `release-accessibility-005-source` failed
+  closed after a successful Astra-medium host candidate and an installed
+  independent-review denial. No transaction or governed product write occurred;
+  the campaign stopped immediately and neither the 40-case public campaign nor
+  protected holdout was opened.
+- The discovery evidence resolves the denial path exactly to
+  `candidate.accepted_source.source_precedence`, but preserves the model-authored
+  reason only as SHA-256. That is sufficient to reject another author prompt:
+  author-owned precedence has already failed as a plain array, a typed global
+  choice, and constraint-co-located typed relations. It is not sufficient to
+  claim the reviewer reason was correct, so the next mechanism must carry an
+  explicit passive/unowned timing falsifier rather than infer the hidden reason.
+- The bounded forward fix consolidates accepted-source relations under the one
+  existing reviewer: host authoring retains atomic cited facts, events, terminal
+  identity, and provisional design; reviewer custody owns components,
+  constraints, and source precedence; deterministic code validates and projects
+  all three into the unchanged canonical candidate. Precedence projection must
+  occur before `workflow_order` custody binding and final first-run validation.
+  No retry, repair, parser, regex, fallback, extra model call, transaction
+  mutation, or compatibility field is allowed.
+- This hypothesis has one terminal gate: a passive unowned timing control must
+  produce no invented edge, an explicit accepted-event ordering control must
+  produce its exact cited edge, and the accessibility public replay must advance
+  past precedence in one attempt. A recurrence retires this ownership line; it
+  must not trigger another field migration or prompt/schema cascade.
+- Evidence:
+  `/private/tmp/odylith-v49-8278cce69-replay.z2jiwA/public-replay.v1.json`,
+  `/private/tmp/odylith-v49-8278cce69-replay.z2jiwA/telemetry/failed-subset/failed-subset-failed-subset-001-cases.telemetry.v1.jsonl`,
+  and immutable distribution
+  `/private/tmp/odylith-v49-8278cce69-dist.uRQK9e`.
+- The bounded consolidation is implemented as host contract v31,
+  host-candidate format v17, and reviewer v18. Host candidates no longer carry
+  `source_precedence`; the existing independent review returns one closed
+  `source_precedence_custody` witness, and deterministic code validates and
+  projects it before constraint custody and final first-run validation.
+  Retained proof binds distinct review-input and projected-final hashes without
+  exposing private reviewer text.
+- The final frozen Greenfield frontier passes 3,362/3,362 tests in 337.71
+  seconds. An earlier integrated pass found 13 stale fixture-ownership failures
+  after 3,349 passes; all 13 were corrected without changing production
+  semantics, and their exact rerun passed 13/13. Independent review then caught
+  and closed a false passive-timing proof fixture and a model-facing
+  prompt/schema contradiction; the final adjudication reports no P0, P1, or
+  blocking P2 finding. The live blocker therefore moves from internal
+  consistency to one immutable public replay. Failure at that replay retires
+  this mechanism line instead of reopening prompt or schema churn.
+
 - Preflight Checks: Verify release command policy, supported CLI arguments, relation schema parity, observed role parity and incomplete-campaign behavior before any new sealed input is authored.
 
 - Regression Tests Added: Added exact current-receipt relation parity, host-candidate/reviewer observation parity, incomplete/unscored severity suppression, and one-candidate provider-unavailable/no-write controls. The consumed holdout is not a regression fixture.

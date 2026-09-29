@@ -52,7 +52,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v1"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v30"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v31"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
 
 
@@ -90,11 +90,6 @@ def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
                 "contributes no additional meaning."
             ),
             (
-                "Bind every explicit ordering constraint to its source events. Different "
-                "constraints may support the same directed edge; never repeat an identical "
-                "before-event, after-event, and constraint-index binding."
-            ),
-            (
                 "Each action_quote must preserve the complete source action owned by its actor. "
                 "When one source performer explicitly owns alternative verbs that govern separate "
                 "outcomes, keep the full joined action phrase in one event instead of selecting "
@@ -111,7 +106,8 @@ def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
             ),
             (
                 "Keep every accepted operational constraint only in facts.operational_constraints; "
-                "the independent reviewer owns its later typed custody."
+                "the independent reviewer owns its later typed custody and the complete accepted "
+                "source precedence relation between existing source-supported events."
             ),
             "Keep accepted source facts separate from assumptions and provisional design decisions.",
             (
@@ -296,6 +292,9 @@ def admit_greenfield_host_candidate(
     projected_response["result"] = project_reviewed_custody(
         canonical_response["result"],
         component_custody=review["admission_witness"]["component_custody"],
+        source_precedence_custody=review["admission_witness"][
+            "source_precedence_custody"
+        ],
         constraint_custody=review["admission_witness"]["constraint_custody"],
         evidence_text=evidence_text,
     )

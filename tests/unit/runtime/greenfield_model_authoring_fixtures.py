@@ -57,8 +57,15 @@ class RemainingCandidateProvider(StructuredAuthoringProvider):
     def review_provider(self) -> AdmittingReviewProvider:
         """Return a reviewer double bound to this fixture's declared canonical truth."""
 
+        result = self.response.get("result") if isinstance(self.response, Mapping) else None
+        source_precedence = (
+            result.get("source_precedence") if isinstance(result, Mapping) else ()
+        )
         return AdmittingReviewProvider(
             component_custody=component_custody_for_response(self.response),
+            source_precedence_custody=(
+                source_precedence if isinstance(source_precedence, list) else ()
+            ),
         )
 
     def generate_structured(self, *, request: object) -> Mapping[str, Any] | None:
@@ -69,6 +76,7 @@ class RemainingCandidateProvider(StructuredAuthoringProvider):
             if isinstance(result, dict) and isinstance(result.get("facts"), dict):
                 result["facts"].pop("human_actors", None)
                 result.pop("components", None)
+                result.pop("source_precedence", None)
         return response
 
 
@@ -106,9 +114,13 @@ class AdmittingReviewProvider(StructuredAuthoringProvider):
         self,
         *,
         component_custody: Mapping[str, Any] | None = None,
+        source_precedence_custody: Sequence[Mapping[str, Any]] | None = None,
         constraint_custody: Sequence[Mapping[str, Any]] | None = None,
     ) -> None:
         self.configured_component_custody = copy.deepcopy(component_custody)
+        self.configured_source_precedence_custody = copy.deepcopy(
+            list(source_precedence_custody or ())
+        )
         configured_custody = (
             constraint_custody
             if constraint_custody is not None
@@ -130,6 +142,7 @@ class AdmittingReviewProvider(StructuredAuthoringProvider):
                         "additional_responsibilities": [],
                     }
                 ),
+                source_precedence_custody=self.configured_source_precedence_custody,
                 constraint_custody=configured_custody,
             )
         )
@@ -208,6 +221,9 @@ class AdmittingReviewProvider(StructuredAuthoringProvider):
                 result_event_order=result_event_order,
                 provisional_design=design,
                 component_custody=component_custody,
+                source_precedence_custody=(
+                    self.configured_source_precedence_custody
+                ),
                 constraint_custody=constraint_custody,
             )
         return super().generate_structured(request=request)
@@ -217,6 +233,7 @@ def admitted_review_response(
     *,
     component_custody: Mapping[str, Any] | None = None,
     constraint_custody: Sequence[Mapping[str, Any]],
+    source_precedence_custody: Sequence[Mapping[str, Any]] = (),
     participant_field: str = "human_actors",
     participant_row: int = 1,
     task_event_order: int = 1,
@@ -252,6 +269,9 @@ def admitted_review_response(
                     "additional_responsibilities": [],
                 }
             ),
+            "source_precedence_custody": copy.deepcopy(
+                list(source_precedence_custody)
+            ),
             "constraint_custody": copy.deepcopy(
                 list(constraint_custody)
             ),
@@ -276,6 +296,7 @@ def host_candidate_response(
     if not isinstance(facts, dict) or not isinstance(events, list):
         raise TypeError("canonical fixture cannot be projected to a host candidate")
     result.pop("components", None)
+    result.pop("source_precedence", None)
     first_path = facts.pop("first_path")
     if not isinstance(first_path, list) or len(first_path) != len(events):
         raise ValueError("canonical fixture event citations are incomplete")
@@ -303,7 +324,7 @@ def component_custody_for_response(
     """Translate declared canonical fixture truth into reviewer-owned custody.
 
     This helper does not interpret source prose. It only moves exact citations and
-    typed owners already declared by a test fixture into the V49 review witness.
+    typed owners already declared by a test fixture into the review witness.
     """
 
     result = response.get("result") if isinstance(response, Mapping) else None

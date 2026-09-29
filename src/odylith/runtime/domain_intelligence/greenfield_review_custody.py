@@ -7,6 +7,10 @@ from collections.abc import Mapping, Sequence
 from copy import deepcopy
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_event_ordering import (
+    SOURCE_PRECEDENCE_SCHEMA,
+    validate_source_precedence,
+)
 from odylith.runtime.domain_intelligence.greenfield_model_json import (
     encode_greenfield_model_value,
 )
@@ -18,6 +22,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_source_citations impor
 )
 from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     MAX_AUTHORED_FIELD_VALUE_CHARS,
+    MAX_AUTHORED_LIST_ITEMS,
 )
 
 REVIEW_INPUT_SOURCE_FIELDS = frozenset(
@@ -26,12 +31,11 @@ REVIEW_INPUT_SOURCE_FIELDS = frozenset(
         "facts",
         "events",
         "terminal",
-        "source_precedence",
         "consistency",
         "ambiguities",
     )
 )
-FINAL_SOURCE_FIELDS = REVIEW_INPUT_SOURCE_FIELDS | {"components"}
+FINAL_SOURCE_FIELDS = REVIEW_INPUT_SOURCE_FIELDS | {"components", "source_precedence"}
 CANDIDATE_PROPOSED_FIELDS = frozenset(("assumptions", "provisional_design"))
 
 _PRODUCT_OWNER_SCHEMA = {
@@ -191,13 +195,78 @@ def candidate_review_sha256(candidate: Mapping[str, Any]) -> str:
 
 
 def candidate_for_pre_review_validation(candidate: Mapping[str, Any]) -> dict[str, Any]:
-    """Supply the canonical validator's final-only component field ephemerally."""
+    """Supply the canonical validator's final-only relation fields ephemerally."""
 
     if set(candidate) != REVIEW_INPUT_SOURCE_FIELDS | CANDIDATE_PROPOSED_FIELDS:
         raise ValueError("Greenfield review input candidate has an invalid shape")
     validation_candidate = deepcopy(dict(candidate))
     validation_candidate["components"] = []
+    validation_candidate["source_precedence"] = []
     return validation_candidate
+
+
+def source_precedence_custody_shape_issues(value: Any) -> tuple[str, ...]:
+    """Validate the closed retained source-precedence witness shape."""
+
+    if (
+        not isinstance(value, list)
+        or len(value) > SOURCE_PRECEDENCE_SCHEMA["maxItems"]
+    ):
+        return ("source precedence custody witness shape is invalid",)
+    fields = {"before_event", "after_event", "constraint_index"}
+    for row in value:
+        if (
+            not isinstance(row, Mapping)
+            or set(row) != fields
+            or any(type(row.get(field)) is not int for field in fields)
+            or not 1 <= row["before_event"] <= 32
+            or not 1 <= row["after_event"] <= 32
+            or not 1 <= row["constraint_index"] <= MAX_AUTHORED_LIST_ITEMS
+        ):
+            return ("source precedence custody witness shape is invalid",)
+    return ()
+
+
+def validated_source_precedence_custody(
+    value: Any,
+    *,
+    candidate: Mapping[str, Any],
+) -> tuple[dict[str, int], ...]:
+    """Bind reviewer-owned precedence to accepted events and cited constraints."""
+
+    if source_precedence_custody_shape_issues(value):
+        raise RuntimeError(
+            "Greenfield candidate review returned invalid source precedence custody"
+        )
+    events = candidate.get("events")
+    facts = candidate.get("facts")
+    constraints = (
+        facts.get("operational_constraints") if isinstance(facts, Mapping) else None
+    )
+    if (
+        not isinstance(events, Sequence)
+        or isinstance(events, (str, bytes, bytearray))
+        or not events
+        or not isinstance(constraints, Sequence)
+        or isinstance(constraints, (str, bytes, bytearray))
+    ):
+        raise RuntimeError(
+            "Greenfield candidate review returned invalid source precedence custody"
+        )
+    constraint_quotes = [
+        str(row.get("quote") or "") if isinstance(row, Mapping) else ""
+        for row in constraints
+    ]
+    try:
+        return validate_source_precedence(
+            value,
+            event_orders=tuple(range(1, len(events) + 1)),
+            operational_constraints=constraint_quotes,
+        )
+    except ValueError as exc:
+        raise RuntimeError(
+            "Greenfield candidate review returned invalid source precedence custody"
+        ) from exc
 
 
 def component_custody_shape_issues(value: Any) -> tuple[str, ...]:
@@ -421,23 +490,29 @@ def project_reviewed_custody(
     candidate: Mapping[str, Any],
     *,
     component_custody: Any,
+    source_precedence_custody: Any,
     constraint_custody: Any,
     evidence_text: str,
 ) -> dict[str, Any]:
-    """Project reviewed components first and product-owned constraints second."""
+    """Project reviewed precedence before constraint and component custody."""
 
     if set(candidate) != REVIEW_INPUT_SOURCE_FIELDS | CANDIDATE_PROPOSED_FIELDS:
         raise RuntimeError("Greenfield candidate review cannot project reviewed custody")
+    precedence_rows = validated_source_precedence_custody(
+        source_precedence_custody,
+        candidate=candidate,
+    )
+    projected = deepcopy(dict(candidate))
+    projected["source_precedence"] = [deepcopy(row) for row in precedence_rows]
+    constraint_rows = validated_constraint_custody(
+        constraint_custody,
+        candidate=projected,
+    )
     component_rows = validated_component_custody(
         component_custody,
         candidate=candidate,
         evidence_text=evidence_text,
     )
-    constraint_rows = validated_constraint_custody(
-        constraint_custody,
-        candidate=candidate,
-    )
-    projected = deepcopy(dict(candidate))
     facts = projected.get("facts")
     assert isinstance(facts, Mapping)
     components: list[dict[str, Any]] = []
@@ -664,6 +739,8 @@ __all__ = [
     "constraint_custody_shape_issues",
     "finalize_admitted_review",
     "project_reviewed_custody",
+    "source_precedence_custody_shape_issues",
     "validated_component_custody",
     "validated_constraint_custody",
+    "validated_source_precedence_custody",
 ]

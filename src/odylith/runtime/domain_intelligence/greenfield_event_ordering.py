@@ -23,11 +23,12 @@ SOURCE_PRECEDENCE_SCHEMA = {
     "maxItems": 64,
     "description": (
         "Preserve every explicit source-stated ordering requirement as a directed "
-        "edge between existing event IDs, backed by the one-based index of its "
-        "accepted operational constraint. Different constraints may support the same "
-        "directed edge; do not repeat an identical edge and constraint binding. Use an "
-        "empty array only when the source states no event precedence; event array order "
-        "and the proposed first-run walkthrough are not source authority."
+        "edge between two existing accepted actor/action event IDs, backed by the "
+        "one-based index of its accepted operational constraint. Different constraints "
+        "may support the same directed edge; do not repeat an identical edge and "
+        "constraint binding. Return [] when no edge is possible or required, including "
+        "passive or unowned timing whose ordered side is not an accepted event. Event "
+        "array order and the proposed first-run walkthrough are not source authority."
     ),
     "items": {
         "type": "object", "additionalProperties": False,

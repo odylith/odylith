@@ -173,6 +173,7 @@ def test_discovery_uses_ephemeral_case_proof_without_publishing_release_evidence
             project_reviewed_custody(
                 review_input_candidate,
                 component_custody=component_custody,
+                source_precedence_custody=[],
                 constraint_custody=[],
                 evidence_text=source,
             )
@@ -263,6 +264,16 @@ def test_discovery_uses_ephemeral_case_proof_without_publishing_release_evidence
     assert retained_case.staging_root.parent.parent.name.startswith("odylith-greenfield-matrix-")
     assert observations["profile_evidence"]["status"] == "passed"
     assert observations["profile_evidence"]["maximum_semantic_model_calls"] == 1
+    hash_summary = observations["profile_evidence"]["stage_observation_summary"][
+        "retained_candidate_hash_summary"
+    ]
+    assert hash_summary["review_input_source_precedence_present"] is False
+    assert hash_summary["source_precedence_projected"] is True
+    assert hash_summary["hashes_are_distinct"] is True
+    assert hash_summary["source_precedence_custody_count"] == 0
+    assert hash_summary["source_precedence_custody_sha256"] == hashlib.sha256(
+        b"[]"
+    ).hexdigest()
     assert observations["binding_issues"] == ()
     assert "participant_selection" not in json.dumps(observations["profile_evidence"])
     assert "remaining_candidate_authoring" not in json.dumps(observations["profile_evidence"])

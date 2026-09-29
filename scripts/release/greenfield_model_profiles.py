@@ -18,7 +18,7 @@ from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_ARGUMENT_COUNT
 from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_RECEIPT_VERSION
 from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_SHAPE_SHA256
 from greenfield_matrix_host_candidate import HOST_NATIVE_MATRIX_OBSERVATION_VERSION
-from greenfield_retained_candidate_proof import retained_admitted_candidate_hash_issues
+from greenfield_retained_candidate_proof import retained_admitted_candidate_hash_evidence
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     DEEP_PROFILE_ID,
     GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION,
@@ -473,15 +473,17 @@ def _host_native_stage_observation_evidence(
         and retained.get("candidate_sha256") != candidate.get("candidate_sha256")
     ):
         issues.append("retained host candidate does not match the sealed receipt")
-    reviewer_admission_issues = _host_native_reviewer_admission_issues(
-        profile,
-        reviewer_observation=_mapping(reviewer_observation),
-        review_input_candidate=_mapping(review_input_candidate),
-        sealed_candidate=candidate,
-        sealed_review_profile=review,
-        expected_review_input_candidate_sha256=expected_review_input_candidate_sha256,
-        expected_source=expected_source,
-        expected_source_sha256=expected_source_sha256,
+    reviewer_admission_issues, retained_candidate_summary = (
+        _host_native_reviewer_admission_evidence(
+            profile,
+            reviewer_observation=_mapping(reviewer_observation),
+            review_input_candidate=_mapping(review_input_candidate),
+            sealed_candidate=candidate,
+            sealed_review_profile=review,
+            expected_review_input_candidate_sha256=expected_review_input_candidate_sha256,
+            expected_source=expected_source,
+            expected_source_sha256=expected_source_sha256,
+        )
     )
     issues.extend(reviewer_admission_issues)
     host_request = _mapping(retained.get("host_request"))
@@ -491,6 +493,7 @@ def _host_native_stage_observation_evidence(
         "semantic_model_call_count": 1,
         "candidate_review_status": "admitted",
         "reviewer_receipt_verified": not reviewer_admission_issues,
+        "retained_candidate_hash_summary": retained_candidate_summary,
         "request_roles": {
             "host_candidate": {
                 "executable_sha256": str(host_request.get("executable_sha256") or ""),
@@ -503,7 +506,7 @@ def _host_native_stage_observation_evidence(
     }
 
 
-def _host_native_reviewer_admission_issues(
+def _host_native_reviewer_admission_evidence(
     profile: str,
     *,
     reviewer_observation: Mapping[str, Any],
@@ -513,8 +516,8 @@ def _host_native_reviewer_admission_issues(
     expected_review_input_candidate_sha256: str,
     expected_source: str,
     expected_source_sha256: str,
-) -> tuple[str, ...]:
-    """Validate private admitted-review proof without exposing it publicly."""
+) -> tuple[tuple[str, ...], dict[str, Any]]:
+    """Validate private proof and return its privacy-safe hash summary."""
 
     private = _mapping(reviewer_observation)
     issues: list[str] = []
@@ -563,13 +566,12 @@ def _host_native_reviewer_admission_issues(
         issues.append("private host-native reviewer admission input hash is invalid")
     if not _is_sha256(receipt.get("candidate_sha256")):
         issues.append("private host-native reviewer admission final candidate hash is invalid")
-    issues.extend(
-        retained_admitted_candidate_hash_issues(
-            review_input_candidate=review_input_candidate,
-            receipt=receipt,
-            evidence_text=expected_source,
-        )
+    retained_candidate_evidence = retained_admitted_candidate_hash_evidence(
+        review_input_candidate=review_input_candidate,
+        receipt=receipt,
+        evidence_text=expected_source,
     )
+    issues.extend(str(issue) for issue in retained_candidate_evidence["issues"])
     if _mapping(receipt.get("model_profile")) != dict(sealed_review_profile):
         issues.append("private host-native reviewer admission profile is not sealed")
     if candidate_review_admission_witness_shape_issues(
@@ -580,7 +582,12 @@ def _host_native_reviewer_admission_issues(
     contract = get_greenfield_model_profile(profile)
     if elapsed is None or elapsed > contract.model_timeout_seconds:
         issues.append("private host-native reviewer admission elapsed time is invalid")
-    return tuple(dict.fromkeys(issues))
+    public_summary = {
+        key: value
+        for key, value in retained_candidate_evidence.items()
+        if key != "issues"
+    }
+    return tuple(dict.fromkeys(issues)), public_summary
 
 
 def host_native_clarification_stage_observation_issues(
@@ -1218,6 +1225,9 @@ def _candidate_review_observation_issues(
             project_reviewed_custody(
                 candidate,
                 component_custody=_mapping(admission_witness).get("component_custody"),
+                source_precedence_custody=_mapping(admission_witness).get(
+                    "source_precedence_custody"
+                ),
                 constraint_custody=_mapping(admission_witness).get("constraint_custody"),
                 evidence_text=source if isinstance(source, str) else "",
             )

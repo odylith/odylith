@@ -1,5 +1,72 @@
 Status: In progress
 
+## V49 immutable public falsification and final relation-ownership consolidation (2026-09-29)
+
+Clean pushed commit `8278cce69282cc4cde54c38bcdefe4dd95869d8c`
+built the complete `0.1.15` multi-platform distribution and passed platform
+domain-leakage validation. Its single permitted replay of
+`release-accessibility-005-source` completed the Astra-medium host author
+successfully, then failed closed in the existing independent review during
+installed `propose`. The campaign stopped after that one case, created no
+transaction or governed product write, and did not open the 40-case campaign or
+protected holdout. The result path is
+`/private/tmp/odylith-v49-8278cce69-replay.z2jiwA/public-replay.v1.json`.
+
+The retained denial path hash
+`d8c85b2cf9903b9b43acc148c7cc0734e7dd9a79c1d829db9466c029d4dd8de2`
+resolves exactly to `candidate.accepted_source.source_precedence`; the discovery
+tier intentionally retained the reason only as hash. Campaign elapsed time was
+`217.256s`, including fresh installed setup. The candidate/review transaction
+used about `147.6s`: roughly `129.1s` before installed propose and `17.4s` in
+propose/review. This is inside the separate `180s` transaction safety window and
+near the advisory `150s` deep target, but misses the `90s` standard target.
+
+Do not add another author instruction. Contract v4 already exposed the ordering
+law, v5 forced a typed author choice, and v6 co-located typed ordering on author
+constraints; public evidence rejected all three. The last bounded hypothesis
+removes `source_precedence` from the host candidate and assigns it to the same
+independent reviewer that already owns component and constraint custody. The
+reviewer returns one closed canonical edge list from accepted events and cited
+constraints; deterministic code validates and projects that list before binding
+workflow-order constraint custody, validating the proposed first run, and
+sealing the unchanged final candidate and transaction. This is distinct from
+v5/v6 because the host owns no precedence field or surrogate. It adds no model
+call, parser, regex, vocabulary rule, repair, retry, fallback, or compatibility
+path.
+
+Treat this as the final accepted-source-relation consolidation, not as a proven
+winner. Its falsifiers are: passive or unowned timing produces no invented edge;
+explicit ordering between accepted actor/action events produces the exact cited
+edge; and the exact accessibility replay advances past precedence in one
+attempt. If the reviewer repeats the impossible-edge error, precedence custody
+or projection fails, or another accepted-source relation migrates after this
+boundary, retire the one-author/one-reviewer composition instead of creating
+another prompt or schema variant. The 40-case public campaign, generated UX,
+clean-install, recovery, host-parity, intervention, independent qualification,
+and protected holdout gates remain closed until these falsifiers pass.
+
+Implementation now uses host contract v31, host-candidate format v17, and
+reviewer v18. The host schema omits `source_precedence`; the independent review
+returns `source_precedence_custody` beside component and constraint custody.
+Deterministic admission validates and projects precedence first, binds
+`workflow_order` custody second, reruns the final canonical and first-run
+validation, and seals distinct review-input and projected-final hashes. Retained
+release evidence exposes only the hashes, custody count/digest, input omission,
+and exact-projection result. No compatibility field, parser, regex, repair,
+retry, fallback, model ladder, or additional model call was added.
+
+The first integrated run exposed 13 stale fixture expectations after 3,349
+passes. All 13 were old test authors or admitting reviewers that still supplied
+host-owned precedence or omitted the new review witness; none was a production
+defect. Their exact rerun passed 13/13, their four owning files passed 114/114,
+and the complete frozen Greenfield frontier then passed 3,362/3,362. After two
+independent-review findings closed a false passive-timing control and a
+prompt/schema description contradiction, the final frozen frontier again
+passed 3,362/3,362 in 337.71 seconds. Independent review reports no P0, P1, or
+blocking P2 finding. The next gate is a pushed immutable distribution and one
+exact accessibility replay. The implementation is not release-qualified until
+that replay passes.
+
 ## V49 implementation and correction closure (2026-09-29)
 
 V49 is implemented as host contract v30, host-candidate format v16, and

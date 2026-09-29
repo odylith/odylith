@@ -909,6 +909,7 @@ def test_release_proof_descriptor_retains_raw_response_before_rejection(
     remaining_response = deepcopy(response)
     remaining_response["result"]["facts"].pop("human_actors")
     remaining_response["result"].pop("components")
+    remaining_response["result"].pop("source_precedence")
     assert retained["remaining_candidate_authoring"]["response"] == remaining_response
 
 

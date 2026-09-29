@@ -12,8 +12,10 @@ from odylith.runtime.domain_intelligence.greenfield_review_custody import (
     constraint_custody_shape_issues,
     finalize_admitted_review,
     project_reviewed_custody,
+    source_precedence_custody_shape_issues,
     validated_component_custody,
     validated_constraint_custody,
+    validated_source_precedence_custody,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GreenfieldModelAuthoringError,
@@ -28,6 +30,7 @@ from tests.unit.runtime.test_greenfield_model_path_custody import _response, _so
 def _review_input() -> dict[str, object]:
     candidate = deepcopy(_response(_source())["result"])
     candidate.pop("components")
+    candidate.pop("source_precedence")
     return candidate
 
 
@@ -79,16 +82,20 @@ def _constraint_custody(*, product_owned: bool = False) -> list[dict[str, object
     ]
 
 
-def test_review_input_has_no_components_and_final_hash_binds_both_projections() -> None:
+def test_review_input_has_no_final_relations_and_final_hash_binds_all_projections() -> None:
     candidate = _review_input()
     review_value = candidate_review_value(candidate)
     assert "components" not in review_value["accepted_source"]
-    assert candidate_for_pre_review_validation(candidate)["components"] == []
+    assert "source_precedence" not in review_value["accepted_source"]
+    validation_candidate = candidate_for_pre_review_validation(candidate)
+    assert validation_candidate["components"] == []
+    assert validation_candidate["source_precedence"] == []
     input_hash = candidate_review_sha256(candidate)
 
     projected = project_reviewed_custody(
         candidate,
         component_custody=_component_custody(),
+        source_precedence_custody=[],
         constraint_custody=_constraint_custody(product_owned=True),
         evidence_text=_source(),
     )
@@ -227,6 +234,7 @@ def test_product_event_may_also_be_the_exact_product_owned_constraint() -> None:
     projected = project_reviewed_custody(
         candidate,
         component_custody=custody,
+        source_precedence_custody=[],
         constraint_custody=[
             {
                 "constraint_index": 1,
@@ -263,6 +271,7 @@ def test_dual_role_clause_cannot_change_owner_during_constraint_projection() -> 
         project_reviewed_custody(
             candidate,
             component_custody=custody,
+            source_precedence_custody=[],
             constraint_custody=[
                 {
                     "constraint_index": 1,
@@ -317,6 +326,7 @@ def test_public_constraint_pattern_projects_only_product_owned_rows() -> None:
     projected = project_reviewed_custody(
         candidate,
         component_custody=_component_custody(),
+        source_precedence_custody=[],
         constraint_custody=custody,
         evidence_text=evidence,
     )
@@ -341,6 +351,170 @@ def test_workflow_order_requires_the_current_constraint_precedence_binding() -> 
     candidate["source_precedence"] = []
     with pytest.raises(RuntimeError, match="invalid constraint custody"):
         validated_constraint_custody(custody, candidate=candidate)
+
+
+def test_reviewed_precedence_projects_before_workflow_order_custody() -> None:
+    candidate = _review_input()
+    precedence = [
+        {"before_event": 1, "after_event": 2, "constraint_index": 1}
+    ]
+
+    projected = project_reviewed_custody(
+        candidate,
+        component_custody=_component_custody(),
+        source_precedence_custody=precedence,
+        constraint_custody=[{"constraint_index": 1, "kind": "workflow_order"}],
+        evidence_text=_source(),
+    )
+
+    assert projected["source_precedence"] == precedence
+
+
+def test_passive_or_unowned_timing_can_retain_empty_precedence() -> None:
+    original_constraint = "Retain source notes for seven years"
+    passive_timing = "Harbor Desk keeps draft evidence private until publication"
+    evidence = _source().replace(original_constraint, passive_timing)
+    candidate = _review_input()
+    candidate["facts"]["operational_constraints"] = [
+        {"quote": passive_timing, "occurrence": 1}
+    ]
+
+    assert all(
+        "publication" not in {
+            event["action_quote"],
+            event["target_quote"],
+        }
+        for event in candidate["events"]
+    )
+
+    projected = project_reviewed_custody(
+        candidate,
+        component_custody=_component_custody(),
+        source_precedence_custody=[],
+        constraint_custody=[
+            {
+                "constraint_index": 1,
+                "kind": "product_owned",
+                "owner_fact": {"field": "title", "row": 1},
+            }
+        ],
+        evidence_text=evidence,
+    )
+    validated = validate_greenfield_authoring_response(
+        {"version": _response(_source())["version"], "result": projected},
+        evidence_text=evidence,
+        elapsed_seconds=0.0,
+        provider={"provider": "test"},
+        profile_id=STANDARD_PROFILE_ID,
+        effective_timeout_seconds=1.0,
+        semantic_model_call_count=1,
+        reviewer_projected_constraints=True,
+    )
+
+    assert projected["source_precedence"] == []
+    assert validated.source_precedence == ()
+    assert validated.intent["operational_constraints"] == [passive_timing]
+
+
+@pytest.mark.parametrize(
+    "precedence",
+    (
+        [
+            {"before_event": 1, "after_event": 2, "constraint_index": 1},
+            {"before_event": 1, "after_event": 2, "constraint_index": 1},
+        ],
+        [
+            {"before_event": 1, "after_event": 2, "constraint_index": 1},
+            {"before_event": 2, "after_event": 1, "constraint_index": 1},
+        ],
+        [{"before_event": 4, "after_event": 2, "constraint_index": 1}],
+        [{"before_event": 1, "after_event": 2, "constraint_index": 2}],
+    ),
+)
+def test_source_precedence_custody_rejects_invalid_relations(precedence) -> None:
+    with pytest.raises(RuntimeError, match="invalid source precedence custody"):
+        validated_source_precedence_custody(
+            precedence,
+            candidate=_review_input(),
+        )
+
+
+def test_source_precedence_custody_rejects_boolean_references() -> None:
+    assert source_precedence_custody_shape_issues(
+        [{"before_event": True, "after_event": 2, "constraint_index": 1}]
+    ) == ("source precedence custody witness shape is invalid",)
+
+
+def test_workflow_order_without_projected_binding_fails_atomically() -> None:
+    candidate = _review_input()
+
+    with pytest.raises(RuntimeError, match="invalid constraint custody"):
+        project_reviewed_custody(
+            candidate,
+            component_custody=_component_custody(),
+            source_precedence_custody=[],
+            constraint_custody=[
+                {"constraint_index": 1, "kind": "workflow_order"}
+            ],
+            evidence_text=_source(),
+        )
+
+    assert "source_precedence" not in candidate
+    assert "components" not in candidate
+
+
+def test_final_hash_separates_review_input_and_precedence_projection() -> None:
+    candidate = _review_input()
+    left = project_reviewed_custody(
+        candidate,
+        component_custody=_component_custody(),
+        source_precedence_custody=[
+            {"before_event": 1, "after_event": 2, "constraint_index": 1}
+        ],
+        constraint_custody=[{"constraint_index": 1, "kind": "workflow_order"}],
+        evidence_text=_source(),
+    )
+    right = project_reviewed_custody(
+        candidate,
+        component_custody=_component_custody(),
+        source_precedence_custody=[
+            {"before_event": 1, "after_event": 3, "constraint_index": 1}
+        ],
+        constraint_custody=[{"constraint_index": 1, "kind": "workflow_order"}],
+        evidence_text=_source(),
+    )
+
+    assert candidate_review_sha256(candidate) not in {
+        candidate_review_sha256(left),
+        candidate_review_sha256(right),
+    }
+    assert candidate_review_sha256(left) != candidate_review_sha256(right)
+
+
+def test_final_validation_rejects_first_run_incompatible_with_projected_precedence() -> None:
+    candidate = _review_input()
+    candidate["provisional_design"]["first_run"]["event_orders"] = [2, 1, 3]
+    projected = project_reviewed_custody(
+        candidate,
+        component_custody=_component_custody(),
+        source_precedence_custody=[
+            {"before_event": 1, "after_event": 2, "constraint_index": 1}
+        ],
+        constraint_custody=[{"constraint_index": 1, "kind": "workflow_order"}],
+        evidence_text=_source(),
+    )
+
+    with pytest.raises(GreenfieldModelAuthoringError, match="violates cited source precedence"):
+        validate_greenfield_authoring_response(
+            {"version": _response(_source())["version"], "result": projected},
+            evidence_text=_source(),
+            elapsed_seconds=0.0,
+            provider={"provider": "test"},
+            profile_id=STANDARD_PROFILE_ID,
+            effective_timeout_seconds=1.0,
+            semantic_model_call_count=1,
+            reviewer_projected_constraints=True,
+        )
 
 
 @pytest.mark.parametrize(
