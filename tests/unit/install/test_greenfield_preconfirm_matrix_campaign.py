@@ -15,9 +15,9 @@ from tests.unit.install.test_greenfield_model_profiles import (
     _host_native_stage,
     _review_input_candidate,
 )
-from odylith.runtime.domain_intelligence.greenfield_constraint_custody import (
+from odylith.runtime.domain_intelligence.greenfield_review_custody import (
     candidate_review_sha256,
-    project_constraint_custody,
+    project_reviewed_custody,
 )
 
 
@@ -159,9 +159,23 @@ def test_discovery_uses_ephemeral_case_proof_without_publishing_release_evidence
         source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
         candidate_sha256 = "1" * 64
         review_input_candidate = _review_input_candidate()
+        review_input_candidate["facts"]["first_path"] = [
+            {"quote": source, "occurrence": 1}
+        ]
+        for event in review_input_candidate["events"]:
+            event["actor_fact"] = {"field": "human_actors", "row": 1}
+        component_custody = {
+            "event_responsibilities": [],
+            "additional_responsibilities": [],
+        }
         review_input_candidate_sha256 = candidate_review_sha256(review_input_candidate)
         final_candidate_sha256 = candidate_review_sha256(
-            project_constraint_custody(review_input_candidate, custody=[])
+            project_reviewed_custody(
+                review_input_candidate,
+                component_custody=component_custody,
+                constraint_custody=[],
+                evidence_text=source,
+            )
         )
         observed = {
             "origin": "host_native",
@@ -187,6 +201,7 @@ def test_discovery_uses_ephemeral_case_proof_without_publishing_release_evidence
             source=source,
             review_input_candidate_sha256=review_input_candidate_sha256,
             final_candidate_sha256=final_candidate_sha256,
+            component_custody=component_custody,
         )
         module.record_retained_case_json(
             retained_case,

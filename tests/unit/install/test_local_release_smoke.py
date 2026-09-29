@@ -234,6 +234,7 @@ def test_run_reports_timeout_with_command_and_cwd(monkeypatch, tmp_path: Path) -
         "missing_evidence",
         "bad_schema",
         "custody_leak",
+        "components_leak",
         "missing_context",
         "attempt",
         "subprocess",
@@ -285,8 +286,8 @@ def test_greenfield_install_smoke_requires_read_only_candidate_contract(
             },
         }
         payload = {
-            "version": "odylith.greenfield.host-candidate-contract.v29",
-            "candidate_version": "odylith.greenfield.host-candidate-format.v15",
+            "version": "odylith.greenfield.host-candidate-contract.v30",
+            "candidate_version": "odylith.greenfield.host-candidate-format.v16",
             "canonical_version": "odylith.greenfield.canonical-meaning.v1",
             "request": {
                 "version": "odylith.greenfield.intent-authoring.v76",
@@ -298,7 +299,7 @@ def test_greenfield_install_smoke_requires_read_only_candidate_contract(
                 "type": "object",
                 "required": ["version", "result"],
                 "properties": {
-                    "version": {"enum": ["odylith.greenfield.host-candidate-format.v15"]},
+                    "version": {"enum": ["odylith.greenfield.host-candidate-format.v16"]},
                     "result": {
                         "anyOf": [{
                             "properties": {
@@ -316,15 +317,19 @@ def test_greenfield_install_smoke_requires_read_only_candidate_contract(
             },
         }
         if defect == "wrong_version":
-            payload["version"] = "legacy-contract"
+            payload["version"] = "odylith.greenfield.host-candidate-contract.v29"
         elif defect == "wrong_candidate_version":
-            payload["candidate_version"] = "odylith.greenfield.host-candidate-format.v13"
+            payload["candidate_version"] = "odylith.greenfield.host-candidate-format.v15"
         elif defect == "missing_evidence":
             payload["request"]["evidence"] = "different evidence"
         elif defect == "bad_schema":
             payload["candidate_schema"] = {"type": "object", "required": ["version"]}
         elif defect == "custody_leak":
             constraint_schema["properties"]["constraint_custody"] = {"type": "object"}
+        elif defect == "components_leak":
+            payload["candidate_schema"]["properties"]["result"]["anyOf"][0][
+                "properties"
+            ]["components"] = {"type": "array"}
         elif defect == "missing_context":
             constraint_schema["required"] = ["quote"]
         stdout = "not-json" if defect == "invalid_json" else json.dumps(payload)

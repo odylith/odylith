@@ -97,6 +97,13 @@ def _complete_response() -> dict[str, Any]:
 def _remaining_response() -> dict[str, Any]:
     response = _complete_response()
     del response["result"]["facts"]["human_actors"]
+    del response["result"]["components"]
+    return response
+
+
+def _review_input_response() -> dict[str, Any]:
+    response = _complete_response()
+    del response["result"]["components"]
     return response
 
 
@@ -249,7 +256,7 @@ def test_join_rejects_non_mapping_result_as_canonical_authoring_error():
 def test_success_uses_three_roles_and_emits_recomputable_v4_proof(monkeypatch, tmp_path):
     complete = _complete_response()
     selector = ParticipantSelectionProvider(complete)
-    remaining = RemainingCandidateProvider(complete)
+    remaining = RemainingCandidateProvider(_remaining_response())
     reviewer = AdmittingReviewProvider()
     proof_path = tmp_path / "proof.json"
     with proof_path.open("w+b") as proof:
@@ -273,8 +280,11 @@ def test_success_uses_three_roles_and_emits_recomputable_v4_proof(monkeypatch, t
     assert remaining.requests[0].schema_name == "greenfield_remaining_candidate_authoring"
     assert reviewer.requests[0].schema_name == "greenfield_candidate_review"
     facts_schema = remaining.requests[0].output_schema["properties"]["result"]["anyOf"][0]["properties"]["facts"]
+    result_schema = remaining.requests[0].output_schema["properties"]["result"]["anyOf"][0]
     assert "human_actors" not in facts_schema["properties"]
     assert "human_actors" not in facts_schema["required"]
+    assert "components" not in result_schema["properties"]
+    assert "components" not in result_schema["required"]
     assert "frozen_human_actors list is the only participant selection" in remaining.requests[0].system_prompt
     assert "actor_fact` field `human_actors` and one-based" in remaining.requests[0].system_prompt
     assert "Bind performing human events to its exact quote values" not in remaining.requests[0].system_prompt
@@ -292,7 +302,10 @@ def test_success_uses_three_roles_and_emits_recomputable_v4_proof(monkeypatch, t
     assert retained["semantic_model_call_count"] == 3
     assert retained["participant_selection"]["response"] == selector.response
     assert retained["remaining_candidate_authoring"]["response"] == _remaining_response()
-    assert retained["joined_candidate"] == complete
+    assert retained["joined_candidate"] == _review_input_response()
+    review_candidate = reviewer.requests[0].prompt_payload["candidate"]
+    assert "components" not in review_candidate["accepted_source"]
+    assert result.component_responsibility_relations == ()
     citations, resolved = resolve_greenfield_participant_selection(
         _source(), retained["participant_selection"]["response"]
     )
@@ -300,6 +313,49 @@ def test_success_uses_three_roles_and_emits_recomputable_v4_proof(monkeypatch, t
     assert join_frozen_greenfield_participants(
         retained["remaining_candidate_authoring"]["response"], citations
     ) == retained["joined_candidate"]
+
+
+def test_review_projects_component_custody_before_product_owned_constraint() -> None:
+    complete = authored_response(
+        _INTENT,
+        evidence_text=_source(),
+        component_responsibility_owners=["Harbor Desk"],
+        first_path_relations=[{
+            "actor_kind": "product",
+            "owner_system_quote": "Harbor Desk",
+            "event_quote": "Dock attendant Ivo records berth occupancy",
+            "action_verb_quote": "records",
+            "target_quote": "berth occupancy",
+            "visible_result_quote": "A berth board shows recorded occupancy",
+        }],
+    )
+    remaining_response = deepcopy(complete)
+    del remaining_response["result"]["facts"]["human_actors"]
+    del remaining_response["result"]["components"]
+    reviewer = AdmittingReviewProvider(
+        constraint_custody=[{
+            "constraint_index": 1,
+            "kind": "product_owned",
+            "owner_fact": {"field": "title", "row": 1},
+        }]
+    )
+
+    result = author_greenfield_intent(
+        evidence_text=_source(),
+        provider=RemainingCandidateProvider(remaining_response),
+        participant_provider_factory=lambda: ParticipantSelectionProvider(complete),
+        review_provider_factory=lambda: reviewer,
+        clock=lambda: 0.0,
+    )
+
+    assert isinstance(result, GreenfieldModelAuthoredIntent)
+    assert [
+        row["responsibility_quote"]
+        for row in result.component_responsibility_relations
+    ] == [
+        "Dock attendant Ivo records berth occupancy",
+        "Council review remains read-only",
+    ]
 
 
 @pytest.mark.parametrize("material_dimension", ["human_actors", "proof_boundary"])
@@ -472,7 +528,7 @@ def test_reviewer_clarification_stops_participant_authoring_before_staging(
 ):
     complete = _complete_response()
     selector = ParticipantSelectionProvider(complete)
-    author = _RemainingAuthorProvider([complete])
+    author = _RemainingAuthorProvider([_remaining_response()])
     reviewer = _SequenceReviewProvider([{
         "outcome": "clarification_required",
         "issue": None,
@@ -513,7 +569,7 @@ def test_reviewer_clarification_stops_participant_authoring_before_staging(
 def test_denial_fails_closed_without_revision_or_second_review():
     complete = _complete_response()
     selector = ParticipantSelectionProvider(complete)
-    author = _RemainingAuthorProvider([complete])
+    author = _RemainingAuthorProvider([_remaining_response()])
     reviewer = _SequenceReviewProvider([{
         "outcome": "denied",
         "issue": {
@@ -541,7 +597,7 @@ def test_denial_fails_closed_without_revision_or_second_review():
 def test_denial_does_not_reach_staging(tmp_path, monkeypatch):
     complete = _complete_response()
     selector = ParticipantSelectionProvider(complete)
-    author = _RemainingAuthorProvider([complete])
+    author = _RemainingAuthorProvider([_remaining_response()])
     reviewer = _SequenceReviewProvider([{
         "outcome": "denied",
         "issue": {"path": "candidate.accepted_source.facts.opportunity", "reason": "Invalid."},

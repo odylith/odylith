@@ -13,7 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider, ParticipantSelectionProvider, RemainingCandidateProvider,
-    admitted_review_response, authored_response,
+    admitted_review_response, authored_response, component_custody_for_response,
 )
 from tests.unit.runtime.test_greenfield_model_path_custody import _LIST_FIELDS, _TEXT_FIELDS, _response, _source
 
@@ -50,6 +50,7 @@ def _remaining_response(response):
     facts = result.get("facts") if isinstance(result, dict) else None
     if isinstance(facts, dict):
         facts.pop("human_actors", None)
+        result.pop("components", None)
     return remaining
 
 
@@ -71,7 +72,9 @@ def test_two_author_roles_and_review_share_the_full_pinned_window(profile_id, mo
     participant, provider = _timed_stages(
         response, clock, participant_seconds=1.0, remaining_seconds=model_budget - 2.0,
     )
-    reviewer = Provider([admitted_review_response(constraint_custody=[{
+    reviewer = Provider([admitted_review_response(
+        component_custody=component_custody_for_response(response),
+        constraint_custody=[{
         "constraint_index": 1,
         "kind": "participant_only",
         "actor_fact": {"field": "human_actors", "row": 1},
@@ -132,7 +135,9 @@ def test_shorter_remaining_window_is_not_reduced_by_a_review_reserve():
     participant, provider = _timed_stages(
         response, clock, participant_seconds=0.5, remaining_seconds=18.5,
     )
-    reviewer = Provider([admitted_review_response(constraint_custody=[{
+    reviewer = Provider([admitted_review_response(
+        component_custody=component_custody_for_response(response),
+        constraint_custody=[{
         "constraint_index": 1,
         "kind": "participant_only",
         "actor_fact": {"field": "human_actors", "row": 1},
@@ -161,7 +166,9 @@ def test_allocation_leaves_review_headroom_without_resetting_the_absolute_deadli
     participant, provider = _timed_stages(
         response, clock, participant_seconds=0.5, remaining_seconds=50.0,
     )
-    reviewer = Provider([admitted_review_response(constraint_custody=[{
+    reviewer = Provider([admitted_review_response(
+        component_custody=component_custody_for_response(response),
+        constraint_custody=[{
         "constraint_index": 1,
         "kind": "participant_only",
         "actor_fact": {"field": "human_actors", "row": 1},
@@ -191,15 +198,11 @@ def test_validation_boundary_rejects_invalid_semantic_call_claims(call_count):
         )
 
 
-@pytest.mark.parametrize("failure", ["ownership", "source_quote", "design_source_fact", "design_authority", "empty_owner_group"])
+@pytest.mark.parametrize("failure", ["source_quote", "design_source_fact", "design_authority"])
 def test_invalid_candidate_never_reaches_a_second_prepared_response_or_writes(tmp_path, failure):
     source = _source()
     invalid = _response(source)
-    if failure == "ownership":
-        invalid["result"]["components"][0]["responsibilities"] = [
-            {"quote": "Dock attendant Ivo enters a vessel tag", "occurrence": 1},
-        ]
-    elif failure == "source_quote":
+    if failure == "source_quote":
         invalid["result"]["facts"]["title"]["quote"] = "Invented title"
     elif failure == "design_source_fact":
         invalid["result"]["facts"]["internal_systems"].append({
@@ -208,8 +211,6 @@ def test_invalid_candidate_never_reaches_a_second_prepared_response_or_writes(tm
         })
     elif failure == "design_authority":
         invalid["result"]["provisional_design"]["authority_kind"] = "accepted_fact"
-    else:
-        invalid["result"]["components"][0]["responsibilities"] = []
     original = deepcopy(invalid)
     clock = Clock()
     participant, provider = _timed_stages(
@@ -338,20 +339,23 @@ def test_proof_preserves_the_exact_candidate_and_dispatched_review_metadata(tmp_
     participant, provider = _timed_stages(
         response, clock, participant_seconds=1.0, remaining_seconds=35.0,
     )
+    reviewer_factory = lambda: AdmittingReviewProvider(
+        component_custody=component_custody_for_response(response),
+    )
     path = tmp_path / "observation.json"
     with path.open("wb") as output:
         monkeypatch.setenv(author.GREENFIELD_MODEL_PROOF_FD_ENV, str(output.fileno()))
         if failed:
             with pytest.raises(author.GreenfieldModelAuthoringError):
                 author.author_greenfield_intent(
-                    review_provider_factory=AdmittingReviewProvider,
+                    review_provider_factory=reviewer_factory,
                     evidence_text=_source(), provider=provider,
                     participant_provider_factory=lambda: participant,
                     clock=clock, model_profile_id=RESCUE_PROFILE_ID,
                 )
         else:
             author.author_greenfield_intent(
-                review_provider_factory=AdmittingReviewProvider,
+                review_provider_factory=reviewer_factory,
                 evidence_text=_source(), provider=provider,
                 participant_provider_factory=lambda: participant,
                 clock=clock, model_profile_id=RESCUE_PROFILE_ID,
@@ -371,6 +375,7 @@ def test_proof_preserves_the_exact_candidate_and_dispatched_review_metadata(tmp_
         assert retained["candidate_review"]["response"] == {
             **admitted_review_response(
                 participant_field="customer",
+                component_custody=component_custody_for_response(response),
                 constraint_custody=[{
                     "constraint_index": 1,
                     "kind": "participant_only",
@@ -428,12 +433,9 @@ def test_source_schema_keeps_human_participants_distinct_from_operational_depend
     )
     properties = provider.requests[0].output_schema["properties"]["result"]["anyOf"][0]["properties"]
     external = properties["facts"]["properties"]["external_systems"]["description"]
-    component = properties["components"]["items"]["properties"]
     assert "explicitly source-stated operational exchange or dependency" in external
     assert "an output recipient, or a reviewer does not" in external
-    assert "never a human performer or external participant" in component["owner_fact_quote"]["description"]
-    assert properties["components"]["minItems"] == 0
-    assert component["responsibilities"]["minItems"] == 1
+    assert "components" not in properties
     assert participant.requests[0].output_schema["properties"]["human_actors"]["type"] == "array"
 
 
@@ -459,11 +461,12 @@ def test_component_relation_order_is_unicode_and_domain_neutral() -> None:
         (row["owner_fact_quote"], row["responsibilities"][0]["quote"])
         for row in response["result"]["components"]
     ] == [("Sąsaja", "Žurnalo įrašas"), ("航路", "航路記録")]
+    provider = RemainingCandidateProvider(response)
     result = author.author_greenfield_intent(
-        review_provider_factory=AdmittingReviewProvider,
+        review_provider_factory=provider.review_provider,
         evidence_text=source,
-        provider=RemainingCandidateProvider(response),
-        participant_provider_factory=RemainingCandidateProvider(response).participant_provider,
+        provider=provider,
+        participant_provider_factory=provider.participant_provider,
         clock=lambda: 0.0,
     )
 

@@ -9,16 +9,19 @@ from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring 
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
     RemainingCandidateProvider,
+    component_custody_for_response,
 )
 from tests.unit.runtime.test_greenfield_model_path_custody import _response, _source
 
 
 def test_authoring_schema_structurally_separates_participants_authored_and_clarification_results() -> None:
     source = _source()
-    provider = RemainingCandidateProvider(_response(source))
+    response = _response(source)
+    provider = RemainingCandidateProvider(response)
     participant = provider.participant_provider()
     authored = author_greenfield_intent(
         review_provider_factory=lambda: AdmittingReviewProvider(
+            component_custody=component_custody_for_response(response),
             constraint_custody=[
                 {
                     "constraint_index": 1,
@@ -95,19 +98,8 @@ def test_authoring_schema_structurally_separates_participants_authored_and_clari
     assert set(actor_fact["properties"]["field"]["enum"]) == {
         "title", "human_actors", "internal_systems", "external_systems",
     }
-    assert authored_properties["components"]["minItems"] == 0
-    assert authored_properties["components"]["items"]["properties"]["responsibilities"]["minItems"] == 1
-    component_description = authored_properties["components"]["description"]
-    responsibility_description = authored_properties["components"]["items"]["properties"][
-        "responsibilities"
-    ]["description"]
-    assert "Operational constraints remain global until independent review" in component_description
-    assert "classifies and projects product-owned custody" in component_description
-    assert "Operational constraints remain global during authoring" in responsibility_description
-    assert "independent review alone may project a product-owned constraint" in responsibility_description
-    component = authored_properties["components"]["items"]
-    assert set(component["properties"]) == {"owner_fact_quote", "responsibilities"}
-    assert set(component["properties"]["responsibilities"]["items"]["properties"]) == {"quote", "occurrence"}
+    assert "components" not in authored_properties
+    assert "components" not in authored_branch["required"]
     assert "component_responsibilities" not in typed_facts["properties"]
     assert "clarification" not in authored_properties
     assert set(clarification_branch["properties"]) == {"status", "consistency", "clarification"}

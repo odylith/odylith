@@ -27,7 +27,6 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 )
 from odylith.runtime.governance import artifact_tribunal
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
-    AdmittingReviewProvider,
     RemainingCandidateProvider,
     authored_response,
 )
@@ -107,7 +106,7 @@ def _materialized_authored_intent(tmp_path: Path) -> dict[str, Any]:
         authoring_timeout_seconds=84,
         authoring_profile_id=STANDARD_PROFILE_ID,
         participant_provider_factory=provider.participant_provider,
-        review_provider_factory=AdmittingReviewProvider,
+        review_provider_factory=provider.review_provider,
     )
 
 
@@ -205,7 +204,7 @@ def test_proposal_construction_rejects_mutated_product_event_owner(tmp_path: Pat
         )
 
 
-def test_proposal_construction_rejects_rebound_component_responsibility_owner(
+def test_proposal_construction_rejects_rebound_product_event_responsibility_owner(
     tmp_path: Path,
 ) -> None:
     candidate = _materialized_authored_intent(tmp_path)
@@ -216,7 +215,7 @@ def test_proposal_construction_rejects_rebound_component_responsibility_owner(
 
     with pytest.raises(
         GreenfieldAuthoredSemanticsError,
-        match="do not match sealed Product Intent authority",
+        match="contradictory owners",
     ):
         greenfield_proposals.build_greenfield_proposal(
             repo_root=tmp_path,
@@ -315,7 +314,7 @@ def test_transaction_compilation_rejects_mutated_relation_set(
     expected_error = (
         "invalid first-path relations"
         if mutation == "removed_classification"
-        else "first run references an unknown source event"
+        else "contradictory owners"
     )
     with pytest.raises(GreenfieldAuthoredSemanticsError, match=expected_error):
         greenfield_proposals.compile_greenfield_create_transaction(
@@ -336,8 +335,14 @@ def test_verified_relation_authority_issues_structural_tribunal_context(tmp_path
         ],
     )
     contract = contracts[0]
-    assert contracts[0]["responsibility_facts"] == ["Record berth occupancy"]
-    assert contracts[1]["responsibility_facts"] == ["Show berth placement"]
+    assert contracts[0]["responsibility_facts"] == [
+        "the berth recorder records berth occupancy",
+        "Record berth occupancy",
+    ]
+    assert contracts[1]["responsibility_facts"] == [
+        "the berth map shows the placement",
+        "Show berth placement",
+    ]
     custody = authored_source_custody(
         intent=candidate,
         authority=candidate[PRODUCT_INTENT_AUTHORITY_KEY],

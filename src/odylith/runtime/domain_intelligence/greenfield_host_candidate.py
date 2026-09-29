@@ -23,9 +23,10 @@ from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
     REFERENCE_PROVENANCE_ROLE_CONTRACT,
     review_greenfield_candidate,
 )
-from odylith.runtime.domain_intelligence.greenfield_constraint_custody import (
+from odylith.runtime.domain_intelligence.greenfield_review_custody import (
+    candidate_for_pre_review_validation,
     finalize_admitted_review,
-    project_constraint_custody,
+    project_reviewed_custody,
 )
 from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import (
     HOST_CANDIDATE_FORMAT_VERSION,
@@ -51,7 +52,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v1"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v29"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v30"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
 
 
@@ -101,24 +102,16 @@ def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
                 "action is not admissible."
             ),
             (
-                "A typed event whose actor_fact selects title or internal_systems must supply one "
-                "responsibility_citation that is an exact subspan of source_citation at the same "
-                "source location and contains only that product-owned clause; use null for human "
-                "or external events. When an event source citation contains several actors "
-                "or product owners, give each differently owned event its own exact contiguous "
-                "source clause; only events with the same product owner may share one source "
-                "citation. Event citations must otherwise be disjoint exact clauses; never use "
-                "partially overlapping event citations. Select the responsibility-specific "
-                "clause separately. Do not repeat "
-                "that exact citation in components.additional_"
-                "responsibilities. Identity is exact: related wording, a shared target, or the "
-                "same owner is still a separate responsibility. Put every other explicit source-"
-                "stated product or component responsibility under its typed owner_fact there."
+                "Give every event its own distinct exact contiguous source_citation. Split a "
+                "source sentence into non-overlapping event clauses even when one actor owns "
+                "several actions; never reuse or partially overlap event citations. When the "
+                "source expresses inseparable joined actions, preserve the complete joined action "
+                "in one event. The independent reviewer owns all accepted component-responsibility "
+                "custody."
             ),
             (
-                "Keep every accepted operational constraint only in facts.operational_constraints. "
-                "Do not repeat one in components.additional_responsibilities; the independent "
-                "review decision owns any later typed relation."
+                "Keep every accepted operational constraint only in facts.operational_constraints; "
+                "the independent reviewer owns its later typed custody."
             ),
             "Keep accepted source facts separate from assumptions and provisional design decisions.",
             (
@@ -139,7 +132,7 @@ def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
                 "checkpoint but cannot make an authored candidate admission-ready."
             ),
             (
-                "Propose 4-5 distinct useful components and 4-5 actionable workstreams without "
+                "In provisional_design, propose 4-5 distinct useful components and 4-5 actionable workstreams without "
                 "padding. Across component supported_event_orders, cover every source event, "
                 "including human actions; support never transfers the actor's work to a component."
             ),
@@ -211,8 +204,13 @@ def admit_greenfield_host_candidate(
         evidence_text=evidence_text,
     )
     canonical_frozen = _canonical_candidate_bytes(canonical_response)
+    validation_response = deepcopy(canonical_response)
+    if canonical_response["result"].get("status") == "authored":
+        validation_response["result"] = candidate_for_pre_review_validation(
+            canonical_response["result"]
+        )
     authored = validate_greenfield_authoring_response(
-        canonical_response,
+        validation_response,
         evidence_text=evidence_text,
         elapsed_seconds=0.0,
         provider={
@@ -295,9 +293,11 @@ def admit_greenfield_host_candidate(
             base_receipt,
         )
     projected_response = deepcopy(canonical_response)
-    projected_response["result"] = project_constraint_custody(
+    projected_response["result"] = project_reviewed_custody(
         canonical_response["result"],
-        custody=review["admission_witness"]["constraint_custody"],
+        component_custody=review["admission_witness"]["component_custody"],
+        constraint_custody=review["admission_witness"]["constraint_custody"],
+        evidence_text=evidence_text,
     )
     projected_frozen = _canonical_candidate_bytes(projected_response)
     projected_authored = validate_greenfield_authoring_response(

@@ -25,11 +25,41 @@ from tests.unit.runtime.greenfield_model_authoring_fixtures import (
 )
 from tests.unit.runtime.test_greenfield_model_path_custody import _response, _source
 
-ADMITTED = admitted_review_response(constraint_custody=[{
-    "constraint_index": 1,
-    "kind": "participant_only",
-    "actor_fact": {"field": "human_actors", "row": 1},
-}])
+BASE_COMPONENT_CUSTODY = {
+    "event_responsibilities": [
+        {
+            "event_order": 2,
+            "responsibility_citation": {
+                "quote": "the product records berth occupancy",
+                "occurrence": 1,
+            },
+        },
+        {
+            "event_order": 3,
+            "responsibility_citation": {
+                "quote": "the berth map shows the placement",
+                "occurrence": 1,
+            },
+        },
+    ],
+    "additional_responsibilities": [
+        {
+            "owner_fact": {"field": "internal_systems", "row": 1},
+            "responsibility_citation": {
+                "quote": "Record berth occupancy",
+                "occurrence": 1,
+            },
+        }
+    ],
+}
+ADMITTED = admitted_review_response(
+    component_custody=BASE_COMPONENT_CUSTODY,
+    constraint_custody=[{
+        "constraint_index": 1,
+        "kind": "participant_only",
+        "actor_fact": {"field": "human_actors", "row": 1},
+    }],
+)
 
 
 class Clock:
@@ -51,6 +81,12 @@ class Reviewer(StructuredAuthoringProvider):
         return super().generate_structured(request=request)
 
 
+def _review_input(response):
+    candidate = deepcopy(response["result"])
+    candidate.pop("components", None)
+    return candidate
+
+
 def run_review(provider, clock, *, deadline=55.0, observation=None, factory=None):
     source = _source()
     authored = author.validate_greenfield_authoring_response(
@@ -59,8 +95,9 @@ def run_review(provider, clock, *, deadline=55.0, observation=None, factory=None
         profile_id=STANDARD_PROFILE_ID, effective_timeout_seconds=55.0,
         semantic_model_call_count=2,
     )
+    candidate = _review_input(_response(source))
     return review.review_greenfield_candidate(
-        evidence_text=source, candidate=_response(source)["result"], source_spans=authored.source_spans,
+        evidence_text=source, candidate=candidate, source_spans=authored.source_spans,
         profile_id=STANDARD_PROFILE_ID, provider_factory=factory or (lambda: provider),
         deadline=deadline, clock=clock,
         observation=observation if observation is not None else {},
@@ -68,9 +105,9 @@ def run_review(provider, clock, *, deadline=55.0, observation=None, factory=None
 
 
 def test_partition_preserves_every_value_and_binds_complete_candidate():
-    assert review.CANDIDATE_REVIEW_VERSION == "odylith.greenfield.candidate-review.v16"
+    assert review.CANDIDATE_REVIEW_VERSION == "odylith.greenfield.candidate-review.v17"
     source = _source()
-    candidate = _response(source)["result"]
+    candidate = _review_input(_response(source))
     original = deepcopy(candidate)
     spans = author.validate_greenfield_authoring_response(
         _response(source), evidence_text=source, elapsed_seconds=0.0,
@@ -232,10 +269,11 @@ def test_review_request_shares_reference_provenance_role_with_host_contract():
     assert "inside-versus-outside responsibility" in prompt
     assert "workflow need not be incomplete" in prompt
     assert "semantic-role classification before accepted-source completeness" in prompt
-    assert "omits separately identified,\nunbound reference provenance" in prompt
-    assert "owned role, dependency, event or result" in prompt
+    assert "author\ndoes not own accepted component composition" in prompt
+    assert "event_responsibilities" in prompt
+    assert "additional_responsibilities" in prompt
     assert "admission_witness.constraint_custody" in prompt
-    assert "Shared vocabulary, descriptive capabilities or thematic\nrelevance" in prompt
+    assert "Shared\nvocabulary, descriptive capabilities or thematic relevance" in prompt
 
 
 def test_human_subject_state_object_keeps_source_and_performer_custody_separate():
@@ -276,9 +314,10 @@ def test_human_subject_state_object_keeps_source_and_performer_custody_separate(
         effective_timeout_seconds=55.0,
         semantic_model_call_count=2,
     )
+    review_input = _review_input(response)
     payload = review.candidate_review_payload(
         source,
-        response["result"],
+        review_input,
         source_spans=authored.source_spans,
     )
 
@@ -338,9 +377,10 @@ def test_title_actor_address_stays_hash_bound_before_canonical_product_translati
         effective_timeout_seconds=55.0,
         semantic_model_call_count=2,
     )
+    review_input = _review_input(response)
     payload = review.candidate_review_payload(
         source,
-        response["result"],
+        review_input,
         source_spans=authored.source_spans,
     )
     clock = Clock()
@@ -348,10 +388,17 @@ def test_title_actor_address_stays_hash_bound_before_canonical_product_translati
     admitted["admission_witness"]["participant_fact"] = {"field": "customer", "row": 1}
     admitted["admission_witness"]["task_event_order"] = 1
     admitted["admission_witness"]["result_event_order"] = 1
+    admitted["admission_witness"]["component_custody"] = {
+        "event_responsibilities": [{
+            "event_order": 1,
+            "responsibility_citation": {"quote": event, "occurrence": 1},
+        }],
+        "additional_responsibilities": [],
+    }
     admitted["admission_witness"]["constraint_custody"] = []
     receipt = review.review_greenfield_candidate(
         evidence_text=source,
-        candidate=response["result"],
+        candidate=review_input,
         source_spans=authored.source_spans,
         profile_id=STANDARD_PROFILE_ID,
         provider_factory=lambda: Reviewer(admitted, clock),
@@ -417,7 +464,7 @@ def test_self_contained_constraints_keep_exact_custody_without_a_new_shape(const
     )
     assert authored.intent["operational_constraints"][-1] == constraint
     payload = review.candidate_review_payload(
-        source, response["result"], source_spans=authored.source_spans,
+        source, _review_input(response), source_spans=authored.source_spans,
     )
     constraint_spans = [row for row in payload["resolved_source_custody"]
                         if row["field"] == "operational_constraints"]
@@ -431,7 +478,7 @@ def test_self_contained_constraints_keep_exact_custody_without_a_new_shape(const
 
 
 def test_unknown_authority_is_not_silently_dropped():
-    candidate = _response(_source())["result"]
+    candidate = _review_input(_response(_source()))
     candidate["unclassified_authority"] = {}
     with pytest.raises(ValueError, match="authority"):
         review.candidate_review_payload(_source(), candidate, source_spans=())
@@ -449,7 +496,7 @@ def _span(source, quote, *, field="first_path", row=1, start=None):
 def test_utf8_context_is_bounded_by_characters_while_coordinates_remain_bytes():
     source = "é" * 70 + " target " + "文" * 70
     payload = review.candidate_review_payload(
-        source, _response(_source())["result"], source_spans=(_span(source, "target"),),
+        source, _review_input(_response(_source())), source_spans=(_span(source, "target"),),
     )
     custody = payload["resolved_source_custody"][0]
     assert custody["source_start_byte"] == len(("é" * 70 + " ").encode())
@@ -462,7 +509,7 @@ def test_overlapping_source_spans_remain_distinct_context_rows():
     first = _span(source, "abcd", row=1)
     second = _span(source, "cde", row=2, start=first["source_start_byte"] + 2)
     payload = review.candidate_review_payload(
-        source, _response(_source())["result"], source_spans=(first, second),
+        source, _review_input(_response(_source())), source_spans=(first, second),
     )
     assert [(row["row"], row["quote"]) for row in payload["resolved_source_custody"]] == [
         (1, "abcd"), (2, "cde"),
@@ -479,7 +526,7 @@ def test_malformed_or_mutated_source_spans_fail_before_provider_dispatch(mutatio
     provider = Reviewer(ADMITTED, Clock())
     with pytest.raises(ValueError, match="source span"):
         review.review_greenfield_candidate(
-            evidence_text=source, candidate=_response(source)["result"], source_spans=(span,),
+            evidence_text=source, candidate=_review_input(_response(source)), source_spans=(span,),
             profile_id=STANDARD_PROFILE_ID, provider_factory=lambda: provider,
             deadline=55.0, clock=Clock(), observation={},
         )
@@ -559,7 +606,6 @@ def test_climate_source_without_user_result_is_reviewed_as_first_path_clarificat
             {"actor_kind": "product", "action_quote": "Access"},
             {"actor_kind": "product", "action_quote": "analyze"},
         ],
-        "components": [],
         "terminal": None,
         "source_precedence": [],
         "consistency": {"status": "consistent", "evidence_quotes": []},
@@ -620,7 +666,6 @@ def test_source_without_participant_or_terminal_cannot_be_admitted_by_fabricated
             "external_systems": [],
         },
         "events": [{"actor_kind": "product", "action_quote": "Unify"}],
-        "components": [],
         "terminal": None,
         "source_precedence": [],
         "consistency": {"status": "consistent", "evidence_quotes": []},

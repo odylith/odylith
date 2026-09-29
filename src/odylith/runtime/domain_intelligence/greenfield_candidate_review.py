@@ -12,13 +12,16 @@ from collections.abc import Callable, Mapping, Sequence
 from copy import deepcopy
 from typing import Any
 
-from odylith.runtime.domain_intelligence.greenfield_constraint_custody import (
-    CANDIDATE_PROPOSED_FIELDS,
-    CANDIDATE_SOURCE_FIELDS,
+from odylith.runtime.domain_intelligence.greenfield_review_custody import (
+    COMPONENT_CUSTODY_SCHEMA,
     CONSTRAINT_CUSTODY_SCHEMA,
+    CANDIDATE_PROPOSED_FIELDS,
+    REVIEW_INPUT_SOURCE_FIELDS,
     candidate_review_sha256,
     candidate_review_value,
+    component_custody_shape_issues,
     constraint_custody_shape_issues,
+    validated_component_custody,
     validated_constraint_custody,
 )
 from odylith.runtime.domain_intelligence.greenfield_material_clarification import (
@@ -36,7 +39,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 )
 from odylith.runtime.reasoning import odylith_reasoning
 
-CANDIDATE_REVIEW_VERSION = "odylith.greenfield.candidate-review.v16"
+CANDIDATE_REVIEW_VERSION = "odylith.greenfield.candidate-review.v17"
 TITLE_ROLE_DEFINITION = (
     "A source-cited name or concise label for the requested product, workflow, or "
     "product state. Identify what the request asks to create, operate, or review; "
@@ -143,15 +146,22 @@ the actual result producer, external dependencies and non-goals. Do not infer a
 system or performer from a name or downstream output purpose. Assumptions remain
 proposed choices, not accepted source facts.
 {REFERENCE_PROVENANCE_ROLE_CONTRACT}
-Apply that semantic-role classification before accepted-source completeness. Do not deny
-a candidate merely because accepted_source.components omits separately identified,
-unbound reference provenance. Preserve and require every responsibility that the source
-explicitly binds to the requested product as an owned role, dependency, event or result in
-accepted_source.components. Shared vocabulary, descriptive capabilities or thematic
-relevance alone do not establish that binding. Operational constraints remain global facts
-in the review input: classify each one exactly once in admission_witness.constraint_custody
-instead of requiring or accepting an author-owned duplicate component responsibility.
-Provisional design cannot substitute for accepted custody.
+Apply that semantic-role classification before accepted-source completeness. The author
+does not own accepted component composition. On admission, classify every source-stated
+product responsibility exactly once in admission_witness.component_custody. Shared
+vocabulary, descriptive capabilities or thematic relevance alone do not establish product
+responsibility. Provisional design cannot substitute for accepted custody.
+For event_responsibilities, return exactly one row for every accepted event whose actor_fact
+selects title or internal_systems, in event order. Select the exact product-action citation
+at the same source occurrence and wholly contained by that event's facts.first_path citation.
+Return no event responsibility for a human or external-system event.
+For additional_responsibilities, return every source-stated non-event product capability,
+dependency or result in source order. Select its exact source citation and bind owner_fact to
+title or the exact accepted internal_systems row. Do not return an event responsibility,
+operational constraint, human-only responsibility, external-system responsibility, or
+source-custody control in this collection. Do not repeat or reuse a citation across owners
+or collections. Operational constraints remain global facts in the review input: classify
+each one exactly once in admission_witness.constraint_custody.
 source_precedence must preserve all explicit ordering requirements using the packet's existing event IDs and cited
 operational constraints; event array order alone is not source temporal authority.
 Require a precedence edge only when both ordered sides are source-supported
@@ -266,6 +276,7 @@ REVIEW_SCHEMA = {
                 "task_event_order",
                 "result_event_order",
                 "design_coverage",
+                "component_custody",
                 "constraint_custody",
             ],
             "properties": {
@@ -320,6 +331,7 @@ REVIEW_SCHEMA = {
                         },
                     },
                 },
+                "component_custody": deepcopy(COMPONENT_CUSTODY_SCHEMA),
                 "constraint_custody": deepcopy(CONSTRAINT_CUSTODY_SCHEMA),
             },
         },
@@ -349,6 +361,10 @@ def candidate_review_payload(
     source_spans: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
     """Partition authority without dropping or reinterpreting a candidate value."""
+    if set(candidate) != REVIEW_INPUT_SOURCE_FIELDS | CANDIDATE_PROPOSED_FIELDS:
+        raise ValueError(
+            "Greenfield reviewer input has unclassified authority or accepted components"
+        )
     review_candidate = candidate_review_value(candidate)
     if not isinstance(source_spans, Sequence) or isinstance(source_spans, (str, bytes, bytearray)) or not source_spans:
         raise ValueError("Greenfield candidate review requires validated source spans")
@@ -443,7 +459,11 @@ def review_greenfield_candidate(
         if response is None and metadata.get("code") in {"timeout", "unavailable"}:
             raise GreenfieldModelRuntimeError(metadata["code"])
         outcome, issue, material_dimension, admission_witness = (
-            _validated_review_outcome(response, candidate=candidate)
+            _validated_review_outcome(
+                response,
+                candidate=candidate,
+                evidence_text=evidence_text,
+            )
         )
         receipt = {
             "version": CANDIDATE_REVIEW_VERSION,
@@ -482,6 +502,7 @@ def _validated_review_outcome(
     response: Any,
     *,
     candidate: Mapping[str, Any],
+    evidence_text: str,
 ) -> tuple[str, Mapping[str, str] | None, str | None, Mapping[str, Any] | None]:
     """Validate one closed decision without adding a recovery or repair branch."""
 
@@ -497,6 +518,7 @@ def _validated_review_outcome(
         return outcome, None, None, _validated_admission_witness(
             admission_witness,
             candidate=candidate,
+            evidence_text=evidence_text,
         )
     if outcome == "denied" and clarification is None and admission_witness is None:
         if (
@@ -526,74 +548,54 @@ def _validated_admission_witness(
     value: Any,
     *,
     candidate: Mapping[str, Any],
+    evidence_text: str,
 ) -> dict[str, Any]:
     """Bind admission to accepted participant, task, and result facts."""
 
     if candidate_review_admission_witness_shape_issues(value):
         raise RuntimeError("Greenfield candidate review returned an invalid admission witness")
     assert isinstance(value, Mapping)
-    participant = value.get("participant_fact")
-    assert isinstance(participant, Mapping)
-    field, row = participant.get("field"), participant.get("row")
-    assert isinstance(field, str) and type(row) is int
-    facts = candidate.get("facts")
-    if not isinstance(facts, Mapping):
+    if not _admission_witness_binds_candidate(value, candidate=candidate):
         raise RuntimeError("Greenfield candidate review returned an invalid admission witness")
-    selected = facts.get(field)
-    if field in {"customer", "title"}:
-        participant_exists = row == 1 and isinstance(selected, Mapping)
-    else:
-        participant_exists = (
-            isinstance(selected, Sequence)
-            and not isinstance(selected, (str, bytes, bytearray))
-            and row <= len(selected)
-            and isinstance(selected[row - 1], Mapping)
-        )
-    events = candidate.get("events")
-    task_order = value.get("task_event_order")
-    result_order = value.get("result_event_order")
-    terminal = candidate.get("terminal")
+    participant = value["participant_fact"]
+    field, row = participant["field"], participant["row"]
+    task_order = value["task_event_order"]
+    result_order = value["result_event_order"]
     design_coverage = value.get("design_coverage")
     constraint_custody = validated_constraint_custody(
         value.get("constraint_custody"),
         candidate=candidate,
     )
-    task_event = (
-        events[task_order - 1]
-        if isinstance(events, Sequence)
-        and not isinstance(events, (str, bytes, bytearray))
-        and type(task_order) is int
-        and 1 <= task_order <= len(events)
-        and isinstance(events[task_order - 1], Mapping)
-        else None
+    component_custody = validated_component_custody(
+        value.get("component_custody"),
+        candidate=candidate,
+        evidence_text=evidence_text,
     )
-    task_owner = task_event.get("actor_fact") if isinstance(task_event, Mapping) else None
-    if (
-        not participant_exists
-        or not isinstance(events, Sequence)
-        or isinstance(events, (str, bytes, bytearray))
-        or type(task_order) is not int
-        or not 1 <= task_order <= len(events)
-        or task_event is None
-        or (
-            field in {"title", "internal_systems"}
-            and task_owner != {"field": field, "row": row}
-        )
-        or type(result_order) is not int
-        or not 1 <= result_order <= len(events)
-        or not isinstance(terminal, Mapping)
-        or terminal.get("event_order") != result_order
-        or not _valid_design_coverage(
-            design_coverage,
-            design=candidate.get("provisional_design"),
-        )
-    ):
-        raise RuntimeError("Greenfield candidate review returned an invalid admission witness")
     return {
         "participant_fact": {"field": field, "row": row},
         "task_event_order": task_order,
         "result_event_order": result_order,
         "design_coverage": deepcopy(dict(design_coverage)),
+        "component_custody": {
+            "event_responsibilities": [
+                {
+                    "event_order": row["event_order"],
+                    "responsibility_citation": deepcopy(
+                        row["responsibility_citation"]
+                    ),
+                }
+                for row in component_custody["event_responsibilities"]
+            ],
+            "additional_responsibilities": [
+                {
+                    "owner_fact": deepcopy(row["owner_fact"]),
+                    "responsibility_citation": deepcopy(
+                        row["responsibility_citation"]
+                    ),
+                }
+                for row in component_custody["additional_responsibilities"]
+            ],
+        },
         "constraint_custody": [deepcopy(row) for row in constraint_custody],
     }
 
@@ -606,7 +608,15 @@ def candidate_review_admission_witness_issues(
     """Expose the one admission-witness validator to retained-proof readers."""
 
     try:
-        _validated_admission_witness(value, candidate=candidate)
+        if candidate_review_admission_witness_shape_issues(value):
+            raise RuntimeError("invalid witness shape")
+        assert isinstance(value, Mapping)
+        if not _admission_witness_binds_candidate(value, candidate=candidate):
+            raise RuntimeError("invalid path witness")
+        validated_constraint_custody(
+            value.get("constraint_custody"),
+            candidate=candidate,
+        )
     except RuntimeError:
         return ("admission witness does not bind the current reviewed design",)
     return ()
@@ -636,7 +646,7 @@ def candidate_review_admission_witness_shape_issues(value: Any) -> tuple[str, ..
 
     if not isinstance(value, Mapping) or set(value) != {
         "participant_fact", "task_event_order", "result_event_order", "design_coverage",
-        "constraint_custody",
+        "component_custody", "constraint_custody",
     }:
         return ("admission witness shape is invalid",)
     participant = value.get("participant_fact")
@@ -680,7 +690,65 @@ def candidate_review_admission_witness_shape_issues(value: Any) -> tuple[str, ..
         return ("admission design-coverage witness is invalid",)
     if constraint_custody_shape_issues(value.get("constraint_custody")):
         return ("admission constraint-custody witness is invalid",)
+    if component_custody_shape_issues(value.get("component_custody")):
+        return ("admission component-custody witness is invalid",)
     return ()
+
+
+def _admission_witness_binds_candidate(
+    value: Mapping[str, Any],
+    *,
+    candidate: Mapping[str, Any],
+) -> bool:
+    """Bind the retained path and design witness without re-reading source prose."""
+
+    participant = value.get("participant_fact")
+    if not isinstance(participant, Mapping):
+        return False
+    field, row = participant.get("field"), participant.get("row")
+    if not isinstance(field, str) or type(row) is not int:
+        return False
+    facts = candidate.get("facts")
+    if not isinstance(facts, Mapping):
+        return False
+    selected = facts.get(field)
+    if field in {"customer", "title"}:
+        participant_exists = row == 1 and isinstance(selected, Mapping)
+    else:
+        participant_exists = (
+            isinstance(selected, Sequence)
+            and not isinstance(selected, (str, bytes, bytearray))
+            and 1 <= row <= len(selected)
+            and isinstance(selected[row - 1], Mapping)
+        )
+    events = candidate.get("events")
+    task_order = value.get("task_event_order")
+    result_order = value.get("result_event_order")
+    if (
+        not participant_exists
+        or not isinstance(events, Sequence)
+        or isinstance(events, (str, bytes, bytearray))
+        or type(task_order) is not int
+        or not 1 <= task_order <= len(events)
+        or not isinstance(events[task_order - 1], Mapping)
+        or type(result_order) is not int
+        or not 1 <= result_order <= len(events)
+    ):
+        return False
+    task_owner = events[task_order - 1].get("actor_fact")
+    terminal = candidate.get("terminal")
+    return (
+        (
+            field not in {"title", "internal_systems"}
+            or task_owner == {"field": field, "row": row}
+        )
+        and isinstance(terminal, Mapping)
+        and terminal.get("event_order") == result_order
+        and _valid_design_coverage(
+            value.get("design_coverage"),
+            design=candidate.get("provisional_design"),
+        )
+    )
 
 
 def _valid_design_coverage(value: Any, *, design: Any) -> bool:

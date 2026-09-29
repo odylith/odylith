@@ -54,6 +54,13 @@ class StructuredAuthoringProvider:
 class RemainingCandidateProvider(StructuredAuthoringProvider):
     """Project a complete canonical fixture onto the remaining-author response schema."""
 
+    def review_provider(self) -> AdmittingReviewProvider:
+        """Return a reviewer double bound to this fixture's declared canonical truth."""
+
+        return AdmittingReviewProvider(
+            component_custody=component_custody_for_response(self.response),
+        )
+
     def generate_structured(self, *, request: object) -> Mapping[str, Any] | None:
         assert getattr(request, "schema_name", "") == "greenfield_remaining_candidate_authoring"
         response = super().generate_structured(request=request)
@@ -61,6 +68,7 @@ class RemainingCandidateProvider(StructuredAuthoringProvider):
             result = response.get("result")
             if isinstance(result, dict) and isinstance(result.get("facts"), dict):
                 result["facts"].pop("human_actors", None)
+                result.pop("components", None)
         return response
 
 
@@ -97,8 +105,10 @@ class AdmittingReviewProvider(StructuredAuthoringProvider):
     def __init__(
         self,
         *,
+        component_custody: Mapping[str, Any] | None = None,
         constraint_custody: Sequence[Mapping[str, Any]] | None = None,
     ) -> None:
+        self.configured_component_custody = copy.deepcopy(component_custody)
         configured_custody = (
             constraint_custody
             if constraint_custody is not None
@@ -111,7 +121,17 @@ class AdmittingReviewProvider(StructuredAuthoringProvider):
             )
         )
         super().__init__(
-            admitted_review_response(constraint_custody=configured_custody)
+            admitted_review_response(
+                component_custody=(
+                    component_custody
+                    if component_custody is not None
+                    else {
+                        "event_responsibilities": [],
+                        "additional_responsibilities": [],
+                    }
+                ),
+                constraint_custody=configured_custody,
+            )
         )
 
     def generate_structured(self, *, request: object) -> Mapping[str, Any] | None:
@@ -162,11 +182,32 @@ class AdmittingReviewProvider(StructuredAuthoringProvider):
                 and not constraints
                 else copy.deepcopy(configured_custody)
             )
+            component_custody = self.configured_component_custody
+            if component_custody is None:
+                first_path = facts.get("first_path") if isinstance(facts, Mapping) else None
+                distinct_first_path = _distinct_declared_citations(first_path)
+                component_custody = {
+                    "event_responsibilities": [
+                        {
+                            "event_order": order,
+                            "responsibility_citation": copy.deepcopy(
+                                distinct_first_path[order - 1]
+                            ),
+                        }
+                        for order, event in enumerate(events or (), start=1)
+                        if isinstance(event, Mapping)
+                        and isinstance(event.get("actor_fact"), Mapping)
+                        and event["actor_fact"].get("field") in {"title", "internal_systems"}
+                        and order <= len(distinct_first_path)
+                    ],
+                    "additional_responsibilities": [],
+                }
             self.response = admitted_review_response(
                 participant_field=participant_field,
                 participant_row=participant_row,
                 result_event_order=result_event_order,
                 provisional_design=design,
+                component_custody=component_custody,
                 constraint_custody=constraint_custody,
             )
         return super().generate_structured(request=request)
@@ -174,6 +215,7 @@ class AdmittingReviewProvider(StructuredAuthoringProvider):
 
 def admitted_review_response(
     *,
+    component_custody: Mapping[str, Any] | None = None,
     constraint_custody: Sequence[Mapping[str, Any]],
     participant_field: str = "human_actors",
     participant_row: int = 1,
@@ -202,6 +244,14 @@ def admitted_review_response(
                 "risk_keys": [row["key"] for row in risks],
                 "risk_posture_status": design["risk_posture"]["status"],
             },
+            "component_custody": copy.deepcopy(
+                component_custody
+                if component_custody is not None
+                else {
+                    "event_responsibilities": [],
+                    "additional_responsibilities": [],
+                }
+            ),
             "constraint_custody": copy.deepcopy(
                 list(constraint_custody)
             ),
@@ -223,9 +273,9 @@ def host_candidate_response(
         return candidate
     facts = result.get("facts")
     events = result.get("events")
-    components = result.get("components")
-    if not isinstance(facts, dict) or not isinstance(events, list) or not isinstance(components, list):
+    if not isinstance(facts, dict) or not isinstance(events, list):
         raise TypeError("canonical fixture cannot be projected to a host candidate")
+    result.pop("components", None)
     first_path = facts.pop("first_path")
     if not isinstance(first_path, list) or len(first_path) != len(events):
         raise ValueError("canonical fixture event citations are incomplete")
@@ -244,57 +294,143 @@ def host_candidate_response(
             )
     for event, citation in zip(events, first_path, strict=True):
         event["source_citation"] = _unique_context_citation(evidence_text, citation)
-        event["responsibility_citation"] = (
-            _unique_context_citation(evidence_text, citation)
-            if event["actor_fact"]["field"] in {"title", "internal_systems"}
-            else None
-        )
-    event_responsibilities = {
-        json.dumps(event["responsibility_citation"], sort_keys=True)
-        for event in events
-        if event["responsibility_citation"] is not None
-    }
-    operational_constraints = {
-        json.dumps(
-            row, sort_keys=True,
-        )
-        for row in facts.get("operational_constraints", [])
-        if isinstance(row, Mapping)
-    }
-    for component in components:
-        owner_quote = str(component.pop("owner_fact_quote", ""))
-        title = facts.get("title")
-        title_quote = str(title.get("quote") or "") if isinstance(title, Mapping) else ""
-        if owner_quote == title_quote:
-            component["owner_fact"] = {"field": "title", "row": 1}
-        else:
-            systems = facts.get("internal_systems")
-            if not isinstance(systems, list):
-                raise TypeError("canonical fixture internal systems are invalid")
-            component["owner_fact"] = {
-                "field": "internal_systems",
-                "row": next(
-                    index
-                    for index, citation in enumerate(systems, start=1)
-                    if isinstance(citation, Mapping)
-                    and str(citation.get("quote") or "") == owner_quote
-                ),
-            }
-        responsibilities = component.get("responsibilities")
-        if not isinstance(responsibilities, list):
-            raise TypeError("canonical fixture component responsibilities are invalid")
-        component["additional_responsibilities"] = [
-            _unique_context_citation(evidence_text, row)
-            for row in responsibilities
-            if json.dumps(
-                _unique_context_citation(evidence_text, row), sort_keys=True
-            ) not in event_responsibilities
-            and json.dumps(
-                _unique_context_citation(evidence_text, row), sort_keys=True
-            ) not in operational_constraints
-        ]
-        component.pop("responsibilities")
     return candidate
+
+
+def component_custody_for_response(
+    response: Mapping[str, Any] | None,
+) -> dict[str, list[dict[str, Any]]]:
+    """Translate declared canonical fixture truth into reviewer-owned custody.
+
+    This helper does not interpret source prose. It only moves exact citations and
+    typed owners already declared by a test fixture into the V49 review witness.
+    """
+
+    result = response.get("result") if isinstance(response, Mapping) else None
+    facts = result.get("facts") if isinstance(result, Mapping) else None
+    events = result.get("events") if isinstance(result, Mapping) else None
+    components = result.get("components") if isinstance(result, Mapping) else None
+    raw_first_path = facts.get("first_path") if isinstance(facts, Mapping) else None
+    first_path = _distinct_declared_citations(raw_first_path)
+    constraints = (
+        facts.get("operational_constraints") if isinstance(facts, Mapping) else None
+    )
+    if not (
+        isinstance(facts, Mapping)
+        and isinstance(events, list)
+        and isinstance(components, list)
+        and isinstance(raw_first_path, list)
+        and len(first_path) == len(events)
+        and isinstance(constraints, list)
+    ):
+        raise ValueError("canonical fixture cannot supply component custody")
+
+    owner_facts: dict[str, dict[str, Any]] = {}
+    title = facts.get("title")
+    if isinstance(title, Mapping) and str(title.get("quote") or ""):
+        owner_facts[str(title["quote"])] = {"field": "title", "row": 1}
+    internal_systems = facts.get("internal_systems")
+    if isinstance(internal_systems, list):
+        for row, citation in enumerate(internal_systems, start=1):
+            if isinstance(citation, Mapping) and str(citation.get("quote") or ""):
+                owner_facts[str(citation["quote"])] = {
+                    "field": "internal_systems",
+                    "row": row,
+                }
+
+    declared: list[tuple[str, dict[str, Any]]] = []
+    for component in components:
+        if not isinstance(component, Mapping):
+            raise ValueError("canonical fixture has invalid component truth")
+        owner = str(component.get("owner_fact_quote") or "")
+        responsibilities = component.get("responsibilities")
+        if owner not in owner_facts or not isinstance(responsibilities, list):
+            raise ValueError("canonical fixture has invalid component truth")
+        for citation in responsibilities:
+            if not isinstance(citation, Mapping):
+                raise ValueError("canonical fixture has invalid component truth")
+            declared.append((owner, copy.deepcopy(dict(citation))))
+
+    used: set[int] = set()
+    event_rows: list[dict[str, Any]] = []
+    for event_order, (event, event_citation) in enumerate(
+        zip(events, first_path, strict=True), start=1
+    ):
+        if not isinstance(event, Mapping) or not isinstance(event_citation, Mapping):
+            raise ValueError("canonical fixture has invalid event truth")
+        actor_fact = event.get("actor_fact")
+        if not isinstance(actor_fact, Mapping):
+            continue
+        field = actor_fact.get("field")
+        row = actor_fact.get("row")
+        if field == "title" and row == 1:
+            owner_citation = title
+        elif (
+            field == "internal_systems"
+            and type(row) is int
+            and isinstance(internal_systems, list)
+            and 1 <= row <= len(internal_systems)
+        ):
+            owner_citation = internal_systems[row - 1]
+        else:
+            continue
+        owner = (
+            str(owner_citation.get("quote") or "")
+            if isinstance(owner_citation, Mapping)
+            else ""
+        )
+        event_quote = str(event_citation.get("quote") or "")
+        matches = [
+            index
+            for index, (declared_owner, citation) in enumerate(declared)
+            if index not in used
+            and declared_owner == owner
+            and str(citation.get("quote") or "") in event_quote
+        ]
+        if len(matches) > 1:
+            raise ValueError("canonical fixture ambiguously binds an event responsibility")
+        responsibility = (
+            declared[matches[0]][1]
+            if matches
+            else copy.deepcopy(dict(event_citation))
+        )
+        if matches:
+            used.add(matches[0])
+        event_rows.append(
+            {
+                "event_order": event_order,
+                "responsibility_citation": responsibility,
+            }
+        )
+
+    constraint_values = [dict(row) for row in constraints if isinstance(row, Mapping)]
+    additional_rows = [
+        {
+            "owner_fact": copy.deepcopy(owner_facts[owner]),
+            "responsibility_citation": copy.deepcopy(citation),
+        }
+        for index, (owner, citation) in enumerate(declared)
+        if index not in used and citation not in constraint_values
+    ]
+    return {
+        "event_responsibilities": event_rows,
+        "additional_responsibilities": additional_rows,
+    }
+
+
+def _distinct_declared_citations(value: Any) -> list[dict[str, Any]]:
+    """Collapse exact duplicate fixture selections without interpreting their text."""
+
+    if not isinstance(value, list):
+        return []
+    distinct: list[dict[str, Any]] = []
+    for citation in value:
+        if not isinstance(citation, Mapping):
+            return []
+        row = copy.deepcopy(dict(citation))
+        if row not in distinct:
+            distinct.append(row)
+    return distinct
 
 
 def write_host_candidate_fixture(

@@ -9,9 +9,6 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     authored_component_relation_facts,
     validate_component_responsibility_relations,
 )
-from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
-    GreenfieldModelAuthoringError,
-)
 from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring import (
     author_greenfield_intent,
 )
@@ -25,7 +22,6 @@ from odylith.runtime.domain_intelligence.proposal_validation import (
     validate_host_reasoned_proposal,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
-    AdmittingReviewProvider,
     RemainingCandidateProvider,
     authored_response,
 )
@@ -81,7 +77,7 @@ def _author(source, response):
         provider=provider,
         participant_provider_factory=provider.participant_provider,
         clock=lambda: 0,
-        review_provider_factory=AdmittingReviewProvider,
+        review_provider_factory=provider.review_provider,
     )
     assert provider.calls == 1
     return result
@@ -92,27 +88,34 @@ def test_no_source_capability_does_not_promote_terminal_ownership(kind):
     source, response, events = _scenario(kind)
     result = _author(source, response)
 
-    assert result.intent["component_responsibilities"] == []
-    assert result.component_responsibility_relations == ()
+    product_events = [row["event_quote"] for row in events if row["actor_kind"] == "product"]
+    assert result.intent["component_responsibilities"] == product_events
+    assert [
+        row["responsibility_quote"]
+        for row in result.component_responsibility_relations
+    ] == product_events
+    assert [
+        row["first_path_event_order"]
+        for row in result.component_responsibility_relations
+    ] == [
+        order
+        for order, row in enumerate(events, start=1)
+        if row["actor_kind"] == "product"
+    ]
     assert [(row["actor_kind"], row["actor_fact_quote"], row["event_quote"])
             for row in result.first_path_relations] == [
         (row["actor_kind"], row["actor_fact_quote"], row["event_quote"]) for row in events
     ]
     assert result.provisional_design == response["result"]["provisional_design"]
-    assert validate_component_responsibility_relations((), intent=result.intent,
-        first_path_relations=result.first_path_relations) == ()
+    assert validate_component_responsibility_relations(
+        result.component_responsibility_relations,
+        intent=result.intent,
+        first_path_relations=result.first_path_relations,
+    ) == result.component_responsibility_relations
     contracts = authored_component_relation_facts(title="Draft Desk", internal_systems=(),
-        relations=result.first_path_relations, component_responsibility_relations=())
-    product_events = [row["event_quote"] for row in events if row["actor_kind"] == "product"]
+        relations=result.first_path_relations,
+        component_responsibility_relations=result.component_responsibility_relations)
     assert [row["responsibility_facts"] for row in contracts] == ([product_events] if product_events else [])
-
-
-@pytest.mark.parametrize("kind", ["human", "product", "mixed", "external"])
-def test_empty_owner_group_is_not_an_implicit_terminal_capability(kind):
-    source, response, _ = _scenario(kind)
-    response["result"]["components"] = [{"owner_fact_quote": "Draft Desk", "responsibilities": []}]
-    with pytest.raises(GreenfieldModelAuthoringError, match="component ownership"):
-        _author(source, response)
 
 
 @pytest.mark.parametrize("owner", ["Draft Desk", "Receipt Store"])
@@ -145,13 +148,15 @@ def test_optional_inventory_does_not_waive_explicit_citation_bindings():
     source, response, _ = _scenario("human", explicit_owner="Receipt Store")
     result = _author(source, response)
 
-    with pytest.raises(GreenfieldAuthoredSemanticsError, match="without typed owners"):
-        validate_component_responsibility_relations([], intent=result.intent,
-            first_path_relations=result.first_path_relations)
-    bad = deepcopy(response)
-    bad["result"]["components"][0]["owner_fact_quote"] = "Mara"
-    with pytest.raises(GreenfieldModelAuthoringError):
-        _author(source, bad)
+    bad_relation = deepcopy(result.component_responsibility_relations[0])
+    bad_relation["owner_system_path"] = "/human_actors/0"
+    bad_relation["owner_system_quote"] = "Mara"
+    with pytest.raises(GreenfieldAuthoredSemanticsError, match="invalid system owner"):
+        validate_component_responsibility_relations(
+            [bad_relation],
+            intent=result.intent,
+            first_path_relations=result.first_path_relations,
+        )
 
 
 def test_human_path_retains_source_story_and_complete_proposed_package(tmp_path):
@@ -162,7 +167,7 @@ def test_human_path_retains_source_story_and_complete_proposed_package(tmp_path)
         repo_root=tmp_path,
         authoring_provider=provider,
         participant_provider_factory=provider.participant_provider,
-        review_provider_factory=AdmittingReviewProvider,
+        review_provider_factory=provider.review_provider,
     )
     proposal = build_greenfield_proposal(repo_root=tmp_path, prompt=source,
         release_selector="0.0.1", confirmed_intent=candidate, require_completion_ready=False)

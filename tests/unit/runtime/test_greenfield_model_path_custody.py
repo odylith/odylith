@@ -30,7 +30,6 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     product_intent_authority_from_envelope,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
-    AdmittingReviewProvider,
     RemainingCandidateProvider,
     StructuredAuthoringProvider,
     authored_response,
@@ -119,6 +118,7 @@ def _participant_first_kwargs(response: dict[str, object]) -> dict[str, object]:
     return {
         "provider": provider,
         "participant_provider_factory": provider.participant_provider,
+        "review_provider_factory": provider.review_provider,
     }
 
 
@@ -185,25 +185,28 @@ def test_authoring_accepts_only_byte_verified_source_citations() -> None:
         timeout_seconds=84,
         model_profile_id=RESCUE_PROFILE_ID,
         clock=lambda: next(ticks, 4.0),
-        review_provider_factory=AdmittingReviewProvider,
+        review_provider_factory=provider.review_provider,
     )
 
     assert result.intent["first_path"] == _AUTHORED_FIRST_PATH
     assert result.first_path_relations[0]["actor_fact_quote"] == "Dock attendant Ivo"
     assert result.first_path_relations[1]["owner_system_path"] == "/internal_systems/0"
     assert result.first_path_relations[-1]["visible_result_quote"] == "the berth map shows the placement"
-    assert result.component_responsibility_relations == (
-        {
-            "responsibility_path": "/component_responsibilities/0",
-            "responsibility_quote": "Record berth occupancy",
-            "owner_system_path": "/internal_systems/0",
-            "owner_system_quote": "Berth map",
-            "first_path_event_order": 0,
-            "responsibility_source": "accepted_fact",
-        },
-    )
+    assert [
+        (
+            row["responsibility_quote"],
+            row["owner_system_path"],
+            row["owner_system_quote"],
+            row["first_path_event_order"],
+        )
+        for row in result.component_responsibility_relations
+    ] == [
+        ("the product records berth occupancy", "/internal_systems/0", "Berth map", 2),
+        ("the berth map shows the placement", "/internal_systems/0", "Berth map", 3),
+        ("Record berth occupancy", "/internal_systems/0", "Berth map", 0),
+    ]
     assert result.tier == "rescue"
-    assert len(result.source_spans) == 19
+    assert len(result.source_spans) == 21
     assert provider.calls == 1
 
 
@@ -245,7 +248,6 @@ def test_product_led_path_keeps_review_recipient_without_inventing_human_event()
         evidence_text=source,
         **_participant_first_kwargs(response),
         clock=lambda: 0.0,
-        review_provider_factory=AdmittingReviewProvider,
     )
 
     assert [row["actor_kind"] for row in result.first_path_relations] == ["product"]
@@ -264,7 +266,7 @@ def test_state_anchor_changes_only_selected_custody_not_canonical_meaning() -> N
         "anchor_occurrence": 1,
     }
     provider = RemainingCandidateProvider(response)
-    reviewer = AdmittingReviewProvider()
+    reviewer = provider.review_provider()
     result = author_greenfield_intent(
         evidence_text=source, provider=provider, clock=lambda: 0.0,
         participant_provider_factory=provider.participant_provider,
@@ -364,7 +366,6 @@ def test_event_rejects_target_that_is_only_adjacent_in_a_selected_fact() -> None
             evidence_text=source,
             **_participant_first_kwargs(response),
             clock=lambda: 0.0,
-            review_provider_factory=AdmittingReviewProvider,
         )
 
 
@@ -378,7 +379,6 @@ def test_event_target_stays_fail_closed_after_ordered_event_simplification() -> 
             evidence_text=source,
             **_participant_first_kwargs(response),
             clock=lambda: 0.0,
-            review_provider_factory=AdmittingReviewProvider,
         )
 
 
@@ -394,7 +394,6 @@ def test_selected_target_without_event_co_containment_stays_fail_closed() -> Non
             evidence_text=source,
             **_participant_first_kwargs(response),
             clock=lambda: 0.0,
-            review_provider_factory=AdmittingReviewProvider,
         )
 
 
@@ -405,7 +404,6 @@ def test_coordinated_events_derive_actor_presence_from_one_typed_fact_edge() -> 
         evidence_text=source,
         **_participant_first_kwargs(response),
         clock=lambda: 0.0,
-        review_provider_factory=AdmittingReviewProvider,
     )
 
     assert [row["actor_fact_quote"] for row in result.first_path_relations] == [
@@ -481,7 +479,6 @@ def test_two_human_actor_changes_use_selected_facts_across_sentences() -> None:
         evidence_text=source,
         **_participant_first_kwargs(response),
         clock=lambda: 0.0,
-        review_provider_factory=AdmittingReviewProvider,
     )
 
     assert [row["actor_fact_quote"] for row in result.first_path_relations] == [
@@ -508,7 +505,6 @@ def test_unselected_actor_fact_cannot_start_or_switch_an_actor_chain(
             evidence_text=source,
             **_participant_first_kwargs(response),
             clock=lambda: 0.0,
-            review_provider_factory=AdmittingReviewProvider,
         )
 
 
@@ -521,7 +517,6 @@ def test_canonical_relation_rejects_retired_surface_actor_fields(
         evidence_text=source,
         **_participant_first_kwargs(response),
         clock=lambda: 0.0,
-        review_provider_factory=AdmittingReviewProvider,
     )
     tampered = [dict(row) for row in result.first_path_relations]
     tampered[0][retired_field] = (
@@ -550,7 +545,7 @@ def test_materialization_preserves_exact_event_fact_bytes(tmp_path) -> None:  # 
         participant_provider_factory=provider.participant_provider,
         authoring_timeout_seconds=84,
         authoring_profile_id=STANDARD_PROFILE_ID,
-        review_provider_factory=AdmittingReviewProvider,
+        review_provider_factory=provider.review_provider,
     )
 
     assert candidate["first_path"] == _AUTHORED_FIRST_PATH
@@ -567,7 +562,6 @@ def test_verified_authoring_spans_become_the_product_intent_custody_source() -> 
         evidence_text=source,
         **_participant_first_kwargs(response),
         clock=lambda: 0.0,
-        review_provider_factory=AdmittingReviewProvider,
     )
     sealed_intent = {
         **result.intent,
@@ -638,7 +632,6 @@ def test_envelope_rejects_relation_rebound_to_a_duplicate_source_occurrence() ->
         evidence_text=source,
         **_participant_first_kwargs(response),
         clock=lambda: 0.0,
-        review_provider_factory=AdmittingReviewProvider,
     )
     relations = [dict(row) for row in result.first_path_relations]
     duplicate_start = source.encode("utf-8").rfind(event.encode("utf-8"))
@@ -694,7 +687,6 @@ def test_authored_custody_preserves_exact_unicode_markdown_and_deferred_actor_by
         evidence_text=source,
         **_participant_first_kwargs(response),
         clock=lambda: 0.0,
-        review_provider_factory=AdmittingReviewProvider,
     )
 
     sealed_intent = {

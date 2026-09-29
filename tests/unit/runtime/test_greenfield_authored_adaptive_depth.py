@@ -19,6 +19,7 @@ from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
     RemainingCandidateProvider,
     authored_response,
+    component_custody_for_response,
 )
 
 
@@ -40,14 +41,14 @@ def _proposal(
     constraint_custody: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     source = _source(intent)
-    provider = RemainingCandidateProvider(
-        authored_response(
-            intent,
-            evidence_text=source,
-            first_path_relations=relations,
-            component_responsibility_owners=responsibility_owners,
-        )
+    response = authored_response(
+        intent,
+        evidence_text=source,
+        first_path_relations=relations,
+        component_responsibility_owners=responsibility_owners,
     )
+    provider = RemainingCandidateProvider(response)
+    component_custody = component_custody_for_response(response)
     candidate = materialize_model_authored_intent(
         prompt=source,
         repo_root=tmp_path,
@@ -56,9 +57,10 @@ def _proposal(
         authoring_profile_id=STANDARD_PROFILE_ID,
         participant_provider_factory=provider.participant_provider,
         review_provider_factory=(
-            AdmittingReviewProvider
+            provider.review_provider
             if constraint_custody is None
             else lambda: AdmittingReviewProvider(
+                component_custody=component_custody,
                 constraint_custody=constraint_custody,
             )
         ),

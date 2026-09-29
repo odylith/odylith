@@ -1,5 +1,35 @@
 Status: In progress
 
+## V49 implementation and correction closure (2026-09-29)
+
+V49 is implemented as host contract v30, host-candidate format v16, and
+reviewer v17. The author no longer owns accepted components or responsibility
+citations. The existing independent reviewer returns closed component and
+constraint custody; deterministic code validates and projects both witnesses,
+then seals the unchanged final canonical and transaction shapes. Retained
+release proof reconstructs the review-input and final-candidate hashes from the
+same custody. The V48 host-owned component path is deleted rather than kept as
+a compatibility or fallback route.
+
+Initial independent review found two P1 contract gaps before checkpointing.
+Exact product-event clauses that are also operational constraints now retain
+both typed custody meanings and deduplicate only the identical final component
+responsibility; a conflicting owner still fails closed. Public host candidates
+must now provide a distinct, non-overlapping source citation for every event,
+so ambiguous citation reuse fails before review rather than losing event
+identity downstream. Both P1s are closed by independent re-review with no
+remaining P0/P1, including a committed end-to-end dual-role admission control.
+No parser, regex, repair, retry, fallback, compatibility branch, or additional
+model call was added.
+
+The complete frozen Greenfield frontier passes 3,348/3,348 tests after the
+corrections. The next gate is one pushed immutable checkpoint and the single
+exact replay of `release-accessibility-005-source`. Only a passing replay may
+advance to the unchanged 40-case public campaign and full generated browser,
+recovery, clean-install, host-parity, and intervention proof. The protected
+holdout remains untouched until all public evidence and independent semantic
+qualification are green.
+
 ## V49 reviewer-owned component custody (2026-09-28)
 
 V48 is not retried. The bounded V49 comparison moves the remaining complete
@@ -15,8 +45,10 @@ with an exact contained product-action citation, and every non-event,
 non-constraint responsibility with an exact source citation and an accepted
 title or internal-system owner. Deterministic admission validates cardinality,
 source resolution, citation containment, owner binding, duplicate or
-cross-owner reuse, source-control exclusion, and non-overlap with constraints;
-it then groups these facts into components. V48's reviewed product-constraint
+cross-owner reuse, and source-control exclusion. Additional responsibilities
+must not overlap constraints; an exact event/constraint dual role retains both
+typed meanings and deduplicates only its identical final component row. It then
+groups these facts into components. V48's reviewed product-constraint
 projection runs second. The final canonical validator, relation derivation,
 authority seal, transaction schema, and confirmation kernel remain unchanged.
 Denial and clarification carry no custody and perform no projection.

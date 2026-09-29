@@ -16,6 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
     authored_response,
+    component_custody_for_response,
     write_host_candidate_fixture,
 )
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
@@ -381,6 +382,7 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
     )
     product_owned = name == "protocol-outcome"
     reviewer = AdmittingReviewProvider(
+        component_custody=component_custody_for_response(response),
         constraint_custody=[
             {
                 "constraint_index": 1,

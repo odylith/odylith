@@ -95,6 +95,22 @@ def _result_first_response(*, include_precedence=True, archive_after_result=Fals
     return source, response, events
 
 
+def _reviewer_component_custody(response):
+    """Declare the product-event ownership adjudicated by the review fixture."""
+
+    first_path = response["result"]["facts"]["first_path"]
+    return {
+        "event_responsibilities": [
+            {
+                "event_order": event_order,
+                "responsibility_citation": deepcopy(first_path[event_order - 1]),
+            }
+            for event_order in (1, 3)
+        ],
+        "additional_responsibilities": [],
+    }
+
+
 def test_post_result_action_survives_authoring_custody_and_all_projections(tmp_path):
     source, response, events = _result_first_response(archive_after_result=True)
     provider = RemainingCandidateProvider(response)
@@ -102,6 +118,7 @@ def test_post_result_action_survives_authoring_custody_and_all_projections(tmp_p
         prompt=source, repo_root=tmp_path, authoring_provider=provider,
         participant_provider_factory=provider.participant_provider,
         review_provider_factory=lambda: AdmittingReviewProvider(
+            component_custody=_reviewer_component_custody(response),
             constraint_custody=[
                 {
                     "constraint_index": 1,
@@ -117,6 +134,10 @@ def test_post_result_action_survives_authoring_custody_and_all_projections(tmp_p
         ),
     )
     assert provider.calls == 1
+    assert candidate["component_responsibilities"][:2] == [
+        events[0]["event_quote"],
+        events[2]["event_quote"],
+    ]
     product_constraint = candidate["operational_constraints"][1]
     assert candidate["component_responsibilities"].count(product_constraint) == 1
     assert candidate["operational_constraints"][0] not in candidate["component_responsibilities"]
@@ -154,6 +175,7 @@ def ordered_package(tmp_path):
         prompt=source, repo_root=tmp_path, authoring_provider=provider,
         participant_provider_factory=provider.participant_provider,
         review_provider_factory=lambda: AdmittingReviewProvider(
+            component_custody=_reviewer_component_custody(response),
             constraint_custody=[
                 {
                     "constraint_index": 1,
@@ -164,7 +186,28 @@ def ordered_package(tmp_path):
         ),
     )
     assert provider.calls == 1
-    assert not candidate.get("component_responsibilities", [])
+    assert candidate["component_responsibilities"] == [
+        events[0]["event_quote"],
+        events[2]["event_quote"],
+    ]
+    assert candidate["authored_semantics"]["component_responsibility_relations"] == [
+        {
+            "responsibility_path": "/component_responsibilities/0",
+            "responsibility_quote": events[0]["event_quote"],
+            "owner_system_path": "/title",
+            "owner_system_quote": "Receipt Desk",
+            "responsibility_source": "accepted_fact",
+            "first_path_event_order": 1,
+        },
+        {
+            "responsibility_path": "/component_responsibilities/1",
+            "responsibility_quote": events[2]["event_quote"],
+            "owner_system_path": "/title",
+            "owner_system_quote": "Receipt Desk",
+            "responsibility_source": "accepted_fact",
+            "first_path_event_order": 3,
+        },
+    ]
     proposal = build_greenfield_proposal(
         repo_root=tmp_path, prompt=source, release_selector="0.0.1",
         confirmed_intent=candidate, require_completion_ready=False,

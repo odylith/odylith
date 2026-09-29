@@ -47,9 +47,9 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
     CANDIDATE_REVIEW_VERSION,
 )
-from odylith.runtime.domain_intelligence.greenfield_constraint_custody import (
+from odylith.runtime.domain_intelligence.greenfield_review_custody import (
     candidate_review_sha256,
-    project_constraint_custody,
+    project_reviewed_custody,
 )
 
 
@@ -330,12 +330,17 @@ def test_authored_private_result_binds_to_actual_admitted_consumer_receipt() -> 
 def test_host_native_profile_evidence_binds_one_host_candidate_and_runtime_review() -> None:
     profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
     candidate_sha256 = "1" * 64
+    source = _review_input_source()
     review_input_candidate = _review_input_candidate()
     review_input_candidate_sha256 = candidate_review_sha256(review_input_candidate)
     final_candidate_sha256 = candidate_review_sha256(
-        project_constraint_custody(review_input_candidate, custody=[])
+        project_reviewed_custody(
+            review_input_candidate,
+            component_custody=_review_component_custody(),
+            constraint_custody=[],
+            evidence_text=source,
+        )
     )
-    source = "Extension publishers assemble release notes."
     source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
     observed = {
         "origin": "host_native",
@@ -400,6 +405,7 @@ def test_host_native_profile_evidence_binds_one_host_candidate_and_runtime_revie
         ("input_candidate", "private host-native reviewer admission input hash is invalid"),
         ("final_candidate", "sealed final candidate hash does not match retained reviewer custody"),
         ("witness", "private host-native reviewer admission witness is invalid"),
+        ("review_version", "private host-native reviewer admission version is invalid"),
         ("profile", "private host-native reviewer admission profile is not sealed"),
     ),
 )
@@ -408,12 +414,17 @@ def test_host_native_profile_evidence_rejects_unbound_private_admission(
     expected_issue: str,
 ) -> None:
     profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
-    source = "Extension publishers assemble release notes."
+    source = _review_input_source()
     source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
     review_input_candidate = _review_input_candidate()
     review_input_candidate_sha256 = candidate_review_sha256(review_input_candidate)
     final_candidate_sha256 = candidate_review_sha256(
-        project_constraint_custody(review_input_candidate, custody=[])
+        project_reviewed_custody(
+            review_input_candidate,
+            component_custody=_review_component_custody(),
+            constraint_custody=[],
+            evidence_text=source,
+        )
     )
     observed = {
         "origin": "host_native",
@@ -448,6 +459,8 @@ def test_host_native_profile_evidence_rejects_unbound_private_admission(
         private["candidate_review"]["candidate_sha256"] = "4" * 64
     elif mutation == "witness":
         private["candidate_review"]["admission_witness"] = None
+    elif mutation == "review_version":
+        private["candidate_review"]["version"] = "odylith.greenfield.candidate-review.v16"
     else:
         private["candidate_review"]["model_profile"]["model"] = "gpt-5.6-sol"
 
@@ -585,13 +598,18 @@ def test_successful_host_candidate_rejects_denial_only_diagnostic_hashes() -> No
 
 
 def test_host_native_result_binding_matches_retained_candidate_to_commit_receipt() -> None:
-    source = "Extension publishers assemble release notes."
+    source = _review_input_source()
     source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
     candidate_sha256 = "3" * 64
     review_input_candidate = _review_input_candidate()
     review_input_candidate_sha256 = candidate_review_sha256(review_input_candidate)
     final_candidate_sha256 = candidate_review_sha256(
-        project_constraint_custody(review_input_candidate, custody=[])
+        project_reviewed_custody(
+            review_input_candidate,
+            component_custody=_review_component_custody(),
+            constraint_custody=[],
+            evidence_text=source,
+        )
     )
     witness = {
         "participant_fact": {"field": "human_actors", "row": 1},
@@ -607,6 +625,7 @@ def test_host_native_result_binding_matches_retained_candidate_to_commit_receipt
             "risk_keys": [],
             "risk_posture_status": "no_material_risks_identified",
         },
+        "component_custody": _review_component_custody(),
         "constraint_custody": [],
     }
     review_profile = {
@@ -1121,9 +1140,11 @@ def _create_payload_for_stage(stage: dict[str, object], *, source: str) -> dict[
     assert isinstance(candidate, dict)
     review_input_candidate_sha256 = candidate_review_sha256(candidate)
     final_candidate_sha256 = candidate_review_sha256(
-        project_constraint_custody(
+        project_reviewed_custody(
             candidate,
-            custody=admission_witness["constraint_custody"],
+            component_custody=admission_witness["component_custody"],
+            constraint_custody=admission_witness["constraint_custody"],
+            evidence_text=source,
         )
     )
     return {
@@ -1202,6 +1223,26 @@ def _review_input_candidate() -> dict[str, object]:
     return {**deepcopy(accepted), **deepcopy(proposed)}
 
 
+def _review_input_source() -> str:
+    stage = _stage_observation(STANDARD_PROFILE_ID)
+    request = stage["request"]
+    assert isinstance(request, dict)
+    return str(request["evidence"])
+
+
+def _review_component_custody() -> dict[str, object]:
+    stage = _stage_observation(STANDARD_PROFILE_ID)
+    review = stage["candidate_review"]
+    assert isinstance(review, dict)
+    response = review["response"]
+    assert isinstance(response, dict)
+    witness = response["admission_witness"]
+    assert isinstance(witness, dict)
+    custody = witness["component_custody"]
+    assert isinstance(custody, dict)
+    return deepcopy(custody)
+
+
 def _host_native_private_admission(
     *,
     observed: dict[str, object],
@@ -1209,6 +1250,7 @@ def _host_native_private_admission(
     review_input_candidate_sha256: str,
     final_candidate_sha256: str,
     witness: dict[str, object] | None = None,
+    component_custody: dict[str, object] | None = None,
 ) -> dict[str, object]:
     admission_witness = witness or {
         "participant_fact": {"field": "human_actors", "row": 1},
@@ -1224,6 +1266,11 @@ def _host_native_private_admission(
             "risk_keys": [],
             "risk_posture_status": "no_material_risks_identified",
         },
+        "component_custody": deepcopy(
+            component_custody
+            if component_custody is not None
+            else _review_component_custody()
+        ),
         "constraint_custody": [],
     }
     return {
@@ -1247,6 +1294,8 @@ def _host_native_private_admission(
             "admission_witness": admission_witness,
         },
     }
+
+
 
 
 def _case(

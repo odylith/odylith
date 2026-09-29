@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from collections.abc import Mapping, Sequence
+from copy import deepcopy
 from dataclasses import replace
 import hashlib
 import json
@@ -17,6 +18,7 @@ from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_ARGUMENT_COUNT
 from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_RECEIPT_VERSION
 from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_SHAPE_SHA256
 from greenfield_matrix_host_candidate import HOST_NATIVE_MATRIX_OBSERVATION_VERSION
+from greenfield_retained_candidate_proof import retained_admitted_candidate_hash_issues
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     DEEP_PROFILE_ID,
     GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION,
@@ -46,9 +48,9 @@ from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
     candidate_review_admission_witness_shape_issues,
     candidate_review_payload,
 )
-from odylith.runtime.domain_intelligence.greenfield_constraint_custody import (
-    candidate_review_sha256,
-    project_constraint_custody,
+from odylith.runtime.domain_intelligence.greenfield_review_custody import (
+    candidate_for_pre_review_validation,
+    project_reviewed_custody,
 )
 from odylith.runtime.domain_intelligence.greenfield_material_clarification import (
     MATERIAL_DIMENSIONS,
@@ -267,6 +269,7 @@ def model_profile_evidence(
             reviewer_observation=_mapping(reviewer_observation),
             review_input_candidate=_mapping(review_input_candidate),
             expected_review_input_candidate_sha256=expected_review_input_candidate_sha256,
+            expected_source=expected_source,
             expected_source_sha256=expected_source_sha256,
         )
         issues.extend(str(issue) for issue in stage_summary["issues"])
@@ -410,6 +413,7 @@ def _host_native_stage_observation_evidence(
     reviewer_observation: Mapping[str, Any] | None = None,
     review_input_candidate: Mapping[str, Any] | None = None,
     expected_review_input_candidate_sha256: str = "",
+    expected_source: str = "",
     expected_source_sha256: str = "",
 ) -> dict[str, Any]:
     """Bind one external host candidate and one runtime review to sealed custody."""
@@ -476,6 +480,7 @@ def _host_native_stage_observation_evidence(
         sealed_candidate=candidate,
         sealed_review_profile=review,
         expected_review_input_candidate_sha256=expected_review_input_candidate_sha256,
+        expected_source=expected_source,
         expected_source_sha256=expected_source_sha256,
     )
     issues.extend(reviewer_admission_issues)
@@ -506,6 +511,7 @@ def _host_native_reviewer_admission_issues(
     sealed_candidate: Mapping[str, Any],
     sealed_review_profile: Mapping[str, Any],
     expected_review_input_candidate_sha256: str,
+    expected_source: str,
     expected_source_sha256: str,
 ) -> tuple[str, ...]:
     """Validate private admitted-review proof without exposing it publicly."""
@@ -561,6 +567,7 @@ def _host_native_reviewer_admission_issues(
         retained_admitted_candidate_hash_issues(
             review_input_candidate=review_input_candidate,
             receipt=receipt,
+            evidence_text=expected_source,
         )
     )
     if _mapping(receipt.get("model_profile")) != dict(sealed_review_profile):
@@ -573,38 +580,6 @@ def _host_native_reviewer_admission_issues(
     contract = get_greenfield_model_profile(profile)
     if elapsed is None or elapsed > contract.model_timeout_seconds:
         issues.append("private host-native reviewer admission elapsed time is invalid")
-    return tuple(dict.fromkeys(issues))
-
-
-def retained_admitted_candidate_hash_issues(
-    *,
-    review_input_candidate: Mapping[str, Any],
-    receipt: Mapping[str, Any],
-) -> tuple[str, ...]:
-    """Bind an admitted final hash to deterministic reviewer-owned projection."""
-
-    candidate = _mapping(review_input_candidate)
-    if not candidate:
-        return ("retained host-native reviewer input candidate is missing",)
-    issues: list[str] = []
-    try:
-        review_input_sha256 = candidate_review_sha256(candidate)
-    except (RuntimeError, TypeError, ValueError):
-        return ("retained host-native reviewer input candidate is invalid",)
-    if receipt.get("review_input_candidate_sha256") != review_input_sha256:
-        issues.append("retained reviewer input does not match the sealed review-input hash")
-    witness = _mapping(receipt.get("admission_witness"))
-    try:
-        projected = project_constraint_custody(
-            candidate,
-            custody=witness.get("constraint_custody"),
-        )
-        final_sha256 = candidate_review_sha256(projected)
-    except (RuntimeError, TypeError, ValueError):
-        issues.append("retained reviewer custody cannot produce a valid final candidate")
-    else:
-        if receipt.get("candidate_sha256") != final_sha256:
-            issues.append("sealed final candidate hash does not match retained reviewer custody")
     return tuple(dict.fromkeys(issues))
 
 
@@ -1149,8 +1124,12 @@ def _model_stage_observation_evidence(
                 )
                 if retained.get("joined_candidate") != joined:
                     raise ValueError("joined candidate mismatch")
+                validation_candidate = deepcopy(joined)
+                validation_candidate["result"] = candidate_for_pre_review_validation(
+                    joined["result"]
+                )
                 authored = validate_greenfield_authoring_response(
-                    joined, evidence_text=source,
+                    validation_candidate, evidence_text=source,
                     elapsed_seconds=_float_value(remainder.get("elapsed_seconds")),
                     provider=_mapping(remainder.get("provider")), profile_id=profile,
                     effective_timeout_seconds=_float_value(remainder.get("timeout_seconds")),
@@ -1233,11 +1212,23 @@ def _candidate_review_observation_issues(
     issue = verdict.get("issue")
     clarification = verdict.get("clarification")
     admission_witness = verdict.get("admission_witness")
+    source = request.get("evidence")
     if expected_outcome == "admitted":
+        try:
+            project_reviewed_custody(
+                candidate,
+                component_custody=_mapping(admission_witness).get("component_custody"),
+                constraint_custody=_mapping(admission_witness).get("constraint_custody"),
+                evidence_text=source if isinstance(source, str) else "",
+            )
+            custody_valid = True
+        except (RuntimeError, TypeError, ValueError):
+            custody_valid = False
         valid_verdict = (
             valid_verdict
             and issue is None
             and clarification is None
+            and custody_valid
             and not candidate_review_admission_witness_issues(
                 admission_witness,
                 candidate=candidate,
@@ -1260,7 +1251,6 @@ def _candidate_review_observation_issues(
             "retained candidate review lacks a valid "
             f"{expected_outcome} current-contract verdict"
         )
-    source = request.get("evidence")
     try:
         if not isinstance(source, str) or not source.strip():
             raise ValueError("missing source")

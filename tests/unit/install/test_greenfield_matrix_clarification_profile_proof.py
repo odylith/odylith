@@ -18,9 +18,9 @@ from tests.unit.install.test_greenfield_matrix_clarification import (
     _host_native_reviewer_clarification_observation,
 )
 from tests.unit.install.test_greenfield_model_profiles import _review_input_candidate
-from odylith.runtime.domain_intelligence.greenfield_constraint_custody import (
+from odylith.runtime.domain_intelligence.greenfield_review_custody import (
     candidate_review_sha256,
-    project_constraint_custody,
+    project_reviewed_custody,
 )
 
 from greenfield_matrix_clarification import clarification_quality_verdict
@@ -72,9 +72,22 @@ def _host_native_authored_profile_evidence(
         },
     }
     review_input_candidate = _review_input_candidate()
+    review_input_candidate["facts"]["first_path"] = [
+        {"quote": source, "occurrence": 1}
+    ]
+    for event in review_input_candidate["events"]:
+        event["actor_fact"] = {"field": "human_actors", "row": 1}
     review_input_candidate_sha256 = candidate_review_sha256(review_input_candidate)
     final_candidate_sha256 = candidate_review_sha256(
-        project_constraint_custody(review_input_candidate, custody=[])
+        project_reviewed_custody(
+            review_input_candidate,
+            component_custody={
+                "event_responsibilities": [],
+                "additional_responsibilities": [],
+            },
+            constraint_custody=[],
+            evidence_text=source,
+        )
     )
     reviewer = _host_native_reviewer_admission_observation(
         source,

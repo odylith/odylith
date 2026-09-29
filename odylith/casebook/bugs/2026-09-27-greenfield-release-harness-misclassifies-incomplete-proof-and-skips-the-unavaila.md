@@ -1,5 +1,33 @@
 - Bug ID: CB-347
 
+## V49 implementation and independent correction closure (2026-09-29)
+
+Host contract v30, host-candidate format v16, and reviewer v17 implement the
+bounded V49 ownership move. The author no longer emits accepted components or
+responsibility citations. The existing independent review decision owns closed
+component and constraint custody; deterministic projection and retained proof
+reconstruct the unchanged final candidate and transaction authority. The V48
+host-owned component path is removed with no compatibility route.
+
+Pre-checkpoint independent review exposed two P1s. A source clause could
+legitimately be both a product event and an operational constraint, but the
+first V49 validator rejected the overlap. It now preserves both typed custody
+rows, emits one identical final component responsibility, and rejects
+cross-owner reassignment. Separately, the host contract allowed same-owner
+events to reuse one citation even though downstream relations could not retain
+distinct event identity. The public contract and canonical host projection now
+require distinct, non-overlapping event citations and fail before review on any
+reuse. Independent re-review closes both findings with no remaining P0/P1 and
+confirms no parser, regex, repair, retry, fallback, or extra model stage was
+introduced.
+
+Fresh proof passes the complete frozen Greenfield frontier at 3,348/3,348 and
+the committed end-to-end dual-role admission control. This is not release
+qualification. The next gates remain a pushed immutable build, the one exact
+public falsification replay, the unchanged 40-case public/browser/recovery
+campaign, independent semantic and UX qualification, and only then the still
+untouched protected holdout.
+
 ## V49 bounded component-custody decision (2026-09-28)
 
 The architecture and evidence reviews select one bounded replacement for V48:
@@ -15,8 +43,10 @@ product-owned event, using that event's exact product-action citation, plus one
 additional responsibility for each non-event, non-constraint responsibility.
 Deterministic validation must bind every owner to an accepted title or internal
 system, require citation containment and canonical source resolution, and
-reject duplicates, cross-owner reuse, constraint overlap, and source-control
-citations before grouping facts into canonical components. Product-owned
+reject duplicates, cross-owner reuse, additional-responsibility constraint
+overlap, and source-control citations before grouping facts into canonical
+components. An exact product-event/constraint dual role retains both typed
+custody meanings and one final component row. Product-owned
 constraints remain V48's separate second projection. A denial or clarification
 has no component or constraint custody and performs no projection.
 

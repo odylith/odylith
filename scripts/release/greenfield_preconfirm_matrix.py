@@ -42,7 +42,7 @@ from greenfield_matrix_case_file import load_case_file  # noqa: E402
 from greenfield_matrix_case_file import ungrounded_required_terms  # noqa: E402
 from greenfield_matrix_clarification import clarification_contract_issues, clarification_quality_verdict, run_expected_clarification  # noqa: E402
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import prepare_model_authoring_evidence
-from odylith.runtime.domain_intelligence.greenfield_constraint_custody import (
+from odylith.runtime.domain_intelligence.greenfield_review_custody import (
     candidate_review_sha256,
 )
 from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import (

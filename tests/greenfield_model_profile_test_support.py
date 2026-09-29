@@ -14,8 +14,6 @@ from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
     ParticipantSelectionProvider,
     RemainingCandidateProvider,
-    StructuredAuthoringProvider,
-    admitted_review_response,
     authored_response,
     clarification_response,
 )
@@ -80,7 +78,12 @@ def production_stage_observation(
     class TimedRemainingProvider(RemainingCandidateProvider):
         def generate_structured(self, *, request):
             now[0] += 10.0
-            return super().generate_structured(request=request)
+            value = super().generate_structured(request=request)
+            if isinstance(value, dict):
+                result = value.get("result")
+                if isinstance(result, dict):
+                    result.pop("components", None)
+            return value
 
     class TimedParticipantProvider(ParticipantSelectionProvider):
         def generate_structured(self, *, request):
@@ -89,12 +92,9 @@ def production_stage_observation(
 
     class TimedReviewProvider(AdmittingReviewProvider):
         def __init__(self):
-            StructuredAuthoringProvider.__init__(
+            AdmittingReviewProvider.__init__(
                 self,
-                admitted_review_response(
-                    result_event_order=1,
-                    constraint_custody=[],
-                ),
+                constraint_custody=[],
             )
 
         def generate_structured(self, *, request):

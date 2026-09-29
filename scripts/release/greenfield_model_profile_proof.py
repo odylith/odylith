@@ -15,7 +15,7 @@ from greenfield_model_profiles import UNAVAILABLE_PROVIDER_PROFILE
 from greenfield_model_profiles import host_native_argv_receipt_issues
 from greenfield_model_profiles import host_native_clarification_stage_observation_issues
 from greenfield_model_profiles import model_stage_observation_issues
-from greenfield_model_profiles import retained_admitted_candidate_hash_issues
+from greenfield_retained_candidate_proof import retained_admitted_candidate_hash_issues
 from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
     CANDIDATE_REVIEW_VERSION,
     candidate_review_admission_witness_shape_issues,
@@ -120,6 +120,7 @@ def authored_model_result_binding_issues(
         retained_admitted_candidate_hash_issues(
             review_input_candidate=joined_candidate,
             receipt=receipt,
+            evidence_text=source,
         )
     )
     return tuple(dict.fromkeys(issues))
@@ -194,6 +195,7 @@ def _host_native_result_binding_issues(
         retained_admitted_candidate_hash_issues(
             review_input_candidate=review_input_candidate,
             receipt=review,
+            evidence_text=source,
         )
     )
     if not _is_sha256(review.get("product_facts_sha256")):

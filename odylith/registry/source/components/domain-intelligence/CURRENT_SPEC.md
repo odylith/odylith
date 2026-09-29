@@ -1,8 +1,33 @@
 # Domain Intelligence
-Last updated: 2026-09-28
+Last updated: 2026-09-29
 
 
 ## Overview
+
+### V49 implemented reviewer custody and proof boundary (2026-09-29)
+
+The candidate contract is now v30, host-candidate format v16, and reviewer
+v17. Host authoring owns source facts, typed events, constraints, terminal
+identity, and provisional design; it does not own accepted components or
+responsibility citations. One independent review owns the closed component and
+constraint witnesses. Deterministic code validates their source bytes and
+typed owners, projects them into the unchanged final canonical shape, and
+retained release proof reconstructs both the unprojected and projected hashes.
+No compatibility author, parser, regex, repair, retry, fallback, or model
+ladder remains in this slice.
+
+Event source citations must be distinct and non-overlapping so one downstream
+event identity cannot silently stand for two actions. A source clause may still
+carry two explicit typed meanings when it is both a product event and an
+operational constraint: both custody rows remain sealed, one identical final
+component responsibility is emitted, and any cross-owner reassignment fails
+closed. Additional responsibilities remain disjoint from constraints.
+
+The frozen Greenfield frontier passes 3,348/3,348 tests, including committed
+end-to-end dual-role admission proof. Independent re-review reports no P0/P1.
+Release qualification still requires the pushed immutable exact replay, the
+unchanged 40-case public campaign with complete browser and recovery proof, and
+final independent semantic adjudication before the protected holdout is opened.
 
 ### V49 reviewer-owned component-custody boundary (2026-09-28)
 
@@ -17,8 +42,10 @@ title or internal system.
 
 Deterministic code must validate complete event cardinality, source resolution,
 citation containment, owner binding, duplicate and cross-owner exclusion,
-constraint non-overlap, and source-control exclusion before grouping the witness
-into the canonical component shape. V48's reviewed product-constraint
+additional-responsibility constraint non-overlap, and source-control exclusion
+before grouping the witness into the canonical component shape. Exact
+event/constraint dual-role clauses retain both typed meanings and deduplicate
+only the final identical component row. V48's reviewed product-constraint
 projection remains a second, separate projection; denial and clarification
 perform neither projection. The final canonical validator, authority seal,
 transaction schema, and post-confirm boundary remain unchanged.

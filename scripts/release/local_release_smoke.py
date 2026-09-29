@@ -32,8 +32,8 @@ _COMMAND_TIMEOUT_SECONDS = 300
 _CANDIDATE_CONTRACT_SMOKE_PROMPT = (
     "Create a project governance package for a first-time user."
 )
-_EXPECTED_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v29"
-_EXPECTED_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v15"
+_EXPECTED_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v30"
+_EXPECTED_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v16"
 
 
 def _has_current_host_candidate_schema(candidate_schema: object) -> bool:
@@ -50,6 +50,7 @@ def _has_current_host_candidate_schema(candidate_schema: object) -> bool:
         if properties["version"].get("enum") != [_EXPECTED_CANDIDATE_FORMAT_VERSION]:
             return False
         authored = properties["result"]["anyOf"][0]
+        authored_properties = authored["properties"]
         constraint = authored["properties"]["facts"]["properties"][
             "operational_constraints"
         ]["items"]
@@ -57,6 +58,8 @@ def _has_current_host_candidate_schema(candidate_schema: object) -> bool:
         return False
     return bool(
         isinstance(constraint, dict)
+        and "components" not in authored_properties
+        and "components" not in set(authored.get("required") or ())
         and constraint.get("type") == "object"
         and constraint.get("additionalProperties") is False
         and set(constraint.get("required") or ()) == {"quote", "context"}
@@ -656,7 +659,7 @@ def _greenfield_candidate_contract_smoke(*, repo_root: Path, odylith: Path, env:
     ):
         issues.append("candidate contract did not preserve the exact prompt evidence")
     if not _has_current_host_candidate_schema(candidate_schema):
-        issues.append("candidate contract did not preserve reviewer-owned constraint custody")
+        issues.append("candidate contract did not preserve reviewer-owned component and constraint custody")
     if observed.active is not True:
         issues.append("candidate-contract smoke did not activate the installed write audit")
     if observed.error:

@@ -9,17 +9,20 @@ from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring 
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     AdmittingReviewProvider,
     RemainingCandidateProvider,
+    component_custody_for_response,
 )
 from tests.unit.runtime.test_greenfield_model_path_custody import _response, _source
 
 
 def test_authoring_prompt_requires_every_transaction_material_fact() -> None:
     source = _source()
-    provider = RemainingCandidateProvider(_response(source))
+    response = _response(source)
+    provider = RemainingCandidateProvider(response)
     participant_provider = provider.participant_provider()
 
     authored = author_greenfield_intent(
         review_provider_factory=lambda: AdmittingReviewProvider(
+            component_custody=component_custody_for_response(response),
             constraint_custody=[
                 {
                     "constraint_index": 1,
@@ -47,16 +50,14 @@ def test_authoring_prompt_requires_every_transaction_material_fact() -> None:
         "human_actors",
     ):
         assert field in prompt
-    assert "owner_fact_quote" in prompt
-    assert "internal_systems fact or title" in prompt
+    assert "Do not return the accepted-source components field" in prompt
+    assert "Independent review alone classifies exact source-supported event" in prompt
+    assert "assigns product ownership, and projects accepted components" in prompt
     assert "facts.operational_constraints" in prompt
     assert "remains only in facts.operational_constraints during authoring" in prompt
     assert "Do not copy any constraint into component responsibilities" in prompt
     assert "Independent review classifies every accepted constraint" in prompt
     assert "alone may project product-owned custody after admission" in prompt
-    assert "preserve its one citation in the owner group" in prompt
-    assert "event separately owns workflow order" in prompt
-    assert "Do not repeat that citation within the owner group" in prompt
     assert "explicitly source-stated operational exchange" in str(provider.requests[0].output_schema)
     assert "product_story is the shortest complete source span" in prompt
     assert "excluding the operator's request to create a proposal" in prompt

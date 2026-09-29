@@ -18,9 +18,10 @@ from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
     HUMAN_ACTOR_ROLE_DEFINITION,
     review_greenfield_candidate,
 )
-from odylith.runtime.domain_intelligence.greenfield_constraint_custody import (
+from odylith.runtime.domain_intelligence.greenfield_review_custody import (
+    candidate_for_pre_review_validation,
     finalize_admitted_review,
-    project_constraint_custody,
+    project_reviewed_custody,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_json import (
     encode_greenfield_model_value,
@@ -217,17 +218,11 @@ when no order is stated.
 A source-stated operational or safety constraint remains only in
 facts.operational_constraints during authoring. Do not copy any constraint into component
 responsibilities. Independent review classifies every accepted constraint and alone may
-project product-owned custody after admission. Group each remaining exact product
-responsibility citation under one
-owner_fact_quote, which selects an internal_systems fact or title when no narrower
-system exists. A product responsibility belongs to one owner, not a human actor.
-Cite every source-stated responsibility, capability, or result. When the same exact clause
-is a typed product event, preserve its one citation in the owner
-group as the canonical responsibility fact; the event separately owns workflow order. Do not
-repeat that citation within the owner group. Return components=[] when none remain. Never
-infer a product responsibility from a terminal result or use an empty owner group.
-The proposed design supplies implementation boundaries without creating accepted
-source capabilities.
+project product-owned custody after admission. Do not return the accepted-source
+components field. Independent review alone classifies exact source-supported event and
+additional responsibilities, assigns product ownership, and projects accepted components.
+The proposed design still supplies implementation boundaries without creating accepted
+source capabilities or accepted component ownership.
 
 MATERIALITY
 {MATERIALITY_DECISION_CONTRACT}
@@ -484,8 +479,17 @@ def author_greenfield_intent(
             participant_citations,
         )
         frozen_joined = encode_greenfield_model_value(joined_candidate)
+        validation_candidate = deepcopy(joined_candidate)
+        try:
+            validation_candidate["result"] = candidate_for_pre_review_validation(
+                joined_candidate["result"]
+            )
+        except (TypeError, ValueError) as exc:
+            raise GreenfieldModelAuthoringError(
+                "Greenfield remaining authoring returned an invalid result; no records were created."
+            ) from exc
         authored = validate_greenfield_authoring_response(
-            joined_candidate,
+            validation_candidate,
             evidence_text=text,
             elapsed_seconds=remaining_stage.receipt["elapsed_seconds"],
             provider=remaining_observation["provider"],
@@ -550,15 +554,18 @@ def author_greenfield_intent(
             raise GreenfieldModelAuthoringError(
                 "Greenfield review changed frozen participants; no records were created."
             )
-        joined_candidate = deepcopy(joined_candidate)
-        joined_candidate["result"] = project_constraint_custody(
+        final_candidate = deepcopy(joined_candidate)
+        witness = review["admission_witness"]
+        final_candidate["result"] = project_reviewed_custody(
             joined_candidate["result"],
-            custody=review["admission_witness"]["constraint_custody"],
+            component_custody=witness["component_custody"],
+            constraint_custody=witness["constraint_custody"],
+            evidence_text=text,
         )
-        frozen_projected = encode_greenfield_model_value(joined_candidate)
+        frozen_projected = encode_greenfield_model_value(final_candidate)
         final_call_count = 3
         authored = validate_greenfield_authoring_response(
-            joined_candidate,
+            final_candidate,
             evidence_text=text,
             elapsed_seconds=authored.elapsed_seconds,
             provider=authored.provider,
@@ -571,13 +578,13 @@ def author_greenfield_intent(
             raise GreenfieldModelAuthoringError(
                 "Greenfield admitted review produced no final candidate; no records were created."
             )
-        if encode_greenfield_model_value(joined_candidate) != frozen_projected:
+        if encode_greenfield_model_value(final_candidate) != frozen_projected:
             raise GreenfieldModelAuthoringError(
                 "Greenfield final validation changed the projected candidate; no records were created."
             )
         review = finalize_admitted_review(
             review,
-            candidate=joined_candidate["result"],
+            candidate=final_candidate["result"],
         )
         completed = True
         return replace(
@@ -649,14 +656,19 @@ def _remaining_authoring_contract() -> tuple[dict[str, Any], str]:
     schema = greenfield_authoring_schema()
     result_schema = schema["properties"]["result"]["anyOf"][0]
     facts_schema = result_schema["properties"]["facts"]
-    if "human_actors" not in facts_schema["properties"] or "human_actors" not in facts_schema[
-        "required"
-    ]:
+    if (
+        "human_actors" not in facts_schema["properties"]
+        or "human_actors" not in facts_schema["required"]
+        or "components" not in result_schema["properties"]
+        or "components" not in result_schema["required"]
+    ):
         raise GreenfieldModelAuthoringError(
             "Greenfield remaining authoring schema ownership is invalid; no records were created."
         )
     del facts_schema["properties"]["human_actors"]
     facts_schema["required"].remove("human_actors")
+    del result_schema["properties"]["components"]
+    result_schema["required"].remove("components")
     return schema, _REMAINING_AUTHORING_PROMPT
 
 

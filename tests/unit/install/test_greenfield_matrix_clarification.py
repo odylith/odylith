@@ -34,9 +34,9 @@ from odylith.runtime.domain_intelligence.greenfield_material_clarification impor
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import combined_prompt_evidence_source
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import prepare_model_authoring_evidence
 from odylith.runtime.domain_intelligence.greenfield_candidate_review import CANDIDATE_REVIEW_VERSION
-from odylith.runtime.domain_intelligence.greenfield_constraint_custody import (
+from odylith.runtime.domain_intelligence.greenfield_review_custody import (
     candidate_review_sha256,
-    project_constraint_custody,
+    project_reviewed_custody,
 )
 from tests.greenfield_model_profile_test_support import (
     production_stage_observation,
@@ -397,8 +397,11 @@ def test_case_preserves_stage_observation_and_actual_terminal_diagnostics(
         "version": CANDIDATE_REVIEW_VERSION, "status": "admitted",
         "source_sha256": hashlib.sha256(source.encode("utf-8")).hexdigest(),
         "review_input_candidate_sha256": candidate_review_sha256(candidate),
-        "candidate_sha256": candidate_review_sha256(project_constraint_custody(
-            candidate, custody=admission_witness["constraint_custody"],
+        "candidate_sha256": candidate_review_sha256(project_reviewed_custody(
+            candidate,
+            component_custody=admission_witness["component_custody"],
+            constraint_custody=admission_witness["constraint_custody"],
+            evidence_text=source,
         )),
         "admission_witness": admission_witness,
     }
@@ -921,6 +924,10 @@ def _host_native_reviewer_admission_observation(
                     ],
                     "risk_keys": [],
                     "risk_posture_status": "no_material_risks_identified",
+                },
+                "component_custody": {
+                    "event_responsibilities": [],
+                    "additional_responsibilities": [],
                 },
                 "constraint_custody": [],
             },
