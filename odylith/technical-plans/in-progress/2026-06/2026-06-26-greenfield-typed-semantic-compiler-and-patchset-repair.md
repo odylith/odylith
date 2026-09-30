@@ -2,6 +2,25 @@ Status: In progress
 
 ## Gate-first implementation and next release decision (2026-09-30)
 
+Installed evidence has now falsified this as a release winner. The exact
+source-only agriculture P1 clarified correctly in `8.555s` with no candidate
+or transaction, but the complete agriculture briefing case failed deterministic
+admission after `150.885s`: the author cited a pronoun-bearing event too
+narrowly for its stated target. The same positive source previously produced a
+passing 5/5/5 package in `138.533s` without the gate. The first negative
+matrix result exposed a stale evaluator shape, corrected without changing the
+frozen source case or product distribution. The first positive attempt exposed
+discovery-wrapper evidence-directory forwarding, corrected before any model
+call. Neither harness defect explains the positive semantic failure.
+
+Stop the fixed public campaign at this falsifier. The useful gate is a
+development result, not a license to keep the two-call mechanism or to loosen
+exact citation custody. Compare only a bounded simpler ownership regime that
+can preserve the no-write source-only result and restore complete positive
+packages with time margin; if none clears both, keep Greenfield preview-only
+and do not open the protected holdout. No case-specific author prompt,
+pronoun parser, retry, repair, fallback, or schema cascade.
+
 The narrow pre-author gate is wired into the public CLI, host-native release
 flow, recovery caller, EDIT rebuild, and operator guidance. It makes one
 source-bound admit/clarify decision before the existing single candidate

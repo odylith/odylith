@@ -2,6 +2,37 @@
 
 ## Pre-author gate implementation checkpoint (2026-09-30)
 
+### Installed comparison outcome
+
+The exact `release-agriculture-030-source` installed replay clarified in
+`8.555s` with `first_path`, zero candidate/proposal publication, and zero
+generated Radar, Registry, or Atlas objects. The initial release harness
+mis-scored that valid gate-only outcome because it still required the retired
+candidate-era `consistency_assessment` field and one frozen question sentence.
+The harness now checks the closed gate-only shape and no-write receipt while
+leaving question meaning to detached semantic review; the unmodified product
+distribution passed the replay after that evaluator correction. The initial
+failure and passing rerun are retained under
+`/private/tmp/odylith-gate-00c750376.MGYf0R/`.
+
+The positive `release-agriculture-037-source` did not pass. The gate admitted
+the explicit briefing path, then the author returned a complete-shaped
+candidate but selected a safety-note event with the narrow citation “the
+scientific reviewer accepts them” and the target “raw analyst notes” outside
+that cited event. Deterministic custody rejected the ungrounded target at
+proposal exit `2`; no transaction or governed product write occurred. The
+failed proposal took `150.885s` including both host calls. The earlier
+single-authority run of this source passed in `138.533s`, so this is a
+positive-path generalization regression with limited latency margin, not a
+win from the separate gate. Retained gate, candidate, and proposal receipts:
+`/private/tmp/odylith-gate-00c750376.MGYf0R/case-037-evidence/`.
+
+Do not relax event-target citation custody, remove this event from the fixed
+case, add pronoun heuristics, retry the model, or promote this gate candidate
+to release. Preserve the no-write negative result as learning; the overall
+gate-plus-author mechanism remains unqualified until a bounded alternative
+improves complete positive packages as well as negative intent handling.
+
 The bounded comparison is now implemented on the current branch, but is not
 release-qualified. `candidate-contract` returns the fixed independent
 first-path gate task and schema. One host gate decision is validated against

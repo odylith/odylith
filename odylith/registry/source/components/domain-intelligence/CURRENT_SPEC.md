@@ -6,6 +6,15 @@ Last updated: 2026-09-30
 
 ### Greenfield first-path gate boundary (2026-09-30)
 
+Installed public comparison does not qualify this boundary for release. The
+gate fixed the exact source-only agriculture P1 in `8.555s` with no write, but
+the complete positive agriculture briefing failed candidate source custody at
+`150.885s`: an authored event's target was outside its exact event citation.
+The deterministic validator correctly refused a transaction. Domain
+Intelligence must preserve exact citation and transaction laws and treat the
+gate-plus-author arrangement as provisional under CB-324, not as a shipped
+winning mechanism. The protected holdout is still closed.
+
 Domain Intelligence now offers a narrow independent authority decision before
 one Greenfield candidate author. The `candidate-contract` exposes the gate
 task and closed schema for the exact operator request and optional EDIT.

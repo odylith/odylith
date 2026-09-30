@@ -400,6 +400,7 @@ def test_greenfield_preconfirm_matrix_without_release_intent_runs_discovery_proo
     assert "--semantic-annotations-file" not in invocations
     assert "--evaluation-split-manifest" not in invocations
     assert "--final-holdout-run-ledger" not in invocations
+    assert f"--evidence-output-dir {overrides['GREENFIELD_MATRIX_EVIDENCE_OUTPUT_DIR']}" in invocations
     assert invocations.count("--host-candidate-arg=") == 14
     assert "--host-candidate-arg=codex" in invocations
     assert "--host-candidate-arg={model}" in invocations

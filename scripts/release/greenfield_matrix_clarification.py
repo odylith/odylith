@@ -22,9 +22,6 @@ from odylith.runtime.domain_intelligence.greenfield_pending_transaction_store im
     GREENFIELD_PENDING_TRANSACTION_ROOT,
     GREENFIELD_RUNTIME_ROOT,
 )
-from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
-    consistency_source_span_receipts_valid,
-)
 from odylith.runtime.domain_intelligence.greenfield_repository_write_set import (
     GREENFIELD_REPOSITORY_WRITE_PATHS,
 )
@@ -111,7 +108,7 @@ def clarification_contract_issues(
     stage_observation: Mapping[str, Any] | None = None,
     expected_source: str = "",
 ) -> tuple[str, ...]:
-    """Require exactly the small, host-neutral clarification payload and no writes."""
+    """Prove the closed no-write shape; detached review judges question meaning."""
 
     issues: list[str] = []
     payload = execution.payload
@@ -148,55 +145,11 @@ def clarification_contract_issues(
                 else ""
             ),
         ))
-    expected_clarification_fields = {
-        "question", "required_fields", "consistency_assessment",
-    }
+    expected_clarification_fields = {"question", "required_fields"}
     if set(clarification) != expected_clarification_fields:
         issues.append(
-            "host-native clarification payload must contain only question, required_fields, "
-            "and consistency_assessment"
+            "host-native clarification payload must contain only question and required_fields"
         )
-    consistency = clarification.get("consistency_assessment")
-    consistency = consistency if isinstance(consistency, Mapping) else {}
-    allowed_consistency_fields = {"status", "source_spans"}
-    basis = consistency.get("basis")
-    complete_source_missingness = basis == "complete_source_missingness"
-    if complete_source_missingness:
-        allowed_consistency_fields.add("basis")
-    if set(consistency) != allowed_consistency_fields:
-        issues.append(
-            "clarification consistency_assessment has missing or unsupported fields"
-        )
-    consistency_status = str(consistency.get("status") or "").strip()
-    raw_consistency_spans = consistency.get("source_spans")
-    consistency_spans = (
-        tuple(raw_consistency_spans)
-        if isinstance(raw_consistency_spans, Sequence)
-        and not isinstance(raw_consistency_spans, (str, bytes, bytearray))
-        else ()
-    )
-    if consistency_status == "consistent" and consistency_spans:
-        issues.append("consistent clarification must not claim conflicting source spans")
-    elif consistency_status == "material_ambiguity":
-        if complete_source_missingness:
-            if consistency_spans:
-                issues.append(
-                    "complete-source missingness clarification must not invent source spans"
-                )
-        elif not consistency_source_span_receipts_valid(
-            consistency_spans,
-            minimum=1,
-        ):
-            issues.append("material ambiguity clarification requires at least one valid source-bound span")
-    elif consistency_status == "material_contradiction" and (
-        not consistency_source_span_receipts_valid(
-            consistency_spans,
-            minimum=2,
-        )
-    ):
-        issues.append("material contradiction clarification requires at least two source-bound spans")
-    elif consistency_status not in {"consistent", "material_ambiguity", "material_contradiction"}:
-        issues.append("clarification consistency_assessment has an unsupported status")
     required_fields = tuple(str(field).strip() for field in expected_fields if str(field).strip())
     if not required_fields:
         issues.append("clarification release case lacks frozen expected material fields")
@@ -210,8 +163,10 @@ def clarification_contract_issues(
     question = clarification.get("question")
     if required_fields and not focused_material_question(question, required_fields=required_fields):
         issues.append("clarification payload must contain one bounded question for typed material fields")
-    if expected_question and question != expected_question:
-        issues.append("clarification payload question must match the frozen typed clarification")
+    if expected_question and not focused_material_question(
+        expected_question, required_fields=required_fields
+    ):
+        issues.append("frozen clarification question is not a bounded first-path question")
     if required_fields and observed_fields != required_fields:
         issues.append(
             "clarification payload required_fields must match the expected material fields: "

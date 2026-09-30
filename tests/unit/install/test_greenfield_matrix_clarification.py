@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -50,11 +51,6 @@ def _execution() -> ClarificationExecution:
                     "and what result do they see?"
                 ),
                 "required_fields": ["first_path"],
-                "consistency_assessment": {
-                    "status": "material_ambiguity",
-                    "source_spans": [],
-                    "basis": "complete_source_missingness",
-                },
             },
         },
         returncode=0,
@@ -77,6 +73,45 @@ def test_clarification_requires_one_host_authority_and_zero_runtime_calls() -> N
     )
 
     assert issues == ()
+
+
+def test_gate_only_clarification_accepts_equivalent_question_not_exact_sentence() -> None:
+    execution = _execution()
+    clarification = dict(execution.payload["clarification"])
+    clarification["question"] = (
+        "Who is this product for, which task should they complete, "
+        "and what observable outcome should it produce?"
+    )
+    execution = replace(execution, payload={"mode": "clarification_required", "clarification": clarification})
+
+    assert clarification_contract_issues(
+        execution,
+        expected_fields=("first_path",),
+        expected_question=(
+            "Who uses this product first, what complete task do they finish, "
+            "and what result do they see?"
+        ),
+        expected_model_profile_id=STANDARD_PROFILE_ID,
+        stage_observation=_stage(),
+        expected_source=SOURCE,
+    ) == ()
+
+
+def test_gate_only_clarification_rejects_retired_candidate_consistency_shape() -> None:
+    execution = _execution()
+    clarification = dict(execution.payload["clarification"])
+    clarification["consistency_assessment"] = {"status": "material_ambiguity"}
+    execution = replace(execution, payload={"mode": "clarification_required", "clarification": clarification})
+
+    issues = clarification_contract_issues(
+        execution,
+        expected_fields=("first_path",),
+        expected_model_profile_id=STANDARD_PROFILE_ID,
+        stage_observation=_stage(),
+        expected_source=SOURCE,
+    )
+
+    assert "host-native clarification payload must contain only question and required_fields" in issues
 
 
 def test_clarification_rejects_runtime_reviewer_style_outcome() -> None:

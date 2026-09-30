@@ -125,6 +125,8 @@ if [[ "$release_intent" == "1" ]]; then
     --lower-capability-control-file "$lower_capability_control_file"
     --evidence-output-dir "$evidence_output_dir"
   )
+elif [[ -n "$evidence_output_dir" ]]; then
+  extra_args+=(--evidence-output-dir "$evidence_output_dir")
 fi
 host_candidate_args=()
 while IFS= read -r argument; do
