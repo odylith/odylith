@@ -1,5 +1,28 @@
 - Bug ID: CB-303
 
+## Single-authority public replay UX findings (2026-09-29)
+
+Clean installed distribution from pushed commit `0ab2929d9` passed the exact
+`release-accessibility-005-source` public replay in one proposal (`131.789s`),
+with 5 Radar workstreams, 5 Registry components, 5 Atlas diagrams, complete
+browser proof, and no automated quality findings. Independent strong review
+found no P0/P1 semantic defect: actor/event ownership, publish-before-verify
+order, reviewer-only disposition, private drafts, evidence custody, and the
+no-certification boundary survived the generated package. This one case is
+not the 40-case campaign or final release qualification.
+
+Two P2 usability defects remain in retained evidence at
+`/private/tmp/odylith-public-replay-0ab2929d9-direct-evidence/retained/release-accessibility-005-source`.
+The displayed/copyable “Run authored proof” handoff says to run bound
+verification commands but omits the commands that are present in the payload.
+The Project handoff owner should include the bound commands and validation
+cases in the copied prompt. Mobile Atlas “Read at 100%” can initially show
+whitespace or clipped label beginnings; the viewport owner should anchor
+readable zoom to meaningful content and prove complete labels in screenshots.
+Do not alter canonical semantics, add a parser, or tune the author to this
+single case. Check whether either class recurs in the broader public campaign
+before elevating it into a release-blocking generalized failure.
+
 - V43 evidence-label ambiguity (2026-09-27): Retained Project, Brief, Atlas,
   project-intelligence, and memory views label the accepted `product_story`
   citation as `Source excerpt`. In source-backed requests, reviewers reasonably

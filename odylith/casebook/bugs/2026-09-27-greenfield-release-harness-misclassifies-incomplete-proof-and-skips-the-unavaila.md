@@ -1,5 +1,44 @@
 - Bug ID: CB-347
 
+## Public campaign clarification false failure (2026-09-29)
+
+The fixed 40-case installed public campaign stopped on its first expected
+clarification case, `release-accessibility-004-topic`. The host returned the
+frozen `first_path` clarification in `50.633s`, with no staged transaction or
+governed write. The release evaluator nevertheless assigned 0/10 because it
+required an authored candidate's sealed receipt and canonical hash on a
+clarification that has no admitted canonical candidate. Eleven candidate-
+receipt errors are evaluator artifacts, not evidence of semantic failure.
+Retained result: `/private/tmp/odylith-public40-0ab2929d9-evidence/public40.v1.json`.
+
+The owning correction is in the profile evidence validator: retain the exact
+host argv, source hash, one-call, zero-runtime-call, output hash, and no-write
+checks, but require sealed canonical-candidate custody only for authored
+transaction outcomes. A clarification must have no sealed candidate receipt.
+Replace the test fixture that fabricates such a receipt; add positive and
+negative clarification controls, then rerun the frozen evaluator suite before
+resuming the public campaign. Do not change the host prompt, candidate schema,
+runtime semantic path, or one-shot public case to satisfy this false oracle.
+
+The evaluator now treats clarification as a source-bound raw host output with
+no sealed candidate receipt; authored transactions retain the sealed custody
+requirement. The retained first case re-evaluates as passed without a provider
+call. The focused campaign/profile/statistics tests passed 176/176, with
+separate fabricated-receipt and hash-mismatch rejection controls. The public
+campaign rerun remains pending; this is not a release claim.
+
+## Discovery wrapper evidence-path miss (2026-09-29)
+
+The public replay wrapper rejected `COMMIT_RECOVERY_PROOF=1` before case
+installation because discovery mode did not forward its supplied retained-
+evidence directory to the controller. No model candidate was produced in that
+attempt. The same maintained controller was invoked directly with the exact
+14 host argv entries and an external retained-evidence directory; the one
+installed public case and all four recovery subcases then passed. This is a
+wrapper usability defect, not a semantic replay failure or release-tier proof.
+Keep it open for a bounded wrapper forwarding test; do not add a repair path
+or reinterpret the successful direct-controller result as final qualification.
+
 ## Single-authority release-gate correction (2026-09-29)
 
 The V49 live reviewer mechanism failed on terminal-event identity and was

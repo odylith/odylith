@@ -26,6 +26,12 @@ from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
 )
+from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import (
+    HOST_CANDIDATE_FORMAT_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_json import (
+    encode_greenfield_model_value,
+)
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     DEEP_PROFILE_ID,
     GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION,
@@ -384,32 +390,58 @@ def _host_stage_evidence(
     if stage.get("host_workspace_cleaned") is not True:
         issues.append("retained host workspace was not cleaned")
 
-    expected_sealed_fields = {
-        "origin",
-        "host_candidate",
-        "runtime_semantic_model_call_count",
-    }
-    if set(sealed) != expected_sealed_fields:
-        issues.append("sealed model observation has missing or unsupported fields")
-    if sealed.get("origin") != "host_native":
-        issues.append("sealed model observation does not identify host authority")
-    if not _is_exact_int(sealed.get("runtime_semantic_model_call_count"), 0):
-        issues.append("sealed runtime semantic model call count is not zero")
-    receipt = _mapping(sealed.get("host_candidate"))
-    if receipt.get("version") != HOST_CANDIDATE_RECEIPT_VERSION:
-        issues.append("sealed host candidate receipt version is invalid")
-    if receipt.get("contract_version") != HOST_CANDIDATE_CONTRACT_VERSION:
-        issues.append("sealed host candidate contract version is invalid")
-    if receipt.get("canonical_version") != GREENFIELD_INTENT_AUTHORING_VERSION:
-        issues.append("sealed host candidate canonical version is invalid")
-    if stage.get("raw_candidate_sha256") != receipt.get("raw_candidate_sha256"):
-        issues.append("retained raw candidate does not match the sealed receipt")
-
-    retained_hash_summary = retained_canonical_candidate_hash_evidence(
-        raw_candidate=raw_candidate,
-        receipt=receipt,
-        evidence_text=expected_source,
-    )
+    if stage.get("response_kind") == "clarification_required":
+        if stage.get("proposal_mode") != "clarification_required":
+            issues.append("retained host clarification proposal mode is invalid")
+        if sealed:
+            issues.append("clarification must not claim a sealed candidate receipt")
+        if raw_candidate.get("version") != HOST_CANDIDATE_FORMAT_VERSION or _mapping(
+            raw_candidate.get("result")
+        ).get("status") != "clarification_required":
+            issues.append("retained host clarification candidate is invalid")
+        try:
+            raw_sha256 = hashlib.sha256(
+                encode_greenfield_model_value(raw_candidate)
+            ).hexdigest()
+        except (RuntimeError, TypeError, ValueError):
+            raw_sha256 = ""
+            issues.append("retained host clarification candidate cannot be encoded")
+        if stage.get("raw_candidate_sha256") != raw_sha256:
+            issues.append("retained host clarification hash does not match host output")
+        retained_hash_summary = {
+            "status": "passed" if raw_sha256 else "failed",
+            "raw_candidate_sha256": raw_sha256,
+            "canonical_projection_verified": False,
+            "issues": [],
+        }
+    else:
+        if stage.get("proposal_mode") != "product_create_transaction":
+            issues.append("retained authored proposal mode is invalid")
+        expected_sealed_fields = {
+            "origin",
+            "host_candidate",
+            "runtime_semantic_model_call_count",
+        }
+        if set(sealed) != expected_sealed_fields:
+            issues.append("sealed model observation has missing or unsupported fields")
+        if sealed.get("origin") != "host_native":
+            issues.append("sealed model observation does not identify host authority")
+        if not _is_exact_int(sealed.get("runtime_semantic_model_call_count"), 0):
+            issues.append("sealed runtime semantic model call count is not zero")
+        receipt = _mapping(sealed.get("host_candidate"))
+        if receipt.get("version") != HOST_CANDIDATE_RECEIPT_VERSION:
+            issues.append("sealed host candidate receipt version is invalid")
+        if receipt.get("contract_version") != HOST_CANDIDATE_CONTRACT_VERSION:
+            issues.append("sealed host candidate contract version is invalid")
+        if receipt.get("canonical_version") != GREENFIELD_INTENT_AUTHORING_VERSION:
+            issues.append("sealed host candidate canonical version is invalid")
+        if stage.get("raw_candidate_sha256") != receipt.get("raw_candidate_sha256"):
+            issues.append("retained raw candidate does not match the sealed receipt")
+        retained_hash_summary = retained_canonical_candidate_hash_evidence(
+            raw_candidate=raw_candidate,
+            receipt=receipt,
+            evidence_text=expected_source,
+        )
     issues.extend(str(issue) for issue in retained_hash_summary["issues"])
     return {
         "origin": "host_native",

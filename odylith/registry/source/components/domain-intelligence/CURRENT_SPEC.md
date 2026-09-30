@@ -4,6 +4,17 @@ Last updated: 2026-09-29
 
 ## Overview
 
+### Exact public replay evidence (2026-09-29)
+
+The installed single-authority candidate from pushed commit `0ab2929d9`
+passed one public accessibility replay in `131.789s` with 5 Radar workstreams,
+5 Registry specs, 5 Atlas diagrams, browser proof, and passing recovery
+subcases. Independent strong review found no P0/P1 semantic defect in that
+package. This evidence supports the one-author ownership regime but does not
+qualify the pinned release profile or establish unseen-input reliability.
+The fixed 40-case public campaign, independent release-tier review, live
+intervention-delivery proof, and untouched protected holdout remain open.
+
 ### Single-semantic-authority release candidate (2026-09-29)
 
 The bounded Greenfield release candidate removes the independent reviewer from

@@ -1,5 +1,48 @@
 Status: In progress
 
+## Public-campaign evaluator stop (2026-09-29)
+
+The disclosed 40-case campaign stopped after one expected `first_path`
+clarification in `50.633s`, with zero governed writes. The evaluator falsely
+required a sealed authored candidate receipt on this no-candidate path and
+reported eleven hash/receipt errors. CB-347 records the retained result and
+the bounded owner correction. Repair the profile proof branch and replace the
+fabricated clarification test fixture, then rerun deterministic tests before
+resuming the public campaign. Do not change the semantic mechanism or tune
+the public case. The protected holdout remains unopened.
+
+The bounded evaluator correction is implemented. A no-receipt clarification
+retains raw-output/source/one-call proof, while authored outcomes still require
+sealed canonical custody. Focused tests passed 176/176, and deterministic
+re-evaluation of the retained first case passed with no new provider call.
+Proceed with the unchanged public corpus; no mechanism revision was made.
+
+## Exact public replay outcome (2026-09-29)
+
+Pushed commit `0ab2929d9` built a complete multi-platform `0.1.15` local
+distribution and passed the 87-term platform domain-leakage check. The exact
+installed `release-accessibility-005-source` replay passed with one
+`131.789s` proposal, 5 Radar workstreams, 5 Registry components, 5 Atlas
+diagrams, 16 trace nodes, complete browser proof, and four passing recovery
+subcases. One host-authored canonical candidate had zero runtime semantic
+model calls after receipt. No automatic quality issue was reported.
+
+Independent strong semantic/UX review found no P0/P1 for this package. It
+confirmed the five actors/systems, one conformance record, publish-before-
+verification order, reviewer-only disposition, private drafts, evidence
+custody, and no-certification boundary. It reported two P2 usability defects:
+the copyable proof handoff omits bound verification commands, and mobile Atlas
+100% reading can open on clipped or empty content. Preserve both in CB-303 and
+look for recurrence across independent public packages before changing their
+owners. The discovery wrapper's retained-evidence forwarding miss is recorded
+in CB-347; the direct controller ran the same frozen case and evidence path.
+
+This is discovery-tier proof for one case, not release qualification. Continue
+to the frozen 40-case public campaign with browser/recovery and independent
+review. Do not open the protected holdout or treat automated 10/10 as human
+quality acceptance. A recurring P1 or cross-case semantic drift stops the
+campaign and retires this mechanism rather than adding another author rule.
+
 ## Current release boundary (2026-09-29)
 
 The single-authority implementation is in place: one host-authored canonical

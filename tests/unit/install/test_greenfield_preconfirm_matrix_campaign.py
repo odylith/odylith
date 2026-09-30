@@ -177,11 +177,7 @@ def test_discovery_uses_ephemeral_case_proof_without_publishing_release_evidence
             evidence_text=source,
             clock=lambda: 1.0,
         )
-        observed = {
-            "origin": "host_native",
-            "host_candidate": receipt,
-            "runtime_semantic_model_call_count": 0,
-        }
+        observed = {}
         stage = {
             "version": HOST_NATIVE_MATRIX_OBSERVATION_VERSION,
             "status": "passed",
@@ -305,7 +301,7 @@ def test_discovery_uses_ephemeral_case_proof_without_publishing_release_evidence
         "retained_candidate_hash_summary"
     ]
     assert hash_summary["status"] == "passed"
-    assert hash_summary["canonical_projection_verified"] is True
+    assert hash_summary["canonical_projection_verified"] is False
     assert observations["binding_issues"] == ()
     serialized_profile = json.dumps(observations["profile_evidence"])
     assert "candidate_" + "review" not in serialized_profile

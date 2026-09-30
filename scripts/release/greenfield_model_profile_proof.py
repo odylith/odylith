@@ -413,6 +413,31 @@ def _result_proves_profile(result: Any, profile_id: str) -> bool:
         )
         and _is_exact_int(summary.get("post_receipt_provider_invocations"), 0)
     )
+    if expected_response == CLARIFICATION_REQUIRED_EXPECTATION:
+        candidate_binding_matches = (
+            observed == {}
+            and _is_sha256(stage.get("raw_candidate_sha256"))
+            and _mapping(summary.get("retained_candidate_hash_summary")).get(
+                "raw_candidate_sha256"
+            ) == stage.get("raw_candidate_sha256")
+        )
+    else:
+        candidate_binding_matches = (
+            set(observed) == exact_observed
+            and observed.get("origin") == "host_native"
+            and _is_exact_int(observed.get("runtime_semantic_model_call_count"), 0)
+            and set(receipt) == exact_receipt
+            and all(
+                _is_sha256(receipt.get(field))
+                for field in (
+                    "source_sha256",
+                    "raw_candidate_sha256",
+                    "canonical_candidate_sha256",
+                )
+            )
+            and stage.get("raw_candidate_sha256") == receipt.get("raw_candidate_sha256")
+            and stage.get("source_sha256") == receipt.get("source_sha256")
+        )
     return (
         str(getattr(result, "status", "") or "") == "passed"
         and bool(getattr(getattr(result, "quality", None), "passed", False))
@@ -427,18 +452,7 @@ def _result_proves_profile(result: Any, profile_id: str) -> bool:
         )
         and _is_exact_int(profile.get("post_receipt_provider_invocations"), 0)
         and configured_matches
-        and set(observed) == exact_observed
-        and observed.get("origin") == "host_native"
-        and _is_exact_int(observed.get("runtime_semantic_model_call_count"), 0)
-        and set(receipt) == exact_receipt
-        and all(
-            _is_sha256(receipt.get(field))
-            for field in (
-                "source_sha256",
-                "raw_candidate_sha256",
-                "canonical_candidate_sha256",
-            )
-        )
+        and candidate_binding_matches
         and stage.get("status") == "passed"
         and stage.get("model_profile_id") == profile_id
         and _is_exact_int(stage.get("host_invocations"), 1)
@@ -446,8 +460,6 @@ def _result_proves_profile(result: Any, profile_id: str) -> bool:
         and _is_exact_int(stage.get("proposal_command_invocations"), 1)
         and _is_exact_int(stage.get("runtime_semantic_model_call_count"), 0)
         and _is_exact_int(stage.get("post_receipt_provider_invocations"), 0)
-        and stage.get("raw_candidate_sha256") == receipt.get("raw_candidate_sha256")
-        and stage.get("source_sha256") == receipt.get("source_sha256")
         and stage.get("response_kind") == expected_response
         and stage.get("proposal_mode")
         == (

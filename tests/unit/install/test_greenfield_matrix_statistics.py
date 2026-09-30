@@ -472,11 +472,7 @@ def _host_native_clarification_result(
     profile_evidence = model_profile_evidence(
         STANDARD_PROFILE_ID,
         model_profile_environment(STANDARD_PROFILE_ID, {}),
-        observed={
-            "origin": "host_native",
-            "host_candidate": receipt,
-            "runtime_semantic_model_call_count": 0,
-        },
+        observed={},
         stage_observation=stage,
         raw_candidate=raw_candidate,
         expected_source=source,

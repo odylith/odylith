@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 import hashlib
+import json
 from types import SimpleNamespace
 
 import pytest
@@ -24,6 +25,10 @@ from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import 
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     get_greenfield_model_profile,
 )
+from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    authored_response,
+    host_candidate_response,
+)
 
 
 SOURCE = "The first complete task remains materially ambiguous."
@@ -42,17 +47,8 @@ def _profile_evidence(profile_id: str = STANDARD_PROFILE_ID) -> dict[str, object
             "clarification": {"material_dimension": "first_path"},
         },
     }
-    _candidate, receipt = admit_greenfield_host_candidate(
-        raw_candidate,
-        evidence_text=SOURCE,
-        clock=lambda: 1.0,
-    )
     contract = get_greenfield_model_profile(profile_id)
-    observed = {
-        "origin": "host_native",
-        "host_candidate": receipt,
-        "runtime_semantic_model_call_count": 0,
-    }
+    observed = {}
     stage = {
         "version": HOST_NATIVE_MATRIX_OBSERVATION_VERSION,
         "status": "passed",
@@ -82,7 +78,15 @@ def _profile_evidence(profile_id: str = STANDARD_PROFILE_ID) -> dict[str, object
         "host_stdout_bytes": 500,
         "host_stderr_bytes": 0,
         "response_kind": "clarification_required",
-        "raw_candidate_sha256": receipt["raw_candidate_sha256"],
+        "raw_candidate_sha256": hashlib.sha256(
+            json.dumps(
+                raw_candidate,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+                allow_nan=False,
+            ).encode("utf-8")
+        ).hexdigest(),
         "host_output_sha256": "4" * 64,
         "host_output_bytes": 500,
         "candidate_temp_outside_repo": True,
@@ -102,17 +106,78 @@ def _profile_evidence(profile_id: str = STANDARD_PROFILE_ID) -> dict[str, object
     )
 
 
+def _authored_profile_evidence(profile_id: str = STANDARD_PROFILE_ID) -> dict[str, object]:
+    event = "Mara stores one draft"
+    intent = {
+        "title": "Draft Desk",
+        "product_story": "Draft Desk supports draft review",
+        "state_object": "one draft",
+        "first_path": event,
+        "proof_boundary": "one draft",
+        "problem": "Scattered drafts delay reviews",
+        "customer": "Mara",
+        "opportunity": "A shared draft reduces rework",
+        "product_view": "Draft Desk keeps a review trail",
+        "human_actors": ["Mara"],
+        "external_systems": [],
+        "internal_systems": [],
+        "component_responsibilities": [],
+        "assumptions": [],
+        "ambiguities": [],
+        "success_metrics": [],
+        "evidence_requirements": [],
+        "operational_constraints": [],
+        "non_goals": [],
+    }
+    source = ". ".join(
+        str(row)
+        for value in intent.values()
+        for row in (value if isinstance(value, list) else [value])
+        if row
+    )
+    response = authored_response(
+        intent,
+        evidence_text=source,
+        first_path_relations=[{
+            "actor_kind": "human",
+            "actor_fact_quote": "Mara",
+            "owner_system_quote": "",
+            "event_quote": event,
+            "action_verb_quote": "stores",
+            "target_quote": "one draft",
+            "visible_result_quote": "one draft",
+        }],
+    )
+    raw_candidate = host_candidate_response(response, evidence_text=source)
+    _candidate, receipt = admit_greenfield_host_candidate(
+        raw_candidate, evidence_text=source, clock=lambda: 1.0
+    )
+    evidence = _profile_evidence(profile_id)
+    stage = evidence["stage_observation"]
+    stage["response_kind"] = "authored"
+    stage["proposal_mode"] = "product_create_transaction"
+    stage["source_sha256"] = hashlib.sha256(source.encode("utf-8")).hexdigest()
+    stage["raw_candidate_sha256"] = receipt["raw_candidate_sha256"]
+    return model_profile_evidence(
+        profile_id,
+        model_profile_environment(profile_id, {}),
+        observed={
+            "origin": "host_native",
+            "host_candidate": receipt,
+            "runtime_semantic_model_call_count": 0,
+        },
+        stage_observation=stage,
+        raw_candidate=raw_candidate,
+        expected_source=source,
+    )
+
+
 def _result(
     *,
     profile_evidence: dict[str, object],
     expectation: str,
 ) -> SimpleNamespace:
     profile_evidence = deepcopy(profile_evidence)
-    if expectation == "transaction_committed":
-        profile_evidence["stage_observation"]["response_kind"] = "authored"
-        profile_evidence["stage_observation"][
-            "proposal_mode"
-        ] = "product_create_transaction"
     evidence: dict[str, object] = {
         "case": {
             "expectation": expectation,
@@ -176,7 +241,7 @@ def test_host_clarification_passes_aggregate_profile_proof() -> None:
 
 def test_complete_release_profile_requires_standard_success_and_rescue_no_write_control() -> None:
     standard = _result(
-        profile_evidence=_profile_evidence(STANDARD_PROFILE_ID),
+        profile_evidence=_authored_profile_evidence(STANDARD_PROFILE_ID),
         expectation="transaction_committed",
     )
     rescue = _result(
@@ -191,7 +256,7 @@ def test_complete_release_profile_requires_standard_success_and_rescue_no_write_
 
 def test_complete_release_profile_fails_without_rescue_control() -> None:
     standard = _result(
-        profile_evidence=_profile_evidence(STANDARD_PROFILE_ID),
+        profile_evidence=_authored_profile_evidence(STANDARD_PROFILE_ID),
         expectation="transaction_committed",
     )
     proof = model_profile_release_proof((standard,), require_complete=True)
@@ -201,7 +266,7 @@ def test_complete_release_profile_fails_without_rescue_control() -> None:
 
 def test_lower_capability_positive_result_cannot_qualify_release_success() -> None:
     rescue = _result(
-        profile_evidence=_profile_evidence(RESCUE_PROFILE_ID),
+        profile_evidence=_authored_profile_evidence(RESCUE_PROFILE_ID),
         expectation="transaction_committed",
     )
     proof = model_profile_release_proof((rescue,), require_complete=False)
@@ -211,7 +276,7 @@ def test_lower_capability_positive_result_cannot_qualify_release_success() -> No
 
 def test_deep_profile_cannot_qualify_release_success() -> None:
     deep = _result(
-        profile_evidence=_profile_evidence(DEEP_PROFILE_ID),
+        profile_evidence=_authored_profile_evidence(DEEP_PROFILE_ID),
         expectation="transaction_committed",
     )
     proof = model_profile_release_proof((deep,), require_complete=False)
@@ -235,7 +300,7 @@ def test_release_profile_rechecks_single_authority_bindings(
     path: tuple[str, ...],
     value: object,
 ) -> None:
-    evidence = deepcopy(_profile_evidence())
+    evidence = deepcopy(_authored_profile_evidence())
     target = evidence
     for key in path[:-1]:
         target = target[key]
@@ -259,7 +324,6 @@ def test_release_profile_rechecks_single_authority_bindings(
             "runtime_semantic_model_calls_after_candidate_receipt",
         ),
         ("stage_observation_summary", "post_receipt_provider_invocations"),
-        ("observed", "runtime_semantic_model_call_count"),
         ("stage_observation", "host_invocations"),
         ("stage_observation", "contract_command_invocations"),
         ("stage_observation", "proposal_command_invocations"),
@@ -280,6 +344,26 @@ def test_aggregate_profile_rejects_non_integer_call_counts(
         require_complete=False,
     )
 
+    assert proof["status"] == "failed"
+
+
+def test_clarification_rejects_fabricated_sealed_candidate_receipt() -> None:
+    evidence = _profile_evidence()
+    evidence["observed"] = _authored_profile_evidence()["observed"]
+    proof = model_profile_release_proof(
+        (_result(profile_evidence=evidence, expectation="clarification_required"),),
+        require_complete=False,
+    )
+    assert proof["status"] == "failed"
+
+
+def test_clarification_rejects_retained_candidate_hash_mismatch() -> None:
+    evidence = _profile_evidence()
+    evidence["stage_observation"]["raw_candidate_sha256"] = "0" * 64
+    proof = model_profile_release_proof(
+        (_result(profile_evidence=evidence, expectation="clarification_required"),),
+        require_complete=False,
+    )
     assert proof["status"] == "failed"
 
 

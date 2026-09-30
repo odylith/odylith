@@ -90,7 +90,7 @@ def _stage(receipt: dict[str, object]) -> dict[str, object]:
         "host_returncode": 0,
         "host_stdout_bytes": 500,
         "host_stderr_bytes": 0,
-        "response_kind": "clarification_required",
+        "response_kind": "authored",
         "raw_candidate_sha256": receipt["raw_candidate_sha256"],
         "host_output_sha256": "4" * 64,
         "host_output_bytes": 500,
@@ -98,7 +98,7 @@ def _stage(receipt: dict[str, object]) -> dict[str, object]:
         "proposal_returncode": 0,
         "proposal_stdout_sha256": "5" * 64,
         "proposal_stderr_sha256": "6" * 64,
-        "proposal_mode": "clarification_required",
+        "proposal_mode": "product_create_transaction",
         "elapsed_seconds": 12.0,
     }
 
@@ -152,6 +152,21 @@ def _profile_evidence() -> dict[str, object]:
         model_profile_environment(STANDARD_PROFILE_ID, {}),
         observed=_observed(receipt),
         stage_observation=_stage(receipt),
+        raw_candidate=raw,
+        expected_source=SOURCE,
+    )
+
+
+def _clarification_profile_evidence() -> dict[str, object]:
+    raw, _receipt = _raw_and_receipt()
+    stage = _stage(_receipt)
+    stage["response_kind"] = "clarification_required"
+    stage["proposal_mode"] = "clarification_required"
+    return model_profile_evidence(
+        STANDARD_PROFILE_ID,
+        model_profile_environment(STANDARD_PROFILE_ID, {}),
+        observed={},
+        stage_observation=stage,
         raw_candidate=raw,
         expected_source=SOURCE,
     )
@@ -268,6 +283,8 @@ def test_clarification_stage_rejects_non_integer_call_counts(
 ) -> None:
     _raw, receipt = _raw_and_receipt()
     stage = _stage(receipt)
+    stage["response_kind"] = "clarification_required"
+    stage["proposal_mode"] = "clarification_required"
     if invalid is MISSING:
         stage.pop(field)
     else:
@@ -389,7 +406,7 @@ def test_release_profile_summary_has_no_runtime_reviewer_profile() -> None:
                 "changed_records": [],
                 "staged_transaction_present": False,
             },
-            "model_profile": _profile_evidence(),
+            "model_profile": _clarification_profile_evidence(),
         },
     )
 

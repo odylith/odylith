@@ -60,6 +60,21 @@ supersedes:
 
 superseded_by: 
 
+## Exact public replay checkpoint (2026-09-29)
+
+- Pushed commit `0ab2929d9` passed the immutable one-case accessibility
+  replay: one proposal in `131.789s`, 5 Radar, 5 Registry, 5 Atlas, browser
+  proof, four recovery subcases, and no automated findings. Independent strong
+  semantic/UX review found no P0/P1. This is a public discovery result, not
+  release qualification or an unseen-input generalization claim.
+- CB-303 retains two P2 UX issues in the copied proof handoff and mobile Atlas
+  reading anchor. CB-347 retains a discovery-wrapper evidence-path miss that
+  occurred before any case attempt; direct-controller proof succeeded.
+- Next decisive gate is the fixed 40-case public campaign with browser,
+  recovery, and independent quality adjudication. Stop on a recurring
+  semantic/UX failure class. Keep the protected holdout unopened until the
+  public campaign and release evidence are clean.
+
 ## Current Greenfield release lane (2026-09-29)
 
 - B-142 remains in implementation, not release-ready. The failed V49 live

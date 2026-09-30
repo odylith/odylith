@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "generated_utc": "2026-09-30T00:05:18Z",
+  "generated_utc": "2026-09-30T00:35:10Z",
   "release_summary": {
     "catalog": [
       {
@@ -322,19 +322,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
-            "local_change_count": 22,
-            "file_touch_count": 95
+            "commit_count": 4,
+            "local_change_count": 3,
+            "file_touch_count": 173
           },
           "48h": {
-            "commit_count": 8,
-            "local_change_count": 35,
-            "file_touch_count": 521
+            "commit_count": 9,
+            "local_change_count": 3,
+            "file_touch_count": 575
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-09-29T17:04:17-07:00",
+          "last_activity_iso": "2026-09-29T17:35:06-07:00",
           "age_days": 95,
           "eta_days": 15,
           "eta_confidence": "high"
@@ -350,7 +350,7 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 75,
+            "index": 73,
             "band": "High"
           },
           "48h": {
@@ -785,19 +785,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
-            "local_change_count": 8,
-            "file_touch_count": 82
+            "commit_count": 4,
+            "local_change_count": 2,
+            "file_touch_count": 172
           },
           "48h": {
-            "commit_count": 8,
-            "local_change_count": 21,
-            "file_touch_count": 144
+            "commit_count": 9,
+            "local_change_count": 2,
+            "file_touch_count": 211
           }
         },
         "timeline": {
           "start_date": "2026-03-28",
-          "last_activity_iso": "2026-09-29T16:53:53-07:00",
+          "last_activity_iso": "2026-09-29T17:34:53-07:00",
           "age_days": 185,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -813,7 +813,7 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 75,
+            "index": 72,
             "band": "High"
           },
           "48h": {
@@ -985,19 +985,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 2,
-            "local_change_count": 3,
-            "file_touch_count": 78
+            "commit_count": 3,
+            "local_change_count": 0,
+            "file_touch_count": 172
           },
           "48h": {
-            "commit_count": 5,
-            "local_change_count": 16,
-            "file_touch_count": 147
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 216
           }
         },
         "timeline": {
           "start_date": "2026-04-10",
-          "last_activity_iso": "2026-09-29T16:36:18-07:00",
+          "last_activity_iso": "2026-09-29T17:08:19-07:00",
           "age_days": 172,
           "eta_days": null,
           "eta_confidence": "low"
@@ -1013,7 +1013,7 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 47,
+            "index": 45,
             "band": "Medium"
           },
           "48h": {
@@ -1089,180 +1089,6 @@
         "proof_summary_lines": []
       },
       {
-        "idea_id": "B-069",
-        "title": "Cross-Host Contract Hardening and Codex-Claude Separation",
-        "status": "finished",
-        "priority": "P0",
-        "sizing": "L",
-        "complexity": "VeryHigh",
-        "ordering_score": "95",
-        "implemented_summary": "",
-        "why": {
-          "problem": "Odylith's runtime and governance layers still carry hardcoded Codex-first policy in places that should be host-neutral. Host detection often doubles as policy, canonical execution-profile ids still encode Codex model branding, Compass runtime artifacts still use Codex stream names, and guidance plus proof surfaces still frame Codex behavior as the default product contract even when Claude Code already shares the same grounding and reasoning quality bar. That drift makes Claude compatibility feel partial even where the product already works, while also obscuring the real boundary: native spawn is a host capability question, not the whole product contract.",
-          "customer": "- Primary: Odylith operators who want the same product outcome in Codex and Claude Code without hidden contract drift. - Secondary: maintainers who need host capability, model-family defaults, and benchmark publication scope to stay explicit and auditable.",
-          "proposed_solution": "Add one canonical host capability contract that separates host family, transport capabilities, and model-family behavior; switch runtime routing and execution-profile ids to host-neutral canon with compatibility aliases; rename Compass runtime artifacts to host-neutral stream terms while keeping legacy read compatibility; rewrite source governance and docs around a host matrix; and normalize benchmark/proof fields so published proof can stay Codex-scoped without making the shared product contract Codex-scoped.",
-          "opportunity": "If Odylith makes host capability the canonical runtime contract and treats Codex-only behavior as one scoped model-family policy instead of the global default, the product can keep Codex-native delegation where it truly exists while making Claude Code feel like a first-class supported host across docs, grounding, Compass, governance, and benchmark scaffolding.",
-          "why_now": "Odylith is already claiming shared product value across Codex and Claude Code. Leaving Codex-only naming and policy wired into the canon now will only make later Claude parity and proof work noisier, riskier, and more expensive.",
-          "founder_pov": "Host neutrality is not a doc polish task. It is the product contract that lets Odylith keep one intelligence plane while telling the truth about which host can transport which kind of delegation today."
-        },
-        "links": {
-          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md",
-          "plan_file": "odylith/technical-plans/done/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md"
-        },
-        "registry_components": [
-          {
-            "component_id": "benchmark",
-            "name": "Benchmark"
-          },
-          {
-            "component_id": "compass",
-            "name": "Compass"
-          },
-          {
-            "component_id": "odylith",
-            "name": "Odylith"
-          },
-          {
-            "component_id": "odylith-context-engine",
-            "name": "Odylith Context Engine"
-          },
-          {
-            "component_id": "subagent-orchestrator",
-            "name": "Subagent Orchestrator"
-          },
-          {
-            "component_id": "subagent-router",
-            "name": "Subagent Router"
-          }
-        ],
-        "execution_wave_programs": [],
-        "release": {},
-        "release_history_summary": "Removed from 0.1.11",
-        "plan": {
-          "created": "2026-04-09",
-          "updated": "2026-04-09",
-          "all_total_tasks": 61,
-          "all_done_tasks": 61,
-          "total_tasks": 24,
-          "done_tasks": 24,
-          "progress_ratio": 1.0,
-          "progress_basis": "execution_checklist",
-          "display_progress_ratio": 1.0,
-          "display_progress_label": "100% progress",
-          "display_progress_state": "percent",
-          "progress_classification": "closed",
-          "checklist_label": "Checklist 24/24",
-          "next_tasks": []
-        },
-        "activity": {
-          "24h": {
-            "commit_count": 2,
-            "local_change_count": 3,
-            "file_touch_count": 78
-          },
-          "48h": {
-            "commit_count": 5,
-            "local_change_count": 16,
-            "file_touch_count": 147
-          }
-        },
-        "timeline": {
-          "start_date": "2026-04-09",
-          "last_activity_iso": "2026-09-29T16:36:18-07:00",
-          "age_days": 173,
-          "eta_days": 0,
-          "eta_confidence": "high"
-        },
-        "lineage": {
-          "reopens": [],
-          "reopened_by": [],
-          "split_from": [],
-          "split_into": [
-            "B-070"
-          ],
-          "merged_into": [],
-          "merged_from": []
-        },
-        "cost": {
-          "base_index": 71,
-          "24h": {
-            "index": 83,
-            "band": "High"
-          },
-          "48h": {
-            "index": 91,
-            "band": "High"
-          }
-        },
-        "proof_state": {},
-        "claim_guard": {},
-        "proof_state_resolution": {
-          "lane_ids": [],
-          "state": "none"
-        },
-        "scope_signal": {
-          "budget_class": "fast_simple",
-          "caps": [],
-          "feature_vector": {
-            "blast_radius_class": "cross-surface",
-            "broad_fanout": false,
-            "cross_surface_conflict": false,
-            "decision_count": 90,
-            "decision_evidence": true,
-            "explicit_count": 806,
-            "frontier_phase": "",
-            "generated_only_churn": false,
-            "governance_only_local_change": false,
-            "has_any_signal": true,
-            "implementation_count": 537,
-            "implementation_evidence": true,
-            "linked_child_count": 0,
-            "linked_surface_count": 5,
-            "meaningful_change_count": 619,
-            "meaningful_scope_activity": true,
-            "narrow_verified_signal": true,
-            "open_warning": false,
-            "proof_blocker": false,
-            "proof_status": "",
-            "stale_authority": false,
-            "synthetic_count": 0,
-            "unsafe_closeout": false,
-            "verified_completion": true
-          },
-          "label": "Active scope",
-          "promoted_default": true,
-          "rank": 3,
-          "reasons": [
-            "A recent verified completion was recorded.",
-            "A narrow verified scoped signal was recorded.",
-            "Explicit decision evidence is present.",
-            "Explicit implementation evidence is present.",
-            "Meaningful scope-local implementation evidence is present."
-          ],
-          "rung": "R3",
-          "token": "active_scope"
-        },
-        "proof_refs": [
-          {
-            "anchor": "timeline-audit",
-            "fact_tag": "frontier",
-            "kind": "workstream",
-            "label": "Proof frontier",
-            "surface": "compass",
-            "value": "B-069"
-          },
-          {
-            "anchor": "current-workstreams",
-            "fact_tag": "deployment_truth",
-            "kind": "workstream",
-            "label": "Deployment truth",
-            "surface": "compass",
-            "value": "B-069"
-          }
-        ],
-        "proof_summary_lines": []
-      },
-      {
         "idea_id": "B-063",
         "title": "Release Planning and Workstream Targeting",
         "status": "finished",
@@ -1330,19 +1156,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 2,
+            "commit_count": 3,
             "local_change_count": 0,
-            "file_touch_count": 75
+            "file_touch_count": 172
           },
           "48h": {
-            "commit_count": 5,
-            "local_change_count": 13,
-            "file_touch_count": 132
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 207
           }
         },
         "timeline": {
           "start_date": "2026-04-08",
-          "last_activity_iso": "2026-09-29T14:46:50-07:00",
+          "last_activity_iso": "2026-09-29T17:08:19-07:00",
           "age_days": 174,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -1360,7 +1186,7 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 62,
+            "index": 65,
             "band": "Medium"
           },
           "48h": {
@@ -1437,6 +1263,180 @@
         "proof_summary_lines": []
       },
       {
+        "idea_id": "B-069",
+        "title": "Cross-Host Contract Hardening and Codex-Claude Separation",
+        "status": "finished",
+        "priority": "P0",
+        "sizing": "L",
+        "complexity": "VeryHigh",
+        "ordering_score": "95",
+        "implemented_summary": "",
+        "why": {
+          "problem": "Odylith's runtime and governance layers still carry hardcoded Codex-first policy in places that should be host-neutral. Host detection often doubles as policy, canonical execution-profile ids still encode Codex model branding, Compass runtime artifacts still use Codex stream names, and guidance plus proof surfaces still frame Codex behavior as the default product contract even when Claude Code already shares the same grounding and reasoning quality bar. That drift makes Claude compatibility feel partial even where the product already works, while also obscuring the real boundary: native spawn is a host capability question, not the whole product contract.",
+          "customer": "- Primary: Odylith operators who want the same product outcome in Codex and Claude Code without hidden contract drift. - Secondary: maintainers who need host capability, model-family defaults, and benchmark publication scope to stay explicit and auditable.",
+          "proposed_solution": "Add one canonical host capability contract that separates host family, transport capabilities, and model-family behavior; switch runtime routing and execution-profile ids to host-neutral canon with compatibility aliases; rename Compass runtime artifacts to host-neutral stream terms while keeping legacy read compatibility; rewrite source governance and docs around a host matrix; and normalize benchmark/proof fields so published proof can stay Codex-scoped without making the shared product contract Codex-scoped.",
+          "opportunity": "If Odylith makes host capability the canonical runtime contract and treats Codex-only behavior as one scoped model-family policy instead of the global default, the product can keep Codex-native delegation where it truly exists while making Claude Code feel like a first-class supported host across docs, grounding, Compass, governance, and benchmark scaffolding.",
+          "why_now": "Odylith is already claiming shared product value across Codex and Claude Code. Leaving Codex-only naming and policy wired into the canon now will only make later Claude parity and proof work noisier, riskier, and more expensive.",
+          "founder_pov": "Host neutrality is not a doc polish task. It is the product contract that lets Odylith keep one intelligence plane while telling the truth about which host can transport which kind of delegation today."
+        },
+        "links": {
+          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md",
+          "plan_file": "odylith/technical-plans/done/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md"
+        },
+        "registry_components": [
+          {
+            "component_id": "benchmark",
+            "name": "Benchmark"
+          },
+          {
+            "component_id": "compass",
+            "name": "Compass"
+          },
+          {
+            "component_id": "odylith",
+            "name": "Odylith"
+          },
+          {
+            "component_id": "odylith-context-engine",
+            "name": "Odylith Context Engine"
+          },
+          {
+            "component_id": "subagent-orchestrator",
+            "name": "Subagent Orchestrator"
+          },
+          {
+            "component_id": "subagent-router",
+            "name": "Subagent Router"
+          }
+        ],
+        "execution_wave_programs": [],
+        "release": {},
+        "release_history_summary": "Removed from 0.1.11",
+        "plan": {
+          "created": "2026-04-09",
+          "updated": "2026-04-09",
+          "all_total_tasks": 61,
+          "all_done_tasks": 61,
+          "total_tasks": 24,
+          "done_tasks": 24,
+          "progress_ratio": 1.0,
+          "progress_basis": "execution_checklist",
+          "display_progress_ratio": 1.0,
+          "display_progress_label": "100% progress",
+          "display_progress_state": "percent",
+          "progress_classification": "closed",
+          "checklist_label": "Checklist 24/24",
+          "next_tasks": []
+        },
+        "activity": {
+          "24h": {
+            "commit_count": 3,
+            "local_change_count": 0,
+            "file_touch_count": 172
+          },
+          "48h": {
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 216
+          }
+        },
+        "timeline": {
+          "start_date": "2026-04-09",
+          "last_activity_iso": "2026-09-29T17:08:19-07:00",
+          "age_days": 173,
+          "eta_days": 0,
+          "eta_confidence": "high"
+        },
+        "lineage": {
+          "reopens": [],
+          "reopened_by": [],
+          "split_from": [],
+          "split_into": [
+            "B-070"
+          ],
+          "merged_into": [],
+          "merged_from": []
+        },
+        "cost": {
+          "base_index": 71,
+          "24h": {
+            "index": 81,
+            "band": "High"
+          },
+          "48h": {
+            "index": 91,
+            "band": "High"
+          }
+        },
+        "proof_state": {},
+        "claim_guard": {},
+        "proof_state_resolution": {
+          "lane_ids": [],
+          "state": "none"
+        },
+        "scope_signal": {
+          "budget_class": "fast_simple",
+          "caps": [],
+          "feature_vector": {
+            "blast_radius_class": "cross-surface",
+            "broad_fanout": false,
+            "cross_surface_conflict": false,
+            "decision_count": 90,
+            "decision_evidence": true,
+            "explicit_count": 806,
+            "frontier_phase": "",
+            "generated_only_churn": false,
+            "governance_only_local_change": false,
+            "has_any_signal": true,
+            "implementation_count": 537,
+            "implementation_evidence": true,
+            "linked_child_count": 0,
+            "linked_surface_count": 5,
+            "meaningful_change_count": 619,
+            "meaningful_scope_activity": true,
+            "narrow_verified_signal": true,
+            "open_warning": false,
+            "proof_blocker": false,
+            "proof_status": "",
+            "stale_authority": false,
+            "synthetic_count": 0,
+            "unsafe_closeout": false,
+            "verified_completion": true
+          },
+          "label": "Active scope",
+          "promoted_default": true,
+          "rank": 3,
+          "reasons": [
+            "A recent verified completion was recorded.",
+            "A narrow verified scoped signal was recorded.",
+            "Explicit decision evidence is present.",
+            "Explicit implementation evidence is present.",
+            "Meaningful scope-local implementation evidence is present."
+          ],
+          "rung": "R3",
+          "token": "active_scope"
+        },
+        "proof_refs": [
+          {
+            "anchor": "timeline-audit",
+            "fact_tag": "frontier",
+            "kind": "workstream",
+            "label": "Proof frontier",
+            "surface": "compass",
+            "value": "B-069"
+          },
+          {
+            "anchor": "current-workstreams",
+            "fact_tag": "deployment_truth",
+            "kind": "workstream",
+            "label": "Deployment truth",
+            "surface": "compass",
+            "value": "B-069"
+          }
+        ],
+        "proof_summary_lines": []
+      },
+      {
         "idea_id": "B-022",
         "title": "Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof",
         "status": "implementation",
@@ -1507,19 +1507,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 1
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 165
           },
           "48h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 21
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 184
           }
         },
         "timeline": {
           "start_date": "2026-03-31",
-          "last_activity_iso": "2026-09-29T16:18:34-07:00",
+          "last_activity_iso": "2026-09-29T17:08:19-07:00",
           "age_days": 182,
           "eta_days": 20,
           "eta_confidence": "high"
@@ -1543,11 +1543,11 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 57,
+            "index": 58,
             "band": "Medium"
           },
           "48h": {
-            "index": 57,
+            "index": 58,
             "band": "Medium"
           }
         },
@@ -1732,19 +1732,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 1
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 165
           },
           "48h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 17
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 180
           }
         },
         "timeline": {
           "start_date": "2026-03-31",
-          "last_activity_iso": "2026-09-29T16:18:34-07:00",
+          "last_activity_iso": "2026-09-29T17:08:19-07:00",
           "age_days": 182,
           "eta_days": 20,
           "eta_confidence": "high"
@@ -1762,11 +1762,11 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 37,
+            "index": 38,
             "band": "Low"
           },
           "48h": {
-            "index": 37,
+            "index": 38,
             "band": "Low"
           }
         },
@@ -1944,19 +1944,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 1
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 165
           },
           "48h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 16
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 179
           }
         },
         "timeline": {
           "start_date": "2026-03-29",
-          "last_activity_iso": "2026-09-29T16:18:34-07:00",
+          "last_activity_iso": "2026-09-29T17:08:19-07:00",
           "age_days": 184,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -1972,11 +1972,11 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 37,
+            "index": 38,
             "band": "Low"
           },
           "48h": {
-            "index": 37,
+            "index": 38,
             "band": "Low"
           }
         },
@@ -3129,19 +3129,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 1
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 165
           },
           "48h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 37
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 196
           }
         },
         "timeline": {
           "start_date": "2026-04-17",
-          "last_activity_iso": "2026-09-29T16:12:33-07:00",
+          "last_activity_iso": "2026-09-29T17:08:19-07:00",
           "age_days": 165,
           "eta_days": null,
           "eta_confidence": "low"
@@ -3157,11 +3157,11 @@
         "cost": {
           "base_index": 84,
           "24h": {
-            "index": 86,
+            "index": 87,
             "band": "High"
           },
           "48h": {
-            "index": 86,
+            "index": 87,
             "band": "High"
           }
         },
@@ -30272,19 +30272,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
-            "local_change_count": 22,
-            "file_touch_count": 95
+            "commit_count": 4,
+            "local_change_count": 3,
+            "file_touch_count": 173
           },
           "48h": {
-            "commit_count": 8,
-            "local_change_count": 35,
-            "file_touch_count": 521
+            "commit_count": 9,
+            "local_change_count": 3,
+            "file_touch_count": 575
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-09-29T17:04:17-07:00",
+          "last_activity_iso": "2026-09-29T17:35:06-07:00",
           "age_days": 95,
           "eta_days": 15,
           "eta_confidence": "high"
@@ -30300,7 +30300,7 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 75,
+            "index": 73,
             "band": "High"
           },
           "48h": {
@@ -30735,19 +30735,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
-            "local_change_count": 8,
-            "file_touch_count": 82
+            "commit_count": 4,
+            "local_change_count": 2,
+            "file_touch_count": 172
           },
           "48h": {
-            "commit_count": 8,
-            "local_change_count": 21,
-            "file_touch_count": 144
+            "commit_count": 9,
+            "local_change_count": 2,
+            "file_touch_count": 211
           }
         },
         "timeline": {
           "start_date": "2026-03-28",
-          "last_activity_iso": "2026-09-29T16:53:53-07:00",
+          "last_activity_iso": "2026-09-29T17:34:53-07:00",
           "age_days": 185,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -30763,7 +30763,7 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 75,
+            "index": 72,
             "band": "High"
           },
           "48h": {
@@ -30935,19 +30935,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 2,
-            "local_change_count": 3,
-            "file_touch_count": 78
+            "commit_count": 3,
+            "local_change_count": 0,
+            "file_touch_count": 172
           },
           "48h": {
-            "commit_count": 5,
-            "local_change_count": 16,
-            "file_touch_count": 147
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 216
           }
         },
         "timeline": {
           "start_date": "2026-04-10",
-          "last_activity_iso": "2026-09-29T16:36:18-07:00",
+          "last_activity_iso": "2026-09-29T17:08:19-07:00",
           "age_days": 172,
           "eta_days": null,
           "eta_confidence": "low"
@@ -30963,7 +30963,7 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 47,
+            "index": 45,
             "band": "Medium"
           },
           "48h": {
@@ -31039,180 +31039,6 @@
         "proof_summary_lines": []
       },
       {
-        "idea_id": "B-069",
-        "title": "Cross-Host Contract Hardening and Codex-Claude Separation",
-        "status": "finished",
-        "priority": "P0",
-        "sizing": "L",
-        "complexity": "VeryHigh",
-        "ordering_score": "95",
-        "implemented_summary": "",
-        "why": {
-          "problem": "Odylith's runtime and governance layers still carry hardcoded Codex-first policy in places that should be host-neutral. Host detection often doubles as policy, canonical execution-profile ids still encode Codex model branding, Compass runtime artifacts still use Codex stream names, and guidance plus proof surfaces still frame Codex behavior as the default product contract even when Claude Code already shares the same grounding and reasoning quality bar. That drift makes Claude compatibility feel partial even where the product already works, while also obscuring the real boundary: native spawn is a host capability question, not the whole product contract.",
-          "customer": "- Primary: Odylith operators who want the same product outcome in Codex and Claude Code without hidden contract drift. - Secondary: maintainers who need host capability, model-family defaults, and benchmark publication scope to stay explicit and auditable.",
-          "proposed_solution": "Add one canonical host capability contract that separates host family, transport capabilities, and model-family behavior; switch runtime routing and execution-profile ids to host-neutral canon with compatibility aliases; rename Compass runtime artifacts to host-neutral stream terms while keeping legacy read compatibility; rewrite source governance and docs around a host matrix; and normalize benchmark/proof fields so published proof can stay Codex-scoped without making the shared product contract Codex-scoped.",
-          "opportunity": "If Odylith makes host capability the canonical runtime contract and treats Codex-only behavior as one scoped model-family policy instead of the global default, the product can keep Codex-native delegation where it truly exists while making Claude Code feel like a first-class supported host across docs, grounding, Compass, governance, and benchmark scaffolding.",
-          "why_now": "Odylith is already claiming shared product value across Codex and Claude Code. Leaving Codex-only naming and policy wired into the canon now will only make later Claude parity and proof work noisier, riskier, and more expensive.",
-          "founder_pov": "Host neutrality is not a doc polish task. It is the product contract that lets Odylith keep one intelligence plane while telling the truth about which host can transport which kind of delegation today."
-        },
-        "links": {
-          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md",
-          "plan_file": "odylith/technical-plans/done/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md"
-        },
-        "registry_components": [
-          {
-            "component_id": "benchmark",
-            "name": "Benchmark"
-          },
-          {
-            "component_id": "compass",
-            "name": "Compass"
-          },
-          {
-            "component_id": "odylith",
-            "name": "Odylith"
-          },
-          {
-            "component_id": "odylith-context-engine",
-            "name": "Odylith Context Engine"
-          },
-          {
-            "component_id": "subagent-orchestrator",
-            "name": "Subagent Orchestrator"
-          },
-          {
-            "component_id": "subagent-router",
-            "name": "Subagent Router"
-          }
-        ],
-        "execution_wave_programs": [],
-        "release": {},
-        "release_history_summary": "Removed from 0.1.11",
-        "plan": {
-          "created": "2026-04-09",
-          "updated": "2026-04-09",
-          "all_total_tasks": 61,
-          "all_done_tasks": 61,
-          "total_tasks": 24,
-          "done_tasks": 24,
-          "progress_ratio": 1.0,
-          "progress_basis": "execution_checklist",
-          "display_progress_ratio": 1.0,
-          "display_progress_label": "100% progress",
-          "display_progress_state": "percent",
-          "progress_classification": "closed",
-          "checklist_label": "Checklist 24/24",
-          "next_tasks": []
-        },
-        "activity": {
-          "24h": {
-            "commit_count": 2,
-            "local_change_count": 3,
-            "file_touch_count": 78
-          },
-          "48h": {
-            "commit_count": 5,
-            "local_change_count": 16,
-            "file_touch_count": 147
-          }
-        },
-        "timeline": {
-          "start_date": "2026-04-09",
-          "last_activity_iso": "2026-09-29T16:36:18-07:00",
-          "age_days": 173,
-          "eta_days": 0,
-          "eta_confidence": "high"
-        },
-        "lineage": {
-          "reopens": [],
-          "reopened_by": [],
-          "split_from": [],
-          "split_into": [
-            "B-070"
-          ],
-          "merged_into": [],
-          "merged_from": []
-        },
-        "cost": {
-          "base_index": 71,
-          "24h": {
-            "index": 83,
-            "band": "High"
-          },
-          "48h": {
-            "index": 91,
-            "band": "High"
-          }
-        },
-        "proof_state": {},
-        "claim_guard": {},
-        "proof_state_resolution": {
-          "lane_ids": [],
-          "state": "none"
-        },
-        "scope_signal": {
-          "budget_class": "fast_simple",
-          "caps": [],
-          "feature_vector": {
-            "blast_radius_class": "cross-surface",
-            "broad_fanout": false,
-            "cross_surface_conflict": false,
-            "decision_count": 90,
-            "decision_evidence": true,
-            "explicit_count": 806,
-            "frontier_phase": "",
-            "generated_only_churn": false,
-            "governance_only_local_change": false,
-            "has_any_signal": true,
-            "implementation_count": 537,
-            "implementation_evidence": true,
-            "linked_child_count": 0,
-            "linked_surface_count": 5,
-            "meaningful_change_count": 619,
-            "meaningful_scope_activity": true,
-            "narrow_verified_signal": true,
-            "open_warning": false,
-            "proof_blocker": false,
-            "proof_status": "",
-            "stale_authority": false,
-            "synthetic_count": 0,
-            "unsafe_closeout": false,
-            "verified_completion": true
-          },
-          "label": "Active scope",
-          "promoted_default": true,
-          "rank": 3,
-          "reasons": [
-            "A recent verified completion was recorded.",
-            "A narrow verified scoped signal was recorded.",
-            "Explicit decision evidence is present.",
-            "Explicit implementation evidence is present.",
-            "Meaningful scope-local implementation evidence is present."
-          ],
-          "rung": "R3",
-          "token": "active_scope"
-        },
-        "proof_refs": [
-          {
-            "anchor": "timeline-audit",
-            "fact_tag": "frontier",
-            "kind": "workstream",
-            "label": "Proof frontier",
-            "surface": "compass",
-            "value": "B-069"
-          },
-          {
-            "anchor": "current-workstreams",
-            "fact_tag": "deployment_truth",
-            "kind": "workstream",
-            "label": "Deployment truth",
-            "surface": "compass",
-            "value": "B-069"
-          }
-        ],
-        "proof_summary_lines": []
-      },
-      {
         "idea_id": "B-063",
         "title": "Release Planning and Workstream Targeting",
         "status": "finished",
@@ -31280,19 +31106,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 2,
+            "commit_count": 3,
             "local_change_count": 0,
-            "file_touch_count": 75
+            "file_touch_count": 172
           },
           "48h": {
-            "commit_count": 5,
-            "local_change_count": 13,
-            "file_touch_count": 132
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 207
           }
         },
         "timeline": {
           "start_date": "2026-04-08",
-          "last_activity_iso": "2026-09-29T14:46:50-07:00",
+          "last_activity_iso": "2026-09-29T17:08:19-07:00",
           "age_days": 174,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -31310,7 +31136,7 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 62,
+            "index": 65,
             "band": "Medium"
           },
           "48h": {
@@ -31387,6 +31213,180 @@
         "proof_summary_lines": []
       },
       {
+        "idea_id": "B-069",
+        "title": "Cross-Host Contract Hardening and Codex-Claude Separation",
+        "status": "finished",
+        "priority": "P0",
+        "sizing": "L",
+        "complexity": "VeryHigh",
+        "ordering_score": "95",
+        "implemented_summary": "",
+        "why": {
+          "problem": "Odylith's runtime and governance layers still carry hardcoded Codex-first policy in places that should be host-neutral. Host detection often doubles as policy, canonical execution-profile ids still encode Codex model branding, Compass runtime artifacts still use Codex stream names, and guidance plus proof surfaces still frame Codex behavior as the default product contract even when Claude Code already shares the same grounding and reasoning quality bar. That drift makes Claude compatibility feel partial even where the product already works, while also obscuring the real boundary: native spawn is a host capability question, not the whole product contract.",
+          "customer": "- Primary: Odylith operators who want the same product outcome in Codex and Claude Code without hidden contract drift. - Secondary: maintainers who need host capability, model-family defaults, and benchmark publication scope to stay explicit and auditable.",
+          "proposed_solution": "Add one canonical host capability contract that separates host family, transport capabilities, and model-family behavior; switch runtime routing and execution-profile ids to host-neutral canon with compatibility aliases; rename Compass runtime artifacts to host-neutral stream terms while keeping legacy read compatibility; rewrite source governance and docs around a host matrix; and normalize benchmark/proof fields so published proof can stay Codex-scoped without making the shared product contract Codex-scoped.",
+          "opportunity": "If Odylith makes host capability the canonical runtime contract and treats Codex-only behavior as one scoped model-family policy instead of the global default, the product can keep Codex-native delegation where it truly exists while making Claude Code feel like a first-class supported host across docs, grounding, Compass, governance, and benchmark scaffolding.",
+          "why_now": "Odylith is already claiming shared product value across Codex and Claude Code. Leaving Codex-only naming and policy wired into the canon now will only make later Claude parity and proof work noisier, riskier, and more expensive.",
+          "founder_pov": "Host neutrality is not a doc polish task. It is the product contract that lets Odylith keep one intelligence plane while telling the truth about which host can transport which kind of delegation today."
+        },
+        "links": {
+          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md",
+          "plan_file": "odylith/technical-plans/done/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md"
+        },
+        "registry_components": [
+          {
+            "component_id": "benchmark",
+            "name": "Benchmark"
+          },
+          {
+            "component_id": "compass",
+            "name": "Compass"
+          },
+          {
+            "component_id": "odylith",
+            "name": "Odylith"
+          },
+          {
+            "component_id": "odylith-context-engine",
+            "name": "Odylith Context Engine"
+          },
+          {
+            "component_id": "subagent-orchestrator",
+            "name": "Subagent Orchestrator"
+          },
+          {
+            "component_id": "subagent-router",
+            "name": "Subagent Router"
+          }
+        ],
+        "execution_wave_programs": [],
+        "release": {},
+        "release_history_summary": "Removed from 0.1.11",
+        "plan": {
+          "created": "2026-04-09",
+          "updated": "2026-04-09",
+          "all_total_tasks": 61,
+          "all_done_tasks": 61,
+          "total_tasks": 24,
+          "done_tasks": 24,
+          "progress_ratio": 1.0,
+          "progress_basis": "execution_checklist",
+          "display_progress_ratio": 1.0,
+          "display_progress_label": "100% progress",
+          "display_progress_state": "percent",
+          "progress_classification": "closed",
+          "checklist_label": "Checklist 24/24",
+          "next_tasks": []
+        },
+        "activity": {
+          "24h": {
+            "commit_count": 3,
+            "local_change_count": 0,
+            "file_touch_count": 172
+          },
+          "48h": {
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 216
+          }
+        },
+        "timeline": {
+          "start_date": "2026-04-09",
+          "last_activity_iso": "2026-09-29T17:08:19-07:00",
+          "age_days": 173,
+          "eta_days": 0,
+          "eta_confidence": "high"
+        },
+        "lineage": {
+          "reopens": [],
+          "reopened_by": [],
+          "split_from": [],
+          "split_into": [
+            "B-070"
+          ],
+          "merged_into": [],
+          "merged_from": []
+        },
+        "cost": {
+          "base_index": 71,
+          "24h": {
+            "index": 81,
+            "band": "High"
+          },
+          "48h": {
+            "index": 91,
+            "band": "High"
+          }
+        },
+        "proof_state": {},
+        "claim_guard": {},
+        "proof_state_resolution": {
+          "lane_ids": [],
+          "state": "none"
+        },
+        "scope_signal": {
+          "budget_class": "fast_simple",
+          "caps": [],
+          "feature_vector": {
+            "blast_radius_class": "cross-surface",
+            "broad_fanout": false,
+            "cross_surface_conflict": false,
+            "decision_count": 90,
+            "decision_evidence": true,
+            "explicit_count": 806,
+            "frontier_phase": "",
+            "generated_only_churn": false,
+            "governance_only_local_change": false,
+            "has_any_signal": true,
+            "implementation_count": 537,
+            "implementation_evidence": true,
+            "linked_child_count": 0,
+            "linked_surface_count": 5,
+            "meaningful_change_count": 619,
+            "meaningful_scope_activity": true,
+            "narrow_verified_signal": true,
+            "open_warning": false,
+            "proof_blocker": false,
+            "proof_status": "",
+            "stale_authority": false,
+            "synthetic_count": 0,
+            "unsafe_closeout": false,
+            "verified_completion": true
+          },
+          "label": "Active scope",
+          "promoted_default": true,
+          "rank": 3,
+          "reasons": [
+            "A recent verified completion was recorded.",
+            "A narrow verified scoped signal was recorded.",
+            "Explicit decision evidence is present.",
+            "Explicit implementation evidence is present.",
+            "Meaningful scope-local implementation evidence is present."
+          ],
+          "rung": "R3",
+          "token": "active_scope"
+        },
+        "proof_refs": [
+          {
+            "anchor": "timeline-audit",
+            "fact_tag": "frontier",
+            "kind": "workstream",
+            "label": "Proof frontier",
+            "surface": "compass",
+            "value": "B-069"
+          },
+          {
+            "anchor": "current-workstreams",
+            "fact_tag": "deployment_truth",
+            "kind": "workstream",
+            "label": "Deployment truth",
+            "surface": "compass",
+            "value": "B-069"
+          }
+        ],
+        "proof_summary_lines": []
+      },
+      {
         "idea_id": "B-022",
         "title": "Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof",
         "status": "implementation",
@@ -31457,19 +31457,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 1
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 165
           },
           "48h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 21
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 184
           }
         },
         "timeline": {
           "start_date": "2026-03-31",
-          "last_activity_iso": "2026-09-29T16:18:34-07:00",
+          "last_activity_iso": "2026-09-29T17:08:19-07:00",
           "age_days": 182,
           "eta_days": 20,
           "eta_confidence": "high"
@@ -31493,11 +31493,11 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 57,
+            "index": 58,
             "band": "Medium"
           },
           "48h": {
-            "index": 57,
+            "index": 58,
             "band": "Medium"
           }
         },
@@ -31682,19 +31682,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 1
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 165
           },
           "48h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 17
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 180
           }
         },
         "timeline": {
           "start_date": "2026-03-31",
-          "last_activity_iso": "2026-09-29T16:18:34-07:00",
+          "last_activity_iso": "2026-09-29T17:08:19-07:00",
           "age_days": 182,
           "eta_days": 20,
           "eta_confidence": "high"
@@ -31712,11 +31712,11 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 37,
+            "index": 38,
             "band": "Low"
           },
           "48h": {
-            "index": 37,
+            "index": 38,
             "band": "Low"
           }
         },
@@ -31894,19 +31894,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 1
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 165
           },
           "48h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 16
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 179
           }
         },
         "timeline": {
           "start_date": "2026-03-29",
-          "last_activity_iso": "2026-09-29T16:18:34-07:00",
+          "last_activity_iso": "2026-09-29T17:08:19-07:00",
           "age_days": 184,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -31922,11 +31922,11 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 37,
+            "index": 38,
             "band": "Low"
           },
           "48h": {
-            "index": 37,
+            "index": 38,
             "band": "Low"
           }
         },
@@ -33079,19 +33079,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 1
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 165
           },
           "48h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 37
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 196
           }
         },
         "timeline": {
           "start_date": "2026-04-17",
-          "last_activity_iso": "2026-09-29T16:12:33-07:00",
+          "last_activity_iso": "2026-09-29T17:08:19-07:00",
           "age_days": 165,
           "eta_days": null,
           "eta_confidence": "low"
@@ -33107,11 +33107,11 @@
         "cost": {
           "base_index": 84,
           "24h": {
-            "index": 86,
+            "index": 87,
             "band": "High"
           },
           "48h": {
-            "index": 86,
+            "index": 87,
             "band": "High"
           }
         },
@@ -60223,19 +60223,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 22,
-          "file_touch_count": 95
+          "commit_count": 4,
+          "local_change_count": 3,
+          "file_touch_count": 173
         },
         "48h": {
-          "commit_count": 8,
-          "local_change_count": 35,
-          "file_touch_count": 521
+          "commit_count": 9,
+          "local_change_count": 3,
+          "file_touch_count": 575
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-09-29T17:04:17-07:00",
+        "last_activity_iso": "2026-09-29T17:35:06-07:00",
         "age_days": 95,
         "eta_days": 15,
         "eta_confidence": "high"
@@ -60251,7 +60251,7 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 75,
+          "index": 73,
           "band": "High"
         },
         "48h": {
@@ -60686,19 +60686,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 8,
-          "file_touch_count": 82
+          "commit_count": 4,
+          "local_change_count": 2,
+          "file_touch_count": 172
         },
         "48h": {
-          "commit_count": 8,
-          "local_change_count": 21,
-          "file_touch_count": 144
+          "commit_count": 9,
+          "local_change_count": 2,
+          "file_touch_count": 211
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-09-29T16:53:53-07:00",
+        "last_activity_iso": "2026-09-29T17:34:53-07:00",
         "age_days": 185,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -60714,7 +60714,7 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 75,
+          "index": 72,
           "band": "High"
         },
         "48h": {
@@ -60886,19 +60886,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 2,
-          "local_change_count": 3,
-          "file_touch_count": 78
+          "commit_count": 3,
+          "local_change_count": 0,
+          "file_touch_count": 172
         },
         "48h": {
-          "commit_count": 5,
-          "local_change_count": 16,
-          "file_touch_count": 147
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 216
         }
       },
       "timeline": {
         "start_date": "2026-04-10",
-        "last_activity_iso": "2026-09-29T16:36:18-07:00",
+        "last_activity_iso": "2026-09-29T17:08:19-07:00",
         "age_days": 172,
         "eta_days": null,
         "eta_confidence": "low"
@@ -60914,7 +60914,7 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 47,
+          "index": 45,
           "band": "Medium"
         },
         "48h": {
@@ -60990,180 +60990,6 @@
       "proof_summary_lines": []
     },
     {
-      "idea_id": "B-069",
-      "title": "Cross-Host Contract Hardening and Codex-Claude Separation",
-      "status": "finished",
-      "priority": "P0",
-      "sizing": "L",
-      "complexity": "VeryHigh",
-      "ordering_score": "95",
-      "implemented_summary": "",
-      "why": {
-        "problem": "Odylith's runtime and governance layers still carry hardcoded Codex-first policy in places that should be host-neutral. Host detection often doubles as policy, canonical execution-profile ids still encode Codex model branding, Compass runtime artifacts still use Codex stream names, and guidance plus proof surfaces still frame Codex behavior as the default product contract even when Claude Code already shares the same grounding and reasoning quality bar. That drift makes Claude compatibility feel partial even where the product already works, while also obscuring the real boundary: native spawn is a host capability question, not the whole product contract.",
-        "customer": "- Primary: Odylith operators who want the same product outcome in Codex and Claude Code without hidden contract drift. - Secondary: maintainers who need host capability, model-family defaults, and benchmark publication scope to stay explicit and auditable.",
-        "proposed_solution": "Add one canonical host capability contract that separates host family, transport capabilities, and model-family behavior; switch runtime routing and execution-profile ids to host-neutral canon with compatibility aliases; rename Compass runtime artifacts to host-neutral stream terms while keeping legacy read compatibility; rewrite source governance and docs around a host matrix; and normalize benchmark/proof fields so published proof can stay Codex-scoped without making the shared product contract Codex-scoped.",
-        "opportunity": "If Odylith makes host capability the canonical runtime contract and treats Codex-only behavior as one scoped model-family policy instead of the global default, the product can keep Codex-native delegation where it truly exists while making Claude Code feel like a first-class supported host across docs, grounding, Compass, governance, and benchmark scaffolding.",
-        "why_now": "Odylith is already claiming shared product value across Codex and Claude Code. Leaving Codex-only naming and policy wired into the canon now will only make later Claude parity and proof work noisier, riskier, and more expensive.",
-        "founder_pov": "Host neutrality is not a doc polish task. It is the product contract that lets Odylith keep one intelligence plane while telling the truth about which host can transport which kind of delegation today."
-      },
-      "links": {
-        "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md",
-        "plan_file": "odylith/technical-plans/done/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md"
-      },
-      "registry_components": [
-        {
-          "component_id": "benchmark",
-          "name": "Benchmark"
-        },
-        {
-          "component_id": "compass",
-          "name": "Compass"
-        },
-        {
-          "component_id": "odylith",
-          "name": "Odylith"
-        },
-        {
-          "component_id": "odylith-context-engine",
-          "name": "Odylith Context Engine"
-        },
-        {
-          "component_id": "subagent-orchestrator",
-          "name": "Subagent Orchestrator"
-        },
-        {
-          "component_id": "subagent-router",
-          "name": "Subagent Router"
-        }
-      ],
-      "execution_wave_programs": [],
-      "release": {},
-      "release_history_summary": "Removed from 0.1.11",
-      "plan": {
-        "created": "2026-04-09",
-        "updated": "2026-04-09",
-        "all_total_tasks": 61,
-        "all_done_tasks": 61,
-        "total_tasks": 24,
-        "done_tasks": 24,
-        "progress_ratio": 1.0,
-        "progress_basis": "execution_checklist",
-        "display_progress_ratio": 1.0,
-        "display_progress_label": "100% progress",
-        "display_progress_state": "percent",
-        "progress_classification": "closed",
-        "checklist_label": "Checklist 24/24",
-        "next_tasks": []
-      },
-      "activity": {
-        "24h": {
-          "commit_count": 2,
-          "local_change_count": 3,
-          "file_touch_count": 78
-        },
-        "48h": {
-          "commit_count": 5,
-          "local_change_count": 16,
-          "file_touch_count": 147
-        }
-      },
-      "timeline": {
-        "start_date": "2026-04-09",
-        "last_activity_iso": "2026-09-29T16:36:18-07:00",
-        "age_days": 173,
-        "eta_days": 0,
-        "eta_confidence": "high"
-      },
-      "lineage": {
-        "reopens": [],
-        "reopened_by": [],
-        "split_from": [],
-        "split_into": [
-          "B-070"
-        ],
-        "merged_into": [],
-        "merged_from": []
-      },
-      "cost": {
-        "base_index": 71,
-        "24h": {
-          "index": 83,
-          "band": "High"
-        },
-        "48h": {
-          "index": 91,
-          "band": "High"
-        }
-      },
-      "proof_state": {},
-      "claim_guard": {},
-      "proof_state_resolution": {
-        "lane_ids": [],
-        "state": "none"
-      },
-      "scope_signal": {
-        "budget_class": "fast_simple",
-        "caps": [],
-        "feature_vector": {
-          "blast_radius_class": "cross-surface",
-          "broad_fanout": false,
-          "cross_surface_conflict": false,
-          "decision_count": 90,
-          "decision_evidence": true,
-          "explicit_count": 806,
-          "frontier_phase": "",
-          "generated_only_churn": false,
-          "governance_only_local_change": false,
-          "has_any_signal": true,
-          "implementation_count": 537,
-          "implementation_evidence": true,
-          "linked_child_count": 0,
-          "linked_surface_count": 5,
-          "meaningful_change_count": 619,
-          "meaningful_scope_activity": true,
-          "narrow_verified_signal": true,
-          "open_warning": false,
-          "proof_blocker": false,
-          "proof_status": "",
-          "stale_authority": false,
-          "synthetic_count": 0,
-          "unsafe_closeout": false,
-          "verified_completion": true
-        },
-        "label": "Active scope",
-        "promoted_default": true,
-        "rank": 3,
-        "reasons": [
-          "A recent verified completion was recorded.",
-          "A narrow verified scoped signal was recorded.",
-          "Explicit decision evidence is present.",
-          "Explicit implementation evidence is present.",
-          "Meaningful scope-local implementation evidence is present."
-        ],
-        "rung": "R3",
-        "token": "active_scope"
-      },
-      "proof_refs": [
-        {
-          "anchor": "timeline-audit",
-          "fact_tag": "frontier",
-          "kind": "workstream",
-          "label": "Proof frontier",
-          "surface": "compass",
-          "value": "B-069"
-        },
-        {
-          "anchor": "current-workstreams",
-          "fact_tag": "deployment_truth",
-          "kind": "workstream",
-          "label": "Deployment truth",
-          "surface": "compass",
-          "value": "B-069"
-        }
-      ],
-      "proof_summary_lines": []
-    },
-    {
       "idea_id": "B-063",
       "title": "Release Planning and Workstream Targeting",
       "status": "finished",
@@ -61231,19 +61057,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 2,
+          "commit_count": 3,
           "local_change_count": 0,
-          "file_touch_count": 75
+          "file_touch_count": 172
         },
         "48h": {
-          "commit_count": 5,
-          "local_change_count": 13,
-          "file_touch_count": 132
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 207
         }
       },
       "timeline": {
         "start_date": "2026-04-08",
-        "last_activity_iso": "2026-09-29T14:46:50-07:00",
+        "last_activity_iso": "2026-09-29T17:08:19-07:00",
         "age_days": 174,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -61261,7 +61087,7 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 62,
+          "index": 65,
           "band": "Medium"
         },
         "48h": {
@@ -61338,6 +61164,180 @@
       "proof_summary_lines": []
     },
     {
+      "idea_id": "B-069",
+      "title": "Cross-Host Contract Hardening and Codex-Claude Separation",
+      "status": "finished",
+      "priority": "P0",
+      "sizing": "L",
+      "complexity": "VeryHigh",
+      "ordering_score": "95",
+      "implemented_summary": "",
+      "why": {
+        "problem": "Odylith's runtime and governance layers still carry hardcoded Codex-first policy in places that should be host-neutral. Host detection often doubles as policy, canonical execution-profile ids still encode Codex model branding, Compass runtime artifacts still use Codex stream names, and guidance plus proof surfaces still frame Codex behavior as the default product contract even when Claude Code already shares the same grounding and reasoning quality bar. That drift makes Claude compatibility feel partial even where the product already works, while also obscuring the real boundary: native spawn is a host capability question, not the whole product contract.",
+        "customer": "- Primary: Odylith operators who want the same product outcome in Codex and Claude Code without hidden contract drift. - Secondary: maintainers who need host capability, model-family defaults, and benchmark publication scope to stay explicit and auditable.",
+        "proposed_solution": "Add one canonical host capability contract that separates host family, transport capabilities, and model-family behavior; switch runtime routing and execution-profile ids to host-neutral canon with compatibility aliases; rename Compass runtime artifacts to host-neutral stream terms while keeping legacy read compatibility; rewrite source governance and docs around a host matrix; and normalize benchmark/proof fields so published proof can stay Codex-scoped without making the shared product contract Codex-scoped.",
+        "opportunity": "If Odylith makes host capability the canonical runtime contract and treats Codex-only behavior as one scoped model-family policy instead of the global default, the product can keep Codex-native delegation where it truly exists while making Claude Code feel like a first-class supported host across docs, grounding, Compass, governance, and benchmark scaffolding.",
+        "why_now": "Odylith is already claiming shared product value across Codex and Claude Code. Leaving Codex-only naming and policy wired into the canon now will only make later Claude parity and proof work noisier, riskier, and more expensive.",
+        "founder_pov": "Host neutrality is not a doc polish task. It is the product contract that lets Odylith keep one intelligence plane while telling the truth about which host can transport which kind of delegation today."
+      },
+      "links": {
+        "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md",
+        "plan_file": "odylith/technical-plans/done/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md"
+      },
+      "registry_components": [
+        {
+          "component_id": "benchmark",
+          "name": "Benchmark"
+        },
+        {
+          "component_id": "compass",
+          "name": "Compass"
+        },
+        {
+          "component_id": "odylith",
+          "name": "Odylith"
+        },
+        {
+          "component_id": "odylith-context-engine",
+          "name": "Odylith Context Engine"
+        },
+        {
+          "component_id": "subagent-orchestrator",
+          "name": "Subagent Orchestrator"
+        },
+        {
+          "component_id": "subagent-router",
+          "name": "Subagent Router"
+        }
+      ],
+      "execution_wave_programs": [],
+      "release": {},
+      "release_history_summary": "Removed from 0.1.11",
+      "plan": {
+        "created": "2026-04-09",
+        "updated": "2026-04-09",
+        "all_total_tasks": 61,
+        "all_done_tasks": 61,
+        "total_tasks": 24,
+        "done_tasks": 24,
+        "progress_ratio": 1.0,
+        "progress_basis": "execution_checklist",
+        "display_progress_ratio": 1.0,
+        "display_progress_label": "100% progress",
+        "display_progress_state": "percent",
+        "progress_classification": "closed",
+        "checklist_label": "Checklist 24/24",
+        "next_tasks": []
+      },
+      "activity": {
+        "24h": {
+          "commit_count": 3,
+          "local_change_count": 0,
+          "file_touch_count": 172
+        },
+        "48h": {
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 216
+        }
+      },
+      "timeline": {
+        "start_date": "2026-04-09",
+        "last_activity_iso": "2026-09-29T17:08:19-07:00",
+        "age_days": 173,
+        "eta_days": 0,
+        "eta_confidence": "high"
+      },
+      "lineage": {
+        "reopens": [],
+        "reopened_by": [],
+        "split_from": [],
+        "split_into": [
+          "B-070"
+        ],
+        "merged_into": [],
+        "merged_from": []
+      },
+      "cost": {
+        "base_index": 71,
+        "24h": {
+          "index": 81,
+          "band": "High"
+        },
+        "48h": {
+          "index": 91,
+          "band": "High"
+        }
+      },
+      "proof_state": {},
+      "claim_guard": {},
+      "proof_state_resolution": {
+        "lane_ids": [],
+        "state": "none"
+      },
+      "scope_signal": {
+        "budget_class": "fast_simple",
+        "caps": [],
+        "feature_vector": {
+          "blast_radius_class": "cross-surface",
+          "broad_fanout": false,
+          "cross_surface_conflict": false,
+          "decision_count": 90,
+          "decision_evidence": true,
+          "explicit_count": 806,
+          "frontier_phase": "",
+          "generated_only_churn": false,
+          "governance_only_local_change": false,
+          "has_any_signal": true,
+          "implementation_count": 537,
+          "implementation_evidence": true,
+          "linked_child_count": 0,
+          "linked_surface_count": 5,
+          "meaningful_change_count": 619,
+          "meaningful_scope_activity": true,
+          "narrow_verified_signal": true,
+          "open_warning": false,
+          "proof_blocker": false,
+          "proof_status": "",
+          "stale_authority": false,
+          "synthetic_count": 0,
+          "unsafe_closeout": false,
+          "verified_completion": true
+        },
+        "label": "Active scope",
+        "promoted_default": true,
+        "rank": 3,
+        "reasons": [
+          "A recent verified completion was recorded.",
+          "A narrow verified scoped signal was recorded.",
+          "Explicit decision evidence is present.",
+          "Explicit implementation evidence is present.",
+          "Meaningful scope-local implementation evidence is present."
+        ],
+        "rung": "R3",
+        "token": "active_scope"
+      },
+      "proof_refs": [
+        {
+          "anchor": "timeline-audit",
+          "fact_tag": "frontier",
+          "kind": "workstream",
+          "label": "Proof frontier",
+          "surface": "compass",
+          "value": "B-069"
+        },
+        {
+          "anchor": "current-workstreams",
+          "fact_tag": "deployment_truth",
+          "kind": "workstream",
+          "label": "Deployment truth",
+          "surface": "compass",
+          "value": "B-069"
+        }
+      ],
+      "proof_summary_lines": []
+    },
+    {
       "idea_id": "B-022",
       "title": "Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof",
       "status": "implementation",
@@ -61408,19 +61408,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 1
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 165
         },
         "48h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 21
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 184
         }
       },
       "timeline": {
         "start_date": "2026-03-31",
-        "last_activity_iso": "2026-09-29T16:18:34-07:00",
+        "last_activity_iso": "2026-09-29T17:08:19-07:00",
         "age_days": 182,
         "eta_days": 20,
         "eta_confidence": "high"
@@ -61444,11 +61444,11 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 57,
+          "index": 58,
           "band": "Medium"
         },
         "48h": {
-          "index": 57,
+          "index": 58,
           "band": "Medium"
         }
       },
@@ -61633,19 +61633,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 1
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 165
         },
         "48h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 17
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 180
         }
       },
       "timeline": {
         "start_date": "2026-03-31",
-        "last_activity_iso": "2026-09-29T16:18:34-07:00",
+        "last_activity_iso": "2026-09-29T17:08:19-07:00",
         "age_days": 182,
         "eta_days": 20,
         "eta_confidence": "high"
@@ -61663,11 +61663,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 37,
+          "index": 38,
           "band": "Low"
         },
         "48h": {
-          "index": 37,
+          "index": 38,
           "band": "Low"
         }
       },
@@ -61845,19 +61845,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 1
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 165
         },
         "48h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 16
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 179
         }
       },
       "timeline": {
         "start_date": "2026-03-29",
-        "last_activity_iso": "2026-09-29T16:18:34-07:00",
+        "last_activity_iso": "2026-09-29T17:08:19-07:00",
         "age_days": 184,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -61873,11 +61873,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 37,
+          "index": 38,
           "band": "Low"
         },
         "48h": {
-          "index": 37,
+          "index": 38,
           "band": "Low"
         }
       },
@@ -63030,19 +63030,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 1
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 165
         },
         "48h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 37
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 196
         }
       },
       "timeline": {
         "start_date": "2026-04-17",
-        "last_activity_iso": "2026-09-29T16:12:33-07:00",
+        "last_activity_iso": "2026-09-29T17:08:19-07:00",
         "age_days": 165,
         "eta_days": null,
         "eta_confidence": "low"
@@ -63058,11 +63058,11 @@
       "cost": {
         "base_index": 84,
         "24h": {
-          "index": 86,
+          "index": 87,
           "band": "High"
         },
         "48h": {
-          "index": 86,
+          "index": 87,
           "band": "High"
         }
       },
@@ -90324,19 +90324,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 1
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 165
         },
         "48h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 21
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 184
         }
       },
       "timeline": {
         "start_date": "2026-03-31",
-        "last_activity_iso": "2026-09-29T16:18:34-07:00",
+        "last_activity_iso": "2026-09-29T17:08:19-07:00",
         "age_days": 182,
         "eta_days": 20,
         "eta_confidence": "high"
@@ -90360,11 +90360,11 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 57,
+          "index": 58,
           "band": "Medium"
         },
         "48h": {
-          "index": 57,
+          "index": 58,
           "band": "Medium"
         }
       },
@@ -90901,19 +90901,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 1
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 165
         },
         "48h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 17
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 180
         }
       },
       "timeline": {
         "start_date": "2026-03-31",
-        "last_activity_iso": "2026-09-29T16:18:34-07:00",
+        "last_activity_iso": "2026-09-29T17:08:19-07:00",
         "age_days": 182,
         "eta_days": 20,
         "eta_confidence": "high"
@@ -90931,11 +90931,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 37,
+          "index": 38,
           "band": "Low"
         },
         "48h": {
-          "index": 37,
+          "index": 38,
           "band": "Low"
         }
       },
@@ -92174,19 +92174,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 2,
-          "local_change_count": 3,
-          "file_touch_count": 78
+          "commit_count": 3,
+          "local_change_count": 0,
+          "file_touch_count": 172
         },
         "48h": {
-          "commit_count": 5,
-          "local_change_count": 16,
-          "file_touch_count": 147
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 216
         }
       },
       "timeline": {
         "start_date": "2026-04-10",
-        "last_activity_iso": "2026-09-29T16:36:18-07:00",
+        "last_activity_iso": "2026-09-29T17:08:19-07:00",
         "age_days": 172,
         "eta_days": null,
         "eta_confidence": "low"
@@ -92202,7 +92202,7 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 47,
+          "index": 45,
           "band": "Medium"
         },
         "48h": {
@@ -94950,19 +94950,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 22,
-          "file_touch_count": 95
+          "commit_count": 4,
+          "local_change_count": 3,
+          "file_touch_count": 173
         },
         "48h": {
-          "commit_count": 8,
-          "local_change_count": 35,
-          "file_touch_count": 521
+          "commit_count": 9,
+          "local_change_count": 3,
+          "file_touch_count": 575
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-09-29T17:04:17-07:00",
+        "last_activity_iso": "2026-09-29T17:35:06-07:00",
         "age_days": 95,
         "eta_days": 15,
         "eta_confidence": "high"
@@ -94978,7 +94978,7 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 75,
+          "index": 73,
           "band": "High"
         },
         "48h": {
@@ -96076,19 +96076,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 8,
-          "file_touch_count": 82
+          "commit_count": 4,
+          "local_change_count": 2,
+          "file_touch_count": 172
         },
         "48h": {
-          "commit_count": 8,
-          "local_change_count": 21,
-          "file_touch_count": 144
+          "commit_count": 9,
+          "local_change_count": 2,
+          "file_touch_count": 211
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-09-29T16:53:53-07:00",
+        "last_activity_iso": "2026-09-29T17:34:53-07:00",
         "age_days": 185,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -96104,7 +96104,7 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 75,
+          "index": 72,
           "band": "High"
         },
         "48h": {
@@ -98569,19 +98569,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 1
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 165
         },
         "48h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 16
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 179
         }
       },
       "timeline": {
         "start_date": "2026-03-29",
-        "last_activity_iso": "2026-09-29T16:18:34-07:00",
+        "last_activity_iso": "2026-09-29T17:08:19-07:00",
         "age_days": 184,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -98597,11 +98597,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 37,
+          "index": 38,
           "band": "Low"
         },
         "48h": {
-          "index": 37,
+          "index": 38,
           "band": "Low"
         }
       },
@@ -104322,19 +104322,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 2,
+          "commit_count": 3,
           "local_change_count": 0,
-          "file_touch_count": 75
+          "file_touch_count": 172
         },
         "48h": {
-          "commit_count": 5,
-          "local_change_count": 13,
-          "file_touch_count": 132
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 207
         }
       },
       "timeline": {
         "start_date": "2026-04-08",
-        "last_activity_iso": "2026-09-29T14:46:50-07:00",
+        "last_activity_iso": "2026-09-29T17:08:19-07:00",
         "age_days": 174,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -104352,7 +104352,7 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 62,
+          "index": 65,
           "band": "Medium"
         },
         "48h": {
@@ -105130,19 +105130,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 2,
-          "local_change_count": 3,
-          "file_touch_count": 78
+          "commit_count": 3,
+          "local_change_count": 0,
+          "file_touch_count": 172
         },
         "48h": {
-          "commit_count": 5,
-          "local_change_count": 16,
-          "file_touch_count": 147
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 216
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-09-29T16:36:18-07:00",
+        "last_activity_iso": "2026-09-29T17:08:19-07:00",
         "age_days": 173,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -105160,7 +105160,7 @@
       "cost": {
         "base_index": 71,
         "24h": {
-          "index": 83,
+          "index": 81,
           "band": "High"
         },
         "48h": {
@@ -113772,19 +113772,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 1
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 165
         },
         "48h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 37
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 196
         }
       },
       "timeline": {
         "start_date": "2026-04-17",
-        "last_activity_iso": "2026-09-29T16:12:33-07:00",
+        "last_activity_iso": "2026-09-29T17:08:19-07:00",
         "age_days": 165,
         "eta_days": null,
         "eta_confidence": "low"
@@ -113800,11 +113800,11 @@
       "cost": {
         "base_index": 84,
         "24h": {
-          "index": 86,
+          "index": 87,
           "band": "High"
         },
         "48h": {
-          "index": 86,
+          "index": 87,
           "band": "High"
         }
       },
@@ -120015,32 +120015,20 @@
   "verified_scoped_workstreams": {
     "24h": [
       "B-005",
-      "B-069",
-      "B-083",
-      "B-110",
       "B-142"
     ],
     "48h": [
       "B-005",
-      "B-069",
-      "B-083",
-      "B-110",
       "B-142"
     ]
   },
   "promoted_scoped_workstreams": {
     "24h": [
       "B-005",
-      "B-069",
-      "B-083",
-      "B-110",
       "B-142"
     ],
     "48h": [
       "B-005",
-      "B-069",
-      "B-083",
-      "B-110",
       "B-142"
     ]
   },
@@ -120269,30 +120257,24 @@
         }
       },
       "B-083": {
-        "rank": 3,
-        "rung": "R3",
-        "token": "active_scope",
-        "label": "Active scope",
+        "rank": 1,
+        "rung": "R1",
+        "token": "background_trace",
+        "label": "Background trace",
         "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Explicit implementation evidence is present.",
-          "Meaningful scope-local implementation evidence is present."
+          "The signal fans across too many scopes to promote directly.",
+          "Recent signal exists, but it is not strong enough to promote by default."
         ],
-        "caps": [],
-        "promoted_default": true,
-        "budget_class": "fast_simple",
+        "caps": [
+          "broad_fanout"
+        ],
+        "promoted_default": false,
+        "budget_class": "cache_only",
         "feature_vector": {
           "has_any_signal": true,
-          "verified_completion": false,
-          "narrow_verified_signal": true,
-          "meaningful_scope_activity": true,
-          "decision_evidence": false,
-          "implementation_evidence": true,
-          "open_warning": false,
-          "cross_surface_conflict": false,
-          "stale_authority": false,
-          "unsafe_closeout": false,
-          "proof_blocker": false
+          "window_inactive": false,
+          "governance_only_local_change": false,
+          "broad_fanout": true
         }
       },
       "B-084": {
@@ -121771,29 +121753,24 @@
         }
       },
       "B-069": {
-        "rank": 3,
-        "rung": "R3",
-        "token": "active_scope",
-        "label": "Active scope",
+        "rank": 1,
+        "rung": "R1",
+        "token": "background_trace",
+        "label": "Background trace",
         "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Meaningful scope-local implementation evidence is present."
+          "The signal fans across too many scopes to promote directly.",
+          "Recent signal exists, but it is not strong enough to promote by default."
         ],
-        "caps": [],
-        "promoted_default": true,
-        "budget_class": "fast_simple",
+        "caps": [
+          "broad_fanout"
+        ],
+        "promoted_default": false,
+        "budget_class": "cache_only",
         "feature_vector": {
           "has_any_signal": true,
-          "verified_completion": false,
-          "narrow_verified_signal": true,
-          "meaningful_scope_activity": true,
-          "decision_evidence": false,
-          "implementation_evidence": false,
-          "open_warning": false,
-          "cross_surface_conflict": false,
-          "stale_authority": false,
-          "unsafe_closeout": false,
-          "proof_blocker": false
+          "window_inactive": false,
+          "governance_only_local_change": false,
+          "broad_fanout": true
         }
       },
       "B-070": {
@@ -122337,29 +122314,24 @@
         }
       },
       "B-110": {
-        "rank": 3,
-        "rung": "R3",
-        "token": "active_scope",
-        "label": "Active scope",
+        "rank": 1,
+        "rung": "R1",
+        "token": "background_trace",
+        "label": "Background trace",
         "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Meaningful scope-local implementation evidence is present."
+          "The signal fans across too many scopes to promote directly.",
+          "Recent signal exists, but it is not strong enough to promote by default."
         ],
-        "caps": [],
-        "promoted_default": true,
-        "budget_class": "fast_simple",
+        "caps": [
+          "broad_fanout"
+        ],
+        "promoted_default": false,
+        "budget_class": "cache_only",
         "feature_vector": {
           "has_any_signal": true,
-          "verified_completion": false,
-          "narrow_verified_signal": true,
-          "meaningful_scope_activity": true,
-          "decision_evidence": false,
-          "implementation_evidence": false,
-          "open_warning": false,
-          "cross_surface_conflict": false,
-          "stale_authority": false,
-          "unsafe_closeout": false,
-          "proof_blocker": false
+          "window_inactive": false,
+          "governance_only_local_change": false,
+          "broad_fanout": true
         }
       },
       "B-111": {
@@ -123207,30 +123179,24 @@
         }
       },
       "B-083": {
-        "rank": 3,
-        "rung": "R3",
-        "token": "active_scope",
-        "label": "Active scope",
+        "rank": 1,
+        "rung": "R1",
+        "token": "background_trace",
+        "label": "Background trace",
         "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Explicit implementation evidence is present.",
-          "Meaningful scope-local implementation evidence is present."
+          "The signal fans across too many scopes to promote directly.",
+          "Recent signal exists, but it is not strong enough to promote by default."
         ],
-        "caps": [],
-        "promoted_default": true,
-        "budget_class": "fast_simple",
+        "caps": [
+          "broad_fanout"
+        ],
+        "promoted_default": false,
+        "budget_class": "cache_only",
         "feature_vector": {
           "has_any_signal": true,
-          "verified_completion": false,
-          "narrow_verified_signal": true,
-          "meaningful_scope_activity": true,
-          "decision_evidence": false,
-          "implementation_evidence": true,
-          "open_warning": false,
-          "cross_surface_conflict": false,
-          "stale_authority": false,
-          "unsafe_closeout": false,
-          "proof_blocker": false
+          "window_inactive": false,
+          "governance_only_local_change": false,
+          "broad_fanout": true
         }
       },
       "B-084": {
@@ -124709,29 +124675,24 @@
         }
       },
       "B-069": {
-        "rank": 3,
-        "rung": "R3",
-        "token": "active_scope",
-        "label": "Active scope",
+        "rank": 1,
+        "rung": "R1",
+        "token": "background_trace",
+        "label": "Background trace",
         "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Meaningful scope-local implementation evidence is present."
+          "The signal fans across too many scopes to promote directly.",
+          "Recent signal exists, but it is not strong enough to promote by default."
         ],
-        "caps": [],
-        "promoted_default": true,
-        "budget_class": "fast_simple",
+        "caps": [
+          "broad_fanout"
+        ],
+        "promoted_default": false,
+        "budget_class": "cache_only",
         "feature_vector": {
           "has_any_signal": true,
-          "verified_completion": false,
-          "narrow_verified_signal": true,
-          "meaningful_scope_activity": true,
-          "decision_evidence": false,
-          "implementation_evidence": false,
-          "open_warning": false,
-          "cross_surface_conflict": false,
-          "stale_authority": false,
-          "unsafe_closeout": false,
-          "proof_blocker": false
+          "window_inactive": false,
+          "governance_only_local_change": false,
+          "broad_fanout": true
         }
       },
       "B-070": {
@@ -125275,29 +125236,24 @@
         }
       },
       "B-110": {
-        "rank": 3,
-        "rung": "R3",
-        "token": "active_scope",
-        "label": "Active scope",
+        "rank": 1,
+        "rung": "R1",
+        "token": "background_trace",
+        "label": "Background trace",
         "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Meaningful scope-local implementation evidence is present."
+          "The signal fans across too many scopes to promote directly.",
+          "Recent signal exists, but it is not strong enough to promote by default."
         ],
-        "caps": [],
-        "promoted_default": true,
-        "budget_class": "fast_simple",
+        "caps": [
+          "broad_fanout"
+        ],
+        "promoted_default": false,
+        "budget_class": "cache_only",
         "feature_vector": {
           "has_any_signal": true,
-          "verified_completion": false,
-          "narrow_verified_signal": true,
-          "meaningful_scope_activity": true,
-          "decision_evidence": false,
-          "implementation_evidence": false,
-          "open_warning": false,
-          "cross_surface_conflict": false,
-          "stale_authority": false,
-          "unsafe_closeout": false,
-          "proof_blocker": false
+          "window_inactive": false,
+          "governance_only_local_change": false,
+          "broad_fanout": true
         }
       },
       "B-111": {
