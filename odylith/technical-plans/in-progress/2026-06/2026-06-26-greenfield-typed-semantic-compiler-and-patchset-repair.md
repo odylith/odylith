@@ -1,5 +1,29 @@
 Status: In progress
 
+## Source-authority replacement comparison (2026-09-30)
+
+CB-324's recurring P1 is an authority error: a labelled reference repository
+was promoted into the requested product's first path. An unchanged, narrow
+pre-author gate classified 40/40 fixed public development cases and five
+fresh authority controls correctly with Astra/medium, including the failing
+agriculture request and an explicit adoption of a reference workflow. The
+gate only returns a no-write question or exact first-path witnesses; it never
+authors or rewrites a candidate. Luna/high returned 39/40, falsely asking for
+more detail on an explicit climate release-status path, so it is rejected as
+a hard gate. This is development evidence, not a new release candidate.
+
+Next compare one minimal pre-author authority-gate flow against the retired
+single-authority flow on the exact agriculture P1 and the prior long positive
+case. Predict no transaction on the P1, one complete 5/5/5 transaction on
+the positive, zero post-candidate model calls, and combined proposal time
+below the 180-second safety ceiling. The gate must be source-bound, must not
+recompose or reinterpret the authored candidate, and must not introduce a
+retry, fallback, full-candidate reviewer, parser, regex, or model ladder.
+Reject the gate if it creates false clarifications, cross-model ownership
+disputes, or unacceptable latency. Only after those controls pass should the
+fixed public campaign and browser/recovery proof run; protected holdout stays
+closed until all public gates are clean.
+
 ## V33 public stop and release-candidate retirement (2026-09-30)
 
 The clean pushed `dc1dd6a08` distribution passed platform leakage and the

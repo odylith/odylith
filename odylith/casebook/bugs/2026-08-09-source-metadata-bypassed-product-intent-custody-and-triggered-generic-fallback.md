@@ -1,5 +1,30 @@
 - Bug ID: CB-324
 
+## Bounded source-authority gate comparison (2026-09-30)
+
+The single-authority V33 release candidate remains retired. A separate,
+read-only first-path gate was tested before any product change. It reads the
+original request and an optional operator edit, treats labelled repositories
+as reference evidence, and returns either one `first_path` question or exact
+operator-intent owner/task/result witnesses. It does not author or repair a
+project. The unchanged Astra/medium gate classified all 40 fixed public
+development cases correctly in 71.104s of four-worker wall time and all five
+fresh authority controls correctly. Individual calls on those controls took
+about 7–8s. Evidence:
+`/private/tmp/odylith-materiality-gate-prototype-v1/public40-astra-medium.v1.json`.
+
+The same gate on Luna/high classified 39/40 public cases correctly. It asked
+for a new result on `release-climate-069-source` despite the explicit operator
+intent to verify a release status. That false clarification is a real
+consumer-utility regression, not permission to change the fixed oracle.
+Evidence:
+`/private/tmp/odylith-materiality-gate-prototype-v1/public40-luna-high.v1.json`.
+Do not ship Luna as a hard admission gate or add case-specific wording. The
+Astra result makes a narrow pre-author authority gate worth an end-to-end
+comparison, but isolated classification does not establish candidate custody,
+combined latency, host parity, generated-package quality, or release readiness.
+Keep the protected holdout unopened.
+
 ## V33 single-authority public recurrence (2026-09-30)
 
 The clean pushed `dc1dd6a08` installed 40-case public discovery campaign
