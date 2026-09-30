@@ -1,5 +1,30 @@
 - Bug ID: CB-324
 
+## Pre-submission reviewer probe rejected (2026-09-30)
+
+One disposable, read-only Astra/low source-first review compared the exact
+public agriculture briefing source with the retained fast-author candidate.
+It reported the missing repository-access boundary twice, but failed to
+identify the independently established P1: the scientific reviewer's
+acceptance of private raw analyst notes is absent as a distinct action.
+The repository boundary may itself need better custody; the duplicate finding
+and missed action mean this reviewer is not a qualified pre-submission gate.
+It made no correction, changed no product files, and did not touch the
+protected holdout. Do not insert the low-effort reviewer into the host flow or
+count its quick response as a semantic win. The next comparison must prove
+source-obligation recall and non-duplicative findings on the same complete
+candidate before considering timing or product-contract changes.
+
+One bounded Astra/medium comparison made source-obligation inventory and
+semantic-role comparison explicit without naming the known missing action.
+It removed the duplicate finding but still identified only the repository
+access boundary and again missed reviewer acceptance as a distinct event.
+The review text is retained at
+`/private/tmp/odylith-astra-low-compact-reuse-20260930/review-medium-output.txt`.
+Neither effort level clears the known P1, so stop this online reviewer
+variant here. More prompt or effort tuning on this one public case would not
+establish unseen-input recall; no production contract was changed.
+
 ## Thin action-gate comparison rejected (2026-09-30)
 
 Two read-only architecture checks found no safe single-candidate shortcut for

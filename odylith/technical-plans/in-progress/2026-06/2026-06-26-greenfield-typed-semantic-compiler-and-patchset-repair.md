@@ -1,5 +1,19 @@
 Status: In progress
 
+## Online candidate-review comparison stopped (2026-09-30)
+
+The approved one-review/one-correction option was tested before any runtime
+change. On the retained complete public agriculture candidate, independent
+source-first Astra/low and Astra/medium reviews both missed the established
+P1 reviewer-acceptance action. Low also duplicated its repository-access
+finding. The medium review text and both outcomes are recorded in CB-324.
+The option fails semantic recall before timing or correction can qualify it;
+do not wire it into the 180-second host flow, relax post-receipt law, or open
+the protected holdout. Keep one final candidate receipt and commit-only
+confirmation. The next mechanism must change how source-owned obligations
+reach the candidate, then be falsified against the fixed no-write negative
+and complete positive cases before more release infrastructure is added.
+
 ## Source-ownership comparison after fast-author no-go (2026-09-30)
 
 Do not make the one-candidate authority field, source-graph-only package
