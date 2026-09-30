@@ -1,5 +1,27 @@
 Status: In progress
 
+## Focused source-action review prototype (2026-09-30)
+
+The full-candidate reviewer remains rejected, but a narrower independent
+review input made one public semantic omission visible: compare an untrusted
+source action inventory with typed candidate events and adjudicate unmatched
+relationships against the original source. On the agriculture positive, this
+identified the missing scientific-reviewer acceptance while rejecting three
+broad aspirations as non-events. One correction produced a candidate that
+installed 0.1.15 admitted into a sealed 5 Radar / 5 Registry / 5 Atlas
+preview with 57 proposed writes and zero deterministic issues. CB-324 holds
+the retained candidate, audit, transaction hash, and caveats.
+
+Do not promote this prototype yet. The inventory is neither complete product
+truth nor a hard quote-coverage rule. Its earlier `39.35s` call and the later
+author, audit, correction, and proposal were not one shared-deadline journey;
+the final corrected package was not independently adjudicated. First prove a
+single 180-second orchestration with clean no-write negative and complete
+positive cases, then an independent second positive and rendered UX. Reject
+the mechanism if source obligations still disappear, the correction displaces
+another action, latency breaches, or cross-surface quality regresses. Keep
+post-confirmation commit-only and the protected holdout closed.
+
 ## Online candidate-review comparison stopped (2026-09-30)
 
 The approved one-review/one-correction option was tested before any runtime

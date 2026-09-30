@@ -1,7 +1,7 @@
 {
   "version": "v1",
-  "generated_utc": "2026-09-30T17:57:06Z",
-  "now_local_iso": "2026-09-30T10:57:06-07:00",
+  "generated_utc": "2026-09-30T18:20:16Z",
+  "now_local_iso": "2026-09-30T11:20:16-07:00",
   "time_context": {
     "timezone": "America/Los_Angeles",
     "label": "San Francisco"
@@ -22,7 +22,7 @@
   },
   "kpis": {
     "24h": {
-      "commits": 20,
+      "commits": 21,
       "local_changes": 1,
       "touched_workstreams": 3,
       "active_workstreams": 27,
@@ -31,7 +31,7 @@
       "active_touched_workstreams": 1
     },
     "48h": {
-      "commits": 24,
+      "commits": 25,
       "local_changes": 1,
       "touched_workstreams": 3,
       "active_workstreams": 27,
@@ -1211,7 +1211,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1224,7 +1224,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1237,7 +1237,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1250,7 +1250,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1263,7 +1263,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1276,7 +1276,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1289,7 +1289,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1302,7 +1302,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1315,7 +1315,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1328,7 +1328,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1341,7 +1341,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1354,7 +1354,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1367,7 +1367,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1380,7 +1380,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1393,7 +1393,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1406,7 +1406,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1419,7 +1419,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1432,7 +1432,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1445,7 +1445,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1458,7 +1458,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1471,7 +1471,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1484,7 +1484,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1497,7 +1497,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1510,7 +1510,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1523,7 +1523,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1541,7 +1541,7 @@
         "bundle_fingerprint": "",
         "provider_decision": "skipped_not_worth_calling",
         "last_successful_narration_fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "sections": [],
         "diagnostics": {
           "reason": "skipped_not_worth_calling",
@@ -1561,7 +1561,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1574,7 +1574,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1587,7 +1587,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1600,7 +1600,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1613,7 +1613,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1631,7 +1631,7 @@
         "bundle_fingerprint": "",
         "provider_decision": "skipped_not_worth_calling",
         "last_successful_narration_fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "sections": [],
         "diagnostics": {
           "reason": "skipped_not_worth_calling",
@@ -1651,7 +1651,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1664,7 +1664,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1677,7 +1677,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1690,7 +1690,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1703,7 +1703,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1716,7 +1716,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1729,7 +1729,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1742,7 +1742,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1755,7 +1755,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1768,7 +1768,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1781,7 +1781,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1794,7 +1794,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1807,7 +1807,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1820,7 +1820,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1833,7 +1833,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1846,7 +1846,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1859,7 +1859,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1872,7 +1872,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1885,7 +1885,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1898,7 +1898,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1911,7 +1911,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1924,7 +1924,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1937,7 +1937,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1950,7 +1950,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1963,7 +1963,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1976,7 +1976,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1989,7 +1989,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2002,7 +2002,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2015,7 +2015,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2028,7 +2028,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2041,7 +2041,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2054,7 +2054,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2067,7 +2067,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2080,7 +2080,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2093,7 +2093,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2106,7 +2106,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2119,7 +2119,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2132,7 +2132,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2145,7 +2145,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2158,7 +2158,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2171,7 +2171,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2184,7 +2184,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2197,7 +2197,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2210,7 +2210,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2223,7 +2223,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2236,7 +2236,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2249,7 +2249,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2262,7 +2262,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2275,7 +2275,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2288,7 +2288,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2301,7 +2301,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2314,7 +2314,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2327,7 +2327,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2340,7 +2340,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2353,7 +2353,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2366,7 +2366,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2379,7 +2379,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2392,7 +2392,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2405,7 +2405,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2418,7 +2418,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2431,7 +2431,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2444,7 +2444,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2457,7 +2457,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2470,7 +2470,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2483,7 +2483,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2496,7 +2496,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2509,7 +2509,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2522,7 +2522,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2671,7 +2671,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2684,7 +2684,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2697,7 +2697,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2710,7 +2710,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2723,7 +2723,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2736,7 +2736,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2749,7 +2749,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2762,7 +2762,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2775,7 +2775,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2788,7 +2788,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2801,7 +2801,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2814,7 +2814,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2827,7 +2827,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2840,7 +2840,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2853,7 +2853,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2866,7 +2866,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2879,7 +2879,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2892,7 +2892,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2905,7 +2905,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2918,7 +2918,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2931,7 +2931,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2944,7 +2944,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2957,7 +2957,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2970,7 +2970,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2983,7 +2983,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2996,7 +2996,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3009,7 +3009,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3022,7 +3022,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3035,7 +3035,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3048,7 +3048,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3061,7 +3061,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3074,7 +3074,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3087,7 +3087,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3100,7 +3100,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3113,7 +3113,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3126,7 +3126,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3139,7 +3139,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3152,7 +3152,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3165,7 +3165,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3178,7 +3178,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3191,7 +3191,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3204,7 +3204,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3217,7 +3217,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3230,7 +3230,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3245,7 +3245,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3258,7 +3258,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3271,7 +3271,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3284,7 +3284,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3297,7 +3297,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3310,7 +3310,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3323,7 +3323,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3336,7 +3336,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3349,7 +3349,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3362,7 +3362,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3375,7 +3375,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3388,7 +3388,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3401,7 +3401,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3414,7 +3414,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3427,7 +3427,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3440,7 +3440,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3453,7 +3453,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3466,7 +3466,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3479,7 +3479,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3492,7 +3492,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3505,7 +3505,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3518,7 +3518,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3531,7 +3531,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3544,7 +3544,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3557,7 +3557,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3575,7 +3575,7 @@
         "bundle_fingerprint": "",
         "provider_decision": "skipped_not_worth_calling",
         "last_successful_narration_fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "sections": [],
         "diagnostics": {
           "reason": "skipped_not_worth_calling",
@@ -3595,7 +3595,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3608,7 +3608,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3621,7 +3621,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3634,7 +3634,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3647,7 +3647,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3665,7 +3665,7 @@
         "bundle_fingerprint": "",
         "provider_decision": "skipped_not_worth_calling",
         "last_successful_narration_fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "sections": [],
         "diagnostics": {
           "reason": "skipped_not_worth_calling",
@@ -3685,7 +3685,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3698,7 +3698,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3711,7 +3711,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3724,7 +3724,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3737,7 +3737,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3750,7 +3750,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3763,7 +3763,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3776,7 +3776,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3789,7 +3789,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3802,7 +3802,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3815,7 +3815,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3828,7 +3828,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3841,7 +3841,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3854,7 +3854,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3867,7 +3867,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3880,7 +3880,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3893,7 +3893,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3906,7 +3906,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3919,7 +3919,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3932,7 +3932,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3945,7 +3945,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3958,7 +3958,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3971,7 +3971,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3984,7 +3984,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3997,7 +3997,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4010,7 +4010,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4023,7 +4023,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4036,7 +4036,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4049,7 +4049,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4062,7 +4062,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4075,7 +4075,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4088,7 +4088,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4101,7 +4101,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4114,7 +4114,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4127,7 +4127,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4140,7 +4140,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4153,7 +4153,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4166,7 +4166,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4179,7 +4179,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4192,7 +4192,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4205,7 +4205,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4218,7 +4218,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4231,7 +4231,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4244,7 +4244,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4257,7 +4257,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4270,7 +4270,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4283,7 +4283,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4296,7 +4296,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4309,7 +4309,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4322,7 +4322,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4335,7 +4335,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4348,7 +4348,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4361,7 +4361,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4374,7 +4374,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4387,7 +4387,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4400,7 +4400,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4413,7 +4413,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4426,7 +4426,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4439,7 +4439,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4452,7 +4452,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4465,7 +4465,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4478,7 +4478,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4491,7 +4491,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4504,7 +4504,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4517,7 +4517,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4530,7 +4530,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4543,7 +4543,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4556,7 +4556,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4705,7 +4705,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4718,7 +4718,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4731,7 +4731,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4744,7 +4744,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4757,7 +4757,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4770,7 +4770,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4783,7 +4783,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4796,7 +4796,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4809,7 +4809,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4822,7 +4822,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4835,7 +4835,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4848,7 +4848,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4861,7 +4861,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4874,7 +4874,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4887,7 +4887,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4900,7 +4900,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4913,7 +4913,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4926,7 +4926,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4939,7 +4939,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4952,7 +4952,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4965,7 +4965,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4978,7 +4978,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4991,7 +4991,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5004,7 +5004,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5017,7 +5017,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5030,7 +5030,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5043,7 +5043,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5056,7 +5056,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5069,7 +5069,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5082,7 +5082,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5095,7 +5095,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5108,7 +5108,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5121,7 +5121,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5134,7 +5134,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5147,7 +5147,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5160,7 +5160,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5173,7 +5173,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5186,7 +5186,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5199,7 +5199,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5212,7 +5212,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5225,7 +5225,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5238,7 +5238,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5251,7 +5251,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5264,7 +5264,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-09-30T17:57:06Z",
+        "generated_utc": "2026-09-30T18:20:16Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -24181,19 +24181,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 17,
+          "commit_count": 18,
           "local_change_count": 1,
           "file_touch_count": 190
         },
         "48h": {
-          "commit_count": 21,
+          "commit_count": 22,
           "local_change_count": 1,
           "file_touch_count": 587
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-09-30T10:54:50-07:00",
+        "last_activity_iso": "2026-09-30T11:19:34-07:00",
         "age_days": 96,
         "eta_days": 15,
         "eta_confidence": "high"
@@ -25307,19 +25307,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 16,
+          "commit_count": 17,
           "local_change_count": 1,
           "file_touch_count": 188
         },
         "48h": {
-          "commit_count": 20,
+          "commit_count": 21,
           "local_change_count": 1,
           "file_touch_count": 226
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-09-30T10:54:50-07:00",
+        "last_activity_iso": "2026-09-30T11:19:34-07:00",
         "age_days": 186,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -49355,19 +49355,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 17,
+            "commit_count": 18,
             "local_change_count": 1,
             "file_touch_count": 190
           },
           "48h": {
-            "commit_count": 21,
+            "commit_count": 22,
             "local_change_count": 1,
             "file_touch_count": 587
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-09-30T10:54:50-07:00",
+          "last_activity_iso": "2026-09-30T11:19:34-07:00",
           "age_days": 96,
           "eta_days": 15,
           "eta_confidence": "high"
@@ -49818,19 +49818,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 16,
+            "commit_count": 17,
             "local_change_count": 1,
             "file_touch_count": 188
           },
           "48h": {
-            "commit_count": 20,
+            "commit_count": 21,
             "local_change_count": 1,
             "file_touch_count": 226
           }
         },
         "timeline": {
           "start_date": "2026-03-28",
-          "last_activity_iso": "2026-09-30T10:54:50-07:00",
+          "last_activity_iso": "2026-09-30T11:19:34-07:00",
           "age_days": 186,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -79305,19 +79305,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 17,
+            "commit_count": 18,
             "local_change_count": 1,
             "file_touch_count": 190
           },
           "48h": {
-            "commit_count": 21,
+            "commit_count": 22,
             "local_change_count": 1,
             "file_touch_count": 587
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-09-30T10:54:50-07:00",
+          "last_activity_iso": "2026-09-30T11:19:34-07:00",
           "age_days": 96,
           "eta_days": 15,
           "eta_confidence": "high"
@@ -79768,19 +79768,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 16,
+            "commit_count": 17,
             "local_change_count": 1,
             "file_touch_count": 188
           },
           "48h": {
-            "commit_count": 20,
+            "commit_count": 21,
             "local_change_count": 1,
             "file_touch_count": 226
           }
         },
         "timeline": {
           "start_date": "2026-03-28",
-          "last_activity_iso": "2026-09-30T10:54:50-07:00",
+          "last_activity_iso": "2026-09-30T11:19:34-07:00",
           "age_days": 186,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -109256,19 +109256,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 17,
+          "commit_count": 18,
           "local_change_count": 1,
           "file_touch_count": 190
         },
         "48h": {
-          "commit_count": 21,
+          "commit_count": 22,
           "local_change_count": 1,
           "file_touch_count": 587
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-09-30T10:54:50-07:00",
+        "last_activity_iso": "2026-09-30T11:19:34-07:00",
         "age_days": 96,
         "eta_days": 15,
         "eta_confidence": "high"
@@ -109719,19 +109719,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 16,
+          "commit_count": 17,
           "local_change_count": 1,
           "file_touch_count": 188
         },
         "48h": {
-          "commit_count": 20,
+          "commit_count": 21,
           "local_change_count": 1,
           "file_touch_count": 226
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-09-30T10:54:50-07:00",
+        "last_activity_iso": "2026-09-30T11:19:34-07:00",
         "age_days": 186,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -147904,7 +147904,7 @@
     {
       "id": "local:M:odylith/compass/runtime/agent-stream.v1.jsonl",
       "kind": "local_change",
-      "ts_iso": "2026-09-30T10:57:03-07:00",
+      "ts_iso": "2026-09-30T11:20:13-07:00",
       "summary": "Modified odylith/compass/runtime/agent-stream.v1.jsonl",
       "author": "local",
       "sha": "",
@@ -147928,10 +147928,10 @@
       "deployment_truth": {}
     },
     {
-      "id": "agent:decision:1442:2026-09-30T10:57:03-07:00",
-      "kind": "decision",
-      "ts_iso": "2026-09-30T10:57:03-07:00",
-      "summary": "Two disposable source-first Astra reviews missed the known Greenfield reviewer-acceptance P1; do not integrate online candidate review, retain commit-only confirmation and 180-second ceiling, and test a different source-obligation ownership mechanism before release.",
+      "id": "agent:statement:1443:2026-09-30T11:20:13-07:00",
+      "kind": "statement",
+      "ts_iso": "2026-09-30T11:20:13-07:00",
+      "summary": "One public Greenfield action-inventory audit caught a missing reviewer acceptance; one correction passed installed 0.1.15 preconfirm as a sealed 5/5/5 package, but shared-deadline, independent second-case, and final semantic/UX gates remain unproved.",
       "author": "assistant",
       "sha": "",
       "workstreams": [],
@@ -147956,7 +147956,7 @@
     {
       "id": "plan:update:26:odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
       "kind": "plan_update",
-      "ts_iso": "2026-09-30T10:54:50-07:00",
+      "ts_iso": "2026-09-30T11:19:34-07:00",
       "summary": "Plan updated: greenfield typed semantic compiler and patchset repair (B-005) is In progress; checklist 137/158 complete.",
       "author": "plan",
       "sha": "",
@@ -147985,7 +147985,7 @@
     {
       "id": "plan:implementation:26:odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
       "kind": "implementation",
-      "ts_iso": "2026-09-30T10:54:50-07:00",
+      "ts_iso": "2026-09-30T11:19:34-07:00",
       "summary": "Implementation checkpoint in greenfield typed semantic compiler and patchset repair: completed Convert final package validators to emit typed finding codes, source-map.",
       "author": "plan",
       "sha": "",
@@ -148014,7 +148014,7 @@
     {
       "id": "local:M:odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
       "kind": "local_change",
-      "ts_iso": "2026-09-30T10:54:50-07:00",
+      "ts_iso": "2026-09-30T11:19:34-07:00",
       "summary": "Modified odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
       "author": "local",
       "sha": "",
@@ -148043,7 +148043,7 @@
     {
       "id": "local:M:odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md",
       "kind": "local_change",
-      "ts_iso": "2026-09-30T10:54:31-07:00",
+      "ts_iso": "2026-09-30T11:19:18-07:00",
       "summary": "Modified odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md",
       "author": "local",
       "sha": "",
@@ -148069,7 +148069,7 @@
     {
       "id": "bug:watch:26:P1",
       "kind": "bug_watch",
-      "ts_iso": "2026-09-30T10:54:31-07:00",
+      "ts_iso": "2026-09-30T11:19:18-07:00",
       "summary": "Critical bug remains open (P1): Source metadata bypassed product intent custody and triggered generic fallback.",
       "author": "bugs",
       "sha": "",
@@ -148079,6 +148079,72 @@
       ],
       "source": "bugs_index",
       "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": "",
+      "proof_lane": "",
+      "proof_fingerprint": "",
+      "proof_phase": "",
+      "evidence_tier": "",
+      "proof_status": "",
+      "work_category": "",
+      "deployment_truth": {}
+    },
+    {
+      "id": "commit:eb05bdb0567b68e755646ff4482fbb57ea3116d2",
+      "kind": "commit",
+      "ts_iso": "2026-09-30T10:59:53-07:00",
+      "summary": "Record Greenfield online reviewer no-go",
+      "author": "freedom-research",
+      "sha": "eb05bdb0567b68e755646ff4482fbb57ea3116d2",
+      "workstreams": [
+        "B-005",
+        "B-142"
+      ],
+      "files": [
+        "odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md",
+        "odylith/compass/compass-payload.v1.js",
+        "odylith/compass/compass-source-truth.v1.json",
+        "odylith/compass/compass.html",
+        "odylith/compass/runtime/agent-stream.v1.jsonl",
+        "odylith/compass/runtime/current.v1.js",
+        "odylith/compass/runtime/current.v1.json",
+        "odylith/compass/runtime/history/2026-09-30.v1.json",
+        "odylith/compass/runtime/history/embedded.v1.js",
+        "odylith/compass/runtime/history/index.v1.json",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
+        "src/odylith/bundle/assets/odylith/compass/compass.html"
+      ],
+      "source": "git",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": "",
+      "proof_lane": "",
+      "proof_fingerprint": "",
+      "proof_phase": "",
+      "evidence_tier": "",
+      "proof_status": "",
+      "work_category": "",
+      "deployment_truth": {}
+    },
+    {
+      "id": "agent:decision:1442:2026-09-30T10:57:03-07:00",
+      "kind": "decision",
+      "ts_iso": "2026-09-30T10:57:03-07:00",
+      "summary": "Two disposable source-first Astra reviews missed the known Greenfield reviewer-acceptance P1; do not integrate online candidate review, retain commit-only confirmation and 180-second ceiling, and test a different source-obligation ownership mechanism before release.",
+      "author": "assistant",
+      "sha": "",
+      "workstreams": [],
+      "files": [
+        "odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md"
+      ],
+      "source": "assistant",
+      "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "transaction_id": "",
       "transaction_seq": null,
       "transaction_boundary": "",
@@ -151302,50 +151368,27 @@
       "proof_status": "",
       "work_category": "",
       "deployment_truth": {}
-    },
-    {
-      "id": "agent:statement:1368:2026-09-27T11:15:12-07:00",
-      "kind": "statement",
-      "ts_iso": "2026-09-27T11:15:12-07:00",
-      "summary": "V41 strict public Greenfield release proof passed nine of ten cases and reproduced CB-289: labelled source provenance triggered an unnecessary product-boundary clarification despite a complete explicit user workflow; protected holdout remains untouched.",
-      "author": "freedom-research",
-      "sha": "",
-      "workstreams": [
-        "B-142"
-      ],
-      "files": [
-        "odylith/casebook/bugs/2026-07-20-inline-source-evidence-could-eclipse-an-explicit-greenfield-first-path.md"
-      ],
-      "source": "codex",
-      "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": "",
-      "proof_lane": "",
-      "proof_fingerprint": "",
-      "proof_phase": "",
-      "evidence_tier": "live-installed-release-proof",
-      "proof_status": "",
-      "work_category": "primary_blocker",
-      "deployment_truth": {}
     }
   ],
   "timeline_transactions": [
     {
-      "id": "txn:global:auto-global-0084:0084",
-      "transaction_id": "txn:global:auto-global-0084:0084",
+      "id": "txn:global:auto-global-0083:0083",
+      "transaction_id": "txn:global:auto-global-0083:0083",
       "session_id": "",
-      "start_ts_iso": "2026-09-30T10:57:03-07:00",
-      "end_ts_iso": "2026-09-30T10:57:03-07:00",
-      "headline": "Updated Compass dashboard",
+      "start_ts_iso": "2026-09-30T11:19:18-07:00",
+      "end_ts_iso": "2026-09-30T11:20:13-07:00",
+      "headline": "Implementation checkpoint in greenfield typed semantic compiler and patchset repair: completed Convert final package validators to emit typed finding codes, source-map",
       "context": "",
-      "event_count": 1,
-      "files_count": 1,
-      "workstreams": [],
+      "event_count": 6,
+      "files_count": 3,
+      "workstreams": [
+        "B-005",
+        "B-142"
+      ],
       "files": [
-        "odylith/compass/runtime/agent-stream.v1.jsonl"
+        "odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md",
+        "odylith/compass/runtime/agent-stream.v1.jsonl",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "explicit_open": false,
       "explicit_closed": false,
@@ -151353,7 +151396,7 @@
         {
           "id": "local:M:odylith/compass/runtime/agent-stream.v1.jsonl",
           "kind": "local_change",
-          "ts_iso": "2026-09-30T10:57:03-07:00",
+          "ts_iso": "2026-09-30T11:20:13-07:00",
           "summary": "Modified odylith/compass/runtime/agent-stream.v1.jsonl",
           "author": "local",
           "sha": "",
@@ -151375,12 +151418,269 @@
           "proof_status": "",
           "work_category": "",
           "deployment_truth": {}
+        },
+        {
+          "id": "plan:update:26:odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
+          "kind": "plan_update",
+          "ts_iso": "2026-09-30T11:19:34-07:00",
+          "summary": "Plan updated: greenfield typed semantic compiler and patchset repair (B-005) is In progress; checklist 137/158 complete.",
+          "author": "plan",
+          "sha": "",
+          "workstreams": [
+            "B-005",
+            "B-142"
+          ],
+          "files": [
+            "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+          ],
+          "source": "plan_index",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": "",
+          "proof_lane": "",
+          "proof_fingerprint": "",
+          "proof_phase": "",
+          "evidence_tier": "",
+          "proof_status": "",
+          "work_category": "",
+          "deployment_truth": {}
+        },
+        {
+          "id": "plan:implementation:26:odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
+          "kind": "implementation",
+          "ts_iso": "2026-09-30T11:19:34-07:00",
+          "summary": "Implementation checkpoint in greenfield typed semantic compiler and patchset repair: completed Convert final package validators to emit typed finding codes, source-map.",
+          "author": "plan",
+          "sha": "",
+          "workstreams": [
+            "B-005",
+            "B-142"
+          ],
+          "files": [
+            "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+          ],
+          "source": "plan_file",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": "",
+          "proof_lane": "",
+          "proof_fingerprint": "",
+          "proof_phase": "",
+          "evidence_tier": "",
+          "proof_status": "",
+          "work_category": "",
+          "deployment_truth": {}
+        },
+        {
+          "id": "local:M:odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
+          "kind": "local_change",
+          "ts_iso": "2026-09-30T11:19:34-07:00",
+          "summary": "Modified odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
+          "author": "local",
+          "sha": "",
+          "workstreams": [
+            "B-005",
+            "B-142"
+          ],
+          "files": [
+            "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+          ],
+          "source": "local",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": "",
+          "proof_lane": "",
+          "proof_fingerprint": "",
+          "proof_phase": "",
+          "evidence_tier": "",
+          "proof_status": "",
+          "work_category": "",
+          "deployment_truth": {}
+        },
+        {
+          "id": "local:M:odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md",
+          "kind": "local_change",
+          "ts_iso": "2026-09-30T11:19:18-07:00",
+          "summary": "Modified odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md",
+          "author": "local",
+          "sha": "",
+          "workstreams": [],
+          "files": [
+            "odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md"
+          ],
+          "source": "local",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": "",
+          "proof_lane": "",
+          "proof_fingerprint": "",
+          "proof_phase": "",
+          "evidence_tier": "",
+          "proof_status": "",
+          "work_category": "",
+          "deployment_truth": {}
+        },
+        {
+          "id": "bug:watch:26:P1",
+          "kind": "bug_watch",
+          "ts_iso": "2026-09-30T11:19:18-07:00",
+          "summary": "Critical bug remains open (P1): Source metadata bypassed product intent custody and triggered generic fallback.",
+          "author": "bugs",
+          "sha": "",
+          "workstreams": [],
+          "files": [
+            "odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md"
+          ],
+          "source": "bugs_index",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": "",
+          "proof_lane": "",
+          "proof_fingerprint": "",
+          "proof_phase": "",
+          "evidence_tier": "",
+          "proof_status": "",
+          "work_category": "",
+          "deployment_truth": {}
         }
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0083:0083",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0083:0083",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0084:0084",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0084:0084",
+      "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
+      "start_ts_iso": "2026-09-30T11:20:13-07:00",
+      "end_ts_iso": "2026-09-30T11:20:13-07:00",
+      "headline": "One public Greenfield action-inventory audit caught a missing reviewer acceptance; one correction passed installed 0.1.15 preconfirm as a sealed 5/5/5 package, but",
+      "context": "",
+      "event_count": 1,
+      "files_count": 1,
+      "workstreams": [],
+      "files": [
+        "odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md"
+      ],
+      "explicit_open": false,
+      "explicit_closed": false,
+      "events": [
+        {
+          "id": "agent:statement:1443:2026-09-30T11:20:13-07:00",
+          "kind": "statement",
+          "ts_iso": "2026-09-30T11:20:13-07:00",
+          "summary": "One public Greenfield action-inventory audit caught a missing reviewer acceptance; one correction passed installed 0.1.15 preconfirm as a sealed 5/5/5 package, but shared-deadline, independent second-case, and final semantic/UX gates remain unproved.",
+          "author": "assistant",
+          "sha": "",
+          "workstreams": [],
+          "files": [
+            "odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md"
+          ],
+          "source": "assistant",
+          "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": "",
+          "proof_lane": "",
+          "proof_fingerprint": "",
+          "proof_phase": "",
+          "evidence_tier": "",
+          "proof_status": "",
+          "work_category": "",
+          "deployment_truth": {}
+        }
+      ]
+    },
+    {
+      "id": "txn:global:auto-global-0082:0082",
+      "transaction_id": "txn:global:auto-global-0082:0082",
+      "session_id": "",
+      "start_ts_iso": "2026-09-30T10:59:53-07:00",
+      "end_ts_iso": "2026-09-30T10:59:53-07:00",
+      "headline": "Record Greenfield online reviewer no-go",
+      "context": "",
+      "event_count": 1,
+      "files_count": 12,
+      "workstreams": [
+        "B-005",
+        "B-142"
+      ],
+      "files": [
+        "odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md",
+        "odylith/compass/compass-payload.v1.js",
+        "odylith/compass/compass-source-truth.v1.json",
+        "odylith/compass/compass.html",
+        "odylith/compass/runtime/agent-stream.v1.jsonl",
+        "odylith/compass/runtime/current.v1.js",
+        "odylith/compass/runtime/current.v1.json",
+        "odylith/compass/runtime/history/2026-09-30.v1.json",
+        "odylith/compass/runtime/history/embedded.v1.js",
+        "odylith/compass/runtime/history/index.v1.json",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
+        "src/odylith/bundle/assets/odylith/compass/compass.html"
+      ],
+      "explicit_open": false,
+      "explicit_closed": false,
+      "events": [
+        {
+          "id": "commit:eb05bdb0567b68e755646ff4482fbb57ea3116d2",
+          "kind": "commit",
+          "ts_iso": "2026-09-30T10:59:53-07:00",
+          "summary": "Record Greenfield online reviewer no-go",
+          "author": "freedom-research",
+          "sha": "eb05bdb0567b68e755646ff4482fbb57ea3116d2",
+          "workstreams": [
+            "B-005",
+            "B-142"
+          ],
+          "files": [
+            "odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md",
+            "odylith/compass/compass-payload.v1.js",
+            "odylith/compass/compass-source-truth.v1.json",
+            "odylith/compass/compass.html",
+            "odylith/compass/runtime/agent-stream.v1.jsonl",
+            "odylith/compass/runtime/current.v1.js",
+            "odylith/compass/runtime/current.v1.json",
+            "odylith/compass/runtime/history/2026-09-30.v1.json",
+            "odylith/compass/runtime/history/embedded.v1.js",
+            "odylith/compass/runtime/history/index.v1.json",
+            "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
+            "src/odylith/bundle/assets/odylith/compass/compass.html"
+          ],
+          "source": "git",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": "",
+          "proof_lane": "",
+          "proof_fingerprint": "",
+          "proof_phase": "",
+          "evidence_tier": "",
+          "proof_status": "",
+          "work_category": "",
+          "deployment_truth": {}
+        }
+      ]
+    },
+    {
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0081:0081",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0081:0081",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-30T10:57:03-07:00",
       "end_ts_iso": "2026-09-30T10:57:03-07:00",
@@ -151424,170 +151724,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0082:0082",
-      "transaction_id": "txn:global:auto-global-0082:0082",
-      "session_id": "",
-      "start_ts_iso": "2026-09-30T10:54:31-07:00",
-      "end_ts_iso": "2026-09-30T10:54:50-07:00",
-      "headline": "Implementation checkpoint in greenfield typed semantic compiler and patchset repair: completed Convert final package validators to emit typed finding codes, source-map",
-      "context": "",
-      "event_count": 5,
-      "files_count": 2,
-      "workstreams": [
-        "B-005",
-        "B-142"
-      ],
-      "files": [
-        "odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md",
-        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
-      ],
-      "explicit_open": false,
-      "explicit_closed": false,
-      "events": [
-        {
-          "id": "plan:update:26:odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
-          "kind": "plan_update",
-          "ts_iso": "2026-09-30T10:54:50-07:00",
-          "summary": "Plan updated: greenfield typed semantic compiler and patchset repair (B-005) is In progress; checklist 137/158 complete.",
-          "author": "plan",
-          "sha": "",
-          "workstreams": [
-            "B-005",
-            "B-142"
-          ],
-          "files": [
-            "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
-          ],
-          "source": "plan_index",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": "",
-          "proof_lane": "",
-          "proof_fingerprint": "",
-          "proof_phase": "",
-          "evidence_tier": "",
-          "proof_status": "",
-          "work_category": "",
-          "deployment_truth": {}
-        },
-        {
-          "id": "plan:implementation:26:odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
-          "kind": "implementation",
-          "ts_iso": "2026-09-30T10:54:50-07:00",
-          "summary": "Implementation checkpoint in greenfield typed semantic compiler and patchset repair: completed Convert final package validators to emit typed finding codes, source-map.",
-          "author": "plan",
-          "sha": "",
-          "workstreams": [
-            "B-005",
-            "B-142"
-          ],
-          "files": [
-            "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
-          ],
-          "source": "plan_file",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": "",
-          "proof_lane": "",
-          "proof_fingerprint": "",
-          "proof_phase": "",
-          "evidence_tier": "",
-          "proof_status": "",
-          "work_category": "",
-          "deployment_truth": {}
-        },
-        {
-          "id": "local:M:odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
-          "kind": "local_change",
-          "ts_iso": "2026-09-30T10:54:50-07:00",
-          "summary": "Modified odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
-          "author": "local",
-          "sha": "",
-          "workstreams": [
-            "B-005",
-            "B-142"
-          ],
-          "files": [
-            "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
-          ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": "",
-          "proof_lane": "",
-          "proof_fingerprint": "",
-          "proof_phase": "",
-          "evidence_tier": "",
-          "proof_status": "",
-          "work_category": "",
-          "deployment_truth": {}
-        },
-        {
-          "id": "local:M:odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md",
-          "kind": "local_change",
-          "ts_iso": "2026-09-30T10:54:31-07:00",
-          "summary": "Modified odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md",
-          "author": "local",
-          "sha": "",
-          "workstreams": [],
-          "files": [
-            "odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md"
-          ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": "",
-          "proof_lane": "",
-          "proof_fingerprint": "",
-          "proof_phase": "",
-          "evidence_tier": "",
-          "proof_status": "",
-          "work_category": "",
-          "deployment_truth": {}
-        },
-        {
-          "id": "bug:watch:26:P1",
-          "kind": "bug_watch",
-          "ts_iso": "2026-09-30T10:54:31-07:00",
-          "summary": "Critical bug remains open (P1): Source metadata bypassed product intent custody and triggered generic fallback.",
-          "author": "bugs",
-          "sha": "",
-          "workstreams": [],
-          "files": [
-            "odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md"
-          ],
-          "source": "bugs_index",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": "",
-          "proof_lane": "",
-          "proof_fingerprint": "",
-          "proof_phase": "",
-          "evidence_tier": "",
-          "proof_status": "",
-          "work_category": "",
-          "deployment_truth": {}
-        }
-      ]
-    },
-    {
-      "id": "txn:global:auto-global-0081:0081",
-      "transaction_id": "txn:global:auto-global-0081:0081",
+      "id": "txn:global:auto-global-0080:0080",
+      "transaction_id": "txn:global:auto-global-0080:0080",
       "session_id": "",
       "start_ts_iso": "2026-09-30T07:26:22-07:00",
       "end_ts_iso": "2026-09-30T07:26:22-07:00",
@@ -151683,8 +151821,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0080:0080",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0080:0080",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0079:0079",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0079:0079",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-30T07:24:50-07:00",
       "end_ts_iso": "2026-09-30T07:24:50-07:00",
@@ -151732,8 +151870,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0079:0079",
-      "transaction_id": "txn:global:auto-global-0079:0079",
+      "id": "txn:global:auto-global-0078:0078",
+      "transaction_id": "txn:global:auto-global-0078:0078",
       "session_id": "",
       "start_ts_iso": "2026-09-30T07:12:05-07:00",
       "end_ts_iso": "2026-09-30T07:13:08-07:00",
@@ -151875,8 +152013,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0078:0078",
-      "transaction_id": "txn:global:auto-global-0078:0078",
+      "id": "txn:global:auto-global-0077:0077",
+      "transaction_id": "txn:global:auto-global-0077:0077",
       "session_id": "",
       "start_ts_iso": "2026-09-30T07:09:15-07:00",
       "end_ts_iso": "2026-09-30T07:09:15-07:00",
@@ -151920,8 +152058,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0077:0077",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0077:0077",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0076:0076",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0076:0076",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-30T07:05:03-07:00",
       "end_ts_iso": "2026-09-30T07:05:03-07:00",
@@ -151969,8 +152107,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0076:0076",
-      "transaction_id": "txn:global:auto-global-0076:0076",
+      "id": "txn:global:auto-global-0075:0075",
+      "transaction_id": "txn:global:auto-global-0075:0075",
       "session_id": "",
       "start_ts_iso": "2026-09-30T06:34:02-07:00",
       "end_ts_iso": "2026-09-30T06:34:02-07:00",
@@ -152088,8 +152226,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0075:0075",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0075:0075",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0074:0074",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0074:0074",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-30T06:31:31-07:00",
       "end_ts_iso": "2026-09-30T06:31:31-07:00",
@@ -152141,8 +152279,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0074:0074",
-      "transaction_id": "txn:global:auto-global-0074:0074",
+      "id": "txn:global:auto-global-0073:0073",
+      "transaction_id": "txn:global:auto-global-0073:0073",
       "session_id": "",
       "start_ts_iso": "2026-09-30T06:21:25-07:00",
       "end_ts_iso": "2026-09-30T06:21:25-07:00",
@@ -152264,8 +152402,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0073:0073",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0073:0073",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0072:0072",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0072:0072",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-30T06:17:22-07:00",
       "end_ts_iso": "2026-09-30T06:17:22-07:00",
@@ -152317,8 +152455,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0072:0072",
-      "transaction_id": "txn:global:auto-global-0072:0072",
+      "id": "txn:global:auto-global-0071:0071",
+      "transaction_id": "txn:global:auto-global-0071:0071",
       "session_id": "",
       "start_ts_iso": "2026-09-30T05:42:39-07:00",
       "end_ts_iso": "2026-09-30T05:44:06-07:00",
@@ -152462,8 +152600,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0071:0071",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0071:0071",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0070:0070",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0070:0070",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-30T05:35:21-07:00",
       "end_ts_iso": "2026-09-30T05:35:21-07:00",
@@ -152515,8 +152653,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0070:0070",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0070:0070",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0069:0069",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0069:0069",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-30T05:06:22-07:00",
       "end_ts_iso": "2026-09-30T05:06:22-07:00",
@@ -152560,8 +152698,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0069:0069",
-      "transaction_id": "txn:global:auto-global-0069:0069",
+      "id": "txn:global:auto-global-0068:0068",
+      "transaction_id": "txn:global:auto-global-0068:0068",
       "session_id": "",
       "start_ts_iso": "2026-09-30T04:54:04-07:00",
       "end_ts_iso": "2026-09-30T04:54:04-07:00",
@@ -152601,8 +152739,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0068:0068",
-      "transaction_id": "txn:global:auto-global-0068:0068",
+      "id": "txn:global:auto-global-0067:0067",
+      "transaction_id": "txn:global:auto-global-0067:0067",
       "session_id": "",
       "start_ts_iso": "2026-09-30T04:47:48-07:00",
       "end_ts_iso": "2026-09-30T04:47:48-07:00",
@@ -152738,8 +152876,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0067:0067",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0067:0067",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0066:0066",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0066:0066",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-30T04:36:50-07:00",
       "end_ts_iso": "2026-09-30T04:36:50-07:00",
@@ -152783,8 +152921,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0066:0066",
-      "transaction_id": "txn:global:auto-global-0066:0066",
+      "id": "txn:global:auto-global-0065:0065",
+      "transaction_id": "txn:global:auto-global-0065:0065",
       "session_id": "",
       "start_ts_iso": "2026-09-30T03:47:47-07:00",
       "end_ts_iso": "2026-09-30T03:49:18-07:00",
@@ -152932,8 +153070,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0065:0065",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0065:0065",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0064:0064",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0064:0064",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-30T03:45:47-07:00",
       "end_ts_iso": "2026-09-30T03:45:47-07:00",
@@ -152977,8 +153115,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0064:0064",
-      "transaction_id": "txn:global:auto-global-0064:0064",
+      "id": "txn:global:auto-global-0063:0063",
+      "transaction_id": "txn:global:auto-global-0063:0063",
       "session_id": "",
       "start_ts_iso": "2026-09-30T03:13:24-07:00",
       "end_ts_iso": "2026-09-30T03:15:18-07:00",
@@ -153218,8 +153356,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0063:0063",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0063:0063",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0062:0062",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0062:0062",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-30T03:11:14-07:00",
       "end_ts_iso": "2026-09-30T03:11:14-07:00",
@@ -153263,8 +153401,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0062:0062",
-      "transaction_id": "txn:global:auto-global-0062:0062",
+      "id": "txn:global:auto-global-0061:0061",
+      "transaction_id": "txn:global:auto-global-0061:0061",
       "session_id": "",
       "start_ts_iso": "2026-09-30T02:12:07-07:00",
       "end_ts_iso": "2026-09-30T02:12:07-07:00",
@@ -153304,8 +153442,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0061:0061",
-      "transaction_id": "txn:global:auto-global-0061:0061",
+      "id": "txn:global:auto-global-0060:0060",
+      "transaction_id": "txn:global:auto-global-0060:0060",
       "session_id": "",
       "start_ts_iso": "2026-09-30T02:03:59-07:00",
       "end_ts_iso": "2026-09-30T02:03:59-07:00",
@@ -153391,8 +153529,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0060:0060",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0060:0060",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0059:0059",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0059:0059",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-30T02:03:07-07:00",
       "end_ts_iso": "2026-09-30T02:03:07-07:00",
@@ -153440,8 +153578,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0059:0059",
-      "transaction_id": "txn:global:auto-global-0059:0059",
+      "id": "txn:global:auto-global-0058:0058",
+      "transaction_id": "txn:global:auto-global-0058:0058",
       "session_id": "",
       "start_ts_iso": "2026-09-30T01:21:34-07:00",
       "end_ts_iso": "2026-09-30T01:21:34-07:00",
@@ -153513,8 +153651,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0058:0058",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0058:0058",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0057:0057",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0057:0057",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-30T01:17:56-07:00",
       "end_ts_iso": "2026-09-30T01:17:56-07:00",
@@ -153566,8 +153704,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0057:0057",
-      "transaction_id": "txn:global:auto-global-0057:0057",
+      "id": "txn:global:auto-global-0056:0056",
+      "transaction_id": "txn:global:auto-global-0056:0056",
       "session_id": "",
       "start_ts_iso": "2026-09-30T00:43:41-07:00",
       "end_ts_iso": "2026-09-30T00:43:41-07:00",
@@ -153641,8 +153779,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0056:0056",
-      "transaction_id": "txn:global:auto-global-0056:0056",
+      "id": "txn:global:auto-global-0055:0055",
+      "transaction_id": "txn:global:auto-global-0055:0055",
       "session_id": "",
       "start_ts_iso": "2026-09-30T00:37:25-07:00",
       "end_ts_iso": "2026-09-30T00:37:25-07:00",
@@ -153734,8 +153872,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0055:0055",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0055:0055",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0054:0054",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0054:0054",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-30T00:35:12-07:00",
       "end_ts_iso": "2026-09-30T00:35:12-07:00",
@@ -153785,8 +153923,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0054:0054",
-      "transaction_id": "txn:global:auto-global-0054:0054",
+      "id": "txn:global:auto-global-0053:0053",
+      "transaction_id": "txn:global:auto-global-0053:0053",
       "session_id": "",
       "start_ts_iso": "2026-09-30T00:29:31-07:00",
       "end_ts_iso": "2026-09-30T00:29:31-07:00",
@@ -153830,8 +153968,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0053:0053",
-      "transaction_id": "txn:global:auto-global-0053:0053",
+      "id": "txn:global:auto-global-0052:0052",
+      "transaction_id": "txn:global:auto-global-0052:0052",
       "session_id": "",
       "start_ts_iso": "2026-09-29T17:55:27-07:00",
       "end_ts_iso": "2026-09-29T17:56:28-07:00",
@@ -153951,8 +154089,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0052:0052",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0052:0052",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0051:0051",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0051:0051",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-29T17:35:06-07:00",
       "end_ts_iso": "2026-09-29T17:35:06-07:00",
@@ -153996,8 +154134,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0051:0051",
-      "transaction_id": "txn:global:auto-global-0051:0051",
+      "id": "txn:global:auto-global-0050:0050",
+      "transaction_id": "txn:global:auto-global-0050:0050",
       "session_id": "",
       "start_ts_iso": "2026-09-29T17:34:53-07:00",
       "end_ts_iso": "2026-09-29T17:34:53-07:00",
@@ -154041,8 +154179,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0050:0050",
-      "transaction_id": "txn:global:auto-global-0050:0050",
+      "id": "txn:global:auto-global-0049:0049",
+      "transaction_id": "txn:global:auto-global-0049:0049",
       "session_id": "",
       "start_ts_iso": "2026-09-29T17:11:00-07:00",
       "end_ts_iso": "2026-09-29T17:11:00-07:00",
@@ -154100,8 +154238,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0049:0049",
-      "transaction_id": "txn:global:auto-global-0049:0049",
+      "id": "txn:global:auto-global-0048:0048",
+      "transaction_id": "txn:global:auto-global-0048:0048",
       "session_id": "",
       "start_ts_iso": "2026-09-29T17:08:19-07:00",
       "end_ts_iso": "2026-09-29T17:08:19-07:00",
@@ -154392,8 +154530,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0048:0048",
-      "transaction_id": "txn:global:auto-global-0048:0048",
+      "id": "txn:global:auto-global-0047:0047",
+      "transaction_id": "txn:global:auto-global-0047:0047",
       "session_id": "",
       "start_ts_iso": "2026-09-29T17:06:17-07:00",
       "end_ts_iso": "2026-09-29T17:06:17-07:00",
@@ -154437,8 +154575,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0047:0047",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0047:0047",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0046:0046",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0046:0046",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-29T17:04:17-07:00",
       "end_ts_iso": "2026-09-29T17:04:17-07:00",
@@ -154482,8 +154620,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0046:0046",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0046:0046",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0045:0045",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0045:0045",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-29T16:54:59-07:00",
       "end_ts_iso": "2026-09-29T16:54:59-07:00",
@@ -154527,8 +154665,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0045:0045",
-      "transaction_id": "txn:global:auto-global-0045:0045",
+      "id": "txn:global:auto-global-0044:0044",
+      "transaction_id": "txn:global:auto-global-0044:0044",
       "session_id": "",
       "start_ts_iso": "2026-09-29T16:30:21-07:00",
       "end_ts_iso": "2026-09-29T16:30:21-07:00",
@@ -154568,8 +154706,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0044:0044",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0044:0044",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0043:0043",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0043:0043",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-29T15:12:58-07:00",
       "end_ts_iso": "2026-09-29T15:12:58-07:00",
@@ -154621,8 +154759,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0043:0043",
-      "transaction_id": "txn:global:auto-global-0043:0043",
+      "id": "txn:global:auto-global-0042:0042",
+      "transaction_id": "txn:global:auto-global-0042:0042",
       "session_id": "",
       "start_ts_iso": "2026-09-29T15:01:44-07:00",
       "end_ts_iso": "2026-09-29T15:01:44-07:00",
@@ -154722,8 +154860,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0042:0042",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0042:0042",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0041:0041",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0041:0041",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-29T15:00:46-07:00",
       "end_ts_iso": "2026-09-29T15:00:46-07:00",
@@ -154775,8 +154913,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0041:0041",
-      "transaction_id": "txn:global:auto-global-0041:0041",
+      "id": "txn:global:auto-global-0040:0040",
+      "transaction_id": "txn:global:auto-global-0040:0040",
       "session_id": "",
       "start_ts_iso": "2026-09-29T14:46:50-07:00",
       "end_ts_iso": "2026-09-29T14:48:37-07:00",
@@ -154943,8 +155081,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0040:0040",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0040:0040",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0039:0039",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0039:0039",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-29T14:45:37-07:00",
       "end_ts_iso": "2026-09-29T14:45:37-07:00",
@@ -154996,8 +155134,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0039:0039",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0039:0039",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0038:0038",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0038:0038",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-29T14:04:28-07:00",
       "end_ts_iso": "2026-09-29T14:04:28-07:00",
@@ -155045,8 +155183,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0038:0038",
-      "transaction_id": "txn:global:auto-global-0038:0038",
+      "id": "txn:global:auto-global-0037:0037",
+      "transaction_id": "txn:global:auto-global-0037:0037",
       "session_id": "",
       "start_ts_iso": "2026-09-29T13:41:06-07:00",
       "end_ts_iso": "2026-09-29T13:41:06-07:00",
@@ -155237,8 +155375,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0037:0037",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0037:0037",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0036:0036",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0036:0036",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-29T13:38:04-07:00",
       "end_ts_iso": "2026-09-29T13:38:04-07:00",
@@ -155286,8 +155424,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0036:0036",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0036:0036",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0035:0035",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0035:0035",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-29T13:31:04-07:00",
       "end_ts_iso": "2026-09-29T13:31:04-07:00",
@@ -155337,8 +155475,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0035:0035",
-      "transaction_id": "txn:global:auto-global-0035:0035",
+      "id": "txn:global:auto-global-0034:0034",
+      "transaction_id": "txn:global:auto-global-0034:0034",
       "session_id": "",
       "start_ts_iso": "2026-09-28T17:33:04-07:00",
       "end_ts_iso": "2026-09-28T17:33:04-07:00",
@@ -155378,8 +155516,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0034:0034",
-      "transaction_id": "txn:global:auto-global-0034:0034",
+      "id": "txn:global:auto-global-0033:0033",
+      "transaction_id": "txn:global:auto-global-0033:0033",
       "session_id": "",
       "start_ts_iso": "2026-09-28T16:51:07-07:00",
       "end_ts_iso": "2026-09-28T16:51:07-07:00",
@@ -155515,8 +155653,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0033:0033",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0033:0033",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0032:0032",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0032:0032",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-28T16:49:41-07:00",
       "end_ts_iso": "2026-09-28T16:49:41-07:00",
@@ -155556,8 +155694,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0032:0032",
-      "transaction_id": "txn:global:auto-global-0032:0032",
+      "id": "txn:global:auto-global-0031:0031",
+      "transaction_id": "txn:global:auto-global-0031:0031",
       "session_id": "",
       "start_ts_iso": "2026-09-28T16:45:39-07:00",
       "end_ts_iso": "2026-09-28T16:45:39-07:00",
@@ -155597,8 +155735,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0031:0031",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0031:0031",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0030:0030",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0030:0030",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-28T16:40:47-07:00",
       "end_ts_iso": "2026-09-28T16:40:47-07:00",
@@ -155648,8 +155786,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0030:0030",
-      "transaction_id": "txn:global:auto-global-0030:0030",
+      "id": "txn:global:auto-global-0029:0029",
+      "transaction_id": "txn:global:auto-global-0029:0029",
       "session_id": "",
       "start_ts_iso": "2026-09-28T16:30:55-07:00",
       "end_ts_iso": "2026-09-28T16:30:55-07:00",
@@ -155845,8 +155983,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0029:0029",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0029:0029",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0028:0028",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0028:0028",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-28T16:24:24-07:00",
       "end_ts_iso": "2026-09-28T16:24:24-07:00",
@@ -155896,8 +156034,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0028:0028",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0028:0028",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0027:0027",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0027:0027",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-28T15:11:53-07:00",
       "end_ts_iso": "2026-09-28T15:11:53-07:00",
@@ -155949,8 +156087,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0027:0027",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0027:0027",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0026:0026",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0026:0026",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-28T15:09:22-07:00",
       "end_ts_iso": "2026-09-28T15:09:22-07:00",
@@ -156002,8 +156140,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0026:0026",
-      "transaction_id": "txn:global:auto-global-0026:0026",
+      "id": "txn:global:auto-global-0025:0025",
+      "transaction_id": "txn:global:auto-global-0025:0025",
       "session_id": "",
       "start_ts_iso": "2026-09-28T14:56:49-07:00",
       "end_ts_iso": "2026-09-28T14:56:49-07:00",
@@ -156147,8 +156285,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0025:0025",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0025:0025",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0024:0024",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0024:0024",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-28T14:52:17-07:00",
       "end_ts_iso": "2026-09-28T14:52:17-07:00",
@@ -156200,8 +156338,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0024:0024",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0024:0024",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0023:0023",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0023:0023",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-28T12:00:30-07:00",
       "end_ts_iso": "2026-09-28T12:00:30-07:00",
@@ -156251,8 +156389,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0023:0023",
-      "transaction_id": "txn:global:auto-global-0023:0023",
+      "id": "txn:global:auto-global-0022:0022",
+      "transaction_id": "txn:global:auto-global-0022:0022",
       "session_id": "",
       "start_ts_iso": "2026-09-28T11:38:36-07:00",
       "end_ts_iso": "2026-09-28T11:38:36-07:00",
@@ -156424,8 +156562,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0022:0022",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0022:0022",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0021:0021",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0021:0021",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-28T11:27:03-07:00",
       "end_ts_iso": "2026-09-28T11:27:03-07:00",
@@ -156475,8 +156613,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0021:0021",
-      "transaction_id": "txn:global:auto-global-0021:0021",
+      "id": "txn:global:auto-global-0020:0020",
+      "transaction_id": "txn:global:auto-global-0020:0020",
       "session_id": "",
       "start_ts_iso": "2026-09-28T11:23:48-07:00",
       "end_ts_iso": "2026-09-28T11:23:48-07:00",
@@ -156516,8 +156654,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0020:0020",
-      "transaction_id": "txn:global:auto-global-0020:0020",
+      "id": "txn:global:auto-global-0019:0019",
+      "transaction_id": "txn:global:auto-global-0019:0019",
       "session_id": "",
       "start_ts_iso": "2026-09-27T19:57:04-07:00",
       "end_ts_iso": "2026-09-27T19:57:04-07:00",
@@ -156557,8 +156695,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0019:0019",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0019:0019",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0018:0018",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0018:0018",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-27T19:11:47-07:00",
       "end_ts_iso": "2026-09-27T19:11:47-07:00",
@@ -156602,8 +156740,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0018:0018",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0018:0018",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0017:0017",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0017:0017",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-27T19:02:37-07:00",
       "end_ts_iso": "2026-09-27T19:02:37-07:00",
@@ -156647,8 +156785,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0017:0017",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0017:0017",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0016:0016",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0016:0016",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-27T18:44:49-07:00",
       "end_ts_iso": "2026-09-27T18:44:49-07:00",
@@ -156692,8 +156830,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0016:0016",
-      "transaction_id": "txn:global:auto-global-0016:0016",
+      "id": "txn:global:auto-global-0015:0015",
+      "transaction_id": "txn:global:auto-global-0015:0015",
       "session_id": "",
       "start_ts_iso": "2026-09-27T15:38:37-07:00",
       "end_ts_iso": "2026-09-27T15:38:37-07:00",
@@ -156733,8 +156871,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0015:0015",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0015:0015",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0014:0014",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0014:0014",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-27T15:18:22-07:00",
       "end_ts_iso": "2026-09-27T15:18:22-07:00",
@@ -156784,8 +156922,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0014:0014",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0014:0014",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0013:0013",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0013:0013",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-27T15:15:45-07:00",
       "end_ts_iso": "2026-09-27T15:15:45-07:00",
@@ -156835,8 +156973,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0013:0013",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0013:0013",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0012:0012",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0012:0012",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-27T15:10:14-07:00",
       "end_ts_iso": "2026-09-27T15:10:14-07:00",
@@ -156890,8 +157028,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0012:0012",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0012:0012",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0011:0011",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0011:0011",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-27T15:02:26-07:00",
       "end_ts_iso": "2026-09-27T15:02:26-07:00",
@@ -156943,8 +157081,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0011:0011",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0011:0011",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0010:0010",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0010:0010",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-27T14:58:17-07:00",
       "end_ts_iso": "2026-09-27T14:58:17-07:00",
@@ -156998,8 +157136,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0010:0010",
-      "transaction_id": "txn:global:auto-global-0010:0010",
+      "id": "txn:global:auto-global-0009:0009",
+      "transaction_id": "txn:global:auto-global-0009:0009",
       "session_id": "",
       "start_ts_iso": "2026-09-27T14:50:56-07:00",
       "end_ts_iso": "2026-09-27T14:50:56-07:00",
@@ -157039,8 +157177,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0009:0009",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0009:0009",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0008:0008",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0008:0008",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-27T14:50:15-07:00",
       "end_ts_iso": "2026-09-27T14:50:15-07:00",
@@ -157092,8 +157230,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0008:0008",
-      "transaction_id": "txn:global:auto-global-0008:0008",
+      "id": "txn:global:auto-global-0007:0007",
+      "transaction_id": "txn:global:auto-global-0007:0007",
       "session_id": "",
       "start_ts_iso": "2026-09-27T14:24:18-07:00",
       "end_ts_iso": "2026-09-27T14:24:18-07:00",
@@ -157133,8 +157271,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0007:0007",
-      "transaction_id": "txn:global:auto-global-0007:0007",
+      "id": "txn:global:auto-global-0006:0006",
+      "transaction_id": "txn:global:auto-global-0006:0006",
       "session_id": "",
       "start_ts_iso": "2026-09-27T13:51:27-07:00",
       "end_ts_iso": "2026-09-27T13:51:27-07:00",
@@ -157178,8 +157316,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0006:0006",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0006:0006",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0005:0005",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0005:0005",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-27T13:44:06-07:00",
       "end_ts_iso": "2026-09-27T13:44:06-07:00",
@@ -157235,8 +157373,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0005:0005",
-      "transaction_id": "txn:global:auto-global-0005:0005",
+      "id": "txn:global:auto-global-0004:0004",
+      "transaction_id": "txn:global:auto-global-0004:0004",
       "session_id": "",
       "start_ts_iso": "2026-09-27T13:27:06-07:00",
       "end_ts_iso": "2026-09-27T13:27:06-07:00",
@@ -157280,8 +157418,8 @@
       ]
     },
     {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0004:0004",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0004:0004",
+      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0003:0003",
+      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0003:0003",
       "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
       "start_ts_iso": "2026-09-27T12:23:50-07:00",
       "end_ts_iso": "2026-09-27T12:23:50-07:00",
@@ -157331,8 +157469,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0003:0003",
-      "transaction_id": "txn:global:auto-global-0003:0003",
+      "id": "txn:global:auto-global-0002:0002",
+      "transaction_id": "txn:global:auto-global-0002:0002",
       "session_id": "",
       "start_ts_iso": "2026-09-27T12:11:27-07:00",
       "end_ts_iso": "2026-09-27T12:11:27-07:00",
@@ -157376,8 +157514,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0002:0002",
-      "transaction_id": "txn:global:auto-global-0002:0002",
+      "id": "txn:global:auto-global-0001:0001",
+      "transaction_id": "txn:global:auto-global-0001:0001",
       "session_id": "",
       "start_ts_iso": "2026-09-27T11:35:07-07:00",
       "end_ts_iso": "2026-09-27T11:35:07-07:00",
@@ -157415,55 +157553,6 @@
           "deployment_truth": {}
         }
       ]
-    },
-    {
-      "id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0001:0001",
-      "transaction_id": "txn:019ffcfa-f136-7080-a35d-1c9d6b6d8c79:auto-019ffcfa-f136-7080-a35d-1c9d6b6d8c79-0001:0001",
-      "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
-      "start_ts_iso": "2026-09-27T11:15:12-07:00",
-      "end_ts_iso": "2026-09-27T11:15:12-07:00",
-      "headline": "V41 strict public Greenfield release proof passed nine of ten cases and reproduced CB-289: labelled source provenance triggered an unnecessary product-boundary clarification",
-      "context": "",
-      "event_count": 1,
-      "files_count": 1,
-      "workstreams": [
-        "B-142"
-      ],
-      "files": [
-        "odylith/casebook/bugs/2026-07-20-inline-source-evidence-could-eclipse-an-explicit-greenfield-first-path.md"
-      ],
-      "explicit_open": false,
-      "explicit_closed": false,
-      "events": [
-        {
-          "id": "agent:statement:1368:2026-09-27T11:15:12-07:00",
-          "kind": "statement",
-          "ts_iso": "2026-09-27T11:15:12-07:00",
-          "summary": "V41 strict public Greenfield release proof passed nine of ten cases and reproduced CB-289: labelled source provenance triggered an unnecessary product-boundary clarification despite a complete explicit user workflow; protected holdout remains untouched.",
-          "author": "freedom-research",
-          "sha": "",
-          "workstreams": [
-            "B-142"
-          ],
-          "files": [
-            "odylith/casebook/bugs/2026-07-20-inline-source-evidence-could-eclipse-an-explicit-greenfield-first-path.md"
-          ],
-          "source": "codex",
-          "session_id": "019ffcfa-f136-7080-a35d-1c9d6b6d8c79",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": "",
-          "proof_lane": "",
-          "proof_fingerprint": "",
-          "proof_phase": "",
-          "evidence_tier": "live-installed-release-proof",
-          "proof_status": "",
-          "work_category": "primary_blocker",
-          "deployment_truth": {}
-        }
-      ]
     }
   ],
   "execution_focus": {
@@ -157471,140 +157560,143 @@
     "recent_window_minutes": 90,
     "global": {
       "is_active": true,
-      "transaction_id": "txn:global:auto-global-0082:0082",
+      "transaction_id": "txn:global:auto-global-0083:0083",
       "session_id": "",
       "context": "",
       "headline": "Implementation checkpoint in greenfield typed semantic compiler and patchset repair: completed Convert final package validators to emit typed finding codes, source-map",
-      "last_event_iso": "2026-09-30T10:54:50-07:00",
-      "start_ts_iso": "2026-09-30T10:54:31-07:00",
+      "last_event_iso": "2026-09-30T11:20:13-07:00",
+      "start_ts_iso": "2026-09-30T11:19:18-07:00",
       "workstreams": [
         "B-005",
         "B-142"
       ],
-      "event_count": 5,
-      "files_count": 2,
+      "event_count": 6,
+      "files_count": 3,
       "kind_counts": {
+        "local_change": 3,
         "plan_update": 1,
         "implementation": 1,
-        "local_change": 2,
         "bug_watch": 1
       },
       "source_counts": {
+        "local": 3,
         "plan_index": 1,
         "plan_file": 1,
-        "local": 2,
         "bugs_index": 1
       },
-      "activity_signal_count": 4,
+      "activity_signal_count": 5,
       "risk_signal_count": 1,
       "top_files": [
         "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
-        "odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md"
+        "odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md",
+        "odylith/compass/runtime/agent-stream.v1.jsonl"
       ],
       "source_files_count": 1,
-      "generated_files_count": 1,
+      "generated_files_count": 2,
       "generated_only_batch": false,
-      "latest_event_kind": "plan_update",
-      "latest_event_summary": "Plan updated: greenfield typed semantic compiler and patchset repair (B-005) is In progress; checklist 137/158 complete.",
+      "latest_event_kind": "local_change",
+      "latest_event_summary": "Modified odylith/compass/runtime/agent-stream.v1.jsonl",
       "has_implementation_signal": true,
       "focus_reason": "recent_activity_signal",
       "selection_mode": "active_implementation",
       "has_live_implementation": true,
       "has_recent_implementation": true,
-      "latest_implementation_iso": "2026-09-30T10:57:03-07:00"
+      "latest_implementation_iso": "2026-09-30T11:20:13-07:00"
     },
     "by_workstream": {
       "B-005": {
         "is_active": true,
-        "transaction_id": "txn:global:auto-global-0082:0082",
+        "transaction_id": "txn:global:auto-global-0083:0083",
         "session_id": "",
         "context": "",
         "headline": "Implementation checkpoint in greenfield typed semantic compiler and patchset repair: completed Convert final package validators to emit typed finding codes, source-map",
-        "last_event_iso": "2026-09-30T10:54:50-07:00",
-        "start_ts_iso": "2026-09-30T10:54:31-07:00",
+        "last_event_iso": "2026-09-30T11:20:13-07:00",
+        "start_ts_iso": "2026-09-30T11:19:18-07:00",
         "workstreams": [
           "B-005",
           "B-142"
         ],
-        "event_count": 5,
-        "files_count": 2,
+        "event_count": 6,
+        "files_count": 3,
         "kind_counts": {
+          "local_change": 3,
           "plan_update": 1,
           "implementation": 1,
-          "local_change": 2,
           "bug_watch": 1
         },
         "source_counts": {
+          "local": 3,
           "plan_index": 1,
           "plan_file": 1,
-          "local": 2,
           "bugs_index": 1
         },
-        "activity_signal_count": 4,
+        "activity_signal_count": 5,
         "risk_signal_count": 1,
         "top_files": [
           "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
-          "odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md"
+          "odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md",
+          "odylith/compass/runtime/agent-stream.v1.jsonl"
         ],
         "source_files_count": 1,
-        "generated_files_count": 1,
+        "generated_files_count": 2,
         "generated_only_batch": false,
-        "latest_event_kind": "plan_update",
-        "latest_event_summary": "Plan updated: greenfield typed semantic compiler and patchset repair (B-005) is In progress; checklist 137/158 complete.",
+        "latest_event_kind": "local_change",
+        "latest_event_summary": "Modified odylith/compass/runtime/agent-stream.v1.jsonl",
         "has_implementation_signal": true,
         "focus_reason": "recent_activity_signal",
         "selection_mode": "active_implementation",
         "has_live_implementation": true,
         "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-09-30T10:54:50-07:00"
+        "latest_implementation_iso": "2026-09-30T11:20:13-07:00"
       },
       "B-142": {
         "is_active": true,
-        "transaction_id": "txn:global:auto-global-0082:0082",
+        "transaction_id": "txn:global:auto-global-0083:0083",
         "session_id": "",
         "context": "",
         "headline": "Implementation checkpoint in greenfield typed semantic compiler and patchset repair: completed Convert final package validators to emit typed finding codes, source-map",
-        "last_event_iso": "2026-09-30T10:54:50-07:00",
-        "start_ts_iso": "2026-09-30T10:54:31-07:00",
+        "last_event_iso": "2026-09-30T11:20:13-07:00",
+        "start_ts_iso": "2026-09-30T11:19:18-07:00",
         "workstreams": [
           "B-005",
           "B-142"
         ],
-        "event_count": 5,
-        "files_count": 2,
+        "event_count": 6,
+        "files_count": 3,
         "kind_counts": {
+          "local_change": 3,
           "plan_update": 1,
           "implementation": 1,
-          "local_change": 2,
           "bug_watch": 1
         },
         "source_counts": {
+          "local": 3,
           "plan_index": 1,
           "plan_file": 1,
-          "local": 2,
           "bugs_index": 1
         },
-        "activity_signal_count": 4,
+        "activity_signal_count": 5,
         "risk_signal_count": 1,
         "top_files": [
           "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
-          "odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md"
+          "odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md",
+          "odylith/compass/runtime/agent-stream.v1.jsonl"
         ],
         "source_files_count": 1,
-        "generated_files_count": 1,
+        "generated_files_count": 2,
         "generated_only_batch": false,
-        "latest_event_kind": "plan_update",
-        "latest_event_summary": "Plan updated: greenfield typed semantic compiler and patchset repair (B-005) is In progress; checklist 137/158 complete.",
+        "latest_event_kind": "local_change",
+        "latest_event_summary": "Modified odylith/compass/runtime/agent-stream.v1.jsonl",
         "has_implementation_signal": true,
         "focus_reason": "recent_activity_signal",
         "selection_mode": "active_implementation",
         "has_live_implementation": true,
         "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-09-30T10:54:50-07:00"
+        "latest_implementation_iso": "2026-09-30T11:20:13-07:00"
       },
       "B-020": {
         "is_active": false,
-        "transaction_id": "txn:global:auto-global-0049:0049",
+        "transaction_id": "txn:global:auto-global-0048:0048",
         "session_id": "",
         "context": "",
         "headline": "Converge Greenfield on single semantic authority and frozen release gate",
@@ -157655,7 +157747,7 @@
       },
       "B-022": {
         "is_active": false,
-        "transaction_id": "txn:global:auto-global-0049:0049",
+        "transaction_id": "txn:global:auto-global-0048:0048",
         "session_id": "",
         "context": "",
         "headline": "Converge Greenfield on single semantic authority and frozen release gate",
@@ -157706,7 +157798,7 @@
       },
       "B-038": {
         "is_active": false,
-        "transaction_id": "txn:global:auto-global-0049:0049",
+        "transaction_id": "txn:global:auto-global-0048:0048",
         "session_id": "",
         "context": "",
         "headline": "Converge Greenfield on single semantic authority and frozen release gate",
@@ -157757,7 +157849,7 @@
       },
       "B-063": {
         "is_active": false,
-        "transaction_id": "txn:global:auto-global-0049:0049",
+        "transaction_id": "txn:global:auto-global-0048:0048",
         "session_id": "",
         "context": "",
         "headline": "Converge Greenfield on single semantic authority and frozen release gate",
@@ -157808,7 +157900,7 @@
       },
       "B-069": {
         "is_active": false,
-        "transaction_id": "txn:global:auto-global-0049:0049",
+        "transaction_id": "txn:global:auto-global-0048:0048",
         "session_id": "",
         "context": "",
         "headline": "Converge Greenfield on single semantic authority and frozen release gate",
@@ -157859,7 +157951,7 @@
       },
       "B-083": {
         "is_active": false,
-        "transaction_id": "txn:global:auto-global-0049:0049",
+        "transaction_id": "txn:global:auto-global-0048:0048",
         "session_id": "",
         "context": "",
         "headline": "Converge Greenfield on single semantic authority and frozen release gate",
@@ -157910,7 +158002,7 @@
       },
       "B-110": {
         "is_active": false,
-        "transaction_id": "txn:global:auto-global-0049:0049",
+        "transaction_id": "txn:global:auto-global-0048:0048",
         "session_id": "",
         "context": "",
         "headline": "Converge Greenfield on single semantic authority and frozen release gate",
@@ -157961,7 +158053,7 @@
       },
       "B-115": {
         "is_active": false,
-        "transaction_id": "txn:global:auto-global-0064:0064",
+        "transaction_id": "txn:global:auto-global-0063:0063",
         "session_id": "",
         "context": "",
         "headline": "Refresh Registry forensics for Greenfield checkpoint",
@@ -158011,7 +158103,7 @@
       },
       "B-117": {
         "is_active": false,
-        "transaction_id": "txn:global:auto-global-0064:0064",
+        "transaction_id": "txn:global:auto-global-0063:0063",
         "session_id": "",
         "context": "",
         "headline": "Refresh Registry forensics for Greenfield checkpoint",
@@ -158061,7 +158153,7 @@
       },
       "B-001": {
         "is_active": false,
-        "transaction_id": "txn:global:auto-global-0079:0079",
+        "transaction_id": "txn:global:auto-global-0078:0078",
         "session_id": "",
         "context": "",
         "headline": "I fixed and pushed one concrete UX regression on 2026/freedom/v0.1.15: three-day-old intervention notes no longer reappear as the \u201cnext\u201d message",
@@ -158117,7 +158209,7 @@
       },
       "B-031": {
         "is_active": false,
-        "transaction_id": "txn:global:auto-global-0079:0079",
+        "transaction_id": "txn:global:auto-global-0078:0078",
         "session_id": "",
         "context": "",
         "headline": "I fixed and pushed one concrete UX regression on 2026/freedom/v0.1.15: three-day-old intervention notes no longer reappear as the \u201cnext\u201d message",
@@ -158173,7 +158265,7 @@
       },
       "B-058": {
         "is_active": false,
-        "transaction_id": "txn:global:auto-global-0079:0079",
+        "transaction_id": "txn:global:auto-global-0078:0078",
         "session_id": "",
         "context": "",
         "headline": "I fixed and pushed one concrete UX regression on 2026/freedom/v0.1.15: three-day-old intervention notes no longer reappear as the \u201cnext\u201d message",
@@ -158229,7 +158321,7 @@
       },
       "B-059": {
         "is_active": false,
-        "transaction_id": "txn:global:auto-global-0079:0079",
+        "transaction_id": "txn:global:auto-global-0078:0078",
         "session_id": "",
         "context": "",
         "headline": "I fixed and pushed one concrete UX regression on 2026/freedom/v0.1.15: three-day-old intervention notes no longer reappear as the \u201cnext\u201d message",
@@ -158285,7 +158377,7 @@
       },
       "B-072": {
         "is_active": false,
-        "transaction_id": "txn:global:auto-global-0079:0079",
+        "transaction_id": "txn:global:auto-global-0078:0078",
         "session_id": "",
         "context": "",
         "headline": "I fixed and pushed one concrete UX regression on 2026/freedom/v0.1.15: three-day-old intervention notes no longer reappear as the \u201cnext\u201d message",
@@ -158341,7 +158433,7 @@
       },
       "B-096": {
         "is_active": false,
-        "transaction_id": "txn:global:auto-global-0079:0079",
+        "transaction_id": "txn:global:auto-global-0078:0078",
         "session_id": "",
         "context": "",
         "headline": "I fixed and pushed one concrete UX regression on 2026/freedom/v0.1.15: three-day-old intervention notes no longer reappear as the \u201cnext\u201d message",
@@ -158397,7 +158489,7 @@
       },
       "B-099": {
         "is_active": false,
-        "transaction_id": "txn:global:auto-global-0079:0079",
+        "transaction_id": "txn:global:auto-global-0078:0078",
         "session_id": "",
         "context": "",
         "headline": "I fixed and pushed one concrete UX regression on 2026/freedom/v0.1.15: three-day-old intervention notes no longer reappear as the \u201cnext\u201d message",
@@ -158453,7 +158545,7 @@
       },
       "B-105": {
         "is_active": false,
-        "transaction_id": "txn:global:auto-global-0079:0079",
+        "transaction_id": "txn:global:auto-global-0078:0078",
         "session_id": "",
         "context": "",
         "headline": "I fixed and pushed one concrete UX regression on 2026/freedom/v0.1.15: three-day-old intervention notes no longer reappear as the \u201cnext\u201d message",
@@ -158509,7 +158601,7 @@
       },
       "B-106": {
         "is_active": false,
-        "transaction_id": "txn:global:auto-global-0079:0079",
+        "transaction_id": "txn:global:auto-global-0078:0078",
         "session_id": "",
         "context": "",
         "headline": "I fixed and pushed one concrete UX regression on 2026/freedom/v0.1.15: three-day-old intervention notes no longer reappear as the \u201cnext\u201d message",
@@ -158565,7 +158657,7 @@
       },
       "B-107": {
         "is_active": false,
-        "transaction_id": "txn:global:auto-global-0079:0079",
+        "transaction_id": "txn:global:auto-global-0078:0078",
         "session_id": "",
         "context": "",
         "headline": "I fixed and pushed one concrete UX regression on 2026/freedom/v0.1.15: three-day-old intervention notes no longer reappear as the \u201cnext\u201d message",
@@ -158621,7 +158713,7 @@
       },
       "B-108": {
         "is_active": false,
-        "transaction_id": "txn:global:auto-global-0079:0079",
+        "transaction_id": "txn:global:auto-global-0078:0078",
         "session_id": "",
         "context": "",
         "headline": "I fixed and pushed one concrete UX regression on 2026/freedom/v0.1.15: three-day-old intervention notes no longer reappear as the \u201cnext\u201d message",
@@ -158677,7 +158769,7 @@
       },
       "B-109": {
         "is_active": false,
-        "transaction_id": "txn:global:auto-global-0079:0079",
+        "transaction_id": "txn:global:auto-global-0078:0078",
         "session_id": "",
         "context": "",
         "headline": "I fixed and pushed one concrete UX regression on 2026/freedom/v0.1.15: three-day-old intervention notes no longer reappear as the \u201cnext\u201d message",
@@ -160857,7 +160949,7 @@
   "runtime_contract": {
     "version": "v1",
     "standup_brief_schema_version": "v25",
-    "input_fingerprint": "543034584bbd8c664c7187f7675c04a918e8f2890f83bfbd16567e2754ae63ce",
+    "input_fingerprint": "4cd3a3923126d139f3486fdec1c626b456e569003086f80a277e451bbad6b4ea",
     "retention_days": 15,
     "active_window_minutes": 15,
     "max_review_age_days": 21,
@@ -160917,7 +161009,7 @@
       "applied_profile": "shell-safe",
       "runtime_mode": "standalone",
       "reason": "",
-      "attempted_utc": "2026-09-30T17:57:06Z",
+      "attempted_utc": "2026-09-30T18:20:16Z",
       "fallback_used": false
     }
   }

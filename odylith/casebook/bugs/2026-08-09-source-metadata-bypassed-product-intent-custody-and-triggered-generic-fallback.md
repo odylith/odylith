@@ -1,6 +1,52 @@
 - Bug ID: CB-324
 
+## Action-inventory-assisted review: one public positive (2026-09-30)
+
+A different disposable review input compared the independently authored
+19-row source action inventory with the 15 typed events in the new
+Astra/medium candidate. One Astra/low source-first audit identified the
+missing scientific-reviewer acceptance of private raw notes and explicitly
+rejected the three broad Product Outcome rows as extra workflow events. It
+also distinguished passive retained state and an unowned invalidation
+constraint from named-actor transitions. The audit is retained at
+`/private/tmp/odylith-astra-low-compact-reuse-20260930/action-audit-low.txt`.
+This result is materially better than the two full-candidate reviews above,
+which both missed the same P1. The inventory remains an untrusted hypothesis,
+not a hard coverage gate or a second canonical source interpretation.
+
+One permitted Astra/medium correction then produced a complete candidate
+with the reviewer-acceptance event, without adding the broad aspirations as
+events. The final candidate is retained at
+`/private/tmp/odylith-astra-low-compact-reuse-20260930/corrected-candidate.json`.
+Installed Odylith 0.1.15 in the disposable consumer repo
+`/private/tmp/greenfield-candidate-probe.zubvCm` admitted it in `8.377s`
+and sealed transaction
+`859add1d59523d7e40aa05703bc96e04805e05e39ad1db38d9f3abea3feef0df`:
+5 Radar, 5 Registry, 5 Atlas, 57 proposed writes, zero deterministic
+proposal issues, and no publication. The first-path diagram includes the
+reviewer-acceptance event and a separate review-to-publication exchange.
+
+This is a one-case public prototype, not a winning production mechanism.
+The action inventory took `39.35s` in an earlier call, the independent author
+about one minute, the focused audit about `16s`, the correction about one
+minute, and installed proposal `8.377s`; concurrency and one shared `180s`
+deadline have not been executed together. The fixed source-only negative,
+another independent complete positive, post-correction semantic/UX review,
+host parity, and browser/recovery proof remain open. Do not relax the safety
+ceiling, promote the partial inventory to hard authority, or open the
+protected holdout from this result.
+
 ## Pre-submission reviewer probe rejected (2026-09-30)
+
+An additional disposable Astra/medium author received the same public
+agriculture candidate contract without the separate authority-gate task.
+It returned a complete-shaped 5-component, 5-workstream, 15-event candidate
+in about one minute, retained at
+`/private/tmp/odylith-astra-low-compact-reuse-20260930/parallel-author-medium.json`.
+The candidate again omitted scientific-reviewer acceptance of private raw
+notes as a distinct event, with empty source precedence. Running the gate and
+author independently or concurrently can save gate latency, but does not
+repair this P1. No installed proposal or holdout was run from this candidate.
 
 One disposable, read-only Astra/low source-first review compared the exact
 public agriculture briefing source with the retained fast-author candidate.
