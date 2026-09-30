@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-09-29
+Last updated: 2026-09-30
 
 
 ## Overview
@@ -1844,6 +1844,8 @@ semantic/design findings.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-30 · Decision:** Decision evidence linked this component to governed work with 2 verifiable artifact references.
+  - Evidence: `odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md`, `src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py`
 - **2026-09-29 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
@@ -1859,9 +1861,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-09-28 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
-- **2026-09-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_candidate_review.py`, `src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
