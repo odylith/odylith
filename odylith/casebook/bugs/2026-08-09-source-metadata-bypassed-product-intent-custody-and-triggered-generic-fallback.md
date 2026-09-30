@@ -1,5 +1,62 @@
 - Bug ID: CB-324
 
+## One-pass relation/lifecycle v20 public no-go; patch retired (2026-09-30)
+
+Fixed public agriculture 037 was authored once against the production v20
+host-candidate contract in `141.765s` (candidate SHA-256
+`a8c7466f8a678bdaa678893c281837fe6c8105277ef1ce164b5303b95ce37258`).
+Deterministic admission rejected it before proposal or create:
+`Greenfield first run omits a cited conditional obligation`. Candidate
+`source_relations[9]` correctly modeled “Briefing portal publishes only
+approved dossiers” as a publication guard on event 5, with no separate
+approval event. Independent source-first review confirmed the source states
+approval as dossier state, not a separate actor/action. The validator's
+required event predecessor would invent product truth.
+
+The candidate also omitted the operator-authoritative intent and explicit
+no-code/data/runtime-integration boundary, and its lifecycle omitted the
+changed-source-observation invalidation of the review disposition before
+republication. Reviewer acceptance of raw notes was retained in a guard and
+design but not an explicit conditional lifecycle transition. These are P1
+complete-package failures. Focused tests and the 1,175-pass install suite did
+not detect them. The broader runtime suite remained red (48 failures after
+1,383 passes). No installed positive, second domain, negative, create, or
+protected holdout was run on this variant.
+
+Source, schema, candidate, admission trace, and observation are retained at
+`/private/tmp/odylith-greenfield-v20-direct-20260930/`. The rejected code
+patch was preserved there as `retired-contract.patch` (SHA-256
+`e4ccf5416a5edb346bda03319bfa7bdb34d1fedfb89cc030a8d1ab5b019998cb`)
+then removed from the working tree. Stop internal mechanism comparisons under
+the active goal's two-comparison rule. A material operating-envelope/input
+contract decision or explicitly authorized rearchitecture is required before
+another public authoring attempt. Keep the protected holdout untouched.
+
+## Disposable obligation graph failed conditional disclosure custody (2026-09-30)
+
+One disposable Astra/medium pass on fixed public agriculture 037 completed in
+`131.02s`, returning 29 exact-source-cited obligations with valid references
+and no cycle. Independent source-first review rejected it (P1). The source
+requires reviewer acceptance **before raw analyst notes are disclosed**. O15
+recognizes that acceptance is conditional, yet publication O22 `requires` O15;
+privacy rule O25 also `requires` O15. Following these edges would require
+acceptance for every briefing publication, even when raw notes remain private,
+and would invert the pre-acceptance privacy condition. No deterministic
+projection can repair those graph semantics. The raw output and observation
+are under `/private/tmp/odylith-greenfield-obligation-probe-20260930/`; output
+SHA-256 is
+`f6536a0f8ee6a176ca15b3dfa8330147d4e1fa0f9840ba4881aef12e1b96061f`.
+No proposal, create, additional generation, or protected holdout followed.
+
+Correction to earlier findings in this case: acceptance is a conditional
+disclosure gate, not a mandatory publication-path transition if raw notes
+stay private. Calling its absence from the first path a standalone P1 was an
+overreading. The two installed v19 positives still failed citation binding,
+and agriculture also lost source precedence and repository authority limits.
+The failed graph is not release qualified. Stop the predeclared comparison;
+the next viable contract must represent conditional guards distinctly from
+mandatory predecessor edges and pass fresh cross-domain source-first review.
+
 ## One-pass cited-state v19 failed installed public positive (2026-09-30)
 
 The new host-candidate shape gave first-path events and the governed dossier
@@ -20,10 +77,11 @@ output SHA-256 is
 Independent source-first review also rejected the candidate as a complete
 package. It omitted the repository-access boundary and source precedence,
 left explicit non-goals empty, and classified a customer group as a human
-actor. The review missed a separate P1: the source requires a scientific
-reviewer to accept private raw analyst notes before later disposition, but
-the five-event candidate has no distinct acceptance transition. Thus the
-reviewer is not a qualified semantic gate. The candidate's narrower path and
+actor. The review missed the conditional raw-note disclosure rule in its
+structural assessment. As corrected above, the source does not require
+acceptance before evidence disposition or publication while notes stay
+private. The reviewer is not a qualified semantic gate. The candidate's
+narrower path and
 state shape are improvements, but neither structural test success nor the
 reviewer's partial findings establish source completeness.
 

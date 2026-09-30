@@ -1,5 +1,143 @@
 Status: In progress
 
+## Full-envelope relation/lifecycle comparison stopped; product patch retired (2026-09-30)
+
+The combined one-pass host candidate v20 / authoring v79 / relation v35
+comparison is a public semantic no-go. It classified conditional constraints
+and added cited state fields, event effects, persistence, and proof to one
+sealed candidate. Its focused relation tests reached 465 passes, lifecycle
+tests 173 passes, and the install fixture suite 1,175 passes. The broader
+runtime Greenfield suite still had 48 failures after 1,383 passes, primarily
+direct legacy fixtures. These structural results did not qualify the package.
+
+The exact production contract authored fixed public agriculture 037 once in
+`141.765s`, within the `165s` model window. Admission then rejected it before
+proposal or create: `Greenfield first run omits a cited conditional obligation`.
+The model bound the portal's “publishes only approved dossiers” rule to
+publication event 5, with no separate approval event. Independent source-first
+review confirmed that approval is a dossier state condition in the source;
+requiring an invented approval actor/action would be wrong. This is a material
+contract failure, not a reason to tune the fixture or relax the validator.
+The same review found two further P1 omissions: operator-authoritative
+source precedence and the repository's no-code/data/integration authority
+boundary were not preserved, and the lifecycle omitted the explicit
+changed-observation invalidation of the review disposition before
+republication. Conditional reviewer acceptance of raw notes appeared in
+design but lacked a lifecycle transition. The candidate is not an admissible
+or complete package.
+
+The raw source, exact contract/schema, candidate, admission error, and
+observation are retained under
+`/private/tmp/odylith-greenfield-v20-direct-20260930/`; candidate SHA-256 is
+`a8c7466f8a678bdaa678893c281837fe6c8105277ef1ce164b5303b95ce37258`.
+The rejected production patch and its two new files are retained there too
+(`retired-contract.patch` SHA-256
+`e4ccf5416a5edb346bda03319bfa7bdb34d1fedfb89cc030a8d1ab5b019998cb`).
+The patch was restored out of the working tree. No second positive, negative,
+installed replay, create, publication, or protected holdout followed.
+
+This exhausts the declared bounded mechanism comparison. The current
+free-form confirmed-intent contract has not produced a source-faithful public
+positive across the tested alternatives. Preserve the full requested outcome
+and stop internal fixture-driven machinery. The next meaningful decision is a
+material operating-envelope/input-contract change that makes conditional
+state predicates, off-path lifecycle transitions, and source authority
+reviewable at intake, or a separately authorized rearchitecture with new
+predeclared public proof. Neither can be counted as release progress until it
+passes end-to-end consumer cases and independent review.
+
+## Full-envelope relation contract replacement (2026-09-30)
+
+The operator reiterated the full production goal after the bounded graph
+failure, so retain the published scope. Replace the ambiguous relation owner
+inside the single host-authored candidate: mandatory event precedence,
+conditional behavior guards, standalone operational limits, and scope
+exclusions must have different typed roles and source custody. Only mandatory
+precedence can select a required first-run predecessor or render an Atlas
+sequence arrow. A conditional guard must identify the governed behavior and
+release condition without implying that the behavior occurs in the first path.
+The accepted source fact remains the evidence owner; new relation rows may
+bind to it but cannot add another free-form product-truth owner. Preserve one
+candidate model pass, deterministic seal, and commit-only confirmation.
+
+The first code review exposed a separate release blocker before installed
+replay: `first_path_contract` still emits empty `required_fields`, `mutation`,
+and `persistence`. Complete this same canonical ownership replacement with
+source-cited fields and transitions of the one governed state object. Bind
+cross-section proof to that same state through exact source spans without
+requiring all valid evidence to occur inside one event quote. Project these
+relations from one sealed owner across Project, Radar, Registry, and Atlas;
+do not revive the retired v19 split owner or add a later interpretation pass.
+The release scorer's new relation family also requires independently
+adjudicated v5 annotation rows before a matrix score can qualify release.
+
+Falsifiable public prediction: the same agriculture 037 source can publish an
+approved briefing while private raw notes remain private; if notes are ever
+disclosed, reviewer acceptance gates that disclosure. The source-only 030
+negative still asks one focused question with no writes, and civic-tech 057
+preserves consent/moderation/withdrawal guards without inventing path steps.
+Invalid relation citations, constraint references, event references, and
+conditional-to-mandatory coercion fail closed. Validate on fixed public cases
+and an independent source-first reviewer before any wider matrix. Stop this
+replacement if it still changes a source condition into a mandatory path edge,
+omits source authority, or breaches the shared deadline; do not tune either
+fixture, open the protected holdout, or stack another mechanism.
+
+## Disposable obligation graph rejected on a conditional boundary (2026-09-30)
+
+The predeclared one-pass graph comparison stopped on its first fixed public
+positive, `release-agriculture-037-source`. The disposable Astra/medium author
+returned a structurally connected, source-cited graph in `131.02s` within the
+`165s` model window. Its 29 obligations and design references have valid exact
+citations, unique IDs, resolvable references, and no dependency cycle. Those
+checks did not prove source meaning. Independent source-first review found a
+P1: the source makes scientific-reviewer acceptance a condition for exposing
+raw analyst notes, while graph O22 makes acceptance a prerequisite for every
+publication and O25 makes the pre-acceptance privacy rule depend on acceptance.
+The `requires` edge cannot express a conditional disclosure guard without
+turning it into a mandatory path predecessor. Retain the raw output and
+observation under `/private/tmp/odylith-greenfield-obligation-probe-20260930/`;
+the output SHA-256 is
+`f6536a0f8ee6a176ca15b3dfa8330147d4e1fa0f9840ba4881aef12e1b96061f`.
+No proposal, create, second positive, negative, or protected holdout followed.
+
+This also corrects an earlier reading of the same source: reviewer acceptance
+is not a mandatory first-path action when raw notes remain private. Prior
+claims that omitting it from the publication path was independently a P1
+overstated the source. The actual P1 in this probe is the inverse error: an
+unconditional publication gate. Stop this graph comparison as declared. A
+future replacement requires a material input contract that distinguishes
+conditional privacy and authority guards from mandatory dependencies, plus
+fresh independent semantic proof; prompt tuning on this fixture is not a
+release path. The full operating envelope remains the target.
+
+## Disposable single-owner comparison before further product edits (2026-09-30)
+
+The remaining bounded hypothesis replaces disconnected, separately authored
+path, state, constraint, precedence, and design arrays with one compact
+source-cited obligation graph as the host's sole semantic owner. Each
+obligation has a role and explicit actor, object, and required relationship;
+proposed design cites obligation identities. Deterministic projections would
+derive path and lifecycle views from the same graph. This is a disposable
+comparison, not a second runtime semantic stage or a license to recover
+missing meaning after candidate receipt.
+
+Predict before implementation: the fixed source-only negative asks one
+first-path question and stages nothing. On both fixed cross-domain positives,
+one host pass within the pinned `165s` model window must retain every
+source-material action, state mutation, authority limit, non-goal, system
+responsibility, and proof relationship without inflating actor inventory or
+safety prose into path events. Agriculture requires a conditional reviewer-
+acceptance guard for disclosing private notes and one dossier through
+publication;
+civic tech requires consent, moderation, withdrawal, and publication custody.
+Cross-section source proof may cite a different exact span than its event, but
+must bind to the same state and transition. Independent source-first review
+must find no P0/P1, and the full pre-confirm journey must stay below `180s`.
+Reject the graph at the first omission, invented authority, generic package,
+or timeout. If it fails, stop internal mechanism comparisons and return to a
+material input-contract or envelope decision; do not tune either fixture.
+
 ## Bounded release hardening and next consumer gate (2026-09-30)
 
 The current public semantic gate remains red. Keep the stated envelope and
