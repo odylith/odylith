@@ -1,5 +1,28 @@
 Status: In progress
 
+## Indexed canonical public comparison stopped at civic linkage (2026-09-30)
+
+The one predeclared source-indexed, single-owner alternative preserved the
+broad envelope and distinguished first-path events, conditional guards,
+off-path state changes, source authority, and design ownership. Its fixed
+public agriculture 037 output returned in `134.803s` and passed independent
+source-first P0/P1 review; source-only agriculture 030 asked one focused
+question in `10.567s` with no artifacts. The unchanged schema then authored
+civic-tech 057 in `124.564s`. Independent review found two P1 linkage gaps:
+the facilitator's prompt-publication step has no owning system or accepting
+workstream, and withdrawal proof cannot point to the off-path withdrawal
+transition. Exact artifacts and hashes are recorded in CB-324.
+
+Retire this disposable format before product integration. The three controls
+do not establish a winning mechanism because the second positive is not a
+source-faithful package. Do not repair the civic fixture wording, add a
+case-specific ownership rule, silently patch the schema, or open the final
+holdout. The next design decision must make cross-section coverage and proof
+relationships explicit for arbitrary sourced actions, including off-path
+ones, then state a fresh falsifiable cross-domain gate before implementation.
+The `180s` whole-flow deadline remains unproved: host authoring, deterministic
+admission, seal, render, and preview have not been timed as one journey.
+
 ## Broad-envelope semantic owner decision and first falsifier (2026-09-30)
 
 The operator selected preservation of the broad cross-domain input envelope

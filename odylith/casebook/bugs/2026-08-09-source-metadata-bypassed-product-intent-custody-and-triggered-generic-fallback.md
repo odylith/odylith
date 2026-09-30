@@ -1,5 +1,39 @@
 - Bug ID: CB-324
 
+## Indexed canonical v1 cross-domain public no-go (2026-09-30)
+
+The operator chose to preserve the broad cross-domain envelope and redesign
+the semantic stage. One disposable source-indexed, single-owner candidate
+format was frozen before the fixed public controls. It kept operator and
+reference-source roles outside product truth, with typed state fields,
+first-path and off-path transitions, authority rules, system ownership,
+workstreams, exchanges, proof links, and views. No product code changed.
+
+Agriculture 037 returned in `134.803s`. Structural references and source-line
+IDs resolved; independent source-first review found no P0/P1, with one P2
+climate-only exchange narrower than the source's generic changed-observation
+rule. The bit-identical schema then returned one focused first-path question
+for source-only agriculture 030 in `10.567s`, with empty artifact arrays and
+no write. Civic-tech 057 returned in `124.564s`; its 61 IDs and 179 citations
+were structurally valid. Independent source-first review rejected it at P1:
+source C15/C31 requires the facilitator to open the dossier and publish its
+prompt, but candidate `open`/`p1` has no owning system or accepting workstream.
+Source C45 requires withdrawal to exclude future aggregates and invalidate
+affected unpublished analysis, but `proof_withdrawal` cannot bind the actual
+`withdraw` transition because the proof schema has no transition-reference
+field; `r_withdrawal` also omits that transition from its targets. These are
+cross-section linkage failures even though the prose states the obligations.
+
+The exact schema, prompts, outputs, timings, and structural checks are under
+`/private/tmp/odylith-greenfield-indexed-canonical-v1-20260930/`,
+`/private/tmp/odylith-greenfield-indexed-canonical-v1-030-20260930/`, and
+`/private/tmp/odylith-greenfield-indexed-canonical-v1-057-20260930/`.
+The civic output SHA-256 is
+`d6ef2a7d9ec38a53b3be2eb620eab7c824153942f1b1b8d2b1281e248cea003b`.
+Stop this prototype before product integration. It produced no complete
+staged package or measured whole-flow deadline; the final holdout remains
+sealed. The public semantic gate remains red.
+
 ## Source-to-claim ledger v1 public no-go (2026-09-30)
 
 After the operator chose to preserve the broad cross-domain envelope, one
