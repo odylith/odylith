@@ -15,7 +15,7 @@
   platform seamless" may rank voice or integration inspection affordances, but
   it must still stay silent when no hard law is violated and no immediate
   user-visible value is earned.
-Last updated: 2026-09-27
+Last updated: 2026-09-30
 
 ## Manual delivery publication boundary
 
@@ -48,8 +48,9 @@ configured or trusted hooks still require separate visible-delivery evidence.
 An explicit `visible-intervention --phase stop_summary --include-closeout`
 with a supplied summary displays that current Assist through the existing
 visible-quality gate. Historical replay cannot replace it. Pending messages
-remain stored and unconfirmed for a subsequent recovery request; confirming the
-current text cannot confirm text that was not shown. A useful closeout does not
+remain stored and unconfirmed, but only a moment no older than 30 minutes is
+eligible for assistant-visible replay. Confirming the current text cannot
+confirm text that was not shown. A useful closeout does not
 need a generic visibility Observation prepended to it.
 
 The renderer preserves the complete supplied summary and punctuation. It does
@@ -572,7 +573,8 @@ claiming ML calibration.
   ledger-visible delivery events, strict chat-confirmed event count, family
   visibility ratios for Teaser diagnostics, Ambient, Observation/Proposal,
   and Assist, pending proposal count, an exact assistant-visible replay block
-  for unconfirmed branded events, and a fast smoke command.
+  for a recent unconfirmed branded moment, and a fast smoke command. Older
+  unconfirmed events remain diagnostic evidence, not instructions to speak.
   These commands are the cheap operator proof before claiming a session has
   live Observation/Proposal/Ambient/Assist delivery; `Activation: ready` alone
   is static wiring, not session-visible proof.
@@ -606,9 +608,10 @@ claiming ML calibration.
   may preserve the bounded set of distinct unconfirmed live beats beside the
   Assist line for a later relevant prompt/checkpoint or manual visibility
   command, but it must not force a new assistant turn. Manual-visible,
-  best-effort, and Stop-continuation rows remain
-  replayable until exact transcript confirmation proves the assistant message
-  actually carried the Markdown.
+  best-effort, and Stop-continuation rows remain eligible for replay only while
+  their moment is recent and unconfirmed. Exact transcript confirmation proves
+  the assistant message carried the Markdown; expiry merely suppresses stale
+  narration and does not count as confirmation.
 - Stop-summary Assist may use concrete validation/pass signals from the
   assistant summary when changed paths are unavailable. This recovery path is
   proof-only: it may say the proof stayed tight, but it must not claim

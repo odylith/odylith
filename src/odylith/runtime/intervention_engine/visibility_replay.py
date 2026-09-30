@@ -9,6 +9,7 @@ confirmation.
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 from typing import Mapping
@@ -31,6 +32,21 @@ _AMBIENT_LABEL_PRIORITY: dict[str, int] = {
     "history": 0,
     "insight": 1,
 }
+_MAX_REPLAY_AGE_SECONDS = 30 * 60
+
+
+def _current_replay_bundle(rows: list[dict[str, Any]]) -> bool:
+    """Keep transcript recovery local to the moment that produced the beat."""
+
+    try:
+        latest = max(
+            datetime.fromisoformat(_normalize_string(row.get("ts_iso")).replace("Z", "+00:00"))
+            for row in rows
+        )
+        age = (datetime.now(timezone.utc) - latest).total_seconds()
+    except (TypeError, ValueError):
+        return False
+    return -60 <= age <= _MAX_REPLAY_AGE_SECONDS
 
 
 def _ambient_label_kind(row: Mapping[str, Any]) -> str:
@@ -111,7 +127,7 @@ def replayable_chat_blocks(
         ]
 
     rows = visible_delivery_frontier.active_unconfirmed_rows(rows)
-    if not rows:
+    if not rows or not _current_replay_bundle(rows):
         return []
     max_live = max(0, int(max_live_blocks))
     max_ambient = max(0, int(ambient_cap))

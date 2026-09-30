@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
 from html import escape
 from pathlib import Path
 
@@ -175,6 +176,54 @@ def test_intervention_status_browser_distinguishes_ledger_visible_session_with_p
         page.locator("#pending", has_text="Next assistant-visible replay:").wait_for(timeout=15000)
         page.locator("#pending", has_text="Later hidden proof still needs chat.").wait_for(timeout=15000)
         assert "Additional pending replay blocks:" not in page.locator("#pending").inner_text()
+        _assert_clean_page(page, observation)
+
+
+def test_intervention_status_browser_keeps_stale_routing_notes_out_of_replay(
+    browser_context, tmp_path: Path, monkeypatch
+) -> None:  # noqa: ANN001
+    _base_url, context = browser_context
+    _seed_codex_repo(tmp_path)
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="ambient_signal",
+        summary="Old routing note.",
+        session_id="browser-stale-session",
+        host_family="codex",
+        intervention_key="old-routing-note",
+        turn_phase="post_bash_checkpoint",
+        display_markdown="**Odylith Insight:** Old routing note.",
+        delivery_channel="assistant_visible_fallback",
+        delivery_status="assistant_render_required",
+        render_surface="codex_post_bash_checkpoint",
+    )
+    original_load = stream_state.load_recent_intervention_events
+    old_time = (datetime.now(timezone.utc) - timedelta(days=3)).isoformat()
+    monkeypatch.setattr(
+        stream_state,
+        "load_recent_intervention_events",
+        lambda **kwargs: [{**row, "ts_iso": old_time} for row in original_load(**kwargs)],
+    )
+    rendered = host_intervention_status.render_intervention_status(
+        host_intervention_status.inspect_intervention_status(
+            repo_root=tmp_path,
+            host_family="codex",
+            session_id="browser-stale-session",
+        )
+    )
+
+    with _new_page(context) as (page, observation):
+        page.set_content(
+            "<!doctype html><html><body>"
+            f"<section id='status'><pre>{escape(rendered)}</pre></section>"
+            "</body></html>",
+            wait_until="domcontentloaded",
+        )
+        status = page.locator("#status")
+        status.get_by_text("Activation: unverified").wait_for(timeout=15000)
+        status.get_by_text("1 waiting-for-chat event(s)").wait_for(timeout=15000)
+        assert "Next assistant-visible replay:" not in status.inner_text()
+        assert "Old routing note." not in status.inner_text()
         _assert_clean_page(page, observation)
 
 

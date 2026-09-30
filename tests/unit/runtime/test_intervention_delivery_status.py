@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -660,6 +661,42 @@ def test_codex_intervention_status_does_not_count_hidden_ready_payload_as_visibl
     assert "Next assistant-visible replay:" in rendered
     assert rendered.count("**Odylith Observation:** Hidden host context is not chat visibility.") == 1
     assert "---\n\n**Odylith Observation:** Hidden host context is not chat visibility.\n\n---" in rendered
+
+
+def test_intervention_status_preserves_old_unconfirmed_proof_without_replaying_it(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _seed_codex_repo(tmp_path)
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="ambient_signal",
+        summary="Old routing note.",
+        session_id="session-old-note",
+        host_family="codex",
+        intervention_key="old-note",
+        turn_phase="post_bash_checkpoint",
+        display_markdown="**Odylith Insight:** Old routing note.",
+        delivery_channel="assistant_visible_fallback",
+        delivery_status="assistant_render_required",
+        render_surface="codex_post_bash_checkpoint",
+    )
+    original_load = stream_state.load_recent_intervention_events
+    old_time = (datetime.now(timezone.utc) - timedelta(days=3)).isoformat()
+
+    def load_old_event(**kwargs):
+        return [{**row, "ts_iso": old_time} for row in original_load(**kwargs)]
+
+    monkeypatch.setattr(stream_state, "load_recent_intervention_events", load_old_event)
+    report = host_intervention_status.inspect_intervention_status(
+        repo_root=tmp_path,
+        host_family="codex",
+        session_id="session-old-note",
+    )
+
+    assert report["activation"] == "unverified"
+    assert report["delivery_ledger"]["unconfirmed_event_count"] == 1
+    assert report["assistant_visible_replay_count"] == 0
+    assert "Next assistant-visible replay:" not in host_intervention_status.render_intervention_status(report)
 
 
 def test_intervention_status_keeps_proven_session_honest_when_new_hidden_beat_is_pending(
