@@ -1,5 +1,36 @@
 - Bug ID: CB-324
 
+## Source-to-claim ledger v1 public no-go (2026-09-30)
+
+After the operator chose to preserve the broad cross-domain envelope, one
+disposable, source-cited claim-ledger replacement was predeclared and run on
+fixed public `release-agriculture-037-source`. This was a single Astra-medium
+call outside the repository, with no retry, product-code edit, proposal,
+transaction, or protected-holdout access. The model returned in `155.614s`
+under the `165s` model window. All 38 claim quotes were exact source spans,
+and the claim IDs, references, and seven selected path actions were
+structurally valid. That did not qualify source meaning or package utility.
+
+Independent source-first review rejected the result at P1: its proof claim
+names the approving publication action but binds only to `publish`, omitting
+the separate `verify` path claim that carries publication-manager
+verification. Registration was also classified as a system responsibility
+instead of a steward action. Raw-note privacy remained prose attached to
+publication rather than a typed reviewer-acceptance gate. The ledger generated
+no differentiated Radar, Registry, or Atlas design, and its model call alone
+used most of the `180s` end-to-end safety window. The operator-prompt
+precedence statement also appeared as an accepted `authority_rule`, showing
+that authoring controls still need a boundary separate from product claims.
+
+The predeclared prediction, schema, prompt, raw output, structural check,
+and timing receipt are retained under
+`/private/tmp/odylith-greenfield-claim-ledger-v1-20260930/`.
+Candidate SHA-256:
+`980fa9ba9b1753e775c0b29565eb97ed4081723750e6ec59561439cd9c7023f5`.
+This replacement is retired before product integration. No second positive,
+source-only negative, complete package, installed matrix, or final holdout
+was run. The public semantic gate remains red.
+
 ## One-pass relation/lifecycle v20 public no-go; patch retired (2026-09-30)
 
 Fixed public agriculture 037 was authored once against the production v20

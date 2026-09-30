@@ -1,5 +1,28 @@
 Status: In progress
 
+## Broad-envelope semantic owner decision and first falsifier (2026-09-30)
+
+The operator selected preservation of the broad cross-domain input envelope
+and a redesigned source-to-claim semantic stage, rather than a narrower
+structured intake contract. The first predeclared replacement experiment was
+one source-cited claim ledger on fixed public agriculture 037, compared with
+retired v20 on the same evidence. It returned 38 exact-cited claims in
+`155.614s`; ID and reference checks passed. Independent source-first review
+rejected its proof-to-publication relationship at P1, and found weaker
+registration and raw-note acceptance roles. It produced no differentiated
+governance package, so its timing leaves no demonstrated end-to-end margin
+under the `180s` safety ceiling. CB-324 retains the artifact hashes and
+review evidence. The prototype is retired; do not patch agriculture wording
+into production or count structural coverage as a semantic win.
+
+Next, design at most one structurally distinct compact, source-indexed
+single-owner alternative against the same public controls. Before any
+product integration, it must preserve source authority outside product truth,
+typed state guards and off-path invalidation, full proof bindings, and enough
+owned design relationships for useful Radar, Registry, and Atlas projections
+within the complete deadline. Stop at the first P1 or time breach. The
+protected final holdout remains sealed.
+
 ## Commit-only handoff truth after navigation faults (2026-09-30)
 
 CB-352 exposed a separate release blocker in the already committed CONFIRM
