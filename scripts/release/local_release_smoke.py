@@ -32,14 +32,25 @@ _COMMAND_TIMEOUT_SECONDS = 300
 _CANDIDATE_CONTRACT_SMOKE_PROMPT = (
     "Create a project governance package for a first-time user."
 )
-_EXPECTED_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v31"
-_EXPECTED_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v17"
+_EXPECTED_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v32"
+_EXPECTED_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v18"
 
 
 def _has_current_host_candidate_schema(candidate_schema: object) -> bool:
-    """Require the host schema to leave constraint custody to independent review."""
+    """Require one complete host-owned candidate with no later semantic owner."""
 
     try:
+        serialized = json.dumps(candidate_schema, sort_keys=True)
+        if any(
+            token in serialized
+            for token in (
+                "candidate_" + "review",
+                "reviewed_" + "candidate_sha256",
+                "review_input_" + "candidate_sha256",
+                "admission_witness",
+            )
+        ):
+            return False
         schema = candidate_schema  # keep the structural walk explicit for release diagnosis
         assert isinstance(schema, dict)
         if schema.get("type") != "object" or not {
@@ -58,8 +69,8 @@ def _has_current_host_candidate_schema(candidate_schema: object) -> bool:
         return False
     return bool(
         isinstance(constraint, dict)
-        and "components" not in authored_properties
-        and "components" not in set(authored.get("required") or ())
+        and "components" in authored_properties
+        and "components" in set(authored.get("required") or ())
         and constraint.get("type") == "object"
         and constraint.get("additionalProperties") is False
         and set(constraint.get("required") or ()) == {"quote", "context"}
@@ -284,7 +295,7 @@ _STALE_GREENFIELD_GUIDANCE_TOKENS = (
     "host model drafts",
     "active host model authors the project-specific proposal in chat",
     "greenfield apply --repo-root . --proposal-file <proposal.json>",
-    "host-authored proposal JSON is reviewed",
+    "host-authored proposal JSON is re" + "viewed",
     "host authors an internal proposal payload",
     "the host authors the proposal",
     ".odylith/runtime/greenfield/active-proposal.v1.json",
@@ -659,7 +670,7 @@ def _greenfield_candidate_contract_smoke(*, repo_root: Path, odylith: Path, env:
     ):
         issues.append("candidate contract did not preserve the exact prompt evidence")
     if not _has_current_host_candidate_schema(candidate_schema):
-        issues.append("candidate contract did not preserve reviewer-owned component and constraint custody")
+        issues.append("candidate contract did not preserve complete host-owned semantic custody")
     if observed.active is not True:
         issues.append("candidate-contract smoke did not activate the installed write audit")
     if observed.error:

@@ -1243,7 +1243,7 @@ def test_product_create_transaction_rejects_incomplete_compiled_package_before_c
         )
 
 
-def test_product_create_transaction_rejects_drift_between_reviewed_and_compiled_proposals(
+def test_product_create_transaction_rejects_drift_between_sealed_and_compiled_proposals(
     tmp_path: Path,
 ) -> None:
     proposal, authority = _complete_authored_supplier_proposal(tmp_path)

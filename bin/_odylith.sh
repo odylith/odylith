@@ -289,6 +289,12 @@ print(value)
 PY
 }
 
+greenfield_release_proof_root() {
+  local head_sha="$1"
+  [[ "$head_sha" =~ ^[0-9a-f]{40}$ ]] || die "Greenfield release proof requires a full Git revision"
+  printf '%s\n' "$(dirname "$odylith_release_session_file")/greenfield-release/$head_sha"
+}
+
 require_current_component_forensics() {
   local output
   if ! output="$(PYTHONPATH="$odylith_repo_root/src${PYTHONPATH:+:$PYTHONPATH}" "$odylith_python" -m odylith.cli governance sync-component-spec-requirements --repo-root "$odylith_repo_root" --check-only 2>&1)"; then
@@ -389,7 +395,12 @@ PY
     evaluation_split_manifest="${GREENFIELD_MATRIX_EVALUATION_SPLIT_MANIFEST:-}"
     final_holdout_run_ledger="${GREENFIELD_MATRIX_FINAL_HOLDOUT_RUN_LEDGER:-}"
     implementation_revision="$(git -C "$odylith_repo_root" rev-parse HEAD)"
-    distribution_provenance_file="$dist_dir/build-provenance.v1.json"
+    distribution_provenance_file="${GREENFIELD_MATRIX_DISTRIBUTION_PROVENANCE_FILE:-$dist_dir/build-provenance.v1.json}"
+    if [[ "$distribution_provenance_file" != "$dist_dir/build-provenance.v1.json" ]]; then
+      require_file "$dist_dir/build-provenance.v1.json"
+      mkdir -p "$(dirname "$distribution_provenance_file")"
+      cp "$dist_dir/build-provenance.v1.json" "$distribution_provenance_file"
+    fi
     lower_capability_control_file="${GREENFIELD_MATRIX_LOWER_CAPABILITY_CONTROL_FILE:-}"
   else
     matrix_release_intent=0
@@ -407,7 +418,7 @@ PY
   GREENFIELD_MATRIX_DISTRIBUTION_PROVENANCE_FILE="$distribution_provenance_file" \
   GREENFIELD_MATRIX_LOWER_CAPABILITY_CONTROL_FILE="$lower_capability_control_file" \
   GREENFIELD_MATRIX_EVIDENCE_OUTPUT_DIR="$evidence_output_dir" \
-  GREENFIELD_MATRIX_OUTPUT_JSON="$dist_dir/greenfield-preconfirm-matrix.v1.json" \
+  GREENFIELD_MATRIX_OUTPUT_JSON="${GREENFIELD_MATRIX_OUTPUT_JSON:-$dist_dir/greenfield-preconfirm-matrix.v1.json}" \
   BROWSER_PROOF=1 \
   COMMIT_RECOVERY_PROOF=1 \
   TEMP_PARENT="$matrix_temp_parent" \

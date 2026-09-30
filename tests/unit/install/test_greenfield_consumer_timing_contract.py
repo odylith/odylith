@@ -12,9 +12,6 @@ import pytest
 from odylith.runtime.domain_intelligence import (
     greenfield_create_transaction as transactions,
 )
-from odylith.runtime.domain_intelligence import (
-    greenfield_model_profile_contract as profiles,
-)
 from odylith.runtime.domain_intelligence import greenfield_preconfirm_engine as engine
 from odylith.runtime.domain_intelligence import greenfield_proposals_cli as cli
 from tests.unit.runtime.greenfield_authored_proposal_fixtures import (
@@ -30,16 +27,10 @@ from greenfield_matrix_quality_scoring import completion_issues, proposal_time_i
 from greenfield_matrix_types import GreenfieldArtifactCounts
 
 TIERS = (("standard", 90.0),)
-HISTORICAL_V12_PROFILES = (
-    ("standard", 60.0, "greenfield-standard-terra-low-complete-author-review-v12"),
-    ("rescue", 90.0, "greenfield-rescue-terra-medium-complete-author-review-v12"),
-    ("deep", 120.0, "greenfield-deep-sol-high-complete-author-review-v12"),
-)
 INVALID_DURATIONS = [None, True, False, "1", "90", -1, float("nan"), float("inf"), 10 ** 1000]
 
 
 def _manifest(tier: str, elapsed: object = 1.0) -> dict:
-    profile = profiles.get_greenfield_model_profile(profiles.model_profile_id_for_repair_tier(tier))
     manifest = approved_authored_quality_manifest_fixture(
         requested_repair_tier=tier, repair_tier=tier,
         target_seconds=dict(TIERS)[tier], operational_timeout_seconds=180.0,
@@ -47,21 +38,7 @@ def _manifest(tier: str, elapsed: object = 1.0) -> dict:
     )
     receipt = manifest["model_authoring"]
     receipt["tier"] = tier
-    elapsed_before = 0.0
-    for key, model, effort in (
-        ("participant_selection", profile.participant_model, profile.participant_reasoning_effort),
-        ("remaining_candidate_authoring", profile.model, profile.reasoning_effort),
-        ("candidate_review", profile.review_model, profile.review_reasoning_effort),
-    ):
-        role = receipt[key]
-        observed = role["model_profile"]
-        observed.update(
-            profile_id=profile.profile_id, authoring_tier=tier,
-            model=model, reasoning_effort=effort,
-            effective_timeout_seconds=profile.model_timeout_seconds - elapsed_before,
-        )
-        elapsed_before += role["elapsed_seconds"]
-    receipt["effective_model_window_seconds"] = profile.model_timeout_seconds
+    receipt["elapsed_seconds"] = elapsed
     return manifest
 
 
@@ -135,37 +112,37 @@ def test_declared_target_requires_exact_numeric_tier_binding(target):
     assert proposal_time_issues(manifest, proposal_seconds=1.0)
 
 
-@pytest.mark.parametrize("tier,budget,profile_id", HISTORICAL_V12_PROFILES)
-def test_old_v12_receipts_are_not_upgraded_or_mutated(tier, budget, profile_id):
+@pytest.mark.parametrize(
+    "stale_role",
+    (
+        "participant_" + "selection",
+        "remaining_candidate_" + "authoring",
+        "candidate_" + "review",
+    ),
+)
+def test_stale_multi_role_receipts_are_rejected_without_mutation(stale_role):
     manifest = _manifest("standard")
-    manifest["requested_repair_tier"] = tier
-    manifest["repair_tier"] = tier
-    manifest["target_seconds"] = budget
-    receipt = manifest["model_authoring"]
-    receipt["tier"] = tier
-    for role in ("participant_selection", "remaining_candidate_authoring", "candidate_review"):
-        receipt[role]["model_profile"]["profile_id"] = profile_id
+    manifest["model_authoring"][stale_role] = {"status": "passed"}
     original = deepcopy(manifest)
     with pytest.raises(ValueError, match="quality manifest is not approved"):
         transactions.require_product_create_transaction_quality_approved(manifest)
-    assert proposal_time_issues(manifest, proposal_seconds=1.0)
     assert manifest == original
 
 
 @pytest.mark.parametrize(
-    "mutation", ["tier", "participant_profile", "remainder_budget", "review_budget"]
+    "mutation", ["tier", "runtime_call", "model_window", "semantic_call"]
 )
-def test_operational_timeout_does_not_relax_role_binding_or_model_caps(mutation):
+def test_operational_timeout_does_not_relax_single_authority_binding(mutation):
     manifest = _manifest("standard", 80.0)
     receipt = manifest["model_authoring"]
     if mutation == "tier":
         manifest["repair_tier"] = "rescue"
-    elif mutation == "participant_profile":
-        receipt["participant_selection"]["model_profile"]["profile_id"] = profiles.RESCUE_PROFILE_ID
-    elif mutation == "remainder_budget":
-        receipt["remaining_candidate_authoring"]["model_profile"]["effective_timeout_seconds"] = 165.001
+    elif mutation == "runtime_call":
+        receipt["runtime_semantic_model_call_count"] = 1
+    elif mutation == "model_window":
+        receipt["effective_model_window_seconds"] = 165.001
     else:
-        receipt["candidate_review"]["model_profile"]["effective_timeout_seconds"] = 165.001
+        manifest["semantic_compiler"]["post_candidate_receipt_semantic_calls"] = 1
     with pytest.raises(ValueError, match="quality manifest is not approved"):
         transactions.require_product_create_transaction_quality_approved(manifest)
 
@@ -208,7 +185,7 @@ def _quality_verdict(monkeypatch, *, proposal_seconds=80.0, create_seconds=1.0):
     }
     summary = {
         "transaction_hash": "a" * 64,
-        "product_facts_sha256": manifest["model_authoring"]["candidate_review"]["product_facts_sha256"],
+        "product_facts_sha256": manifest["model_authoring"]["canonical_authority"]["product_facts_sha256"],
         "repository_write_set_hash": "b" * 64,
     }
     manifest["product_create_transaction"] = summary

@@ -4,6 +4,35 @@ Last updated: 2026-09-29
 
 ## Overview
 
+### Single-semantic-authority release candidate (2026-09-29)
+
+The bounded Greenfield release candidate removes the independent reviewer from
+live transaction admission. One active host returns the complete
+canonical candidate once; after candidate receipt, Domain Intelligence performs
+zero semantic-model calls and only deterministic normalization, validation,
+sealing, package projection, and transaction handoff. Explicit human
+CONFIRM/EDIT/REJECT remains required. Independent strong semantic and UX review
+moves to immutable release evidence and may qualify or block a model/profile
+release without reinterpreting an individual consumer transaction.
+
+The runtime now binds a versioned canonical candidate hash rather than reviewer
+custody. The old runtime reviewer, participant/join path, and their tests are
+removed. Frozen non-holdout runtime proof passes 1,380 tests; the release and
+install slice passes 1,266 tests. These are implementation checks, not semantic
+release qualification. The combined frozen Greenfield runtime, install, and
+integration suite passes 2,629 tests. Source-citation, typed-relation, terminal, first-run,
+package-depth, transaction, rollback, recovery, and browser invariants remain
+required. There is no compatibility route, parser, regex, repair, retry,
+fallback, second semantic model call, or model ladder. One failed immutable
+public replay retires this candidate and ends the production Greenfield claim.
+
+Terminal release evidence must persist under a HEAD-scoped proof root. A
+detached independent review binds that exact matrix, retained evidence,
+one-shot holdout ledger, and distribution provenance. Dispatch revalidates
+those bytes and refuses discovery-tier, missing, stale, or tampered evidence.
+The public replay, full browser/recovery campaign, independent semantic and UX
+qualification, and protected holdout are still open gates.
+
 ### V49 live falsification and retired release mechanism (2026-09-29)
 
 The clean pushed v31/v17/reviewer-v18 checkpoint passed 3,362 frozen

@@ -737,11 +737,13 @@ def _manifest_issues(
         semantic_compiler=mapping_copy(manifest.get("semantic_compiler")),
         requested_repair_tier=str(manifest.get("requested_repair_tier", "")),
     ):
-        issues.append("pre-confirm participant-first authoring and candidate-review receipt did not pass")
-    elif model_authoring["candidate_review"]["product_facts_sha256"] != mapping_copy(
-        manifest.get("write_transaction")
-    ).get("product_facts_sha256"):
-        issues.append("candidate-review Product Intent facts hash does not match the write transaction")
+        issues.append("pre-confirm single-authority host receipt did not pass")
+    elif mapping_copy(model_authoring.get("canonical_authority")).get(
+        "product_facts_sha256"
+    ) != mapping_copy(manifest.get("write_transaction")).get("product_facts_sha256"):
+        issues.append(
+            "canonical host Product Intent facts hash does not match the write transaction"
+        )
     lens_report = mapping_copy(manifest.get("quality_lenses"))
     if (
         str(lens_report.get("status", "")).strip() != "passed"

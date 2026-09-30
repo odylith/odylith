@@ -1,4 +1,4 @@
-"""Shared structured-provider fixtures for Greenfield model-authoring tests."""
+"""Shared complete-host-candidate fixtures for Greenfield authoring tests."""
 
 from __future__ import annotations
 
@@ -16,267 +16,65 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring impor
     _REPEATED_SOURCE_FIELDS,
     _SINGULAR_SOURCE_FIELDS,
 )
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    STANDARD_PROFILE_ID,
+)
 from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import (
     HOST_CANDIDATE_FORMAT_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
+    admit_greenfield_host_candidate,
+)
+from odylith.runtime.domain_intelligence.greenfield_host_candidate_materialization import (
+    materialize_host_authored_intent,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
+    prepare_model_authoring_evidence,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_source_citations import (
     resolve_source_citation,
 )
 
 
-class StructuredAuthoringProvider:
-    """Return a fixed model response without manufacturing custody coordinates."""
-
-    provider_name = "codex-cli"
-
-    def __init__(self, response: Mapping[str, Any] | None) -> None:
-        self.response = response
-        self.calls = 0
-        self.requests: list[object] = []
-
-    def generate_structured(self, *, request: object) -> Mapping[str, Any] | None:
-        self.last_request_system_prompt = str(getattr(request, "system_prompt", ""))
-        self.last_request_output_schema = copy.deepcopy(
-            getattr(request, "output_schema", {})
-        )
-        self.last_request_model = str(getattr(request, "model", ""))
-        self.last_request_reasoning_effort = str(getattr(request, "reasoning_effort", ""))
-        self.requests.append(request)
-        self.calls += 1
-        return copy.deepcopy(dict(self.response)) if self.response is not None else None
-
-    def participant_provider(self) -> ParticipantSelectionProvider:
-        """Return a separate selector for participants explicitly declared by this fixture."""
-
-        return ParticipantSelectionProvider(self.response)
-
-
-class RemainingCandidateProvider(StructuredAuthoringProvider):
-    """Project a complete canonical fixture onto the remaining-author response schema."""
-
-    def review_provider(self) -> AdmittingReviewProvider:
-        """Return a reviewer double bound to this fixture's declared canonical truth."""
-
-        result = self.response.get("result") if isinstance(self.response, Mapping) else None
-        source_precedence = (
-            result.get("source_precedence") if isinstance(result, Mapping) else ()
-        )
-        return AdmittingReviewProvider(
-            component_custody=component_custody_for_response(self.response),
-            source_precedence_custody=(
-                source_precedence if isinstance(source_precedence, list) else ()
-            ),
-        )
-
-    def generate_structured(self, *, request: object) -> Mapping[str, Any] | None:
-        assert getattr(request, "schema_name", "") == "greenfield_remaining_candidate_authoring"
-        response = super().generate_structured(request=request)
-        if isinstance(response, dict):
-            result = response.get("result")
-            if isinstance(result, dict) and isinstance(result.get("facts"), dict):
-                result["facts"].pop("human_actors", None)
-                result.pop("components", None)
-                result.pop("source_precedence", None)
-        return response
-
-
-class ParticipantSelectionProvider(StructuredAuthoringProvider):
-    """Convert declared fixture citations, never discover roles from the source prose."""
-
-    def __init__(self, candidate: Mapping[str, Any] | None = None) -> None:
-        result = candidate.get("result") if isinstance(candidate, Mapping) else None
-        facts = result.get("facts") if isinstance(result, Mapping) else None
-        citations = facts.get("human_actors", []) if isinstance(facts, Mapping) else []
-        if isinstance(citations, list):
-            selectors = [
-                {
-                    "quote": citation["quote"],
-                    "prefix": "",
-                    "anchor_occurrence": citation["occurrence"],
-                }
-                if isinstance(citation, Mapping) and set(citation) == {"quote", "occurrence"}
-                else copy.deepcopy(citation)
-                for citation in citations
-            ]
-        else:
-            selectors = copy.deepcopy(citations)
-        super().__init__({"human_actors": selectors})
-
-    def generate_structured(self, *, request: object) -> Mapping[str, Any] | None:
-        assert getattr(request, "schema_name", "") == "greenfield_participant_selection"
-        return super().generate_structured(request=request)
-
-
-class AdmittingReviewProvider(StructuredAuthoringProvider):
-    """Independent transport double for structurally valid positive wiring cases."""
-
-    def __init__(
-        self,
-        *,
-        component_custody: Mapping[str, Any] | None = None,
-        source_precedence_custody: Sequence[Mapping[str, Any]] | None = None,
-        constraint_custody: Sequence[Mapping[str, Any]] | None = None,
-    ) -> None:
-        self.configured_component_custody = copy.deepcopy(component_custody)
-        self.configured_source_precedence_custody = copy.deepcopy(
-            list(source_precedence_custody or ())
-        )
-        configured_custody = (
-            constraint_custody
-            if constraint_custody is not None
-            else (
-                {
-                    "constraint_index": 1,
-                    "kind": "participant_only",
-                    "actor_fact": {"field": "human_actors", "row": 1},
-                },
-            )
-        )
-        super().__init__(
-            admitted_review_response(
-                component_custody=(
-                    component_custody
-                    if component_custody is not None
-                    else {
-                        "event_responsibilities": [],
-                        "additional_responsibilities": [],
-                    }
-                ),
-                source_precedence_custody=self.configured_source_precedence_custody,
-                constraint_custody=configured_custody,
-            )
-        )
-
-    def generate_structured(self, *, request: object) -> Mapping[str, Any] | None:
-        assert getattr(request, "schema_name", "") == "greenfield_candidate_review"
-        assert getattr(request, "model", "") == "gpt-6-astra"
-        assert getattr(request, "reasoning_effort", "") == "medium"
-        if isinstance(self.response, Mapping) and self.response.get("outcome") == "admitted":
-            payload = getattr(request, "prompt_payload", {})
-            candidate = payload.get("candidate") if isinstance(payload, Mapping) else None
-            facts = candidate.get("accepted_source", {}).get("facts") if isinstance(candidate, Mapping) else None
-            terminal = candidate.get("accepted_source", {}).get("terminal") if isinstance(candidate, Mapping) else None
-            events = candidate.get("accepted_source", {}).get("events") if isinstance(candidate, Mapping) else None
-            design = candidate.get("proposed_decisions", {}).get("provisional_design") if isinstance(candidate, Mapping) else None
-            participant_field = "human_actors"
-            participant_row = 1
-            if isinstance(facts, Mapping):
-                if isinstance(facts.get("customer"), Mapping):
-                    participant_field = "customer"
-                elif not facts.get("human_actors") and facts.get("external_systems"):
-                    participant_field = "external_systems"
-                elif not facts.get("human_actors"):
-                    first_event = events[0] if isinstance(events, list) and events else None
-                    actor_fact = (
-                        first_event.get("actor_fact")
-                        if isinstance(first_event, Mapping)
-                        else None
-                    )
-                    if (
-                        isinstance(actor_fact, Mapping)
-                        and actor_fact.get("field") in {"title", "internal_systems"}
-                    ):
-                        participant_field = str(actor_fact["field"])
-                        participant_row = int(actor_fact.get("row") or 1)
-            result_event_order = (
-                terminal.get("event_order") if isinstance(terminal, Mapping) else 1
-            )
-            constraints = facts.get("operational_constraints") if isinstance(facts, Mapping) else []
-            witness = self.response.get("admission_witness")
-            configured_custody = (
-                witness.get("constraint_custody")
-                if isinstance(witness, Mapping)
-                else None
-            )
-            constraint_custody = (
-                []
-                if isinstance(constraints, Sequence)
-                and not isinstance(constraints, (str, bytes, bytearray))
-                and not constraints
-                else copy.deepcopy(configured_custody)
-            )
-            component_custody = self.configured_component_custody
-            if component_custody is None:
-                first_path = facts.get("first_path") if isinstance(facts, Mapping) else None
-                distinct_first_path = _distinct_declared_citations(first_path)
-                component_custody = {
-                    "event_responsibilities": [
-                        {
-                            "event_order": order,
-                            "responsibility_citation": copy.deepcopy(
-                                distinct_first_path[order - 1]
-                            ),
-                        }
-                        for order, event in enumerate(events or (), start=1)
-                        if isinstance(event, Mapping)
-                        and isinstance(event.get("actor_fact"), Mapping)
-                        and event["actor_fact"].get("field") in {"title", "internal_systems"}
-                        and order <= len(distinct_first_path)
-                    ],
-                    "additional_responsibilities": [],
-                }
-            self.response = admitted_review_response(
-                participant_field=participant_field,
-                participant_row=participant_row,
-                result_event_order=result_event_order,
-                provisional_design=design,
-                component_custody=component_custody,
-                source_precedence_custody=(
-                    self.configured_source_precedence_custody
-                ),
-                constraint_custody=constraint_custody,
-            )
-        return super().generate_structured(request=request)
-
-
-def admitted_review_response(
+def admit_complete_host_candidate(
     *,
-    component_custody: Mapping[str, Any] | None = None,
-    constraint_custody: Sequence[Mapping[str, Any]],
-    source_precedence_custody: Sequence[Mapping[str, Any]] = (),
-    participant_field: str = "human_actors",
-    participant_row: int = 1,
-    task_event_order: int = 1,
-    result_event_order: int = 3,
-    provisional_design: Mapping[str, Any] | None = None,
-) -> dict[str, Any]:
-    """Return one structurally grounded admitted-review fixture."""
+    evidence_text: str,
+    host_candidate: Mapping[str, Any],
+    model_profile_id: str = STANDARD_PROFILE_ID,
+) -> Any:
+    """Admit one complete public host candidate through the shipped boundary."""
 
-    design = provisional_design or structural_design_fixture((1, 2, 3))
-    risks = design["risk_posture"]["items"]
-    return {
-        "outcome": "admitted",
-        "issue": None,
-        "clarification": None,
-        "admission_witness": {
-            "participant_fact": {
-                "field": participant_field,
-                "row": participant_row,
-            },
-            "task_event_order": task_event_order,
-            "result_event_order": result_event_order,
-            "design_coverage": {
-                "component_verification_keys": [row["key"] for row in design["components"]],
-                "workstream_verification_keys": [row["key"] for row in design["workstreams"]],
-                "risk_keys": [row["key"] for row in risks],
-                "risk_posture_status": design["risk_posture"]["status"],
-            },
-            "component_custody": copy.deepcopy(
-                component_custody
-                if component_custody is not None
-                else {
-                    "event_responsibilities": [],
-                    "additional_responsibilities": [],
-                }
-            ),
-            "source_precedence_custody": copy.deepcopy(
-                list(source_precedence_custody)
-            ),
-            "constraint_custody": copy.deepcopy(
-                list(constraint_custody)
-            ),
-        },
-    }
+    return admit_greenfield_host_candidate(
+        host_candidate,
+        evidence_text=evidence_text,
+        profile_id=model_profile_id,
+    )[0]
+
+
+def materialize_complete_host_candidate(
+    *,
+    prompt: str,
+    repo_root: Path,
+    host_candidate: Mapping[str, Any],
+    authoring_profile_id: str = STANDARD_PROFILE_ID,
+    edit_evidence: str = "",
+    authoring_receipt: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Materialize one complete public host candidate through the shipped path."""
+
+    prepared_evidence = prepare_model_authoring_evidence(
+        prompt=prompt,
+        edit_evidence=edit_evidence,
+    )
+    return materialize_host_authored_intent(
+        prompt=prompt,
+        repo_root=repo_root,
+        edit_evidence=edit_evidence,
+        host_candidate=host_candidate,
+        authoring_profile_id=authoring_profile_id,
+        authoring_receipt=authoring_receipt,
+        prepared_evidence=prepared_evidence,
+    )
 
 
 def host_candidate_response(
@@ -295,8 +93,6 @@ def host_candidate_response(
     events = result.get("events")
     if not isinstance(facts, dict) or not isinstance(events, list):
         raise TypeError("canonical fixture cannot be projected to a host candidate")
-    result.pop("components", None)
-    result.pop("source_precedence", None)
     first_path = facts.pop("first_path")
     if not isinstance(first_path, list) or len(first_path) != len(events):
         raise ValueError("canonical fixture event citations are incomplete")
@@ -316,142 +112,6 @@ def host_candidate_response(
     for event, citation in zip(events, first_path, strict=True):
         event["source_citation"] = _unique_context_citation(evidence_text, citation)
     return candidate
-
-
-def component_custody_for_response(
-    response: Mapping[str, Any] | None,
-) -> dict[str, list[dict[str, Any]]]:
-    """Translate declared canonical fixture truth into reviewer-owned custody.
-
-    This helper does not interpret source prose. It only moves exact citations and
-    typed owners already declared by a test fixture into the review witness.
-    """
-
-    result = response.get("result") if isinstance(response, Mapping) else None
-    facts = result.get("facts") if isinstance(result, Mapping) else None
-    events = result.get("events") if isinstance(result, Mapping) else None
-    components = result.get("components") if isinstance(result, Mapping) else None
-    raw_first_path = facts.get("first_path") if isinstance(facts, Mapping) else None
-    first_path = _distinct_declared_citations(raw_first_path)
-    constraints = (
-        facts.get("operational_constraints") if isinstance(facts, Mapping) else None
-    )
-    if not (
-        isinstance(facts, Mapping)
-        and isinstance(events, list)
-        and isinstance(components, list)
-        and isinstance(raw_first_path, list)
-        and len(first_path) == len(events)
-        and isinstance(constraints, list)
-    ):
-        raise ValueError("canonical fixture cannot supply component custody")
-
-    owner_facts: dict[str, dict[str, Any]] = {}
-    title = facts.get("title")
-    if isinstance(title, Mapping) and str(title.get("quote") or ""):
-        owner_facts[str(title["quote"])] = {"field": "title", "row": 1}
-    internal_systems = facts.get("internal_systems")
-    if isinstance(internal_systems, list):
-        for row, citation in enumerate(internal_systems, start=1):
-            if isinstance(citation, Mapping) and str(citation.get("quote") or ""):
-                owner_facts[str(citation["quote"])] = {
-                    "field": "internal_systems",
-                    "row": row,
-                }
-
-    declared: list[tuple[str, dict[str, Any]]] = []
-    for component in components:
-        if not isinstance(component, Mapping):
-            raise ValueError("canonical fixture has invalid component truth")
-        owner = str(component.get("owner_fact_quote") or "")
-        responsibilities = component.get("responsibilities")
-        if owner not in owner_facts or not isinstance(responsibilities, list):
-            raise ValueError("canonical fixture has invalid component truth")
-        for citation in responsibilities:
-            if not isinstance(citation, Mapping):
-                raise ValueError("canonical fixture has invalid component truth")
-            declared.append((owner, copy.deepcopy(dict(citation))))
-
-    used: set[int] = set()
-    event_rows: list[dict[str, Any]] = []
-    for event_order, (event, event_citation) in enumerate(
-        zip(events, first_path, strict=True), start=1
-    ):
-        if not isinstance(event, Mapping) or not isinstance(event_citation, Mapping):
-            raise ValueError("canonical fixture has invalid event truth")
-        actor_fact = event.get("actor_fact")
-        if not isinstance(actor_fact, Mapping):
-            continue
-        field = actor_fact.get("field")
-        row = actor_fact.get("row")
-        if field == "title" and row == 1:
-            owner_citation = title
-        elif (
-            field == "internal_systems"
-            and type(row) is int
-            and isinstance(internal_systems, list)
-            and 1 <= row <= len(internal_systems)
-        ):
-            owner_citation = internal_systems[row - 1]
-        else:
-            continue
-        owner = (
-            str(owner_citation.get("quote") or "")
-            if isinstance(owner_citation, Mapping)
-            else ""
-        )
-        event_quote = str(event_citation.get("quote") or "")
-        matches = [
-            index
-            for index, (declared_owner, citation) in enumerate(declared)
-            if index not in used
-            and declared_owner == owner
-            and str(citation.get("quote") or "") in event_quote
-        ]
-        if len(matches) > 1:
-            raise ValueError("canonical fixture ambiguously binds an event responsibility")
-        responsibility = (
-            declared[matches[0]][1]
-            if matches
-            else copy.deepcopy(dict(event_citation))
-        )
-        if matches:
-            used.add(matches[0])
-        event_rows.append(
-            {
-                "event_order": event_order,
-                "responsibility_citation": responsibility,
-            }
-        )
-
-    constraint_values = [dict(row) for row in constraints if isinstance(row, Mapping)]
-    additional_rows = [
-        {
-            "owner_fact": copy.deepcopy(owner_facts[owner]),
-            "responsibility_citation": copy.deepcopy(citation),
-        }
-        for index, (owner, citation) in enumerate(declared)
-        if index not in used and citation not in constraint_values
-    ]
-    return {
-        "event_responsibilities": event_rows,
-        "additional_responsibilities": additional_rows,
-    }
-
-
-def _distinct_declared_citations(value: Any) -> list[dict[str, Any]]:
-    """Collapse exact duplicate fixture selections without interpreting their text."""
-
-    if not isinstance(value, list):
-        return []
-    distinct: list[dict[str, Any]] = []
-    for citation in value:
-        if not isinstance(citation, Mapping):
-            return []
-        row = copy.deepcopy(dict(citation))
-        if row not in distinct:
-            distinct.append(row)
-    return distinct
 
 
 def write_host_candidate_fixture(

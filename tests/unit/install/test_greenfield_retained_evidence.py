@@ -256,13 +256,13 @@ def test_retained_case_descriptor_accepts_child_style_bytes_without_exposing_a_p
     case = begin_retained_case_evidence(evidence_root=root, case_id="GFH-model")
 
     with retained_case_evidence_fd(
-        case, "semantic/model-authoring-observation.v1.json"
+        case, "semantic/host-authoring-observation.v1.json"
     ) as descriptor:
         assert descriptor > 2
         os.write(descriptor, b'{"status":"captured"}\n')
 
     assert (
-        case.staging_root / "semantic/model-authoring-observation.v1.json"
+        case.staging_root / "semantic/host-authoring-observation.v1.json"
     ).read_bytes() == b'{"status":"captured"}\n'
 
 

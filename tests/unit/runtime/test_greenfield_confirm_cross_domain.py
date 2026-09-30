@@ -14,9 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     combined_prompt_evidence_source,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
-    AdmittingReviewProvider,
     authored_response,
-    component_custody_for_response,
     write_host_candidate_fixture,
 )
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
@@ -380,33 +378,6 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
         response,
         evidence_text=staged_evidence,
     )
-    product_owned = name == "protocol-outcome"
-    reviewer = AdmittingReviewProvider(
-        component_custody=component_custody_for_response(response),
-        constraint_custody=[
-            {
-                "constraint_index": 1,
-                "kind": "product_owned" if product_owned else "participant_only",
-                **(
-                    {"owner_fact": {"field": "title", "row": 1}}
-                    if product_owned
-                    else {"actor_fact": {"field": "human_actors", "row": 1}}
-                ),
-            }
-        ]
-    )
-    monkeypatch.setattr(
-        greenfield_proposals_cli,
-        "_greenfield_review_provider",
-        lambda **kwargs: (
-            (reviewer, "gpt-6-astra", "medium")
-            if kwargs.get("request_role") == "candidate_review"
-            else (_ for _ in ()).throw(
-                AssertionError("retired runtime authoring provider requested")
-            )
-        ),
-    )
-
     def render_preconfirm_surfaces(*, repo_root: Path) -> dict[str, Any]:
         for relative_path in greenfield_surface_refresh_proof.GREENFIELD_REQUIRED_SURFACE_ARTIFACTS:
             path = Path(repo_root) / relative_path
@@ -443,7 +414,6 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
     )
 
     assert rc == 0, output
-    assert reviewer.calls == 1
     assert "- validation gate: passed" in output
     accepted = json.loads(
         (tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8")
@@ -462,10 +432,7 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
     accepted_intent = accepted["proposal"]["intent"]
     assert accepted_intent["first_path"] == intent["first_path"]
     assert accepted_intent["human_actors"] == intent["human_actors"]
-    assert accepted_intent["component_responsibilities"] == [
-        *intent["component_responsibilities"],
-        *(intent["operational_constraints"] if product_owned else []),
-    ]
+    assert accepted_intent["component_responsibilities"] == intent["component_responsibilities"]
     design = accepted_intent["authored_semantics"]["provisional_design"]
     assert len(list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))) >= 2
     assert len(registry["components"]) == len(design["components"])

@@ -69,7 +69,6 @@ def test_greenfield_materiality_has_one_prewrite_owner() -> None:
     assert "materialize_prompt_intent_hypothesis" not in cli
     assert "greenfield_prompt_intent_materialization" not in cli
     assert "materialize_model_authored_intent" not in cli
-    assert "participant_selection" not in cli
     assert "restage_compiled_candidate_intent" not in staging
     assert "stage_candidate_intent(" in materialization
     assert "import re" not in clarification

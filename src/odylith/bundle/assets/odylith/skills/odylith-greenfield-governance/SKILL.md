@@ -24,12 +24,16 @@ mechanism-level learning.
    repository. Then run `./.odylith/bin/odylith greenfield propose --repo-root .
    --prompt "<operator request>" --candidate-file '<temporary-file>'`.
    The candidate is an untrusted hypothesis: Odylith revalidates every source
-   citation and typed relation, runs one independent semantic review, seals the
-   custody facts, and quality-gates the complete staged ProductCreateTransaction.
+   citation, typed relation, semantic invariant, and custody hash, seals the
+   canonical candidate, and quality-gates the complete staged
+   ProductCreateTransaction with zero semantic/model/provider calls after
+   candidate receipt. Independent semantic and UX review runs only over frozen
+   release evidence; it may qualify or block a pinned release profile, but it
+   never admits, mutates, or denies an individual consumer transaction.
    Do not inspect source code to infer the candidate schema. Do not add a parser,
    regex extraction pass, participant selector, remainder author, join, repair,
    retry, fallback candidate, or alternate model ladder. Stop on the first
-   validation or review failure and record that mechanism evidence.
+   deterministic validation failure and record that mechanism evidence.
 3. Show the read-only, transaction-bound preview directly. It publishes nothing, but prints
    three full shell-quoted terminal commands: `odylith greenfield decide --repo-root
    '<path>' CONFIRM '<hash>'`, `odylith greenfield decide --repo-root '<path>' EDIT

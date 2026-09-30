@@ -234,7 +234,7 @@ def test_run_reports_timeout_with_command_and_cwd(monkeypatch, tmp_path: Path) -
         "missing_evidence",
         "bad_schema",
         "custody_leak",
-        "components_leak",
+        "missing_components",
         "missing_context",
         "attempt",
         "subprocess",
@@ -286,11 +286,11 @@ def test_greenfield_install_smoke_requires_read_only_candidate_contract(
             },
         }
         payload = {
-            "version": "odylith.greenfield.host-candidate-contract.v31",
-            "candidate_version": "odylith.greenfield.host-candidate-format.v17",
-            "canonical_version": "odylith.greenfield.canonical-meaning.v1",
+            "version": "odylith.greenfield.host-candidate-contract.v32",
+            "candidate_version": "odylith.greenfield.host-candidate-format.v18",
+            "canonical_version": "odylith.greenfield.intent-authoring.v77",
             "request": {
-                "version": "odylith.greenfield.intent-authoring.v76",
+                "version": "odylith.greenfield.intent-authoring.v77",
                 "evidence": module._CANDIDATE_CONTRACT_SMOKE_PROMPT,
             },
             "requirements": ["Return exactly one candidate."],
@@ -299,10 +299,11 @@ def test_greenfield_install_smoke_requires_read_only_candidate_contract(
                 "type": "object",
                 "required": ["version", "result"],
                 "properties": {
-                    "version": {"enum": ["odylith.greenfield.host-candidate-format.v17"]},
+                    "version": {"enum": ["odylith.greenfield.host-candidate-format.v18"]},
                     "result": {
                         "anyOf": [{
                             "properties": {
+                                "components": {"type": "array"},
                                 "facts": {
                                     "properties": {
                                         "operational_constraints": {
@@ -311,6 +312,7 @@ def test_greenfield_install_smoke_requires_read_only_candidate_contract(
                                     },
                                 },
                             },
+                            "required": ["components"],
                         }],
                     },
                 },
@@ -326,10 +328,10 @@ def test_greenfield_install_smoke_requires_read_only_candidate_contract(
             payload["candidate_schema"] = {"type": "object", "required": ["version"]}
         elif defect == "custody_leak":
             constraint_schema["properties"]["constraint_custody"] = {"type": "object"}
-        elif defect == "components_leak":
-            payload["candidate_schema"]["properties"]["result"]["anyOf"][0][
-                "properties"
-            ]["components"] = {"type": "array"}
+        elif defect == "missing_components":
+            authored = payload["candidate_schema"]["properties"]["result"]["anyOf"][0]
+            authored["properties"].pop("components")
+            authored["required"].remove("components")
         elif defect == "missing_context":
             constraint_schema["required"] = ["quote"]
         stdout = "not-json" if defect == "invalid_json" else json.dumps(payload)

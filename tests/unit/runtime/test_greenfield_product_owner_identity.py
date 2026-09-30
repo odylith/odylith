@@ -10,16 +10,11 @@ from odylith.runtime.domain_intelligence.greenfield_authored_proposal import (
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GreenfieldModelAuthoringError,
 )
-from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring import (
-    author_greenfield_intent,
-)
-from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
-    materialize_model_authored_intent,
-)
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
-    AdmittingReviewProvider,
-    RemainingCandidateProvider,
     authored_response,
+    admit_complete_host_candidate,
+    host_candidate_response,
+    materialize_complete_host_candidate,
 )
 from tests.unit.runtime.test_greenfield_model_path_custody import (
     _LIST_FIELDS,
@@ -76,13 +71,10 @@ def test_title_alias_keeps_source_owner_through_structural_design_support(tmp_pa
         ],
     )
 
-    provider = RemainingCandidateProvider(response)
-    candidate = materialize_model_authored_intent(
+    candidate = materialize_complete_host_candidate(
         prompt=source,
         repo_root=tmp_path,
-        authoring_provider=provider,
-        participant_provider_factory=provider.participant_provider,
-        review_provider_factory=AdmittingReviewProvider,
+        host_candidate=host_candidate_response(response, evidence_text=source),
     )
 
     semantics = candidate["authored_semantics"]
@@ -136,13 +128,9 @@ def test_two_indistinguishable_internal_system_paths_fail_closed() -> None:
         GreenfieldModelAuthoringError,
         match="duplicate labels for distinct product owners",
     ):
-        provider = RemainingCandidateProvider(response)
-        author_greenfield_intent(
+        admit_complete_host_candidate(
             evidence_text=source,
-            provider=provider,
-            clock=lambda: 0.0,
-            participant_provider_factory=provider.participant_provider,
-            review_provider_factory=AdmittingReviewProvider,
+            host_candidate=host_candidate_response(response, evidence_text=source),
         )
 
 
@@ -159,13 +147,9 @@ def test_product_and_human_label_collision_requires_the_explicit_typed_actor() -
         component_responsibility_owners=["Berth map"],
     )
 
-    provider = RemainingCandidateProvider(response)
-    result = author_greenfield_intent(
+    result = admit_complete_host_candidate(
         evidence_text=source,
-        provider=provider,
-        clock=lambda: 0.0,
-        participant_provider_factory=provider.participant_provider,
-        review_provider_factory=AdmittingReviewProvider,
+        host_candidate=host_candidate_response(response, evidence_text=source),
     )
 
     assert result.first_path_relations[0]["actor_kind"] == "human"

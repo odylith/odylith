@@ -1422,13 +1422,19 @@ def test_release_upload_artifacts_include_raw_runtime_bundles_and_attribution(tm
     assert "SHA256SUMS" in names
     assert "odylith-runtime-linux-x86_64.tar.gz.sigstore.json" in names
 
-def test_release_preflight_uses_isolated_temp_dist_dir() -> None:
+def test_release_preflight_preserves_one_shot_dist_and_review_evidence() -> None:
     text = (REPO_ROOT / "bin" / "release-preflight").read_text(encoding="utf-8")
     shared = (REPO_ROOT / "bin" / "_odylith.sh").read_text(encoding="utf-8")
 
-    assert 'preflight_root="$(mktemp -d "${TMPDIR:-/tmp}/odylith-release-preflight.XXXXXX")"' in text
+    assert 'preflight_root="$(greenfield_release_proof_root "$expected_sha")"' in text
     assert 'dist_dir="$preflight_root/dist"' in text
-    assert 'trap \'rm -rf "$preflight_root"\' EXIT' in text
+    assert 'if [[ -e "$preflight_root" ]]; then' in text
+    assert 'trap \'rm -rf "$preflight_root"\' EXIT' not in text
+    assert 'GREENFIELD_MATRIX_OUTPUT_JSON="$preflight_root/matrix-result.v1.json"' in text
+    assert 'GREENFIELD_MATRIX_EVIDENCE_OUTPUT_DIR="$preflight_root/retained-evidence"' in text
+    assert 'GREENFIELD_MATRIX_FINAL_HOLDOUT_RUN_LEDGER="$preflight_root/final-holdout-ledger.v3.json"' in text
+    assert 'ODYLITH_GREENFIELD_MATRIX_TEMP_PARENT="${TMPDIR:-/tmp}"' in text
+    assert 'awaits independent Greenfield qualification' in text
     assert 'run_release_proof_steps "$resolved_version" "$dist_dir" terminal' in text
     assert 'run_release_proof_steps() {' in shared
     assert '"$odylith_python" "$odylith_host_repo_root/scripts/sync_version_truth.py" --repo-root . sync' in shared

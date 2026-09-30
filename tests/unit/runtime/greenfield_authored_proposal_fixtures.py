@@ -7,8 +7,9 @@ from pathlib import Path
 from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
-from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
-    CANDIDATE_REVIEW_VERSION,
+from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
+    HOST_CANDIDATE_CONTRACT_VERSION,
+    HOST_CANDIDATE_RECEIPT_VERSION,
 )
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_RELATION_SET_SHA256_KEY,
@@ -16,25 +17,23 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
 )
-from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
-    materialize_model_authored_intent,
+from odylith.runtime.domain_intelligence.greenfield_host_candidate_materialization import (
+    materialize_host_authored_intent,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     STANDARD_PROFILE_ID,
     get_greenfield_model_profile,
 )
 from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
-    REVIEWED_CANDIDATE_SHA256_KEY,
+    CANONICAL_CANDIDATE_SHA256_KEY,
 )
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import (
     PRECONFIRM_ENGINE_VERSION,
     PRECONFIRM_QUALITY_MANIFEST_VERSION,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
-    AdmittingReviewProvider,
-    RemainingCandidateProvider,
-    admitted_review_response,
     authored_response,
+    host_candidate_response,
 )
 
 
@@ -63,68 +62,37 @@ def approved_authored_quality_manifest_fixture(
             "prewrite_clean_before_commit": True,
         },
         "semantic_compiler": {
-            "version": "odylith.greenfield.authored-semantic-validation.v4",
+            "version": "odylith.greenfield.authored-semantic-validation.v5",
             "status": "passed",
-            "semantic_owner": "validated_model_authored_intent",
-            "post_authoring_interpretation_calls": 1,
+            "semantic_owner": "host_canonical_candidate",
+            "post_candidate_receipt_semantic_calls": 0,
         },
         "model_authoring": {
+            "authoring_origin": "host_native",
             "authoring_version": GREENFIELD_INTENT_AUTHORING_VERSION,
-            "semantic_model_call_count": 3,
+            "runtime_semantic_model_call_count": 0,
             "tier": profile.repair_tier,
             "elapsed_seconds": 0.75,
             "effective_model_window_seconds": profile.model_timeout_seconds,
-            "participant_selection": {
-                "elapsed_seconds": 0.25,
-                "model_profile": {
-                    "profile_id": profile.profile_id,
-                    "provider": profile.provider,
-                    "model": profile.participant_model,
-                    "reasoning_effort": profile.participant_reasoning_effort,
-                    "effective_timeout_seconds": profile.model_timeout_seconds,
-                    "authoring_tier": profile.repair_tier,
-                },
-            },
-            "remaining_candidate_authoring": {
-                "elapsed_seconds": 0.25,
-                "model_profile": {
-                    "profile_id": profile.profile_id,
-                    "provider": profile.provider,
-                    "model": profile.model,
-                    "reasoning_effort": profile.reasoning_effort,
-                    "effective_timeout_seconds": profile.model_timeout_seconds - 0.25,
-                    "authoring_tier": profile.repair_tier,
-                },
-            },
-            "candidate_review": {
-                "version": CANDIDATE_REVIEW_VERSION,
-                "status": "admitted",
+            "host_candidate": {
+                "version": HOST_CANDIDATE_RECEIPT_VERSION,
+                "contract_version": HOST_CANDIDATE_CONTRACT_VERSION,
+                "canonical_version": GREENFIELD_INTENT_AUTHORING_VERSION,
                 "source_sha256": authority.get("markdown_source_sha256", "0" * 64),
-                "review_input_candidate_sha256": "4" * 64,
-                "candidate_sha256": authority.get(
-                    REVIEWED_CANDIDATE_SHA256_KEY, "1" * 64
+                "raw_candidate_sha256": "4" * 64,
+                "canonical_candidate_sha256": authority.get(
+                    CANONICAL_CANDIDATE_SHA256_KEY, "1" * 64
                 ),
+            },
+            "canonical_authority": {
+                "canonical_candidate_sha256": authority.get(
+                    CANONICAL_CANDIDATE_SHA256_KEY, "1" * 64
+                ),
+                "source_sha256": authority.get("markdown_source_sha256", "0" * 64),
                 "product_facts_sha256": authority.get("product_facts_sha256", "2" * 64),
                 AUTHORED_RELATION_SET_SHA256_KEY: authority.get(
                     AUTHORED_RELATION_SET_SHA256_KEY, "3" * 64
                 ),
-                "admission_witness": admitted_review_response(
-                    result_event_order=1,
-                    constraint_custody=[{
-                        "constraint_index": 1,
-                        "kind": "participant_only",
-                        "actor_fact": {"field": "human_actors", "row": 1},
-                    }],
-                )["admission_witness"],
-                "elapsed_seconds": 0.25,
-                "model_profile": {
-                    "profile_id": profile.profile_id,
-                    "provider": profile.provider,
-                    "model": profile.review_model,
-                    "reasoning_effort": profile.review_reasoning_effort,
-                    "effective_timeout_seconds": profile.model_timeout_seconds - 0.5,
-                    "authoring_tier": profile.repair_tier,
-                },
             },
         },
     }
@@ -150,23 +118,16 @@ def materialize_typed_intent_fixture(
         if str(row)
     )
     receipt = authoring_receipt if authoring_receipt is not None else {}
-    provider = RemainingCandidateProvider(
-        authored_response(
-            intent,
-            evidence_text=source,
-            first_path_relations=first_path_relations,
-            component_responsibility_owners=component_responsibility_owners,
-        )
+    response = authored_response(
+        intent,
+        evidence_text=source,
+        first_path_relations=first_path_relations,
+        component_responsibility_owners=component_responsibility_owners,
     )
-    return materialize_model_authored_intent(
+    return materialize_host_authored_intent(
         prompt=source,
         repo_root=repo_root,
-        participant_provider_factory=provider.participant_provider,
-        review_provider_factory=lambda: AdmittingReviewProvider(
-            constraint_custody=constraint_custody
-        ),
-        authoring_provider=provider,
-        authoring_timeout_seconds=54,
+        host_candidate=host_candidate_response(response, evidence_text=source),
         authoring_profile_id=STANDARD_PROFILE_ID,
         authoring_receipt=receipt,
     )

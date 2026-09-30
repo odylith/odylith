@@ -405,10 +405,20 @@ def test_semantic_release_campaign_uses_sealed_case_binding_for_commit_recovery(
     assert payload["commit_recovery_proof"]["recovery_case"]["binding_scope"] == "campaign-case-v1"
 
 
-def test_release_campaign_fails_when_onboarding_scorecard_fails(
+@pytest.mark.parametrize(
+    ("scorecard_status", "expected_exit", "expected_status"),
+    [
+        ("failed", 1, "failed"),
+        ("awaiting-independent-review", 0, "awaiting-independent-review"),
+    ],
+)
+def test_release_campaign_reports_onboarding_scorecard_boundary(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
+    scorecard_status: str,
+    expected_exit: int,
+    expected_status: str,
 ) -> None:
     module = _module()
     release_case = module.default_cases()[0]
@@ -446,7 +456,7 @@ def test_release_campaign_fails_when_onboarding_scorecard_fails(
     monkeypatch.setattr(
         module,
         "build_onboarding_quality_scorecard",
-        lambda **_kwargs: {"status": "failed", "score": 0},
+        lambda **_kwargs: {"status": scorecard_status, "score": 0},
     )
     monkeypatch.setattr(module, "browser_proof_summary", lambda *_args, **_kwargs: {"status": "passed"})
     monkeypatch.setattr(module, "_platform_leakage_proof_summary", lambda _results: {"status": "passed"})
@@ -472,9 +482,12 @@ def test_release_campaign_fails_when_onboarding_scorecard_fails(
     )
     payload = json.loads(capsys.readouterr().out)
 
-    assert exit_code == 1
-    assert payload["status"] == "failed"
-    assert payload["onboarding_quality_scorecard"] == {"status": "failed", "score": 0}
+    assert exit_code == expected_exit
+    assert payload["status"] == expected_status
+    assert payload["onboarding_quality_scorecard"] == {
+        "status": scorecard_status,
+        "score": 0,
+    }
 
 
 def test_final_holdout_child_rechecks_sealed_distribution_provenance_before_claim(tmp_path: Path) -> None:

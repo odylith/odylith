@@ -9,20 +9,17 @@ flowchart LR
     subgraph host_lane["Host-native semantic authoring"]
       direction TB
       host["Active host reasoning<br/>One compact complete candidate"]
-      candidate["Typed candidate<br/>Complete cited events and component support<br/>plus one proposed coherent branch"]
+      candidate["Typed candidate<br/>Complete cited events, source precedence,<br/>components, responsibilities and provisional design"]
       source_control["Semantic custody check<br/>Source-only controls stay in evidence;<br/>joined branch actions keep complete ownership"]
     end
 
     subgraph admission_lane["Deterministic admission"]
       direction TB
-      validator["Deterministic validator and custody compiler<br/>Complete event custody; selected terminal,<br/>predecessors and branch order"]
+      validator["Deterministic validator and custody compiler<br/>Exact citations, complete event custody, selected terminal,<br/>component ownership, precedence, relations and hashes"]
       complete{"Complete and<br/>source-grounded?"}
-      clarify["One focused clarification<br/>No review, package or governed write"]
-      review["Independent tri-state review<br/>Distinguishes required sequence<br/>from alternate outcomes"]
-      review_clarify["Reviewer-selected material clarification<br/>Retain review receipt; one focused question<br/>No package or governed write"]
-      denied["Denied after completed review<br/>Retain exact candidate and review receipt<br/>No repair, retry, or fallback ladder"]
-      review_failure["Reviewer unavailable or late<br/>Fail closed; retain attempt and failure custody only<br/>No review receipt or governed write"]
-      canonical["Canonical Product Intent envelope<br/>Reviewed candidate admitted unchanged"]
+      clarify["One focused clarification<br/>No package, transaction or governed write"]
+      invalid_candidate["Invalid or tampered candidate<br/>Fail closed with no second model,<br/>repair, retry, fallback or governed write"]
+      canonical["Canonical Product Intent envelope<br/>Candidate, source, product-fact and relation hashes bound"]
     end
 
     subgraph projection_lane["Deterministic governance projections"]
@@ -36,23 +33,27 @@ flowchart LR
 
     subgraph transaction_lane["Sealed transaction"]
       direction TB
-      seal["Sealed transaction<br/>Exact projections, custody and review receipt"]
+      seal["Sealed transaction<br/>Exact projections, canonical host receipt<br/>and zero post-receipt semantic calls"]
       decision{"Operator decision"}
       confirm["CONFIRM<br/>Commit-only publication"]
       revise["EDIT<br/>New candidate contract from old seal + correction"]
       reject["REJECT<br/>No governed writes"]
-      readback["Readback equals reviewed bytes"]
+      readback["Readback equals sealed bytes"]
+    end
+
+    subgraph release_lane["Detached release qualification"]
+      direction TB
+      frozen["Frozen campaign evidence<br/>Immutable retained outputs and browser states"]
+      evaluator["Independent semantic and UX evaluator<br/>Reads evidence only; never changes<br/>consumer candidate or transaction"]
+      qualified["Pinned profile qualified or blocked<br/>Transaction authority remains unchanged"]
     end
 
     request --> contract
     edit --> contract
     contract --> host --> candidate --> source_control --> validator --> complete
+    validator -- "invalid or tampered" --> invalid_candidate
     complete -- "no" --> clarify
-    complete -- "yes" --> review
-    review -- "admitted unchanged" --> canonical
-    review -- "material source gap" --> review_clarify
-    review -- "source-sufficient semantic defect" --> denied
-    review -- "unavailable or late" --> review_failure
+    complete -- "yes" --> canonical
     canonical --> project
     canonical --> radar
     canonical --> registry
@@ -67,6 +68,7 @@ flowchart LR
     decision -- "CONFIRM" --> confirm --> readback
     decision -- "EDIT" --> revise --> contract
     decision -- "REJECT" --> reject
+    canonical -. "immutable campaign input" .-> frozen --> evaluator --> qualified
 
     classDef evidence fill:#EFF6FF,stroke:#BFD7FE,color:#132033,stroke-width:1px;
     classDef semantic fill:#ECFDFB,stroke:#A7E9E3,color:#132033,stroke-width:1px;
@@ -74,13 +76,15 @@ flowchart LR
     classDef constraint fill:#FFF8E6,stroke:#F6D98B,color:#132033,stroke-width:1px;
     class request,edit,contract,host,candidate evidence;
     class source_control semantic;
-    class validator,review,canonical,project,radar,registry,atlas,compass semantic;
+    class validator,canonical,project,radar,registry,atlas,compass semantic;
     class seal,decision,confirm,revise,reject,readback governance;
-    class complete,clarify,review_clarify,denied,review_failure constraint;
+    class frozen,evaluator,qualified governance;
+    class complete,clarify,invalid_candidate constraint;
 
     style evidence_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#293D52
     style host_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#293D52
     style admission_lane fill:#F8FFFE,stroke:#A7E9E3,stroke-width:1px,color:#293D52
     style projection_lane fill:#F8FFFE,stroke:#A7E9E3,stroke-width:1px,color:#293D52
     style transaction_lane fill:#FCFBFF,stroke:#DDD6FE,stroke-width:1px,color:#293D52
+    style release_lane fill:#FFFCF3,stroke:#F6D98B,stroke-width:1px,color:#293D52
     linkStyle default stroke:#9FB2C8,stroke-width:1.25px

@@ -52,9 +52,6 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
     require_relation_authority_parity,
 )
-from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
-    candidate_review_design_coverage_issues,
-)
 from odylith.runtime.domain_intelligence.greenfield_model_receipt_approval import (
     greenfield_model_authoring_receipt_approved,
 )
@@ -67,7 +64,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     PRODUCT_INTENT_AUTHORITY_KEY,
 )
 from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
-    REVIEWED_CANDIDATE_SHA256_KEY,
+    CANONICAL_CANDIDATE_SHA256_KEY,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_FACTS_HASH_KEY
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_facts_hash
@@ -177,7 +174,7 @@ def build_product_create_transaction(
         authored_projection_verified=authored_projection_verified,
     )
     if authored_projection_verified:
-        _require_candidate_review_authority_binding(
+        _require_host_candidate_authority_binding(
             quality_manifest,
             authority,
             proposal=proposal,
@@ -298,7 +295,7 @@ def require_product_create_transaction_quality_approved(
     raw_model_authoring = manifest.get("model_authoring")
     model_authoring = raw_model_authoring if isinstance(raw_model_authoring, Mapping) else {}
     manifest_claims_authored = str(semantic_compiler.get("semantic_owner", "")).strip() == (
-        "validated_model_authored_intent"
+        "host_canonical_candidate"
     )
     authored_projection = (
         manifest_claims_authored
@@ -330,29 +327,34 @@ def require_product_create_transaction_quality_approved(
     )
 
 
-def _require_candidate_review_authority_binding(
+def _require_host_candidate_authority_binding(
     quality_manifest: Mapping[str, Any],
     authority: Mapping[str, Any],
     *,
     proposal: Mapping[str, Any],
 ) -> None:
-    review = quality_manifest["model_authoring"]["candidate_review"]
-    intent = proposal.get("intent")
-    semantics = intent.get(AUTHORED_SEMANTICS_KEY) if isinstance(intent, Mapping) else None
-    design = semantics.get("provisional_design") if isinstance(semantics, Mapping) else None
+    model_authoring = quality_manifest["model_authoring"]
+    host = model_authoring.get("host_candidate")
+    canonical = model_authoring.get("canonical_authority")
     if (
-        review["source_sha256"] != authority.get("markdown_source_sha256")
-        or review["product_facts_sha256"] != authority.get(PRODUCT_FACTS_HASH_KEY)
-        or review[AUTHORED_RELATION_SET_SHA256_KEY]
+        not isinstance(host, Mapping)
+        or not isinstance(canonical, Mapping)
+        or model_authoring.get("runtime_semantic_model_call_count") != 0
+        or host.get("source_sha256") != authority.get("markdown_source_sha256")
+        or host.get("canonical_candidate_sha256")
+        != authority.get(CANONICAL_CANDIDATE_SHA256_KEY)
+        or canonical.get("canonical_candidate_sha256")
+        != authority.get(CANONICAL_CANDIDATE_SHA256_KEY)
+        or canonical.get("source_sha256")
+        != authority.get("markdown_source_sha256")
+        or canonical.get("product_facts_sha256")
+        != authority.get(PRODUCT_FACTS_HASH_KEY)
+        or canonical.get(AUTHORED_RELATION_SET_SHA256_KEY)
         != authority.get(AUTHORED_RELATION_SET_SHA256_KEY)
-        or review["candidate_sha256"]
-        != authority.get(REVIEWED_CANDIDATE_SHA256_KEY)
-        or candidate_review_design_coverage_issues(
-            review.get("admission_witness"),
-            provisional_design=design,
-        )
     ):
-        raise ValueError("ProductCreateTransaction candidate review does not match its sealed Product Intent authority")
+        raise ValueError(
+            "ProductCreateTransaction host candidate does not match its sealed Product Intent authority"
+        )
 
 
 def require_product_create_transaction_verified(transaction: ProductCreateTransaction) -> None:
@@ -385,7 +387,7 @@ def require_product_create_transaction_hash_verified(transaction: ProductCreateT
         transaction.quality_manifest, authored_projection_verified=authored,
     )
     if authored:
-        _require_candidate_review_authority_binding(
+        _require_host_candidate_authority_binding(
             transaction.quality_manifest,
             transaction.intent_authority,
             proposal=transaction.proposal,

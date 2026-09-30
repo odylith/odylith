@@ -13,7 +13,7 @@ from typing import Any
 COMMANDS = (
     ("candidate-contract", "Show the typed host reasoning contract for one request."),
     ("propose", "Compile and review a complete Greenfield package before confirmation."),
-    ("decide", "Confirm, edit or reject one reviewed package in the terminal."),
+    ("decide", "Confirm, edit or reject one sealed package in the terminal."),
     ("apply", "Disabled legacy command; use propose to review a package."),
     ("create", "Commit a compiled ProductCreateTransaction."),
     ("compile-transaction", "Compile and quality-gate a ProductCreateTransaction without governed writes."),
@@ -78,7 +78,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--json", action="store_true", dest="as_json")
     args = parser.parse_args(tokens[1:])
     if len(args.transaction_hash) != 64 or not set(args.transaction_hash) <= set("0123456789abcdef"):
-        parser.error("use the exact 64-character approval hash from the reviewed package")
+        parser.error("use the exact 64-character approval hash from the sealed package")
     if args.command != "EDIT" and (args.edit is not None or args.edit_evidence is not None):
         parser.error("correction evidence is accepted only with EDIT")
     if args.command != "EDIT" and args.candidate_file:
@@ -97,7 +97,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 repo_root=root, transaction_hash=args.transaction_hash,
             )
         except (OSError, RuntimeError, ValueError) as error:
-            message = f"This reviewed package is unavailable: {error}. No governed records were written."
+            message = f"This sealed package is unavailable: {error}. No governed records were written."
             print(json.dumps({"status": "STALE_TRANSACTION", "error": message}) if args.as_json else message)
             return 2
         from odylith.runtime.domain_intelligence.greenfield_proposals_cli import (

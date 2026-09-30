@@ -16,17 +16,14 @@ from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import 
 from odylith.runtime.domain_intelligence.greenfield_authored_proposal import build_authored_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import authored_semantics_mapping
 from odylith.runtime.domain_intelligence.greenfield_candidate_intent_stage import render_candidate_intent_markdown
-from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring import (
-    author_greenfield_intent,
-)
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     build_product_intent_envelope,
     product_facts_hash,
     product_facts_payload,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
-    AdmittingReviewProvider,
-    RemainingCandidateProvider,
+    admit_complete_host_candidate,
+    host_candidate_response,
 )
 from tests.unit.runtime.test_greenfield_model_path_custody import _response, _source
 
@@ -45,12 +42,9 @@ def _authored():
     for row in _DECISIONS:
         response["result"]["facts"][row["applies_to"]] = None
     response["result"]["assumptions"] = copy.deepcopy(_DECISIONS)
-    provider = RemainingCandidateProvider(response)
-    authored = author_greenfield_intent(
+    authored = admit_complete_host_candidate(
         evidence_text=source,
-        provider=provider,
-        participant_provider_factory=provider.participant_provider,
-        review_provider_factory=AdmittingReviewProvider,
+        host_candidate=host_candidate_response(response, evidence_text=source),
     )
     return source, authored
 
@@ -70,7 +64,7 @@ def test_decision_assumptions_keep_their_type_and_custody() -> None:
         intent,
         source_text=source,
         source_path="evidence.txt",
-        reviewed_candidate_sha256=authored.candidate_review["candidate_sha256"],
+        canonical_candidate_sha256="a" * 64,
         authored_source_spans=authored.source_spans,
         authored_atomic_claims=authored.atomic_claims,
         authored_source_sha256=authored.source_sha256,

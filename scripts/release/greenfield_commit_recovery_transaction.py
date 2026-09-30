@@ -17,6 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization
 import greenfield_commit_recovery_evidence as recovery_evidence
 from greenfield_commit_recovery_evidence import as_mapping
 from greenfield_matrix_host_candidate import HostCandidateFlow
+from greenfield_matrix_host_candidate import post_receipt_runtime_env
 from greenfield_matrix_host_candidate import resolve_trusted_codex_executable
 from greenfield_matrix_host_candidate import run_host_candidate_flow
 from greenfield_matrix_release_artifacts import is_sha256
@@ -137,62 +138,63 @@ def compile_transaction(
     confirmed_intent = str(case.confirmed_intent_markdown or "").strip()
     if confirmed_intent:
         command.extend(["--edit", confirmed_intent])
-    if host_candidate_argv:
-
-        def invoke_installed(installed_command: Sequence[str], timeout: float) -> Any:
-            return _run(
-                cwd=repo_root,
-                env=dict(env),
-                command=list(installed_command),
-                timeout=timeout,
-            )
-
-        def invoke_propose(candidate_path: Path, timeout: float) -> Any:
-            candidate_command = [*command, "--candidate-file", str(candidate_path)]
-            return recovery_evidence.run_proposal(
-                evidence=evidence,
-                runner=_run,
-                cwd=repo_root,
-                env=dict(env),
-                command=candidate_command,
-                timeout=timeout,
-            )
-
-        observe = None
-        if evidence is not None:
-            observe = lambda payload: recovery_evidence.record_retained_case_json(
-                evidence,
-                "semantic/host-authoring-observation.v1.json",
-                dict(payload),
-            )
-        proposed = run_host_candidate_flow(
-            HostCandidateFlow(
-                repo_root=repo_root,
-                temp_parent=repo_root.parent,
-                host_argv=tuple(str(value) for value in host_candidate_argv),
-                prompt=case.prompt,
-                edit_evidence=confirmed_intent,
-                timeout=COMMAND_TIMEOUT_SECONDS,
-                env=env,
-                trusted_codex_executable=resolve_trusted_codex_executable(environ=env),
-                expected_model=str(env.get("ODYLITH_REASONING_MODEL") or ""),
-                expected_reasoning_effort=str(
-                    env.get("ODYLITH_REASONING_CODEX_REASONING_EFFORT") or ""
-                ),
-                invoke_installed=invoke_installed,
-                invoke_propose=invoke_propose,
-                observe=observe,
-            )
+    if not host_candidate_argv:
+        raise RuntimeError(
+            "installed recovery proof requires the one-authority host candidate argv"
         )
-    else:
-        proposed = recovery_evidence.run_proposal(
+
+    def invoke_installed(installed_command: Sequence[str], timeout: float) -> Any:
+        return _run(
+            cwd=repo_root,
+            env=dict(env),
+            command=list(installed_command),
+            timeout=timeout,
+        )
+
+    def invoke_propose(candidate_path: Path, timeout: float) -> Any:
+        candidate_command = [*command, "--candidate-file", str(candidate_path)]
+        return recovery_evidence.run_proposal(
             evidence=evidence,
             runner=_run,
             cwd=repo_root,
-            env=dict(env),
-            command=command,
-            timeout=COMMAND_TIMEOUT_SECONDS,
+            env=post_receipt_runtime_env(env),
+            command=candidate_command,
+            timeout=timeout,
         )
+
+    observe = None
+    retain_candidate_bytes = None
+    if evidence is not None:
+        observe = lambda payload: recovery_evidence.record_retained_case_json(
+            evidence,
+            "semantic/host-authoring-observation.v1.json",
+            dict(payload),
+        )
+        retain_candidate_bytes = lambda value: recovery_evidence.record_retained_case_bytes(
+            evidence,
+            "semantic/host-candidate.raw.v1.json",
+            value,
+        )
+    proposed = run_host_candidate_flow(
+        HostCandidateFlow(
+            repo_root=repo_root,
+            temp_parent=repo_root.parent,
+            host_argv=tuple(str(value) for value in host_candidate_argv),
+            prompt=case.prompt,
+            edit_evidence=confirmed_intent,
+            timeout=COMMAND_TIMEOUT_SECONDS,
+            env=env,
+            trusted_codex_executable=resolve_trusted_codex_executable(environ=env),
+            expected_model=str(env.get("ODYLITH_REASONING_MODEL") or ""),
+            expected_reasoning_effort=str(
+                env.get("ODYLITH_REASONING_CODEX_REASONING_EFFORT") or ""
+            ),
+            invoke_installed=invoke_installed,
+            invoke_propose=invoke_propose,
+            observe=observe,
+            retain_candidate_bytes=retain_candidate_bytes,
+        )
+    )
     payload = require_success_payload(proposed, label="installed commit recovery propose")
     transaction = as_mapping(payload.get("product_create_transaction"))
     transaction_hash = str(transaction.get("transaction_hash") or "").strip()

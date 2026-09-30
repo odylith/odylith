@@ -7,7 +7,6 @@ GREENFIELD_LIFECYCLE_TESTS := \
 	tests/unit/runtime/test_greenfield_transaction.py \
 	tests/unit/runtime/test_greenfield_commit_journal.py \
 	tests/unit/runtime/test_greenfield_commit_rollback.py \
-	tests/unit/runtime/test_greenfield_model_intent_authoring.py \
 	tests/unit/install/test_greenfield_commit_recovery_proof.py \
 	tests/unit/install/test_greenfield_browser_surface_proof.py \
 	tests/unit/runtime/test_greenfield_host_confirmation.py \
@@ -15,7 +14,7 @@ GREENFIELD_LIFECYCLE_TESTS := \
 
 GREENFIELD_FAST_TESTS := $(filter-out $(GREENFIELD_LIFECYCLE_TESTS),$(GREENFIELD_RUNTIME_TESTS))
 
-.PHONY: help validate dev-validate dev-refresh license-audit lane-show benchmark-analysis release-version-preview release-version-show release-session-show release-session-clear local-release-assets greenfield-test-fast greenfield-test-lifecycle greenfield-preconfirm-matrix greenfield-matrix-generate-cases greenfield-matrix-shards greenfield-matrix-campaign release-candidate release-preflight release-dispatch dogfood-activate consumer-rehearsal ga-gate
+.PHONY: help validate dev-validate dev-refresh license-audit lane-show benchmark-analysis release-version-preview release-version-show release-session-show release-session-clear local-release-assets greenfield-test-fast greenfield-test-lifecycle greenfield-preconfirm-matrix greenfield-onboarding-review greenfield-matrix-generate-cases greenfield-matrix-shards greenfield-matrix-campaign release-candidate release-preflight release-dispatch dogfood-activate consumer-rehearsal ga-gate
 
 help:
 	@./bin/help
@@ -61,6 +60,9 @@ greenfield-test-lifecycle:
 
 greenfield-preconfirm-matrix:
 	@./bin/greenfield-preconfirm-matrix "$(VERSION)" "$(DIST)"
+
+greenfield-onboarding-review:
+	@./bin/greenfield-onboarding-review "$(REVIEW)"
 
 greenfield-matrix-generate-cases:
 	@./bin/greenfield-matrix-generate-cases

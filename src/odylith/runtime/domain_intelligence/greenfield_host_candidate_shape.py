@@ -1,4 +1,4 @@
-"""Compact host hypothesis shape before independent accepted-source custody."""
+"""Complete one-pass host hypothesis shape for deterministic admission."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     MAX_AUTHORED_FIELD_VALUE_CHARS,
 )
 
-HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v17"
+HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v18"
 HOST_EVENT_CITATION_FIELD = "source_citation"
 
 
@@ -50,7 +50,7 @@ def _context_citation_schema(*, description: str = "") -> dict[str, Any]:
 
 
 def greenfield_host_candidate_schema() -> dict[str, Any]:
-    """Return the host shape with contextual event citations and no component custody."""
+    """Return the complete host shape with contextual fact and event citations."""
 
     schema = greenfield_authoring_schema()
     schema["properties"]["version"]["enum"] = [HOST_CANDIDATE_FORMAT_VERSION]
@@ -75,7 +75,8 @@ def greenfield_host_candidate_schema() -> dict[str, Any]:
     )
     facts["properties"]["operational_constraints"]["description"] = (
         "Every exact source-stated operational, safety, ordering, or actor restriction. "
-        "Keep each constraint global; independent review owns its later typed custody."
+        "Keep each constraint global and preserve exact dual-role custody when the same "
+        "source bytes also carry one component responsibility."
     )
     facts["required"] = [
         field for field in facts["required"] if field != "first_path"
@@ -93,13 +94,6 @@ def greenfield_host_candidate_schema() -> dict[str, Any]:
             "citation; do not return a separate facts.first_path list."
         ),
     }
-    authored["required"] = [
-        field
-        for field in authored["required"]
-        if field not in {"components", "source_precedence"}
-    ]
-    authored["properties"].pop("components")
-    authored["properties"].pop("source_precedence")
     return schema
 
 

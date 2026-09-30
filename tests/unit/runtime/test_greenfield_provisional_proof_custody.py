@@ -13,9 +13,12 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_SEMANTICS_KEY,
     authored_semantics_mapping,
 )
-from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
-    STANDARD_PROFILE_ID,
-    get_greenfield_model_profile,
+from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
+    HOST_CANDIDATE_CONTRACT_VERSION,
+    HOST_CANDIDATE_RECEIPT_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
+    GREENFIELD_INTENT_AUTHORING_VERSION,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     build_product_intent_envelope,
@@ -43,24 +46,17 @@ _NON_PROOF_SOURCE = "Background context has no proof checkpoint"
 
 
 def _model_authoring() -> dict[str, Any]:
-    profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
-    common = {
-        "profile_id": profile.profile_id,
-        "provider": profile.provider,
-        "effective_timeout_seconds": profile.model_timeout_seconds,
-        "authoring_tier": profile.repair_tier,
-    }
     return {
-        "participant_selection": {
-            **common,
-            "model": profile.participant_model,
-            "reasoning_effort": profile.participant_reasoning_effort,
+        "origin": "host_native",
+        "host_candidate": {
+            "version": HOST_CANDIDATE_RECEIPT_VERSION,
+            "contract_version": HOST_CANDIDATE_CONTRACT_VERSION,
+            "canonical_version": GREENFIELD_INTENT_AUTHORING_VERSION,
+            "source_sha256": "a" * 64,
+            "raw_candidate_sha256": "b" * 64,
+            "canonical_candidate_sha256": "c" * 64,
         },
-        "remaining_candidate_authoring": {
-            **common,
-            "model": profile.model,
-            "reasoning_effort": profile.reasoning_effort,
-        },
+        "runtime_semantic_model_call_count": 0,
     }
 
 
@@ -103,7 +99,7 @@ def _build_provisional_envelope() -> dict[str, Any]:
         source_text=source,
         source_path="evidence.txt",
         source_format="operator_prompt",
-        reviewed_candidate_sha256="a" * 64,
+        canonical_candidate_sha256="a" * 64,
         model_authoring=_model_authoring(),
         authored_source_spans=spans,
         authored_atomic_claims=claims,
@@ -183,7 +179,7 @@ def test_source_stated_proof_retains_strict_source_custody() -> None:
         source_text=source,
         source_path="evidence.txt",
         source_format="operator_prompt",
-        reviewed_candidate_sha256=authored.candidate_review["candidate_sha256"],
+        canonical_candidate_sha256="a" * 64,
         model_authoring=_model_authoring(),
         authored_source_spans=authored.source_spans,
         authored_atomic_claims=authored.atomic_claims,
@@ -210,7 +206,7 @@ def test_provisional_proof_missing_competing_malformed_or_fact_overlap_fails() -
             source_text=source,
             source_path="evidence.txt",
             source_format="operator_prompt",
-            reviewed_candidate_sha256="a" * 64,
+            canonical_candidate_sha256="a" * 64,
             model_authoring=_model_authoring(),
             authored_source_spans=spans,
             authored_atomic_claims=claims,
@@ -229,7 +225,7 @@ def test_provisional_proof_missing_competing_malformed_or_fact_overlap_fails() -
                 source_text=source,
                 source_path="evidence.txt",
                 source_format="operator_prompt",
-                reviewed_candidate_sha256="a" * 64,
+                canonical_candidate_sha256="a" * 64,
                 model_authoring=_model_authoring(),
                 authored_source_spans=spans,
                 authored_atomic_claims=claims,
@@ -245,7 +241,7 @@ def test_provisional_proof_missing_competing_malformed_or_fact_overlap_fails() -
             source_text=source_fact,
             source_path="evidence.txt",
             source_format="operator_prompt",
-            reviewed_candidate_sha256=authored.candidate_review["candidate_sha256"],
+            canonical_candidate_sha256="a" * 64,
             model_authoring=_model_authoring(),
             authored_source_spans=authored.source_spans,
             authored_atomic_claims=authored.atomic_claims,

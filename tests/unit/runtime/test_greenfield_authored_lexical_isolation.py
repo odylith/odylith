@@ -18,7 +18,6 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     combined_prompt_evidence_source,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
-    AdmittingReviewProvider,
     authored_response,
     write_host_candidate_fixture,
 )
@@ -102,7 +101,7 @@ def _public_propose(
     capsys: Any,
     intent: Mapping[str, Any],
     repair_tier: str = "",
-) -> tuple[int, dict[str, Any], AdmittingReviewProvider]:
+) -> tuple[int, dict[str, Any]]:
     activate_greenfield_baseline_fixture(tmp_path)
     source = _evidence_source(intent)
     staged_evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
@@ -117,18 +116,7 @@ def _public_propose(
         canonical,
         evidence_text=staged_evidence,
     )
-    reviewer = AdmittingReviewProvider()
     assert staged_evidence
-
-    def provider_for_role(**kwargs: object) -> tuple[object, str, str]:
-        assert kwargs.get("request_role") == "candidate_review"
-        return reviewer, "gpt-6-astra", "medium"
-
-    monkeypatch.setattr(
-        greenfield_proposals_cli,
-        "_greenfield_review_provider",
-        provider_for_role,
-    )
 
     arguments = [
         "propose", "--repo-root", str(tmp_path), "--prompt", source,
@@ -137,7 +125,7 @@ def _public_propose(
     if repair_tier:
         arguments.extend(("--repair-tier", repair_tier))
     rc = greenfield_proposals_cli.main(arguments)
-    return rc, json.loads(capsys.readouterr().out), reviewer
+    return rc, json.loads(capsys.readouterr().out)
 
 
 def test_public_authored_propose_seals_exact_non_latin_customer(
@@ -147,7 +135,7 @@ def test_public_authored_propose_seals_exact_non_latin_customer(
 ) -> None:
     intent = _authored_intent(customer="港務員")
 
-    rc, payload, reviewer = _public_propose(
+    rc, payload = _public_propose(
         tmp_path=tmp_path,
         monkeypatch=monkeypatch,
         capsys=capsys,
@@ -155,7 +143,6 @@ def test_public_authored_propose_seals_exact_non_latin_customer(
     )
 
     assert rc == 0, payload
-    assert reviewer.calls == 1
     assert payload["intent_hypothesis"]["customer"] == "港務員"
     assert payload["mode"] == "product_create_transaction"
     transaction_path = tmp_path / payload["transaction_file"]
@@ -207,7 +194,7 @@ def test_public_authored_propose_seals_exact_non_latin_product_title(
         product_view="港務台 gives dock attendants a berth workflow",
     )
 
-    rc, payload, reviewer = _public_propose(
+    rc, payload = _public_propose(
         tmp_path=tmp_path,
         monkeypatch=monkeypatch,
         capsys=capsys,
@@ -215,7 +202,6 @@ def test_public_authored_propose_seals_exact_non_latin_product_title(
     )
 
     assert rc == 0, payload
-    assert reviewer.calls == 1
     assert payload["intent_hypothesis"]["title"] == "港務台"
     transaction_path = tmp_path / payload["transaction_file"]
     transaction = json.loads(transaction_path.read_text(encoding="utf-8"))
@@ -243,7 +229,7 @@ def test_public_authored_propose_seals_exact_repeated_brand_without_rewriting(
         product_view="Miu Miu gives dock attendants a berth workflow",
     )
 
-    rc, payload, reviewer = _public_propose(
+    rc, payload = _public_propose(
         tmp_path=tmp_path,
         monkeypatch=monkeypatch,
         capsys=capsys,
@@ -251,7 +237,6 @@ def test_public_authored_propose_seals_exact_repeated_brand_without_rewriting(
     )
 
     assert rc == 0, payload
-    assert reviewer.calls == 1
     assert payload["intent_hypothesis"]["title"] == "Miu Miu"
     transaction_path = tmp_path / payload["transaction_file"]
     transaction = json.loads(transaction_path.read_text(encoding="utf-8"))
@@ -267,7 +252,7 @@ def test_public_authored_standard_tier_stays_structural_and_seals_exact_unicode_
     intent = _authored_intent(customer="港務員")
     source = _evidence_source(intent)
     staged_evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
-    rc, payload, reviewer = _public_propose(
+    rc, payload = _public_propose(
         tmp_path=tmp_path,
         monkeypatch=monkeypatch,
         capsys=capsys,
@@ -275,20 +260,18 @@ def test_public_authored_standard_tier_stays_structural_and_seals_exact_unicode_
     )
 
     assert rc == 0, payload
-    assert reviewer.calls == 1
     transaction = json.loads((tmp_path / payload["transaction_file"]).read_text(encoding="utf-8"))
     manifest = transaction["quality_manifest"]
     assert manifest["requested_repair_tier"] == "auto"
     assert manifest["repair_tier"] == "standard"
     assert manifest["target_seconds"] == 90.0
     assert manifest["operational_timeout_seconds"] == 180.0
-    assert reviewer.requests[0].timeout_seconds == 165.0
     assert manifest["rescue_activated"] is False
     assert manifest["semantic_compiler"] == {
-        "version": "odylith.greenfield.authored-semantic-validation.v4",
+        "version": "odylith.greenfield.authored-semantic-validation.v5",
         "status": "passed",
-        "semantic_owner": "validated_model_authored_intent",
-        "post_authoring_interpretation_calls": 1,
+        "semantic_owner": "host_canonical_candidate",
+        "post_candidate_receipt_semantic_calls": 0,
     }
     unicode_atom = next(
         atom

@@ -21,9 +21,6 @@ from odylith.runtime.domain_intelligence.greenfield_authored_radar_ordering impo
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_SEMANTICS_KEY,
 )
-from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
-    materialize_model_authored_intent,
-)
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GreenfieldModelAuthoringError,
 )
@@ -36,9 +33,9 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import legacy_backlog_normalization
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
-    AdmittingReviewProvider,
-    RemainingCandidateProvider,
     authored_response,
+    host_candidate_response,
+    materialize_complete_host_candidate,
 )
 
 
@@ -95,21 +92,16 @@ def _authored_proposal(
             *non_goals,
         )
     )
-    provider = RemainingCandidateProvider(
-        authored_response(
+    response = authored_response(
             intent,
             first_path_relations=relations,
             component_responsibility_owners=["Harbor Desk"],
         )
-    )
-    candidate = materialize_model_authored_intent(
+    candidate = materialize_complete_host_candidate(
         prompt=prompt,
         repo_root=tmp_path,
-        authoring_provider=provider,
-        authoring_timeout_seconds=84.0,
+        host_candidate=host_candidate_response(response, evidence_text=prompt),
         authoring_profile_id=STANDARD_PROFILE_ID,
-        participant_provider_factory=provider.participant_provider,
-        review_provider_factory=AdmittingReviewProvider,
     )
     proposal = build_authored_greenfield_proposal(
         observed_source={},

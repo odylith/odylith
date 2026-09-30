@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 HOST_NATIVE_MATRIX_OBSERVATION_VERSION = (
-    "odylith.greenfield.host-native-matrix-observation.v4"
+    "odylith.greenfield.host-native-matrix-observation.v5"
 )
 HOST_NATIVE_ARGV_RECEIPT_VERSION = "odylith.greenfield.host-argv-receipt.v1"
 
@@ -57,6 +57,22 @@ def canonical_host_candidate_argv_template() -> tuple[str, ...]:
     )
 
 
+def post_receipt_runtime_env(environ: Mapping[str, str]) -> dict[str, str]:
+    """Disable every runtime provider route after host-candidate receipt."""
+
+    values = dict(environ)
+    values.update(
+        {
+            "ODYLITH_REASONING_MODE": "disabled",
+            "ODYLITH_REASONING_PROVIDER": "auto-local",
+            "ODYLITH_REASONING_TIMEOUT_SECONDS": "1",
+            "ODYLITH_REASONING_CODEX_BIN": "/usr/bin/false",
+            "ODYLITH_REASONING_CLAUDE_BIN": "/usr/bin/false",
+        }
+    )
+    return values
+
+
 HOST_NATIVE_ARGV_ARGUMENT_COUNT = 1 + len(
     _canonical_host_candidate_tokens(model="", reasoning_effort="", output_schema="")
 )
@@ -85,14 +101,13 @@ class HostCandidateFlowError(RuntimeError):
             "host_returncode",
             "contract_sha256",
             "candidate_schema_sha256",
-            "candidate_raw_sha256",
-            "candidate_raw_bytes",
+            "host_output_sha256",
+            "host_output_bytes",
             "proposal_returncode",
             "proposal_mode",
             "proposal_stdout_sha256",
-            "candidate_review_status",
-            "candidate_review_issue_path_sha256",
-            "candidate_review_issue_reason_sha256",
+            "runtime_semantic_model_call_count",
+            "post_receipt_provider_invocations",
             "elapsed_seconds",
         )
         diagnostic = {
@@ -157,13 +172,13 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
         "host_invocations": 0,
         "contract_command_invocations": 0,
         "proposal_command_invocations": 0,
+        "runtime_semantic_model_call_count": 0,
+        "post_receipt_provider_invocations": 0,
         "model_profile_id": str(
             flow.env.get("ODYLITH_GREENFIELD_MODEL_PROFILE") or ""
         ).strip(),
         "candidate_temp_cleaned": False,
         "host_workspace_cleaned": False,
-        "candidate_review_issue_path_sha256": "",
-        "candidate_review_issue_reason_sha256": "",
     }
     candidate_path: Path | None = None
     host_workspace: Path | None = None
@@ -270,7 +285,7 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
                     stage="host",
                 )
             observation["response_kind"] = response_kind
-            observation["candidate_sha256"] = hashlib.sha256(
+            observation["raw_candidate_sha256"] = hashlib.sha256(
                 json.dumps(
                     candidate,
                     ensure_ascii=False,
@@ -279,8 +294,8 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
                     allow_nan=False,
                 ).encode("utf-8")
             ).hexdigest()
-            observation["candidate_raw_sha256"] = hashlib.sha256(candidate_bytes).hexdigest()
-            observation["candidate_raw_bytes"] = len(candidate_bytes)
+            observation["host_output_sha256"] = hashlib.sha256(candidate_bytes).hexdigest()
+            observation["host_output_bytes"] = len(candidate_bytes)
 
             candidate_path = Path(candidate_dir) / "candidate.json"
             candidate_path.write_text(
@@ -551,28 +566,13 @@ def _sha256_text(value: str) -> str:
 
 
 def _proposal_outcome(value: str) -> dict[str, str]:
-    """Return only stable reviewer/outcome metadata from a proposal response."""
+    """Return only the deterministic proposal mode from a proposal response."""
 
     try:
         payload = _single_json_object(value, label="proposal")
     except (TypeError, ValueError, json.JSONDecodeError):
-        return {"proposal_mode": "invalid", "candidate_review_status": "unreported"}
-    review = payload.get("candidate_review")
-    review = review if isinstance(review, Mapping) else {}
-    status = str(review.get("status") or "").strip()
-    outcome = {
-        "proposal_mode": str(payload.get("mode") or "").strip() or "invalid",
-        "candidate_review_status": status or "unreported",
-    }
-    issue = review.get("issue")
-    if isinstance(issue, Mapping):
-        path = str(issue.get("path") or "").strip()
-        reason = str(issue.get("reason") or "").strip()
-        if path:
-            outcome["candidate_review_issue_path_sha256"] = _sha256_text(path)
-        if reason:
-            outcome["candidate_review_issue_reason_sha256"] = _sha256_text(reason)
-    return outcome
+        return {"proposal_mode": "invalid"}
+    return {"proposal_mode": str(payload.get("mode") or "").strip() or "invalid"}
 
 
 def _emit_observation(
@@ -604,6 +604,7 @@ __all__ = [
     "HostCandidateFlow",
     "HostCandidateFlowError",
     "canonical_host_candidate_argv_template",
+    "post_receipt_runtime_env",
     "qualify_host_candidate_argv",
     "resolve_trusted_codex_executable",
     "run_host_candidate_flow",

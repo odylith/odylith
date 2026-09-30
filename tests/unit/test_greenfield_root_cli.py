@@ -6,11 +6,11 @@ from pathlib import Path
 import pytest
 
 from odylith import cli
-from odylith.runtime.domain_intelligence import greenfield_proposals_cli
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     clarification_response,
+    host_candidate_response,
 )
 
 
@@ -41,30 +41,25 @@ def test_greenfield_create_help_exposes_precompiled_transaction_contract(capsys)
 
 def test_greenfield_propose_command_returns_one_host_authored_clarification(
     tmp_path: Path,
-    monkeypatch,
     capsys,
 ) -> None:
     activate_greenfield_baseline_fixture(tmp_path)
     publication = (tmp_path / "odylith/index.html").read_bytes()
     baseline = greenfield_repository_write_set.greenfield_managed_fingerprints(tmp_path)
-    from tests.unit.runtime.test_greenfield_host_candidate import _host_clarification
-
+    prompt = "Build an ecommerce site"
     candidate_path = tmp_path / "host-candidate.json"
     candidate_path.write_text(
-        json.dumps(_host_clarification(clarification_response(
-            question="unused test metadata",
-            material_dimension="first_path",
-            evidence_quotes=(),
-        ))),
-        encoding="utf-8",
-    )
-
-    monkeypatch.setattr(
-        greenfield_proposals_cli,
-        "_greenfield_review_provider",
-        lambda **_kwargs: (_ for _ in ()).throw(
-            AssertionError("clarification must not dispatch candidate review")
+        json.dumps(
+            host_candidate_response(
+                clarification_response(
+                    question="unused test metadata",
+                    material_dimension="first_path",
+                    evidence_quotes=(),
+                ),
+                evidence_text=prompt,
+            )
         ),
+        encoding="utf-8",
     )
     rc = cli.main(
         [
@@ -73,7 +68,7 @@ def test_greenfield_propose_command_returns_one_host_authored_clarification(
             "--repo-root",
             str(tmp_path),
             "--prompt",
-            "Build an ecommerce site",
+            prompt,
             "--candidate-file",
             str(candidate_path),
             "--format",

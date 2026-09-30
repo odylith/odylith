@@ -9,7 +9,7 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "2301c4bba26fe025317b7060fc38871a0091d31e9299bcc3b5b912b239eb8c6d",
+    "digest": "8998b77c56dee9809b07c152b6395751b0237c4a1a88ca9de8428750311c5709",
     "file_count": 317,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
@@ -14453,9 +14453,9 @@
       ],
       "component_names": [
         "Host-native candidate author",
-        "Independent tri-state reviewer",
-        "Deterministic custody and projections",
-        "Sealed confirmation boundary"
+        "Deterministic admission and projections",
+        "Sealed confirmation boundary",
+        "Detached release evaluator"
       ],
       "related_component_ids": []
     },
@@ -14501,8 +14501,10 @@
         "B-142"
       ],
       "component_names": [
-        "Independent tri-state candidate review",
-        "Failed-review custody"
+        "Host-native candidate author",
+        "Deterministic custody compiler",
+        "Sealed confirmation boundary",
+        "Detached release evaluator"
       ],
       "related_component_ids": []
     },
@@ -26287,5 +26289,5 @@
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-09-29 20:38:28Z"
+  "generated_utc": "2026-09-29 23:56:10Z"
 }

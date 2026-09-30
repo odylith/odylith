@@ -296,10 +296,10 @@ def build_greenfield_preconfirm_manifest(
             "reason": "typed_structural_validation",
         },
         "semantic_compiler": {
-            "version": "odylith.greenfield.authored-semantic-validation.v4",
+            "version": "odylith.greenfield.authored-semantic-validation.v5",
             "status": "passed",
-            "semantic_owner": "validated_model_authored_intent",
-            "post_authoring_interpretation_calls": 1,
+            "semantic_owner": "host_canonical_candidate",
+            "post_candidate_receipt_semantic_calls": 0,
         },
         "write_transaction": {
             "status": write_transaction_status,
@@ -313,51 +313,20 @@ def build_greenfield_preconfirm_manifest(
 
 
 def _model_authoring_manifest(receipt: Mapping[str, Any]) -> dict[str, Any]:
-    if receipt.get("authoring_origin") == "host_native":
-        return {
-            key: deepcopy(receipt.get(key))
-            for key in (
-                "authoring_origin",
-                "authoring_version",
-                "runtime_semantic_model_call_count",
-                "tier",
-                "elapsed_seconds",
-                "effective_model_window_seconds",
-                "host_candidate",
-                "candidate_review",
-            )
-        }
+    if receipt.get("authoring_origin") != "host_native":
+        raise ValueError("Greenfield pre-confirm requires one canonical host receipt")
     return {
-        key: receipt.get(key)
+        key: deepcopy(receipt.get(key))
         for key in (
-            "authoring_version", "semantic_model_call_count", "tier", "elapsed_seconds",
+            "authoring_origin",
+            "authoring_version",
+            "runtime_semantic_model_call_count",
+            "tier",
+            "elapsed_seconds",
             "effective_model_window_seconds",
+            "host_candidate",
+            "canonical_authority",
         )
-    } | {
-        role: _model_authoring_role_manifest(receipt.get(role))
-        for role in ("participant_selection", "remaining_candidate_authoring")
-    } | {
-        "candidate_review": deepcopy(receipt.get("candidate_review")),
-    }
-
-
-def _model_authoring_role_manifest(value: Any) -> dict[str, Any]:
-    role = value if isinstance(value, Mapping) else {}
-    model_profile = role.get("model_profile")
-    model_profile = model_profile if isinstance(model_profile, Mapping) else {}
-    return {
-        "elapsed_seconds": role.get("elapsed_seconds"),
-        "model_profile": {
-            key: model_profile.get(key)
-            for key in (
-                "profile_id",
-                "provider",
-                "model",
-                "reasoning_effort",
-                "effective_timeout_seconds",
-                "authoring_tier",
-            )
-        },
     }
 
 

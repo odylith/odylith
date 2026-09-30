@@ -1,151 +1,108 @@
-"""Production-emitted model observations for provider-free profile proof tests."""
+"""Synthetic one-authority observations for provider-free release tests."""
 
-import json
-import tempfile
+from __future__ import annotations
 
-import pytest
+from pathlib import Path
+import sys
 
-from odylith.runtime.domain_intelligence import greenfield_participant_first_authoring as author
+
+SCRIPTS_ROOT = Path(__file__).resolve().parents[1] / "scripts" / "release"
+if str(SCRIPTS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_ROOT))
+
+from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_ARGUMENT_COUNT
+from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_SHAPE_SHA256
+from greenfield_matrix_host_candidate import HOST_NATIVE_MATRIX_OBSERVATION_VERSION
+from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
+    HOST_CANDIDATE_CONTRACT_VERSION,
+    HOST_CANDIDATE_RECEIPT_VERSION,
+)
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
 )
-from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import get_greenfield_model_profile
-from tests.unit.runtime.greenfield_model_authoring_fixtures import (
-    AdmittingReviewProvider,
-    ParticipantSelectionProvider,
-    RemainingCandidateProvider,
-    authored_response,
-    clarification_response,
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    get_greenfield_model_profile,
 )
 
 
-def sealed_profile_observation(profile_id, *, shared_timeout=None):
-    profile = get_greenfield_model_profile(profile_id)
-    timeout = profile.model_timeout_seconds if shared_timeout is None else shared_timeout
+def _receipt() -> dict[str, object]:
     return {
-        "participant_selection": {
-            "profile_id": profile_id, "provider": profile.provider,
-            "model": profile.participant_model,
-            "reasoning_effort": profile.participant_reasoning_effort,
-            "authoring_tier": profile.repair_tier,
-            "effective_timeout_seconds": timeout,
-        },
-        "remaining_candidate_authoring": {
-            "profile_id": profile_id, "provider": profile.provider, "model": profile.model,
-            "reasoning_effort": profile.reasoning_effort,
-            "authoring_tier": profile.repair_tier,
-            "effective_timeout_seconds": timeout - 5.0,
-        },
+        "version": HOST_CANDIDATE_RECEIPT_VERSION,
+        "contract_version": HOST_CANDIDATE_CONTRACT_VERSION,
+        "canonical_version": GREENFIELD_INTENT_AUTHORING_VERSION,
+        "source_sha256": "1" * 64,
+        "raw_candidate_sha256": "2" * 64,
+        "canonical_candidate_sha256": "3" * 64,
+    }
+
+
+def sealed_profile_observation(
+    profile_id: str,
+    *,
+    shared_timeout: float | None = None,
+) -> dict[str, object]:
+    del profile_id, shared_timeout
+    return {
+        "origin": "host_native",
+        "host_candidate": _receipt(),
+        "runtime_semantic_model_call_count": 0,
     }
 
 
 def production_stage_observation(
-    profile_id, *, response_kind="authored", shared_timeout=None, reviewed=False,
-    evidence_text=None,
-):
-    """Capture the real author/review proof FD; historical negatives stay explicit."""
-    if reviewed:
-        return _historical_review_observation(profile_id, response_kind)
-    intent = {
-        "title": "Receipt Desk",
-        "product_story": "The product displays the receipt",
-        "state_object": "receipt",
-        "first_path": "The product displays the receipt",
-        "proof_boundary": "The product displays the receipt",
-        "problem": "Operators cannot find their receipt",
-        "customer": "Operators",
-        "opportunity": "A receipt is available for review",
-        "product_view": "Operators can see their receipt",
-        "human_actors": ["Operators"],
-        "internal_systems": ["Receipt view"],
-        "component_responsibilities": ["Display the receipt"],
-    }
-    source = ". ".join(row for value in intent.values()
-                       for row in (value if isinstance(value, list) else [value])) + "."
-    if evidence_text is not None:
-        source = evidence_text
-    response = (authored_response(intent, evidence_text=source,
-                                  component_responsibility_owners=["Receipt view"], first_path_relations=[{
-        "order": 1, "actor_kind": "product",
-        "owner_system_quote": "Receipt view",
-        "event_quote": intent["first_path"], "action_verb_quote": "displays",
-        "target_quote": "the receipt", "visible_result_quote": intent["proof_boundary"],
-    }]) if response_kind == "authored" else clarification_response(
-        question="", material_dimension="first_path", evidence_quotes=[],
-    ))
-    now = [0.0]
+    profile_id: str,
+    *,
+    response_kind: str = "authored",
+    shared_timeout: float | None = None,
+    evidence_text: str | None = None,
+) -> dict[str, object]:
+    """Return the closed release-stage shape without dispatching a provider."""
 
-    class TimedRemainingProvider(RemainingCandidateProvider):
-        def generate_structured(self, *, request):
-            now[0] += 10.0
-            value = super().generate_structured(request=request)
-            if isinstance(value, dict):
-                result = value.get("result")
-                if isinstance(result, dict):
-                    result.pop("components", None)
-            return value
-
-    class TimedParticipantProvider(ParticipantSelectionProvider):
-        def generate_structured(self, *, request):
-            now[0] += 5.0
-            return super().generate_structured(request=request)
-
-    class TimedReviewProvider(AdmittingReviewProvider):
-        def __init__(self):
-            AdmittingReviewProvider.__init__(
-                self,
-                constraint_custody=[],
-            )
-
-        def generate_structured(self, *, request):
-            now[0] += 1.0
-            return super().generate_structured(request=request)
-
-    provider = TimedRemainingProvider(response)
-    participant = TimedParticipantProvider(response)
-    reviewer = TimedReviewProvider()
-    with tempfile.TemporaryFile() as output, pytest.MonkeyPatch.context() as patch:
-        patch.setenv(author.GREENFIELD_MODEL_PROOF_FD_ENV, str(output.fileno()))
-        result = author.author_greenfield_intent(
-            evidence_text=source, provider=provider, model_profile_id=profile_id,
-            timeout_seconds=shared_timeout, clock=lambda: now[0],
-            participant_provider_factory=lambda: participant,
-            review_provider_factory=lambda: reviewer,
-        )
-        output.seek(0)
-        stage = json.load(output)
-    assert provider.calls == 1
-    assert participant.calls == 1
-    assert reviewer.calls == (1 if response_kind == "authored" else 0)
-    assert stage["semantic_model_call_count"] == result.semantic_model_call_count
-    return stage
-
-
-def _historical_review_observation(profile_id, response_kind):
-    """Retain the old matrix's demoted-clarification fixture solely for refusal."""
+    del evidence_text
     profile = get_greenfield_model_profile(profile_id)
-    version = GREENFIELD_INTENT_AUTHORING_VERSION
-    result = (clarification_response(
-        question="", material_dimension="first_path", evidence_quotes=[],
-    )["result"] if response_kind == "clarification_required" else {"status": "authored"})
+    receipt = _receipt()
     return {
-        "version": "odylith.greenfield.model-proof-observation.v2",
-        "authoring_version": version, "semantic_model_call_count": 2,
-        "response": {"version": version, "result": result},
-        "initial_authoring": {
-            "profile_id": profile_id, "request_role": "initial_authoring",
-            "model": profile.model, "reasoning_effort": profile.reasoning_effort,
-            "timeout_seconds": profile.model_timeout_seconds, "elapsed_seconds": 5.0,
-            "provider": {"provider": profile.provider, "model": profile.model,
-                         "reasoning_effort": profile.reasoning_effort},
+        "version": HOST_NATIVE_MATRIX_OBSERVATION_VERSION,
+        "status": "passed",
+        "host_invocations": 1,
+        "contract_command_invocations": 1,
+        "proposal_command_invocations": 1,
+        "runtime_semantic_model_call_count": 0,
+        "post_receipt_provider_invocations": 0,
+        "model_profile_id": profile_id,
+        "host_request": {
+            "version": "odylith.greenfield.host-argv-receipt.v1",
+            "executable_sha256": "4" * 64,
+            "argument_count": HOST_NATIVE_ARGV_ARGUMENT_COUNT,
+            "model": profile.model,
+            "reasoning_effort": profile.reasoning_effort,
+            "output_schema_present": True,
+            "argv_shape_sha256": HOST_NATIVE_ARGV_SHAPE_SHA256,
         },
-        "initial_response": {"version": version, "result": {"status": "authored"}},
-        "source_review": {
-            "profile_id": profile_id, "request_role": "source_review",
-            "model": "gpt-5.6-sol", "reasoning_effort": "medium",
-            "timeout_seconds": profile.model_timeout_seconds - 5.0, "elapsed_seconds": 5.0,
-            "provider": {"provider": profile.provider, "model": "gpt-5.6-sol",
-                         "reasoning_effort": "medium"},
-            "response": {"result": result if response_kind == "clarification_required" else {"corrections": []}},
-        },
+        "candidate_temp_cleaned": True,
+        "host_workspace_cleaned": True,
+        "stage": "propose",
+        "contract_returncode": 0,
+        "contract_sha256": "5" * 64,
+        "source_sha256": receipt["source_sha256"],
+        "candidate_schema_sha256": "6" * 64,
+        "host_returncode": 0,
+        "host_stdout_bytes": 500,
+        "host_stderr_bytes": 0,
+        "response_kind": response_kind,
+        "raw_candidate_sha256": receipt["raw_candidate_sha256"],
+        "host_output_sha256": "7" * 64,
+        "host_output_bytes": 500,
+        "candidate_temp_outside_repo": True,
+        "proposal_returncode": 0,
+        "proposal_stdout_sha256": "8" * 64,
+        "proposal_stderr_sha256": "9" * 64,
+        "proposal_mode": (
+            "clarification_required"
+            if response_kind == "clarification_required"
+            else "product_create_transaction"
+        ),
+        "elapsed_seconds": (
+            min(shared_timeout, 10.0) if shared_timeout is not None else 10.0
+        ),
     }

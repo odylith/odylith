@@ -200,7 +200,9 @@ def test_greenfield_release_matrix_gates_on_explicit_profile_scorecard() -> None
     assert "rescue_proof" not in scorecard
     assert "model_profile_proof=profile_proof" in matrix
     assert "unavailable_provider_proof=unavailable_provider" in matrix
-    assert 'or onboarding_quality_scorecard.get("status") == "passed"' in matrix
+    assert 'review_status == "passed"' in matrix
+    assert 'review_status == "awaiting-independent-review"' in matrix
+    assert '"awaiting-independent-review",' in matrix
 
 
 def test_greenfield_preconfirm_matrix_target_runs_installed_release_gate() -> None:
@@ -282,9 +284,10 @@ def test_greenfield_preconfirm_matrix_target_runs_installed_release_gate() -> No
     assert "make greenfield-preconfirm-matrix" in help_text
     assert "write greenfield-preconfirm-matrix.v1.json" in help_text
     assert "per-case browser surface state" in help_text
-    assert "one host-authored candidate plus independent semantic review" in help_text
+    assert "one host-authored candidate" in help_text
+    assert "separate independent semantic and UX review" in help_text
     assert "one-call model-first authoring" not in help_text
-    assert "does not qualify terminal decisions or native chat confirmation through a create-only run" in help_text
+    assert "does not qualify native chat confirmation through a create-only run" in help_text
     assert "Proposal timing targets are advisory; operational timeouts remain separate" in help_text
     assert "GREENFIELD_MATRIX_TELEMETRY_JSONL" in help_text
     assert "GREENFIELD_MATRIX_STOP_AFTER_CLUSTER_FAILURES" in help_text
@@ -685,11 +688,11 @@ def test_release_candidate_is_pr_safe_non_publishing_current_checkout_lane() -> 
     assert "Registry component forensics are stale for the checked-out source" in shared
     assert 'ensure_playwright_chromium' in shared
     assert 'GREENFIELD_MATRIX_RELEASE_INTENT="$matrix_release_intent"' in shared
-    assert 'GREENFIELD_MATRIX_OUTPUT_JSON="$dist_dir/greenfield-preconfirm-matrix.v1.json"' in shared
+    assert 'GREENFIELD_MATRIX_OUTPUT_JSON="${GREENFIELD_MATRIX_OUTPUT_JSON:-$dist_dir/greenfield-preconfirm-matrix.v1.json}"' in shared
     assert 'GREENFIELD_MATRIX_IMPLEMENTATION_REVISION="$implementation_revision"' in shared
     assert 'GREENFIELD_MATRIX_DISTRIBUTION_PROVENANCE_FILE="$distribution_provenance_file"' in shared
     assert 'implementation_revision="$(git -C "$odylith_repo_root" rev-parse HEAD)"' in shared
-    assert 'distribution_provenance_file="$dist_dir/build-provenance.v1.json"' in shared
+    assert 'distribution_provenance_file="${GREENFIELD_MATRIX_DISTRIBUTION_PROVENANCE_FILE:-$dist_dir/build-provenance.v1.json}"' in shared
     assert "RESCUE_" + "SMOKE" not in shared
     assert "NATURAL_" + "RESCUE_PROOF" not in shared
     assert 'BROWSER_PROOF=1' in shared

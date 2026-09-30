@@ -62,9 +62,9 @@ _POSTCONFIRM_RUNTIME_SOURCE_FILES = (
 _VOLATILE_HASH_KEYS = frozenset({"elapsed_seconds", "whole_project_elapsed_seconds", "create_elapsed_seconds"})
 _SEALED_COMMIT_ATTESTATION = object()
 _CURRENT_SEALED_INTENT_VERSIONS = {
-    "version": "odylith.product-intent-authority.v12",
-    "envelope_schema_version": "odylith.product-intent-envelope.v12",
-    "ledger_version": "odylith.product-intent-custody-ledger.v9",
+    "version": "odylith.product-intent-authority.v13",
+    "envelope_schema_version": "odylith.product-intent-envelope.v13",
+    "ledger_version": "odylith.product-intent-custody-ledger.v10",
     "atomic_ledger_version": "odylith.product-intent-atomic-facts.v3",
 }
 

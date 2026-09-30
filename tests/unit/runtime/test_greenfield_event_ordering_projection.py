@@ -21,7 +21,6 @@ from odylith.runtime.domain_intelligence.greenfield_experience import (
     build_next_steps,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
-    materialize_model_authored_intent,
     render_product_intent_preview,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
@@ -34,9 +33,9 @@ from odylith.runtime.domain_intelligence.greenfield_preconfirm_semantic_alignmen
 )
 from odylith.runtime.domain_intelligence.proposal_validation import validate_host_reasoned_proposal
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
-    AdmittingReviewProvider,
-    RemainingCandidateProvider,
     authored_response,
+    host_candidate_response,
+    materialize_complete_host_candidate,
     structural_design_fixture,
 )
 
@@ -67,13 +66,19 @@ def _result_first_response(*, include_precedence=True, archive_after_result=Fals
         {"before_event": 2, "after_event": 1, "constraint_index": 1},
         {"before_event": 1, "after_event": 3, "constraint_index": 2},
     ] if archive_after_result else [{"before_event": 2, "after_event": 3, "constraint_index": 1}])
+    component_responsibilities = [
+        events[0]["event_quote"],
+        events[2]["event_quote"],
+        *([constraints[1]] if archive_after_result else []),
+    ]
     intent = dict(
         title="Receipt Desk", product_story="Receipt Desk supports a complete draft review",
         state_object="one draft", first_path=". ".join(row["event_quote"] for row in events),
         proof_boundary="the review receipt", problem="Scattered drafts delay reviews",
         customer="Reviewer Mara", opportunity="A shared receipt would reduce rework",
         product_view="Receipt Desk keeps a complete review trail", human_actors=["Reviewer Mara"],
-        external_systems=[], internal_systems=[], component_responsibilities=[], assumptions=[],
+        external_systems=[], internal_systems=[],
+        component_responsibilities=component_responsibilities, assumptions=[],
         ambiguities=[], success_metrics=[], evidence_requirements=[], non_goals=[],
         operational_constraints=constraints,
     )
@@ -89,52 +94,20 @@ def _result_first_response(*, include_precedence=True, archive_after_result=Fals
     )
     response = authored_response(
         intent, evidence_text=source, first_path_relations=events, provisional_design=design,
+        component_responsibility_owners=["Receipt Desk"] * len(component_responsibilities),
         **({"source_precedence": precedence}
            if include_precedence else {}),
     )
     return source, response, events
 
 
-def _reviewer_component_custody(response):
-    """Declare the product-event ownership adjudicated by the review fixture."""
-
-    first_path = response["result"]["facts"]["first_path"]
-    return {
-        "event_responsibilities": [
-            {
-                "event_order": event_order,
-                "responsibility_citation": deepcopy(first_path[event_order - 1]),
-            }
-            for event_order in (1, 3)
-        ],
-        "additional_responsibilities": [],
-    }
-
-
 def test_post_result_action_survives_authoring_custody_and_all_projections(tmp_path):
     source, response, events = _result_first_response(archive_after_result=True)
-    provider = RemainingCandidateProvider(response)
-    candidate = materialize_model_authored_intent(
-        prompt=source, repo_root=tmp_path, authoring_provider=provider,
-        participant_provider_factory=provider.participant_provider,
-        review_provider_factory=lambda: AdmittingReviewProvider(
-            component_custody=_reviewer_component_custody(response),
-            source_precedence_custody=response["result"]["source_precedence"],
-            constraint_custody=[
-                {
-                    "constraint_index": 1,
-                    "kind": "participant_only",
-                    "actor_fact": {"field": "human_actors", "row": 1},
-                },
-                {
-                    "constraint_index": 2,
-                    "kind": "product_owned",
-                    "owner_fact": {"field": "title", "row": 1},
-                },
-            ],
-        ),
+    candidate = materialize_complete_host_candidate(
+        prompt=source,
+        repo_root=tmp_path,
+        host_candidate=host_candidate_response(response, evidence_text=source),
     )
-    assert provider.calls == 1
     assert candidate["component_responsibilities"][:2] == [
         events[0]["event_quote"],
         events[2]["event_quote"],
@@ -171,23 +144,11 @@ def test_post_result_action_survives_authoring_custody_and_all_projections(tmp_p
 @pytest.fixture
 def ordered_package(tmp_path):
     source, response, events = _result_first_response()
-    provider = RemainingCandidateProvider(response)
-    candidate = materialize_model_authored_intent(
-        prompt=source, repo_root=tmp_path, authoring_provider=provider,
-        participant_provider_factory=provider.participant_provider,
-        review_provider_factory=lambda: AdmittingReviewProvider(
-            component_custody=_reviewer_component_custody(response),
-            source_precedence_custody=response["result"]["source_precedence"],
-            constraint_custody=[
-                {
-                    "constraint_index": 1,
-                    "kind": "participant_only",
-                    "actor_fact": {"field": "human_actors", "row": 1},
-                },
-            ],
-        ),
+    candidate = materialize_complete_host_candidate(
+        prompt=source,
+        repo_root=tmp_path,
+        host_candidate=host_candidate_response(response, evidence_text=source),
     )
-    assert provider.calls == 1
     assert candidate["component_responsibilities"] == [
         events[0]["event_quote"],
         events[2]["event_quote"],

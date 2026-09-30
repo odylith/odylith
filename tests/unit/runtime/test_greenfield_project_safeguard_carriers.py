@@ -17,9 +17,6 @@ from odylith.runtime.domain_intelligence.greenfield_authored_proposal import (
     build_authored_greenfield_proposal,
 )
 from odylith.runtime.domain_intelligence.greenfield_experience import build_next_steps
-from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
-    materialize_model_authored_intent,
-)
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     STANDARD_PROFILE_ID,
 )
@@ -30,8 +27,8 @@ from odylith.runtime.domain_intelligence.proposal_memory import (
     build_project_brief_source_markdown,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
-    AdmittingReviewProvider,
-    RemainingCandidateProvider,
+    host_candidate_response,
+    materialize_complete_host_candidate,
 )
 from tests.unit.runtime.test_greenfield_model_path_custody import _response, _source
 
@@ -358,15 +355,11 @@ def _proposal(tmp_path: Path, *, include_assumption: bool = True) -> dict[str, o
             }
         ],
     }
-    provider = RemainingCandidateProvider(response)
-    candidate = materialize_model_authored_intent(
+    candidate = materialize_complete_host_candidate(
         prompt=source,
         repo_root=tmp_path,
-        authoring_provider=provider,
-        authoring_timeout_seconds=60,
+        host_candidate=host_candidate_response(response, evidence_text=source),
         authoring_profile_id=STANDARD_PROFILE_ID,
-        participant_provider_factory=provider.participant_provider,
-        review_provider_factory=AdmittingReviewProvider,
     )
     proposal = build_authored_greenfield_proposal(
         observed_source={"source_posture": "operator prompt evidence"},

@@ -1,473 +1,297 @@
 from __future__ import annotations
 
+from copy import deepcopy
 import hashlib
 from types import SimpleNamespace
 
 import pytest
 
-from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
-    DEEP_PROFILE_ID,
-    RESCUE_PROFILE_ID,
-    STANDARD_PROFILE_ID,
-    get_greenfield_model_profile,
-)
-from tests.unit.install.test_greenfield_matrix_clarification import (
-    _host_native_clarification_execution,
-    _host_native_clarification_stage,
-    _host_native_reviewer_admission_observation,
-    _host_native_reviewer_clarification_observation,
-)
-from tests.unit.install.test_greenfield_model_profiles import _review_input_candidate
-from odylith.runtime.domain_intelligence.greenfield_review_custody import (
-    candidate_review_sha256,
-    project_reviewed_custody,
-)
-
-from greenfield_matrix_clarification import clarification_quality_verdict
+from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_ARGUMENT_COUNT
+from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_SHAPE_SHA256
+from greenfield_matrix_host_candidate import HOST_NATIVE_MATRIX_OBSERVATION_VERSION
 from greenfield_model_profile_proof import model_profile_release_proof
+from greenfield_model_profiles import DEEP_PROFILE_ID
+from greenfield_model_profiles import RESCUE_PROFILE_ID
+from greenfield_model_profiles import STANDARD_PROFILE_ID
 from greenfield_model_profiles import model_profile_environment
 from greenfield_model_profiles import model_profile_evidence
+from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
+    admit_greenfield_host_candidate,
+)
+from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import (
+    HOST_CANDIDATE_FORMAT_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    get_greenfield_model_profile,
+)
 
 
-def _host_native_clarification_profile_evidence(
-    source: str,
-    *,
-    profile_id: str = STANDARD_PROFILE_ID,
-) -> dict[str, object]:
-    return model_profile_evidence(
-        profile_id,
-        model_profile_environment(profile_id, {}),
-        observed={},
-        stage_observation=_host_native_clarification_stage(
-            source,
-            profile_id=profile_id,
-        ),
-        expected_source=source,
-    )
+SOURCE = "The first complete task remains materially ambiguous."
+MISSING = object()
 
 
-def _host_native_authored_profile_evidence(
-    source: str,
-    *,
-    profile_id: str = STANDARD_PROFILE_ID,
-) -> dict[str, object]:
-    profile = get_greenfield_model_profile(profile_id)
-    stage = _host_native_clarification_stage(source, profile_id=profile_id)
-    stage["response_kind"] = "authored"
-    observed = {
-        "origin": "host_native",
-        "host_candidate": {
-            "version": "odylith.greenfield.host-candidate.v1",
-            "contract_version": "odylith.greenfield.intent-authoring.v76",
-            "source_sha256": stage["source_sha256"],
-            "candidate_sha256": stage["candidate_sha256"],
-        },
-        "candidate_review": {
-            "profile_id": profile_id,
-            "provider": profile.provider,
-            "model": profile.review_model,
-            "reasoning_effort": profile.review_reasoning_effort,
-            "effective_timeout_seconds": 120.0,
-            "authoring_tier": profile.repair_tier,
+def _profile_evidence(profile_id: str = STANDARD_PROFILE_ID) -> dict[str, object]:
+    raw_candidate = {
+        "version": HOST_CANDIDATE_FORMAT_VERSION,
+        "result": {
+            "status": "clarification_required",
+            "consistency": {
+                "status": "material_ambiguity",
+                "evidence_quotes": [],
+            },
+            "clarification": {"material_dimension": "first_path"},
         },
     }
-    review_input_candidate = _review_input_candidate()
-    review_input_candidate["facts"]["first_path"] = [
-        {"quote": source, "occurrence": 1}
-    ]
-    for event in review_input_candidate["events"]:
-        event["actor_fact"] = {"field": "human_actors", "row": 1}
-    review_input_candidate_sha256 = candidate_review_sha256(review_input_candidate)
-    final_candidate_sha256 = candidate_review_sha256(
-        project_reviewed_custody(
-            review_input_candidate,
-            component_custody={
-                "event_responsibilities": [],
-                "additional_responsibilities": [],
-            },
-            source_precedence_custody=[],
-            constraint_custody=[],
-            evidence_text=source,
-        )
+    _candidate, receipt = admit_greenfield_host_candidate(
+        raw_candidate,
+        evidence_text=SOURCE,
+        clock=lambda: 1.0,
     )
-    reviewer = _host_native_reviewer_admission_observation(
-        source,
-        profile_id=profile_id,
-        host_candidate_sha256=str(stage["candidate_sha256"]),
-        review_input_candidate_sha256=review_input_candidate_sha256,
-        final_candidate_sha256=final_candidate_sha256,
-    )
+    contract = get_greenfield_model_profile(profile_id)
+    observed = {
+        "origin": "host_native",
+        "host_candidate": receipt,
+        "runtime_semantic_model_call_count": 0,
+    }
+    stage = {
+        "version": HOST_NATIVE_MATRIX_OBSERVATION_VERSION,
+        "status": "passed",
+        "host_invocations": 1,
+        "contract_command_invocations": 1,
+        "proposal_command_invocations": 1,
+        "runtime_semantic_model_call_count": 0,
+        "post_receipt_provider_invocations": 0,
+        "model_profile_id": profile_id,
+        "host_request": {
+            "version": "odylith.greenfield.host-argv-receipt.v1",
+            "executable_sha256": "1" * 64,
+            "argument_count": HOST_NATIVE_ARGV_ARGUMENT_COUNT,
+            "model": contract.model,
+            "reasoning_effort": contract.reasoning_effort,
+            "output_schema_present": True,
+            "argv_shape_sha256": HOST_NATIVE_ARGV_SHAPE_SHA256,
+        },
+        "candidate_temp_cleaned": True,
+        "host_workspace_cleaned": True,
+        "stage": "propose",
+        "contract_returncode": 0,
+        "contract_sha256": "2" * 64,
+        "source_sha256": hashlib.sha256(SOURCE.encode()).hexdigest(),
+        "candidate_schema_sha256": "3" * 64,
+        "host_returncode": 0,
+        "host_stdout_bytes": 500,
+        "host_stderr_bytes": 0,
+        "response_kind": "clarification_required",
+        "raw_candidate_sha256": receipt["raw_candidate_sha256"],
+        "host_output_sha256": "4" * 64,
+        "host_output_bytes": 500,
+        "candidate_temp_outside_repo": True,
+        "proposal_returncode": 0,
+        "proposal_stdout_sha256": "5" * 64,
+        "proposal_stderr_sha256": "6" * 64,
+        "proposal_mode": "clarification_required",
+        "elapsed_seconds": 18.02,
+    }
     return model_profile_evidence(
         profile_id,
         model_profile_environment(profile_id, {}),
         observed=observed,
         stage_observation=stage,
-        reviewer_observation=reviewer,
-        review_input_candidate=review_input_candidate,
-        expected_review_input_candidate_sha256=review_input_candidate_sha256,
-        expected_source=source,
+        raw_candidate=raw_candidate,
+        expected_source=SOURCE,
     )
 
 
-def _host_native_clarification_aggregate_result(
-    source: str,
+def _result(
     *,
     profile_evidence: dict[str, object],
+    expectation: str,
 ) -> SimpleNamespace:
-    execution = _host_native_clarification_execution(source)
-    public = execution.payload["clarification"]
-    return SimpleNamespace(
-        name="host-native clarification",
-        status="passed",
-        proposal_seconds=18.02,
-        quality=clarification_quality_verdict(()),
-        evidence={
-            "case": {
-                "expectation": "clarification_required",
-                "prompt_sha256": hashlib.sha256(b"prompt").hexdigest(),
-                "expected_clarification": {
-                    "field": "first_path",
-                    "question": public["question"],
+    profile_evidence = deepcopy(profile_evidence)
+    if expectation == "transaction_committed":
+        profile_evidence["stage_observation"]["response_kind"] = "authored"
+        profile_evidence["stage_observation"][
+            "proposal_mode"
+        ] = "product_create_transaction"
+    evidence: dict[str, object] = {
+        "case": {
+            "expectation": expectation,
+            "prompt_sha256": hashlib.sha256(b"prompt").hexdigest(),
+        },
+        "model_profile": profile_evidence,
+    }
+    score_basis = "release_quality_score"
+    if expectation == "clarification_required":
+        evidence.update(
+            {
+                "clarification": {
+                    "mode": "clarification_required",
+                    "question": "What complete task should the first user finish?",
+                    "required_fields": ["first_path"],
+                    "returncode": 0,
                 },
-            },
-            "clarification": {
-                "mode": "clarification_required",
-                "question": public["question"],
-                "required_fields": ["first_path"],
-                "returncode": 0,
-            },
-            "no_write": {
-                "before_record_count": 0,
-                "after_record_count": 0,
-                "changed_records": [],
-                "staged_transaction_present": False,
-                "write_audit_active": True,
-                "write_attempts": [],
-                "write_audit_error": "",
-            },
-            "model_profile": profile_evidence,
-        },
-    )
-
-
-def _host_native_committed_aggregate_result(
-    *,
-    profile_evidence: dict[str, object],
-) -> SimpleNamespace:
+                "no_write": {
+                    "write_audit_active": True,
+                    "write_audit_error": "",
+                    "write_attempts": [],
+                    "changed_records": [],
+                    "staged_transaction_present": False,
+                },
+            }
+        )
+        score_basis = "clarification_required_no_write_contract"
     return SimpleNamespace(
-        name="host-native committed",
+        name=f"{expectation}:{profile_evidence['profile_id']}",
         status="passed",
         proposal_seconds=18.02,
-        quality=SimpleNamespace(passed=True),
-        evidence={
-            "case": {
-                "expectation": "transaction_committed",
-                "prompt_sha256": hashlib.sha256(b"prompt").hexdigest(),
-            },
-            "model_profile": profile_evidence,
-        },
+        quality=SimpleNamespace(passed=True, score_basis=score_basis),
+        evidence=evidence,
     )
 
 
-def test_reviewer_selected_clarification_stays_host_native_without_reclassifying_host_output() -> None:
-    source = "The first complete task remains materially ambiguous."
-    stage = _host_native_clarification_stage(source)
-    stage["response_kind"] = "authored"
-    stage["candidate_review_status"] = "clarification_required"
-    reviewer = _host_native_reviewer_clarification_observation(source)
-    review = reviewer["candidate_review"]
-    assert isinstance(review, dict)
+def _mutate_path(
+    value: dict[str, object], path: tuple[str, ...], replacement: object
+) -> None:
+    target = value
+    for key in path[:-1]:
+        target = target[key]
+    if replacement is MISSING:
+        target.pop(path[-1])
+    else:
+        target[path[-1]] = replacement
 
-    evidence = model_profile_evidence(
-        STANDARD_PROFILE_ID,
-        model_profile_environment(STANDARD_PROFILE_ID, {}),
-        observed={},
-        stage_observation=stage,
-        reviewer_observation=reviewer,
-        expected_review_input_candidate_sha256=str(
-            review["review_input_candidate_sha256"]
-        ),
-        expected_source=source,
-    )
 
-    assert evidence["status"] == "passed", evidence["issues"]
-    summary = evidence["stage_observation_summary"]
-    assert summary["response_kind"] == "authored"
-    assert summary["clarification_origin"] == "reviewer"
-    assert evidence["sealed_request_roles"] == ["host_candidate"]
-    assert summary["reviewer_receipt_verified"] is True
-    assert not any(
-        "participant_selection" in issue or "remaining_candidate_authoring" in issue
-        for issue in evidence["issues"]
+def test_host_clarification_passes_aggregate_profile_proof() -> None:
+    evidence = _profile_evidence()
+    proof = model_profile_release_proof(
+        (_result(profile_evidence=evidence, expectation="clarification_required"),),
+        require_complete=False,
     )
-
-    result = _host_native_clarification_aggregate_result(
-        source,
-        profile_evidence=evidence,
-    )
-    proof = model_profile_release_proof((result,), require_complete=False)
     assert proof["status"] == "passed", proof["issues"]
+    profile = proof["profiles"][STANDARD_PROFILE_ID]
+    assert profile["host_semantic_model_calls"] == 1
+    assert profile["runtime_semantic_model_calls_after_candidate_receipt"] == 0
+    assert profile["post_receipt_provider_invocations"] == 0
 
 
-def test_host_native_clarification_passes_aggregate_profile_proof() -> None:
-    source = "The first complete task remains materially ambiguous."
-    profile_evidence = _host_native_clarification_profile_evidence(source)
-    result = _host_native_clarification_aggregate_result(
-        source,
-        profile_evidence=profile_evidence,
+def test_complete_release_profile_requires_standard_success_and_rescue_no_write_control() -> None:
+    standard = _result(
+        profile_evidence=_profile_evidence(STANDARD_PROFILE_ID),
+        expectation="transaction_committed",
     )
-
-    proof = model_profile_release_proof((result,), require_complete=False)
-
-    assert proof["status"] == "passed", proof["issues"]
-    assert proof["profiles"][STANDARD_PROFILE_ID]["maximum_semantic_model_calls"] == 1
-
-
-def test_release_profile_proof_requires_astra_success_and_luna_no_write_control() -> None:
-    source = "The first complete task remains materially ambiguous."
-    clarification = _host_native_clarification_aggregate_result(
-        source,
-        profile_evidence=_host_native_clarification_profile_evidence(
-            source,
-            profile_id=RESCUE_PROFILE_ID,
-        ),
+    rescue = _result(
+        profile_evidence=_profile_evidence(RESCUE_PROFILE_ID),
+        expectation="clarification_required",
     )
-    authored_evidence = _host_native_authored_profile_evidence(
-        source,
-        profile_id=STANDARD_PROFILE_ID,
-    )
-    assert authored_evidence["status"] == "passed", authored_evidence["issues"]
-    committed = _host_native_committed_aggregate_result(
-        profile_evidence=authored_evidence,
-    )
-    proof = model_profile_release_proof((committed, clarification), require_complete=True)
-
+    proof = model_profile_release_proof((standard, rescue), require_complete=True)
     assert proof["status"] == "passed", proof["issues"]
     assert proof["lower_capability_scope"]["status"] == "passed"
     assert proof["lower_capability_scope"]["role"] == "host_candidate"
-    observed = proof["lower_capability_scope"]["observed_profiles"]
-    assert len(observed) == 1
-    assert observed[0]["profile_id"] == RESCUE_PROFILE_ID
-    assert observed[0]["model"] == get_greenfield_model_profile(
-        RESCUE_PROFILE_ID
-    ).model
-    assert observed[0]["committed_positive_case_count"] == 0
-    assert observed[0]["clarification_no_write_control_count"] == 1
 
 
-def test_complete_release_profile_proof_fails_without_astra_or_luna_control() -> None:
-    source = "The first complete task remains materially ambiguous."
-    astra = _host_native_committed_aggregate_result(
-        profile_evidence=_host_native_authored_profile_evidence(source),
+def test_complete_release_profile_fails_without_rescue_control() -> None:
+    standard = _result(
+        profile_evidence=_profile_evidence(STANDARD_PROFILE_ID),
+        expectation="transaction_committed",
     )
-    luna = _host_native_clarification_aggregate_result(
-        source,
-        profile_evidence=_host_native_clarification_profile_evidence(
-            source,
-            profile_id=RESCUE_PROFILE_ID,
-        ),
-    )
-
-    missing_luna = model_profile_release_proof((astra,), require_complete=True)
-    missing_astra = model_profile_release_proof((luna,), require_complete=True)
-
-    assert missing_luna["status"] == "failed"
-    assert any("clarification/no-write control" in issue for issue in missing_luna["issues"])
-    assert missing_astra["status"] == "failed"
-    assert any("missing success profile" in issue for issue in missing_astra["issues"])
-
-
-def test_release_profile_proof_rejects_duplicate_luna_controls() -> None:
-    source = "The first complete task remains materially ambiguous."
-    committed = _host_native_committed_aggregate_result(
-        profile_evidence=_host_native_authored_profile_evidence(source),
-    )
-    clarification = _host_native_clarification_aggregate_result(
-        source,
-        profile_evidence=_host_native_clarification_profile_evidence(
-            source,
-            profile_id=RESCUE_PROFILE_ID,
-        ),
-    )
-
-    proof = model_profile_release_proof(
-        (committed, clarification, clarification),
-        require_complete=True,
-    )
-
+    proof = model_profile_release_proof((standard,), require_complete=True)
     assert proof["status"] == "failed"
-    assert any("exactly one result" in issue for issue in proof["issues"])
+    assert any("clarification/no-write case" in issue for issue in proof["issues"])
 
 
-def test_luna_or_sol_positive_result_cannot_qualify_release_success() -> None:
-    source = "The first complete task remains materially ambiguous."
-    luna_positive = _host_native_committed_aggregate_result(
-        profile_evidence=_host_native_authored_profile_evidence(
-            source,
-            profile_id=RESCUE_PROFILE_ID,
-        ),
+def test_lower_capability_positive_result_cannot_qualify_release_success() -> None:
+    rescue = _result(
+        profile_evidence=_profile_evidence(RESCUE_PROFILE_ID),
+        expectation="transaction_committed",
     )
-    sol_evidence = _host_native_authored_profile_evidence(
-        source,
-        profile_id=DEEP_PROFILE_ID,
-    )
-    sol_positive = _host_native_committed_aggregate_result(
-        profile_evidence=sol_evidence,
-    )
-
-    luna_proof = model_profile_release_proof((luna_positive,), require_complete=False)
-    sol_proof = model_profile_release_proof((sol_positive,), require_complete=False)
-
-    assert luna_proof["status"] == "failed"
-    assert any("must clarify without writing" in issue for issue in luna_proof["issues"])
-    assert sol_proof["status"] == "failed"
-    assert any("unsupported diagnostic" in issue for issue in sol_proof["issues"])
-    assert sol_proof["profiles"][STANDARD_PROFILE_ID]["committed_positive_case_count"] == 0
-
-
-def test_supported_profile_rejects_a_forged_profile_relabel() -> None:
-    source = "The first complete task remains materially ambiguous."
-    forged = _host_native_authored_profile_evidence(source)
-    forged["profile_id"] = RESCUE_PROFILE_ID
-
-    proof = model_profile_release_proof(
-        (_host_native_committed_aggregate_result(profile_evidence=forged),),
-        require_complete=False,
-    )
-
+    proof = model_profile_release_proof((rescue,), require_complete=False)
     assert proof["status"] == "failed"
-    assert any("different model profile" in issue for issue in proof["issues"])
+    assert any("must clarify without writing" in issue for issue in proof["issues"])
+
+
+def test_deep_profile_cannot_qualify_release_success() -> None:
+    deep = _result(
+        profile_evidence=_profile_evidence(DEEP_PROFILE_ID),
+        expectation="transaction_committed",
+    )
+    proof = model_profile_release_proof((deep,), require_complete=False)
+    assert proof["status"] == "failed"
+    assert any("unsupported diagnostic" in issue for issue in proof["issues"])
 
 
 @pytest.mark.parametrize(
-    "binding",
+    ("path", "value"),
     (
-        "configured_provider", "configured_model", "configured_effort", "stage",
-        "host_executable", "host_shape", "host_argument_count", "host_output_schema",
-        "host_model", "host_effort", "review_profile", "review_provider",
-        "review_model", "review_effort",
+        (("configured", "model"), "gpt-5.6-sol"),
+        (("stage_observation", "model_profile_id"), RESCUE_PROFILE_ID),
+        (("stage_observation", "host_request", "argument_count"), 15),
+        (("stage_observation", "host_request", "output_schema_present"), False),
+        (("stage_observation", "host_request", "model"), "gpt-5.6-sol"),
+        (("stage_observation", "post_receipt_provider_invocations"), 1),
+        (("observed", "runtime_semantic_model_call_count"), 1),
     ),
 )
-def test_supported_profile_rechecks_each_host_native_profile_binding(binding: str) -> None:
-    source = "The first complete task remains materially ambiguous."
-    evidence = _host_native_authored_profile_evidence(source)
-    if binding == "configured_provider":
-        evidence["configured"]["provider"] = "anthropic-cli"
-    elif binding == "configured_model":
-        evidence["configured"]["model"] = "gpt-5.6-sol"
-    elif binding == "configured_effort":
-        evidence["configured"]["reasoning_effort"] = "high"
-    elif binding == "stage":
-        evidence["stage_observation"]["model_profile_id"] = RESCUE_PROFILE_ID
-    elif binding == "host_executable":
-        evidence["stage_observation"]["host_request"]["executable_sha256"] = "a" * 64
-    elif binding == "host_shape":
-        evidence["stage_observation"]["host_request"]["argv_shape_sha256"] = "b" * 64
-    elif binding == "host_argument_count":
-        evidence["stage_observation"]["host_request"]["argument_count"] = 15
-    elif binding == "host_output_schema":
-        evidence["stage_observation"]["host_request"]["output_schema_present"] = False
-    elif binding == "host_model":
-        evidence["stage_observation"]["host_request"]["model"] = "gpt-5.6-sol"
-    elif binding == "host_effort":
-        evidence["stage_observation"]["host_request"]["reasoning_effort"] = "high"
-    elif binding == "review_profile":
-        evidence["observed"]["candidate_review"]["profile_id"] = RESCUE_PROFILE_ID
-    elif binding == "review_provider":
-        evidence["observed"]["candidate_review"]["provider"] = "anthropic-cli"
-    elif binding == "review_model":
-        evidence["observed"]["candidate_review"]["model"] = "gpt-5.6-sol"
-    else:
-        evidence["observed"]["candidate_review"]["reasoning_effort"] = "high"
+def test_release_profile_rechecks_single_authority_bindings(
+    path: tuple[str, ...],
+    value: object,
+) -> None:
+    evidence = deepcopy(_profile_evidence())
+    target = evidence
+    for key in path[:-1]:
+        target = target[key]
+    target[path[-1]] = value
+    proof = model_profile_release_proof(
+        (_result(profile_evidence=evidence, expectation="transaction_committed"),),
+        require_complete=False,
+    )
+    assert proof["status"] == "failed"
+
+
+@pytest.mark.parametrize(
+    "path",
+    (
+        ("host_semantic_model_calls",),
+        ("runtime_semantic_model_calls_after_candidate_receipt",),
+        ("post_receipt_provider_invocations",),
+        ("stage_observation_summary", "host_semantic_model_calls"),
+        (
+            "stage_observation_summary",
+            "runtime_semantic_model_calls_after_candidate_receipt",
+        ),
+        ("stage_observation_summary", "post_receipt_provider_invocations"),
+        ("observed", "runtime_semantic_model_call_count"),
+        ("stage_observation", "host_invocations"),
+        ("stage_observation", "contract_command_invocations"),
+        ("stage_observation", "proposal_command_invocations"),
+        ("stage_observation", "runtime_semantic_model_call_count"),
+        ("stage_observation", "post_receipt_provider_invocations"),
+    ),
+)
+@pytest.mark.parametrize("invalid", (False, True, 0.0, MISSING))
+def test_aggregate_profile_rejects_non_integer_call_counts(
+    path: tuple[str, ...],
+    invalid: object,
+) -> None:
+    evidence = _profile_evidence()
+    _mutate_path(evidence, path, invalid)
 
     proof = model_profile_release_proof(
-        (_host_native_committed_aggregate_result(profile_evidence=evidence),),
+        (_result(profile_evidence=evidence, expectation="clarification_required"),),
         require_complete=False,
     )
 
     assert proof["status"] == "failed"
-    expected_issue = {
-        "configured_provider": "host-native configured model",
-        "configured_model": "host-native configured model",
-        "configured_effort": "host-native configured model",
-        "stage": "host-native stage identifies a different model profile",
-        "host_executable": "host-native executable identity does not match the sealed observation",
-        "host_shape": "retained host-native argv shape fingerprint is invalid",
-        "host_argument_count": "retained host-native argument count is invalid",
-        "host_output_schema": "retained host-native output schema proof is missing",
-        "host_model": "retained host-native argv model does not match",
-        "host_effort": "retained host-native argv reasoning effort does not match",
-        "review_profile": "host-native candidate review identifies a different model profile",
-        "review_provider": "observed provider does not match",
-        "review_model": "observed model does not match",
-        "review_effort": "observed reasoning_effort does not match",
-    }[binding]
-    assert any(expected_issue in issue for issue in proof["issues"])
-
-
-def test_aggregate_clarification_rejects_contradictory_authored_observations() -> None:
-    source = "The first complete task remains materially ambiguous."
-    profile_evidence = _host_native_clarification_profile_evidence(source)
-    profile_evidence["observed"] = {
-        "participant_selection": {},
-        "remaining_candidate_authoring": {},
-    }
-    result = _host_native_clarification_aggregate_result(
-        source,
-        profile_evidence=profile_evidence,
-    )
-
-    proof = model_profile_release_proof((result,), require_complete=False)
-
-    assert proof["status"] == "failed"
-    assert any("contradictory authored observations" in issue for issue in proof["issues"])
-
-
-def test_aggregate_authored_evidence_cannot_be_reclassified_by_response_kind() -> None:
-    source = "The first complete task remains materially ambiguous."
-    profile_evidence = _host_native_authored_profile_evidence(source)
-    assert profile_evidence["status"] == "passed", profile_evidence["issues"]
-    profile_evidence["stage_observation"]["response_kind"] = "clarification_required"
-    result = _host_native_clarification_aggregate_result(
-        source,
-        profile_evidence=profile_evidence,
-    )
-
-    proof = model_profile_release_proof((result,), require_complete=False)
-
-    assert proof["status"] == "failed"
-    assert any("reviewed candidate does not match" in issue for issue in proof["issues"])
-
-
-def test_aggregate_clarification_revalidates_retained_expected_source_hash() -> None:
-    source = "The first complete task remains materially ambiguous."
-    profile_evidence = _host_native_clarification_profile_evidence(source)
-    profile_evidence["stage_observation"]["source_sha256"] = "4" * 64
-    result = _host_native_clarification_aggregate_result(
-        source,
-        profile_evidence=profile_evidence,
-    )
-
-    proof = model_profile_release_proof((result,), require_complete=False)
-
-    assert proof["status"] == "failed"
-    assert any("source does not match" in issue for issue in proof["issues"])
 
 
 @pytest.mark.parametrize(
     "elapsed",
     (180.0, 180.001, None, True, "18.0", 0.0, -1.0, float("nan"), float("inf")),
 )
-def test_aggregate_clarification_rejects_expired_or_invalid_elapsed(elapsed: object) -> None:
-    source = "The first complete task remains materially ambiguous."
-    profile_evidence = _host_native_clarification_profile_evidence(source)
-    profile_evidence["stage_observation"]["elapsed_seconds"] = elapsed
-    result = _host_native_clarification_aggregate_result(
-        source,
-        profile_evidence=profile_evidence,
+def test_aggregate_profile_rejects_expired_or_invalid_elapsed(elapsed: object) -> None:
+    evidence = _profile_evidence()
+    evidence["stage_observation"]["elapsed_seconds"] = elapsed
+    proof = model_profile_release_proof(
+        (_result(profile_evidence=evidence, expectation="clarification_required"),),
+        require_complete=False,
     )
-
-    proof = model_profile_release_proof((result,), require_complete=False)
-
     assert proof["status"] == "failed"
-    assert any("operational-timeout proof" in issue for issue in proof["issues"])

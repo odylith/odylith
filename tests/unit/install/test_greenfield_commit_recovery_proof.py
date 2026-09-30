@@ -22,6 +22,13 @@ from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SCRIPTS_ROOT = REPO_ROOT / "scripts" / "release"
+HOST_CANDIDATE_ARGV = (
+    "/trusted/codex", "exec", "--ephemeral", "--ignore-user-config",
+    "--skip-git-repo-check", "--sandbox", "read-only",
+    "--model", "gpt-6-astra", "--config",
+    "model_reasoning_effort=medium", "--output-schema",
+    "{candidate_schema}", "-",
+)
 
 
 def _module():
@@ -532,6 +539,16 @@ def test_compile_transaction_uses_the_exact_case_prompt_and_confirmed_intent(tmp
             stderr="",
         ),
     )
+    monkeypatch.setattr(
+        module.recovery_transaction,
+        "resolve_trusted_codex_executable",
+        lambda **_kwargs: "/trusted/codex",
+    )
+    monkeypatch.setattr(
+        module.recovery_transaction,
+        "run_host_candidate_flow",
+        lambda flow: flow.invoke_propose(tmp_path.parent / "candidate.json", 123.0),
+    )
     case = module.GreenfieldMatrixCase(
         name="bound recovery case",
         prompt="Create the exact recovery-bound product.",
@@ -543,6 +560,7 @@ def test_compile_transaction_uses_the_exact_case_prompt_and_confirmed_intent(tmp
         repo_root=tmp_path,
         env={"PATH": "/usr/bin"},
         case=case,
+        host_candidate_argv=HOST_CANDIDATE_ARGV,
     )
     assert compiled.transaction_hash == "a" * 64
     assert compiled.product_facts_hash == "c" * 64
@@ -677,6 +695,16 @@ def test_compile_transaction_rejects_an_authority_that_does_not_bind_edit_eviden
             stderr="",
         ),
     )
+    monkeypatch.setattr(
+        module.recovery_transaction,
+        "resolve_trusted_codex_executable",
+        lambda **_kwargs: "/trusted/codex",
+    )
+    monkeypatch.setattr(
+        module.recovery_transaction,
+        "run_host_candidate_flow",
+        lambda flow: flow.invoke_propose(tmp_path.parent / "candidate.json", 123.0),
+    )
     case = module.GreenfieldMatrixCase(
         name="bound recovery case",
         prompt="Create the exact recovery-bound product.",
@@ -689,6 +717,7 @@ def test_compile_transaction_rejects_an_authority_that_does_not_bind_edit_eviden
             repo_root=tmp_path,
             env={"PATH": "/usr/bin"},
             case=case,
+            host_candidate_argv=HOST_CANDIDATE_ARGV,
         )
     except RuntimeError as exc:
         assert "did not bind the exact prompt and edit evidence" in str(exc)

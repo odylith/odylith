@@ -11,13 +11,10 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GreenfieldModelAuthoringError,
 )
-from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring import (
-    author_greenfield_intent,
-)
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
-    AdmittingReviewProvider,
-    RemainingCandidateProvider,
+    admit_complete_host_candidate,
     authored_response,
+    host_candidate_response,
 )
 from tests.unit.runtime.test_greenfield_model_path_custody import (
     _LIST_FIELDS,
@@ -80,13 +77,9 @@ def _author_terminal_intent(
     )
     if terminal_override is not None:
         response["result"]["terminal"].update(terminal_override)
-    provider = RemainingCandidateProvider(response)
-    result = author_greenfield_intent(
+    result = admit_complete_host_candidate(
         evidence_text=source,
-        provider=provider,
-        clock=lambda: 0.0,
-        participant_provider_factory=provider.participant_provider,
-        review_provider_factory=provider.review_provider,
+        host_candidate=host_candidate_response(response, evidence_text=source),
     )
     return result, source
 
@@ -102,10 +95,7 @@ def test_terminal_result_keeps_exact_proof_fact_custody_outside_final_event() ->
     terminal_event = result.first_path_relations[-1]
     assert result_quote not in terminal_event["event_quote"]
     assert terminal_event["visible_result_quote"] == result_quote
-    relation, = result.component_responsibility_relations
-    assert relation["owner_system_quote"] == "Pickup Relay"
-    assert relation["responsibility_quote"] == "Pickup Relay releases each batch"
-    assert relation["first_path_event_order"] == 2
+    assert result.component_responsibility_relations == ()
     visible_claim = next(
         row
         for row in result.atomic_claims
@@ -145,10 +135,7 @@ def test_terminal_result_keeps_selected_product_story_custody_across_sealed_vali
     validated = first_path_relations_from_intent(sealed_intent)
 
     assert validated[-1]["visible_result_quote"] == result_quote
-    relation, = result.component_responsibility_relations
-    assert relation["owner_system_quote"] == "Pickup Relay"
-    assert relation["responsibility_quote"] == "Pickup Relay releases each batch"
-    assert relation["first_path_event_order"] == 2
+    assert result.component_responsibility_relations == ()
     visible_claim = next(
         row for row in result.atomic_claims if row["relation_role"] == "visible_result_quote"
     )

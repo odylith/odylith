@@ -330,14 +330,30 @@ def _stage_observation(
     profile_id: str,
     *,
     clarification: bool = False,
-    reviewed: bool = False,
 ) -> dict[str, object]:
     from tests.greenfield_model_profile_test_support import production_stage_observation
 
     return production_stage_observation(
         profile_id, response_kind="clarification_required" if clarification else "authored",
-        reviewed=reviewed,
     )
+
+
+def _profile_evidence(profile_id: str, *, clarification: bool = False) -> dict[str, object]:
+    return {
+        "profile_id": profile_id,
+        "semantic_authority": "active_host_single_authority",
+        "sealed_request_roles": ["host_candidate"],
+        "host_semantic_model_calls": 1,
+        "runtime_semantic_model_calls_after_candidate_receipt": 0,
+        "post_receipt_provider_invocations": 0,
+        "stage_observation": _stage_observation(
+            profile_id,
+            clarification=clarification,
+        ),
+        "status": "passed",
+        "issues": [],
+        "observed": sealed_profile_observation(profile_id),
+    }
 
 
 def _passing_matrix_result(module, *, manifest_summary: dict[str, object] | None = None) -> object:
@@ -357,13 +373,7 @@ def _passing_matrix_result(module, *, manifest_summary: dict[str, object] | None
                 "expectation": "transaction_committed",
                 "prompt_sha256": "a" * 64,
             },
-            "model_profile": {
-                "profile_id": profile_id,
-                "stage_observation": _stage_observation(profile_id),
-                "status": "passed",
-                "issues": [],
-                "observed": sealed_profile_observation(profile_id),
-            },
+            "model_profile": _profile_evidence(profile_id),
         },
     )
 
@@ -379,13 +389,7 @@ def _passing_profile_result(module, profile_id: str, proposal_seconds: float) ->
                 "expectation": "transaction_committed",
                 "prompt_sha256": "a" * 64,
             },
-            "model_profile": {
-                "profile_id": profile_id,
-                "stage_observation": _stage_observation(profile_id),
-                "status": "passed",
-                "issues": [],
-                "observed": sealed_profile_observation(profile_id),
-            },
+            "model_profile": _profile_evidence(profile_id),
         },
     )
 
@@ -394,8 +398,6 @@ def _passing_clarification_profile_result(
     module,
     profile_id: str,
     proposal_seconds: float,
-    *,
-    reviewed: bool = False,
 ) -> object:
     expected_field = "first_path"
     expected_question = "Who uses this product first, and what complete result do they see?"
@@ -409,14 +411,10 @@ def _passing_clarification_profile_result(
         ),
         evidence={
             **dict(result.evidence or {}),
-            "model_profile": {
-                **result.evidence["model_profile"],
-                "stage_observation": _stage_observation(
-                    profile_id,
-                    clarification=True,
-                    reviewed=reviewed,
-                ),
-            },
+            "model_profile": _profile_evidence(
+                profile_id,
+                clarification=True,
+            ),
             "case": {
                 "id": f"{profile_id}-clarification",
                 "expectation": "clarification_required",

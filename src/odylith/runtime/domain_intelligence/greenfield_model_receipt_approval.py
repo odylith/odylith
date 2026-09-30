@@ -1,4 +1,4 @@
-"""Fail-closed approval of retained Greenfield model-stage receipts."""
+"""Fail-closed approval of one-pass host-candidate receipts."""
 
 from __future__ import annotations
 
@@ -6,14 +6,11 @@ import math
 from collections.abc import Mapping
 from typing import Any
 
-from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
-    CANDIDATE_REVIEW_VERSION,
-    candidate_review_admission_witness_shape_issues,
-)
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_RELATION_SET_SHA256_KEY,
 )
 from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
+    HOST_CANDIDATE_CONTRACT_VERSION,
     HOST_CANDIDATE_RECEIPT_VERSION,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
@@ -21,7 +18,6 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring impor
 )
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     get_greenfield_model_profile,
-    greenfield_model_profile_observation_issues,
     model_profile_id_for_repair_tier,
 )
 
@@ -32,169 +28,8 @@ def greenfield_model_authoring_receipt_approved(
     semantic_compiler: Mapping[str, Any],
     requested_repair_tier: str,
 ) -> bool:
-    """Validate observed author/reviewer metadata, not source authority or quality."""
+    """Validate canonical host custody and prove zero post-receipt semantic calls."""
 
-    if model_authoring.get("authoring_origin") == "host_native":
-        return _host_native_authoring_receipt_approved(
-            model_authoring=model_authoring,
-            semantic_compiler=semantic_compiler,
-            requested_repair_tier=requested_repair_tier,
-        )
-
-    expected_fields = {
-        "authoring_version",
-        "semantic_model_call_count",
-        "tier",
-        "elapsed_seconds",
-        "effective_model_window_seconds",
-        "participant_selection",
-        "remaining_candidate_authoring",
-        "candidate_review",
-    }
-    return (
-        set(model_authoring) == expected_fields
-        and str(semantic_compiler.get("version", "")).strip()
-        == "odylith.greenfield.authored-semantic-validation.v4"
-        and str(semantic_compiler.get("status", "")).strip() == "passed"
-        and str(semantic_compiler.get("semantic_owner", "")).strip()
-        == "validated_model_authored_intent"
-        and str(model_authoring.get("authoring_version", "")).strip()
-        == GREENFIELD_INTENT_AUTHORING_VERSION
-        and _semantic_model_call_count_approved(
-            model_authoring.get("semantic_model_call_count")
-        )
-        and _authoring_role_approved(
-            model_authoring,
-            request_role="participant_selection",
-            requested_repair_tier=requested_repair_tier,
-        )
-        and _authoring_role_approved(
-            model_authoring,
-            request_role="remaining_candidate_authoring",
-            requested_repair_tier=requested_repair_tier,
-        )
-        and _candidate_review_approved(
-            model_authoring,
-            requested_repair_tier=requested_repair_tier,
-        )
-        and type(semantic_compiler.get("post_authoring_interpretation_calls")) is int
-        and semantic_compiler.get("post_authoring_interpretation_calls")
-        == 1
-    )
-
-
-def _semantic_model_call_count_approved(value: Any) -> bool:
-    return type(value) is int and value == 3
-
-
-def _authoring_role_approved(
-    model_authoring: Mapping[str, Any],
-    *,
-    requested_repair_tier: str,
-    request_role: str,
-    receipt_key: str = "",
-) -> bool:
-    receipt = model_authoring.get(receipt_key or request_role)
-    if request_role != "candidate_review" and (
-        not isinstance(receipt, Mapping)
-        or set(receipt) != {"elapsed_seconds", "model_profile"}
-    ):
-        return False
-    if not isinstance(receipt, Mapping):
-        return False
-    raw_observation = receipt.get("model_profile")
-    observation = raw_observation if isinstance(raw_observation, Mapping) else {}
-    if set(observation) != {
-        "profile_id",
-        "provider",
-        "model",
-        "reasoning_effort",
-        "effective_timeout_seconds",
-        "authoring_tier",
-    }:
-        return False
-    timeout = observation.get("effective_timeout_seconds")
-    if (
-        type(timeout) not in (int, float)
-        or (isinstance(timeout, float) and not math.isfinite(timeout))
-        or timeout <= 0
-    ):
-        return False
-    profile_id = str(observation.get("profile_id") or "").strip()
-    authoring_tier = str(model_authoring.get("tier") or "").strip().casefold()
-    if str(observation.get("authoring_tier") or "").strip().casefold() != authoring_tier:
-        return False
-    try:
-        profile = get_greenfield_model_profile(profile_id)
-        expected_profile_id = model_profile_id_for_repair_tier(requested_repair_tier)
-        observation_issues = greenfield_model_profile_observation_issues(
-            profile_id=profile_id,
-            provider=str(observation.get("provider") or ""),
-            model=str(observation.get("model") or ""),
-            reasoning_effort=str(observation.get("reasoning_effort") or ""),
-            effective_timeout_seconds=observation.get("effective_timeout_seconds"),
-            authoring_tier=str(observation.get("authoring_tier") or ""),
-            request_role=request_role,
-        )
-    except (TypeError, ValueError, OverflowError):
-        return False
-    return (
-        profile_id == expected_profile_id
-        and authoring_tier == profile.repair_tier
-        and not observation_issues
-    )
-
-
-def _candidate_review_approved(
-    model_authoring: Mapping[str, Any], *, requested_repair_tier: str,
-) -> bool:
-    review = model_authoring.get("candidate_review")
-    if not isinstance(review, Mapping) or set(review) != {
-        "version",
-        "status",
-        "source_sha256",
-        "review_input_candidate_sha256",
-        "candidate_sha256",
-        "product_facts_sha256",
-        AUTHORED_RELATION_SET_SHA256_KEY,
-        "elapsed_seconds",
-        "model_profile",
-        "admission_witness",
-    }:
-        return False
-    if review.get("version") != CANDIDATE_REVIEW_VERSION or review.get("status") != "admitted":
-        return False
-    for key in (
-        "source_sha256",
-        "review_input_candidate_sha256",
-        "candidate_sha256",
-        "product_facts_sha256",
-        AUTHORED_RELATION_SET_SHA256_KEY,
-    ):
-        if not _is_sha256(review.get(key)):
-            return False
-    witness = review.get("admission_witness")
-    if (
-        candidate_review_admission_witness_shape_issues(witness)
-    ):
-        return False
-    if not _authoring_role_approved(
-        model_authoring,
-        requested_repair_tier=requested_repair_tier,
-        request_role="candidate_review",
-    ):
-        return False
-    if model_authoring.get("authoring_origin") == "host_native":
-        return _host_native_timing_approved(model_authoring)
-    return _sequential_model_receipts_approved(model_authoring)
-
-
-def _host_native_authoring_receipt_approved(
-    *,
-    model_authoring: Mapping[str, Any],
-    semantic_compiler: Mapping[str, Any],
-    requested_repair_tier: str,
-) -> bool:
     expected_fields = {
         "authoring_origin",
         "authoring_version",
@@ -203,104 +38,69 @@ def _host_native_authoring_receipt_approved(
         "elapsed_seconds",
         "effective_model_window_seconds",
         "host_candidate",
-        "candidate_review",
+        "canonical_authority",
     }
     host = model_authoring.get("host_candidate")
-    review = model_authoring.get("candidate_review")
+    canonical = model_authoring.get("canonical_authority")
+    try:
+        profile = get_greenfield_model_profile(
+            model_profile_id_for_repair_tier(requested_repair_tier)
+        )
+        elapsed = float(model_authoring.get("elapsed_seconds"))
+        window = float(model_authoring.get("effective_model_window_seconds"))
+    except (TypeError, ValueError, OverflowError):
+        return False
     return bool(
         set(model_authoring) == expected_fields
         and model_authoring.get("authoring_origin") == "host_native"
         and model_authoring.get("authoring_version")
         == GREENFIELD_INTENT_AUTHORING_VERSION
-        and model_authoring.get("runtime_semantic_model_call_count") == 1
-        and str(semantic_compiler.get("version", "")).strip()
-        == "odylith.greenfield.authored-semantic-validation.v4"
+        and type(model_authoring.get("runtime_semantic_model_call_count")) is int
+        and model_authoring.get("runtime_semantic_model_call_count") == 0
+        and model_authoring.get("tier") == profile.repair_tier
+        and math.isfinite(elapsed)
+        and math.isfinite(window)
+        and 0.0 <= elapsed <= window <= profile.model_timeout_seconds
+        and semantic_compiler.get("version")
+        == "odylith.greenfield.authored-semantic-validation.v5"
         and semantic_compiler.get("status") == "passed"
         and semantic_compiler.get("semantic_owner")
-        == "validated_model_authored_intent"
-        and semantic_compiler.get("post_authoring_interpretation_calls") == 1
+        == "host_canonical_candidate"
+        and type(semantic_compiler.get("post_candidate_receipt_semantic_calls")) is int
+        and semantic_compiler.get("post_candidate_receipt_semantic_calls") == 0
         and isinstance(host, Mapping)
         and set(host)
-        == {"version", "contract_version", "source_sha256", "candidate_sha256"}
+        == {
+            "version",
+            "contract_version",
+            "canonical_version",
+            "source_sha256",
+            "raw_candidate_sha256",
+            "canonical_candidate_sha256",
+        }
         and host.get("version") == HOST_CANDIDATE_RECEIPT_VERSION
-        and host.get("contract_version") == GREENFIELD_INTENT_AUTHORING_VERSION
-        and _is_sha256(host.get("source_sha256"))
-        and _is_sha256(host.get("candidate_sha256"))
-        and isinstance(review, Mapping)
-        and review.get("source_sha256") == host.get("source_sha256")
-        and _candidate_review_approved(
-            model_authoring,
-            requested_repair_tier=requested_repair_tier,
+        and host.get("contract_version") == HOST_CANDIDATE_CONTRACT_VERSION
+        and host.get("canonical_version") == GREENFIELD_INTENT_AUTHORING_VERSION
+        and all(
+            _is_sha256(host.get(key))
+            for key in (
+                "source_sha256",
+                "raw_candidate_sha256",
+                "canonical_candidate_sha256",
+            )
         )
-    )
-
-
-def _host_native_timing_approved(model_authoring: Mapping[str, Any]) -> bool:
-    review = model_authoring.get("candidate_review")
-    profile_observation = review.get("model_profile") if isinstance(review, Mapping) else None
-    if not isinstance(profile_observation, Mapping):
-        return False
-    values = (
-        model_authoring.get("elapsed_seconds"),
-        model_authoring.get("effective_model_window_seconds"),
-        review.get("elapsed_seconds"),
-        profile_observation.get("effective_timeout_seconds"),
-    )
-    if any(type(value) not in (int, float) for value in values):
-        return False
-    total, window, review_elapsed, review_timeout = (float(value) for value in values)
-    if any(not math.isfinite(value) for value in (total, window, review_elapsed, review_timeout)):
-        return False
-    try:
-        profile = get_greenfield_model_profile(str(profile_observation.get("profile_id") or ""))
-    except ValueError:
-        return False
-    return (
-        0.0 <= review_elapsed <= review_timeout <= window <= profile.model_timeout_seconds
-        and review_elapsed <= total <= window
-    )
-
-
-def _sequential_model_receipts_approved(model_authoring: Mapping[str, Any]) -> bool:
-    role_keys = ["participant_selection", "remaining_candidate_authoring"]
-    role_keys.append("candidate_review")
-    receipts = [model_authoring.get(key) for key in role_keys]
-    if any(not isinstance(receipt, Mapping) for receipt in receipts):
-        return False
-    total = model_authoring.get("elapsed_seconds")
-    shared_effective = model_authoring.get("effective_model_window_seconds")
-    numeric = [total, shared_effective]
-    for receipt in receipts:
-        assert isinstance(receipt, Mapping)
-        profile = receipt.get("model_profile")
-        if not isinstance(profile, Mapping):
-            return False
-        numeric.extend(
-            [receipt.get("elapsed_seconds"), profile.get("effective_timeout_seconds")]
-        )
-    if any(type(value) not in (int, float) or value < 0 for value in numeric):
-        return False
-    try:
-        normalized = [float(value) for value in numeric]
-    except (OverflowError, TypeError, ValueError):
-        return False
-    if any(not math.isfinite(value) for value in normalized):
-        return False
-    total_seconds, shared_effective_seconds = normalized[:2]
-    first = receipts[0]
-    assert isinstance(first, Mapping)
-    profile = get_greenfield_model_profile(first["model_profile"]["profile_id"])
-    elapsed = 0.0
-    for receipt in receipts:
-        assert isinstance(receipt, Mapping)
-        stage_elapsed = float(receipt["elapsed_seconds"])
-        stage_timeout = float(receipt["model_profile"]["effective_timeout_seconds"])
-        if not stage_elapsed <= stage_timeout <= shared_effective_seconds - elapsed:
-            return False
-        elapsed += stage_elapsed
-    return (
-        total_seconds <= shared_effective_seconds <= profile.model_timeout_seconds
-        and elapsed <= total_seconds
+        and isinstance(canonical, Mapping)
+        and set(canonical)
+        == {
+            "canonical_candidate_sha256",
+            "source_sha256",
+            "product_facts_sha256",
+            AUTHORED_RELATION_SET_SHA256_KEY,
+        }
+        and all(_is_sha256(value) for value in canonical.values())
+        and canonical.get("canonical_candidate_sha256")
+        == host.get("canonical_candidate_sha256")
+        and canonical.get("source_sha256") == host.get("source_sha256")
     )
 
 

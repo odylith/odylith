@@ -27,9 +27,6 @@ from odylith.runtime.domain_intelligence.greenfield_handoff_contract import (
 from odylith.runtime.domain_intelligence.greenfield_authored_proposal import (
     build_authored_greenfield_proposal,
 )
-from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
-    materialize_model_authored_intent,
-)
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     STANDARD_PROFILE_ID,
 )
@@ -39,9 +36,9 @@ from odylith.runtime.domain_intelligence.greenfield_preconfirm_handoff_quality i
 from odylith.runtime.domain_intelligence.greenfield_experience import build_next_steps
 from odylith.runtime.project_intelligence import greenfield
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
-    AdmittingReviewProvider,
-    RemainingCandidateProvider,
     authored_response,
+    host_candidate_response,
+    materialize_complete_host_candidate,
     structural_design_fixture,
 )
 
@@ -672,22 +669,16 @@ def test_authored_dashboard_preserves_archive_after_the_published_result(tmp_pat
         str(item) for value in intent.values()
         for item in (value if isinstance(value, list) else [value]) if str(item)
     )
-    provider = RemainingCandidateProvider(
-        authored_response(
+    response = authored_response(
             intent,
             evidence_text=source,
             first_path_relations=relations,
             source_precedence=precedence,
         )
-    )
-    authored = materialize_model_authored_intent(
+    authored = materialize_complete_host_candidate(
         prompt=source, repo_root=tmp_path,
-        authoring_provider=provider,
-        authoring_timeout_seconds=60, authoring_profile_id=STANDARD_PROFILE_ID,
-        participant_provider_factory=provider.participant_provider,
-        review_provider_factory=lambda: AdmittingReviewProvider(
-            source_precedence_custody=precedence,
-        ),
+        host_candidate=host_candidate_response(response, evidence_text=source),
+        authoring_profile_id=STANDARD_PROFILE_ID,
     )
     proposal = build_authored_greenfield_proposal(
         observed_source={"source_posture": "operator prompt evidence"},
@@ -970,21 +961,16 @@ def test_authored_dashboard_projects_proposed_capabilities_without_changing_sour
         for item in (value if isinstance(value, list) else [value])
         if str(item)
     )
-    provider = RemainingCandidateProvider(
-        authored_response(
+    response = authored_response(
             intent,
             evidence_text=source,
             first_path_relations=relations,
         )
-    )
-    authored = materialize_model_authored_intent(
+    authored = materialize_complete_host_candidate(
         prompt=source,
         repo_root=tmp_path,
-        authoring_provider=provider,
-        authoring_timeout_seconds=60,
+        host_candidate=host_candidate_response(response, evidence_text=source),
         authoring_profile_id=STANDARD_PROFILE_ID,
-        participant_provider_factory=provider.participant_provider,
-        review_provider_factory=AdmittingReviewProvider,
     )
     proposal = build_authored_greenfield_proposal(
         observed_source={"source_posture": "operator prompt evidence"},

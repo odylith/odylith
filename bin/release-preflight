@@ -22,14 +22,34 @@ if [[ "$canonical_exec" != "true" ]]; then
   exit $?
 fi
 
+[[ "${GREENFIELD_MATRIX_RELEASE_INTENT:-0}" == "1" ]] || die "release preflight requires GREENFIELD_MATRIX_RELEASE_INTENT=1"
+for required_input in \
+  GREENFIELD_MATRIX_CASE_FILE \
+  GREENFIELD_MATRIX_SEALED_RELEASE_INPUT_ROOT \
+  GREENFIELD_MATRIX_SEMANTIC_ANNOTATIONS_FILE \
+  GREENFIELD_MATRIX_EVALUATION_SPLIT_MANIFEST \
+  GREENFIELD_MATRIX_LOWER_CAPABILITY_CONTROL_FILE; do
+  [[ -n "${!required_input:-}" ]] || die "release preflight requires $required_input"
+done
 require_canonical_release_checkout
 resolved_version="$(resolve_release_session_version "release-preflight" "$requested_version" "true" "true")"
 tag="v${resolved_version}"
-preflight_root="$(mktemp -d "${TMPDIR:-/tmp}/odylith-release-preflight.XXXXXX")"
+expected_sha="$(release_session_field head_sha)"
+preflight_root="$(greenfield_release_proof_root "$expected_sha")"
+if [[ -e "$preflight_root" ]]; then
+  die "release proof directory already exists; preserve it and do not rerun the one-shot proof: $preflight_root"
+fi
+mkdir -p "$(dirname "$preflight_root")"
+mkdir "$preflight_root"
 dist_dir="$preflight_root/dist"
 mkdir -p "$dist_dir"
-trap 'rm -rf "$preflight_root"' EXIT
 
+GREENFIELD_MATRIX_OUTPUT_JSON="$preflight_root/matrix-result.v1.json" \
+GREENFIELD_MATRIX_EVIDENCE_OUTPUT_DIR="$preflight_root/retained-evidence" \
+GREENFIELD_MATRIX_FINAL_HOLDOUT_RUN_LEDGER="$preflight_root/final-holdout-ledger.v3.json" \
+GREENFIELD_MATRIX_DISTRIBUTION_PROVENANCE_FILE="$preflight_root/build-provenance.v1.json" \
+ODYLITH_GREENFIELD_MATRIX_TEMP_PARENT="${TMPDIR:-/tmp}" \
 run_release_proof_steps "$resolved_version" "$dist_dir" terminal
 
-echo "release preflight ready for ${tag}"
+echo "release preflight evidence preserved at $preflight_root"
+echo "release preflight for ${tag} awaits independent Greenfield qualification"

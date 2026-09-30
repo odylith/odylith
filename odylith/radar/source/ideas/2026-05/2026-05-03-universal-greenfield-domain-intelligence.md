@@ -60,6 +60,26 @@ supersedes:
 
 superseded_by: 
 
+## Current Greenfield release lane (2026-09-29)
+
+- B-142 remains in implementation, not release-ready. The failed V49 live
+  author/reviewer composition is retired. One active host now authors the
+  complete canonical candidate; deterministic admission seals it without a
+  second semantic/model call. Human confirmation remains mandatory.
+- Frozen non-holdout runtime checks pass 1,380 tests; release/install checks
+  pass 1,266; the combined runtime/install/integration suite passes 2,629;
+  focused terminal release-gate checks pass 128. Independent gate review finds
+  no remaining release-bypassing P0/P1. Detached semantic
+  and UX review is bound to one persistent HEAD-scoped release proof, with
+  dispatch-time revalidation. These are code/proof-contract results, not
+  evidence that an unseen project meets the product-quality floor.
+- Finish the independent gate review and frozen integration checks, then push
+  one immutable build. Run the exact public accessibility replay once; if it
+  fails, retire this Greenfield production claim. If it passes, run the public
+  40-case browser/recovery campaign, independent semantic/UX qualification,
+  and only then the untouched one-shot protected holdout. No parser, regex,
+  repair, retry, fallback, model ladder, or further mechanism variant.
+
 ## V31 Retained Public Qualification Gate (2026-09-27)
 
 - Keep Astra-medium as the sole automatically assigned and release-qualified

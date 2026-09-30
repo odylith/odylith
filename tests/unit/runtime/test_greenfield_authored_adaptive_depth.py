@@ -9,17 +9,13 @@ from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
     authored_first_run_text,
 )
-from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
-    materialize_model_authored_intent,
-)
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     STANDARD_PROFILE_ID,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
-    AdmittingReviewProvider,
-    RemainingCandidateProvider,
     authored_response,
-    component_custody_for_response,
+    host_candidate_response,
+    materialize_complete_host_candidate,
 )
 
 
@@ -47,23 +43,12 @@ def _proposal(
         first_path_relations=relations,
         component_responsibility_owners=responsibility_owners,
     )
-    provider = RemainingCandidateProvider(response)
-    component_custody = component_custody_for_response(response)
-    candidate = materialize_model_authored_intent(
+    del constraint_custody
+    candidate = materialize_complete_host_candidate(
         prompt=source,
         repo_root=tmp_path,
-        authoring_provider=provider,
-        authoring_timeout_seconds=54,
+        host_candidate=host_candidate_response(response, evidence_text=source),
         authoring_profile_id=STANDARD_PROFILE_ID,
-        participant_provider_factory=provider.participant_provider,
-        review_provider_factory=(
-            provider.review_provider
-            if constraint_custody is None
-            else lambda: AdmittingReviewProvider(
-                component_custody=component_custody,
-                constraint_custody=constraint_custody,
-            )
-        ),
     )
     return greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
@@ -436,7 +421,7 @@ def test_structured_source_projects_distinct_canonical_design_with_source_custod
     design = intent["authored_semantics"]["provisional_design"]
 
     for constraint in intent["operational_constraints"]:
-        assert intent["component_responsibilities"].count(constraint) == 1
+        assert intent["component_responsibilities"].count(constraint) == 0
 
     assert [row["workstream_role"] for row in backlog] == ["provisional_design"] * 4
     assert len({row["title"] for row in backlog}) == 4
@@ -512,7 +497,7 @@ def test_direct_evidence_graph_material_facts_survive_structural_design_projecti
         "Supervisor releases the batch."
     )
     product_story = "Create a governed community exchange."
-    proof_boundary = "Supervisor releases the batch."
+    proof_boundary = "Verify the released batch and its receipt."
     decisions = {
         "problem": "Participants need to keep batch registration, inspection, and release connected.",
         "customer": "Community exchange participants are the primary beneficiaries of the batch history.",
@@ -595,7 +580,7 @@ def test_direct_evidence_graph_material_facts_survive_structural_design_projecti
 
     backlog = proposal["backlog"]
     for constraint in intent["operational_constraints"]:
-        assert proposal["intent"]["component_responsibilities"].count(constraint) == 1
+        assert proposal["intent"].get("component_responsibilities", []).count(constraint) == 0
     assert [row["workstream_role"] for row in backlog] == ["provisional_design"] * 4
     for row in backlog:
         for index, (field, statement) in enumerate(decisions.items()):

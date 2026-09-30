@@ -10,20 +10,24 @@ from pathlib import Path
 
 import pytest
 
-from tests.unit.install.test_greenfield_model_profiles import (
-    _host_native_private_admission,
-    _host_native_stage,
-    _review_input_candidate,
-)
-from odylith.runtime.domain_intelligence.greenfield_review_custody import (
-    candidate_review_sha256,
-    project_reviewed_custody,
-)
-
-
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SCRIPTS_ROOT = REPO_ROOT / "scripts" / "release"
+if str(SCRIPTS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_ROOT))
 
+from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
+    admit_greenfield_host_candidate,
+)
+from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import (
+    HOST_CANDIDATE_FORMAT_VERSION,
+)
+from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_ARGUMENT_COUNT
+from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_RECEIPT_VERSION
+from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_SHAPE_SHA256
+from greenfield_matrix_host_candidate import HOST_NATIVE_MATRIX_OBSERVATION_VERSION
+from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
+    GREENFIELD_INTENT_AUTHORING_VERSION,
+)
 
 def _load_module(path: Path, name: str):
     spec = importlib.util.spec_from_file_location(name, path)
@@ -157,53 +161,66 @@ def test_discovery_uses_ephemeral_case_proof_without_publishing_release_evidence
             edit_evidence=str(case.confirmed_intent_markdown or ""),
         ).evidence_source
         source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
-        candidate_sha256 = "1" * 64
-        review_input_candidate = _review_input_candidate()
-        review_input_candidate["facts"]["first_path"] = [
-            {"quote": source, "occurrence": 1}
-        ]
-        for event in review_input_candidate["events"]:
-            event["actor_fact"] = {"field": "human_actors", "row": 1}
-        component_custody = {
-            "event_responsibilities": [],
-            "additional_responsibilities": [],
+        raw_candidate = {
+            "version": HOST_CANDIDATE_FORMAT_VERSION,
+            "result": {
+                "status": "clarification_required",
+                "consistency": {
+                    "status": "material_ambiguity",
+                    "evidence_quotes": [],
+                },
+                "clarification": {"material_dimension": "first_path"},
+            },
         }
-        review_input_candidate_sha256 = candidate_review_sha256(review_input_candidate)
-        final_candidate_sha256 = candidate_review_sha256(
-            project_reviewed_custody(
-                review_input_candidate,
-                component_custody=component_custody,
-                source_precedence_custody=[],
-                constraint_custody=[],
-                evidence_text=source,
-            )
+        _candidate, receipt = admit_greenfield_host_candidate(
+            raw_candidate,
+            evidence_text=source,
+            clock=lambda: 1.0,
         )
         observed = {
             "origin": "host_native",
-            "host_candidate": {
-                "version": "odylith.greenfield.host-candidate.v1",
-                "contract_version": "odylith.greenfield.intent-authoring.v76",
-                "source_sha256": source_sha256,
-                "candidate_sha256": candidate_sha256,
-            },
-            "candidate_review": {
-                "profile_id": profile_id,
-                "provider": profile.provider,
-                "model": profile.review_model,
-                "reasoning_effort": profile.review_reasoning_effort,
-                "effective_timeout_seconds": 120.0,
-                "authoring_tier": profile.repair_tier,
-            },
+            "host_candidate": receipt,
+            "runtime_semantic_model_call_count": 0,
         }
-        stage = _host_native_stage(candidate_sha256=candidate_sha256)
-        stage["source_sha256"] = source_sha256
-        reviewer = _host_native_private_admission(
-            observed=observed,
-            source=source,
-            review_input_candidate_sha256=review_input_candidate_sha256,
-            final_candidate_sha256=final_candidate_sha256,
-            component_custody=component_custody,
-        )
+        stage = {
+            "version": HOST_NATIVE_MATRIX_OBSERVATION_VERSION,
+            "status": "passed",
+            "host_invocations": 1,
+            "contract_command_invocations": 1,
+            "proposal_command_invocations": 1,
+            "runtime_semantic_model_call_count": 0,
+            "post_receipt_provider_invocations": 0,
+            "model_profile_id": profile_id,
+            "host_request": {
+                "version": HOST_NATIVE_ARGV_RECEIPT_VERSION,
+                "executable_sha256": "1" * 64,
+                "argument_count": HOST_NATIVE_ARGV_ARGUMENT_COUNT,
+                "model": profile.model,
+                "reasoning_effort": profile.reasoning_effort,
+                "output_schema_present": True,
+                "argv_shape_sha256": HOST_NATIVE_ARGV_SHAPE_SHA256,
+            },
+            "candidate_temp_cleaned": True,
+            "host_workspace_cleaned": True,
+            "stage": "propose",
+            "contract_returncode": 0,
+            "contract_sha256": "2" * 64,
+            "source_sha256": source_sha256,
+            "candidate_schema_sha256": "3" * 64,
+            "host_returncode": 0,
+            "host_stdout_bytes": 500,
+            "host_stderr_bytes": 0,
+            "response_kind": "clarification_required",
+            "raw_candidate_sha256": receipt["raw_candidate_sha256"],
+            "host_output_sha256": "4" * 64,
+            "host_output_bytes": 500,
+            "candidate_temp_outside_repo": True,
+            "proposal_returncode": 0,
+            "proposal_stdout_sha256": "5" * 64,
+            "proposal_stderr_sha256": "6" * 64,
+            "proposal_mode": "clarification_required",
+            "elapsed_seconds": 18.0,
+        }
         module.record_retained_case_json(
             retained_case,
             "semantic/host-authoring-observation.v1.json",
@@ -211,34 +228,47 @@ def test_discovery_uses_ephemeral_case_proof_without_publishing_release_evidence
         )
         module.record_retained_case_json(
             retained_case,
-            "semantic/model-authoring-observation.v1.json",
-            reviewer,
+            "semantic/host-candidate.raw.v1.json",
+            raw_candidate,
         )
         observations["stage"] = module._retained_model_stage_observation(retained_case)
-        observations["reviewer"] = module._retained_host_native_reviewer_observation(retained_case)
+        observations["raw_candidate"] = module._retained_raw_host_candidate(retained_case)
         profile_evidence = module.model_profile_evidence(
             profile_id,
             module.model_profile_environment(profile_id, {}),
             observed=observed,
             stage_observation=observations["stage"],
-            reviewer_observation=observations["reviewer"],
-            review_input_candidate=review_input_candidate,
-            expected_review_input_candidate_sha256=review_input_candidate_sha256,
+            raw_candidate=observations["raw_candidate"],
             expected_source=source,
         )
-        sealed_review = dict(reviewer["candidate_review"])
-        sealed_review["product_facts_sha256"] = "5" * 64
         binding_issues = module.authored_model_result_binding_issues(
             stage_observation=observations["stage"],
-            reviewer_observation=observations["reviewer"],
-            review_input_candidate=review_input_candidate,
+            raw_candidate=observations["raw_candidate"],
             create_payload={
                 "commit_manifest": {
                     "model_authoring": {
                         "authoring_origin": "host_native",
-                        "host_candidate": observed["host_candidate"],
-                        "candidate_review": sealed_review,
-                    }
+                        "authoring_version": GREENFIELD_INTENT_AUTHORING_VERSION,
+                        "runtime_semantic_model_call_count": 0,
+                        "tier": profile.repair_tier,
+                        "elapsed_seconds": 18.0,
+                        "effective_model_window_seconds": 165.0,
+                        "host_candidate": receipt,
+                        "canonical_authority": {
+                            "canonical_candidate_sha256": receipt[
+                                "canonical_candidate_sha256"
+                            ],
+                            "source_sha256": source_sha256,
+                            "product_facts_sha256": "7" * 64,
+                            "authored_relation_set_sha256": "8" * 64,
+                        },
+                    },
+                    "semantic_compiler": {
+                        "version": "odylith.greenfield.authored-semantic-validation.v5",
+                        "status": "passed",
+                        "semantic_owner": "host_canonical_candidate",
+                        "post_candidate_receipt_semantic_calls": 0,
+                    },
                 }
             },
             expected_source=source,
@@ -262,21 +292,24 @@ def test_discovery_uses_ephemeral_case_proof_without_publishing_release_evidence
     assert retained_case is not None
     assert retained_case.staging_root.parent.name == "private-proof"
     assert retained_case.staging_root.parent.parent.name.startswith("odylith-greenfield-matrix-")
+    assert "profile_evidence" in observations, results[0]
     assert observations["profile_evidence"]["status"] == "passed"
-    assert observations["profile_evidence"]["maximum_semantic_model_calls"] == 1
+    assert observations["profile_evidence"]["host_semantic_model_calls"] == 1
+    assert (
+        observations["profile_evidence"][
+            "runtime_semantic_model_calls_after_candidate_receipt"
+        ]
+        == 0
+    )
     hash_summary = observations["profile_evidence"]["stage_observation_summary"][
         "retained_candidate_hash_summary"
     ]
-    assert hash_summary["review_input_source_precedence_present"] is False
-    assert hash_summary["source_precedence_projected"] is True
-    assert hash_summary["hashes_are_distinct"] is True
-    assert hash_summary["source_precedence_custody_count"] == 0
-    assert hash_summary["source_precedence_custody_sha256"] == hashlib.sha256(
-        b"[]"
-    ).hexdigest()
+    assert hash_summary["status"] == "passed"
+    assert hash_summary["canonical_projection_verified"] is True
     assert observations["binding_issues"] == ()
-    assert "participant_selection" not in json.dumps(observations["profile_evidence"])
-    assert "remaining_candidate_authoring" not in json.dumps(observations["profile_evidence"])
+    serialized_profile = json.dumps(observations["profile_evidence"])
+    assert "candidate_" + "review" not in serialized_profile
+    assert "reviewed_" + "candidate_sha256" not in serialized_profile
     assert results[0].status == "passed"
     assert not retained_case.staging_root.exists()
     assert not published_evidence.exists()

@@ -1119,7 +1119,7 @@ def test_public_authored_propose_never_calls_legacy_semantic_rule_families(
     )
     trap("connector", greenfield_confirmed_text, "normalize_connector_sequence")
 
-    rc, payload, provider = _public_propose(
+    rc, payload = _public_propose(
         tmp_path=tmp_path,
         monkeypatch=monkeypatch,
         capsys=capsys,
@@ -1127,7 +1127,6 @@ def test_public_authored_propose_never_calls_legacy_semantic_rule_families(
     )
 
     assert rc == 0, payload
-    assert provider.calls == 1
     assert family_calls["terminal_deferral"] == 0
     assert family_calls["source_casing"] == 0
     assert family_calls["connector"] == 0

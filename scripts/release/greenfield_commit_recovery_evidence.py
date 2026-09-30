@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from contextlib import nullcontext
 import hashlib
 import json
 import os
@@ -16,7 +15,7 @@ from greenfield_matrix_release_artifacts import is_sha256
 from greenfield_matrix_release_artifacts import (
     RetainedEvidenceCase, begin_retained_case_evidence, finalize_retained_case_evidence,
     prepare_retained_evidence_output_dir, record_retained_case_bytes,
-    record_retained_case_json, record_retained_case_text, retained_case_evidence_fd,
+    record_retained_case_json, record_retained_case_text,
     repo_artifact_path, retained_evidence_manifest_issues, sha256_file,
     write_retained_evidence_manifest,
 )
@@ -58,13 +57,8 @@ def begin_proposal(*, output_dir: Path, temp_parent: Path) -> RetainedEvidenceCa
 
 
 def run_proposal(*, evidence: RetainedEvidenceCase | None, runner: Any, **arguments: Any) -> Any:
-    capture = retained_case_evidence_fd(evidence, "semantic/model-authoring-observation.v1.json") if evidence else nullcontext(None)
     try:
-        with capture as descriptor:
-            if descriptor is not None:
-                arguments["env"] = dict(arguments["env"], ODYLITH_GREENFIELD_MODEL_PROOF_FD=str(descriptor))
-                arguments["pass_fds"] = (descriptor,)
-            result = runner(**arguments)
+        result = runner(**arguments)
     except BaseException as exc:
         if evidence is not None:
             record_retained_case_json(evidence, "commands/propose-error.json", {

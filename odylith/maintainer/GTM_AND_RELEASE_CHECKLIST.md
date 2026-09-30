@@ -78,14 +78,22 @@ release.
 - [ ] `make release-version-show`
 - [ ] `odylith release list --repo-root .`
 - [ ] `odylith release show current --repo-root .`
-- [ ] `make release-preflight [VERSION=[version]]`
+- [ ] Run `make release-preflight [VERSION=[version]]` with
+      `GREENFIELD_MATRIX_RELEASE_INTENT=1` and the frozen case, sealed input,
+      annotations, split manifest, and lower-capability control inputs. It
+      preserves one proof directory for the release session's commit.
+- [ ] Complete one independent strong semantic and UX review over the exact frozen
+      Greenfield result and retained evidence, then run `make
+      greenfield-onboarding-review REVIEW=[review-package]`.
 - [ ] Verify the previous published release ref from release metadata, then run
       `odylith release migration-gate --repo-root . --target-version [version] --base-ref [published_predecessor_ref]`
       on the clean, frozen candidate. Complete the exact emitted assessments
       for committed public docs, guidance, CLI, browser, or managed-asset changes;
       clean Git status is not assessment evidence.
 - [ ] `make release-session-show`
-- [ ] `make release-dispatch`
+- [ ] Run `make release-dispatch`. It reads the active session's fixed proof
+      directory and fails closed if the review, one-shot ledger, provenance,
+      or underlying evidence is missing, stale, or belongs to another commit.
 - [ ] Wait for the canonical GitHub release workflow to finish cleanly.
 - [ ] `make dogfood-activate`
 - [ ] `./.odylith/bin/odylith validate self-host-posture --repo-root . --mode local-runtime`

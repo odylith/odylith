@@ -1,5 +1,76 @@
 Status: In progress
 
+## Current release boundary (2026-09-29)
+
+The single-authority implementation is in place: one host-authored canonical
+candidate, deterministic validation and sealing after receipt, no live
+independent reviewer, and no post-receipt semantic/provider call. The dead
+participant/join and reviewer-custody paths have been removed. Frozen
+non-holdout runtime proof passes 1,380 tests; the release/install slice passes
+1,266. The combined frozen Greenfield runtime, install, and integration suite
+passes 2,629 tests; focused terminal release-gate checks pass 128. Independent
+adversarial gate review found no remaining release-bypassing P0/P1. These results
+prove code behavior, not generated-project quality or production readiness.
+
+Release preflight now preserves one HEAD-scoped matrix result, retained
+evidence, final-holdout ledger, and build provenance. Detached independent
+semantic/UX review writes a sidecar for that exact evidence. Dispatch
+recomputes the binding and fails closed on missing, discovery-tier, stale,
+failed, or tampered proof. Governed-surface validation remains before the
+checkpoint is pushed.
+
+Next: freeze and push the implementation, build the immutable distribution,
+run the one permitted public accessibility replay, then the public 40-case
+browser/recovery campaign and independent qualification. Open the untouched
+protected holdout exactly once only if those gates pass. One failed immutable
+public replay retires this replacement; do not add another semantic mechanism.
+
+## Single-semantic-authority replacement candidate (2026-09-29)
+
+The terminal V49 replay proves that the live host-author plus
+full-candidate-reviewer composition cannot converge reliably: independent
+semantic ownership moved disagreement across responsibilities, components,
+precedence, and terminal-event identity. The separately bounded replacement is
+one active-host semantic authority with deterministic validation and sealing,
+explicit human CONFIRM/EDIT/REJECT, and detached strong release evaluation.
+This is not another custody migration or reviewer prompt variant.
+
+The host returns one complete canonical candidate containing cited facts,
+events and terminal identity, components and responsibilities, source
+precedence, assumptions, and provisional design. After candidate receipt,
+runtime semantic-model call count is zero. Odylith may normalize contextual
+citations into canonical occurrences and deterministically validate citations,
+typed references, cardinality, relation integrity, terminal and first-run
+coherence, hashes, transaction preconditions, publication, rollback, recovery,
+and readback. It may not reinterpret product meaning. The reviewed preview and
+human confirmation remain the per-request safety boundary. Independent strong
+semantic and UX review evaluates immutable campaign evidence and can block a
+model/profile release, but it cannot author, mutate, or deny an individual
+consumer transaction.
+
+Delete the runtime candidate-review/custody path, stale reviewer authority,
+participant-selector/remainder-author/join path, reviewer-specific proof and
+compatibility tests in the same wave. Replace
+`reviewed_candidate_sha256` with a versioned `canonical_candidate_sha256`
+authority binding across the envelope and transaction law. Reuse the existing
+source-citation, relation, canonical-response, package, Tribunal, preview,
+confirmation, commit-only, recovery, and detached onboarding-review owners.
+Add no parser, regex, vocabulary rule, repair, retry, fallback, second semantic
+model call, or model ladder.
+
+The falsifiable prediction for `release-accessibility-005-source` is that one
+host pass preserves all five accepted events, selects release-manager
+verification as terminal, retains draft privacy as a constraint, produces the
+4–5 Radar / 4–5 Registry / 5+ Atlas floor, reaches preview without a second
+semantic denial, writes nothing before qualified confirmation, and remains
+below the 180-second safety ceiling. Focused deterministic controls, the full
+frozen frontier, independent patch review, and an immutable build precede one
+fresh replay. Failure of that replay, a provider call after candidate receipt,
+an offline P0/P1, output-floor/UX regression, or inability to prove general
+relation violations retires this replacement immediately. Do not respond with
+another prompt, schema, field, or reviewer variant; keep Greenfield preview-only
+or remove it from the production release claim.
+
 ## V49 terminal public falsification and mechanism retirement (2026-09-29)
 
 Clean pushed commit `9c8bb2433ca3da7d92b4fbf6486d9e6ba2996b62`

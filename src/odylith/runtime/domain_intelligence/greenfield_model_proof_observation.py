@@ -1,4 +1,4 @@
-"""Write private Greenfield model proof only through a parent-granted FD."""
+"""Write private one-pass host-candidate proof through a parent-granted FD."""
 
 from __future__ import annotations
 
@@ -17,41 +17,29 @@ from odylith.runtime.domain_intelligence.greenfield_model_outcomes import (
 )
 
 GREENFIELD_MODEL_PROOF_FD_ENV = "ODYLITH_GREENFIELD_MODEL_PROOF_FD"
-GREENFIELD_MODEL_PROOF_OBSERVATION_VERSION = "odylith.greenfield.model-proof-observation.v4"
+GREENFIELD_MODEL_PROOF_OBSERVATION_VERSION = (
+    "odylith.greenfield.model-proof-observation.v5"
+)
 
 
 def emit_greenfield_model_proof_observation(
     *,
     evidence_text: str,
-    semantic_model_call_count: int,
-    participant_selection: Mapping[str, Any] | None,
-    remaining_candidate_authoring: Mapping[str, Any] | None,
-    joined_candidate: Mapping[str, Any] | None,
-    candidate_review: Mapping[str, Any] | None,
-    failure: Mapping[str, Any] | None,
-    origin: str = "",
-    host_candidate: Mapping[str, Any] | None = None,
+    host_candidate: Mapping[str, Any],
+    failure: Mapping[str, Any] | None = None,
 ) -> None:
-    """Persist exact private stage evidence without a file path or fallback channel."""
+    """Persist immutable host receipt evidence with zero runtime semantic calls."""
 
     payload: dict[str, Any] = {
         "version": GREENFIELD_MODEL_PROOF_OBSERVATION_VERSION,
         "authoring_version": GREENFIELD_INTENT_AUTHORING_VERSION,
         "request": greenfield_authoring_payload(evidence_text),
-        "semantic_model_call_count": semantic_model_call_count,
+        "origin": "host_native",
+        "host_candidate": deepcopy(dict(host_candidate)),
+        "runtime_semantic_model_call_count": 0,
     }
-    if origin:
-        payload["origin"] = origin
-    for key, value in (
-        ("host_candidate", host_candidate),
-        ("participant_selection", participant_selection),
-        ("remaining_candidate_authoring", remaining_candidate_authoring),
-        ("candidate_review", candidate_review),
-        ("joined_candidate", joined_candidate),
-        ("failure", failure),
-    ):
-        if value is not None:
-            payload[key] = deepcopy(dict(value))
+    if failure is not None:
+        payload["failure"] = deepcopy(dict(failure))
     _write_parent_granted_observation(payload)
 
 

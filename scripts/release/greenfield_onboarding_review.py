@@ -26,7 +26,7 @@ from greenfield_onboarding_quality_scorecard import build_onboarding_quality_sco
 
 
 ONBOARDING_REVIEW_PACKAGE_VERSION = "odylith.greenfield.onboarding-review-package.v1"
-ONBOARDING_REVIEW_SIDECAR_VERSION = "odylith.greenfield.onboarding-review-sidecar.v1"
+ONBOARDING_REVIEW_SIDECAR_VERSION = "odylith.greenfield.onboarding-review-sidecar.v2"
 ONBOARDING_REVIEW_LENSES = (
     "product_manager",
     "architect",
@@ -39,7 +39,6 @@ _REVIEWABLE_ARTIFACT_KINDS = {
     "retained_navigation",
     "semantic_receipt",
 }
-_PASSING_GATE_STATUSES = {"passed", "not_requested"}
 _REVIEWER_FIELDS = {
     "identity",
     "role",
@@ -292,6 +291,10 @@ def finalize_onboarding_review(
         retained_manifest_path=retained_manifest_path,
         review_path=review_file,
     )
+    sidecar["review_package"] = {
+        "path": str(review_file),
+        "sha256": sha256_file(review_file),
+    }
     _exclusive_write_json(output, sidecar)
     return sidecar
 
@@ -788,6 +791,12 @@ def _validate_hash_binding(
 
 def _automated_gate_issues(base: Mapping[str, Any], results: Sequence[Any]) -> tuple[str, ...]:
     issues: list[str] = []
+    if str(base.get("version") or "") != "greenfield-preconfirm-installed-matrix-v2":
+        issues.append("base result is not the supported installed Greenfield matrix")
+    if str(base.get("status") or "") != "awaiting-independent-review":
+        issues.append("base result did not reach independent review")
+    if str(_mapping(base.get("onboarding_quality_scorecard")).get("status") or "") != "awaiting-independent-review":
+        issues.append("base result scorecard did not reach independent review")
     if not results:
         issues.append("base result contains no matrix cases")
     for index, row in enumerate(results):
@@ -798,6 +807,8 @@ def _automated_gate_issues(base: Mapping[str, Any], results: Sequence[Any]) -> t
         if str(row.get("status") or "") != "passed" or _mapping(row.get("quality")).get("passed") is not True:
             issues.append(f"base matrix case `{case_id}` did not pass automated quality")
     campaign = _mapping(base.get("campaign"))
+    if str(campaign.get("proof_tier") or "") != "release":
+        issues.append("campaign is not terminal release proof")
     if campaign.get("failed_case_count") != 0:
         issues.append("campaign contains failed cases")
     if campaign.get("completed_case_count") != len(results):
@@ -813,9 +824,9 @@ def _automated_gate_issues(base: Mapping[str, Any], results: Sequence[Any]) -> t
         "platform_domain_leakage_proof": {"passed"},
         "temp_cleanup_proof": {"passed"},
         "model_profile_proof": {"passed"},
-        "lower_capability_control_proof": _PASSING_GATE_STATUSES,
-        "unavailable_provider_proof": _PASSING_GATE_STATUSES,
-        "semantic_release": _PASSING_GATE_STATUSES,
+        "lower_capability_control_proof": {"passed"},
+        "unavailable_provider_proof": {"passed"},
+        "semantic_release": {"passed"},
         "retained_evidence": {"passed"},
     }
     for key, accepted in required_statuses.items():
@@ -823,10 +834,10 @@ def _automated_gate_issues(base: Mapping[str, Any], results: Sequence[Any]) -> t
             issues.append(f"automated release gate `{key}` did not pass")
     if _mapping(base.get("metamorphic_output")).get("passed") is not True:
         issues.append("automated release gate `metamorphic_output` did not pass")
-    if "commit_recovery_proof" in base and str(
-        _mapping(base.get("commit_recovery_proof")).get("status") or ""
-    ) != "passed":
+    if str(_mapping(base.get("commit_recovery_proof")).get("status") or "") != "passed":
         issues.append("automated release gate `commit_recovery_proof` did not pass")
+    if _mapping(base.get("semantic_release")).get("passed") is not True:
+        issues.append("automated release gate `semantic_release` lacks a passing verdict")
     return tuple(dict.fromkeys(issues))
 
 

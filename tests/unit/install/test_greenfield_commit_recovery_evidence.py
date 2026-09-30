@@ -33,15 +33,17 @@ def test_recovery_transaction_preparation_has_one_bounded_owner() -> None:
 
 
 @pytest.mark.parametrize("outcome", ("success", "failure", "timeout"))
-def test_proposal_custody_keeps_native_descriptor_and_raw_streams(tmp_path: Path, outcome: str) -> None:
+def test_proposal_custody_keeps_raw_streams_without_runtime_model_descriptor(
+    tmp_path: Path,
+    outcome: str,
+) -> None:
     case = evidence.begin_proposal(output_dir=tmp_path / "evidence", temp_parent=tmp_path / "fixtures")
     captured = {}
 
     def runner(**arguments):
         captured.update(arguments)
-        descriptor = int(arguments["env"]["ODYLITH_GREENFIELD_MODEL_PROOF_FD"])
-        assert arguments["pass_fds"] == (descriptor,)
-        os.write(descriptor, b'{"native":"observation"}\n')
+        assert "ODYLITH_GREENFIELD_MODEL_PROOF_FD" not in arguments["env"]
+        assert "pass_fds" not in arguments
         if outcome == "timeout":
             raise subprocess.TimeoutExpired(arguments["command"], 150, output=b"partial\xff", stderr=b"timeout")
         return SimpleNamespace(returncode=0 if outcome == "success" else 2, stdout="raw stdout", stderr="raw stderr")
@@ -57,9 +59,7 @@ def test_proposal_custody_keeps_native_descriptor_and_raw_streams(tmp_path: Path
         assert result.returncode == (0 if outcome == "success" else 2)
         assert (case.staging_root / "commands/propose.stdout").read_text() == "raw stdout"
         assert (case.staging_root / "commands/propose.stderr").read_text() == "raw stderr"
-    assert (case.staging_root / "semantic/model-authoring-observation.v1.json").read_bytes() == b'{"native":"observation"}\n'
-    with pytest.raises(OSError):
-        os.fstat(captured["pass_fds"][0])
+    assert not (case.staging_root / "semantic/host-authoring-observation.v1.json").exists()
 
 
 @pytest.mark.parametrize("mutation", ("none", "bytes", "mode", "inode", "symlink", "fifo"))

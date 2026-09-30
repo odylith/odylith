@@ -16,9 +16,6 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     authored_relation_set_sha256,
     authored_source_custody,
 )
-from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
-    materialize_model_authored_intent,
-)
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     STANDARD_PROFILE_ID,
 )
@@ -27,8 +24,9 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 )
 from odylith.runtime.governance import artifact_tribunal
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
-    RemainingCandidateProvider,
     authored_response,
+    host_candidate_response,
+    materialize_complete_host_candidate,
 )
 
 
@@ -91,22 +89,17 @@ def _materialized_authored_intent(tmp_path: Path) -> dict[str, Any]:
         for row in (value if isinstance(value, list) else [value])
         if str(row)
     ) + "."
-    provider = RemainingCandidateProvider(
-        authored_response(
+    response = authored_response(
             intent,
             evidence_text=source,
             first_path_relations=relations,
             component_responsibility_owners=["Berth recorder", "Berth map"],
         )
-    )
-    return materialize_model_authored_intent(
+    return materialize_complete_host_candidate(
         prompt=source,
         repo_root=tmp_path,
-        authoring_provider=provider,
-        authoring_timeout_seconds=84,
+        host_candidate=host_candidate_response(response, evidence_text=source),
         authoring_profile_id=STANDARD_PROFILE_ID,
-        participant_provider_factory=provider.participant_provider,
-        review_provider_factory=provider.review_provider,
     )
 
 
@@ -215,7 +208,7 @@ def test_proposal_construction_rejects_rebound_product_event_responsibility_owne
 
     with pytest.raises(
         GreenfieldAuthoredSemanticsError,
-        match="contradictory owners",
+        match="do not match sealed Product Intent authority",
     ):
         greenfield_proposals.build_greenfield_proposal(
             repo_root=tmp_path,
@@ -314,7 +307,7 @@ def test_transaction_compilation_rejects_mutated_relation_set(
     expected_error = (
         "invalid first-path relations"
         if mutation == "removed_classification"
-        else "contradictory owners"
+        else "unknown source event"
     )
     with pytest.raises(GreenfieldAuthoredSemanticsError, match=expected_error):
         greenfield_proposals.compile_greenfield_create_transaction(
@@ -335,14 +328,8 @@ def test_verified_relation_authority_issues_structural_tribunal_context(tmp_path
         ],
     )
     contract = contracts[0]
-    assert contracts[0]["responsibility_facts"] == [
-        "the berth recorder records berth occupancy",
-        "Record berth occupancy",
-    ]
-    assert contracts[1]["responsibility_facts"] == [
-        "the berth map shows the placement",
-        "Show berth placement",
-    ]
+    assert contracts[0]["responsibility_facts"] == ["Record berth occupancy"]
+    assert contracts[1]["responsibility_facts"] == ["Show berth placement"]
     custody = authored_source_custody(
         intent=candidate,
         authority=candidate[PRODUCT_INTENT_AUTHORITY_KEY],

@@ -311,7 +311,7 @@ def test_terminal_edit_without_retained_source_fails_closed_before_compilation(
     [
         ("failure", 2, "authoring failed"),
         ("clarification", 0, "Which operator owns the decision?"),
-        ("same_hash", 2, "did not produce a new reviewed package"),
+        ("same_hash", 2, "did not produce a new sealed package"),
     ],
 )
 def test_terminal_edit_non_success_preserves_the_original_reviewed_package(

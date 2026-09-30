@@ -17,14 +17,11 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     authored_semantics_mapping,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
+    GREENFIELD_INTENT_AUTHORING_VERSION,
     GreenfieldModelAuthoredIntent,
-)
-from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring import (
-    author_greenfield_intent,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     STANDARD_PROFILE_ID,
-    get_greenfield_model_profile,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     PRODUCT_FACTS_HASH_KEY,
@@ -39,13 +36,12 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     require_product_intent_authority,
 )
 from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
-    REVIEWED_CANDIDATE_SHA256_KEY,
+    CANONICAL_CANDIDATE_SHA256_KEY,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
-    AdmittingReviewProvider,
-    ParticipantSelectionProvider,
-    RemainingCandidateProvider,
+    admit_complete_host_candidate,
     authored_response,
+    host_candidate_response,
 )
 
 
@@ -120,13 +116,10 @@ def _authored_result(source: str) -> GreenfieldModelAuthoredIntent:
         first_path_relations=_RELATIONS,
         component_responsibility_owners=["Berth map"],
     )
-    result = author_greenfield_intent(
+    result = admit_complete_host_candidate(
         evidence_text=source,
-        provider=RemainingCandidateProvider(response),
-        participant_provider_factory=lambda: ParticipantSelectionProvider(response),
+        host_candidate=host_candidate_response(response, evidence_text=source),
         model_profile_id=STANDARD_PROFILE_ID,
-        clock=lambda: 0.0,
-        review_provider_factory=AdmittingReviewProvider,
     )
     assert isinstance(result, GreenfieldModelAuthoredIntent)
     return result
@@ -155,29 +148,22 @@ def _build_envelope(
 ) -> dict[str, Any]:
     if source is None or result is None or intent is None:
         source, result, intent = _authored_inputs()
-    profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
     return build_product_intent_envelope(
         intent,
         source_text=source,
         source_path=".odylith/runtime/greenfield/candidate-evidence.md",
         source_format="operator_prompt",
-        reviewed_candidate_sha256=result.candidate_review["candidate_sha256"],
+        canonical_candidate_sha256="a" * 64,
         model_authoring={
-            "participant_selection": {
-                "profile_id": profile.profile_id,
-                "provider": profile.provider,
-                "model": profile.participant_model,
-                "reasoning_effort": profile.participant_reasoning_effort,
-                "effective_timeout_seconds": profile.model_timeout_seconds,
-                "authoring_tier": profile.repair_tier,
-            },
-            "remaining_candidate_authoring": {
-                "profile_id": profile.profile_id,
-                "provider": profile.provider,
-                "model": profile.model,
-                "reasoning_effort": profile.reasoning_effort,
-                "effective_timeout_seconds": profile.model_timeout_seconds,
-                "authoring_tier": profile.repair_tier,
+            "origin": "host_native",
+            "runtime_semantic_model_call_count": 0,
+            "host_candidate": {
+                "version": "odylith.greenfield.host-candidate.v2",
+                "contract_version": "odylith.greenfield.host-candidate-contract.v32",
+                "canonical_version": GREENFIELD_INTENT_AUTHORING_VERSION,
+                "source_sha256": result.source_sha256,
+                "raw_candidate_sha256": "b" * 64,
+                "canonical_candidate_sha256": "a" * 64,
             },
         },
         authored_source_spans=result.source_spans,
@@ -200,9 +186,7 @@ def test_authored_envelope_preserves_exact_facts_spans_relations_and_authority()
     assert envelope["product_facts"] == product_facts_payload(intent)
     assert envelope["decision_record"][PRODUCT_FACTS_HASH_KEY] == product_facts_hash(intent)
     assert envelope["custody_ledger"][AUTHORED_RELATION_SET_SHA256_KEY] == expected_relation_hash
-    assert envelope["custody_ledger"][REVIEWED_CANDIDATE_SHA256_KEY] == (
-        result.candidate_review["candidate_sha256"]
-    )
+    assert envelope["custody_ledger"][CANONICAL_CANDIDATE_SHA256_KEY] == "a" * 64
     assert envelope["custody_ledger"]["atomic_facts"]
     assert envelope["materiality_gate"] == {
         "status": "passed",
@@ -222,9 +206,7 @@ def test_authored_envelope_preserves_exact_facts_spans_relations_and_authority()
     )
     require_product_intent_authority(authority)
     assert authority[AUTHORED_RELATION_SET_SHA256_KEY] == expected_relation_hash
-    assert authority[REVIEWED_CANDIDATE_SHA256_KEY] == result.candidate_review[
-        "candidate_sha256"
-    ]
+    assert authority[CANONICAL_CANDIDATE_SHA256_KEY] == "a" * 64
     assert all(
         field["derivation"] == "exact_authored_projection"
         for field in authority["material_fields"].values()
@@ -238,7 +220,7 @@ def test_envelope_construction_rejects_relation_free_input() -> None:
             _INTENT,
             source_text=_source(),
             source_format="operator_prompt",
-            reviewed_candidate_sha256="a" * 64,
+            canonical_candidate_sha256="a" * 64,
         )
 
 
@@ -249,7 +231,7 @@ def test_envelope_rejects_source_digest_or_span_rebinding() -> None:
             intent,
             source_text=source + " changed",
             source_format="operator_prompt",
-            reviewed_candidate_sha256=result.candidate_review["candidate_sha256"],
+            canonical_candidate_sha256="a" * 64,
             authored_source_spans=result.source_spans,
             authored_atomic_claims=result.atomic_claims,
             authored_source_sha256=result.source_sha256,
@@ -262,7 +244,7 @@ def test_envelope_rejects_source_digest_or_span_rebinding() -> None:
             intent,
             source_text=source,
             source_format="operator_prompt",
-            reviewed_candidate_sha256=result.candidate_review["candidate_sha256"],
+            canonical_candidate_sha256="a" * 64,
             authored_source_spans=rebound_spans,
             authored_atomic_claims=result.atomic_claims,
             authored_source_sha256=result.source_sha256,
@@ -275,7 +257,7 @@ def test_envelope_rejects_source_digest_or_span_rebinding() -> None:
             intent,
             source_text=source,
             source_format="operator_prompt",
-            reviewed_candidate_sha256=result.candidate_review["candidate_sha256"],
+            canonical_candidate_sha256="a" * 64,
             authored_source_spans=rebound_projection,
             authored_atomic_claims=result.atomic_claims,
             authored_source_sha256=result.source_sha256,
@@ -294,7 +276,7 @@ def test_optional_human_fact_still_requires_exact_atomic_source_custody() -> Non
             intent,
             source_text=source,
             source_format="operator_prompt",
-            reviewed_candidate_sha256=result.candidate_review["candidate_sha256"],
+            canonical_candidate_sha256="a" * 64,
             authored_source_spans=result.source_spans,
             authored_atomic_claims=claims,
             authored_source_sha256=result.source_sha256,
@@ -346,15 +328,15 @@ def test_current_schema_without_authored_relation_custody_is_not_an_envelope() -
         product_intent_authority_from_envelope(relation_free)
 
 
-def test_current_schema_without_reviewed_candidate_custody_is_not_an_envelope() -> None:
+def test_current_schema_without_canonical_candidate_custody_is_not_an_envelope() -> None:
     source, result, intent = _authored_inputs()
-    review_free = _build_envelope(source=source, result=result, intent=intent)
-    review_free["custody_ledger"].pop(REVIEWED_CANDIDATE_SHA256_KEY)
+    canonical_free = _build_envelope(source=source, result=result, intent=intent)
+    canonical_free["custody_ledger"].pop(CANONICAL_CANDIDATE_SHA256_KEY)
 
-    assert not is_product_intent_envelope(review_free)
-    assert product_facts_from_envelope(review_free, source_text=source) is None
+    assert not is_product_intent_envelope(canonical_free)
+    assert product_facts_from_envelope(canonical_free, source_text=source) is None
     with pytest.raises(ValueError, match="current authored-custody envelope"):
-        product_intent_authority_from_envelope(review_free)
+        product_intent_authority_from_envelope(canonical_free)
 
 
 def test_rebind_restores_only_exact_authored_facts() -> None:

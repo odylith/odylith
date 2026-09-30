@@ -17,8 +17,12 @@ from odylith.runtime.domain_intelligence.greenfield_candidate_intent_stage impor
     candidate_intent_stage_paths,
     stage_candidate_intent,
 )
-from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring import (
-    author_greenfield_intent,
+from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
+    HOST_CANDIDATE_CONTRACT_VERSION,
+    HOST_CANDIDATE_RECEIPT_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
+    GREENFIELD_INTENT_AUTHORING_VERSION,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     STANDARD_PROFILE_ID,
@@ -29,9 +33,9 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     product_intent_authority_from_envelope,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
-    AdmittingReviewProvider,
-    RemainingCandidateProvider,
+    admit_complete_host_candidate,
     authored_response,
+    host_candidate_response,
 )
 
 
@@ -66,8 +70,7 @@ def _authored_stage_inputs(repo_root: Path) -> tuple[dict[str, object], dict[str
         for row in (value if isinstance(value, list) else [value])
         if str(row)
     ) + "."
-    provider = RemainingCandidateProvider(
-        authored_response(
+    response = authored_response(
             intent,
             evidence_text=evidence,
             component_responsibility_owners=["Evidence Ledger"],
@@ -91,14 +94,10 @@ def _authored_stage_inputs(repo_root: Path) -> tuple[dict[str, object], dict[str
                 },
             ],
         )
-    )
-    result = author_greenfield_intent(
-        review_provider_factory=AdmittingReviewProvider,
+    result = admit_complete_host_candidate(
         evidence_text=evidence,
-        provider=provider,
-        participant_provider_factory=provider.participant_provider,
+        host_candidate=host_candidate_response(response, evidence_text=evidence),
         model_profile_id=STANDARD_PROFILE_ID,
-        clock=lambda: 0.0,
     )
     authored_intent: dict[str, object] = {
         **result.intent,
@@ -115,10 +114,18 @@ def _authored_stage_inputs(repo_root: Path) -> tuple[dict[str, object], dict[str
         source_text=evidence,
         source_path=paths.evidence_markdown.relative_to(repo_root),
         source_format="operator_prompt",
-        reviewed_candidate_sha256=result.candidate_review["candidate_sha256"],
+        canonical_candidate_sha256="a" * 64,
         model_authoring={
-            role: getattr(result, role)["model_profile"]
-            for role in ("participant_selection", "remaining_candidate_authoring")
+            "origin": "host_native",
+            "host_candidate": {
+                "version": HOST_CANDIDATE_RECEIPT_VERSION,
+                "contract_version": HOST_CANDIDATE_CONTRACT_VERSION,
+                "canonical_version": GREENFIELD_INTENT_AUTHORING_VERSION,
+                "source_sha256": result.source_sha256,
+                "raw_candidate_sha256": "b" * 64,
+                "canonical_candidate_sha256": "a" * 64,
+            },
+            "runtime_semantic_model_call_count": 0,
         },
         authored_source_spans=result.source_spans,
         authored_atomic_claims=result.atomic_claims,

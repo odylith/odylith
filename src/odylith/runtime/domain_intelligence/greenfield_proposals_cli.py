@@ -15,9 +15,6 @@ from odylith.runtime.domain_intelligence import (
     greenfield_pending_transaction_store,
     greenfield_proposals,
 )
-from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
-    GreenfieldCandidateRejected,
-)
 from odylith.runtime.domain_intelligence.greenfield_cli import terminal_decision_offer
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
     require_product_create_transaction_quality_approved,
@@ -54,7 +51,6 @@ from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import (
     PRECONFIRM_REPAIR_TIERS,
     GreenfieldPreconfirmEngineError,
 )
-from odylith.runtime.reasoning import odylith_reasoning
 
 _PUBLIC_INTENT_AUTHORITY_SUMMARY_VERSION = "odylith.product-intent-authority-summary.v1"
 _PUBLIC_INTENT_AUTHORITY_SUMMARY_KEYS = (
@@ -90,7 +86,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         help=(
             "Path to one host-authored candidate matching the returned candidate-contract "
             "schema. Odylith treats it as an untrusted hypothesis, revalidates its source "
-            "custody, and runs independent review."
+            "custody and deterministically validates the complete candidate once."
         ),
     )
     propose.add_argument("--format", choices=("text", "json"), default="text", dest="output_format")
@@ -162,7 +158,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         required=True,
         help=(
             "Path to one host-authored candidate matching the returned candidate-contract "
-            "schema for deterministic validation and review."
+            "schema for deterministic validation and sealing."
         ),
     )
     compile_transaction.add_argument("--edit", default="", help=argparse.SUPPRESS)
@@ -202,7 +198,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     candidate_source.add_argument("--prompt")
     candidate_source.add_argument(
         "--transaction-hash",
-        help="Use the retained source from this reviewed package for an EDIT candidate.",
+        help="Use the retained source from this sealed package for an EDIT candidate.",
     )
     candidate_contract.add_argument("--edit", default="")
     candidate_contract.add_argument("--edit-evidence", default="")
@@ -288,7 +284,7 @@ def rebuild_pending_transaction(
     edit_evidence_file: str, as_json: bool, started_at: float | None = None,
     host_candidate_file: str = "",
 ) -> int:
-    """Re-author from verified retained evidence; never alter the reviewed package."""
+    """Re-author from verified retained evidence; never alter the sealed package."""
     from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
         load_compiled_product_create_transaction_file,
     )
@@ -306,7 +302,7 @@ def rebuild_pending_transaction(
             raise ValueError("Add your correction with --edit or --edit-evidence. No governed records were written.")
         prompt = previous.proposal.get("intent", {}).get("prompt")
         if not isinstance(prompt, str) or not prompt.strip():
-            raise ValueError("The reviewed package has no retained source evidence; start a new proposal.")
+            raise ValueError("The sealed package has no retained source evidence; start a new proposal.")
         if not str(host_candidate_file or "").strip():
             raise ValueError(
                 "Greenfield EDIT requires one host-authored candidate matching the "
@@ -324,7 +320,7 @@ def rebuild_pending_transaction(
             host_candidate=host_candidate,
         )
         if transaction.transaction_hash == transaction_hash:
-            raise RuntimeError("The correction did not produce a new reviewed package. The old package is unchanged.")
+            raise RuntimeError("The correction did not produce a new sealed package. The old package is unchanged.")
     except GreenfieldClarificationRequired as exc:
         return _finish_clarification(exc=exc, as_json=as_json)
     except (OSError, ValueError, RuntimeError) as exc:
@@ -344,8 +340,6 @@ def _print_greenfield_error(exc: Exception, *, as_json: bool) -> None:
             payload["outcome"] = exc.outcome
         if isinstance(exc, GreenfieldPreconfirmEngineError):
             payload["commit_manifest"] = exc.manifest
-        if isinstance(exc, GreenfieldCandidateRejected):
-            payload["candidate_review"] = dict(exc.receipt)
         print(json.dumps(payload, indent=2, sort_keys=True))
         return
     print(str(exc))
@@ -461,13 +455,7 @@ def _compile_prompt_evidence_transaction(
         source_language=source_language,
         prepared_evidence=prepared_evidence,
         authoring_receipt=authoring_receipt,
-        authoring_deadline=started + profile.model_timeout_seconds,
         clock=now,
-        review_provider_factory=lambda: _greenfield_review_provider(
-            repo_root=repo_root,
-            profile_id=profile_id,
-            request_role="candidate_review",
-        )[0],
     )
     authoring_tier = str(authoring_receipt.get("tier") or "").strip()
     if authoring_tier not in {"standard", "rescue", "deep"}:
@@ -560,36 +548,6 @@ def _stage_pending_transaction_with_deadline(
     return transaction_path
 
 
-def _greenfield_review_provider(
-    *, repo_root: Path, profile_id: str, request_role: str = "candidate_review",
-) -> tuple[Any, str, str]:
-    """Resolve the one pinned independent reviewer for a host candidate."""
-
-    if request_role != "candidate_review":
-        raise ValueError("Unsupported Greenfield review request role")
-    profile = get_greenfield_model_profile(profile_id)
-    model, effort = profile.review_model, profile.review_reasoning_effort
-    configured = odylith_reasoning.reasoning_config_from_env(repo_root=repo_root)
-    config = replace(
-        configured,
-        provider=profile.provider,
-        model=model,
-        codex_reasoning_effort=effort,
-    )
-    try:
-        provider = odylith_reasoning.provider_from_config(
-            config,
-            repo_root=repo_root,
-            require_auto_mode=True,
-            allow_implicit_local_provider=True,
-        )
-    except TimeoutError as exc:
-        raise GreenfieldModelRuntimeError("timeout") from exc
-    if provider is None:
-        raise GreenfieldModelRuntimeError("unavailable")
-    return provider, model, effort
-
-
 def _public_intent_hypothesis(candidate_intent: Mapping[str, Any]) -> dict[str, Any]:
     """Return typed Product Intent without exposing the private custody receipt."""
 
@@ -643,7 +601,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 prompt = str(previous.proposal.get("intent", {}).get("prompt") or "")
                 if not prompt.strip():
                     raise ValueError(
-                        "The reviewed package has no retained source evidence; start a new proposal."
+                        "The sealed package has no retained source evidence; start a new proposal."
                     )
             prepared = prepare_model_authoring_evidence(
                 prompt=prompt,

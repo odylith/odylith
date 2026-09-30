@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_odylith.sh"
+
+review_input="${1:-${GREENFIELD_ONBOARDING_REVIEW_PACKAGE:-}}"
+[[ -n "$review_input" ]] || die "Greenfield onboarding review requires an independent review package"
+require_file "$review_input"
+expected_sha="$(release_session_field head_sha)"
+proof_root="$(greenfield_release_proof_root "$expected_sha")"
+base_result="$proof_root/matrix-result.v1.json"
+retained_manifest="$proof_root/retained-evidence/retained-evidence-manifest.v1.json"
+review_package="$proof_root/independent-review-package.v1.json"
+output_sidecar="$proof_root/onboarding-review-sidecar.v2.json"
+require_file "$base_result"
+require_file "$retained_manifest"
+[[ ! -e "$output_sidecar" ]] || die "Greenfield onboarding review sidecar already exists: $output_sidecar"
+if [[ "$(cd "$(dirname "$review_input")" && pwd -P)/$(basename "$review_input")" != "$review_package" ]]; then
+  [[ ! -e "$review_package" ]] || die "Greenfield independent review package already exists: $review_package"
+  cp "$review_input" "$review_package"
+fi
+
+"$odylith_python" "$odylith_repo_root/scripts/release/greenfield_onboarding_review.py" \
+  --base-result "$base_result" \
+  --retained-manifest "$retained_manifest" \
+  --review "$review_package" \
+  --output "$output_sidecar"

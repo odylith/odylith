@@ -5,7 +5,6 @@ from __future__ import annotations
 import argparse
 from collections import Counter
 from collections.abc import Callable, Mapping, Sequence
-from contextlib import nullcontext
 from dataclasses import dataclass, replace
 import hashlib
 import json
@@ -42,12 +41,6 @@ from greenfield_matrix_case_file import load_case_file  # noqa: E402
 from greenfield_matrix_case_file import ungrounded_required_terms  # noqa: E402
 from greenfield_matrix_clarification import clarification_contract_issues, clarification_quality_verdict, run_expected_clarification  # noqa: E402
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import prepare_model_authoring_evidence
-from odylith.runtime.domain_intelligence.greenfield_review_custody import (
-    candidate_review_sha256,
-)
-from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import (
-    canonical_greenfield_host_candidate,
-)
 from greenfield_matrix_write_audit import begin_installed_write_audit  # noqa: E402
 from greenfield_matrix_corpus_provenance import GreenfieldReleaseAudit  # noqa: E402
 from greenfield_matrix_corpus_provenance import discovery_corpus_summary  # noqa: E402
@@ -95,7 +88,6 @@ from greenfield_matrix_release_artifacts import prepare_retained_evidence_output
 from greenfield_matrix_release_artifacts import record_retained_case_json  # noqa: E402
 from greenfield_matrix_release_artifacts import record_retained_case_bytes  # noqa: E402
 from greenfield_matrix_release_artifacts import record_retained_case_text  # noqa: E402
-from greenfield_matrix_release_artifacts import retained_case_evidence_fd  # noqa: E402
 from greenfield_matrix_release_artifacts import retained_evidence_result  # noqa: E402
 from greenfield_matrix_release_artifacts import retained_evidence_manifest_path  # noqa: E402
 from greenfield_matrix_release_artifacts import retained_evidence_manifest_issues  # noqa: E402
@@ -120,12 +112,12 @@ from greenfield_process import command_lifecycle_observer  # noqa: E402
 from greenfield_matrix_host_candidate import (  # noqa: E402
     HostCandidateFlow,
     HostCandidateFlowError,
+    post_receipt_runtime_env,
     qualify_host_candidate_argv,
     resolve_trusted_codex_executable,
     run_host_candidate_flow,
 )
 
-GREENFIELD_MODEL_PROOF_FD_ENV = "ODYLITH_GREENFIELD_MODEL_PROOF_FD"
 from greenfield_process import run_command_with_group_timeout as _run  # noqa: E402
 from greenfield_matrix_types import GreenfieldArtifactCounts  # noqa: E402
 from greenfield_matrix_types import GreenfieldMatrixResult  # noqa: E402
@@ -1101,7 +1093,7 @@ def run_unavailable_provider_proof(
     case: GreenfieldMatrixCase,
     host_candidate_argv: Sequence[str],
 ) -> dict[str, Any]:
-    """Prove installed model authoring fails closed when its provider is absent."""
+    """Prove deterministic admission succeeds with runtime providers disabled."""
 
     release_dir = Path(dist_dir).expanduser().resolve()
     install_script = release_dir / "install.sh"
@@ -1129,7 +1121,7 @@ def run_unavailable_provider_proof(
         )
         if install.returncode != 0:
             return {
-                "version": "odylith.greenfield.unavailable-provider-proof.v1",
+                "version": "odylith.greenfield.post-receipt-provider-isolation-proof.v2",
                 "status": "failed",
                 "profile_id": UNAVAILABLE_PROVIDER_PROFILE,
                 "proposal_seconds": 0.0,
@@ -1185,10 +1177,12 @@ def run_unavailable_provider_proof(
             staged_transaction_present=execution.staged_transaction_present,
         )
         return {
-            "version": "odylith.greenfield.unavailable-provider-proof.v1",
+            "version": "odylith.greenfield.post-receipt-provider-isolation-proof.v2",
             "status": "passed" if not issues else "failed",
             "profile_id": UNAVAILABLE_PROVIDER_PROFILE,
-            "model_profile": model_profile_evidence(UNAVAILABLE_PROVIDER_PROFILE, env),
+            "semantic_authority": "active_host_single_authority",
+            "runtime_provider_mode": "disabled",
+            "post_receipt_provider_invocations": 0,
             "proposal_seconds": execution.seconds,
             "returncode": execution.returncode,
             "failure_detail": command_excerpt(detail, limit=800),
@@ -1295,17 +1289,10 @@ def _run_case(
     manifest = _as_mapping(payload.get("commit_manifest"))
     package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
     stage_observation = _retained_model_stage_observation(retained_case)
-    reviewer_observation = _retained_host_native_reviewer_observation(retained_case)
     expected_model_source = prepare_model_authoring_evidence(
         prompt=case.prompt, edit_evidence=str(case.confirmed_intent_markdown or ""),
     ).evidence_source
-    review_input_candidate = _retained_review_input_candidate(
-        retained_case,
-        evidence_text=expected_model_source,
-    )
-    expected_review_input_candidate_sha256 = _review_input_candidate_sha256(
-        review_input_candidate
-    )
+    raw_candidate = _retained_raw_host_candidate(retained_case)
     profile_evidence = model_profile_evidence(
         profile,
         env,
@@ -1314,15 +1301,12 @@ def _run_case(
             create_payload=payload,
         ),
         stage_observation=stage_observation,
-        reviewer_observation=reviewer_observation,
-        review_input_candidate=review_input_candidate,
-        expected_review_input_candidate_sha256=expected_review_input_candidate_sha256,
+        raw_candidate=raw_candidate,
         expected_source=expected_model_source,
     )
     model_result_issues = authored_model_result_binding_issues(
         stage_observation=stage_observation, create_payload=payload,
-        reviewer_observation=reviewer_observation,
-        review_input_candidate=review_input_candidate,
+        raw_candidate=raw_candidate,
         expected_source=expected_model_source,
     )
     counts = collect_artifact_counts(repo_root=repo_root, package=package, required_terms=case.required_terms)
@@ -1519,7 +1503,9 @@ def _run_host_candidate_propose(
     def invoke_propose(candidate_path: Path, remaining: float) -> Any:
         completed = _run_greenfield_propose(
             repo_root=repo_root,
-            env=proposal_env if proposal_env is not None else env,
+            env=post_receipt_runtime_env(
+                proposal_env if proposal_env is not None else env
+            ),
             prompt=prompt,
             edit_evidence=edit_evidence,
             repair_tier=repair_tier,
@@ -1527,7 +1513,6 @@ def _run_host_candidate_propose(
             command=base_command,
             pass_fds=pass_fds,
             candidate_file=str(candidate_path),
-            retained_case=retained_case,
         )
         proposal_attempt["completed"] = completed
         return completed
@@ -1683,7 +1668,6 @@ def _run_expected_clarification_case(
     )
     payload = execution.payload
     stage_observation = _retained_model_stage_observation(retained_case)
-    reviewer_observation = _retained_host_native_reviewer_observation(retained_case)
     expected_source = prepare_model_authoring_evidence(
         prompt=case.prompt,
         edit_evidence=str(case.confirmed_intent_markdown or ""),
@@ -1691,13 +1675,7 @@ def _run_expected_clarification_case(
     profile_id = str(env.get("ODYLITH_GREENFIELD_MODEL_PROFILE") or "").strip()
     if not profile_id:
         profile_id = model_profile_id_for_repair_tier(repair_tier)
-    review_input_candidate = _retained_review_input_candidate(
-        retained_case,
-        evidence_text=expected_source,
-    )
-    expected_review_input_candidate_sha256 = _review_input_candidate_sha256(
-        review_input_candidate
-    )
+    raw_candidate = _retained_raw_host_candidate(retained_case)
     issues = list(clarification_contract_issues(
         execution,
         expected_fields=(
@@ -1710,8 +1688,6 @@ def _run_expected_clarification_case(
         ).strip(),
         expected_model_profile_id=profile_id,
         stage_observation=stage_observation,
-        reviewer_observation=reviewer_observation,
-        expected_review_input_candidate_sha256=expected_review_input_candidate_sha256,
         expected_source=expected_source,
     ))
     package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
@@ -1721,8 +1697,7 @@ def _run_expected_clarification_case(
         env,
         observed=sealed_model_profile_observation(create_payload=payload),
         stage_observation=stage_observation,
-        reviewer_observation=reviewer_observation,
-        expected_review_input_candidate_sha256=expected_review_input_candidate_sha256,
+        raw_candidate=raw_candidate,
         expected_source=expected_source,
     )
     issues.extend(str(issue) for issue in profile_evidence.get("issues", ()))
@@ -1794,7 +1769,6 @@ def _run_greenfield_propose(
     repair_tier: str = "",
     command: Sequence[str] | None = None,
     pass_fds: tuple[int, ...] = (),
-    retained_case: RetainedEvidenceCase | None = None,
     candidate_file: str,
 ) -> Any:
     if not str(candidate_file or "").strip():
@@ -1810,29 +1784,15 @@ def _run_greenfield_propose(
             candidate_file=candidate_file,
         )
     )
-    capture = (
-        retained_case_evidence_fd(
-            retained_case,
-            "semantic/model-authoring-observation.v1.json",
-        )
-        if retained_case is not None
-        else nullcontext(None)
-    )
-    with capture as proof_fd:
-        proposal_env = dict(env)
-        inherited_fds = pass_fds
-        if proof_fd is not None:
-            proposal_env[GREENFIELD_MODEL_PROOF_FD_ENV] = str(proof_fd)
-            inherited_fds = (*pass_fds, proof_fd)
-        run_kwargs: dict[str, Any] = {
-            "cwd": repo_root,
-            "env": proposal_env,
-            "command": propose_command,
-            "timeout": timeout,
-        }
-        if inherited_fds:
-            run_kwargs["pass_fds"] = inherited_fds
-        return _run(**run_kwargs)
+    run_kwargs: dict[str, Any] = {
+        "cwd": repo_root,
+        "env": dict(env),
+        "command": propose_command,
+        "timeout": timeout,
+    }
+    if pass_fds:
+        run_kwargs["pass_fds"] = pass_fds
+    return _run(**run_kwargs)
 
 
 def _greenfield_propose_arguments(
@@ -2345,32 +2305,15 @@ def _retained_model_stage_observation(
     if retained_case is None:
         return {}
     semantic_root = retained_case.staging_root / "semantic"
-    host_observation = _read_json_mapping(
+    return _read_json_mapping(
         semantic_root / "host-authoring-observation.v1.json"
     )
-    return host_observation or _read_json_mapping(
-        semantic_root / "model-authoring-observation.v1.json"
-    )
 
 
-def _retained_host_native_reviewer_observation(
+def _retained_raw_host_candidate(
     retained_case: RetainedEvidenceCase | None,
 ) -> Mapping[str, Any]:
-    """Read private proof-FD evidence only for release-custody validation."""
-
-    if retained_case is None:
-        return {}
-    return _read_json_mapping(
-        retained_case.staging_root / "semantic" / "model-authoring-observation.v1.json"
-    )
-
-
-def _retained_review_input_candidate(
-    retained_case: RetainedEvidenceCase | None,
-    *,
-    evidence_text: str,
-) -> Mapping[str, Any]:
-    """Rebuild the exact review input while preserving the raw host receipt."""
+    """Read the exact retained host candidate for independent hash projection."""
 
     if retained_case is None:
         return {}
@@ -2382,22 +2325,7 @@ def _retained_review_input_candidate(
         return {}
     if not isinstance(candidate, Mapping):
         return {}
-    try:
-        canonical = canonical_greenfield_host_candidate(
-            candidate,
-            evidence_text=evidence_text,
-        )
-        result = canonical.get("result")
-        return dict(result) if isinstance(result, Mapping) else {}
-    except (RuntimeError, TypeError, ValueError):
-        return {}
-
-
-def _review_input_candidate_sha256(candidate: Mapping[str, Any]) -> str:
-    try:
-        return candidate_review_sha256(candidate)
-    except (RuntimeError, TypeError, ValueError):
-        return ""
+    return dict(candidate)
 
 
 def _parse_json_object(value: str) -> Mapping[str, Any]:
@@ -3474,7 +3402,7 @@ def _execute_matrix_campaign(
         commit_recovery_proof=commit_recovery,
     )
     semantic_release_passed = semantic_release.get("status") in {"not_requested", "passed"}
-    passed = (
+    automated_passed = (
         all(result.quality.passed for result in results)
         and profile_proof.get("status") == "passed"
         and lower_capability_control_proof.get("status") in {"not_requested", "passed"}
@@ -3490,16 +3418,23 @@ def _execute_matrix_campaign(
             not retained_evidence_required
             or retained_evidence.get("status") == "passed"
         )
-        and (
-            campaign_config.proof_tier != "release"
-            or onboarding_quality_scorecard.get("status") == "passed"
-        )
+    )
+    review_status = str(onboarding_quality_scorecard.get("status") or "")
+    awaiting_independent_review = (
+        campaign_config.proof_tier == "release"
+        and automated_passed
+        and review_status == "awaiting-independent-review"
+    )
+    passed = automated_passed and (
+        campaign_config.proof_tier != "release" or review_status == "passed"
     )
     payload = {
         "version": QUALITY_MATRIX_VERSION,
         "status": (
             "passed"
             if passed and campaign_config.proof_tier == "release"
+            else "awaiting-independent-review"
+            if awaiting_independent_review
             else "discovery-passed"
             if passed
             else "failed"
@@ -3557,7 +3492,11 @@ def _execute_matrix_campaign(
         print(json.dumps(payload, indent=2, sort_keys=True))
     else:
         _print_human_summary(results)
-    return 0 if payload["status"] in {"passed", "discovery-passed"} else 1
+    return 0 if payload["status"] in {
+        "passed",
+        "discovery-passed",
+        "awaiting-independent-review",
+    } else 1
 
 
 def _semantic_release_report(

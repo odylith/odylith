@@ -1,11 +1,12 @@
 # Bug Index
 
-Last updated (UTC): 2026-09-29
+Last updated (UTC): 2026-09-30
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-349 | 2026-09-30 | Queued compass refresh loses source local dependency environment | P2 | compass | Open | [2026-09-30-queued-compass-refresh-loses-source-local-dependency-environment.md](2026-09-30-queued-compass-refresh-loses-source-local-dependency-environment.md) |
 | CB-346 | 2026-09-27 | One shot greenfield holdout aborts when a valid host candidate exceeds the model | P1 | domain-intelligence | Open | [2026-09-27-one-shot-greenfield-holdout-aborts-when-a-valid-host-candidate-exceeds-the-model.md](2026-09-27-one-shot-greenfield-holdout-aborts-when-a-valid-host-candidate-exceeds-the-model.md) |
 | CB-347 | 2026-09-27 | Greenfield release harness misclassifies incomplete proof and skips the unavaila | P1 | release | Open | [2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md](2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md) |
 | CB-348 | 2026-09-27 | Greenfield failed subset runner returns a function instead of proposal execution | P1 | release | FixedPendingRelease | [2026-09-27-greenfield-failed-subset-runner-returns-a-function-instead-of-proposal-execution.md](2026-09-27-greenfield-failed-subset-runner-returns-a-function-instead-of-proposal-execution.md) |

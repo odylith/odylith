@@ -15,12 +15,6 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GreenfieldModelAuthoringError,
 )
-from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring import (
-    author_greenfield_intent,
-)
-from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
-    materialize_model_authored_intent,
-)
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     RESCUE_PROFILE_ID,
     STANDARD_PROFILE_ID,
@@ -30,9 +24,10 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     product_intent_authority_from_envelope,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
-    RemainingCandidateProvider,
-    StructuredAuthoringProvider,
+    admit_complete_host_candidate,
     authored_response,
+    host_candidate_response,
+    materialize_complete_host_candidate,
     model_event_rows,
 )
 
@@ -113,12 +108,14 @@ def _response(source: str) -> dict[str, object]:
     return response
 
 
-def _participant_first_kwargs(response: dict[str, object]) -> dict[str, object]:
-    provider = RemainingCandidateProvider(response)
+def _complete_host_candidate_kwargs(
+    response: dict[str, object], evidence_text: str,
+) -> dict[str, object]:
     return {
-        "provider": provider,
-        "participant_provider_factory": provider.participant_provider,
-        "review_provider_factory": provider.review_provider,
+        "host_candidate": host_candidate_response(
+            response,
+            evidence_text=evidence_text,
+        ),
     }
 
 
@@ -175,17 +172,12 @@ def _carried_human_actor_response() -> tuple[str, dict[str, Any], dict[str, Any]
 
 def test_authoring_accepts_only_byte_verified_source_citations() -> None:
     source = _source()
-    provider = RemainingCandidateProvider(_response(source))
-    ticks = iter((0.0, 4.0, 4.0, 4.0))
-
-    result = author_greenfield_intent(
+    result = admit_complete_host_candidate(
         evidence_text=source,
-        provider=provider,
-        participant_provider_factory=provider.participant_provider,
-        timeout_seconds=84,
+        host_candidate=host_candidate_response(
+            _response(source), evidence_text=source,
+        ),
         model_profile_id=RESCUE_PROFILE_ID,
-        clock=lambda: next(ticks, 4.0),
-        review_provider_factory=provider.review_provider,
     )
 
     assert result.intent["first_path"] == _AUTHORED_FIRST_PATH
@@ -201,13 +193,10 @@ def test_authoring_accepts_only_byte_verified_source_citations() -> None:
         )
         for row in result.component_responsibility_relations
     ] == [
-        ("the product records berth occupancy", "/internal_systems/0", "Berth map", 2),
-        ("the berth map shows the placement", "/internal_systems/0", "Berth map", 3),
         ("Record berth occupancy", "/internal_systems/0", "Berth map", 0),
     ]
     assert result.tier == "rescue"
-    assert len(result.source_spans) == 21
-    assert provider.calls == 1
+    assert len(result.source_spans) == 19
 
 
 def test_product_led_path_keeps_review_recipient_without_inventing_human_event() -> None:
@@ -244,10 +233,9 @@ def test_product_led_path_keeps_review_recipient_without_inventing_human_event()
         ],
     )
 
-    result = author_greenfield_intent(
+    result = admit_complete_host_candidate(
         evidence_text=source,
-        **_participant_first_kwargs(response),
-        clock=lambda: 0.0,
+        **_complete_host_candidate_kwargs(response, source),
     )
 
     assert [row["actor_kind"] for row in result.first_path_relations] == ["product"]
@@ -265,12 +253,9 @@ def test_state_anchor_changes_only_selected_custody_not_canonical_meaning() -> N
         "prefix": "the product records ",
         "anchor_occurrence": 1,
     }
-    provider = RemainingCandidateProvider(response)
-    reviewer = provider.review_provider()
-    result = author_greenfield_intent(
-        evidence_text=source, provider=provider, clock=lambda: 0.0,
-        participant_provider_factory=provider.participant_provider,
-        review_provider_factory=lambda: reviewer,
+    result = admit_complete_host_candidate(
+        evidence_text=source,
+        **_complete_host_candidate_kwargs(response, source),
     )
     span = next(row for row in result.source_spans if row["section_key"] == "state_object")
     expected_start = source.encode().index(b"the product records berth occupancy") + len(b"the product records ")
@@ -281,14 +266,10 @@ def test_state_anchor_changes_only_selected_custody_not_canonical_meaning() -> N
     assert span["source_end_byte"] == expected_start + len(b"berth occupancy")
     assert result.first_path_relations[1]["target_quote"] == "berth occupancy"
     assert result.intent["first_path"] == _AUTHORED_FIRST_PATH
-    custody = reviewer.requests[0].prompt_payload["resolved_source_custody"]
-    selected = next(row for row in custody if row["field"] == "state_object")
-    assert selected["source_start_byte"] == expected_start
-    assert selected["context_before"].endswith("the product records ")
-    assert provider.calls == reviewer.calls == 1
+    assert span["source_start_byte"] == expected_start
 
 
-def test_wrong_state_anchor_is_reviewed_at_its_selected_location_not_rebound() -> None:
+def test_state_anchor_is_sealed_at_its_selected_location_not_rebound() -> None:
     source = "berth occupancy training module. " + _source()
     response = _response(source)
     response["result"]["facts"]["state_object"] = {
@@ -296,30 +277,13 @@ def test_wrong_state_anchor_is_reviewed_at_its_selected_location_not_rebound() -
         "prefix": "",
         "anchor_occurrence": 1,
     }
-    provider = RemainingCandidateProvider(response)
-    reviewer = StructuredAuthoringProvider({
-        "outcome": "denied",
-        "issue": {
-            "path": "candidate.accepted_source.facts.state_object",
-            "reason": "Selected text is a training subject, not managed state.",
-        },
-        "clarification": None,
-        "admission_witness": None,
-    })
-
-    with pytest.raises(GreenfieldModelAuthoringError):
-        author_greenfield_intent(
-            evidence_text=source, provider=provider, clock=lambda: 0.0,
-            participant_provider_factory=provider.participant_provider,
-            review_provider_factory=lambda: reviewer,
-        )
-    selected = next(
-        row for row in reviewer.requests[0].prompt_payload["resolved_source_custody"]
-        if row["field"] == "state_object"
+    result = admit_complete_host_candidate(
+        evidence_text=source,
+        **_complete_host_candidate_kwargs(response, source),
     )
+    selected = next(row for row in result.source_spans if row["section_key"] == "state_object")
     assert selected["source_start_byte"] == 0
-    assert selected["context_after"].startswith(" training module")
-    assert provider.calls == reviewer.calls == 1
+    assert source[selected["source_end_byte"] :].startswith(" training module")
 
 
 def test_event_rejects_target_that_is_only_adjacent_in_a_selected_fact() -> None:
@@ -362,10 +326,9 @@ def test_event_rejects_target_that_is_only_adjacent_in_a_selected_fact() -> None
     )
 
     with pytest.raises(GreenfieldModelAuthoringError, match="ungrounded first-path event"):
-        author_greenfield_intent(
+        admit_complete_host_candidate(
             evidence_text=source,
-            **_participant_first_kwargs(response),
-            clock=lambda: 0.0,
+            **_complete_host_candidate_kwargs(response, source),
         )
 
 
@@ -375,10 +338,9 @@ def test_event_target_stays_fail_closed_after_ordered_event_simplification() -> 
     model_event_rows(response)[0]["target_quote"] = "release readiness proof"
 
     with pytest.raises(GreenfieldModelAuthoringError, match="ungrounded first-path event"):
-        author_greenfield_intent(
+        admit_complete_host_candidate(
             evidence_text=source,
-            **_participant_first_kwargs(response),
-            clock=lambda: 0.0,
+            **_complete_host_candidate_kwargs(response, source),
         )
 
 
@@ -390,20 +352,18 @@ def test_selected_target_without_event_co_containment_stays_fail_closed() -> Non
     )
 
     with pytest.raises(GreenfieldModelAuthoringError, match="ungrounded first-path event"):
-        author_greenfield_intent(
+        admit_complete_host_candidate(
             evidence_text=source,
-            **_participant_first_kwargs(response),
-            clock=lambda: 0.0,
+            **_complete_host_candidate_kwargs(response, source),
         )
 
 
 def test_coordinated_events_derive_actor_presence_from_one_typed_fact_edge() -> None:
     source, response, intent = _carried_human_actor_response()
 
-    result = author_greenfield_intent(
+    result = admit_complete_host_candidate(
         evidence_text=source,
-        **_participant_first_kwargs(response),
-        clock=lambda: 0.0,
+        **_complete_host_candidate_kwargs(response, source),
     )
 
     assert [row["actor_fact_quote"] for row in result.first_path_relations] == [
@@ -475,10 +435,9 @@ def test_two_human_actor_changes_use_selected_facts_across_sentences() -> None:
         ],
     )
 
-    result = author_greenfield_intent(
+    result = admit_complete_host_candidate(
         evidence_text=source,
-        **_participant_first_kwargs(response),
-        clock=lambda: 0.0,
+        **_complete_host_candidate_kwargs(response, source),
     )
 
     assert [row["actor_fact_quote"] for row in result.first_path_relations] == [
@@ -501,10 +460,9 @@ def test_unselected_actor_fact_cannot_start_or_switch_an_actor_chain(
     relation["actor_fact"] = {"field": "human_actors", "row": 99}
 
     with pytest.raises(GreenfieldModelAuthoringError, match="unbound first-path actor fact"):
-        author_greenfield_intent(
+        admit_complete_host_candidate(
             evidence_text=source,
-            **_participant_first_kwargs(response),
-            clock=lambda: 0.0,
+            **_complete_host_candidate_kwargs(response, source),
         )
 
 
@@ -513,10 +471,9 @@ def test_canonical_relation_rejects_retired_surface_actor_fields(
     retired_field: str,
 ) -> None:
     source, response, intent = _carried_human_actor_response()
-    result = author_greenfield_intent(
+    result = admit_complete_host_candidate(
         evidence_text=source,
-        **_participant_first_kwargs(response),
-        clock=lambda: 0.0,
+        **_complete_host_candidate_kwargs(response, source),
     )
     tampered = [dict(row) for row in result.first_path_relations]
     tampered[0][retired_field] = (
@@ -537,15 +494,11 @@ def test_canonical_relation_rejects_retired_surface_actor_fields(
 def test_materialization_preserves_exact_event_fact_bytes(tmp_path) -> None:  # type: ignore[no-untyped-def]
     source = _source()
     response = _response(source)
-    provider = RemainingCandidateProvider(response)
-    candidate = materialize_model_authored_intent(
+    candidate = materialize_complete_host_candidate(
         prompt=source,
         repo_root=tmp_path,
-        authoring_provider=provider,
-        participant_provider_factory=provider.participant_provider,
-        authoring_timeout_seconds=84,
+        host_candidate=host_candidate_response(response, evidence_text=source),
         authoring_profile_id=STANDARD_PROFILE_ID,
-        review_provider_factory=provider.review_provider,
     )
 
     assert candidate["first_path"] == _AUTHORED_FIRST_PATH
@@ -558,10 +511,9 @@ def test_materialization_preserves_exact_event_fact_bytes(tmp_path) -> None:  # 
 def test_verified_authoring_spans_become_the_product_intent_custody_source() -> None:
     source = _source()
     response = _response(source)
-    result = author_greenfield_intent(
+    result = admit_complete_host_candidate(
         evidence_text=source,
-        **_participant_first_kwargs(response),
-        clock=lambda: 0.0,
+        **_complete_host_candidate_kwargs(response, source),
     )
     sealed_intent = {
         **result.intent,
@@ -576,7 +528,7 @@ def test_verified_authoring_spans_become_the_product_intent_custody_source() -> 
         sealed_intent,
         source_text=source,
         source_format="operator_prompt",
-        reviewed_candidate_sha256=result.candidate_review["candidate_sha256"],
+        canonical_candidate_sha256="a" * 64,
         authored_source_spans=result.source_spans,
         authored_atomic_claims=result.atomic_claims,
         authored_source_sha256=result.source_sha256,
@@ -628,10 +580,9 @@ def test_envelope_rejects_relation_rebound_to_a_duplicate_source_occurrence() ->
     event = "Dock attendant Ivo enters a vessel tag"
     source = f"{_source()} {event}."
     response = _response(source)
-    result = author_greenfield_intent(
+    result = admit_complete_host_candidate(
         evidence_text=source,
-        **_participant_first_kwargs(response),
-        clock=lambda: 0.0,
+        **_complete_host_candidate_kwargs(response, source),
     )
     relations = [dict(row) for row in result.first_path_relations]
     duplicate_start = source.encode("utf-8").rfind(event.encode("utf-8"))
@@ -652,7 +603,7 @@ def test_envelope_rejects_relation_rebound_to_a_duplicate_source_occurrence() ->
             sealed_intent,
             source_text=source,
             source_format="operator_prompt",
-            reviewed_candidate_sha256=result.candidate_review["candidate_sha256"],
+            canonical_candidate_sha256="a" * 64,
             authored_source_spans=result.source_spans,
             authored_atomic_claims=result.atomic_claims,
             authored_source_sha256=result.source_sha256,
@@ -683,10 +634,9 @@ def test_authored_custody_preserves_exact_unicode_markdown_and_deferred_actor_by
         evidence_text=source,
         component_responsibility_owners=["`berth-map`"],
     )
-    result = author_greenfield_intent(
+    result = admit_complete_host_candidate(
         evidence_text=source,
-        **_participant_first_kwargs(response),
-        clock=lambda: 0.0,
+        **_complete_host_candidate_kwargs(response, source),
     )
 
     sealed_intent = {
@@ -702,7 +652,7 @@ def test_authored_custody_preserves_exact_unicode_markdown_and_deferred_actor_by
         sealed_intent,
         source_text=source,
         source_format="operator_prompt",
-        reviewed_candidate_sha256=result.candidate_review["candidate_sha256"],
+        canonical_candidate_sha256="a" * 64,
         authored_source_spans=result.source_spans,
         authored_atomic_claims=result.atomic_claims,
         authored_source_sha256=result.source_sha256,

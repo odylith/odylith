@@ -12,7 +12,6 @@ from collections.abc import Callable, Mapping
 from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
-from time import monotonic
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
@@ -32,20 +31,13 @@ from odylith.runtime.domain_intelligence.greenfield_material_clarification impor
 )
 from odylith.runtime.domain_intelligence.greenfield_model_authoring_receipt import (
     envelope_authoring_observation,
-    model_authoring_receipt,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GreenfieldAuthoringClarification,
     GreenfieldModelAuthoredIntent,
 )
-from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
-    STANDARD_PROFILE_ID,
-)
 from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     admit_greenfield_public_evidence,
-)
-from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring import (
-    author_greenfield_intent,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     PRODUCT_INTENT_AUTHORITY_KEY,
@@ -115,75 +107,6 @@ def prepare_model_authoring_evidence(
     )
 
 
-def materialize_model_authored_intent(
-    *,
-    prompt: str,
-    repo_root: Path,
-    edit_evidence: str = "",
-    authoring_provider: Any,
-    authoring_profile_id: str = STANDARD_PROFILE_ID,
-    authoring_timeout_seconds: float | None = None,
-    authoring_model: str = "",
-    authoring_reasoning_effort: str = "",
-    source_language: str = "en",
-    prepared_evidence: GreenfieldPreparedAuthoringEvidence | None = None,
-    authoring_receipt: dict[str, Any] | None = None,
-    participant_provider_factory: Callable[[], Any] | None = None,
-    review_provider_factory: Callable[[], Any] | None = None,
-    authoring_deadline: float | None = None,
-    clock: Callable[[], float] = monotonic,
-) -> dict[str, Any]:
-    """Stage one model-authored intent without a parser or lexical fallback."""
-
-    prepared = prepared_evidence or prepare_model_authoring_evidence(
-        prompt=prompt,
-        edit_evidence=edit_evidence,
-        source_language=source_language,
-    )
-    if prepared.prompt != prompt:
-        raise ValueError("prepared Greenfield evidence does not match the operator prompt")
-    authored = author_greenfield_intent(
-        evidence_text=prepared.evidence_source,
-        provider=authoring_provider,
-        timeout_seconds=authoring_timeout_seconds,
-        model=authoring_model,
-        reasoning_effort=authoring_reasoning_effort,
-        model_profile_id=authoring_profile_id,
-        source_format=prepared.source_format,
-        source_document_count=prepared.source_document_count,
-        source_language=prepared.source_language,
-        participant_provider_factory=participant_provider_factory,
-        review_provider_factory=review_provider_factory,
-        deadline=authoring_deadline,
-        clock=clock,
-    )
-    receipt = model_authoring_receipt(authored)
-    if isinstance(authored, GreenfieldAuthoringClarification):
-        clarification = material_clarification_for_fields(
-            authored.required_fields, consistency_status=authored.consistency_status,
-        )
-        if authoring_receipt is not None:
-            authoring_receipt.clear()
-            authoring_receipt.update(receipt)
-        raise GreenfieldClarificationRequired(
-            clarification.question,
-            required_fields=clarification.required_fields,
-            authoring_receipt=receipt,
-        )
-    if not isinstance(authored, GreenfieldModelAuthoredIntent):
-        raise TypeError("Greenfield model authoring returned an unsupported result")
-
-    return stage_validated_authored_intent(
-        prompt=prompt,
-        repo_root=repo_root,
-        prepared=prepared,
-        authored=authored,
-        receipt=receipt,
-        authoring_receipt=authoring_receipt,
-        clarification_error=GreenfieldClarificationRequired,
-    )
-
-
 def stage_validated_authored_intent(
     *,
     prompt: str,
@@ -194,10 +117,18 @@ def stage_validated_authored_intent(
     authoring_receipt: dict[str, Any] | None,
     clarification_error: Callable[..., Exception],
 ) -> dict[str, Any]:
-    """Seal one validated candidate through the shared custody path."""
+    """Seal one validated host candidate through the canonical custody path."""
 
-    if not isinstance(review := receipt.get("candidate_review"), dict) or review.get("status") != "admitted":
-        raise ValueError("Greenfield admitted candidate is missing its review receipt")
+    host_receipt = receipt.get("host_candidate")
+    if (
+        not isinstance(host_receipt, dict)
+        or receipt.get("authoring_origin") != "host_native"
+        or receipt.get("runtime_semantic_model_call_count") != 0
+    ):
+        raise ValueError("Greenfield admitted candidate is missing its canonical host receipt")
+    canonical_candidate_sha256 = str(
+        host_receipt.get("canonical_candidate_sha256") or ""
+    )
     intent = deepcopy(dict(authored.intent))
     intent[AUTHORED_SEMANTICS_KEY] = authored_semantics_mapping(
         authored.first_path_relations,
@@ -215,7 +146,7 @@ def stage_validated_authored_intent(
         source_format=prepared.source_format,
         source_document_count=prepared.source_document_count,
         source_language=prepared.source_language,
-        reviewed_candidate_sha256=str(review.get("candidate_sha256") or ""),
+        canonical_candidate_sha256=canonical_candidate_sha256,
         model_authoring=envelope_authoring_observation(receipt),
         authored_source_spans=authored.source_spans,
         authored_atomic_claims=authored.atomic_claims,
@@ -235,17 +166,21 @@ def stage_validated_authored_intent(
         markdown_source_path=paths.evidence_markdown.relative_to(root),
     )
     require_product_intent_authority(authority)
-    reviewed_relation_hash = authored_relation_set_sha256(
+    canonical_relation_hash = authored_relation_set_sha256(
         authored.first_path_relations,
         authored.component_responsibility_relations,
         first_path_context_relations=authored.first_path_context_relations,
         source_precedence=authored.source_precedence,
         provisional_design=authored.provisional_design,
     )
-    if reviewed_relation_hash != authority[AUTHORED_RELATION_SET_SHA256_KEY]:
-        raise ValueError("Greenfield candidate review does not match its sealed authored design")
-    review[AUTHORED_RELATION_SET_SHA256_KEY] = reviewed_relation_hash
-    receipt["candidate_review"]["product_facts_sha256"] = authority["product_facts_sha256"]
+    if canonical_relation_hash != authority[AUTHORED_RELATION_SET_SHA256_KEY]:
+        raise ValueError("Greenfield host candidate does not match its sealed authored design")
+    receipt["canonical_authority"] = {
+        "canonical_candidate_sha256": canonical_candidate_sha256,
+        "source_sha256": authority["markdown_source_sha256"],
+        "product_facts_sha256": authority["product_facts_sha256"],
+        AUTHORED_RELATION_SET_SHA256_KEY: canonical_relation_hash,
+    }
     candidate = stage_candidate_intent(
         repo_root=root,
         intent=intent,
@@ -292,7 +227,6 @@ __all__ = [
     "GreenfieldClarificationRequired",
     "GreenfieldPreparedAuthoringEvidence",
     "combined_prompt_evidence_source",
-    "materialize_model_authored_intent",
     "prepare_model_authoring_evidence",
     "prompt_only_material_decision_error",
     "render_product_intent_preview",

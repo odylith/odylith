@@ -42,7 +42,7 @@ TRANSACTION_FILE = f".odylith/runtime/greenfield/pending/{HASH}/product-create-t
 OFFER_ROOT = Path("/matrix/repo")
 
 
-@pytest.mark.parametrize("tamper", [None, "product", "model", "reviewer"])
+@pytest.mark.parametrize("tamper", [None, "product", "model", "authority"])
 def test_dry_run_uses_real_compiler_hash_with_sealed_model_timing(tmp_path: Path, tamper: str | None) -> None:
     from odylith.runtime.domain_intelligence import greenfield_create_transaction as compiler
     from tests.unit.runtime.test_greenfield_create_transaction import _transaction
@@ -52,7 +52,6 @@ def test_dry_run_uses_real_compiler_hash_with_sealed_model_timing(tmp_path: Path
     quality["elapsed_seconds"] = 12.5
     quality["model_authoring"] = {
         **quality["model_authoring"], "elapsed_seconds": 9.0,
-        "candidate_review": {**quality["model_authoring"]["candidate_review"], "elapsed_seconds": 3.0},
     }
     transaction = replace(transaction, quality_manifest=quality)
     transaction = replace(transaction, transaction_hash=compiler.product_create_transaction_hash(transaction))
@@ -65,7 +64,9 @@ def test_dry_run_uses_real_compiler_hash_with_sealed_model_timing(tmp_path: Path
         elif tamper == "model":
             payload["quality_manifest"]["model_authoring"]["elapsed_seconds"] += 1
         else:
-            payload["quality_manifest"]["model_authoring"]["candidate_review"]["elapsed_seconds"] += 1
+            payload["quality_manifest"]["model_authoring"]["canonical_authority"][
+                "product_facts_sha256"
+            ] = "f" * 64
         encoded = json.dumps(payload, sort_keys=True).encode()
         path.write_bytes(encoded)
         receipt_path = path.with_name(path.name + ".compiler-receipt.v1.json")

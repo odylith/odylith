@@ -70,16 +70,22 @@ the preview does not offer publication.
 For example:
 
 ```bash
-odylith greenfield propose --repo-root . --prompt "build an ecommerce site"
+odylith greenfield candidate-contract --repo-root . --prompt "build an ecommerce site"
+# The active host writes one complete matching candidate outside the repository.
+odylith greenfield propose --repo-root . --prompt "build an ecommerce site" --candidate-file "<temporary-file>"
 ```
 
-Before confirmation, Odylith stores each compiled package at an immutable,
+The active host reasons once over the returned contract. Odylith deterministically
+validates that untrusted candidate and, before confirmation, stores each compiled
+package at an immutable,
 transaction-addressed pending path under `.odylith/runtime/greenfield/`. That package already
 contains the quality-gated backlog, first-release plan, Registry components,
 Atlas topology, assumptions, risks, open questions, validation obligations, and
 post-commit handoff. The separate, explicit operator `greenfield create` command
-requires the reviewed transaction file, hash and confirmation. It publishes only
-sealed bytes, without model interpretation or generation. A chat approval must
+requires the canonical transaction file, hash and confirmation. It publishes only
+sealed bytes, without model interpretation or generation. No semantic, model, or
+provider call runs after candidate receipt; detached semantic and UX review
+qualifies frozen release evidence rather than consumer transactions. A chat approval must
 not be converted into that command by a model. The commit-only path materializes an immutable generation, switches one
 active pointer, validates readback, and directs the operator to that exact project view.
 

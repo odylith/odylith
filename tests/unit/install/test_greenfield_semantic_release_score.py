@@ -37,6 +37,13 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
     STANDARD_PROFILE_ID,
     get_greenfield_model_profile,
 )
+from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
+    HOST_CANDIDATE_CONTRACT_VERSION,
+    HOST_CANDIDATE_RECEIPT_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
+    GREENFIELD_INTENT_AUTHORING_VERSION,
+)
 from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     greenfield_operating_envelope_receipt,
 )
@@ -431,40 +438,6 @@ def test_release_evidence_fails_closed_on_missing_unknown_or_mismatched_slices(
 
     assert report["passed"] is False
     assert any(expected_issue in issue for issue in report["release_evidence_issues"])
-
-
-@pytest.mark.parametrize(
-    "damage",
-    ("missing_candidate_review", "extra_role", "discordant_candidate_review"),
-)
-def test_unsealed_clarification_rejects_inexact_authoring_observations(
-    damage: str,
-) -> None:
-    case = _case(f"clarification-{damage}", expectation="clarification_required")
-    result = _clarification_result(case)
-    observed = result.evidence["model_profile"]["observed"]
-    if damage == "missing_candidate_review":
-        observed.pop("candidate_review")
-    elif damage == "extra_role":
-        observed["legacy_authoring"] = deepcopy(observed["candidate_review"])
-    else:
-        observed["candidate_review"] = _model_authoring_observations(
-            RESCUE_PROFILE_ID
-        )["candidate_review"]
-
-    report = score_module.evaluate_semantic_release(
-        cases=(case,),
-        annotations={case.case_id: _clarification_annotation()},
-        results=(result,),
-        floors=FLOORS,
-        _allow_not_applicable_metrics=True,
-    )
-
-    assert report["passed"] is False
-    assert any(
-        "has invalid unsealed model-profile observation evidence" in issue
-        for issue in report["release_evidence_issues"]
-    )
 
 
 def test_release_required_slices_fail_closed_on_missing_coverage() -> None:
@@ -1111,23 +1084,18 @@ def _model_result_evidence(profile_id: str) -> dict[str, object]:
 
 
 def _model_authoring_observations(profile_id: str) -> dict[str, object]:
-    profile = get_greenfield_model_profile(profile_id)
+    del profile_id
     return {
         "origin": "host_native",
         "host_candidate": {
-            "version": "odylith.greenfield.host-candidate-receipt.test.v1",
-            "contract_version": "odylith.greenfield.host-candidate-contract.test.v1",
+            "version": HOST_CANDIDATE_RECEIPT_VERSION,
+            "contract_version": HOST_CANDIDATE_CONTRACT_VERSION,
+            "canonical_version": GREENFIELD_INTENT_AUTHORING_VERSION,
             "source_sha256": "a" * 64,
-            "candidate_sha256": "b" * 64,
+            "raw_candidate_sha256": "b" * 64,
+            "canonical_candidate_sha256": "c" * 64,
         },
-        "candidate_review": {
-            "profile_id": profile.profile_id,
-            "provider": profile.provider,
-            "model": profile.review_model,
-            "reasoning_effort": profile.review_reasoning_effort,
-            "effective_timeout_seconds": profile.model_timeout_seconds,
-            "authoring_tier": profile.repair_tier,
-        },
+        "runtime_semantic_model_call_count": 0,
     }
 
 

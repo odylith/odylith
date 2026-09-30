@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import math
 from collections.abc import Mapping, Sequence
 from typing import Any
 
@@ -10,14 +9,11 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
     GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION,
     UNAVAILABLE_PROVIDER_PROFILE_ID,
     declared_greenfield_model_profile_ids,
-    get_greenfield_model_profile,
-    greenfield_model_profile_observation_issues,
     lower_capability_control_greenfield_model_profile_ids,
     release_success_greenfield_model_profile_ids,
-    supported_greenfield_model_profile_ids,
 )
 
-GREENFIELD_OPERATING_ENVELOPE_VERSION = "odylith.greenfield-operating-envelope.v5"
+GREENFIELD_OPERATING_ENVELOPE_VERSION = "odylith.greenfield-operating-envelope.v6"
 GREENFIELD_OPERATING_PROFILE = "single-product-governance-onboarding"
 
 # These are the only source formats accepted by the public authored path. The
@@ -106,12 +102,6 @@ _HOST_CONTRACT = {
 }
 _MODEL_AUTHORITY = "candidate_hypothesis_only"
 _LOWER_CAPABILITY_BEHAVIOR = "clarify_or_fail_safe_without_invention"
-_AUTHORING_OBSERVATION_ROLES = (
-    "participant_selection",
-    "remaining_candidate_authoring",
-)
-
-
 class GreenfieldOperatingEnvelopeError(ValueError):
     """The evidence cannot enter the supported Greenfield authoring path."""
 
@@ -461,117 +451,54 @@ def _evidence_issues(observed: Mapping[str, Any], *, public_only: bool) -> list[
 
 
 def _model_authoring_observations(value: Mapping[str, Any] | None) -> dict[str, Any] | None:
-    if isinstance(value, Mapping) and value.get("origin") == "host_native":
-        if set(value) != {"origin", "host_candidate", "candidate_review"}:
-            return None
-        candidate = value.get("host_candidate")
-        review = _model_authoring_observation(value.get("candidate_review"))
-        if (
-            not isinstance(candidate, Mapping)
-            or set(candidate)
-            != {"version", "contract_version", "source_sha256", "candidate_sha256"}
-            or any(
-                not isinstance(candidate.get(key), str) or not candidate.get(key)
-                for key in ("version", "contract_version")
-            )
-            or any(
-                not _is_sha256(candidate.get(key))
-                for key in ("source_sha256", "candidate_sha256")
-            )
-            or review is None
-        ):
-            return None
-        return {
-            "origin": "host_native",
-            "host_candidate": dict(candidate),
-            "candidate_review": review,
-        }
-    if not isinstance(value, Mapping) or set(value) != set(_AUTHORING_OBSERVATION_ROLES):
-        return None
-    observations = {
-        role: _model_authoring_observation(value.get(role))
-        for role in _AUTHORING_OBSERVATION_ROLES
-    }
-    if any(observation is None for observation in observations.values()):
-        return None
-    return observations
-
-
-def _model_authoring_observation(value: Any) -> dict[str, Any] | None:
     if not isinstance(value, Mapping) or set(value) != {
-        "profile_id",
-        "provider",
-        "model",
-        "reasoning_effort",
-        "effective_timeout_seconds",
-        "authoring_tier",
+        "origin",
+        "host_candidate",
+        "runtime_semantic_model_call_count",
     }:
         return None
-    raw_timeout = value.get("effective_timeout_seconds")
-    if type(raw_timeout) not in (int, float):
-        return None
-    timeout_seconds = float(raw_timeout)
-    tier = str(value.get("authoring_tier") or "").strip()
+    candidate = value.get("host_candidate")
     if (
-        tier not in {"standard", "rescue", "deep"}
-        or not math.isfinite(timeout_seconds)
-        or timeout_seconds <= 0.0
+        value.get("origin") != "host_native"
+        or type(value.get("runtime_semantic_model_call_count")) is not int
+        or value.get("runtime_semantic_model_call_count") != 0
+        or not isinstance(candidate, Mapping)
+        or set(candidate)
+        != {
+            "version",
+            "contract_version",
+            "canonical_version",
+            "source_sha256",
+            "raw_candidate_sha256",
+            "canonical_candidate_sha256",
+        }
+        or any(
+            not isinstance(candidate.get(key), str) or not candidate.get(key)
+            for key in ("version", "contract_version", "canonical_version")
+        )
+        or any(
+            not _is_sha256(candidate.get(key))
+            for key in (
+                "source_sha256",
+                "raw_candidate_sha256",
+                "canonical_candidate_sha256",
+            )
+        )
     ):
         return None
     return {
-        "profile_id": str(value.get("profile_id") or "").strip(),
-        "provider": str(value.get("provider") or "").strip().casefold(),
-        "model": str(value.get("model") or "").strip(),
-        "reasoning_effort": str(value.get("reasoning_effort") or "").strip().casefold(),
-        "effective_timeout_seconds": timeout_seconds,
-        "authoring_tier": tier,
+        "origin": "host_native",
+        "host_candidate": dict(candidate),
+        "runtime_semantic_model_call_count": 0,
     }
 
 
 def _model_authoring_observation_issues(
     observations: Mapping[str, Any],
 ) -> tuple[str, ...]:
-    if observations.get("origin") == "host_native":
-        review = observations.get("candidate_review")
-        if not isinstance(review, Mapping):
-            return ("host-native candidate review observation is missing",)
-        issues = list(greenfield_model_profile_observation_issues(
-            profile_id=str(review.get("profile_id") or ""),
-            provider=str(review.get("provider") or ""),
-            model=str(review.get("model") or ""),
-            reasoning_effort=str(review.get("reasoning_effort") or ""),
-            effective_timeout_seconds=review.get("effective_timeout_seconds"),
-            authoring_tier=str(review.get("authoring_tier") or ""),
-            request_role="candidate_review",
-        ))
-        profile_id = str(review.get("profile_id") or "")
-        if not issues and profile_id not in supported_greenfield_model_profile_ids():
-            issues.append("observed model profile is not release-qualified")
-        return tuple(issues)
-    issues: list[str] = []
-    profile_ids: set[str] = set()
-    tiers: set[str] = set()
-    for role in _AUTHORING_OBSERVATION_ROLES:
-        observation = observations[role]
-        profile_id = observation["profile_id"]
-        profile_ids.add(profile_id)
-        tiers.add(observation["authoring_tier"])
-        issues.extend(greenfield_model_profile_observation_issues(
-            profile_id=profile_id,
-            provider=observation["provider"],
-            model=observation["model"],
-            reasoning_effort=observation["reasoning_effort"],
-            effective_timeout_seconds=observation["effective_timeout_seconds"],
-            authoring_tier=observation["authoring_tier"],
-            request_role=role,
-        ))
-    if len(profile_ids) != 1 or len(tiers) != 1:
-        issues.append("authoring roles do not share one pinned Greenfield model profile")
-    elif get_greenfield_model_profile(next(iter(profile_ids))).repair_tier != next(iter(tiers)):
-        issues.append("authoring tier does not match the pinned Greenfield model profile")
-    elif next(iter(profile_ids)) not in supported_greenfield_model_profile_ids():
-        issues.append("observed model profile is not release-qualified")
-    return tuple(issues)
+    if observations.get("runtime_semantic_model_call_count") != 0:
+        return ("runtime semantic calls occurred after candidate receipt",)
+    return ()
 
 
 def _is_sha256(value: Any) -> bool:

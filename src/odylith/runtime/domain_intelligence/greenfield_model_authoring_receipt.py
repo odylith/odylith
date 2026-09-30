@@ -1,4 +1,4 @@
-"""Receipt projections for admitted Greenfield semantic candidates."""
+"""Receipt projections for one complete host-authored Greenfield candidate."""
 
 from __future__ import annotations
 
@@ -13,8 +13,10 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring impor
 )
 
 
-def model_authoring_receipt(
+def host_authoring_receipt(
     authored: GreenfieldModelAuthoredIntent | GreenfieldAuthoringClarification,
+    *,
+    host_candidate: Mapping[str, Any],
 ) -> dict[str, Any]:
     consistency_spans = (
         authored.consistency_source_spans
@@ -26,24 +28,13 @@ def model_authoring_receipt(
         )
     )
     return {
+        "authoring_origin": "host_native",
         "authoring_version": GREENFIELD_INTENT_AUTHORING_VERSION,
-        "semantic_model_call_count": authored.semantic_model_call_count,
+        "runtime_semantic_model_call_count": authored.semantic_model_call_count,
         "tier": authored.tier,
         "elapsed_seconds": authored.elapsed_seconds,
         "effective_model_window_seconds": authored.effective_model_window_seconds,
-        "participant_selection": deepcopy(authored.participant_selection),
-        "remaining_candidate_authoring": deepcopy(authored.remaining_candidate_authoring),
-        **(
-            {
-                "candidate_review": deepcopy(authored.candidate_review),
-            }
-            if isinstance(authored, GreenfieldModelAuthoredIntent)
-            else (
-                {"candidate_review": deepcopy(authored.candidate_review)}
-                if authored.candidate_review
-                else {}
-            )
-        ),
+        "host_candidate": deepcopy(dict(host_candidate)),
         "consistency_assessment": {
             "status": authored.consistency_status,
             "source_spans": [dict(span) for span in consistency_spans],
@@ -58,18 +49,13 @@ def model_authoring_receipt(
 
 
 def envelope_authoring_observation(receipt: Mapping[str, Any]) -> dict[str, Any]:
-    if receipt.get("authoring_origin") == "host_native":
-        review = receipt.get("candidate_review")
-        review_profile = review.get("model_profile") if isinstance(review, Mapping) else None
-        return {
-            "origin": "host_native",
-            "host_candidate": deepcopy(receipt.get("host_candidate")),
-            "candidate_review": deepcopy(review_profile),
-        }
     return {
-        role: deepcopy(receipt[role]["model_profile"])
-        for role in ("participant_selection", "remaining_candidate_authoring")
+        "origin": "host_native",
+        "host_candidate": deepcopy(receipt.get("host_candidate")),
+        "runtime_semantic_model_call_count": receipt.get(
+            "runtime_semantic_model_call_count"
+        ),
     }
 
 
-__all__ = ["envelope_authoring_observation", "model_authoring_receipt"]
+__all__ = ["envelope_authoring_observation", "host_authoring_receipt"]

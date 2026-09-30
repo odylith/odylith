@@ -8,8 +8,9 @@ import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_model_intent_authoring
 from odylith.runtime.domain_intelligence import greenfield_proposals_cli
-from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring import (
-    author_greenfield_intent,
+from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
+    HOST_CANDIDATE_CONTRACT_VERSION,
+    HOST_CANDIDATE_RECEIPT_VERSION,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
     prepare_model_authoring_evidence,
@@ -38,48 +39,25 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
     UNAVAILABLE_PROVIDER_PROFILE_ID,
     get_greenfield_model_profile,
 )
+from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
+    GREENFIELD_INTENT_AUTHORING_VERSION,
+)
 
 
 def _model_observation(profile_id: str = STANDARD_PROFILE_ID) -> dict[str, object]:
-    profile = get_greenfield_model_profile(profile_id)
+    del profile_id
     return {
-        "participant_selection": {
-            "profile_id": profile.profile_id,
-            "provider": profile.provider,
-            "model": profile.participant_model,
-            "reasoning_effort": profile.participant_reasoning_effort,
-            "effective_timeout_seconds": profile.model_timeout_seconds,
-            "authoring_tier": profile.repair_tier,
+        "origin": "host_native",
+        "host_candidate": {
+            "version": HOST_CANDIDATE_RECEIPT_VERSION,
+            "contract_version": HOST_CANDIDATE_CONTRACT_VERSION,
+            "canonical_version": GREENFIELD_INTENT_AUTHORING_VERSION,
+            "source_sha256": "a" * 64,
+            "raw_candidate_sha256": "b" * 64,
+            "canonical_candidate_sha256": "c" * 64,
         },
-        "remaining_candidate_authoring": {
-            "profile_id": profile.profile_id,
-            "provider": profile.provider,
-            "model": profile.model,
-            "reasoning_effort": profile.reasoning_effort,
-            "effective_timeout_seconds": profile.model_timeout_seconds,
-            "authoring_tier": profile.repair_tier,
-        },
+        "runtime_semantic_model_call_count": 0,
     }
-
-
-def test_published_operating_envelope_matches_the_runtime_contract() -> None:
-    root = Path(__file__).resolve().parents[3]
-    published = (root / "docs/specs/greenfield-operating-envelope.md").read_text(
-        encoding="utf-8"
-    )
-
-    assert GREENFIELD_OPERATING_ENVELOPE_VERSION in published
-    assert "64 KiB" in published
-    assert "8 MiB" not in published
-    assert "journaled crash recovery, not package-level atomic" in published
-    for profile_id in (STANDARD_PROFILE_ID, RESCUE_PROFILE_ID, DEEP_PROFILE_ID):
-        profile = get_greenfield_model_profile(profile_id)
-        assert profile_id in published
-        assert f"{int(profile.performance_target_seconds)}-second" in published
-    assert "sole release-success profile" in published
-    assert "lower-capability clarification/no-write control" in published
-    assert "negative and\n  diagnostic profile" in published
-    assert "180-second operational timeout" in published
 
 
 def test_greenfield_operating_envelope_accepts_one_bounded_governance_product() -> None:
@@ -226,47 +204,11 @@ def test_authored_caps_are_truthful_for_singular_state_and_unsupported_contradic
     assert "contradictions_not_supported" in receipt["issues"]
 
 
-class _ProviderThatMustNotRun:
-    provider_name = "codex-cli"
-
-    def __init__(self) -> None:
-        self.calls = 0
-
-    def generate_structured(self, *, request: object) -> None:
-        del request
-        self.calls += 1
-        raise AssertionError("structurally unsupported evidence reached the provider")
-
-
-def test_max_plus_one_model_input_is_rejected_before_provider_call() -> None:
-    provider = _ProviderThatMustNotRun()
-
+def test_max_plus_one_model_input_is_rejected_before_candidate_admission() -> None:
     with pytest.raises(ValueError, match="evidence_too_large"):
-        author_greenfield_intent(
-            evidence_text="x" * (MAX_EVIDENCE_BYTES + 1),
-            provider=provider,
-            participant_provider_factory=lambda: provider,
-            source_format="operator_prompt",
-            source_document_count=1,
-            source_language="en",
+        prepare_model_authoring_evidence(
+            prompt="x" * (MAX_EVIDENCE_BYTES + 1),
         )
-
-    assert provider.calls == 0
-
-
-def test_timeout_never_invents_a_missing_model_profile_before_the_call() -> None:
-    provider = _ProviderThatMustNotRun()
-
-    with pytest.raises(ValueError, match="unsupported Greenfield model profile: <empty>"):
-        author_greenfield_intent(
-            evidence_text="Create one bounded product.",
-            provider=provider,
-            participant_provider_factory=lambda: provider,
-            model_profile_id="",
-            timeout_seconds=84.0,
-        )
-
-    assert provider.calls == 0
 
 
 def test_cli_exposes_only_release_success_tiers_and_labels_other_profiles() -> None:
@@ -298,20 +240,7 @@ def test_cli_exposes_only_release_success_tiers_and_labels_other_profiles() -> N
         )
 
 
-def test_public_compile_rejects_oversize_before_provider_discovery(monkeypatch, tmp_path) -> None:  # type: ignore[no-untyped-def]
-    provider_discovery_calls = 0
-
-    def forbidden_provider_discovery(**_kwargs: object) -> None:
-        nonlocal provider_discovery_calls
-        provider_discovery_calls += 1
-        raise AssertionError("oversize evidence reached provider discovery")
-
-    monkeypatch.setattr(
-        greenfield_proposals_cli,
-        "_greenfield_review_provider",
-        forbidden_provider_discovery,
-    )
-
+def test_public_compile_rejects_oversize_before_candidate_admission(tmp_path) -> None:  # type: ignore[no-untyped-def]
     with pytest.raises(ValueError, match="evidence_too_large"):
         greenfield_proposals_cli._compile_prompt_evidence_transaction(
             repo_root=tmp_path,
@@ -320,38 +249,6 @@ def test_public_compile_rejects_oversize_before_provider_discovery(monkeypatch, 
             release_selector="",
             host_candidate={},
         )
-
-    assert provider_discovery_calls == 0
-
-
-def test_edit_read_time_reduces_the_provider_window_before_discovery(monkeypatch, tmp_path) -> None:  # type: ignore[no-untyped-def]
-    provider_discovery_calls = 0
-
-    def forbidden_provider_discovery(**_kwargs: object) -> None:
-        nonlocal provider_discovery_calls
-        provider_discovery_calls += 1
-        raise AssertionError("expired evidence-read budget reached provider discovery")
-
-    monkeypatch.setattr(
-        greenfield_proposals_cli,
-        "_greenfield_review_provider",
-        forbidden_provider_discovery,
-    )
-    monkeypatch.setattr(greenfield_proposals_cli.time, "perf_counter", lambda: 165.0)
-
-    with pytest.raises(RuntimeError, match="model time window") as exc_info:
-        greenfield_proposals_cli._compile_prompt_evidence_transaction(
-            repo_root=tmp_path,
-            prompt="Create one bounded product.",
-            edit_evidence="A bounded edit.",
-            release_selector="",
-            repair_tier="standard",
-            started_at=0.0,
-            host_candidate={},
-        )
-
-    assert provider_discovery_calls == 0
-    assert exc_info.value.outcome == {"kind": "environment", "code": "MODEL_TIMEOUT_NO_WRITE"}
 
 
 @pytest.mark.parametrize("target", [90.0, 120.0, 150.0])
@@ -415,20 +312,12 @@ def test_expired_operational_timeout_cannot_begin_staging(monkeypatch, tmp_path,
     assert list(tmp_path.iterdir()) == []
 
 
-def test_non_english_contract_is_rejected_without_lexical_detection_or_provider_call() -> None:
-    provider = _ProviderThatMustNotRun()
-
+def test_non_english_contract_is_rejected_before_candidate_admission() -> None:
     with pytest.raises(ValueError, match="unsupported_evidence_language"):
-        author_greenfield_intent(
-            evidence_text="A structurally valid project description.",
-            provider=provider,
-            participant_provider_factory=lambda: provider,
-            source_format="operator_prompt",
-            source_document_count=1,
+        prepare_model_authoring_evidence(
+            prompt="A structurally valid project description.",
             source_language="fr",
         )
-
-    assert provider.calls == 0
 
 
 def test_prompt_and_edit_are_counted_as_one_and_two_exact_documents() -> None:
@@ -517,7 +406,7 @@ def test_authoring_schema_and_operating_receipt_use_the_same_caps() -> None:
         (("filesystem_contract", "locking"), "best_effort"),
         (("host_contract", "other_hosts"), "unrestricted"),
         (("model_contract", "lower_capability_behavior"), "invent_and_continue"),
-        (("model_contract", "observed", "participant_selection", "authoring_tier"), "deep"),
+        (("model_contract", "observed", "runtime_semantic_model_call_count"), 1),
     ),
 )
 def test_validator_rejects_mutated_supported_contract_sections(
@@ -542,9 +431,9 @@ def test_validator_rejects_mutated_supported_contract_sections(
         require_supported_greenfield_operating_envelope(mutated)
 
 
-def test_public_envelope_rejects_partial_or_cross_profile_role_observations() -> None:
+def test_public_envelope_rejects_partial_or_nonzero_runtime_observations() -> None:
     partial = _model_observation()
-    partial.pop("participant_selection")
+    partial.pop("host_candidate")
     partial_receipt = greenfield_operating_envelope_receipt(
         facts={}, source_format="operator_prompt", source_size_bytes=120,
         model_authoring=partial,
@@ -552,33 +441,14 @@ def test_public_envelope_rejects_partial_or_cross_profile_role_observations() ->
     assert partial_receipt["status"] == "unsupported"
     assert partial_receipt["issues"] == ["missing_model_authoring_observation"]
 
-    crossed = _model_observation()
-    crossed["remaining_candidate_authoring"] = _model_observation(
-        RESCUE_PROFILE_ID
-    )["remaining_candidate_authoring"]
-    crossed_receipt = greenfield_operating_envelope_receipt(
+    nonzero = _model_observation()
+    nonzero["runtime_semantic_model_call_count"] = 1
+    nonzero_receipt = greenfield_operating_envelope_receipt(
         facts={}, source_format="operator_prompt", source_size_bytes=120,
-        model_authoring=crossed,
+        model_authoring=nonzero,
     )
-    assert crossed_receipt["status"] == "unsupported"
-    assert crossed_receipt["issues"] == ["model_authoring_observation_mismatch"]
-
-
-@pytest.mark.parametrize("profile_id", [RESCUE_PROFILE_ID, DEEP_PROFILE_ID])
-def test_public_envelope_rejects_control_and_diagnostic_profiles_as_success(
-    profile_id: str,
-) -> None:
-    receipt = greenfield_operating_envelope_receipt(
-        facts={},
-        source_format="operator_prompt",
-        source_size_bytes=120,
-        model_authoring=_model_observation(profile_id),
-    )
-
-    assert receipt["status"] == "unsupported"
-    assert receipt["issues"] == ["model_authoring_observation_mismatch"]
-    with pytest.raises(ValueError, match="outside the declared operating envelope"):
-        require_supported_greenfield_operating_envelope(receipt)
+    assert nonzero_receipt["status"] == "unsupported"
+    assert nonzero_receipt["issues"] == ["missing_model_authoring_observation"]
 
 
 def test_validator_rejects_v4_receipt_and_v22_model_contract() -> None:

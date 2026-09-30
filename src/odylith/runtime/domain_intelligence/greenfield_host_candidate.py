@@ -1,33 +1,20 @@
-"""Admit one host-authored Greenfield candidate without runtime re-authoring.
+"""Admit and seal one complete host-authored Greenfield candidate.
 
-The host candidate is an untrusted typed hypothesis.  This boundary reuses the
-canonical authoring validator and independent candidate reviewer; it does not
-repair, revise, parse, or reinterpret the candidate.
+The host candidate is an untrusted typed hypothesis. This boundary canonicalizes
+source locators and runs deterministic validation once. It never invokes a model,
+provider, reviewer, repair, retry, or fallback after candidate receipt.
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
-import math
 from collections.abc import Callable, Mapping
-from copy import deepcopy
 from dataclasses import replace
 from pathlib import Path
 from time import monotonic
 from typing import Any
 
-from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
-    GreenfieldCandidateClarificationRequired,
-    GreenfieldCandidateRejected,
-    REFERENCE_PROVENANCE_ROLE_CONTRACT,
-    review_greenfield_candidate,
-)
-from odylith.runtime.domain_intelligence.greenfield_review_custody import (
-    candidate_for_pre_review_validation,
-    finalize_admitted_review,
-    project_reviewed_custody,
-)
 from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import (
     HOST_CANDIDATE_FORMAT_VERSION,
     canonical_greenfield_host_candidate,
@@ -40,19 +27,19 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring impor
     greenfield_authoring_payload,
     validate_greenfield_authoring_response,
 )
-from odylith.runtime.domain_intelligence.greenfield_model_proof_observation import (
-    emit_greenfield_model_proof_observation,
-)
-from odylith.runtime.domain_intelligence.greenfield_model_outcomes import (
-    GreenfieldModelRuntimeError,
-)
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     STANDARD_PROFILE_ID,
     get_greenfield_model_profile,
 )
+from odylith.runtime.domain_intelligence.greenfield_model_proof_observation import (
+    emit_greenfield_model_proof_observation,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_invariants import (
+    REFERENCE_PROVENANCE_ROLE_CONTRACT,
+)
 
-HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v1"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v31"
+HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v2"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v32"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
 
 
@@ -65,8 +52,9 @@ def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
         "canonical_version": GREENFIELD_INTENT_AUTHORING_VERSION,
         "task": (
             "Reason over the complete source and return exactly one JSON value matching "
-            "candidate_schema. The candidate is an untrusted hypothesis; Odylith will "
-            "revalidate every citation and run an independent semantic review."
+            "candidate_schema. The candidate is the host's one complete semantic pass and "
+            "an untrusted hypothesis; Odylith will deterministically revalidate its exact "
+            "citations, typed relations, invariants, and hashes without another semantic call."
         ),
         "requirements": [
             (
@@ -101,13 +89,15 @@ def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
                 "source sentence into non-overlapping event clauses even when one actor owns "
                 "several actions; never reuse or partially overlap event citations. When the "
                 "source expresses inseparable joined actions, preserve the complete joined action "
-                "in one event. The independent reviewer owns all accepted component-responsibility "
-                "custody."
+                "in one event. Supply every accepted component and responsibility directly, "
+                "including exact source occurrences and source-bound owners."
             ),
             (
-                "Keep every accepted operational constraint only in facts.operational_constraints; "
-                "the independent reviewer owns its later typed custody and the complete accepted "
-                "source precedence relation between existing source-supported events."
+                "Keep every accepted operational constraint in facts.operational_constraints and "
+                "supply the complete source_precedence relation between existing source-supported "
+                "events. Passive or unowned timing creates no edge. An exact cited clause may be "
+                "both an event responsibility and an operational constraint only when the same "
+                "source bytes genuinely carry both typed meanings."
             ),
             "Keep accepted source facts separate from assumptions and provisional design decisions.",
             (
@@ -173,40 +163,25 @@ def admit_greenfield_host_candidate(
     *,
     evidence_text: str,
     profile_id: str = STANDARD_PROFILE_ID,
-    review_provider_factory: Callable[[], Any] | None,
-    deadline: float | None = None,
     clock: Callable[[], float] = monotonic,
 ) -> tuple[
     GreenfieldModelAuthoredIntent | GreenfieldAuthoringClarification,
     dict[str, Any],
 ]:
-    """Validate and independently review one immutable host candidate."""
+    """Canonicalize, validate once, and seal one immutable host candidate."""
 
     profile = get_greenfield_model_profile(profile_id)
     started = clock()
-    model_deadline = started + profile.model_timeout_seconds
-    if deadline is not None:
-        if not math.isfinite(deadline):
-            raise ValueError("Greenfield received an invalid host-candidate deadline")
-        model_deadline = min(model_deadline, deadline)
-    effective_window = model_deadline - started
-    if effective_window < 1.0:
-        raise GreenfieldModelRuntimeError("timeout")
-
-    frozen = _canonical_candidate_bytes(response)
-    candidate_sha256 = hashlib.sha256(frozen).hexdigest()
+    raw_frozen = _canonical_candidate_bytes(response)
+    raw_candidate_sha256 = hashlib.sha256(raw_frozen).hexdigest()
     canonical_response = canonical_greenfield_host_candidate(
         response,
         evidence_text=evidence_text,
     )
     canonical_frozen = _canonical_candidate_bytes(canonical_response)
-    validation_response = deepcopy(canonical_response)
-    if canonical_response["result"].get("status") == "authored":
-        validation_response["result"] = candidate_for_pre_review_validation(
-            canonical_response["result"]
-        )
+    canonical_candidate_sha256 = hashlib.sha256(canonical_frozen).hexdigest()
     authored = validate_greenfield_authoring_response(
-        validation_response,
+        canonical_response,
         evidence_text=evidence_text,
         elapsed_seconds=0.0,
         provider={
@@ -215,139 +190,42 @@ def admit_greenfield_host_candidate(
             "reasoning_effort": "not-observed",
         },
         profile_id=profile_id,
-        effective_timeout_seconds=effective_window,
+        effective_timeout_seconds=profile.model_timeout_seconds,
         semantic_model_call_count=0,
         allow_zero_semantic_calls=True,
         event_citations_are_event_owned=True,
+        allow_exact_dual_role_constraints=True,
     )
-    if _canonical_candidate_bytes(response) != frozen:
+    if _canonical_candidate_bytes(response) != raw_frozen:
         raise RuntimeError("Greenfield host-candidate validation changed the candidate")
     if _canonical_candidate_bytes(canonical_response) != canonical_frozen:
         raise RuntimeError("Greenfield host-candidate validation changed the canonical projection")
 
-    base_receipt = {
+    receipt = {
         "version": HOST_CANDIDATE_RECEIPT_VERSION,
-        "contract_version": GREENFIELD_INTENT_AUTHORING_VERSION,
+        "contract_version": HOST_CANDIDATE_CONTRACT_VERSION,
+        "canonical_version": GREENFIELD_INTENT_AUTHORING_VERSION,
         "source_sha256": hashlib.sha256(evidence_text.encode("utf-8")).hexdigest(),
-        "candidate_sha256": candidate_sha256,
+        "raw_candidate_sha256": raw_candidate_sha256,
+        "canonical_candidate_sha256": canonical_candidate_sha256,
     }
-    if isinstance(authored, GreenfieldAuthoringClarification):
-        return authored, base_receipt
-
-    review_observation: dict[str, Any] = {}
-    try:
-        review = review_greenfield_candidate(
-            evidence_text=evidence_text,
-            candidate=canonical_response["result"],
-            profile_id=profile_id,
-            source_spans=authored.source_spans,
-            provider_factory=review_provider_factory,
-            deadline=model_deadline,
-            clock=clock,
-            observation=review_observation,
+    if isinstance(authored, GreenfieldModelAuthoredIntent):
+        authored = replace(
+            authored,
+            elapsed_seconds=max(0.0, clock() - started),
+            effective_model_window_seconds=profile.model_timeout_seconds,
         )
-    except GreenfieldCandidateRejected as rejection:
-        emit_greenfield_model_proof_observation(
-            evidence_text=evidence_text,
-            semantic_model_call_count=1,
-            participant_selection=None,
-            remaining_candidate_authoring=None,
-            joined_candidate=None,
-            candidate_review=rejection.receipt,
-            failure=None,
-            origin="host_native",
-            host_candidate=base_receipt,
+    elif isinstance(authored, GreenfieldAuthoringClarification):
+        authored = replace(
+            authored,
+            elapsed_seconds=max(0.0, clock() - started),
+            effective_model_window_seconds=profile.model_timeout_seconds,
         )
-        raise
-    except GreenfieldCandidateClarificationRequired as clarification:
-        emit_greenfield_model_proof_observation(
-            evidence_text=evidence_text,
-            semantic_model_call_count=1,
-            participant_selection=None,
-            remaining_candidate_authoring=None,
-            joined_candidate=None,
-            candidate_review=clarification.receipt,
-            failure=None,
-            origin="host_native",
-            host_candidate=base_receipt,
-        )
-        return (
-            GreenfieldAuthoringClarification(
-                required_fields=(clarification.material_dimension,),
-                elapsed_seconds=max(0.0, clock() - started),
-                tier=authored.tier,
-                provider=deepcopy(authored.provider),
-                profile_id=authored.profile_id,
-                effective_timeout_seconds=authored.effective_timeout_seconds,
-                consistency_status="material_ambiguity",
-                consistency_source_spans=(),
-                clarification_basis="complete_source_missingness",
-                effective_model_window_seconds=effective_window,
-                candidate_review=deepcopy(dict(clarification.receipt)),
-                semantic_model_call_count=1,
-            ),
-            base_receipt,
-        )
-    projected_response = deepcopy(canonical_response)
-    projected_response["result"] = project_reviewed_custody(
-        canonical_response["result"],
-        component_custody=review["admission_witness"]["component_custody"],
-        source_precedence_custody=review["admission_witness"][
-            "source_precedence_custody"
-        ],
-        constraint_custody=review["admission_witness"]["constraint_custody"],
-        evidence_text=evidence_text,
-    )
-    projected_frozen = _canonical_candidate_bytes(projected_response)
-    projected_authored = validate_greenfield_authoring_response(
-        projected_response,
-        evidence_text=evidence_text,
-        elapsed_seconds=0.0,
-        provider={
-            "provider": "host-native",
-            "model": "outside-runtime-custody",
-            "reasoning_effort": "not-observed",
-        },
-        profile_id=profile_id,
-        effective_timeout_seconds=effective_window,
-        semantic_model_call_count=0,
-        allow_zero_semantic_calls=True,
-        event_citations_are_event_owned=True,
-        reviewer_projected_constraints=True,
-    )
-    if not isinstance(projected_authored, GreenfieldModelAuthoredIntent):
-        raise RuntimeError("Greenfield admitted review produced no final candidate")
-    if _canonical_candidate_bytes(projected_response) != projected_frozen:
-        raise RuntimeError("Greenfield final validation changed the projected candidate")
-    review = finalize_admitted_review(
-        review,
-        candidate=projected_response["result"],
-    )
     emit_greenfield_model_proof_observation(
         evidence_text=evidence_text,
-        semantic_model_call_count=1,
-        participant_selection=None,
-        remaining_candidate_authoring=None,
-        joined_candidate=None,
-        candidate_review=review,
-        failure=None,
-        origin="host_native",
-        host_candidate=base_receipt,
+        host_candidate=receipt,
     )
-    if _canonical_candidate_bytes(response) != frozen:
-        raise RuntimeError("Greenfield host-candidate review changed the candidate")
-    if _canonical_candidate_bytes(canonical_response) != canonical_frozen:
-        raise RuntimeError("Greenfield host-candidate review changed the canonical projection")
-    return (
-        replace(
-            projected_authored,
-            elapsed_seconds=max(0.0, clock() - started),
-            effective_model_window_seconds=effective_window,
-            semantic_model_call_count=1,
-            candidate_review=deepcopy(review),
-        ),
-        base_receipt,
-    )
+    return authored, receipt
 
 
 def _canonical_candidate_bytes(response: Mapping[str, Any]) -> bytes:

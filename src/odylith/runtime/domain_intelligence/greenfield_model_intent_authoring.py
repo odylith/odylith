@@ -27,7 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     GreenfieldAuthoredSemanticsError,
     authored_component_relation_facts,
 )
-from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
+from odylith.runtime.domain_intelligence.greenfield_semantic_invariants import (
     HUMAN_ACTOR_ROLE_DEFINITION,
     INTERNAL_SYSTEM_ROLE_DEFINITION,
     OPERATIONAL_CONSTRAINT_ROLE_DEFINITION,
@@ -74,7 +74,7 @@ from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
     validate_provisional_design,
 )
 
-GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v76"
+GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v77"
 MATERIALITY_DECISION_CONTRACT = (
     "Ask only when a missing or conflicting choice materially changes the target "
     "user, usable path, visible outcome, product/dependency boundary, source constraint, "
@@ -156,9 +156,6 @@ class GreenfieldAuthoringClarification:
     consistency_source_spans: tuple[dict[str, Any], ...]
     clarification_basis: str = ""
     effective_model_window_seconds: float = 0.0
-    participant_selection: dict[str, Any] = field(default_factory=dict)
-    remaining_candidate_authoring: dict[str, Any] = field(default_factory=dict)
-    candidate_review: dict[str, Any] = field(default_factory=dict)
     semantic_model_call_count: int = 0
 
 
@@ -182,10 +179,7 @@ class GreenfieldModelAuthoredIntent:
     effective_timeout_seconds: float
     consistency_status: str
     effective_model_window_seconds: float = 0.0
-    participant_selection: dict[str, Any] = field(default_factory=dict)
-    remaining_candidate_authoring: dict[str, Any] = field(default_factory=dict)
     semantic_model_call_count: int = 0
-    candidate_review: dict[str, Any] = field(default_factory=dict)
 
 
 def authoring_tier(profile_id: str) -> str:
@@ -205,7 +199,7 @@ def validate_greenfield_authoring_response(
     semantic_model_call_count: int,
     allow_zero_semantic_calls: bool = False,
     event_citations_are_event_owned: bool = False,
-    reviewer_projected_constraints: bool = False,
+    allow_exact_dual_role_constraints: bool = False,
 ) -> GreenfieldModelAuthoredIntent | GreenfieldAuthoringClarification:
     minimum_call_count = 0 if allow_zero_semantic_calls else 1
     if type(semantic_model_call_count) is not int or semantic_model_call_count < minimum_call_count:
@@ -295,7 +289,7 @@ def validate_greenfield_authoring_response(
             first_path=str(intent.get("first_path") or ""),
             evidence_text=evidence_text,
             event_citations_are_event_owned=event_citations_are_event_owned,
-            reviewer_projected_constraints=reviewer_projected_constraints,
+            allow_exact_dual_role_constraints=allow_exact_dual_role_constraints,
         )
         authored_component_relation_facts(
             title=str(intent.get("title") or ""),

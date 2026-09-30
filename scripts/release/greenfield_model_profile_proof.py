@@ -1,209 +1,126 @@
-"""Observed release proof for installed Greenfield model profiles."""
+"""Observed release proof for one host semantic authority and zero runtime calls."""
 
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from copy import deepcopy
 import hashlib
-import json
+import math
 from typing import Any
 
+from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_ARGUMENT_COUNT
+from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_RECEIPT_VERSION
+from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_SHAPE_SHA256
 from greenfield_model_profiles import DEEP_PROFILE_ID
 from greenfield_model_profiles import LOWER_CAPABILITY_CONTROL_PROFILES
 from greenfield_model_profiles import MODEL_PROFILES
 from greenfield_model_profiles import UNAVAILABLE_PROVIDER_PROFILE
-from greenfield_model_profiles import host_native_argv_receipt_issues
-from greenfield_model_profiles import host_native_clarification_stage_observation_issues
-from greenfield_model_profiles import model_stage_observation_issues
-from greenfield_retained_candidate_proof import retained_admitted_candidate_hash_issues
-from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
-    CANDIDATE_REVIEW_VERSION,
-    candidate_review_admission_witness_shape_issues,
+from greenfield_retained_candidate_proof import (
+    retained_canonical_candidate_hash_issues,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
+    GREENFIELD_INTENT_AUTHORING_VERSION,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     get_greenfield_model_profile,
-    greenfield_model_profile_observation_issues,
 )
 
 
-MODEL_PROFILE_PROOF_VERSION = "odylith.greenfield.installed-model-profile-proof.v6"
-UNAVAILABLE_PROVIDER_FAILURE_TEXT = "model authoring is unavailable"
+MODEL_PROFILE_PROOF_VERSION = (
+    "odylith.greenfield.installed-single-authority-profile-proof.v7"
+)
 TRANSACTION_COMMITTED_EXPECTATION = "transaction_committed"
 CLARIFICATION_REQUIRED_EXPECTATION = "clarification_required"
 CLARIFICATION_NO_WRITE_SCORE_BASIS = "clarification_required_no_write_contract"
 
 
+def _is_exact_int(value: Any, expected: int) -> bool:
+    return type(value) is int and value == expected
+
+
 def authored_model_result_binding_issues(
     *,
     stage_observation: Mapping[str, Any],
-    reviewer_observation: Mapping[str, Any] | None = None,
-    review_input_candidate: Mapping[str, Any] | None = None,
+    raw_candidate: Mapping[str, Any],
     create_payload: Mapping[str, Any],
     expected_source: str,
 ) -> tuple[str, ...]:
-    """Bind retained private author/review evidence to the committed receipt."""
+    """Bind retained host output to the committed single-authority receipts."""
 
-    retained = _mapping(stage_observation)
-    model_authoring = _nested_mapping(_mapping(create_payload), "commit_manifest", "model_authoring")
-    if model_authoring.get("authoring_origin") == "host_native":
-        return _host_native_result_binding_issues(
-            stage_observation=retained,
-            reviewer_observation=_mapping(reviewer_observation),
-            review_input_candidate=_mapping(review_input_candidate),
-            model_authoring=model_authoring,
-            expected_source=expected_source,
-        )
-    private_request = _mapping(retained.get("request"))
-    private_review = _mapping(retained.get("candidate_review"))
-    private_review_request = _mapping(private_review.get("request"))
-    private_candidate = private_review_request.get("candidate")
-    receipt = _nested_mapping(
-        _mapping(create_payload),
-        "commit_manifest",
-        "model_authoring",
-        "candidate_review",
-    )
+    stage = _mapping(stage_observation)
+    manifest = _nested_mapping(_mapping(create_payload), "commit_manifest")
+    model_authoring = _mapping(manifest.get("model_authoring"))
+    semantic_compiler = _mapping(manifest.get("semantic_compiler"))
+    canonical_authority = _mapping(model_authoring.get("canonical_authority"))
+    receipt = _mapping(model_authoring.get("host_candidate"))
     issues: list[str] = []
-    source = str(expected_source or "")
-    if not source:
-        issues.append("expected authored source is missing")
-    if set(private_request) != {"version", "evidence"}:
-        issues.append("retained private author request is missing or malformed")
-    elif private_request.get("evidence") != source:
-        issues.append("retained private author request does not match the expected source")
-    if not private_review or private_review.get("dispatched") is not True:
-        issues.append("retained private candidate review is missing")
-    if not isinstance(private_candidate, Mapping):
-        issues.append("retained private reviewed candidate is missing")
 
-    if not receipt:
-        issues.append("sealed candidate-review receipt is missing")
-        return tuple(issues)
-    if (
-        receipt.get("version") != CANDIDATE_REVIEW_VERSION
-        or receipt.get("status") != "admitted"
+    expected_model_authoring_fields = {
+        "authoring_origin",
+        "authoring_version",
+        "runtime_semantic_model_call_count",
+        "tier",
+        "elapsed_seconds",
+        "effective_model_window_seconds",
+        "host_candidate",
+        "canonical_authority",
+    }
+    if set(model_authoring) != expected_model_authoring_fields:
+        issues.append("sealed model-authoring receipt has missing or unsupported fields")
+    if model_authoring.get("authoring_origin") != "host_native":
+        issues.append("sealed model-authoring receipt does not identify host authority")
+    if model_authoring.get("authoring_version") != GREENFIELD_INTENT_AUTHORING_VERSION:
+        issues.append("sealed model-authoring version is invalid")
+    if not _is_exact_int(
+        model_authoring.get("runtime_semantic_model_call_count"), 0
     ):
-        issues.append("sealed candidate-review receipt is not admitted")
+        issues.append("sealed runtime semantic model call count is not zero")
 
-    expected_source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
-    sealed_source_sha256 = receipt.get("source_sha256")
-    if not _is_sha256(sealed_source_sha256):
-        issues.append("sealed candidate-review source hash is invalid")
-    elif sealed_source_sha256 != expected_source_sha256:
-        issues.append("sealed candidate-review source hash does not match the expected source")
+    expected_compiler = {
+        "version": "odylith.greenfield.authored-semantic-validation.v5",
+        "status": "passed",
+        "semantic_owner": "host_canonical_candidate",
+        "post_candidate_receipt_semantic_calls": 0,
+    }
+    if semantic_compiler != expected_compiler:
+        issues.append("semantic compiler does not prove zero post-receipt semantic calls")
+    elif not _is_exact_int(
+        semantic_compiler.get("post_candidate_receipt_semantic_calls"), 0
+    ):
+        issues.append("semantic compiler does not prove zero post-receipt semantic calls")
 
-    sealed_review_input_sha256 = receipt.get("review_input_candidate_sha256")
-    if not _is_sha256(sealed_review_input_sha256):
-        issues.append("sealed candidate-review input hash is invalid")
-    elif isinstance(private_candidate, Mapping):
-        try:
-            private_candidate_sha256 = hashlib.sha256(
-                json.dumps(
-                    private_candidate,
-                    sort_keys=True,
-                    ensure_ascii=False,
-                    separators=(",", ":"),
-                    allow_nan=False,
-                ).encode("utf-8")
-            ).hexdigest()
-        except (TypeError, ValueError, OverflowError):
-            issues.append("retained private reviewed candidate is not canonical JSON")
-        else:
-            if private_candidate_sha256 != sealed_review_input_sha256:
-                issues.append(
-                    "retained private reviewed candidate does not match the sealed review input"
-                )
-    if not _is_sha256(receipt.get("candidate_sha256")):
-        issues.append("sealed candidate-review candidate hash is invalid")
-    joined_candidate = _mapping(_mapping(retained.get("joined_candidate")).get("result"))
+    expected_source_sha256 = hashlib.sha256(expected_source.encode("utf-8")).hexdigest()
+    expected_authority_fields = {
+        "canonical_candidate_sha256",
+        "source_sha256",
+        "product_facts_sha256",
+        "authored_relation_set_sha256",
+    }
+    if set(canonical_authority) != expected_authority_fields:
+        issues.append("canonical authority has missing or unsupported fields")
+    for field in expected_authority_fields:
+        if not _is_sha256(canonical_authority.get(field)):
+            issues.append(f"canonical authority {field} is invalid")
+    if canonical_authority.get("source_sha256") != expected_source_sha256:
+        issues.append("canonical authority source hash does not match retained evidence")
+    if canonical_authority.get("canonical_candidate_sha256") != receipt.get(
+        "canonical_candidate_sha256"
+    ):
+        issues.append("canonical authority does not match the sealed host candidate")
+
     issues.extend(
-        retained_admitted_candidate_hash_issues(
-            review_input_candidate=joined_candidate,
+        retained_canonical_candidate_hash_issues(
+            raw_candidate=raw_candidate,
             receipt=receipt,
-            evidence_text=source,
+            evidence_text=expected_source,
         )
     )
-    return tuple(dict.fromkeys(issues))
-
-
-def _host_native_result_binding_issues(
-    *,
-    stage_observation: Mapping[str, Any],
-    reviewer_observation: Mapping[str, Any],
-    review_input_candidate: Mapping[str, Any],
-    model_authoring: Mapping[str, Any],
-    expected_source: str,
-) -> tuple[str, ...]:
-    """Bind retained one-shot host execution to sealed candidate and review receipts."""
-
-    issues: list[str] = []
-    source = str(expected_source or "")
-    if not source:
-        issues.append("expected authored source is missing")
-    candidate = _mapping(model_authoring.get("host_candidate"))
-    if set(candidate) != {
-        "version", "contract_version", "source_sha256", "candidate_sha256",
-    }:
-        issues.append("sealed host candidate receipt is missing or malformed")
-    expected_source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
-    if candidate.get("source_sha256") != expected_source_sha256:
-        issues.append("sealed host candidate source hash does not match the expected source")
-    if not _is_sha256(candidate.get("candidate_sha256")):
-        issues.append("sealed host candidate hash is invalid")
-    if stage_observation.get("candidate_sha256") != candidate.get("candidate_sha256"):
-        issues.append("retained host candidate does not match the sealed receipt")
-
-    review = _mapping(model_authoring.get("candidate_review"))
-    if not review:
-        issues.append("sealed candidate-review receipt is missing")
-    elif (
-        review.get("version") != CANDIDATE_REVIEW_VERSION
-        or review.get("status") != "admitted"
-    ):
-        issues.append("sealed candidate-review receipt is not admitted")
-    elif review.get("source_sha256") != expected_source_sha256:
-        issues.append("sealed candidate-review source hash does not match the expected source")
-    private = _mapping(reviewer_observation)
-    private_request = _mapping(private.get("request"))
-    private_candidate = _mapping(private.get("host_candidate"))
-    private_review = _mapping(private.get("candidate_review"))
-    if set(private) != {
-        "version", "authoring_version", "request", "semantic_model_call_count",
-        "origin", "host_candidate", "candidate_review",
-    }:
-        issues.append("retained private host-native admission proof is missing or malformed")
-    if private.get("origin") != "host_native" or private.get("semantic_model_call_count") != 1:
-        issues.append("retained private host-native admission proof has invalid custody")
-    if private_request.get("evidence") != source:
-        issues.append("retained private host-native admission source does not match expected source")
-    if private_candidate != candidate:
-        issues.append("retained private host candidate receipt does not match the sealed receipt")
-    for field in (
-        "version", "status", "source_sha256", "review_input_candidate_sha256",
-        "candidate_sha256", "model_profile", "admission_witness",
-    ):
-        if private_review.get(field) != review.get(field):
-            issues.append(
-                "retained private host-native admission does not match the sealed reviewer receipt"
-            )
-            break
-    if not _is_sha256(review.get("review_input_candidate_sha256")):
-        issues.append("sealed candidate-review input hash is invalid")
-    if not _is_sha256(review.get("candidate_sha256")):
-        issues.append("sealed candidate-review candidate hash is invalid")
-    issues.extend(
-        retained_admitted_candidate_hash_issues(
-            review_input_candidate=review_input_candidate,
-            receipt=review,
-            evidence_text=source,
-        )
-    )
-    if not _is_sha256(review.get("product_facts_sha256")):
-        issues.append("sealed candidate-review product-facts hash is invalid")
-    if candidate_review_admission_witness_shape_issues(
-        review.get("admission_witness")
-    ):
-        issues.append("sealed candidate-review admission witness is invalid")
+    if stage.get("raw_candidate_sha256") != receipt.get("raw_candidate_sha256"):
+        issues.append("retained host stage does not match the sealed raw candidate")
+    if not _is_exact_int(stage.get("runtime_semantic_model_call_count"), 0):
+        issues.append("retained host stage reports a runtime semantic model call")
+    if not _is_exact_int(stage.get("post_receipt_provider_invocations"), 0):
+        issues.append("retained host stage reports a post-receipt provider invocation")
     return tuple(dict.fromkeys(issues))
 
 
@@ -212,7 +129,7 @@ def sealed_model_profile_observation(
     proposal: Mapping[str, Any] | None = None,
     create_payload: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Read the actual request observation from its sealed authority owner."""
+    """Read the request observation from its sealed product-intent authority."""
 
     proposal_row = _mapping(proposal)
     payload = _mapping(create_payload)
@@ -253,10 +170,10 @@ def model_profile_release_proof(
     *,
     require_complete: bool,
 ) -> dict[str, Any]:
-    """Require Astra success plus one Luna clarification/no-write control."""
+    """Require host/profile parity and zero post-receipt calls for every row."""
 
-    qualified_profile_ids = (*MODEL_PROFILES, *LOWER_CAPABILITY_CONTROL_PROFILES)
-    rows: dict[str, list[Any]] = {profile_id: [] for profile_id in qualified_profile_ids}
+    qualified = (*MODEL_PROFILES, *LOWER_CAPABILITY_CONTROL_PROFILES)
+    rows: dict[str, list[Any]] = {profile_id: [] for profile_id in qualified}
     validation_issues: list[str] = []
     coverage_issues: list[str] = []
     for result in results:
@@ -274,118 +191,75 @@ def model_profile_release_proof(
             )
             continue
         rows[profile_id].append(result)
-        if str(profile_evidence.get("status") or "") != "passed":
-            validation_issues.append(f"model profile `{profile_id}` lacks sealed request parity")
-        if str(getattr(result, "status", "") or "").strip() != "passed":
-            validation_issues.append(f"model profile `{profile_id}` lacks a passed terminal matrix result")
-        validation_issues.extend(
-            f"model profile `{profile_id}` {issue}"
-            for issue in _profile_observation_issues(
-                profile_evidence, profile_id, expectation=_result_expectation(result)
-            )
-        )
-        if not bool(getattr(getattr(result, "quality", None), "passed", False)):
-            validation_issues.append(f"model profile `{profile_id}` has a semantic or product-quality failure")
-        elapsed = _float_value(getattr(result, "proposal_seconds", 0.0))
-        contract = get_greenfield_model_profile(profile_id)
-        if not 0.0 < elapsed < contract.operational_timeout_seconds:
+        if not _result_proves_profile(result, profile_id):
             validation_issues.append(
-                f"model profile `{profile_id}` is missing strict under-"
-                f"{contract.operational_timeout_seconds:g}s installed operational-timeout proof"
+                f"model profile `{profile_id}` lacks one-host/zero-runtime-call proof"
             )
         expectation = _result_expectation(result)
-        lower_capability_control = profile_id in LOWER_CAPABILITY_CONTROL_PROFILES
-        if expectation not in {TRANSACTION_COMMITTED_EXPECTATION, CLARIFICATION_REQUIRED_EXPECTATION}:
+        if expectation not in {
+            TRANSACTION_COMMITTED_EXPECTATION,
+            CLARIFICATION_REQUIRED_EXPECTATION,
+        }:
             validation_issues.append(
                 f"model profile `{profile_id}` lacks a declared supported case expectation"
             )
-        elif lower_capability_control and expectation != CLARIFICATION_REQUIRED_EXPECTATION:
+        if (
+            profile_id in LOWER_CAPABILITY_CONTROL_PROFILES
+            and expectation != CLARIFICATION_REQUIRED_EXPECTATION
+        ):
             validation_issues.append(
                 f"lower-capability control `{profile_id}` must clarify without writing"
             )
-        elif expectation == CLARIFICATION_REQUIRED_EXPECTATION and not _result_proves_clarification_no_write(result, profile_id):
+        if (
+            expectation == CLARIFICATION_REQUIRED_EXPECTATION
+            and not _result_proves_clarification_no_write(result, profile_id)
+        ):
             validation_issues.append(
                 f"model profile `{profile_id}` clarification row lacks source-bound no-write proof"
             )
-    if require_complete:
-        for profile_id in MODEL_PROFILES:
-            profile_results = rows[profile_id]
-            if not profile_results:
-                coverage_issues.append(f"release proof is missing success profile `{profile_id}`")
-            elif not any(_result_proves_committed_case(result, profile_id) for result in profile_results):
-                coverage_issues.append(
-                    f"release proof is missing a committed positive case for model profile `{profile_id}`"
-                )
 
-    lower_profile_ids = LOWER_CAPABILITY_CONTROL_PROFILES
-    if not lower_profile_ids:
-        validation_issues.append("release contract does not declare a lower-capability control")
-    for profile_id in lower_profile_ids:
+    for profile_id in MODEL_PROFILES:
         profile_results = rows[profile_id]
-        if len(profile_results) > 1:
-            validation_issues.append(
-                f"lower-capability control `{profile_id}` must contain exactly one result"
-            )
-        if not any(_result_proves_clarification_no_write(result, profile_id) for result in profile_results):
+        if not any(
+            _result_proves_committed_case(result, profile_id)
+            for result in profile_results
+        ):
             coverage_issues.append(
-                f"lower-capability control `{profile_id}` lacks an observed "
-                "source-bound clarification/no-write control"
+                f"release proof is missing a committed positive case for model profile `{profile_id}`"
+            )
+    for profile_id in LOWER_CAPABILITY_CONTROL_PROFILES:
+        profile_results = rows[profile_id]
+        if not any(
+            _result_proves_clarification_no_write(result, profile_id)
+            for result in profile_results
+        ):
+            coverage_issues.append(
+                f"lower-capability control `{profile_id}` lacks a clarification/no-write case"
             )
 
-    profile_summaries = {}
+    profiles: dict[str, Any] = {}
     for profile_id, profile_results in rows.items():
         contract = get_greenfield_model_profile(profile_id)
-        host_native = bool(profile_results) and all(
-            _profile_evidence_is_host_native(
-                _mapping(
-                    _mapping(getattr(result, "evidence", None)).get("model_profile")
-                )
-            )
-            for result in profile_results
-        )
-        elapsed_values = [
+        elapsed = [
             _float_value(getattr(result, "proposal_seconds", 0.0))
             for result in profile_results
         ]
-        profile_summaries[profile_id] = {
+        profiles[profile_id] = {
             "repair_tier": contract.repair_tier,
             "provider": contract.provider,
-            "model": contract.model,
-            "reasoning_effort": contract.reasoning_effort,
-            "participant_selection_model": (
-                "not_applicable" if host_native else contract.participant_model
-            ),
-            "participant_selection_reasoning_effort": (
-                "not_applicable" if host_native else contract.participant_reasoning_effort
-            ),
-            "remaining_candidate_authoring_model": (
-                "external_host" if host_native else contract.model
-            ),
-            "remaining_candidate_authoring_reasoning_effort": (
-                "outside_runtime_custody" if host_native else contract.reasoning_effort
-            ),
-            "candidate_review_model": (
-                "not_applicable"
-                if profile_id in LOWER_CAPABILITY_CONTROL_PROFILES
-                else contract.review_model
-            ),
-            "candidate_review_reasoning_effort": (
-                "not_applicable"
-                if profile_id in LOWER_CAPABILITY_CONTROL_PROFILES
-                else contract.review_reasoning_effort
-            ),
-            "maximum_semantic_model_calls": 1 if host_native else 3,
+            "host_model": contract.model,
+            "host_reasoning_effort": contract.reasoning_effort,
+            "semantic_authority": "active_host_single_authority",
+            "host_semantic_model_calls": 1,
+            "runtime_semantic_model_calls_after_candidate_receipt": 0,
+            "post_receipt_provider_invocations": 0,
             "performance_target_seconds": contract.performance_target_seconds,
             "operational_timeout_seconds": contract.operational_timeout_seconds,
-            "performance_target_met": (
-                bool(elapsed_values)
-                and max(elapsed_values) <= contract.performance_target_seconds
-            ),
+            "performance_target_met": bool(elapsed)
+            and max(elapsed) <= contract.performance_target_seconds,
             "lower_capability": contract.lower_capability,
             "lower_capability_role": (
-                ("host_candidate" if host_native else "remaining_candidate_authoring")
-                if contract.lower_capability
-                else "not_applicable"
+                "host_candidate" if contract.lower_capability else "not_applicable"
             ),
             "case_count": len(profile_results),
             "committed_positive_case_count": sum(
@@ -396,40 +270,63 @@ def model_profile_release_proof(
                 _result_proves_clarification_no_write(result, profile_id)
                 for result in profile_results
             ),
-            "worst_proposal_seconds": max(elapsed_values, default=0.0),
+            "worst_proposal_seconds": max(elapsed, default=0.0),
             "status": (
                 "passed"
                 if profile_results
-                and all(_result_proves_valid_case(result, profile_id) for result in profile_results)
-                and (
-                    profile_id not in LOWER_CAPABILITY_CONTROL_PROFILES
-                    or all(
-                        _result_expectation(result) == CLARIFICATION_REQUIRED_EXPECTATION
-                        for result in profile_results
-                    )
+                and all(
+                    _result_proves_valid_case(result, profile_id)
+                    for result in profile_results
                 )
                 else "missing"
                 if not profile_results
                 else "failed"
             ),
         }
-    lower_capability_scope = _lower_capability_scope(rows, lower_profile_ids)
-    cleaned_validation_issues = tuple(dict.fromkeys(validation_issues))
-    cleaned_coverage_issues = tuple(dict.fromkeys(coverage_issues))
-    cleaned_issues = (*cleaned_validation_issues, *cleaned_coverage_issues)
+
+    validation_issues = list(dict.fromkeys(validation_issues))
+    coverage_issues = list(dict.fromkeys(coverage_issues))
+    valid_lower_profiles = [
+        profile_id
+        for profile_id in LOWER_CAPABILITY_CONTROL_PROFILES
+        if any(
+            _result_proves_clarification_no_write(result, profile_id)
+            for result in rows.get(profile_id, ())
+        )
+    ]
     status = (
         "failed"
-        if cleaned_validation_issues or (require_complete and cleaned_coverage_issues)
+        if validation_issues or (require_complete and coverage_issues)
         else "passed"
     )
     return {
         "version": MODEL_PROFILE_PROOF_VERSION,
         "status": status,
-        "coverage_status": "passed" if not cleaned_coverage_issues else "incomplete",
+        "coverage_status": "passed" if not coverage_issues else "incomplete",
         "required_complete_coverage": bool(require_complete),
-        "profiles": profile_summaries,
-        "lower_capability_scope": lower_capability_scope,
-        "issues": list(cleaned_issues),
+        "profiles": profiles,
+        "lower_capability_scope": {
+            "status": (
+                "passed" if len(valid_lower_profiles) == len(LOWER_CAPABILITY_CONTROL_PROFILES)
+                else "unproven"
+            ),
+            "role": "host_candidate",
+            "requirement": "source_bound_clarification_no_write_only",
+            "observed_profiles": [
+                {
+                    "profile_id": profile_id,
+                    "model": get_greenfield_model_profile(profile_id).model,
+                    "committed_positive_case_count": profiles[profile_id][
+                        "committed_positive_case_count"
+                    ],
+                    "clarification_no_write_control_count": profiles[profile_id][
+                        "clarification_no_write_control_count"
+                    ],
+                }
+                for profile_id in valid_lower_profiles
+            ],
+        },
+        "issues": [*validation_issues, *coverage_issues],
     }
 
 
@@ -445,41 +342,129 @@ def unavailable_provider_proof_issues(
     changed_records: Sequence[str],
     staged_transaction_present: bool,
 ) -> tuple[str, ...]:
-    """Require the negative profile to fail quickly before any repository write."""
+    """Require deterministic admission to ignore disabled runtime providers."""
 
-    del subprocess_attempts
+    del detail, subprocess_attempts
     contract = get_greenfield_model_profile(UNAVAILABLE_PROVIDER_PROFILE)
     issues: list[str] = []
-    if returncode == 0:
-        issues.append("unavailable-provider proposal unexpectedly succeeded")
+    if returncode != 0:
+        issues.append("post-receipt provider isolation proposal did not succeed")
     if not 0.0 < _float_value(proposal_seconds) < contract.operational_timeout_seconds:
-        issues.append("unavailable-provider failure did not finish inside the operational timeout")
-    if UNAVAILABLE_PROVIDER_FAILURE_TEXT not in str(detail or "").casefold():
-        issues.append("unavailable-provider proposal did not report model authoring unavailability")
+        issues.append("post-receipt provider isolation exceeded its operational timeout")
     if not write_audit_active:
-        issues.append("unavailable-provider proposal did not activate the installed write audit")
+        issues.append("post-receipt provider isolation did not activate the write audit")
     if write_audit_error:
-        issues.append("unavailable-provider write audit failed")
+        issues.append("post-receipt provider isolation write audit failed")
     if write_attempts:
-        issues.append("unavailable-provider proposal attempted repository writes")
-    if changed_records:
-        issues.append("unavailable-provider proposal changed governed or staged records")
-    if staged_transaction_present:
-        issues.append("unavailable-provider proposal staged a transaction")
+        issues.append("post-receipt provider isolation attempted repository writes")
+    unexpected_changes = tuple(
+        path
+        for path in changed_records
+        if not str(path).startswith(".odylith/runtime/greenfield/pending/")
+    )
+    if unexpected_changes:
+        issues.append("post-receipt provider isolation changed governed records")
+    if not staged_transaction_present:
+        issues.append("post-receipt provider isolation did not stage a transaction")
     return tuple(issues)
 
 
 def _result_proves_profile(result: Any, profile_id: str) -> bool:
     evidence = _mapping(getattr(result, "evidence", None))
-    profile_evidence = _mapping(evidence.get("model_profile"))
+    profile = _mapping(evidence.get("model_profile"))
     contract = get_greenfield_model_profile(profile_id)
-    return (
-        str(getattr(result, "status", "") or "").strip() == "passed"
-        and bool(getattr(getattr(result, "quality", None), "passed", False))
-        and str(profile_evidence.get("status") or "") == "passed"
-        and not _profile_observation_issues(
-            profile_evidence, profile_id, expectation=_result_expectation(result)
+    summary = _mapping(profile.get("stage_observation_summary"))
+    stage = _mapping(profile.get("stage_observation"))
+    observed = _mapping(profile.get("observed"))
+    receipt = _mapping(observed.get("host_candidate"))
+    host_request = _mapping(stage.get("host_request"))
+    stage_elapsed = _float_value(stage.get("elapsed_seconds"))
+    expected_response = (
+        "clarification_required"
+        if _result_expectation(result) == CLARIFICATION_REQUIRED_EXPECTATION
+        else "authored"
+    )
+    exact_observed = {
+        "origin",
+        "host_candidate",
+        "runtime_semantic_model_call_count",
+    }
+    exact_receipt = {
+        "version",
+        "contract_version",
+        "canonical_version",
+        "source_sha256",
+        "raw_candidate_sha256",
+        "canonical_candidate_sha256",
+    }
+    configured = _mapping(profile.get("configured"))
+    configured_matches = not configured or (
+        configured.get("provider") == contract.provider
+        and configured.get("model") == contract.model
+        and configured.get("reasoning_effort") == contract.reasoning_effort
+        and configured.get("maximum_model_timeout_seconds")
+        == contract.model_timeout_seconds
+    )
+    summary_matches = not summary or (
+        summary.get("status") == "passed"
+        and _is_exact_int(summary.get("host_semantic_model_calls"), 1)
+        and _is_exact_int(
+            summary.get("runtime_semantic_model_calls_after_candidate_receipt"), 0
         )
+        and _is_exact_int(summary.get("post_receipt_provider_invocations"), 0)
+    )
+    return (
+        str(getattr(result, "status", "") or "") == "passed"
+        and bool(getattr(getattr(result, "quality", None), "passed", False))
+        and profile.get("status") == "passed"
+        and profile.get("issues") == []
+        and profile.get("profile_id") == profile_id
+        and profile.get("semantic_authority") == "active_host_single_authority"
+        and profile.get("sealed_request_roles") == ["host_candidate"]
+        and _is_exact_int(profile.get("host_semantic_model_calls"), 1)
+        and _is_exact_int(
+            profile.get("runtime_semantic_model_calls_after_candidate_receipt"), 0
+        )
+        and _is_exact_int(profile.get("post_receipt_provider_invocations"), 0)
+        and configured_matches
+        and set(observed) == exact_observed
+        and observed.get("origin") == "host_native"
+        and _is_exact_int(observed.get("runtime_semantic_model_call_count"), 0)
+        and set(receipt) == exact_receipt
+        and all(
+            _is_sha256(receipt.get(field))
+            for field in (
+                "source_sha256",
+                "raw_candidate_sha256",
+                "canonical_candidate_sha256",
+            )
+        )
+        and stage.get("status") == "passed"
+        and stage.get("model_profile_id") == profile_id
+        and _is_exact_int(stage.get("host_invocations"), 1)
+        and _is_exact_int(stage.get("contract_command_invocations"), 1)
+        and _is_exact_int(stage.get("proposal_command_invocations"), 1)
+        and _is_exact_int(stage.get("runtime_semantic_model_call_count"), 0)
+        and _is_exact_int(stage.get("post_receipt_provider_invocations"), 0)
+        and stage.get("raw_candidate_sha256") == receipt.get("raw_candidate_sha256")
+        and stage.get("source_sha256") == receipt.get("source_sha256")
+        and stage.get("response_kind") == expected_response
+        and stage.get("proposal_mode")
+        == (
+            CLARIFICATION_REQUIRED_EXPECTATION
+            if expected_response == CLARIFICATION_REQUIRED_EXPECTATION
+            else "product_create_transaction"
+        )
+        and host_request.get("model") == contract.model
+        and host_request.get("reasoning_effort") == contract.reasoning_effort
+        and host_request.get("version") == HOST_NATIVE_ARGV_RECEIPT_VERSION
+        and host_request.get("argument_count") == HOST_NATIVE_ARGV_ARGUMENT_COUNT
+        and host_request.get("argv_shape_sha256") == HOST_NATIVE_ARGV_SHAPE_SHA256
+        and host_request.get("output_schema_present") is True
+        and type(stage_elapsed) is float
+        and math.isfinite(stage_elapsed)
+        and 0.0 < stage_elapsed < contract.operational_timeout_seconds
+        and summary_matches
         and 0.0
         < _float_value(getattr(result, "proposal_seconds", 0.0))
         < contract.operational_timeout_seconds
@@ -494,265 +479,48 @@ def _result_proves_committed_case(result: Any, profile_id: str) -> bool:
 
 
 def _result_proves_clarification_no_write(result: Any, profile_id: str) -> bool:
-    """Verify the retained source binding and fail-safe clarification contract."""
-
     if not _result_proves_profile(result, profile_id):
         return False
     evidence = _mapping(getattr(result, "evidence", None))
     case = _mapping(evidence.get("case"))
     clarification = _mapping(evidence.get("clarification"))
     no_write = _mapping(evidence.get("no_write"))
-    expected = _mapping(case.get("expected_clarification"))
-    expected_field = str(expected.get("field") or "").strip()
-    expected_question = str(expected.get("question") or "").strip()
-    question = str(clarification.get("question") or "").strip()
     required_fields = clarification.get("required_fields")
     quality = getattr(result, "quality", None)
     return (
         _result_expectation(result) == CLARIFICATION_REQUIRED_EXPECTATION
         and _is_sha256(case.get("prompt_sha256"))
-        and bool(expected_field)
         and isinstance(required_fields, Sequence)
         and not isinstance(required_fields, (str, bytes))
-        and tuple(str(value or "").strip() for value in required_fields) == (expected_field,)
-        and str(clarification.get("mode") or "").strip() == CLARIFICATION_REQUIRED_EXPECTATION
+        and len(required_fields) == 1
+        and clarification.get("mode") == CLARIFICATION_REQUIRED_EXPECTATION
         and clarification.get("returncode") == 0
-        and bool(question)
-        and (not expected_question or question == expected_question)
-        and str(getattr(quality, "score_basis", "") or "").strip()
+        and bool(str(clarification.get("question") or "").strip())
+        and str(getattr(quality, "score_basis", "") or "")
         == CLARIFICATION_NO_WRITE_SCORE_BASIS
-        and tuple(getattr(quality, "issues", ()) or ()) == ()
         and no_write.get("write_audit_active") is True
         and not str(no_write.get("write_audit_error") or "").strip()
         and _empty_sequence(no_write.get("write_attempts"))
         and _empty_sequence(no_write.get("changed_records"))
         and no_write.get("staged_transaction_present") is False
-        and isinstance(no_write.get("before_record_count"), int)
-        and isinstance(no_write.get("after_record_count"), int)
-        and no_write.get("before_record_count") == no_write.get("after_record_count")
     )
 
 
 def _result_proves_valid_case(result: Any, profile_id: str) -> bool:
-    expectation = _result_expectation(result)
-    if expectation == TRANSACTION_COMMITTED_EXPECTATION:
+    if _result_expectation(result) == TRANSACTION_COMMITTED_EXPECTATION:
         return _result_proves_committed_case(result, profile_id)
-    if expectation == CLARIFICATION_REQUIRED_EXPECTATION:
+    if _result_expectation(result) == CLARIFICATION_REQUIRED_EXPECTATION:
         return _result_proves_clarification_no_write(result, profile_id)
     return False
 
 
 def _result_expectation(result: Any) -> str:
     evidence = _mapping(getattr(result, "evidence", None))
-    case = _mapping(evidence.get("case"))
-    return str(case.get("expectation") or "").strip().casefold()
+    return str(_mapping(evidence.get("case")).get("expectation") or "").casefold()
 
 
-def _lower_capability_scope(
-    rows: Mapping[str, Sequence[Any]],
-    lower_profile_ids: Sequence[str],
-) -> dict[str, Any]:
-    """Report the source-bound lower-capability clarification control."""
-
-    observed_profiles: list[dict[str, Any]] = []
-    complete = bool(lower_profile_ids)
-    for profile_id in lower_profile_ids:
-        profile_results = rows.get(profile_id, ())
-        controls = [
-            result
-            for result in profile_results
-            if _result_proves_clarification_no_write(result, profile_id)
-        ]
-        if not controls:
-            complete = False
-            continue
-        contract = get_greenfield_model_profile(profile_id)
-        observed_profiles.append(
-            {
-                "profile_id": profile_id,
-                "provider": contract.provider,
-                "model": contract.model,
-                "reasoning_effort": contract.reasoning_effort,
-                "authoring_tier": contract.repair_tier,
-                "qualification": "direct_codex_argv_and_source_bound_no_write",
-                "committed_positive_case_count": 0,
-                "clarification_no_write_control_count": len(controls),
-            }
-        )
-        complete = complete and bool(controls)
-    return {
-        "status": "passed" if complete else "unproven",
-        "observed_profiles": observed_profiles,
-        "role": "host_candidate",
-        "requirement": "installed_source_bound_clarification_no_write_only",
-    }
-
-
-def _profile_observation_issues(
-    profile_evidence: Mapping[str, Any],
-    profile_id: str,
-    *,
-    expectation: str,
-) -> tuple[str, ...]:
-    observed = _mapping(profile_evidence.get("observed"))
-    stages = _mapping(profile_evidence.get("stage_observation"))
-    summary = _mapping(profile_evidence.get("stage_observation_summary"))
-    host_native_binding_issues = _host_native_profile_binding_issues(
-        profile_evidence,
-        profile_id,
-    )
-    if host_native_binding_issues:
-        return host_native_binding_issues
-    if summary.get("origin") == "host_native" and summary.get("clarification_origin"):
-        if expectation != CLARIFICATION_REQUIRED_EXPECTATION:
-            return ("host-native clarification does not match the declared case outcome",)
-        if observed:
-            return ("host-native clarification carries contradictory authored observations",)
-        if summary.get("clarification_origin") == "reviewer":
-            if summary.get("reviewer_receipt_verified") is not True:
-                return ("host-native reviewer clarification lacks verified private proof receipt",)
-            # The full reviewer receipt is private evidence.  Its source, candidate,
-            # outcome, dimension, and profile bindings were already fail-closed by
-            # model_profile_evidence before this public aggregate is formed.
-            return ()
-        return host_native_clarification_stage_observation_issues(
-            profile_id,
-            stage_observation=stages,
-            expected_source_sha256=str(
-                profile_evidence.get("expected_source_sha256") or ""
-            ),
-            clarification_origin=str(summary.get("clarification_origin") or ""),
-        )
-    if observed.get("origin") == "host_native":
-        if expectation != TRANSACTION_COMMITTED_EXPECTATION:
-            return ("host-native reviewed candidate does not match the declared case outcome",)
-        if summary.get("reviewer_receipt_verified") is not True:
-            return ("host-native admission lacks verified private proof receipt",)
-        # model_profile_evidence already bound the private receipt to the exact
-        # source, canonical reviewer candidate, sealed profile, and witness.
-        return ()
-    if stages.get("response_kind") == CLARIFICATION_REQUIRED_EXPECTATION:
-        if expectation != CLARIFICATION_REQUIRED_EXPECTATION:
-            return ("host-native clarification does not match the declared case outcome",)
-        if observed:
-            return ("host-native clarification carries contradictory authored observations",)
-        return host_native_clarification_stage_observation_issues(
-            profile_id,
-            stage_observation=stages,
-            expected_source_sha256=str(
-                profile_evidence.get("expected_source_sha256") or ""
-            ),
-        )
-    if set(observed) != {"participant_selection", "remaining_candidate_authoring"}:
-        return ("lacks the two stable six-field request observations",)
-    issues: list[str] = []
-    expected_fields = {
-        "profile_id", "provider", "model", "reasoning_effort",
-        "effective_timeout_seconds", "authoring_tier",
-    }
-    for role in ("participant_selection", "remaining_candidate_authoring"):
-        role_observation = _mapping(observed.get(role))
-        if set(role_observation) != expected_fields:
-            issues.append(f"{role} lacks the stable six-field request observation")
-            continue
-        if str(role_observation.get("profile_id") or "").strip() != profile_id:
-            issues.append(f"{role} observation identifies a different profile")
-            continue
-        issues.extend(
-            greenfield_model_profile_observation_issues(
-                profile_id=profile_id,
-                provider=str(role_observation.get("provider") or ""),
-                model=str(role_observation.get("model") or ""),
-                reasoning_effort=str(role_observation.get("reasoning_effort") or ""),
-                effective_timeout_seconds=role_observation.get("effective_timeout_seconds"),
-                authoring_tier=str(role_observation.get("authoring_tier") or ""),
-                request_role=role,
-            )
-        )
-    issues.extend(model_stage_observation_issues(
-        profile_id, observed=observed, stage_observation=stages,
-    ))
-    expected_status = (
-        "authored" if expectation == TRANSACTION_COMMITTED_EXPECTATION
-        else "clarification_required"
-    )
-    if _nested_mapping(
-        stages, "remaining_candidate_authoring", "response", "result"
-    ).get("status") != expected_status:
-        issues.append("retained model response does not match the declared case outcome")
-    return tuple(issues)
-
-
-def _host_native_profile_binding_issues(
-    profile_evidence: Mapping[str, Any],
-    profile_id: str,
-) -> tuple[str, ...]:
-    """Recheck public host-native evidence against the claimed pinned profile."""
-
-    observed = _mapping(profile_evidence.get("observed"))
-    stages = _mapping(profile_evidence.get("stage_observation"))
-    summary = _mapping(profile_evidence.get("stage_observation_summary"))
-    if not (
-        observed.get("origin") == "host_native"
-        or summary.get("origin") == "host_native"
-    ):
-        return ()
-
-    contract = get_greenfield_model_profile(profile_id)
-    issues: list[str] = []
-    configured = _mapping(profile_evidence.get("configured"))
-    if (
-        configured.get("provider") != contract.provider
-        or configured.get("model") != contract.model
-        or configured.get("reasoning_effort") != contract.reasoning_effort
-    ):
-        issues.append("host-native configured model does not match the claimed profile")
-    if stages.get("model_profile_id") != profile_id:
-        issues.append("host-native stage identifies a different model profile")
-    issues.extend(
-        host_native_argv_receipt_issues(profile_id, stages.get("host_request"))
-    )
-    stage_host_request = _mapping(stages.get("host_request"))
-    summary_request_roles = _mapping(summary.get("request_roles"))
-    sealed_host_candidate = _mapping(summary_request_roles.get("host_candidate"))
-    sealed_executable_sha256 = sealed_host_candidate.get("executable_sha256")
-    if not _is_sha256(sealed_executable_sha256):
-        issues.append("host-native sealed executable identity is missing")
-    elif stage_host_request.get("executable_sha256") != sealed_executable_sha256:
-        issues.append(
-            "host-native executable identity does not match the sealed observation"
-        )
-
-    review = _mapping(observed.get("candidate_review"))
-    if review:
-        if review.get("profile_id") != profile_id:
-            issues.append("host-native candidate review identifies a different model profile")
-        else:
-            issues.extend(
-                greenfield_model_profile_observation_issues(
-                    profile_id=profile_id,
-                    provider=str(review.get("provider") or ""),
-                    model=str(review.get("model") or ""),
-                    reasoning_effort=str(review.get("reasoning_effort") or ""),
-                    effective_timeout_seconds=review.get("effective_timeout_seconds"),
-                    authoring_tier=str(review.get("authoring_tier") or ""),
-                    request_role="candidate_review",
-                )
-            )
-    return tuple(dict.fromkeys(issues))
-
-
-def _profile_evidence_is_host_native(profile_evidence: Mapping[str, Any]) -> bool:
-    observed = _mapping(profile_evidence.get("observed"))
-    summary = _mapping(profile_evidence.get("stage_observation_summary"))
-    return (
-        observed.get("origin") == "host_native"
-        or summary.get("origin") == "host_native"
-    )
-
-
-def _nested_mapping(value: Mapping[str, Any], *path: str) -> Mapping[str, Any]:
-    current: Mapping[str, Any] = value
+def _nested_mapping(value: Mapping[str, Any], *path: str) -> dict[str, Any]:
+    current = _mapping(value)
     for key in path:
         current = _mapping(current.get(key))
         if not current:
@@ -760,8 +528,8 @@ def _nested_mapping(value: Mapping[str, Any], *path: str) -> Mapping[str, Any]:
     return current
 
 
-def _mapping(value: Any) -> Mapping[str, Any]:
-    return value if isinstance(value, Mapping) else {}
+def _mapping(value: Any) -> dict[str, Any]:
+    return dict(value) if isinstance(value, Mapping) else {}
 
 
 def _float_value(value: Any) -> float:
@@ -775,11 +543,17 @@ def _float_value(value: Any) -> float:
 
 def _is_sha256(value: Any) -> bool:
     normalized = str(value or "").strip().casefold()
-    return len(normalized) == 64 and all(character in "0123456789abcdef" for character in normalized)
+    return len(normalized) == 64 and all(
+        character in "0123456789abcdef" for character in normalized
+    )
 
 
 def _empty_sequence(value: Any) -> bool:
-    return isinstance(value, Sequence) and not isinstance(value, (str, bytes)) and len(value) == 0
+    return (
+        isinstance(value, Sequence)
+        and not isinstance(value, (str, bytes))
+        and len(value) == 0
+    )
 
 
 __all__ = [

@@ -156,19 +156,11 @@ from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_proposals_cli
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import combined_prompt_evidence_source
 from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
-from tests.unit.runtime.greenfield_model_authoring_fixtures import AdmittingReviewProvider, write_host_candidate_fixture
+from tests.unit.runtime.greenfield_model_authoring_fixtures import write_host_candidate_fixture
 from tests.unit.runtime.test_greenfield_model_path_custody import _response, _source
 
 source = _source()
 evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
-def provider_for_role(**kwargs):
-    role = kwargs.get("request_role")
-    if role != "candidate_review":
-        raise AssertionError(f"unexpected Greenfield role: {{role}}")
-    return AdmittingReviewProvider(), "gpt-6-astra", "medium"
-greenfield_proposals_cli._greenfield_review_provider = (
-    provider_for_role
-)
 with tempfile.TemporaryDirectory(prefix="greenfield-parser-retirement-") as repo_root:
     activate_greenfield_baseline_fixture(Path(repo_root))
     response = _response(evidence)

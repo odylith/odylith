@@ -29,6 +29,8 @@ from greenfield_onboarding_review import ONBOARDING_REVIEW_LENSES
 from greenfield_onboarding_review import ONBOARDING_REVIEW_PACKAGE_VERSION
 from greenfield_onboarding_review import build_onboarding_review_sidecar
 from greenfield_onboarding_review import finalize_onboarding_review
+from greenfield_final_holdout_guard import FINAL_HOLDOUT_RUN_LEDGER_VERSION
+from greenfield_release_qualification import verify_release_qualification
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     RESCUE_PROFILE_ID,
     STANDARD_PROFILE_ID,
@@ -40,6 +42,8 @@ PROMPT_SHA = "1" * 64
 CONFIRMED_INTENT_SHA = "2" * 64
 SOURCE_ARTIFACT_SHA = "3" * 64
 TRANSACTION_HASH = "4" * 64
+IMPLEMENTATION_REVISION = "a" * 40
+RUN_ID = "9" * 64
 
 
 @pytest.fixture
@@ -52,7 +56,7 @@ def evidence(tmp_path: Path) -> dict[str, object]:
         transaction_hash=TRANSACTION_HASH,
     )
     root = prepare_retained_evidence_output_dir(
-        output_dir=tmp_path / "retained",
+        output_dir=tmp_path / "retained-evidence",
         temp_parent=temp_parent,
     )
     retained_case = begin_retained_case_evidence(evidence_root=root, case_id=CASE_ID)
@@ -74,18 +78,19 @@ def evidence(tmp_path: Path) -> dict[str, object]:
     retained_manifest_path = write_retained_evidence_manifest(
         root=root,
         expected_case_ids=(CASE_ID,),
+        run_id=RUN_ID,
     )
     base = _base_result(
         retained_manifest_path=retained_manifest_path,
         transaction_hash=TRANSACTION_HASH,
     )
-    base_path = _write_json(tmp_path / "matrix-result.json", base)
+    base_path = _write_json(tmp_path / "matrix-result.v1.json", base)
     review = _review_package(
         base_path=base_path,
         retained_manifest_path=retained_manifest_path,
         case_manifest_path=case_manifest_path,
     )
-    review_path = _write_json(tmp_path / "independent-review.json", review)
+    review_path = _write_json(tmp_path / "independent-review-package.v1.json", review)
     return {
         "base": base,
         "base_path": base_path,
@@ -129,6 +134,122 @@ def test_valid_review_finalizes_detached_lens_approvals_without_mutating_inputs(
             review_path=review_path,
             output_path=tmp_path / "final-review.json",
         )
+
+
+def test_release_qualification_binds_review_to_terminal_holdout_and_revision(
+    evidence: dict[str, object], tmp_path: Path
+) -> None:
+    sidecar_path, ledger_path, provenance_path = _passing_release_qualification(evidence, tmp_path)
+
+    result = verify_release_qualification(
+        sidecar_path=sidecar_path,
+        final_holdout_ledger_path=ledger_path,
+        distribution_provenance_path=provenance_path,
+        implementation_revision=IMPLEMENTATION_REVISION,
+    )
+
+    assert result["status"] == "passed"
+    assert result["implementation_revision"] == IMPLEMENTATION_REVISION
+    assert result["matrix_result_sha256"] == sha256_file(evidence["base_path"])
+
+
+def test_release_qualification_rejects_stale_reviewed_evidence(
+    evidence: dict[str, object], tmp_path: Path
+) -> None:
+    sidecar_path, ledger_path, provenance_path = _passing_release_qualification(evidence, tmp_path)
+    base_path = evidence["base_path"]
+    assert isinstance(base_path, Path)
+    base_path.write_text(base_path.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="bytes changed after review"):
+        verify_release_qualification(
+            sidecar_path=sidecar_path,
+            final_holdout_ledger_path=ledger_path,
+            distribution_provenance_path=provenance_path,
+            implementation_revision=IMPLEMENTATION_REVISION,
+        )
+
+
+def test_release_qualification_rejects_another_commit(
+    evidence: dict[str, object], tmp_path: Path
+) -> None:
+    sidecar_path, ledger_path, provenance_path = _passing_release_qualification(evidence, tmp_path)
+
+    with pytest.raises(RuntimeError, match="different implementation revision"):
+        verify_release_qualification(
+            sidecar_path=sidecar_path,
+            final_holdout_ledger_path=ledger_path,
+            distribution_provenance_path=provenance_path,
+            implementation_revision="b" * 40,
+        )
+
+
+@pytest.mark.parametrize(
+    ("mutation", "failure"),
+    [
+        ("run_id", "different run IDs"),
+        ("protected_inputs", "lacks protected-input custody"),
+        ("provenance_hash", "distribution provenance differ"),
+    ],
+)
+def test_release_qualification_rejects_broken_holdout_custody(
+    evidence: dict[str, object],
+    tmp_path: Path,
+    mutation: str,
+    failure: str,
+) -> None:
+    sidecar_path, ledger_path, provenance_path = _passing_release_qualification(evidence, tmp_path)
+    ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+    if mutation == "run_id":
+        ledger["run_id"] = "8" * 64
+    elif mutation == "protected_inputs":
+        ledger["protected_inputs"].pop("lower_capability_control")
+    else:
+        ledger["distribution_provenance_sha256"] = "f" * 64
+    _write_json(ledger_path, ledger)
+
+    with pytest.raises(RuntimeError, match=failure):
+        verify_release_qualification(
+            sidecar_path=sidecar_path,
+            final_holdout_ledger_path=ledger_path,
+            distribution_provenance_path=provenance_path,
+            implementation_revision=IMPLEMENTATION_REVISION,
+        )
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "expected_issue"),
+    [
+        ("semantic_release", {"status": "not_requested", "passed": True}, "semantic_release"),
+        ("proof_tier", "discovery", "not terminal release proof"),
+    ],
+)
+def test_independent_review_cannot_promote_nonterminal_matrix_evidence(
+    evidence: dict[str, object],
+    tmp_path: Path,
+    field: str,
+    value: object,
+    expected_issue: str,
+) -> None:
+    base = deepcopy(evidence["base"])
+    assert isinstance(base, dict)
+    if field == "proof_tier":
+        base["campaign"]["proof_tier"] = value
+    else:
+        base[field] = value
+    base_path = _write_json(tmp_path / f"nonterminal-{field}.json", base)
+    review = deepcopy(evidence["review"])
+    assert isinstance(review, dict)
+    review["base_result_sha256"] = sha256_file(base_path)
+
+    sidecar = build_onboarding_review_sidecar(
+        base_result_path=base_path,
+        retained_manifest_path=evidence["retained_manifest_path"],
+        review_package=review,
+    )
+
+    assert sidecar["status"] == "failed"
+    assert expected_issue in " ".join(sidecar["automated_release_gates"]["issues"])
 
 
 def test_missing_or_partial_review_stays_awaiting_and_unproven(
@@ -463,8 +584,8 @@ def _base_result(*, retained_manifest_path: Path, transaction_hash: str) -> dict
         **{lens: -1 for lens in ONBOARDING_REVIEW_LENSES},
     }
     return {
-        "version": "test-matrix.v1",
-        "status": "failed",
+        "version": "greenfield-preconfirm-installed-matrix-v2",
+        "status": "awaiting-independent-review",
         "results": [
             {
                 "name": "review case",
@@ -486,6 +607,7 @@ def _base_result(*, retained_manifest_path: Path, transaction_hash: str) -> dict
             }
         ],
         "campaign": {
+            "proof_tier": "release",
             "completed_case_count": 1,
             "failed_case_count": 0,
             "failure_clusters": [],
@@ -520,7 +642,7 @@ def _base_result(*, retained_manifest_path: Path, transaction_hash: str) -> dict
             ],
         },
         "unavailable_provider_proof": {"status": "passed"},
-        "semantic_release": {"status": "not_requested", "passed": True},
+        "semantic_release": {"status": "passed", "passed": True},
         "metamorphic_output": {"status": "passed", "passed": True},
         "commit_recovery_proof": {"status": "passed"},
         "retained_evidence": {
@@ -528,7 +650,7 @@ def _base_result(*, retained_manifest_path: Path, transaction_hash: str) -> dict
             "manifest": str(retained_manifest_path),
             "manifest_sha256": sha256_file(retained_manifest_path),
         },
-        "onboarding_quality_scorecard": {"status": "failed", "score": 0},
+        "onboarding_quality_scorecard": {"status": "awaiting-independent-review", "score": 0},
     }
 
 
@@ -663,6 +785,56 @@ def _published_case(*, repo: Path, staged_root: Path, transaction_hash: str) -> 
         "repository_write_set_hash": generation.write_set_hash,
         "publication_sha256": hashlib.sha256(publication_text.encode()).hexdigest(),
     }
+
+
+def _passing_release_qualification(
+    evidence: dict[str, object], tmp_path: Path
+) -> tuple[Path, Path, Path]:
+    base_path = evidence["base_path"]
+    retained_path = evidence["retained_manifest_path"]
+    review_path = evidence["review_path"]
+    assert isinstance(base_path, Path)
+    assert isinstance(retained_path, Path)
+    assert isinstance(review_path, Path)
+    sidecar_path = tmp_path / "onboarding-review-sidecar.v2.json"
+    finalize_onboarding_review(
+        base_result_path=base_path,
+        retained_manifest_path=retained_path,
+        review_path=review_path,
+        output_path=sidecar_path,
+    )
+    provenance_path = _write_json(
+        tmp_path / "build-provenance.v1.json",
+        {
+            "version": "odylith-release-provenance.v1",
+            "source_tree": {"head": IMPLEMENTATION_REVISION, "dirty": False},
+            "workflow": {"sha": IMPLEMENTATION_REVISION},
+        },
+    )
+    ledger_path = _write_json(
+        tmp_path / "final-holdout-ledger.v3.json",
+        {
+            "version": FINAL_HOLDOUT_RUN_LEDGER_VERSION,
+            "status": "passed",
+            "disclosed": True,
+            "protected_inputs_bound": True,
+            "protected_inputs": {
+                "final_holdout": {"filename": "holdout.json", "sha256": "e" * 64},
+                "evaluation_manifest": {"filename": "splits.json", "sha256": "e" * 64},
+                "case_file_001": {"filename": "cases.json", "sha256": "e" * 64},
+                "lower_capability_control": {"filename": "control.json", "sha256": "e" * 64},
+            },
+            "run_id": RUN_ID,
+            "implementation_revision": IMPLEMENTATION_REVISION,
+            "distribution_provenance_sha256": sha256_file(provenance_path),
+            "result_sha256": sha256_file(base_path),
+            "retained_evidence": {
+                "manifest_path": str(retained_path.resolve()),
+                "manifest_sha256": sha256_file(retained_path),
+            },
+        },
+    )
+    return sidecar_path, ledger_path, provenance_path
 
 
 def _write(path: Path, value: str) -> Path:

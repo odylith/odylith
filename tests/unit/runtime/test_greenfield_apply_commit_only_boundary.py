@@ -116,10 +116,9 @@ def test_create_confirm_cli_commits_transaction_without_post_confirm_generation(
 
     monkeypatch.setattr(greenfield_proposals, "compile_greenfield_create_transaction", forbidden)
     monkeypatch.setattr(greenfield_proposals, "_build_authored_prewrite_package", forbidden)
-    monkeypatch.setattr(
+    assert not hasattr(
         greenfield_model_intent_materialization,
         "materialize_model_authored_intent",
-        forbidden,
     )
     monkeypatch.setattr(greenfield_apply_prewrite, "build_prewrite_completion_package", forbidden)
     monkeypatch.setattr(greenfield_prewrite_surface_stage, "build_staged_surface_refresh_preview", forbidden)

@@ -11,8 +11,6 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization
 )
 from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
-    AdmittingReviewProvider,
-    RemainingCandidateProvider,
     authored_response,
     write_host_candidate_fixture,
 )
@@ -22,12 +20,11 @@ from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governan
 
 def test_hiit_structured_fixture_preserves_path_and_sealed_package_under_sixty_seconds(
     tmp_path: Path,
-    monkeypatch,
     capsys,
 ) -> None:
-    """Native integration with a synthetic baseline and fixed author/reviewer fixtures.
+    """Native integration with a synthetic baseline and complete host candidate.
 
-    Not installation, independent semantic quality, or live-model timing proof.
+    Not installation, live-model quality, or live-model timing proof.
     """
     _seed_empty_governance_repo(tmp_path)
     activate_greenfield_baseline_fixture(tmp_path)
@@ -36,27 +33,15 @@ def test_hiit_structured_fixture_preserves_path_and_sealed_package_under_sixty_s
     intent_path.write_text(HIIT_CONFIRMED_INTENT_TEXT, encoding="utf-8")
 
     prompt = "Draft a greenfield proposal for a guided HIIT interval training app"
-    provider = _hiit_authoring_provider(prompt)
+    response = _hiit_host_response(prompt)
     evidence = combined_prompt_evidence_source(
         prompt=prompt,
         edit_evidence=HIIT_CONFIRMED_INTENT_TEXT,
     )
     candidate_path = write_host_candidate_fixture(
         tmp_path.parent / f"{tmp_path.name}-host-candidate.json",
-        provider.response,
+        response,
         evidence_text=evidence,
-    )
-    reviewer = AdmittingReviewProvider()
-
-    def authoring_provider(*, request_role="candidate_review", **_kwargs):
-        if request_role == "candidate_review":
-            return reviewer, "gpt-6-astra", "medium"
-        raise AssertionError(f"Unexpected Greenfield request role: {request_role}")
-
-    monkeypatch.setattr(
-        greenfield_proposals_cli,
-        "_greenfield_review_provider",
-        authoring_provider,
     )
 
     started, rc, payload, transaction_payload = _run_proposed_transaction_create(
@@ -68,8 +53,9 @@ def test_hiit_structured_fixture_preserves_path_and_sealed_package_under_sixty_s
     elapsed = time.perf_counter() - started
 
     assert rc == 0
-    assert provider.calls == 0
-    assert reviewer.calls == 1
+    assert payload["commit_manifest"]["model_authoring"][
+        "runtime_semantic_model_call_count"
+    ] == 0
     accepted = json.loads((tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8"))
     proposal = accepted["proposal"]
     first_path = proposal["semantic_model"]["first_path_contract"]
@@ -139,7 +125,7 @@ def test_hiit_structured_fixture_preserves_path_and_sealed_package_under_sixty_s
         assert banned not in generated_source
 
 
-def _hiit_authoring_provider(prompt: str) -> RemainingCandidateProvider:
+def _hiit_host_response(prompt: str) -> dict:
     first_path = (
         "A trainee chooses a workout, starts it, the timer drives each work and rest interval "
         "with audio and on-screen cues, keeps the screen awake, marks the session complete, "
@@ -255,12 +241,10 @@ def _hiit_authoring_provider(prompt: str) -> RemainingCandidateProvider:
         prompt=prompt,
         edit_evidence=HIIT_CONFIRMED_INTENT_TEXT,
     )
-    return RemainingCandidateProvider(
-        authored_response(
-            intent,
-            evidence_text=evidence,
-            first_path_relations=relations,
-        )
+    return authored_response(
+        intent,
+        evidence_text=evidence,
+        first_path_relations=relations,
     )
 
 

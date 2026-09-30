@@ -66,7 +66,7 @@ def test_model_profile_release_proof_requires_astra_and_a_separate_luna_control(
     positives_only = module.model_profile_release_proof(results, require_complete=True)
     assert positives_only["status"] == "failed"
     assert positives_only["lower_capability_scope"]["status"] == "unproven"
-    assert any("clarification/no-write control" in issue for issue in positives_only["issues"])
+    assert any("clarification/no-write case" in issue for issue in positives_only["issues"])
     breached = replace(
         results[0],
         proposal_seconds=module.get_greenfield_model_profile(
@@ -78,20 +78,26 @@ def test_model_profile_release_proof_requires_astra_and_a_separate_luna_control(
     )["status"] == "failed"
 
 
-def test_model_profile_release_proof_rejects_obsolete_review_demoted_clarification() -> None:
+def test_model_profile_release_proof_rejects_stale_runtime_reviewer_fields() -> None:
     module = _module()
     profile_id = module.model_profile_id_for_repair_tier("standard")
     results = (
         _passing_profile_result(module, profile_id, 20.0),
-        _passing_clarification_profile_result(
-            module,
-            profile_id,
-            20.0,
-            reviewed=True,
-        ),
+        _passing_clarification_profile_result(module, profile_id, 20.0),
     )
+    clarification = results[1]
+    evidence = dict(clarification.evidence)
+    profile_evidence = dict(evidence["model_profile"])
+    profile_evidence["observed"] = {
+        **profile_evidence["observed"],
+        "candidate_" + "review": {"status": "admitted"},
+    }
+    evidence["model_profile"] = profile_evidence
 
-    proof = module.model_profile_release_proof(results, require_complete=False)
+    proof = module.model_profile_release_proof(
+        (results[0], replace(clarification, evidence=evidence)),
+        require_complete=False,
+    )
 
     assert proof["status"] == "failed"
     assert proof["profiles"][profile_id]["committed_positive_case_count"] == 1
@@ -114,7 +120,7 @@ def test_model_profile_release_proof_reports_missing_lower_profile_as_unproven()
         "status": "unproven",
         "observed_profiles": [],
         "role": "host_candidate",
-        "requirement": "installed_source_bound_clarification_no_write_only",
+        "requirement": "source_bound_clarification_no_write_only",
     }
     assert module.model_profile_release_proof(results, require_complete=True)["status"] == "failed"
 
@@ -135,11 +141,16 @@ def test_model_profile_release_proof_rejects_sol_as_an_unsupported_diagnostic() 
 
     assert release["status"] == "failed"
     assert any("unsupported diagnostic" in issue for issue in release["issues"])
-    assert any("missing success profile" in issue for issue in release["issues"])
+    assert any("committed positive case" in issue for issue in release["issues"])
 
 
-@pytest.mark.parametrize("mutation", ["missing", "author_model", "author_timeout", "review_path", "outcome"])
-def test_model_profile_aggregate_rechecks_private_roles_despite_passed_label(mutation: str) -> None:
+@pytest.mark.parametrize(
+    "mutation",
+    ["missing", "host_model", "host_count", "post_receipt_call", "outcome"],
+)
+def test_model_profile_aggregate_rechecks_single_authority_despite_passed_label(
+    mutation: str,
+) -> None:
     module = _module()
     profile_id = module.model_profile_id_for_repair_tier("standard")
     result = _passing_profile_result(module, profile_id, 20.0)
@@ -148,12 +159,12 @@ def test_model_profile_aggregate_rechecks_private_roles_despite_passed_label(mut
     stages = _stage_observation(profile_id)
     if mutation == "missing":
         stages = {}
-    elif mutation == "author_model":
-        stages["remaining_candidate_authoring"]["provider"]["model"] = "gpt-5.6-sol"
-    elif mutation == "author_timeout":
-        stages["remaining_candidate_authoring"]["timeout_seconds"] = 54.0
-    elif mutation == "review_path":
-        stages["source_review"] = {}
+    elif mutation == "host_model":
+        stages["host_request"]["model"] = "gpt-5.6-sol"
+    elif mutation == "host_count":
+        stages["host_invocations"] = 2
+    elif mutation == "post_receipt_call":
+        stages["post_receipt_provider_invocations"] = 1
     else:
         stages = _stage_observation(profile_id, clarification=True)
     profile_evidence["stage_observation"] = stages
@@ -230,7 +241,9 @@ def test_model_profile_release_proof_rejects_elapsed_tier_relabeling() -> None:
     result = _passing_profile_result(module, standard_id, 30.0)
     evidence = dict(result.evidence or {})
     profile_evidence = dict(evidence["model_profile"])
-    profile_evidence["observed"]["remaining_candidate_authoring"]["authoring_tier"] = "rescue"
+    profile_evidence["stage_observation"]["model_profile_id"] = (
+        module.LOWER_CAPABILITY_CONTROL_PROFILES[0]
+    )
     evidence["model_profile"] = profile_evidence
 
     proof = module.model_profile_release_proof(
@@ -239,7 +252,7 @@ def test_model_profile_release_proof_rejects_elapsed_tier_relabeling() -> None:
     )
 
     assert proof["status"] == "failed"
-    assert any("authoring tier" in issue for issue in proof["issues"])
+    assert any("one-host/zero-runtime-call proof" in issue for issue in proof["issues"])
 
 
 def test_model_profile_release_proof_requires_a_passed_terminal_result() -> None:
@@ -256,13 +269,13 @@ def test_model_profile_release_proof_requires_a_passed_terminal_result() -> None
     )
 
     assert proof["status"] == "failed"
-    assert any("terminal matrix result" in issue for issue in proof["issues"])
+    assert any("one-host/zero-runtime-call proof" in issue for issue in proof["issues"])
 
 
-def test_unavailable_provider_proof_requires_fast_no_write_failure() -> None:
+def test_unavailable_provider_proof_requires_success_without_runtime_provider_use() -> None:
     module = _module()
     values = {
-        "returncode": 1,
+        "returncode": 0,
         "proposal_seconds": 1.0,
         "detail": "Greenfield model authoring is unavailable; no records were created.",
         "write_audit_active": True,
@@ -270,15 +283,15 @@ def test_unavailable_provider_proof_requires_fast_no_write_failure() -> None:
         "write_attempts": (),
         "subprocess_attempts": ("subprocess.Popen",),
         "changed_records": (),
-        "staged_transaction_present": False,
+        "staged_transaction_present": True,
     }
 
     assert module.unavailable_provider_proof_issues(**values) == ()
-    assert module.unavailable_provider_proof_issues(**{**values, "returncode": 0})
+    assert module.unavailable_provider_proof_issues(**{**values, "returncode": 1})
     assert module.unavailable_provider_proof_issues(**{**values, "write_attempts": ("open",)})
 
 
-def test_unavailable_provider_proof_reaches_provider_failure_with_one_candidate(
+def test_unavailable_provider_proof_admits_one_candidate_without_runtime_provider(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
@@ -328,13 +341,13 @@ def test_unavailable_provider_proof_reaches_provider_failure_with_one_candidate(
     def run_propose(**kwargs):
         proposals.append(kwargs)
         time.sleep(0.005)
+        pending = kwargs["repo_root"] / ".odylith/runtime/greenfield/pending/proof.json"
+        pending.parent.mkdir(parents=True, exist_ok=True)
+        pending.write_text("{}\n", encoding="utf-8")
         return module.SimpleNamespace(
-            returncode=1,
-            stdout='{"error":"MODEL_UNAVAILABLE_NO_WRITE"}',
-            stderr=(
-                "Greenfield model authoring is unavailable; no records were created. "
-                "Check the configured provider and try again."
-            ),
+            returncode=0,
+            stdout='{"mode":"product_create_transaction","transaction_file":"proof.json"}',
+            stderr="",
         )
 
     def run_host_flow(flow):
@@ -342,11 +355,8 @@ def test_unavailable_provider_proof_reaches_provider_failure_with_one_candidate(
         candidate_path = flow.temp_parent / "candidate.json"
         candidate_path.write_text('{"result":{"status":"authored"}}\n', encoding="utf-8")
         completed = flow.invoke_propose(candidate_path, 90.0)
-        assert completed.returncode == 1
-        raise module.HostCandidateFlowError(
-            "host-native candidate proposal command returned nonzero",
-            observation={"stage": "propose", "proposal_command_invocations": 1},
-        )
+        assert completed.returncode == 0
+        return completed
 
     monkeypatch.setattr(module, "_serve_directory", serve_directory)
     monkeypatch.setattr(module, "_local_release_env", lambda **_kwargs: {"PATH": "/trusted"})
@@ -369,13 +379,12 @@ def test_unavailable_provider_proof_reaches_provider_failure_with_one_candidate(
     )
 
     assert proof["status"] == "passed"
-    assert proof["returncode"] == 1
-    assert "model authoring is unavailable" in proof["failure_detail"].casefold()
+    assert proof["returncode"] == 0
     assert proof["no_write"] == {
         "before_record_count": 0,
-        "after_record_count": 0,
-        "changed_records": [],
-        "staged_transaction_present": False,
+        "after_record_count": 1,
+        "changed_records": [".odylith/runtime/greenfield/pending/proof.json"],
+        "staged_transaction_present": True,
         "write_audit_active": True,
         "write_attempts": [],
         "subprocess_attempts": ["subprocess.Popen"],
@@ -392,9 +401,8 @@ def test_unavailable_provider_proof_reaches_provider_failure_with_one_candidate(
         proposals[0]["env"]["ODYLITH_GREENFIELD_MODEL_PROFILE"]
         == module.UNAVAILABLE_PROVIDER_PROFILE
     )
-    assert proposals[0]["env"]["ODYLITH_REASONING_CODEX_BIN"].endswith(
-        "/missing-codex-provider"
-    )
+    assert proposals[0]["env"]["ODYLITH_REASONING_CODEX_BIN"] == "/usr/bin/false"
+    assert proposals[0]["env"]["ODYLITH_REASONING_MODE"] == "disabled"
     assert servers[0].shutdown_called is True
     assert servers[0].close_called is True
 

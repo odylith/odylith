@@ -9,21 +9,17 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     authored_component_relation_facts,
     validate_component_responsibility_relations,
 )
-from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring import (
-    author_greenfield_intent,
-)
 from odylith.runtime.domain_intelligence.greenfield_proposals import (
     build_greenfield_proposal,
-)
-from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
-    materialize_model_authored_intent,
 )
 from odylith.runtime.domain_intelligence.proposal_validation import (
     validate_host_reasoned_proposal,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
-    RemainingCandidateProvider,
     authored_response,
+    admit_complete_host_candidate,
+    host_candidate_response,
+    materialize_complete_host_candidate,
 )
 
 
@@ -71,15 +67,10 @@ def _scenario(kind: str, *, explicit_owner: str = ""):
 
 
 def _author(source, response):
-    provider = RemainingCandidateProvider(response)
-    result = author_greenfield_intent(
+    result = admit_complete_host_candidate(
         evidence_text=source,
-        provider=provider,
-        participant_provider_factory=provider.participant_provider,
-        clock=lambda: 0,
-        review_provider_factory=provider.review_provider,
+        host_candidate=host_candidate_response(response, evidence_text=source),
     )
-    assert provider.calls == 1
     return result
 
 
@@ -88,20 +79,8 @@ def test_no_source_capability_does_not_promote_terminal_ownership(kind):
     source, response, events = _scenario(kind)
     result = _author(source, response)
 
-    product_events = [row["event_quote"] for row in events if row["actor_kind"] == "product"]
-    assert result.intent["component_responsibilities"] == product_events
-    assert [
-        row["responsibility_quote"]
-        for row in result.component_responsibility_relations
-    ] == product_events
-    assert [
-        row["first_path_event_order"]
-        for row in result.component_responsibility_relations
-    ] == [
-        order
-        for order, row in enumerate(events, start=1)
-        if row["actor_kind"] == "product"
-    ]
+    assert result.intent["component_responsibilities"] == []
+    assert result.component_responsibility_relations == ()
     assert [(row["actor_kind"], row["actor_fact_quote"], row["event_quote"])
             for row in result.first_path_relations] == [
         (row["actor_kind"], row["actor_fact_quote"], row["event_quote"]) for row in events
@@ -115,7 +94,12 @@ def test_no_source_capability_does_not_promote_terminal_ownership(kind):
     contracts = authored_component_relation_facts(title="Draft Desk", internal_systems=(),
         relations=result.first_path_relations,
         component_responsibility_relations=result.component_responsibility_relations)
-    assert [row["responsibility_facts"] for row in contracts] == ([product_events] if product_events else [])
+    product_events = [
+        row["event_quote"] for row in events if row["actor_kind"] == "product"
+    ]
+    assert [row["responsibility_facts"] for row in contracts] == (
+        [product_events] if product_events else []
+    )
 
 
 @pytest.mark.parametrize("owner", ["Draft Desk", "Receipt Store"])
@@ -161,13 +145,10 @@ def test_optional_inventory_does_not_waive_explicit_citation_bindings():
 
 def test_human_path_retains_source_story_and_complete_proposed_package(tmp_path):
     source, response, events = _scenario("human")
-    provider = RemainingCandidateProvider(response)
-    candidate = materialize_model_authored_intent(
+    candidate = materialize_complete_host_candidate(
         prompt=source,
         repo_root=tmp_path,
-        authoring_provider=provider,
-        participant_provider_factory=provider.participant_provider,
-        review_provider_factory=provider.review_provider,
+        host_candidate=host_candidate_response(response, evidence_text=source),
     )
     proposal = build_greenfield_proposal(repo_root=tmp_path, prompt=source,
         release_selector="0.0.1", confirmed_intent=candidate, require_completion_ready=False)

@@ -10,9 +10,6 @@ from odylith.runtime.domain_intelligence import greenfield_authored_component_sp
 from odylith.runtime.domain_intelligence.greenfield_authored_proposal import (
     build_authored_greenfield_proposal,
 )
-from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
-    materialize_model_authored_intent,
-)
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     STANDARD_PROFILE_ID,
 )
@@ -20,9 +17,9 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     PRODUCT_INTENT_AUTHORITY_KEY,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
-    AdmittingReviewProvider,
-    RemainingCandidateProvider,
     authored_response,
+    host_candidate_response,
+    materialize_complete_host_candidate,
 )
 
 
@@ -81,22 +78,17 @@ def _authored_proposal(tmp_path: Path) -> dict[str, object]:
         for item in (value if isinstance(value, list) else [value])
         if str(item)
     )
-    provider = RemainingCandidateProvider(
-        authored_response(
+    response = authored_response(
             intent,
             evidence_text=source,
             first_path_relations=relations,
             component_responsibility_owners=["Berth map"],
         )
-    )
-    candidate = materialize_model_authored_intent(
+    candidate = materialize_complete_host_candidate(
         prompt=source,
         repo_root=tmp_path,
-        authoring_provider=provider,
-        authoring_timeout_seconds=60,
+        host_candidate=host_candidate_response(response, evidence_text=source),
         authoring_profile_id=STANDARD_PROFILE_ID,
-        participant_provider_factory=provider.participant_provider,
-        review_provider_factory=AdmittingReviewProvider,
     )
     proposal = build_authored_greenfield_proposal(
         observed_source={"source_posture": "operator prompt evidence"},

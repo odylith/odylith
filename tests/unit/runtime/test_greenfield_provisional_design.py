@@ -578,7 +578,7 @@ def _enveloped_intent() -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]
     )
     envelope = build_product_intent_envelope(
         intent, source_text=source, source_path="evidence.md", source_format="typed_envelope_json",
-        reviewed_candidate_sha256="a" * 64,
+        canonical_candidate_sha256="a" * 64,
         authored_source_spans=spans, authored_atomic_claims=claims,
         authored_source_sha256=hashlib.sha256(source.encode()).hexdigest(),
     )

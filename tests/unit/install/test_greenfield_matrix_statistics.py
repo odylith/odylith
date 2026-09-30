@@ -37,6 +37,17 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
     STANDARD_PROFILE_ID,
     get_greenfield_model_profile,
 )
+from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
+    HOST_CANDIDATE_CONTRACT_VERSION,
+    HOST_CANDIDATE_RECEIPT_VERSION,
+    admit_greenfield_host_candidate,
+)
+from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import (
+    HOST_CANDIDATE_FORMAT_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
+    GREENFIELD_INTENT_AUTHORING_VERSION,
+)
 from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     greenfield_operating_envelope_receipt,
 )
@@ -403,12 +414,30 @@ def _host_native_clarification_result(
         edit_evidence=case.confirmed_intent_markdown,
     )
     profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
+    raw_candidate = {
+        "version": HOST_CANDIDATE_FORMAT_VERSION,
+        "result": {
+            "status": "clarification_required",
+            "consistency": {
+                "status": "material_ambiguity",
+                "evidence_quotes": [],
+            },
+            "clarification": {"material_dimension": "first_path"},
+        },
+    }
+    _candidate, receipt = admit_greenfield_host_candidate(
+        raw_candidate,
+        evidence_text=source,
+        clock=lambda: 1.0,
+    )
     stage = {
-        "version": "odylith.greenfield.host-native-matrix-observation.v4",
+        "version": "odylith.greenfield.host-native-matrix-observation.v5",
         "status": "passed",
         "host_invocations": 1,
         "contract_command_invocations": 1,
         "proposal_command_invocations": 1,
+        "runtime_semantic_model_call_count": 0,
+        "post_receipt_provider_invocations": 0,
         "model_profile_id": STANDARD_PROFILE_ID,
         "host_request": {
             "version": "odylith.greenfield.host-argv-receipt.v1",
@@ -430,24 +459,26 @@ def _host_native_clarification_result(
         "host_stdout_bytes": 200,
         "host_stderr_bytes": 0,
         "response_kind": "clarification_required",
-        "candidate_sha256": "3" * 64,
-        "candidate_raw_sha256": "4" * 64,
-        "candidate_raw_bytes": 200,
+        "raw_candidate_sha256": receipt["raw_candidate_sha256"],
+        "host_output_sha256": "4" * 64,
+        "host_output_bytes": 200,
         "candidate_temp_outside_repo": True,
         "proposal_returncode": 0,
         "proposal_stdout_sha256": "5" * 64,
         "proposal_stderr_sha256": "6" * 64,
         "proposal_mode": "clarification_required",
-        "candidate_review_status": "unreported",
-        "candidate_review_issue_path_sha256": "",
-        "candidate_review_issue_reason_sha256": "",
         "elapsed_seconds": 18.02,
     }
     profile_evidence = model_profile_evidence(
         STANDARD_PROFILE_ID,
         model_profile_environment(STANDARD_PROFILE_ID, {}),
-        observed={},
+        observed={
+            "origin": "host_native",
+            "host_candidate": receipt,
+            "runtime_semantic_model_call_count": 0,
+        },
         stage_observation=stage,
+        raw_candidate=raw_candidate,
         expected_source=source,
     )
     return GreenfieldMatrixResult(
@@ -547,29 +578,28 @@ def _release_result(
             "preconfirm_dry_run": {
                 "semantic_snapshot": {"operating_envelope": envelope},
             },
-            "model_profile": {"profile_id": profile_id},
+            "model_profile": {
+                "profile_id": profile_id,
+                "status": "passed",
+                "issues": [],
+            },
         },
     )
 
 
 def _model_authoring_observations(profile_id: str) -> dict[str, object]:
-    profile = get_greenfield_model_profile(profile_id)
+    del profile_id
     return {
         "origin": "host_native",
         "host_candidate": {
-            "version": "odylith.greenfield.host-candidate-receipt.test.v1",
-            "contract_version": "odylith.greenfield.host-candidate-contract.test.v1",
+            "version": HOST_CANDIDATE_RECEIPT_VERSION,
+            "contract_version": HOST_CANDIDATE_CONTRACT_VERSION,
+            "canonical_version": GREENFIELD_INTENT_AUTHORING_VERSION,
             "source_sha256": "a" * 64,
-            "candidate_sha256": "b" * 64,
+            "raw_candidate_sha256": "b" * 64,
+            "canonical_candidate_sha256": "c" * 64,
         },
-        "candidate_review": {
-            "profile_id": profile.profile_id,
-            "provider": profile.provider,
-            "model": profile.review_model,
-            "reasoning_effort": profile.review_reasoning_effort,
-            "effective_timeout_seconds": profile.model_timeout_seconds,
-            "authoring_tier": profile.repair_tier,
-        },
+        "runtime_semantic_model_call_count": 0,
     }
 
 

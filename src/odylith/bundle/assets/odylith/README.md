@@ -101,10 +101,14 @@ For an empty or thin repo where the project exists mostly as intent, use the
 greenfield proposal lane before source-backed governance exists:
 
 ```bash
-./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<project intent>"
+./.odylith/bin/odylith greenfield candidate-contract --repo-root . --prompt "<project intent>"
+# The active host writes one complete matching candidate outside the repository.
+./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<project intent>" --candidate-file "<temporary-file>"
 ```
 
-`propose` compiles typed custody facts and quality-gates the full staged
+The active host reasons once over the returned contract. `propose` then
+deterministically validates that untrusted candidate, compiles typed custody facts,
+and quality-gates the full staged
 ProductCreateTransaction for read-only review. The sectioned preview preserves
 Product story, State object, First complete path, Human actors, systems,
 assumptions, ambiguities, and proof boundary. It publishes nothing, but prints
@@ -112,7 +116,10 @@ three full shell-quoted terminal commands: `odylith greenfield decide --repo-roo
 '<path>' CONFIRM '<hash>'`, `odylith greenfield decide --repo-root '<path>' EDIT
 '<hash>' --edit '<corrections>'` (or `--edit-evidence '<file>'`), and `odylith
 greenfield decide --repo-root '<path>' REJECT '<hash>'`. No qualified confirmation
-interface comes from ordinary chat approval, host names, or registered hooks. Do not append chat decision
+interface comes from ordinary chat approval, host names, or registered hooks. No
+semantic, model, or provider call runs after candidate receipt; detached semantic
+and UX review qualifies frozen release evidence rather than consumer transactions.
+Do not append chat decision
 commands, offer publication, or run create from a chat approval.
 
 Odylith asks one focused question only when an ambiguity materially changes the

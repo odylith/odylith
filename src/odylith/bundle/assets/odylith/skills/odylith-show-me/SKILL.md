@@ -42,14 +42,21 @@ placeholder products in response to a show-me request.
    shown verbatim so the operator sees exactly what Odylith said.
 5. If the operator names a new project, architecture, research goal, or
    feature after an empty/thin show result, do not refuse because source is
-   absent. Run the project-first proposal path instead:
-   `./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<their request>"`.
-   `propose` compiles typed evidence and quality-gates the full staged ProductCreateTransaction
+   absent. Run `./.odylith/bin/odylith greenfield candidate-contract --repo-root .
+   --prompt "<their request>"` first. The active host reasons once over that
+   complete contract, writes one matching candidate to a temporary file outside
+   the repository, then runs `./.odylith/bin/odylith greenfield propose --repo-root
+   . --prompt "<their request>" --candidate-file "<temporary-file>"`.
+   `propose` deterministically validates that untrusted candidate, compiles typed
+   evidence, and quality-gates the full staged ProductCreateTransaction
    for read-only review. It publishes nothing, but prints `odylith greenfield decide
    --repo-root '<path>' CONFIRM '<hash>'`, `odylith greenfield decide --repo-root
    '<path>' EDIT '<hash>' --edit '<corrections>'` (or `--edit-evidence '<file>'`),
    and `odylith greenfield decide --repo-root '<path>' REJECT '<hash>'`. No qualified
-   confirmation interface comes from ordinary chat approval, host names, or hooks. Do not append chat
+   confirmation interface comes from ordinary chat approval, host names, or hooks.
+   No semantic, model, or provider call runs after candidate receipt. Independent
+   semantic and UX review qualifies frozen release evidence only; it never admits,
+   mutates, or denies an individual consumer transaction. Do not append chat
    decision commands, offer publication, or run create from a chat approval. Ask one
    focused question only for material uncertainty; otherwise show assumptions.
    CONFIRM and REJECT share one bounded owner without compiler or model work. EDIT

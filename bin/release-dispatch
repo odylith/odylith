@@ -27,6 +27,18 @@ require_canonical_release_checkout
 resolved_version="$(resolve_release_session_version "release-dispatch" "$requested_version" "false" "true")"
 tag="v${resolved_version}"
 expected_sha="$(release_session_field head_sha)"
+proof_root="$(greenfield_release_proof_root "$expected_sha")"
+review_sidecar="$proof_root/onboarding-review-sidecar.v2.json"
+holdout_ledger="$proof_root/final-holdout-ledger.v3.json"
+distribution_provenance="$proof_root/build-provenance.v1.json"
+require_file "$review_sidecar"
+require_file "$holdout_ledger"
+require_file "$distribution_provenance"
+"$odylith_python" "$odylith_repo_root/scripts/release/greenfield_release_qualification.py" \
+  --sidecar "$review_sidecar" \
+  --final-holdout-ledger "$holdout_ledger" \
+  --distribution-provenance "$distribution_provenance" \
+  --implementation-revision "$expected_sha"
 
 gh workflow run release.yml --repo "$odylith_release_repo" --ref "$odylith_release_ref" -f tag="$tag" -f expected_sha="$expected_sha"
 echo "dispatched canonical release workflow for $tag on repo $odylith_release_repo ref $odylith_release_ref sha $expected_sha"

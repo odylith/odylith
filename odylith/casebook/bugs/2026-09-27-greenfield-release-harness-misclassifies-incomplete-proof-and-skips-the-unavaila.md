@@ -1,5 +1,29 @@
 - Bug ID: CB-347
 
+## Single-authority release-gate correction (2026-09-29)
+
+The V49 live reviewer mechanism failed on terminal-event identity and was
+retired. The replacement uses one host-authored complete canonical candidate;
+deterministic validation and sealing perform no semantic/provider call after
+candidate receipt. A detached strong review now qualifies only frozen release
+evidence, not individual consumer transactions.
+
+Adversarial review of the first detached release gate exposed three unsafe
+paths: discovery-tier proof could be accepted as terminal, preflight deleted
+evidence required for review, and a synthetic ledger could pass without exact
+run/input/provenance binding. Dispatch also accepted arbitrary evidence paths.
+The implementation now requires a HEAD-scoped persistent proof root, release-
+tier terminal statuses, exact protected-input categories and hashes, retained
+run-ID and manifest binding, verified distribution provenance, and dispatch-
+time recomputation. Functional tests prove missing or failed review reaches
+zero workflow-dispatch calls, while a valid bound review reaches one.
+
+The focused gate suite passes 128 tests, the combined Greenfield suite passes
+2,629 tests, and independent gate re-review finds no remaining release-bypassing
+P0/P1. This is still not a release or Casebook closeout.
+The public replay, 40-case campaign, independent semantic/UX qualification,
+and untouched protected holdout remain open.
+
 ## V49 implementation and independent correction closure (2026-09-29)
 
 Host contract v30, host-candidate format v16, and reviewer v17 implement the
@@ -572,6 +596,28 @@ the protected holdout remains untouched.
   distribution; CB-347 stays open.
 
 ## V49 Immutable Public Replay And Diagnosability Boundary (2026-09-29)
+
+### Separately bounded replacement decision
+
+- An independent mechanism comparison selected one live semantic authority:
+  the active host authors one complete canonical candidate, deterministic code
+  validates and seals it, and explicit human confirmation controls publication.
+  Strong independent semantic review moves to immutable release evaluation and
+  no longer participates in consumer transaction admission.
+- Same-model self-review loses because it still creates two stochastic semantic
+  decisions and a serial latency tail. Ensembles lose on latency, cost, and
+  arbitration. A learned classifier has no sufficiently broad independently
+  labeled relation corpus and would turn visible disagreement into opaque
+  overfitting.
+- The change must delete reviewer custody, reviewer receipt authority, and the
+  dead participant/remainder/join path rather than retain a compatibility mode.
+  Runtime semantic-model calls after candidate receipt must be zero. Existing
+  citation, relation, transaction, confirmation, rollback, recovery, browser,
+  and detached release-review invariants remain fixed.
+- The exact public case gets one fresh replay only after focused controls, the
+  full frozen frontier, independent patch review, and immutable build. Failure
+  retires this replacement with no follow-on prompt/schema patch; Greenfield
+  then remains preview-only or leaves the production release claim.
 
 ### Terminal replay result
 

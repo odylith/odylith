@@ -1,1270 +1,79 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from dataclasses import replace
 import hashlib
 import json
-import sys
 from types import SimpleNamespace
 
 import pytest
 
-from tests.greenfield_matrix_campaign_test_support import SCRIPTS_ROOT
-
-
-if str(SCRIPTS_ROOT) not in sys.path:
-    sys.path.insert(0, str(SCRIPTS_ROOT))
-
 from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_ARGUMENT_COUNT
 from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_SHAPE_SHA256
-from greenfield_model_profiles import MODEL_PROFILES
-from greenfield_model_profiles import DEEP_PROFILE_ID
-from greenfield_model_profiles import RESCUE_PROFILE_ID
-from greenfield_model_profiles import STANDARD_PROFILE_ID
-from greenfield_model_profiles import UNAVAILABLE_PROVIDER_PROFILE
-from greenfield_model_profiles import assign_model_profiles
-from greenfield_model_profiles import case_model_profile
-from greenfield_model_profiles import model_profile_environment
-from greenfield_model_profiles import model_profile_evidence
-from greenfield_model_profiles import model_stage_observation_issues
-from greenfield_model_profiles import profile_coverage
-from greenfield_model_profiles import profile_counts
-from greenfield_retained_candidate_proof import retained_admitted_candidate_hash_issues
-from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
+from greenfield_matrix_host_candidate import HOST_NATIVE_MATRIX_OBSERVATION_VERSION
 from greenfield_model_profile_proof import authored_model_result_binding_issues
 from greenfield_model_profile_proof import model_profile_release_proof
-from greenfield_model_profile_proof import sealed_model_profile_observation
-from tests.greenfield_model_profile_test_support import (
-    production_stage_observation as _stage_observation,
-    sealed_profile_observation as _sealed_observation,
+from greenfield_model_profiles import STANDARD_PROFILE_ID
+from greenfield_model_profiles import (
+    host_native_clarification_stage_observation_issues,
 )
-from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
-    get_greenfield_model_profile,
-    model_profile_id_for_repair_tier,
-    normalize_greenfield_model_repair_tier,
-    require_greenfield_model_profile_observation,
-    supported_greenfield_model_profile_ids,
-    supported_greenfield_model_repair_tiers,
+from greenfield_model_profiles import model_profile_environment
+from greenfield_model_profiles import model_profile_evidence
+from greenfield_retained_candidate_proof import (
+    retained_canonical_candidate_hash_issues,
 )
-from odylith.runtime.domain_intelligence.greenfield_candidate_review import (
-    CANDIDATE_REVIEW_VERSION,
+from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
+    admit_greenfield_host_candidate,
 )
-from odylith.runtime.domain_intelligence.greenfield_review_custody import (
-    candidate_review_sha256,
-    project_reviewed_custody,
+from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import (
+    HOST_CANDIDATE_FORMAT_VERSION,
 )
 
 
-def test_assignment_is_balanced_by_outcome_and_does_not_consult_prompt_text() -> None:
-    cases = tuple(
-        _case(f"commit-{index}", expectation="transaction_committed")
-        for index in range(6)
-    ) + tuple(
-        _case(f"clarify-{index}", expectation="clarification_required")
-        for index in range(3)
-    )
-
-    assigned = assign_model_profiles(cases)
-    changed_prompts = assign_model_profiles(
-        tuple(replace(case, prompt=f"Completely different evidence {index}") for index, case in enumerate(cases))
-    )
-
-    assert profile_counts(assigned) == {STANDARD_PROFILE_ID: 9}
-    assert [case_model_profile(case) for case in assigned] == [
-        case_model_profile(case) for case in changed_prompts
-    ]
-    for profile in MODEL_PROFILES:
-        profile_cases = [case for case in assigned if case_model_profile(case) == profile]
-        assert sum(case.expectation == "transaction_committed" for case in profile_cases) == 6
-        assert sum(case.expectation == "clarification_required" for case in profile_cases) == 3
+SOURCE = "Build a useful product."
+MISSING = object()
 
 
-def test_assignment_balances_repeated_input_styles_across_profiles() -> None:
-    cases = tuple(
-        replace(_case(f"direct-{index}"), input_style="direct_request")
-        for index in range(3)
-    ) + tuple(
-        replace(_case(f"brief-{index}"), input_style="pasted_brief")
-        for index in range(3)
-    )
-
-    coverage = profile_coverage(assign_model_profiles(cases))
-
-    assert coverage["input_style"]["direct_request"] == {
-        STANDARD_PROFILE_ID: 3
-    }
-    assert coverage["input_style"]["pasted_brief"] == {
-        STANDARD_PROFILE_ID: 3
-    }
-
-
-def test_assignment_preserves_one_valid_explicit_profile_and_rejects_bad_tags() -> None:
-    explicit = replace(_case("explicit"), tags=(f"model-profile:{MODEL_PROFILES[0]}",))
-    diagnostic = replace(_case("diagnostic"), tags=(f"model-profile:{DEEP_PROFILE_ID}",))
-
-    assert case_model_profile(assign_model_profiles((explicit,))[0]) == MODEL_PROFILES[0]
-    assert all(
-        case_model_profile(case) != DEEP_PROFILE_ID
-        for case in assign_model_profiles(tuple(_case(f"automatic-{index}") for index in range(6)))
-    )
-
-    with pytest.raises(ValueError, match="invalid model profile"):
-        assign_model_profiles((diagnostic,))
-    with pytest.raises(ValueError, match="invalid model profile"):
-        assign_model_profiles((replace(_case("bad"), tags=("model-profile:unknown",)),))
-    with pytest.raises(ValueError, match="invalid model profile"):
-        assign_model_profiles(
-            (
-                replace(
-                    _case("duplicate"),
-                    tags=(
-                        f"model-profile:{MODEL_PROFILES[0]}",
-                        f"model-profile:{MODEL_PROFILES[0]}",
-                    ),
-                ),
-            )
-        )
-
-
-def test_profile_registry_separates_release_success_from_controls_and_diagnostics() -> None:
-    assert supported_greenfield_model_profile_ids() == (STANDARD_PROFILE_ID,)
-    assert supported_greenfield_model_repair_tiers() == ("standard",)
-    assert model_profile_id_for_repair_tier("standard") == STANDARD_PROFILE_ID
-    assert model_profile_id_for_repair_tier("auto") == STANDARD_PROFILE_ID
-    assert model_profile_id_for_repair_tier("") == STANDARD_PROFILE_ID
-    assert model_profile_id_for_repair_tier("default") == STANDARD_PROFILE_ID
-    with pytest.raises(ValueError, match="not release-qualified"):
-        model_profile_id_for_repair_tier("rescue")
-    with pytest.raises(ValueError, match="not release-qualified"):
-        model_profile_id_for_repair_tier("deep")
-    assert normalize_greenfield_model_repair_tier("default") == "auto"
-    assert normalize_greenfield_model_repair_tier("rescue") == "rescue"
-    with pytest.raises(ValueError, match="unsupported Greenfield repair tier"):
-        normalize_greenfield_model_repair_tier("adaptive")
-    standard = get_greenfield_model_profile(STANDARD_PROFILE_ID)
-    assert standard.model == "gpt-6-astra"
-    assert standard.reasoning_effort == "medium"
-    assert standard.participant_model == "gpt-6-astra"
-    assert standard.participant_reasoning_effort == "medium"
-    assert standard.lower_capability is False
-    rescue = get_greenfield_model_profile(RESCUE_PROFILE_ID)
-    assert rescue.model == "gpt-5.6-luna"
-    assert rescue.reasoning_effort == "medium"
-    assert rescue.lower_capability is True
-    deep = get_greenfield_model_profile(DEEP_PROFILE_ID)
-    assert deep.model == "gpt-5.6-sol"
-    assert deep.reasoning_effort == "high"
-    assert [
-        (profile.model_timeout_seconds, profile.performance_target_seconds, profile.operational_timeout_seconds)
-        for profile in (standard, rescue, deep)
-    ] == [
-        (165.0, 90.0, 180.0), (165.0, 120.0, 180.0), (165.0, 150.0, 180.0),
-    ]
-    assert all(not hasattr(profile, "source_review_model") for profile in (standard, rescue, deep))
-    assert get_greenfield_model_profile(UNAVAILABLE_PROVIDER_PROFILE).lower_capability is False
-    assert UNAVAILABLE_PROVIDER_PROFILE not in supported_greenfield_model_profile_ids()
-
-
-def test_profile_environments_pin_provider_model_effort_and_shared_tier_windows() -> None:
-    inherited = {
-        "PATH": "/usr/bin:/bin",
-        "ODYLITH_REASONING_PROVIDER": "stale-provider",
-        "ODYLITH_REASONING_API_KEY": "secret",
-        "ODYLITH_REASONING_CLAUDE_BIN": "stale-claude",
-    }
-
-    standard = model_profile_environment(STANDARD_PROFILE_ID, inherited)
-    rescue = model_profile_environment(RESCUE_PROFILE_ID, inherited)
-    deep = model_profile_environment(DEEP_PROFILE_ID, inherited)
-    unavailable = model_profile_environment(
-        UNAVAILABLE_PROVIDER_PROFILE,
-        inherited,
-        unavailable_provider_bin="/nonexistent/greenfield-provider-test",
-    )
-
-    assert "ODYLITH_REASONING_API_KEY" not in standard
-    assert standard["ODYLITH_REASONING_PROVIDER"] == "codex-cli"
-    assert standard["ODYLITH_REASONING_MODEL"] == "gpt-6-astra"
-    assert standard["ODYLITH_REASONING_CODEX_REASONING_EFFORT"] == "medium"
-    assert standard["ODYLITH_REASONING_TIMEOUT_SECONDS"] == "165"
-    assert rescue["ODYLITH_REASONING_MODEL"] == "gpt-5.6-luna"
-    assert rescue["ODYLITH_REASONING_CODEX_REASONING_EFFORT"] == "medium"
-    assert rescue["ODYLITH_REASONING_TIMEOUT_SECONDS"] == "165"
-    assert deep["ODYLITH_REASONING_MODEL"] == "gpt-5.6-sol"
-    assert deep["ODYLITH_REASONING_CODEX_REASONING_EFFORT"] == "high"
-    assert deep["ODYLITH_REASONING_TIMEOUT_SECONDS"] == "165"
-    assert unavailable["ODYLITH_REASONING_CODEX_BIN"] == "/nonexistent/greenfield-provider-test"
-    assert unavailable["ODYLITH_REASONING_CODEX_BIN"] != "/usr/bin/false"
-    assert unavailable["ODYLITH_REASONING_TIMEOUT_SECONDS"] == "1"
-    evidence = model_profile_evidence(UNAVAILABLE_PROVIDER_PROFILE, unavailable)
-    assert evidence["provider_unavailability_configured"] is True
-    assert evidence["status"] == "unobserved"
-
-
-def test_profile_evidence_requires_sealed_observation_parity() -> None:
-    env = model_profile_environment(STANDARD_PROFILE_ID, {})
-    observed = _sealed_observation(STANDARD_PROFILE_ID, shared_timeout=54.5)
-    stage_observation = _stage_observation(
-        STANDARD_PROFILE_ID,
-        shared_timeout=54.5,
-    )
-
-    evidence = model_profile_evidence(
-        STANDARD_PROFILE_ID,
-        env,
-        observed=observed,
-        stage_observation=stage_observation,
-    )
-
-    assert evidence["status"] == "passed"
-    assert evidence["profile_id"] == STANDARD_PROFILE_ID
-    assert evidence["observed"] == observed
-    assert evidence["sealed_request_roles"] == [
-        "participant_selection", "remaining_candidate_authoring",
-    ]
-    assert evidence["lower_capability_scope"] == "not_applicable"
-    assert "expected_source_review" not in evidence
-    assert evidence["stage_observation"] == stage_observation
-    assert evidence["stage_observation_summary"]["response_kind"] == "authored"
-    assert evidence["maximum_semantic_model_calls"] == 3
-    assert evidence["stage_observation_summary"]["semantic_model_call_count"] == 3
-    assert set(evidence["stage_observation_summary"]["request_roles"]) == {
-        "participant_selection", "remaining_candidate_authoring", "candidate_review",
-    }
-    for role, role_observation in observed.items():
-        require_greenfield_model_profile_observation(
-            **role_observation, request_role=role,
-        )
-
-    mismatched = model_profile_evidence(
-        STANDARD_PROFILE_ID,
-        env,
-        observed={
-            **observed,
-            "remaining_candidate_authoring": {
-                **observed["remaining_candidate_authoring"], "model": "gpt-5.4",
+def _raw_and_receipt() -> tuple[dict[str, object], dict[str, object]]:
+    raw = {
+        "version": HOST_CANDIDATE_FORMAT_VERSION,
+        "result": {
+            "status": "clarification_required",
+            "consistency": {
+                "status": "material_ambiguity",
+                "evidence_quotes": [],
             },
-        },
-        stage_observation=stage_observation,
-    )
-    assert mismatched["status"] == "failed"
-    assert mismatched["issues"] == ["observed model does not match pinned Greenfield model profile"]
-
-    misconfigured = model_profile_evidence(
-        STANDARD_PROFILE_ID,
-        {**env, "ODYLITH_REASONING_MODEL": "gpt-5.4"},
-        observed=observed,
-        stage_observation=stage_observation,
-    )
-    assert misconfigured["status"] == "failed"
-    assert misconfigured["issues"] == [
-        "configured model does not match the assigned release profile"
-    ]
-
-
-def test_sealed_observation_reads_both_exact_envelope_roles_without_flat_migration() -> None:
-    observed = _sealed_observation(STANDARD_PROFILE_ID)
-    proposal = {
-        "product_intent_authority": {
-            "operating_envelope": {"model_contract": {"observed": observed}}
-        }
-    }
-
-    assert sealed_model_profile_observation(proposal=proposal) == observed
-
-    flat = observed["remaining_candidate_authoring"]
-    extracted = sealed_model_profile_observation(
-        proposal={
-            "product_intent_authority": {
-                "operating_envelope": {"model_contract": {"observed": flat}}
-            }
-        }
-    )
-    assert extracted != observed
-    assert model_profile_evidence(
-        STANDARD_PROFILE_ID,
-        model_profile_environment(STANDARD_PROFILE_ID, {}),
-        observed=extracted,
-        stage_observation=_stage_observation(STANDARD_PROFILE_ID),
-    )["status"] == "failed"
-
-
-def test_sealed_observation_preserves_unsupported_fields_for_closed_evidence_check() -> None:
-    observed = _sealed_observation(STANDARD_PROFILE_ID)
-    forged = deepcopy(observed)
-    forged["participant_selection"]["extra"] = "must not be normalized away"
-    forged["legacy_role"] = deepcopy(forged["remaining_candidate_authoring"])
-    proposal = {
-        "product_intent_authority": {
-            "operating_envelope": {"model_contract": {"observed": forged}}
-        }
-    }
-
-    extracted = sealed_model_profile_observation(proposal=proposal)
-    evidence = model_profile_evidence(
-        STANDARD_PROFILE_ID,
-        model_profile_environment(STANDARD_PROFILE_ID, {}),
-        observed=extracted,
-        stage_observation=_stage_observation(STANDARD_PROFILE_ID),
-    )
-
-    assert extracted == forged
-    assert evidence["status"] == "failed"
-    assert "sealed model observations have missing or unsupported roles" in evidence["issues"]
-    assert (
-        "sealed participant_selection observation has missing or unsupported fields"
-        in evidence["issues"]
-    )
-
-
-def test_authored_private_result_binds_to_actual_admitted_consumer_receipt() -> None:
-    stage = _stage_observation(STANDARD_PROFILE_ID)
-    source = stage["request"]["evidence"]
-    create_payload = _create_payload_for_stage(stage, source=source)
-
-    assert authored_model_result_binding_issues(
-        stage_observation=stage,
-        create_payload=create_payload,
-        expected_source=source,
-    ) == ()
-
-
-def test_host_native_profile_evidence_binds_one_host_candidate_and_runtime_review() -> None:
-    profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
-    candidate_sha256 = "1" * 64
-    source = _review_input_source()
-    review_input_candidate = _review_input_candidate()
-    review_input_candidate_sha256 = candidate_review_sha256(review_input_candidate)
-    final_candidate_sha256 = candidate_review_sha256(
-        project_reviewed_custody(
-            review_input_candidate,
-            component_custody=_review_component_custody(),
-            source_precedence_custody=_review_source_precedence_custody(),
-            constraint_custody=[],
-            evidence_text=source,
-        )
-    )
-    source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
-    observed = {
-        "origin": "host_native",
-        "host_candidate": {
-            "version": "odylith.greenfield.host-candidate.v1",
-            "contract_version": "odylith.greenfield.intent-authoring.v76",
-            "source_sha256": source_sha256,
-            "candidate_sha256": candidate_sha256,
-        },
-        "candidate_review": {
-            "profile_id": STANDARD_PROFILE_ID,
-            "provider": profile.provider,
-            "model": profile.review_model,
-            "reasoning_effort": profile.review_reasoning_effort,
-            "effective_timeout_seconds": 120.0,
-            "authoring_tier": profile.repair_tier,
+            "clarification": {"material_dimension": "first_path"},
         },
     }
-    stage = _host_native_stage(candidate_sha256=candidate_sha256)
-    stage["source_sha256"] = source_sha256
-    reviewer_observation = _host_native_private_admission(
-        observed=observed,
-        source=source,
-        review_input_candidate_sha256=review_input_candidate_sha256,
-        final_candidate_sha256=final_candidate_sha256,
+    _authored, receipt = admit_greenfield_host_candidate(
+        raw,
+        evidence_text=SOURCE,
+        clock=lambda: 1.0,
     )
+    return raw, receipt
 
-    evidence = model_profile_evidence(
-        STANDARD_PROFILE_ID,
-        model_profile_environment(STANDARD_PROFILE_ID, {}),
-        observed=observed,
-        stage_observation=stage,
-        reviewer_observation=reviewer_observation,
-        review_input_candidate=review_input_candidate,
-        expected_review_input_candidate_sha256=review_input_candidate_sha256,
-        expected_source=source,
-    )
 
-    assert evidence["status"] == "passed", evidence["issues"]
-    assert evidence["sealed_request_roles"] == ["host_candidate", "candidate_review"]
-    assert evidence["maximum_semantic_model_calls"] == 1
-    assert evidence["stage_observation_summary"]["origin"] == "host_native"
-    hash_summary = evidence["stage_observation_summary"][
-        "retained_candidate_hash_summary"
-    ]
-    assert hash_summary == {
-        "review_input_candidate_sha256": review_input_candidate_sha256,
-        "final_candidate_sha256": final_candidate_sha256,
-        "review_input_source_precedence_present": False,
-        "source_precedence_custody_count": len(_review_source_precedence_custody()),
-        "source_precedence_custody_sha256": hashlib.sha256(
-            json.dumps(
-                _review_source_precedence_custody(),
-                sort_keys=True,
-                ensure_ascii=False,
-                separators=(",", ":"),
-                allow_nan=False,
-            ).encode("utf-8")
-        ).hexdigest(),
-        "source_precedence_projected": True,
-        "hashes_are_distinct": True,
-        "status": "passed",
-    }
-    result = SimpleNamespace(
-        name="host-native control",
-        status="passed",
-        quality=SimpleNamespace(passed=True),
-        proposal_seconds=80.0,
-        evidence={
-            "case": {"expectation": "transaction_committed"},
-            "model_profile": evidence,
-        },
-    )
-    proof = model_profile_release_proof((result,), require_complete=False)
-    assert proof["status"] == "passed", proof["issues"]
-    assert proof["profiles"][STANDARD_PROFILE_ID]["maximum_semantic_model_calls"] == 1
-
-
-def test_retained_review_hashes_keep_unprojected_input_distinct_from_final_candidate() -> None:
-    source = _review_input_source()
-    review_input_candidate = _review_input_candidate()
-    precedence_custody = _review_source_precedence_custody()
-    assert "source_precedence" not in review_input_candidate
-    projected = project_reviewed_custody(
-        review_input_candidate,
-        component_custody=_review_component_custody(),
-        source_precedence_custody=precedence_custody,
-        constraint_custody=[],
-        evidence_text=source,
-    )
-    assert projected["source_precedence"] == precedence_custody
-    review_input_candidate_sha256 = candidate_review_sha256(review_input_candidate)
-    final_candidate_sha256 = candidate_review_sha256(projected)
-    assert review_input_candidate_sha256 != final_candidate_sha256
-    receipt = {
-        "review_input_candidate_sha256": review_input_candidate_sha256,
-        "candidate_sha256": final_candidate_sha256,
-        "admission_witness": {
-            "component_custody": _review_component_custody(),
-            "source_precedence_custody": precedence_custody,
-            "constraint_custody": [],
-        },
-    }
-
-    assert retained_admitted_candidate_hash_issues(
-        review_input_candidate=review_input_candidate,
-        receipt=receipt,
-        evidence_text=source,
-    ) == ()
-
-    swapped = deepcopy(receipt)
-    swapped["review_input_candidate_sha256"] = final_candidate_sha256
-    swapped["candidate_sha256"] = review_input_candidate_sha256
-    assert retained_admitted_candidate_hash_issues(
-        review_input_candidate=review_input_candidate,
-        receipt=swapped,
-        evidence_text=source,
-    ) == (
-        "retained reviewer input does not match the sealed review-input hash",
-        "sealed final candidate hash does not match retained reviewer custody",
-    )
-
-
-@pytest.mark.parametrize(
-    ("mutation", "expected_issue"),
-    (
-        ("missing", "private host-native reviewer admission observation is missing or malformed"),
-        ("input_candidate", "private host-native reviewer admission input hash is invalid"),
-        ("final_candidate", "sealed final candidate hash does not match retained reviewer custody"),
-        ("witness", "private host-native reviewer admission witness is invalid"),
-        ("missing_precedence", "private host-native reviewer admission witness is invalid"),
-        (
-            "forged_precedence",
-            "retained reviewer custody cannot produce a valid final candidate",
-        ),
-        ("review_version", "private host-native reviewer admission version is invalid"),
-        ("profile", "private host-native reviewer admission profile is not sealed"),
-    ),
-)
-def test_host_native_profile_evidence_rejects_unbound_private_admission(
-    mutation: str,
-    expected_issue: str,
-) -> None:
-    profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
-    source = _review_input_source()
-    source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
-    review_input_candidate = _review_input_candidate()
-    review_input_candidate_sha256 = candidate_review_sha256(review_input_candidate)
-    final_candidate_sha256 = candidate_review_sha256(
-        project_reviewed_custody(
-            review_input_candidate,
-            component_custody=_review_component_custody(),
-            source_precedence_custody=_review_source_precedence_custody(),
-            constraint_custody=[],
-            evidence_text=source,
-        )
-    )
-    observed = {
-        "origin": "host_native",
-        "host_candidate": {
-            "version": "odylith.greenfield.host-candidate.v1",
-            "contract_version": "odylith.greenfield.intent-authoring.v76",
-            "source_sha256": source_sha256,
-            "candidate_sha256": "1" * 64,
-        },
-        "candidate_review": {
-            "profile_id": STANDARD_PROFILE_ID,
-            "provider": profile.provider,
-            "model": profile.review_model,
-            "reasoning_effort": profile.review_reasoning_effort,
-            "effective_timeout_seconds": 120.0,
-            "authoring_tier": profile.repair_tier,
-        },
-    }
-    stage = _host_native_stage(candidate_sha256="1" * 64)
-    stage["source_sha256"] = source_sha256
-    private = _host_native_private_admission(
-        observed=observed,
-        source=source,
-        review_input_candidate_sha256=review_input_candidate_sha256,
-        final_candidate_sha256=final_candidate_sha256,
-    )
-    if mutation == "missing":
-        private = {}
-    elif mutation == "input_candidate":
-        private["candidate_review"]["review_input_candidate_sha256"] = "5" * 64
-    elif mutation == "final_candidate":
-        private["candidate_review"]["candidate_sha256"] = "4" * 64
-    elif mutation == "witness":
-        private["candidate_review"]["admission_witness"] = None
-    elif mutation == "missing_precedence":
-        private["candidate_review"]["admission_witness"].pop(
-            "source_precedence_custody"
-        )
-    elif mutation == "forged_precedence":
-        private["candidate_review"]["admission_witness"][
-            "source_precedence_custody"
-        ] = [{"before_event": 1, "after_event": 1, "constraint_index": 1}]
-    elif mutation == "review_version":
-        private["candidate_review"]["version"] = "odylith.greenfield.candidate-review.v16"
-    else:
-        private["candidate_review"]["model_profile"]["model"] = "gpt-5.6-sol"
-
-    evidence = model_profile_evidence(
-        STANDARD_PROFILE_ID,
-        model_profile_environment(STANDARD_PROFILE_ID, {}),
-        observed=observed,
-        stage_observation=stage,
-        reviewer_observation=private,
-        review_input_candidate=review_input_candidate,
-        expected_review_input_candidate_sha256=review_input_candidate_sha256,
-        expected_source=source,
-    )
-
-    assert evidence["status"] == "failed"
-    assert expected_issue in evidence["issues"]
-
-
-@pytest.mark.parametrize("mutation", ("executable", "model", "effort", "output_schema"))
-def test_host_native_profile_evidence_rejects_forged_safe_argv_receipt(
-    mutation: str,
-) -> None:
-    profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
-    candidate_sha256 = "1" * 64
-    stage = _host_native_stage(candidate_sha256=candidate_sha256)
-    receipt = stage["host_request"]
-    if mutation == "executable":
-        receipt["executable_sha256"] = "not-a-hash"
-    elif mutation == "model":
-        receipt["model"] = "gpt-5.6-sol"
-    elif mutation == "effort":
-        receipt["reasoning_effort"] = "high"
-    else:
-        receipt["output_schema_present"] = False
-    observed = {
-        "origin": "host_native",
-        "host_candidate": {
-            "version": "odylith.greenfield.host-candidate.v1",
-            "contract_version": "odylith.greenfield.intent-authoring.v76",
-            "source_sha256": "2" * 64,
-            "candidate_sha256": candidate_sha256,
-        },
-        "candidate_review": {
-            "profile_id": STANDARD_PROFILE_ID,
-            "provider": profile.provider,
-            "model": profile.review_model,
-            "reasoning_effort": profile.review_reasoning_effort,
-            "effective_timeout_seconds": 120.0,
-            "authoring_tier": profile.repair_tier,
-        },
-    }
-
-    evidence = model_profile_evidence(
-        STANDARD_PROFILE_ID,
-        model_profile_environment(STANDARD_PROFILE_ID, {}),
-        observed=observed,
-        stage_observation=stage,
-    )
-
-    assert evidence["status"] == "failed"
-    assert any("retained host-native" in issue for issue in evidence["issues"])
-
-
-@pytest.mark.parametrize(
-    ("mutation", "expected_issue"),
-    (
-        ("candidate_hash", "retained host-native candidate_sha256 is invalid"),
-        ("source_hash", "retained host-native expected source hash is invalid"),
-        ("returncode", "retained host-native proposal return code is invalid"),
-        (
-            "issue_path_hash",
-            "retained host-native candidate_review_issue_path_sha256 is invalid",
-        ),
-        (
-            "issue_reason_hash",
-            "retained host-native candidate_review_issue_reason_sha256 is invalid",
-        ),
-    ),
-)
-def test_denied_host_candidate_stays_in_one_call_custody(
-    mutation: str, expected_issue: str,
-) -> None:
-    stage = _host_native_stage(candidate_sha256="1" * 64)
-    stage.update(
-        status="failed",
-        proposal_returncode=2,
-        proposal_mode="error",
-        candidate_review_status="denied",
-        candidate_review_issue_path_sha256="c" * 64,
-        candidate_review_issue_reason_sha256="d" * 64,
-    )
-    if mutation == "candidate_hash":
-        stage["candidate_sha256"] = "forged"
-    elif mutation == "source_hash":
-        stage["source_sha256"] = "forged"
-    elif mutation == "returncode":
-        stage["proposal_returncode"] = "2"
-    elif mutation == "issue_path_hash":
-        stage["candidate_review_issue_path_sha256"] = "not-a-hash"
-    else:
-        stage["candidate_review_issue_reason_sha256"] = "not-a-hash"
-
-    evidence = model_profile_evidence(
-        STANDARD_PROFILE_ID,
-        model_profile_environment(STANDARD_PROFILE_ID, {}),
-        observed={},
-        stage_observation=stage,
-    )
-
-    assert evidence["status"] == "failed"
-    assert expected_issue in evidence["issues"]
-    assert not any(
-        "participant_selection" in issue or "remaining_candidate_authoring" in issue
-        for issue in evidence["issues"]
-    )
-    assert evidence["stage_observation_summary"]["origin"] == "host_native"
-
-
-def test_successful_host_candidate_rejects_denial_only_diagnostic_hashes() -> None:
-    stage = _host_native_stage(candidate_sha256="1" * 64)
-    stage["candidate_review_issue_path_sha256"] = "c" * 64
-
-    evidence = model_profile_evidence(
-        STANDARD_PROFILE_ID,
-        model_profile_environment(STANDARD_PROFILE_ID, {}),
-        observed={},
-        stage_observation=stage,
-    )
-
-    assert evidence["status"] == "failed"
-    assert (
-        "retained host-native candidate_review_issue_path_sha256 must be empty without a denied review"
-        in evidence["issues"]
-    )
-
-
-def test_host_native_result_binding_matches_retained_candidate_to_commit_receipt() -> None:
-    source = _review_input_source()
-    source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
-    candidate_sha256 = "3" * 64
-    review_input_candidate = _review_input_candidate()
-    review_input_candidate_sha256 = candidate_review_sha256(review_input_candidate)
-    final_candidate_sha256 = candidate_review_sha256(
-        project_reviewed_custody(
-            review_input_candidate,
-            component_custody=_review_component_custody(),
-            source_precedence_custody=_review_source_precedence_custody(),
-            constraint_custody=[],
-            evidence_text=source,
-        )
-    )
-    witness = {
-        "participant_fact": {"field": "human_actors", "row": 1},
-        "task_event_order": 1,
-        "result_event_order": 1,
-        "design_coverage": {
-            "component_verification_keys": [
-                "test-boundary-1", "test-boundary-2", "test-boundary-3", "test-boundary-4",
-            ],
-            "workstream_verification_keys": [
-                "test-work-1", "test-work-2", "test-work-3", "test-work-4",
-            ],
-            "risk_keys": [],
-            "risk_posture_status": "no_material_risks_identified",
-        },
-        "component_custody": _review_component_custody(),
-        "source_precedence_custody": _review_source_precedence_custody(),
-        "constraint_custody": [],
-    }
-    review_profile = {
-        "profile_id": STANDARD_PROFILE_ID,
-        "provider": "codex-cli",
-        "model": "gpt-6-astra",
-        "reasoning_effort": "medium",
-        "effective_timeout_seconds": 120.0,
-        "authoring_tier": "standard",
-    }
-    payload = {
-        "commit_manifest": {
-            "model_authoring": {
-                "authoring_origin": "host_native",
-                "host_candidate": {
-                    "version": "odylith.greenfield.host-candidate.v1",
-                    "contract_version": "odylith.greenfield.intent-authoring.v76",
-                    "source_sha256": source_sha256,
-                    "candidate_sha256": candidate_sha256,
-                },
-                "candidate_review": {
-                    "version": CANDIDATE_REVIEW_VERSION,
-                    "status": "admitted",
-                    "source_sha256": source_sha256,
-                    "review_input_candidate_sha256": review_input_candidate_sha256,
-                    "candidate_sha256": final_candidate_sha256,
-                    "product_facts_sha256": "5" * 64,
-                    "elapsed_seconds": 1.0,
-                    "model_profile": review_profile,
-                    "admission_witness": witness,
-                },
-            }
-        }
-    }
-
-    observed = {
-        "origin": "host_native",
-        "host_candidate": payload["commit_manifest"]["model_authoring"]["host_candidate"],
-        "candidate_review": review_profile,
-    }
-    reviewer_observation = _host_native_private_admission(
-        observed=observed,
-        source=source,
-        review_input_candidate_sha256=review_input_candidate_sha256,
-        final_candidate_sha256=final_candidate_sha256,
-        witness=witness,
-    )
-    assert authored_model_result_binding_issues(
-        stage_observation=_host_native_stage(candidate_sha256=candidate_sha256),
-        reviewer_observation=reviewer_observation,
-        review_input_candidate=review_input_candidate,
-        create_payload=payload,
-        expected_source=source,
-    ) == ()
-
-    forged_payload = deepcopy(payload)
-    forged_private = deepcopy(reviewer_observation)
-    forged_payload["commit_manifest"]["model_authoring"]["candidate_review"][
-        "candidate_sha256"
-    ] = "4" * 64
-    forged_private["candidate_review"]["candidate_sha256"] = "4" * 64
-    assert "sealed final candidate hash does not match retained reviewer custody" in (
-        authored_model_result_binding_issues(
-            stage_observation=_host_native_stage(candidate_sha256=candidate_sha256),
-            reviewer_observation=forged_private,
-            review_input_candidate=review_input_candidate,
-            create_payload=forged_payload,
-            expected_source=source,
-        )
-    )
-
-    mismatched = _host_native_stage(candidate_sha256="4" * 64)
-    assert "retained host candidate does not match the sealed receipt" in (
-        authored_model_result_binding_issues(
-            stage_observation=mismatched,
-            reviewer_observation=reviewer_observation,
-            create_payload=payload,
-            expected_source=source,
-        )
-    )
-
-
-@pytest.mark.parametrize(
-    ("mutation", "expected_issue"),
-    (
-        ("expected_source", "retained private author request does not match the expected source"),
-        ("private_candidate", "retained private reviewed candidate does not match the sealed review input"),
-        ("missing_private_review", "retained private candidate review is missing"),
-        ("missing_receipt", "sealed candidate-review receipt is missing"),
-        ("denied_receipt", "sealed candidate-review receipt is not admitted"),
-        ("source_hash", "sealed candidate-review source hash does not match the expected source"),
-        ("candidate_hash", "sealed candidate-review candidate hash is invalid"),
-        ("wrong_final_candidate_hash", "sealed final candidate hash does not match retained reviewer custody"),
-    ),
-)
-def test_authored_private_result_binding_fails_closed(mutation, expected_issue) -> None:
-    stage = _stage_observation(STANDARD_PROFILE_ID)
-    source = stage["request"]["evidence"]
-    create_payload = _create_payload_for_stage(stage, source=source)
-    expected_source = source
-    receipt = create_payload["commit_manifest"]["model_authoring"]["candidate_review"]
-    if mutation == "expected_source":
-        expected_source = source + " changed"
-    elif mutation == "private_candidate":
-        stage["candidate_review"]["request"]["candidate"]["extra"] = "split proof"
-    elif mutation == "missing_private_review":
-        stage.pop("candidate_review")
-    elif mutation == "missing_receipt":
-        create_payload["commit_manifest"]["model_authoring"].pop("candidate_review")
-    elif mutation == "denied_receipt":
-        receipt["status"] = "denied"
-    elif mutation == "source_hash":
-        receipt["source_sha256"] = "0" * 64
-    elif mutation == "candidate_hash":
-        receipt["candidate_sha256"] = "missing"
-    elif mutation == "wrong_final_candidate_hash":
-        receipt["candidate_sha256"] = "4" * 64
-    else:
-        raise AssertionError(f"unknown mutation: {mutation}")
-
-    issues = authored_model_result_binding_issues(
-        stage_observation=stage,
-        create_payload=create_payload,
-        expected_source=expected_source,
-    )
-
-    assert expected_issue in issues
-
-
-def test_profile_evidence_accepts_two_call_clarification_without_review() -> None:
-    env = model_profile_environment(RESCUE_PROFILE_ID, {})
-    observed = _sealed_observation(RESCUE_PROFILE_ID)
-    stage = _stage_observation(RESCUE_PROFILE_ID, response_kind="clarification_required")
-
-    evidence = model_profile_evidence(
-        RESCUE_PROFILE_ID,
-        env,
-        observed=observed,
-        stage_observation=stage,
-    )
-
-    assert evidence["status"] == "passed"
-    assert evidence["stage_observation_summary"]["semantic_model_call_count"] == 2
-    assert set(evidence["stage_observation_summary"]["request_roles"]) == {
-        "participant_selection", "remaining_candidate_authoring",
-    }
-
-
-def test_profile_evidence_rejects_obsolete_two_call_review_demoted_clarification() -> None:
-    env = model_profile_environment(RESCUE_PROFILE_ID, {})
-    observed = _sealed_observation(RESCUE_PROFILE_ID)
-    stage = _stage_observation(
-        RESCUE_PROFILE_ID,
-        response_kind="clarification_required",
-        reviewed=True,
-    )
-
-    evidence = model_profile_evidence(
-        RESCUE_PROFILE_ID,
-        env,
-        observed=observed,
-        stage_observation=stage,
-    )
-
-    assert evidence["status"] == "failed"
-    assert "retained model authoring observation version is invalid" in evidence["issues"]
-    assert "participant-first response must not record a legacy author path" in evidence["issues"]
-
-
-def test_profile_evidence_fails_closed_without_retained_stage_observation() -> None:
-    env = model_profile_environment(STANDARD_PROFILE_ID, {})
-
-    evidence = model_profile_evidence(
-        STANDARD_PROFILE_ID,
-        env,
-        observed=_sealed_observation(STANDARD_PROFILE_ID),
-    )
-
-    assert evidence["status"] == "failed"
-    assert "retained model authoring observation is missing" in evidence["issues"]
-
-
-@pytest.mark.parametrize(
-    ("mutation", "expected_issue"),
-    (
-        ("version", "retained model authoring observation version is invalid"),
-        ("authoring_version", "retained model authoring version is invalid"),
-        ("response_version", "retained model response version is invalid"),
-        ("response_kind", "retained model response kind is invalid"),
-        ("bool_count", "retained semantic model call count is invalid"),
-        ("two_calls", "authored response must record exactly three semantic calls"),
-        ("forged_participant_role", "retained participant_selection request role is invalid"),
-        ("forged_participant_model", "observed model does not match pinned Greenfield model profile"),
-        ("participant_failure", "retained participant_selection provider metadata records a failure"),
-        ("participant_cap", "retained participant_selection timeout does not match its sealed observation"),
-        ("participant_elapsed", "retained remaining_candidate_authoring timeout exceeds the remaining model window"),
-        ("missing_participant", "retained participant_selection observation has missing or unsupported fields"),
-    ),
-)
-def test_stage_observation_rejects_malformed_forged_roles_and_timing(
-    mutation: str, expected_issue: str,
-) -> None:
-    issues = model_stage_observation_issues(
-        RESCUE_PROFILE_ID, observed=_sealed_observation(RESCUE_PROFILE_ID),
-        stage_observation=_mutated_stage_observation(mutation),
-    )
-    assert expected_issue in issues
-
-
-@pytest.mark.parametrize("response_kind", ["authored", "clarification_required"])
-@pytest.mark.parametrize("field", ["source_review", "initial_response"])
-def test_obsolete_review_metadata_is_rejected_even_with_a_one_call_claim(response_kind, field):
-    stage = _stage_observation(RESCUE_PROFILE_ID, response_kind=response_kind)
-    stage[field] = {}
-    issues = model_stage_observation_issues(
-        RESCUE_PROFILE_ID, observed=_sealed_observation(RESCUE_PROFILE_ID), stage_observation=stage,
-    )
-    assert "participant-first response must not record a legacy author path" in issues
-
-
-@pytest.mark.parametrize(("response_kind", "count"), [
-    ("authored", 0), ("authored", 1), ("authored", 2), ("authored", 4),
-    ("authored", True), ("authored", 3.0),
-    ("clarification_required", 0), ("clarification_required", 1),
-    ("clarification_required", 3), ("clarification_required", True),
-    ("clarification_required", 2.0),
-])
-def test_outcomes_require_their_exact_role_count(response_kind, count):
-    stage = _stage_observation(RESCUE_PROFILE_ID, response_kind=response_kind)
-    stage["semantic_model_call_count"] = count
-    issues = model_stage_observation_issues(
-        RESCUE_PROFILE_ID, observed=_sealed_observation(RESCUE_PROFILE_ID), stage_observation=stage,
-    )
-    expected = ("authored response must record exactly three semantic calls"
-                if response_kind == "authored"
-                else "clarification response must record exactly two semantic calls")
-    assert expected in issues
-
-
-@pytest.mark.parametrize("profile_id", MODEL_PROFILES)
-@pytest.mark.parametrize("response_kind", ["authored", "clarification_required"])
-def test_current_production_observations_qualify_without_mutation(profile_id, response_kind):
-    stage = _stage_observation(profile_id, response_kind=response_kind)
-    original = deepcopy(stage)
-    assert model_stage_observation_issues(
-        profile_id, observed=_sealed_observation(profile_id), stage_observation=stage,
-    ) == ()
-    assert stage == original
-
-
-@pytest.mark.parametrize("profile_id", MODEL_PROFILES)
-def test_five_call_revision_observation_is_not_an_active_compatibility_path(profile_id):
-    stage = _stage_observation(profile_id)
-    stage["semantic_model_call_count"] = 5
-    stage["rejected_candidate"] = {}
-    stage["rejected_candidate_review"] = {}
-    stage["candidate_revision"] = {}
-
-    issues = model_stage_observation_issues(
-        profile_id,
-        observed=_sealed_observation(profile_id),
-        stage_observation=stage,
-    )
-
-    assert "authored response must record exactly three semantic calls" in issues
-    assert "retained model observation has missing or unsupported fields" in issues
-
-
-@pytest.mark.parametrize(("path", "value"), [
-    (("candidate_review",), None),
-    (("candidate_review", "dispatched"), False),
-    (("candidate_review", "dispatched"), 1),
-    (("candidate_review", "request_role"), "remaining_candidate_authoring"),
-    (("candidate_review", "profile_id"), STANDARD_PROFILE_ID),
-    (("candidate_review", "model"), "gpt-5.6-terra"),
-    (("candidate_review", "reasoning_effort"), "low"),
-    (("candidate_review", "provider"), {}),
-    (("candidate_review", "provider", "model"), "gpt-5.6-terra"),
-    (("candidate_review", "provider", "reasoning_effort"), "low"),
-    (("candidate_review", "provider", "provider"), "claude-cli"),
-    (("candidate_review", "provider", "code"), "timeout"),
-    (("candidate_review", "provider", "detail"), "unreported failure"),
-    (("candidate_review", "provider", "code"), None),
-    (("participant_selection", "provider", "detail"), "unreported failure"),
-    (("participant_selection", "provider", "model"), "gpt-5.6-sol"),
-    (("participant_selection", "request", "source"), "Different source"),
-    (("participant_selection", "response", "human_actors", 0, "quote"), "Invented actor"),
-    (("participant_selection", "resolved", 0, "source_start_byte"), 999),
-    (("remaining_candidate_authoring", "request", "frozen_human_actors"), []),
-    (("remaining_candidate_authoring", "response", "result", "facts", "human_actors"), []),
-    (("candidate_review", "response"), None),
-    (("candidate_review", "response"), {"outcome": "admitted", "issue": None, "clarification": {}}),
-    (("candidate_review", "response"), {"outcome": "denied", "issue": {"path": "facts", "reason": "unsupported"}, "clarification": {}}),
-    (("candidate_review", "response"), {"outcome": "admitted", "issue": {}, "clarification": None}),
-    (("candidate_review", "response"), {"outcome": "admitted", "issue": None, "clarification": None, "repair": {}}),
-    (("candidate_review", "request", "source"), "Different source"),
-    (("candidate_review", "request", "candidate", "accepted_source", "events"), []),
-    (("candidate_review", "request", "candidate", "proposed_decisions", "provisional_design"), {}),
-    (("candidate_review", "request", "role_definitions"), {}),
-    (("candidate_review", "request", "resolved_source_custody"), []),
-    (("candidate_review", "request", "resolved_source_custody", 0, "source_start_byte"), 999),
-    (("candidate_review", "request", "resolved_source_custody", 0, "context_after"), "Forged context"),
-    (("candidate_review", "protocol"), "odylith.greenfield.exact-row-review.experimental.v1"),
-    (("candidate_review", "final_candidate"), {}),
-    (("participant_selection", "unexpected_role"), {}),
-    (("third_role",), {}),
-    (("failure",), {}),
-    (("request", "version"), "old"),
-    (("request", "evidence"), "Different source"),
-    (("request", "evidence"), None),
-    (("joined_candidate", "result", "facts", "title", "quote"), "Unsupported title"),
-    (("joined_candidate", "result", "provisional_design"), {}),
-])
-def test_current_review_rejects_missing_failed_stale_or_unbound_observations(path, value):
-    stage = _stage_observation(RESCUE_PROFILE_ID)
-    target = stage
-    for key in path[:-1]:
-        target = target[key]
-    target[path[-1]] = value
-    original = deepcopy(stage)
-    assert model_stage_observation_issues(
-        RESCUE_PROFILE_ID, observed=_sealed_observation(RESCUE_PROFILE_ID), stage_observation=stage,
-    )
-    assert stage == original
-
-
-@pytest.mark.parametrize(
-    "role", ["participant_selection", "remaining_candidate_authoring", "candidate_review"]
-)
-@pytest.mark.parametrize("field", ["elapsed_seconds", "timeout_seconds"])
-@pytest.mark.parametrize("value", [None, True, "1.0", 0.0, -1.0, float("nan"), float("inf")])
-def test_every_role_requires_positive_finite_numeric_timing(role, field, value):
-    stage = _stage_observation(RESCUE_PROFILE_ID)
-    stage[role][field] = value
-    assert model_stage_observation_issues(
-        RESCUE_PROFILE_ID, observed=_sealed_observation(RESCUE_PROFILE_ID), stage_observation=stage,
-    )
-
-
-@pytest.mark.parametrize("profile_id", MODEL_PROFILES)
-@pytest.mark.parametrize("field", ["elapsed_seconds", "timeout_seconds"])
-def test_review_cannot_exceed_the_remaining_sealed_window(profile_id, field):
-    profile = get_greenfield_model_profile(profile_id)
-    for remaining in (2.0, 30.0):
-        stage = _stage_observation(profile_id)
-        stage["participant_selection"]["elapsed_seconds"] = (
-            profile.model_timeout_seconds - remaining - 10.0
-        )
-        stage["remaining_candidate_authoring"]["elapsed_seconds"] = 10.0
-        stage["candidate_review"]["timeout_seconds"] = remaining
-        stage["candidate_review"][field] = remaining + 0.001
-        assert model_stage_observation_issues(
-            profile_id, observed=_sealed_observation(profile_id), stage_observation=stage,
-        )
-
-
-def test_review_elapsed_includes_setup_and_must_fit_request_timeout():
-    stage = _stage_observation(STANDARD_PROFILE_ID)
-    stage["candidate_review"].update(timeout_seconds=18.0, elapsed_seconds=19.0)
-    assert "retained candidate review elapsed time exceeds its timeout" in model_stage_observation_issues(
-        STANDARD_PROFILE_ID, observed=_sealed_observation(STANDARD_PROFILE_ID), stage_observation=stage,
-    )
-
-
-@pytest.mark.parametrize(("role", "field", "value"), [
-    ("participant_selection", "profile_id", STANDARD_PROFILE_ID),
-    ("participant_selection", "provider", "claude-cli"),
-    ("participant_selection", "model", "gpt-5.6-sol"),
-    ("participant_selection", "reasoning_effort", "low"),
-    ("remaining_candidate_authoring", "authoring_tier", "standard"),
-    ("remaining_candidate_authoring", "effective_timeout_seconds", 165.001),
-    ("remaining_candidate_authoring", "effective_timeout_seconds", None),
-    ("remaining_candidate_authoring", "effective_timeout_seconds", True),
-])
-def test_stage_checker_independently_rejects_false_sealed_profile(role, field, value):
-    observed = _sealed_observation(RESCUE_PROFILE_ID)
-    observed[role][field] = value
-    assert model_stage_observation_issues(
-        RESCUE_PROFILE_ID, observed=observed, stage_observation=_stage_observation(RESCUE_PROFILE_ID),
-    )
-
-
-@pytest.mark.parametrize("field", ["timeout_seconds", "elapsed_seconds"])
-def test_review_budget_does_not_tolerate_sub_microsecond_overrun(field):
-    stage = _stage_observation(STANDARD_PROFILE_ID)
-    stage["candidate_review"][field] = (
-        get_greenfield_model_profile(STANDARD_PROFILE_ID).model_timeout_seconds
-        - stage["participant_selection"]["elapsed_seconds"]
-        - stage["remaining_candidate_authoring"]["elapsed_seconds"]
-        + 0.0000001
-    )
-    assert model_stage_observation_issues(
-        STANDARD_PROFILE_ID, observed=_sealed_observation(STANDARD_PROFILE_ID), stage_observation=stage,
-    )
-
-
-def test_review_above_old_stage_cap_is_valid_inside_remaining_shared_budget():
-    stage = _stage_observation(STANDARD_PROFILE_ID)
-    stage["candidate_review"].update(timeout_seconds=30.0, elapsed_seconds=23.0)
-    assert model_stage_observation_issues(
-        STANDARD_PROFILE_ID, observed=_sealed_observation(STANDARD_PROFILE_ID), stage_observation=stage,
-    ) == ()
-
-
-@pytest.mark.parametrize("profile_id", MODEL_PROFILES)
-@pytest.mark.parametrize("elapsed", [None, True, "1.0", 0.0, -1.0, float("nan"), float("inf"), "at_cap"])
-def test_profile_aggregate_rejects_non_numeric_missing_or_expired_consumer_time(profile_id, elapsed):
-    stage = _stage_observation(profile_id)
-    profile = get_greenfield_model_profile(profile_id)
-    result = SimpleNamespace(
-        name="timing control", status="passed", quality=SimpleNamespace(passed=True),
-        proposal_seconds=profile.operational_timeout_seconds if elapsed == "at_cap" else elapsed,
-        evidence={
-            "case": {"expectation": "transaction_committed"},
-            "model_profile": model_profile_evidence(
-                profile_id, model_profile_environment(profile_id, {}),
-                observed=_sealed_observation(profile_id), stage_observation=stage,
-            ),
-        },
-    )
-    proof = model_profile_release_proof((result,), require_complete=False)
-    assert proof["status"] == "failed"
-    assert any("operational-timeout proof" in issue for issue in proof["issues"])
-    assert proof["profiles"][profile_id]["committed_positive_case_count"] == 0
-    assert proof["profiles"][profile_id]["maximum_semantic_model_calls"] == 3
-
-
-@pytest.mark.parametrize("profile_id", MODEL_PROFILES)
-def test_profile_aggregate_accepts_exact_participant_first_observations(profile_id):
-    stage = _stage_observation(profile_id)
-    result = SimpleNamespace(
-        name="participant-first control", status="passed",
-        quality=SimpleNamespace(passed=True), proposal_seconds=80.0,
-        evidence={
-            "case": {"expectation": "transaction_committed"},
-            "model_profile": model_profile_evidence(
-                profile_id, model_profile_environment(profile_id, {}),
-                observed=_sealed_observation(profile_id), stage_observation=stage,
-            ),
-        },
-    )
-
-    proof = model_profile_release_proof((result,), require_complete=False)
-
-    assert proof["status"] == "passed", proof["issues"]
-    assert proof["profiles"][profile_id]["status"] == "passed"
-    assert proof["profiles"][profile_id]["committed_positive_case_count"] == 1
-
-
-@pytest.mark.parametrize("mutation", ["review", "unsupported_dimension", "unsupported_quote", "empty_source"])
-def test_clarification_remains_source_bound_and_has_no_review(mutation):
-    stage = _stage_observation(RESCUE_PROFILE_ID, response_kind="clarification_required")
-    if mutation == "review":
-        stage["candidate_review"] = _stage_observation(RESCUE_PROFILE_ID)["candidate_review"]
-    elif mutation == "unsupported_dimension":
-        stage["remaining_candidate_authoring"]["response"]["result"]["clarification"][
-            "material_dimension"
-        ] = "writing_style"
-    elif mutation == "unsupported_quote":
-        stage["remaining_candidate_authoring"]["response"]["result"]["consistency"] = {
-            "status": "material_contradiction", "evidence_quotes": ["Invented one", "Invented two"],
-        }
-    else:
-        stage["request"]["evidence"] = ""
-    assert model_stage_observation_issues(
-        RESCUE_PROFILE_ID, observed=_sealed_observation(RESCUE_PROFILE_ID), stage_observation=stage,
-    )
-
-
-def _mutated_stage_observation(mutation: str) -> dict[str, object]:
-    stage = deepcopy(_stage_observation(RESCUE_PROFILE_ID))
-    participant = stage["participant_selection"]
-    assert isinstance(participant, dict)
-    if mutation in {"version", "authoring_version"}:
-        stage[mutation] = "old"
-    elif mutation == "response_version":
-        stage["remaining_candidate_authoring"]["response"]["version"] = "old"
-    elif mutation == "response_kind":
-        stage["remaining_candidate_authoring"]["response"]["result"]["status"] = "invented"
-    elif mutation == "bool_count":
-        stage["semantic_model_call_count"] = True
-    elif mutation == "two_calls":
-        stage["semantic_model_call_count"] = 2
-    elif mutation == "forged_participant_role":
-        participant["request_role"] = "source_review"
-    elif mutation == "forged_participant_model":
-        participant["model"] = "gpt-5.6-sol"
-        participant["provider"]["model"] = "gpt-5.6-sol"
-    elif mutation == "participant_failure":
-        participant["provider"]["code"] = "provider_timeout"
-    elif mutation == "participant_cap":
-        participant["timeout_seconds"] = 60.0
-    elif mutation == "participant_elapsed":
-        participant["elapsed_seconds"] = 165.001
-    elif mutation == "missing_participant":
-        stage.pop("participant_selection")
-    else:
-        raise AssertionError(f"unknown mutation: {mutation}")
-    return stage
-
-
-def _create_payload_for_stage(stage: dict[str, object], *, source: str) -> dict[str, object]:
-    review = stage["candidate_review"]
-    assert isinstance(review, dict)
-    response = review["response"]
-    assert isinstance(response, dict)
-    admission_witness = response["admission_witness"]
-    assert isinstance(admission_witness, dict)
-    joined = stage["joined_candidate"]
-    assert isinstance(joined, dict)
-    candidate = joined["result"]
-    assert isinstance(candidate, dict)
-    review_input_candidate_sha256 = candidate_review_sha256(candidate)
-    final_candidate_sha256 = candidate_review_sha256(
-        project_reviewed_custody(
-            candidate,
-            component_custody=admission_witness["component_custody"],
-            source_precedence_custody=admission_witness[
-                "source_precedence_custody"
-            ],
-            constraint_custody=admission_witness["constraint_custody"],
-            evidence_text=source,
-        )
-    )
+def _observed(receipt: dict[str, object]) -> dict[str, object]:
     return {
-        "commit_manifest": {
-            "model_authoring": {
-                "candidate_review": {
-                    "version": CANDIDATE_REVIEW_VERSION,
-                    "status": "admitted",
-                    "source_sha256": hashlib.sha256(source.encode("utf-8")).hexdigest(),
-                    "review_input_candidate_sha256": review_input_candidate_sha256,
-                    "candidate_sha256": final_candidate_sha256,
-                    "product_facts_sha256": "2" * 64,
-                    "elapsed_seconds": 1.0,
-                    "model_profile": {},
-                    "admission_witness": deepcopy(admission_witness),
-                }
-            }
-        }
+        "origin": "host_native",
+        "host_candidate": deepcopy(receipt),
+        "runtime_semantic_model_call_count": 0,
     }
 
 
-def _host_native_stage(*, candidate_sha256: str) -> dict[str, object]:
+def _stage(receipt: dict[str, object]) -> dict[str, object]:
     return {
-        "version": "odylith.greenfield.host-native-matrix-observation.v4",
+        "version": HOST_NATIVE_MATRIX_OBSERVATION_VERSION,
         "status": "passed",
         "host_invocations": 1,
         "contract_command_invocations": 1,
         "proposal_command_invocations": 1,
+        "runtime_semantic_model_call_count": 0,
+        "post_receipt_provider_invocations": 0,
         "model_profile_id": STANDARD_PROFILE_ID,
         "host_request": {
             "version": "odylith.greenfield.host-argv-receipt.v1",
-            "executable_sha256": "7" * 64,
+            "executable_sha256": "1" * 64,
             "argument_count": HOST_NATIVE_ARGV_ARGUMENT_COUNT,
             "model": "gpt-6-astra",
             "reasoning_effort": "medium",
@@ -1275,140 +84,321 @@ def _host_native_stage(*, candidate_sha256: str) -> dict[str, object]:
         "host_workspace_cleaned": True,
         "stage": "propose",
         "contract_returncode": 0,
-        "contract_sha256": "5" * 64,
-        "source_sha256": "2" * 64,
-        "candidate_schema_sha256": "6" * 64,
+        "contract_sha256": "2" * 64,
+        "source_sha256": hashlib.sha256(SOURCE.encode()).hexdigest(),
+        "candidate_schema_sha256": "3" * 64,
         "host_returncode": 0,
-        "host_stdout_bytes": 100,
+        "host_stdout_bytes": 500,
         "host_stderr_bytes": 0,
-        "response_kind": "authored",
-        "candidate_sha256": candidate_sha256,
-        "candidate_raw_sha256": "9" * 64,
-        "candidate_raw_bytes": 100,
+        "response_kind": "clarification_required",
+        "raw_candidate_sha256": receipt["raw_candidate_sha256"],
+        "host_output_sha256": "4" * 64,
+        "host_output_bytes": 500,
         "candidate_temp_outside_repo": True,
         "proposal_returncode": 0,
-        "proposal_stdout_sha256": "a" * 64,
-        "proposal_stderr_sha256": "b" * 64,
-        "proposal_mode": "product_create_transaction",
-        "candidate_review_status": "unreported",
-        "candidate_review_issue_path_sha256": "",
-        "candidate_review_issue_reason_sha256": "",
-        "elapsed_seconds": 80.0,
+        "proposal_stdout_sha256": "5" * 64,
+        "proposal_stderr_sha256": "6" * 64,
+        "proposal_mode": "clarification_required",
+        "elapsed_seconds": 12.0,
     }
 
 
-def _review_input_candidate() -> dict[str, object]:
-    stage = _stage_observation(STANDARD_PROFILE_ID)
-    review = stage["candidate_review"]
-    assert isinstance(review, dict)
-    request = review["request"]
-    assert isinstance(request, dict)
-    partitioned = request["candidate"]
-    assert isinstance(partitioned, dict)
-    accepted = partitioned["accepted_source"]
-    proposed = partitioned["proposed_decisions"]
-    assert isinstance(accepted, dict) and isinstance(proposed, dict)
-    return {**deepcopy(accepted), **deepcopy(proposed)}
-
-
-def _review_input_source() -> str:
-    stage = _stage_observation(STANDARD_PROFILE_ID)
-    request = stage["request"]
-    assert isinstance(request, dict)
-    return str(request["evidence"])
-
-
-def _review_component_custody() -> dict[str, object]:
-    stage = _stage_observation(STANDARD_PROFILE_ID)
-    review = stage["candidate_review"]
-    assert isinstance(review, dict)
-    response = review["response"]
-    assert isinstance(response, dict)
-    witness = response["admission_witness"]
-    assert isinstance(witness, dict)
-    custody = witness["component_custody"]
-    assert isinstance(custody, dict)
-    return deepcopy(custody)
-
-
-def _review_source_precedence_custody() -> list[dict[str, object]]:
-    stage = _stage_observation(STANDARD_PROFILE_ID)
-    review = stage["candidate_review"]
-    assert isinstance(review, dict)
-    response = review["response"]
-    assert isinstance(response, dict)
-    witness = response["admission_witness"]
-    assert isinstance(witness, dict)
-    custody = witness["source_precedence_custody"]
-    assert isinstance(custody, list)
-    return deepcopy(custody)
-
-
-def _host_native_private_admission(
-    *,
-    observed: dict[str, object],
-    source: str,
-    review_input_candidate_sha256: str,
-    final_candidate_sha256: str,
-    witness: dict[str, object] | None = None,
-    component_custody: dict[str, object] | None = None,
-) -> dict[str, object]:
-    admission_witness = witness or {
-        "participant_fact": {"field": "human_actors", "row": 1},
-        "task_event_order": 1,
-        "result_event_order": 1,
-        "design_coverage": {
-            "component_verification_keys": [
-                "test-boundary-1", "test-boundary-2", "test-boundary-3", "test-boundary-4",
-            ],
-            "workstream_verification_keys": [
-                "test-work-1", "test-work-2", "test-work-3", "test-work-4",
-            ],
-            "risk_keys": [],
-            "risk_posture_status": "no_material_risks_identified",
-        },
-        "component_custody": deepcopy(
-            component_custody
-            if component_custody is not None
-            else _review_component_custody()
-        ),
-        "source_precedence_custody": _review_source_precedence_custody(),
-        "constraint_custody": [],
-    }
+def _create_payload(receipt: dict[str, object]) -> dict[str, object]:
     return {
-        "version": "odylith.greenfield.model-proof-observation.v4",
-        "authoring_version": "odylith.greenfield.intent-authoring.v76",
-        "request": {
-            "version": "odylith.greenfield.intent-authoring.v76",
-            "evidence": source,
-        },
-        "semantic_model_call_count": 1,
-        "origin": "host_native",
-        "host_candidate": deepcopy(observed["host_candidate"]),
-        "candidate_review": {
-            "version": CANDIDATE_REVIEW_VERSION,
-            "status": "admitted",
-            "source_sha256": hashlib.sha256(source.encode("utf-8")).hexdigest(),
-            "review_input_candidate_sha256": review_input_candidate_sha256,
-            "candidate_sha256": final_candidate_sha256,
-            "model_profile": deepcopy(observed["candidate_review"]),
-            "elapsed_seconds": 1.0,
-            "admission_witness": admission_witness,
-        },
+        "commit_manifest": {
+            "model_authoring": {
+                "authoring_origin": "host_native",
+                "authoring_version": "odylith.greenfield.intent-authoring.v77",
+                "runtime_semantic_model_call_count": 0,
+                "tier": "standard",
+                "elapsed_seconds": 1.0,
+                "effective_model_window_seconds": 165.0,
+                "host_candidate": receipt,
+                "canonical_authority": {
+                    "canonical_candidate_sha256": receipt[
+                        "canonical_candidate_sha256"
+                    ],
+                    "source_sha256": hashlib.sha256(SOURCE.encode()).hexdigest(),
+                    "product_facts_sha256": "7" * 64,
+                    "authored_relation_set_sha256": "8" * 64,
+                },
+            },
+            "semantic_compiler": {
+                "version": "odylith.greenfield.authored-semantic-validation.v5",
+                "status": "passed",
+                "semantic_owner": "host_canonical_candidate",
+                "post_candidate_receipt_semantic_calls": 0,
+            },
+        }
     }
 
 
+def _mutate_path(
+    value: dict[str, object], path: tuple[str, ...], replacement: object
+) -> None:
+    target = value
+    for key in path[:-1]:
+        target = target[key]
+    if replacement is MISSING:
+        target.pop(path[-1])
+    else:
+        target[path[-1]] = replacement
 
 
-def _case(
-    case_id: str,
-    *,
-    expectation: str = "transaction_committed",
-) -> GreenfieldMatrixCase:
-    return GreenfieldMatrixCase(
-        case_id=case_id,
-        name=case_id,
-        prompt=f"Operator completes {case_id} and reviews one receipt.",
-        required_terms=("receipt",),
-        expectation=expectation,
+def _profile_evidence() -> dict[str, object]:
+    raw, receipt = _raw_and_receipt()
+    return model_profile_evidence(
+        STANDARD_PROFILE_ID,
+        model_profile_environment(STANDARD_PROFILE_ID, {}),
+        observed=_observed(receipt),
+        stage_observation=_stage(receipt),
+        raw_candidate=raw,
+        expected_source=SOURCE,
     )
+
+
+def test_retained_candidate_binds_raw_and_canonical_hashes() -> None:
+    raw, receipt = _raw_and_receipt()
+
+    assert retained_canonical_candidate_hash_issues(
+        raw_candidate=raw,
+        receipt=receipt,
+        evidence_text=SOURCE,
+    ) == ()
+
+    tampered = deepcopy(raw)
+    tampered["result"]["clarification"]["material_dimension"] = "product_view"
+    issues = retained_canonical_candidate_hash_issues(
+        raw_candidate=tampered,
+        receipt=receipt,
+        evidence_text=SOURCE,
+    )
+    assert "sealed raw candidate hash does not match retained host output" in issues
+    assert (
+        "sealed canonical candidate hash does not match deterministic projection"
+        in issues
+    )
+
+
+def test_profile_evidence_proves_one_host_and_zero_post_receipt_calls() -> None:
+    evidence = _profile_evidence()
+
+    assert evidence["status"] == "passed", evidence["issues"]
+    assert evidence["semantic_authority"] == "active_host_single_authority"
+    assert evidence["sealed_request_roles"] == ["host_candidate"]
+    assert evidence["host_semantic_model_calls"] == 1
+    assert evidence["runtime_semantic_model_calls_after_candidate_receipt"] == 0
+    assert evidence["post_receipt_provider_invocations"] == 0
+    summary = evidence["stage_observation_summary"]
+    assert summary["retained_candidate_hash_summary"]["canonical_projection_verified"] is True
+    assert "candidate_" + "review" not in json.dumps(evidence, sort_keys=True)
+
+
+def test_profile_evidence_rejects_post_receipt_provider_or_reviewer_fields() -> None:
+    raw, receipt = _raw_and_receipt()
+    stage = _stage(receipt)
+    stage["post_receipt_provider_invocations"] = 1
+    observed = _observed(receipt)
+    observed["candidate_" + "review"] = {"status": "admitted"}
+
+    evidence = model_profile_evidence(
+        STANDARD_PROFILE_ID,
+        model_profile_environment(STANDARD_PROFILE_ID, {}),
+        observed=observed,
+        stage_observation=stage,
+        raw_candidate=raw,
+        expected_source=SOURCE,
+    )
+
+    assert evidence["status"] == "failed"
+    assert any("post_receipt_provider_invocations" in issue for issue in evidence["issues"])
+    assert "sealed model observation has missing or unsupported fields" in evidence["issues"]
+
+
+@pytest.mark.parametrize(
+    ("location", "field"),
+    (
+        ("stage", "host_invocations"),
+        ("stage", "contract_command_invocations"),
+        ("stage", "proposal_command_invocations"),
+        ("stage", "runtime_semantic_model_call_count"),
+        ("stage", "post_receipt_provider_invocations"),
+        ("observed", "runtime_semantic_model_call_count"),
+    ),
+)
+@pytest.mark.parametrize("invalid", (False, True, 0.0, MISSING))
+def test_profile_evidence_rejects_non_integer_call_counts(
+    location: str,
+    field: str,
+    invalid: object,
+) -> None:
+    raw, receipt = _raw_and_receipt()
+    stage = _stage(receipt)
+    observed = _observed(receipt)
+    target = stage if location == "stage" else observed
+    if invalid is MISSING:
+        target.pop(field)
+    else:
+        target[field] = invalid
+
+    evidence = model_profile_evidence(
+        STANDARD_PROFILE_ID,
+        model_profile_environment(STANDARD_PROFILE_ID, {}),
+        observed=observed,
+        stage_observation=stage,
+        raw_candidate=raw,
+        expected_source=SOURCE,
+    )
+
+    assert evidence["status"] == "failed"
+
+
+@pytest.mark.parametrize(
+    "field",
+    (
+        "host_invocations",
+        "runtime_semantic_model_call_count",
+        "post_receipt_provider_invocations",
+    ),
+)
+@pytest.mark.parametrize("invalid", (False, True, 0.0, MISSING))
+def test_clarification_stage_rejects_non_integer_call_counts(
+    field: str,
+    invalid: object,
+) -> None:
+    _raw, receipt = _raw_and_receipt()
+    stage = _stage(receipt)
+    if invalid is MISSING:
+        stage.pop(field)
+    else:
+        stage[field] = invalid
+
+    issues = host_native_clarification_stage_observation_issues(
+        STANDARD_PROFILE_ID,
+        stage_observation=stage,
+        expected_source_sha256=hashlib.sha256(SOURCE.encode()).hexdigest(),
+    )
+
+    assert issues
+
+
+def test_committed_result_binding_uses_canonical_authority_only() -> None:
+    raw, receipt = _raw_and_receipt()
+    create_payload = _create_payload(receipt)
+
+    assert authored_model_result_binding_issues(
+        stage_observation=_stage(receipt),
+        raw_candidate=raw,
+        create_payload=create_payload,
+        expected_source=SOURCE,
+    ) == ()
+
+    create_payload["commit_manifest"]["semantic_compiler"][
+        "post_candidate_receipt_semantic_calls"
+    ] = 1
+    assert "semantic compiler does not prove zero post-receipt semantic calls" in (
+        authored_model_result_binding_issues(
+            stage_observation=_stage(receipt),
+            raw_candidate=raw,
+            create_payload=create_payload,
+            expected_source=SOURCE,
+        )
+    )
+
+
+@pytest.mark.parametrize(
+    "path",
+    (
+        ("commit_manifest", "model_authoring", "runtime_semantic_model_call_count"),
+        (
+            "commit_manifest",
+            "semantic_compiler",
+            "post_candidate_receipt_semantic_calls",
+        ),
+    ),
+)
+@pytest.mark.parametrize("invalid", (False, True, 0.0, MISSING))
+def test_committed_result_binding_rejects_non_integer_call_counts(
+    path: tuple[str, ...],
+    invalid: object,
+) -> None:
+    raw, receipt = _raw_and_receipt()
+    create_payload = _create_payload(receipt)
+    _mutate_path(create_payload, path, invalid)
+
+    issues = authored_model_result_binding_issues(
+        stage_observation=_stage(receipt),
+        raw_candidate=raw,
+        create_payload=create_payload,
+        expected_source=SOURCE,
+    )
+
+    assert issues
+
+
+@pytest.mark.parametrize(
+    "field",
+    ("runtime_semantic_model_call_count", "post_receipt_provider_invocations"),
+)
+@pytest.mark.parametrize("invalid", (False, True, 0.0, MISSING))
+def test_committed_result_binding_rejects_non_integer_stage_call_counts(
+    field: str,
+    invalid: object,
+) -> None:
+    raw, receipt = _raw_and_receipt()
+    stage = _stage(receipt)
+    if invalid is MISSING:
+        stage.pop(field)
+    else:
+        stage[field] = invalid
+
+    issues = authored_model_result_binding_issues(
+        stage_observation=stage,
+        raw_candidate=raw,
+        create_payload=_create_payload(receipt),
+        expected_source=SOURCE,
+    )
+
+    assert issues
+
+
+def test_release_profile_summary_has_no_runtime_reviewer_profile() -> None:
+    result = SimpleNamespace(
+        name="clarification",
+        status="passed",
+        quality=SimpleNamespace(
+            passed=True,
+            score_basis="clarification_required_no_write_contract",
+        ),
+        proposal_seconds=12.0,
+        evidence={
+            "case": {
+                "expectation": "clarification_required",
+                "prompt_sha256": "9" * 64,
+            },
+            "clarification": {
+                "mode": "clarification_required",
+                "question": "What complete task should the first user finish?",
+                "required_fields": ["first_path"],
+                "returncode": 0,
+            },
+            "no_write": {
+                "write_audit_active": True,
+                "write_audit_error": "",
+                "write_attempts": [],
+                "changed_records": [],
+                "staged_transaction_present": False,
+            },
+            "model_profile": _profile_evidence(),
+        },
+    )
+
+    proof = model_profile_release_proof((result,), require_complete=False)
+
+    assert proof["status"] == "passed", proof["issues"]
+    serialized = json.dumps(proof, sort_keys=True)
+    assert "candidate_" + "review" not in serialized
+    assert "reviewer" not in serialized
+    profile = proof["profiles"][STANDARD_PROFILE_ID]
+    assert profile["host_model"] == "gpt-6-astra"
+    assert profile["runtime_semantic_model_calls_after_candidate_receipt"] == 0

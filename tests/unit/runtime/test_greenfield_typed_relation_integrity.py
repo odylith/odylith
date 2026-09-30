@@ -14,16 +14,13 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring impor
     GreenfieldModelAuthoredIntent,
     GreenfieldModelAuthoringError,
 )
-from odylith.runtime.domain_intelligence.greenfield_participant_first_authoring import (
-    author_greenfield_intent,
-)
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     build_product_intent_envelope,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
-    AdmittingReviewProvider,
-    RemainingCandidateProvider,
+    admit_complete_host_candidate,
     authored_response,
+    host_candidate_response,
     model_event_rows,
 )
 
@@ -132,13 +129,9 @@ def _author(
     evidence: str,
     response: dict[str, object],
 ) -> GreenfieldModelAuthoredIntent:
-    provider = RemainingCandidateProvider(response)
-    result = author_greenfield_intent(
+    result = admit_complete_host_candidate(
         evidence_text=evidence,
-        provider=provider,
-        clock=lambda: 0.0,
-        participant_provider_factory=provider.participant_provider,
-        review_provider_factory=AdmittingReviewProvider,
+        host_candidate=host_candidate_response(response, evidence_text=evidence),
     )
     assert isinstance(result, GreenfieldModelAuthoredIntent)
     return result
@@ -372,7 +365,7 @@ def test_sealed_separate_source_context_rejects_an_unknown_event_order() -> None
             sealed_intent,
             source_text=evidence,
             source_format="operator_prompt",
-            reviewed_candidate_sha256=result.candidate_review["candidate_sha256"],
+            canonical_candidate_sha256="a" * 64,
             authored_source_spans=result.source_spans,
             authored_atomic_claims=result.atomic_claims,
             authored_source_sha256=result.source_sha256,
@@ -485,7 +478,7 @@ def test_repeated_event_text_at_distinct_source_and_projection_coordinates_seals
         sealed_intent,
         source_text=evidence,
         source_format="operator_prompt",
-        reviewed_candidate_sha256=result.candidate_review["candidate_sha256"],
+        canonical_candidate_sha256="a" * 64,
         authored_source_spans=result.source_spans,
         authored_atomic_claims=result.atomic_claims,
         authored_source_sha256=result.source_sha256,
@@ -530,7 +523,7 @@ def test_true_duplicate_event_coordinates_fail_sealed_validation() -> None:
             sealed_intent,
             source_text=evidence,
             source_format="operator_prompt",
-            reviewed_candidate_sha256=result.candidate_review["candidate_sha256"],
+            canonical_candidate_sha256="a" * 64,
             authored_source_spans=result.source_spans,
             authored_atomic_claims=result.atomic_claims,
             authored_source_sha256=result.source_sha256,
@@ -559,7 +552,7 @@ def test_partially_overlapping_source_event_coordinates_fail_sealed_validation()
             sealed_intent,
             source_text=evidence,
             source_format="operator_prompt",
-            reviewed_candidate_sha256=result.candidate_review["candidate_sha256"],
+            canonical_candidate_sha256="a" * 64,
             authored_source_spans=result.source_spans,
             authored_atomic_claims=result.atomic_claims,
             authored_source_sha256=result.source_sha256,

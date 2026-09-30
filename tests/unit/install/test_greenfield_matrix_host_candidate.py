@@ -162,7 +162,7 @@ def test_host_candidate_happy_path_is_one_shot_and_cleans_candidate_file(
     assert "host_argv" not in observations[-1]
     assert observations[-1]["candidate_temp_cleaned"] is True
     assert observations[-1]["host_workspace_cleaned"] is True
-    assert observations[-1]["candidate_sha256"] == hashlib.sha256(
+    assert observations[-1]["raw_candidate_sha256"] == hashlib.sha256(
         json.dumps(
             {"version": "candidate", "result": {"status": "authored"}},
             ensure_ascii=False,
@@ -174,11 +174,12 @@ def test_host_candidate_happy_path_is_one_shot_and_cleans_candidate_file(
     raw_candidate = json.dumps(
         {"version": "candidate", "result": {"status": "authored"}},
     ).encode("utf-8")
-    assert observations[-1]["candidate_raw_sha256"] == hashlib.sha256(raw_candidate).hexdigest()
-    assert observations[-1]["candidate_raw_bytes"] == len(raw_candidate)
+    assert observations[-1]["host_output_sha256"] == hashlib.sha256(raw_candidate).hexdigest()
+    assert observations[-1]["host_output_bytes"] == len(raw_candidate)
     assert observations[-1]["proposal_returncode"] == 0
     assert observations[-1]["proposal_mode"] == "product_create_transaction"
-    assert observations[-1]["candidate_review_status"] == "unreported"
+    assert observations[-1]["runtime_semantic_model_call_count"] == 0
+    assert observations[-1]["post_receipt_provider_invocations"] == 0
     assert not host_calls[0][3].exists()
     assert "candidate" not in observations[-1]
 
@@ -299,7 +300,7 @@ def test_host_candidate_clarification_candidate_is_passed_unchanged_to_propose(
     assert observations[-1]["candidate_temp_cleaned"] is True
 
 
-def test_host_candidate_retains_raw_candidate_and_denied_proposal_before_cleanup(
+def test_host_candidate_retains_raw_candidate_and_deterministic_failure_before_cleanup(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     candidate = {"version": "candidate", "result": {"status": "authored"}}
@@ -308,24 +309,10 @@ def test_host_candidate_retains_raw_candidate_and_denied_proposal_before_cleanup
     )
     retained: dict[str, bytes] = {}
     observations: list[dict[str, object]] = []
-    denial_reason = "Missing source-bound privacy custody."
-    issue_path = "candidate.accepted_source.components USER_SOURCE_SECRET"
-
     def denied(_path: Path, _timeout: float):
         return _completed(
             ["odylith", "greenfield", "propose"],
-            stdout=json.dumps(
-                {
-                    "mode": "error",
-                    "candidate_review": {
-                        "status": "denied",
-                        "issue": {
-                            "path": issue_path,
-                            "reason": denial_reason,
-                        },
-                    },
-                }
-            ),
+            stdout=json.dumps({"mode": "error", "error": "invalid candidate"}),
             returncode=2,
         )
 
@@ -350,31 +337,18 @@ def test_host_candidate_retains_raw_candidate_and_denied_proposal_before_cleanup
     assert retained["candidate"] == json.dumps(candidate).encode("utf-8")
     assert json.loads(retained["stdout"]) == {
         "mode": "error",
-        "candidate_review": {
-            "status": "denied",
-            "issue": {
-                "path": issue_path,
-                "reason": denial_reason,
-            },
-        },
+        "error": "invalid candidate",
     }
     assert retained["stderr"] == b""
     observation = observations[-1]
-    assert observation["candidate_raw_sha256"] == hashlib.sha256(retained["candidate"]).hexdigest()
+    assert observation["host_output_sha256"] == hashlib.sha256(retained["candidate"]).hexdigest()
     assert observation["proposal_returncode"] == 2
     assert observation["proposal_mode"] == "error"
-    assert observation["candidate_review_status"] == "denied"
-    assert observation["candidate_review_issue_path_sha256"] == hashlib.sha256(
-        issue_path.encode("utf-8")
-    ).hexdigest()
-    assert observation["candidate_review_issue_reason_sha256"] == hashlib.sha256(
-        denial_reason.encode("utf-8")
-    ).hexdigest()
+    assert observation["runtime_semantic_model_call_count"] == 0
+    assert observation["post_receipt_provider_invocations"] == 0
     assert observation["candidate_temp_cleaned"] is True
     diagnostic = str(raised.value)
-    assert issue_path not in diagnostic
-    assert "USER_SOURCE_SECRET" not in diagnostic
-    assert denial_reason not in diagnostic
+    assert "invalid candidate" not in diagnostic
 
 
 @pytest.mark.parametrize(

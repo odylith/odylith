@@ -246,10 +246,26 @@ def test_authored_package_passes_in_one_validation_pass(
         build_prewrite=lambda current, tribunal: calls.append(current) or _prewrite(current, tribunal),
         proposal_ready=True,
         model_authoring_receipt={
-            "authoring_version": "odylith.greenfield.model-intent-authoring.v1",
-            "semantic_model_call_count": 3,
+            "authoring_origin": "host_native",
+            "authoring_version": "odylith.greenfield.model-intent-authoring.v77",
+            "runtime_semantic_model_call_count": 0,
             "tier": "standard",
             "elapsed_seconds": 12.0,
+            "effective_model_window_seconds": 120.0,
+            "host_candidate": {
+                "version": "odylith.greenfield.host-candidate-receipt.v2",
+                "contract_version": "odylith.greenfield.host-candidate-contract.v32",
+                "canonical_version": "odylith.greenfield.model-intent-authoring.v77",
+                "source_sha256": "a" * 64,
+                "raw_candidate_sha256": "b" * 64,
+                "canonical_candidate_sha256": "c" * 64,
+            },
+            "canonical_authority": {
+                "canonical_candidate_sha256": "c" * 64,
+                "source_sha256": "a" * 64,
+                "product_facts_sha256": "d" * 64,
+                "authored_relation_set_sha256": "e" * 64,
+            },
         },
         clock=lambda: 0.0,
     )
@@ -263,12 +279,12 @@ def test_authored_package_passes_in_one_validation_pass(
     assert "repaired_issue_codes" not in result.manifest
     assert "patchset_request" not in result.manifest
     assert result.manifest["semantic_compiler"] == {
-        "version": "odylith.greenfield.authored-semantic-validation.v4",
+        "version": "odylith.greenfield.authored-semantic-validation.v5",
         "status": "passed",
-        "semantic_owner": "validated_model_authored_intent",
-        "post_authoring_interpretation_calls": 1,
+        "semantic_owner": "host_canonical_candidate",
+        "post_candidate_receipt_semantic_calls": 0,
     }
-    assert result.manifest["model_authoring"]["semantic_model_call_count"] == 3
+    assert result.manifest["model_authoring"]["runtime_semantic_model_call_count"] == 0
 
 
 def test_authored_quality_failure_is_immediate_and_unrepaired(
