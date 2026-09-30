@@ -1,5 +1,34 @@
 - Bug ID: CB-324
 
+## V33 single-authority public recurrence (2026-09-30)
+
+The clean pushed `dc1dd6a08` installed 40-case public discovery campaign
+stopped after 8 cases (7 passed, 1 failed) at
+`release-agriculture-030-source`. The operator requested only "Build an
+agriculture product" and supplied a separately labelled plantFEM repository
+description as source evidence. The one Astra/medium candidate promoted "This
+software" into the requested product owner and its reference simulation
+capability into the task, operational constraint, and terminal proof. Citation
+bytes and structural validation passed, but semantic authority did not: a
+transaction was staged where one focused `first_path` clarification with no
+transaction was required. Independent source-first adjudication confirms P1;
+the fixed expectation is not an evaluator error. No governed publication
+occurred. Retained evidence:
+`/private/tmp/odylith-public40-dc1dd6a08-evidence/public40.v1.json` and
+`retained/release-agriculture-030-source/` beneath that evidence root.
+
+The same campaign passed the former `release-agriculture-037-source` latency
+blocker in `138.533s` through proposal, committed a 5/5/5 package, and passed
+browser checks. Compact output is therefore a useful latency improvement,
+but it does not repair this source-authority regression. The current
+single-authority candidate fails the predeclared public release gate; do not
+add another author instruction, parser, regex, retry, or case-specific rule.
+The missing invariant is that separately identified reference provenance
+cannot supply the requested product's owner/task/result witness unless the
+operator explicitly binds it into that product path. A different ownership
+regime or a deliberately narrower product input contract requires a bounded
+decision and fresh end-to-end proof before Greenfield release qualification.
+
 ## V37 source-repository title recurrence (2026-09-27)
 
 The retained V37 mobility case completed its one host-author call in

@@ -1,5 +1,31 @@
 Status: In progress
 
+## V33 public stop and release-candidate retirement (2026-09-30)
+
+The clean pushed `dc1dd6a08` distribution passed platform leakage and the
+first seven cases of the fixed 40-case installed public discovery campaign,
+including the old agriculture latency blocker at `138.533s` through proposal
+with 5 Radar, 5 Registry, 5 Atlas, committed create, and clean browser proof.
+Case eight, `release-agriculture-030-source`, failed the predeclared
+clarification/no-write floor: the host promoted a separately labelled source
+repository's simulator description into the requested product owner, task,
+constraint, and terminal result, and staged a transaction. Independent
+source-first adjudication confirms P1 rather than oracle error. The campaign
+stopped at 7 passed/1 failed; protected holdout remains unopened. Evidence:
+`/private/tmp/odylith-public40-dc1dd6a08-evidence/public40.v1.json`.
+
+This triggers the single-authority replacement's stated retirement rule.
+Keep the measured compact-output latency learning, but do not treat the
+current one-host candidate as a release winner or add a prompt/schema/regex
+patch, retry, repair, reviewer ladder, or fixture exception. The next product
+decision must explicitly change the ownership regime or narrow the accepted
+input contract so reference material cannot manufacture first-path authority;
+compare that bounded option against the current failure and complete
+positive/negative controls before any new public campaign. If no such option
+clears semantic quality and the 180-second safety window, Greenfield remains
+preview-only or outside the production release claim. Do not open protected
+holdout while this public P1 persists.
+
 ## Compact-output decision (2026-09-30)
 
 Promote only a versioned one-sentence compact-JSON instruction in the existing
