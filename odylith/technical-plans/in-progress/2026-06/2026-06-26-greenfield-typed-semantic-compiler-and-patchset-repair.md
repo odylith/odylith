@@ -12,6 +12,14 @@ actions while inflating beneficiary goals into workflow events. CB-324 carries
 the independent review and external evidence. None clears the fixed negative
 and complete positive cases, so Greenfield create remains unqualified.
 
+An exact-span comparison of the retained gate and fast candidate rules out a
+cheap hard coverage join: 15 of 19 action rows match candidate events, three
+unmatched rows are broad outcome aspirations, and the fourth is the missing
+reviewer-acceptance event. Its quote is already present as a constraint, so
+mere quote presence would pass the defective package. Do not promote a
+section-name filter, all-rows-as-events rule, or candidate self-attestation as
+the next mechanism.
+
 The next mechanism comparison must make source-authority ownership explicit
 and preserve all product-governing constraints, non-goals, and actions before
 design projection, with one frozen authoring regime and one independent

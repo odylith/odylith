@@ -37,6 +37,18 @@ checklist safe to feed to a design author. Do not add it as a second partial
 interpretation or count its 39-second latency as an end-to-end win. CB-324
 remains open; the protected holdout stays closed.
 
+The retained 19-row gate was also compared directly with the retained
+15-event fast-author candidate using exact source-quote containment. Fifteen
+gate rows map to candidate events; four do not. Three unmatched rows are broad
+Product Outcome aspirations that must not become forced workflow events. The
+fourth is the genuinely missing scientific-reviewer acceptance action. That
+same quote appears in the candidate's operational constraints, so checking
+whether the quote appears anywhere would falsely pass; requiring every gate
+row to be an event would falsely fail the three aspirations. Do not turn this
+partial checklist into a hard span-coverage rule or infer action type from
+source headings. A source-first semantic distinction and a complete-package
+quality path remain necessary; no candidate, proposal, or holdout was rerun.
+
 A final bounded latency discriminator kept the complete source-graph task and
 schema unchanged and changed only the fixed source-role effort to Astra-low.
 The one read-only call timed out after `70.013s` with zero output bytes. It
