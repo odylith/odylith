@@ -1871,6 +1871,8 @@ This section captures synchronized requirement and contract signals derived from
 
 <!-- registry-requirements:start -->
 - **2026-09-30 · Decision:** Decision evidence linked this component to governed work with 2 verifiable artifact references.
+  - Evidence: `odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
+- **2026-09-30 · Decision:** Decision evidence linked this component to governed work with 2 verifiable artifact references.
   - Evidence: `odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md`, `src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py`
 - **2026-09-29 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
@@ -1882,9 +1884,6 @@ This section captures synchronized requirement and contract signals derived from
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `src/odylith/runtime/domain_intelligence/greenfield_constraint_custody.py`
 - **2026-09-28 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
-- **2026-09-28 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
 <!-- registry-requirements:end -->

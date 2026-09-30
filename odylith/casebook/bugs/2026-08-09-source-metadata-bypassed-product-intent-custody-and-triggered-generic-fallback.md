@@ -1,5 +1,42 @@
 - Bug ID: CB-324
 
+## Thin action-gate comparison rejected (2026-09-30)
+
+Two read-only architecture checks found no safe single-candidate shortcut for
+the source-only authority failure. The current CLI frames the whole free-form
+request as one operator-evidence blob, so a candidate field that labels one
+span as product intent would be the same host's self-attestation. Exact-span
+validation cannot distinguish a separately labelled reference repository from
+operator adoption. The retained source-only candidate already proves that
+membership checks can pass while reference capabilities become product truth.
+Separately, the retained source graph cannot by itself generate useful Radar,
+Registry, and detailed Atlas outputs: it lacks component support, exchange,
+workstream acceptance, first-run, and risk-path design relationships. A
+deterministic name projection would repeat the prior generic-diagram failure.
+
+A narrower, disposable Astra-medium authority gate was then tested on the
+exact public v4 complete agriculture source. One call returned in `39.35s`
+with an admitted first-path decision and 19 source-quoted actor/action rows,
+including the scientific reviewer's acceptance of private analyst notes.
+The raw output SHA-256 is
+`5ac38967733205a43db4e170ca0bbcc4973f6f423070eef66070c3ae7f1fe7fd`;
+the external artifacts are retained at
+`/private/tmp/odylith-agri-action-gate-J6vSjp/`. No product code, candidate,
+proposal, transaction, retry, or protected holdout was involved.
+
+Independent source-first review rejected this fast checklist as the sole
+source authority. Its schema cannot carry the source non-goals or critical
+safety rules, including reference-repository non-authorization, private-note
+timing, modeled-versus-observed and correlation-versus-causation boundaries,
+exclusive reviewer/publisher authority, invalidation before republication,
+and lineage. It also promoted broad beneficiary goals into workflow actions,
+omitted the first-path reviewer disposition, and shortened the publication
+manager's joined verify-and-publish action. The source quote for reviewer
+acceptance was grounded, but that isolated success does not make the
+checklist safe to feed to a design author. Do not add it as a second partial
+interpretation or count its 39-second latency as an end-to-end win. CB-324
+remains open; the protected holdout stays closed.
+
 ## Astra-low compact-author comparison rejected (2026-09-30)
 
 One read-only Astra-low author call used the unchanged v33 candidate contract,

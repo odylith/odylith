@@ -1,5 +1,27 @@
 Status: In progress
 
+## Source-ownership comparison after fast-author no-go (2026-09-30)
+
+Do not make the one-candidate authority field, source-graph-only package
+projection, or thin actor/action checklist the next production mechanism.
+The first is self-attested because a free-form prompt has no trusted split
+between operator intent and reference evidence. The second lacks the design
+edges needed for distinct workstreams and detailed diagrams. The third took
+`39.35s` but omitted non-goals, source safety boundaries, and first-path
+actions while inflating beneficiary goals into workflow events. CB-324 carries
+the independent review and external evidence. None clears the fixed negative
+and complete positive cases, so Greenfield create remains unqualified.
+
+The next mechanism comparison must make source-authority ownership explicit
+and preserve all product-governing constraints, non-goals, and actions before
+design projection, with one frozen authoring regime and one independent
+source-first review. Predict the full 5/5/5 package and no-write negative
+under the shared `180s` ceiling before changing production code. Reject any
+option that merely omits source fields for speed, duplicates semantic owners,
+repeats the generic Atlas topology, or adds a parser, regex, retry, repair,
+fallback model, or case-specific prompt. Keep the original release objective;
+preview-only is not completion.
+
 ## Fast-author no-go and bounded release decision (2026-09-30)
 
 The unchanged Astra/medium authority gate plus one Astra/low compact author

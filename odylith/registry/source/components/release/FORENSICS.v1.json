@@ -14,12 +14,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 794,
+    "explicit_event_count": 795,
     "mapped_workstream_evidence_count": 675,
     "recent_path_match_count": 0,
     "spec_history_event_count": 66,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 794
+    "timeline_event_count": 795
   },
   "name": "Release",
   "path_prefixes": [
@@ -48,6 +48,23 @@
   ],
   "spec_ref": "odylith/registry/source/components/release/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1436,
+      "explicit_components": [
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "release"
+      ],
+      "meaningful": false,
+      "summary": "Implementation evidence linked this component to governed work.",
+      "ts_iso": "2026-09-30T05:44:06-07:00",
+      "workstreams": []
+    },
     {
       "artifact_count": 2,
       "artifacts": [
