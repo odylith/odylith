@@ -1,5 +1,49 @@
 - Bug ID: CB-324
 
+## One-pass cited-state v19 failed installed public positive (2026-09-30)
+
+The new host-candidate shape gave first-path events and the governed dossier
+separate typed ownership. Focused tests passed (292 tests), the fast suite
+passed (1,308 tests), and local 0.1.15 assets built. An installed discovery
+replay of fixed public `release-agriculture-037-source` then failed after
+`159.199s` without a proposal or create. The host returned a candidate with
+five path events, cited dossier fields, five transitions, and persistence, but
+the deterministic validator rejected transition 5: its resulting-state quote
+(`published briefing`) came from the source's proof section outside that
+event's quote. The validator's same-event citation rule cannot represent that
+valid cross-section evidence relationship as authored. The matrix and raw
+candidate are retained under
+`/private/tmp/odylith-greenfield-v19-public-evidence-20260930/`; the host
+output SHA-256 is
+`addbdad975e1b97ae836f71acc920424cb370f0b6e339b5c890c9796a9ec6d86`.
+
+Independent source-first review also rejected the candidate as a complete
+package. It omitted the repository-access boundary and source precedence,
+left explicit non-goals empty, and classified a customer group as a human
+actor. The review missed a separate P1: the source requires a scientific
+reviewer to accept private raw analyst notes before later disposition, but
+the five-event candidate has no distinct acceptance transition. Thus the
+reviewer is not a qualified semantic gate. The candidate's narrower path and
+state shape are improvements, but neither structural test success nor the
+reviewer's partial findings establish source completeness.
+
+The two remaining fixed controls used the same installed assets. Source-only
+`release-agriculture-030-source` asked the expected first-path question in
+`8.385s`, with no staged transaction or governed records. Independent
+`release-civic-tech-057-source` failed after `162.057s` before proposal or
+create on the same resulting-state binding rule: its last event cites
+publication while `published aggregate insight` appears in a different
+source span. Its host output SHA-256 is
+`095308add0834f26c03ffe95cea21e4f1f1a9def5856ae005c54d8a637bcafa7`;
+the matrix and raw candidate are retained under
+`/private/tmp/odylith-greenfield-v19-remaining-evidence-20260930/`.
+The complete fixed comparison is one clean negative and two failed
+positives. The earlier action-inventory-assisted alternative also failed
+complete-package semantic review. Stop adding machinery under the two-
+comparison rule and seek a material scope or operating-envelope decision.
+No protected holdout or publication was run. Do not weaken citation custody,
+add a parser, or tune either fixture into a pass.
+
 ## Corrected 5/5/5 package rejected by independent review (2026-09-30)
 
 The previously admitted public agriculture candidate is **not** a semantic-golden

@@ -1,5 +1,30 @@
 Status: In progress
 
+## Installed v19 public replay: first positive no-go (2026-09-30)
+
+The one-pass host-candidate experiment separated path events from
+actor and system inventory and gave the governed state cited fields,
+transitions, and persistence. Focused tests (292), the fast suite (1,308),
+and a local 0.1.15 asset build passed. The first installed fixed public
+positive, `release-agriculture-037-source`, failed after `159.199s` before
+proposal or create because transition 5 cited its resulting state from a
+different source section than its event. More importantly, source-first
+review found lost repository authority and source-precedence limits, and an
+independent check found that scientific-reviewer acceptance of private raw
+notes is still absent as a distinct transition. CB-324 holds the retained
+candidate and matrix. The v19 package is not release qualified.
+
+The same installed build passed source-only `release-agriculture-030-source`
+in `8.385s` with one focused question and no writes. Independent civic-tech
+positive `release-civic-tech-057-source` failed after `162.057s` before
+proposal or create on the same resulting-state citation binding rule. The
+fixed comparison is therefore one clean negative and two failed positives.
+The prior action-inventory-assisted package also failed independent semantic
+review. Both bounded alternatives have failed the public semantic gate;
+stop adding machinery and retire the unqualified v19 runtime variant. The
+next step requires an explicit material scope or operating-envelope decision
+before selecting a new mechanism. Keep the protected final holdout closed.
+
 ## Corrected package no-go and smallest next ownership comparison (2026-09-30)
 
 Independent source-first review rejected the action-inventory-assisted
