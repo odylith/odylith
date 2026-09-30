@@ -1,5 +1,43 @@
 Status: In progress
 
+## Corrected package no-go and smallest next ownership comparison (2026-09-30)
+
+Independent source-first review rejected the action-inventory-assisted
+5/5/5 public agriculture package: the author put actor inventory, system
+responsibilities, and a privacy imperative into the first path (P1), and
+the single dossier's citations, notes, disposition, and publication status
+never became a typed lifecycle contract (P1). Source precedence, explicit
+non-goals, and one system responsibility also lost structural force (P2).
+The installed proposal's zero-issue result is self-consistency evidence,
+not semantic qualification. CB-324 records the retained source, candidate,
+transaction, and findings. Retire this corrected package as a release
+candidate; do not spend a shared-deadline run or open the holdout on it.
+
+The smallest ownership comparison is one host-authored canonical candidate,
+not another model stage. In the existing candidate contract, `events` must
+own only source-supported steps on the usable task-to-visible-result path;
+off-path actor/system responsibilities and safety rules retain their own
+typed fact/constraint roles. The current canonicalizer makes every event
+citation a `facts.first_path` citation, so merely improving downstream
+rendering cannot repair wrong membership. The governed state object also
+needs source-cited fields and transitions bound to that same object, with
+deterministic citation/binding checks; the present singular state-object
+quote cannot represent the lifecycle. These are hypotheses to test, not a
+license for a new parser, source-heading rule, online reviewer, retry,
+fallback, or duplicated semantic owner.
+
+Before production code changes, compare that one-pass shape against the
+current v33 contract on fixed public positive and source-only negative
+controls. Falsifiable predictions: the negative still asks one question
+without staging; a complete positive keeps off-path facts but excludes them
+from first-path event IDs and Atlas sequence, preserves one dossier's cited
+fields and transitions across canonical, Radar, Registry, and Atlas views,
+and stays inside the shared 180-second safety ceiling. Then test an
+independent second positive, explicit negative/tampered citations, and
+human-visible UX. Reject the shape if the author still conflates roles,
+omits state transitions, creates repetitive surfaces, or breaches time.
+Do not claim release readiness from contract text or deterministic tests.
+
 ## Focused source-action review prototype (2026-09-30)
 
 The full-candidate reviewer remains rejected, but a narrower independent

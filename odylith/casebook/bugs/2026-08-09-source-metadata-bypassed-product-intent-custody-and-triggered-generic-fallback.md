@@ -1,5 +1,42 @@
 - Bug ID: CB-324
 
+## Corrected 5/5/5 package rejected by independent review (2026-09-30)
+
+The previously admitted public agriculture candidate is **not** a semantic-golden
+package. Independent source-first review of the retained source, candidate, and
+sealed transaction found two P1 defects even though installed 0.1.15 reported
+zero deterministic proposal issues. The source's First Complete Path is a
+five-actor dossier workflow; the candidate's 15 events additionally contain
+Human Actors, Product Systems, and a Safety Boundary. The compiler projects
+all 15 into `proposal.intent.first_path` and a `first_path_contract` that
+labels the privacy imperative as a reviewer-performed Event 10. The tribunal
+then reports 15 typed first-path relations, validating its own contaminated
+projection rather than the source's path semantics. Separately, the single
+governed dossier must carry citations, analysis notes, review disposition,
+and publication status across the lifecycle; the sealed contract has
+`required_fields: []` and empty `mutation` and `persistence`. No typed
+relationship proves that one revisioned dossier owns those fields throughout.
+
+Two P2 defects remain: the operator's source-precedence and explicit
+no-code/data/service-access limits are flattened into generic constraints
+while typed `source_precedence` and `non_goals` are empty; and the climate-series
+workspace's stated observation-holding responsibility is absent from the
+Atlas system-context projection. The retained source is
+`/private/tmp/odylith-astra-low-compact-reuse-20260930/edit.md`, the candidate
+is `corrected-candidate.json` beside it, and the sealed transaction is under
+`/private/tmp/greenfield-candidate-probe.zubvCm/.odylith/runtime/greenfield/pending/859add1d59523d7e40aa05703bc96e04805e05e39ad1db38d9f3abea3feef0df/`.
+No create or protected holdout was run.
+
+This falsifies the action-inventory-assisted correction as a complete-package
+release mechanism on the very public case that motivated it. Keep the case
+as a negative/adversarial fixture, preserve the no-write negative and the
+180-second ceiling, and do not use count, citation validity, or the tribunal's
+current first-path tally as semantic qualification. The next comparison must
+give first-path membership and governed-state lifecycle explicit canonical
+ownership, then prove those relationships in a complete package without a
+regex/heading parser, another interpretation pass, retry, or fixture-specific
+rule. Retire the losing variant instead of stacking a reviewer on it.
+
 ## Action-inventory-assisted review: one public positive (2026-09-30)
 
 A different disposable review input compared the independently authored
