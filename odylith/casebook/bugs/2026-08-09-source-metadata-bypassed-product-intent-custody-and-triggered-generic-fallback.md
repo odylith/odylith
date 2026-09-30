@@ -37,6 +37,16 @@ checklist safe to feed to a design author. Do not add it as a second partial
 interpretation or count its 39-second latency as an end-to-end win. CB-324
 remains open; the protected holdout stays closed.
 
+A final bounded latency discriminator kept the complete source-graph task and
+schema unchanged and changed only the fixed source-role effort to Astra-low.
+The one read-only call timed out after `70.013s` with zero output bytes. It
+produced no graph, event citations, or package; there was no retry or design
+pass. The retained prompt/schema and terminal receipts are under
+`/private/tmp/greenfield-split-v4-037-20260930/source-low-*`. This does not
+prove low effort can never return, but it supplies no source-quality evidence
+or credible timing margin for the already slow design stage. Stop tuning the
+rejected split by model effort alone.
+
 ## Astra-low compact-author comparison rejected (2026-09-30)
 
 One read-only Astra-low author call used the unchanged v33 candidate contract,

@@ -10042,7 +10042,7 @@
       ]
     }
   ],
-  "generated_utc": "2026-09-30 13:19:07Z",
+  "generated_utc": "2026-09-30 13:32:29Z",
   "indexes": {
     "cases": {
       "case-component-atlas": "component:atlas",
@@ -10391,7 +10391,7 @@
         "renderer": 4749,
         "runbook": 299,
         "runtime": 248305,
-        "spec": 197026
+        "spec": 197038
       },
       "claim_guard": {
         "blocked_terms": [
@@ -11537,7 +11537,7 @@
         "renderer": 2290,
         "runbook": 145,
         "runtime": 121608,
-        "spec": 97291
+        "spec": 97297
       },
       "claim_guard": {
         "blocked_terms": [
@@ -12292,7 +12292,7 @@
         "renderer": 2290,
         "runbook": 145,
         "runtime": 121608,
-        "spec": 97291
+        "spec": 97297
       },
       "claim_guard": {
         "blocked_terms": [
@@ -146137,16 +146137,16 @@
         "renderer": 21,
         "runbook": 1,
         "runtime": 946,
-        "spec": 727
+        "spec": 729
       },
       "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "closeout_signal": "none",
-        "decision_count": 105,
+        "decision_count": 106,
         "developer_doc_count": 1,
         "direct_event_count": 22,
-        "explicit_count": 897,
+        "explicit_count": 898,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md",
         "implementation_count": 594,
@@ -146159,7 +146159,7 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 1,
-        "shared_component_event_count": 216,
+        "shared_component_event_count": 217,
         "status": "implementation",
         "successor_event_count": 0,
         "synthetic_count": 0
@@ -146917,8 +146917,8 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-09-25T10:24:28-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-09-30T06:17:22-07:00",
-        "latest_explicit_ts_iso": "2026-09-30T06:17:22-07:00",
+        "latest_event_ts_iso": "2026-09-30T06:31:31-07:00",
+        "latest_explicit_ts_iso": "2026-09-30T06:31:31-07:00",
         "latest_signal_kind": "decision",
         "linked_components": [
           "benchmark",
@@ -147085,9 +147085,9 @@
           "blast_radius_class": "cross-surface",
           "broad_fanout": false,
           "cross_surface_conflict": false,
-          "decision_count": 105,
+          "decision_count": 106,
           "decision_evidence": true,
-          "explicit_count": 897,
+          "explicit_count": 898,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
@@ -147165,16 +147165,16 @@
         "renderer": 22,
         "runbook": 1,
         "runtime": 938,
-        "spec": 741
+        "spec": 743
       },
       "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "closeout_signal": "none",
-        "decision_count": 108,
+        "decision_count": 109,
         "developer_doc_count": 1,
         "direct_event_count": 599,
-        "explicit_count": 939,
+        "explicit_count": 940,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
         "implementation_count": 625,
@@ -147187,7 +147187,7 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 1,
-        "shared_component_event_count": 258,
+        "shared_component_event_count": 259,
         "status": "implementation",
         "successor_event_count": 0,
         "synthetic_count": 0
@@ -147946,8 +147946,8 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-09-30T03:45:47-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-09-30T06:17:22-07:00",
-        "latest_explicit_ts_iso": "2026-09-30T06:17:22-07:00",
+        "latest_event_ts_iso": "2026-09-30T06:31:31-07:00",
+        "latest_explicit_ts_iso": "2026-09-30T06:31:31-07:00",
         "latest_signal_kind": "decision",
         "linked_components": [
           "atlas",
@@ -148160,9 +148160,9 @@
           "blast_radius_class": "cross-surface",
           "broad_fanout": false,
           "cross_surface_conflict": false,
-          "decision_count": 108,
+          "decision_count": 109,
           "decision_evidence": true,
-          "explicit_count": 939,
+          "explicit_count": 940,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
@@ -148238,16 +148238,16 @@
         "renderer": 21,
         "runbook": 1,
         "runtime": 925,
-        "spec": 724
+        "spec": 726
       },
       "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "closeout_signal": "none",
-        "decision_count": 100,
+        "decision_count": 101,
         "developer_doc_count": 0,
         "direct_event_count": 0,
-        "explicit_count": 873,
+        "explicit_count": 874,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-06/2026-06-03-decompose-greenfield-project-intelligence-surface.md",
         "implementation_count": 584,
@@ -148260,7 +148260,7 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 192,
+        "shared_component_event_count": 193,
         "status": "queued",
         "successor_event_count": 0,
         "synthetic_count": 0
@@ -148992,8 +148992,8 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-09-30T06:17:22-07:00",
-        "latest_explicit_ts_iso": "2026-09-30T06:17:22-07:00",
+        "latest_event_ts_iso": "2026-09-30T06:31:31-07:00",
+        "latest_explicit_ts_iso": "2026-09-30T06:31:31-07:00",
         "latest_signal_kind": "decision",
         "linked_components": [
           "dashboard",
@@ -149099,9 +149099,9 @@
           "blast_radius_class": "cross-surface",
           "broad_fanout": false,
           "cross_surface_conflict": false,
-          "decision_count": 100,
+          "decision_count": 101,
           "decision_evidence": true,
-          "explicit_count": 873,
+          "explicit_count": 874,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
@@ -153970,9 +153970,9 @@
       "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
-        "decision_count": 81,
+        "decision_count": 82,
         "developer_doc_count": 2,
-        "explicit_count": 719,
+        "explicit_count": 720,
         "fresh_diagrams": true,
         "implementation_count": 512,
         "live_actionable": true,
@@ -154051,8 +154051,8 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-09-30T06:17:22-07:00",
-        "latest_explicit_ts_iso": "2026-09-30T06:17:22-07:00",
+        "latest_event_ts_iso": "2026-09-30T06:31:31-07:00",
+        "latest_explicit_ts_iso": "2026-09-30T06:31:31-07:00",
         "latest_signal_kind": "decision",
         "linked_components": [
           "domain-intelligence"
@@ -154244,9 +154244,9 @@
           "blast_radius_class": "cross-surface",
           "broad_fanout": false,
           "cross_surface_conflict": false,
-          "decision_count": 81,
+          "decision_count": 82,
           "decision_evidence": true,
-          "explicit_count": 719,
+          "explicit_count": 720,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
@@ -176231,8 +176231,8 @@
       "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "local",
-        "decision_count": 87,
-        "explicit_count": 821,
+        "decision_count": 88,
+        "explicit_count": 822,
         "fresh_diagrams": true,
         "implementation_count": 562,
         "live_actionable": true,
@@ -176311,7 +176311,7 @@
         "basis": "explicit",
         "blast_radius_class": "local",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-09-30T06:17:22-07:00",
+        "latest_event_ts_iso": "2026-09-30T06:31:31-07:00",
         "latest_explicit_ts_iso": "2026-03-27T16:07:04-07:00",
         "latest_signal_kind": "decision",
         "linked_components": [
@@ -176504,9 +176504,9 @@
           "blast_radius_class": "local",
           "broad_fanout": false,
           "cross_surface_conflict": false,
-          "decision_count": 87,
+          "decision_count": 88,
           "decision_evidence": true,
-          "explicit_count": 821,
+          "explicit_count": 822,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,

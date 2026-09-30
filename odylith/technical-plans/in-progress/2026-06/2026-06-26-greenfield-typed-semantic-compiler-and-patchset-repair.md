@@ -22,6 +22,12 @@ repeats the generic Atlas topology, or adds a parser, regex, retry, repair,
 fallback model, or case-specific prompt. Keep the original release objective;
 preview-only is not completion.
 
+The attempted fixed Astra-low source role did not rescue the rejected split:
+the unchanged full source-graph task timed out at `70.013s` with no output.
+Do not run a design pass or another effort/profile substitution from that
+empty result. Stop serial model-role tuning until an ownership change can
+predict both full semantic custody and complete-package timing.
+
 ## Fast-author no-go and bounded release decision (2026-09-30)
 
 The unchanged Astra/medium authority gate plus one Astra/low compact author
