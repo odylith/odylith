@@ -8,10 +8,6 @@ import pytest
 from odylith import cli
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
-from tests.unit.runtime.greenfield_model_authoring_fixtures import (
-    clarification_response,
-    host_candidate_response,
-)
 
 
 def test_greenfield_help_describes_complete_preconfirm_package(capsys) -> None:
@@ -39,7 +35,29 @@ def test_greenfield_create_help_exposes_precompiled_transaction_contract(capsys)
     assert "--confirm-intent" not in output
 
 
-def test_greenfield_propose_command_returns_one_host_authored_clarification(
+def test_greenfield_authority_check_is_routed_by_root_cli(tmp_path: Path, capsys) -> None:
+    gate_path = tmp_path / "authority-gate.json"
+    gate_path.write_text(json.dumps({
+        "decision": "clarify",
+        "required_fields": ["first_path"],
+        "owner_quote": "",
+        "task_quote": "",
+        "result_quote": "",
+        "question": "Who uses the product, for which task, and with what result?",
+    }), encoding="utf-8")
+
+    rc = cli.main([
+        "greenfield", "authority-check", "--repo-root", str(tmp_path),
+        "--prompt", "Build a service workspace", "--gate-file", str(gate_path),
+        "--format", "json",
+    ])
+
+    assert rc == 0
+    assert json.loads(capsys.readouterr().out)["mode"] == "clarification_required"
+    assert sorted(path.name for path in tmp_path.iterdir()) == ["authority-gate.json"]
+
+
+def test_greenfield_propose_command_returns_one_pre_author_clarification(
     tmp_path: Path,
     capsys,
 ) -> None:
@@ -47,20 +65,15 @@ def test_greenfield_propose_command_returns_one_host_authored_clarification(
     publication = (tmp_path / "odylith/index.html").read_bytes()
     baseline = greenfield_repository_write_set.greenfield_managed_fingerprints(tmp_path)
     prompt = "Build an ecommerce site"
-    candidate_path = tmp_path / "host-candidate.json"
-    candidate_path.write_text(
-        json.dumps(
-            host_candidate_response(
-                clarification_response(
-                    question="unused test metadata",
-                    material_dimension="first_path",
-                    evidence_quotes=(),
-                ),
-                evidence_text=prompt,
-            )
-        ),
-        encoding="utf-8",
-    )
+    gate_path = tmp_path.parent / f"{tmp_path.name}-authority-gate.json"
+    gate_path.write_text(json.dumps({
+        "decision": "clarify",
+        "required_fields": ["first_path"],
+        "owner_quote": "",
+        "task_quote": "",
+        "result_quote": "",
+        "question": "Who uses this product first, what complete task do they finish, and what result do they see?",
+    }), encoding="utf-8")
     rc = cli.main(
         [
             "greenfield",
@@ -69,8 +82,8 @@ def test_greenfield_propose_command_returns_one_host_authored_clarification(
             str(tmp_path),
             "--prompt",
             prompt,
-            "--candidate-file",
-            str(candidate_path),
+            "--gate-file",
+            str(gate_path),
             "--format",
             "json",
         ]
@@ -80,12 +93,8 @@ def test_greenfield_propose_command_returns_one_host_authored_clarification(
     assert rc == 0
     assert payload["mode"] == "clarification_required"
     clarification = payload["clarification"]
-    assert clarification["question"] == (
-        "Who uses this product first, what complete task do they finish, "
-        "and what result do they see?"
-    )
+    assert clarification["question"] == "Who uses this product first, what complete task do they finish, and what result do they see?"
     assert clarification["required_fields"] == ["first_path"]
-    assert clarification["consistency_assessment"]["status"] == "material_ambiguity"
     assert (tmp_path / "odylith/index.html").read_bytes() == publication
     assert greenfield_repository_write_set.greenfield_managed_fingerprints(tmp_path) == baseline
     assert not (tmp_path / ".odylith/runtime/greenfield/pending").exists()

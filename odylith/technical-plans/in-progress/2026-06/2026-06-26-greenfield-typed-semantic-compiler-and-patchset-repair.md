@@ -1,5 +1,25 @@
 Status: In progress
 
+## Gate-first implementation and next release decision (2026-09-30)
+
+The narrow pre-author gate is wired into the public CLI, host-native release
+flow, recovery caller, EDIT rebuild, and operator guidance. It makes one
+source-bound admit/clarify decision before the existing single candidate
+author. Clarification stops with no candidate/propose call; admission keeps
+the authored candidate as the only package-semantic authority. The runner
+records both calls separately under one 180-second operational timeout and
+retains the raw gate output for review. Fast runtime (1,304), lifecycle (219),
+and install (1,148) tests pass. This is a frozen implementation checkpoint,
+not release qualification.
+
+Next: build from one committed revision and run the exact agriculture P1
+negative and complete positive installed cases. Reject the mechanism if it
+stages the negative, weakens the 5/5/5 positive, or exceeds the 180-second
+ceiling. If both pass, run the fixed public campaign, browser/recovery proof,
+independent semantic and UX adjudication, then the still-unopened protected
+holdout in the predeclared order. Do not expand the gate into a parser,
+fallback, candidate reviewer, or repair loop.
+
 ## Source-authority replacement comparison (2026-09-30)
 
 CB-324's recurring P1 is an authority error: a labelled reference repository

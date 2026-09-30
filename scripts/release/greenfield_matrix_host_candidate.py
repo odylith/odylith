@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 HOST_NATIVE_MATRIX_OBSERVATION_VERSION = (
-    "odylith.greenfield.host-native-matrix-observation.v5"
+    "odylith.greenfield.host-native-matrix-observation.v6"
 )
 HOST_NATIVE_ARGV_RECEIPT_VERSION = "odylith.greenfield.host-argv-receipt.v1"
 
@@ -136,9 +136,10 @@ class HostCandidateFlow:
     expected_model: str
     expected_reasoning_effort: str
     invoke_installed: Callable[[Sequence[str], float], Any]
-    invoke_propose: Callable[[Path, float], Any]
+    invoke_propose: Callable[[Path, Path, float], Any]
     installed_command: tuple[str, ...] = ("./.odylith/bin/odylith",)
     observe: Callable[[Mapping[str, Any]], None] | None = None
+    retain_authority_gate_bytes: Callable[[bytes], None] | None = None
     retain_candidate_bytes: Callable[[bytes], None] | None = None
     retain_proposal_bytes: Callable[[str, bytes], None] | None = None
 
@@ -146,9 +147,8 @@ class HostCandidateFlow:
 def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
     """Obtain a contract, invoke exactly one configured host, and propose its candidate.
 
-    The callback for ``invoke_propose`` receives a temporary candidate path. The
-    path is always removed before this function returns or raises. Every stage
-    receives only the remaining portion of one total timeout window.
+    The callback for ``invoke_propose`` receives temporary candidate and gate
+    paths. Both are removed before return. Every stage shares one timeout.
     """
 
     host_argv, _ = qualify_host_candidate_argv(
@@ -170,7 +170,10 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
         "version": HOST_NATIVE_MATRIX_OBSERVATION_VERSION,
         "status": "running",
         "host_invocations": 0,
+        "authority_gate_host_invocations": 0,
+        "candidate_host_invocations": 0,
         "contract_command_invocations": 0,
+        "authority_check_command_invocations": 0,
         "proposal_command_invocations": 0,
         "runtime_semantic_model_call_count": 0,
         "post_receipt_provider_invocations": 0,
@@ -178,9 +181,11 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
             flow.env.get("ODYLITH_GREENFIELD_MODEL_PROFILE") or ""
         ).strip(),
         "candidate_temp_cleaned": False,
+        "authority_gate_temp_cleaned": False,
         "host_workspace_cleaned": False,
     }
     candidate_path: Path | None = None
+    gate_path: Path | None = None
     host_workspace: Path | None = None
     try:
         observation["contract_command_invocations"] = 1
@@ -211,6 +216,115 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
             dir=str(temp_parent),
         ) as candidate_dir:
             host_workspace = Path(candidate_dir)
+            gate_contract = contract.get("authority_gate")
+            if not isinstance(gate_contract, Mapping) or set(gate_contract) != {
+                "version", "task", "operator_request", "operator_edit", "response_schema",
+            }:
+                _fail(
+                    "host-native candidate contract has no closed authority gate",
+                    observation=observation,
+                    stage="contract",
+                )
+            if not isinstance(gate_contract.get("response_schema"), Mapping):
+                _fail(
+                    "host-native authority gate has no response schema",
+                    observation=observation,
+                    stage="contract",
+                )
+            if (gate_contract.get("operator_request") != flow.prompt
+                    or gate_contract.get("operator_edit") != flow.edit_evidence
+                    or not str(gate_contract.get("task") or "").strip()):
+                _fail("host-native authority gate is not bound to the operator request",
+                      observation=observation, stage="contract")
+            gate_schema_path = host_workspace / "authority-gate-schema.json"
+            gate_schema_path.write_text(
+                json.dumps(gate_contract["response_schema"], ensure_ascii=False,
+                           sort_keys=True, separators=(",", ":")) + "\n",
+                encoding="utf-8",
+            )
+            gate_argv, gate_request = qualify_host_candidate_argv(
+                _resolved_host_argv(host_argv, candidate_schema_path=gate_schema_path),
+                trusted_codex_executable=flow.trusted_codex_executable,
+                expected_model=flow.expected_model,
+                expected_reasoning_effort=flow.expected_reasoning_effort,
+                expected_output_schema=str(gate_schema_path),
+                path_value=str(flow.env.get("PATH") or os.environ.get("PATH") or ""),
+            )
+            observation["authority_gate_request"] = gate_request
+            observation["authority_gate_schema_sha256"] = _sha256_text(
+                gate_schema_path.read_text(encoding="utf-8")
+            )
+            observation["host_invocations"] = 1
+            observation["authority_gate_host_invocations"] = 1
+            observation["stage"] = "authority-gate"
+            gate_result = _invoke_host(
+                gate_argv,
+                contract_text=json.dumps(dict(gate_contract), ensure_ascii=False,
+                                         sort_keys=True, separators=(",", ":")),
+                cwd=host_workspace,
+                env=flow.env,
+                timeout=_remaining(started, timeout),
+            )
+            observation["authority_gate_returncode"] = int(
+                getattr(gate_result, "returncode", 1)
+            )
+            gate_text = _text_stream(getattr(gate_result, "stdout", ""))
+            gate_bytes = gate_text.encode("utf-8")
+            if flow.retain_authority_gate_bytes is not None:
+                flow.retain_authority_gate_bytes(gate_bytes)
+            observation["authority_gate_output_sha256"] = hashlib.sha256(gate_bytes).hexdigest()
+            observation["authority_gate_output_bytes"] = len(gate_bytes)
+            if observation["authority_gate_returncode"] != 0:
+                _fail("host-native authority gate command returned nonzero",
+                      observation=observation, stage="authority-gate")
+            gate = _single_json_object(gate_text, label="authority gate")
+            decision = gate.get("decision")
+            if decision not in {"admit", "clarify"}:
+                _fail("host-native authority gate decision is invalid",
+                      observation=observation, stage="authority-gate")
+            observation["authority_gate_decision"] = decision
+            gate_path = host_workspace / "authority-gate.json"
+            gate_path.write_text(
+                json.dumps(gate, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+                + "\n", encoding="utf-8",
+            )
+            observation["authority_gate_temp_outside_repo"] = not _is_within(
+                gate_path, repo_root
+            )
+            if not observation["authority_gate_temp_outside_repo"]:
+                _fail("host-native authority gate path is inside the consumer repo",
+                      observation=observation, stage="authority-gate-file")
+            observation["authority_check_command_invocations"] = 1
+            observation["stage"] = "authority-check"
+            authority_check = _invoke_installed_authority_check(
+                flow, gate_path=gate_path, remaining=_remaining(started, timeout)
+            )
+            observation["authority_check_returncode"] = int(
+                getattr(authority_check, "returncode", 1)
+            )
+            check_stdout = _text_stream(getattr(authority_check, "stdout", ""))
+            observation["authority_check_stdout_sha256"] = _sha256_text(check_stdout)
+            observation["authority_check_stderr_sha256"] = _sha256_text(
+                _text_stream(getattr(authority_check, "stderr", ""))
+            )
+            if observation["authority_check_returncode"] != 0:
+                _fail("installed authority check returned nonzero",
+                      observation=observation, stage="authority-check")
+            check_payload = _single_json_object(check_stdout, label="authority check")
+            check_mode = str(check_payload.get("mode") or "").strip()
+            if decision == "clarify":
+                if check_mode != "clarification_required":
+                    _fail("installed authority check did not clarify",
+                          observation=observation, stage="authority-check")
+                observation["response_kind"] = "clarification_required"
+                observation["proposal_mode"] = "clarification_required"
+                observation["candidate_temp_cleaned"] = True
+                observation["status"] = "passed"
+                return authority_check
+            else:
+                if check_mode != "authority_admitted" or check_payload.get("gate") != gate:
+                    _fail("installed authority check did not admit",
+                          observation=observation, stage="authority-check")
             schema_path = host_workspace / "candidate-schema.json"
             candidate_schema = contract.get("candidate_schema")
             if not isinstance(candidate_schema, Mapping):
@@ -245,7 +359,8 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
             observation["candidate_schema_sha256"] = _sha256_text(
                 schema_path.read_text(encoding="utf-8")
             )
-            observation["host_invocations"] = 1
+            observation["host_invocations"] = 2
+            observation["candidate_host_invocations"] = 1
             observation["stage"] = "host"
             host_result = _invoke_host(
                 resolved_host_argv,
@@ -278,7 +393,7 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
                 if isinstance(result, Mapping)
                 else ""
             )
-            if response_kind not in {"authored", "clarification_required"}:
+            if response_kind != "authored":
                 _fail(
                     "host-native candidate has an unsupported response kind",
                     observation=observation,
@@ -316,6 +431,7 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
             observation["stage"] = "propose"
             proposal = flow.invoke_propose(
                 candidate_path,
+                gate_path,
                 _remaining(started, timeout),
             )
             proposal_stdout = _text_stream(getattr(proposal, "stdout", ""))
@@ -344,6 +460,7 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
                     stage="propose",
                 )
         observation["candidate_temp_cleaned"] = not candidate_path.exists()
+        observation["authority_gate_temp_cleaned"] = not gate_path.exists()
         observation["host_workspace_cleaned"] = not host_workspace.exists()
         if not observation["candidate_temp_cleaned"]:
             _fail(
@@ -351,13 +468,16 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
                 observation=observation,
                 stage="candidate-cleanup",
             )
+        if not observation["authority_gate_temp_cleaned"]:
+            _fail("host-native authority gate temporary file was not cleaned",
+                  observation=observation, stage="authority-gate-cleanup")
         observation["status"] = "passed"
         observation["elapsed_seconds"] = round(time.monotonic() - started, 3)
         _emit_observation(flow.observe, observation)
         return proposal
     except HostCandidateFlowError:
         raise
-    except (OSError, TypeError, ValueError, json.JSONDecodeError, subprocess.TimeoutExpired) as exc:
+    except (OSError, TypeError, ValueError, TimeoutError, json.JSONDecodeError, subprocess.TimeoutExpired) as exc:
         _fail(
             f"host-native candidate flow failed closed: {type(exc).__name__}",
             observation=observation,
@@ -367,11 +487,10 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
         observation.setdefault("elapsed_seconds", round(time.monotonic() - started, 3))
         if observation.get("status") == "running":
             observation["status"] = "failed"
-        if candidate_path is not None:
-            observation["candidate_temp_cleaned"] = not candidate_path.exists()
-        if host_workspace is not None:
-            observation["host_workspace_cleaned"] = not host_workspace.exists()
-        if observation.get("status") != "passed":
+        observation["candidate_temp_cleaned"] = candidate_path is None or not candidate_path.exists()
+        observation["authority_gate_temp_cleaned"] = gate_path is None or not gate_path.exists()
+        observation["host_workspace_cleaned"] = host_workspace is None or not host_workspace.exists()
+        if observation.get("status") != "passed" or observation.get("response_kind") == "clarification_required":
             _emit_observation(flow.observe, observation)
 
 
@@ -387,6 +506,20 @@ def _invoke_installed_contract(flow: HostCandidateFlow, *, remaining: float) -> 
     ]
     if flow.edit_evidence.strip():
         command.extend(("--edit", flow.edit_evidence))
+    return flow.invoke_installed(command, remaining)
+
+
+def _invoke_installed_authority_check(
+    flow: HostCandidateFlow, *, gate_path: Path, remaining: float
+) -> Any:
+    command = [
+        *flow.installed_command,
+        "greenfield", "authority-check", "--repo-root", ".",
+        "--prompt", flow.prompt,
+    ]
+    if flow.edit_evidence.strip():
+        command.extend(("--edit", flow.edit_evidence))
+    command.extend(("--gate-file", str(gate_path), "--format", "json"))
     return flow.invoke_installed(command, remaining)
 
 

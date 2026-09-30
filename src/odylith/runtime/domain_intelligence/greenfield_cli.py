@@ -12,6 +12,7 @@ from typing import Any
 
 COMMANDS = (
     ("candidate-contract", "Show the typed host reasoning contract for one request."),
+    ("authority-check", "Validate one source-bound pre-author decision without staging a package."),
     ("propose", "Compile and review a complete Greenfield package before confirmation."),
     ("decide", "Confirm, edit or reject one sealed package in the terminal."),
     ("apply", "Disabled legacy command; use propose to review a package."),
@@ -75,6 +76,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             "for a full EDIT rebuild."
         ),
     )
+    parser.add_argument(
+        "--gate-file",
+        default="",
+        help="Independent source-authority decision for a full EDIT rebuild.",
+    )
     parser.add_argument("--json", action="store_true", dest="as_json")
     args = parser.parse_args(tokens[1:])
     if len(args.transaction_hash) != 64 or not set(args.transaction_hash) <= set("0123456789abcdef"):
@@ -83,6 +89,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         parser.error("correction evidence is accepted only with EDIT")
     if args.command != "EDIT" and args.candidate_file:
         parser.error("a host candidate is accepted only with EDIT")
+    if args.command != "EDIT" and args.gate_file:
+        parser.error("an authority gate is accepted only with EDIT")
     args.edit = args.edit or ""
     args.edit_evidence = args.edit_evidence or ""
     root = Path(args.repo_root).expanduser().resolve()
@@ -109,6 +117,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             edit_evidence=args.edit, edit_evidence_file=args.edit_evidence,
             as_json=args.as_json, started_at=started_at,
             host_candidate_file=args.candidate_file,
+            authority_gate_file=args.gate_file,
         )
 
     from odylith.runtime.surfaces.greenfield_host_confirmation import (

@@ -1,5 +1,25 @@
 - Bug ID: CB-324
 
+## Pre-author gate implementation checkpoint (2026-09-30)
+
+The bounded comparison is now implemented on the current branch, but is not
+release-qualified. `candidate-contract` returns the fixed independent
+first-path gate task and schema. One host gate decision is validated against
+the exact request/edit source before candidate authoring. A material gap exits
+with one `first_path` question, no candidate, and no transaction. Admission
+allows exactly one complete candidate author; proposal and EDIT both require
+the gate file, while deterministic custody and commit-only confirmation remain
+unchanged. The release harness shares the 180-second ceiling across both host
+calls and retains distinct gate and candidate receipts. No parser, regex,
+repair, retry, fallback candidate, or full-candidate reviewer was added.
+
+The Greenfield runtime fast suite passed 1,304 tests, lifecycle passed 219,
+and install tests passed 1,148. These prove contract wiring and failure
+closure, not semantic generalization or combined latency. The exact installed
+`release-agriculture-030-source` negative and
+`release-agriculture-037-source` positive replay are the next falsifiers.
+CB-324 stays open; the protected holdout remains unopened.
+
 ## Bounded source-authority gate comparison (2026-09-30)
 
 The single-authority V33 release candidate remains retired. A separate,

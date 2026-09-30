@@ -157,6 +157,7 @@ from odylith.runtime.domain_intelligence import greenfield_proposals_cli
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import combined_prompt_evidence_source
 from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
 from tests.unit.runtime.greenfield_model_authoring_fixtures import write_host_candidate_fixture
+from tests.unit.runtime.greenfield_authority_gate_fixtures import write_admitted_authority_gate
 from tests.unit.runtime.test_greenfield_model_path_custody import _response, _source
 
 source = _source()
@@ -169,8 +170,12 @@ with tempfile.TemporaryDirectory(prefix="greenfield-parser-retirement-") as repo
         response,
         evidence_text=evidence,
     )
+    gate_path = write_admitted_authority_gate(
+        Path(repo_root) / "authority-gate.json", source_quote=source,
+    )
     result = greenfield_proposals_cli.main(
-        ["propose", "--repo-root", repo_root, "--prompt", source, "--candidate-file", str(candidate_path), "--format", "json"]
+        ["propose", "--repo-root", repo_root, "--prompt", source,
+         "--candidate-file", str(candidate_path), "--gate-file", str(gate_path), "--format", "json"]
     )
 if result != 0:
     raise SystemExit(f"public Greenfield proposal failed with exit code {{result}}")

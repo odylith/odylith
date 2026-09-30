@@ -1500,7 +1500,7 @@ def _run_host_candidate_propose(
 
     proposal_attempt: dict[str, Any] = {}
 
-    def invoke_propose(candidate_path: Path, remaining: float) -> Any:
+    def invoke_propose(candidate_path: Path, gate_path: Path, remaining: float) -> Any:
         completed = _run_greenfield_propose(
             repo_root=repo_root,
             env=post_receipt_runtime_env(
@@ -1513,11 +1513,13 @@ def _run_host_candidate_propose(
             command=base_command,
             pass_fds=pass_fds,
             candidate_file=str(candidate_path),
+            gate_file=str(gate_path),
         )
         proposal_attempt["completed"] = completed
         return completed
 
     observe = None
+    retain_authority_gate_bytes = None
     retain_candidate_bytes = None
     retain_proposal_bytes = None
     if retained_case is not None:
@@ -1525,6 +1527,11 @@ def _run_host_candidate_propose(
             retained_case,
             "semantic/host-authoring-observation.v1.json",
             dict(payload),
+        )
+        retain_authority_gate_bytes = lambda value: record_retained_case_bytes(
+            retained_case,
+            "semantic/host-authority-gate.raw.v1.json",
+            value,
         )
         retain_candidate_bytes = lambda value: record_retained_case_bytes(
             retained_case,
@@ -1555,6 +1562,7 @@ def _run_host_candidate_propose(
                 invoke_propose=invoke_propose,
                 installed_command=base_command,
                 observe=observe,
+                retain_authority_gate_bytes=retain_authority_gate_bytes,
                 retain_candidate_bytes=retain_candidate_bytes,
                 retain_proposal_bytes=retain_proposal_bytes,
             )
@@ -1770,10 +1778,15 @@ def _run_greenfield_propose(
     command: Sequence[str] | None = None,
     pass_fds: tuple[int, ...] = (),
     candidate_file: str,
+    gate_file: str,
 ) -> Any:
     if not str(candidate_file or "").strip():
         raise RuntimeError(
             "greenfield propose requires a candidate file from the host-candidate flow"
+        )
+    if not str(gate_file or "").strip():
+        raise RuntimeError(
+            "greenfield propose requires a source-authority gate from the host-candidate flow"
         )
     propose_command = list(command) if command is not None else ["./.odylith/bin/odylith"]
     propose_command.extend(
@@ -1782,6 +1795,7 @@ def _run_greenfield_propose(
             edit_evidence=edit_evidence,
             repair_tier=repair_tier,
             candidate_file=candidate_file,
+            gate_file=gate_file,
         )
     )
     run_kwargs: dict[str, Any] = {
@@ -1801,6 +1815,7 @@ def _greenfield_propose_arguments(
     edit_evidence: str = "",
     repair_tier: str = "",
     candidate_file: str = "",
+    gate_file: str = "",
 ) -> list[str]:
     arguments = [
         "greenfield",
@@ -1818,6 +1833,8 @@ def _greenfield_propose_arguments(
         arguments.extend(["--repair-tier", repair_tier])
     if candidate_file:
         arguments.extend(["--candidate-file", candidate_file])
+    if gate_file:
+        arguments.extend(["--gate-file", gate_file])
     return arguments
 
 

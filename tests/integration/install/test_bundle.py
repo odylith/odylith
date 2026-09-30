@@ -7,10 +7,15 @@ def test_bundle_root_contains_installed_agents_entrypoint() -> None:
     assert (root / "AGENTS.md").is_file()
     agents_text = (root / "AGENTS.md").read_text(encoding="utf-8")
     assert "odylith greenfield candidate-contract" in agents_text
-    assert "builds typed custody facts to gate ProductCreateTransaction" in agents_text
-    assert "90/120/150 seconds as advisory targets" in agents_text
-    assert "Read-only preview: `odylith greenfield decide" in agents_text
-    assert "CONFIRM/REJECT use one owner and no compiler/model" in agents_text
+    assert "then seals ProductCreateTransaction" in agents_text
+    assert "nested `authority_gate` task, request, edit, and schema" in agents_text
+    assert "greenfield authority-check --repo-root ." in agents_text
+    assert "Clarification: show one question and stop; no candidate or transaction" in agents_text
+    assert "--gate-file \"<gate-file>\" --candidate-file \"<candidate-file>\"" in agents_text
+    assert "repeat gate pass and `authority-check`" in agents_text
+    assert "90/120/150 seconds advisory" in agents_text
+    assert "Preview: `odylith greenfield decide" in agents_text
+    assert "CONFIRM/REJECT use one owner, no compiler/model" in agents_text
     assert "odylith greenfield create --transaction-file PATH" in agents_text
     assert "verifies receipt, hash, and preconditions under rollback guard" in agents_text
     assert "greenfield compile-transaction" not in agents_text
@@ -29,6 +34,9 @@ def test_bundle_root_contains_installed_agents_entrypoint() -> None:
     assert (root / "agents-guidelines").is_dir()
     assert (root / "skills").is_dir()
     assert (root / "skills" / "odylith-diagram-catalog" / "SKILL.md").is_file()
+    greenfield_skill = (root / "skills" / "odylith-greenfield-governance" / "SKILL.md").read_text(encoding="utf-8")
+    assert "greenfield\n   authority-check" in greenfield_skill
+    assert "Stop on clarification" in greenfield_skill
 
     project_root = bundled_project_root_assets_root()
     assert (project_root / ".claude" / "CLAUDE.md").is_file()

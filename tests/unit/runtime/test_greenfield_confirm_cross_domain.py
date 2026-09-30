@@ -311,10 +311,18 @@ def _run_confirmed_transaction_create(
     candidate_path: Path,
     capsys: Any,
 ) -> tuple[int, str]:
+    from tests.unit.runtime.greenfield_authority_gate_fixtures import (
+        write_admitted_authority_gate,
+    )
+
+    gate_path = write_admitted_authority_gate(
+        candidate_path.with_name("authority-gate.json"), source_quote=prompt,
+    )
     compile_rc = greenfield_proposals_cli.main(
         [
             "propose", "--repo-root", str(repo_root), "--prompt", prompt,
-            "--candidate-file", str(candidate_path), "--format", "json",
+            "--candidate-file", str(candidate_path),
+            "--gate-file", str(gate_path), "--format", "json",
         ]
     )
     compile_output = capsys.readouterr().out

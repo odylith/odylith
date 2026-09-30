@@ -16,7 +16,7 @@ def _completed(argv: list[str], *, stdout: str = "", stderr: str = "", returncod
     return subprocess.CompletedProcess(argv, returncode, stdout=stdout, stderr=stderr)
 
 
-def _flow(tmp_path: Path, *, candidate: object, contract: object):
+def _flow(tmp_path: Path, *, candidate: object, contract: object, gate_decision: str = "admit"):
     repo = tmp_path / "consumer"
     repo.mkdir()
     temp_parent = tmp_path / "evidence"
@@ -30,9 +30,31 @@ def _flow(tmp_path: Path, *, candidate: object, contract: object):
     contract_payload = dict(contract)
     contract_payload.setdefault("candidate_schema", {})
     contract_payload.setdefault("request", {"evidence": "Create a reviewable plan."})
+    contract_payload.setdefault("authority_gate", {
+        "version": "gate-contract", "task": "Decide first-path authority.",
+        "operator_request": "Create a reviewable plan.",
+        "operator_edit": "Keep the source path.", "response_schema": {},
+    })
+    gate = {
+        "decision": gate_decision,
+        "required_fields": ["first_path"] if gate_decision == "clarify" else [],
+        "owner_quote": "" if gate_decision == "clarify" else "owner",
+        "task_quote": "" if gate_decision == "clarify" else "task",
+        "result_quote": "" if gate_decision == "clarify" else "result",
+        "question": "What first path?" if gate_decision == "clarify" else "",
+    }
 
     def installed(command, timeout):
         installed_calls.append((list(command), timeout))
+        if "authority-check" in command:
+            gate_path = Path(command[command.index("--gate-file") + 1])
+            assert gate_path.is_file()
+            assert json.loads(gate_path.read_text(encoding="utf-8")) == gate
+            mode = "clarification_required" if gate_decision == "clarify" else "authority_admitted"
+            result = {"mode": mode}
+            if gate_decision == "admit":
+                result["gate"] = gate
+            return _completed(list(command), stdout=json.dumps(result))
         return _completed(list(command), stdout=json.dumps(contract_payload))
 
     def host_run(command, **kwargs):
@@ -47,11 +69,14 @@ def _flow(tmp_path: Path, *, candidate: object, contract: object):
         schema_path = Path(command[command.index("--output-schema") + 1])
         assert schema_path.is_file()
         assert schema_path.parent == Path(kwargs["cwd"])
+        if schema_path.name == "authority-gate-schema.json":
+            return _completed(list(command), stdout=json.dumps(gate))
         return _completed(list(command), stdout=json.dumps(candidate))
 
-    def propose(path: Path, timeout: float):
+    def propose(path: Path, gate_path: Path, timeout: float):
         proposal_paths.append(path)
         assert path.is_file()
+        assert gate_path.is_file()
         assert json.loads(path.read_text(encoding="utf-8")) == candidate
         return _completed(
             ["odylith", "greenfield", "propose"],
@@ -119,7 +144,7 @@ def test_host_candidate_happy_path_is_one_shot_and_cleans_candidate_file(
     result = host_module.run_host_candidate_flow(flow)
 
     assert result.returncode == 0
-    assert len(installed_calls) == 1
+    assert len(installed_calls) == 2
     assert installed_calls[0][0] == [
         "./.odylith/bin/odylith",
         "greenfield",
@@ -131,21 +156,25 @@ def test_host_candidate_happy_path_is_one_shot_and_cleans_candidate_file(
         "--edit",
         "Keep the source path.",
     ]
-    assert len(host_calls) == 1
-    assert host_calls[0][0][:4] == [
+    assert len(host_calls) == 2
+    assert host_calls[1][0][:4] == [
         str((tmp_path / "trusted/bin/codex").resolve()),
         "exec",
         "--ephemeral",
         "--ignore-user-config",
     ]
-    assert "{candidate_schema}" not in host_calls[0][0]
-    assert host_calls[0][1] == contract_text
+    assert "{candidate_schema}" not in host_calls[1][0]
+    assert json.loads(host_calls[1][1])["authority_gate"]["task"] == "Decide first-path authority."
     assert len(proposal_paths) == 1
     assert not proposal_paths[0].exists()
     assert not any(path == repo or repo in path.parents for path in proposal_paths)
     assert list(repo.iterdir()) == []
     assert observations[-1]["status"] == "passed"
-    assert observations[-1]["host_invocations"] == 1
+    assert observations[-1]["host_invocations"] == 2
+    assert observations[-1]["authority_gate_host_invocations"] == 1
+    assert observations[-1]["candidate_host_invocations"] == 1
+    assert observations[-1]["authority_check_command_invocations"] == 1
+    assert observations[-1]["authority_gate_request"] == observations[-1]["host_request"]
     assert observations[-1]["model_profile_id"] == "greenfield-standard-v1"
     assert observations[-1]["source_sha256"] == hashlib.sha256(
         b"Create a reviewable plan."
@@ -161,6 +190,7 @@ def test_host_candidate_happy_path_is_one_shot_and_cleans_candidate_file(
     assert request["output_schema_present"] is True
     assert "host_argv" not in observations[-1]
     assert observations[-1]["candidate_temp_cleaned"] is True
+    assert observations[-1]["authority_gate_temp_cleaned"] is True
     assert observations[-1]["host_workspace_cleaned"] is True
     assert observations[-1]["raw_candidate_sha256"] == hashlib.sha256(
         json.dumps(
@@ -275,18 +305,13 @@ def test_host_candidate_qualification_rejects_every_noncanonical_token(
         )
 
 
-def test_host_candidate_clarification_candidate_is_passed_unchanged_to_propose(
+def test_authority_gate_clarification_skips_candidate_and_propose(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    candidate = {
-        "version": "candidate",
-        "result": {
-            "status": "clarification_required",
-            "clarification": {"required_fields": ["first_path"]},
-        },
-    }
+    candidate = {"version": "candidate", "result": {"status": "authored"}}
     flow, host_run, _installed, host_calls, proposal_paths, _repo = _flow(
         tmp_path, contract={"version": "contract"}, candidate=candidate,
+        gate_decision="clarify",
     )
     observations: list[dict[str, object]] = []
     flow = host_module.HostCandidateFlow(**{**flow.__dict__, "observe": observations.append})
@@ -294,9 +319,16 @@ def test_host_candidate_clarification_candidate_is_passed_unchanged_to_propose(
     result = host_module.run_host_candidate_flow(flow)
 
     assert result.returncode == 0
+    assert json.loads(result.stdout)["mode"] == "clarification_required"
     assert len(host_calls) == 1
-    assert len(proposal_paths) == 1
+    assert len(proposal_paths) == 0
     assert observations[-1]["response_kind"] == "clarification_required"
+    assert observations[-1]["proposal_command_invocations"] == 0
+    assert observations[-1]["candidate_host_invocations"] == 0
+    assert observations[-1]["host_invocations"] == 1
+    assert "host_request" not in observations[-1]
+    assert "raw_candidate_sha256" not in observations[-1]
+    assert observations[-1]["authority_gate_temp_cleaned"] is True
     assert observations[-1]["candidate_temp_cleaned"] is True
 
 
@@ -309,7 +341,7 @@ def test_host_candidate_retains_raw_candidate_and_deterministic_failure_before_c
     )
     retained: dict[str, bytes] = {}
     observations: list[dict[str, object]] = []
-    def denied(_path: Path, _timeout: float):
+    def denied(_path: Path, _gate_path: Path, _timeout: float):
         return _completed(
             ["odylith", "greenfield", "propose"],
             stdout=json.dumps({"mode": "error", "error": "invalid candidate"}),
@@ -371,7 +403,7 @@ def test_host_candidate_failures_are_fail_closed_and_do_not_propose(
     )
     proposal_calls: list[Path] = []
     flow = host_module.HostCandidateFlow(
-        **{**flow.__dict__, "invoke_propose": lambda path, _timeout: proposal_calls.append(path)},
+        **{**flow.__dict__, "invoke_propose": lambda path, _gate_path, _timeout: proposal_calls.append(path)},
     )
 
     def host_run(command, **kwargs):
@@ -403,6 +435,12 @@ def test_malformed_host_output_is_retained_before_parse_failure(
     malformed = b'{"first": true}\n{"second": true}\n'
 
     def host_run(command, **_kwargs):
+        schema_path = Path(command[command.index("--output-schema") + 1])
+        if schema_path.name == "authority-gate-schema.json":
+            return _completed(list(command), stdout=json.dumps({
+                "decision": "admit", "required_fields": [], "owner_quote": "owner",
+                "task_quote": "task", "result_quote": "result", "question": "",
+            }))
         return _completed(list(command), stdout=malformed.decode("utf-8"))
 
     flow = host_module.HostCandidateFlow(
@@ -441,17 +479,12 @@ def test_host_timeout_budget_includes_contract_and_host_work(tmp_path: Path, mon
     )
     monkeypatch.setattr(host_module.subprocess, "run", host_run)
 
+    original_installed = flow.invoke_installed
+
     def slow_contract(command, timeout):
-        installed_calls.append((list(command), timeout))
-        time.sleep(0.02)
-        return _completed(
-            list(command),
-            stdout=json.dumps({
-                "version": "contract",
-                "candidate_schema": {},
-                "request": {"evidence": "Create a reviewable plan."},
-            }),
-        )
+        if "candidate-contract" in command:
+            time.sleep(0.02)
+        return original_installed(command, timeout)
 
     flow = host_module.HostCandidateFlow(**{**flow.__dict__, "invoke_installed": slow_contract})
     host_module.run_host_candidate_flow(flow)

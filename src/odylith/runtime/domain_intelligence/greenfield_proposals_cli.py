@@ -16,6 +16,11 @@ from odylith.runtime.domain_intelligence import (
     greenfield_proposals,
 )
 from odylith.runtime.domain_intelligence.greenfield_cli import terminal_decision_offer
+from odylith.runtime.domain_intelligence.greenfield_authority_gate import (
+    greenfield_authority_gate_contract,
+    load_greenfield_authority_gate_file,
+    validate_greenfield_authority_gate,
+)
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
     require_product_create_transaction_quality_approved,
     require_product_create_transaction_verified,
@@ -82,12 +87,17 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     propose.add_argument("--prompt", required=True)
     propose.add_argument(
         "--candidate-file",
-        required=True,
+        default="",
         help=(
             "Path to one host-authored candidate matching the returned candidate-contract "
             "schema. Odylith treats it as an untrusted hypothesis, revalidates its source "
             "custody and deterministically validates the complete candidate once."
         ),
+    )
+    propose.add_argument(
+        "--gate-file",
+        required=True,
+        help="Source-bound pre-author authority decision returned for this exact request.",
     )
     propose.add_argument("--format", choices=("text", "json"), default="text", dest="output_format")
     propose.add_argument(
@@ -155,11 +165,16 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     compile_transaction.add_argument("--prompt", required=True)
     compile_transaction.add_argument(
         "--candidate-file",
-        required=True,
+        default="",
         help=(
             "Path to one host-authored candidate matching the returned candidate-contract "
             "schema for deterministic validation and sealing."
         ),
+    )
+    compile_transaction.add_argument(
+        "--gate-file",
+        required=True,
+        help="Source-bound pre-author authority decision returned for this exact request.",
     )
     compile_transaction.add_argument("--edit", default="", help=argparse.SUPPRESS)
     compile_transaction.add_argument("--edit-evidence", default="", help=argparse.SUPPRESS)
@@ -207,6 +222,16 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         choices=("en",),
         default="en",
     )
+    authority_check = subparsers.add_parser(
+        "authority-check",
+        help="Validate one host-authored source-authority decision without staging a package.",
+    )
+    authority_check.add_argument("--repo-root", default=".")
+    authority_check.add_argument("--prompt", required=True)
+    authority_check.add_argument("--edit", default="")
+    authority_check.add_argument("--edit-evidence", default="")
+    authority_check.add_argument("--gate-file", required=True)
+    authority_check.add_argument("--format", choices=("text", "json"), default="text", dest="output_format")
     return parser.parse_args(argv)
 
 
@@ -283,6 +308,7 @@ def rebuild_pending_transaction(
     *, repo_root: Path, transaction_hash: str, edit_evidence: str,
     edit_evidence_file: str, as_json: bool, started_at: float | None = None,
     host_candidate_file: str = "",
+    authority_gate_file: str = "",
 ) -> int:
     """Re-author from verified retained evidence; never alter the sealed package."""
     from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
@@ -303,6 +329,11 @@ def rebuild_pending_transaction(
         prompt = previous.proposal.get("intent", {}).get("prompt")
         if not isinstance(prompt, str) or not prompt.strip():
             raise ValueError("The sealed package has no retained source evidence; start a new proposal.")
+        decision = _authority_gate_from_args(
+            argparse.Namespace(gate_file=authority_gate_file, evidence_language="en"),
+            repo_root=repo_root, prompt=prompt, edit_evidence=correction,
+        )
+        _require_admitted_authority_gate(decision)
         if not str(host_candidate_file or "").strip():
             raise ValueError(
                 "Greenfield EDIT requires one host-authored candidate matching the "
@@ -323,7 +354,7 @@ def rebuild_pending_transaction(
             raise RuntimeError("The correction did not produce a new sealed package. The old package is unchanged.")
     except GreenfieldClarificationRequired as exc:
         return _finish_clarification(exc=exc, as_json=as_json)
-    except (OSError, ValueError, RuntimeError) as exc:
+    except (OSError, ValueError, RuntimeError, TypeError) as exc:
         _print_greenfield_error(exc, as_json=as_json)
         return 2
     _print_transaction_review(
@@ -418,6 +449,34 @@ def _host_candidate_from_args(
     if not path.is_absolute():
         path = repo_root / path
     return load_greenfield_host_candidate_file(path)
+
+
+def _authority_gate_from_args(
+    args: argparse.Namespace, *, repo_root: Path, prompt: str, edit_evidence: str,
+) -> dict[str, Any]:
+    value = str(getattr(args, "gate_file", "") or "").strip()
+    if not value:
+        raise ValueError("Greenfield requires a source-authority gate for this request; no records were created.")
+    path = Path(value).expanduser()
+    if not path.is_absolute():
+        path = repo_root / path
+    prepared = prepare_model_authoring_evidence(
+        prompt=prompt,
+        edit_evidence=edit_evidence,
+        source_language=str(getattr(args, "evidence_language", "en")),
+    )
+    return validate_greenfield_authority_gate(
+        load_greenfield_authority_gate_file(path),
+        evidence_source=prepared.evidence_source,
+    )
+
+
+def _require_admitted_authority_gate(decision: Mapping[str, Any]) -> None:
+    if decision["decision"] == "clarify":
+        raise GreenfieldClarificationRequired(
+            str(decision["question"]),
+            required_fields=tuple(decision["required_fields"]),
+        )
 
 
 def _compile_prompt_evidence_transaction(
@@ -608,14 +667,37 @@ def main(argv: Sequence[str] | None = None) -> int:
                 edit_evidence=edit_evidence,
                 source_language=str(args.evidence_language),
             )
+            contract = greenfield_host_candidate_contract(prepared.evidence_source)
+            contract["authority_gate"] = greenfield_authority_gate_contract(
+                prompt=prompt,
+                edit_evidence=edit_evidence,
+                evidence_source=prepared.evidence_source,
+            )
             print(json.dumps(
-                greenfield_host_candidate_contract(prepared.evidence_source),
+                contract,
                 indent=2,
                 sort_keys=True,
             ))
         except (OSError, ValueError, RuntimeError) as exc:
             _print_greenfield_error(exc, as_json=True)
             return 2
+        return 0
+    if args.command == "authority-check":
+        try:
+            edit_evidence = _edit_evidence_from_args(args, repo_root=repo_root)
+            decision = _authority_gate_from_args(
+                args, repo_root=repo_root, prompt=str(args.prompt), edit_evidence=edit_evidence,
+            )
+            _require_admitted_authority_gate(decision)
+        except GreenfieldClarificationRequired as exc:
+            return _finish_clarification(exc=exc, as_json=args.output_format == "json")
+        except (OSError, ValueError, RuntimeError, TypeError) as exc:
+            _print_greenfield_error(exc, as_json=args.output_format == "json")
+            return 2
+        if args.output_format == "json":
+            print(json.dumps({"mode": "authority_admitted", "gate": decision}, sort_keys=True))
+        else:
+            print("The requested product path has an operator-owned first-path witness.")
         return 0
     if args.command == "propose":
         if bool(args.confirm_intent) or str(args.intent_file or "").strip():
@@ -624,6 +706,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         try:
             started_at = time.perf_counter()
             edit_evidence = _edit_evidence_from_args(args, repo_root=repo_root)
+            decision = _authority_gate_from_args(
+                args, repo_root=repo_root, prompt=str(args.prompt), edit_evidence=edit_evidence,
+            )
+            _require_admitted_authority_gate(decision)
             host_candidate = _host_candidate_from_args(args, repo_root=repo_root)
             candidate_intent, transaction, transaction_path = _compile_prompt_evidence_transaction(
                 repo_root=repo_root,
@@ -637,7 +723,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
         except GreenfieldClarificationRequired as exc:
             return _finish_clarification(exc=exc, as_json=args.output_format == "json")
-        except (OSError, ValueError, RuntimeError, json.JSONDecodeError) as exc:
+        except (OSError, ValueError, RuntimeError, TypeError, json.JSONDecodeError) as exc:
             _print_greenfield_error(exc, as_json=args.output_format == "json")
             return 2
         _print_transaction_review(
@@ -659,6 +745,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         try:
             started_at = time.perf_counter()
             edit_evidence = _edit_evidence_from_args(args, repo_root=repo_root)
+            decision = _authority_gate_from_args(
+                args, repo_root=repo_root, prompt=str(args.prompt), edit_evidence=edit_evidence,
+            )
+            _require_admitted_authority_gate(decision)
             host_candidate = _host_candidate_from_args(args, repo_root=repo_root)
             candidate_intent, transaction, staged_path = _compile_prompt_evidence_transaction(
                 repo_root=repo_root,
@@ -700,7 +790,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 exc=exc,
                 as_json=args.output_format == "json",
             )
-        except (OSError, ValueError, RuntimeError, json.JSONDecodeError) as exc:
+        except (OSError, ValueError, RuntimeError, TypeError, json.JSONDecodeError) as exc:
             _print_greenfield_error(exc, as_json=args.output_format == "json")
             return 2
         return 0

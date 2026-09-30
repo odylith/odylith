@@ -547,7 +547,11 @@ def test_compile_transaction_uses_the_exact_case_prompt_and_confirmed_intent(tmp
     monkeypatch.setattr(
         module.recovery_transaction,
         "run_host_candidate_flow",
-        lambda flow: flow.invoke_propose(tmp_path.parent / "candidate.json", 123.0),
+        lambda flow: flow.invoke_propose(
+            tmp_path.parent / "candidate.json",
+            tmp_path.parent / "authority-gate.json",
+            123.0,
+        ),
     )
     case = module.GreenfieldMatrixCase(
         name="bound recovery case",
@@ -567,6 +571,7 @@ def test_compile_transaction_uses_the_exact_case_prompt_and_confirmed_intent(tmp
     command = captured["command"]
     assert command[command.index("--prompt") + 1] == case.prompt
     assert command[command.index("--edit") + 1] == case.confirmed_intent_markdown
+    assert command[command.index("--gate-file") + 1] == str(tmp_path.parent / "authority-gate.json")
 
 
 def test_compile_transaction_uses_host_native_candidate_when_configured(tmp_path: Path, monkeypatch) -> None:
@@ -607,7 +612,7 @@ def test_compile_transaction_uses_host_native_candidate_when_configured(tmp_path
         captured["flow"] = flow
         candidate_path = tmp_path.parent / "candidate.json"
         candidate_path.write_text("{}\n", encoding="utf-8")
-        return flow.invoke_propose(candidate_path, 123.0)
+        return flow.invoke_propose(candidate_path, tmp_path.parent / "authority-gate.json", 123.0)
 
     def fake_run(**kwargs):  # noqa: ANN003
         captured["command"] = kwargs["command"]
@@ -657,6 +662,7 @@ def test_compile_transaction_uses_host_native_candidate_when_configured(tmp_path
     )
     command = captured["command"]
     assert command[command.index("--candidate-file") + 1] == str(tmp_path.parent / "candidate.json")
+    assert command[command.index("--gate-file") + 1] == str(tmp_path.parent / "authority-gate.json")
 
 
 def test_compile_transaction_rejects_an_authority_that_does_not_bind_edit_evidence(tmp_path: Path, monkeypatch) -> None:
@@ -703,7 +709,11 @@ def test_compile_transaction_rejects_an_authority_that_does_not_bind_edit_eviden
     monkeypatch.setattr(
         module.recovery_transaction,
         "run_host_candidate_flow",
-        lambda flow: flow.invoke_propose(tmp_path.parent / "candidate.json", 123.0),
+        lambda flow: flow.invoke_propose(
+            tmp_path.parent / "candidate.json",
+            tmp_path.parent / "authority-gate.json",
+            123.0,
+        ),
     )
     case = module.GreenfieldMatrixCase(
         name="bound recovery case",

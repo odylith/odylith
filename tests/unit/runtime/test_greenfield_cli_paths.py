@@ -233,6 +233,8 @@ def test_greenfield_confirm_intent_flag_is_retired(tmp_path, capsys) -> None:
             "Draft a greenfield proposal for a municipal permit review workspace",
             "--candidate-file",
             str(candidate_path),
+            "--gate-file",
+            str(candidate_path),
             "--confirm-intent",
         ]
     )

@@ -7,6 +7,7 @@ import sys
 import pytest
 
 from tests.greenfield_matrix_campaign_test_support import SCRIPTS_ROOT
+from tests.greenfield_model_profile_test_support import production_stage_observation
 
 
 if str(SCRIPTS_ROOT) not in sys.path:
@@ -19,8 +20,6 @@ from greenfield_matrix_statistics import release_statistical_confidence_contract
 from greenfield_matrix_statistics import release_statistical_confidence_contract_issues
 from greenfield_matrix_statistics import wilson_interval
 from greenfield_matrix_clarification import clarification_quality_verdict
-from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_ARGUMENT_COUNT
-from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_SHAPE_SHA256
 from greenfield_matrix_types import GreenfieldArtifactCounts
 from greenfield_matrix_types import GreenfieldMatrixResult
 from greenfield_matrix_types import GreenfieldQualityVerdict
@@ -35,15 +34,10 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
     DEEP_PROFILE_ID,
     RESCUE_PROFILE_ID,
     STANDARD_PROFILE_ID,
-    get_greenfield_model_profile,
 )
 from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
     HOST_CANDIDATE_CONTRACT_VERSION,
     HOST_CANDIDATE_RECEIPT_VERSION,
-    admit_greenfield_host_candidate,
-)
-from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import (
-    HOST_CANDIDATE_FORMAT_VERSION,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
@@ -413,68 +407,17 @@ def _host_native_clarification_result(
         prompt=case.prompt,
         edit_evidence=case.confirmed_intent_markdown,
     )
-    profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
-    raw_candidate = {
-        "version": HOST_CANDIDATE_FORMAT_VERSION,
-        "result": {
-            "status": "clarification_required",
-            "consistency": {
-                "status": "material_ambiguity",
-                "evidence_quotes": [],
-            },
-            "clarification": {"material_dimension": "first_path"},
-        },
-    }
-    _candidate, receipt = admit_greenfield_host_candidate(
-        raw_candidate,
-        evidence_text=source,
-        clock=lambda: 1.0,
+    stage = production_stage_observation(
+        STANDARD_PROFILE_ID, response_kind="clarification_required",
     )
-    stage = {
-        "version": "odylith.greenfield.host-native-matrix-observation.v5",
-        "status": "passed",
-        "host_invocations": 1,
-        "contract_command_invocations": 1,
-        "proposal_command_invocations": 1,
-        "runtime_semantic_model_call_count": 0,
-        "post_receipt_provider_invocations": 0,
-        "model_profile_id": STANDARD_PROFILE_ID,
-        "host_request": {
-            "version": "odylith.greenfield.host-argv-receipt.v1",
-            "executable_sha256": "7" * 64,
-            "argument_count": HOST_NATIVE_ARGV_ARGUMENT_COUNT,
-            "model": profile.model,
-            "reasoning_effort": profile.reasoning_effort,
-            "output_schema_present": True,
-            "argv_shape_sha256": HOST_NATIVE_ARGV_SHAPE_SHA256,
-        },
-        "candidate_temp_cleaned": True,
-        "host_workspace_cleaned": True,
-        "stage": "propose",
-        "contract_returncode": 0,
-        "contract_sha256": "1" * 64,
-        "source_sha256": hashlib.sha256(source.encode("utf-8")).hexdigest(),
-        "candidate_schema_sha256": "2" * 64,
-        "host_returncode": 0,
-        "host_stdout_bytes": 200,
-        "host_stderr_bytes": 0,
-        "response_kind": "clarification_required",
-        "raw_candidate_sha256": receipt["raw_candidate_sha256"],
-        "host_output_sha256": "4" * 64,
-        "host_output_bytes": 200,
-        "candidate_temp_outside_repo": True,
-        "proposal_returncode": 0,
-        "proposal_stdout_sha256": "5" * 64,
-        "proposal_stderr_sha256": "6" * 64,
-        "proposal_mode": "clarification_required",
-        "elapsed_seconds": 18.02,
-    }
+    stage["source_sha256"] = hashlib.sha256(source.encode("utf-8")).hexdigest()
+    stage["elapsed_seconds"] = 18.02
     profile_evidence = model_profile_evidence(
         STANDARD_PROFILE_ID,
         model_profile_environment(STANDARD_PROFILE_ID, {}),
         observed={},
         stage_observation=stage,
-        raw_candidate=raw_candidate,
+        raw_candidate={},
         expected_source=source,
     )
     return GreenfieldMatrixResult(

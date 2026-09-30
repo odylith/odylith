@@ -342,8 +342,10 @@ def _profile_evidence(profile_id: str, *, clarification: bool = False) -> dict[s
     return {
         "profile_id": profile_id,
         "semantic_authority": "active_host_single_authority",
-        "sealed_request_roles": ["host_candidate"],
-        "host_semantic_model_calls": 1,
+        "sealed_request_roles": (
+            ["authority_gate"] if clarification else ["authority_gate", "host_candidate"]
+        ),
+        "host_semantic_model_calls": 1 if clarification else 2,
         "runtime_semantic_model_calls_after_candidate_receipt": 0,
         "post_receipt_provider_invocations": 0,
         "stage_observation": _stage_observation(
@@ -352,7 +354,7 @@ def _profile_evidence(profile_id: str, *, clarification: bool = False) -> dict[s
         ),
         "status": "passed",
         "issues": [],
-        "observed": sealed_profile_observation(profile_id),
+        "observed": {} if clarification else sealed_profile_observation(profile_id),
     }
 
 

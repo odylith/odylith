@@ -219,6 +219,8 @@ def test_cli_exposes_only_release_success_tiers_and_labels_other_profiles() -> N
             "Create one bounded product.",
             "--candidate-file",
             "/tmp/candidate.json",
+            "--gate-file",
+            "/tmp/gate.json",
             "--repair-tier",
             "standard",
         ]
@@ -234,6 +236,8 @@ def test_cli_exposes_only_release_success_tiers_and_labels_other_profiles() -> N
                 "Create one bounded product.",
                 "--candidate-file",
                 "/tmp/candidate.json",
+                "--gate-file",
+                "/tmp/gate.json",
                 "--repair-tier",
                 "rescue",
             ]

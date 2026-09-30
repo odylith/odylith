@@ -65,8 +65,11 @@ def _stage(receipt: dict[str, object]) -> dict[str, object]:
     return {
         "version": HOST_NATIVE_MATRIX_OBSERVATION_VERSION,
         "status": "passed",
-        "host_invocations": 1,
+        "host_invocations": 2,
+        "authority_gate_host_invocations": 1,
+        "candidate_host_invocations": 1,
         "contract_command_invocations": 1,
+        "authority_check_command_invocations": 1,
         "proposal_command_invocations": 1,
         "runtime_semantic_model_call_count": 0,
         "post_receipt_provider_invocations": 0,
@@ -80,12 +83,31 @@ def _stage(receipt: dict[str, object]) -> dict[str, object]:
             "output_schema_present": True,
             "argv_shape_sha256": HOST_NATIVE_ARGV_SHAPE_SHA256,
         },
+        "authority_gate_request": {
+            "version": "odylith.greenfield.host-argv-receipt.v1",
+            "executable_sha256": "1" * 64,
+            "argument_count": HOST_NATIVE_ARGV_ARGUMENT_COUNT,
+            "model": "gpt-6-astra",
+            "reasoning_effort": "medium",
+            "output_schema_present": True,
+            "argv_shape_sha256": HOST_NATIVE_ARGV_SHAPE_SHA256,
+        },
         "candidate_temp_cleaned": True,
+        "authority_gate_temp_cleaned": True,
         "host_workspace_cleaned": True,
         "stage": "propose",
         "contract_returncode": 0,
         "contract_sha256": "2" * 64,
         "source_sha256": hashlib.sha256(SOURCE.encode()).hexdigest(),
+        "authority_gate_schema_sha256": "a" * 64,
+        "authority_gate_returncode": 0,
+        "authority_gate_output_sha256": "b" * 64,
+        "authority_gate_output_bytes": 200,
+        "authority_gate_decision": "admit",
+        "authority_gate_temp_outside_repo": True,
+        "authority_check_returncode": 0,
+        "authority_check_stdout_sha256": "c" * 64,
+        "authority_check_stderr_sha256": "d" * 64,
         "candidate_schema_sha256": "3" * 64,
         "host_returncode": 0,
         "host_stdout_bytes": 500,
@@ -158,16 +180,28 @@ def _profile_evidence() -> dict[str, object]:
 
 
 def _clarification_profile_evidence() -> dict[str, object]:
-    raw, _receipt = _raw_and_receipt()
+    _raw, _receipt = _raw_and_receipt()
     stage = _stage(_receipt)
+    stage["host_invocations"] = 1
+    stage["candidate_host_invocations"] = 0
+    stage["proposal_command_invocations"] = 0
+    stage["authority_gate_decision"] = "clarify"
+    stage["stage"] = "authority-check"
     stage["response_kind"] = "clarification_required"
     stage["proposal_mode"] = "clarification_required"
+    for field in (
+        "host_request", "candidate_schema_sha256", "host_returncode",
+        "host_stdout_bytes", "host_stderr_bytes", "raw_candidate_sha256",
+        "host_output_sha256", "host_output_bytes", "candidate_temp_outside_repo",
+        "proposal_returncode", "proposal_stdout_sha256", "proposal_stderr_sha256",
+    ):
+        stage.pop(field)
     return model_profile_evidence(
         STANDARD_PROFILE_ID,
         model_profile_environment(STANDARD_PROFILE_ID, {}),
         observed={},
         stage_observation=stage,
-        raw_candidate=raw,
+        raw_candidate={},
         expected_source=SOURCE,
     )
 
@@ -200,8 +234,8 @@ def test_profile_evidence_proves_one_host_and_zero_post_receipt_calls() -> None:
 
     assert evidence["status"] == "passed", evidence["issues"]
     assert evidence["semantic_authority"] == "active_host_single_authority"
-    assert evidence["sealed_request_roles"] == ["host_candidate"]
-    assert evidence["host_semantic_model_calls"] == 1
+    assert evidence["sealed_request_roles"] == ["authority_gate", "host_candidate"]
+    assert evidence["host_semantic_model_calls"] == 2
     assert evidence["runtime_semantic_model_calls_after_candidate_receipt"] == 0
     assert evidence["post_receipt_provider_invocations"] == 0
     summary = evidence["stage_observation_summary"]

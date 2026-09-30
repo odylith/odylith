@@ -23,9 +23,12 @@ def _stage() -> dict[str, object]:
         "proposal_mode": "clarification_required",
         "source_sha256": hashlib.sha256(SOURCE.encode()).hexdigest(),
         "host_invocations": 1,
+        "authority_gate_host_invocations": 1,
+        "candidate_host_invocations": 0,
+        "proposal_command_invocations": 0,
         "runtime_semantic_model_call_count": 0,
         "post_receipt_provider_invocations": 0,
-        "host_request": {
+        "authority_gate_request": {
             "version": "odylith.greenfield.host-argv-receipt.v1",
             "executable_sha256": "1" * 64,
             "argument_count": HOST_NATIVE_ARGV_ARGUMENT_COUNT,

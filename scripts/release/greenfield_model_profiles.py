@@ -26,12 +26,6 @@ from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
 )
-from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import (
-    HOST_CANDIDATE_FORMAT_VERSION,
-)
-from odylith.runtime.domain_intelligence.greenfield_model_json import (
-    encode_greenfield_model_value,
-)
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     DEEP_PROFILE_ID,
     GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION,
@@ -76,18 +70,32 @@ _HOST_STAGE_FIELDS = frozenset(
         "version",
         "status",
         "host_invocations",
+        "authority_gate_host_invocations",
+        "candidate_host_invocations",
         "contract_command_invocations",
+        "authority_check_command_invocations",
         "proposal_command_invocations",
         "runtime_semantic_model_call_count",
         "post_receipt_provider_invocations",
         "model_profile_id",
         "host_request",
+        "authority_gate_request",
         "candidate_temp_cleaned",
+        "authority_gate_temp_cleaned",
         "host_workspace_cleaned",
         "stage",
         "contract_returncode",
         "contract_sha256",
         "source_sha256",
+        "authority_gate_schema_sha256",
+        "authority_gate_returncode",
+        "authority_gate_output_sha256",
+        "authority_gate_output_bytes",
+        "authority_gate_decision",
+        "authority_gate_temp_outside_repo",
+        "authority_check_returncode",
+        "authority_check_stdout_sha256",
+        "authority_check_stderr_sha256",
         "candidate_schema_sha256",
         "host_returncode",
         "host_stdout_bytes",
@@ -104,6 +112,12 @@ _HOST_STAGE_FIELDS = frozenset(
         "elapsed_seconds",
     }
 )
+_GATE_ONLY_ABSENT_FIELDS = frozenset({
+    "host_request", "candidate_schema_sha256", "host_returncode",
+    "host_stdout_bytes", "host_stderr_bytes", "raw_candidate_sha256",
+    "host_output_sha256", "host_output_bytes", "candidate_temp_outside_repo",
+    "proposal_returncode", "proposal_stdout_sha256", "proposal_stderr_sha256",
+})
 
 
 def _is_exact_int(value: Any, expected: int) -> bool:
@@ -287,11 +301,15 @@ def model_profile_evidence(
         "operational_timeout_seconds": contract.operational_timeout_seconds,
         "lower_capability": contract.lower_capability,
         "semantic_authority": "active_host_single_authority",
-        "sealed_request_roles": ["host_candidate"],
-        "lower_capability_scope": (
-            "host_candidate" if contract.lower_capability else "not_applicable"
+        "sealed_request_roles": (
+            ["authority_gate"]
+            if stage_summary["response_kind"] == "clarification_required"
+            else ["authority_gate", "host_candidate"]
         ),
-        "host_semantic_model_calls": 1,
+        "lower_capability_scope": (
+            "authority_gate" if contract.lower_capability else "not_applicable"
+        ),
+        "host_semantic_model_calls": stage_summary["host_semantic_model_calls"],
         "runtime_semantic_model_calls_after_candidate_receipt": 0,
         "post_receipt_provider_invocations": 0,
         "configured": configured,
@@ -337,19 +355,27 @@ def _host_stage_evidence(
     issues: list[str] = []
     stage = _mapping(stage_observation)
     sealed = _mapping(sealed_observation)
-    if set(stage) != _HOST_STAGE_FIELDS:
+    clarification = stage.get("response_kind") == "clarification_required"
+    expected_stage_fields = (
+        _HOST_STAGE_FIELDS - _GATE_ONLY_ABSENT_FIELDS
+        if clarification else _HOST_STAGE_FIELDS
+    )
+    if set(stage) != expected_stage_fields:
         issues.append("retained host stage has missing or unsupported fields")
     if stage.get("version") != HOST_NATIVE_MATRIX_OBSERVATION_VERSION:
         issues.append("retained host stage version is invalid")
     if stage.get("status") != "passed":
         issues.append("retained host stage did not pass")
-    for field in (
-        "host_invocations",
-        "contract_command_invocations",
-        "proposal_command_invocations",
-    ):
+    for field in ("authority_gate_host_invocations", "contract_command_invocations",
+                  "authority_check_command_invocations"):
         if not _is_exact_int(stage.get(field), 1):
             issues.append(f"retained host stage {field} must equal one")
+    expected_candidate_calls = 0 if clarification else 1
+    for field in ("candidate_host_invocations", "proposal_command_invocations"):
+        if not _is_exact_int(stage.get(field), expected_candidate_calls):
+            issues.append(f"retained host stage {field} has an invalid count")
+    if not _is_exact_int(stage.get("host_invocations"), 1 + expected_candidate_calls):
+        issues.append("retained host stage total host call count is invalid")
     for field in (
         "runtime_semantic_model_call_count",
         "post_receipt_provider_invocations",
@@ -358,23 +384,34 @@ def _host_stage_evidence(
             issues.append(f"retained host stage {field} must equal zero")
     if stage.get("model_profile_id") != profile:
         issues.append("retained host stage identifies a different model profile")
-    issues.extend(host_native_argv_receipt_issues(profile, stage.get("host_request")))
+    issues.extend(host_native_argv_receipt_issues(profile, stage.get("authority_gate_request")))
+    if not clarification:
+        issues.extend(host_native_argv_receipt_issues(profile, stage.get("host_request")))
+        if _mapping(stage.get("authority_gate_request")) != _mapping(stage.get("host_request")):
+            issues.append("gate and candidate used different host model or executable receipts")
     if expected_source_sha256 and stage.get("source_sha256") != expected_source_sha256:
         issues.append("retained host stage source hash does not match evaluated source")
     for field in (
         "contract_sha256",
         "source_sha256",
-        "candidate_schema_sha256",
-        "raw_candidate_sha256",
-        "host_output_sha256",
-        "proposal_stdout_sha256",
-        "proposal_stderr_sha256",
+        "authority_gate_schema_sha256", "authority_gate_output_sha256",
+        "authority_check_stdout_sha256", "authority_check_stderr_sha256",
     ):
         if not _is_sha256(stage.get(field)):
             issues.append(f"retained host stage {field} is invalid")
-    if stage.get("contract_returncode") != 0 or stage.get("host_returncode") != 0:
+    for field in (() if clarification else (
+        "candidate_schema_sha256", "raw_candidate_sha256", "host_output_sha256",
+        "proposal_stdout_sha256", "proposal_stderr_sha256",
+    )):
+        if not _is_sha256(stage.get(field)):
+            issues.append(f"retained host stage {field} is invalid")
+    if (stage.get("contract_returncode") != 0
+            or stage.get("authority_gate_returncode") != 0
+            or stage.get("authority_check_returncode") != 0):
         issues.append("retained host stage has a failed prerequisite command")
-    if stage.get("proposal_returncode") != 0:
+    if not clarification and stage.get("host_returncode") != 0:
+        issues.append("retained host candidate command failed")
+    if not clarification and stage.get("proposal_returncode") != 0:
         issues.append("retained host stage proposal return code is invalid")
     if stage.get("response_kind") not in {"authored", "clarification_required"}:
         issues.append("retained host stage response kind is invalid")
@@ -383,34 +420,28 @@ def _host_stage_evidence(
         "clarification_required",
     }:
         issues.append("retained host stage proposal mode is invalid")
-    if stage.get("candidate_temp_outside_repo") is not True:
+    if stage.get("authority_gate_decision") != ("clarify" if clarification else "admit"):
+        issues.append("retained host gate decision does not match the outcome")
+    if stage.get("authority_gate_temp_outside_repo") is not True:
+        issues.append("retained authority gate path was not outside the repository")
+    if stage.get("authority_gate_temp_cleaned") is not True:
+        issues.append("retained authority gate file was not cleaned")
+    if not clarification and stage.get("candidate_temp_outside_repo") is not True:
         issues.append("retained host candidate path was not outside the repository")
     if stage.get("candidate_temp_cleaned") is not True:
         issues.append("retained host candidate file was not cleaned")
     if stage.get("host_workspace_cleaned") is not True:
         issues.append("retained host workspace was not cleaned")
 
-    if stage.get("response_kind") == "clarification_required":
+    if clarification:
         if stage.get("proposal_mode") != "clarification_required":
             issues.append("retained host clarification proposal mode is invalid")
         if sealed:
             issues.append("clarification must not claim a sealed candidate receipt")
-        if raw_candidate.get("version") != HOST_CANDIDATE_FORMAT_VERSION or _mapping(
-            raw_candidate.get("result")
-        ).get("status") != "clarification_required":
-            issues.append("retained host clarification candidate is invalid")
-        try:
-            raw_sha256 = hashlib.sha256(
-                encode_greenfield_model_value(raw_candidate)
-            ).hexdigest()
-        except (RuntimeError, TypeError, ValueError):
-            raw_sha256 = ""
-            issues.append("retained host clarification candidate cannot be encoded")
-        if stage.get("raw_candidate_sha256") != raw_sha256:
-            issues.append("retained host clarification hash does not match host output")
+        if raw_candidate:
+            issues.append("gate clarification must not retain an authored candidate")
         retained_hash_summary = {
-            "status": "passed" if raw_sha256 else "failed",
-            "raw_candidate_sha256": raw_sha256,
+            "status": "not_applicable",
             "canonical_projection_verified": False,
             "issues": [],
         }
@@ -447,9 +478,11 @@ def _host_stage_evidence(
         "origin": "host_native",
         "response_kind": str(stage.get("response_kind") or ""),
         "request_roles": {
-            "host_candidate": dict(_mapping(stage.get("host_request")))
+            "authority_gate": dict(_mapping(stage.get("authority_gate_request"))),
+            **({"host_candidate": dict(_mapping(stage.get("host_request")))}
+               if not clarification else {}),
         },
-        "host_semantic_model_calls": 1,
+        "host_semantic_model_calls": 1 + expected_candidate_calls,
         "runtime_semantic_model_calls_after_candidate_receipt": 0,
         "post_receipt_provider_invocations": 0,
         "retained_candidate_hash_summary": {
@@ -502,7 +535,7 @@ def host_native_clarification_stage_observation_issues(
     stage_observation: Mapping[str, Any],
     expected_source_sha256: str,
 ) -> tuple[str, ...]:
-    """Validate that a one-call host clarification reached deterministic admission."""
+    """Validate one gate-only clarification with no candidate or proposal call."""
 
     stage = _mapping(stage_observation)
     issues: list[str] = []
@@ -516,11 +549,16 @@ def host_native_clarification_stage_observation_issues(
         issues.append("retained host clarification source hash is invalid")
     if not _is_exact_int(stage.get("host_invocations"), 1):
         issues.append("retained host clarification did not use exactly one host call")
+    if not _is_exact_int(stage.get("authority_gate_host_invocations"), 1):
+        issues.append("retained clarification did not use exactly one authority gate")
+    for field in ("candidate_host_invocations", "proposal_command_invocations"):
+        if not _is_exact_int(stage.get(field), 0):
+            issues.append(f"retained clarification {field} is not zero")
     if not _is_exact_int(stage.get("runtime_semantic_model_call_count"), 0):
         issues.append("retained host clarification used a runtime semantic call")
     if not _is_exact_int(stage.get("post_receipt_provider_invocations"), 0):
         issues.append("retained host clarification used a post-receipt provider call")
-    issues.extend(host_native_argv_receipt_issues(profile, stage.get("host_request")))
+    issues.extend(host_native_argv_receipt_issues(profile, stage.get("authority_gate_request")))
     return tuple(dict.fromkeys(issues))
 
 

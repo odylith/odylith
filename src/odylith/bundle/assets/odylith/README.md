@@ -102,11 +102,17 @@ greenfield proposal lane before source-backed governance exists:
 
 ```bash
 ./.odylith/bin/odylith greenfield candidate-contract --repo-root . --prompt "<project intent>"
-# The active host writes one complete matching candidate outside the repository.
-./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<project intent>" --candidate-file "<temporary-file>"
+# The active host runs one separate constrained pass using authority_gate and writes gate JSON outside the repository.
+./.odylith/bin/odylith greenfield authority-check --repo-root . --prompt "<project intent>" --gate-file "<gate-file>" --format json
+# If admitted, the host writes one complete matching candidate outside the repository.
+./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<project intent>" --gate-file "<gate-file>" --candidate-file "<candidate-file>"
 ```
 
-The active host reasons once over the returned contract. `propose` then
+The contract returns nested `authority_gate` task, request, edit, and schema
+plus the candidate schema. If `authority-check` asks for clarification, show its
+one question and stop without a candidate or transaction. Only after admission
+does the active host reason once over the candidate contract. The gate cannot
+rewrite the candidate. `propose` then
 deterministically validates that untrusted candidate, compiles typed custody facts,
 and quality-gates the full staged
 ProductCreateTransaction for read-only review. The sectioned preview preserves
@@ -126,8 +132,11 @@ Odylith asks one focused question only when an ambiguity materially changes the
 first release; other gaps become visible assumptions. Markdown is evidence and a
 human view, not product truth. Staging retains the compiled package and hash under
 `.odylith/runtime/greenfield/pending/` without changing governed product records.
-EDIT verifies the retained hash and uses sealed original source plus the new
-untrusted correction. It preserves the original tier and 90/120/150 limits,
+EDIT reruns `candidate-contract`, the separate gate pass, and `authority-check`
+against sealed original source plus the new untrusted correction; clarification
+stops before a new candidate or transaction. On admission it passes the same
+correction, `--gate-file`, and `--candidate-file` to `decide EDIT`. It preserves
+the original tier and advisory 90/120/150 targets under the 180-second safety timeout,
 retains the immutable old seal, and returns a new hash and preview. CONFIRM and
 REJECT use the shared bounded owner without compiler or model work.
 
@@ -140,8 +149,10 @@ model, generate artifacts or rebuild persistent projections after confirmation.
 This command is not permission for a host to reinterpret a chat approval.
 
 Use `greenfield propose --format json` for an explicitly requested audit view.
-Do not inspect source to discover schema, hand-author proposal JSON, narrate
-parser/schema retries or invent a confirmation path. Do not start coding until
+Do not inspect source to discover either schema, add a full-candidate reviewer,
+parser, regex extraction pass, repair, retry, fallback or alternate model ladder,
+or make a model call after candidate receipt. Do not hand-author proposal JSON,
+narrate parser/schema retries or invent a confirmation path. Do not start coding until
 the product gates are accepted.
 
 For the common governance authoring fast paths, use:

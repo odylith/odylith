@@ -4,6 +4,23 @@ Last updated: 2026-09-30
 
 ## Overview
 
+### Greenfield first-path gate boundary (2026-09-30)
+
+Domain Intelligence now offers a narrow independent authority decision before
+one Greenfield candidate author. The `candidate-contract` exposes the gate
+task and closed schema for the exact operator request and optional EDIT.
+`authority-check` verifies a source-bound admit or one `first_path` question;
+clarification stops before candidate authoring and stages nothing. On admit,
+the existing candidate remains the sole package-semantic authority, and the
+deterministic validator, sealed transaction, and commit-only CONFIRM are
+unchanged. The release runner records gate and candidate calls separately
+under one 180-second ceiling. This replaces the failed assumption that one
+candidate author can always keep labelled reference software separate from
+operator-owned product intent, without introducing a parser, regex, repair,
+fallback, or second full-candidate reviewer. Runtime, lifecycle, and install
+tests pass (1,304/219/1,148); exact installed semantic and latency replays
+and release qualification remain open under CB-324.
+
 ### Exact public replay evidence (2026-09-29)
 
 The installed single-authority candidate from pushed commit `0ab2929d9`

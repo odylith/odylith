@@ -830,13 +830,14 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "search existing workstream, plan, bug, component, diagram, and recent session/Compass context first" in guidance_text
     assert "If the slice is genuinely new and it is repo-owned non-product work, create the missing workstream and bound plan before non-trivial implementation" in guidance_text
     assert "default to the nearest `AGENTS.md`, the repo-local launcher, and truthful `odylith ... --help`" in guidance_text
-    assert "compiles typed evidence" in guidance_text
-    assert "only command rail" in guidance_text
+    assert "nested `authority_gate` task, request, edit, and schema" in guidance_text
+    assert "greenfield authority-check --repo-root ." in guidance_text
+    assert "Clarification: show one question and stop; no candidate or transaction" in guidance_text
+    assert "greenfield propose ... --gate-file" in guidance_text
     assert "ProductCreateTransaction" in guidance_text
-    assert "CONFIRM commits the shown hash-bound package" in guidance_text
-    assert "EDIT treats corrections as new evidence and rebuilds" in guidance_text
-    assert "REJECT writes nothing" in guidance_text
-    assert "Markdown is a view, never product truth" in guidance_text
+    assert "CONFIRM/REJECT use one owner, no compiler/model" in guidance_text
+    assert "repeat gate pass and `authority-check` against sealed source plus correction" in guidance_text
+    assert "Markdown is view, not truth" in guidance_text
     assert "--transaction-file" in guidance_text
     assert "--transaction-hash" in guidance_text
     assert "rollback guard" in guidance_text
@@ -884,14 +885,13 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "stop at diagnosis and maintainer-ready feedback" in root_agents
     assert "Treat `odylith upgrade`, `odylith reinstall`, `odylith doctor --repair`, `odylith sync`, and `odylith dashboard refresh` as writes" in root_agents
     assert "search existing truth first" in root_agents
-    assert "Odylith treats input as evidence" in root_agents
-    assert "builds typed facts" in root_agents
-    assert "one hash-bound rail" in root_agents
+    assert "Untrusted inputs stay evidence" in root_agents
+    assert "greenfield authority-check --repo-root ." in root_agents
+    assert "Clarification: show one question and stop; no candidate or transaction" in root_agents
     assert "ProductCreateTransaction" in root_agents
-    assert "**CONFIRM** commits that package" in root_agents
-    assert "**EDIT** adds evidence and rebuilds" in root_agents
-    assert "**REJECT** stops with no writes" in root_agents
-    assert "Markdown is a view, never product truth" in root_agents
+    assert "CONFIRM/REJECT use one owner, no compiler/model" in root_agents
+    assert "repeat gate pass and `authority-check` against sealed source plus correction" in root_agents
+    assert "Markdown is view, not truth" in root_agents
     assert "--transaction-file" in root_agents
     assert "--transaction-hash" in root_agents
     assert "rollback guard" in root_agents

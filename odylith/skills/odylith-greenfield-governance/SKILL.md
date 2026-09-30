@@ -17,22 +17,31 @@ mechanism-level learning.
 1. Do not refuse merely because the repo has no app source. Greenfield intent is
    proposal evidence, not source evidence.
    Product meaning comes before artifact mapping.
-2. Use the active host as the single semantic author. First run
+2. Use the active host for two bounded passes with distinct jobs. First run
    `./.odylith/bin/odylith greenfield candidate-contract --repo-root . --prompt
-   "<operator request>"`. Reason over its complete evidence and write exactly one
-   JSON candidate matching the returned schema to a temporary file outside the
-   repository. Then run `./.odylith/bin/odylith greenfield propose --repo-root .
-   --prompt "<operator request>" --candidate-file '<temporary-file>'`.
-   The candidate is an untrusted hypothesis: Odylith revalidates every source
+   "<operator request>"`. Its nested `authority_gate` supplies the task, request,
+   edit, and response schema alongside the candidate schema. Run one separate
+   constrained host authority-gate pass and write its JSON to a temporary file
+   outside the repository. Then run `./.odylith/bin/odylith greenfield
+   authority-check --repo-root . --prompt "<operator request>" --gate-file
+   '<gate-file>' --format json`. If the gate asks for clarification, show its one
+   question and stop: do not author a candidate or stage a transaction. Only
+   after admission, reason once over the candidate contract, write exactly one
+   JSON candidate matching its schema to another temporary file outside the
+   repository, and run `./.odylith/bin/odylith greenfield propose --repo-root .
+   --prompt "<operator request>" --gate-file '<gate-file>' --candidate-file
+   '<candidate-file>'`. The gate cannot rewrite the candidate. Both outputs are
+   untrusted hypotheses: Odylith revalidates every source
    citation, typed relation, semantic invariant, and custody hash, seals the
    canonical candidate, and quality-gates the complete staged
    ProductCreateTransaction with zero semantic/model/provider calls after
    candidate receipt. Independent semantic and UX review runs only over frozen
    release evidence; it may qualify or block a pinned release profile, but it
    never admits, mutates, or denies an individual consumer transaction.
-   Do not inspect source code to infer the candidate schema. Do not add a parser,
-   regex extraction pass, participant selector, remainder author, join, repair,
-   retry, fallback candidate, or alternate model ladder. Stop on the first
+   Do not inspect source code to infer either schema. Do not add a full-candidate
+   reviewer, parser, regex extraction pass, participant selector, remainder
+   author, join, repair, retry, fallback candidate, or alternate model ladder.
+   Do not call a model after candidate receipt. Stop on the first
    deterministic validation failure and record that mechanism evidence.
 3. Show the read-only, transaction-bound preview directly. It publishes nothing, but prints
    three full shell-quoted terminal commands: `odylith greenfield decide --repo-root
@@ -42,10 +51,13 @@ mechanism-level learning.
    interface comes from ordinary chat approval, host names, or hooks.
 4. `CONFIRM` and `REJECT` use the shared bounded deterministic owner without
    compiler or model work. For `EDIT`, run `greenfield candidate-contract` with
-   `--transaction-hash '<old-hash>'` and the new `--edit` or `--edit-evidence`,
-   author one new host candidate, then pass that same correction and
-   `--candidate-file '<temporary-file>'` to `greenfield decide EDIT`. EDIT verifies
-   the retained hash, compiles the sealed original source plus correction,
+   `--transaction-hash '<old-hash>'` and the new `--edit` or `--edit-evidence`.
+   Repeat the separate constrained gate pass against the sealed source plus
+   correction, and run `greenfield authority-check` with that correction and
+   `--gate-file '<gate-file>' --format json`. Stop on clarification. Only after
+   admission, author one new host candidate, then pass that same correction,
+   `--gate-file '<gate-file>'`, and `--candidate-file '<candidate-file>'` to
+   `greenfield decide EDIT`. EDIT verifies the retained hash, compiles the sealed original source plus correction,
    preserves the original tier and advisory 90/120/150 targets, retains the old
    seal, and returns a new preview/hash. It adds no repair or fallback path.
 5. `odylith greenfield create` with `--transaction-file`, `--transaction-hash`,

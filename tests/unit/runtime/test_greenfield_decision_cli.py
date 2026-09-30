@@ -87,6 +87,19 @@ def _write_candidate_stub(tmp_path: Path) -> Path:
     return path
 
 
+def _write_gate_stub(tmp_path: Path, prompt: str) -> Path:
+    path = tmp_path.parent / f"{tmp_path.name}-authority-gate.json"
+    path.write_text(json.dumps({
+        "decision": "admit",
+        "required_fields": [],
+        "owner_quote": prompt,
+        "task_quote": prompt,
+        "result_quote": prompt,
+        "question": "",
+    }), encoding="utf-8")
+    return path
+
+
 def test_terminal_decision_prints_human_completion_without_json_wrapper(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -238,11 +251,13 @@ def test_terminal_edit_rebuilds_once_from_verified_retained_source_and_correctio
     )
     governed_before = _tree_digest(tmp_path / "odylith")
     candidate_path = _write_candidate_stub(tmp_path)
+    gate_path = _write_gate_stub(tmp_path, str(previous.proposal["intent"]["prompt"]))
 
     assert greenfield_cli.main([
         "decide", "EDIT", previous.transaction_hash,
         "--repo-root", str(tmp_path), "--edit", correction,
         "--candidate-file", str(candidate_path),
+        "--gate-file", str(gate_path),
     ]) == 0
 
     assert len(compile_calls) == 1
@@ -330,6 +345,7 @@ def test_terminal_edit_non_success_preserves_the_original_reviewed_package(
     governed_before = _tree_digest(tmp_path / "odylith")
     compile_calls: list[dict[str, object]] = []
     candidate_path = _write_candidate_stub(tmp_path)
+    gate_path = _write_gate_stub(tmp_path, str(previous.proposal["intent"]["prompt"]))
 
     def compile_once(**kwargs: object) -> tuple[dict[str, str], object, Path]:
         compile_calls.append(dict(kwargs))
@@ -354,6 +370,7 @@ def test_terminal_edit_non_success_preserves_the_original_reviewed_package(
         "decide", "EDIT", previous.transaction_hash,
         "--repo-root", str(tmp_path), "--edit", "Clarify the owner.",
         "--candidate-file", str(candidate_path),
+        "--gate-file", str(gate_path),
     ]) == expected_result
 
     assert expected_text in capsys.readouterr().out

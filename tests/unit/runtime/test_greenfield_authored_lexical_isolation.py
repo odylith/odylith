@@ -102,6 +102,10 @@ def _public_propose(
     intent: Mapping[str, Any],
     repair_tier: str = "",
 ) -> tuple[int, dict[str, Any]]:
+    from tests.unit.runtime.greenfield_authority_gate_fixtures import (
+        write_admitted_authority_gate,
+    )
+
     activate_greenfield_baseline_fixture(tmp_path)
     source = _evidence_source(intent)
     staged_evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
@@ -117,10 +121,15 @@ def _public_propose(
         evidence_text=staged_evidence,
     )
     assert staged_evidence
+    gate_path = write_admitted_authority_gate(
+        tmp_path.parent / f"{tmp_path.name}-authority-gate.json",
+        source_quote=source,
+    )
 
     arguments = [
         "propose", "--repo-root", str(tmp_path), "--prompt", source,
-        "--candidate-file", str(candidate_path), "--format", "json",
+        "--candidate-file", str(candidate_path),
+        "--gate-file", str(gate_path), "--format", "json",
     ]
     if repair_tier:
         arguments.extend(("--repair-tier", repair_tier))

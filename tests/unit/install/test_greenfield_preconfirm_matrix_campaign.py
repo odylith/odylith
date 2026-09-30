@@ -15,19 +15,10 @@ SCRIPTS_ROOT = REPO_ROOT / "scripts" / "release"
 if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
-from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
-    admit_greenfield_host_candidate,
-)
-from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import (
-    HOST_CANDIDATE_FORMAT_VERSION,
-)
 from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_ARGUMENT_COUNT
 from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_RECEIPT_VERSION
 from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_SHAPE_SHA256
 from greenfield_matrix_host_candidate import HOST_NATIVE_MATRIX_OBSERVATION_VERSION
-from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
-    GREENFIELD_INTENT_AUTHORING_VERSION,
-)
 
 def _load_module(path: Path, name: str):
     spec = importlib.util.spec_from_file_location(name, path)
@@ -161,33 +152,20 @@ def test_discovery_uses_ephemeral_case_proof_without_publishing_release_evidence
             edit_evidence=str(case.confirmed_intent_markdown or ""),
         ).evidence_source
         source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
-        raw_candidate = {
-            "version": HOST_CANDIDATE_FORMAT_VERSION,
-            "result": {
-                "status": "clarification_required",
-                "consistency": {
-                    "status": "material_ambiguity",
-                    "evidence_quotes": [],
-                },
-                "clarification": {"material_dimension": "first_path"},
-            },
-        }
-        _candidate, receipt = admit_greenfield_host_candidate(
-            raw_candidate,
-            evidence_text=source,
-            clock=lambda: 1.0,
-        )
         observed = {}
         stage = {
             "version": HOST_NATIVE_MATRIX_OBSERVATION_VERSION,
             "status": "passed",
             "host_invocations": 1,
+            "authority_gate_host_invocations": 1,
+            "candidate_host_invocations": 0,
             "contract_command_invocations": 1,
-            "proposal_command_invocations": 1,
+            "authority_check_command_invocations": 1,
+            "proposal_command_invocations": 0,
             "runtime_semantic_model_call_count": 0,
             "post_receipt_provider_invocations": 0,
             "model_profile_id": profile_id,
-            "host_request": {
+            "authority_gate_request": {
                 "version": HOST_NATIVE_ARGV_RECEIPT_VERSION,
                 "executable_sha256": "1" * 64,
                 "argument_count": HOST_NATIVE_ARGV_ARGUMENT_COUNT,
@@ -197,23 +175,22 @@ def test_discovery_uses_ephemeral_case_proof_without_publishing_release_evidence
                 "argv_shape_sha256": HOST_NATIVE_ARGV_SHAPE_SHA256,
             },
             "candidate_temp_cleaned": True,
+            "authority_gate_temp_cleaned": True,
             "host_workspace_cleaned": True,
             "stage": "propose",
             "contract_returncode": 0,
             "contract_sha256": "2" * 64,
             "source_sha256": source_sha256,
-            "candidate_schema_sha256": "3" * 64,
-            "host_returncode": 0,
-            "host_stdout_bytes": 500,
-            "host_stderr_bytes": 0,
+            "authority_gate_schema_sha256": "a" * 64,
+            "authority_gate_returncode": 0,
+            "authority_gate_output_sha256": "b" * 64,
+            "authority_gate_output_bytes": 500,
+            "authority_gate_decision": "clarify",
+            "authority_gate_temp_outside_repo": True,
+            "authority_check_returncode": 0,
+            "authority_check_stdout_sha256": "c" * 64,
+            "authority_check_stderr_sha256": "d" * 64,
             "response_kind": "clarification_required",
-            "raw_candidate_sha256": receipt["raw_candidate_sha256"],
-            "host_output_sha256": "4" * 64,
-            "host_output_bytes": 500,
-            "candidate_temp_outside_repo": True,
-            "proposal_returncode": 0,
-            "proposal_stdout_sha256": "5" * 64,
-            "proposal_stderr_sha256": "6" * 64,
             "proposal_mode": "clarification_required",
             "elapsed_seconds": 18.0,
         }
@@ -224,8 +201,15 @@ def test_discovery_uses_ephemeral_case_proof_without_publishing_release_evidence
         )
         module.record_retained_case_json(
             retained_case,
-            "semantic/host-candidate.raw.v1.json",
-            raw_candidate,
+            "semantic/host-authority-gate.raw.v1.json",
+            {
+                "decision": "clarify",
+                "required_fields": ["first_path"],
+                "owner_quote": "",
+                "task_quote": "",
+                "result_quote": "",
+                "question": "Who uses this product first, and what result do they see?",
+            },
         )
         observations["stage"] = module._retained_model_stage_observation(retained_case)
         observations["raw_candidate"] = module._retained_raw_host_candidate(retained_case)
@@ -237,40 +221,7 @@ def test_discovery_uses_ephemeral_case_proof_without_publishing_release_evidence
             raw_candidate=observations["raw_candidate"],
             expected_source=source,
         )
-        binding_issues = module.authored_model_result_binding_issues(
-            stage_observation=observations["stage"],
-            raw_candidate=observations["raw_candidate"],
-            create_payload={
-                "commit_manifest": {
-                    "model_authoring": {
-                        "authoring_origin": "host_native",
-                        "authoring_version": GREENFIELD_INTENT_AUTHORING_VERSION,
-                        "runtime_semantic_model_call_count": 0,
-                        "tier": profile.repair_tier,
-                        "elapsed_seconds": 18.0,
-                        "effective_model_window_seconds": 165.0,
-                        "host_candidate": receipt,
-                        "canonical_authority": {
-                            "canonical_candidate_sha256": receipt[
-                                "canonical_candidate_sha256"
-                            ],
-                            "source_sha256": source_sha256,
-                            "product_facts_sha256": "7" * 64,
-                            "authored_relation_set_sha256": "8" * 64,
-                        },
-                    },
-                    "semantic_compiler": {
-                        "version": "odylith.greenfield.authored-semantic-validation.v5",
-                        "status": "passed",
-                        "semantic_owner": "host_canonical_candidate",
-                        "post_candidate_receipt_semantic_calls": 0,
-                    },
-                }
-            },
-            expected_source=source,
-        )
         observations["profile_evidence"] = profile_evidence
-        observations["binding_issues"] = binding_issues
         return _result(module, name=kwargs["case"].name)
 
     monkeypatch.setattr(module, "_run_case", fake_run_case)
@@ -300,9 +251,9 @@ def test_discovery_uses_ephemeral_case_proof_without_publishing_release_evidence
     hash_summary = observations["profile_evidence"]["stage_observation_summary"][
         "retained_candidate_hash_summary"
     ]
-    assert hash_summary["status"] == "passed"
+    assert hash_summary["status"] == "not_applicable"
     assert hash_summary["canonical_projection_verified"] is False
-    assert observations["binding_issues"] == ()
+    assert observations["raw_candidate"] == {}
     serialized_profile = json.dumps(observations["profile_evidence"])
     assert "candidate_" + "review" not in serialized_profile
     assert "reviewed_" + "candidate_sha256" not in serialized_profile
@@ -381,6 +332,7 @@ def test_direct_propose_requires_candidate_file_before_command_execution(
             prompt="Create a source-grounded product.",
             timeout=90,
             candidate_file="",
+            gate_file=str(tmp_path / "authority-gate.json"),
         )
 
 

@@ -151,8 +151,12 @@ def compile_transaction(
             timeout=timeout,
         )
 
-    def invoke_propose(candidate_path: Path, timeout: float) -> Any:
-        candidate_command = [*command, "--candidate-file", str(candidate_path)]
+    def invoke_propose(candidate_path: Path, gate_path: Path, timeout: float) -> Any:
+        candidate_command = [
+            *command,
+            "--candidate-file", str(candidate_path),
+            "--gate-file", str(gate_path),
+        ]
         return recovery_evidence.run_proposal(
             evidence=evidence,
             runner=_run,

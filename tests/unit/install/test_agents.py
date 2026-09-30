@@ -76,15 +76,15 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
         "odylith/agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md",
         "odylith/skills/odylith-code-hygiene-guard/SKILL.md",
         "Discipline hot paths must not call host models",
-            "Input, corrections, and the candidate are untrusted evidence",
-        "builds typed custody facts",
-        "Read-only preview",
-        "no qualified confirmation interface",
-            "do not run create from a chat approval",
-            "90/120/150 seconds as advisory targets",
-            "separate 180-second operational safety timeout",
-        "Ask one focused question only for material uncertainty",
-        "Markdown is a view, never product truth",
+        "nested `authority_gate` task, request, edit, and schema",
+        "greenfield authority-check --repo-root .",
+        "Clarification: show one question and stop; no candidate or transaction",
+        "--gate-file \"<gate-file>\" --candidate-file \"<candidate-file>\"",
+        "No full-candidate reviewer, parser/regex, repair, retry, fallback, or model ladder",
+        "Preview:",
+        "chat/hooks cannot confirm or authorize create",
+        "90/120/150 seconds advisory under the 180-second safety timeout",
+        "Markdown is view, not truth",
         "ProductCreateTransaction",
         "--transaction-file",
         "--transaction-hash",
@@ -141,12 +141,12 @@ def test_managed_block_adds_maintainer_overlay_for_product_repo() -> None:
     assert "rerender only the owned surface" in block
     assert "Claude direct-edit and Bash PostToolUse hooks stay silent on success" in block
     assert "Claude Stop is memory/logging only" in block
-    assert "Do not hand-author proposal or transaction JSON" in block
-    assert "infer the candidate schema from source" in block
-    assert "internal schema failures" in block
-    assert "Show the preview and its material confirmation blocker plainly" in block
-    assert "no qualified confirmation interface" in block
-    assert "without model reasoning, generation, or repair" in block
+    assert "never hand-author proposal/transaction JSON" in block
+    assert "infer schemas from source" in block
+    assert "narrate schema failures" in block
+    assert "Clarification: show one question and stop; no candidate or transaction" in block
+    assert "chat/hooks cannot confirm or authorize create" in block
+    assert "without model, generation, or repair" in block
     assert "Confirm/Edit/Reject" not in block
     assert "confirm to expand" not in block
     assert len(block.encode("utf-8")) < 12400

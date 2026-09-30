@@ -27,7 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 
 
 MODEL_PROFILE_PROOF_VERSION = (
-    "odylith.greenfield.installed-single-authority-profile-proof.v7"
+    "odylith.greenfield.installed-gated-authority-profile-proof.v8"
 )
 TRANSACTION_COMMITTED_EXPECTATION = "transaction_committed"
 CLARIFICATION_REQUIRED_EXPECTATION = "clarification_required"
@@ -193,7 +193,7 @@ def model_profile_release_proof(
         rows[profile_id].append(result)
         if not _result_proves_profile(result, profile_id):
             validation_issues.append(
-                f"model profile `{profile_id}` lacks one-host/zero-runtime-call proof"
+                f"model profile `{profile_id}` lacks gate/candidate call and zero-runtime-call proof"
             )
         expectation = _result_expectation(result)
         if expectation not in {
@@ -250,7 +250,11 @@ def model_profile_release_proof(
             "host_model": contract.model,
             "host_reasoning_effort": contract.reasoning_effort,
             "semantic_authority": "active_host_single_authority",
-            "host_semantic_model_calls": 1,
+            "host_semantic_model_calls": max(
+                (_mapping(_mapping(getattr(result, "evidence", None)).get("model_profile"))
+                 .get("host_semantic_model_calls", 0) for result in profile_results),
+                default=0,
+            ),
             "runtime_semantic_model_calls_after_candidate_receipt": 0,
             "post_receipt_provider_invocations": 0,
             "performance_target_seconds": contract.performance_target_seconds,
@@ -259,7 +263,7 @@ def model_profile_release_proof(
             and max(elapsed) <= contract.performance_target_seconds,
             "lower_capability": contract.lower_capability,
             "lower_capability_role": (
-                "host_candidate" if contract.lower_capability else "not_applicable"
+                "authority_gate" if contract.lower_capability else "not_applicable"
             ),
             "case_count": len(profile_results),
             "committed_positive_case_count": sum(
@@ -310,7 +314,7 @@ def model_profile_release_proof(
                 "passed" if len(valid_lower_profiles) == len(LOWER_CAPABILITY_CONTROL_PROFILES)
                 else "unproven"
             ),
-            "role": "host_candidate",
+            "role": "authority_gate",
             "requirement": "source_bound_clarification_no_write_only",
             "observed_profiles": [
                 {
@@ -377,6 +381,7 @@ def _result_proves_profile(result: Any, profile_id: str) -> bool:
     stage = _mapping(profile.get("stage_observation"))
     observed = _mapping(profile.get("observed"))
     receipt = _mapping(observed.get("host_candidate"))
+    gate_request = _mapping(stage.get("authority_gate_request"))
     host_request = _mapping(stage.get("host_request"))
     stage_elapsed = _float_value(stage.get("elapsed_seconds"))
     expected_response = (
@@ -405,9 +410,11 @@ def _result_proves_profile(result: Any, profile_id: str) -> bool:
         and configured.get("maximum_model_timeout_seconds")
         == contract.model_timeout_seconds
     )
+    expected_candidate_calls = 0 if expected_response == CLARIFICATION_REQUIRED_EXPECTATION else 1
+    expected_host_calls = 1 + expected_candidate_calls
     summary_matches = not summary or (
         summary.get("status") == "passed"
-        and _is_exact_int(summary.get("host_semantic_model_calls"), 1)
+        and _is_exact_int(summary.get("host_semantic_model_calls"), expected_host_calls)
         and _is_exact_int(
             summary.get("runtime_semantic_model_calls_after_candidate_receipt"), 0
         )
@@ -416,10 +423,8 @@ def _result_proves_profile(result: Any, profile_id: str) -> bool:
     if expected_response == CLARIFICATION_REQUIRED_EXPECTATION:
         candidate_binding_matches = (
             observed == {}
-            and _is_sha256(stage.get("raw_candidate_sha256"))
-            and _mapping(summary.get("retained_candidate_hash_summary")).get(
-                "raw_candidate_sha256"
-            ) == stage.get("raw_candidate_sha256")
+            and "raw_candidate_sha256" not in stage
+            and "host_request" not in stage
         )
     else:
         candidate_binding_matches = (
@@ -445,8 +450,11 @@ def _result_proves_profile(result: Any, profile_id: str) -> bool:
         and profile.get("issues") == []
         and profile.get("profile_id") == profile_id
         and profile.get("semantic_authority") == "active_host_single_authority"
-        and profile.get("sealed_request_roles") == ["host_candidate"]
-        and _is_exact_int(profile.get("host_semantic_model_calls"), 1)
+        and profile.get("sealed_request_roles") == (
+            ["authority_gate"] if not expected_candidate_calls
+            else ["authority_gate", "host_candidate"]
+        )
+        and _is_exact_int(profile.get("host_semantic_model_calls"), expected_host_calls)
         and _is_exact_int(
             profile.get("runtime_semantic_model_calls_after_candidate_receipt"), 0
         )
@@ -455,9 +463,12 @@ def _result_proves_profile(result: Any, profile_id: str) -> bool:
         and candidate_binding_matches
         and stage.get("status") == "passed"
         and stage.get("model_profile_id") == profile_id
-        and _is_exact_int(stage.get("host_invocations"), 1)
+        and _is_exact_int(stage.get("host_invocations"), expected_host_calls)
+        and _is_exact_int(stage.get("authority_gate_host_invocations"), 1)
+        and _is_exact_int(stage.get("candidate_host_invocations"), expected_candidate_calls)
         and _is_exact_int(stage.get("contract_command_invocations"), 1)
-        and _is_exact_int(stage.get("proposal_command_invocations"), 1)
+        and _is_exact_int(stage.get("authority_check_command_invocations"), 1)
+        and _is_exact_int(stage.get("proposal_command_invocations"), expected_candidate_calls)
         and _is_exact_int(stage.get("runtime_semantic_model_call_count"), 0)
         and _is_exact_int(stage.get("post_receipt_provider_invocations"), 0)
         and stage.get("response_kind") == expected_response
@@ -467,12 +478,13 @@ def _result_proves_profile(result: Any, profile_id: str) -> bool:
             if expected_response == CLARIFICATION_REQUIRED_EXPECTATION
             else "product_create_transaction"
         )
-        and host_request.get("model") == contract.model
-        and host_request.get("reasoning_effort") == contract.reasoning_effort
-        and host_request.get("version") == HOST_NATIVE_ARGV_RECEIPT_VERSION
-        and host_request.get("argument_count") == HOST_NATIVE_ARGV_ARGUMENT_COUNT
-        and host_request.get("argv_shape_sha256") == HOST_NATIVE_ARGV_SHAPE_SHA256
-        and host_request.get("output_schema_present") is True
+        and gate_request.get("model") == contract.model
+        and gate_request.get("reasoning_effort") == contract.reasoning_effort
+        and gate_request.get("version") == HOST_NATIVE_ARGV_RECEIPT_VERSION
+        and gate_request.get("argument_count") == HOST_NATIVE_ARGV_ARGUMENT_COUNT
+        and gate_request.get("argv_shape_sha256") == HOST_NATIVE_ARGV_SHAPE_SHA256
+        and gate_request.get("output_schema_present") is True
+        and (not expected_candidate_calls or host_request == gate_request)
         and type(stage_elapsed) is float
         and math.isfinite(stage_elapsed)
         and 0.0 < stage_elapsed < contract.operational_timeout_seconds

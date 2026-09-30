@@ -53,12 +53,15 @@ def _profile_evidence(profile_id: str = STANDARD_PROFILE_ID) -> dict[str, object
         "version": HOST_NATIVE_MATRIX_OBSERVATION_VERSION,
         "status": "passed",
         "host_invocations": 1,
+        "authority_gate_host_invocations": 1,
+        "candidate_host_invocations": 0,
         "contract_command_invocations": 1,
-        "proposal_command_invocations": 1,
+        "authority_check_command_invocations": 1,
+        "proposal_command_invocations": 0,
         "runtime_semantic_model_call_count": 0,
         "post_receipt_provider_invocations": 0,
         "model_profile_id": profile_id,
-        "host_request": {
+        "authority_gate_request": {
             "version": "odylith.greenfield.host-argv-receipt.v1",
             "executable_sha256": "1" * 64,
             "argument_count": HOST_NATIVE_ARGV_ARGUMENT_COUNT,
@@ -68,31 +71,22 @@ def _profile_evidence(profile_id: str = STANDARD_PROFILE_ID) -> dict[str, object
             "argv_shape_sha256": HOST_NATIVE_ARGV_SHAPE_SHA256,
         },
         "candidate_temp_cleaned": True,
+        "authority_gate_temp_cleaned": True,
         "host_workspace_cleaned": True,
-        "stage": "propose",
+        "stage": "authority-check",
         "contract_returncode": 0,
         "contract_sha256": "2" * 64,
         "source_sha256": hashlib.sha256(SOURCE.encode()).hexdigest(),
-        "candidate_schema_sha256": "3" * 64,
-        "host_returncode": 0,
-        "host_stdout_bytes": 500,
-        "host_stderr_bytes": 0,
+        "authority_gate_schema_sha256": "3" * 64,
+        "authority_gate_returncode": 0,
+        "authority_gate_output_sha256": "4" * 64,
+        "authority_gate_output_bytes": 200,
+        "authority_gate_decision": "clarify",
+        "authority_gate_temp_outside_repo": True,
+        "authority_check_returncode": 0,
+        "authority_check_stdout_sha256": "5" * 64,
+        "authority_check_stderr_sha256": "6" * 64,
         "response_kind": "clarification_required",
-        "raw_candidate_sha256": hashlib.sha256(
-            json.dumps(
-                raw_candidate,
-                ensure_ascii=False,
-                sort_keys=True,
-                separators=(",", ":"),
-                allow_nan=False,
-            ).encode("utf-8")
-        ).hexdigest(),
-        "host_output_sha256": "4" * 64,
-        "host_output_bytes": 500,
-        "candidate_temp_outside_repo": True,
-        "proposal_returncode": 0,
-        "proposal_stdout_sha256": "5" * 64,
-        "proposal_stderr_sha256": "6" * 64,
         "proposal_mode": "clarification_required",
         "elapsed_seconds": 18.02,
     }
@@ -101,7 +95,7 @@ def _profile_evidence(profile_id: str = STANDARD_PROFILE_ID) -> dict[str, object
         model_profile_environment(profile_id, {}),
         observed=observed,
         stage_observation=stage,
-        raw_candidate=raw_candidate,
+        raw_candidate={},
         expected_source=SOURCE,
     )
 
@@ -154,6 +148,22 @@ def _authored_profile_evidence(profile_id: str = STANDARD_PROFILE_ID) -> dict[st
     )
     evidence = _profile_evidence(profile_id)
     stage = evidence["stage_observation"]
+    stage["host_invocations"] = 2
+    stage["candidate_host_invocations"] = 1
+    stage["proposal_command_invocations"] = 1
+    stage["authority_gate_decision"] = "admit"
+    stage["stage"] = "propose"
+    stage["host_request"] = deepcopy(stage["authority_gate_request"])
+    stage["candidate_schema_sha256"] = "7" * 64
+    stage["host_returncode"] = 0
+    stage["host_stdout_bytes"] = 500
+    stage["host_stderr_bytes"] = 0
+    stage["host_output_sha256"] = "8" * 64
+    stage["host_output_bytes"] = 500
+    stage["candidate_temp_outside_repo"] = True
+    stage["proposal_returncode"] = 0
+    stage["proposal_stdout_sha256"] = "9" * 64
+    stage["proposal_stderr_sha256"] = "a" * 64
     stage["response_kind"] = "authored"
     stage["proposal_mode"] = "product_create_transaction"
     stage["source_sha256"] = hashlib.sha256(source.encode("utf-8")).hexdigest()
@@ -251,7 +261,7 @@ def test_complete_release_profile_requires_standard_success_and_rescue_no_write_
     proof = model_profile_release_proof((standard, rescue), require_complete=True)
     assert proof["status"] == "passed", proof["issues"]
     assert proof["lower_capability_scope"]["status"] == "passed"
-    assert proof["lower_capability_scope"]["role"] == "host_candidate"
+    assert proof["lower_capability_scope"]["role"] == "authority_gate"
 
 
 def test_complete_release_profile_fails_without_rescue_control() -> None:

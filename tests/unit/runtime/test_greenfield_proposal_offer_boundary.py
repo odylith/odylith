@@ -65,10 +65,20 @@ def test_public_preview_offers_three_hash_bound_terminal_decisions(
     )
     candidate_path = tmp_path.parent / f"{tmp_path.name}-host-candidate.json"
     candidate_path.write_text("{}\n", encoding="utf-8")
+    gate_path = tmp_path.parent / f"{tmp_path.name}-authority-gate.json"
+    gate_path.write_text(json.dumps({
+        "decision": "admit",
+        "required_fields": [],
+        "owner_quote": "Example",
+        "task_quote": "Example",
+        "result_quote": "Example",
+        "question": "",
+    }), encoding="utf-8")
 
     assert greenfield_proposals_cli.main([
         command, "--repo-root", str(tmp_path), "--prompt", "Example",
         "--candidate-file", str(candidate_path),
+        "--gate-file", str(gate_path),
         "--format", output_format,
     ]) == 0
     output = capsys.readouterr().out

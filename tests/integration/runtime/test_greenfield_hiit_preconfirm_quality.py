@@ -10,6 +10,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization
     combined_prompt_evidence_source,
 )
 from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
+from tests.unit.runtime.greenfield_authority_gate_fixtures import write_admitted_authority_gate
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     authored_response,
     write_host_candidate_fixture,
@@ -43,11 +44,16 @@ def test_hiit_structured_fixture_preserves_path_and_sealed_package_under_sixty_s
         response,
         evidence_text=evidence,
     )
+    gate_path = write_admitted_authority_gate(
+        tmp_path.parent / f"{tmp_path.name}-authority-gate.json",
+        source_quote=prompt,
+    )
 
     started, rc, payload, transaction_payload = _run_proposed_transaction_create(
         tmp_path,
         prompt=prompt,
         candidate_path=candidate_path,
+        gate_path=gate_path,
         capsys=capsys,
     )
     elapsed = time.perf_counter() - started
@@ -253,6 +259,7 @@ def _run_proposed_transaction_create(
     *,
     prompt: str,
     candidate_path: Path,
+    gate_path: Path,
     capsys,
 ) -> tuple[float, int, dict, dict]:
     started = time.perf_counter()
@@ -267,6 +274,8 @@ def _run_proposed_transaction_create(
             ".odylith/runtime/greenfield/confirmed-intent.md",
             "--candidate-file",
             str(candidate_path),
+            "--gate-file",
+            str(gate_path),
             "--format",
             "json",
         ]

@@ -119,7 +119,7 @@ def test_model_profile_release_proof_reports_missing_lower_profile_as_unproven()
     assert proof["lower_capability_scope"] == {
         "status": "unproven",
         "observed_profiles": [],
-        "role": "host_candidate",
+        "role": "authority_gate",
         "requirement": "source_bound_clarification_no_write_only",
     }
     assert module.model_profile_release_proof(results, require_complete=True)["status"] == "failed"
@@ -162,7 +162,7 @@ def test_model_profile_aggregate_rechecks_single_authority_despite_passed_label(
     elif mutation == "host_model":
         stages["host_request"]["model"] = "gpt-5.6-sol"
     elif mutation == "host_count":
-        stages["host_invocations"] = 2
+        stages["host_invocations"] = 3
     elif mutation == "post_receipt_call":
         stages["post_receipt_provider_invocations"] = 1
     else:
@@ -252,7 +252,7 @@ def test_model_profile_release_proof_rejects_elapsed_tier_relabeling() -> None:
     )
 
     assert proof["status"] == "failed"
-    assert any("one-host/zero-runtime-call proof" in issue for issue in proof["issues"])
+    assert any("gate/candidate call and zero-runtime-call proof" in issue for issue in proof["issues"])
 
 
 def test_model_profile_release_proof_requires_a_passed_terminal_result() -> None:
@@ -269,7 +269,7 @@ def test_model_profile_release_proof_requires_a_passed_terminal_result() -> None
     )
 
     assert proof["status"] == "failed"
-    assert any("one-host/zero-runtime-call proof" in issue for issue in proof["issues"])
+    assert any("gate/candidate call and zero-runtime-call proof" in issue for issue in proof["issues"])
 
 
 def test_unavailable_provider_proof_requires_success_without_runtime_provider_use() -> None:
@@ -352,9 +352,11 @@ def test_unavailable_provider_proof_admits_one_candidate_without_runtime_provide
 
     def run_host_flow(flow):
         host_flows.append(flow)
+        gate_path = flow.temp_parent / "authority-gate.json"
+        gate_path.write_text('{"decision":"admit"}\n', encoding="utf-8")
         candidate_path = flow.temp_parent / "candidate.json"
         candidate_path.write_text('{"result":{"status":"authored"}}\n', encoding="utf-8")
-        completed = flow.invoke_propose(candidate_path, 90.0)
+        completed = flow.invoke_propose(candidate_path, gate_path, 90.0)
         assert completed.returncode == 0
         return completed
 

@@ -1,4 +1,4 @@
-"""Synthetic one-authority observations for provider-free release tests."""
+"""Synthetic gate-first observations for provider-free release tests."""
 
 from __future__ import annotations
 
@@ -61,42 +61,46 @@ def production_stage_observation(
     del evidence_text
     profile = get_greenfield_model_profile(profile_id)
     receipt = _receipt()
-    return {
+    clarification = response_kind == "clarification_required"
+    host_request = {
+        "version": "odylith.greenfield.host-argv-receipt.v1",
+        "executable_sha256": "4" * 64,
+        "argument_count": HOST_NATIVE_ARGV_ARGUMENT_COUNT,
+        "model": profile.model,
+        "reasoning_effort": profile.reasoning_effort,
+        "output_schema_present": True,
+        "argv_shape_sha256": HOST_NATIVE_ARGV_SHAPE_SHA256,
+    }
+    stage = {
         "version": HOST_NATIVE_MATRIX_OBSERVATION_VERSION,
         "status": "passed",
-        "host_invocations": 1,
+        "host_invocations": 1 if clarification else 2,
+        "authority_gate_host_invocations": 1,
+        "candidate_host_invocations": 0 if clarification else 1,
         "contract_command_invocations": 1,
-        "proposal_command_invocations": 1,
+        "authority_check_command_invocations": 1,
+        "proposal_command_invocations": 0 if clarification else 1,
         "runtime_semantic_model_call_count": 0,
         "post_receipt_provider_invocations": 0,
         "model_profile_id": profile_id,
-        "host_request": {
-            "version": "odylith.greenfield.host-argv-receipt.v1",
-            "executable_sha256": "4" * 64,
-            "argument_count": HOST_NATIVE_ARGV_ARGUMENT_COUNT,
-            "model": profile.model,
-            "reasoning_effort": profile.reasoning_effort,
-            "output_schema_present": True,
-            "argv_shape_sha256": HOST_NATIVE_ARGV_SHAPE_SHA256,
-        },
+        "authority_gate_request": host_request,
         "candidate_temp_cleaned": True,
+        "authority_gate_temp_cleaned": True,
         "host_workspace_cleaned": True,
         "stage": "propose",
         "contract_returncode": 0,
         "contract_sha256": "5" * 64,
         "source_sha256": receipt["source_sha256"],
-        "candidate_schema_sha256": "6" * 64,
-        "host_returncode": 0,
-        "host_stdout_bytes": 500,
-        "host_stderr_bytes": 0,
+        "authority_gate_schema_sha256": "a" * 64,
+        "authority_gate_returncode": 0,
+        "authority_gate_output_sha256": "b" * 64,
+        "authority_gate_output_bytes": 500,
+        "authority_gate_decision": "clarify" if clarification else "admit",
+        "authority_gate_temp_outside_repo": True,
+        "authority_check_returncode": 0,
+        "authority_check_stdout_sha256": "c" * 64,
+        "authority_check_stderr_sha256": "d" * 64,
         "response_kind": response_kind,
-        "raw_candidate_sha256": receipt["raw_candidate_sha256"],
-        "host_output_sha256": "7" * 64,
-        "host_output_bytes": 500,
-        "candidate_temp_outside_repo": True,
-        "proposal_returncode": 0,
-        "proposal_stdout_sha256": "8" * 64,
-        "proposal_stderr_sha256": "9" * 64,
         "proposal_mode": (
             "clarification_required"
             if response_kind == "clarification_required"
@@ -106,3 +110,19 @@ def production_stage_observation(
             min(shared_timeout, 10.0) if shared_timeout is not None else 10.0
         ),
     }
+    if not clarification:
+        stage.update({
+            "host_request": dict(host_request),
+            "candidate_schema_sha256": "6" * 64,
+            "host_returncode": 0,
+            "host_stdout_bytes": 500,
+            "host_stderr_bytes": 0,
+            "raw_candidate_sha256": receipt["raw_candidate_sha256"],
+            "host_output_sha256": "7" * 64,
+            "host_output_bytes": 500,
+            "candidate_temp_outside_repo": True,
+            "proposal_returncode": 0,
+            "proposal_stdout_sha256": "8" * 64,
+            "proposal_stderr_sha256": "9" * 64,
+        })
+    return stage
