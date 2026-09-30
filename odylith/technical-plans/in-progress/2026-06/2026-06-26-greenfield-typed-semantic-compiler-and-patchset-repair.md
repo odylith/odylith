@@ -1,5 +1,28 @@
 Status: In progress
 
+## Fast-author no-go and bounded release decision (2026-09-30)
+
+The unchanged Astra/medium authority gate plus one Astra/low compact author
+reached a complete-shaped candidate in `81.15s`, with `6.51s` deterministic
+proposal admission on the exact public v4 complete agriculture case. That
+candidate omitted the source-stated reviewer acceptance of private raw notes
+as a distinct event (P1) and left two narrower proof/ordering gaps (P2).
+Its Atlas/Delivery artifact failure was confounded by a diagnostic `PATH`
+that hid Node from Mermaid; it does not qualify or condemn the renderer.
+CB-324 holds the candidate hash and review evidence. Do not promote this
+profile, replay the same candidate as first-pass proof, or add a parser,
+rule cascade, repair, retry, or model ladder to save it.
+
+The public negative gate is useful, but the full-author variant misses event
+custody and the split variant misses time. The fast author improves timing
+without clearing source completeness. No current mechanism has passed both
+the no-write negative and complete positive package under the fixed envelope.
+Keep Greenfield create outside a production-ready claim. The next bounded
+decision is whether a genuinely simpler single-ownership mechanism can prove
+both cases without losing source actions; absent that evidence, qualify and
+ship only the independently proven preview scope. Do not open the protected
+holdout until the public semantic, artifact, browser, and timing gates pass.
+
 ## Split-ownership stop and release posture (2026-09-30)
 
 The bounded source-graph/design split did not clear the fixed public gate.

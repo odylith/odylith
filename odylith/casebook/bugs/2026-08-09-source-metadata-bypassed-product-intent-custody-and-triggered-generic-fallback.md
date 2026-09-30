@@ -1,5 +1,40 @@
 - Bug ID: CB-324
 
+## Astra-low compact-author comparison rejected (2026-09-30)
+
+One read-only Astra-low author call used the unchanged v33 candidate contract,
+the admitted Astra-medium first-path gate, and the exact public v4 agriculture
+briefing source. It returned a 25,022-byte candidate in `81.15s`; installed
+deterministic proposal admission took `6.51s` and accepted candidate custody
+and the semantic compiler. The candidate contained five components, five
+workstreams, six material risks, and fifteen events. There was no second
+author, candidate repair, protected-holdout run, or governed product write.
+Evidence is retained at
+`/private/tmp/odylith-astra-low-compact-reuse-20260930/` (candidate SHA-256
+`73a6b9757deeae0d6bbd111662399173d87ddfc379f3380c6e974dd74511c444`).
+
+This is not a release pass. Independent source-first review found that the
+source explicitly makes the scientific reviewer accept raw analyst notes
+before they may leave private custody, but the candidate contains only the
+reviewer's evidence-disposition action. It omits the distinct acceptance
+event (P1), despite preserving the reviewer role and a privacy constraint.
+The package also lacks an explicit reject path when either specialist
+interpretation is absent and leaves source-owned first-path ordering out of
+canonical precedence (P2). The fast model profile therefore does not earn
+promotion. Deterministic citation checks can accept a package that omits a
+source action; do not address that gap with a source-specific parser, regex,
+prompt patch, fallback model, or retry.
+
+The proposal's Atlas and Delivery artifact failure is a confounded harness
+result, not proof that the diagrams were malformed. The diagnostic removed
+`/opt/homebrew/bin` from `PATH` to isolate providers, thereby hiding `node`
+from both the Mermaid worker and its one-shot fallback. The surfaced error
+truncated the underlying renderer exception. No identical-candidate replay
+was used to turn the first failed proposal into release evidence. Future
+one-shot probes must preserve non-provider build tools while isolating model
+credentials. The faster timing remains only a measurement; the protected
+holdout stays closed and CB-324 stays open.
+
 ## Split source-graph/design comparison rejected (2026-09-30)
 
 A disposable, no-retry two-stage probe tested whether giving the first host
