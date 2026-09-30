@@ -254,7 +254,7 @@ def test_authored_package_passes_in_one_validation_pass(
             "effective_model_window_seconds": 120.0,
             "host_candidate": {
                 "version": "odylith.greenfield.host-candidate-receipt.v2",
-                "contract_version": "odylith.greenfield.host-candidate-contract.v32",
+                "contract_version": "odylith.greenfield.host-candidate-contract.v33",
                 "canonical_version": "odylith.greenfield.model-intent-authoring.v77",
                 "source_sha256": "a" * 64,
                 "raw_candidate_sha256": "b" * 64,

@@ -32,7 +32,7 @@ _COMMAND_TIMEOUT_SECONDS = 300
 _CANDIDATE_CONTRACT_SMOKE_PROMPT = (
     "Create a project governance package for a first-time user."
 )
-_EXPECTED_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v32"
+_EXPECTED_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v33"
 _EXPECTED_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v18"
 
 

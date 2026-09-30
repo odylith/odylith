@@ -159,7 +159,7 @@ def _build_envelope(
             "runtime_semantic_model_call_count": 0,
             "host_candidate": {
                 "version": "odylith.greenfield.host-candidate.v2",
-                "contract_version": "odylith.greenfield.host-candidate-contract.v32",
+                "contract_version": "odylith.greenfield.host-candidate-contract.v33",
                 "canonical_version": GREENFIELD_INTENT_AUTHORING_VERSION,
                 "source_sha256": result.source_sha256,
                 "raw_candidate_sha256": "b" * 64,

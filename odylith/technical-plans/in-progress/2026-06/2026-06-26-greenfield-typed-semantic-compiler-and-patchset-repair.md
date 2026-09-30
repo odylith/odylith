@@ -1,5 +1,57 @@
 Status: In progress
 
+## Compact-output decision (2026-09-30)
+
+Promote only a versioned one-sentence compact-JSON instruction in the existing
+single host candidate contract; keep source evidence, schema, semantic
+requirements, validator, reviewer, and transaction law unchanged. The exact
+agriculture failure source improved from ~177s to 143.254s host authoring and
+151.638s through a passing clean installed proposal. A predeclared longer
+healthcare public source independently returned an admissible candidate in
+149.394s and a passing clean installed proposal in 8.116s (157.510s combined,
+56 proposed writes). Independent semantic reviews found no P0/P1 in either;
+P2 first-run ordering/copy polish remains. This buys 22-28s of safety margin
+on these two cases, not proof that every case meets the advisory 90/120/150
+targets. Freeze the candidate, rerun the fixed public campaign from case one,
+and stop on the first real failure. Do not add an output parser, repair pass,
+model ladder, or case-specific rule. Keep protected holdout unopened until the
+public campaign and generated UX are clean.
+
+## Public latency falsifier and bounded alternatives (2026-09-29)
+
+The fixed public campaign on pushed `c54fe4717` passed six installed cases,
+including the previously misclassified clarification, then stopped on
+`release-agriculture-037-source` at the `180s` operational safety boundary.
+The one Astra/medium host returned a complete raw candidate, but left only
+`2.7s` for proposal admission; no transaction or governed write occurred.
+The raw candidate itself deterministically admits. Exact source, schema, and
+contract hashes were preserved for two bounded offline comparisons: Sol/high
+timed out with no output at `165s` and is rejected; Astra/low returned an
+admissible candidate in `164.676s`, and a fresh installed proposal staged it
+in `8.226s`. Independent review found no P0/P1 after correctly excluding
+repository-metadata authoring controls from product facts, but found weaker
+first-run sequence and privacy-risk scope (P2). Its ~7-second margin is not a
+credible generalization or advisory-latency win. A final exact-contract
+Luna/high diagnostic returned in `99.875s` but failed deterministic admission
+on an ungrounded non-material-ambiguity assessment. Reject both Sol/high and
+Luna/high; do not promote Astra/low yet. No tested setting clears both the
+semantic and latency bars with margin. Next examine the single candidate's
+duplicated authoring load as the owning abstraction, using one measured
+reduction against the same source and a second independent public control
+before changing the sole runtime path. Keep the original failed campaign and
+protected holdout untouched. Do not add a runtime model ladder, retry,
+timeout increase, parser, or case-specific rule as a shortcut.
+
+Measured output-format hypothesis: the failed Astra/medium host emitted
+`28,324` JSON bytes, while the identical candidate compacted to `21,538`
+bytes. Its `6,786` formatting bytes are model-generated output work, not
+source meaning. One offline Astra/medium comparison will hold the source and
+candidate schema fixed and add only a compact-JSON output instruction. Predict
+an admissible, source-faithful candidate with substantially more than `2.7s`
+proposal margin; reject the format instruction if latency or semantic quality
+does not improve. Do not compact after model receipt and call that latency
+proof.
+
 ## Public-campaign evaluator stop (2026-09-29)
 
 The disclosed 40-case campaign stopped after one expected `first_path`

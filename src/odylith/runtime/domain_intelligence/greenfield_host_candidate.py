@@ -39,7 +39,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_invariants import (
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v2"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v32"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v33"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
 
 
@@ -54,7 +54,8 @@ def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
             "Reason over the complete source and return exactly one JSON value matching "
             "candidate_schema. The candidate is the host's one complete semantic pass and "
             "an untrusted hypothesis; Odylith will deterministically revalidate its exact "
-            "citations, typed relations, invariants, and hashes without another semantic call."
+            "citations, typed relations, invariants, and hashes without another semantic call. "
+            "Emit compact JSON with no indentation or optional whitespace outside strings."
         ),
         "requirements": [
             (

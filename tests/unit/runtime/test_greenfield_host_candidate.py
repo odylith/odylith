@@ -65,6 +65,9 @@ def test_contract_requires_one_complete_host_candidate() -> None:
     assert contract["candidate_version"] == HOST_CANDIDATE_FORMAT_VERSION
     assert {"components", "source_precedence"} <= set(authored["required"])
     assert "review" not in contract["task"].casefold()
+    assert contract["task"].endswith(
+        "Emit compact JSON with no indentation or optional whitespace outside strings."
+    )
 
 
 def test_admission_validates_once_and_seals_raw_and_canonical_hashes() -> None:

@@ -286,7 +286,7 @@ def test_greenfield_install_smoke_requires_read_only_candidate_contract(
             },
         }
         payload = {
-            "version": "odylith.greenfield.host-candidate-contract.v32",
+            "version": "odylith.greenfield.host-candidate-contract.v33",
             "candidate_version": "odylith.greenfield.host-candidate-format.v18",
             "canonical_version": "odylith.greenfield.intent-authoring.v77",
             "request": {

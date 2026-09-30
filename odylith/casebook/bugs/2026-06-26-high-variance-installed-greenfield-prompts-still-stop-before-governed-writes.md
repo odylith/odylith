@@ -1,5 +1,44 @@
 - Bug ID: CB-209
 
+- Compact-output comparison (2026-09-30): A presentation-only sentence in the
+  single host candidate task reduced Astra/medium authoring on the exact
+  `release-agriculture-037-source` from `~177s` to `143.254s`; deterministic
+  admission and installed proposal passed in `8.384s` more (`151.638s`
+  combined). The predeclared independent, longer healthcare public control
+  returned an admissible candidate in `149.394s`; clean installed proposal
+  passed quality and validation in `8.116s` more (`157.510s` combined, 56
+  proposed writes, no governed publication). Independent source reviews found
+  no P0/P1 semantic defect in either candidate. Agriculture retains a P2
+  overexpanded first-run sequence; healthcare has minor P2 copy/boilerplate
+  issues. Both clear the `180s` safety boundary but miss the `150s` deep
+  advisory target. This is a bounded candidate improvement, not release
+  qualification: rerun the fixed public campaign on the versioned contract,
+  then assess protected holdout and human-visible UX. Evidence:
+  `/private/tmp/odylith-agriculture-037-astra-compact-comparison/` and
+  `/private/tmp/odylith-healthcare-117-astra-compact-comparison/`.
+
+- Public 40-case latency stop (2026-09-29): The pushed `c54fe4717` single-authority
+  campaign passed six installed cases, then `release-agriculture-037-source`
+  failed closed at `180.024s`. Astra/medium returned a 28,324-byte authored
+  candidate with exit 0; the remaining `2.7s` expired in proposal admission
+  (`returncode 124`). No transaction or governed write was produced. The exact
+  raw candidate deterministically admits in `0.003s`, so this is a shared
+  authoring-window failure, not a citation/parser or evaluation failure.
+  Retained evidence:
+  `/private/tmp/odylith-public40-c54fe4717-evidence/public40.v1.json`.
+  An exact-contract Sol/high comparison timed out at `165.009s` with zero output
+  and is rejected. Astra/low produced a deterministically admissible 25,903-byte
+  candidate in `164.676s`; installed proposal took `8.226s` and staged a
+  transaction. Independent source review retracted an initial P1 after applying
+  the exact authoring-control contract; no product P0/P1 remains in this case,
+  but low effort worsens first-run sequencing and privacy proof (P2), and its
+  ~7-second safety margin is not a release-qualified replacement. One final
+  exact-contract Luna/high diagnostic returned in `99.875s` but failed
+  deterministic admission because its non-material ambiguity assessment had
+  no source-bound evidence. Reject it without a repair call. No tested model
+  setting clears both semantic and timing bars with margin. Do not add a
+  retry, model ladder, timeout exemption, or case-specific source rule.
+
 - Frozen Runtime Stale-Contract Closure (2026-09-21): The first complete runtime
   gate found 15 failures across component ownership, event ordering, recovery
   classification and typed-relation tests. Every failure constructed the retired
