@@ -16,8 +16,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    get_greenfield_model_profile,
+)
+
 HOST_NATIVE_MATRIX_OBSERVATION_VERSION = (
-    "odylith.greenfield.host-native-matrix-observation.v6"
+    "odylith.greenfield.host-native-matrix-observation.v7"
 )
 HOST_NATIVE_ARGV_RECEIPT_VERSION = "odylith.greenfield.host-argv-receipt.v1"
 
@@ -148,7 +152,8 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
     """Obtain a contract, invoke exactly one configured host, and propose its candidate.
 
     The callback for ``invoke_propose`` receives temporary candidate and gate
-    paths. Both are removed before return. Every stage shares one timeout.
+    paths. Both are removed before return. Host calls share the pinned model
+    window; installed commands retain the separate operational timeout.
     """
 
     host_argv, _ = qualify_host_candidate_argv(
@@ -159,7 +164,10 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
         expected_output_schema="{candidate_schema}",
         path_value=str(flow.env.get("PATH") or os.environ.get("PATH") or ""),
     )
-    timeout = _positive_timeout(flow.timeout)
+    profile_id = str(flow.env.get("ODYLITH_GREENFIELD_MODEL_PROFILE") or "").strip()
+    profile = get_greenfield_model_profile(profile_id)
+    timeout = min(_positive_timeout(flow.timeout), profile.operational_timeout_seconds)
+    model_timeout = min(timeout, profile.model_timeout_seconds)
     repo_root = Path(flow.repo_root).expanduser().resolve()
     temp_parent = Path(flow.temp_parent).expanduser().resolve()
     _require_temp_parent_outside_repo(temp_parent=temp_parent, repo_root=repo_root)
@@ -177,9 +185,9 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
         "proposal_command_invocations": 0,
         "runtime_semantic_model_call_count": 0,
         "post_receipt_provider_invocations": 0,
-        "model_profile_id": str(
-            flow.env.get("ODYLITH_GREENFIELD_MODEL_PROFILE") or ""
-        ).strip(),
+        "model_profile_id": profile_id,
+        "model_window_seconds": model_timeout,
+        "operational_timeout_seconds": timeout,
         "candidate_temp_cleaned": False,
         "authority_gate_temp_cleaned": False,
         "host_workspace_cleaned": False,
@@ -254,16 +262,17 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
             observation["authority_gate_schema_sha256"] = _sha256_text(
                 gate_schema_path.read_text(encoding="utf-8")
             )
+            observation["stage"] = "authority-gate"
+            gate_timeout = _remaining(started, model_timeout)
             observation["host_invocations"] = 1
             observation["authority_gate_host_invocations"] = 1
-            observation["stage"] = "authority-gate"
             gate_result = _invoke_host(
                 gate_argv,
                 contract_text=json.dumps(dict(gate_contract), ensure_ascii=False,
                                          sort_keys=True, separators=(",", ":")),
                 cwd=host_workspace,
                 env=flow.env,
-                timeout=_remaining(started, timeout),
+                timeout=gate_timeout,
             )
             observation["authority_gate_returncode"] = int(
                 getattr(gate_result, "returncode", 1)
@@ -359,15 +368,16 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
             observation["candidate_schema_sha256"] = _sha256_text(
                 schema_path.read_text(encoding="utf-8")
             )
+            observation["stage"] = "host"
+            candidate_timeout = _remaining(started, model_timeout)
             observation["host_invocations"] = 2
             observation["candidate_host_invocations"] = 1
-            observation["stage"] = "host"
             host_result = _invoke_host(
                 resolved_host_argv,
                 contract_text=contract_text,
                 cwd=host_workspace,
                 env=flow.env,
-                timeout=_remaining(started, timeout),
+                timeout=candidate_timeout,
             )
             observation["host_returncode"] = int(getattr(host_result, "returncode", 1))
             observation["host_stdout_bytes"] = len(

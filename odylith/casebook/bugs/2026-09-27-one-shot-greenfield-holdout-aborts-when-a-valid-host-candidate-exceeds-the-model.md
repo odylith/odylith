@@ -75,3 +75,43 @@
 - src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py
 
 - Runbook References: - odylith/MAINTAINER_RELEASE_RUNBOOK.md
+
+## Installed host window mismatch (2026-09-30)
+
+Independent review of the current release path found a separate timing
+contract gap under this existing owner. The pinned profile declares a
+`165s` shared model window with `15s` reserved for deterministic completion,
+but the installed matrix passes the full `180s` operational timeout to host
+authoring. Both authority-gate and candidate calls consume the remaining
+portion of that `180s` window; the direct host argv has no separate model
+timeout flag. A slow host call can therefore leave no promised completion
+reserve even if it finishes before the operational cutoff. This is a code
+and documentation mismatch, not evidence that the earlier consumed holdout
+may be rerun. Cap the entire host-authoring phase at the pinned model window,
+then prove an overrun fails without staging or another call. Keep the
+`180s` operational safety timeout and release qualification gates unchanged.
+
+The bounded host-window correction now reads the pinned profile and gives
+both host calls remaining time from one flow-start `165s` deadline. Contract,
+authority check, and proposal commands retain the separate `180s` deadline.
+An expired model window stops before another host call or proposal. Simulated
+clock controls and adjacent release-harness tests passed 269/269; the fast
+Greenfield suite passed 1,310/1,310. Keep CB-346 open: this fixes the budget
+contract mismatch but does not prove tail-latency success on complete positive
+projects or qualify any final holdout.
+
+Independent integration review found one remaining defect in that bounded
+patch: its new model-window and operational-timeout observation fields were
+absent from the closed release profile-evidence schema, so real host
+observations would be rejected despite passing synthetic timing tests. The
+profile-evidence schema and real-observation fixture must bind those fields
+to the selected profile before this timing correction can be accepted.
+
+The closed profile-evidence schema now requires both fields to equal the
+selected profile's pinned limits. Positive and gate-only clarification
+fixtures include them, and one test carries an actual host-flow observation
+through the verifier. The observation format advanced to v7 so old v6
+receipts cannot silently acquire the new guarantee. Focused profile, matrix,
+and release-proof controls passed 298/298; a fresh four-module install pack
+passed 191/191 after the format bump. This closes the observation mismatch.
+CB-346 remains open for full positive tail-latency and release qualification.

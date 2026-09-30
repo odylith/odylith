@@ -224,8 +224,8 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
     assert "Project overview" in surface_text
     assert "Accepted evidence excerpt:" in surface_text
     assert "Risks" in surface_text
-    assert "Reviewed typed risk posture from the model-authored provisional design." in surface_text
-    assert "Reviewed no-material-risk posture" in surface_text
+    assert "Proposed risk posture from the model-authored design." in surface_text
+    assert "Proposed risk posture: no material risk identified" in surface_text
     assert "This structural fixture carries no product-domain risk claim." in surface_text
     assert "Project not defined yet" not in surface_text
     assert "Current orienting work" not in surface_text

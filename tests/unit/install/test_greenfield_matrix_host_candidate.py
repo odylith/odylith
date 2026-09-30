@@ -9,7 +9,11 @@ from pathlib import Path
 import pytest
 
 from scripts.release import greenfield_matrix_host_candidate as host_module
+from scripts.release import greenfield_model_profiles as profile_module
 from scripts.release import greenfield_preconfirm_matrix as matrix_module
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    STANDARD_PROFILE_ID,
+)
 
 
 def _completed(argv: list[str], *, stdout: str = "", stderr: str = "", returncode: int = 0):
@@ -108,7 +112,7 @@ def _flow(tmp_path: Path, *, candidate: object, contract: object, gate_decision:
             timeout=5.0,
             env={
                 "PATH": str(trusted_codex.parent),
-                "ODYLITH_GREENFIELD_MODEL_PROFILE": "greenfield-standard-v1",
+                "ODYLITH_GREENFIELD_MODEL_PROFILE": STANDARD_PROFILE_ID,
             },
             trusted_codex_executable=str(trusted_codex),
             expected_model="gpt-6-astra",
@@ -175,7 +179,7 @@ def test_host_candidate_happy_path_is_one_shot_and_cleans_candidate_file(
     assert observations[-1]["candidate_host_invocations"] == 1
     assert observations[-1]["authority_check_command_invocations"] == 1
     assert observations[-1]["authority_gate_request"] == observations[-1]["host_request"]
-    assert observations[-1]["model_profile_id"] == "greenfield-standard-v1"
+    assert observations[-1]["model_profile_id"] == STANDARD_PROFILE_ID
     assert observations[-1]["source_sha256"] == hashlib.sha256(
         b"Create a reviewable plan."
     ).hexdigest()
@@ -330,6 +334,29 @@ def test_authority_gate_clarification_skips_candidate_and_propose(
     assert "raw_candidate_sha256" not in observations[-1]
     assert observations[-1]["authority_gate_temp_cleaned"] is True
     assert observations[-1]["candidate_temp_cleaned"] is True
+
+
+def test_real_gate_only_observation_passes_closed_profile_evidence(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    flow, host_run, _installed, _host_calls, _proposal_paths, _repo = _flow(
+        tmp_path, contract={"version": "contract"}, candidate={},
+        gate_decision="clarify",
+    )
+    observations: list[dict[str, object]] = []
+    flow = host_module.HostCandidateFlow(**{
+        **flow.__dict__, "timeout": 180.0, "observe": observations.append,
+    })
+    monkeypatch.setattr(host_module.subprocess, "run", host_run)
+
+    assert host_module.run_host_candidate_flow(flow).returncode == 0
+    evidence = profile_module.model_profile_evidence(
+        STANDARD_PROFILE_ID,
+        profile_module.model_profile_environment(STANDARD_PROFILE_ID, flow.env),
+        observed={}, stage_observation=observations[-1], raw_candidate={},
+        expected_source="Create a reviewable plan.",
+    )
+    assert evidence["status"] == "passed", evidence["issues"]
 
 
 def test_host_candidate_retains_raw_candidate_and_deterministic_failure_before_cleanup(
@@ -491,6 +518,93 @@ def test_host_timeout_budget_includes_contract_and_host_work(tmp_path: Path, mon
 
     assert host_calls[0][2] < installed_calls[0][1]
     assert host_calls[0][2] > 0
+
+
+def test_gate_and_candidate_share_pinned_model_window_with_operational_reserve(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    candidate = {"version": "candidate", "result": {"status": "authored"}}
+    flow, host_run, _installed_calls, host_calls, _proposal_paths, _repo = _flow(
+        tmp_path, contract={"version": "contract"}, candidate=candidate,
+    )
+    clock = [0.0]
+    proposal_timeouts: list[float] = []
+    observations: list[dict[str, object]] = []
+    original_installed = flow.invoke_installed
+    monkeypatch.setattr(host_module.time, "monotonic", lambda: clock[0])
+
+    def timed_host(command, **kwargs):
+        result = host_run(command, **kwargs)
+        schema = Path(command[command.index("--output-schema") + 1])
+        clock[0] += 100.0 if schema.name == "authority-gate-schema.json" else 10.0
+        return result
+
+    def timed_installed(command, timeout):
+        result = original_installed(command, timeout)
+        if "authority-check" in command:
+            clock[0] += 20.0
+        return result
+
+    original_propose = flow.invoke_propose
+
+    def timed_propose(candidate_path, gate_path, timeout):
+        proposal_timeouts.append(timeout)
+        return original_propose(candidate_path, gate_path, timeout)
+
+    flow = host_module.HostCandidateFlow(**{
+        **flow.__dict__, "timeout": 180.0, "invoke_installed": timed_installed,
+        "invoke_propose": timed_propose, "observe": observations.append,
+    })
+    monkeypatch.setattr(host_module.subprocess, "run", timed_host)
+
+    assert host_module.run_host_candidate_flow(flow).returncode == 0
+    assert [call[2] for call in host_calls] == [165.0, 45.0]
+    assert proposal_timeouts == [50.0]
+    assert observations[-1]["model_window_seconds"] == 165.0
+    assert observations[-1]["operational_timeout_seconds"] == 180.0
+
+
+def test_expired_shared_model_window_cannot_borrow_operational_reserve(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    candidate = {"version": "candidate", "result": {"status": "authored"}}
+    flow, host_run, _installed, host_calls, proposal_paths, repo = _flow(
+        tmp_path, contract={"version": "contract"}, candidate=candidate,
+    )
+    clock = [0.0]
+    observations: list[dict[str, object]] = []
+    original_installed = flow.invoke_installed
+    monkeypatch.setattr(host_module.time, "monotonic", lambda: clock[0])
+
+    def timed_host(command, **kwargs):
+        result = host_run(command, **kwargs)
+        clock[0] += 160.0
+        return result
+
+    def timed_installed(command, timeout):
+        result = original_installed(command, timeout)
+        if "authority-check" in command:
+            clock[0] += 5.0
+        return result
+
+    flow = host_module.HostCandidateFlow(**{
+        **flow.__dict__, "timeout": 180.0, "invoke_installed": timed_installed,
+        "observe": observations.append,
+    })
+    monkeypatch.setattr(host_module.subprocess, "run", timed_host)
+
+    with pytest.raises(host_module.HostCandidateFlowError, match="failed closed"):
+        host_module.run_host_candidate_flow(flow)
+
+    assert len(host_calls) == 1
+    assert host_calls[0][2] == 165.0
+    assert proposal_paths == []
+    assert list(repo.iterdir()) == []
+    assert observations[-1]["stage"] == "host"
+    assert observations[-1]["candidate_host_invocations"] == 0
+    assert observations[-1]["proposal_command_invocations"] == 0
+    assert observations[-1]["candidate_temp_cleaned"] is True
+    assert observations[-1]["authority_gate_temp_cleaned"] is True
 
 
 def test_propose_arguments_wire_exact_candidate_file_without_changing_legacy_default() -> None:

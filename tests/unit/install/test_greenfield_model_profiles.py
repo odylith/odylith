@@ -27,6 +27,9 @@ from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
 from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import (
     HOST_CANDIDATE_FORMAT_VERSION,
 )
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    get_greenfield_model_profile,
+)
 
 
 SOURCE = "Build a useful product."
@@ -62,6 +65,7 @@ def _observed(receipt: dict[str, object]) -> dict[str, object]:
 
 
 def _stage(receipt: dict[str, object]) -> dict[str, object]:
+    profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
     return {
         "version": HOST_NATIVE_MATRIX_OBSERVATION_VERSION,
         "status": "passed",
@@ -74,6 +78,8 @@ def _stage(receipt: dict[str, object]) -> dict[str, object]:
         "runtime_semantic_model_call_count": 0,
         "post_receipt_provider_invocations": 0,
         "model_profile_id": STANDARD_PROFILE_ID,
+        "model_window_seconds": profile.model_timeout_seconds,
+        "operational_timeout_seconds": profile.operational_timeout_seconds,
         "host_request": {
             "version": "odylith.greenfield.host-argv-receipt.v1",
             "executable_sha256": "1" * 64,
@@ -241,6 +247,46 @@ def test_profile_evidence_proves_one_host_and_zero_post_receipt_calls() -> None:
     summary = evidence["stage_observation_summary"]
     assert summary["retained_candidate_hash_summary"]["canonical_projection_verified"] is True
     assert "candidate_" + "review" not in json.dumps(evidence, sort_keys=True)
+
+
+@pytest.mark.parametrize("clarification", (False, True))
+@pytest.mark.parametrize(
+    "field", ("model_window_seconds", "operational_timeout_seconds")
+)
+@pytest.mark.parametrize("invalid", (MISSING, True, "165", 164.0, 180.001))
+def test_profile_evidence_rejects_unbound_host_window(
+    clarification: bool, field: str, invalid: object,
+) -> None:
+    raw, receipt = _raw_and_receipt()
+    if clarification:
+        stage = deepcopy(_clarification_profile_evidence()["stage_observation"])
+        observed = {}
+        raw = {}
+    else:
+        stage = _stage(receipt)
+        observed = _observed(receipt)
+    _mutate_path(stage, (field,), invalid)
+
+    evidence = model_profile_evidence(
+        STANDARD_PROFILE_ID,
+        model_profile_environment(STANDARD_PROFILE_ID, {}),
+        observed=observed,
+        stage_observation=stage,
+        raw_candidate=raw,
+        expected_source=SOURCE,
+    )
+
+    assert evidence["status"] == "failed"
+    assert (
+        f"retained host stage {field} does not match the assigned profile"
+        in evidence["issues"]
+    )
+    if clarification:
+        assert host_native_clarification_stage_observation_issues(
+            STANDARD_PROFILE_ID,
+            stage_observation=stage,
+            expected_source_sha256=hashlib.sha256(SOURCE.encode()).hexdigest(),
+        )
 
 
 def test_profile_evidence_rejects_post_receipt_provider_or_reviewer_fields() -> None:

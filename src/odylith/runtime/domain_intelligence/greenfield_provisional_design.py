@@ -111,7 +111,7 @@ _RISK_ITEM_FIELDS = {
 _RISK_POSTURE_SCHEMA = {
     "type": "object",
     "description": (
-        "A proportional reviewed implementation-risk posture. Identify material product, "
+        "A proportional proposed implementation-risk posture. Identify material product, "
         "operational, security, privacy, abuse, accessibility, retention, or compliance "
         "exposure when present; otherwise explain why none is material for this project."
     ),

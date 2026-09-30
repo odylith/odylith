@@ -171,7 +171,7 @@ def build_authored_greenfield_payload(
         ),
         "answers": [],
         "risk_title": "Risks",
-        "risk_note": "Reviewed typed risk posture from the model-authored provisional design.",
+        "risk_note": "Proposed risk posture from the model-authored design.",
         "risk_items": risk_items,
         "scenario": [
             "Proposed first run",
@@ -505,7 +505,7 @@ def _authored_risk_rows(design: Any) -> list[dict[str, str]]:
     rationale = _first_text(value, "rationale")
     if status == "no_material_risks_identified":
         return [{
-            "risk": "Reviewed no-material-risk posture",
+            "risk": "Proposed risk posture: no material risk identified",
             "meaning": rationale,
             "status": status,
             "scope": "Complete provisional design.",

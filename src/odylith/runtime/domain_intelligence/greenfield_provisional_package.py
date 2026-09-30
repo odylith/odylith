@@ -295,7 +295,7 @@ def build_provisional_risk_allocations(
 def provisional_risk_text(
     allocation: Mapping[str, Any], *, design: Mapping[str, Any],
 ) -> str:
-    """Render one reviewed proposed risk without promoting it to accepted fact."""
+    """Render one proposed risk without promoting it to accepted fact."""
 
     risk = allocation["risk_item"]
     scope = derive_risk_scope(design, risk)
@@ -319,7 +319,7 @@ def provisional_risk_posture_texts(
     allocated_risks: Sequence[Mapping[str, Any]],
     scope_kind: str,
 ) -> list[str]:
-    """Keep reviewed risk meaning visible for material and no-material scopes."""
+    """Keep proposed risk meaning visible for material and no-material scopes."""
 
     if allocated_risks:
         return [
@@ -328,10 +328,10 @@ def provisional_risk_posture_texts(
         ]
     rationale = str(risk_posture["rationale"])
     if risk_posture["status"] == "no_material_risks_identified":
-        return [f"Reviewed no-material-risk posture — {rationale}"]
+        return [f"Proposed risk posture: no material risk identified — {rationale}"]
     return [
-        f"No reviewed material risk is allocated to this {scope_kind}. "
-        f"Overall reviewed posture — {rationale}"
+        f"No proposed material risk is allocated to this {scope_kind}. "
+        f"Overall proposed risk posture: {rationale}"
     ]
 
 

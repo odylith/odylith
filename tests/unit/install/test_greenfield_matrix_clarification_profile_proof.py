@@ -61,6 +61,8 @@ def _profile_evidence(profile_id: str = STANDARD_PROFILE_ID) -> dict[str, object
         "runtime_semantic_model_call_count": 0,
         "post_receipt_provider_invocations": 0,
         "model_profile_id": profile_id,
+        "model_window_seconds": contract.model_timeout_seconds,
+        "operational_timeout_seconds": contract.operational_timeout_seconds,
         "authority_gate_request": {
             "version": "odylith.greenfield.host-argv-receipt.v1",
             "executable_sha256": "1" * 64,

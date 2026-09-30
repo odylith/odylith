@@ -101,9 +101,9 @@ def canonical_citation_from_host_selection(
 ) -> dict[str, Any]:
     """Project one host-selected quote into the legacy canonical address.
 
-    The host selects exact source text, never a numeric address. A unique quote
-    locates itself; a repeated quote requires exact unique context. Context is
-    locator-only and never enlarges the selected meaning.
+    The host selects exact source text, never a numeric address. Context must
+    contain the quote at a unique source location, including for unique quotes.
+    It is locator-only and never enlarges the selected meaning.
     """
 
     if (
@@ -118,11 +118,6 @@ def canonical_citation_from_host_selection(
 
     quote_bytes = quote.encode("utf-8")
     quote_starts = _overlapping_match_starts(evidence, quote_bytes)
-    if len(quote_starts) == 1:
-        if state_object:
-            return {"prefix": "", "quote": quote, "anchor_occurrence": 1}
-        return {"quote": quote, "occurrence": 1}
-
     context_bytes = context.encode("utf-8")
     context_starts = _overlapping_match_starts(evidence, context_bytes)
     quote_offsets = _overlapping_match_starts(context_bytes, quote_bytes)
@@ -133,6 +128,11 @@ def canonical_citation_from_host_selection(
     quote_start = context_start + quote_offsets[0]
     if evidence[quote_start : quote_start + len(quote_bytes)] != quote_bytes:
         raise GreenfieldModelAuthoringError(_INVALID_CITATION)
+
+    if len(quote_starts) == 1:
+        if state_object:
+            return {"prefix": "", "quote": quote, "anchor_occurrence": 1}
+        return {"quote": quote, "occurrence": 1}
 
     if state_object:
         prefix_bytes = context_bytes[: quote_offsets[0]]

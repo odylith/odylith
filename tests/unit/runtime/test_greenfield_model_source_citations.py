@@ -98,25 +98,43 @@ def test_unique_context_projects_state_without_enlarging_its_meaning() -> None:
     )
 
 
-@pytest.mark.parametrize(
-    "citation",
-    (
-        {"quote": "unique proof", "context": "unique proof"},
-        {"quote": "unique proof", "context": "wrong"},
-    ),
-)
-def test_unique_quote_projects_without_host_owned_locator_precision(
-    citation: dict[str, object],
-) -> None:
+@pytest.mark.parametrize("context", ("unique proof", "one unique proof remains"))
+def test_unique_quote_projects_with_source_bound_context(context: str) -> None:
     evidence = b"one unique proof remains"
 
-    canonical = canonical_citation_from_host_selection(evidence, citation)
+    canonical = canonical_citation_from_host_selection(
+        evidence,
+        {"quote": "unique proof", "context": context},
+    )
 
     assert canonical == {"quote": "unique proof", "occurrence": 1}
     assert resolve_source_citation(evidence, canonical) == (
         "unique proof",
         evidence.index(b"unique proof"),
     )
+
+
+@pytest.mark.parametrize(
+    "context",
+    (
+        "fabricated context",
+        "separate source text",
+        "unique proof invented suffix",
+    ),
+)
+@pytest.mark.parametrize("state_object", (False, True))
+def test_unique_quote_rejects_fabricated_or_disconnected_context(
+    context: str,
+    state_object: bool,
+) -> None:
+    evidence = b"one unique proof remains; separate source text"
+
+    with pytest.raises(GreenfieldModelAuthoringError):
+        canonical_citation_from_host_selection(
+            evidence,
+            {"quote": "unique proof", "context": context},
+            state_object=state_object,
+        )
 
 
 def test_unique_state_quote_projects_without_host_owned_locator_precision() -> None:

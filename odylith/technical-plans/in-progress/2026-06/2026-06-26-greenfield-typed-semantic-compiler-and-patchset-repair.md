@@ -1,5 +1,32 @@
 Status: In progress
 
+## Bounded release hardening and next consumer gate (2026-09-30)
+
+The current public semantic gate remains red. Keep the stated envelope and
+replace the source-obligation owning mechanism in a future bounded comparison;
+do not stack another parser, reviewer, retry, fallback, or fixture rule on the
+retired v19 experiment. The disclosed public subset contains 40 frozen cases
+across ten source families and five input styles (22 expected commits, 18
+expected clarifications). After one complete positive clears independent
+source-first review, run the cross-domain public matrix and a newly sampled,
+unseen high-variance development set with inputs, source provenance, selected
+profile, build, and hashes frozen before evaluation. Fresh sampling and exact
+replay serve different purposes; neither permits tuning a protected holdout.
+
+Independent contract review also found CB-351: a unique quote could carry
+fabricated host context, and CB-346: the installed host flow did not enforce
+the pinned `165s` model window within the separate `180s` safety limit.
+Bounded owner-local fixes now pass 73 citation/custody tests and 269 adjacent
+timing controls. Host-authored risk text now says proposed, with 128 focused
+unit tests and six Project browser checks passing. The fast Greenfield suite
+passes 1,310/1,310. These fixes close specific trust and presentation gaps;
+they do not qualify the failed complete positive packages or the final
+holdout. CB-350's published envelope correction passed independent rereview.
+That review found a closed-profile observation mismatch in the timing fix;
+observation format v7 and the profile verifier now bind both windows, with
+298 focused profile/matrix/release controls and 191 post-bump install
+controls passing.
+
 ## Installed v19 public replay: first positive no-go (2026-09-30)
 
 The one-pass host-candidate experiment separated path events from
@@ -22,8 +49,23 @@ fixed comparison is therefore one clean negative and two failed positives.
 The prior action-inventory-assisted package also failed independent semantic
 review. Both bounded alternatives have failed the public semantic gate;
 stop adding machinery and retire the unqualified v19 runtime variant. The
-next step requires an explicit material scope or operating-envelope decision
-before selecting a new mechanism. Keep the protected final holdout closed.
+full requested envelope remains the working scope. Any new comparison must
+replace ownership of source obligations rather than extend the failed
+mechanisms. Keep the protected final holdout closed.
+
+The failed positive controls are inside the current structural envelope:
+each is English prompt-plus-edit evidence under 4 KiB, with one product, one
+governed state object, and one first path. The runtime admits up to 64 KiB
+across two documents and one state object/path. Excluding these controls
+would change the fixed release contract, so the full requested scope remains
+the default until the operator explicitly changes it. This is a mechanism
+blocker, not evidence that the supported complexity can simply be relabeled
+out of scope.
+
+The published operating-envelope document previously declared v5,
+model-profile v23, and authoring v68 while the runtime declared v6/v24/v77.
+CB-350 owns the correction and its independent review. Do not use version
+alignment alone as release proof.
 
 ## Corrected package no-go and smallest next ownership comparison (2026-09-30)
 

@@ -436,7 +436,7 @@ def test_authored_dashboard_bypasses_legacy_projection_and_preserves_exact_facts
         "Source-stated scope limits:\nBatch Æther migration"
     )
     assert payload["risk_items"] == [{
-        "risk": "Reviewed no-material-risk posture",
+        "risk": "Proposed risk posture: no material risk identified",
         "meaning": "This structural fixture carries no product-domain risk claim.",
         "status": "no_material_risks_identified",
         "scope": "Complete provisional design.",

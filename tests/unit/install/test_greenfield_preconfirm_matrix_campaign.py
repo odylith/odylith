@@ -165,6 +165,8 @@ def test_discovery_uses_ephemeral_case_proof_without_publishing_release_evidence
             "runtime_semantic_model_call_count": 0,
             "post_receipt_provider_invocations": 0,
             "model_profile_id": profile_id,
+            "model_window_seconds": profile.model_timeout_seconds,
+            "operational_timeout_seconds": profile.operational_timeout_seconds,
             "authority_gate_request": {
                 "version": HOST_NATIVE_ARGV_RECEIPT_VERSION,
                 "executable_sha256": "1" * 64,

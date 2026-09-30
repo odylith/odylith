@@ -3315,3 +3315,14 @@ before elevating it into a release-blocking generalized failure.
   and Greenfield install proof passes `1,254/1,254`. This strengthens the same
   canonical-risk authority only; it does not qualify a public run or the final
   holdout.
+
+## Host-only proposed-risk copy correction (2026-09-30)
+
+Independent review found that the active candidate schema and Project surface
+still described host-authored risk posture as “reviewed” after the online
+candidate reviewer was retired. The candidate prompt, provisional package,
+and Project dashboard now say “proposed” so a host assertion is not presented
+as an independent review. Focused unit checks passed 128/128; Project browser
+checks passed 6/6 across normal desktop/mobile and blank/degraded states; the
+fast Greenfield suite passed 1,310/1,310. This is a bounded copy correction,
+not complete-package semantic qualification. CB-303 remains open.

@@ -1,11 +1,12 @@
 # Greenfield Operating Envelope
 
-Version: `odylith.greenfield-operating-envelope.v5`
+Version: `odylith.greenfield-operating-envelope.v6`
 
 Profile: `single-product-governance-onboarding`
 
-This is the bounded release claim for Greenfield, not a claim of universal
-semantic correctness.
+This defines Greenfield's bounded support target. A production release claim
+still requires semantic, transaction, host, browser, and holdout proof within
+this envelope.
 
 ## Supported evidence
 
@@ -53,16 +54,18 @@ preview. It adds no schema, stage, retry, or repair mechanism. The sealed-byte
 `create` CLI remains a separate commit-only interface. Native automatic delivery
 and visible completion require their own proof.
 
-Model-profile contract v23 declares three pinned real-model profiles, but only
-one is qualified to support a successful release claim:
+Model-profile contract `odylith.greenfield.model-profile-contract.v24`
+declares three pinned real-model profiles. Only the
+standard profile is an eligible release-success route; eligibility does not
+qualify a release without observed end-to-end evidence:
 
-- `greenfield-standard-participant-first-astra-medium-v19`: the default and
-  `auto` path, the sole release-success profile, with a 90-second advisory
-  performance target.
-- `greenfield-rescue-participant-first-luna-medium-v19`: an explicit
+- `greenfield-standard-host-candidate-astra-medium-v20`: the default and
+  `auto` path, the sole eligible release-success profile, with a 90-second
+  advisory performance target.
+- `greenfield-rescue-host-candidate-luna-medium-v20`: an explicit
   lower-capability clarification/no-write control with a 120-second advisory
   target. It is declared but is not success-qualified.
-- `greenfield-deep-participant-first-sol-high-v18`: an unsupported negative and
+- `greenfield-deep-host-candidate-sol-high-v19`: an unsupported negative and
   diagnostic profile with a 150-second advisory target. It is declared but is
   not success-qualified.
 
@@ -70,16 +73,14 @@ All three profiles use one 180-second operational timeout and one 165-second
 shared model window, leaving 15 seconds for deterministic completion. Meeting or
 missing the selected 90/120/150-second target is recorded as performance evidence,
 not used as an admission gate. Proposal elapsed time must remain strictly below
-the operational timeout. Sixty seconds remains an advisory normal-case target.
+the operational timeout. Ninety seconds is the advisory normal-case target.
 The separate commit-only step must still finish strictly below 60 seconds.
-Profile contract v23 separates declared profiles, the release-success profile,
+Profile contract v24 separates declared profiles, the release-success profile,
 and the lower-capability control instead of treating evidence profiles as
 interchangeable success routes. The advisory targets, finite timeout, semantic
 requirements, and transaction laws are unchanged.
 Historical observations keep their original limits and verdicts; old sealed
-v12/v13/v14/v15/v16/v17 transactions and v22 model-profile receipts are not
-relabeled as current. Retired standard v18 authoring receipts are not relabeled
-as v19, and retired rescue Terra v18 receipts are not relabeled as Luna v19.
+transactions and earlier model-profile receipts are not relabeled as current.
 Fresh profile evidence is required for any qualification.
 
 The selected profile is fixed before the model request. Elapsed time or a failed
@@ -111,44 +112,40 @@ Astra release proof requires observed committed positive cases and source-bound
 material clarifications with no writes. Sol diagnostic evidence cannot qualify a
 release-success profile.
 
-Authoring v68 returns either a reviewed source-and-design candidate or the
-existing material clarification result. Source facts, actions and relationships
-remain citation-bound. A required, separately labeled `provisional_design`
-proposes 4–5 logical components, 4–5 workstreams, internal exchanges and
-verification. Design support references source-event identities without changing
-who performs those actions. Source facts never come from the design section.
-Five deterministic Atlas views distinguish source context and first path from
-proposed exchanges, delivery dependencies and capability support. Diagram count
-is not evidence of useful detail; human review and browser proof remain required.
+Canonical authoring `odylith.greenfield.intent-authoring.v77` receives one
+host-owned candidate in host format v18 under candidate contract v33. The
+host first returns one authority decision;
+an admitted request receives one candidate pass. The deterministic compiler
+validates that candidate, its citations, and relationships, then derives and
+seals their canonical relation hash. It does not call a runtime semantic
+model, run an online candidate reviewer, correct a candidate, or select a
+fallback profile after receipt. A clarification stops without staging.
 
-The existing authored relation hash binds this design with source semantics;
-no second candidate store, source ledger or post-confirm interpretation is added.
-The old source-review/correction path remains removed. The new reviewer receives
-accepted-source and proposed-decision namespaces without changing any value.
-It also receives the canonical resolver's selected byte locations and bounded
-surrounding text. This is a read-only view, not a second citation resolver or an
-automatic occurrence repair. Review v2 binds the unchanged source and candidate;
-the release checker reconstructs the same view through canonical validation.
-It may admit or deny with one substantiated witness, never rewrite the candidate.
-Practical proposed choices remain advisory unless materially incompatible or unsafe.
-Private proof retains the one direct host-candidate request, exact resolved model
-and reasoning-effort argv, response hash, source hash, call count, cleanup state,
-and elapsed time. An authored candidate then receives one independent read-only
-Astra review inside the selected standard window; a host clarification ends after
-the one host call and writes nothing. There is no participant selector,
-remaining-candidate author, deterministic join, repair, retry, or fallback lane.
-Admission is not proof of universal entailment. Independent semantic,
-transaction, browser, recovery, and UX adjudication remains a release gate,
-including regression examples previously caught by retired mechanisms. Exact
-citations and a passed structural quality manifest are not an entailment
-guarantee. The sealed host-candidate and review receipts remain bound to the
-complete source, candidate, and Product Intent authority.
+The candidate keeps source facts, actions, and relationships citation-bound.
+Its separately labeled `provisional_design` currently requires 4–5 logical
+components and 4–5 workstreams, plus internal exchanges and verification.
+That fixed cardinality does not prove the depth is useful; release review
+must reject padding on simpler projects. Design references source-event
+identities without changing who performs the actions; it cannot create
+accepted source facts. Five
+deterministic Atlas views separate source context and first path from proposed
+exchanges, delivery dependencies, and capability support. Counts alone do
+not qualify their quality.
 
-Identical quote bytes at a different location do not prove the selected role.
-Participant and state-object selectors use exact prefix/quote anchors and strict
-anchor occurrences, without ordinal normalization or word-boundary repair.
-The other existing quote/occurrence citations normalize an impossible ordinal
-only when the quote has one exact location; ambiguous repeated matches fail closed.
+Host evidence uses `{quote, context}` selections, including one source
+citation per event. The canonical resolver derives byte locations and its
+internal quote/occurrence or prefix/anchor citation forms. A quote at a
+different source location does not prove the selected role; ambiguous matches
+fail closed. The sealed candidate and relation hashes bind the admitted
+source to the canonical package. Host request arguments, model identity,
+response hash, call count, cleanup, and elapsed time are observed by the
+external release harness, not inferred from the sealed runtime receipt.
+
+Admission is not proof of semantic entailment. Independent source-first
+review, transaction, browser, recovery, and UX adjudication remain release
+gates outside consumer admission. Exact citations and a passed structural
+manifest are insufficient for a production claim.
+
 Missing-information clarification uses empty model `evidence_quotes`; the compiler
 binds the exact complete admitted input, including its byte range and hash. This
 records examined-source custody, not proof that information is absent. Contradictions
@@ -163,8 +160,9 @@ before it. JSON retains those same spans beside the question. Neither view infer
 truncates, or recomposes the conflicting claims. Full-source
 clarification JSON can repeat the bounded input; no lossy excerpt or whitespace
 matching mechanism is introduced.
-Clarification receipts retain both actual pre-review role observations and the
-shared model window; they record two calls and no final-review observation.
+Clarification records the authority or candidate stage actually reached and
+does not report a nonexistent final-review call. A gate clarification requires
+the focused first-path question and no witness citations; it writes nothing.
 Participant inventory does not assign human actions or product access. Project
 labels people without a typed first-path action as participants, and its operator
 projection includes only typed human performers. Atlas retains all contextual
@@ -218,26 +216,28 @@ one concise, useful provisional statement. Canonical assumptions carry an
 `applies_to` target and `statement`; their text and role are hash-bound but never
 become accepted source facts. Required decision fields render these statements
 with an explicit Assumption label, not repeated gap notices. Product Intent
-envelope and authority v10 reject earlier staged formats without reinterpretation.
+envelope and authority v13 reject earlier staged formats without reinterpretation.
 Product-only and external-system workflows need no invented human participant.
 Every event still binds to a source-cited typed actor. A provisional customer stays
 an explicitly labeled assumption, never a human actor, dependency, or accepted fact;
 projections do not infer a customer from the first participant.
-Authored semantics v14 stores one actor identity per event: the selected actor fact,
+Authored semantics v16 stores one actor identity per event: the selected actor fact,
 and separately binds the required provisional design.
-The v68 raw authoring contract selects that actor through `actor_fact: {field, row}`,
-using the same one-based fact-row convention as terminal results. Actor references
+The raw host format v18 selects that actor through `actor_fact: {field, row}`
+using the same one-based fact-row convention as terminal results. The compiler
+projects this into canonical authoring v77. Actor references
 may select only title, human actors, internal systems, or external systems; scalar
 title uses row 1. The compiler resolves the original selected row through source
 custody and derives the canonical kind, path and exact quotation. Identical names
 do not choose an actor implicitly, and quote-only event references are rejected.
-This structural address does not establish entailment: source review must still
-verify that the selected actor performs the action. Confirmation does not migrate
-old raw authoring responses or reinterpret their actor references.
+This structural address does not establish entailment: independent semantic
+release review must verify that the selected actor performs the action.
+Confirmation does not migrate old raw authoring responses or reinterpret
+their actor references.
 Aliases, pronouns, and omitted subjects remain in the original event text; they do
 not create a second actor field or a grammatical carry state. Event-actor atomic
 links in ledger v3 cite the selected fact directly, not a substring of the action.
-The custody ledger v7 and current sealed-format checks reject older formats rather
+The custody ledger v10 and current sealed-format checks reject older formats rather
 than translating their meaning during confirmation.
 Failure tracking and restoration remain source-cited actions; an ungrounded
 recovery classification is not part of the authored event contract.

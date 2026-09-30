@@ -83,6 +83,8 @@ def production_stage_observation(
         "runtime_semantic_model_call_count": 0,
         "post_receipt_provider_invocations": 0,
         "model_profile_id": profile_id,
+        "model_window_seconds": profile.model_timeout_seconds,
+        "operational_timeout_seconds": profile.operational_timeout_seconds,
         "authority_gate_request": host_request,
         "candidate_temp_cleaned": True,
         "authority_gate_temp_cleaned": True,

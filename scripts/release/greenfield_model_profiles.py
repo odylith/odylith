@@ -78,6 +78,8 @@ _HOST_STAGE_FIELDS = frozenset(
         "runtime_semantic_model_call_count",
         "post_receipt_provider_invocations",
         "model_profile_id",
+        "model_window_seconds",
+        "operational_timeout_seconds",
         "host_request",
         "authority_gate_request",
         "candidate_temp_cleaned",
@@ -384,6 +386,7 @@ def _host_stage_evidence(
             issues.append(f"retained host stage {field} must equal zero")
     if stage.get("model_profile_id") != profile:
         issues.append("retained host stage identifies a different model profile")
+    issues.extend(_stage_profile_window_issues(profile, stage))
     issues.extend(host_native_argv_receipt_issues(profile, stage.get("authority_gate_request")))
     if not clarification:
         issues.extend(host_native_argv_receipt_issues(profile, stage.get("host_request")))
@@ -529,6 +532,21 @@ def host_native_argv_receipt_issues(profile: str, value: Any) -> tuple[str, ...]
     return tuple(issues)
 
 
+def _stage_profile_window_issues(
+    profile: str, stage: Mapping[str, Any]
+) -> tuple[str, ...]:
+    contract = get_greenfield_model_profile(profile)
+    expected = {
+        "model_window_seconds": contract.model_timeout_seconds,
+        "operational_timeout_seconds": contract.operational_timeout_seconds,
+    }
+    return tuple(
+        f"retained host stage {field} does not match the assigned profile"
+        for field, seconds in expected.items()
+        if type(stage.get(field)) is not float or stage[field] != seconds
+    )
+
+
 def host_native_clarification_stage_observation_issues(
     profile: str,
     *,
@@ -547,6 +565,7 @@ def host_native_clarification_stage_observation_issues(
         issues.append("retained host clarification proposal mode is invalid")
     if stage.get("source_sha256") != expected_source_sha256:
         issues.append("retained host clarification source hash is invalid")
+    issues.extend(_stage_profile_window_issues(profile, stage))
     if not _is_exact_int(stage.get("host_invocations"), 1):
         issues.append("retained host clarification did not use exactly one host call")
     if not _is_exact_int(stage.get("authority_gate_host_invocations"), 1):
