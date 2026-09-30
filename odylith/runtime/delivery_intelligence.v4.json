@@ -10042,7 +10042,7 @@
       ]
     }
   ],
-  "generated_utc": "2026-09-30 10:46:25Z",
+  "generated_utc": "2026-09-30 11:45:18Z",
   "indexes": {
     "cases": {
       "case-component-atlas": "component:atlas",
@@ -10391,7 +10391,7 @@
         "renderer": 4749,
         "runbook": 299,
         "runtime": 248305,
-        "spec": 196901
+        "spec": 196908
       },
       "claim_guard": {
         "blocked_terms": [
@@ -11537,7 +11537,7 @@
         "renderer": 2290,
         "runbook": 145,
         "runtime": 121608,
-        "spec": 97229
+        "spec": 97232
       },
       "claim_guard": {
         "blocked_terms": [
@@ -12292,7 +12292,7 @@
         "renderer": 2290,
         "runbook": 145,
         "runtime": 121608,
-        "spec": 97229
+        "spec": 97232
       },
       "claim_guard": {
         "blocked_terms": [
@@ -13047,7 +13047,7 @@
         "renderer": 56,
         "runbook": 8,
         "runtime": 3559,
-        "spec": 1336
+        "spec": 1337
       },
       "claim_guard": {
         "blocked_terms": [
@@ -146137,20 +146137,20 @@
         "renderer": 21,
         "runbook": 1,
         "runtime": 946,
-        "spec": 723
+        "spec": 724
       },
       "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "closeout_signal": "none",
-        "decision_count": 102,
+        "decision_count": 103,
         "developer_doc_count": 1,
         "direct_event_count": 22,
-        "explicit_count": 894,
+        "explicit_count": 895,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md",
         "implementation_count": 594,
-        "latest_event_attribution": "other_workstream",
+        "latest_event_attribution": "shared_component_only",
         "live_actionable": true,
         "live_reason": "Implementation workstream is still live.",
         "other_workstream_event_count": 659,
@@ -146159,13 +146159,14 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 1,
-        "shared_component_event_count": 213,
+        "shared_component_event_count": 214,
         "status": "implementation",
         "successor_event_count": 0,
         "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
+          "odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md",
           "private/tmp/odylith-materiality-gate-prototype-v1/public40-astra-medium.v1.json",
           "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
           "src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py",
@@ -146180,8 +146181,7 @@
           "bin/greenfield-preconfirm-matrix",
           "tests/unit/install/test_release_greenfield_matrix_bootstrap.py",
           "src/odylith/runtime/surfaces/claude_host_prompt_bundle.py",
-          "src/odylith/runtime/surfaces/claude_host_prompt_context.py",
-          "src/odylith/runtime/surfaces/codex_host_prompt_context.py"
+          "src/odylith/runtime/surfaces/claude_host_prompt_context.py"
         ],
         "code_references": [
           "src/odylith/runtime/surfaces/claude_host_prompt_bundle.py",
@@ -146253,6 +146253,7 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
+          "odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md",
           "private/tmp/odylith-materiality-gate-prototype-v1/public40-astra-medium.v1.json",
           "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
           "src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py",
@@ -146915,9 +146916,9 @@
         ],
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-09-25T10:24:28-07:00",
-        "latest_event_attribution": "other_workstream",
-        "latest_event_ts_iso": "2026-09-30T03:45:47-07:00",
-        "latest_explicit_ts_iso": "2026-09-30T03:45:47-07:00",
+        "latest_event_attribution": "shared_component_only",
+        "latest_event_ts_iso": "2026-09-30T04:36:50-07:00",
+        "latest_explicit_ts_iso": "2026-09-30T04:36:50-07:00",
         "latest_signal_kind": "decision",
         "linked_components": [
           "benchmark",
@@ -147084,9 +147085,9 @@
           "blast_radius_class": "cross-surface",
           "broad_fanout": false,
           "cross_surface_conflict": false,
-          "decision_count": 102,
+          "decision_count": 103,
           "decision_evidence": true,
-          "explicit_count": 894,
+          "explicit_count": 895,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
@@ -147095,7 +147096,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 657,
+          "meaningful_change_count": 658,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -147164,20 +147165,20 @@
         "renderer": 22,
         "runbook": 1,
         "runtime": 938,
-        "spec": 735
+        "spec": 736
       },
       "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "closeout_signal": "none",
-        "decision_count": 104,
+        "decision_count": 105,
         "developer_doc_count": 1,
         "direct_event_count": 599,
-        "explicit_count": 933,
+        "explicit_count": 934,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
         "implementation_count": 623,
-        "latest_event_attribution": "direct_workstream",
+        "latest_event_attribution": "shared_component_only",
         "live_actionable": true,
         "live_reason": "Implementation workstream is still live.",
         "other_workstream_event_count": 82,
@@ -147186,15 +147187,15 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 1,
-        "shared_component_event_count": 252,
+        "shared_component_event_count": 253,
         "status": "implementation",
         "successor_event_count": 0,
         "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
-          "private/tmp/odylith-materiality-gate-prototype-v1/public40-astra-medium.v1.json",
           "odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md",
+          "private/tmp/odylith-materiality-gate-prototype-v1/public40-astra-medium.v1.json",
           "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
           "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
           "src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py",
@@ -147280,8 +147281,8 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
-          "private/tmp/odylith-materiality-gate-prototype-v1/public40-astra-medium.v1.json",
           "odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md",
+          "private/tmp/odylith-materiality-gate-prototype-v1/public40-astra-medium.v1.json",
           "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
           "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
           "src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py",
@@ -147944,9 +147945,9 @@
         ],
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-09-30T03:45:47-07:00",
-        "latest_event_attribution": "direct_workstream",
-        "latest_event_ts_iso": "2026-09-30T03:45:47-07:00",
-        "latest_explicit_ts_iso": "2026-09-30T03:45:47-07:00",
+        "latest_event_attribution": "shared_component_only",
+        "latest_event_ts_iso": "2026-09-30T04:36:50-07:00",
+        "latest_explicit_ts_iso": "2026-09-30T04:36:50-07:00",
         "latest_signal_kind": "decision",
         "linked_components": [
           "atlas",
@@ -148159,9 +148160,9 @@
           "blast_radius_class": "cross-surface",
           "broad_fanout": false,
           "cross_surface_conflict": false,
-          "decision_count": 104,
+          "decision_count": 105,
           "decision_evidence": true,
-          "explicit_count": 933,
+          "explicit_count": 934,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
@@ -148237,20 +148238,20 @@
         "renderer": 21,
         "runbook": 1,
         "runtime": 925,
-        "spec": 720
+        "spec": 721
       },
       "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
         "closeout_signal": "none",
-        "decision_count": 97,
+        "decision_count": 98,
         "developer_doc_count": 0,
         "direct_event_count": 0,
-        "explicit_count": 870,
+        "explicit_count": 871,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-06/2026-06-03-decompose-greenfield-project-intelligence-surface.md",
         "implementation_count": 584,
-        "latest_event_attribution": "other_workstream",
+        "latest_event_attribution": "shared_component_only",
         "live_actionable": false,
         "live_reason": "",
         "other_workstream_event_count": 681,
@@ -148259,13 +148260,14 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 189,
+        "shared_component_event_count": 190,
         "status": "queued",
         "successor_event_count": 0,
         "synthetic_count": 0
       },
       "evidence_bundle": {
         "changed_artifacts": [
+          "odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md",
           "private/tmp/odylith-materiality-gate-prototype-v1/public40-astra-medium.v1.json",
           "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
           "src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py",
@@ -148280,8 +148282,7 @@
           "bin/greenfield-preconfirm-matrix",
           "tests/unit/install/test_release_greenfield_matrix_bootstrap.py",
           "src/odylith/runtime/surfaces/claude_host_prompt_bundle.py",
-          "src/odylith/runtime/surfaces/claude_host_prompt_context.py",
-          "src/odylith/runtime/surfaces/codex_host_prompt_context.py"
+          "src/odylith/runtime/surfaces/claude_host_prompt_context.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -148339,6 +148340,7 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
+          "odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md",
           "private/tmp/odylith-materiality-gate-prototype-v1/public40-astra-medium.v1.json",
           "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
           "src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py",
@@ -148989,9 +148991,9 @@
         "code_references": [],
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
-        "latest_event_attribution": "other_workstream",
-        "latest_event_ts_iso": "2026-09-30T03:45:47-07:00",
-        "latest_explicit_ts_iso": "2026-09-30T03:45:47-07:00",
+        "latest_event_attribution": "shared_component_only",
+        "latest_event_ts_iso": "2026-09-30T04:36:50-07:00",
+        "latest_explicit_ts_iso": "2026-09-30T04:36:50-07:00",
         "latest_signal_kind": "decision",
         "linked_components": [
           "dashboard",
@@ -149097,9 +149099,9 @@
           "blast_radius_class": "cross-surface",
           "broad_fanout": false,
           "cross_surface_conflict": false,
-          "decision_count": 97,
+          "decision_count": 98,
           "decision_evidence": true,
-          "explicit_count": 870,
+          "explicit_count": 871,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
@@ -149108,7 +149110,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 646,
+          "meaningful_change_count": 647,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -153963,14 +153965,14 @@
         "renderer": 3,
         "runbook": 1,
         "runtime": 299,
-        "spec": 96
+        "spec": 97
       },
       "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "cross-surface",
-        "decision_count": 78,
+        "decision_count": 79,
         "developer_doc_count": 2,
-        "explicit_count": 716,
+        "explicit_count": 717,
         "fresh_diagrams": true,
         "implementation_count": 512,
         "live_actionable": true,
@@ -154049,8 +154051,8 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-09-30T03:45:47-07:00",
-        "latest_explicit_ts_iso": "2026-09-30T03:45:47-07:00",
+        "latest_event_ts_iso": "2026-09-30T04:36:50-07:00",
+        "latest_explicit_ts_iso": "2026-09-30T04:36:50-07:00",
         "latest_signal_kind": "decision",
         "linked_components": [
           "domain-intelligence"
@@ -154242,9 +154244,9 @@
           "blast_radius_class": "cross-surface",
           "broad_fanout": false,
           "cross_surface_conflict": false,
-          "decision_count": 78,
+          "decision_count": 79,
           "decision_evidence": true,
-          "explicit_count": 716,
+          "explicit_count": 717,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
@@ -176229,8 +176231,8 @@
       "confidence": "High",
       "diagnostics": {
         "blast_radius_class": "local",
-        "decision_count": 83,
-        "explicit_count": 815,
+        "decision_count": 84,
+        "explicit_count": 816,
         "fresh_diagrams": true,
         "implementation_count": 560,
         "live_actionable": true,
@@ -176309,7 +176311,7 @@
         "basis": "explicit",
         "blast_radius_class": "local",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-09-30T03:45:47-07:00",
+        "latest_event_ts_iso": "2026-09-30T04:36:50-07:00",
         "latest_explicit_ts_iso": "2026-03-27T16:07:04-07:00",
         "latest_signal_kind": "decision",
         "linked_components": [
@@ -176502,9 +176504,9 @@
           "blast_radius_class": "local",
           "broad_fanout": false,
           "cross_surface_conflict": false,
-          "decision_count": 83,
+          "decision_count": 84,
           "decision_evidence": true,
-          "explicit_count": 815,
+          "explicit_count": 816,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,

@@ -1,5 +1,26 @@
 Status: In progress
 
+## Split-ownership stop and release posture (2026-09-30)
+
+The bounded source-graph/design split did not clear the fixed public gate.
+On the current v4 public cases and installed distribution, the source-only
+negative clarified in `9.426s` without authoring. The complete positive
+spent `85.150s` on a 16-event source graph, then timed out during design at
+the shared `180s` ceiling. There was no candidate, proposal, or 5/5/5 package
+to qualify. The disposable probe is removed; no product path was changed.
+The earlier v3 smoke run is invalid for the current source and is excluded.
+Evidence and the exact structural caveat are in CB-324.
+
+The pre-author gate plus full author fails the positive semantic gate; the
+split source-graph plus design fails the time gate; the previous single-author
+path fails the source-only negative. None is a release winner. Do not open the
+protected holdout or claim Greenfield production readiness. Keep the 180s
+operational safety ceiling and 90/120/150s advisory targets. The next
+mechanism decision must identify a smaller, falsifiable ownership change with
+a credible timing and quality prediction on the same negative and positive
+controls before any new code or full public campaign. If none does, ship only
+the qualified preview scope and keep create out of the production claim.
+
 ## Gate-first implementation and next release decision (2026-09-30)
 
 Installed evidence has now falsified this as a release winner. The exact

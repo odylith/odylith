@@ -1,5 +1,32 @@
 - Bug ID: CB-324
 
+## Split source-graph/design comparison rejected (2026-09-30)
+
+A disposable, no-retry two-stage probe tested whether giving the first host
+pass ownership of source-cited facts and events, and the second pass ownership
+of provisional design, could retain the no-write authority gate while removing
+duplicate semantic authoring. It used the exact v4 public agriculture inputs
+and the same locally built installed distribution as the preceding comparison.
+The negative `release-agriculture-030-source` asked one `first_path` question
+in `9.426s`, with one model call and no candidate or proposal. The positive
+`release-agriculture-037-source` admitted, but its source pass took `85.150s`
+and the design-only pass exhausted the shared `180s` request deadline. No
+candidate or proposal was produced, so semantic admission, the 5/5/5 package,
+and browser quality remain unproved. Receipts are retained at
+`/private/tmp/greenfield-split-v4-030-20260930/` and
+`/private/tmp/greenfield-split-v4-037-20260930/`.
+
+The positive source graph contained 16 events, five source components, and ten
+constraints; every event action and target was contained in its own quote.
+Its final analyst-note acceptance event still used a pronoun-only target,
+which was not admitted or independently reviewed. This partial structural
+improvement cannot compensate for the deadline failure. Reject the split
+graph/design mechanism at this release gate; the disposable probe was removed
+without changing product code. An earlier v3 smoke run used a superseded case
+and lacked an installed generation; it is excluded from this comparison.
+Preserve the event-local custody invariant and do not substitute fixture
+tuning, a parser, a repair/retry, a fallback model, or a longer safety timeout.
+
 ## Pre-author gate implementation checkpoint (2026-09-30)
 
 ### Installed comparison outcome

@@ -9,7 +9,7 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "8998b77c56dee9809b07c152b6395751b0237c4a1a88ca9de8428750311c5709",
+    "digest": "992a420b62b0bdcb90da1145e5ede08b84fda21e468c2c14d9f272d15d2b70fc",
     "file_count": 317,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
@@ -14492,7 +14492,7 @@
     {
       "id": "diagram:D-045",
       "type": "diagram",
-      "label": "Greenfield Host-Native Candidate And Transaction Custody",
+      "label": "Greenfield First-Path Gate And Transaction Custody",
       "diagram_id": "D-045",
       "status": "active",
       "owner": "product",
@@ -26289,5 +26289,5 @@
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-09-29 23:56:10Z"
+  "generated_utc": "2026-09-30 11:45:09Z"
 }
