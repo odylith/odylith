@@ -14,12 +14,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 787,
-    "mapped_workstream_evidence_count": 672,
+    "explicit_event_count": 791,
+    "mapped_workstream_evidence_count": 674,
     "recent_path_match_count": 0,
     "spec_history_event_count": 66,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 787
+    "timeline_event_count": 791
   },
   "name": "Release",
   "path_prefixes": [
@@ -48,6 +48,111 @@
   ],
   "spec_ref": "odylith/registry/source/components/release/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1429,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-09-30T03:11:14-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1428,
+      "explicit_components": [
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "release"
+      ],
+      "meaningful": false,
+      "summary": "Implementation evidence linked this component to governed work.",
+      "ts_iso": "2026-09-30T02:12:07-07:00",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "sha256:3f37ce60125ef9c4aa4961ed4f4cabbb068b416edeb088bb10983bf9eaa7a8f8"
+      ],
+      "confidence": "high",
+      "event_index": 1427,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-09-30T02:03:07-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 1426,
+      "explicit_components": [
+        "release"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. 2 verifiable artifact references.",
+      "ts_iso": "2026-09-30T01:17:56-07:00",
+      "workstreams": []
+    },
     {
       "artifact_count": 0,
       "artifacts": [],
