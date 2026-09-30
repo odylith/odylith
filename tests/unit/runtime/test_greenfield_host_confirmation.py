@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -72,3 +73,66 @@ def test_supported_hosts_confirm_exact_sealed_transaction_without_semantic_work(
             "confirm": True,
         }
     ]
+
+
+def test_confirm_reports_closed_after_navigation_failure_and_same_hash_retry(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _transaction_path, _receipt, transaction_hash = _stage_pending_transaction(tmp_path)
+    handoff = greenfield_host_confirmation.greenfield_post_confirm_handoff
+    original_navigation = handoff.post_confirm_navigation
+    monkeypatch.setenv("ODYLITH_NO_BROWSER", "1")
+
+    def failed_navigation(*_args: object, **_kwargs: object) -> dict[str, str]:
+        raise RuntimeError("injected dashboard pin failure")
+
+    monkeypatch.setattr(handoff, "post_confirm_navigation", failed_navigation)
+    first = greenfield_host_confirmation.handle_greenfield_decision(
+        repo_root=tmp_path,
+        command="CONFIRM",
+        transaction_hash=transaction_hash,
+    )
+
+    dashboard = tmp_path / "odylith" / "index.html"
+    assert first["status"] == "CLOSED"
+    assert "was committed from the exact reviewed bytes and passed readback" in first["visible_markdown"]
+    assert "automatic reviewed-generation navigation is unavailable" in first["visible_markdown"]
+    assert str(dashboard) in first["visible_markdown"]
+    assert dashboard.is_file()
+    journal = tmp_path / ".odylith/runtime/greenfield/create-journal" / transaction_hash / "state.v1.json"
+    assert json.loads(journal.read_text(encoding="utf-8"))["state"] == "closed"
+
+    monkeypatch.setattr(handoff, "post_confirm_navigation", original_navigation)
+    second = greenfield_host_confirmation.handle_greenfield_decision(
+        repo_root=tmp_path,
+        command="CONFIRM",
+        transaction_hash=transaction_hash,
+    )
+    assert second["status"] == "CLOSED"
+    assert "Opened the committed" not in second["visible_markdown"]
+    assert "reviewed-generation navigation is unavailable" not in second["visible_markdown"]
+    assert dashboard.is_file()
+
+
+def test_confirm_keeps_committed_receipt_when_browser_open_raises(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _transaction_path, _receipt, transaction_hash = _stage_pending_transaction(tmp_path)
+    handoff = greenfield_host_confirmation.greenfield_post_confirm_handoff
+
+    def browser_failed(_navigation: object) -> dict[str, str]:
+        raise RuntimeError("injected browser open failure")
+
+    monkeypatch.setattr(handoff, "open_committed_dashboard", browser_failed)
+    decision = greenfield_host_confirmation.handle_greenfield_decision(
+        repo_root=tmp_path,
+        command="CONFIRM",
+        transaction_hash=transaction_hash,
+    )
+
+    assert decision["status"] == "CLOSED"
+    assert "was committed from the exact reviewed bytes and passed readback" in decision["visible_markdown"]
+    assert "The package is committed. Open the" in decision["visible_markdown"]
+    assert "odylith/index.html" in decision["visible_markdown"]

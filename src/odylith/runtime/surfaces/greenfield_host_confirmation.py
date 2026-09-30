@@ -254,14 +254,19 @@ def _confirm_pending_transaction(
             ),
             developer_context=f"Report the environment outcome only; do not regenerate artifacts. Detail: {error}",
         )
-    navigation = greenfield_post_confirm_handoff.post_confirm_navigation(
-        root,
-        transaction_hash=transaction_hash,
-    )
     try:
-        browser = greenfield_post_confirm_handoff.open_committed_dashboard(navigation)
-    except host_hook_execution.HookBudgetExpired:
-        browser = {"status": "unavailable", "reason": "browser open exceeded the decision budget"}
+        navigation = greenfield_post_confirm_handoff.post_confirm_navigation(
+            root,
+            transaction_hash=transaction_hash,
+        )
+    except (Exception, host_hook_execution.HookBudgetExpired):
+        navigation = greenfield_post_confirm_handoff.committed_navigation_fallback(root)
+        browser = {"status": "not_attempted", "reason": "reviewed-generation navigation unavailable"}
+    else:
+        try:
+            browser = greenfield_post_confirm_handoff.open_committed_dashboard(navigation)
+        except (Exception, host_hook_execution.HookBudgetExpired):
+            browser = {"status": "unavailable", "reason": "browser open unavailable after commit"}
     return _decision(
         status="CLOSED",
         command="CONFIRM",

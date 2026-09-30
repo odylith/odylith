@@ -10,6 +10,7 @@ from odylith import cli
 from odylith.runtime.domain_intelligence import (
     greenfield_apply_diagrams,
     greenfield_create_baseline,
+    greenfield_create_cli,
     greenfield_create_commit,
     greenfield_generation_store,
     greenfield_post_confirm_handoff,
@@ -417,6 +418,110 @@ def test_greenfield_create_cli_commits_transaction_file_without_recompiling(
     assert payload["product_create_transaction"]["transaction_hash"] == transaction.transaction_hash
     assert payload["product_create_transaction"]["verified"] is True
     assert payload["commit_manifest"]["write_transaction"]["commit_only"] is True
+
+
+@pytest.mark.parametrize("as_json", [False, True])
+def test_create_cli_preserves_success_receipt_after_dashboard_navigation_failure(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    as_json: bool,
+) -> None:
+    transaction_hash = "a" * 64
+    calls: list[dict[str, object]] = []
+
+    def committed(**kwargs: object) -> dict[str, object]:
+        calls.append(dict(kwargs))
+        return {
+            "mode": "applied",
+            "product_create_transaction": {
+                "transaction_hash": transaction_hash,
+                "quality_status": "passed",
+                "validation_status": "passed",
+                "repository_write_count": 1,
+            },
+        }
+
+    def navigation_failed(*_args: object, **_kwargs: object) -> dict[str, str]:
+        raise RuntimeError("injected dashboard pin failure")
+
+    monkeypatch.setattr(greenfield_create_commit, "commit_greenfield_create_transaction", committed)
+    monkeypatch.setattr(greenfield_post_confirm_handoff, "post_confirm_navigation", navigation_failed)
+    monkeypatch.setattr(
+        greenfield_post_confirm_handoff,
+        "open_committed_dashboard",
+        lambda _navigation: pytest.fail("fallback navigation must not open a browser"),
+    )
+    argv = [
+        "create", "--repo-root", str(tmp_path),
+        "--transaction-file", "compiled.json", "--transaction-hash", transaction_hash, "--confirm",
+    ]
+    if as_json:
+        argv.append("--json")
+
+    assert greenfield_create_cli.main(argv) == 0
+    output = capsys.readouterr().out
+    dashboard = str(tmp_path / "odylith" / "index.html")
+    if as_json:
+        payload = json.loads(output)
+        assert payload["mode"] == "applied"
+        assert payload["post_confirm_navigation"]["dashboard_path"] == dashboard
+        assert payload["post_confirm_navigation"]["view_status"] == "reviewed_generation_navigation_unavailable"
+        assert payload["post_confirm_browser"]["status"] == "not_attempted"
+    else:
+        assert "Odylith committed the validated Greenfield package" in output
+        assert "automatic reviewed-generation navigation is unavailable" in output
+        assert dashboard in output
+        assert "rerun the same create command" in output
+    assert len(calls) == 1
+
+
+def test_create_cli_preserves_success_receipt_after_browser_open_failure(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    transaction_hash = "b" * 64
+    calls = 0
+
+    def committed(**_kwargs: object) -> dict[str, object]:
+        nonlocal calls
+        calls += 1
+        return {
+            "mode": "applied",
+            "product_create_transaction": {
+                "transaction_hash": transaction_hash,
+                "quality_status": "passed",
+                "validation_status": "passed",
+                "repository_write_count": 1,
+            },
+        }
+
+    monkeypatch.setattr(greenfield_create_commit, "commit_greenfield_create_transaction", committed)
+    monkeypatch.setattr(
+        greenfield_post_confirm_handoff,
+        "post_confirm_navigation",
+        lambda *_args, **_kwargs: {
+            "dashboard_path": str(tmp_path / "odylith" / "index.html"),
+            "project_url": "file:///reviewed/project",
+            "view_status": "reviewed_generation_available",
+        },
+    )
+    monkeypatch.setattr(
+        greenfield_post_confirm_handoff,
+        "open_committed_dashboard",
+        lambda _navigation: (_ for _ in ()).throw(RuntimeError("injected browser failure")),
+    )
+
+    assert greenfield_create_cli.main([
+        "create", "--repo-root", str(tmp_path),
+        "--transaction-file", "compiled.json", "--transaction-hash", transaction_hash, "--confirm",
+    ]) == 0
+    output = capsys.readouterr().out
+    assert "Odylith committed the validated Greenfield package" in output
+    assert "could not open a browser automatically" in output
+    assert "file:///reviewed/project" in output
+    assert calls == 1
 
 
 def test_greenfield_create_cli_rejects_transaction_without_compiler_receipt(

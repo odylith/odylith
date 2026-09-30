@@ -4,6 +4,19 @@ Last updated: 2026-09-30
 
 ## Overview
 
+### Greenfield committed-outcome handoff (2026-09-30)
+
+After a sealed Greenfield CONFIRM closes successfully, optional dashboard
+navigation cannot change the committed outcome. If reviewed-generation
+pinning or browser opening fails, the host and CLI keep the durable receipt,
+identify the local dashboard entry, and allow the same transaction hash to
+retry idempotently. The fallback states when a reviewed-generation link is
+unavailable; it does not open an unverified route automatically. It performs
+no rollback, model call, semantic repair, or artifact rebuild after commit.
+CB-352 records the injected-fault proof and release limitation. This contract
+does not qualify Greenfield authoring while CB-324's public semantic gate is
+red.
+
 ### Greenfield first-path gate boundary (2026-09-30)
 
 Installed public comparison does not qualify this boundary for release. The

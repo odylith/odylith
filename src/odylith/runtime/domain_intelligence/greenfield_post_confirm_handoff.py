@@ -30,6 +30,11 @@ class GreenfieldCanonicalViewUnavailableError(RuntimeError):
 def completion_assist_text(*, navigation: Mapping[str, str], opened: bool) -> str:
     """Return one explicit chat-visible fallback for the committed result."""
 
+    if navigation.get("view_status") == "reviewed_generation_navigation_unavailable":
+        return (
+            "**Odylith Assist:** Greenfield is committed from the reviewed bytes. "
+            f"Check the local dashboard entry at {navigation['dashboard_path']}."
+        )
     destination = (
         "The committed Project dashboard is open."
         if opened
@@ -92,6 +97,18 @@ def post_confirm_navigation(repo_root: Path, *, transaction_hash: str = "") -> d
     return navigation
 
 
+def committed_navigation_fallback(repo_root: Path) -> dict[str, str]:
+    """Name the local dashboard entry when reviewed-generation routing fails after commit."""
+
+    dashboard_path = Path(repo_root).expanduser().absolute() / "odylith" / "index.html"
+    navigation = dict(POST_CONFIRM_NAVIGATION)
+    navigation["dashboard_path"] = str(dashboard_path)
+    navigation["project_url"] = f"{dashboard_path.as_uri()}?tab=project"
+    navigation["view_status"] = "reviewed_generation_navigation_unavailable"
+    navigation["compatibility_dashboard_path"] = str(dashboard_path)
+    return navigation
+
+
 def open_committed_dashboard(navigation: Mapping[str, str]) -> dict[str, Any]:
     """Open the committed Project view without changing transaction success."""
 
@@ -138,6 +155,12 @@ def completion_markdown(
             f"[Project dashboard]({navigation['project_url']}) or use `{navigation['dashboard_path']}`."
         )
     )
+    if navigation.get("view_status") == "reviewed_generation_navigation_unavailable":
+        destination = (
+            "The package is committed, but automatic reviewed-generation navigation is unavailable. "
+            f"Check the local dashboard entry at `{navigation['dashboard_path']}`; "
+            "if it does not open, retry the same CONFIRM command to recover the reviewed-generation link."
+        )
     return "\n".join(
         (
             "**Odylith Greenfield published**",
@@ -162,6 +185,7 @@ __all__ = [
     "canonical_current_project_root",
     "completion_assist_text",
     "completion_markdown",
+    "committed_navigation_fallback",
     "open_committed_dashboard",
     "post_confirm_navigation",
 ]

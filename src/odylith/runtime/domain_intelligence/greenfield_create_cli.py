@@ -69,10 +69,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
     except (ValueError, RuntimeError, OSError, json.JSONDecodeError) as error:
         return _error(str(error), as_json=args.as_json, error=error)
-    navigation = greenfield_post_confirm_handoff.post_confirm_navigation(
-        root,
-        transaction_hash=str(args.transaction_hash),
-    )
+    try:
+        navigation = greenfield_post_confirm_handoff.post_confirm_navigation(
+            root,
+            transaction_hash=str(args.transaction_hash),
+        )
+    except Exception:
+        navigation = greenfield_post_confirm_handoff.committed_navigation_fallback(root)
     if args.as_json:
         response = dict(result)
         response["post_confirm_navigation"] = navigation
@@ -85,12 +88,22 @@ def main(argv: Sequence[str] | None = None) -> int:
         }
         response["post_confirm_browser"] = {
             "status": "not_attempted",
-            "reason": "machine_readable_output",
+            "reason": (
+                "reviewed-generation navigation unavailable"
+                if navigation.get("view_status") == "reviewed_generation_navigation_unavailable"
+                else "machine_readable_output"
+            ),
             "url": navigation["project_url"],
         }
         print(json.dumps(response, indent=2, sort_keys=True))
     else:
-        browser_result = greenfield_post_confirm_handoff.open_committed_dashboard(navigation)
+        if navigation.get("view_status") == "reviewed_generation_navigation_unavailable":
+            browser_result = {"status": "not_attempted", "reason": "reviewed-generation navigation unavailable"}
+        else:
+            try:
+                browser_result = greenfield_post_confirm_handoff.open_committed_dashboard(navigation)
+            except Exception:
+                browser_result = {"status": "unavailable", "reason": "browser open unavailable after commit"}
         summary = dict(result.get("product_create_transaction") or {})
         print("Odylith committed the validated Greenfield package.")
         print(f"- transaction hash: {args.transaction_hash}")
@@ -114,6 +127,10 @@ def _print_post_confirm_navigation(
     print("")
     if browser_result.get("status") == "opened":
         print(f"Opened the committed Project dashboard: {navigation['project_url']}")
+    elif navigation.get("view_status") == "reviewed_generation_navigation_unavailable":
+        print("The package was committed, but automatic reviewed-generation navigation is unavailable.")
+        print(f"Check the local dashboard entry: {navigation['dashboard_path']}")
+        print("If it does not open, rerun the same create command to recover the reviewed-generation link.")
     else:
         print("The package was committed, but Odylith could not open a browser automatically.")
         print(f"Open the committed Project dashboard: {navigation['project_url']}")

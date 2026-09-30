@@ -1,5 +1,21 @@
 Status: In progress
 
+## Commit-only handoff truth after navigation faults (2026-09-30)
+
+CB-352 exposed a separate release blocker in the already committed CONFIRM
+path: a dashboard-navigation exception escaped after the create journal
+closed, making a successful publication appear to fail. The host callback
+and create CLI now retain the committed receipt and return the exact local
+dashboard entry when reviewed-generation pinning or browser opening fails.
+They never roll back, regenerate, or reinterpret the sealed package after
+commit. A real-commit fault test verifies CLOSED journal state, published
+dashboard, and same-hash retry. The focused fix suite passes 89/89, the
+wider handoff/write-set/browser-publication slice 112/112, and the Greenfield
+runtime unit suite 1,411/1,411. Independent review found no P0/P1. The
+fallback does not claim a verified generation link when pinning fails, and
+installed release proof remains outstanding. This fix does not change the
+CB-324 public semantic no-go or authorize the protected holdout.
+
 ## Full-envelope relation/lifecycle comparison stopped; product patch retired (2026-09-30)
 
 The combined one-pass host candidate v20 / authoring v79 / relation v35
