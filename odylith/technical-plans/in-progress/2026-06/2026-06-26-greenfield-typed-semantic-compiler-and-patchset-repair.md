@@ -1,5 +1,28 @@
 Status: In progress
 
+## Whole-journey clock boundary diagnosis (2026-10-01)
+
+The public CLI returns `candidate-contract`, accepts a host-authored gate at
+`authority-check`, and accepts a host-authored candidate at `propose` in
+separate invocations. `greenfield_proposals_cli.py` starts its `perf_counter`
+inside `propose`, after both host reasoning calls. The internal preconfirm
+and staging checks therefore cover compilation onward, not the complete
+request-to-preview journey. The release host-candidate harness does start a
+single monotonic clock before its contract call and clamps both model calls
+and proposal to the pinned profile, but that harness observation is not a
+production CLI receipt. The pinned profile still specifies a `180s`
+operational cap and a `165s` shared model window. Changing those constants
+alone would leave the product clock's missing host interval unresolved.
+
+Any selected time contract must carry one source-bound journey start across
+the separate contract, gate, candidate, and propose invocations, including
+EDIT, and account for time spent in host reasoning. The CLI can reject a
+late result at the next boundary; only the host can interrupt an active
+reasoning pass. Prove cross-invocation elapsed time, stale/mismatched source
+rejection, late staged-transaction retirement, and no-write expiration before
+claiming a whole-flow safety cap. This is a timing-boundary diagnosis, not
+semantic qualification or authorization to change the pending contract.
+
 ## Public comparison stop and material contract decision (2026-10-01)
 
 The generic online verifier missed the known civic P1, both source-obligation

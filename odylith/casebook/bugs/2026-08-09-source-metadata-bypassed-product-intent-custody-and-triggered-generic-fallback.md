@@ -1,5 +1,17 @@
 - Bug ID: CB-324
 
+## Whole-journey timeout cannot be inferred from proposal receipt (2026-10-01)
+
+The current CLI starts its measured preconfirm interval inside `propose`,
+after `candidate-contract`, the host gate, `authority-check`, and host
+candidate authoring. Its pinned `180s` timeout and `165s` model window do
+not establish the operator's provisional `300s` whole pre-confirm cap.
+The release harness has a separate full-flow monotonic observation, but a
+successful proposal receipt alone cannot prove that full interval. A future
+time-contract change needs cross-invocation, source-bound timing and host
+interruption plus late-result no-write controls. No runtime timing code was
+changed by this diagnosis; CB-324 and release timing remain open.
+
 ## Public mechanism stop rule reached (2026-10-01)
 
 The post-authorization public comparisons have not improved source-to-claim
