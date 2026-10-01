@@ -13,7 +13,12 @@ the protected holdout to adjudicate an already failed public gate.
 The technical constraint is independent source-duty recall, not a missing
 owner key. The author may omit an off-path action before any relation check;
 a comparator with no independently identified source duty has nothing to
-compare. A longer timeout alone has no demonstrated semantic benefit. The
+compare. The latest civic author took `158.004s`; the separate source-only
+inventory still had no output at `100.013s`. If those observations occurred
+sequentially in one `300s` journey, they would leave under `41.983s` for
+comparison, staging, and preview. That is a critical-path risk, not a
+measured combined journey or proof that parallel calls would be correct.
+A longer timeout alone has no demonstrated semantic benefit. The
 smallest material decision is whether to (a) keep broad free-form intake and
 permit an explicitly slower, asynchronous independent source-obligation
 pass with its own measured bound, or (b) keep the `300s` whole-flow cap and
