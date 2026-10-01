@@ -1,5 +1,60 @@
 - Bug ID: CB-324
 
+## Source-only obligation inventory exceeded its bounded review budget (2026-10-01)
+
+The second verification design separated source obligation discovery from
+candidate comparison. Its frozen civic-tech 057 source-only request returned
+no JSON within the predeclared `100s` inventory budget and stopped at
+`100.013s`. Input SHA-256 is
+`6b4da3f63e0a062003eae7328311b755651ae9cdd91c642864ee0fb6de6775a1`;
+schema SHA-256 is
+`cba8c60810e19b90b443b6c7ec23620dcf384109cfeb1e205ded6e0386c4efb7`.
+The empty stdout has SHA-256
+`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`.
+Retained diagnostics under
+`/private/tmp/odylith-greenfield-obligation-verifier-v1-20261001/` do not
+separate provider delay from generation cost. The comparison stage was not
+called. Combined with the generic verifier's missed P1, this exhausts the
+declared two-comparison verification probe without a public semantic gain.
+No product code, package, transaction, or protected holdout changed.
+
+## Generic online verifier missed known civic P1 failures (2026-10-01)
+
+One frozen, generic Astra/medium reviewer saw the exact civic 057 source
+lines and retained indexed candidate, without its known review findings. It
+returned `pass` with no findings in `10.743s`. It missed the facilitator's
+unowned prompt-publication step and the missing withdrawal-transition proof
+link, both established P1 from the earlier independent source-first review.
+The probe artifacts are under
+`/private/tmp/odylith-greenfield-verification-probe-v1-20261001/`;
+input SHA-256 is
+`a8345373871f0fec6eed8cc1bec234ecc9ac77017000e17d7c85197016eaf609`
+and output SHA-256 is
+`6ee3b90a5109834f40f7494902b7c3f6b13108f31cb80315a3559cb1ef2fc56c`.
+The predeclared stop rule retired this verifier before the agriculture
+control, product integration, package staging, or holdout access. A quick
+global reviewer verdict cannot enforce source-to-candidate coverage; the
+next bounded design must expose each source obligation and its exact typed
+candidate owner before it can claim verification.
+
+## Operator-approved verification path and unresolved defect (2026-10-01)
+
+The operator authorized retaining broad free-form evidence while replacing
+the failed one-pass source-to-claim path with bounded source-first semantic
+verification. The proposed whole pre-confirm cap is `300s`, with `180s` as
+the performance target. This supersedes the previous `180s` hard stop for
+new evidence only; all earlier runs retain their recorded limits and no-go
+verdicts. The separate commit-only `60s` contract remains.
+
+The live defect is still open: the current installed flow has no verified
+source-to-candidate semantic coverage pass. Its sealed timing starts at
+`propose`, after authority and host authoring, so it does not establish a
+whole-journey bound. A new verifier may find omissions but cannot count as
+release proof without complete packages and independent source-first review.
+One final candidate may enter deterministic admission only after the bounded
+pre-receipt flow; no model call may follow that receipt or CONFIRM. The public
+037/030/057 controls and untouched protected holdout retain their roles.
+
 ## Atomic operation owner exceeded the public model window (2026-09-30)
 
 After the operator chose to keep broad free-form, cross-domain evidence, one

@@ -1,5 +1,113 @@
 Status: In progress
 
+## Source-only obligation inventory stopped on time (2026-10-01)
+
+The second predeclared verification design began with source-only discovery,
+with no candidate or known findings in its input. On civic-tech 057 it
+returned no JSON before the `100s` inventory budget and stopped at
+`100.013s` (`stdout_bytes: 0`). The frozen input SHA-256 is
+`6b4da3f63e0a062003eae7328311b755651ae9cdd91c642864ee0fb6de6775a1`,
+the schema SHA-256 is
+`cba8c60810e19b90b443b6c7ec23620dcf384109cfeb1e205ded6e0386c4efb7`,
+and the retained stdout SHA-256 is the empty-stream digest
+`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`.
+Artifacts are under
+`/private/tmp/odylith-greenfield-obligation-verifier-v1-20261001/`.
+The diagnostic output does not identify whether provider delay or inventory
+generation exhausted the window. No candidate comparison, agriculture
+control, package, transaction, product edit, or holdout access followed.
+
+The first generic verifier missed known P1 and this structurally distinct
+source-only inventory failed its bounded time gate. Neither improves the
+public semantic gate. Stop adding verifier machinery under the two-comparison
+rule. The provisional `300s` whole-journey cap is an operator-approved
+design bound, not a measured capability. A larger cap has no demonstrated
+quality benefit. The next decision must materially change the first-release
+input/complexity envelope or authorize a different measured quality/latency
+contract; retain the broad-input objective and no-go release status until
+then.
+
+## Generic verifier probe rejected before integration (2026-10-01)
+
+The first predeclared generic source-first reviewer was run once on retained
+civic-tech 057 evidence and indexed candidate, without the known findings in
+its input. It returned `{\"verdict\":\"pass\",\"findings\":[]}` in `10.743s`
+using Astra/medium. The candidate still lacks the facilitator
+prompt-publication owner and a proof link to the off-path withdrawal
+transition, both previously independently adjudicated P1. The prompt,
+schema, input, output, and timing are retained under
+`/private/tmp/odylith-greenfield-verification-probe-v1-20261001/`.
+The civic input SHA-256 is
+`a8345373871f0fec6eed8cc1bec234ecc9ac77017000e17d7c85197016eaf609`;
+the output SHA-256 is
+`6ee3b90a5109834f40f7494902b7c3f6b13108f31cb80315a3559cb1ef2fc56c`.
+This falsifies a generic full-candidate review gate. Stop this contract now;
+the agriculture 037 control was not called and no product code changed.
+
+The next bounded alternative must separate source obligation discovery from
+candidate comparison. First derive a source-only inventory of actions,
+state changes, conditional guards, authority, and proof duties, with exact
+source lines. Then require explicit candidate-section references and owning
+relationships for each discovered duty. A bare global `pass` must be
+impossible. Freeze its schema and failure criteria before a model call;
+do not feed the civic finding into the prompt or tune the source fixture.
+If the inventory omits material source duties or the comparison still
+accepts a missing owner/proof binding, retire this alternative too.
+
+## Operator-approved broad-input verification contract (2026-10-01)
+
+The operator chose the broad free-form, cross-domain evidence envelope and
+authorized a bounded source-first semantic verification flow. This decision
+supersedes the older one-pass/no-reviewer and fixed `180s` hard-limit rules
+below; their failed observations and original deadlines remain historical
+evidence. The proposal is a **provisional `300s` hard cap for the complete
+pre-confirm journey**, with `180s` retained as the performance target and a
+separate `60s` limit for commit-only confirmation. This is a changed release
+contract, not evidence that a two-pass system meets either time or quality.
+
+Freeze the next comparison before a model call. Start one monotonic clock
+before candidate-contract and authority work. Include the authority gate,
+draft authoring, one source-first semantic verification, at most one bounded
+correction if the verification findings are actionable, deterministic
+admission, package validation, sealing, and preview in the `300s` cap. A
+missing, contradictory, or unresolved material obligation must yield one
+focused question or a no-write failure. No model call is permitted after the
+**final** candidate receipt, and CONFIRM remains exact sealed-byte publication
+without model, generation, or semantic repair. The verifier must compare
+source obligations to candidate roles and relationships, including omissions
+and conditional or off-path duties; citation/hash validity alone cannot pass
+it. Bind a versioned receipt to the exact source, draft, findings, and final
+candidate. The receipt records process custody, not semantic truth. An
+independent source-first release reviewer remains required.
+
+The installed consumer path must bind the host's start time and deadline to
+the final candidate and reject a missing, forged, or expired whole-journey
+receipt. The current `propose` clock starts after host authoring and cannot
+prove this new contract. Preserve old `180s` observations unchanged; introduce
+a new versioned profile, candidate contract, receipt, guidance, and harness
+proof. Keep historical controls and the protected final holdout unchanged.
+
+Falsifiable public prediction: on the frozen agriculture 037 and civic-tech
+057 positives, verification catches omitted or incorrectly linked owner,
+state, conditional, proof, and authority obligations before a seal. The
+source-only agriculture 030 negative asks one material question and stages
+nothing. Both corrected positives must then pass deterministic admission,
+complete differentiated package rendering, and independent source-first
+P0/P1 review within the whole `300s` cap, with elapsed time also reported
+against `180s`. If either positive misses the hard cap, retains a P0/P1,
+or lacks a complete package, stop the variant without fixture-specific repair
+or production promotion. Do not open the protected holdout until all earlier
+release gates pass.
+
+The first disposable verification probe is narrower than release proof: use
+one generic source-first reviewer contract on the retained indexed 057 and
+037 public candidates without telling it their known findings. It must find
+the civic 057 missing prompt-publication owner and withdrawal-to-transition
+proof link as material defects, avoid a false P0/P1 on agriculture 037, and
+finish each review within `100s`. A miss or false block retires that reviewer
+contract before integration. Even a pass does not revive the indexed
+candidate format or qualify the `300s` complete-flow contract.
+
 ## Atomic operation public comparison stopped on time (2026-09-30)
 
 The frozen atomic-operation replacement described below made one operation
