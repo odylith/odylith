@@ -1,5 +1,36 @@
 - Bug ID: CB-324
 
+## Atomic operation owner exceeded the public model window (2026-09-30)
+
+After the operator chose to keep broad free-form, cross-domain evidence, one
+bounded replacement made each source-obligated operation the owner of its
+actor or external trigger, state effect, path role, primary system,
+workstream, rules, and proof. This replaced the indexed format's separately
+authored path, transition, ownership, and proof links. The three public
+control prompts and one schema were frozen before the first call. The
+predeclared stop rule included the `165s` model window and forbade retry or
+fixture-specific trimming.
+
+The first fixed positive, agriculture 037, timed out at `165.022s` with no
+candidate JSON (`stdout_bytes: 0`). The schema SHA-256 is
+`ac4988eb2448d1e179637d60b327e4dfaddbf44dd22495d2ba6e6933c58ee328`;
+the prompt SHA-256 is
+`4de20b5109ca11ee1ef0ebddf41245215fb8b1498585f62a1eb093b22aa76b0d`.
+The frozen prediction, prompts, schema, stderr, and timing receipt are under
+`/private/tmp/odylith-greenfield-atomic-operations-v1-037-20260930/`.
+Stderr SHA-256 is
+`246a88fdea257f2ebf80331b49ceb0785a28cecdc9db43a34972a2e2e5f5ab03`.
+The source-only negative and civic second positive were not called. No
+candidate was admitted, no package or transaction was staged, no production
+code changed, and the protected holdout was untouched.
+
+This falsifies the atomic-operation replacement against the current time
+contract before semantic quality can be assessed. Do not recover a partial
+candidate from stderr, retry, compress the schema against this fixture, or
+count the structural design as a win. The public semantic and complete-flow
+release gates remain red. A material operating-envelope or latency/quality
+contract decision is required before another authoring comparison.
+
 ## Indexed canonical v1 cross-domain public no-go (2026-09-30)
 
 The operator chose to preserve the broad cross-domain envelope and redesign

@@ -1,5 +1,56 @@
 Status: In progress
 
+## Atomic operation public comparison stopped on time (2026-09-30)
+
+The frozen atomic-operation replacement described below made one operation
+own path membership, state effects, primary system, workstream, guards, and
+proof. Fixed public agriculture 037 was called once with Astra/medium. It
+returned no candidate within the `165s` model window and stopped at
+`165.022s`; the full `180s` pre-confirm journey could not fit. CB-324 has
+the exact schema, prompt, and timing hashes. No 030 or 057 call, product
+integration, staged package, or protected-holdout access followed.
+
+Retire this replacement without prompt trimming, schema patching, or a
+retry. The prior claim ledger failed semantic review at `155.614s`, the
+indexed-canonical format failed civic cross-section review despite
+`124.564s`, and the atomic owner did not return inside the model window.
+The full broad free-form envelope, one-pass no-reviewer architecture, and
+`180s` safety limit have no demonstrated release-capable combination. Stop
+internal mechanism comparisons and present the smallest material contract
+decision; do not call the current runtime production ready.
+
+## Atomic operation owner decision and frozen public gate (2026-09-30)
+
+The operator's standing decision preserves the broad cross-domain free-form
+evidence envelope. The failed claim ledger and indexed-canonical v1 are
+retired. The next bounded replacement changes ownership rather than appending
+fields to either format: each source-obligated operation is authored once with
+its actor or typed external trigger, governed object and field effects,
+first-path membership, primary system owner, accountable workstream, applied
+rules, and proof obligation. Conditional disclosure and source-change
+invalidation are operations outside the first path. The first-path sequence,
+state lifecycle, Project, Radar, Registry, Atlas, and proof views derive from
+these operations; no second prose interpretation owns product meaning.
+System, workstream, exchange, and view design may carry distinct proposed
+decisions, but every design claim must cite canonical operations or explicit
+source constraints. Operator controls and reference metadata remain outside
+accepted product truth. A missing operation is still a semantic risk that
+structural validation alone cannot detect.
+
+Freeze one source-indexed atomic-operation contract before the next model
+call. Use unchanged public agriculture 037 and civic-tech 057 as positives,
+and agriculture 030 as the no-write clarification. On the same schema and
+one call per case, independent source-first review must find no P0/P1,
+including omitted off-path duties, invented actors, unsupported authority,
+or unowned actions. Deterministic admission must reject dangling or missing
+operation ownership, guard, state, and proof links. Both positives must yield
+complete differentiated Project/Radar/Registry/Atlas previews and the full
+gate, authoring, validation, seal, and render journey must fit `180s`; model
+latency alone does not count. Stop at the first semantic P1 or timing breach,
+retire this replacement, and return to a material input-contract decision.
+Do not tune either fixture, add a second semantic pass, or open the protected
+holdout.
+
 ## Indexed canonical public comparison stopped at civic linkage (2026-09-30)
 
 The one predeclared source-indexed, single-owner alternative preserved the
