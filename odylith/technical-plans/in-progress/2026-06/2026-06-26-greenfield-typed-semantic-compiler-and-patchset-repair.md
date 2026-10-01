@@ -7,8 +7,11 @@ own path membership, state effects, primary system, workstream, guards, and
 proof. Fixed public agriculture 037 was called once with Astra/medium. It
 returned no candidate within the `165s` model window and stopped at
 `165.022s`; the full `180s` pre-confirm journey could not fit. CB-324 has
-the exact schema, prompt, and timing hashes. No 030 or 057 call, product
-integration, staged package, or protected-holdout access followed.
+the exact schema, prompt, and timing hashes. The retained diagnostics do not
+identify whether generation, provider service, or local setup consumed the
+window; a longer limit alone has no demonstrated semantic benefit. No 030 or
+057 call, product integration, staged package, or protected-holdout access
+followed.
 
 Retire this replacement without prompt trimming, schema patching, or a
 retry. The prior claim ledger failed semantic review at `155.614s`, the

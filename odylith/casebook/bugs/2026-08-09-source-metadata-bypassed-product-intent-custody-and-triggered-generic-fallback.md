@@ -20,6 +20,11 @@ The frozen prediction, prompts, schema, stderr, and timing receipt are under
 `/private/tmp/odylith-greenfield-atomic-operations-v1-037-20260930/`.
 Stderr SHA-256 is
 `246a88fdea257f2ebf80331b49ceb0785a28cecdc9db43a34972a2e2e5f5ab03`.
+The retained stderr contains the CLI banner, submitted prompt, and a local
+rollout-state warning, but no completed model response or provider error.
+It does not distinguish generation cost from provider or local delay. The
+observed deadline breach disqualifies this run; it does not prove the atomic
+representation inherently needs a longer deadline.
 The source-only negative and civic second positive were not called. No
 candidate was admitted, no package or transaction was staged, no production
 code changed, and the protected holdout was untouched.
