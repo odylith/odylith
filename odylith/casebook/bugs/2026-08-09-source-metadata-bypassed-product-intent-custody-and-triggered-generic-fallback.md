@@ -1,5 +1,20 @@
 - Bug ID: CB-324
 
+## Per-source-line verifier exceeded its civic budget (2026-10-01)
+
+One frozen reviewer required a role and candidate-link judgment for every
+civic 057 source line, removing the generic reviewer's bare `pass` path.
+It returned no JSON in `130.015s` under its `130s` budget. Input SHA-256 is
+`3ba20cd8577a43ce88c0cbce99e62553937ed7de33b8480052de320afcf63ea6`;
+schema SHA-256 is
+`db027d9bf3c3f5ad9a0d6ce081224a893799823598fda7467e43aaa80a40e829`.
+Artifacts are under
+`/private/tmp/odylith-greenfield-line-coverage-v1-20261001/`.
+No agriculture review or correction was run. This exact verifier is
+retired before production integration. It does not prove the `300s`
+whole-flow contract or source fidelity; provider versus generation delay
+remains unknown. The protected holdout remains untouched.
+
 ## Source-only obligation inventory exceeded its bounded review budget (2026-10-01)
 
 The second verification design separated source obligation discovery from
@@ -14,9 +29,11 @@ The empty stdout has SHA-256
 Retained diagnostics under
 `/private/tmp/odylith-greenfield-obligation-verifier-v1-20261001/` do not
 separate provider delay from generation cost. The comparison stage was not
-called. Combined with the generic verifier's missed P1, this exhausts the
-declared two-comparison verification probe without a public semantic gain.
-No product code, package, transaction, or protected holdout changed.
+called. Combined with the generic verifier's missed P1, this gives no
+public semantic gain. It does not exhaust the goal's two-comparison stop
+rule because neither probe reached a complete, structured source-to-candidate
+comparison. Both exact probe contracts are retired. No product code,
+package, transaction, or protected holdout changed.
 
 ## Generic online verifier missed known civic P1 failures (2026-10-01)
 

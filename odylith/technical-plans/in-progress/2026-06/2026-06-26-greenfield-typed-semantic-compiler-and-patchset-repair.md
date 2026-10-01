@@ -1,5 +1,51 @@
 Status: In progress
 
+## Per-source-line coverage verifier stopped on time (2026-10-01)
+
+The frozen Astra/medium reviewer required a typed judgment for every civic
+057 source line and candidate relationship. Its input SHA-256 was
+`3ba20cd8577a43ce88c0cbce99e62553937ed7de33b8480052de320afcf63ea6`;
+its dynamic schema SHA-256 was
+`db027d9bf3c3f5ad9a0d6ce081224a893799823598fda7467e43aaa80a40e829`.
+It returned no JSON before the predeclared `130s` verifier budget and
+stopped at `130.015s`; stdout was empty. Retained artifacts are under
+`/private/tmp/odylith-greenfield-line-coverage-v1-20261001/`.
+No agriculture call, correction, complete package, or product integration
+followed. The diagnostic output does not separate provider delay from
+generation cost. The result disqualifies this exact reviewer under its
+bounded budget; it does not establish whether a slower result would be
+semantically correct.
+
+The new `300s` contract remains unproved. The retained civic candidate
+authoring observation took `124.564s`; a verifier requiring more than
+`130s` leaves under `45.436s` for authority, any correction, deterministic
+compilation, sealing, and preview even before overhead. Do not infer a
+successful whole journey by summing different historical calls, and do not
+raise the cap again to make these probes pass. Stop this verification design
+without fixture trimming. Source fidelity, end-to-end timing, and release
+quality remain no-go.
+
+## Frozen per-source-line coverage comparison (2026-10-01)
+
+Test one reviewer whose output schema requires a judgment for every exact
+source line ID. Each line must classify authoring controls and context
+separately from product obligations. Every independently testable product
+duty within a line must name candidate JSON paths and mark its relationship
+supported, missing, or mislinked. Actions require the performer and product
+support owner where stated; off-path state changes require their transition
+and proof link when the source calls for proof. A prose mention or shared
+citation without the owning relationship cannot count as supported. The
+verdict is derived from rows, not accepted as a bare model `pass`.
+
+Freeze the generic prompt, dynamic source-ID schema, and exact inputs before
+the first call. On retained civic 057, this reviewer must identify the
+missing prompt-publication owner and withdrawal-to-transition proof binding,
+without being told those findings. It must return within `130s`. Only if
+that succeeds, run the unchanged reviewer on agriculture 037 and require no
+false P0/P1 within `130s`. A miss, false block, or timeout retires this
+reviewer contract. Even two passes are only a detection probe; they do not
+qualify corrected candidates, whole-flow timing, packages, or release.
+
 ## Source-only obligation inventory stopped on time (2026-10-01)
 
 The second predeclared verification design began with source-only discovery,
@@ -17,15 +63,16 @@ The diagnostic output does not identify whether provider delay or inventory
 generation exhausted the window. No candidate comparison, agriculture
 control, package, transaction, product edit, or holdout access followed.
 
-The first generic verifier missed known P1 and this structurally distinct
-source-only inventory failed its bounded time gate. Neither improves the
-public semantic gate. Stop adding verifier machinery under the two-comparison
-rule. The provisional `300s` whole-journey cap is an operator-approved
-design bound, not a measured capability. A larger cap has no demonstrated
-quality benefit. The next decision must materially change the first-release
-input/complexity envelope or authorize a different measured quality/latency
-contract; retain the broad-input objective and no-go release status until
-then.
+The generic verifier missed known P1 and this source-only inventory failed
+its bounded time gate. Neither improves the public semantic gate. These
+limited probes are not two complete, well-designed mechanism comparisons:
+the first had no forced coverage structure and the second never reached
+candidate comparison. They do not exhaust the goal's two-comparison stop
+rule or falsify the operator-approved broader flow. Retire both exact probe
+contracts. The provisional `300s` whole-journey cap remains a design bound,
+not a measured capability; a larger cap has no demonstrated quality benefit.
+The next bounded comparison must force explicit source-line coverage and
+typed candidate relationship references before it may return a pass.
 
 ## Generic verifier probe rejected before integration (2026-10-01)
 
@@ -44,15 +91,13 @@ the output SHA-256 is
 This falsifies a generic full-candidate review gate. Stop this contract now;
 the agriculture 037 control was not called and no product code changed.
 
-The next bounded alternative must separate source obligation discovery from
-candidate comparison. First derive a source-only inventory of actions,
-state changes, conditional guards, authority, and proof duties, with exact
-source lines. Then require explicit candidate-section references and owning
-relationships for each discovered duty. A bare global `pass` must be
+The next bounded alternative must force an explicit role and candidate-link
+judgment for every source line. It may mark headings and authoring controls
+as non-product evidence, but a product duty needs exact candidate section
+references and an owning relationship. A bare global `pass` must be
 impossible. Freeze its schema and failure criteria before a model call;
 do not feed the civic finding into the prompt or tune the source fixture.
-If the inventory omits material source duties or the comparison still
-accepts a missing owner/proof binding, retire this alternative too.
+If it accepts a missing owner or proof binding, retire it.
 
 ## Operator-approved broad-input verification contract (2026-10-01)
 
