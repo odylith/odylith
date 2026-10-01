@@ -1,5 +1,39 @@
 - Bug ID: CB-324
 
+## Public mechanism stop rule reached (2026-10-01)
+
+The post-authorization public comparisons have not improved source-to-claim
+quality: the generic verifier false-passed civic P1; two source-duty
+verification designs timed out without output; and the event-link author
+returned an invalid civic candidate that omitted withdrawal. Do not add a
+third candidate/reviewer variation or open the protected holdout under the
+current contract. Exact timings, hashes, and artifact roots are recorded
+below. The remaining material choice is a separately bounded asynchronous
+source-obligation pass for broad complex evidence, or a lower supported
+complexity band under the `300s` whole-flow cap. The operator has not chosen
+either, so the existing broad public positive gate remains failed and this
+bug remains open.
+
+## Event-owned relation candidate failed public civic control (2026-10-01)
+
+The frozen event-link variant authored civic 057 once in `158.004s` but
+failed its deterministic fact-reference validator (`scalar fact must use row
+zero`). Candidate SHA-256 is
+`9b25a15b7edc080d98b2f0977873912772e19a476a83d1e6865e6606440c28b7`;
+schema SHA-256 is
+`90f4edb69995a2453b09645a7a2bfe463e0eab9831e694b6ff68322ffe733333`.
+Retained candidate, frozen inputs, validator, and timestamped CLI events are
+under `/private/tmp/odylith-greenfield-event-links-v1-20261001/`.
+
+Even setting the invalid reference aside, the author omitted the source's
+withdrawal transition and made actor inventory and system duties first-run
+steps. Links assigned an owner to every authored event but could not cover
+an unselected source action. This is the same source-to-claim P1 class as
+the prior civic failure. The exact variant is retired; no 037/030 calls,
+candidate repair, product integration, package, transaction, or protected
+holdout access followed. The whole-flow `300s` cap and `180s` target remain
+unproved. The release gate remains open.
+
 ## Per-source-line verifier exceeded its civic budget (2026-10-01)
 
 One frozen reviewer required a role and candidate-link judgment for every

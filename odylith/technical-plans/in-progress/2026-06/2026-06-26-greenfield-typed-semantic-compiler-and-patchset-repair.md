@@ -1,5 +1,91 @@
 Status: In progress
 
+## Public comparison stop and material contract decision (2026-10-01)
+
+The generic online verifier missed the known civic P1, both source-obligation
+verification designs returned no output within their frozen budgets, and the
+event-owned relation author returned an invalid, source-incomplete civic
+candidate. These are distinct public failures under the operator-approved
+broad free-form, bounded-verification direction. The goal's two-comparison
+stop rule is met: stop adding candidate/reviewer machinery and do not spend
+the protected holdout to adjudicate an already failed public gate.
+
+The technical constraint is independent source-duty recall, not a missing
+owner key. The author may omit an off-path action before any relation check;
+a comparator with no independently identified source duty has nothing to
+compare. A longer timeout alone has no demonstrated semantic benefit. The
+smallest material decision is whether to (a) keep broad free-form intake and
+permit an explicitly slower, asynchronous independent source-obligation
+pass with its own measured bound, or (b) keep the `300s` whole-flow cap and
+declare a lower complexity band, returning a no-write out-of-envelope
+outcome for cases as complex as the current civic/agriculture positives.
+Neither change is presumed authorized by this record. The `180s` target,
+`300s` provisional whole-flow cap, and `60s` commit-only cap remain the
+current contract until an operator decision. No production integration or
+release claim follows from this checkpoint.
+
+## Event-owned relation public civic no-go (2026-10-01)
+
+The frozen disposable civic 057 author completed in `158.004s` with one
+candidate, but its typed fact links failed the predeclared structural check:
+a scalar `state_object` or `proof_boundary` reference used row `1` where
+the contract requires row `0`. Candidate SHA-256 is
+`9b25a15b7edc080d98b2f0977873912772e19a476a83d1e6865e6606440c28b7`;
+schema SHA-256 is
+`90f4edb69995a2453b09645a7a2bfe463e0eab9831e694b6ff68322ffe733333`.
+The CLI started in `0.150s` and emitted its completed item at `157.478s`;
+the internal queue-versus-generation split remains unobserved. Artifacts
+are under `/private/tmp/odylith-greenfield-event-links-v1-20261001/`.
+
+The candidate also omitted the source's withdrawal transition while putting
+actor inventory and system responsibilities into its first-run event path.
+Every *selected* event had an ownership edge, demonstrating the limitation:
+event-owned links cannot detect a source action the author never selected or
+prevent wrong event selection. Retire this exact relation contract at its
+first invalid reference and semantic P1; do not repair, retune, run 037/030,
+or integrate it. No product code, transaction, or protected holdout changed.
+The public source-to-claim and whole-journey release gates remain no-go.
+
+## Event-owned relation comparison before product integration (2026-10-01)
+
+The next bounded hypothesis reuses the current host candidate's one cited
+source-event array. `first_run` already selects a subset, so an off-path
+withdrawal or changed-source event can retain its own event identity. Add
+one accountable design path `(event_order, component_key, workstream_key)`
+for each event, selected from existing support and verification edges. Add
+typed links from that same event ID to already selected cited facts for
+conditional guards, state effects, and proof duties. The links carry no new
+source prose and cannot create mandatory path precedence. The event remains
+the one source-action owner; component and workstream paths are proposed
+delivery ownership. This differs from the retired atomic-operation output,
+which forced every action, state, system, guard, and proof field into one large
+authored operation, and from the v20 split-source/transition owners.
+
+Freeze one compact, domain-neutral experimental schema and prompt delta
+outside the product tree. Use the unchanged public civic-tech 057 positive
+first, with one Astra/medium author call capped at `200s`; instrument CLI
+JSONL event timing without an extra provider call. The candidate must put
+facilitator prompt publication on exactly one accountable design path and
+bind withdrawal as an off-path event to its state effect and proof. If it
+passes exact source-reference and relationship checks plus independent
+source-first P0/P1 review, run the bit-identical contract on agriculture
+037 and source-only negative 030. Agriculture must preserve private-note
+reviewer acceptance as a conditional disclosure guard, not a mandatory
+publication predecessor, and retain changed-source invalidation off path.
+The negative must ask one material first-path question with no package.
+Retire this contract at the first timeout, semantic P0/P1, invalid reference,
+invented owner, or false positive/negative. No fixture-specific correction,
+retry, fallback, or protected-holdout access follows.
+
+This disposable authoring comparison cannot itself qualify a release. Only
+after the public source-to-claim gate passes should product integration
+start. The integrated gate must then prove one whole contract-to-preview
+clock under the provisional `300s` cap, report against the `180s` target,
+produce complete differentiated Project/Radar/Registry/Atlas artifacts,
+and preserve commit-only exact-seal confirmation. A separate source-first
+omission verifier remains necessary; structural links alone cannot detect
+a source duty the author never selected.
+
 ## Per-source-line coverage verifier stopped on time (2026-10-01)
 
 The frozen Astra/medium reviewer required a typed judgment for every civic
