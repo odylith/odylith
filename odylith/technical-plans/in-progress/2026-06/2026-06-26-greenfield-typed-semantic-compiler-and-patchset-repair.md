@@ -1,5 +1,39 @@
 Status: In progress
 
+## Asynchronous source-inventory v1 civic no-go (2026-10-01)
+
+The frozen source-only Astra/medium civic 057 call completed once in
+`145.525s` under its diagnostic `240s` cap. Its output has 44 duties,
+15 authored relations, and three evidence-handling controls; output SHA-256
+is `33e0e0c44a21c0635361651901c627cc4473a4523236a3011eb53cae60d16bd7`.
+CLI start events occurred by `0.658s` and completed output at `145.193s`;
+provider queue versus generation remains unobservable. Frozen contract and
+runner are under `/private/tmp/odylith-greenfield-async-inventory-v1-20261001/`
+with manifest SHA-256
+`aa0c3d30ee150fd9cb6db900bd3d95b880beb62db1b836571f0f4a056b96764f`.
+
+This exact variant fails its predeclared structural gate: relation 6 uses
+`changes` from editor `actor_action` O13 to publication `state_field` O21,
+while its typed contract requires a `state_transition` source. The off-path
+withdrawal-removal duty O36 also lacks a required field-change link; its
+companion invalidation O37 has one. Do not repair or rerun this output, pass
+it to candidate authoring, run 037/030, or integrate it. The source-only
+inventory did recover the previously omitted C45 withdrawal effects and
+classified facilitator prompt publication as a first-path human action,
+which is evidence of improved source recall, not a structural or release
+pass. The `first_path` label on proof duties also risks turning evidence
+checks into workflow events if propagated unchanged.
+
+The next and last bounded comparison in this decision wave should remove
+relationship authorship from the source inventory entirely. It may list
+exact-cited duties in distinct role arrays, with only human actions eligible
+for first-path membership. Candidate authoring retains typed relationship
+ownership, and independent source-first review must compare every ledger
+duty to that candidate before sealing. Freeze this generic alternative
+before one civic call; stop on first invalid source reference, missing P1,
+false role, timeout, or package regression. Extra time remains diagnostic
+until a complete public journey passes.
+
 ## Operator decision: broad input with bounded asynchronous verification (2026-10-01)
 
 The operator selected the recommended material contract change after the

@@ -1,5 +1,24 @@
 - Bug ID: CB-324
 
+## Async source-inventory v1 stopped at structural gate (2026-10-01)
+
+One frozen civic 057 source-only inventory completed in `145.525s` under a
+`240s` diagnostic cap, returning 44 duties and 15 relations. Output SHA-256:
+`33e0e0c44a21c0635361651901c627cc4473a4523236a3011eb53cae60d16bd7`;
+freeze manifest SHA-256:
+`aa0c3d30ee150fd9cb6db900bd3d95b880beb62db1b836571f0f4a056b96764f`.
+Artifacts are under
+`/private/tmp/odylith-greenfield-async-inventory-v1-20261001/`.
+It correctly surfaced facilitator prompt publication and both C45
+withdrawal effects as source duties, but its `changes` relation 6 links an
+actor action directly to a state field where its own contract demands a
+state transition; withdrawal-removal also lacks a state-field link. The
+structural stop rule retires this exact graph-owning inventory before
+candidate comparison, 037/030, product integration, or holdout access.
+Source-duty recall improved on this public case but cannot be credited as
+an accepted package. The next bounded alternative removes graph ownership
+from the source-only inventory while preserving independent duty discovery.
+
 ## Operator chose broad asynchronous verification direction (2026-10-01)
 
 The operator chose to preserve broad free-form and complex inputs and permit
