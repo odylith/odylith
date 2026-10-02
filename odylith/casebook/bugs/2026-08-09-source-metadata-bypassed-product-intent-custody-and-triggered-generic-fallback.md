@@ -1,5 +1,42 @@
 - Bug ID: CB-324
 
+## Ledger-guided civic candidate still failed semantic gate (2026-10-01)
+
+The frozen public gate admitted in `10.648s`, installed authority-check
+passed, and one unchanged-schema candidate returned in `159.768s`.
+Combined gate-plus-author wall time was `170.711s`, without comparison or
+preview. Candidate SHA-256:
+`47b340a40b641e791af865c6712b089d592abadcaaa633f524f41789e3da6dbf`;
+frozen manifest SHA-256:
+`b24b07f4e51e00a8796774c2e10a0557e9c75f9cdfa362f7f69fdf9e18700afd`.
+Evidence: `/private/tmp/odylith-greenfield-ledger-candidate-v1-20261001/`.
+
+Despite the accepted source-duty ledger, independent source-first review
+found P1 first-run pollution: supporting facilitator inventory event 1 and
+system duties 9–13 entered the source C31 path. It also found P1 loss of
+explicit operator-versus-repository source precedence (`source_precedence`
+is empty). Both withdrawal effects survive in design prose, but no
+dedicated off-path canonical event binds the transition; that remains a
+typed lifecycle proof gap. The exact variant is retired before proposal,
+package, 037/030, product integration, or final holdout. Broad asynchronous
+timing did not resolve the candidate's role-selection ownership defect;
+CB-324 remains open and the public semantic release gate is no-go.
+
+## Source-only civic ledger v2 passed; package fidelity unproved (2026-10-01)
+
+The frozen v2 source-duty ledger returned in `99.361s` with exact citations
+and valid distinct role arrays. Output SHA-256 is
+`501d2d3ac1261bfeb616a6637a8bafa472cea537a9f374eba8c742f45fc95f04`;
+manifest SHA-256 is
+`3096ce018e086aaa17416d38f3c92390b14c31dc4403445a021ac6391d112cd3`.
+Artifacts: `/private/tmp/odylith-greenfield-async-ledger-v2-20261001/`.
+It identifies facilitator prompt publication as a first-path human action
+and C45 withdrawal as an off-path transition with both required effects.
+An independent source-first review of this inventory reported no P0/P1/P2
+source-role finding. This closes only the civic duty-discovery diagnostic,
+not CB-324: no authored candidate, source-to-candidate comparison, preview,
+whole-flow bound, cross-domain result, or release gate has passed.
+
 ## Async source-inventory v1 stopped at structural gate (2026-10-01)
 
 One frozen civic 057 source-only inventory completed in `145.525s` under a

@@ -1,5 +1,97 @@
 Status: In progress
 
+## Ledger-guided civic candidate failed source-to-claim review (2026-10-01)
+
+The frozen gate admitted civic 057 in `10.648s` and installed
+`authority-check` accepted its exact witness. One unchanged-schema
+Astra/medium candidate returned in `159.768s`; gate plus candidate took
+`170.711s` before any independent review, compilation, or preview.
+Candidate SHA-256 is
+`47b340a40b641e791af865c6712b089d592abadcaaa633f524f41789e3da6dbf`;
+gate SHA-256 is
+`c26977613a5fa818eda7869a6752357e0fd17649897d6b4fe77dbe7faa4863bf`.
+The frozen request/runner manifest SHA-256 is
+`b24b07f4e51e00a8796774c2e10a0557e9c75f9cdfa362f7f69fdf9e18700afd`;
+artifacts are under
+`/private/tmp/odylith-greenfield-ledger-candidate-v1-20261001/`.
+
+The schema check passed, but independent source-first review found two P1s.
+`provisional_design.first_run.event_orders` includes supporting facilitator
+inventory event 1 and product-system duties 9–13 in addition to source C31's
+human path events 2–8. `source_precedence` is empty although P1/C11 makes
+reviewed operator intent authoritative and repository metadata background.
+The candidate contains both C45 withdrawal effects in component, exchange,
+risk, and workstream prose, but no dedicated off-path event; its withdrawal
+verification points to consent-preservation event 10. The reviewer marked
+that traceability gap P2; the original release requirement for a typed
+governed-state lifecycle remains unproved. No `propose`, package, 037/030
+call, product integration, or protected-holdout access followed.
+
+This falsifies the second bounded comparison in the operator-selected broad
+asynchronous wave. The v2 ledger demonstrably improves source-duty recall,
+but feeding it as advice to the unchanged candidate author does not transfer
+first-path or lifecycle ownership. Stop prompt/schema-adjacent variations
+under the goal's two-comparison rule. Diagnose the canonical role and
+transition ownership boundary before any new algorithm, time-cap, or scope
+decision; do not count richer design prose as a release-quality typed graph.
+
+## Civic source-duty ledger v2 passed its source-only gate (2026-10-01)
+
+The frozen v2 Astra/medium civic 057 ledger completed once in `99.361s`
+under its `240s` diagnostic cap, output SHA-256
+`501d2d3ac1261bfeb616a6637a8bafa472cea537a9f374eba8c742f45fc95f04`.
+CLI start events appeared by `0.121s` and the completed item at `99.038s`.
+Exact-citation and closed-shape checks pass. It has seven first-path human
+actions, two supporting human actions, six product-system duties, six dossier
+fields, one off-path withdrawal transition with both removal and unpublished-
+analysis invalidation effects, one conditional guard, eight boundaries,
+one proof duty, and four evidence controls. Independent source-first review
+against the frozen civic source/rubric found no P0, P1, or P2 inventory-role
+finding: facilitator prompt publication is F2, C45 withdrawal is T1,
+authority/privacy boundaries are B1/B5/B6, and source handling stays outside
+product duties. This is source-duty recall evidence only; it has no candidate
+relationship, complete package, preview, whole-journey timing, or release
+credit.
+
+The next fixed comparison passes this exact ledger as a cited checklist to
+one candidate author while retaining the original operator source as
+authority and the current candidate schema. Candidate relationships must
+map each material duty to correct typed owners and proof, with supporting
+actor/system inventory kept outside the first-run event sequence. Review
+the draft source-first before `propose`; stop without repair or retry at the
+first structural or P0/P1 semantic failure. If civic passes, use the same
+generic mechanism on agriculture 037 and source-only negative 030 before
+product integration. No protected-holdout access is authorized by this pass.
+The disposable civic gate-plus-author comparison is frozen at
+`/private/tmp/odylith-greenfield-ledger-candidate-v1-20261001/`, manifest
+SHA-256 `b24b07f4e51e00a8796774c2e10a0557e9c75f9cdfa362f7f69fdf9e18700afd`.
+It uses the installed gate and unchanged candidate schema. One Astra/medium
+gate call has a `120s` diagnostic cap and must pass installed
+`authority-check` before one Astra/medium candidate call with a `300s`
+diagnostic cap. The candidate cap gives the prior `158.004s` author result
+room for the accepted 13,213-byte ledger; neither cap is a release SLO.
+One complete public journey, including semantic comparison and preview,
+must still establish the eventual finite asynchronous bound.
+
+## Frozen asynchronous source-duty ledger v2 comparison (2026-10-01)
+
+The source-only successor is frozen outside the product tree at
+`/private/tmp/odylith-greenfield-async-ledger-v2-20261001/`, manifest SHA-256
+`3096ce018e086aaa17416d38f3c92390b14c31dc4403445a021ac6391d112cd3`.
+It uses separate exact-cited arrays for first-path human actions, supporting
+human actions, system duties, state fields, off-path transitions with effects,
+conditional guards, boundaries, proof duties, and evidence controls; it
+authors no relationship graph. One Astra/medium civic 057 source-only call
+has a `240s` diagnostic cap, based on v1's `145.525s` completion plus
+`94.475s` observation margin. The runner is single-use and timestamps CLI
+JSONL events. Structural exact-citation and role checks plus independent
+source-first review against the frozen public rubric must pass before any
+candidate, agriculture, or source-only-negative call. Retire at the first
+timeout, invalid source reference, missing civic P1 duty, or false role;
+do not repair, retry, or open the protected holdout.
+The public rubric SHA-256 is
+`a20bd6cc09e5d4da9b8f0fe5f957ccaebef42238a172d7e585be23e8d5e34e0e`.
+
 ## Asynchronous source-inventory v1 civic no-go (2026-10-01)
 
 The frozen source-only Astra/medium civic 057 call completed once in
