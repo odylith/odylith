@@ -1,5 +1,17 @@
 - Bug ID: CB-324
 
+## Operator chose broad asynchronous verification direction (2026-10-01)
+
+The operator chose to preserve broad free-form and complex inputs and permit
+a separately bounded asynchronous source-verification flow. The provisional
+`300s` whole pre-confirm cap is retired for this path; a new finite bound
+must be measured on fixed public complete journeys before release. The
+`180s` interactive target and `60s` commit-only contract remain. This
+decision authorizes a source-first obligation verifier before sealing, not
+a claim that longer model time fixes the civic withdrawal, agriculture
+reviewer-acceptance, or source-role errors. CB-324 stays open pending
+cross-domain public semantic proof and all downstream release gates.
+
 ## Whole-journey timeout cannot be inferred from proposal receipt (2026-10-01)
 
 The current CLI starts its measured preconfirm interval inside `propose`,

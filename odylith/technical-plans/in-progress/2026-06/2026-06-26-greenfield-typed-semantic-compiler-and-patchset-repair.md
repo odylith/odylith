@@ -1,5 +1,37 @@
 Status: In progress
 
+## Operator decision: broad input with bounded asynchronous verification (2026-10-01)
+
+The operator selected the recommended material contract change after the
+public comparison stop. Preserve the broad free-form, cross-domain and
+complex-evidence envelope. Retire the provisional `300s` whole pre-confirm
+hard cap for this path; measure and version a new finite asynchronous bound
+from fixed public end-to-end runs before production promotion. Retain `180s`
+as an advisory interactive performance target and `60s` for commit-only
+CONFIRM. The old `180s` runtime profile and proposal-local timer remain
+implemented facts, not proof of the newly selected contract. Do not simply
+raise those constants: the whole journey must account for host gate,
+source-verification, candidate authoring, semantic comparison, deterministic
+compilation, sealing, and preview across invocations.
+
+The next bounded public hypothesis separates source-duty discovery from
+candidate authoring. One compact, exact-source-cited inventory must identify
+independently testable product obligations, including off-path state changes,
+conditional guards, actor and system duties, and proof boundaries, while
+excluding evidence-handling instructions from product features. The inventory
+does not author the package. A candidate and a source-first comparison must
+prove each inventory duty has a correct typed owner and relationship; words
+appearing somewhere in prose do not count. This is an explicitly authorized
+verification role, not an authority to mutate a candidate after sealing.
+Freeze the generic experiment before one fixed public civic 057 run, then
+continue to agriculture 037 and the source-only 030 negative only if civic
+passes structural and independent P0/P1 review. Do not retune or repair a
+failed candidate, add a model ladder, or open the protected holdout. An
+asynchronous deadline is a safety boundary; extra time alone is no semantic
+credit. Product integration starts only after the public source-to-claim
+comparison improves quality, and release claims still require every original
+gate in order.
+
 ## Whole-journey clock boundary diagnosis (2026-10-01)
 
 The public CLI returns `candidate-contract`, accepts a host-authored gate at
