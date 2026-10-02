@@ -1,6 +1,6 @@
 ---
 description: Validate Guidance Behavior pressure cases and high-risk guidance contracts.
-argument-hint: [--case-id CASE_ID] [--json]
+argument-hint: "[--case-id CASE_ID] [--json]"
 ---
 
 Validate Guidance Behavior pressure cases and high-risk guidance contracts.
