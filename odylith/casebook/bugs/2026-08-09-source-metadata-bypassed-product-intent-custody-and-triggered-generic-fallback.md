@@ -13,9 +13,11 @@ Evidence: `/private/tmp/odylith-greenfield-ledger-candidate-v1-20261001/`.
 
 Despite the accepted source-duty ledger, independent source-first review
 found P1 first-run pollution: supporting facilitator inventory event 1 and
-system duties 9–13 entered the source C31 path. It also found P1 loss of
-explicit operator-versus-repository source precedence (`source_precedence`
-is empty). Both withdrawal effects survive in design prose, but no
+system duties 9–13 entered the source C31 path. An initial second P1 about
+empty `source_precedence` was withdrawn after contract review: that field
+orders product events; the authority gate and `product_intent_authority`
+own operator-versus-repository evidence priority. Both withdrawal effects
+survive in design prose, but no
 dedicated off-path canonical event binds the transition; that remains a
 typed lifecycle proof gap. The exact variant is retired before proposal,
 package, 037/030, product integration, or final holdout. Broad asynchronous

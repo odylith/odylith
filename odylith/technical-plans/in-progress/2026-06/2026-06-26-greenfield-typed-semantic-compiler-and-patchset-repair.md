@@ -15,11 +15,13 @@ The frozen request/runner manifest SHA-256 is
 artifacts are under
 `/private/tmp/odylith-greenfield-ledger-candidate-v1-20261001/`.
 
-The schema check passed, but independent source-first review found two P1s.
+The schema check passed, but independent source-first review found one P1.
 `provisional_design.first_run.event_orders` includes supporting facilitator
 inventory event 1 and product-system duties 9–13 in addition to source C31's
-human path events 2–8. `source_precedence` is empty although P1/C11 makes
-reviewed operator intent authoritative and repository metadata background.
+human path events 2–8. The review's initial second P1 was withdrawn:
+`source_precedence` expresses product-event ordering, not operator-versus-
+repository evidence authority. The authority gate and `product_intent_authority`
+own the latter contract; an empty event-order array does not prove its loss.
 The candidate contains both C45 withdrawal effects in component, exchange,
 risk, and workstream prose, but no dedicated off-path event; its withdrawal
 verification points to consent-preservation event 10. The reviewer marked
