@@ -22,9 +22,9 @@ def _observation(profile_id: str) -> dict[str, object]:
     }
 
 
-def test_v24_profiles_are_detached_single_candidate_release_evidence() -> None:
+def test_v25_profiles_are_detached_single_candidate_release_evidence() -> None:
     assert profiles.GREENFIELD_MODEL_PROFILE_CONTRACT_VERSION == (
-        "odylith.greenfield.model-profile-contract.v24"
+        "odylith.greenfield.model-profile-contract.v25"
     )
     assert profiles.supported_greenfield_model_profile_ids() == (
         profiles.STANDARD_PROFILE_ID,
@@ -46,7 +46,7 @@ def test_v24_profiles_are_detached_single_candidate_release_evidence() -> None:
             profiles.declared_greenfield_model_profile_ids(),
         )
     ] == [
-        ("gpt-6-astra", "medium", 90.0, 165.0),
+        ("gpt-6-astra", "medium", 90.0, 300.0),
         ("gpt-5.6-luna", "medium", 120.0, 165.0),
         ("gpt-5.6-sol", "high", 150.0, 165.0),
     ]
@@ -72,7 +72,7 @@ def test_only_candidate_authoring_is_a_declared_release_evidence_role() -> None:
         ("model", "other-model"),
         ("reasoning_effort", "other-effort"),
         ("effective_timeout_seconds", 0),
-        ("effective_timeout_seconds", 166.0),
+        ("effective_timeout_seconds", 301.0),
         ("authoring_tier", "rescue"),
     ),
 )
@@ -96,9 +96,18 @@ def test_control_and_diagnostic_tiers_are_not_runtime_success_routes(tier: str) 
     "profile_id",
     (
         "greenfield-retired-composition-v0",
+        "greenfield-standard-host-candidate-astra-medium-v20",
         "greenfield-legacy-authoring-v0",
     ),
 )
 def test_retired_composition_profiles_have_no_compatibility_alias(profile_id: str) -> None:
     with pytest.raises(ValueError, match="unsupported Greenfield model profile"):
         profiles.get_greenfield_model_profile(profile_id)
+
+
+def test_standard_budget_revision_keeps_control_budgets_and_completion_reserve() -> None:
+    assert profiles.GREENFIELD_COMPLETION_RESERVE_SECONDS == 15.0
+    assert profiles.STANDARD_PROFILE_ID.endswith("-v21")
+    assert profiles.get_greenfield_model_profile(profiles.STANDARD_PROFILE_ID).operational_timeout_seconds == 315.0
+    assert profiles.get_greenfield_model_profile(profiles.RESCUE_PROFILE_ID).operational_timeout_seconds == 180.0
+    assert profiles.get_greenfield_model_profile(profiles.DEEP_PROFILE_ID).operational_timeout_seconds == 180.0

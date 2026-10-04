@@ -15,12 +15,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 164,
-    "mapped_workstream_evidence_count": 149,
+    "explicit_event_count": 170,
+    "mapped_workstream_evidence_count": 150,
     "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 164
+    "timeline_event_count": 170
   },
   "name": "Execution Engine",
   "path_prefixes": [
@@ -28,6 +28,162 @@
   ],
   "spec_ref": "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "sha256:62b67e1f685b7fef51102005dddd27774be3fee38c42965c53aab035d0b6b221"
+      ],
+      "confidence": "low",
+      "event_index": 1510,
+      "explicit_components": [],
+      "kind": "ambient_signal",
+      "mapped_components": [
+        "execution-engine",
+        "odylith",
+        "registry"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work. 1 verifiable artifact reference.",
+      "ts_iso": "2026-10-02T23:06:20Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "src/odylith/bundle/assets/odylith/README.md"
+      ],
+      "confidence": "high",
+      "event_index": 1481,
+      "explicit_components": [],
+      "kind": "ambient_signal",
+      "mapped_components": [
+        "execution-engine",
+        "odylith",
+        "odylith-chatter",
+        "registry"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work. 1 verifiable artifact reference.",
+      "ts_iso": "2026-10-02T05:49:18Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 4,
+      "artifacts": [
+        "sha256:88592c0cf9cc11b3cb366910ddfcc5fd50d8ea808a8c20e2047c9bffb4028671",
+        "sha256:f21fc95b67853ff2e443a8f9d94dcf83c00fc4831cc27fe916d7e862042e92ff",
+        "sha256:474036526f67b147d13ae5364992b43225f28e54fb30ddfc04becbd452950565",
+        "sha256:658df68f05bb7ee0b24f1b520e15b0f00a25ec939e202f64cf68fd979ddc0907"
+      ],
+      "confidence": "low",
+      "event_index": 1477,
+      "explicit_components": [],
+      "kind": "ambient_signal",
+      "mapped_components": [
+        "execution-engine",
+        "odylith",
+        "registry"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work. 4 verifiable artifact references.",
+      "ts_iso": "2026-10-02T05:48:36Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "src/odylith/bundle/assets/odylith/README.md"
+      ],
+      "confidence": "high",
+      "event_index": 1473,
+      "explicit_components": [],
+      "kind": "ambient_signal",
+      "mapped_components": [
+        "execution-engine",
+        "odylith",
+        "odylith-chatter",
+        "registry"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work. 1 verifiable artifact reference.",
+      "ts_iso": "2026-10-02T05:44:26Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "odylith/README.md"
+      ],
+      "confidence": "high",
+      "event_index": 1470,
+      "explicit_components": [
+        "execution-engine",
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "registry"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work. 1 verifiable artifact reference.",
+      "ts_iso": "2026-10-02T04:40:45Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/visibility_replay.py"
+      ],
+      "confidence": "high",
+      "event_index": 1439,
+      "explicit_components": [
+        "benchmark",
+        "compass",
+        "delivery-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "benchmark",
+        "compass",
+        "delivery-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-09-30T07:05:03-07:00",
+      "workstreams": [
+        "B-096"
+      ]
+    },
     {
       "artifact_count": 0,
       "artifacts": [],

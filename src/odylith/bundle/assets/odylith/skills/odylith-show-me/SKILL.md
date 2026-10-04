@@ -43,10 +43,22 @@ placeholder products in response to a show-me request.
 5. If the operator names a new project, architecture, research goal, or
    feature after an empty/thin show result, do not refuse because source is
    absent. Run `./.odylith/bin/odylith greenfield candidate-contract --repo-root .
-   --prompt "<their request>"` first. The active host reasons once over that
-   complete contract, writes one matching candidate to a temporary file outside
-   the repository, then runs `./.odylith/bin/odylith greenfield propose --repo-root
-   . --prompt "<their request>" --candidate-file "<temporary-file>"`.
+   --prompt "<their request>"` first. Run one constrained `authority_gate` pass
+   outside the repository, then `greenfield authority-check --repo-root . --prompt
+   "<their request>" --gate-file '<gate-file>' --format json`. Stop on
+   clarification. Inventory source duties using `source_ledger_schema` outside
+   the repository and run `greenfield source-ledger-check --repo-root . --prompt
+   "<their request>" --ledger-file '<ledger-file>' --format json`. Stop on
+   clarification. Give its `decision_task` to one bounded source-only verifier
+   and save the matching verdict JSON outside the repository. Rerun
+   `greenfield source-ledger-check --repo-root . --prompt "<their request>"
+   --ledger-file '<ledger-file>' --decision-file '<decision-file>' --format json`.
+   Any non-yes stops before candidate authoring. Only this second admitted check
+   supplies the accepted receipt to save outside the repository. Then the
+   active host reasons once over the candidate contract, writes one matching
+   candidate outside the repository, and runs `./.odylith/bin/odylith greenfield
+   propose --repo-root . --prompt "<their request>" --gate-file '<gate-file>'
+   --candidate-file '<candidate-file>' --ledger-file '<receipt-file>'`.
    `propose` deterministically validates that untrusted candidate, compiles typed
    evidence, and quality-gates the full staged ProductCreateTransaction
    for read-only review. It publishes nothing, but prints `odylith greenfield decide
@@ -60,7 +72,10 @@ placeholder products in response to a show-me request.
    decision commands, offer publication, or run create from a chat approval. Ask one
    focused question only for material uncertainty; otherwise show assumptions.
    CONFIRM and REJECT share one bounded owner without compiler or model work. EDIT
-   verifies the retained hash, uses sealed original source plus new untrusted correction,
+   verifies the retained hash, repeats the gate, source-ledger preflight, one
+   bounded source-only verifier, and receipt check with `--decision-file` against
+   sealed original source plus new untrusted correction, passes the accepted
+   `--ledger-file` receipt,
    preserves original tier and 90/120/150 limits, retains the immutable old seal, and
    returns a new hash and preview. Explicit terminal operator `greenfield create` with `--transaction-file`,
    `--transaction-hash`, and `--confirm` remains a separate deterministic interface:

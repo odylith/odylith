@@ -163,8 +163,8 @@ def test_scoring_reuses_the_native_metadata_receipt_validator() -> None:
     ("path", "value"),
     [
         (("runtime_semantic_model_call_count",), 1),
-        (("effective_model_window_seconds",), 165.001),
-        (("elapsed_seconds",), 165.001),
+        (("effective_model_window_seconds",), 300.001),
+        (("elapsed_seconds",), 300.001),
         (("elapsed_seconds",), float("nan")),
         (("host_candidate", "source_sha256"), ""),
         (("host_candidate", "raw_candidate_sha256"), "g" * 64),

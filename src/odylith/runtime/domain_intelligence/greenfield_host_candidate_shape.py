@@ -16,9 +16,15 @@ from odylith.runtime.domain_intelligence.greenfield_model_source_citations impor
 from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     MAX_AUTHORED_FIELD_VALUE_CHARS,
 )
+from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
+    greenfield_source_duty_binding_schema,
+)
+from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
+    verify_greenfield_source_duty_ledger_receipt,
+)
 
-HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v18"
-HOST_EVENT_CITATION_FIELD = "source_citation"
+HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v21"
+HOST_SOURCE_DUTY_BINDING_FIELD = "source_duty_binding"
 
 
 def _context_citation_schema(*, description: str = "") -> dict[str, Any]:
@@ -55,6 +61,10 @@ def greenfield_host_candidate_schema() -> dict[str, Any]:
     schema = greenfield_authoring_schema()
     schema["properties"]["version"]["enum"] = [HOST_CANDIDATE_FORMAT_VERSION]
     authored = schema["properties"]["result"]["anyOf"][0]
+    authored["required"].append(HOST_SOURCE_DUTY_BINDING_FIELD)
+    authored["properties"][HOST_SOURCE_DUTY_BINDING_FIELD] = (
+        greenfield_source_duty_binding_schema()
+    )
     facts = authored["properties"]["facts"]
     for field, fact_schema in tuple(facts["properties"].items()):
         description = str(fact_schema.get("description") or "")
@@ -79,21 +89,17 @@ def greenfield_host_candidate_schema() -> dict[str, Any]:
         "source bytes also carry one component responsibility."
     )
     facts["required"] = [
-        field for field in facts["required"] if field != "first_path"
+        field for field in facts["required"] if field not in {"first_path", "supporting_events"}
     ]
     facts["properties"].pop("first_path")
+    facts["properties"].pop("supporting_events")
     event = authored["properties"]["events"]["items"]
-    event["required"] = [
-        *event["required"],
-        HOST_EVENT_CITATION_FIELD,
-    ]
-    event["properties"][HOST_EVENT_CITATION_FIELD] = {
-        **_context_citation_schema(),
-        "description": (
-            "The exact source citation for this event. Each event owns exactly one "
-            "citation; do not return a separate facts.first_path list."
-        ),
-    }
+    event["required"] = ["actor_fact"]
+    event["properties"] = {"actor_fact": event["properties"]["actor_fact"]}
+    event["description"] = (
+        "Select only the actor fact. The accepted source ledger owns each event citation, "
+        "action quote, and target quote through source_duty_binding."
+    )
     return schema
 
 
@@ -101,6 +107,7 @@ def canonical_greenfield_host_candidate(
     response: Mapping[str, Any],
     *,
     evidence_text: str,
+    source_duty_receipt: Mapping[str, Any],
 ) -> dict[str, Any]:
     """Project unique host contexts into the unchanged canonical validator shape."""
 
@@ -120,7 +127,7 @@ def canonical_greenfield_host_candidate(
         raise ValueError("Greenfield host candidate result has an invalid shape")
     facts = result.get("facts")
     events = result.get("events")
-    if not isinstance(facts, Mapping) or "first_path" in facts:
+    if not isinstance(facts, Mapping) or {"first_path", "supporting_events"} & set(facts):
         raise ValueError(
             "Greenfield host candidate must not duplicate first-path citation authority"
         )
@@ -131,6 +138,9 @@ def canonical_greenfield_host_candidate(
     ):
         raise TypeError("Greenfield host candidate events must be a non-empty array")
     evidence = evidence_text.encode("utf-8")
+    ledger = verify_greenfield_source_duty_ledger_receipt(
+        source_duty_receipt, evidence_text=evidence_text
+    )["ledger"]
     canonical_facts = {
         field: _canonical_fact_value(
             evidence,
@@ -156,32 +166,58 @@ def canonical_greenfield_host_candidate(
     canonical_facts["operational_constraints"] = canonical_constraints
     canonical_events: list[dict[str, Any]] = []
     path_citations: list[Any] = []
-    seen_source_citations: set[tuple[tuple[str, Any], ...]] = set()
+    supporting_citations: list[Any] = []
+    binding = result[HOST_SOURCE_DUTY_BINDING_FIELD]
+    first_path_orders = {
+        row["event_order"] for row in binding["first_path_actions"]
+    }
+    duty_by_id = {
+        row["id"]: row
+        for section in ("first_path_actions", "supporting_human_actions", "system_duties")
+        for row in ledger[section]
+    }
+    duty_by_order = {
+        row["event_order"]: duty_by_id[row["duty_id"]]
+        for section in ("first_path_actions", "supporting_human_actions", "system_duties")
+        for row in binding[section]
+    }
+    if set(duty_by_order) != set(range(1, len(events) + 1)):
+        raise ValueError("Greenfield host events must bind one source action atom each")
     event_fields = frozenset(
         authored_schema["properties"]["events"]["items"]["required"]
     )
-    for raw_event in events:
+    for event_order, raw_event in enumerate(events, start=1):
         if not isinstance(raw_event, Mapping) or set(raw_event) != event_fields:
             raise ValueError("Greenfield host candidate event has invalid fields")
-        event = deepcopy(dict(raw_event))
-        if HOST_EVENT_CITATION_FIELD not in event:
-            raise ValueError("Greenfield host candidate event has no source citation")
+        duty = duty_by_order[event_order]
         citation = canonical_citation_from_host_selection(
             evidence,
-            event.pop(HOST_EVENT_CITATION_FIELD),
+            duty["event_ref"],
         )
-        path_citations.append(citation)
-        citation_identity = tuple(sorted(citation.items()))
-        if citation_identity in seen_source_citations:
-            raise ValueError(
-                "Greenfield events must use distinct non-overlapping source citations"
-            )
-        seen_source_citations.add(citation_identity)
+        event = {
+            "actor_fact": deepcopy(raw_event["actor_fact"]),
+            "action_quote": duty["action"],
+            "target_quote": duty["target"],
+        }
+        if event_order in first_path_orders:
+            path_citations.append(citation)
+        else:
+            supporting_citations.append(citation)
         canonical_events.append(event)
     canonical_facts["first_path"] = path_citations
+    canonical_facts["supporting_events"] = supporting_citations
     canonical_result = deepcopy(dict(result))
+    canonical_result.pop(HOST_SOURCE_DUTY_BINDING_FIELD)
     canonical_result["facts"] = canonical_facts
     canonical_result["events"] = canonical_events
+    terminal = canonical_result.get("terminal")
+    if isinstance(terminal, dict) and isinstance(terminal.get("result_fact"), dict):
+        result_fact = terminal["result_fact"]
+        if result_fact.get("field") == "first_path":
+            source_row = result_fact.get("row")
+            if type(source_row) is not int or source_row not in first_path_orders:
+                raise ValueError("Greenfield terminal must cite a selected first-path fact")
+            result_fact["row"] = sum(order <= source_row for order in first_path_orders)
     candidate["result"] = canonical_result
     return candidate
 
@@ -208,7 +244,7 @@ def _canonical_fact_value(
 
 __all__ = [
     "HOST_CANDIDATE_FORMAT_VERSION",
-    "HOST_EVENT_CITATION_FIELD",
+    "HOST_SOURCE_DUTY_BINDING_FIELD",
     "canonical_greenfield_host_candidate",
     "greenfield_host_candidate_schema",
 ]

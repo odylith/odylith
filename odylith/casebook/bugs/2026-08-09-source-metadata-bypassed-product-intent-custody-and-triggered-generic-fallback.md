@@ -1,5 +1,753 @@
 - Bug ID: CB-324
 
+## Broad proof and serialized browser rerun (2026-10-03)
+
+After the field-identity correction, the broad Greenfield lane reports 2,891
+passing tests and one failure in 265.43 seconds. The file-protocol killed-writer
+browser test passes its generation, recovery and journal assertions, then
+detects changed original source assets: concurrent maintainer Compass/Casebook
+refreshes changed the same files whose hashes it froze. The HTTP variant
+passes. Preserve the failed run at
+`/private/tmp/odylith-greenfield-broad-after-field-identity-20261002.log`;
+do not describe the entire lane as passing or weaken its source-isolation check.
+Settle governed views first, then rerun both protocol variants with source
+assets held still. This is a test orchestration correction; package admission
+and independent semantic qualification remain open.
+
+Serialized rerun passes both file and HTTP variants (2026-10-03); the complete
+prior broad run remains recorded as one failure. No test or runtime change was
+needed to preserve the source-isolation assertion. See
+`/private/tmp/odylith-greenfield-serialized-browser-recovery-20261003.log`.
+
+## Fresh v16 reaches candidate but rejects lifecycle field relationship (2026-10-02)
+
+The frozen civic source with the v15 full distribution and corrected controller
+completes gate, inventory, source-only verification, and candidate once each.
+Inventory: 129.526 seconds / 15,281 bytes; verifier: 40.515 seconds / 3,048
+bytes; completeness yes with zero omissions. Candidate output: 22,908 bytes.
+Shared gate/candidate proposal phase: 86.171 seconds, including local work.
+Whole diagnostic journey: 256.213 seconds, within existing caps.
+Proposal returns rc2: `source lifecycle effect is bound to a different state field`.
+No package, preview, transaction, publication, or post-receipt model exists.
+Retain all v16 evidence unchanged outside repo. This falsifies the complete
+admission prediction while proving candidate authorship can finish in budget.
+
+The accepted inventory declares `aggregate analysis` as one field, but its
+withdrawal effects name `aggregate analysis inputs` and `aggregate analysis
+validity`. The candidate binds both effects to the accepted analysis field.
+The passive lifecycle owner requires exact source-authored field-label
+identity and rejects both. Source-only entailment accepts the effects without
+establishing their typed parent-field relationship. Determine whether the
+inventory or candidate must own that relationship; preserve all three effects
+and strict invalid-reference refusal. Do not relax equality into a heading,
+substring, vocabulary, or semantic-guess fallback; do not repair/reuse v16.
+Compare the smallest single-owner correction before another public run.
+
+Bounded read-only diagnosis confirms no candidate can satisfy that admitted
+inventory under existing exact-identity rules. The source inventory task does
+not receive the exact-label requirement; candidate requirements carry it only
+after labels are accepted. Choose upstream enforcement of the existing rule
+over a new field/aspect schema: canonical field labels remain references,
+while change and observable_check preserve each distinct withdrawal effect.
+One shared identity owner must reject duplicate/missing object+field identities
+before verifier dispatch, enforce the same ID in candidate binding, and drive
+passive projection. This preserves broad free-form input and all observed
+source meaning without another model or semantic interpretation stage.
+
+The correction passes 203 focused tests and 191 independent checks. One
+resolver now owns exact object/field identity across preflight, compact
+expansion, receipt revalidation, binding, and lifecycle. Ordered effects keep
+their distinct changes/checks even when they share a field. Inventory guidance
+reaches the actual nested host task. Independent review caught interpolation
+of an untrusted transition ID in a new error; it now emits only numeric paths
+and a fixed category, with a public JSON privacy probe passing. The 115 core
+checks rerun after that message correction also pass. Authentic host-driver
+suppression passes 91 checks: real compiler preflight rejects missing and
+duplicate identities after gate/inventory, with zero verifier/candidate/proposal
+calls, private retained failures, final sink and cleanup. Fresh installed
+package admission remains required. Valid schema shapes, versions, model stages, and caps are
+unchanged; v16 is not repaired or reused.
+
+Atlas provenance audit cannot establish qualification for eight additional
+review-only metadata advances outside D-043/D-045. Their writer and the three
+IDs behind the earlier ephemeral stale-count difference are unknown. Preserve
+fingerprints and mark those eight review dates unqualified, alongside the
+original sixteen. Scoped source/render proof qualifies only D-043/D-045;
+catalog view refresh preserves all 24 unqualified dates. Before/after external
+snapshots retain custody; no unrelated diagram is reviewed or rendered.
+
+The complete install unit lane now passes all 1,827 tests in 129.03 seconds.
+This supersedes the pending full rerun, not the historical failed invocation;
+it does not qualify package semantics or release readiness.
+
+## Host diagnostic and terminal observer custody (2026-10-02)
+
+One exact authority-gate diagnostic reconstructed the v15 compiler contract
+hash and gate schema unchanged. Astra-medium returned admission in 13.575
+seconds; its event trace contains one agent message and no tool or command
+events. The JSONL diagnostic argv differs from the production call, and the
+original v15 environment/streams were not retained. This does not identify
+v15's timeout cause, qualify a package, or authorize receipt reuse.
+Retain the diagnostic outside repo at
+`/private/tmp/odylith-greenfield-v15-exact-gate-diagnostic-20261002/`.
+
+The shared process-group transport correction passes 279 focused checks,
+including authentic stdin, partial streams, group cleanup, and failed-stage
+suppression. Independent review passes 112 checks but finds another P1:
+terminal lifecycle-observer write failure raises before host stream retention
+and masks a nonzero or timeout outcome. A real rc9 reproduction retains zero
+stdout/stderr callbacks and loses terminal diagnostic metadata. Carry the
+complete terminal result through the observer error, retain it before failure,
+and preserve the command failure as primary with telemetry failure attached.
+Require authentic failing-observer proof and independent rereview before the
+next complete public flow. No further limit increase, retry, or semantic
+stage is introduced.
+
+Correction passes 288 focused checks; independent rereview passes 121 and
+clears the terminal-observer P1. Authentic process controls cover all four
+host stages at rc0/7 and authority-gate timeout124, exact retained streams,
+failed diagnostics without private excerpts, no later calls, and cleanup.
+Command failure remains primary, with telemetry failure attached. Success
+observation v12 remains unchanged. Cleanup proof covers the owned process
+group only; a descendant escaping it is explicitly unverified. Fresh v16
+package quality and release qualification remain open.
+
+## Host deadline cleanup and failed-stream custody defects (2026-10-02)
+
+Independent review reproduces a P1 in the release host boundary: direct
+subprocess.run timeout cleanup kills its direct child but can leave a detached
+descendant alive or block on a surviving descendant's stdout/stderr pipe.
+The existing shared process-group runner already owns bounded cleanup; host
+calls bypass it because it lacks stdin text support. Another P1 discards
+TimeoutExpired partial streams before any retention callback. Failed gate
+diagnostics therefore cannot distinguish model/provider behavior from local
+execution stalls. Existing empty exception tests do not cover either defect.
+
+Adopt the shared group owner with optional stdin text, preserve partial
+stdout via stage callbacks and raw stderr outside repo via a diagnostic
+callback, and prove descendants terminate plus no later phase/transaction
+runs. Do not put private excerpts in observations or add retries/caps/stages.
+An isolated same-model availability request passed in 4.507 seconds with no
+network/auth/limit error; v15's specific provider cause remains unknown.
+
+## Fresh v15 authority-gate timeout; no authoring measurement (2026-10-02)
+
+The unchanged civic source on the fresh v15 full distribution timed out at
+the first authority gate after 300.026 seconds. Observation v12 records one
+host call, zero inventory/verifier/candidate/proposal calls, no post-receipt
+provider work, and cleaned temporary files/workspace. No package exists.
+The executable and argv hashes match v13/v14. This fails the complete-journey
+prediction; it does not establish candidate latency under the revised window.
+Retain `/private/tmp/odylith-greenfield-public-civic-057-v15-output.json` and
+its evidence unchanged. No public rerun or further cap increase before host
+diagnosis. The TimeoutExpired stdout/stderr was not retained by the driver,
+so current evidence cannot distinguish provider unavailability, stalled
+execution, or process cleanup defects. Local auth status alone is insufficient.
+
+## Recovery caller omitted current receipt and budget (2026-10-02)
+
+Independent review of the v21/v25 budget revision caught a P1 in the release
+recovery caller: its fixed 300-second command cap clamps the standard
+315-second operational allowance and erases completion headroom. Its obsolete
+three-argument proposal callback also omits the accepted ledger file while
+the actual driver calls candidate, gate, ledger, and timeout. The real recovery
+flow is therefore nonfunctional despite mocked-driver tests passing.
+The callback drift predates the budget revision. Retained observation also
+writes an advisory observer snapshot before the driver's final timing update.
+
+Before fresh dispatch, adopt the shared standard operational limit and exact
+accepted-ledger callback; retain the owned final observation sink in finally.
+Add an authentic caller-to-driver boundary regression for timeout, ledger
+custody, callback shape, and final retained proof. No retry or semantic owner
+is added. Primary deadline-chain independent tests passed 125 checks; that
+does not clear the recovery caller finding.
+Retained accepted-ledger and sealed-transaction artifact bytes must also be
+written in the timed proposal callback, before final observation, so their
+cost cannot disappear outside the measured whole journey.
+
+The corrected caller passes 64 focused checks through the actual driver:
+315 operational/300 model, exact fresh ledger custody, retained artifacts
+inside their timed phases, final sink after cleanup, and pre-candidate refusal
+on receipt tampering. Independent rereview and fresh installed proof remain
+required before qualification.
+
+Independent rereview clears the recovery P1s: 64 checks pass and separate
+telemetry-failure injection preserves the original error. Fresh v15 installed
+semantic proof remains open; do not call this boundary correction a package
+or release win.
+
+## Fresh v14 falsifies candidate input compaction as timing fix (2026-10-02)
+
+The unchanged frozen civic source and installed v12 semantic runtime again
+passed inventory and source-only verification: 15,259 bytes in 123.995 seconds,
+then 2,903-byte decisions in 37.939 seconds with completeness yes/no omissions.
+The candidate received transport v1, 58,660 bytes, request SHA-256
+`1c50ed7e5a8ac03743fc6ba2623d9c8534ed47199e700d4839705bf98fefd3db`.
+It timed out at the same shared 165-second model window (165.032 observed).
+Whole journey: 326.965 seconds. Four host invocations occurred once each; no
+candidate, proposal, preview, or transaction exists. Browser and recovery
+proof were not attempted. Retain the failed evidence unchanged at
+`/private/tmp/odylith-greenfield-public-civic-057-v14-evidence/`.
+
+The smaller representation preserved source custody but failed the declared
+prediction that one candidate call would produce a complete admitted package
+within existing caps. Do not call it a winning mechanism or attribute the
+small whole-journey difference to improved authoring: both candidate calls
+hit their limit. Before another provider dispatch, identify required duplicate
+source/citation reconstruction in candidate output and assess the finite
+authoring budget under the already-authorized longer bounded flow. Compare at
+most two explicit alternatives, preserve broad supported evidence and all
+semantic/transaction laws, and predeclare any versioned constraint change.
+No retained receipt becomes a new public positive; no blind cap-only rerun.
+
+## Broad transport regression: generic word in domain-leak guard (2026-10-02)
+
+The broad Greenfield suite passed 2,850 tests and failed only the static
+fixture-domain leak guard on `transport`. The new candidate transport is an
+evidence encoding mechanism; the word does not encode fixture product meaning.
+The actual fare-choice fixture names a transit fare feed and rideshare quote
+export. Replace the generic mechanism-word prohibition with `transit fare feed` and
+`rideshare`, retaining all other fixture-domain bans and rendered cross-domain
+checks. This corrects an overbroad test, not production semantics; require the
+focused cross-domain suite and independent review before checkpoint credit.
+The initial replacement `transit` also matched the generic `transition(s)`
+substring and failed the focused guard. Use the complete fixture phrase;
+retain this failed correction so the same substring mistake is not repeated.
+
+## Candidate transport review: retained profile protocol drift (2026-10-02)
+
+Independent review caught a P1 before the fresh public dispatch: observation
+v11 adds candidate request bytes, SHA-256, and transport version, but the
+release profile validator's closed host-stage field set omitted them. A real
+successful authored stage would therefore fail retained profile qualification
+as unsupported fields. The focused transport/driver tests did not traverse
+this proof handoff. Extend the authored field contract and both clarification
+absent sets, validate the exact transport version and request evidence shape,
+and prove an authentic driver observation through model-profile evidence.
+No paid v14 run occurred before this finding; no release evidence is promoted.
+
+The corrected authored field set requires all three fields and validates the
+exact transport version, positive integer byte count, and SHA-256 shape. Both
+clarification paths omit them. An actual driver observation now traverses
+model-profile evidence unchanged; authentic gate and inventory clarification
+observations and tampered-field negatives pass. Focused proof: 107 tests pass.
+Independent rereview and the fresh public outcome remain separate gates.
+
+## Fresh v13 source admission passes; candidate authoring times out (2026-10-02)
+
+The corrected driver used the unchanged installed v12 distribution and the
+frozen public civic case. One inventory returned 14,653 bytes in 126.772
+seconds, passed preflight, and received an accepted source-duty receipt after
+one source-only verifier returned 2,654 bytes in 41.749 seconds. Completeness
+was yes with no omissions. Candidate authoring then timed out at the shared
+165-second proposal model window. Whole observed journey: 333.549 seconds,
+within the unqualified 660-second diagnostic ceiling. Four host invocations
+occurred, one per phase; no candidate, proposal, preview, or transaction exists.
+Retain the failed run unchanged at
+`/private/tmp/odylith-greenfield-public-civic-057-v13-evidence/`.
+
+This clears the previous driver integration blocker but does not establish a
+complete semantic positive. Measure the candidate request before the next
+change: the driver currently sends the entire all-stage contract plus the
+expanded accepted receipt. Compare a lossless candidate-only transport using
+the existing compiler owners, preserving complete source, material duties,
+constraints, candidate rules, and schema. Do not increase caps, reuse the
+retained receipt as new public proof, or introduce a second semantic owner.
+
+The bounded transport correction reconstructs the old request at 93,600 bytes
+and the implemented candidate-only view at 58,841 bytes (37.14 percent smaller).
+The existing receipt/gate owners validate source custody, and the existing
+compact bank preserves every material row and citation. Full receipt custody
+remains external for proposal admission. The 206 passing focused/adjacent tests
+prove representation and integration, not the live prediction or semantic
+quality. The failed v13 evidence remains unchanged.
+
+## Installed v12 advances preflight; stale release-driver task contract (2026-10-02)
+
+The next fresh inventory returned 15,890 bytes in 129.344 seconds and passed
+installed product source-ledger preflight. Its bound decision task contains
+`authority_source`, `source_duty_ledger`, `reference_index_order`, `task`,
+`decision_set_schema`, and `verifier_task_sha256`. The driver still required
+`decision_task.source_sha256` and `decision_task.ledger_sha256`, fields removed
+from the compact task. Those hashes remain in the compiler-owned preflight.
+The driver therefore stopped before dispatching verification despite product
+preflight success. Whole observed journey: 141.796 seconds. Retain v12 raw
+evidence unchanged at
+`/private/tmp/odylith-greenfield-public-civic-057-v12-evidence/`.
+
+This is a release-driver integration defect, not a failed semantic verdict or
+complete package. Align the guard with the actual product-owned task and its
+hash custody, using the shared compiler owner rather than copying its hash
+algorithm. Add an authentic producer-to-driver contract regression; synthetic
+fixtures carrying removed fields hid the defect. Continue with fresh source
+authoring after the corrected driver. No retained v12 output becomes a positive.
+
+## Checkpoint audit: show-me omitted source-only verification (2026-10-02)
+
+The source and bundled `odylith-show-me` skills called the first source-ledger
+check an accepted receipt and then instructed candidate authoring. That call
+returns structural preflight plus `decision_task`, not semantic admission.
+The EDIT instructions also omitted the verifier and second check. The
+Greenfield governance skill and runtime enforce the correct two-check flow.
+Align the show-me source/mirror and strengthen their shared guidance gate to
+require `decision_task`, one bounded source-only verifier, and a second
+`source-ledger-check --decision-file` before candidate or EDIT.
+
+This is a P1 guidance gap. The v12 diagnostic distribution was frozen before
+this correction; its external controller uses the correct two-check path.
+Its semantic comparison cannot qualify the repaired show-me route or native
+host parity. A subsequent clean distribution must contain the corrected
+guidance before release.
+
+## Fresh v5 installed civic run: unused citation bookkeeping rejection (2026-10-02)
+
+The unchanged frozen public civic case (SHA-256
+`1ecfded303927f4a8aba4ddd5181c6d7507c3aa9795662e9d28b1c0457bdbe2c`)
+ran through the freshly rebuilt full 0.1.15 distribution. Authority admitted;
+one source inventory returned 16,399 bytes in 135.306 seconds: seven first-path
+actions, one supporting human action, five system duties, six state fields,
+one off-path transition, two guards, ten boundaries, and one proof duty.
+Preflight rejected `compact citations must all be referenced`. The sole unused
+bank entry was the exact opening product-outcome sentence. No verifier,
+candidate, preview, or transaction exists. Whole observed journey: 151.487
+seconds. Retain the failed run at
+`/private/tmp/odylith-greenfield-public-civic-057-v11-evidence/` unchanged.
+
+This is transport bookkeeping, not evidence that semantic admission passed.
+Compare compiler-owned bank normalization: validate every bank entry against
+the complete exact source, resolve all referenced IDs, and omit only unused
+bank storage from the canonical material ledger. Unknown/duplicate IDs,
+invalid quotes or contexts (including unused ones), missing material rows,
+and source-wide semantic incompleteness must still fail closed. No repair of
+this retained output or retry of this run is authorized as a positive.
+
+## Review correction: citation identity is not workflow order (2026-10-02)
+
+The broader runtime/install rerun passed 2,763 tests and failed 16 valid event
+ordering cases after the ascending numeric guard below was introduced.
+Independent re-adjudication confirmed a P1 regression: event numbers are
+citation identities; the ordered ledger binding list owns workflow chronology.
+The earlier joint actor/slot/first-run swap was valid renumbering and preserved
+the source workflow. Withdraw that repro and its monotonicity recommendation.
+Remove only the numeric ascending guard. Retain exact ordered list equality
+between first-run orders and ledger bindings, with positive coherent
+renumbering and negative first-run-only reversal tests. The new positive
+initially asserted invariance of raw `intent.first_path`, which is the source
+citation view rather than the labeled proposed run. Independent review traced
+`authored_first_run_relations` and found the consumer workflow already invariant.
+Changing raw first-path text collapsed the established source/design distinction
+and broke the event-ordering projection contract. Revert that attempted
+projection change and assert consumer run invariance instead. The broad rerun
+passed 2,778 tests; its sole failure was the invalid raw-field assertion.
+Historical diagnoses are retained to prevent repeating these failed corrections.
+
+## Initial candidate binding diagnosis, superseded above (2026-10-02)
+
+Independent v5 review reproduced a P1 in the existing binding validator.
+Swapping two first-path duty event orders, swapping their actor rows, and
+supplying first_run=[3,2] was accepted because first-run comparison used a set.
+Downstream canonicalization sorts by event order, so the candidate could
+reverse the source inventory's workflow. The source owner must require
+strictly increasing first-path binding orders in ledger order and exact
+ordered first-run equality. Supporting/system events may interleave without
+reordering the selected path. Direct binding and admission tamper regressions
+plus independent recheck are required before the installed public run.
+
+## Keyed source-only counterchallenge (2026-10-02)
+
+The frozen 11-row opaque challenge returned in 30.368 seconds and 1,968 bytes:
+five supported inherited-verb/action claims received yes; six changed
+actor/action/object/role claims received no. Local key custody accepted
+different map insertion order and rejected missing, extra, duplicate JSON
+keys, changed task hash, and invalid support indexes. Completeness correctly
+returned no, but its six omission citations used heading labels as context
+rather than exact excerpts containing their quotes. Exact citation checks
+reject that response; no receipt, repaired output, or retry exists.
+Retain `/private/tmp/odylith-greenfield-keyed-judgment-counter-v1-20261002/`.
+This proves these row-discrimination controls and safe rejection, not a
+positive semantic admission or complete-package release result.
+
+## Compact verifier feasibility; judgment ordering custody failure (2026-10-02)
+
+A lossless view retained every one of the 52 duty rows and three reference
+controls while reducing the verifier request by 79.5%, from 134,075 to 27,452
+bytes. The one Astra/medium call returned 52 unique yes judgments and
+source-completeness yes in 70.567 seconds and 4,607 output bytes. Original
+frozen-schema validation passed after correcting the external controller's
+shape-validator API misuse. Admission still failed its exact ordered-ID gate:
+the first returned duty was b1 rather than f1. The input object's section
+keys had been serialized alphabetically, while the expected order was private
+to the compiler. Retain the failed comparison at
+`/private/tmp/odylith-greenfield-verifier-owned-judgment-v1-20261002/` without
+sorting it into a receipt, a model retry, or a package-success claim.
+
+Move deterministic judgment order and hash expansion to the compiler. The
+verifier's closed keyed table must contain each expected duty once; workflow
+order remains in the source inventory. Semantic and complete-package release
+proof is still outstanding. The current results establish transport and
+judgment feasibility only, not a winning released mechanism.
+
+## Single action owner inventory passes; verifier input amplification stops it (2026-10-02)
+
+The unchanged public civic source returned the external single-owner inventory
+in 164.207 seconds and 20,243 bytes. Exact citation checks passed for 34 bank
+entries and 17 distinct normalized action atoms. It carried 8 first-path,
+3 supporting-human, 6 system, 10 state-field, 1 off-path transition, 5 guard,
+11 boundary, and 8 proof rows. This is structural feasibility only. The one
+source-only verifier timed out at 120.014 seconds with no item or JSON output;
+no candidate, package, or retry ran. Retain evidence at
+`/private/tmp/odylith-greenfield-single-action-owner-v1-20261002/`.
+
+The 3,313-byte source became a 134,075-byte verifier request for 52 claims.
+Each material row repeated its action, actor, event, statement, source refs,
+role refs, source hash, and claim hash in the surrounding claim object. The
+compact accepted inventory itself was 20,243 bytes. This amplification is
+observed; it does not prove why the provider timed out. Retire the duplicated
+verifier transport before a larger implementation wave. Keep the original
+inventory bytes and semantic contents unchanged in any bounded transport
+comparison. The source-verification and complete-package gates remain red.
+
+## Final observation timing defect found in review (2026-10-02)
+
+Independent review falsified observation v9's callback-inclusive time claim:
+an observer advancing the fake clock by 600 seconds returned within the
+660-second diagnostic cap, but its retained successful snapshot reported zero
+whole-journey seconds. The deadline rejected over-cap callbacks, yet the
+under-cap measurement still omitted meaningful work. This is a proof defect,
+not a semantic positive. Replace opaque final publication with one measured
+advisory callback followed by an owned final observation sink. Sample elapsed
+time and deadline after callback return; the small final timestamp JSON
+serialization boundary must be explicit. Require the 600-second regression
+to retain 600 seconds and the over-cap control to remain failed.
+
+Observation v10 now publishes the authoritative plain-dict sink after one
+measured advisory callback. Its exact elapsed scope ends before final
+timestamp JSON serialization. Retained JSON and caller stage evidence agree;
+primary errors survive observer failure. Independent review found no P0/P1
+remaining in this correction; its 10 deadline/observer controls passed. The
+worker's host/retention/recovery slice passed 115 tests. The wider slice passed
+1,223 tests and exposed one obsolete observer fixture; migrating that fixture
+to the authoritative sink passed its 20-test file. This resolves the reporting
+defect in source-local code, not consumer timing qualification or CB-324.
+
+## Whole-journey diagnostic enforcement gap (2026-10-02)
+
+The v8 release harness reports complete journey time but subtracts inventory
+and verifier time from its enforced proposal timer. It has separate finite
+phase caps and no enforced overall deadline. Complete release qualification
+already rejects the absent public-data-backed bound; a phase-success report
+must therefore remain diagnostic. The operator's earlier broad asynchronous
+choice is still authoritative and requires no new scope answer.
+
+Observation v10 now enforces one provisional 660-second diagnostic deadline,
+derived from the existing phase caps. Every dispatch is clamped to remaining
+whole time; late callback results and late cleanup fail before confirmation.
+Retained profile evidence requires an explicit unqualified bound and a
+nonexpired deadline, and rechecks those fields even in a purported passing
+profile. Product-owned timing custody across CLI invocations, a measured
+consumer bound, and the public semantic package are still unproved. This
+correction does not change the failed v10 source inventory verdict.
+
+## Civic v10 compact inventory failed atomic source custody (2026-10-02)
+
+The unchanged civic 057 source installed cleanly and passed authority admission
+under host contract v44. The compact host output was 18,050 bytes in
+`161.754s`, meeting the predeclared under-25-KB and under-200-second inventory
+targets. The whole failed journey took `174.548s`. Installed preflight rejected
+the ledger because one of its 26 citation-bank entries was unused. Retained
+evidence is at `/private/tmp/odylith-greenfield-public-civic-057-v10-evidence/`.
+
+A read-only diagnostic that excluded only that unused entry exposed the deeper
+failure: `first_path_actions[1]: source action atom is duplicated`. All seven
+first-path rows used the same broad paragraph citation (`c25`) as event,
+actor, action, and target, although the rows describe distinct actors and
+actions. No source-only verifier, candidate, transaction, or package ran.
+Compact transport reduced output and time, but did not preserve atomic
+source-to-action evidence in live authoring. Do not count this as a semantic
+win or rerun it with a wording patch. The full-citation and compact
+representations have both failed the same fixed public gate; decide the
+smallest supported evidence envelope before another mechanism attempt.
+CB-324 remains open.
+
+## Civic v9 public inventory exceeded its cap (2026-10-01)
+
+The same frozen civic request installed cleanly and passed authority admission
+under contract v43. Its source-ledger host did not return JSON within the
+300-second diagnostic cap; the host call was terminated, and the whole journey
+failed at `313.357s` before preflight, verifier, candidate, or package.
+Retained evidence is at
+`/private/tmp/odylith-greenfield-public-civic-057-v9-evidence/`. Raising the
+cap or adding another wording change would not establish consumer utility.
+The last completed v8 ledger used 107 repeated citations and 37,404 output
+bytes. Compare a smaller action-row citation representation against this
+failed mechanism on the same frozen source; preserve exact citations,
+source-wide semantic verification, and transaction custody. CB-324 is open.
+
+## Civic v8 public ledger relationship failure (2026-10-01)
+
+The unchanged civic request installed from v8 and passed authority admission.
+The host returned an inventory in `262.934s`; all 107 retained citation
+contexts were exact, unique source excerpts containing their quotes. This
+closes the v7 citation-format failure. Preflight then rejected the first path
+because an actor phrase drawn from a cited human-role sentence was a substring
+of its role citation rather than the identical citation object. A structural
+inventory of all eleven action rows found two events omitted from the redundant
+`source_refs` list and six action or target phrases drawn from explicit role
+sentences instead of the event span. No verifier, candidate, or package ran.
+The failed journey took `278.921s`; evidence is at
+`/private/tmp/odylith-greenfield-public-civic-057-v8-evidence/`.
+
+The v43 correction accepts an external actor, action, or target phrase only
+when it is inside an explicit event, source, or role citation and outside
+reference-only context. The source-only verifier still judges the full
+actor/action/target relationship against the event. The host task now requires
+the event citation unchanged in each action row's `source_refs`, since an
+affirmative decision must select that event. Focused source-binding controls
+pass `91/91`. A fresh fixed-source public attempt is required; CB-324 is open.
+
+## Civic v7 public ledger citation and preflight failure (2026-10-01)
+
+The unchanged civic 057 request against a fresh v7 local distribution installed
+cleanly and passed authority admission. The host returned one 31,257-byte
+inventory after `240.026s`, but the controller gave installed preflight only
+`0.2s` from that same host-stage budget. It timed out before a verifier,
+candidate, proposal, or package. The whole journey took `256.695s`; the run
+remains failed evidence at
+`/private/tmp/odylith-greenfield-public-civic-057-v7-evidence/`.
+
+Independent inspection of the retained ledger found that all 115 citations
+quoted source text but used section labels as `context`; none contained its
+quote as an exact source excerpt. Normal source-ledger preflight rejects the
+first row with `source citation is invalid`. Thus a longer local timeout alone
+would not admit this ledger. Contract v42 now tells the host to copy exact
+source excerpts containing each quote, and the controller gives local
+preflight and receipt checks separate 30-second budgets. The inventory host
+cap is 300 seconds for diagnosis. Focused flow and profile checks pass
+`310/310`; a new unchanged public run must prove host compliance and a useful
+complete package. CB-324 remains open.
+
+## Civic v6 public host task misassigned controller commands (2026-10-01)
+
+The first unchanged civic 057 run against a fresh local v6 distribution
+installed cleanly and passed the authority gate, then stopped at source-ledger
+preflight. The ledger host returned an environmental clarification saying the
+read-only sandbox prevented it from running Odylith or saving ledger/decision
+files. The `source_ledger.task` contract had instructed that host stage to run
+those commands even though the external harness owns them. Independently, the
+top-level CLI had never registered `source-ledger-check`; replay of the
+retained ledger returns argparse invalid choice (2), explaining the preflight
+error. The attempt made
+two host calls, reached no verifier/candidate/package/create, and produced no
+release-success evidence. Retained evidence is at
+`/private/tmp/odylith-greenfield-public-civic-057-v6-evidence/`.
+Correct the stage ownership in a versioned host contract: the model returns a
+ledger JSON only; the controller handles CLI/file custody and verification.
+Register the command at the public CLI boundary and cover the real launcher.
+CB-324 stays open pending a new unchanged public attempt and release gates.
+
+## V5 inventory omission bypass (2026-10-01)
+
+Independent second review found that the source-only verifier judges every
+listed row but has no source-wide completeness verdict. Exact authority text
+can require a guard, boundary, or proof duty that the ledger omits. The v5
+receipt then admits the incomplete ledger, and create verification succeeds;
+the reviewer reproduced transaction hash
+`a2d1f391891876d95c8089d6bd3f44ea24723360978da7020ecbf7f304d69b61`.
+The public civic run was stopped before package creation. Add one source-wide
+coverage verdict to the same pass, cite omissions on a negative result, reject
+old receipts, and prove omission recall before public qualification. CB-324
+remains open.
+
+The first frozen omitted-duty control passed in `26.298s`: four listed actions
+received `yes`, while completeness returned `no` with three exact missing-duty
+citations; admission rejected it. Request/output SHA-256 are recorded in the
+active B-142 plan. This does not prove recall over the public envelope.
+
+## Complete-row verifier repair and narrow proof (2026-10-01)
+
+The unreleased source-only verifier now requires one cited verdict for every
+action, state, transition, guard, boundary, and proof row. The receipt binds
+the full verifier task and rejects older action-only decisions. Focused gate
+and lifecycle tests passed `72/72`. A frozen, opaque-ID, single-attempt
+diagnostic accepted ten supported claims and rejected ten altered claims in
+`50.788s` under its `120s` cap; artifacts are at
+`/private/tmp/odylith-greenfield-blind-verifier-v2-20261001/`. The deliberately
+mixed diagnostic ledger cannot be admitted. CB-324 stays open pending unchanged
+public civic/agriculture full-package evidence, independent source-first review,
+and release qualification.
+
+## V4 verifier omits non-action duty entailment (2026-10-01)
+
+Independent read-only review reproduced a P1 source-to-claim bypass in the
+new v4 gate before any public package run. The decision set covers action
+sections only. Ledger preflight checks exact citations and nonblank text for
+state fields, off-path transitions, conditional guards, boundaries, and proof
+duties, but does not judge whether their stated meaning follows from those
+citations. A cited guard that says `Do not publish definitions` can be
+rewritten as `publish definitions immediately`; a boundary and proof duty
+can likewise be inverted. A complete action-only affirmative decision set
+then admits the ledger, materializes the wrong non-action text into canonical
+lifecycle/package surfaces, and produces a hash-verified transaction. The
+reviewer's concrete repro and exact final hash are retained in the current
+review handoff. Hash parity prevents later tampering; it does not certify the
+meaning of admitted ledger fields.
+
+The fixed public campaign remains stopped. Extend the same bounded
+pre-candidate source-only verifier to every material ledger duty, with exact
+source/role citations and ordered per-duty verdicts. Keep candidate design
+separate and fail closed on any missing, negative, or uncertain duty. Prove the
+inverted guard/boundary/proof regression and fixed public cases before another
+release claim. The protected holdout remains unopened.
+
+## Opaque-ID v4 action verifier diagnostic passed (2026-10-01)
+
+One frozen single-attempt source-only challenge used the production v4
+preflight/task/schema, a complete authority source, and ten interleaved opaque
+claim IDs. The Astra/medium verifier accepted all five supported actions and
+rejected all five altered verb, object, or role claims in `31.223s`, below
+its predeclared `120s` cap. The request SHA-256 is
+`f9a5882e8b82707f5c5a86f25b2224c6983db002fbf27324ef90c2076b81b29a`;
+the output SHA-256 is
+`4d3c99eafdfc60296bdba5b02b11018e1e05f6f1a09855e35df4257da593574c`.
+The frozen request, schema, output, JSONL event record, timing, and one-attempt
+lock are under `/private/tmp/odylith-greenfield-blind-verifier-v1-20261001/`.
+
+This is the first non-label-leaking source-only discrimination evidence for
+the replacement mechanism. It is a ten-claim diagnostic, not a complete civic
+or agriculture package, source-duty completeness proof, released profile,
+whole-journey latency measurement, or final-holdout qualification. CB-324
+remains open.
+
+## Source-only normalized-action discriminator passed; release remains open (2026-10-01)
+
+One frozen source-only Astra/medium comparison returned in `26.931s` under
+its predeclared `120s` diagnostic cap. It accepted all six supported action
+claims, including civic joined-clause actions and two inherited-verb claims
+from one shared citation. It rejected all four altered verb, object, actor,
+and first-path-role claims. The request SHA-256 is
+`84cace161378639fa4bfbf0040dddfb3b9af035a73659531b5352773f403fd37`;
+the output SHA-256 is
+`0251b73c00cbeb8199b02bde9895961269a55973a1b9e82ddf7f955bd32acea1`.
+Frozen input, schema, output, event log, timing, and one-attempt lock are at
+`/private/tmp/odylith-greenfield-action-entailment-v1-20261001/`.
+
+The diagnostic IDs `M-VERB`, `M-OBJECT`, `M-ACTOR`, and `M-ROLE`
+expose which rows are counterclaims. Therefore this single call proves
+compact response and timing feasibility, but it is not independent evidence
+that the model discriminated meaning. A blinded public test and source-first
+review remain necessary. The v3 ledger still cannot admit
+the inherited-verb action because it requires disjoint exact projection
+spans. Replace that representation with source-cited normalized action
+statements and a hash-bound per-duty verdict before candidate authoring.
+Preserve exact source anchors, type role custody, and fail-closed negative
+verdicts. Full civic/agriculture packages, source-first review, latency,
+transaction, installed distribution, browser, host parity, and final holdout
+remain open.
+
+## Exact role-local projection falsified by inherited verbs (2026-10-01)
+
+The ledger-owned action replacement now has explicit performer categories and
+one cited action atom per event. Independent review first reproduced a human
+action being rebound to a product actor using identical citation bytes, and a
+human/product joined clause duplicated across `first_path` and
+`supporting_events`. Typed performer-role equality rejects the actor transfer.
+Ledger v3 adds a source-local projection citation per action, and the explicit
+verb clause `Dock attendant Ivo enters a vessel tag and the product records
+berth occupancy` stages one human path and one system duty with both typed
+relations intact. Focused tests passed `142/142` after this correction.
+
+This narrower projection contract fails the broad free-form envelope on the
+minimal clause `A reviewer defines scope and audience.` when `defines scope`
+belongs to the first path and `defines audience` is supporting work. A full
+supporting quote overlaps the first-path quote; the disjoint suffix `and
+audience` has no `defines` verb. The deterministic negative test passes, which
+proves a safe refusal, not supported consumer success. No parser, grammatical
+carry, weakened citation check, provider rerun, or holdout access followed.
+The exact role-local projection hypothesis is retired as a broad-input
+solution. Supporting this class requires source-cited normalized typed-action
+projection with semantic verification, or a declared narrower evidence
+envelope. The operator previously selected the broad envelope; the release
+gate remains failed pending a measured replacement, public cross-domain
+package proof, and independent review.
+
+## Independent source-duty review found two admission gaps (2026-10-01)
+
+Read-only review reproduced an admitted candidate whose source ledger gained a
+cited conditional guard, authority boundary, and proof duty, while canonical
+Product Intent and package output contained none of their meaning. The current
+binding covers action roles and off-path transitions but has no required
+binding or projection for these three ledger roles. Civic 057's accepted ledger
+has one guard, eight boundaries, and one proof duty, so the escape affects the
+fixed public positive. Source-ledger hashes inside a receipt do not make these
+requirements operative. The same review confirmed the separate coordinated
+action defect below: overlapping citations are rejected, while collapsing two
+duties into one event can silently drop one typed action. Focused tests passed
+`148/148`, demonstrating missing coverage rather than a failing existing test.
+
+The source-duty mechanism remains P1 and cannot be credited as a public
+package. The next bounded ownership replacement must derive typed action
+meaning once from source duties, require guard/boundary/proof projection into
+canonical meaning and differentiated package surfaces, and reject missing
+bindings. Commit-time receipt hash parity also needs independent verification.
+No new provider attempt or protected-holdout access followed this review.
+
+## Fresh role-bound civic candidate failed exact event custody (2026-10-01)
+
+One frozen Astra/medium public civic 057 candidate under host format v19 and
+source-duty binding v2 returned in `159.159s` below its predeclared `240s`
+diagnostic cap. Request SHA-256:
+`e26fb43a37fea7db7295576a3f04640449c6d05b72850c15ca4555a280fd25a2`;
+schema SHA-256:
+`c9c305015224c37ccfb298117a5a4c4d97bba59d462796d8b66e7fe92a3128ce`;
+candidate SHA-256:
+`8265f9e56056a0f3fc88d984963bd65a0e5896103df94766dfa27e6bf01b1997`.
+Frozen artifacts and one-attempt lock are under
+`/private/tmp/odylith-greenfield-role-bound-civic-v1-20261001/`.
+The candidate passed its declared JSON schema and bound exactly seven C31
+first-path duties. Deterministic admission then rejected an ungrounded event:
+the supporting citation `and audience.` carried `action_quote: defines`;
+the system citation `and publication choices.` carried
+`action_quote: receives`. Each verb exists only in the preceding source clause.
+The model split one joined source action into separate events and invented a
+verb inside each local citation. This is a source-to-event ownership defect,
+not a runtime timeout. The exact variant is retired with no repair, retry,
+proposal, agriculture control, or protected holdout. Role selection improved
+structurally, but no complete consumer package passed the public semantic
+gate. A next mechanism must remove duplicate event meaning ownership rather
+than loosen exact citation or add grammatical carry state.
+
+## Role-bound civic staging passes structural custody; semantic gate open (2026-10-01)
+
+The canonical host shape now separates ledger-bound first-path events from
+supporting and system events, and source-duty binding v2 requires every
+candidate event to have exactly one role. Replaying the frozen public civic
+candidate as a **diagnostic**, with only the proposed first-run orders and
+typed role/transition bindings supplied, admits and stages seven C31 path
+actions, six other cited events, and C45 withdrawal with both cited aggregate
+analysis effects. The Product Intent `first_path` contains only the seven
+bound actions; `supporting_events` preserves the other six. This demonstrates
+structural custody, not a fresh candidate or semantic success: the original
+candidate's first-run rationale remains its old prose, and deterministic
+overlap cannot prove performer identity, completeness, or entailment. No full
+proposal, independent positive review, 037/030, or holdout ran from this
+diagnostic. The release gate and CB-324 remain open.
+
+## Canonical first-path pollution remains after source-duty binding (2026-10-01)
+
+The new closed source-duty ledger and candidate binding reject the frozen
+civic candidate because its proposed first run contains events outside the
+seven bound C31 first-path actions. A diagnostic edit changing only
+`first_run.event_orders` to events 2–8 admits and stages the same 13 cited
+relations with a bound C45 lifecycle. The resulting canonical Product Intent
+still concatenates all 13 event citations into `first_path`: supporting
+facilitator inventory event 1 and system duties 9–13 retain the wrong role.
+The cause is the host canonicalizer's projection of every event citation into
+`facts.first_path`, followed by the authored-intent compiler joining all
+those facts. This is a source-role ownership P1, not a provider formatting
+failure. The corrected candidate is diagnostic only and has no proposal,
+package, public cross-domain, or release credit. Fix the canonical event-role
+contract and prove it on the frozen public source before any provider rerun.
+
 ## Ledger-guided civic candidate still failed semantic gate (2026-10-01)
 
 The frozen public gate admitted in `10.648s`, installed authority-check

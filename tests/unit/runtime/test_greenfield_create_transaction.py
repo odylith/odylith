@@ -416,7 +416,7 @@ def _transaction(repo_root: Path | None = None) -> Any:
         prewrite_package=package,
         backlog_result=package.backlog_result or {},
         intent_authority=authority,
-        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority),
+        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority, proposal=proposal),
         repo_root=root,
     )
 
@@ -697,7 +697,7 @@ def test_product_create_transaction_json_round_trips_traceability_diagram_links(
         prewrite_package=package,
         backlog_result=package.backlog_result or {},
         intent_authority=authority,
-        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority),
+        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority, proposal=proposal),
         repo_root=root,
     )
 
@@ -1238,7 +1238,7 @@ def test_product_create_transaction_rejects_incomplete_compiled_package_before_c
             backlog_result=package.backlog_result or {},
             prewrite_package=package,
             intent_authority=authority,
-        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority),
+        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority, proposal=proposal),
             repo_root=tmp_path,
         )
 
@@ -1258,7 +1258,7 @@ def test_product_create_transaction_rejects_drift_between_sealed_and_compiled_pr
             backlog_result=package.backlog_result or {},
             prewrite_package=package,
             intent_authority=authority,
-        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority),
+        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority, proposal=proposal),
             repo_root=tmp_path,
         )
 
@@ -1284,6 +1284,32 @@ def test_hash_verification_rejects_rehashed_compiled_package_proposal_drift(tmp_
         greenfield_create_transaction.require_product_create_transaction_hash_verified(drifted)
 
 
+@pytest.mark.parametrize(
+    "receipt_field",
+    (
+        "source_duty_ledger_sha256",
+        "source_duty_verifier_task_sha256",
+        "source_duty_decision_set_sha256",
+        "source_duty_binding_sha256",
+    ),
+)
+def test_hash_verification_rejects_rehashed_source_duty_receipt_drift(
+    tmp_path: Path, receipt_field: str,
+) -> None:
+    transaction = _transaction(repo_root=tmp_path)
+    manifest = json.loads(json.dumps(transaction.quality_manifest))
+    manifest["model_authoring"]["host_candidate"][receipt_field] = "0" * 64
+    drifted = replace(transaction, quality_manifest=manifest, transaction_hash="")
+    drifted = replace(
+        drifted,
+        transaction_hash=greenfield_create_transaction.product_create_transaction_hash(drifted),
+    )
+
+    assert not drifted.verified
+    with pytest.raises(ValueError, match="source-duty hashes do not match"):
+        greenfield_create_transaction.require_product_create_transaction_hash_verified(drifted)
+
+
 def test_product_create_transaction_rejects_missing_surface_refresh_proof_before_confirm(tmp_path: Path) -> None:
     proposal, authority = _complete_authored_supplier_proposal(tmp_path)
     package = replace(_package(proposal, repo_root=tmp_path), surface_refresh_preview=None)
@@ -1296,7 +1322,7 @@ def test_product_create_transaction_rejects_missing_surface_refresh_proof_before
             backlog_result=package.backlog_result or {},
             prewrite_package=package,
             intent_authority=authority,
-        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority),
+        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority, proposal=proposal),
             repo_root=tmp_path,
         )
 
@@ -1315,7 +1341,7 @@ def test_product_create_transaction_rejects_missing_compiled_atlas_catalog_rows_
             backlog_result=package.backlog_result or {},
             prewrite_package=package,
             intent_authority=authority,
-        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority),
+        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority, proposal=proposal),
             repo_root=tmp_path,
         )
 
@@ -1332,7 +1358,7 @@ def test_product_create_transaction_rejects_missing_compiled_traceability_before
             backlog_result=package.backlog_result or {},
             prewrite_package=package,
             intent_authority=authority,
-        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority),
+        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority, proposal=proposal),
             repo_root=tmp_path,
         )
 
@@ -1353,7 +1379,7 @@ def test_product_create_transaction_rejects_compiled_traceability_without_diagra
             backlog_result=package.backlog_result or {},
             prewrite_package=package,
             intent_authority=authority,
-        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority),
+        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority, proposal=proposal),
             repo_root=tmp_path,
         )
 

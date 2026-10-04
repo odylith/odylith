@@ -25,7 +25,10 @@ from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_author
     PRODUCT_INTENT_AUTHORITY_VERSION,
     CANONICAL_CANDIDATE_SHA256_KEY,
 )
-from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import atomic_fact_ledger_hash
+from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
+    ATOMIC_FACT_LEDGER_VERSION,
+    atomic_fact_ledger_hash,
+)
 from odylith.runtime.domain_intelligence.greenfield_authored_proposal import build_authored_greenfield_proposal
 from tests.unit.runtime.greenfield_proposal_fixtures import compiled_greenfield_package_fixture
 from tests.unit.runtime.greenfield_authored_proposal_fixtures import canonical_model_authored_intent_fixture
@@ -33,8 +36,12 @@ from tests.unit.runtime.greenfield_authored_proposal_fixtures import _canonical_
 from tests.unit.runtime.greenfield_authored_proposal_fixtures import approved_authored_quality_manifest_fixture
 
 
-def _approved_quality_manifest(authority: dict[str, Any]) -> dict[str, Any]:
-    return approved_authored_quality_manifest_fixture(intent_authority=authority)
+def _approved_quality_manifest(
+    authority: dict[str, Any], proposal: dict[str, Any],
+) -> dict[str, Any]:
+    return approved_authored_quality_manifest_fixture(
+        intent_authority=authority, proposal=proposal,
+    )
 
 
 def _recorded_authority(tmp_path: Path) -> tuple[Path, dict[str, Any], dict[str, Any]]:
@@ -65,7 +72,7 @@ def _transaction(tmp_path: Path, *, authority: dict[str, Any] | None = None) -> 
         prewrite_package=package,
         backlog_result=package.backlog_result or {},
         intent_authority=intent_authority,
-        quality_manifest=_approved_quality_manifest(intent_authority),
+        quality_manifest=_approved_quality_manifest(intent_authority, proposal),
         repo_root=tmp_path,
     )
 
@@ -88,7 +95,7 @@ def test_product_create_transaction_carries_confirmed_intent_authority_block(tmp
     assert persisted["source_format"] == "operator_prompt"
     assert persisted["materiality_status"] == "passed"
     assert persisted["material_custody_sha256"]
-    assert persisted["atomic_ledger_version"] == "odylith.product-intent-atomic-facts.v3"
+    assert persisted["atomic_ledger_version"] == ATOMIC_FACT_LEDGER_VERSION
     assert persisted["atomic_facts"]
     assert persisted["atomic_custody_sha256"] == atomic_fact_ledger_hash(persisted["atomic_facts"])
     assert persisted[CANONICAL_CANDIDATE_SHA256_KEY] == authority[
@@ -121,7 +128,7 @@ def test_serialized_authored_transaction_contains_only_sealed_component_relation
     )
     proposal[PRODUCT_INTENT_AUTHORITY_KEY] = authority
     package = compiled_greenfield_package_fixture(proposal, repo_root=tmp_path)
-    quality_manifest = _approved_quality_manifest(authority)
+    quality_manifest = _approved_quality_manifest(authority, proposal)
     transaction = build_product_create_transaction(
         proposal=proposal,
         release_selector="0.0.1",
@@ -372,7 +379,7 @@ def test_transaction_rejects_typed_intent_drift_from_its_sealed_authority(tmp_pa
             prewrite_package=package,
             backlog_result=package.backlog_result or {},
             intent_authority=authority,
-            quality_manifest=_approved_quality_manifest(authority),
+            quality_manifest=_approved_quality_manifest(authority, proposal),
             repo_root=tmp_path,
         )
 

@@ -25,6 +25,7 @@ _FACT_ATOM_POLICY = {
     "product_story": ("outputs", "affirmed"),
     "state_object": ("states", "affirmed"),
     "first_path": ("actions", "affirmed"),
+    "supporting_events": ("actions", "affirmed"),
     "proof_boundary": ("constraints", "required"),
     "problem": ("states", "affirmed"),
     "customer": ("actors", "affirmed"),
@@ -153,7 +154,9 @@ def _whole_fact_claim(
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authoring returned an unsupported typed fact"
         ) from exc
-    quote = str(fact.get("quote") or "")
+    projected_quote = str(fact.get("quote") or "")
+    normalized_action = fact.get("entailment_relationship") == "verified_source_action"
+    quote = str(fact.get("source_quote") or "") if normalized_action else projected_quote
     return _claim(
         intent=intent,
         fact=fact,
@@ -162,6 +165,7 @@ def _whole_fact_claim(
         polarity=polarity,
         source_start=_integer(fact.get("source_start_byte")),
         projection_start=_integer(fact.get("projection_start_byte")),
+        projection_quote=projected_quote if normalized_action else None,
     )
 
 
@@ -179,32 +183,44 @@ def _path_relation_claim(
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authoring returned an ungrounded atomic relation"
         )
-    source_start = _integer(relation.get("source_start_byte")) + role_start
-    source_end = source_start + len(quote.encode("utf-8"))
-    path_fact = next(
+    event_fact = next(
         (
             fact
             for fact in selected_facts
-            if str(fact.get("field") or "") == "first_path"
-            and _integer(fact.get("source_start_byte")) <= source_start
-            and source_end <= _integer(fact.get("source_end_byte"))
+            if str(fact.get("field") or "") in {"first_path", "supporting_events"}
+            and _integer(fact.get("source_start_byte")) == _integer(relation.get("source_start_byte"))
+            and _integer(fact.get("source_end_byte")) == _integer(relation.get("source_end_byte"))
+            and str(fact.get("quote") or "") == event
         ),
         None,
     )
-    if path_fact is None:
+    if event_fact is None:
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authoring returned an unbound atomic relation"
         )
+    normalized_action = event_fact.get("entailment_relationship") == "verified_source_action"
+    if normalized_action:
+        verified_field = "verified_action" if role == "action_verb_quote" else "verified_target"
+        if event_fact.get(verified_field) != quote:
+            raise GreenfieldAuthoredSemanticsError(
+                "Greenfield atomic relation differs from its verified source action"
+            )
+        source_quote = str(event_fact.get("source_quote") or "")
+        source_start = _integer(event_fact.get("source_start_byte"))
+    else:
+        source_quote = quote
+        source_start = _integer(relation.get("source_start_byte")) + role_start
     return _claim(
         intent=intent,
-        fact=path_fact,
-        quote=quote,
+        fact=event_fact,
+        quote=source_quote,
         category=_RELATION_ATOM_CATEGORY[role],
         polarity="affirmed",
         source_start=source_start,
-        projection_start=_integer(relation.get("event_start_byte")) + role_start,
+        projection_start=_integer(event_fact.get("projection_start_byte")) + role_start,
         relation_order=_integer(relation.get("order")),
         relation_role=role,
+        projection_quote=quote if normalized_action else None,
     )
 
 
@@ -246,6 +262,7 @@ def _claim(
     projection_start: int,
     relation_order: int = 0,
     relation_role: str = "",
+    projection_quote: str | None = None,
 ) -> dict[str, Any]:
     if not quote:
         raise GreenfieldAuthoredSemanticsError(
@@ -259,6 +276,7 @@ def _claim(
             "Greenfield authoring returned an invalid atomic projection"
         )
     quote_bytes = quote.encode("utf-8")
+    projected_bytes = (projection_quote or quote).encode("utf-8")
     return {
         "field": field,
         "category": category,
@@ -269,12 +287,13 @@ def _claim(
         "quote_sha256": hashlib.sha256(quote_bytes).hexdigest(),
         "projection_path": projection_path,
         "projection_start_byte": projection_start,
-        "projection_end_byte": projection_start + len(quote_bytes),
+        "projection_end_byte": projection_start + len(projected_bytes),
         "projection_value_sha256": hashlib.sha256(
             projection_value.encode("utf-8")
         ).hexdigest(),
         "relation_order": relation_order,
         "relation_role": relation_role,
+        **({"projection_quote": projection_quote} if projection_quote is not None else {}),
     }
 
 

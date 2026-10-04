@@ -23,6 +23,10 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring impor
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     STANDARD_PROFILE_ID,
 )
+from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
+    HOST_CANDIDATE_CONTRACT_VERSION,
+    HOST_CANDIDATE_RECEIPT_VERSION,
+)
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     PRODUCT_FACTS_HASH_KEY,
     PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION,
@@ -38,10 +42,14 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
     CANONICAL_CANDIDATE_SHA256_KEY,
 )
+from odylith.runtime.domain_intelligence.greenfield_source_lifecycle import (
+    project_greenfield_source_lifecycle,
+)
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     admit_complete_host_candidate,
     authored_response,
     host_candidate_response,
+    synthetic_source_duty_receipt,
 )
 
 
@@ -109,25 +117,38 @@ def _source() -> str:
     ) + "."
 
 
-def _authored_result(source: str) -> GreenfieldModelAuthoredIntent:
+def _authored_result(source: str) -> tuple[GreenfieldModelAuthoredIntent, dict[str, Any]]:
     response = authored_response(
         _INTENT,
         evidence_text=source,
         first_path_relations=_RELATIONS,
         component_responsibility_owners=["Berth map"],
     )
+    candidate = host_candidate_response(response, evidence_text=source)
     result = admit_complete_host_candidate(
         evidence_text=source,
-        host_candidate=host_candidate_response(response, evidence_text=source),
+        host_candidate=candidate,
         model_profile_id=STANDARD_PROFILE_ID,
     )
     assert isinstance(result, GreenfieldModelAuthoredIntent)
-    return result
+    return result, candidate
 
 
 def _authored_inputs() -> tuple[str, GreenfieldModelAuthoredIntent, dict[str, Any]]:
     source = _source()
-    result = _authored_result(source)
+    result, candidate = _authored_result(source)
+    ledger_receipt = synthetic_source_duty_receipt(candidate, evidence_text=source)
+    binding = candidate["result"]["source_duty_binding"]
+    source_duty = {
+        "ledger_receipt": ledger_receipt,
+        "binding": binding,
+        "lifecycle": project_greenfield_source_lifecycle(
+            ledger_receipt=ledger_receipt,
+            binding=binding,
+            candidate_result=candidate["result"],
+            evidence_text=source,
+        ),
+    }
     intent = {
         **result.intent,
         AUTHORED_SEMANTICS_KEY: authored_semantics_mapping(
@@ -135,6 +156,7 @@ def _authored_inputs() -> tuple[str, GreenfieldModelAuthoredIntent, dict[str, An
             result.component_responsibility_relations,
             first_path_context_relations=result.first_path_context_relations,
             provisional_design=result.provisional_design,
+            source_duty=source_duty,
         ),
     }
     return source, result, intent
@@ -158,12 +180,16 @@ def _build_envelope(
             "origin": "host_native",
             "runtime_semantic_model_call_count": 0,
             "host_candidate": {
-                "version": "odylith.greenfield.host-candidate.v2",
-                "contract_version": "odylith.greenfield.host-candidate-contract.v33",
+                "version": HOST_CANDIDATE_RECEIPT_VERSION,
+                "contract_version": HOST_CANDIDATE_CONTRACT_VERSION,
                 "canonical_version": GREENFIELD_INTENT_AUTHORING_VERSION,
                 "source_sha256": result.source_sha256,
                 "raw_candidate_sha256": "b" * 64,
                 "canonical_candidate_sha256": "a" * 64,
+                "source_duty_ledger_sha256": "c" * 64,
+                "source_duty_verifier_task_sha256": "e" * 64,
+                "source_duty_decision_set_sha256": "f" * 64,
+                "source_duty_binding_sha256": "d" * 64,
             },
         },
         authored_source_spans=result.source_spans,
@@ -179,6 +205,7 @@ def test_authored_envelope_preserves_exact_facts_spans_relations_and_authority()
         result.first_path_relations,
         result.component_responsibility_relations,
         first_path_context_relations=result.first_path_context_relations,
+        source_duty=intent[AUTHORED_SEMANTICS_KEY]["source_duty"],
         provisional_design=result.provisional_design,
     )
 

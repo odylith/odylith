@@ -28,6 +28,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     authored_response,
     host_candidate_response,
+    synthetic_source_duty_receipt,
 )
 
 
@@ -54,15 +55,25 @@ def _profile_evidence(profile_id: str = STANDARD_PROFILE_ID) -> dict[str, object
         "status": "passed",
         "host_invocations": 1,
         "authority_gate_host_invocations": 1,
+        "source_ledger_host_invocations": 0,
+        "source_duty_verifier_host_invocations": 0,
         "candidate_host_invocations": 0,
         "contract_command_invocations": 1,
         "authority_check_command_invocations": 1,
+        "source_ledger_check_command_invocations": 0,
         "proposal_command_invocations": 0,
         "runtime_semantic_model_call_count": 0,
         "post_receipt_provider_invocations": 0,
         "model_profile_id": profile_id,
         "model_window_seconds": contract.model_timeout_seconds,
         "operational_timeout_seconds": contract.operational_timeout_seconds,
+        "source_ledger_diagnostic_cap_seconds": 300.0,
+        "source_duty_verifier_diagnostic_cap_seconds": 120.0,
+        "whole_journey_diagnostic_cap_seconds": 660.0,
+        "candidate_completion_reserve_seconds": 15.0,
+        "whole_journey_bound_status": "diagnostic_unqualified",
+        "whole_journey_elapsed_scope": "through_observer_return_before_final_snapshot_serialization",
+        "whole_journey_deadline_status": "within",
         "authority_gate_request": {
             "version": "odylith.greenfield.host-argv-receipt.v1",
             "executable_sha256": "1" * 64,
@@ -74,6 +85,8 @@ def _profile_evidence(profile_id: str = STANDARD_PROFILE_ID) -> dict[str, object
         },
         "candidate_temp_cleaned": True,
         "authority_gate_temp_cleaned": True,
+        "source_ledger_temp_cleaned": True,
+        "source_duty_decision_temp_cleaned": True,
         "host_workspace_cleaned": True,
         "stage": "authority-check",
         "contract_returncode": 0,
@@ -91,6 +104,8 @@ def _profile_evidence(profile_id: str = STANDARD_PROFILE_ID) -> dict[str, object
         "response_kind": "clarification_required",
         "proposal_mode": "clarification_required",
         "elapsed_seconds": 18.02,
+        "proposal_phase_elapsed_seconds": 18.02,
+        "whole_journey_seconds": 18.02,
     }
     return model_profile_evidence(
         profile_id,
@@ -145,17 +160,50 @@ def _authored_profile_evidence(profile_id: str = STANDARD_PROFILE_ID) -> dict[st
         }],
     )
     raw_candidate = host_candidate_response(response, evidence_text=source)
+    source_duty_receipt = synthetic_source_duty_receipt(
+        raw_candidate, evidence_text=source
+    )
     _candidate, receipt = admit_greenfield_host_candidate(
-        raw_candidate, evidence_text=source, clock=lambda: 1.0
+        raw_candidate, evidence_text=source,
+        source_duty_receipt=source_duty_receipt, clock=lambda: 1.0
     )
     evidence = _profile_evidence(profile_id)
     stage = evidence["stage_observation"]
-    stage["host_invocations"] = 2
+    stage["host_invocations"] = 4
+    stage["source_ledger_host_invocations"] = 1
+    stage["source_duty_verifier_host_invocations"] = 1
+    stage["source_ledger_check_command_invocations"] = 2
     stage["candidate_host_invocations"] = 1
     stage["proposal_command_invocations"] = 1
     stage["authority_gate_decision"] = "admit"
     stage["stage"] = "propose"
     stage["host_request"] = deepcopy(stage["authority_gate_request"])
+    stage["source_ledger_request"] = deepcopy(stage["authority_gate_request"])
+    stage["source_duty_verifier_request"] = deepcopy(stage["authority_gate_request"])
+    stage["source_ledger_schema_sha256"] = "b" * 64
+    stage["source_ledger_returncode"] = 0
+    stage["source_ledger_output_sha256"] = "c" * 64
+    stage["source_ledger_output_bytes"] = 300
+    stage["source_ledger_temp_outside_repo"] = True
+    stage["source_ledger_preflight_returncode"] = 0
+    stage["source_ledger_preflight_stdout_sha256"] = "b" * 64
+    stage["source_ledger_preflight_mode"] = "source_duty_preflight"
+    stage["source_duty_decision_schema_sha256"] = "c" * 64
+    stage["source_duty_verifier_returncode"] = 0
+    stage["source_duty_decision_output_sha256"] = "d" * 64
+    stage["source_duty_decision_output_bytes"] = 300
+    stage["source_completeness_verdict"] = "yes"
+    stage["source_completeness_omission_count"] = 0
+    stage["source_duty_decision_temp_outside_repo"] = True
+    stage["source_ledger_check_returncode"] = 0
+    stage["source_ledger_check_stdout_sha256"] = "d" * 64
+    stage["source_ledger_check_mode"] = "source_duty_admitted"
+    stage["source_ledger_elapsed_seconds"] = 20.0
+    stage["source_duty_verifier_elapsed_seconds"] = 10.0
+    stage["source_ledger_sha256"] = receipt["source_duty_ledger_sha256"]
+    stage["source_duty_decision_set_sha256"] = receipt["source_duty_decision_set_sha256"]
+    stage["source_duty_verifier_task_sha256"] = receipt["source_duty_verifier_task_sha256"]
+    stage["whole_journey_seconds"] = 48.02
     stage["candidate_schema_sha256"] = "7" * 64
     stage["host_returncode"] = 0
     stage["host_stdout_bytes"] = 500
@@ -180,6 +228,7 @@ def _authored_profile_evidence(profile_id: str = STANDARD_PROFILE_ID) -> dict[st
         },
         stage_observation=stage,
         raw_candidate=raw_candidate,
+        source_duty_receipt=source_duty_receipt,
         expected_source=source,
     )
 
@@ -251,7 +300,7 @@ def test_host_clarification_passes_aggregate_profile_proof() -> None:
     assert profile["post_receipt_provider_invocations"] == 0
 
 
-def test_complete_release_profile_requires_standard_success_and_rescue_no_write_control() -> None:
+def test_complete_release_profile_requires_public_whole_journey_bound() -> None:
     standard = _result(
         profile_evidence=_authored_profile_evidence(STANDARD_PROFILE_ID),
         expectation="transaction_committed",
@@ -261,7 +310,8 @@ def test_complete_release_profile_requires_standard_success_and_rescue_no_write_
         expectation="clarification_required",
     )
     proof = model_profile_release_proof((standard, rescue), require_complete=True)
-    assert proof["status"] == "passed", proof["issues"]
+    assert proof["status"] == "failed"
+    assert any("whole-journey bound" in issue for issue in proof["issues"])
     assert proof["lower_capability_scope"]["status"] == "passed"
     assert proof["lower_capability_scope"]["role"] == "authority_gate"
 
@@ -381,7 +431,7 @@ def test_clarification_rejects_retained_candidate_hash_mismatch() -> None:
 
 @pytest.mark.parametrize(
     "elapsed",
-    (180.0, 180.001, None, True, "18.0", 0.0, -1.0, float("nan"), float("inf")),
+    (315.0, 315.001, None, True, "18.0", 0.0, -1.0, float("nan"), float("inf")),
 )
 def test_aggregate_profile_rejects_expired_or_invalid_elapsed(elapsed: object) -> None:
     evidence = _profile_evidence()

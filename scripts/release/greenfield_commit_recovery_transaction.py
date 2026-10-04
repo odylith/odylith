@@ -8,10 +8,15 @@ import hashlib
 import json
 from pathlib import Path
 import shutil
+import sys
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
     combined_prompt_evidence_source,
+)
+
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    STANDARD_PROFILE_ID, get_greenfield_model_profile,
 )
 
 import greenfield_commit_recovery_evidence as recovery_evidence
@@ -25,7 +30,7 @@ from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 from greenfield_process import run_command_with_group_timeout as _run
 
 
-COMMAND_TIMEOUT_SECONDS = 300
+COMMAND_TIMEOUT_SECONDS = get_greenfield_model_profile(STANDARD_PROFILE_ID).operational_timeout_seconds
 
 
 @dataclass(frozen=True)
@@ -151,13 +156,14 @@ def compile_transaction(
             timeout=timeout,
         )
 
-    def invoke_propose(candidate_path: Path, gate_path: Path, timeout: float) -> Any:
+    def invoke_propose(candidate_path: Path, gate_path: Path, ledger_path: Path, timeout: float) -> Any:
         candidate_command = [
             *command,
             "--candidate-file", str(candidate_path),
             "--gate-file", str(gate_path),
+            "--ledger-file", str(ledger_path),
         ]
-        return recovery_evidence.run_proposal(
+        result = recovery_evidence.run_proposal(
             evidence=evidence,
             runner=_run,
             cwd=repo_root,
@@ -165,40 +171,71 @@ def compile_transaction(
             command=candidate_command,
             timeout=timeout,
         )
+        if evidence is not None and result.returncode == 0:
+            payload = json_mapping(result.stdout, label="installed commit recovery propose")
+            transaction_file = str(payload.get("transaction_file") or "").strip()
+            if transaction_file:
+                transaction_path = Path(transaction_file).expanduser()
+                if not transaction_path.is_absolute():
+                    transaction_path = repo_root / transaction_path
+                recovery_evidence.record_retained_case_bytes(
+                    evidence, "semantic/product-create-transaction.v1.json", transaction_path.read_bytes(),
+                )
+        return result
 
-    observe = None
+    observation_sink: dict[str, Any] = {}
     retain_candidate_bytes = None
+    retain_source_ledger_check_bytes = None
     if evidence is not None:
-        observe = lambda payload: recovery_evidence.record_retained_case_json(
-            evidence,
-            "semantic/host-authoring-observation.v1.json",
-            dict(payload),
+        retain_source_ledger_check_bytes = lambda value: recovery_evidence.record_retained_case_bytes(
+            evidence, "semantic/host-source-ledger-check.raw.v1.json", value,
         )
         retain_candidate_bytes = lambda value: recovery_evidence.record_retained_case_bytes(
             evidence,
             "semantic/host-candidate.raw.v1.json",
             value,
         )
-    proposed = run_host_candidate_flow(
-        HostCandidateFlow(
-            repo_root=repo_root,
-            temp_parent=repo_root.parent,
-            host_argv=tuple(str(value) for value in host_candidate_argv),
-            prompt=case.prompt,
-            edit_evidence=confirmed_intent,
-            timeout=COMMAND_TIMEOUT_SECONDS,
-            env=env,
-            trusted_codex_executable=resolve_trusted_codex_executable(environ=env),
-            expected_model=str(env.get("ODYLITH_REASONING_MODEL") or ""),
-            expected_reasoning_effort=str(
-                env.get("ODYLITH_REASONING_CODEX_REASONING_EFFORT") or ""
-            ),
-            invoke_installed=invoke_installed,
-            invoke_propose=invoke_propose,
-            observe=observe,
-            retain_candidate_bytes=retain_candidate_bytes,
+    try:
+        proposed = run_host_candidate_flow(
+            HostCandidateFlow(
+                repo_root=repo_root,
+                temp_parent=repo_root.parent,
+                host_argv=tuple(str(value) for value in host_candidate_argv),
+                prompt=case.prompt,
+                edit_evidence=confirmed_intent,
+                timeout=COMMAND_TIMEOUT_SECONDS,
+                env=env,
+                trusted_codex_executable=resolve_trusted_codex_executable(environ=env),
+                expected_model=str(env.get("ODYLITH_REASONING_MODEL") or ""),
+                expected_reasoning_effort=str(
+                    env.get("ODYLITH_REASONING_CODEX_REASONING_EFFORT") or ""
+                ),
+                invoke_installed=invoke_installed,
+                invoke_propose=invoke_propose,
+                observation_sink=observation_sink,
+                retain_source_ledger_check_bytes=retain_source_ledger_check_bytes,
+                retain_candidate_bytes=retain_candidate_bytes,
+                retain_authority_gate_bytes=(lambda value: recovery_evidence.record_retained_case_bytes(
+                    evidence, "semantic/host-authority-gate.raw.v1.json", value)) if evidence is not None else None,
+                retain_source_ledger_bytes=(lambda value: recovery_evidence.record_retained_case_bytes(
+                    evidence, "semantic/host-source-ledger.raw.v1.json", value)) if evidence is not None else None,
+                retain_source_duty_decision_bytes=(lambda value: recovery_evidence.record_retained_case_bytes(
+                    evidence, "semantic/host-source-duty-decisions.raw.v1.json", value)) if evidence is not None else None,
+                retain_host_stderr_bytes=(lambda stage, value: recovery_evidence.record_retained_case_bytes(
+                    evidence, f"semantic/host-{stage}.stderr.raw.v1", value)) if evidence is not None else None,
+            )
         )
-    )
+    finally:
+        if evidence is not None:
+            primary_error = sys.exception()
+            try:
+                recovery_evidence.record_retained_case_json(
+                    evidence, "semantic/host-authoring-observation.v1.json", observation_sink,
+                )
+            except Exception as exc:
+                if primary_error is None:
+                    raise
+                primary_error.add_note(f"Failed to retain final recovery observation: {exc}")
     payload = require_success_payload(proposed, label="installed commit recovery propose")
     transaction = as_mapping(payload.get("product_create_transaction"))
     transaction_hash = str(transaction.get("transaction_hash") or "").strip()
@@ -229,12 +266,6 @@ def compile_transaction(
             "installed greenfield propose did not return the sealed Product Intent facts hash"
         )
     _require_case_evidence_bound_to_transaction(case=case, intent_authority=intent_authority)
-    if evidence is not None:
-        recovery_evidence.record_retained_case_bytes(
-            evidence,
-            "semantic/product-create-transaction.v1.json",
-            transaction_path.read_bytes(),
-        )
     return RecoveryTransaction(
         transaction_file=transaction_file,
         transaction_hash=transaction_hash,

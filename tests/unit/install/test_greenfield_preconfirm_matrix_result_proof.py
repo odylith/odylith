@@ -162,7 +162,7 @@ def test_model_profile_aggregate_rechecks_single_authority_despite_passed_label(
     elif mutation == "host_model":
         stages["host_request"]["model"] = "gpt-5.6-sol"
     elif mutation == "host_count":
-        stages["host_invocations"] = 3
+        stages["host_invocations"] = 4
     elif mutation == "post_receipt_call":
         stages["post_receipt_provider_invocations"] = 1
     else:
@@ -356,7 +356,10 @@ def test_unavailable_provider_proof_admits_one_candidate_without_runtime_provide
         gate_path.write_text('{"decision":"admit"}\n', encoding="utf-8")
         candidate_path = flow.temp_parent / "candidate.json"
         candidate_path.write_text('{"result":{"status":"authored"}}\n', encoding="utf-8")
-        completed = flow.invoke_propose(candidate_path, gate_path, 90.0)
+        ledger_path = flow.temp_parent / "source-ledger.json"
+        ledger_path.write_text('{"status":"inventory"}\n', encoding="utf-8")
+        completed = flow.invoke_propose(candidate_path, gate_path, ledger_path, 90.0)
+        flow.observation_sink.update({"elapsed_seconds": 1.0, "whole_journey_seconds": 1.0})
         assert completed.returncode == 0
         return completed
 

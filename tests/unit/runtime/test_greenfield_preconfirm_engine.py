@@ -335,7 +335,7 @@ def test_profiles_keep_advisory_targets_and_one_operational_timeout(
     )
 
     assert result.manifest["target_seconds"] == target
-    assert result.manifest["operational_timeout_seconds"] == 180.0
+    assert result.manifest["operational_timeout_seconds"] == 315.0
     assert result.manifest["repair_tier"] == authored
     assert result.manifest["rescue_activated"] is rescue
     assert f"target {target:g}s is advisory" in result.manifest["repair_tier_policy"][authored]
@@ -412,7 +412,7 @@ def test_operational_timeout_before_prewrite_fails_closed(
             release_selector="0.0.1",
             build_prewrite=lambda *_args: calls.append(object()),
             proposal_ready=True,
-            elapsed_before_start_seconds=180.0,
+            elapsed_before_start_seconds=315.0,
             clock=lambda: 0.0,
         )
     assert calls == []
@@ -427,7 +427,7 @@ def test_operational_timeout_crossed_during_package_build_rejects_success(
     now = {"seconds": 0.0}
 
     def build(current: object, tribunal: object) -> SimpleNamespace:
-        now["seconds"] = 180.0
+        now["seconds"] = 315.0
         return _prewrite(current, tribunal)
 
     with pytest.raises(engine.GreenfieldPreconfirmEngineError) as exc:
@@ -440,7 +440,7 @@ def test_operational_timeout_crossed_during_package_build_rejects_success(
         )
 
     assert exc.value.manifest["stop_reason"] == "operational_timeout_exhausted"
-    assert exc.value.manifest["elapsed_seconds"] == 180.0
+    assert exc.value.manifest["elapsed_seconds"] == 315.0
 
 
 def test_engine_surface_has_no_repair_or_rerender_callback() -> None:

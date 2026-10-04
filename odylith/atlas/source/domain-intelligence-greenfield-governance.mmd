@@ -4,19 +4,21 @@ flowchart TB
       request["Greenfield request and EDIT evidence<br/>Untrusted input with exact source custody"]
       baseline["Complete installed baseline<br/>Immutable view exists before proposal admission"]
       contract["Public candidate contract<br/>Sealed source context and typed schema"]
-      model_pass["One active host author<br/>One compact complete candidate inside the shared deadline"]
-      typed_graph["Host-authored typed evidence graph<br/>Complete cited events and component support<br/>plus one proposed coherent branch"]
-      source_custody["Source-custody semantic boundary<br/>Evidence identity and non-projection controls stay sealed;<br/>product-facing constraints retain their governed outcome"]
+      model_pass["Normalized source-duty ledger v5<br/>One source owner for role, action and target meaning"]
+      typed_graph["Compact source bank v3 evidence<br/>Host resolves every ID; compiler verifies each exact<br/>quote and context against the full source"]
+      identity_check["Exact transition-state identity preflight<br/>Resolve every effect by declared object and field<br/>before verifier; binding and passive projection reuse it"]
+      source_custody["Compact source-only verifier and canonical ledger<br/>Closed keyed decisions and source-wide completeness;<br/>unused bank storage drops only after source validation"]
+      candidate_author["One candidate authoring pass<br/>Lossless compact accepted inventory and custody hashes;<br/>full accepted receipt remains compiler-owned"]
       ambiguity{"Material meaning complete?"}
       clarify["One focused clarification<br/>No transaction or governed write"]
-      request --> contract --> model_pass --> typed_graph --> source_custody --> ambiguity
+      request --> contract --> model_pass --> typed_graph --> identity_check --> source_custody --> candidate_author --> ambiguity
       baseline -. "required" .-> contract
       ambiguity -- "no" --> clarify
     end
 
     subgraph projection_lane["Deterministic package construction"]
       direction LR
-      custody["Deterministic candidate admission<br/>Validate exact citations, complete event order,<br/>component ownership, source precedence and hashes"]
+      custody["Deterministic candidate admission<br/>Reuse exact transition-state identities; restore verified<br/>action and target; validate lifecycle, relations and hashes"]
       invalid_candidate["Invalid or tampered candidate<br/>Fail closed with no model, repair, retry,<br/>fallback, transaction, or governed write"]
       projections["Deterministic source and design projections<br/>4–5 Radar, 4–5 Registry, five Atlas views<br/>Exact release membership and dependency-ready task"]
       staged_surfaces["Temporary-root surface rendering<br/>Shared read lock holds the validated baseline<br/>No detached narration queue or worker"]
@@ -24,7 +26,7 @@ flowchart TB
       quality["Pre-confirm complete-package gates<br/>Host canonical receipt and zero post-receipt semantic calls<br/>Independent release qualification remains open"]
       execution_handoff["Typed Execution Engine handoff<br/>Canonical handshake, snapshot and validation bundle"]
       intervention_fallback["Host-neutral intervention fallback<br/>Observation / Proposal / Assist remain distinct"]
-      timing["Proposal timing gate<br/>90 / 120 / 150-second advisory targets<br/>165-second model window; below 180 seconds overall"]
+      timing["Bounded asynchronous timing<br/>300-second shared gate and candidate model window;<br/>315-second proposal cap includes 15-second completion reserve;<br/>fixed 660-second whole deadline is non-additive, diagnostic and unqualified"]
       custody -- "valid and hash-bound" --> projections --> staged_surfaces --> delivery_proof --> quality --> execution_handoff --> intervention_fallback --> timing
       custody -- "invalid or tampered" --> invalid_candidate
     end
@@ -94,7 +96,7 @@ flowchart TB
     classDef governance fill:#F5F3FF,stroke:#DDD6FE,color:#132033,stroke-width:1px;
     classDef constraint fill:#FFF8E6,stroke:#F6D98B,color:#132033,stroke-width:1px;
     classDef invalid fill:#FFF1F0,stroke:#F7B4AE,color:#132033,stroke-width:1px;
-    class request,baseline,contract,model_pass,typed_graph,source_custody primary;
+    class request,baseline,contract,model_pass,typed_graph,identity_check,source_custody,candidate_author primary;
     class custody,projections,staged_surfaces,delivery_proof,quality,execution_handoff,intervention_fallback,timing,bundle_scope,live_telemetry,direct_live execution;
     class write_set,generation_manifest,entry,sealed,decision,edit,reject,confirm,publish,observed,navigate,captured_status,later,recovery,owners,evaluator,acceptance,confidence,retained governance;
     class ambiguity,drift constraint;

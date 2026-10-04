@@ -17,6 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
     GreenfieldClarificationRequired,
+    prepare_model_authoring_evidence,
 )
 from odylith.runtime.domain_intelligence import greenfield_pending_transaction_store
 from odylith.runtime.domain_intelligence import greenfield_proposals_cli
@@ -24,6 +25,9 @@ from odylith.runtime.surfaces import greenfield_host_confirmation
 from tests.unit.runtime.test_greenfield_host_confirmation import _stage_pending_transaction
 from tests.unit.runtime.greenfield_proposal_fixtures import (
     compiled_greenfield_package_fixture,
+)
+from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    write_synthetic_source_duty_receipt,
 )
 from tests.unit.runtime.test_greenfield_transaction_provenance import (
     _executed_source_files,
@@ -98,6 +102,17 @@ def _write_gate_stub(tmp_path: Path, prompt: str) -> Path:
         "question": "",
     }), encoding="utf-8")
     return path
+
+
+def _write_ledger_stub(tmp_path: Path, prompt: str, correction: str) -> Path:
+    evidence = prepare_model_authoring_evidence(
+        prompt=prompt, edit_evidence=correction,
+    ).evidence_source
+    return write_synthetic_source_duty_receipt(
+        tmp_path.parent / f"{tmp_path.name}-source-ledger.json",
+        {"result": {"status": "clarification_required"}},
+        evidence_text=evidence,
+    )
 
 
 def test_terminal_decision_prints_human_completion_without_json_wrapper(
@@ -251,13 +266,16 @@ def test_terminal_edit_rebuilds_once_from_verified_retained_source_and_correctio
     )
     governed_before = _tree_digest(tmp_path / "odylith")
     candidate_path = _write_candidate_stub(tmp_path)
-    gate_path = _write_gate_stub(tmp_path, str(previous.proposal["intent"]["prompt"]))
+    retained_prompt = str(previous.proposal["intent"]["prompt"])
+    gate_path = _write_gate_stub(tmp_path, retained_prompt)
+    ledger_path = _write_ledger_stub(tmp_path, retained_prompt, correction)
 
     assert greenfield_cli.main([
         "decide", "EDIT", previous.transaction_hash,
         "--repo-root", str(tmp_path), "--edit", correction,
         "--candidate-file", str(candidate_path),
         "--gate-file", str(gate_path),
+        "--ledger-file", str(ledger_path),
     ]) == 0
 
     assert len(compile_calls) == 1
@@ -269,6 +287,8 @@ def test_terminal_edit_rebuilds_once_from_verified_retained_source_and_correctio
     assert call["repair_tier"] == previous.quality_manifest["requested_repair_tier"]
     assert call["source_language"] == "en"
     assert call["host_candidate"] == {}
+    assert call["source_duty_receipt"]["ledger"]["status"] == "inventory"
+    assert call["source_duty_receipt"]["decision_set_sha256"]
     assert isinstance(call["started_at"], float)
     assert len(review_calls) == 1
     assert review_calls[0]["candidate_intent"] == {"title": "Rebuilt"}
@@ -277,6 +297,48 @@ def test_terminal_edit_rebuilds_once_from_verified_retained_source_and_correctio
     assert review_calls[0]["as_json"] is False
     assert pending_path.is_file()
     assert _tree_digest(tmp_path / "odylith") == governed_before
+
+
+@pytest.mark.parametrize(
+    ("tamper_field", "tamper_value", "expected_error"),
+    (
+        ("decision_set_sha256", "0" * 64, "source duty ledger receipt hash is invalid"),
+        ("version", "odylith.greenfield.source-duty-ledger-receipt.v5", "source duty ledger receipt version is invalid"),
+    ),
+)
+def test_terminal_edit_rejects_tampered_source_decision_before_candidate(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    tamper_field: str,
+    tamper_value: str,
+    expected_error: str,
+) -> None:
+    previous = _source_retaining_transaction(tmp_path)
+    pending_path = greenfield_pending_transaction_store.stage_pending_transaction(
+        repo_root=tmp_path, transaction=previous,
+    )
+    correction = "Require the operator to record the recovery outcome."
+    retained_prompt = str(previous.proposal["intent"]["prompt"])
+    ledger_path = _write_ledger_stub(tmp_path, retained_prompt, correction)
+    receipt = json.loads(ledger_path.read_text(encoding="utf-8"))
+    receipt[tamper_field] = tamper_value
+    ledger_path.write_text(json.dumps(receipt), encoding="utf-8")
+    monkeypatch.setattr(
+        greenfield_proposals_cli, "_compile_prompt_evidence_transaction",
+        lambda **_kwargs: pytest.fail("tampered source duties reached candidate compilation"),
+    )
+
+    rc = greenfield_cli.main([
+        "decide", "EDIT", previous.transaction_hash,
+        "--repo-root", str(tmp_path), "--edit", correction,
+        "--gate-file", str(_write_gate_stub(tmp_path, retained_prompt)),
+        "--ledger-file", str(ledger_path), "--json",
+    ])
+
+    assert rc == 2
+    assert expected_error in capsys.readouterr().out
+    assert pending_path.is_file()
 
 
 def test_terminal_edit_without_retained_source_fails_closed_before_compilation(
@@ -345,7 +407,9 @@ def test_terminal_edit_non_success_preserves_the_original_reviewed_package(
     governed_before = _tree_digest(tmp_path / "odylith")
     compile_calls: list[dict[str, object]] = []
     candidate_path = _write_candidate_stub(tmp_path)
-    gate_path = _write_gate_stub(tmp_path, str(previous.proposal["intent"]["prompt"]))
+    retained_prompt = str(previous.proposal["intent"]["prompt"])
+    gate_path = _write_gate_stub(tmp_path, retained_prompt)
+    ledger_path = _write_ledger_stub(tmp_path, retained_prompt, "Clarify the owner.")
 
     def compile_once(**kwargs: object) -> tuple[dict[str, str], object, Path]:
         compile_calls.append(dict(kwargs))
@@ -371,6 +435,7 @@ def test_terminal_edit_non_success_preserves_the_original_reviewed_package(
         "--repo-root", str(tmp_path), "--edit", "Clarify the owner.",
         "--candidate-file", str(candidate_path),
         "--gate-file", str(gate_path),
+        "--ledger-file", str(ledger_path),
     ]) == expected_result
 
     assert expected_text in capsys.readouterr().out

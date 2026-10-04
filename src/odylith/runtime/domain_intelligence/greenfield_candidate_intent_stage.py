@@ -147,12 +147,21 @@ def render_candidate_intent_markdown(intent: Mapping[str, Any]) -> str:
         "## First complete path",
         authored_first_run_text(intent) if AUTHORED_SEMANTICS_KEY in intent else _text_fact(intent, "first_path"),
         "",
+        *(
+            [
+                "## Other source-stated actions",
+                *_bullet_lines(intent.get("supporting_events"), empty_text=""),
+                "",
+            ]
+            if intent.get("supporting_events") else []
+        ),
         "## Operational constraints",
         *_bullet_lines(
             intent.get("operational_constraints"),
             empty_text="No operational constraints are stated in the source.",
         ),
         "",
+        *_source_design_duty_preview(intent),
         "## Human actors",
         *_bullet_lines(intent.get("human_actors"), empty_text="No human participants are stated in the source."),
         "",
@@ -178,6 +187,39 @@ def render_candidate_intent_markdown(intent: Mapping[str, Any]) -> str:
         decision_copy(intent, "proof_boundary"),
     ]
     return "\n".join(lines) + "\n"
+
+
+def _source_design_duty_preview(intent: Mapping[str, Any]) -> list[str]:
+    """Show accepted typed source duties before confirmation without rewriting them."""
+
+    semantics = intent.get(AUTHORED_SEMANTICS_KEY)
+    source_duty = semantics.get("source_duty") if isinstance(semantics, Mapping) else None
+    lifecycle = source_duty.get("lifecycle") if isinstance(source_duty, Mapping) else None
+    if not isinstance(lifecycle, Mapping):
+        return []
+    lines: list[str] = []
+    for role, heading, fields in (
+        ("conditional_guards", "Source conditional guards", ("trigger", "protected_action", "rule")),
+        ("boundaries", "Source boundaries", ("kind", "rule")),
+        ("proof_duties", "Source proof duties", ("dossier_or_artifact", "must_show")),
+    ):
+        duties = lifecycle.get(role)
+        if not isinstance(duties, list):
+            raise ValueError(f"typed candidate {role} projection is missing")
+        if not duties:
+            continue
+        lines.extend([f"## {heading}", ""])
+        for duty in duties:
+            if not isinstance(duty, Mapping):
+                raise ValueError(f"typed candidate {role} projection is malformed")
+            lines.append(f"- {duty['duty_id']} ({duty['component_key']} / {duty['workstream_key']})")
+            lines.extend(f"  - {field.replace('_', ' ').capitalize()}: {duty[field]}" for field in fields)
+            lines.extend(
+                f"  - Source citation (occurrence {ref['occurrence']}): {ref['quote']}"
+                for ref in duty["source_refs"]
+            )
+        lines.append("")
+    return lines
 
 
 def _bullet_lines(value: Any, *, empty_text: str) -> list[str]:

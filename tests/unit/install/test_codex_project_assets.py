@@ -274,13 +274,25 @@ def test_greenfield_guidance_keeps_public_review_separate_from_operator_create()
         assert "--intent-file" not in text, path
         assert "--confirm-intent" not in text, path
         assert "read-only" in text, path
+        assert "source-ledger-check" in compact_text, path
+        assert "--ledger-file" in compact_text, path
+        assert "decision_task" in compact_text, path
+        assert "source-only verifier" in compact_text, path
+        assert "--decision-file" in compact_text, path
+        if "greenfield propose" in compact_text:
+            assert (
+                compact_text.index("greenfield authority-check")
+                < compact_text.index("greenfield source-ledger-check")
+                < compact_text.index("--decision-file")
+                < compact_text.index("greenfield propose")
+            ), path
         assert "qualified confirmation interface" in compact_text, path
-        assert "create from a chat approval" in compact_text, path
+        assert "chat approval" in compact_text or "Chat/hooks cannot authorize create" in compact_text, path
         assert "odylith greenfield decide" in compact_text, path
         assert "CONFIRM" in compact_text, path
         assert "EDIT" in compact_text, path
         assert "REJECT" in compact_text, path
-        assert "chat approval" in compact_text, path
+        assert "chat approval" in compact_text or "Chat/hooks cannot authorize create" in compact_text, path
         assert "## Choose one command" not in text, path
         assert "rollback guard" in compact_text, path
         assert ".odylith/runtime/greenfield/confirmed-intent.md" not in compact_text, path

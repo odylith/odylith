@@ -25,6 +25,9 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     product_intent_authority_from_envelope,
     require_product_intent_authority,
 )
+from odylith.runtime.domain_intelligence.greenfield_source_lifecycle import (
+    project_greenfield_source_lifecycle,
+)
 from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
     PRODUCT_INTENT_AUTHORITY_VERSION,
     PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION,
@@ -35,7 +38,9 @@ from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_author
 )
 from tests.unit.runtime.test_greenfield_product_intent_envelope import (
     _authored_inputs,
+    _authored_result,
 )
+from tests.unit.runtime.test_greenfield_host_candidate import _accepted_ledger
 
 
 _PROVISIONAL_PROOF = {
@@ -55,16 +60,51 @@ def _model_authoring() -> dict[str, Any]:
             "source_sha256": "a" * 64,
             "raw_candidate_sha256": "b" * 64,
             "canonical_candidate_sha256": "c" * 64,
+            "source_duty_ledger_sha256": "d" * 64,
+            "source_duty_verifier_task_sha256": "c" * 64,
+            "source_duty_decision_set_sha256": "f" * 64,
+            "source_duty_binding_sha256": "e" * 64,
         },
         "runtime_semantic_model_call_count": 0,
     }
 
 
 def _provisional_inputs() -> tuple[str, dict[str, Any], list[dict[str, Any]], list[dict[str, Any]]]:
-    source, authored, intent = _authored_inputs()
+    original_source, authored, intent = _authored_inputs()
     source_proof = str(intent["proof_boundary"])
     assert len(source_proof.encode("utf-8")) == len(_NON_PROOF_SOURCE.encode("utf-8"))
-    source = source.replace(source_proof, _NON_PROOF_SOURCE, 1)
+    source = original_source.replace(source_proof, _NON_PROOF_SOURCE, 1)
+
+    old_duty = intent[AUTHORED_SEMANTICS_KEY]["source_duty"]
+    ledger = copy.deepcopy(old_duty["ledger_receipt"]["ledger"])
+    for section in ("first_path_actions", "supporting_human_actions", "system_duties"):
+        for row in ledger[section]:
+            for field in ("event_ref", "actor_ref"):
+                citation = row[field]
+                if citation is None or citation["context"] in source:
+                    continue
+                old_context = citation["context"].encode("utf-8")
+                offset = original_source.encode("utf-8").find(old_context)
+                assert offset >= 0
+                citation["context"] = source.encode("utf-8")[
+                    offset:offset + len(old_context)
+                ].decode("utf-8")
+    ledger_receipt = _accepted_ledger(ledger, evidence_text=source)
+    binding = copy.deepcopy(old_duty["binding"])
+    binding["source_sha256"] = ledger_receipt["source_sha256"]
+    binding["ledger_sha256"] = ledger_receipt["ledger_sha256"]
+    _authored, candidate = _authored_result(original_source)
+    candidate["result"]["source_duty_binding"] = binding
+    source_duty = {
+        "ledger_receipt": ledger_receipt,
+        "binding": binding,
+        "lifecycle": project_greenfield_source_lifecycle(
+            ledger_receipt=ledger_receipt,
+            binding=binding,
+            candidate_result=candidate["result"],
+            evidence_text=source,
+        ),
+    }
 
     provisional = copy.deepcopy(intent)
     provisional["proof_boundary"] = ""
@@ -78,12 +118,16 @@ def _provisional_inputs() -> tuple[str, dict[str, Any], list[dict[str, Any]], li
         authored.component_responsibility_relations,
         first_path_context_relations=authored.first_path_context_relations,
         provisional_design=authored.provisional_design,
+        source_duty=source_duty,
     )
     spans = [
         copy.deepcopy(row)
         for row in authored.source_spans
         if row["section_key"] != "proof_boundary"
     ]
+    for span in spans:
+        if span.get("entailment_relationship") == "verified_source_action":
+            span["decision_set_sha256"] = ledger_receipt["decision_set_sha256"]
     claims = [
         copy.deepcopy(row)
         for row in authored.atomic_claims

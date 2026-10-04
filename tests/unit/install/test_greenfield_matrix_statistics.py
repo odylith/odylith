@@ -412,6 +412,8 @@ def _host_native_clarification_result(
     )
     stage["source_sha256"] = hashlib.sha256(source.encode("utf-8")).hexdigest()
     stage["elapsed_seconds"] = 18.02
+    stage["proposal_phase_elapsed_seconds"] = 18.02
+    stage["whole_journey_seconds"] = 18.02
     profile_evidence = model_profile_evidence(
         STANDARD_PROFILE_ID,
         model_profile_environment(STANDARD_PROFILE_ID, {}),
@@ -537,6 +539,10 @@ def _model_authoring_observations(profile_id: str) -> dict[str, object]:
             "source_sha256": "a" * 64,
             "raw_candidate_sha256": "b" * 64,
             "canonical_candidate_sha256": "c" * 64,
+            "source_duty_ledger_sha256": "d" * 64,
+            "source_duty_verifier_task_sha256": "0" * 64,
+            "source_duty_decision_set_sha256": "f" * 64,
+            "source_duty_binding_sha256": "e" * 64,
         },
         "runtime_semantic_model_call_count": 0,
     }

@@ -17,21 +17,32 @@ mechanism-level learning.
 1. Do not refuse merely because the repo has no app source. Greenfield intent is
    proposal evidence, not source evidence.
    Product meaning comes before artifact mapping.
-2. Use the active host for two bounded passes with distinct jobs. First run
+2. Use the active host for bounded gate, source-ledger, and candidate passes. First run
    `./.odylith/bin/odylith greenfield candidate-contract --repo-root . --prompt
    "<operator request>"`. Its nested `authority_gate` supplies the task, request,
-   edit, and response schema alongside the candidate schema. Run one separate
+   edit, and response schema alongside `source_ledger_schema` and the candidate
+   schema. Run one separate
    constrained host authority-gate pass and write its JSON to a temporary file
    outside the repository. Then run `./.odylith/bin/odylith greenfield
    authority-check --repo-root . --prompt "<operator request>" --gate-file
    '<gate-file>' --format json`. If the gate asks for clarification, show its one
-   question and stop: do not author a candidate or stage a transaction. Only
-   after admission, reason once over the candidate contract, write exactly one
-   JSON candidate matching its schema to another temporary file outside the
+   question and stop: do not author a candidate or stage a transaction. On
+   admission, inventory source-stated duties and evidence controls using
+   `source_ledger_schema`; write that JSON outside the repository. Run
+   `./.odylith/bin/odylith greenfield source-ledger-check --repo-root . --prompt
+   "<operator request>" --ledger-file '<ledger-file>' --format json`.
+   Stop on ledger clarification. The first check returns a structural preflight
+   and `decision_task`, not an admitted receipt. Give that complete-source task
+   to one bounded source-only verifier, save its decision JSON outside the repo,
+   and rerun `source-ledger-check` with the same inputs plus
+   `--decision-file '<decision-file>'`. Any missing, negative, uncertain, or
+   malformed decision stops before candidate authoring. Save the admitted
+   `receipt` outside the repository. Only then reason once over the candidate contract, write exactly
+   one JSON candidate matching its schema to another temporary file outside the
    repository, and run `./.odylith/bin/odylith greenfield propose --repo-root .
    --prompt "<operator request>" --gate-file '<gate-file>' --candidate-file
-   '<candidate-file>'`. The gate cannot rewrite the candidate. Both outputs are
-   untrusted hypotheses: Odylith revalidates every source
+   '<candidate-file>' --ledger-file '<receipt-file>'`. The accepted ledger binds
+   source roles; the candidate cannot redefine them. Odylith revalidates every source
    citation, typed relation, semantic invariant, and custody hash, seals the
    canonical candidate, and quality-gates the complete staged
    ProductCreateTransaction with zero semantic/model/provider calls after
@@ -52,11 +63,15 @@ mechanism-level learning.
 4. `CONFIRM` and `REJECT` use the shared bounded deterministic owner without
    compiler or model work. For `EDIT`, run `greenfield candidate-contract` with
    `--transaction-hash '<old-hash>'` and the new `--edit` or `--edit-evidence`.
-   Repeat the separate constrained gate pass against the sealed source plus
-   correction, and run `greenfield authority-check` with that correction and
-   `--gate-file '<gate-file>' --format json`. Stop on clarification. Only after
-   admission, author one new host candidate, then pass that same correction,
-   `--gate-file '<gate-file>'`, and `--candidate-file '<candidate-file>'` to
+   Repeat the separate gate pass and `greenfield authority-check` against the
+   sealed source plus correction, then inventory source duties and run
+   `greenfield source-ledger-check` with that correction and
+   `--ledger-file '<ledger-file>' --format json`. Stop on clarification. Run one
+   bounded source-only verifier over the returned `decision_task`, then rerun
+   the check with `--decision-file '<decision-file>'`; stop on any non-yes duty.
+   Save the new accepted receipt outside the repository. Only after admission, author one
+   new host candidate, then pass that same correction, `--gate-file '<gate-file>'`,
+   `--candidate-file '<candidate-file>'`, and `--ledger-file '<receipt-file>'` to
    `greenfield decide EDIT`. EDIT verifies the retained hash, compiles the sealed original source plus correction,
    preserves the original tier and advisory 90/120/150 targets, retains the old
    seal, and returns a new preview/hash. It adds no repair or fallback path.

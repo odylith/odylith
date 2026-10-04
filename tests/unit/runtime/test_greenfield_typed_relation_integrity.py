@@ -17,12 +17,16 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring impor
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     build_product_intent_envelope,
 )
+from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
+    GreenfieldSourceDutyBindingError,
+)
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     admit_complete_host_candidate,
     authored_response,
     host_candidate_response,
     model_event_rows,
 )
+from tests.unit.runtime.test_greenfield_model_path_custody import _source_duty_for_response
 
 
 def _harbor_case() -> tuple[str, dict[str, object], dict[str, object]]:
@@ -162,7 +166,7 @@ def test_external_event_actor_must_reference_a_selected_external_fact() -> None:
     relations = model_event_rows(response)
     relations[1]["actor_fact"] = {"field": "external_systems", "row": 2}
 
-    with pytest.raises(GreenfieldModelAuthoringError, match="actor fact"):
+    with pytest.raises(GreenfieldSourceDutyBindingError, match="unknown actor fact"):
         _author(evidence, response)
 
 
@@ -334,7 +338,7 @@ def test_coordinated_clauses_preserve_actor_facts_and_every_action() -> None:
         "shows",
     ]
     assert [
-        row["quote"]
+        row["projection_quote"]
         for row in result.atomic_claims
         if row["relation_role"] == "action_verb_quote"
     ] == ["uploads", "reviews", "stores", "shows"]
@@ -472,6 +476,7 @@ def test_repeated_event_text_at_distinct_source_and_projection_coordinates_seals
             result.component_responsibility_relations,
             first_path_context_relations=result.first_path_context_relations,
             provisional_design=result.provisional_design,
+            source_duty=_source_duty_for_response(response, evidence),
         ),
     }
     envelope = build_product_intent_envelope(

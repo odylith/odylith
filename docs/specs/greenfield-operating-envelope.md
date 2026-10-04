@@ -1,6 +1,8 @@
 # Greenfield Operating Envelope
 
-Version: `odylith.greenfield-operating-envelope.v6`
+Receipt version: `odylith.greenfield-operating-envelope.v6`
+
+Document revision: `11`
 
 Profile: `single-product-governance-onboarding`
 
@@ -54,12 +56,12 @@ preview. It adds no schema, stage, retry, or repair mechanism. The sealed-byte
 `create` CLI remains a separate commit-only interface. Native automatic delivery
 and visible completion require their own proof.
 
-Model-profile contract `odylith.greenfield.model-profile-contract.v24`
+Model-profile contract `odylith.greenfield.model-profile-contract.v25`
 declares three pinned real-model profiles. Only the
 standard profile is an eligible release-success route; eligibility does not
 qualify a release without observed end-to-end evidence:
 
-- `greenfield-standard-host-candidate-astra-medium-v20`: the default and
+- `greenfield-standard-host-candidate-astra-medium-v21`: the default and
   `auto` path, the sole eligible release-success profile, with a 90-second
   advisory performance target.
 - `greenfield-rescue-host-candidate-luna-medium-v20`: an explicit
@@ -69,16 +71,71 @@ qualify a release without observed end-to-end evidence:
   diagnostic profile with a 150-second advisory target. It is declared but is
   not success-qualified.
 
-All three profiles use one 180-second operational timeout and one 165-second
-shared model window, leaving 15 seconds for deterministic completion. Meeting or
-missing the selected 90/120/150-second target is recorded as performance evidence,
-not used as an admission gate. Proposal elapsed time must remain strictly below
-the operational timeout. Ninety seconds is the advisory normal-case target.
+The standard profile has a 315-second proposal timeout and one shared
+300-second authority-gate/candidate model window, leaving 15 seconds for
+deterministic completion. The gate consumes part of that shared window; it
+does not reset before candidate authoring. Lower-capability and unsupported
+control profiles retain their 180/165-second limits. This constraint revision
+implements the operator-approved longer bounded broad-input flow; it is not
+a retry or a profile promotion. Separately bounded source-duty inventory and source-only material-duty
+verification precede `propose` for the broad free-form path. The inventory's
+current 300-second cap and verifier's 120-second cap are diagnostic; the finite
+whole-journey release limit must be selected from fixed public complete runs.
+Each local source-ledger preflight and receipt check has its own 30-second
+limit after its host stage. The release harness additionally enforces one
+660-second diagnostic deadline across all phases, retained-evidence callbacks,
+and cleanup. This hard ceiling stays fixed at 660 seconds; phase maxima are
+not additive allocations. It is explicitly `diagnostic_unqualified`, not a
+public-data-backed consumer limit. Each dispatched request receives at most
+the whole journey's remaining time. Candidate dispatch additionally reserves
+15 seconds for completion. A callback returning after expiry makes the flow
+fail before confirmation. Observation v12 samples elapsed time after the advisory observer
+returns and publishes an owned final snapshot. Its explicit elapsed scope
+includes model calls, local checks, raw artifact retention, cleanup, and the
+observer; the final timestamp JSON serialization follows that sample.
+It distinguishes `proposal_phase_elapsed_seconds`
+from `whole_journey_seconds`; legacy `elapsed_seconds` retains the proposal
+phase value. Product-owned timing custody across separate CLI invocations and
+a measured release bound remain unproved. Citation context is a verbatim source excerpt that
+contains the selected quote and occurs once in the complete evidence.
+Ledger v5 owns each normalized action, target, and statement once. Exact event
+and actor citations plus role context support that meaning; the compiler
+derives support indexes and does not require invented verb or target
+microspans. Compact v3 verification supplies every material row and citation
+once with the complete authority source. Decision v4 returns one closed table
+keyed by duty ID plus source-wide completeness. The compiler owns canonical
+judgment order and hash custody; workflow order stays in the source inventory.
+The actor, event, and role contexts must all be selected by an affirmative
+judgment. Atomic action and target projections retain the complete exact event
+as source support and their exact slice of the verified normalized statement.
+At host intake the compiler validates every bank citation against the complete
+source, including unused selections. It resolves referenced IDs and omits only
+unused bank storage from the canonical ledger. Unknown or duplicate IDs,
+duplicate quote/context pairs, and invalid used or unused selections reject.
+Decoding without complete source cannot discard unused selections.
+Candidate authoring transport v1 retains the complete source request,
+candidate requirements and schema, versions, and admitted authority gate. It
+presents the accepted material inventory through the same lossless compact
+citation bank plus receipt custody hashes. The complete accepted receipt stays
+outside the model for deterministic proposal admission. Completed authority and
+inventory authoring schemas and completed verifier decisions are absent from
+this phase's request. Citation resolution preserves exact quotes and contexts;
+this view neither reinterprets duties nor adds a semantic stage. Observation
+v12 records the exact candidate request bytes, hash, transport version, and
+candidate completion reserve.
+This revised path remains unqualified pending fresh complete public packages.
+Neither a successful proposal receipt nor the inventory's own duration proves
+the whole journey. Meeting or missing the selected 90/120/150-second target is
+recorded as performance evidence, not used as an admission gate. Proposal
+elapsed time must remain strictly below its operational timeout. Ninety
+seconds is the advisory normal-case target.
 The separate commit-only step must still finish strictly below 60 seconds.
-Profile contract v24 separates declared profiles, the release-success profile,
+Profile contract v25 separates declared profiles, the release-success profile,
 and the lower-capability control instead of treating evidence profiles as
-interchangeable success routes. The advisory targets, finite timeout, semantic
-requirements, and transaction laws are unchanged.
+interchangeable success routes. The advisory targets, semantic requirements,
+and transaction laws are unchanged. The standard phase limit is revised as
+declared above; earlier 180/165-second v20 evidence remains unchanged and
+cannot qualify v21.
 Historical observations keep their original limits and verdicts; old sealed
 transactions and earlier model-profile receipts are not relabeled as current.
 Fresh profile evidence is required for any qualification.
@@ -112,14 +169,48 @@ Astra release proof requires observed committed positive cases and source-bound
 material clarifications with no writes. Sol diagnostic evidence cannot qualify a
 release-success profile.
 
-Canonical authoring `odylith.greenfield.intent-authoring.v77` receives one
-host-owned candidate in host format v18 under candidate contract v33. The
-host first returns one authority decision;
-an admitted request receives one candidate pass. The deterministic compiler
-validates that candidate, its citations, and relationships, then derives and
-seals their canonical relation hash. It does not call a runtime semantic
-model, run an online candidate reviewer, correct a candidate, or select a
-fallback profile after receipt. A clarification stops without staging.
+Canonical authoring `odylith.greenfield.intent-authoring.v79` receives one
+host-owned candidate in host format v21 under candidate contract v46. The
+source-duty host returns one compact citation bank and typed rows that refer
+to it; deterministic expansion restores the same complete cited ledger before
+preflight. This path remains unqualified. Earlier v44 public evidence failed
+duplicate-action custody; the fresh v45 installed civic run stopped on one
+unused exact opening-outcome citation before verification or package creation.
+Neither failed result becomes a positive for v46. Each host
+stage returns only its schema-matching JSON; the external controller owns file
+custody, CLI checks, and the separate verifier call. The host first returns one
+authority decision. An admitted request receives one
+exact-cited source-duty inventory (ledger v5), one source-only material-duty verdict
+pass, and one candidate pass. Ledger action rows own a normalized statement,
+action, and target, with exact actor, event, and role citations and a typed performer
+role. Structural preflight exposes every hash-bound row across all eight material
+duty sections and the complete authority source to the verifier. In the same
+pass, the verifier must decide whether the inventory omits any material duty
+from that full source and cite omissions when it does. An accepted receipt v7
+requires one affirmative cited verdict per row, an affirmative source-wide
+completeness verdict, and the complete verifier task hash; missing, negative,
+uncertain, or
+mismatched verdicts stop before candidate authoring. The candidate selects
+actor fact addresses, design owners, and run order; it cannot independently
+author action text. Binding v3 maps each
+candidate event to exactly one ledger action and retains cited passive state
+transitions, conditional guards, boundaries, and proof duties. The deterministic compiler
+validates citations, role coverage, relationships, and hashes, then seals one
+canonical relation set. The first path contains only binding-selected task
+events; other cited events remain in `supporting_events`. Two actions can share
+one exact source clause while retaining separate normalized typed relations.
+The verifier's judgment and inventory completeness need independent source-first
+semantic review; hashes only prove receipt consistency. Earlier action-only
+and rows-only receipts do not qualify or admit the complete package. There is no runtime
+post-receipt model call, online candidate reviewer, correction, or fallback
+profile. A clarification stops without staging.
+
+Atomic fact ledger v4 carries a narrow verified-action relation with exact
+source anchors and normalized event text. This can represent an inherited verb
+such as `A reviewer defines scope and audience.` across distinct action roles.
+The broad free-form envelope remains unqualified until unchanged public
+cross-domain packages pass blinded semantic review and the complete journey,
+transaction, installed, browser, host, private, and final-holdout gates.
 
 The candidate keeps source facts, actions, and relationships citation-bound.
 Its separately labeled `provisional_design` currently requires 4–5 logical
@@ -171,8 +262,15 @@ and the sequence view come from the existing typed event relations.
 An overrun fails without another call; a smaller caller-supplied model window
 never extends the selected consumer deadline.
 An initial non-structured provider failure retains its categorical code, profile,
-timing and response shape through the existing private proof channel, never raw
-failed output or provider diagnostic text. Public failure wording stays unchanged.
+timing and response shape through the existing private proof channel. Public
+failures and observations never include raw failed output or diagnostic excerpts.
+The release harness may retain native host stdout/stderr outside the repository
+for diagnosis, with private permissions and a 256 KiB stderr limit. Oversized
+stderr fails closed with its full size/hash; it is never silently clipped.
+These streams confer no semantic admission credit. Host timeouts use the shared
+process-group cleanup owner and suppress later phases. Descendants escaping that
+group remain explicitly unverified. Successful v12 observation fields and the
+declared model and whole-journey limits remain unchanged.
 External-system admission and component ownership are defined on their existing
 shared schema properties: an external dependency requires a source-stated product
 exchange or operational dependency, and human-enabled work retains its enclosing
@@ -221,11 +319,13 @@ Product-only and external-system workflows need no invented human participant.
 Every event still binds to a source-cited typed actor. A provisional customer stays
 an explicitly labeled assumption, never a human actor, dependency, or accepted fact;
 projections do not infer a customer from the first participant.
-Authored semantics v16 stores one actor identity per event: the selected actor fact,
+Authored semantics v18 stores one actor identity per event: the selected actor fact,
 and separately binds the required provisional design.
-The raw host format v18 selects that actor through `actor_fact: {field, row}`
+The raw host format v21 selects that actor through `actor_fact: {field, row}`
 using the same one-based fact-row convention as terminal results. The compiler
-projects this into canonical authoring v77. Actor references
+projects this into canonical authoring v79. The verified source-duty ledger
+supplies each normalized event statement, action, and target with exact event,
+actor, and role citations. Actor references
 may select only title, human actors, internal systems, or external systems; scalar
 title uses row 1. The compiler resolves the original selected row through source
 custody and derives the canonical kind, path and exact quotation. Identical names
@@ -236,7 +336,7 @@ Confirmation does not migrate old raw authoring responses or reinterpret
 their actor references.
 Aliases, pronouns, and omitted subjects remain in the original event text; they do
 not create a second actor field or a grammatical carry state. Event-actor atomic
-links in ledger v3 cite the selected fact directly, not a substring of the action.
+links in atomic ledger v4 cite the selected fact directly, not a substring of the action.
 The custody ledger v10 and current sealed-format checks reject older formats rather
 than translating their meaning during confirmation.
 Failure tracking and restoration remain source-cited actions; an ungrounded

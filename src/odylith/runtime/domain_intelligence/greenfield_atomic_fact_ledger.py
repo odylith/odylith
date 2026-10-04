@@ -14,15 +14,16 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 )
 
 
-ATOMIC_FACT_LEDGER_VERSION = "odylith.product-intent-atomic-facts.v3"
+ATOMIC_FACT_LEDGER_VERSION = "odylith.product-intent-atomic-facts.v4"
 ATOMIC_CATEGORY_FIELDS = {
     "actors": ("human_actors", "customer"),
-    "actions": ("first_path", "internal_systems", "component_responsibilities"),
-    "states": ("state_object", "first_path"),
-    "outputs": ("first_path", "success_metrics", "proof_boundary", "product_story"),
+    "actions": ("first_path", "supporting_events", "internal_systems", "component_responsibilities"),
+    "states": ("state_object", "first_path", "supporting_events"),
+    "outputs": ("first_path", "supporting_events", "success_metrics", "proof_boundary", "product_story"),
     "constraints": (
         "operational_constraints",
         "first_path",
+        "supporting_events",
         "success_metrics",
         "proof_boundary",
         "non_goals",
@@ -38,6 +39,7 @@ ATOMIC_PROJECTION_FIELDS = frozenset(
         "product_story",
         "state_object",
         "first_path",
+        "supporting_events",
         "proof_boundary",
         "problem",
         "customer",
@@ -75,6 +77,7 @@ _CLAIM_FIELDS = frozenset(
         "relation_role",
     }
 )
+_NORMALIZED_CLAIM_FIELDS = _CLAIM_FIELDS | {"projection_quote"}
 _LEDGER_FIELDS = frozenset(
     {
         "atom_id",
@@ -140,6 +143,8 @@ def append_atomic_source_spans(
                 "source_start_byte": start,
                 "source_end_byte": end,
                 "quote_sha256": quote_sha256,
+                **({"verified_projection_sha256": _sha256_text(str(claim["projection_quote"]))}
+                   if "projection_quote" in claim else {}),
             }
         )
 
@@ -189,13 +194,16 @@ def build_atomic_fact_ledger(
             "source_start_byte": start,
             "source_end_byte": end,
         }
+        projected_quote = str(claim.get("projection_quote") or quote)
         row = {
             "atom_id": "",
             "categories": [str(claim["category"])],
-            "normalized_value": quote,
+            "normalized_value": projected_quote,
             "polarity": str(claim["polarity"]),
             "custody_state": "accepted_fact",
-            "entailment_relationship": "exact_source_span",
+            "entailment_relationship": (
+                "verified_source_action" if "projection_quote" in claim else "exact_source_span"
+            ),
             "source_span_ids": [span_id],
             "source_span_refs": [source_ref],
             "projection_links": [projection],
@@ -243,7 +251,7 @@ def require_atomic_fact_ledger(
             raise ValueError("ProductCreateTransaction atomic fact custody has an invalid polarity")
         if (
             row.get("custody_state") != "accepted_fact"
-            or row.get("entailment_relationship") != "exact_source_span"
+            or row.get("entailment_relationship") not in {"exact_source_span", "verified_source_action"}
             or not _valid_exact_span_refs(row.get("source_span_refs"), row.get("source_span_ids"))
         ):
             raise ValueError("ProductCreateTransaction accepted atomic fact lacks exact source custody")
@@ -271,7 +279,12 @@ def _require_authored_claims(
         not isinstance(value, Sequence)
         or isinstance(value, (str, bytes, bytearray))
         or not value
-        or any(not isinstance(claim, Mapping) or set(claim) != _CLAIM_FIELDS for claim in value)
+        or any(
+            not isinstance(claim, Mapping)
+            or set(claim) not in {_CLAIM_FIELDS, _NORMALIZED_CLAIM_FIELDS}
+            or ("projection_quote" in claim and claim.get("field") not in {"first_path", "supporting_events"})
+            for claim in value
+        )
     ):
         raise ValueError("model-authored Product Intent requires exact atomic claims")
     return tuple(value)
@@ -363,15 +376,18 @@ def _require_exact_source_custody(
     ref = row["source_span_refs"][0]
     span = spans_by_id.get(span_id)
     quote = str(row["normalized_value"])
+    source_quote = str(span.get("text") or "") if span is not None else ""
+    verified_action = row.get("entailment_relationship") == "verified_source_action"
     if (
         span is None
         or span.get("classification") != "product_claim"
         or span.get("section_key") != "atomic_evidence"
-        or span.get("text") != quote
-        or span.get("text_sha256") != _sha256_text(quote)
+        or (not verified_action and source_quote != quote)
+        or (verified_action and span.get("verified_projection_sha256") != _sha256_text(quote))
+        or span.get("text_sha256") != _sha256_text(source_quote)
         or ref.get("span_id") != span_id
         or ref.get("classification") != "product_claim"
-        or ref.get("text_sha256") != _sha256_text(quote)
+        or ref.get("text_sha256") != _sha256_text(source_quote)
         or ref.get("source_start_byte") != span.get("source_start_byte")
         or ref.get("source_end_byte") != span.get("source_end_byte")
     ):

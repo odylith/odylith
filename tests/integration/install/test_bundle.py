@@ -8,12 +8,15 @@ def test_bundle_root_contains_installed_agents_entrypoint() -> None:
     agents_text = (root / "AGENTS.md").read_text(encoding="utf-8")
     assert "odylith greenfield candidate-contract" in agents_text
     assert "then seals ProductCreateTransaction" in agents_text
-    assert "nested `authority_gate` task, request, edit, and schema" in agents_text
+    assert "gate, source-ledger, and candidate schemas" in agents_text
     assert "greenfield authority-check --repo-root ." in agents_text
     assert "Clarification: show one question and stop; no candidate or transaction" in agents_text
     assert "--gate-file \"<gate-file>\" --candidate-file \"<candidate-file>\"" in agents_text
-    assert "repeat gate pass and `authority-check`" in agents_text
-    assert "90/120/150 seconds advisory" in agents_text
+    assert "one bounded source-only verifier" in agents_text
+    assert "--decision-file \"<decision-file>\"" in agents_text
+    assert "repeat gate, source-ledger preflight, one source-only verifier, and receipt check" in agents_text
+    assert "90/120/150s advisory" in agents_text
+    assert "standard 315s = shared 300s gate/candidate + 15s completion" in agents_text
     assert "Preview: `odylith greenfield decide" in agents_text
     assert "CONFIRM/REJECT use one owner, no compiler/model" in agents_text
     assert "odylith greenfield create --transaction-file PATH" in agents_text

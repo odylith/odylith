@@ -66,6 +66,9 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
     CANONICAL_CANDIDATE_SHA256_KEY,
 )
+from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
+    SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+)
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_FACTS_HASH_KEY
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_facts_hash
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
@@ -354,6 +357,34 @@ def _require_host_candidate_authority_binding(
     ):
         raise ValueError(
             "ProductCreateTransaction host candidate does not match its sealed Product Intent authority"
+        )
+
+    intent = proposal.get("intent")
+    authored_semantics = intent.get(AUTHORED_SEMANTICS_KEY) if isinstance(intent, Mapping) else None
+    source_duty = (
+        authored_semantics.get("source_duty")
+        if isinstance(authored_semantics, Mapping) else None
+    )
+    ledger_receipt = source_duty.get("ledger_receipt") if isinstance(source_duty, Mapping) else None
+    lifecycle = source_duty.get("lifecycle") if isinstance(source_duty, Mapping) else None
+    if (
+        not isinstance(ledger_receipt, Mapping)
+        or not isinstance(lifecycle, Mapping)
+        or ledger_receipt.get("version") != SOURCE_DUTY_LEDGER_RECEIPT_VERSION
+        or ledger_receipt.get("source_sha256") != authority.get("markdown_source_sha256")
+        or not ledger_receipt.get("ledger_sha256")
+        or not ledger_receipt.get("verifier_task_sha256")
+        or not ledger_receipt.get("decision_set_sha256")
+        or not lifecycle.get("binding_sha256")
+        or host.get("source_duty_ledger_sha256") != ledger_receipt["ledger_sha256"]
+        or host.get("source_duty_verifier_task_sha256")
+        != ledger_receipt["verifier_task_sha256"]
+        or host.get("source_duty_decision_set_sha256")
+        != ledger_receipt["decision_set_sha256"]
+        or host.get("source_duty_binding_sha256") != lifecycle["binding_sha256"]
+    ):
+        raise ValueError(
+            "ProductCreateTransaction host candidate source-duty hashes do not match its reviewed proposal"
         )
 
 

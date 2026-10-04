@@ -287,7 +287,7 @@ def _selected_input():
     result = response["result"]
     intent, spans, selected = _intent_from_typed_source_spans(
         result["facts"], component_rows=(), evidence_text=source,
-        assumptions=result["assumptions"], ambiguities=[],
+        assumptions=result["assumptions"], ambiguities=[], normalized_actions={},
     )
     return source, result, intent, spans, selected
 

@@ -65,7 +65,7 @@ _CURRENT_SEALED_INTENT_VERSIONS = {
     "version": "odylith.product-intent-authority.v13",
     "envelope_schema_version": "odylith.product-intent-envelope.v13",
     "ledger_version": "odylith.product-intent-custody-ledger.v10",
-    "atomic_ledger_version": "odylith.product-intent-atomic-facts.v3",
+    "atomic_ledger_version": "odylith.product-intent-atomic-facts.v4",
 }
 
 

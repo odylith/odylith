@@ -11,6 +11,9 @@ from typing import Any
 from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_ARGUMENT_COUNT
 from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_RECEIPT_VERSION
 from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_SHAPE_SHA256
+from greenfield_matrix_host_candidate import PROVISIONAL_SOURCE_CHECK_TIMEOUT_SECONDS
+from greenfield_matrix_host_candidate import PROVISIONAL_SOURCE_DUTY_VERIFIER_TIMEOUT_SECONDS
+from greenfield_matrix_host_candidate import PROVISIONAL_SOURCE_LEDGER_TIMEOUT_SECONDS
 from greenfield_model_profiles import DEEP_PROFILE_ID
 from greenfield_model_profiles import LOWER_CAPABILITY_CONTROL_PROFILES
 from greenfield_model_profiles import MODEL_PROFILES
@@ -18,6 +21,7 @@ from greenfield_model_profiles import UNAVAILABLE_PROVIDER_PROFILE
 from greenfield_retained_candidate_proof import (
     retained_canonical_candidate_hash_issues,
 )
+from greenfield_whole_journey_budget import whole_journey_observation_issues
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
 )
@@ -42,6 +46,7 @@ def authored_model_result_binding_issues(
     *,
     stage_observation: Mapping[str, Any],
     raw_candidate: Mapping[str, Any],
+    source_duty_receipt: Mapping[str, Any] | None = None,
     create_payload: Mapping[str, Any],
     expected_source: str,
 ) -> tuple[str, ...]:
@@ -113,10 +118,13 @@ def authored_model_result_binding_issues(
             raw_candidate=raw_candidate,
             receipt=receipt,
             evidence_text=expected_source,
+            source_duty_receipt=source_duty_receipt,
         )
     )
     if stage.get("raw_candidate_sha256") != receipt.get("raw_candidate_sha256"):
         issues.append("retained host stage does not match the sealed raw candidate")
+    if stage.get("source_ledger_sha256") != receipt.get("source_duty_ledger_sha256"):
+        issues.append("retained host stage does not match the sealed source ledger")
     if not _is_exact_int(stage.get("runtime_semantic_model_call_count"), 0):
         issues.append("retained host stage reports a runtime semantic model call")
     if not _is_exact_int(stage.get("post_receipt_provider_invocations"), 0):
@@ -176,6 +184,12 @@ def model_profile_release_proof(
     rows: dict[str, list[Any]] = {profile_id: [] for profile_id in qualified}
     validation_issues: list[str] = []
     coverage_issues: list[str] = []
+    # No public-data-backed finite release bound is sealed yet. A caller cannot
+    # pass a bare number to turn this provisional phase cap into release proof.
+    if require_complete:
+        coverage_issues.append(
+            "release proof lacks a public-data-backed finite whole-journey bound"
+        )
     for result in results:
         evidence = _mapping(getattr(result, "evidence", None))
         profile_evidence = _mapping(evidence.get("model_profile"))
@@ -308,6 +322,8 @@ def model_profile_release_proof(
         "status": status,
         "coverage_status": "passed" if not coverage_issues else "incomplete",
         "required_complete_coverage": bool(require_complete),
+        "whole_journey_release_bound_seconds": None,
+        "whole_journey_bound_status": "unqualified",
         "profiles": profiles,
         "lower_capability_scope": {
             "status": (
@@ -373,7 +389,10 @@ def unavailable_provider_proof_issues(
     return tuple(issues)
 
 
-def _result_proves_profile(result: Any, profile_id: str) -> bool:
+def _result_proves_profile(
+    result: Any, profile_id: str,
+    *, whole_journey_release_bound_seconds: float | None = None,
+) -> bool:
     evidence = _mapping(getattr(result, "evidence", None))
     profile = _mapping(evidence.get("model_profile"))
     contract = get_greenfield_model_profile(profile_id)
@@ -382,8 +401,13 @@ def _result_proves_profile(result: Any, profile_id: str) -> bool:
     observed = _mapping(profile.get("observed"))
     receipt = _mapping(observed.get("host_candidate"))
     gate_request = _mapping(stage.get("authority_gate_request"))
+    ledger_request = _mapping(stage.get("source_ledger_request"))
+    verifier_request = _mapping(stage.get("source_duty_verifier_request"))
     host_request = _mapping(stage.get("host_request"))
     stage_elapsed = _float_value(stage.get("elapsed_seconds"))
+    ledger_elapsed = _float_value(stage.get("source_ledger_elapsed_seconds"))
+    verifier_elapsed = _float_value(stage.get("source_duty_verifier_elapsed_seconds"))
+    whole_elapsed = _float_value(stage.get("whole_journey_seconds"))
     expected_response = (
         "clarification_required"
         if _result_expectation(result) == CLARIFICATION_REQUIRED_EXPECTATION
@@ -401,6 +425,10 @@ def _result_proves_profile(result: Any, profile_id: str) -> bool:
         "source_sha256",
         "raw_candidate_sha256",
         "canonical_candidate_sha256",
+        "source_duty_ledger_sha256",
+        "source_duty_decision_set_sha256",
+        "source_duty_verifier_task_sha256",
+        "source_duty_binding_sha256",
     }
     configured = _mapping(profile.get("configured"))
     configured_matches = not configured or (
@@ -411,7 +439,9 @@ def _result_proves_profile(result: Any, profile_id: str) -> bool:
         == contract.model_timeout_seconds
     )
     expected_candidate_calls = 0 if expected_response == CLARIFICATION_REQUIRED_EXPECTATION else 1
-    expected_host_calls = 1 + expected_candidate_calls
+    expected_ledger_calls = 0 if stage.get("authority_gate_decision") == "clarify" else 1
+    expected_verifier_calls = 0 if expected_response == CLARIFICATION_REQUIRED_EXPECTATION else 1
+    expected_host_calls = 1 + expected_ledger_calls + expected_verifier_calls + expected_candidate_calls
     summary_matches = not summary or (
         summary.get("status") == "passed"
         and _is_exact_int(summary.get("host_semantic_model_calls"), expected_host_calls)
@@ -438,10 +468,17 @@ def _result_proves_profile(result: Any, profile_id: str) -> bool:
                     "source_sha256",
                     "raw_candidate_sha256",
                     "canonical_candidate_sha256",
+                    "source_duty_ledger_sha256",
+                    "source_duty_decision_set_sha256",
+                    "source_duty_verifier_task_sha256",
+                    "source_duty_binding_sha256",
                 )
             )
             and stage.get("raw_candidate_sha256") == receipt.get("raw_candidate_sha256")
             and stage.get("source_sha256") == receipt.get("source_sha256")
+            and stage.get("source_ledger_sha256") == receipt.get("source_duty_ledger_sha256")
+            and stage.get("source_duty_decision_set_sha256") == receipt.get("source_duty_decision_set_sha256")
+            and stage.get("source_duty_verifier_task_sha256") == receipt.get("source_duty_verifier_task_sha256")
         )
     return (
         str(getattr(result, "status", "") or "") == "passed"
@@ -452,7 +489,9 @@ def _result_proves_profile(result: Any, profile_id: str) -> bool:
         and profile.get("semantic_authority") == "active_host_single_authority"
         and profile.get("sealed_request_roles") == (
             ["authority_gate"] if not expected_candidate_calls
-            else ["authority_gate", "host_candidate"]
+            and not expected_ledger_calls
+            else ["authority_gate", "source_ledger"] if not expected_candidate_calls
+            else ["authority_gate", "source_ledger", "source_duty_verifier", "host_candidate"]
         )
         and _is_exact_int(profile.get("host_semantic_model_calls"), expected_host_calls)
         and _is_exact_int(
@@ -462,9 +501,17 @@ def _result_proves_profile(result: Any, profile_id: str) -> bool:
         and configured_matches
         and candidate_binding_matches
         and stage.get("status") == "passed"
+        and not whole_journey_observation_issues(stage)
         and stage.get("model_profile_id") == profile_id
         and _is_exact_int(stage.get("host_invocations"), expected_host_calls)
         and _is_exact_int(stage.get("authority_gate_host_invocations"), 1)
+        and _is_exact_int(stage.get("source_ledger_host_invocations"), expected_ledger_calls)
+        and _is_exact_int(stage.get("source_duty_verifier_host_invocations"), expected_verifier_calls)
+        and _is_exact_int(stage.get("source_ledger_check_command_invocations"), expected_ledger_calls + expected_verifier_calls)
+        and (not expected_verifier_calls or (
+            stage.get("source_completeness_verdict") == "yes"
+            and _is_exact_int(stage.get("source_completeness_omission_count"), 0)
+        ))
         and _is_exact_int(stage.get("candidate_host_invocations"), expected_candidate_calls)
         and _is_exact_int(stage.get("contract_command_invocations"), 1)
         and _is_exact_int(stage.get("authority_check_command_invocations"), 1)
@@ -484,14 +531,29 @@ def _result_proves_profile(result: Any, profile_id: str) -> bool:
         and gate_request.get("argument_count") == HOST_NATIVE_ARGV_ARGUMENT_COUNT
         and gate_request.get("argv_shape_sha256") == HOST_NATIVE_ARGV_SHAPE_SHA256
         and gate_request.get("output_schema_present") is True
+        and (not expected_ledger_calls or ledger_request == gate_request)
+        and (not expected_verifier_calls or verifier_request == gate_request)
         and (not expected_candidate_calls or host_request == gate_request)
         and type(stage_elapsed) is float
         and math.isfinite(stage_elapsed)
         and 0.0 < stage_elapsed < contract.operational_timeout_seconds
+        and (
+            not expected_ledger_calls
+            or 0.0 <= ledger_elapsed
+            < PROVISIONAL_SOURCE_LEDGER_TIMEOUT_SECONDS + PROVISIONAL_SOURCE_CHECK_TIMEOUT_SECONDS
+        )
+        and (
+            not expected_verifier_calls
+            or 0.0 <= verifier_elapsed
+            < PROVISIONAL_SOURCE_DUTY_VERIFIER_TIMEOUT_SECONDS + PROVISIONAL_SOURCE_CHECK_TIMEOUT_SECONDS
+        )
+        and type(whole_elapsed) is float
+        and math.isfinite(whole_elapsed)
+        and whole_elapsed >= stage_elapsed
+        and abs(whole_elapsed - stage_elapsed - ledger_elapsed - verifier_elapsed) <= 0.003
+        and (whole_journey_release_bound_seconds is None or whole_elapsed < whole_journey_release_bound_seconds)
         and summary_matches
-        and 0.0
-        < _float_value(getattr(result, "proposal_seconds", 0.0))
-        < contract.operational_timeout_seconds
+        and _float_value(getattr(result, "proposal_seconds", 0.0)) == stage_elapsed
     )
 
 

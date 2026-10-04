@@ -60,6 +60,10 @@ _HOST_CANDIDATE_FIELDS = {
     "source_sha256",
     "raw_candidate_sha256",
     "canonical_candidate_sha256",
+    "source_duty_ledger_sha256",
+    "source_duty_verifier_task_sha256",
+    "source_duty_decision_set_sha256",
+    "source_duty_binding_sha256",
 }
 
 
@@ -740,6 +744,10 @@ def _host_authority_observation_issues(
         "source_sha256",
         "raw_candidate_sha256",
         "canonical_candidate_sha256",
+        "source_duty_ledger_sha256",
+        "source_duty_verifier_task_sha256",
+        "source_duty_decision_set_sha256",
+        "source_duty_binding_sha256",
     ):
         if not _is_sha256(candidate.get(field)):
             issues.append(f"host_candidate {field} is invalid")

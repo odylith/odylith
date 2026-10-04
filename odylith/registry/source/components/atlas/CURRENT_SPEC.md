@@ -6,7 +6,7 @@
   affordances, admissible action, proof, compact learning, benchmark evidence,
   updated priors, and the cross-system loop through Context, Execution,
   Memory, Intervention, Tribunal, Surfaces, and Benchmarks.
-Last updated: 2026-09-25
+Last updated: 2026-10-02
 
 
 ## Purpose
@@ -426,6 +426,8 @@ too low-signal for default promotion.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-10-02 · Decision:** Decision evidence linked this component to governed work with 3 verifiable artifact references.
+  - Evidence: `odylith/atlas/source/catalog/diagrams.v1.json`, `odylith/atlas/source/domain-intelligence-greenfield-governance.mmd`, `odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd`
 - **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
   - Evidence: `odylith/atlas/source/catalog/diagrams.v1.json`, `src/odylith/runtime/surfaces/assets/mermaid_cli_worker.mjs`, `src/odylith/runtime/surfaces/assets/mermaid_render_config.json`
 - **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
@@ -439,8 +441,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-28 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/atlas/source/catalog/diagrams.v1.json`, `odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md`, `odylith/registry/source/components/atlas/CURRENT_SPEC.md`, `src/odylith/runtime/surfaces/render_mermaid_catalog.py`, plus 1 more
-- **2026-03-16 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
-  - Evidence: `odylith/atlas/source/catalog/diagrams.v1.json`, `odylith/registry/source/components/subagent-router/CURRENT_SPEC.md`, `src/odylith/runtime/orchestration/subagent_router.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

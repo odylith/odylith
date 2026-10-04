@@ -10,6 +10,7 @@ import pytest
 from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_ARGUMENT_COUNT
 from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_SHAPE_SHA256
 from greenfield_matrix_host_candidate import HOST_NATIVE_MATRIX_OBSERVATION_VERSION
+from greenfield_whole_journey_budget import PROVISIONAL_WHOLE_JOURNEY_TIMEOUT_SECONDS
 from greenfield_model_profile_proof import authored_model_result_binding_issues
 from greenfield_model_profile_proof import model_profile_release_proof
 from greenfield_model_profiles import STANDARD_PROFILE_ID
@@ -22,6 +23,7 @@ from greenfield_retained_candidate_proof import (
     retained_canonical_candidate_hash_issues,
 )
 from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
+    HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION,
     admit_greenfield_host_candidate,
 )
 from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import (
@@ -29,6 +31,12 @@ from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import 
 )
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     get_greenfield_model_profile,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
+    GREENFIELD_INTENT_AUTHORING_VERSION,
+)
+from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    synthetic_source_duty_receipt,
 )
 
 
@@ -51,6 +59,7 @@ def _raw_and_receipt() -> tuple[dict[str, object], dict[str, object]]:
     _authored, receipt = admit_greenfield_host_candidate(
         raw,
         evidence_text=SOURCE,
+        source_duty_receipt=synthetic_source_duty_receipt(raw, evidence_text=SOURCE),
         clock=lambda: 1.0,
     )
     return raw, receipt
@@ -64,22 +73,36 @@ def _observed(receipt: dict[str, object]) -> dict[str, object]:
     }
 
 
+def _source_receipt(raw: dict[str, object]) -> dict[str, object]:
+    return synthetic_source_duty_receipt(raw, evidence_text=SOURCE)
+
+
 def _stage(receipt: dict[str, object]) -> dict[str, object]:
     profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
     return {
         "version": HOST_NATIVE_MATRIX_OBSERVATION_VERSION,
         "status": "passed",
-        "host_invocations": 2,
+        "host_invocations": 4,
         "authority_gate_host_invocations": 1,
+        "source_ledger_host_invocations": 1,
+        "source_duty_verifier_host_invocations": 1,
         "candidate_host_invocations": 1,
         "contract_command_invocations": 1,
         "authority_check_command_invocations": 1,
+        "source_ledger_check_command_invocations": 2,
         "proposal_command_invocations": 1,
         "runtime_semantic_model_call_count": 0,
         "post_receipt_provider_invocations": 0,
         "model_profile_id": STANDARD_PROFILE_ID,
         "model_window_seconds": profile.model_timeout_seconds,
         "operational_timeout_seconds": profile.operational_timeout_seconds,
+        "source_ledger_diagnostic_cap_seconds": 300.0,
+        "source_duty_verifier_diagnostic_cap_seconds": 120.0,
+        "whole_journey_diagnostic_cap_seconds": PROVISIONAL_WHOLE_JOURNEY_TIMEOUT_SECONDS,
+        "candidate_completion_reserve_seconds": 15.0,
+        "whole_journey_bound_status": "diagnostic_unqualified",
+        "whole_journey_elapsed_scope": "through_observer_return_before_final_snapshot_serialization",
+        "whole_journey_deadline_status": "within",
         "host_request": {
             "version": "odylith.greenfield.host-argv-receipt.v1",
             "executable_sha256": "1" * 64,
@@ -98,8 +121,28 @@ def _stage(receipt: dict[str, object]) -> dict[str, object]:
             "output_schema_present": True,
             "argv_shape_sha256": HOST_NATIVE_ARGV_SHAPE_SHA256,
         },
+        "source_ledger_request": {
+            "version": "odylith.greenfield.host-argv-receipt.v1",
+            "executable_sha256": "1" * 64,
+            "argument_count": HOST_NATIVE_ARGV_ARGUMENT_COUNT,
+            "model": "gpt-6-astra",
+            "reasoning_effort": "medium",
+            "output_schema_present": True,
+            "argv_shape_sha256": HOST_NATIVE_ARGV_SHAPE_SHA256,
+        },
+        "source_duty_verifier_request": {
+            "version": "odylith.greenfield.host-argv-receipt.v1",
+            "executable_sha256": "1" * 64,
+            "argument_count": HOST_NATIVE_ARGV_ARGUMENT_COUNT,
+            "model": "gpt-6-astra",
+            "reasoning_effort": "medium",
+            "output_schema_present": True,
+            "argv_shape_sha256": HOST_NATIVE_ARGV_SHAPE_SHA256,
+        },
         "candidate_temp_cleaned": True,
         "authority_gate_temp_cleaned": True,
+        "source_ledger_temp_cleaned": True,
+        "source_duty_decision_temp_cleaned": True,
         "host_workspace_cleaned": True,
         "stage": "propose",
         "contract_returncode": 0,
@@ -114,7 +157,33 @@ def _stage(receipt: dict[str, object]) -> dict[str, object]:
         "authority_check_returncode": 0,
         "authority_check_stdout_sha256": "c" * 64,
         "authority_check_stderr_sha256": "d" * 64,
+        "source_ledger_schema_sha256": "e" * 64,
+        "source_ledger_returncode": 0,
+        "source_ledger_output_sha256": "f" * 64,
+        "source_ledger_output_bytes": 200,
+        "source_ledger_temp_outside_repo": True,
+        "source_ledger_preflight_returncode": 0,
+        "source_ledger_preflight_stdout_sha256": "9" * 64,
+        "source_ledger_preflight_mode": "source_duty_preflight",
+        "source_duty_decision_schema_sha256": "a" * 64,
+        "source_duty_verifier_returncode": 0,
+        "source_duty_decision_output_sha256": "b" * 64,
+        "source_duty_decision_output_bytes": 200,
+        "source_completeness_verdict": "yes",
+        "source_completeness_omission_count": 0,
+        "source_duty_decision_temp_outside_repo": True,
+        "source_ledger_check_returncode": 0,
+        "source_ledger_check_stdout_sha256": "0" * 64,
+        "source_ledger_check_mode": "source_duty_admitted",
+        "source_ledger_elapsed_seconds": 20.0,
+        "source_duty_verifier_elapsed_seconds": 10.0,
+        "source_ledger_sha256": receipt["source_duty_ledger_sha256"],
+        "source_duty_decision_set_sha256": receipt["source_duty_decision_set_sha256"],
+        "source_duty_verifier_task_sha256": receipt["source_duty_verifier_task_sha256"],
         "candidate_schema_sha256": "3" * 64,
+        "candidate_transport_version": HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION,
+        "candidate_request_bytes": 2000,
+        "candidate_request_sha256": "5" * 64,
         "host_returncode": 0,
         "host_stdout_bytes": 500,
         "host_stderr_bytes": 0,
@@ -128,6 +197,8 @@ def _stage(receipt: dict[str, object]) -> dict[str, object]:
         "proposal_stderr_sha256": "6" * 64,
         "proposal_mode": "product_create_transaction",
         "elapsed_seconds": 12.0,
+        "proposal_phase_elapsed_seconds": 12.0,
+        "whole_journey_seconds": 42.0,
     }
 
 
@@ -136,11 +207,11 @@ def _create_payload(receipt: dict[str, object]) -> dict[str, object]:
         "commit_manifest": {
             "model_authoring": {
                 "authoring_origin": "host_native",
-                "authoring_version": "odylith.greenfield.intent-authoring.v77",
+                "authoring_version": GREENFIELD_INTENT_AUTHORING_VERSION,
                 "runtime_semantic_model_call_count": 0,
                 "tier": "standard",
                 "elapsed_seconds": 1.0,
-                "effective_model_window_seconds": 165.0,
+                "effective_model_window_seconds": 300.0,
                 "host_candidate": receipt,
                 "canonical_authority": {
                     "canonical_candidate_sha256": receipt[
@@ -181,6 +252,7 @@ def _profile_evidence() -> dict[str, object]:
         observed=_observed(receipt),
         stage_observation=_stage(receipt),
         raw_candidate=raw,
+        source_duty_receipt=_source_receipt(raw),
         expected_source=SOURCE,
     )
 
@@ -189,6 +261,12 @@ def _clarification_profile_evidence() -> dict[str, object]:
     _raw, _receipt = _raw_and_receipt()
     stage = _stage(_receipt)
     stage["host_invocations"] = 1
+    stage["source_ledger_host_invocations"] = 0
+    stage["source_duty_verifier_host_invocations"] = 0
+    stage["source_ledger_check_command_invocations"] = 0
+    stage["source_ledger_elapsed_seconds"] = 0.0
+    stage.pop("source_duty_verifier_elapsed_seconds")
+    stage["whole_journey_seconds"] = 12.0
     stage["candidate_host_invocations"] = 0
     stage["proposal_command_invocations"] = 0
     stage["authority_gate_decision"] = "clarify"
@@ -196,10 +274,24 @@ def _clarification_profile_evidence() -> dict[str, object]:
     stage["response_kind"] = "clarification_required"
     stage["proposal_mode"] = "clarification_required"
     for field in (
+        "candidate_request_bytes", "candidate_request_sha256", "candidate_transport_version",
         "host_request", "candidate_schema_sha256", "host_returncode",
         "host_stdout_bytes", "host_stderr_bytes", "raw_candidate_sha256",
         "host_output_sha256", "host_output_bytes", "candidate_temp_outside_repo",
         "proposal_returncode", "proposal_stdout_sha256", "proposal_stderr_sha256",
+        "source_ledger_request", "source_ledger_schema_sha256",
+        "source_ledger_returncode", "source_ledger_output_sha256",
+        "source_ledger_output_bytes", "source_ledger_temp_outside_repo",
+        "source_ledger_preflight_returncode", "source_ledger_preflight_stdout_sha256",
+        "source_ledger_preflight_mode", "source_duty_verifier_request",
+        "source_duty_decision_schema_sha256", "source_duty_verifier_returncode",
+        "source_duty_decision_output_sha256", "source_duty_decision_output_bytes",
+        "source_completeness_verdict", "source_completeness_omission_count",
+        "source_duty_decision_temp_outside_repo", "source_duty_decision_set_sha256",
+        "source_duty_verifier_task_sha256",
+        "source_ledger_check_returncode", "source_ledger_check_stdout_sha256",
+        "source_ledger_check_mode", "source_ledger_elapsed_seconds",
+        "source_ledger_sha256",
     ):
         stage.pop(field)
     return model_profile_evidence(
@@ -219,6 +311,7 @@ def test_retained_candidate_binds_raw_and_canonical_hashes() -> None:
         raw_candidate=raw,
         receipt=receipt,
         evidence_text=SOURCE,
+        source_duty_receipt=_source_receipt(raw),
     ) == ()
 
     tampered = deepcopy(raw)
@@ -227,6 +320,7 @@ def test_retained_candidate_binds_raw_and_canonical_hashes() -> None:
         raw_candidate=tampered,
         receipt=receipt,
         evidence_text=SOURCE,
+        source_duty_receipt=_source_receipt(raw),
     )
     assert "sealed raw candidate hash does not match retained host output" in issues
     assert (
@@ -240,13 +334,43 @@ def test_profile_evidence_proves_one_host_and_zero_post_receipt_calls() -> None:
 
     assert evidence["status"] == "passed", evidence["issues"]
     assert evidence["semantic_authority"] == "active_host_single_authority"
-    assert evidence["sealed_request_roles"] == ["authority_gate", "host_candidate"]
-    assert evidence["host_semantic_model_calls"] == 2
+    assert evidence["sealed_request_roles"] == ["authority_gate", "source_ledger", "source_duty_verifier", "host_candidate"]
+    assert evidence["host_semantic_model_calls"] == 4
     assert evidence["runtime_semantic_model_calls_after_candidate_receipt"] == 0
     assert evidence["post_receipt_provider_invocations"] == 0
     summary = evidence["stage_observation_summary"]
     assert summary["retained_candidate_hash_summary"]["canonical_projection_verified"] is True
     assert "candidate_" + "review" not in json.dumps(evidence, sort_keys=True)
+
+
+@pytest.mark.parametrize("clarification", (False, True))
+@pytest.mark.parametrize("field,invalid", (
+    ("whole_journey_diagnostic_cap_seconds", MISSING),
+    ("whole_journey_diagnostic_cap_seconds", 661.0),
+    ("whole_journey_bound_status", "release_qualified"),
+    ("whole_journey_elapsed_scope", "before_observer_return"),
+    ("whole_journey_deadline_status", "expired"),
+    ("proposal_phase_elapsed_seconds", 1.0),
+    ("whole_journey_seconds", float("inf")),
+    ("whole_journey_seconds", 660.0),
+))
+def test_profile_evidence_rejects_unproved_whole_journey_deadline(
+    clarification: bool, field: str, invalid: object,
+) -> None:
+    raw, receipt = _raw_and_receipt()
+    stage = deepcopy(_clarification_profile_evidence()["stage_observation"]) if clarification else _stage(receipt)
+    _mutate_path(stage, (field,), invalid)
+    evidence = model_profile_evidence(
+        STANDARD_PROFILE_ID,
+        model_profile_environment(STANDARD_PROFILE_ID, {}),
+        observed={} if clarification else _observed(receipt),
+        stage_observation=stage,
+        raw_candidate={} if clarification else raw,
+        source_duty_receipt=_source_receipt(raw),
+        expected_source=SOURCE,
+    )
+    assert evidence["status"] == "failed"
+    assert any("journey" in issue or "proposal phase" in issue for issue in evidence["issues"])
 
 
 @pytest.mark.parametrize("clarification", (False, True))
@@ -386,6 +510,7 @@ def test_committed_result_binding_uses_canonical_authority_only() -> None:
     assert authored_model_result_binding_issues(
         stage_observation=_stage(receipt),
         raw_candidate=raw,
+        source_duty_receipt=_source_receipt(raw),
         create_payload=create_payload,
         expected_source=SOURCE,
     ) == ()
@@ -397,6 +522,7 @@ def test_committed_result_binding_uses_canonical_authority_only() -> None:
         authored_model_result_binding_issues(
             stage_observation=_stage(receipt),
             raw_candidate=raw,
+            source_duty_receipt=_source_receipt(raw),
             create_payload=create_payload,
             expected_source=SOURCE,
         )
@@ -426,6 +552,7 @@ def test_committed_result_binding_rejects_non_integer_call_counts(
     issues = authored_model_result_binding_issues(
         stage_observation=_stage(receipt),
         raw_candidate=raw,
+        source_duty_receipt=_source_receipt(raw),
         create_payload=create_payload,
         expected_source=SOURCE,
     )
@@ -452,6 +579,7 @@ def test_committed_result_binding_rejects_non_integer_stage_call_counts(
     issues = authored_model_result_binding_issues(
         stage_observation=stage,
         raw_candidate=raw,
+        source_duty_receipt=_source_receipt(raw),
         create_payload=_create_payload(receipt),
         expected_source=SOURCE,
     )
@@ -499,3 +627,27 @@ def test_release_profile_summary_has_no_runtime_reviewer_profile() -> None:
     profile = proof["profiles"][STANDARD_PROFILE_ID]
     assert profile["host_model"] == "gpt-6-astra"
     assert profile["runtime_semantic_model_calls_after_candidate_receipt"] == 0
+
+
+def test_release_profile_rechecks_deadline_in_claimed_passing_evidence() -> None:
+    profile_evidence = _clarification_profile_evidence()
+    profile_evidence["stage_observation"]["whole_journey_deadline_status"] = "expired"
+    result = SimpleNamespace(
+        name="expired-clarification", status="passed",
+        quality=SimpleNamespace(passed=True, score_basis="clarification_required_no_write_contract"),
+        proposal_seconds=12.0,
+        evidence={
+            "case": {"expectation": "clarification_required", "prompt_sha256": "9" * 64},
+            "clarification": {
+                "mode": "clarification_required", "question": "What complete task should the first user finish?",
+                "required_fields": ["first_path"], "returncode": 0,
+            },
+            "no_write": {
+                "write_audit_active": True, "write_audit_error": "", "write_attempts": [],
+                "changed_records": [], "staged_transaction_present": False,
+            },
+            "model_profile": profile_evidence,
+        },
+    )
+    proof = model_profile_release_proof((result,), require_complete=False)
+    assert proof["status"] == "failed"

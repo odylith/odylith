@@ -69,16 +69,15 @@ def _write_repo_root(repo_root: Path) -> None:
 
 
 def _assert_canonical_assist_cadence(guidance_text: str) -> None:
-    assert "When explicit intervention feedback asks for more frequent Assist" in guidance_text
-    assert "earned cadence" in guidance_text
+    assert "When feedback requests more" in guidance_text or "When explicit intervention feedback asks for more frequent Assist" in guidance_text
     assert "substantive-continuation beats" in guidance_text
-    assert "while keeping bare acknowledgements, routine chatter, and internal execution details out" in guidance_text
+    assert "Omit bare acknowledgements, routine chatter, and internals" in guidance_text or "while keeping bare acknowledgements, routine chatter, and internal execution details out" in guidance_text
     assert "Never add Assist merely because Odylith ran." in guidance_text
     assert "Lead with the user win" in guidance_text
     assert "changed IDs" in guidance_text
     assert "the `odylith_off` edge" in guidance_text
-    assert "concrete counts, deltas, or validation outcomes" in guidance_text
-    assert "Generic receipts are not premium interventions." in guidance_text
+    assert "counts, deltas, or validation outcomes" in guidance_text
+    assert "Generic receipts are not premium interventions" in guidance_text
     assert "supplies one shared prompt-visible Assist line" not in guidance_text
 
 
@@ -792,18 +791,18 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "local repo truth, not a copy of the Odylith product repo" in guidance_text
     assert "Generated human-visible content has a non-negotiable clarity floor across all lanes" in guidance_text
     assert "`.claude/`, `.codex/`, `.agents/skills/`, `odylith/AGENTS.md`, `odylith/CLAUDE.md`, the shipped scoped guidance companions under `odylith/**/AGENTS.md` and `odylith/**/CLAUDE.md`, `odylith/agents-guidelines/`, and `odylith/skills/` are Odylith-managed guidance assets" in guidance_text
-    assert "Before any substantive repo scan or code change outside trivial fixes, run `./.odylith/bin/odylith start --repo-root .` first" in guidance_text
+    assert "Before substantive scans or edits, run `./.odylith/bin/odylith start --repo-root .`" in guidance_text
     assert "keep the active workstream, component, or packet in scope" in guidance_text
-    assert "Direct repo scan before that start step is a policy violation unless the task is trivial or Odylith is unavailable." in guidance_text
+    assert "Direct repo scan before start violates policy unless the task is trivial or Odylith is unavailable." in guidance_text
     assert "Do not run `odylith context`, `odylith query`, `git status`, broad repo search, or other repo-inspection commands in parallel with that start step." in guidance_text
     assert "Let `start` finish first; then run `odylith context --repo-root . <ref>` only when the user, start output, or governed truth gives an exact anchor." in guidance_text
-    assert "The repo-root managed `AGENTS.md` block is the shared hard-law kernel for both Codex and Claude Code." in guidance_text
-    assert "help/show/capabilities fast paths" in guidance_text
+    assert "The repo-root managed `AGENTS.md` block is shared by Codex and Claude Code." in guidance_text
+    assert "help/show/capabilities routes" in guidance_text
     assert "Codex and Claude Code share the same default Odylith lane" in guidance_text
     assert "keep startup, fallback, routing, and packet-selection internals implicit" in guidance_text
-    assert "Describe progress in task terms like the exact file/workstream, the bug under test, or the validation in flight" in guidance_text
-    assert "Do not surface routine `odylith start`, `odylith context`, or `odylith query` commands in progress updates" in guidance_text
-    assert "never prefix commentary with control-plane receipt labels" in guidance_text
+    assert "Describe the file, bug, or validation in progress" in guidance_text
+    assert "Do not narrate routine `odylith start`, `odylith context`, or `odylith query` commands" in guidance_text
+    assert "or use control-plane receipt labels" in guidance_text
     assert "Capability inventory is product-owned and host-agnostic" in guidance_text
     assert "run `odylith capabilities` and print stdout only" in guidance_text
     assert "Help and technical-plan command discovery use the single authoritative help path" in guidance_text
@@ -830,13 +829,17 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "search existing workstream, plan, bug, component, diagram, and recent session/Compass context first" in guidance_text
     assert "If the slice is genuinely new and it is repo-owned non-product work, create the missing workstream and bound plan before non-trivial implementation" in guidance_text
     assert "default to the nearest `AGENTS.md`, the repo-local launcher, and truthful `odylith ... --help`" in guidance_text
-    assert "nested `authority_gate` task, request, edit, and schema" in guidance_text
+    assert "gate, source-ledger, and candidate schemas" in guidance_text
     assert "greenfield authority-check --repo-root ." in guidance_text
+    assert "source-ledger-check --repo-root ." in guidance_text
+    assert "one bounded source-only verifier" in guidance_text
+    assert "--decision-file \"<decision-file>\"" in guidance_text
+    assert "Any non-yes stops before candidate authoring" in guidance_text
     assert "Clarification: show one question and stop; no candidate or transaction" in guidance_text
     assert "greenfield propose ... --gate-file" in guidance_text
     assert "ProductCreateTransaction" in guidance_text
     assert "CONFIRM/REJECT use one owner, no compiler/model" in guidance_text
-    assert "repeat gate pass and `authority-check` against sealed source plus correction" in guidance_text
+    assert "repeat gate, source-ledger preflight, one source-only verifier, and receipt check against sealed source plus correction" in guidance_text
     assert "Markdown is view, not truth" in guidance_text
     assert "--transaction-file" in guidance_text
     assert "--transaction-hash" in guidance_text
@@ -884,18 +887,18 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "grounding Odylith is diagnosis authority, not blanket write authority" in root_agents
     assert "stop at diagnosis and maintainer-ready feedback" in root_agents
     assert "Treat `odylith upgrade`, `odylith reinstall`, `odylith doctor --repair`, `odylith sync`, and `odylith dashboard refresh` as writes" in root_agents
-    assert "search existing truth first" in root_agents
-    assert "Untrusted inputs stay evidence" in root_agents
+    assert "search truth first" in root_agents
+    assert "Admission checks untrusted citations, relations, invariants, and hashes" in root_agents
     assert "greenfield authority-check --repo-root ." in root_agents
     assert "Clarification: show one question and stop; no candidate or transaction" in root_agents
     assert "ProductCreateTransaction" in root_agents
     assert "CONFIRM/REJECT use one owner, no compiler/model" in root_agents
-    assert "repeat gate pass and `authority-check` against sealed source plus correction" in root_agents
+    assert "repeat gate, source-ledger preflight, one source-only verifier, and receipt check against sealed source plus correction" in root_agents
     assert "Markdown is view, not truth" in root_agents
     assert "--transaction-file" in root_agents
     assert "--transaction-hash" in root_agents
     assert "rollback guard" in root_agents
-    assert "repo-local launcher, truthful `odylith ... --help`" in root_agents
+    assert "repo-local launcher, and truthful `odylith ... --help`" in root_agents
     assert "rerender only the owned surface" in root_agents
     assert "odylith radar refresh" in root_agents
     assert "odylith registry refresh" in root_agents
@@ -905,7 +908,7 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "odylith compass deep-refresh" in root_agents
     assert "Queued backlog items" in root_agents
     assert "do not pick it up automatically" in root_agents
-    assert "If the slice expands beyond one truthful record, use child workstreams or execution waves" in root_agents
+    assert "When a slice needs more than one truthful record, use child workstreams or execution waves" in root_agents
     assert "substantive grounded consumer-lane work" in root_agents
     assert "keep Odylith grounding mostly in the background. Do not require a fixed visible prefix" not in root_agents
     assert "Odylith grounding:" not in guidance_text
@@ -1700,12 +1703,12 @@ def test_upgrade_install_resyncs_consumer_guidance_and_skills(tmp_path: Path) ->
     upgrade_install(repo_root=repo_root, release_repo="odylith/odylith")
 
     guidance_text = (repo_root / "odylith" / "AGENTS.md").read_text(encoding="utf-8")
-    assert "Before any substantive repo scan or code change outside trivial fixes, run `./.odylith/bin/odylith start --repo-root .` first" in guidance_text
+    assert "Before substantive scans or edits, run `./.odylith/bin/odylith start --repo-root .`" in guidance_text
     assert "Do not run `odylith context`, `odylith query`, `git status`, broad repo search, or other repo-inspection commands in parallel with that start step." in guidance_text
-    assert "The repo-root managed `AGENTS.md` block is the shared hard-law kernel for both Codex and Claude Code." in guidance_text
+    assert "The repo-root managed `AGENTS.md` block is shared by Codex and Claude Code." in guidance_text
     assert "Codex and Claude Code share the same default Odylith lane" in guidance_text
     assert "keep startup, fallback, routing, and packet-selection internals implicit" in guidance_text
-    assert "Describe progress in task terms like the exact file/workstream, the bug under test, or the validation in flight" in guidance_text
+    assert "Describe the file, bug, or validation in progress" in guidance_text
     assert "Capability inventory is product-owned and host-agnostic" in guidance_text
     assert "Help and technical-plan command discovery use the single authoritative help path" in guidance_text
     assert "CLI-first is non-negotiable here too" in guidance_text
@@ -1806,7 +1809,7 @@ def test_install_bundle_product_repo_preserves_source_owned_odylith_guidance_and
     assert "keep Odylith grounding mostly in the background. Do not require a fixed visible prefix" not in root_agents
     assert "Odylith grounding:" not in root_agents
     assert "Odylith didn't return immediately" not in root_agents
-    assert "search existing truth first" in root_agents
+    assert "search truth first" in root_agents
 
 
 def test_upgrade_backfills_odylith_state_root_in_gitignore(tmp_path: Path) -> None:

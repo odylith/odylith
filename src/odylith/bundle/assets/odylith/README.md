@@ -102,17 +102,31 @@ greenfield proposal lane before source-backed governance exists:
 
 ```bash
 ./.odylith/bin/odylith greenfield candidate-contract --repo-root . --prompt "<project intent>"
-# The active host runs one separate constrained pass using authority_gate and writes gate JSON outside the repository.
+# Write one authority_gate result outside the repository.
 ./.odylith/bin/odylith greenfield authority-check --repo-root . --prompt "<project intent>" --gate-file "<gate-file>" --format json
-# If admitted, the host writes one complete matching candidate outside the repository.
-./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<project intent>" --gate-file "<gate-file>" --candidate-file "<candidate-file>"
+# On admission, author one source_ledger_schema inventory outside the repository.
+./.odylith/bin/odylith greenfield source-ledger-check --repo-root . --prompt "<project intent>" --ledger-file "<ledger-file>" --format json
+# The preflight returns a decision_task and decision_set_schema. Make one bounded
+# source-only verifier pass over every material duty, then save its decision set outside the repository.
+./.odylith/bin/odylith greenfield source-ledger-check --repo-root . --prompt "<project intent>" --ledger-file "<ledger-file>" --decision-file "<decision-file>" --format json
+# Save the accepted v6 receipt object outside the repository, then author one candidate.
+./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<project intent>" --gate-file "<gate-file>" --candidate-file "<candidate-file>" --ledger-file "<receipt-file>"
 ```
 
-The contract returns nested `authority_gate` task, request, edit, and schema
-plus the candidate schema. If `authority-check` asks for clarification, show its
-one question and stop without a candidate or transaction. Only after admission
-does the active host reason once over the candidate contract. The gate cannot
-rewrite the candidate. `propose` then
+The contract returns nested `authority_gate` and `source_ledger` tasks and
+schemas plus the candidate schema. The first `source-ledger-check` validates
+the inventory structure and returns one source-only decision task with a closed
+schema; it does not admit the inventory. The host makes one bounded verifier
+pass over every material duty row and the full source. Its single decision set
+must affirm every row and source completeness with no omitted duties. The second
+check admits only that complete source-bound decision set. If `authority-check` or either
+`source-ledger-check` asks for clarification, show its one question and stop
+without a candidate or transaction. A denied, uncertain, or missing duty, or
+a nonaffirmative source-completeness verdict, stops before candidate authoring.
+Only after both authority and source duty
+admit does the host reason once over the candidate contract. The accepted v6
+source-duty receipt binds the verified task and source roles; neither gate nor
+candidate may redefine them. `propose` then
 deterministically validates that untrusted candidate, compiles typed custody facts,
 and quality-gates the full staged
 ProductCreateTransaction for read-only review. The sectioned preview preserves
@@ -132,13 +146,16 @@ Odylith asks one focused question only when an ambiguity materially changes the
 first release; other gaps become visible assumptions. Markdown is evidence and a
 human view, not product truth. Staging retains the compiled package and hash under
 `.odylith/runtime/greenfield/pending/` without changing governed product records.
-EDIT reruns `candidate-contract`, the separate gate pass, and `authority-check`
-against sealed original source plus the new untrusted correction; clarification
-stops before a new candidate or transaction. On admission it passes the same
-correction, `--gate-file`, and `--candidate-file` to `decide EDIT`. It preserves
-the original tier and advisory 90/120/150 targets under the 180-second safety timeout,
-retains the immutable old seal, and returns a new hash and preview. CONFIRM and
-REJECT use the shared bounded owner without compiler or model work.
+EDIT reruns `candidate-contract`, the gate pass, `authority-check`, source
+duty inventory, preflight, one bounded source-only verifier decision set, and
+the decision-file check against sealed original source plus the new untrusted
+correction. Clarification or a nonaffirmative duty stops before a new candidate or
+transaction. On admission, pass the correction, `--gate-file`, `--candidate-file`,
+and accepted `--ledger-file` receipt to `decide EDIT`. It preserves
+the original tier and advisory 90/120/150 targets, retains the immutable old seal,
+and returns a new hash and preview. The standard proposal limit is 315 seconds
+with one shared 300-second gate/candidate model window. CONFIRM and REJECT use
+the shared bounded owner without compiler or model work.
 
 Explicit terminal operator invocation of `odylith greenfield create` with
 `--transaction-file`, `--transaction-hash`, and `--confirm` remains a separate

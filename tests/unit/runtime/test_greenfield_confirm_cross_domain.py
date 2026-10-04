@@ -16,6 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     authored_response,
     write_host_candidate_fixture,
+    write_synthetic_source_duty_receipt,
 )
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
@@ -51,7 +52,8 @@ _SOURCE_DOMAIN_LEAK_TERMS = (
     "protocol outcome",
     "stomach fat",
     "symptom",
-    "transport",
+    "transit fare feed",
+    "rideshare",
 )
 
 
@@ -318,10 +320,16 @@ def _run_confirmed_transaction_create(
     gate_path = write_admitted_authority_gate(
         candidate_path.with_name("authority-gate.json"), source_quote=prompt,
     )
+    ledger_path = write_synthetic_source_duty_receipt(
+        candidate_path.with_name("source-ledger.json"),
+        json.loads(candidate_path.read_text(encoding="utf-8")),
+        evidence_text=combined_prompt_evidence_source(prompt=prompt, edit_evidence=""),
+    )
     compile_rc = greenfield_proposals_cli.main(
         [
             "propose", "--repo-root", str(repo_root), "--prompt", prompt,
             "--candidate-file", str(candidate_path),
+            "--ledger-file", str(ledger_path),
             "--gate-file", str(gate_path), "--format", "json",
         ]
     )

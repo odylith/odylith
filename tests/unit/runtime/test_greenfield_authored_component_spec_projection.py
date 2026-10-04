@@ -162,7 +162,8 @@ def test_authored_component_spec_is_structural_and_bypasses_legacy_owners(
     assert set(authoring_input["component_contract"]) == {
         "authority_kind", "design_ref", "provisional_component",
         "support_event_refs", "supporting_events", "exchanges", "delivery_workstreams",
-        "risk_allocations",
+            "risk_allocations", "source_lifecycle_transitions",
+            "source_conditional_guards", "source_boundaries", "source_proof_duties",
     }
     assert authoring_input["authority_kind"] == "provisional_design"
     assert authoring_input["boundary"]

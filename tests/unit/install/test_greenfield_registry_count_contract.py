@@ -13,6 +13,9 @@ from greenfield_matrix_quality_scoring import completion_issues
 from greenfield_matrix_package_evidence import _registry_findings
 from greenfield_matrix_types import GreenfieldArtifactCounts
 from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import RenderedArtifact
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS,
+)
 
 
 def test_completion_has_no_arbitrary_artifact_count_floor() -> None:
@@ -21,7 +24,7 @@ def test_completion_has_no_arbitrary_artifact_count_floor() -> None:
         manifest={
             "requested_repair_tier": "auto", "repair_tier": "standard",
             "elapsed_seconds": 20.0, "target_seconds": 90.0,
-            "operational_timeout_seconds": 180.0,
+            "operational_timeout_seconds": GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS,
         },
         create_returncode=0,
         proposal_seconds=20.0,
@@ -35,7 +38,7 @@ def test_completion_still_enforces_transaction_result_and_time() -> None:
     manifest = {
         "requested_repair_tier": "auto", "repair_tier": "standard",
         "elapsed_seconds": 20.0, "target_seconds": 90.0,
-        "operational_timeout_seconds": 180.0,
+        "operational_timeout_seconds": GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS,
     }
     assert completion_issues(
         counts=counts,

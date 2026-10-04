@@ -56,6 +56,7 @@ def _authored_diagrams(
     external_systems: tuple[str, ...] = ("Harbor Ledger",),
     relations: tuple[dict[str, Any], ...] | None = None,
     provisional_design: dict[str, Any] | None = None,
+    source_lifecycle: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     source_relations = relations if relations is not None else (
         {
@@ -115,6 +116,7 @@ def _authored_diagrams(
         backlog=tuple({"title": row["title"]} for row in design["workstreams"]),
         relations=source_relations,
         provisional_design=design,
+        source_lifecycle=source_lifecycle,
     )
 
 
@@ -816,13 +818,103 @@ def test_first_run_keeps_result_first_source_ids_and_proposed_links() -> None:
     assert [
         box["node_id"] for box in selected["diagram_boxes"]
         if box["node_id"].startswith("event")
-    ] == ["event1", "event2", "event3"]
+    ] == ["event1", "event2"]
     assert 'event2 -. "proposed next step" .-> event1' in selected["mermaid_source"]
     proposed_steps = [
         line.strip() for line in selected["mermaid_source"].splitlines()
         if "proposed next step" in line
     ]
     assert proposed_steps == ['event2 -. "proposed next step" .-> event1']
+    assert "event3" not in selected["mermaid_source"]
+
+
+def test_context_does_not_call_unselected_supporting_relation_a_first_path_action() -> None:
+    design = _provisional_design(event_orders=(1, 2, 3, 4))
+    design["first_run"]["event_orders"] = [1, 2, 3]
+    design["components"][3]["supported_event_orders"] = [4]
+    design["components"][3]["verification_event_orders"] = [4]
+    design["workstreams"][3]["verification_event_orders"] = [4]
+    rows = _authored_diagrams(
+        human_actors=("Dock attendant Ivo", "Harbor liaison"),
+        relations=(
+            _relation(1, "Dock attendant Ivo", "Dock attendant Ivo enters a vessel tag"),
+            _relation(2, "Berth map", "the product records berth occupancy", actor_kind="product", owner="Berth map"),
+            _relation(3, "Berth map", "the berth map shows the placement", actor_kind="product", owner="Berth map"),
+            _relation(4, "Harbor liaison", "Harbor liaison inventories old berths"),
+        ),
+        provisional_design=design,
+    )
+    context, sequence, support = rows[0], rows[1], rows[-1]
+    context_boxes = {box["node_id"]: box for box in context["diagram_boxes"]}
+
+    assert context_boxes["actor2"]["role"] == "Participant"
+    assert "no first-path action is assigned" in context_boxes["actor2"]["description"]
+    assert "Harbor liaison inventories old berths" not in context["mermaid_source"]
+    assert "event4" not in sequence["mermaid_source"]
+    assert "proposed_component4" not in sequence["mermaid_source"]
+    assert "source_action4" in support["mermaid_source"]
+
+
+def _source_lifecycle() -> dict[str, Any]:
+    return {
+        "state_fields": [
+            {
+                "duty_id": "F1", "state_object": "berth occupancy", "field": "access",
+                "meaning": "whether the placement remains accessible",
+                "source_refs": [{"quote": "placement access", "occurrence": 1}],
+            },
+            {
+                "duty_id": "F2", "state_object": "berth occupancy", "field": "cache",
+                "meaning": "retained placement copy",
+                "source_refs": [{"quote": "cached placement", "occurrence": 1}],
+            },
+        ],
+        "off_path_transitions": [
+            {
+                "duty_id": "T1", "trigger": "withdrawal",
+                "governed_object": "berth occupancy", "component_key": "occupancy-record",
+                "workstream_key": "occupancy",
+                "source_refs": [{
+                    "quote": "Withdrawal closes placement access and erases the cached placement",
+                    "occurrence": 1,
+                }],
+                "effects": [
+                    {"state_field_id": "F1", "field": "access", "change": "closed", "observable_check": "access closed"},
+                    {"state_field_id": "F2", "field": "cache", "change": "erased", "observable_check": "cache empty"},
+                ],
+            }
+        ],
+    }
+
+
+def test_cited_off_path_lifecycle_keeps_two_effects_out_of_first_run() -> None:
+    rows = _authored_diagrams(source_lifecycle=_source_lifecycle())
+    first_run, support = rows[1], rows[-1]
+    boxes = {box["node_id"]: box for box in support["diagram_boxes"]}
+    source = support["mermaid_source"]
+
+    assert "Withdrawal closes placement access and erases the cached placement" in boxes[
+        "off_path_transition1"
+    ]["description"]
+    assert boxes["off_path_transition1"]["role"] == "Source-stated off-path transition"
+    assert boxes["off_path_transition1_effect1"]["label"] == "closed; check: access closed"
+    assert boxes["off_path_transition1_effect2"]["label"] == "erased; check: cache empty"
+    assert "placement access" in boxes["state_field1"]["description"]
+    assert "cached placement" in boxes["state_field2"]["description"]
+    assert 'component2 -. "proposed lifecycle support" .-> off_path_transition1' in source
+    assert 'off_path_transition1_effect1 -->|"changes access"| state_field1' in source
+    assert 'off_path_transition1_effect2 -->|"changes cache"| state_field2' in source
+    assert "off_path_transition" not in first_run["mermaid_source"]
+    assert "withdrawal" not in first_run["mermaid_source"].lower()
+    assert [box["node_id"] for box in first_run["diagram_boxes"] if box["node_id"].startswith("event")] == [
+        "event1", "event2", "event3"
+    ]
+
+
+def test_absent_lifecycle_does_not_invent_atlas_transition() -> None:
+    support = _authored_diagrams()[-1]
+    assert "off_path_transition" not in support["mermaid_source"]
+    assert not any(box["role"] == "Source-stated off-path transition" for box in support["diagram_boxes"])
 
 
 @pytest.mark.parametrize("event_count", [1, 3])

@@ -1,5 +1,89 @@
 # Odylith
 
+## Source-duty Greenfield contract (2026-10-02)
+
+For the unreleased Greenfield path, Odylith carries a source-duty ledger and
+independent material-duty decision receipt into candidate admission. The ledger
+inventories first-path human actions, supporting human actions, system duties,
+cited state fields, passive off-path transitions, conditional guards,
+boundaries, and proof duties. Ledger v5 owns each normalized action, target,
+statement, typed performer role, and exact event/actor/role citations once.
+One shared ledger identity owner also requires unique declared object/field
+pairs and exact transition-effect references before source verification.
+The inventory author receives that requirement where field labels originate;
+candidate binding and lifecycle projection enforce the same identity, while
+ordered changes and observable checks retain distinct effects on one field.
+No string-prefix inference, additional semantic stage, or receipt repair is
+part of this correction. Fresh complete-package admission remains required.
+Verb and target microcitations and duplicated actor/action fields are removed.
+Host contract v46 authors compact v3; the installed CLI expands it to v5 for
+preflight, while the verifier receives compact material rows and citations
+once with the complete authority source. Duplicate and unknown bank entries
+reject. Every bank quote/context, including unused selections, must validate
+against the exact complete source; only unused storage may be omitted from the
+canonical material ledger. Expansion without source still rejects unused
+selections. This path is unqualified pending a fresh complete public
+package; the previous compact v1 failure remains retained under CB-324.
+A source-only verifier sees the complete authority source and must return one
+affirmative cited decision per row across all eight material duty sections and
+one affirmative source-wide inventory-completeness verdict before candidate
+authoring; omitted duties are cited in a non-affirmative completeness verdict.
+Decision v4 uses a closed table keyed by duty ID. The compiler owns judgment
+order, derived event/actor/role indexes, claim hashes, and receipt expansion.
+Missing, extra, or duplicate IDs, absent event/actor/role support, and invalid
+selections fail closed. Source workflow order remains in the ledger.
+Any negative,
+uncertain, missing, or mismatched decision stops the path. The accepted receipt
+binds source, ledger, the full verifier task, claims, and decisions by hash through
+proposal and create. Action-only and rows-only receipts are rejected by the
+current contract.
+Candidate transport v1 carries the full source, candidate requirements/schema,
+admitted authority, and lossless compact accepted inventory with custody
+hashes. The complete receipt remains compiler-owned outside the model for
+proposal admission. Completed-stage schemas and verifier output do not enter
+candidate authorship. This representation change adds no semantic stage and
+does not qualify the path until complete public packages pass independent
+review.
+Host candidate v21 selects actor fact addresses and design. A closed v3 binding
+must map every candidate event to exactly one cited ledger action,
+preserve the selected first-run order, and bind every transition effect to a cited state field plus
+one Registry component and Radar workstream. The lifecycle projection preserves
+the source trigger, governed object, effect, observable check, citations, and
+bound component/workstream; Atlas receives that passive state transition.
+Guard, boundary, and proof duties require typed design owners and remain visible
+in canonical intent, preview, Registry, and Radar projections.
+
+Canonical Product Intent keeps the selected `first_path` separate from
+`supporting_events`; supporting and system events remain available to the
+design without becoming participant first-run work. These deterministic gates
+prove receipt integrity, exact citation custody, exhaustive role coverage,
+ordering, and projection custody. A verifier's affirmative decision remains a
+model judgment; hashes cannot establish its correctness or source-duty
+completeness. The source-wide verdict addresses the separate omission bypass;
+complete-row decision coverage closes the earlier bypass in which
+contradictory state, transition, guard, boundary, or proof text could ride an
+affirmative action-only receipt. Atomic fact ledger v4 carries verified action
+relations whose source support is the complete exact event and whose projection
+is the exact action/target slice of the normalized statement. It does not invent
+verb or target source coordinates. Non-action facts keep exact source custody.
+The normalized representation
+can express shared-verb clauses such as `A reviewer defines scope and audience.`
+Independent source-first semantic review of complete public packages is still
+required before release credit; the broad evidence envelope remains unqualified.
+
+The unreleased standard profile v21 has a 315-second proposal phase limit and
+one shared 300-second gate/candidate model window with 15 seconds reserved
+for deterministic completion. The release controller keeps its hard
+660-second diagnostic whole-journey ceiling; phase maxima are non-additive
+and candidate dispatch is clamped to remaining whole time minus the reserve.
+Historical v20's 180/165-second failures remain unchanged. This implements
+the operator-authorized longer bounded flow; it adds no retry or model ladder.
+Broad free-form evidence
+may take a separately bounded asynchronous verification journey, but its finite
+whole-journey bound is unmeasured and must not be represented as qualified. The
+commit-only confirmation contract remains separately bounded at 60 seconds.
+This work is tracked by B-142 and CB-324; it is not a release-success claim.
+
 ## Participant-first Greenfield integration (2026-09-18)
 
 The unreleased production path now selects participants before remaining source
@@ -135,7 +219,7 @@ comes from selecting facts, not cutting character windows out of their meaning.
   are first-class host families, dev/dogfood/consumer are first-class lanes,
   and host model aliases resolve to adapter families without turning Odylith Discipline
   classification into a model-consuming path.
-Last updated: 2026-09-09
+Last updated: 2026-10-02
 
 
 ## Purpose
@@ -823,6 +907,8 @@ Public docs should describe these commands, not direct module entrypoints.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-10-02 · Decision:** Decision evidence linked this component to governed work with 1 verifiable artifact reference.
+  - Evidence: `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
 - **2026-08-03 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-145
   - Evidence: `sha256:a54ff182c7e8acf56acfd6e4b9c3ff41e2c41a31c9b211b2deb9df75d9a478f9`, `odylith/casebook/bugs/2026-08-01-fresh-install-compact-guidance-omitted-greenfield-commit-only-boundary.md`, `src/odylith/install/agents.py`, `tests/unit/install/test_agents.py`
@@ -835,8 +921,6 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: `sha256:a54ff182c7e8acf56acfd6e4b9c3ff41e2c41a31c9b211b2deb9df75d9a478f9`, `sha256:2578ef93b5dac059562561a3d24005fb9dd0a8771590dff49d56bb173d616627`, `sha256:61a82c8db99693b7a2b3de56c6e2ff31e6679544c761fa414231280d0b8dfb8e`, `src/odylith/install/casebook_metadata_migration.py`
 - **2026-04-11 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved.
   - Scope: B-090
-- **2026-04-11 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved.
-  - Scope: B-089
 <!-- registry-requirements:end -->
 
 ## Feature History

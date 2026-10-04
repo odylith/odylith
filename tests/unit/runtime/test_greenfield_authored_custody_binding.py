@@ -131,6 +131,8 @@ def test_product_intent_authority_binds_complete_ordered_authored_relation_set(t
         relations,
         component_relations,
         first_path_context_relations=context_relations,
+        source_precedence=candidate["authored_semantics"]["source_precedence"],
+        source_duty=candidate["authored_semantics"]["source_duty"],
         provisional_design=candidate["authored_semantics"]["provisional_design"],
     )
 
@@ -307,7 +309,7 @@ def test_transaction_compilation_rejects_mutated_relation_set(
     expected_error = (
         "invalid first-path relations"
         if mutation == "removed_classification"
-        else "unknown source event"
+        else "first-path event role binding is malformed"
     )
     with pytest.raises(GreenfieldAuthoredSemanticsError, match=expected_error):
         greenfield_proposals.compile_greenfield_create_transaction(

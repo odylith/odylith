@@ -35,7 +35,7 @@ def semantic_model_shape_issues(
         for key in required
         if not isinstance(semantic.get(key), (Mapping, list))
     ]
-    if normalize_string(semantic.get("schema_version")) != "odylith.greenfield.semantic_model.v3":
+    if normalize_string(semantic.get("schema_version")) != "odylith.greenfield.semantic_model.v4":
         issues.append("GreenfieldSemanticModel schema_version is missing or unsupported")
     first_path = semantic.get("first_path_contract") if isinstance(semantic.get("first_path_contract"), Mapping) else {}
     events = first_path.get("events") if isinstance(first_path, Mapping) else None
@@ -206,6 +206,13 @@ def semantic_diagram_alignment_issues(proposal: Mapping[str, Any], semantic: Map
         issues.append("GreenfieldSemanticModel source precedence drifted from canonical intent")
     if semantic.get("provisional_design") != authored["provisional_design"]:
         issues.append("GreenfieldSemanticModel first-run design drifted from canonical intent")
+    source_duty = authored.get("source_duty")
+    lifecycle = source_duty.get("lifecycle") if isinstance(source_duty, Mapping) else None
+    if semantic.get("source_lifecycle") != lifecycle:
+        issues.append("GreenfieldSemanticModel source lifecycle drifted from canonical intent")
+    expected_transitions = lifecycle.get("off_path_transitions", []) if isinstance(lifecycle, Mapping) else []
+    if graph.get("state_transitions") != expected_transitions:
+        issues.append("DiagramEventGraph state transitions drifted from canonical lifecycle")
     expected_events = tuple(
         (index, row["order"], row["event_quote"], "proposed_first_run")
         for index, row in enumerate(relations, 1)

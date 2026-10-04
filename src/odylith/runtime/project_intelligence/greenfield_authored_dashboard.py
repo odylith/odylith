@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
@@ -308,6 +309,9 @@ def build_authored_greenfield_payload(
             "success_metrics": list(success_metrics),
             "first_path_relations": [dict(row) for row in relations],
             "source_precedence": [dict(row) for row in intent[AUTHORED_SEMANTICS_KEY]["source_precedence"]],
+            "source_lifecycle": deepcopy(
+                intent[AUTHORED_SEMANTICS_KEY]["source_duty"]["lifecycle"]
+            ) if isinstance(intent[AUTHORED_SEMANTICS_KEY].get("source_duty"), Mapping) else None,
             "first_path_context_relations": [dict(row) for row in context_relations],
             "component_responsibility_relations": [dict(row) for row in component_relations],
             "provisional_design": provisional_design,

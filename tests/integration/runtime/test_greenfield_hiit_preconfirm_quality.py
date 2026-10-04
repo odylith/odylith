@@ -13,6 +13,7 @@ from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_
 from tests.unit.runtime.greenfield_authority_gate_fixtures import write_admitted_authority_gate
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     authored_response,
+    write_synthetic_source_duty_receipt,
     write_host_candidate_fixture,
 )
 from tests.unit.runtime.greenfield_proposal_fixtures import HIIT_CONFIRMED_INTENT_TEXT
@@ -48,12 +49,18 @@ def test_hiit_structured_fixture_preserves_path_and_sealed_package_under_sixty_s
         tmp_path.parent / f"{tmp_path.name}-authority-gate.json",
         source_quote=prompt,
     )
+    ledger_path = write_synthetic_source_duty_receipt(
+        tmp_path.parent / f"{tmp_path.name}-source-duty-receipt.json",
+        json.loads(candidate_path.read_text(encoding="utf-8")),
+        evidence_text=evidence,
+    )
 
     started, rc, payload, transaction_payload = _run_proposed_transaction_create(
         tmp_path,
         prompt=prompt,
         candidate_path=candidate_path,
         gate_path=gate_path,
+        ledger_path=ledger_path,
         capsys=capsys,
     )
     elapsed = time.perf_counter() - started
@@ -260,6 +267,7 @@ def _run_proposed_transaction_create(
     prompt: str,
     candidate_path: Path,
     gate_path: Path,
+    ledger_path: Path,
     capsys,
 ) -> tuple[float, int, dict, dict]:
     started = time.perf_counter()
@@ -276,6 +284,8 @@ def _run_proposed_transaction_create(
             str(candidate_path),
             "--gate-file",
             str(gate_path),
+            "--ledger-file",
+            str(ledger_path),
             "--format",
             "json",
         ]

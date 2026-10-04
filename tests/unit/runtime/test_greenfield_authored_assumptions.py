@@ -25,7 +25,11 @@ from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     admit_complete_host_candidate,
     host_candidate_response,
 )
-from tests.unit.runtime.test_greenfield_model_path_custody import _response, _source
+from tests.unit.runtime.test_greenfield_model_path_custody import (
+    _response,
+    _source,
+    _source_duty_for_response,
+)
 
 
 _DECISIONS = [
@@ -46,17 +50,18 @@ def _authored():
         evidence_text=source,
         host_candidate=host_candidate_response(response, evidence_text=source),
     )
-    return source, authored
+    return source, response, authored
 
 
 def test_decision_assumptions_keep_their_type_and_custody() -> None:
-    source, authored = _authored()
+    source, response, authored = _authored()
     intent = dict(authored.intent)
     intent["authored_semantics"] = authored_semantics_mapping(
         authored.first_path_relations,
         authored.component_responsibility_relations,
         first_path_context_relations=authored.first_path_context_relations,
         provisional_design=authored.provisional_design,
+        source_duty=_source_duty_for_response(response, source),
     )
     assert intent["problem"] == intent["opportunity"] == intent["product_view"] == ""
     assert intent["assumptions"] == _DECISIONS
@@ -125,7 +130,7 @@ def test_preview_preserves_explicit_systems_and_constraints_verbatim() -> None:
 
 
 def test_radar_required_decisions_point_to_assumptions_not_missing_facts() -> None:
-    _, authored = _authored()
+    _, _, authored = _authored()
     intent = dict(authored.intent)
     intent["authored_semantics"] = authored_semantics_mapping(
         authored.first_path_relations,

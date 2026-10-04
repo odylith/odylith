@@ -19,6 +19,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     authored_response,
+    write_synthetic_source_duty_receipt,
     write_host_candidate_fixture,
 )
 from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
@@ -120,6 +121,11 @@ def _public_propose(
         canonical,
         evidence_text=staged_evidence,
     )
+    ledger_path = write_synthetic_source_duty_receipt(
+        tmp_path.parent / f"{tmp_path.name}-source-ledger.json",
+        json.loads(candidate_path.read_text(encoding="utf-8")),
+        evidence_text=staged_evidence,
+    )
     assert staged_evidence
     gate_path = write_admitted_authority_gate(
         tmp_path.parent / f"{tmp_path.name}-authority-gate.json",
@@ -129,6 +135,7 @@ def _public_propose(
     arguments = [
         "propose", "--repo-root", str(tmp_path), "--prompt", source,
         "--candidate-file", str(candidate_path),
+        "--ledger-file", str(ledger_path),
         "--gate-file", str(gate_path), "--format", "json",
     ]
     if repair_tier:
@@ -161,7 +168,7 @@ def test_public_authored_propose_seals_exact_non_latin_customer(
     assert manifest["requested_repair_tier"] == "auto"
     assert manifest["repair_tier"] == "standard"
     assert manifest["target_seconds"] == 90.0
-    assert manifest["operational_timeout_seconds"] == 180.0
+    assert manifest["operational_timeout_seconds"] == 315.0
     assert manifest["rescue_activated"] is False
 
 
@@ -274,7 +281,7 @@ def test_public_authored_standard_tier_stays_structural_and_seals_exact_unicode_
     assert manifest["requested_repair_tier"] == "auto"
     assert manifest["repair_tier"] == "standard"
     assert manifest["target_seconds"] == 90.0
-    assert manifest["operational_timeout_seconds"] == 180.0
+    assert manifest["operational_timeout_seconds"] == 315.0
     assert manifest["rescue_activated"] is False
     assert manifest["semantic_compiler"] == {
         "version": "odylith.greenfield.authored-semantic-validation.v5",

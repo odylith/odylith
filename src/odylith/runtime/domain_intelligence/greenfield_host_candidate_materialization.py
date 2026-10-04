@@ -29,6 +29,12 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     STANDARD_PROFILE_ID,
 )
+from odylith.runtime.domain_intelligence.greenfield_source_lifecycle import (
+    project_greenfield_source_lifecycle,
+)
+from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
+    verify_greenfield_source_duty_ledger_receipt,
+)
 
 
 def materialize_host_authored_intent(
@@ -36,6 +42,7 @@ def materialize_host_authored_intent(
     prompt: str,
     repo_root: Path,
     host_candidate: Mapping[str, Any],
+    source_duty_receipt: Mapping[str, Any],
     edit_evidence: str = "",
     authoring_profile_id: str = STANDARD_PROFILE_ID,
     source_language: str = "en",
@@ -52,9 +59,13 @@ def materialize_host_authored_intent(
     )
     if prepared.prompt != prompt:
         raise ValueError("prepared Greenfield evidence does not match the operator prompt")
+    accepted_source_duties = verify_greenfield_source_duty_ledger_receipt(
+        source_duty_receipt, evidence_text=prepared.evidence_source,
+    )
     authored, host_receipt = admit_greenfield_host_candidate(
         host_candidate,
         evidence_text=prepared.evidence_source,
+        source_duty_receipt=accepted_source_duties,
         profile_id=authoring_profile_id,
         clock=clock,
     )
@@ -72,12 +83,26 @@ def materialize_host_authored_intent(
             required_fields=clarification.required_fields,
             authoring_receipt=receipt,
         )
+    result = host_candidate["result"]
+    binding = result["source_duty_binding"]
+    lifecycle = project_greenfield_source_lifecycle(
+        ledger_receipt=accepted_source_duties,
+        binding=binding,
+        candidate_result=result,
+        evidence_text=prepared.evidence_source,
+    )
+    source_duty = {
+        "ledger_receipt": deepcopy(dict(accepted_source_duties)),
+        "binding": deepcopy(dict(binding)),
+        "lifecycle": lifecycle,
+    }
     return stage_validated_authored_intent(
         prompt=prompt,
         repo_root=repo_root,
         prepared=prepared,
         authored=authored,
         receipt=receipt,
+        source_duty=source_duty,
         authoring_receipt=authoring_receipt,
         clarification_error=GreenfieldClarificationRequired,
     )

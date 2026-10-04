@@ -15,7 +15,7 @@
   platform seamless" may rank voice or integration inspection affordances, but
   it must still stay silent when no hard law is violated and no immediate
   user-visible value is earned.
-Last updated: 2026-09-30
+Last updated: 2026-10-02
 
 ## Manual delivery publication boundary
 
@@ -868,6 +868,9 @@ parallel payload schemas.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-09-30 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 1 verifiable artifact reference.
+  - Scope: B-096
+  - Evidence: `src/odylith/runtime/intervention_engine/visibility_replay.py`
 - **2026-09-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-04-30-intervention-visibility-fallback-leaks-internal-instructions-into-claude-chat.md`, `src/odylith/runtime/intervention_engine/host_surface_runtime.py`, `src/odylith/runtime/intervention_engine/visible_delivery_runtime.py`, `src/odylith/runtime/surfaces/codex_host_stop_summary.py`
@@ -883,9 +886,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-141
   - Evidence: `odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md`, `src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py`, `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js`
-- **2026-05-01 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 7 verifiable artifact references.
-  - Scope: B-141
-  - Evidence: `sha256:735e1037e13fed924b4417feebc9b632d2da582760a7bbcd48ea9be411aa74a8`, `src/odylith/runtime/surfaces/claude_host_prompt_bundle.py`, `src/odylith/runtime/surfaces/claude_host_prompt_context.py`, `src/odylith/runtime/surfaces/claude_host_session_brief.py`, plus 3 more
 <!-- registry-requirements:end -->
 
 ## Feature History

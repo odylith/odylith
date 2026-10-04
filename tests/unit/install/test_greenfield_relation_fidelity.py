@@ -80,6 +80,34 @@ def test_relation_fidelity_reports_exact_family_and_worst_slice_evidence() -> No
     }
 
 
+@pytest.mark.parametrize("verifier_hash", (None, "invalid-hash"))
+def test_relation_fidelity_rejects_missing_or_invalid_verifier_receipt(
+    verifier_hash: str | None,
+) -> None:
+    case, annotation, result = _rich_relation_bundle("relations-verifier-receipt")
+    snapshot = result.evidence["preconfirm_dry_run"]["semantic_snapshot"]
+    host_candidate = snapshot["operating_envelope"]["model_contract"]["observed"]["host_candidate"]
+    if verifier_hash is None:
+        del host_candidate["source_duty_verifier_task_sha256"]
+    else:
+        host_candidate["source_duty_verifier_task_sha256"] = verifier_hash
+
+    report = score_module.evaluate_semantic_release(
+        cases=(case,),
+        annotations={case.case_id: annotation},
+        results=(result,),
+        floors=FLOORS,
+        _include_model_profiles=False,
+        _allow_not_applicable_metrics=True,
+    )
+
+    assert report["passed"] is False
+    assert "release_evidence" in report["case_outcomes"][0]["failed_dimensions"]
+    assert any(
+        "host_candidate" in issue for issue in report["release_evidence_issues"]
+    )
+
+
 def test_snapshot_accepts_current_authored_semantics_source_precedence() -> None:
     case, _annotation, result = _rich_relation_bundle("current-source-precedence")
     snapshot = result.evidence["preconfirm_dry_run"]["semantic_snapshot"]
@@ -226,6 +254,7 @@ def test_event_actor_atom_uses_only_its_selected_actor_fact() -> None:
     relation = {
         "order": 1,
         "source_start_byte": 9,
+        "source_end_byte": 28,
         "event_start_byte": 0,
         "actor_fact_path": "/human_actors/0",
         "actor_fact_quote": "Reviewer",

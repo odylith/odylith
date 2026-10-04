@@ -114,6 +114,7 @@ def stage_validated_authored_intent(
     prepared: GreenfieldPreparedAuthoringEvidence,
     authored: GreenfieldModelAuthoredIntent,
     receipt: dict[str, Any],
+    source_duty: Mapping[str, Any],
     authoring_receipt: dict[str, Any] | None,
     clarification_error: Callable[..., Exception],
 ) -> dict[str, Any]:
@@ -129,12 +130,28 @@ def stage_validated_authored_intent(
     canonical_candidate_sha256 = str(
         host_receipt.get("canonical_candidate_sha256") or ""
     )
+    if (
+        not isinstance(source_duty, Mapping)
+        or set(source_duty) != {"ledger_receipt", "binding", "lifecycle"}
+        or source_duty["ledger_receipt"].get("ledger_sha256")
+        != host_receipt.get("source_duty_ledger_sha256")
+        or source_duty["ledger_receipt"].get("source_sha256")
+        != host_receipt.get("source_sha256")
+        or source_duty["ledger_receipt"].get("verifier_task_sha256")
+        != host_receipt.get("source_duty_verifier_task_sha256")
+        or source_duty["ledger_receipt"].get("decision_set_sha256")
+        != host_receipt.get("source_duty_decision_set_sha256")
+        or source_duty["lifecycle"].get("binding_sha256")
+        != host_receipt.get("source_duty_binding_sha256")
+    ):
+        raise ValueError("Greenfield source duties do not match the admitted host candidate")
     intent = deepcopy(dict(authored.intent))
     intent[AUTHORED_SEMANTICS_KEY] = authored_semantics_mapping(
         authored.first_path_relations,
         authored.component_responsibility_relations,
         first_path_context_relations=authored.first_path_context_relations,
         source_precedence=authored.source_precedence,
+        source_duty=source_duty,
         provisional_design=authored.provisional_design,
     )
     root = Path(repo_root).expanduser().resolve()
@@ -171,6 +188,7 @@ def stage_validated_authored_intent(
         authored.component_responsibility_relations,
         first_path_context_relations=authored.first_path_context_relations,
         source_precedence=authored.source_precedence,
+        source_duty=source_duty,
         provisional_design=authored.provisional_design,
     )
     if canonical_relation_hash != authority[AUTHORED_RELATION_SET_SHA256_KEY]:

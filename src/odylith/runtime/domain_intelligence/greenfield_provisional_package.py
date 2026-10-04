@@ -30,9 +30,103 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
     derive_risk_scope, provisional_design_from_intent,
 )
+from odylith.runtime.domain_intelligence.greenfield_source_lifecycle import (
+    verified_source_design_duties,
+)
 
 
 PROVISIONAL_DESIGN_ROOT = "/authored_semantics/provisional_design"
+
+
+def _source_lifecycle_transitions(
+    intent: Mapping[str, Any], design: Mapping[str, Any],
+) -> list[Mapping[str, Any]]:
+    source_duty = intent["authored_semantics"].get("source_duty")
+    if source_duty is None:
+        return []
+    lifecycle = source_duty.get("lifecycle") if isinstance(source_duty, Mapping) else None
+    transitions = lifecycle.get("off_path_transitions") if isinstance(lifecycle, Mapping) else None
+    if not isinstance(transitions, list) or any(not isinstance(row, Mapping) for row in transitions):
+        raise ValueError("source lifecycle transitions are missing from the canonical intent")
+    component_keys = {row["key"] for row in design["components"]}
+    workstreams = {row["key"]: row for row in design["workstreams"]}
+    if any(
+        row.get("component_key") not in component_keys
+        or row.get("workstream_key") not in workstreams
+        or row["component_key"] not in workstreams[row["workstream_key"]]["component_keys"]
+        for row in transitions
+    ):
+        raise ValueError("source lifecycle owner is absent from the canonical design")
+    return transitions
+
+
+def _owned_lifecycle_transitions(
+    transitions: Sequence[Mapping[str, Any]], *, owner_kind: str, owner_key: str,
+) -> list[dict[str, Any]]:
+    return [deepcopy(dict(row)) for row in transitions if row[owner_kind] == owner_key]
+
+
+def _source_lifecycle_text(transition: Mapping[str, Any]) -> str:
+    """Describe one source-governed state change without inventing an actor."""
+
+    effects = transition["effects"]
+    citations = transition["source_refs"]
+    lines = [
+        f"Source state transition — {transition['governed_object']}; trigger: {transition['trigger']}.",
+        *[
+            f"Field {effect['field']}: {effect['change']}; observable check: {effect['observable_check']}."
+            for effect in effects
+        ],
+        *[
+            f"Source citation (occurrence {citation['occurrence']}): {citation['quote']}"
+            for citation in citations
+        ],
+    ]
+    return "\n".join(lines)
+
+
+_DESIGN_DUTY_ROLES = (
+    "conditional_guards", "boundaries", "proof_duties",
+)
+
+
+def _source_design_duties(
+    intent: Mapping[str, Any], design: Mapping[str, Any],
+) -> dict[str, list[dict[str, Any]]]:
+    source_duty = intent["authored_semantics"].get("source_duty")
+    if source_duty is None:
+        return {role: [] for role in _DESIGN_DUTY_ROLES}
+    if not isinstance(source_duty, Mapping):
+        raise ValueError("source duty custody is malformed")
+    return {
+        role: verified_source_design_duties(
+            source_duty, role=role,
+            components=design["components"], workstreams=design["workstreams"],
+        )
+        for role in _DESIGN_DUTY_ROLES
+    }
+
+
+def _source_design_duty_text(role: str, duty: Mapping[str, Any]) -> str:
+    if role == "conditional_guards":
+        statement = (
+            f"Source conditional guard — when {duty['trigger']}, "
+            f"protect {duty['protected_action']}: {duty['rule']}."
+        )
+    elif role == "boundaries":
+        statement = f"Source {duty['kind']} boundary — {duty['rule']}"
+    else:
+        statement = (
+            f"Source proof duty — {duty['dossier_or_artifact']} must show "
+            f"{duty['must_show']}."
+        )
+    return "\n".join([
+        statement,
+        *[
+            f"Source citation (occurrence {citation['occurrence']}): {citation['quote']}"
+            for citation in duty["source_refs"]
+        ],
+    ])
 
 
 def build_provisional_components(
@@ -42,6 +136,8 @@ def build_provisional_components(
 
     design = provisional_design_from_intent(intent)
     events = {row["order"]: row for row in first_path_relations_from_intent(intent)}
+    lifecycle_transitions = _source_lifecycle_transitions(intent, design)
+    source_design_duties = _source_design_duties(intent, design)
     risk_allocations = build_provisional_risk_allocations(design)
     rows: list[dict[str, Any]] = []
     for index, component in enumerate(design["components"]):
@@ -76,6 +172,15 @@ def build_provisional_components(
             "exchanges": exchanges,
             "delivery_workstreams": deliveries,
             "risk_allocations": allocated_risks,
+            "source_lifecycle_transitions": _owned_lifecycle_transitions(
+                lifecycle_transitions, owner_kind="component_key", owner_key=key,
+            ),
+            **{
+                f"source_{role}": _owned_lifecycle_transitions(
+                    source_design_duties[role], owner_kind="component_key", owner_key=key,
+                )
+                for role in _DESIGN_DUTY_ROLES
+            },
         }
         rows.append({
             "component_id": key,
@@ -124,6 +229,8 @@ def build_provisional_backlog(
     components = {row["key"]: row for row in design["components"]}
     workstreams = {row["key"]: row for row in design["workstreams"]}
     events = {row["order"]: row for row in first_path_relations_from_intent(intent)}
+    lifecycle_transitions = _source_lifecycle_transitions(intent, design)
+    source_design_duties = _source_design_duties(intent, design)
     risk_allocations = build_provisional_risk_allocations(design)
     rows: list[dict[str, Any]] = []
     for index, workstream in enumerate(design["workstreams"]):
@@ -174,6 +281,16 @@ def build_provisional_backlog(
             for key in component_keys
         ]
         interfaces = [provisional_exchange_text(row) for row in exchanges]
+        owned_lifecycle = _owned_lifecycle_transitions(
+            lifecycle_transitions, owner_kind="workstream_key", owner_key=workstream["key"],
+        )
+        owned_source_duties = {
+            role: _owned_lifecycle_transitions(
+                source_design_duties[role],
+                owner_kind="workstream_key", owner_key=workstream["key"],
+            )
+            for role in _DESIGN_DUTY_ROLES
+        }
         design_ref = f"{PROVISIONAL_DESIGN_ROOT}/workstreams/{index}"
         proof_section = (
             "Source Proof Boundary"
@@ -218,6 +335,20 @@ def build_provisional_backlog(
                 "are provisional design. Source-event support does not transfer the original actor's ownership."
             ),
         }
+        if owned_lifecycle:
+            sections["Source Lifecycle"] = _bullets([
+                _source_lifecycle_text(transition) for transition in owned_lifecycle
+            ])
+        for role, title in (
+            ("conditional_guards", "Source Conditional Guards"),
+            ("boundaries", "Source Boundaries"),
+            ("proof_duties", "Source Proof Duties"),
+        ):
+            if owned_source_duties[role]:
+                sections[title] = _bullets([
+                    _source_design_duty_text(role, duty)
+                    for duty in owned_source_duties[role]
+                ])
         rows.append({
             "title": workstream["title"],
             "workstream_type": "standalone",
@@ -257,6 +388,11 @@ def build_provisional_backlog(
                 "supporting_events": supporting_events,
                 "exchanges": exchanges,
                 "risk_allocations": allocated_risks,
+                "source_lifecycle_transitions": owned_lifecycle,
+                **{
+                    f"source_{role}": owned_source_duties[role]
+                    for role in _DESIGN_DUTY_ROLES
+                },
             },
             "radar_sections": sections,
         })

@@ -77,6 +77,10 @@ def greenfield_model_authoring_receipt_approved(
             "source_sha256",
             "raw_candidate_sha256",
             "canonical_candidate_sha256",
+            "source_duty_ledger_sha256",
+            "source_duty_verifier_task_sha256",
+            "source_duty_decision_set_sha256",
+            "source_duty_binding_sha256",
         }
         and host.get("version") == HOST_CANDIDATE_RECEIPT_VERSION
         and host.get("contract_version") == HOST_CANDIDATE_CONTRACT_VERSION
@@ -87,6 +91,10 @@ def greenfield_model_authoring_receipt_approved(
                 "source_sha256",
                 "raw_candidate_sha256",
                 "canonical_candidate_sha256",
+                "source_duty_ledger_sha256",
+                "source_duty_verifier_task_sha256",
+                "source_duty_decision_set_sha256",
+                "source_duty_binding_sha256",
             )
         )
         and isinstance(canonical, Mapping)

@@ -14,12 +14,17 @@ from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_ARGUMENT_COUNT
 from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_RECEIPT_VERSION
 from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_SHAPE_SHA256
 from greenfield_matrix_host_candidate import HOST_NATIVE_MATRIX_OBSERVATION_VERSION
+from greenfield_matrix_host_candidate import PROVISIONAL_SOURCE_LEDGER_TIMEOUT_SECONDS
+from greenfield_matrix_host_candidate import PROVISIONAL_SOURCE_DUTY_VERIFIER_TIMEOUT_SECONDS
+from greenfield_matrix_host_candidate import PROVISIONAL_SOURCE_CHECK_TIMEOUT_SECONDS
+from greenfield_whole_journey_budget import whole_journey_observation_issues
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 from greenfield_preconfirm_matrix_cases import case_expectation
 from greenfield_retained_candidate_proof import (
     retained_canonical_candidate_hash_evidence,
 )
 from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
+    HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION,
     HOST_CANDIDATE_CONTRACT_VERSION,
     HOST_CANDIDATE_RECEIPT_VERSION,
 )
@@ -72,18 +77,25 @@ _HOST_STAGE_FIELDS = frozenset(
         "host_invocations",
         "authority_gate_host_invocations",
         "candidate_host_invocations",
+        "source_ledger_host_invocations",
+        "source_duty_verifier_host_invocations",
         "contract_command_invocations",
         "authority_check_command_invocations",
+        "source_ledger_check_command_invocations",
         "proposal_command_invocations",
         "runtime_semantic_model_call_count",
         "post_receipt_provider_invocations",
         "model_profile_id",
         "model_window_seconds",
         "operational_timeout_seconds",
+        "source_ledger_diagnostic_cap_seconds",
+        "source_duty_verifier_diagnostic_cap_seconds",
         "host_request",
         "authority_gate_request",
         "candidate_temp_cleaned",
         "authority_gate_temp_cleaned",
+        "source_ledger_temp_cleaned",
+        "source_duty_decision_temp_cleaned",
         "host_workspace_cleaned",
         "stage",
         "contract_returncode",
@@ -98,7 +110,35 @@ _HOST_STAGE_FIELDS = frozenset(
         "authority_check_returncode",
         "authority_check_stdout_sha256",
         "authority_check_stderr_sha256",
+        "source_ledger_request",
+        "source_ledger_schema_sha256",
+        "source_ledger_returncode",
+        "source_ledger_output_sha256",
+        "source_ledger_output_bytes",
+        "source_ledger_temp_outside_repo",
+        "source_ledger_preflight_returncode",
+        "source_ledger_preflight_stdout_sha256",
+        "source_ledger_preflight_mode",
+        "source_duty_verifier_request",
+        "source_duty_decision_schema_sha256",
+        "source_duty_verifier_returncode",
+        "source_duty_decision_output_sha256",
+        "source_duty_decision_output_bytes",
+        "source_completeness_verdict",
+        "source_completeness_omission_count",
+        "source_duty_decision_temp_outside_repo",
+        "source_ledger_check_returncode",
+        "source_ledger_check_stdout_sha256",
+        "source_ledger_check_mode",
+        "source_ledger_elapsed_seconds",
+        "source_ledger_sha256",
+        "source_duty_decision_set_sha256",
+        "source_duty_verifier_task_sha256",
+        "source_duty_verifier_elapsed_seconds",
         "candidate_schema_sha256",
+        "candidate_request_bytes",
+        "candidate_request_sha256",
+        "candidate_transport_version",
         "host_returncode",
         "host_stdout_bytes",
         "host_stderr_bytes",
@@ -112,13 +152,51 @@ _HOST_STAGE_FIELDS = frozenset(
         "proposal_stderr_sha256",
         "proposal_mode",
         "elapsed_seconds",
+        "proposal_phase_elapsed_seconds",
+        "whole_journey_seconds",
+        "whole_journey_diagnostic_cap_seconds",
+        "candidate_completion_reserve_seconds",
+        "whole_journey_bound_status",
+        "whole_journey_elapsed_scope",
+        "whole_journey_deadline_status",
     }
 )
 _GATE_ONLY_ABSENT_FIELDS = frozenset({
+    "candidate_request_bytes", "candidate_request_sha256", "candidate_transport_version",
     "host_request", "candidate_schema_sha256", "host_returncode",
     "host_stdout_bytes", "host_stderr_bytes", "raw_candidate_sha256",
     "host_output_sha256", "host_output_bytes", "candidate_temp_outside_repo",
     "proposal_returncode", "proposal_stdout_sha256", "proposal_stderr_sha256",
+    "source_ledger_request", "source_ledger_schema_sha256",
+    "source_ledger_returncode", "source_ledger_output_sha256",
+    "source_ledger_output_bytes", "source_ledger_temp_outside_repo",
+    "source_ledger_preflight_returncode", "source_ledger_preflight_stdout_sha256",
+    "source_ledger_preflight_mode", "source_duty_verifier_request",
+    "source_duty_decision_schema_sha256", "source_duty_verifier_returncode",
+    "source_duty_decision_output_sha256", "source_duty_decision_output_bytes",
+    "source_completeness_verdict", "source_completeness_omission_count",
+    "source_duty_decision_temp_outside_repo", "source_duty_decision_set_sha256",
+    "source_duty_verifier_task_sha256",
+    "source_duty_verifier_elapsed_seconds",
+    "source_ledger_check_returncode", "source_ledger_check_stdout_sha256",
+    "source_ledger_check_mode", "source_ledger_elapsed_seconds",
+    "source_ledger_sha256",
+})
+_LEDGER_CLARIFICATION_ABSENT_FIELDS = frozenset({
+    "candidate_request_bytes", "candidate_request_sha256", "candidate_transport_version",
+    "host_request", "candidate_schema_sha256", "host_returncode",
+    "host_stdout_bytes", "host_stderr_bytes", "raw_candidate_sha256",
+    "host_output_sha256", "host_output_bytes", "candidate_temp_outside_repo",
+    "proposal_returncode", "proposal_stdout_sha256", "proposal_stderr_sha256",
+    "source_ledger_sha256", "source_duty_verifier_request",
+    "source_duty_decision_schema_sha256", "source_duty_verifier_returncode",
+    "source_duty_decision_output_sha256", "source_duty_decision_output_bytes",
+    "source_completeness_verdict", "source_completeness_omission_count",
+    "source_duty_decision_temp_outside_repo", "source_duty_decision_set_sha256",
+    "source_duty_verifier_task_sha256",
+    "source_duty_verifier_elapsed_seconds",
+    "source_ledger_check_returncode", "source_ledger_check_stdout_sha256",
+    "source_ledger_check_mode",
 })
 
 
@@ -259,6 +337,7 @@ def model_profile_evidence(
     observed: Mapping[str, Any] | None = None,
     stage_observation: Mapping[str, Any] | None = None,
     raw_candidate: Mapping[str, Any] | None = None,
+    source_duty_receipt: Mapping[str, Any] | None = None,
     expected_source: str = "",
 ) -> dict[str, Any]:
     """Bind one host argv, retained candidate and zero-call runtime receipt."""
@@ -289,6 +368,7 @@ def model_profile_evidence(
         sealed_observation=_mapping(observed),
         stage_observation=_mapping(stage_observation),
         raw_candidate=_mapping(raw_candidate),
+        source_duty_receipt=_mapping(source_duty_receipt),
         expected_source=expected_source,
         expected_source_sha256=expected_source_sha256,
     )
@@ -303,11 +383,7 @@ def model_profile_evidence(
         "operational_timeout_seconds": contract.operational_timeout_seconds,
         "lower_capability": contract.lower_capability,
         "semantic_authority": "active_host_single_authority",
-        "sealed_request_roles": (
-            ["authority_gate"]
-            if stage_summary["response_kind"] == "clarification_required"
-            else ["authority_gate", "host_candidate"]
-        ),
+        "sealed_request_roles": list(stage_summary["request_roles"]),
         "lower_capability_scope": (
             "authority_gate" if contract.lower_capability else "not_applicable"
         ),
@@ -351,6 +427,7 @@ def _host_stage_evidence(
     sealed_observation: Mapping[str, Any],
     stage_observation: Mapping[str, Any],
     raw_candidate: Mapping[str, Any],
+    source_duty_receipt: Mapping[str, Any],
     expected_source: str,
     expected_source_sha256: str,
 ) -> dict[str, Any]:
@@ -358,9 +435,11 @@ def _host_stage_evidence(
     stage = _mapping(stage_observation)
     sealed = _mapping(sealed_observation)
     clarification = stage.get("response_kind") == "clarification_required"
-    expected_stage_fields = (
-        _HOST_STAGE_FIELDS - _GATE_ONLY_ABSENT_FIELDS
-        if clarification else _HOST_STAGE_FIELDS
+    gate_only = stage.get("authority_gate_decision") == "clarify"
+    ledger_clarification = clarification and not gate_only
+    expected_stage_fields = _HOST_STAGE_FIELDS - (
+        _GATE_ONLY_ABSENT_FIELDS if gate_only else
+        _LEDGER_CLARIFICATION_ABSENT_FIELDS if ledger_clarification else frozenset()
     )
     if set(stage) != expected_stage_fields:
         issues.append("retained host stage has missing or unsupported fields")
@@ -373,10 +452,19 @@ def _host_stage_evidence(
         if not _is_exact_int(stage.get(field), 1):
             issues.append(f"retained host stage {field} must equal one")
     expected_candidate_calls = 0 if clarification else 1
+    expected_ledger_calls = 0 if gate_only else 1
+    expected_verifier_calls = 0 if clarification else 1
+    for field in ("source_ledger_host_invocations",):
+        if not _is_exact_int(stage.get(field), expected_ledger_calls):
+            issues.append(f"retained host stage {field} has an invalid count")
+    if not _is_exact_int(stage.get("source_duty_verifier_host_invocations"), expected_verifier_calls):
+        issues.append("retained host stage source duty verifier count is invalid")
+    if not _is_exact_int(stage.get("source_ledger_check_command_invocations"), expected_ledger_calls + expected_verifier_calls):
+        issues.append("retained host stage source ledger check count is invalid")
     for field in ("candidate_host_invocations", "proposal_command_invocations"):
         if not _is_exact_int(stage.get(field), expected_candidate_calls):
             issues.append(f"retained host stage {field} has an invalid count")
-    if not _is_exact_int(stage.get("host_invocations"), 1 + expected_candidate_calls):
+    if not _is_exact_int(stage.get("host_invocations"), 1 + expected_ledger_calls + expected_verifier_calls + expected_candidate_calls):
         issues.append("retained host stage total host call count is invalid")
     for field in (
         "runtime_semantic_model_call_count",
@@ -388,6 +476,14 @@ def _host_stage_evidence(
         issues.append("retained host stage identifies a different model profile")
     issues.extend(_stage_profile_window_issues(profile, stage))
     issues.extend(host_native_argv_receipt_issues(profile, stage.get("authority_gate_request")))
+    if expected_ledger_calls:
+        issues.extend(host_native_argv_receipt_issues(profile, stage.get("source_ledger_request")))
+        if _mapping(stage.get("authority_gate_request")) != _mapping(stage.get("source_ledger_request")):
+            issues.append("gate and source ledger used different host model or executable receipts")
+    if expected_verifier_calls:
+        issues.extend(host_native_argv_receipt_issues(profile, stage.get("source_duty_verifier_request")))
+        if _mapping(stage.get("authority_gate_request")) != _mapping(stage.get("source_duty_verifier_request")):
+            issues.append("gate and source duty verifier used different host model or executable receipts")
     if not clarification:
         issues.extend(host_native_argv_receipt_issues(profile, stage.get("host_request")))
         if _mapping(stage.get("authority_gate_request")) != _mapping(stage.get("host_request")):
@@ -402,12 +498,71 @@ def _host_stage_evidence(
     ):
         if not _is_sha256(stage.get(field)):
             issues.append(f"retained host stage {field} is invalid")
+    if expected_ledger_calls:
+        for field in (
+            "source_ledger_schema_sha256", "source_ledger_output_sha256",
+            "source_ledger_preflight_stdout_sha256",
+        ):
+            if not _is_sha256(stage.get(field)):
+                issues.append(f"retained host stage {field} is invalid")
+        if stage.get("source_ledger_returncode") != 0 or stage.get("source_ledger_preflight_returncode") != 0:
+            issues.append("retained source ledger prerequisite failed")
+        if stage.get("source_ledger_preflight_mode") != (
+            "clarification_required" if ledger_clarification else "source_duty_preflight"
+        ):
+            issues.append("retained source ledger preflight mode is invalid")
+        if stage.get("source_ledger_temp_outside_repo") is not True:
+            issues.append("retained source ledger path was not outside the repository")
+    if expected_verifier_calls:
+        for field in (
+            "source_duty_decision_schema_sha256", "source_duty_decision_output_sha256",
+            "source_ledger_check_stdout_sha256", "source_ledger_sha256",
+            "source_duty_decision_set_sha256",
+            "source_duty_verifier_task_sha256",
+        ):
+            if not _is_sha256(stage.get(field)):
+                issues.append(f"retained host stage {field} is invalid")
+        if stage.get("source_duty_verifier_returncode") != 0 or stage.get("source_ledger_check_returncode") != 0:
+            issues.append("retained source duty verifier or decision check failed")
+        if stage.get("source_ledger_check_mode") != "source_duty_admitted":
+            issues.append("retained source ledger decision check mode is invalid")
+        if stage.get("source_completeness_verdict") != "yes" or not _is_exact_int(
+            stage.get("source_completeness_omission_count"), 0
+        ):
+            issues.append("retained source completeness is not affirmative and omission-free")
+        if stage.get("source_duty_decision_temp_outside_repo") is not True:
+            issues.append("retained source duty decision path was not outside the repository")
+    if stage.get("source_ledger_temp_cleaned") is not True:
+        issues.append("retained source ledger file was not cleaned")
+    if stage.get("source_duty_decision_temp_cleaned") is not True:
+        issues.append("retained source duty decision file was not cleaned")
+    if stage.get("source_ledger_diagnostic_cap_seconds") != PROVISIONAL_SOURCE_LEDGER_TIMEOUT_SECONDS:
+        issues.append("retained source ledger diagnostic cap is invalid")
+    if stage.get("source_duty_verifier_diagnostic_cap_seconds") != PROVISIONAL_SOURCE_DUTY_VERIFIER_TIMEOUT_SECONDS:
+        issues.append("retained source duty verifier diagnostic cap is invalid")
+    stage_elapsed = stage.get("elapsed_seconds")
+    journey_elapsed = stage.get("whole_journey_seconds")
+    ledger_elapsed = stage.get("source_ledger_elapsed_seconds", 0.0)
+    verifier_elapsed = stage.get("source_duty_verifier_elapsed_seconds", 0.0)
+    if any(type(value) is not float or not math.isfinite(value) or value < 0.0 for value in (
+        stage_elapsed, journey_elapsed, ledger_elapsed, verifier_elapsed,
+    )) or abs(journey_elapsed - stage_elapsed - ledger_elapsed - verifier_elapsed) > 0.003:
+        issues.append("retained stage and whole-journey timing do not reconcile")
+    elif (stage_elapsed > get_greenfield_model_profile(profile).operational_timeout_seconds
+          or ledger_elapsed > PROVISIONAL_SOURCE_LEDGER_TIMEOUT_SECONDS + PROVISIONAL_SOURCE_CHECK_TIMEOUT_SECONDS
+          or verifier_elapsed > PROVISIONAL_SOURCE_DUTY_VERIFIER_TIMEOUT_SECONDS + PROVISIONAL_SOURCE_CHECK_TIMEOUT_SECONDS):
+        issues.append("retained stage timing exceeded its phase bound")
     for field in (() if clarification else (
-        "candidate_schema_sha256", "raw_candidate_sha256", "host_output_sha256",
+        "candidate_schema_sha256", "candidate_request_sha256", "raw_candidate_sha256", "host_output_sha256",
         "proposal_stdout_sha256", "proposal_stderr_sha256",
     )):
         if not _is_sha256(stage.get(field)):
             issues.append(f"retained host stage {field} is invalid")
+    if not clarification:
+        if stage.get("candidate_transport_version") != HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION:
+            issues.append("retained candidate transport version is invalid")
+        if type(stage.get("candidate_request_bytes")) is not int or stage["candidate_request_bytes"] <= 0:
+            issues.append("retained candidate request byte count must be a positive integer")
     if (stage.get("contract_returncode") != 0
             or stage.get("authority_gate_returncode") != 0
             or stage.get("authority_check_returncode") != 0):
@@ -423,7 +578,7 @@ def _host_stage_evidence(
         "clarification_required",
     }:
         issues.append("retained host stage proposal mode is invalid")
-    if stage.get("authority_gate_decision") != ("clarify" if clarification else "admit"):
+    if stage.get("authority_gate_decision") != ("clarify" if gate_only else "admit"):
         issues.append("retained host gate decision does not match the outcome")
     if stage.get("authority_gate_temp_outside_repo") is not True:
         issues.append("retained authority gate path was not outside the repository")
@@ -471,23 +626,42 @@ def _host_stage_evidence(
             issues.append("sealed host candidate canonical version is invalid")
         if stage.get("raw_candidate_sha256") != receipt.get("raw_candidate_sha256"):
             issues.append("retained raw candidate does not match the sealed receipt")
+        if stage.get("source_ledger_sha256") != receipt.get("source_duty_ledger_sha256"):
+            issues.append("retained source ledger does not match the sealed receipt")
+        if stage.get("source_duty_decision_set_sha256") != receipt.get("source_duty_decision_set_sha256"):
+            issues.append("retained source duty decision set does not match the sealed receipt")
+        if stage.get("source_duty_verifier_task_sha256") != receipt.get("source_duty_verifier_task_sha256"):
+            issues.append("retained source duty verifier task does not match the sealed receipt")
         retained_hash_summary = retained_canonical_candidate_hash_evidence(
             raw_candidate=raw_candidate,
             receipt=receipt,
             evidence_text=expected_source,
+            source_duty_receipt=source_duty_receipt,
         )
+        if (retained_hash_summary.get("source_completeness_verdict") != "yes"
+                or retained_hash_summary.get("source_completeness_omission_count") != 0):
+            issues.append("retained source duty receipt lacks affirmative source completeness")
     issues.extend(str(issue) for issue in retained_hash_summary["issues"])
     return {
         "origin": "host_native",
         "response_kind": str(stage.get("response_kind") or ""),
         "request_roles": {
             "authority_gate": dict(_mapping(stage.get("authority_gate_request"))),
+            **({"source_ledger": dict(_mapping(stage.get("source_ledger_request")))}
+               if expected_ledger_calls else {}),
+            **({"source_duty_verifier": dict(_mapping(stage.get("source_duty_verifier_request")))}
+               if expected_verifier_calls else {}),
             **({"host_candidate": dict(_mapping(stage.get("host_request")))}
                if not clarification else {}),
         },
-        "host_semantic_model_calls": 1 + expected_candidate_calls,
+        "host_semantic_model_calls": 1 + expected_ledger_calls + expected_verifier_calls + expected_candidate_calls,
         "runtime_semantic_model_calls_after_candidate_receipt": 0,
         "post_receipt_provider_invocations": 0,
+        "candidate_request": {
+            key: stage.get(key) for key in (
+                "candidate_transport_version", "candidate_request_bytes", "candidate_request_sha256",
+            )
+        } if not clarification else {},
         "retained_candidate_hash_summary": {
             key: value
             for key, value in retained_hash_summary.items()
@@ -540,11 +714,13 @@ def _stage_profile_window_issues(
         "model_window_seconds": contract.model_timeout_seconds,
         "operational_timeout_seconds": contract.operational_timeout_seconds,
     }
-    return tuple(
+    issues = [
         f"retained host stage {field} does not match the assigned profile"
         for field, seconds in expected.items()
         if type(stage.get(field)) is not float or stage[field] != seconds
-    )
+    ]
+    issues.extend(whole_journey_observation_issues(stage))
+    return tuple(issues)
 
 
 def host_native_clarification_stage_observation_issues(

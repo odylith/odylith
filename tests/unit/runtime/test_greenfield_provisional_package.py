@@ -14,6 +14,9 @@ from odylith.runtime.domain_intelligence.greenfield_authored_proposal import (
     build_authored_greenfield_proposal,
 )
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import AUTHORED_SEMANTICS_KEY
+from odylith.runtime.domain_intelligence.greenfield_candidate_intent_stage import (
+    render_candidate_intent_markdown,
+)
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_semantic_alignment import (
     semantic_component_alignment_issues,
     semantic_workstream_alignment_issues,
@@ -23,6 +26,10 @@ from odylith.runtime.domain_intelligence.greenfield_provisional_package import (
     build_provisional_backlog,
     build_provisional_components,
 )
+from odylith.runtime.domain_intelligence.greenfield_source_lifecycle import (
+    _sha256 as _lifecycle_sha256,
+    project_greenfield_source_lifecycle,
+)
 from odylith.runtime.domain_intelligence.project_intelligence_binding import (
     attach_project_intelligence_bindings,
     project_intelligence_binding_issues,
@@ -30,6 +37,8 @@ from odylith.runtime.domain_intelligence.project_intelligence_binding import (
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance.validate_backlog_contract import default_section_boilerplate
 from tests.unit.runtime.test_greenfield_authored_component_spec_projection import _authored_proposal
+from tests.unit.runtime.test_greenfield_source_lifecycle import _case as _source_duty_case
+from tests.unit.runtime.test_greenfield_source_duty_binding import _with_design_duties
 
 
 def _allocated(proposal: dict) -> dict:
@@ -347,3 +356,156 @@ def test_semantic_alignment_rejects_source_actor_reassignment_even_with_matching
     assert any("canonical provisional design" in issue for issue in semantic_component_alignment_issues(
         proposal, proposal["semantic_model"],
     ))
+
+
+def test_off_path_lifecycle_is_projected_only_to_bound_component_and_workstream(tmp_path: Path) -> None:
+    proposal = _authored_proposal(tmp_path)
+    intent = deepcopy(proposal["intent"])
+    design = intent[AUTHORED_SEMANTICS_KEY]["provisional_design"]
+    component_key = design["components"][0]["key"]
+    workstream_key = next(
+        row["key"] for row in design["workstreams"] if component_key in row["component_keys"]
+    )
+    evidence, receipt, candidate, binding = _source_duty_case("dossier")
+    candidate["provisional_design"]["components"][0]["key"] = component_key
+    candidate["provisional_design"]["workstreams"][0].update({
+        "key": workstream_key, "component_keys": [component_key],
+    })
+    binding["off_path_transitions"][0].update({
+        "component_key": component_key, "workstream_key": workstream_key,
+    })
+    lifecycle = project_greenfield_source_lifecycle(
+        ledger_receipt=receipt, binding=binding,
+        candidate_result=candidate, evidence_text=evidence,
+    )
+    transition = lifecycle["off_path_transitions"][0]
+    intent[AUTHORED_SEMANTICS_KEY]["source_duty"] = {
+        "ledger_receipt": receipt,
+        "binding": binding,
+        "lifecycle": lifecycle,
+    }
+    original_intent = deepcopy(intent)
+
+    components = build_provisional_components(intent=intent, product_slug="harbor-planner")
+    backlog = build_provisional_backlog(intent=intent, diagram_slugs={"context": "context"})
+
+    assert intent == original_intent
+    assert [row["component_id"] for row in components if row["component_contract"]["source_lifecycle_transitions"]] == [component_key]
+    assert [row["provisional_workstream_contract"]["provisional_workstream"]["key"] for row in backlog
+            if row["provisional_workstream_contract"]["source_lifecycle_transitions"]] == [workstream_key]
+    owner = next(row for row in components if row["component_id"] == component_key)
+    delivery = next(row for row in backlog if row["provisional_workstream_contract"]["provisional_workstream"]["key"] == workstream_key)
+    assert owner["component_contract"]["source_lifecycle_transitions"] == [transition]
+    assert delivery["provisional_workstream_contract"]["source_lifecycle_transitions"] == [transition]
+    assert "Withdrawal closes dossier access and erases the cached copy" in delivery["radar_sections"]["Source Lifecycle"]
+    assert "Source citation (occurrence 1)" in delivery["radar_sections"]["Source Lifecycle"]
+    assert delivery["radar_sections"]["Source Lifecycle"].index("access: closed") < delivery["radar_sections"]["Source Lifecycle"].index("cache: erased")
+    assert all("Source Lifecycle" not in row["radar_sections"] for row in backlog if row is not delivery)
+    assert [row["component_contract"]["supporting_events"] for row in components] == [
+        row["component_contract"]["supporting_events"] for row in proposal["components"]
+    ]
+    assert [row["provisional_workstream_contract"]["supporting_events"] for row in backlog] == [
+        row["provisional_workstream_contract"]["supporting_events"] for row in proposal["backlog"]
+    ]
+    assert all("withdrawal" not in row["radar_sections"]["Source Event Support"].lower() for row in backlog)
+
+    inputs = registry.build_authored_component_authoring_inputs(
+        root=tmp_path, proposal=proposal, release_selector="0.0.1", backlog_result=_allocated(proposal),
+    )
+    for row in inputs:
+        row["component_contract"]["source_lifecycle_transitions"] = (
+            [deepcopy(transition)] if row["component_id"] == component_key else []
+        )
+        spec = registry.build_authored_component_spec(row)
+        assert ("## Source state lifecycle" in spec) is (row["component_id"] == component_key)
+        if row["component_id"] == component_key:
+            assert "Withdrawal closes dossier access and erases the cached copy" in spec
+            assert "Source citation (occurrence 1)" in spec
+            assert spec.index("access: closed") < spec.index("cache: erased")
+            assert "performer" not in spec.lower()
+
+    wrong_owner = next(row for row in inputs if row["component_id"] != component_key)
+    wrong_owner["component_contract"]["source_lifecycle_transitions"] = [deepcopy(transition)]
+    with pytest.raises(ValueError, match="unrelated source lifecycle"):
+        registry.build_authored_component_spec(wrong_owner)
+
+    intent[AUTHORED_SEMANTICS_KEY]["source_duty"]["lifecycle"]["off_path_transitions"][0]["workstream_key"] = "missing-delivery"
+    with pytest.raises(ValueError, match="owner is absent"):
+        build_provisional_backlog(intent=intent, diagram_slugs={"context": "context"})
+
+
+def test_guard_boundary_and_proof_duty_survive_canonical_package_projection(tmp_path: Path) -> None:
+    proposal = _authored_proposal(tmp_path)
+    intent = deepcopy(proposal["intent"])
+    design = intent[AUTHORED_SEMANTICS_KEY]["provisional_design"]
+    component_key = design["components"][0]["key"]
+    workstream_key = next(
+        row["key"] for row in design["workstreams"] if component_key in row["component_keys"]
+    )
+    evidence, receipt, candidate, binding = _source_duty_case("dossier")
+    evidence, receipt, binding = _with_design_duties(evidence, receipt, binding)
+    candidate["provisional_design"]["components"][0]["key"] = component_key
+    candidate["provisional_design"]["workstreams"][0].update({
+        "key": workstream_key, "component_keys": [component_key],
+    })
+    binding["off_path_transitions"][0].update({
+        "component_key": component_key, "workstream_key": workstream_key,
+    })
+    for role in ("conditional_guards", "boundaries", "proof_duties"):
+        binding[role][0].update({
+            "component_key": component_key, "workstream_key": workstream_key,
+        })
+    lifecycle = project_greenfield_source_lifecycle(
+        ledger_receipt=receipt, binding=binding,
+        candidate_result=candidate, evidence_text=evidence,
+    )
+    intent[AUTHORED_SEMANTICS_KEY]["source_duty"] = {
+        "ledger_receipt": receipt, "binding": binding, "lifecycle": lifecycle,
+    }
+    preview = render_candidate_intent_markdown(intent)
+    for heading in ("Source conditional guards", "Source boundaries", "Source proof duties"):
+        assert f"## {heading}" in preview
+    components = build_provisional_components(intent=intent, product_slug="harbor-planner")
+    backlog = build_provisional_backlog(intent=intent, diagram_slugs={"context": "context"})
+    owner = next(row for row in components if row["component_id"] == component_key)
+    delivery = next(
+        row for row in backlog
+        if row["provisional_workstream_contract"]["provisional_workstream"]["key"] == workstream_key
+    )
+    for role, section in (
+        ("conditional_guards", "Source Conditional Guards"),
+        ("boundaries", "Source Boundaries"),
+        ("proof_duties", "Source Proof Duties"),
+    ):
+        assert owner["component_contract"][f"source_{role}"] == lifecycle[role]
+        assert delivery["provisional_workstream_contract"][f"source_{role}"] == lifecycle[role]
+        assert lifecycle[role][0]["source_refs"][0]["quote"] in delivery["radar_sections"][section]
+    assert registry._provisional_component_contract(owner) == owner["component_contract"]
+    inputs = registry.build_authored_component_authoring_inputs(
+        root=tmp_path, proposal=proposal, release_selector="0.0.1",
+        backlog_result=_allocated(proposal),
+    )
+    component_input = next(row for row in inputs if row["component_id"] == component_key)
+    component_input["component_contract"] = deepcopy(owner["component_contract"])
+    spec = registry.build_authored_component_spec(component_input)
+    for heading in ("Source conditional guards", "Source boundaries", "Source proof duties"):
+        assert f"## {heading}" in spec
+    for role in ("conditional_guards", "boundaries", "proof_duties"):
+        assert lifecycle[role][0]["source_refs"][0]["quote"] in spec
+    wrong_owner = deepcopy(component_input)
+    wrong_owner["component_contract"]["source_boundaries"][0]["workstream_key"] = "unrelated"
+    with pytest.raises(ValueError, match="unrelated source boundaries"):
+        registry.build_authored_component_spec(wrong_owner)
+
+    stale = deepcopy(intent)
+    stale_lifecycle = stale[AUTHORED_SEMANTICS_KEY]["source_duty"]["lifecycle"]
+    stale_lifecycle["boundaries"] = []
+    stale_lifecycle["lifecycle_sha256"] = _lifecycle_sha256({
+        key: value for key, value in stale_lifecycle.items() if key != "lifecycle_sha256"
+    })
+    with pytest.raises(ValueError, match="incomplete coverage"):
+        build_provisional_components(intent=stale, product_slug="harbor-planner")
+    stale = deepcopy(intent)
+    stale[AUTHORED_SEMANTICS_KEY]["source_duty"]["binding"]["proof_duties"][0]["duty_id"] = "stale"
+    with pytest.raises(ValueError, match="custody is stale"):
+        build_provisional_backlog(intent=stale, diagram_slugs={"context": "context"})

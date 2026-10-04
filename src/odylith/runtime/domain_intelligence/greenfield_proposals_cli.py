@@ -56,6 +56,18 @@ from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import (
     PRECONFIRM_REPAIR_TIERS,
     GreenfieldPreconfirmEngineError,
 )
+from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
+    load_greenfield_source_duty_file,
+    preflight_greenfield_source_duty_ledger,
+    validate_greenfield_source_duty_ledger,
+    verify_greenfield_source_duty_ledger_receipt,
+)
+from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import (
+    source_duty_entailment_task,
+)
+from odylith.runtime.domain_intelligence.greenfield_source_duty_compact import (
+    expand_compact_source_duty_ledger,
+)
 
 _PUBLIC_INTENT_AUTHORITY_SUMMARY_VERSION = "odylith.product-intent-authority-summary.v1"
 _PUBLIC_INTENT_AUTHORITY_SUMMARY_KEYS = (
@@ -71,7 +83,8 @@ _REPAIR_TIER_TIMING_HELP = (
     "Sol negative diagnostic "
     f"{get_greenfield_model_profile(DEEP_PROFILE_ID).performance_target_seconds:g}s advisory. "
     "Control and diagnostic profiles are not executable success choices."
-    + f" Operational safety timeout: {GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS:g}s for every profile."
+    + f" Operational safety timeout: {GREENFIELD_OPERATIONAL_TIMEOUT_SECONDS:g}s for auto/standard; "
+    + f"{get_greenfield_model_profile(RESCUE_PROFILE_ID).operational_timeout_seconds:g}s for control/diagnostic profiles."
     + f" Normal-case target: {GREENFIELD_NORMAL_CASE_TARGET_SECONDS:g}s (advisory)."
 )
 
@@ -98,6 +111,10 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         "--gate-file",
         required=True,
         help="Source-bound pre-author authority decision returned for this exact request.",
+    )
+    propose.add_argument(
+        "--ledger-file", required=True,
+        help="Accepted source-duty receipt for this exact request, written outside the repository.",
     )
     propose.add_argument("--format", choices=("text", "json"), default="text", dest="output_format")
     propose.add_argument(
@@ -176,6 +193,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         required=True,
         help="Source-bound pre-author authority decision returned for this exact request.",
     )
+    compile_transaction.add_argument("--ledger-file", required=True)
     compile_transaction.add_argument("--edit", default="", help=argparse.SUPPRESS)
     compile_transaction.add_argument("--edit-evidence", default="", help=argparse.SUPPRESS)
     compile_transaction.add_argument(
@@ -232,6 +250,22 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     authority_check.add_argument("--edit-evidence", default="")
     authority_check.add_argument("--gate-file", required=True)
     authority_check.add_argument("--format", choices=("text", "json"), default="text", dest="output_format")
+    source_ledger_check = subparsers.add_parser(
+        "source-ledger-check",
+        help="Preflight source duties, then admit one source-only decision set before candidate authoring.",
+    )
+    source_ledger_check.add_argument("--repo-root", default=".")
+    source_ledger_check.add_argument("--prompt", required=True)
+    source_ledger_check.add_argument("--edit", default="")
+    source_ledger_check.add_argument("--edit-evidence", default="")
+    source_ledger_check.add_argument("--ledger-file", required=True)
+    source_ledger_check.add_argument(
+        "--decision-file", default="",
+        help="One source-only decision set for admitting the preflighted ledger.",
+    )
+    source_ledger_check.add_argument(
+        "--format", choices=("text", "json"), default="json", dest="output_format",
+    )
     return parser.parse_args(argv)
 
 
@@ -309,6 +343,7 @@ def rebuild_pending_transaction(
     edit_evidence_file: str, as_json: bool, started_at: float | None = None,
     host_candidate_file: str = "",
     authority_gate_file: str = "",
+    source_duty_file: str = "",
 ) -> int:
     """Re-author from verified retained evidence; never alter the sealed package."""
     from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
@@ -334,6 +369,10 @@ def rebuild_pending_transaction(
             repo_root=repo_root, prompt=prompt, edit_evidence=correction,
         )
         _require_admitted_authority_gate(decision)
+        ledger_receipt = _source_duty_receipt_from_args(
+            argparse.Namespace(ledger_file=source_duty_file, evidence_language="en"),
+            repo_root=repo_root, prompt=prompt, edit_evidence=correction,
+        )
         if not str(host_candidate_file or "").strip():
             raise ValueError(
                 "Greenfield EDIT requires one host-authored candidate matching the "
@@ -349,6 +388,7 @@ def rebuild_pending_transaction(
             repair_tier=previous.quality_manifest["requested_repair_tier"],
             source_language="en", started_at=started,
             host_candidate=host_candidate,
+            source_duty_receipt=ledger_receipt,
         )
         if transaction.transaction_hash == transaction_hash:
             raise RuntimeError("The correction did not produce a new sealed package. The old package is unchanged.")
@@ -471,6 +511,25 @@ def _authority_gate_from_args(
     )
 
 
+def _source_duty_receipt_from_args(
+    args: argparse.Namespace, *, repo_root: Path, prompt: str, edit_evidence: str,
+) -> dict[str, Any]:
+    value = str(getattr(args, "ledger_file", "") or "").strip()
+    if not value:
+        raise ValueError("Greenfield requires an accepted source-duty ledger; no records were created.")
+    path = Path(value).expanduser()
+    if not path.is_absolute():
+        path = repo_root / path
+    prepared = prepare_model_authoring_evidence(
+        prompt=prompt, edit_evidence=edit_evidence,
+        source_language=str(getattr(args, "evidence_language", "en")),
+    )
+    receipt = verify_greenfield_source_duty_ledger_receipt(
+        load_greenfield_source_duty_file(path), evidence_text=prepared.evidence_source,
+    )
+    return receipt
+
+
 def _require_admitted_authority_gate(decision: Mapping[str, Any]) -> None:
     if decision["decision"] == "clarify":
         raise GreenfieldClarificationRequired(
@@ -490,6 +549,7 @@ def _compile_prompt_evidence_transaction(
     started_at: float | None = None,
     clock: Callable[[], float] | None = None,
     host_candidate: Mapping[str, Any],
+    source_duty_receipt: Mapping[str, Any],
 ) -> tuple[dict[str, Any], Any, Path]:
     now = clock or time.perf_counter
     started = now() if started_at is None else float(started_at)
@@ -509,6 +569,7 @@ def _compile_prompt_evidence_transaction(
         prompt=prompt,
         repo_root=repo_root,
         host_candidate=host_candidate,
+        source_duty_receipt=source_duty_receipt,
         edit_evidence=edit_evidence,
         authoring_profile_id=profile_id,
         source_language=source_language,
@@ -699,6 +760,50 @@ def main(argv: Sequence[str] | None = None) -> int:
         else:
             print("The requested product path has an operator-owned first-path witness.")
         return 0
+    if args.command == "source-ledger-check":
+        try:
+            edit_evidence = _edit_evidence_from_args(args, repo_root=repo_root)
+            prepared = prepare_model_authoring_evidence(
+                prompt=str(args.prompt), edit_evidence=edit_evidence,
+                source_language="en",
+            )
+            path = Path(str(args.ledger_file)).expanduser()
+            if not path.is_absolute():
+                path = repo_root / path
+            ledger = expand_compact_source_duty_ledger(
+                load_greenfield_source_duty_file(path), evidence_text=prepared.evidence_source,
+            )
+            preflight = preflight_greenfield_source_duty_ledger(
+                ledger, evidence_text=prepared.evidence_source,
+            )
+            if ledger["status"] == "clarification_required":
+                result = {
+                    "mode": "clarification_required",
+                    "clarification": {"question": ledger["question"]},
+                }
+            elif not str(args.decision_file).strip():
+                result = {
+                    "mode": "source_duty_preflight",
+                    "preflight": preflight,
+                    "decision_task": source_duty_entailment_task(
+                        preflight, evidence_text=prepared.evidence_source,
+                    ),
+                }
+            else:
+                decision_path = Path(str(args.decision_file)).expanduser()
+                if not decision_path.is_absolute():
+                    decision_path = repo_root / decision_path
+                decision_set = load_greenfield_source_duty_file(decision_path)
+                receipt = validate_greenfield_source_duty_ledger(
+                    ledger, evidence_text=prepared.evidence_source,
+                    decision_set=decision_set,
+                )
+                result = {"mode": "source_duty_admitted", "receipt": receipt}
+        except (OSError, ValueError, RuntimeError, TypeError) as exc:
+            _print_greenfield_error(exc, as_json=args.output_format == "json")
+            return 2
+        print(json.dumps(result, indent=2, sort_keys=True) if args.output_format == "json" else result["mode"])
+        return 0
     if args.command == "propose":
         if bool(args.confirm_intent) or str(args.intent_file or "").strip():
             _print_greenfield_error(ValueError(_retired_intent_file_message()), as_json=args.output_format == "json")
@@ -710,6 +815,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 args, repo_root=repo_root, prompt=str(args.prompt), edit_evidence=edit_evidence,
             )
             _require_admitted_authority_gate(decision)
+            source_duty_receipt = _source_duty_receipt_from_args(
+                args, repo_root=repo_root, prompt=str(args.prompt), edit_evidence=edit_evidence,
+            )
             host_candidate = _host_candidate_from_args(args, repo_root=repo_root)
             candidate_intent, transaction, transaction_path = _compile_prompt_evidence_transaction(
                 repo_root=repo_root,
@@ -720,6 +828,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 source_language=str(args.evidence_language),
                 started_at=started_at,
                 host_candidate=host_candidate,
+                source_duty_receipt=source_duty_receipt,
             )
         except GreenfieldClarificationRequired as exc:
             return _finish_clarification(exc=exc, as_json=args.output_format == "json")
@@ -749,6 +858,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 args, repo_root=repo_root, prompt=str(args.prompt), edit_evidence=edit_evidence,
             )
             _require_admitted_authority_gate(decision)
+            source_duty_receipt = _source_duty_receipt_from_args(
+                args, repo_root=repo_root, prompt=str(args.prompt), edit_evidence=edit_evidence,
+            )
             host_candidate = _host_candidate_from_args(args, repo_root=repo_root)
             candidate_intent, transaction, staged_path = _compile_prompt_evidence_transaction(
                 repo_root=repo_root,
@@ -759,6 +871,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 source_language=str(args.evidence_language),
                 started_at=started_at,
                 host_candidate=host_candidate,
+                source_duty_receipt=source_duty_receipt,
             )
             output_path = str(args.output or "").strip()
             if output_path:

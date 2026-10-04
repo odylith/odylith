@@ -308,6 +308,7 @@ def _check_text_contract(
     paths: Sequence[str],
     tokens: Sequence[str],
     message: str,
+    alternatives: Sequence[Sequence[str]] = (),
 ) -> dict[str, Any]:
     failures: list[GuidanceIssue] = []
     evidence: list[str] = []
@@ -322,7 +323,7 @@ def _check_text_contract(
                 )
             )
             continue
-        if not _contains_all(text, tokens):
+        if not any(_contains_all(text, accepted) for accepted in (tokens, *alternatives)):
             failures.append(GuidanceIssue(check_id, message, path=relative_path))
         else:
             evidence.append(relative_path)
@@ -383,6 +384,7 @@ def _guidance_checks(repo_root: Path, *, cases: Sequence[Mapping[str, Any]]) -> 
             paths=("AGENTS.md", "odylith/AGENTS.md", "src/odylith/bundle/assets/odylith/AGENTS.md"),
             tokens=("CLI-first", "hand-edit governed files", "odylith backlog create"),
             message="governed truth guidance must point to CLI-first paths where a CLI exists",
+            alternatives=(("CLI-first", "For governed files, use", "before hand edits", "odylith backlog create"),),
         ),
         _check_text_contract(
             repo_root,
@@ -404,6 +406,10 @@ def _guidance_checks(repo_root: Path, *, cases: Sequence[Mapping[str, Any]]) -> 
             paths=("AGENTS.md", "odylith/AGENTS.md", "src/odylith/bundle/assets/odylith/AGENTS.md"),
             tokens=("Queued backlog items", "not implicit implementation instructions", "explicitly asks"),
             message="queue guidance must prevent queued records from becoming implicit implementation work",
+            alternatives=((
+                "Radar and Casebook queues and shell or Compass previews are not implementation instructions",
+                "Work a queued item only when the user explicitly asks",
+            ),),
         ),
         _check_text_contract(
             repo_root,

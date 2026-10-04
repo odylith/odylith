@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+from copy import deepcopy
 import hashlib
 import json
 from typing import Any
@@ -29,7 +30,7 @@ from odylith.runtime.domain_intelligence.greenfield_event_ordering import valida
 from odylith.runtime.governance.artifact_tribunal import _bind_verified_source_custody
 
 AUTHORED_SEMANTICS_KEY = "authored_semantics"
-AUTHORED_SEMANTICS_VERSION = "odylith.greenfield.authored-semantics.v16"
+AUTHORED_SEMANTICS_VERSION = "odylith.greenfield.authored-semantics.v18"
 AUTHORED_RELATION_SET_SHA256_KEY = "authored_relation_set_sha256"
 AUTHORED_PROJECTION_ORIGIN = "model_authored_typed_intent"
 AUTHORED_SEMANTIC_ROOT = f"intent.{AUTHORED_SEMANTICS_KEY}"
@@ -164,6 +165,7 @@ def authored_semantics_mapping(
     first_path_context_relations: Sequence[Mapping[str, Any]] = (),
     source_precedence: Sequence[Mapping[str, Any]] = (),
     provisional_design: Mapping[str, Any],
+    source_duty: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Serialize source relations and tagged design without replacing source facts."""
 
@@ -177,6 +179,7 @@ def authored_semantics_mapping(
             dict(row) for row in component_responsibility_relations
         ],
         "source_precedence": [dict(row) for row in source_precedence],
+        "source_duty": deepcopy(dict(source_duty)) if source_duty is not None else None,
         "provisional_design": validate_provisional_design(
             provisional_design, event_orders=tuple(row["order"] for row in relations),
             source_precedence=source_precedence,
@@ -369,6 +372,7 @@ def require_authored_relation_source_custody(
     context_relations: Sequence[Mapping[str, Any]],
     source_bytes: bytes,
     source_spans: Sequence[Mapping[str, Any]],
+    source_duty: Mapping[str, Any] | None = None,
 ) -> None:
     """Bind sealed event projections to their exact selected source segments."""
 
@@ -388,6 +392,7 @@ def require_authored_relation_source_custody(
     projection_cursor = 0
     for expected_row, span in enumerate(path_spans, start=1):
         text = str(span.get("text") or "")
+        projected_text = str(span.get("projection_text") or text)
         projection_start = span.get("projection_start_byte")
         projection_end = span.get("projection_end_byte")
         if (
@@ -396,14 +401,66 @@ def require_authored_relation_source_custody(
             or projection_start != projection_cursor
             or not isinstance(projection_end, int)
             or isinstance(projection_end, bool)
-            or projection_end != projection_start + len(text.encode("utf-8"))
+            or projection_end != projection_start + len(projected_text.encode("utf-8"))
         ):
             raise GreenfieldAuthoredSemanticsError(
                 "model-authored Product Intent first-path segment projection custody is malformed"
             )
         projection_cursor = projection_end + 1
 
-    covered_rows: set[int] = set()
+    supporting_spans = sorted(
+        (
+            span for span in source_spans
+            if span.get("classification") == "product_claim"
+            and span.get("section_key") == "supporting_events"
+        ),
+        key=lambda span: int(span.get("row_index") or 0),
+    )
+    for expected_row, span in enumerate(supporting_spans, start=1):
+        text = str(span.get("text") or "")
+        projected_text = str(span.get("projection_text") or text)
+        if (
+            span.get("row_index") != expected_row
+            or span.get("projection_path") != f"/supporting_events/{expected_row - 1}"
+            or span.get("projection_start_byte") != 0
+            or span.get("projection_end_byte") != len(projected_text.encode("utf-8"))
+        ):
+            raise GreenfieldAuthoredSemanticsError(
+                "model-authored Product Intent supporting-event projection custody is malformed"
+            )
+
+    event_spans = (*path_spans, *supporting_spans)
+    bound_spans: dict[int, Mapping[str, Any]] = {}
+    if source_duty is not None:
+        binding = source_duty.get("binding")
+        if not isinstance(binding, Mapping):
+            raise GreenfieldAuthoredSemanticsError("Greenfield source-duty event binding is malformed")
+        path_row = supporting_row = 0
+        orders: list[tuple[int, str]] = []
+        for section in ("first_path_actions", "supporting_human_actions", "system_duties"):
+            rows = binding.get(section)
+            if not isinstance(rows, Sequence) or isinstance(rows, (str, bytes, bytearray)):
+                raise GreenfieldAuthoredSemanticsError("Greenfield source-duty event binding is malformed")
+            for row in rows:
+                if not isinstance(row, Mapping) or type(row.get("event_order")) is not int:
+                    raise GreenfieldAuthoredSemanticsError("Greenfield source-duty event binding is malformed")
+                orders.append((row["event_order"], section))
+        for order, section in sorted(orders):
+            if order in bound_spans:
+                raise GreenfieldAuthoredSemanticsError("Greenfield source-duty event binding is malformed")
+            if section == "first_path_actions":
+                path_row += 1
+                if path_row > len(path_spans):
+                    raise GreenfieldAuthoredSemanticsError("Greenfield source-duty event binding is malformed")
+                bound_spans[order] = path_spans[path_row - 1]
+            else:
+                supporting_row += 1
+                if supporting_row > len(supporting_spans):
+                    raise GreenfieldAuthoredSemanticsError("Greenfield source-duty event binding is malformed")
+                bound_spans[order] = supporting_spans[supporting_row - 1]
+        if path_row != len(path_spans) or supporting_row != len(supporting_spans):
+            raise GreenfieldAuthoredSemanticsError("Greenfield source-duty event binding is malformed")
+    covered_rows: set[tuple[str, int]] = set()
     for relation in relations:
         source_start = relation.get("source_start_byte")
         source_end = relation.get("source_end_byte")
@@ -416,35 +473,49 @@ def require_authored_relation_source_custody(
             )
         matching_segments = [
             span
-            for span in path_spans
+            for span in event_spans
+            if (not bound_spans or span is bound_spans.get(relation.get("order")))
             if isinstance(event_start, int)
             and not isinstance(event_start, bool)
             and isinstance(event_end, int)
             and not isinstance(event_end, bool)
             and span["projection_start_byte"] <= event_start
             and event_end <= span["projection_end_byte"]
+            and span.get("source_start_byte") <= source_start
+            and source_end <= span.get("source_end_byte")
         ]
         if len(matching_segments) != 1:
             raise GreenfieldAuthoredSemanticsError(
-                "model-authored Product Intent relation projection is not owned by one selected source segment"
+                "model-authored Product Intent relation source custody does not match one selected event segment"
             )
         segment = matching_segments[0]
         local_start = event_start - int(segment["projection_start_byte"])
-        expected_source_start = int(segment["source_start_byte"]) + local_start
+        normalized = segment.get("entailment_relationship") == "verified_source_action"
+        expected_source_start = (
+            int(segment["source_start_byte"])
+            if normalized else int(segment["source_start_byte"]) + local_start
+        )
         quote_bytes = quote.encode("utf-8")
         if (
             not quote
+            or (normalized and quote != segment.get("projection_text"))
             or source_start != expected_source_start
-            or source_end != expected_source_start + len(quote_bytes)
-            or source_bytes[source_start:source_end] != quote_bytes
+            or source_end != expected_source_start + len(
+                str(segment["text"]).encode("utf-8") if normalized else quote_bytes
+            )
+            or source_bytes[source_start:source_end] != (
+                str(segment["text"]).encode("utf-8") if normalized else quote_bytes
+            )
         ):
             raise GreenfieldAuthoredSemanticsError(
                 "model-authored Product Intent relation source custody does not match the exact envelope source"
             )
-        covered_rows.add(int(segment["row_index"]))
-    if covered_rows != set(range(1, len(path_spans) + 1)):
+        covered_rows.add((str(segment["section_key"]), int(segment["row_index"])))
+    if covered_rows != {
+        (str(span["section_key"]), int(span["row_index"])) for span in event_spans
+    }:
         raise GreenfieldAuthoredSemanticsError(
-            "model-authored Product Intent left a selected first-path segment without event custody"
+            "model-authored Product Intent left a selected event segment without event custody"
         )
 
     span_identity = {
@@ -523,6 +594,7 @@ def _authored_relations_from_intent(
             "first_path_context_relations",
             "component_responsibility_relations",
             "source_precedence",
+            "source_duty",
             "provisional_design",
         }
     ):
@@ -540,6 +612,23 @@ def _authored_relations_from_intent(
     has_provisional_proof = bool(
         provisional_proof_assumption(intent.get("assumptions", []))
     )
+    source_duty = semantics.get("source_duty")
+    selected_orders: tuple[int, ...] | None = None
+    if source_duty is not None:
+        if not isinstance(source_duty, Mapping) or not isinstance(source_duty.get("binding"), Mapping):
+            raise GreenfieldAuthoredSemanticsError("Greenfield source-duty custody is malformed")
+        bindings = source_duty["binding"].get("first_path_actions")
+        if not isinstance(bindings, Sequence) or isinstance(bindings, (str, bytes, bytearray)):
+            raise GreenfieldAuthoredSemanticsError("Greenfield source-duty custody is malformed")
+        bound_orders = tuple(row.get("event_order") for row in bindings if isinstance(row, Mapping))
+        if (
+            len(bound_orders) != len(bindings)
+            or any(type(order) is not int for order in bound_orders)
+        ):
+            raise GreenfieldAuthoredSemanticsError("Greenfield source-duty custody is malformed")
+        selected_orders = tuple(dict.fromkeys(bound_orders))
+    elif intent_text_rows(intent.get("supporting_events")):
+        raise GreenfieldAuthoredSemanticsError("Greenfield supporting events lack source-duty custody")
     first_path_relations = validate_first_path_relations(
         relations,
         first_path=str(intent.get("first_path") or ""),
@@ -549,6 +638,8 @@ def _authored_relations_from_intent(
         product_title=str(intent.get("title") or ""),
         terminal_result_facts=intent_terminal_result_values(intent),
         require_visible_result=not has_provisional_proof,
+        intent=intent,
+        first_path_event_orders=selected_orders,
     )
     if has_provisional_proof and any(
         row["visible_result_quote"] for row in first_path_relations
@@ -585,13 +676,21 @@ def _authored_relations_from_intent(
                 None,
             ),
         )
+        if selected_orders is not None:
+            proposed_orders = semantics["provisional_design"]["first_run"]["event_orders"]
+            if len(proposed_orders) != len(selected_orders) or set(proposed_orders) != set(selected_orders):
+                raise ValueError("Greenfield first run does not match source first-path duties")
     except ValueError as exc:
         raise GreenfieldAuthoredSemanticsError(str(exc)) from exc
     return first_path_relations, context_relations, component_relations
 
 
 def first_path_relations_from_intent(intent: Mapping[str, Any] | None) -> tuple[dict[str, Any], ...]:
-    """Return first-path relations only after validating all authored relations."""
+    """Return the complete typed event inventory after validating source roles.
+
+    The historical field name also contains supporting events. Consumers that
+    render the first run must select the source-duty binding's event orders.
+    """
 
     relations, _context_relations, _component_relations = _authored_relations_from_intent(intent)
     return relations
@@ -729,6 +828,7 @@ def authored_relation_set_sha256(
     first_path_context_relations: Sequence[Mapping[str, Any]] = (),
     source_precedence: Sequence[Mapping[str, Any]] = (),
     provisional_design: Mapping[str, Any] | None = None,
+    source_duty: Mapping[str, Any] | None = None,
 ) -> str:
     """Bind source relations and provisional design in one semantic custody hash."""
 
@@ -760,8 +860,13 @@ def authored_relation_set_sha256(
         if not isinstance(row, Mapping) or set(row) != {"before_event", "after_event", "constraint_index"}:
             raise GreenfieldAuthoredSemanticsError("Greenfield source precedence custody is malformed")
         precedence_payload.append(dict(row))
-    if not first_path_payload and (component_payload or context_payload or precedence_payload or provisional_design is not None):
+    if not first_path_payload and (component_payload or context_payload or precedence_payload or provisional_design is not None or source_duty is not None):
         raise GreenfieldAuthoredSemanticsError("Greenfield authored design requires source relations")
+    if source_duty is not None and (
+        not isinstance(source_duty, Mapping)
+        or set(source_duty) != {"ledger_receipt", "binding", "lifecycle"}
+    ):
+        raise GreenfieldAuthoredSemanticsError("Greenfield source-duty custody is malformed")
     design_payload = validate_provisional_design(
         provisional_design, event_orders=tuple(row["order"] for row in first_path_payload),
         source_precedence=precedence_payload,
@@ -774,6 +879,7 @@ def authored_relation_set_sha256(
             "first_path_context_relations": context_payload,
             "component_responsibility_relations": component_payload,
             "source_precedence": precedence_payload,
+            "source_duty": deepcopy(dict(source_duty)) if source_duty is not None else None,
             "provisional_design": design_payload,
         },
         ensure_ascii=True,
@@ -822,6 +928,7 @@ def require_relation_authority_parity(
         component_relations,
         first_path_context_relations=context_relations,
         source_precedence=intent[AUTHORED_SEMANTICS_KEY]["source_precedence"],
+        source_duty=intent[AUTHORED_SEMANTICS_KEY]["source_duty"],
         provisional_design=intent[AUTHORED_SEMANTICS_KEY]["provisional_design"],
     )
     if sealed_digest != expected:
@@ -850,6 +957,7 @@ def authored_source_custody(
             component_relations,
             first_path_context_relations=context_relations,
             source_precedence=intent[AUTHORED_SEMANTICS_KEY]["source_precedence"],
+            source_duty=intent[AUTHORED_SEMANTICS_KEY]["source_duty"],
             provisional_design=intent[AUTHORED_SEMANTICS_KEY]["provisional_design"],
         ),
     )

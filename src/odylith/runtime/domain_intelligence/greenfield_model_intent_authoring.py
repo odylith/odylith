@@ -60,6 +60,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
     get_greenfield_model_profile,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_source_citations import (
+    canonical_citation_from_host_selection,
     exact_occurrence_start,
     exact_quote,
     resolve_source_citation,
@@ -73,8 +74,11 @@ from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
     PROVISIONAL_DESIGN_SCHEMA,
     validate_provisional_design,
 )
+from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
+    verify_greenfield_source_duty_ledger_receipt,
+)
 
-GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v77"
+GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v79"
 MATERIALITY_DECISION_CONTRACT = (
     "Ask only when a missing or conflicting choice materially changes the target "
     "user, usable path, visible outcome, product/dependency boundary, source constraint, "
@@ -103,6 +107,7 @@ _TEXT_FIELDS = (
     "product_view",
 )
 _LIST_FIELDS = (
+    "supporting_events",
     "success_metrics",
     "evidence_requirements",
     "operational_constraints",
@@ -131,6 +136,7 @@ _SOURCE_FACT_FIELDS = tuple(
     for field in _INTENT_FIELDS
     if field not in {"assumptions", "ambiguities", "component_responsibilities"}
 )
+_OPTIONAL_SOURCE_FACT_FIELDS = frozenset({"supporting_events"})
 _SOURCE_REQUIRED_FIELDS = frozenset(
     (*_SOURCE_FACT_FIELDS, "component_responsibilities")
 )
@@ -200,6 +206,9 @@ def validate_greenfield_authoring_response(
     allow_zero_semantic_calls: bool = False,
     event_citations_are_event_owned: bool = False,
     allow_exact_dual_role_constraints: bool = False,
+    first_path_event_orders: Sequence[int] | None = None,
+    accepted_source_duties: Mapping[str, Any] | None = None,
+    accepted_source_duty_binding: Mapping[str, Any] | None = None,
 ) -> GreenfieldModelAuthoredIntent | GreenfieldAuthoringClarification:
     minimum_call_count = 0 if allow_zero_semantic_calls else 1
     if type(semantic_model_call_count) is not int or semantic_model_call_count < minimum_call_count:
@@ -263,6 +272,11 @@ def validate_greenfield_authoring_response(
             "Greenfield authoring omitted the ambiguity raised by conflicting evidence; no records were created."
         )
     try:
+        normalized_actions = _accepted_source_actions(
+            accepted_source_duties,
+            accepted_source_duty_binding,
+            evidence_text=evidence_text,
+        )
         component_rows = model_component_responsibility_rows(
             result.get("components")
         )
@@ -272,6 +286,7 @@ def validate_greenfield_authoring_response(
             evidence_text=evidence_text,
             assumptions=result.get("assumptions"),
             ambiguities=result.get("ambiguities"),
+            normalized_actions=normalized_actions,
         )
         terminal = result.get("terminal")
         has_provisional_proof = bool(
@@ -290,6 +305,7 @@ def validate_greenfield_authoring_response(
             evidence_text=evidence_text,
             event_citations_are_event_owned=event_citations_are_event_owned,
             allow_exact_dual_role_constraints=allow_exact_dual_role_constraints,
+            first_path_event_orders=first_path_event_orders,
         )
         authored_component_relation_facts(
             title=str(intent.get("title") or ""),
@@ -446,6 +462,56 @@ def _validated_consistency_assessment(
     return status, tuple(spans)
 
 
+def _accepted_source_actions(
+    receipt: Mapping[str, Any] | None,
+    binding: Mapping[str, Any] | None,
+    *,
+    evidence_text: str,
+) -> dict[tuple[str, int], dict[str, Any]]:
+    if receipt is None and binding is None:
+        return {}
+    if receipt is None or binding is None:
+        raise GreenfieldModelAuthoringError(
+            "Greenfield verified source actions require their event binding"
+        )
+    verified = verify_greenfield_source_duty_ledger_receipt(
+        receipt, evidence_text=evidence_text
+    )
+    ledger = verified["ledger"]
+    by_order: dict[int, dict[str, Any]] = {}
+    path_orders: set[int] = set()
+    for section in ("first_path_actions", "supporting_human_actions", "system_duties"):
+        source_rows = ledger[section]
+        binding_rows = binding.get(section)
+        if not isinstance(binding_rows, list) or len(binding_rows) != len(source_rows):
+            raise GreenfieldModelAuthoringError("Greenfield source action binding is malformed")
+        for duty, bound in zip(source_rows, binding_rows, strict=True):
+            if not isinstance(bound, Mapping) or bound.get("duty_id") != duty["id"]:
+                raise GreenfieldModelAuthoringError("Greenfield source action binding is malformed")
+            order = bound.get("event_order")
+            if type(order) is not int or order < 1 or order in by_order:
+                raise GreenfieldModelAuthoringError("Greenfield source action binding is malformed")
+            by_order[order] = dict(duty)
+            if section == "first_path_actions":
+                path_orders.add(order)
+    if not by_order or set(by_order) != set(range(1, len(by_order) + 1)):
+        raise GreenfieldModelAuthoringError("Greenfield source action binding is incomplete")
+    result: dict[tuple[str, int], dict[str, Any]] = {}
+    path_row = supporting_row = 0
+    for order in sorted(by_order):
+        if order in path_orders:
+            path_row += 1
+            key = ("first_path", path_row)
+        else:
+            supporting_row += 1
+            key = ("supporting_events", supporting_row)
+        result[key] = {
+            **by_order[order],
+            "decision_set_sha256": verified["decision_set_sha256"],
+        }
+    return result
+
+
 def _intent_from_typed_source_spans(
     value: Any,
     *,
@@ -453,6 +519,7 @@ def _intent_from_typed_source_spans(
     evidence_text: str,
     assumptions: Any,
     ambiguities: Any,
+    normalized_actions: Mapping[tuple[str, int], Mapping[str, Any]],
 ) -> tuple[dict[str, Any], tuple[dict[str, Any], ...], tuple[dict[str, Any], ...]]:
     """Compile canonical facts from exact quotes and their source occurrences.
 
@@ -461,7 +528,9 @@ def _intent_from_typed_source_spans(
     the projected semantic quote or borrowing the prefix's meaning.
     """
 
-    if not isinstance(value, Mapping) or set(value) != set(_SOURCE_FACT_FIELDS):
+    if not isinstance(value, Mapping) or (
+        set(value) - _OPTIONAL_SOURCE_FACT_FIELDS
+    ) != (set(_SOURCE_FACT_FIELDS) - _OPTIONAL_SOURCE_FACT_FIELDS):
         raise GreenfieldModelAuthoringError("Greenfield authoring returned invalid source citations; no records were created.")
     typed_citations: list[tuple[str, int, Mapping[str, Any]]] = []
     for source_field in _SOURCE_FACT_FIELDS:
@@ -513,8 +582,24 @@ def _intent_from_typed_source_spans(
         )
         quoted_bytes = quote.encode("utf-8")
         end = start + len(quoted_bytes)
+        action = normalized_actions.get((source_field, source_field_row))
+        display_quote = quote
+        if action is not None:
+            event_quote, event_start = resolve_source_citation(
+                evidence,
+                canonical_citation_from_host_selection(evidence, action["event_ref"]),
+            )
+            if quote != event_quote or start != event_start:
+                raise GreenfieldModelAuthoringError(
+                    "Greenfield verified action differs from its selected source citation"
+                )
+            display_quote = str(action["statement"])
+            if not display_quote or len(display_quote) > MAX_AUTHORED_FIELD_VALUE_CHARS:
+                raise GreenfieldModelAuthoringError(
+                    "Greenfield verified action statement is invalid"
+                )
         key = (source_field, start, end)
-        if key in seen and source_field != "operational_constraints":
+        if action is None and key in seen and source_field != "operational_constraints":
             # Duplicate collapse must not renumber model-authored references.
             seen[key]["source_field_rows"].append(source_field_row)
             continue
@@ -527,21 +612,21 @@ def _intent_from_typed_source_spans(
                     "Greenfield authoring exceeded the declared intent size; no records were created."
                 )
             projection_start = len(existing_path.encode("utf-8")) + (1 if existing_path else 0)
-            composed = f"{existing_path}\n{quote}" if existing_path else quote
+            composed = f"{existing_path}\n{display_quote}" if existing_path else display_quote
             if len(composed) > MAX_AUTHORED_FIELD_VALUE_CHARS:
                 raise GreenfieldModelAuthoringError(
                     "Greenfield authoring exceeded the declared intent size; no records were created."
                 )
             intent[source_field] = composed
         elif source_field in _TEXT_FIELDS:
-            intent[source_field] = quote
+            intent[source_field] = display_quote
             row_index = sum(1 for span in spans if span["section_key"] == source_field) + 1
         else:
             rows = intent[source_field]
             assert isinstance(rows, list)
             if len(rows) >= MAX_AUTHORED_LIST_ITEMS:
                 raise GreenfieldModelAuthoringError("Greenfield authoring exceeded the declared intent size; no records were created.")
-            rows.append(quote)
+            rows.append(display_quote)
             row_index = len(rows)
         projection_path = (
             f"/{source_field}" if source_field in _TEXT_FIELDS else f"/{source_field}/{row_index - 1}"
@@ -551,12 +636,20 @@ def _intent_from_typed_source_spans(
                 "fact_index": citation_index,
                 "field": source_field,
                 "source_field_rows": [source_field_row],
-                "quote": quote,
+                "quote": display_quote,
+                **({"source_quote": quote} if action is not None else {}),
                 "source_start_byte": start,
                 "source_end_byte": end,
                 "projection_path": projection_path,
                 "projection_start_byte": projection_start,
-                "projection_end_byte": projection_start + len(quoted_bytes),
+                "projection_end_byte": projection_start + len(display_quote.encode("utf-8")),
+                **({
+                    "entailment_relationship": "verified_source_action",
+                    "source_duty_id": action["id"],
+                    "decision_set_sha256": action["decision_set_sha256"],
+                    "verified_action": action["action"],
+                    "verified_target": action["target"],
+                } if action is not None else {}),
             }
         )
         seen[key] = selected_facts[-1]
@@ -571,8 +664,16 @@ def _intent_from_typed_source_spans(
                 "source_end_byte": end,
                 "projection_path": projection_path,
                 "projection_start_byte": projection_start,
-                "projection_end_byte": projection_start + len(quoted_bytes),
+                "projection_end_byte": projection_start + len(display_quote.encode("utf-8")),
                 "quote_sha256": hashlib.sha256(quoted_bytes).hexdigest(),
+                **({
+                    "entailment_relationship": "verified_source_action",
+                    "source_duty_id": action["id"],
+                    "decision_set_sha256": action["decision_set_sha256"],
+                    "projection_text": display_quote,
+                    "verified_action": action["action"],
+                    "verified_target": action["target"],
+                } if action is not None else {}),
             }
         )
     if not intent["title"] or not intent["first_path"]:
@@ -655,7 +756,7 @@ _STATE_CITATION_SCHEMA: dict[str, Any] = {
 _TYPED_FACTS_SCHEMA: dict[str, Any] = {
     "type": "object",
     "additionalProperties": False,
-    "required": list(_SOURCE_FACT_FIELDS),
+    "required": [field for field in _SOURCE_FACT_FIELDS if field not in _OPTIONAL_SOURCE_FACT_FIELDS],
     "properties": {
         **{
             field: {"anyOf": [_CITATION_SCHEMA, {"type": "null"}]}

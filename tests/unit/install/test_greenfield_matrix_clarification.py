@@ -12,17 +12,31 @@ from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_ARGUMENT_COUNT
 from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_SHAPE_SHA256
 from greenfield_matrix_host_candidate import HOST_NATIVE_MATRIX_OBSERVATION_VERSION
 from greenfield_model_profiles import STANDARD_PROFILE_ID
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    get_greenfield_model_profile,
+)
 
 
 SOURCE = "Build a useful product."
 
 
 def _stage() -> dict[str, object]:
+    profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
     return {
         "version": HOST_NATIVE_MATRIX_OBSERVATION_VERSION,
         "response_kind": "clarification_required",
         "proposal_mode": "clarification_required",
         "source_sha256": hashlib.sha256(SOURCE.encode()).hexdigest(),
+        "model_window_seconds": profile.model_timeout_seconds,
+        "operational_timeout_seconds": profile.operational_timeout_seconds,
+        "whole_journey_diagnostic_cap_seconds": 660.0,
+        "candidate_completion_reserve_seconds": 15.0,
+        "whole_journey_bound_status": "diagnostic_unqualified",
+        "whole_journey_elapsed_scope": "through_observer_return_before_final_snapshot_serialization",
+        "whole_journey_deadline_status": "within",
+        "elapsed_seconds": 1.0,
+        "proposal_phase_elapsed_seconds": 1.0,
+        "whole_journey_seconds": 1.0,
         "host_invocations": 1,
         "authority_gate_host_invocations": 1,
         "candidate_host_invocations": 0,

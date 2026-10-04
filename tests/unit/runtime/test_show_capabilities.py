@@ -629,12 +629,10 @@ def test_managed_guidance_exempts_show_me_from_intervention_proof() -> None:
     assert "Odylith, help" in block
     assert "CLI help fast path" in block
     assert "Odylith, show me what you can do" in block
-    assert "advisory `odylith show` repo-capability demo" in block
-    assert "not a request to prove intervention UX" in block
-    assert "run `doctor`" in block
-    assert "explain missing launcher state" in block
-    assert "build a sample application" in block
-    assert "If Odylith is not installed in the current folder" in block
+    assert "print only stdout from the first available `odylith show` command" in block
+    assert "It is advisory; do not substitute intervention or install diagnostics" in block
+    assert "a launcher report, or a sample app" in block
+    assert "If Odylith is absent, say so" in block
     assert "print stdout only" in block
 
 

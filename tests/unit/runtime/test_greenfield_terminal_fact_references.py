@@ -26,7 +26,7 @@ def _compiled(proof: str, *, metrics: list[str] | None = None):
         ]
     intent, spans, facts = _intent_from_typed_source_spans(
         response["facts"], component_rows=(), evidence_text=source,
-        assumptions=[], ambiguities=[],
+        assumptions=[], ambiguities=[], normalized_actions={},
     )
     return source, intent, spans, facts
 
@@ -124,7 +124,7 @@ def test_identical_text_at_distinct_source_locations_is_not_collapsed() -> None:
     ]
     _, spans, facts = _intent_from_typed_source_spans(
         response["facts"], component_rows=(), evidence_text=source,
-        assumptions=[], ambiguities=[],
+        assumptions=[], ambiguities=[], normalized_actions={},
     )
     result = _terminal_result_fact(
         _terminal(field="success_metrics", row=2), selected_facts=facts, evidence_text=source,

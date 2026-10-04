@@ -139,6 +139,7 @@ def build_authored_greenfield_proposal(
         relations=first_run_relations,
         provisional_design=provisional_design,
         source_precedence=confirmed_intent[AUTHORED_SEMANTICS_KEY]["source_precedence"],
+        source_duty=confirmed_intent[AUTHORED_SEMANTICS_KEY]["source_duty"],
     )
     diagrams = build_authored_atlas_diagrams(
         title=title,
@@ -158,6 +159,7 @@ def build_authored_greenfield_proposal(
         diagram_roles=tuple(diagram_slugs),
         source_precedence=confirmed_intent[AUTHORED_SEMANTICS_KEY]["source_precedence"],
         operational_constraints=operational_constraints,
+        source_lifecycle=(confirmed_intent[AUTHORED_SEMANTICS_KEY]["source_duty"] or {}).get("lifecycle"),
     )
     intent = _intent_copy(confirmed_intent)
     intent.update(
@@ -445,7 +447,9 @@ def _semantic_model(
     relations: Sequence[Mapping[str, Any]],
     provisional_design: Mapping[str, Any],
     source_precedence: Sequence[Mapping[str, Any]],
+    source_duty: Mapping[str, Any] | None,
 ) -> dict[str, Any]:
+    lifecycle = source_duty.get("lifecycle") if isinstance(source_duty, Mapping) else None
     events = [
         {
             "index": index,
@@ -486,7 +490,7 @@ def _semantic_model(
         for row in backlog
     ]
     return {
-        "schema_version": "odylith.greenfield.semantic_model.v3",
+        "schema_version": "odylith.greenfield.semantic_model.v4",
         "first_path_contract": {
             "authority_kind": "provisional_design",
             "actor": _text(first_event.get("actor_fact_quote")),
@@ -515,9 +519,11 @@ def _semantic_model(
         "components": component_refs,
         "provisional_design": copy.deepcopy(provisional_design),
         "source_precedence": [dict(row) for row in source_precedence],
+        "source_lifecycle": copy.deepcopy(lifecycle),
         "workstreams": workstreams,
         "diagram_event_graph": {
             "events": events,
+            "state_transitions": copy.deepcopy(lifecycle["off_path_transitions"]) if isinstance(lifecycle, Mapping) else [],
             "component_sequence": [str(row.get("component_id") or "") for row in components],
             "proof_checkpoint": proof_boundary,
         },

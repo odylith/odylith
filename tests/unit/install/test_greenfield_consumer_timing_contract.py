@@ -33,7 +33,7 @@ INVALID_DURATIONS = [None, True, False, "1", "90", -1, float("nan"), float("inf"
 def _manifest(tier: str, elapsed: object = 1.0) -> dict:
     manifest = approved_authored_quality_manifest_fixture(
         requested_repair_tier=tier, repair_tier=tier,
-        target_seconds=dict(TIERS)[tier], operational_timeout_seconds=180.0,
+        target_seconds=dict(TIERS)[tier], operational_timeout_seconds=315.0,
         elapsed_seconds=elapsed,
     )
     receipt = manifest["model_authoring"]
@@ -58,7 +58,7 @@ def test_performance_target_boundary_is_advisory(tier, target, offset):
 @pytest.mark.parametrize("tier,target", TIERS)
 @pytest.mark.parametrize("overrun", [0.0, 0.001])
 def test_sealed_admission_and_release_scoring_reject_at_operational_timeout(tier, target, overrun):
-    elapsed = 180.0 + overrun
+    elapsed = 315.0 + overrun
     manifest = _manifest(tier, elapsed)
     with pytest.raises(ValueError, match="quality manifest is not approved"):
         transactions.require_product_create_transaction_quality_approved(manifest)
@@ -72,11 +72,11 @@ def test_expired_operational_timeout_stops_before_prewrite(monkeypatch, tier, ta
     with pytest.raises(engine.GreenfieldPreconfirmEngineError) as exc:
         engine.run_greenfield_preconfirm_engine(
             proposal={}, release_selector="", repair_tier=tier,
-            elapsed_before_start_seconds=180.0 + overrun, clock=lambda: 0.0,
+            elapsed_before_start_seconds=315.0 + overrun, clock=lambda: 0.0,
             build_prewrite=lambda *_: pytest.fail("expired ceiling reached prewrite"),
         )
     assert exc.value.manifest["target_seconds"] == target
-    assert exc.value.manifest["operational_timeout_seconds"] == 180.0
+    assert exc.value.manifest["operational_timeout_seconds"] == 315.0
     assert exc.value.manifest["stop_reason"] == "operational_timeout_exhausted"
 
 
@@ -140,7 +140,7 @@ def test_operational_timeout_does_not_relax_single_authority_binding(mutation):
     elif mutation == "runtime_call":
         receipt["runtime_semantic_model_call_count"] = 1
     elif mutation == "model_window":
-        receipt["effective_model_window_seconds"] = 165.001
+        receipt["effective_model_window_seconds"] = 300.001
     else:
         manifest["semantic_compiler"]["post_candidate_receipt_semantic_calls"] = 1
     with pytest.raises(ValueError, match="quality manifest is not approved"):
@@ -154,7 +154,7 @@ def test_help_distinguishes_performance_targets_from_operational_timeout(capsys,
     assert exc.value.code == 0
     text = " ".join(capsys.readouterr().out.split())
     assert "90s" in text and "120s" in text and "150s" in text
-    assert "Operational safety timeout: 180s" in text
+    assert "Operational safety timeout: 315s" in text
     assert "Normal-case target: 90s" in text and "advisory" in text
     assert "under-60s profile" not in text
 
@@ -228,7 +228,7 @@ def test_real_quality_verdict_reports_invalid_observation_without_raising(monkey
     assert verdict.scores["latency"] == 0
 
 
-@pytest.mark.parametrize("phase,ceiling", [("proposal", 180.0), ("commit-only create", 60.0)])
+@pytest.mark.parametrize("phase,ceiling", [("proposal", 315.0), ("commit-only create", 60.0)])
 @pytest.mark.parametrize("overrun", [0.0, 0.001])
 def test_real_quality_verdict_rejects_exact_or_exceeded_ceiling(monkeypatch, phase, ceiling, overrun):
     times = {"proposal_seconds" if phase == "proposal" else "create_seconds": ceiling + overrun}

@@ -343,9 +343,10 @@ def _profile_evidence(profile_id: str, *, clarification: bool = False) -> dict[s
         "profile_id": profile_id,
         "semantic_authority": "active_host_single_authority",
         "sealed_request_roles": (
-            ["authority_gate"] if clarification else ["authority_gate", "host_candidate"]
+            ["authority_gate"] if clarification else
+            ["authority_gate", "source_ledger", "source_duty_verifier", "host_candidate"]
         ),
-        "host_semantic_model_calls": 1 if clarification else 2,
+        "host_semantic_model_calls": 1 if clarification else 4,
         "runtime_semantic_model_calls_after_candidate_receipt": 0,
         "post_receipt_provider_invocations": 0,
         "stage_observation": _stage_observation(
@@ -360,6 +361,12 @@ def _profile_evidence(profile_id: str, *, clarification: bool = False) -> dict[s
 
 def _passing_matrix_result(module, *, manifest_summary: dict[str, object] | None = None) -> object:
     profile_id = module.model_profile_id_for_repair_tier("standard")
+    profile_evidence = _profile_evidence(profile_id)
+    stage = dict(profile_evidence["stage_observation"])
+    stage["elapsed_seconds"] = 18.0
+    stage["proposal_phase_elapsed_seconds"] = 18.0
+    stage["whole_journey_seconds"] = 48.0
+    profile_evidence["stage_observation"] = stage
     return module.GreenfieldMatrixResult(
         name="matrix case",
         status="passed",
@@ -375,12 +382,18 @@ def _passing_matrix_result(module, *, manifest_summary: dict[str, object] | None
                 "expectation": "transaction_committed",
                 "prompt_sha256": "a" * 64,
             },
-            "model_profile": _profile_evidence(profile_id),
+            "model_profile": profile_evidence,
         },
     )
 
 
 def _passing_profile_result(module, profile_id: str, proposal_seconds: float) -> object:
+    profile_evidence = _profile_evidence(profile_id)
+    stage = dict(profile_evidence["stage_observation"])
+    stage["elapsed_seconds"] = proposal_seconds
+    stage["proposal_phase_elapsed_seconds"] = proposal_seconds
+    stage["whole_journey_seconds"] = proposal_seconds + 30.0
+    profile_evidence["stage_observation"] = stage
     return replace(
         _passing_matrix_result(module),
         name=profile_id,
@@ -391,7 +404,7 @@ def _passing_profile_result(module, profile_id: str, proposal_seconds: float) ->
                 "expectation": "transaction_committed",
                 "prompt_sha256": "a" * 64,
             },
-            "model_profile": _profile_evidence(profile_id),
+            "model_profile": profile_evidence,
         },
     )
 
@@ -404,6 +417,12 @@ def _passing_clarification_profile_result(
     expected_field = "first_path"
     expected_question = "Who uses this product first, and what complete result do they see?"
     result = _passing_profile_result(module, profile_id, proposal_seconds)
+    profile_evidence = _profile_evidence(profile_id, clarification=True)
+    stage = dict(profile_evidence["stage_observation"])
+    stage["elapsed_seconds"] = proposal_seconds
+    stage["proposal_phase_elapsed_seconds"] = proposal_seconds
+    stage["whole_journey_seconds"] = proposal_seconds
+    profile_evidence["stage_observation"] = stage
     return replace(
         result,
         name=f"{profile_id}-clarification",
@@ -413,10 +432,7 @@ def _passing_clarification_profile_result(
         ),
         evidence={
             **dict(result.evidence or {}),
-            "model_profile": _profile_evidence(
-                profile_id,
-                clarification=True,
-            ),
+            "model_profile": profile_evidence,
             "case": {
                 "id": f"{profile_id}-clarification",
                 "expectation": "clarification_required",

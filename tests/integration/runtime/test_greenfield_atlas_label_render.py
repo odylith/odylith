@@ -9,7 +9,10 @@ from odylith.runtime.domain_intelligence.greenfield_authored_atlas_design_views 
     mermaid_label,
 )
 from odylith.runtime.surfaces.mermaid_worker_session import _MermaidWorkerSession
-from tests.unit.runtime.test_greenfield_authored_atlas_view import _authored_diagrams
+from tests.unit.runtime.test_greenfield_authored_atlas_view import (
+    _authored_diagrams,
+    _source_lifecycle,
+)
 
 
 _LABELS = (
@@ -98,4 +101,26 @@ def test_capability_support_groups_render_complete_local_relationships(tmp_path:
         f"L_component{index}_workstream{index}_acceptance"
         for index in range(1, 5)
     }
+    assert png.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
+
+
+def test_cited_passive_lifecycle_renders_trigger_and_both_field_effects(tmp_path: Path) -> None:
+    row = _authored_diagrams(source_lifecycle=_source_lifecycle())[-1]
+    mmd, svg, png = (tmp_path / f"lifecycle.{suffix}" for suffix in ("mmd", "svg", "png"))
+    mmd.write_text(row["mermaid_source"], encoding="utf-8")
+    with _MermaidWorkerSession(repo_root=Path(__file__).resolve().parents[3], cli_version="11.12.0") as worker:
+        worker.render_one(job={
+            "diagram_id": "lifecycle", "source_mmd": str(mmd),
+            "source_svg": str(svg), "source_png": str(png),
+        }, timeout_seconds=30)
+    root = ET.parse(svg).getroot()
+    labels = {
+        " ".join(" ".join(element.itertext()).split()) for element in root.iter()
+        if element.attrib.get("class") in {"nodeLabel", "edgeLabel"}
+    }
+    assert any("Withdrawal closes placement access and erases the cached placement" in label for label in labels)
+    assert "closed; check: access closed" in labels
+    assert "erased; check: cache empty" in labels
+    assert "changes access" in labels
+    assert "changes cache" in labels
     assert png.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")

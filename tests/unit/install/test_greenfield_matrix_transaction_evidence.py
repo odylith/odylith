@@ -117,6 +117,7 @@ def test_installed_matrix_preserves_show_propose_sealed_confirm_journey(
             repo_root=tmp_path, env={"ODYLITH_GREENFIELD_MODEL_PROFILE": profile.profile_id},
             repair_tier="auto", invoke_cli=invoke_cli,
             invoke_propose=lambda _timeout: _proposal(transaction_hash), raw_streams=raw,
+            read_proposal_stage_seconds=lambda: 0.001,
         )
         assert ["show" if "show" in command else command[2] for command in calls] == ["show", "decide", "decide"]
         assert execution.dry_run_receipt["transaction_hash"] == transaction_hash
@@ -128,6 +129,7 @@ def test_installed_matrix_preserves_show_propose_sealed_confirm_journey(
                 repo_root=tmp_path, env={"ODYLITH_GREENFIELD_MODEL_PROFILE": profile.profile_id},
                 repair_tier="auto", invoke_cli=invoke_cli,
                 invoke_propose=lambda _timeout: _proposal(transaction_hash), raw_streams=raw,
+                read_proposal_stage_seconds=lambda: 0.001,
             )
         assert len(calls) == 1
     assert "show.stdout" in raw and "show.stderr" in raw

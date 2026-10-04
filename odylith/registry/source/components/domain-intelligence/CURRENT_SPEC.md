@@ -1,8 +1,60 @@
 # Domain Intelligence
-Last updated: 2026-09-30
+Last updated: 2026-10-02
 
 
 ## Overview
+
+### Verified duty ownership and keyed judgments (2026-10-02)
+
+The unreleased v5 ledger owns normalized action meaning and first-path
+membership before candidate design. One source-only verifier sees the complete
+authority source plus compact material rows and citations once. It returns
+per-duty judgments in a closed keyed table and a source-completeness verdict.
+The compiler owns canonical judgment order, claim hashes, derived citation
+indexes, and receipt custody. It requires event, actor, and role support for
+every affirmative action. Candidate events bind accepted duty IDs and actor
+fact addresses; canonical shaping supplies action and target from the ledger.
+State-field relationship identity belongs to that same source inventory.
+Each transition effect must address one unique declared object/field pair;
+preflight rejects absent or duplicate identities before verifier dispatch.
+Inventory guidance requires canonical field-label reuse while distinct effect
+changes and observable checks preserve their complete meaning. Candidate
+binding and passive lifecycle projection use the same exact identity owner,
+without interpreting labels or inferring parent fields. Fresh public admission
+must prove this correction; v16's completed candidate was rejected and is not
+package qualification.
+Compact v3/host contract v46 moves citation-bank census to the compiler.
+Complete-source validation covers every bank entry, including unused ones;
+only unused storage is omitted. Material rows and canonical ledger v5 hash
+meaning remain intact. Missing/unknown/duplicate references and invalid used
+or unused citations still reject; no-source decoding cannot omit unused ones.
+
+Candidate authoring transport v1 uses that shared compact citation-bank view
+for the accepted inventory, with receipt custody hashes and the complete
+source request, candidate rules/schema, and admitted authority gate. The full
+verified receipt remains external for deterministic proposal admission.
+Completed-stage authoring schemas and verifier decisions are excluded from
+the candidate request. This changes representation only; material duty
+meaning, stage count, semantic ownership, and admission checks remain intact.
+Fresh complete-package qualification is still required under CB-324.
+
+The operator-approved longer bounded flow now declares standard profile v21
+under profile contract v25: proposal phase 315 seconds, shared gate/candidate
+model window 300, completion reserve 15. The controller still enforces the
+fixed 660-second diagnostic whole limit with non-additive phase maxima and
+candidate dispatch clamped to whole time remaining minus the reserve.
+Source inventory, verifier, and local check caps remain 300/120/30. It is one
+candidate call, with no retry, repair, new semantic stage, or model ladder.
+These revised bounds require a rebuilt distribution and fresh complete
+public packages; prior v20 timeout evidence receives no qualification credit.
+
+Verified action/target atomic claims retain the complete exact event as source
+support and exact normalized statement slices as projections. Direct graph and
+sealed envelope checks reject overridden meaning, source coordinates, and
+projection slices. Source lifecycle, passive transitions, guards, boundaries,
+and proof bindings continue through the existing transaction digest chain.
+CB-324 remains open: source-local custody tests and external feasibility do not
+qualify the complete public package, consumer timing, or release envelope.
 
 ### Greenfield committed-outcome handoff (2026-09-30)
 
@@ -1883,22 +1935,19 @@ semantic/design findings.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-09-30 · Decision:** Decision evidence linked this component to governed work with 2 verifiable artifact references.
+- **2026-10-02 · Implementation:** Implementation evidence linked this component to governed work with 4 verifiable artifact references.
+  - Evidence: `odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_source_duty_ledger.py`, `tests/unit/install/test_greenfield_driver_field_inventory_stop.py`
+- **2026-10-02 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py`
+- **2026-10-02 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
   - Evidence: `odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
-- **2026-09-30 · Decision:** Decision evidence linked this component to governed work with 2 verifiable artifact references.
-  - Evidence: `odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md`, `src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py`
-- **2026-09-29 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+- **2026-10-02 · Decision:** Decision evidence linked this component to governed work with 2 verifiable artifact references.
+  - Evidence: `odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
+- **2026-10-01 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
-- **2026-09-29 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
-- **2026-09-28 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `src/odylith/runtime/domain_intelligence/greenfield_constraint_custody.py`
-- **2026-09-28 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
+  - Evidence: `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_source_duty_entailment.py`
+- **2026-10-01 · Decision:** Decision evidence linked this component to governed work with 1 verifiable artifact reference.
+  - Evidence: `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
 <!-- registry-requirements:end -->
 
 ## Feature History

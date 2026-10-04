@@ -7,6 +7,8 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
     event_target_is_source_bound,
+    intent_text_at_path,
+    intent_text_rows,
 )
 
 
@@ -46,6 +48,8 @@ def validate_first_path_relations(
     product_title: str = "",
     terminal_result_facts: Sequence[str] = (),
     require_visible_result: bool = True,
+    intent: Mapping[str, Any] | None = None,
+    first_path_event_orders: Sequence[int] | None = None,
 ) -> tuple[dict[str, Any], ...]:
     """Return stable source-event identities, not an inferred execution order."""
 
@@ -72,13 +76,35 @@ def validate_first_path_relations(
     )
     rows: list[dict[str, Any]] = []
     path_bytes = path.encode("utf-8")
+    selected_orders = (
+        frozenset(first_path_event_orders)
+        if first_path_event_orders is not None else None
+    )
+    if selected_orders is not None and (
+        not selected_orders
+        or len(first_path_event_orders) != len(selected_orders)
+        or any(type(order) is not int or not 1 <= order <= len(value)
+               for order in selected_orders)
+        or intent is None
+    ):
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield first-path event role binding is malformed"
+        )
+    supporting_index = 0
     cursor = 0
     visible_seen = False
     seen_source_events: set[tuple[int, int]] = set()
-    seen_projection_events: set[tuple[int, int]] = set()
+    seen_projection_events: set[tuple[str, int, int]] = set()
     seen_typed_events: set[tuple[Any, ...]] = set()
     last_projection_event: tuple[int, int] | None = None
     for expected_order, raw in enumerate(value, start=1):
+        if selected_orders is None or expected_order in selected_orders:
+            projection_path = "/first_path"
+            event_path_bytes = path_bytes
+        else:
+            projection_path = f"/supporting_events/{supporting_index}"
+            supporting_index += 1
+            event_path_bytes = intent_text_at_path(intent, projection_path).encode("utf-8")
         if not isinstance(raw, Mapping) or set(raw) != FIRST_PATH_RELATION_FIELDS:
             raise GreenfieldAuthoredSemanticsError(
                 "Greenfield authoring returned invalid first-path relations"
@@ -120,15 +146,20 @@ def validate_first_path_relations(
             or not isinstance(event_end, int)
             or isinstance(event_end, bool)
             or (
+                projection_path == "/first_path" and
                 event_start < cursor
                 and (event_start, event_end) != last_projection_event
             )
             or event_end <= event_start
-            or event_end > len(path_bytes)
+            or event_end > len(event_path_bytes)
             or actor_kind not in FIRST_PATH_ACTOR_KINDS
             or not event_quote
             or _nonidentical_overlap(source_start, source_end, seen_source_events)
-            or _nonidentical_overlap(event_start, event_end, seen_projection_events)
+            or _nonidentical_overlap(
+                event_start, event_end,
+                {(start, end) for path_key, start, end in seen_projection_events
+                 if path_key == projection_path},
+            )
             or typed_event in seen_typed_events
             or not action_verb_quote
         ):
@@ -145,7 +176,7 @@ def validate_first_path_relations(
             owner_values=owner_values,
         )
         if (
-            path_bytes[event_start:event_end] != event_quote.encode("utf-8")
+            event_path_bytes[event_start:event_end] != event_quote.encode("utf-8")
             or action_verb_quote not in event_quote
         ):
             raise GreenfieldAuthoredSemanticsError(
@@ -171,10 +202,11 @@ def validate_first_path_relations(
                 )
             visible_seen = True
         seen_source_events.add((source_start, source_end))
-        seen_projection_events.add((event_start, event_end))
+        seen_projection_events.add((projection_path, event_start, event_end))
         seen_typed_events.add(typed_event)
-        last_projection_event = (event_start, event_end)
-        cursor = max(cursor, event_end)
+        if projection_path == "/first_path":
+            last_projection_event = (event_start, event_end)
+            cursor = max(cursor, event_end)
         rows.append(
             {
                 "order": order,
@@ -196,6 +228,10 @@ def validate_first_path_relations(
     if require_visible_result and not visible_seen:
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authoring did not type a path with a visible result"
+        )
+    if selected_orders is not None and supporting_index != len(intent_text_rows(intent.get("supporting_events"))):
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield supporting events do not match source role bindings"
         )
     return tuple(rows)
 

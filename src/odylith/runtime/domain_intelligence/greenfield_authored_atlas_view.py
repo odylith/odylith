@@ -61,6 +61,7 @@ def build_authored_atlas_diagrams(
     source_precedence: Sequence[Mapping[str, Any]] = (),
     operational_constraints: Sequence[str] = (),
     proof_is_provisional: bool = False,
+    source_lifecycle: Mapping[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     """Project source facts and one separately authoritative provisional design."""
 
@@ -84,6 +85,10 @@ def build_authored_atlas_diagrams(
         for row in components
     ]
     backlog_titles = _workstream_titles(backlog)
+    first_run_orders = set(provisional_design["first_run"]["event_orders"])
+    first_run_relations = [
+        relation for relation in relations if relation["order"] in first_run_orders
+    ]
 
     context_source, context_boxes = _context_view(
         title=title,
@@ -91,7 +96,7 @@ def build_authored_atlas_diagrams(
         actors=human_actors,
         externals=external_systems,
         components=components,
-        relations=relations,
+        relations=first_run_relations,
     )
     design_specs = build_provisional_design_atlas_specs(
         provisional_design=provisional_design,
@@ -102,6 +107,7 @@ def build_authored_atlas_diagrams(
         proof_is_provisional=proof_is_provisional,
         non_goals=non_goals,
         source_precedence=source_precedence,
+        source_lifecycle=source_lifecycle,
     )
     sequence_source, sequence_boxes = _sequence_view(
         relations,
@@ -120,8 +126,8 @@ def build_authored_atlas_diagrams(
             ),
             "read_guide": (
                 "People are source-stated participants, not necessarily product users. "
-                "Each performing person, product system, or external system connects to its "
-                "own exact events. Human and external-system action groups connect to the candidate "
+                "First-run performers connect to their selected source events. Other named "
+                "participants remain context only. Human and external-system action groups connect to the candidate "
                 "product through a non-owning first-path interaction boundary; dotted participant-context "
                 "links assign no action. The first-run view shows "
                 "one proposed walkthrough, not source-list chronology. Registry links identify proposed "
@@ -496,7 +502,11 @@ def _sequence_view(
     lines = ["flowchart LR"]
     boxes: list[dict[str, str]] = []
     performers: dict[tuple[str, str], str] = {}
+    orders = design["first_run"]["event_orders"]
+    selected = set(orders)
     for relation in relations:
+        if relation["order"] not in selected:
+            continue
         index = relation["order"]
         event_quote = _required_string(relation.get("event_quote"), "first-path event quote")
         actor_kind = _required_string(relation.get("actor_kind"), "first-path actor kind")
@@ -544,18 +554,24 @@ def _sequence_view(
                     )
                 )
             lines.append(f'  {performers[owner_identity]} -->|"owns event state"| event{index}')
-    required = {(row["before_event"], row["after_event"]): row["constraint_index"] for row in source_precedence}
+    required = {
+        (row["before_event"], row["after_event"]): row["constraint_index"]
+        for row in source_precedence
+        if row["before_event"] in selected and row["after_event"] in selected
+    }
     for (before, after), constraint_index in required.items():
         lines.append(f'  event{before} -->|"source constraint {constraint_index}"| event{after}')
-    orders = design["first_run"]["event_orders"]
     for before, after in zip(orders, orders[1:]):
         if (before, after) not in required:
             lines.append(f'  event{before} -. "proposed next step" .-> event{after}')
     component_nodes = {
         component["key"]: f"proposed_component{index}"
         for index, component in enumerate(design["components"], start=1)
+        if selected.intersection(component["supported_event_orders"])
     }
     for component in design["components"]:
+        if component["key"] not in component_nodes:
+            continue
         node_id = component_nodes[component["key"]]
         lines.append(
             f'  {node_id}["Proposed stage<br/>{_mermaid_label(component["name"])}"]'
@@ -569,8 +585,11 @@ def _sequence_view(
             )
         )
         for order in component["supported_event_orders"]:
-            lines.append(f'  event{order} -. "proposed support" .-> {node_id}')
+            if order in selected:
+                lines.append(f'  event{order} -. "proposed support" .-> {node_id}')
     for exchange in design["exchanges"]:
+        if exchange["from_component"] not in component_nodes or exchange["to_component"] not in component_nodes:
+            continue
         lines.append(
             f'  {component_nodes[exchange["from_component"]]} '
             f'-->|"Proposed exchange: {_mermaid_label(exchange["contract"])}"| '

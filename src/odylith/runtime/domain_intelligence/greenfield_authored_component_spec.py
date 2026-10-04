@@ -242,6 +242,44 @@ def build_authored_component_spec(row: Mapping[str, Any]) -> str:
             f"- Source relation: `{reference}`", f"- Source actor kind: `{event['actor_kind']}`", "",
             _evidence_block(event["event_quote"]), "",
         ])
+    if contract["source_lifecycle_transitions"]:
+        lines.extend([
+            "## Source state lifecycle", "",
+            "These source-governed changes are outside the proposed first run.", "",
+        ])
+        for transition in contract["source_lifecycle_transitions"]:
+            lines.extend([
+                f"### {transition['governed_object']} — {transition['trigger']}", "",
+                f"- Source duty: `{transition['duty_id']}`", "",
+            ])
+            for effect in transition["effects"]:
+                lines.extend([
+                    f"- {effect['field']}: {effect['change']} "
+                    f"(observable check: {effect['observable_check']})",
+                ])
+            lines.append("")
+            for citation in transition["source_refs"]:
+                lines.extend([
+                    f"Source citation (occurrence {citation['occurrence']}):", "",
+                    _evidence_block(citation["quote"]), "",
+                ])
+    for role, title, fields in (
+        ("conditional_guards", "Source conditional guards", ("trigger", "protected_action", "rule")),
+        ("boundaries", "Source boundaries", ("kind", "rule")),
+        ("proof_duties", "Source proof duties", ("dossier_or_artifact", "must_show")),
+    ):
+        duties = contract[f"source_{role}"]
+        if duties:
+            lines.extend([f"## {title}", ""])
+        for duty in duties:
+            lines.extend([f"### {duty['duty_id']}", ""])
+            lines.extend([f"- {field.replace('_', ' ').capitalize()}: {duty[field]}" for field in fields])
+            lines.append("")
+            for citation in duty["source_refs"]:
+                lines.extend([
+                    f"Source citation (occurrence {citation['occurrence']}):", "",
+                    _evidence_block(citation["quote"]), "",
+                ])
     lines.extend([
         "## Trace links", "", f"- Canonical design row: `{contract['design_ref']}`",
         *[f"- Acceptance authority: `{delivery['design_ref']}/verification`"
@@ -258,6 +296,8 @@ def _provisional_component_contract(row: Mapping[str, Any]) -> Mapping[str, Any]
     fields = {
         "authority_kind", "design_ref", "provisional_component", "support_event_refs",
         "supporting_events", "exchanges", "delivery_workstreams", "risk_allocations",
+        "source_lifecycle_transitions",
+        "source_conditional_guards", "source_boundaries", "source_proof_duties",
     }
     if (
         row.get("projection_origin") != AUTHORED_PROJECTION_ORIGIN
@@ -294,6 +334,9 @@ def _provisional_component_contract(row: Mapping[str, Any]) -> Mapping[str, Any]
         raise ValueError("Registry component has duplicate delivery acceptance")
     if len({delivery["design_ref"] for delivery in deliveries}) != len(deliveries):
         raise ValueError("Registry component has duplicate delivery authority reference")
+    owned_workstream_keys = {
+        delivery["provisional_workstream"]["key"] for delivery in deliveries
+    }
     if "workstreams" in row:
         _require_delivery_allocation(row, deliveries)
     checks = {
@@ -367,6 +410,64 @@ def _provisional_component_contract(row: Mapping[str, Any]) -> Mapping[str, Any]
         f"/authored_semantics/first_path_relations/{order - 1}" for order in orders
     ]:
         raise ValueError("Registry component drifted from exact source-event references")
+    transitions = contract.get("source_lifecycle_transitions")
+    if not isinstance(transitions, list) or any(
+        not isinstance(transition, Mapping)
+        or set(transition) != {
+            "duty_id", "trigger", "governed_object", "effects", "component_key",
+            "workstream_key", "source_refs",
+        }
+        or transition["component_key"] != row["component_id"]
+        or any(
+            not isinstance(transition[key], str) or not transition[key]
+            for key in ("duty_id", "trigger", "governed_object", "component_key", "workstream_key")
+        )
+        or not isinstance(transition["effects"], list)
+        or not isinstance(transition["source_refs"], list)
+        or not transition["effects"]
+        or not transition["source_refs"]
+        or any(
+            not isinstance(effect, Mapping)
+            or set(effect) != {"state_field_id", "field", "change", "observable_check"}
+            or any(not isinstance(effect.get(key), str) or not effect[key] for key in effect)
+            for effect in transition["effects"]
+        )
+        or any(
+            not isinstance(citation, Mapping)
+            or set(citation) != {"quote", "occurrence"}
+            or not isinstance(citation["quote"], str)
+            or not citation["quote"]
+            or type(citation["occurrence"]) is not int
+            or citation["occurrence"] < 1
+            for citation in transition["source_refs"]
+        )
+        for transition in transitions
+    ):
+        raise ValueError("Registry component has unrelated source lifecycle transitions")
+    for role, fields in (
+        ("conditional_guards", ("trigger", "protected_action", "rule")),
+        ("boundaries", ("kind", "rule")),
+        ("proof_duties", ("dossier_or_artifact", "must_show")),
+    ):
+        duties = contract.get(f"source_{role}")
+        if not isinstance(duties, list) or any(
+            not isinstance(duty, Mapping)
+            or set(duty) != {"duty_id", "component_key", "workstream_key", "source_refs", *fields}
+            or duty.get("component_key") != row["component_id"]
+            or duty.get("workstream_key") not in owned_workstream_keys
+            or any(not isinstance(duty.get(key), str) or not duty[key] for key in ("duty_id", "component_key", "workstream_key", *fields))
+            or not isinstance(duty.get("source_refs"), list)
+            or not duty["source_refs"]
+            or any(
+                not isinstance(ref, Mapping)
+                or set(ref) != {"quote", "occurrence"}
+                or not isinstance(ref["quote"], str) or not ref["quote"]
+                or type(ref["occurrence"]) is not int or ref["occurrence"] < 1
+                for ref in duty["source_refs"]
+            )
+            for duty in duties
+        ):
+            raise ValueError(f"Registry component has unrelated source {role}")
     return contract
 
 

@@ -531,6 +531,28 @@ def test_json_output_contract(tmp_path: Path, capsys) -> None:  # noqa: ANN001
     assert payload["guidance_checks"]
 
 
+def test_compact_root_guidance_preserves_cli_and_queue_contracts(tmp_path: Path) -> None:
+    _write_corpus(tmp_path, cases=[_case("guidance-a")])
+    _write_guidance_fixture(tmp_path)
+    root_guidance = tmp_path / "AGENTS.md"
+    text = root_guidance.read_text(encoding="utf-8")
+    text = text.replace(
+        "CLI-first guidance says hand-edit governed files is forbidden when odylith backlog create exists.",
+        "CLI-first: For governed files, use odylith backlog create before hand edits.",
+    ).replace(
+        "Queued backlog items are not implicit implementation instructions unless the user explicitly asks.",
+        "Radar and Casebook queues and shell or Compass previews are not implementation instructions. "
+        "Work a queued item only when the user explicitly asks.",
+    )
+    root_guidance.write_text(text, encoding="utf-8")
+
+    payload = validate_guidance_behavior.validate_guidance_behavior(repo_root=tmp_path)
+
+    assert payload["status"] == "passed"
+    assert "cli_first_governed_truth" not in {error["check_id"] for error in payload["errors"]}
+    assert "queue_non_adoption" not in {error["check_id"] for error in payload["errors"]}
+
+
 def test_skill_description_lint_requires_trigger_conditions(tmp_path: Path) -> None:
     _write_corpus(tmp_path)
     _write_guidance_fixture(tmp_path, skill_description="Build a fixture workflow summary.")

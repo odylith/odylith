@@ -68,24 +68,27 @@ def test_customer_bootstrap_guidance_carries_live_proof_claim_gate() -> None:
     assert "reports `Activation: ready` and a chat-visibility line is confirmed" in guidance
     assert "Treat recorded-only and waiting-for-chat states as partial proof" in guidance
     assert "then seals ProductCreateTransaction" in guidance
-    assert "nested `authority_gate` task, request, edit, and schema" in guidance
+    assert "gate, source-ledger, and candidate schemas" in guidance
     assert "greenfield authority-check --repo-root ." in guidance
     assert "--gate-file \"<gate-file>\" --format json" in guidance
     assert "Clarification: show one question and stop; no candidate or transaction" in guidance
-    assert "On admission, reason once over candidate contract" in guidance
+    assert "Give its decision_task to one bounded source-only verifier" in guidance
+    assert "--decision-file \"<decision-file>\"" in guidance
+    assert "Any non-yes stops before candidate authoring" in guidance
     assert "--gate-file \"<gate-file>\" --candidate-file \"<candidate-file>\"" in guidance
     assert "No full-candidate reviewer, parser/regex, repair, retry, fallback, or model ladder" in guidance
     assert "Preview:" in guidance
-    assert "chat/hooks cannot confirm or authorize create" in guidance
+    assert "Chat/hooks cannot authorize create" in guidance
     assert "odylith greenfield decide --repo-root PATH CONFIRM|EDIT|REJECT HASH" in guidance
     assert "CONFIRM/REJECT use one owner, no compiler/model" in guidance
     assert "For EDIT, rerun `candidate-contract` with `--transaction-hash`" in guidance
-    assert "repeat gate pass and `authority-check` against sealed source plus correction" in guidance
-    assert "pass correction, `--gate-file`, and `--candidate-file` to `decide EDIT`" in guidance
+    assert "repeat gate, source-ledger preflight, one source-only verifier, and receipt check against sealed source plus correction" in guidance
+    assert "pass correction, `--gate-file`, `--candidate-file`, and accepted `--ledger-file` receipt to `decide EDIT`" in guidance
     assert "verifies receipt, hash, and preconditions" in guidance
     assert "without model, generation, or repair" in guidance
     assert "Markdown is view, not truth" in guidance
-    assert "90/120/150 seconds advisory under the 180-second safety timeout" in guidance
+    assert "90/120/150s advisory" in guidance
+    assert "standard 315s = shared 300s gate/candidate + 15s completion" in guidance
     assert "confirmed-intent.json" not in guidance
     assert "greenfield compile-transaction" not in guidance
     assert "ProductCreateTransaction" in guidance

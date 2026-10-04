@@ -37,7 +37,14 @@ def test_atomic_fact_ledger_accepts_exact_authored_custody(tmp_path: Path) -> No
     assert authority["atomic_ledger_version"] == ATOMIC_FACT_LEDGER_VERSION
     assert authority["atomic_custody_sha256"] == atomic_fact_ledger_hash(atoms)
     assert all(row["custody_state"] == "accepted_fact" for row in atoms)
-    assert all(row["entailment_relationship"] == "exact_source_span" for row in atoms)
+    assert {
+        row["entailment_relationship"] for row in atoms
+    } == {"exact_source_span", "verified_source_action"}
+    assert all(
+        row["entailment_relationship"] == "exact_source_span"
+        for row in atoms
+        if row["projection_links"][0]["field"] not in {"first_path", "supporting_events"}
+    )
     assert all(row["source_span_refs"] for row in atoms)
     assert all(row["projection_links"] for row in atoms)
 

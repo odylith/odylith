@@ -236,6 +236,8 @@ def test_greenfield_confirm_intent_flag_is_retired(tmp_path, capsys) -> None:
             str(candidate_path),
             "--gate-file",
             str(candidate_path),
+            "--ledger-file",
+            str(candidate_path),
             "--confirm-intent",
         ]
     )
@@ -304,7 +306,7 @@ def _compiled_transaction_for_cli(tmp_path: Path):
         prewrite_package=package,
         backlog_result=package.backlog_result or {},
         intent_authority=authority,
-        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority),
+        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority, proposal=proposal),
         repo_root=tmp_path,
     )
     return proposal, transaction

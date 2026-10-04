@@ -42,9 +42,11 @@ class CommandLifecycleObserverError(RuntimeError):
 
     def __init__(self, *, command: list[str], result: subprocess.CompletedProcess[str], state: str) -> None:
         super().__init__("command lifecycle telemetry failed after terminal command outcome")
+        self.result = result
         self.command_kind = _command_kind(command)
         self.returncode = int(result.returncode)
         self.state = state
+        self.termination_observation = getattr(result, "termination_observation", None)
         self.stdout = result.stdout
         self.stderr = result.stderr
 
@@ -68,6 +70,7 @@ def run_command_with_group_timeout(
     timeout: float,
     on_started: Callable[[int, int], None] | None = None,
     pass_fds: tuple[int, ...] = (),
+    stdin_text: str | None = None,
 ) -> subprocess.CompletedProcess[str]:
     if not math.isfinite(timeout) or timeout <= 0:
         raise ValueError("command timeout must be a positive finite number")
@@ -75,6 +78,7 @@ def run_command_with_group_timeout(
         command,
         cwd=str(cwd),
         env=dict(env),
+        stdin=subprocess.PIPE if stdin_text is not None else None,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
@@ -109,7 +113,8 @@ def run_command_with_group_timeout(
         )
         raise
     try:
-        stdout, stderr = process.communicate(timeout=timeout)
+        stdout, stderr = (process.communicate(timeout=timeout) if stdin_text is None
+                          else process.communicate(input=stdin_text, timeout=timeout))
     except subprocess.TimeoutExpired as exc:
         stdout, stderr, termination_observation = _stop_process_group(process)
         stdout = _merge_timeout_streams(stdout, exc.stdout)

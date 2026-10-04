@@ -7,6 +7,12 @@ import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_create_cli, greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_proposals_cli
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    combined_prompt_evidence_source,
+)
+from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    write_synthetic_source_duty_receipt,
+)
 from tests.unit.runtime.greenfield_authored_proposal_fixtures import (
     canonical_model_authored_intent_fixture,
 )
@@ -74,10 +80,16 @@ def test_public_preview_offers_three_hash_bound_terminal_decisions(
         "result_quote": "Example",
         "question": "",
     }), encoding="utf-8")
+    ledger_path = write_synthetic_source_duty_receipt(
+        tmp_path.parent / f"{tmp_path.name}-source-ledger.json",
+        {"result": {"status": "clarification_required"}},
+        evidence_text=combined_prompt_evidence_source(prompt="Example", edit_evidence=""),
+    )
 
     assert greenfield_proposals_cli.main([
         command, "--repo-root", str(tmp_path), "--prompt", "Example",
         "--candidate-file", str(candidate_path),
+        "--ledger-file", str(ledger_path),
         "--gate-file", str(gate_path),
         "--format", output_format,
     ]) == 0

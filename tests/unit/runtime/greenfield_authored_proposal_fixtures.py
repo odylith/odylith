@@ -17,9 +17,6 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
 )
-from odylith.runtime.domain_intelligence.greenfield_host_candidate_materialization import (
-    materialize_host_authored_intent,
-)
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     STANDARD_PROFILE_ID,
     get_greenfield_model_profile,
@@ -34,16 +31,31 @@ from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import (
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     authored_response,
     host_candidate_response,
+    materialize_complete_host_candidate,
 )
 
 
 def approved_authored_quality_manifest_fixture(
-    *, intent_authority: Mapping[str, Any] | None = None, **overrides: Any,
+    *, intent_authority: Mapping[str, Any] | None = None,
+    proposal: Mapping[str, Any] | None = None, **overrides: Any,
 ) -> dict[str, Any]:
     """Bind native transaction fixtures to their authority; standalone receipts use test hashes."""
 
     profile = get_greenfield_model_profile(STANDARD_PROFILE_ID)
     authority = intent_authority or {}
+    source_duty = proposal["intent"]["authored_semantics"]["source_duty"] if proposal else None
+    ledger_sha256 = (
+        source_duty["ledger_receipt"]["ledger_sha256"] if source_duty else "5" * 64
+    )
+    verifier_task_sha256 = (
+        source_duty["ledger_receipt"]["verifier_task_sha256"] if source_duty else "8" * 64
+    )
+    decision_set_sha256 = (
+        source_duty["ledger_receipt"]["decision_set_sha256"] if source_duty else "7" * 64
+    )
+    binding_sha256 = (
+        source_duty["lifecycle"]["binding_sha256"] if source_duty else "6" * 64
+    )
     manifest: dict[str, Any] = {
         "version": PRECONFIRM_QUALITY_MANIFEST_VERSION,
         "engine": PRECONFIRM_ENGINE_VERSION,
@@ -83,6 +95,10 @@ def approved_authored_quality_manifest_fixture(
                 "canonical_candidate_sha256": authority.get(
                     CANONICAL_CANDIDATE_SHA256_KEY, "1" * 64
                 ),
+                "source_duty_ledger_sha256": ledger_sha256,
+                "source_duty_verifier_task_sha256": verifier_task_sha256,
+                "source_duty_decision_set_sha256": decision_set_sha256,
+                "source_duty_binding_sha256": binding_sha256,
             },
             "canonical_authority": {
                 "canonical_candidate_sha256": authority.get(
@@ -124,7 +140,7 @@ def materialize_typed_intent_fixture(
         first_path_relations=first_path_relations,
         component_responsibility_owners=component_responsibility_owners,
     )
-    return materialize_host_authored_intent(
+    return materialize_complete_host_candidate(
         prompt=source,
         repo_root=repo_root,
         host_candidate=host_candidate_response(response, evidence_text=source),

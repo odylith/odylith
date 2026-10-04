@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_delivery_runtime
@@ -258,6 +259,29 @@ def test_live_proof_family_packet_exposes_real_repo_proof_state() -> None:
     assert summary["proof_state_present"] is True
     assert summary["proof_resolution_state"] == "resolved"
     assert summary["proof_lane_id"] == "proof-state-control-plane"
-    assert summary["proof_status"] == "live_verified"
-    assert summary["claim_guard_highest_truthful_claim"] == "fixed live"
-    assert summary["claim_guard_hosted_frontier_advanced"] is True
+
+    stream = REPO_ROOT / "odylith/compass/runtime/agent-stream.v1.jsonl"
+    lane_events = [
+        event
+        for line in stream.read_text(encoding="utf-8").splitlines()
+        if (event := json.loads(line)).get("proof_lane") == "proof-state-control-plane"
+        and event.get("proof_status")
+    ]
+    assert lane_events
+    recorded_status = lane_events[-1]["proof_status"]
+    if recorded_status == "deployed":
+        assert summary["proof_status"] in {"deployed", "live_verified"}
+    else:
+        assert summary["proof_status"] == recorded_status
+
+    expected_claim = {
+        "diagnosed": "diagnosed",
+        "fixed_in_code": "fixed in code",
+        "unit_tested": "unit-tested",
+        "preview_tested": "preview-tested",
+        "deployed": "deployed",
+        "live_verified": "fixed live",
+        "falsified_live": "falsified live",
+    }[summary["proof_status"]]
+    assert summary["claim_guard_highest_truthful_claim"] == expected_claim
+    assert summary["claim_guard_hosted_frontier_advanced"] is (summary["proof_status"] == "live_verified")

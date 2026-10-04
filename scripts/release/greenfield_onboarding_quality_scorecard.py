@@ -44,9 +44,17 @@ def build_onboarding_quality_scorecard(
     missing proof is a zero rather than a generous partial score.
     """
 
+    # An expected transaction is not evidence that it compiled or committed.
     transaction_results = tuple(result for result in results if _expectation(result) != "clarification_required")
     clarification_results = tuple(result for result in results if _expectation(result) == "clarification_required")
     all_transaction_scores = lambda *names: _all_scores(transaction_results, *names)
+    passed_transaction_count = lambda *names: _passing_score_count(transaction_results, *names)
+
+    def transaction_evidence(checks: str, *score_names: str) -> str:
+        return (
+            f"Transaction cases passing {checks}: "
+            f"{passed_transaction_count(*score_names)}/{len(transaction_results)}"
+        )
     browser_passed = _mapping_status(browser_proof) == "passed"
     custody_passed = _mapping_status(platform_leakage_proof) == "passed" and bool(metamorphic_output.get("passed"))
     profile_issues = _profile_evidence_issues(
@@ -66,7 +74,10 @@ def build_onboarding_quality_scorecard(
         "consumer_utility_and_comprehension": _dimension(
             passed=bool(transaction_results) and all_transaction_scores("operator_usefulness", "implementation_prompts") and browser_passed,
             evidence=(
-                f"{len(transaction_results)} committed cases expose project prompts and completed governance surfaces",
+                transaction_evidence(
+                    "operator-usefulness and implementation-prompt checks",
+                    "operator_usefulness", "implementation_prompts",
+                ),
                 "headless project/workspace browser proof passed" if browser_passed else "headless project/workspace browser proof did not pass",
             ),
             missing=_missing_transaction_scores(transaction_results, "operator_usefulness", "implementation_prompts"),
@@ -74,14 +85,17 @@ def build_onboarding_quality_scorecard(
         "intent_fidelity_and_evidence_custody": _dimension(
             passed=bool(transaction_results) and all_transaction_scores("semantic_manifest") and custody_passed,
             evidence=(
-                "every committed case has a valid typed semantic manifest",
-                "generated-artifact platform leakage and metamorphic output proof passed" if custody_passed else "custody proof did not pass",
+                transaction_evidence("typed semantic-manifest checks", "semantic_manifest"),
+                "platform leakage and metamorphic output checks passed" if custody_passed else "custody proof did not pass",
             ),
             missing=_missing_transaction_scores(transaction_results, "semantic_manifest"),
         ),
         "actor_action_state_object_extraction": _review_dimension(
             automated_passed=bool(transaction_results) and all_transaction_scores("copy_semantic_clarity"),
-            evidence=("copy-semantic validation passed; product and domain judgment is supplied by independent review",),
+            evidence=(
+                transaction_evidence("copy-semantic checks", "copy_semantic_clarity"),
+                "independent product and domain review is separate",
+            ),
             automated_missing=_missing_transaction_scores(transaction_results, "copy_semantic_clarity"),
             review_scores=_independent_review_scores(
                 transaction_results,
@@ -92,7 +106,12 @@ def build_onboarding_quality_scorecard(
         ),
         "first_path_completeness_and_coherence": _review_dimension(
             automated_passed=bool(transaction_results) and all_transaction_scores("completion", "copy_semantic_clarity"),
-            evidence=("completion and copy-semantic validation passed; product utility is supplied by independent review",),
+            evidence=(
+                transaction_evidence(
+                    "completion and copy-semantic checks", "completion", "copy_semantic_clarity",
+                ),
+                "independent product review is separate",
+            ),
             automated_missing=_missing_transaction_scores(transaction_results, "completion", "copy_semantic_clarity"),
             review_scores=_independent_review_scores(
                 transaction_results,
@@ -103,14 +122,18 @@ def build_onboarding_quality_scorecard(
         "clarification_quality_and_assumption_discipline": _dimension(
             passed=bool(clarification_results) and all(_quality_passed(result) for result in clarification_results),
             evidence=(
-                f"{len(clarification_results)} material-ambiguity case(s) returned one focused no-write clarification",
-                f"{len(transaction_results)} non-clarification case(s) compiled a usable transaction",
+                "Material-ambiguity cases passing focused no-write clarification checks: "
+                f"{sum(_quality_passed(result) for result in clarification_results)}/{len(clarification_results)}",
+                f"Transaction cases selected: {len(transaction_results)}; completion is scored separately",
             ),
             missing=() if clarification_results else ("corpus has no material-ambiguity clarification case",),
         ),
         "cross_artifact_consistency": _review_dimension(
             automated_passed=bool(transaction_results) and all_transaction_scores("traceability"),
-            evidence=("traceability validation passed; architecture consistency is supplied by independent review",),
+            evidence=(
+                transaction_evidence("traceability checks", "traceability"),
+                "independent architecture review is separate",
+            ),
             automated_missing=_missing_transaction_scores(transaction_results, "traceability"),
             review_scores=_independent_review_scores(
                 transaction_results,
@@ -120,7 +143,10 @@ def build_onboarding_quality_scorecard(
         ),
         "absence_of_generic_or_ai_shaped_output": _review_dimension(
             automated_passed=bool(transaction_results) and all_transaction_scores("copy_semantic_clarity"),
-            evidence=("rendered-copy validation passed; domain-specific quality is supplied by independent review",),
+            evidence=(
+                transaction_evidence("copy-semantic checks", "copy_semantic_clarity"),
+                "independent domain review is separate",
+            ),
             automated_missing=_missing_transaction_scores(transaction_results, "copy_semantic_clarity"),
             review_scores=_independent_review_scores(
                 transaction_results,
@@ -155,7 +181,8 @@ def build_onboarding_quality_scorecard(
         "confirm_time_atomicity_readback_retry_and_recovery": _review_dimension(
             automated_passed=bool(transaction_results) and all_transaction_scores("completion") and recovery_passed,
             evidence=(
-                "every committed case passed commit-only completion; engineering judgment is supplied by independent review",
+                transaction_evidence("completion checks", "completion"),
+                "independent engineering review is separate",
                 "installed crash, retry, rollback, and readback recovery proof passed" if recovery_passed else "installed recovery proof did not pass",
             ),
             automated_missing=(
@@ -171,7 +198,7 @@ def build_onboarding_quality_scorecard(
         "confirmation_and_post_success_ux_clarity": _dimension(
             passed=bool(transaction_results) and all_transaction_scores("confirmation_ux") and browser_passed,
             evidence=(
-                "every committed case exposed a hash-bound CONFIRM / EDIT / REJECT rail and five stable success routes",
+                transaction_evidence("confirmation-UX checks", "confirmation_ux"),
                 "headless browser proof passed for the generated workspace" if browser_passed else "headless browser proof did not pass",
             ),
             missing=_missing_transaction_scores(transaction_results, "confirmation_ux"),
@@ -277,6 +304,10 @@ def _case_id(result: Any) -> str:
 
 def _all_scores(results: Sequence[Any], *names: str) -> bool:
     return bool(results) and not _missing_transaction_scores(results, *names)
+
+
+def _passing_score_count(results: Sequence[Any], *names: str) -> int:
+    return sum(not _missing_transaction_scores((result,), *names) for result in results)
 
 
 def _missing_transaction_scores(results: Sequence[Any], *names: str) -> tuple[str, ...]:

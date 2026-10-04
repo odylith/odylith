@@ -88,6 +88,34 @@ def test_scorecard_accepts_serialized_results_for_post_run_finalization() -> Non
     assert scorecard["score"] == 10
 
 
+def test_failed_preflight_is_not_described_as_a_committed_transaction() -> None:
+    result = _result("failed before preflight", profile_id=_PROFILE_IDS["standard"])
+    result.status = "case-execution-exception"
+    result.create_returncode = 1
+    result.quality.passed = False
+    result.quality.scores = {name: 0 for name in _COMMITTED_SCORES}
+
+    scorecard = build_onboarding_quality_scorecard(
+        results=(result,),
+        browser_proof={"status": "skipped"},
+        platform_leakage_proof={"status": "passed"},
+        metamorphic_output={"passed": True},
+        model_profile_proof={"status": "failed", "profiles": {}},
+        unavailable_provider_proof={"status": "not_requested"},
+        commit_recovery_proof=None,
+    )
+
+    evidence = "\n".join(
+        item
+        for dimension in scorecard["dimensions"].values()
+        for item in dimension["evidence"]
+    )
+    assert scorecard["status"] == "failed"
+    assert "Transaction cases passing operator-usefulness and implementation-prompt checks: 0/1" in evidence
+    assert "committed case" not in evidence
+    assert "compiled a usable transaction" not in evidence
+
+
 def test_scorecard_fails_when_visible_confirmation_or_navigation_is_not_proven() -> None:
     results = list(_passing_results())
     result = results[0]

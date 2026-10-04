@@ -409,30 +409,37 @@ def test_benchmark_honest_baseline_contract_stays_explicit() -> None:
 
 
 def test_odylith_assist_closeout_contract_stays_explicit_across_shared_and_bundled_guidance() -> None:
-    canonical_paths = (
-        ROOT / "AGENTS.md",
-        ROOT / "src" / "odylith" / "install" / "agents.py",
+    from odylith.install.agents import managed_block
+
+    canonical_guidance = (
+        ("AGENTS.md", (ROOT / "AGENTS.md").read_text(encoding="utf-8")),
+        ("product root template", managed_block(repo_role="product_repo")),
     )
     canonical_requirements = (
         ODYLITH_ASSIST_LABEL,
-        "material implementation, decisions, verified results, or explicit intervention feedback",
-        "Routine prompts stay quiet.",
+        "at closeout use at most one for material work, decisions, proof, or explicit intervention feedback",
+        "When feedback requests more",
+        "substantive-continuation beats",
+        "Omit bare acknowledgements, routine chatter, and internals",
         "Never add Assist merely because Odylith ran.",
         ODYLITH_ASSIST_USER_WIN,
         "changed IDs",
         "the `odylith_off` edge",
-        "concrete counts, deltas, or validation outcomes",
-        "Generic receipts are not premium interventions.",
+        "counts, deltas, or validation outcomes",
+        "Generic receipts are not premium interventions",
     )
-    for path in canonical_paths:
-        normalized = " ".join(path.read_text(encoding="utf-8").split())
+    for label, text in canonical_guidance:
+        normalized = " ".join(text.split())
         for requirement in canonical_requirements:
-            assert requirement in normalized, f"canonical assist cadence drifted in {path.relative_to(ROOT)}: {requirement!r}"
+            assert requirement in normalized, f"canonical assist cadence drifted in {label}: {requirement!r}"
         assert ODYLITH_ASSIST_LEGACY_DEFAULT not in normalized, (
-            f"legacy default assist emission remains in {path.relative_to(ROOT)}"
+            f"legacy default assist emission remains in {label}"
         )
 
-    bundle_path = ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "AGENTS.md"
+    scoped_paths = (
+        ROOT / "odylith" / "AGENTS.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "AGENTS.md",
+    )
     bundled_requirements = (
         ODYLITH_ASSIST_LABEL,
         "material implementation, decisions, verified results, or explicit intervention feedback",
@@ -444,10 +451,11 @@ def test_odylith_assist_closeout_contract_stays_explicit_across_shared_and_bundl
         "concrete counts, deltas, or validation outcomes",
         "Generic receipts are not premium interventions.",
     )
-    normalized_bundle = " ".join(bundle_path.read_text(encoding="utf-8").split())
-    for requirement in bundled_requirements:
-        assert requirement in normalized_bundle, f"bundled assist cadence drifted: {requirement!r}"
-    assert ODYLITH_ASSIST_LEGACY_DEFAULT not in normalized_bundle
+    for path in scoped_paths:
+        normalized = " ".join(path.read_text(encoding="utf-8").split())
+        for requirement in bundled_requirements:
+            assert requirement in normalized, f"scoped assist cadence drifted in {path.relative_to(ROOT)}: {requirement!r}"
+        assert ODYLITH_ASSIST_LEGACY_DEFAULT not in normalized
 
 
 def test_odylith_assist_closeout_contract_stays_explicit_in_maintainer_and_benchmark_surfaces() -> None:
@@ -701,12 +709,13 @@ def test_anti_slop_contract_stays_explicit_across_guidance_surfaces() -> None:
     )
     for path in routing_paths:
         normalized = " ".join(path.read_text(encoding="utf-8").split())
-        assert ANTI_SLOP_TREAT_AS_REGRESSION in normalized, f"anti-slop regression bar drifted in {path.relative_to(ROOT)}"
+        assert ANTI_SLOP_TREAT_AS_REGRESSION.rstrip(".") in normalized, f"anti-slop regression bar drifted in {path.relative_to(ROOT)}"
         assert "ANTI_SLOP_AND_DECOMPOSITION.md" in normalized, f"anti-slop guide routing drifted in {path.relative_to(ROOT)}"
         assert "code-hygiene-guard" in normalized, f"anti-slop skill routing drifted in {path.relative_to(ROOT)}"
-        assert ANTI_SLOP_ANY_PROJECT in normalized.lower(), f"project-wide anti-slop scope drifted in {path.relative_to(ROOT)}"
-        assert ANTI_SLOP_INCOMPLETE_PASS in normalized.lower(), f"incomplete-pass anti-slop bar drifted in {path.relative_to(ROOT)}"
-        assert ANTI_SLOP_KERNEL_ADOPTION in normalized.lower(), f"shared-kernel adoption bar drifted in {path.relative_to(ROOT)}"
+        lowered = normalized.lower()
+        assert ANTI_SLOP_ANY_PROJECT in lowered or "project surfaces" in lowered, f"project-wide anti-slop scope drifted in {path.relative_to(ROOT)}"
+        assert ANTI_SLOP_INCOMPLETE_PASS in lowered or "are incomplete" in lowered, f"incomplete-pass anti-slop bar drifted in {path.relative_to(ROOT)}"
+        assert "partial shared-kernel adoption" in lowered, f"shared-kernel adoption bar drifted in {path.relative_to(ROOT)}"
 
     proof_paths = (
         ROOT / "odylith" / "agents-guidelines" / "CODING_STANDARDS.md",
@@ -778,9 +787,15 @@ def test_anti_slop_contract_stays_explicit_across_guidance_surfaces() -> None:
         ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "skills" / "odylith-code-hygiene-guard" / "SKILL.md",
     )
     for path in hardening_paths:
-        normalized = " ".join(path.read_text(encoding="utf-8").split())
-        assert ANTI_SLOP_PROSE_ONLY_INCOMPLETE in normalized.lower(), f"anti-slop hardening completeness bar drifted in {path.relative_to(ROOT)}"
-        assert ANTI_SLOP_TWO_PROOF_LAYERS in normalized.lower(), f"two-proof-layer anti-slop bar drifted in {path.relative_to(ROOT)}"
+        lowered = " ".join(path.read_text(encoding="utf-8").split()).lower()
+        assert (
+            ANTI_SLOP_PROSE_ONLY_INCOMPLETE in lowered
+            or "prose-only hardening are incomplete" in lowered
+        ), f"anti-slop hardening completeness bar drifted in {path.relative_to(ROOT)}"
+        assert (
+            ANTI_SLOP_TWO_PROOF_LAYERS in lowered
+            or "repo-wide or lane-wide claims need fresh behavior proof and structural inventory" in lowered
+        ), f"two-proof-layer anti-slop bar drifted in {path.relative_to(ROOT)}"
 
     browser_proof_paths = (
         ROOT / "odylith" / "AGENTS.md",
@@ -802,8 +817,8 @@ def test_anti_slop_contract_stays_explicit_across_guidance_surfaces() -> None:
     )
     for path in browser_proof_paths:
         normalized = " ".join(path.read_text(encoding="utf-8").split())
-        assert ANTI_SLOP_BROWSER_MATRIX in normalized, f"browser-proof anti-slop bar drifted in {path.relative_to(ROOT)}"
-        assert ANTI_SLOP_BROWSER_STATES in normalized, f"browser-state anti-slop bar drifted in {path.relative_to(ROOT)}"
+        assert ANTI_SLOP_BROWSER_MATRIX in normalized or "browser surfaces need" in normalized, f"browser-proof anti-slop bar drifted in {path.relative_to(ROOT)}"
+        assert ANTI_SLOP_BROWSER_STATES in normalized or "normal, empty/fallback, and degraded/error states" in normalized, f"browser-state anti-slop bar drifted in {path.relative_to(ROOT)}"
 
     repo_wide_scan_paths = (
         ROOT / "odylith" / "agents-guidelines" / "ANTI_SLOP_AND_DECOMPOSITION.md",
@@ -1048,6 +1063,11 @@ def test_cli_help_guidance_blocks_plan_command_guess_and_parallel_probe_cancella
     )
     for path in shared_guidance_paths:
         normalized = " ".join(path.read_text(encoding="utf-8").split())
+        if path == ROOT / "AGENTS.md":
+            assert "run one authoritative command first" in normalized
+            assert "do not probe files in parallel" in normalized
+            assert "If invalid, use `odylith --help`, then the listed subcommand" in normalized
+            continue
         assert "single authoritative" in normalized
         assert (
             "parallel exploratory" in normalized

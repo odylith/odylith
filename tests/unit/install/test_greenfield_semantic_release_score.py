@@ -1094,6 +1094,10 @@ def _model_authoring_observations(profile_id: str) -> dict[str, object]:
             "source_sha256": "a" * 64,
             "raw_candidate_sha256": "b" * 64,
             "canonical_candidate_sha256": "c" * 64,
+            "source_duty_ledger_sha256": "d" * 64,
+            "source_duty_decision_set_sha256": "f" * 64,
+            "source_duty_verifier_task_sha256": "1" * 64,
+            "source_duty_binding_sha256": "e" * 64,
         },
         "runtime_semantic_model_call_count": 0,
     }

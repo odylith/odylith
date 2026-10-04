@@ -36,7 +36,7 @@ def _transaction(repo_root: Path) -> Any:
         prewrite_package=package,
         backlog_result=package.backlog_result or {},
         intent_authority=authority,
-        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority),
+        quality_manifest=approved_authored_quality_manifest_fixture(intent_authority=authority, proposal=proposal),
         repo_root=repo_root,
     )
 

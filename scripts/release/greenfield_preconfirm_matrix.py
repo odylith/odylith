@@ -1131,6 +1131,7 @@ def run_unavailable_provider_proof(
             }
         audit = begin_installed_write_audit(repo_root=repo_root)
         attempt: dict[str, Any] = {}
+        observed_stage: dict[str, Any] = {}
 
         def invoke() -> Any:
             audit_env = audit.environment()
@@ -1151,6 +1152,7 @@ def run_unavailable_provider_proof(
                 ),
                 pass_fds=audit.pass_fds,
                 return_failed_proposal=True,
+                stage_observation=observed_stage,
             )
             attempt["completed"] = completed
             return completed
@@ -1167,7 +1169,7 @@ def run_unavailable_provider_proof(
         detail = str(getattr(completed, "stderr", "") or getattr(completed, "stdout", "") or "")
         issues = unavailable_provider_proof_issues(
             returncode=execution.returncode,
-            proposal_seconds=execution.seconds,
+            proposal_seconds=float(observed_stage.get("elapsed_seconds") or 0.0),
             detail=detail,
             write_audit_active=audit_evidence.active,
             write_audit_error=audit_evidence.error,
@@ -1183,7 +1185,8 @@ def run_unavailable_provider_proof(
             "semantic_authority": "active_host_single_authority",
             "runtime_provider_mode": "disabled",
             "post_receipt_provider_invocations": 0,
-            "proposal_seconds": execution.seconds,
+            "proposal_seconds": float(observed_stage.get("elapsed_seconds") or 0.0),
+            "whole_journey_seconds": execution.seconds,
             "returncode": execution.returncode,
             "failure_detail": command_excerpt(detail, limit=800),
             "no_write": {
@@ -1262,6 +1265,7 @@ def _run_case(
     raw_streams: dict[str, str] = {}
     raw_streams["input.prompt"] = case.prompt
     raw_streams["input.edit-evidence"] = str(case.confirmed_intent_markdown or "")
+    observed_stage: dict[str, Any] = {}
     invoke_propose = lambda timeout: _run_host_candidate_propose(
         repo_root=repo_root,
         env=env,
@@ -1271,6 +1275,7 @@ def _run_case(
         timeout=timeout,
         host_candidate_argv=host_candidate_argv,
         retained_case=retained_case,
+        stage_observation=observed_stage,
     )
     execution = run_compiled_greenfield_journey(
         repo_root=repo_root,
@@ -1281,6 +1286,7 @@ def _run_case(
             cwd=repo_root, env=env, command=list(command), timeout=timeout,
         ),
         invoke_propose=invoke_propose,
+        read_proposal_stage_seconds=lambda: observed_stage.get("elapsed_seconds"),
     )
     create = execution.failure or execution.decision
     proposal_seconds = execution.proposal_seconds
@@ -1293,6 +1299,7 @@ def _run_case(
         prompt=case.prompt, edit_evidence=str(case.confirmed_intent_markdown or ""),
     ).evidence_source
     raw_candidate = _retained_raw_host_candidate(retained_case)
+    source_duty_receipt = _retained_source_duty_receipt(retained_case)
     profile_evidence = model_profile_evidence(
         profile,
         env,
@@ -1302,11 +1309,13 @@ def _run_case(
         ),
         stage_observation=stage_observation,
         raw_candidate=raw_candidate,
+        source_duty_receipt=source_duty_receipt,
         expected_source=expected_model_source,
     )
     model_result_issues = authored_model_result_binding_issues(
         stage_observation=stage_observation, create_payload=payload,
         raw_candidate=raw_candidate,
+        source_duty_receipt=source_duty_receipt,
         expected_source=expected_model_source,
     )
     counts = collect_artifact_counts(repo_root=repo_root, package=package, required_terms=case.required_terms)
@@ -1481,6 +1490,9 @@ def _run_host_candidate_propose(
     pass_fds: tuple[int, ...] = (),
     proposal_env: Mapping[str, str] | None = None,
     return_failed_proposal: bool = False,
+    observe_stage: Callable[[Mapping[str, Any]], None] | None = None,
+    stage_observation: dict[str, Any] | None = None,
+    retain_diagnostic_bytes: Callable[[str, bytes], None] | None = None,
 ) -> Any:
     base_command = tuple(
         str(value)
@@ -1500,7 +1512,9 @@ def _run_host_candidate_propose(
 
     proposal_attempt: dict[str, Any] = {}
 
-    def invoke_propose(candidate_path: Path, gate_path: Path, remaining: float) -> Any:
+    def invoke_propose(
+        candidate_path: Path, gate_path: Path, ledger_path: Path, remaining: float
+    ) -> Any:
         completed = _run_greenfield_propose(
             repo_root=repo_root,
             env=post_receipt_runtime_env(
@@ -1514,23 +1528,43 @@ def _run_host_candidate_propose(
             pass_fds=pass_fds,
             candidate_file=str(candidate_path),
             gate_file=str(gate_path),
+            ledger_file=str(ledger_path),
         )
         proposal_attempt["completed"] = completed
         return completed
 
-    observe = None
+    final_observation: dict[str, Any] = {}
     retain_authority_gate_bytes = None
+    retain_source_ledger_bytes = None
+    retain_source_ledger_preflight_bytes = None
+    retain_source_duty_decision_bytes = None
+    retain_source_ledger_check_bytes = None
     retain_candidate_bytes = None
     retain_proposal_bytes = None
     if retained_case is not None:
-        observe = lambda payload: record_retained_case_json(
-            retained_case,
-            "semantic/host-authoring-observation.v1.json",
-            dict(payload),
-        )
         retain_authority_gate_bytes = lambda value: record_retained_case_bytes(
             retained_case,
             "semantic/host-authority-gate.raw.v1.json",
+            value,
+        )
+        retain_source_ledger_bytes = lambda value: record_retained_case_bytes(
+            retained_case,
+            "semantic/host-source-ledger.raw.v1.json",
+            value,
+        )
+        retain_source_ledger_preflight_bytes = lambda value: record_retained_case_bytes(
+            retained_case,
+            "semantic/host-source-ledger-preflight.raw.v1.json",
+            value,
+        )
+        retain_source_duty_decision_bytes = lambda value: record_retained_case_bytes(
+            retained_case,
+            "semantic/host-source-duty-decisions.raw.v1.json",
+            value,
+        )
+        retain_source_ledger_check_bytes = lambda value: record_retained_case_bytes(
+            retained_case,
+            "semantic/host-source-ledger-check.raw.v1.json",
             value,
         )
         retain_candidate_bytes = lambda value: record_retained_case_bytes(
@@ -1543,6 +1577,35 @@ def _run_host_candidate_propose(
             f"semantic/host-proposal.{stream}.raw.v1",
             value,
         )
+    if retain_diagnostic_bytes is not None:
+        def _with_diagnostic(label: str, existing: Callable[[bytes], None] | None):
+            def capture(value: bytes) -> None:
+                if existing is not None:
+                    existing(value)
+                retain_diagnostic_bytes(label, value)
+            return capture
+        retain_authority_gate_bytes = _with_diagnostic(
+            "authority-gate", retain_authority_gate_bytes
+        )
+        retain_source_ledger_bytes = _with_diagnostic(
+            "source-ledger", retain_source_ledger_bytes
+        )
+        retain_source_ledger_preflight_bytes = _with_diagnostic(
+            "source-ledger-preflight", retain_source_ledger_preflight_bytes
+        )
+        retain_source_duty_decision_bytes = _with_diagnostic(
+            "source-duty-decisions", retain_source_duty_decision_bytes
+        )
+        retain_source_ledger_check_bytes = _with_diagnostic(
+            "source-ledger-check", retain_source_ledger_check_bytes
+        )
+        retain_candidate_bytes = _with_diagnostic("candidate", retain_candidate_bytes)
+    def retain_host_stderr(stage: str, value: bytes) -> None:
+        if retained_case is not None:
+            record_retained_case_bytes(retained_case, f"semantic/host-{stage}.stderr.raw.v1", value)
+        if retain_diagnostic_bytes is not None:
+            retain_diagnostic_bytes(f"{stage}-stderr", value)
+
     profile_id = str(env.get("ODYLITH_GREENFIELD_MODEL_PROFILE") or "").strip()
     profile = get_greenfield_model_profile(profile_id)
     try:
@@ -1561,10 +1624,17 @@ def _run_host_candidate_propose(
                 invoke_installed=invoke_installed,
                 invoke_propose=invoke_propose,
                 installed_command=base_command,
-                observe=observe,
+                observation_sink=final_observation,
+                observe=observe_stage,
                 retain_authority_gate_bytes=retain_authority_gate_bytes,
+                retain_source_ledger_bytes=retain_source_ledger_bytes,
+                retain_source_ledger_preflight_bytes=retain_source_ledger_preflight_bytes,
+                retain_source_duty_decision_bytes=retain_source_duty_decision_bytes,
+                retain_source_ledger_check_bytes=retain_source_ledger_check_bytes,
                 retain_candidate_bytes=retain_candidate_bytes,
                 retain_proposal_bytes=retain_proposal_bytes,
+                retain_host_stderr_bytes=(retain_host_stderr
+                    if retained_case is not None or retain_diagnostic_bytes is not None else None),
             )
         )
     except HostCandidateFlowError:
@@ -1576,6 +1646,24 @@ def _run_host_candidate_propose(
         ):
             return completed
         raise
+    finally:
+        # Final telemetry serialization is the explicit endpoint of the measured
+        # journey. All raw retention and opaque observer work completed before it.
+        if final_observation:
+            if stage_observation is not None:
+                dict.update(stage_observation, final_observation)
+            primary_error = sys.exc_info()[1]
+            try:
+                if retained_case is not None:
+                    record_retained_case_json(
+                        retained_case,
+                        "semantic/host-authoring-observation.v1.json",
+                        final_observation,
+                    )
+            except Exception as exc:
+                if primary_error is None:
+                    raise
+                primary_error.add_note(f"final observation retention failed: {type(exc).__name__}")
 
 
 def _host_candidate_argv_for_profile(
@@ -1684,6 +1772,7 @@ def _run_expected_clarification_case(
     if not profile_id:
         profile_id = model_profile_id_for_repair_tier(repair_tier)
     raw_candidate = _retained_raw_host_candidate(retained_case)
+    source_duty_receipt = _retained_source_duty_receipt(retained_case)
     issues = list(clarification_contract_issues(
         execution,
         expected_fields=(
@@ -1706,6 +1795,7 @@ def _run_expected_clarification_case(
         observed=sealed_model_profile_observation(create_payload=payload),
         stage_observation=stage_observation,
         raw_candidate=raw_candidate,
+        source_duty_receipt=source_duty_receipt,
         expected_source=expected_source,
     )
     issues.extend(str(issue) for issue in profile_evidence.get("issues", ()))
@@ -1755,7 +1845,7 @@ def _run_expected_clarification_case(
         name=case.name,
         status="passed" if quality.passed else "failed",
         create_seconds=execution.seconds,
-        proposal_seconds=execution.seconds,
+        proposal_seconds=float(stage_observation.get("elapsed_seconds") or 0.0),
         counts=counts,
         quality=quality,
         create_returncode=execution.returncode,
@@ -1779,6 +1869,7 @@ def _run_greenfield_propose(
     pass_fds: tuple[int, ...] = (),
     candidate_file: str,
     gate_file: str,
+    ledger_file: str,
 ) -> Any:
     if not str(candidate_file or "").strip():
         raise RuntimeError(
@@ -1788,6 +1879,10 @@ def _run_greenfield_propose(
         raise RuntimeError(
             "greenfield propose requires a source-authority gate from the host-candidate flow"
         )
+    if not str(ledger_file or "").strip():
+        raise RuntimeError(
+            "greenfield propose requires a source ledger from the host-candidate flow"
+        )
     propose_command = list(command) if command is not None else ["./.odylith/bin/odylith"]
     propose_command.extend(
         _greenfield_propose_arguments(
@@ -1796,6 +1891,7 @@ def _run_greenfield_propose(
             repair_tier=repair_tier,
             candidate_file=candidate_file,
             gate_file=gate_file,
+            ledger_file=ledger_file,
         )
     )
     run_kwargs: dict[str, Any] = {
@@ -1816,6 +1912,7 @@ def _greenfield_propose_arguments(
     repair_tier: str = "",
     candidate_file: str = "",
     gate_file: str = "",
+    ledger_file: str = "",
 ) -> list[str]:
     arguments = [
         "greenfield",
@@ -1835,6 +1932,8 @@ def _greenfield_propose_arguments(
         arguments.extend(["--candidate-file", candidate_file])
     if gate_file:
         arguments.extend(["--gate-file", gate_file])
+    if ledger_file:
+        arguments.extend(["--ledger-file", ledger_file])
     return arguments
 
 
@@ -2343,6 +2442,18 @@ def _retained_raw_host_candidate(
     if not isinstance(candidate, Mapping):
         return {}
     return dict(candidate)
+
+
+def _retained_source_duty_receipt(
+    retained_case: RetainedEvidenceCase | None,
+) -> Mapping[str, Any]:
+    if retained_case is None:
+        return {}
+    payload = _read_json_mapping(
+        retained_case.staging_root / "semantic" / "host-source-ledger-check.raw.v1.json"
+    )
+    receipt = payload.get("receipt")
+    return dict(receipt) if isinstance(receipt, Mapping) else {}
 
 
 def _parse_json_object(value: str) -> Mapping[str, Any]:

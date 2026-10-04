@@ -163,6 +163,10 @@ def test_authored_typed_projection_passes_structural_tribunal() -> None:
         "exchanges",
         "delivery_workstreams",
         "risk_allocations",
+        "source_lifecycle_transitions",
+        "source_conditional_guards",
+        "source_boundaries",
+        "source_proof_duties",
     }
     semantics = proposal["intent"][AUTHORED_SEMANTICS_KEY]
     assert component["component_id"] == "test-boundary-1"

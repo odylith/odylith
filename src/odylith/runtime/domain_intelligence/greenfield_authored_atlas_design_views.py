@@ -34,6 +34,7 @@ def build_provisional_design_atlas_specs(
     non_goals: Sequence[str],
     source_precedence: Sequence[Mapping[str, Any]],
     proof_is_provisional: bool = False,
+    source_lifecycle: Mapping[str, Any] | None = None,
 ) -> dict[str, dict[str, Any]]:
     """Return three deterministic proposed-design lenses from canonical rows."""
 
@@ -63,6 +64,12 @@ def build_provisional_design_atlas_specs(
         proof_boundary=proof_boundary,
         proof_is_provisional=proof_is_provisional,
         non_goals=non_goals,
+        source_lifecycle=source_lifecycle,
+    )
+    source_fact_guide = (
+        "a cited state lifecycle; its off-path transitions do not become first-run actions."
+        if source_lifecycle and source_lifecycle.get("off_path_transitions")
+        else "an edge-free context inventory; no transition or causal topology is inferred."
     )
     shared = {
         "authority_kind": PROVISIONAL_DESIGN_AUTHORITY_KIND,
@@ -117,7 +124,7 @@ def build_provisional_design_atlas_specs(
                 "reference inventory shows each full action once; repeated IDs do not create "
                 "additional events or execution order. Support does not "
                 "transfer the stated actor's action to a component. Source-stated facts are "
-                "an edge-free context inventory; no transition or causal topology is inferred."
+                + source_fact_guide
             ),
             "source": support_source,
             "boxes": support_boxes,
@@ -241,6 +248,7 @@ def _capability_support_view(
     proof_boundary: str,
     non_goals: Sequence[str],
     proof_is_provisional: bool,
+    source_lifecycle: Mapping[str, Any] | None,
 ) -> tuple[str, list[dict[str, str]]]:
     events = {row["order"]: row for row in relations}
     lines = ["flowchart LR"]
@@ -345,6 +353,13 @@ def _capability_support_view(
             f"Source-stated work outside scope: {non_goal}",
         ))
     lines.append("  end")
+    if source_lifecycle is not None:
+        _append_source_lifecycle(
+            lines=lines,
+            boxes=boxes,
+            lifecycle=source_lifecycle,
+            component_ids=component_ids,
+        )
     if proof_is_provisional:
         lines.extend([
             '  subgraph proposed_checkpoint["Proposed proof checkpoint — assumption"]',
@@ -356,6 +371,65 @@ def _capability_support_view(
             atlas_box("proof", proof_boundary, "Proposed proof checkpoint", "An explicit assumption; no source-stated producer or terminal result is asserted."),
         ])
     return styled_mermaid(lines), boxes
+
+
+def _append_source_lifecycle(
+    *,
+    lines: list[str],
+    boxes: list[dict[str, str]],
+    lifecycle: Mapping[str, Any],
+    component_ids: Mapping[str, str],
+) -> None:
+    """Display sealed source transitions without inventing an actor or an event."""
+
+    field_nodes: dict[str, str] = {}
+    for index, field in enumerate(lifecycle["state_fields"], 1):
+        node = f"state_field{index}"
+        field_nodes[field["duty_id"]] = node
+        quote = _source_quote(field["source_refs"])
+        label = f"{field['state_object']} · {field['field']}"
+        lines.append(f'  {node}["State field<br/>{mermaid_label(label, width=44)}"]')
+        boxes.append(atlas_box(
+            node, label, "Source-stated state field",
+            f"Source: {quote}. Meaning: {field['meaning']}",
+        ))
+    for index, transition in enumerate(lifecycle["off_path_transitions"], 1):
+        node = f"off_path_transition{index}"
+        quote = _source_quote(transition["source_refs"])
+        label = f"{transition['governed_object']} · {transition['trigger']}"
+        lines.append(
+            f'  {node}["Off-path state transition<br/>{mermaid_label(label, width=44)}'
+            f'<br/>Source: {mermaid_label(quote, width=44)}"]'
+        )
+        boxes.append(atlas_box(
+            node, label, "Source-stated off-path transition",
+            f"Source: {quote}. Trigger: {transition['trigger']}. "
+            f"Governed object: {transition['governed_object']}.",
+        ))
+        component = component_ids[transition["component_key"]]
+        lines.append(f'  {component} -. "proposed lifecycle support" .-> {node}')
+        for effect_index, effect in enumerate(transition["effects"], 1):
+            field = field_nodes[effect["state_field_id"]]
+            change = f"{effect['change']}; check: {effect['observable_check']}"
+            effect_node = f"{node}_effect{effect_index}"
+            lines.append(f'  {effect_node}["{mermaid_label(change, width=44)}"]')
+            lines.append(
+                f'  {node} -->|"source-stated effect"| {effect_node}'
+            )
+            lines.append(f'  {effect_node} -->|"changes {mermaid_label(effect["field"])}"| {field}')
+            boxes.append(atlas_box(
+                effect_node,
+                change,
+                "Source-stated state effect",
+                f"{transition['trigger']} changes {effect['field']}: "
+                f"{effect['change']}; observable check: {effect['observable_check']}.",
+            ))
+
+
+def _source_quote(source_refs: Sequence[Mapping[str, Any]]) -> str:
+    if not source_refs:
+        raise ValueError("source lifecycle row has no source citation")
+    return "; ".join(f"“{ref['quote']}”" for ref in source_refs)
 
 
 __all__ = [

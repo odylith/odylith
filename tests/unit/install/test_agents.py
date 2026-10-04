@@ -76,14 +76,17 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
         "odylith/agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md",
         "odylith/skills/odylith-code-hygiene-guard/SKILL.md",
         "Discipline hot paths must not call host models",
-        "nested `authority_gate` task, request, edit, and schema",
+        "gate, source-ledger, and candidate schemas",
+        "one bounded source-only verifier",
+        "--decision-file \"<decision-file>\"",
         "greenfield authority-check --repo-root .",
         "Clarification: show one question and stop; no candidate or transaction",
         "--gate-file \"<gate-file>\" --candidate-file \"<candidate-file>\"",
         "No full-candidate reviewer, parser/regex, repair, retry, fallback, or model ladder",
         "Preview:",
-        "chat/hooks cannot confirm or authorize create",
-        "90/120/150 seconds advisory under the 180-second safety timeout",
+        "Chat/hooks cannot authorize create",
+        "standard 315s = shared 300s gate/candidate",
+        "+ 15s completion",
         "Markdown is view, not truth",
         "ProductCreateTransaction",
         "--transaction-file",
@@ -145,7 +148,7 @@ def test_managed_block_adds_maintainer_overlay_for_product_repo() -> None:
     assert "infer schemas from source" in block
     assert "narrate schema failures" in block
     assert "Clarification: show one question and stop; no candidate or transaction" in block
-    assert "chat/hooks cannot confirm or authorize create" in block
+    assert "Chat/hooks cannot authorize create" in block
     assert "without model, generation, or repair" in block
     assert "Confirm/Edit/Reject" not in block
     assert "confirm to expand" not in block

@@ -66,7 +66,8 @@
   compiler or model work. `EDIT` verifies the retained hash, compiles only sealed
   original source plus new untrusted correction through the existing compiler,
   preserves the tier, the 90/120/150-second performance targets, and the separate
-  180-second operational safety timeout, keeps the old seal, and returns a new
+  profile operational safety timeout (315 seconds for standard, 180 for controls),
+  keeps the old seal, and returns a new
   preview/hash. Performance-target overruns are reported as timing evidence and
   are not proposal failures by themselves. It adds no schema, stage, retry, or
   repair path.

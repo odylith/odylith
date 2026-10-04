@@ -126,6 +126,10 @@ def _authored_project_dashboard_contract_issues(
         issues.append("model-authored Project dashboard drifted from typed first-path relations")
     if facts.get("source_precedence") != intent[AUTHORED_SEMANTICS_KEY]["source_precedence"]:
         issues.append("model-authored Project dashboard drifted from source prerequisites")
+    source_duty = intent[AUTHORED_SEMANTICS_KEY].get("source_duty")
+    lifecycle = source_duty.get("lifecycle") if isinstance(source_duty, Mapping) else None
+    if facts.get("source_lifecycle") != lifecycle:
+        issues.append("model-authored Project dashboard drifted from source lifecycle")
     context_relations = first_path_context_relations_from_intent(intent)
     if [dict(row) for row in mapping_rows(facts.get("first_path_context_relations"))] != [
         dict(row) for row in context_relations

@@ -74,6 +74,7 @@ def derive_model_relations(
     evidence_text: str,
     event_citations_are_event_owned: bool = False,
     allow_exact_dual_role_constraints: bool = False,
+    first_path_event_orders: Sequence[int] | None = None,
 ) -> DerivedModelRelations:
     """Compile the compact graph without adding a second semantic author."""
 
@@ -84,6 +85,7 @@ def derive_model_relations(
         first_path=first_path,
         evidence_text=evidence_text,
         event_citations_are_event_owned=event_citations_are_event_owned,
+        first_path_event_orders=first_path_event_orders,
     )
     return DerivedModelRelations(
         first_path_relations=path_relations,
@@ -169,6 +171,7 @@ def _derive_events(
     first_path: str,
     evidence_text: str,
     event_citations_are_event_owned: bool,
+    first_path_event_orders: Sequence[int] | None,
 ) -> tuple[tuple[dict[str, Any], ...], dict[str, Any] | None]:
     if (
         not isinstance(value, Sequence)
@@ -185,6 +188,10 @@ def _derive_events(
         for fact in selected_facts
         if str(fact.get("field") or "") == "first_path"
     )
+    supporting_facts = tuple(
+        fact for fact in selected_facts
+        if str(fact.get("field") or "") == "supporting_events"
+    )
     if not path_facts or "\n".join(
         str(fact.get("quote") or "") for fact in path_facts
     ) != first_path:
@@ -192,20 +199,50 @@ def _derive_events(
             "Greenfield authoring must select exactly one first-path fact per event"
         )
     if event_citations_are_event_owned:
+        selected_orders = (
+            frozenset(first_path_event_orders)
+            if first_path_event_orders is not None
+            else frozenset(range(1, len(event_rows) + 1))
+        )
+        if (
+            not selected_orders
+            or (first_path_event_orders is not None
+                and len(first_path_event_orders) != len(selected_orders))
+            or any(type(order) is not int or not 1 <= order <= len(event_rows)
+                   for order in selected_orders)
+            or sum(len(fact.get("source_field_rows", ())) for fact in path_facts)
+            != len(selected_orders)
+            or sum(len(fact.get("source_field_rows", ())) for fact in supporting_facts)
+            != len(event_rows) - len(selected_orders)
+        ):
+            raise GreenfieldAuthoredSemanticsError(
+                "Greenfield authoring event roles do not match source-bound first-path duties"
+            )
         event_facts: list[Mapping[str, Any]] = []
+        path_row = 0
+        supporting_row = 0
         for event_order in range(1, len(event_rows) + 1):
+            is_path = event_order in selected_orders
+            if is_path:
+                path_row += 1
+                role_facts = path_facts
+                role_row = path_row
+            else:
+                supporting_row += 1
+                role_facts = supporting_facts
+                role_row = supporting_row
             matches = tuple(
                 fact
-                for fact in path_facts
-                if event_order in fact.get("source_field_rows", ())
+                for fact in role_facts
+                if role_row in fact.get("source_field_rows", ())
             )
             if len(matches) != 1:
                 raise GreenfieldAuthoredSemanticsError(
-                    "Greenfield authoring must bind every event to one first-path fact"
+                    "Greenfield authoring must bind every event to one source-cited fact"
                 )
             event_facts.append(matches[0])
     else:
-        if len(path_facts) != len(event_rows):
+        if supporting_facts or len(path_facts) != len(event_rows):
             raise GreenfieldAuthoredSemanticsError(
                 "Greenfield authoring must select exactly one first-path fact per event"
             )
@@ -226,7 +263,18 @@ def _derive_events(
         event_end = _positive_int(selected_fact.get("projection_end_byte"))
         source_start = _nonnegative_int(selected_fact.get("source_start_byte"))
         source_end = _positive_int(selected_fact.get("source_end_byte"))
-        if event_end - event_start != event_length or source_end - source_start != event_length:
+        verified_action = (
+            selected_fact.get("entailment_relationship") == "verified_source_action"
+        )
+        source_quote = str(selected_fact.get("source_quote") or "")
+        if (
+            event_end - event_start != event_length
+            or (
+                verified_action
+                and source_end - source_start != len(source_quote.encode("utf-8"))
+            )
+            or (not verified_action and source_end - source_start != event_length)
+        ):
             raise GreenfieldAuthoredSemanticsError(
                 "Greenfield authoring returned invalid source custody"
             )
@@ -263,6 +311,13 @@ def _derive_events(
             event_quote=event_quote,
             selected_facts=selected_facts,
         )
+        if verified_action and (
+            action_quote != selected_fact.get("verified_action")
+            or target_quote != selected_fact.get("verified_target")
+        ):
+            raise GreenfieldAuthoredSemanticsError(
+                "Greenfield event differs from its verified source action"
+            )
         if (
             actor_kind not in FIRST_PATH_ACTOR_KINDS
             or action_quote not in event_quote
@@ -340,7 +395,10 @@ def _terminal_result_fact(
         )
     result_fact = candidates[0]
     result_bytes = result_quote.encode("utf-8")
-    starts = _occurrence_starts(_required_quote(result_fact.get("quote")).encode("utf-8"), result_bytes)
+    source_fact_quote = _required_quote(
+        result_fact.get("source_quote") or result_fact.get("quote")
+    )
+    starts = _occurrence_starts(source_fact_quote.encode("utf-8"), result_bytes)
     # Never rescue an invalid local ordinal with a unique or global match.
     if result_occurrence > len(starts):
         raise GreenfieldAuthoredSemanticsError(
@@ -356,9 +414,19 @@ def _terminal_result_fact(
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authoring returned a terminal result outside its selected facts"
         )
-    projection_start = (
-        _nonnegative_int(result_fact.get("projection_start_byte")) + local_start
+    projection_starts = _occurrence_starts(
+        _required_quote(result_fact.get("quote")).encode("utf-8"), result_bytes
     )
+    if not projection_starts:
+        raise GreenfieldAuthoredSemanticsError(
+            "Greenfield terminal result is absent from its verified action display"
+        )
+    projection_local_start = (
+        projection_starts[0]
+        if result_fact.get("entailment_relationship") == "verified_source_action"
+        else local_start
+    )
+    projection_start = _nonnegative_int(result_fact.get("projection_start_byte")) + projection_local_start
     return {
         **dict(result_fact),
         "terminal_result_quote": result_quote,

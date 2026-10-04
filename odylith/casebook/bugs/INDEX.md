@@ -1,11 +1,12 @@
 # Bug Index
 
-Last updated (UTC): 2026-10-02
+Last updated (UTC): 2026-10-04
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-353 | 2026-10-02 | Greenfield release scorecard claims transactions compiled when cases failed befo | P2 | domain-intelligence-greenfield | Open | [2026-10-02-greenfield-release-scorecard-claims-transactions-compiled-when-cases-failed-befo.md](2026-10-02-greenfield-release-scorecard-claims-transactions-compiled-when-cases-failed-befo.md) |
 | CB-349 | 2026-09-30 | Queued compass refresh loses source local dependency environment | P2 | compass | Open | [2026-09-30-queued-compass-refresh-loses-source-local-dependency-environment.md](2026-09-30-queued-compass-refresh-loses-source-local-dependency-environment.md) |
 | CB-351 | 2026-09-30 | Greenfield unique source quote accepts fabricated context | P1 | domain-intelligence | FixedPendingRelease | [2026-09-30-greenfield-unique-source-quote-accepts-fabricated-context.md](2026-09-30-greenfield-unique-source-quote-accepts-fabricated-context.md) |
 | CB-352 | 2026-09-30 | Greenfield post confirm navigation error hides committed create | P1 | domain-intelligence | FixedPendingRelease | [2026-09-30-greenfield-post-confirm-navigation-error-hides-committed-create.md](2026-09-30-greenfield-post-confirm-navigation-error-hides-committed-create.md) |

@@ -19,6 +19,12 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring impor
 from odylith.runtime.domain_intelligence.greenfield_model_json import (
     encode_greenfield_model_value,
 )
+from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
+    verify_greenfield_source_duty_ledger_receipt,
+)
+from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
+    validate_greenfield_source_duty_binding,
+)
 
 
 def retained_canonical_candidate_hash_issues(
@@ -26,6 +32,7 @@ def retained_canonical_candidate_hash_issues(
     raw_candidate: Mapping[str, Any],
     receipt: Mapping[str, Any],
     evidence_text: str,
+    source_duty_receipt: Mapping[str, Any] | None = None,
 ) -> tuple[str, ...]:
     """Return fail-closed issues for one retained raw/canonical hash binding."""
 
@@ -33,6 +40,7 @@ def retained_canonical_candidate_hash_issues(
         raw_candidate=raw_candidate,
         receipt=receipt,
         evidence_text=evidence_text,
+        source_duty_receipt=source_duty_receipt,
     )
     return tuple(str(issue) for issue in evidence["issues"])
 
@@ -42,6 +50,7 @@ def retained_canonical_candidate_hash_evidence(
     raw_candidate: Mapping[str, Any],
     receipt: Mapping[str, Any],
     evidence_text: str,
+    source_duty_receipt: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Prove the runtime admitted exactly the retained host bytes after projection.
 
@@ -51,10 +60,27 @@ def retained_canonical_candidate_hash_evidence(
     """
 
     candidate = dict(raw_candidate)
+    retained_decisions = (
+        source_duty_receipt.get("decision_set")
+        if isinstance(source_duty_receipt, Mapping) else None
+    )
+    completeness = (
+        retained_decisions.get("source_completeness")
+        if isinstance(retained_decisions, Mapping) else None
+    )
+    omissions = completeness.get("omissions") if isinstance(completeness, Mapping) else None
     summary: dict[str, Any] = {
         "raw_candidate_sha256": "",
         "canonical_candidate_sha256": "",
         "canonical_projection_verified": False,
+        "source_completeness_verdict": (
+            str(completeness.get("verdict") or "")
+            if isinstance(completeness, Mapping) else "missing"
+        ),
+        "source_completeness_omission_count": (
+            len(omissions) if isinstance(omissions, list) else -1
+        ),
+        "source_completeness_verified": False,
     }
     if not candidate:
         return {
@@ -65,12 +91,32 @@ def retained_canonical_candidate_hash_evidence(
 
     issues: list[str] = []
     try:
+        ledger_receipt = verify_greenfield_source_duty_ledger_receipt(
+            source_duty_receipt or {}, evidence_text=evidence_text
+        )
+        summary["source_completeness_verified"] = True
+        result = candidate.get("result")
+        binding = result.get("source_duty_binding") if isinstance(result, Mapping) else None
+        if isinstance(binding, Mapping):
+            binding = validate_greenfield_source_duty_binding(
+                binding, ledger_receipt=ledger_receipt,
+                candidate_result=result, evidence_text=evidence_text,
+            )
+        elif isinstance(result, Mapping) and result.get("status") == "authored":
+            raise ValueError("authored candidate lacks source duty binding")
+    except (RuntimeError, TypeError, ValueError):
+        return {
+            **summary, "status": "failed",
+            "issues": ["retained source duty receipt or binding is invalid"],
+        }
+    try:
         raw_sha256 = hashlib.sha256(
             encode_greenfield_model_value(candidate)
         ).hexdigest()
         canonical = canonical_greenfield_host_candidate(
             candidate,
             evidence_text=evidence_text,
+            source_duty_receipt=ledger_receipt,
         )
         canonical_sha256 = hashlib.sha256(
             encode_greenfield_model_value(canonical)
@@ -94,6 +140,10 @@ def retained_canonical_candidate_hash_evidence(
         "source_sha256",
         "raw_candidate_sha256",
         "canonical_candidate_sha256",
+        "source_duty_ledger_sha256",
+        "source_duty_decision_set_sha256",
+        "source_duty_verifier_task_sha256",
+        "source_duty_binding_sha256",
     }
     if set(receipt) != expected_receipt_fields:
         issues.append("sealed host candidate receipt has missing or unsupported fields")
@@ -112,6 +162,18 @@ def retained_canonical_candidate_hash_evidence(
         issues.append(
             "sealed canonical candidate hash does not match deterministic projection"
         )
+    if receipt.get("source_duty_ledger_sha256") != ledger_receipt["ledger_sha256"]:
+        issues.append("sealed source duty ledger hash does not match retained receipt")
+    if receipt.get("source_duty_decision_set_sha256") != ledger_receipt["decision_set_sha256"]:
+        issues.append("sealed source duty decision hash does not match retained receipt")
+    if receipt.get("source_duty_verifier_task_sha256") != ledger_receipt["verifier_task_sha256"]:
+        issues.append("sealed source duty verifier task hash does not match retained receipt")
+    binding_sha256 = (
+        hashlib.sha256(encode_greenfield_model_value(binding)).hexdigest()
+        if binding is not None else None
+    )
+    if receipt.get("source_duty_binding_sha256") != binding_sha256:
+        issues.append("sealed source duty binding hash does not match retained candidate")
 
     issues = list(dict.fromkeys(issues))
     return {

@@ -23,12 +23,22 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     build_product_intent_envelope,
     product_intent_authority_from_envelope,
 )
+from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
+    GreenfieldSourceDutyBindingError,
+)
+from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
+    GreenfieldSourceDutyLedgerError,
+)
+from odylith.runtime.domain_intelligence.greenfield_source_lifecycle import (
+    project_greenfield_source_lifecycle,
+)
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     admit_complete_host_candidate,
     authored_response,
     host_candidate_response,
     materialize_complete_host_candidate,
     model_event_rows,
+    synthetic_source_duty_receipt,
 )
 
 _TEXT_FIELDS = {
@@ -115,6 +125,22 @@ def _complete_host_candidate_kwargs(
         "host_candidate": host_candidate_response(
             response,
             evidence_text=evidence_text,
+        ),
+    }
+
+
+def _source_duty_for_response(response: dict[str, Any], source: str) -> dict[str, Any]:
+    candidate = host_candidate_response(response, evidence_text=source)
+    receipt = synthetic_source_duty_receipt(candidate, evidence_text=source)
+    binding = candidate["result"]["source_duty_binding"]
+    return {
+        "ledger_receipt": receipt,
+        "binding": binding,
+        "lifecycle": project_greenfield_source_lifecycle(
+            ledger_receipt=receipt,
+            binding=binding,
+            candidate_result=candidate["result"],
+            evidence_text=source,
         ),
     }
 
@@ -325,7 +351,7 @@ def test_event_rejects_target_that_is_only_adjacent_in_a_selected_fact() -> None
         ],
     )
 
-    with pytest.raises(GreenfieldModelAuthoringError, match="ungrounded first-path event"):
+    with pytest.raises(GreenfieldSourceDutyLedgerError, match="normalized target must be an exact statement slice"):
         admit_complete_host_candidate(
             evidence_text=source,
             **_complete_host_candidate_kwargs(response, source),
@@ -337,7 +363,7 @@ def test_event_target_stays_fail_closed_after_ordered_event_simplification() -> 
     response = _response(source)
     model_event_rows(response)[0]["target_quote"] = "release readiness proof"
 
-    with pytest.raises(GreenfieldModelAuthoringError, match="ungrounded first-path event"):
+    with pytest.raises(GreenfieldSourceDutyLedgerError, match="normalized target must be an exact statement slice"):
         admit_complete_host_candidate(
             evidence_text=source,
             **_complete_host_candidate_kwargs(response, source),
@@ -351,7 +377,7 @@ def test_selected_target_without_event_co_containment_stays_fail_closed() -> Non
         "Source evidence preserves berth history"
     )
 
-    with pytest.raises(GreenfieldModelAuthoringError, match="ungrounded first-path event"):
+    with pytest.raises(GreenfieldSourceDutyLedgerError, match="normalized target must be an exact statement slice"):
         admit_complete_host_candidate(
             evidence_text=source,
             **_complete_host_candidate_kwargs(response, source),
@@ -459,7 +485,7 @@ def test_unselected_actor_fact_cannot_start_or_switch_an_actor_chain(
     relation = model_event_rows(response)[relation_index]
     relation["actor_fact"] = {"field": "human_actors", "row": 99}
 
-    with pytest.raises(GreenfieldModelAuthoringError, match="unbound first-path actor fact"):
+    with pytest.raises(GreenfieldSourceDutyBindingError, match="unknown actor fact"):
         admit_complete_host_candidate(
             evidence_text=source,
             **_complete_host_candidate_kwargs(response, source),
@@ -522,6 +548,7 @@ def test_verified_authoring_spans_become_the_product_intent_custody_source() -> 
             result.component_responsibility_relations,
             first_path_context_relations=result.first_path_context_relations,
             provisional_design=result.provisional_design,
+            source_duty=_source_duty_for_response(response, source),
         ),
     }
     envelope = build_product_intent_envelope(
@@ -562,7 +589,7 @@ def test_verified_authoring_spans_become_the_product_intent_custody_source() -> 
     )
     assert action_atom["categories"] == ["actions"]
     assert action_atom["polarity"] == "affirmed"
-    assert action_atom["entailment_relationship"] == "exact_source_span"
+    assert action_atom["entailment_relationship"] == "verified_source_action"
     assert action_atom["source_span_refs"][0]["source_start_byte"] >= 0
     assert {
         "field": "first_path",
@@ -595,6 +622,7 @@ def test_envelope_rejects_relation_rebound_to_a_duplicate_source_occurrence() ->
             result.component_responsibility_relations,
             first_path_context_relations=result.first_path_context_relations,
             provisional_design=result.provisional_design,
+            source_duty=_source_duty_for_response(response, source),
         ),
     }
 
@@ -646,6 +674,7 @@ def test_authored_custody_preserves_exact_unicode_markdown_and_deferred_actor_by
             result.component_responsibility_relations,
             first_path_context_relations=result.first_path_context_relations,
             provisional_design=result.provisional_design,
+            source_duty=_source_duty_for_response(response, source),
         ),
     }
     envelope = build_product_intent_envelope(

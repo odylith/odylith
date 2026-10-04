@@ -158,15 +158,25 @@ def test_discovery_uses_ephemeral_case_proof_without_publishing_release_evidence
             "status": "passed",
             "host_invocations": 1,
             "authority_gate_host_invocations": 1,
+            "source_ledger_host_invocations": 0,
+            "source_duty_verifier_host_invocations": 0,
             "candidate_host_invocations": 0,
             "contract_command_invocations": 1,
             "authority_check_command_invocations": 1,
+            "source_ledger_check_command_invocations": 0,
             "proposal_command_invocations": 0,
             "runtime_semantic_model_call_count": 0,
             "post_receipt_provider_invocations": 0,
             "model_profile_id": profile_id,
             "model_window_seconds": profile.model_timeout_seconds,
             "operational_timeout_seconds": profile.operational_timeout_seconds,
+            "whole_journey_diagnostic_cap_seconds": 660.0,
+            "candidate_completion_reserve_seconds": 15.0,
+            "whole_journey_bound_status": "diagnostic_unqualified",
+            "whole_journey_elapsed_scope": "through_observer_return_before_final_snapshot_serialization",
+            "whole_journey_deadline_status": "within",
+            "source_ledger_diagnostic_cap_seconds": 300.0,
+            "source_duty_verifier_diagnostic_cap_seconds": 120.0,
             "authority_gate_request": {
                 "version": HOST_NATIVE_ARGV_RECEIPT_VERSION,
                 "executable_sha256": "1" * 64,
@@ -178,6 +188,8 @@ def test_discovery_uses_ephemeral_case_proof_without_publishing_release_evidence
             },
             "candidate_temp_cleaned": True,
             "authority_gate_temp_cleaned": True,
+            "source_ledger_temp_cleaned": True,
+            "source_duty_decision_temp_cleaned": True,
             "host_workspace_cleaned": True,
             "stage": "propose",
             "contract_returncode": 0,
@@ -195,6 +207,8 @@ def test_discovery_uses_ephemeral_case_proof_without_publishing_release_evidence
             "response_kind": "clarification_required",
             "proposal_mode": "clarification_required",
             "elapsed_seconds": 18.0,
+            "proposal_phase_elapsed_seconds": 18.0,
+            "whole_journey_seconds": 18.0,
         }
         module.record_retained_case_json(
             retained_case,
@@ -242,7 +256,7 @@ def test_discovery_uses_ephemeral_case_proof_without_publishing_release_evidence
     assert retained_case.staging_root.parent.name == "private-proof"
     assert retained_case.staging_root.parent.parent.name.startswith("odylith-greenfield-matrix-")
     assert "profile_evidence" in observations, results[0]
-    assert observations["profile_evidence"]["status"] == "passed"
+    assert observations["profile_evidence"]["status"] == "passed", observations["profile_evidence"]["issues"]
     assert observations["profile_evidence"]["host_semantic_model_calls"] == 1
     assert (
         observations["profile_evidence"][
@@ -335,6 +349,7 @@ def test_direct_propose_requires_candidate_file_before_command_execution(
             timeout=90,
             candidate_file="",
             gate_file=str(tmp_path / "authority-gate.json"),
+            ledger_file=str(tmp_path / "source-ledger.json"),
         )
 
 

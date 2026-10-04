@@ -55,6 +55,10 @@ def _model_observation(profile_id: str = STANDARD_PROFILE_ID) -> dict[str, objec
             "source_sha256": "a" * 64,
             "raw_candidate_sha256": "b" * 64,
             "canonical_candidate_sha256": "c" * 64,
+            "source_duty_ledger_sha256": "d" * 64,
+            "source_duty_verifier_task_sha256": "8" * 64,
+            "source_duty_decision_set_sha256": "f" * 64,
+            "source_duty_binding_sha256": "e" * 64,
         },
         "runtime_semantic_model_call_count": 0,
     }
@@ -221,6 +225,8 @@ def test_cli_exposes_only_release_success_tiers_and_labels_other_profiles() -> N
             "/tmp/candidate.json",
             "--gate-file",
             "/tmp/gate.json",
+            "--ledger-file",
+            "/tmp/ledger.json",
             "--repair-tier",
             "standard",
         ]
@@ -238,6 +244,8 @@ def test_cli_exposes_only_release_success_tiers_and_labels_other_profiles() -> N
                 "/tmp/candidate.json",
                 "--gate-file",
                 "/tmp/gate.json",
+                "--ledger-file",
+                "/tmp/ledger.json",
                 "--repair-tier",
                 "rescue",
             ]
@@ -252,6 +260,7 @@ def test_public_compile_rejects_oversize_before_candidate_admission(tmp_path) ->
             edit_evidence="",
             release_selector="",
             host_candidate={},
+            source_duty_receipt={},
         )
 
 

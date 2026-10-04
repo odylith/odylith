@@ -1,5 +1,42 @@
 # Release
-Last updated: 2026-09-30
+Last updated: 2026-10-02
+
+## Greenfield host process boundary (2026-10-02)
+
+Host calls must use the shared group-timeout owner with exact stdin delivery,
+bounded descendant cleanup, and retained partial streams on failure. Raw
+stderr belongs in external diagnostic evidence; failed observations may hold
+cleanup outcome and stream sizes/hashes, never private excerpts. A host
+timeout must suppress all later semantic stages and proposal publication.
+External stderr is limited to 256 KiB with private file/directory permissions;
+oversize evidence fails closed with its full size and hash, without clipping.
+Terminal lifecycle-observer failures must retain the complete terminal result
+and streams before refusing. Nonzero and timeout command outcomes remain the
+primary failures; telemetry failure is attached rather than replacing them.
+Cleanup proof covers the owned process group. Escaping descendants are
+explicitly unverified. Successful v12 observation fields remain unchanged.
+The prior direct-child timeout path and discarded exception streams are P1
+defects. Independent process-boundary proof is required before fresh public
+execution; v15's gate timeout has no semantic-positive credit.
+
+## Greenfield standard deadline and recovery custody (2026-10-02)
+
+Model-profile contract v25 and standard profile v21 declare a shared
+300-second gate/candidate model window, 315-second operational allowance,
+and 15-second completion reserve. The fixed diagnostic whole deadline stays
+660 seconds; phase maxima are non-additive. Candidate dispatch reserves
+completion time and never resets spent gate time. Observation v12 proves the
+reserve through authored and clarification outcomes; controls retain their
+previous limits.
+
+The recovery caller adopts that shared standard allowance and passes the
+exact accepted source-duty ledger receipt to the four-argument proposal
+callback. Raw source receipt and sealed transaction retention occur inside
+their timed callbacks. The owned final observation is serialized after driver
+finalization; telemetry failure preserves the primary flow exception.
+Independent primary-chain checks pass 125 tests and recovery checks pass 64.
+Fresh installed semantic, transaction, browser, and full release qualification
+remain required. Historical limits and failed experiments are unchanged.
 
 ## V43 maintained matrix invocation contract (2026-09-27)
 
@@ -1046,22 +1083,18 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-10-02 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
+  - Evidence: `odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
+- **2026-10-02 · Decision:** Decision evidence linked this component to governed work with 3 verifiable artifact references.
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `tests/unit/install/test_greenfield_actual_driver_profile_evidence.py`
+- **2026-10-02 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py`
+- **2026-10-02 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
+  - Evidence: `odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
 - **2026-09-30 · Decision:** Decision evidence linked this component to governed work with 2 verifiable artifact references.
   - Evidence: `odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
 - **2026-09-27 · Decision:** Decision evidence linked this component to governed work with 1 verifiable artifact reference.
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`
-- **2026-09-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-failed-subset-runner-returns-a-function-instead-of-proposal-execution.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
-- **2026-09-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-001
-  - Evidence: `odylith/casebook/bugs/2026-05-07-release-smoke-omitted-greenfield-create-journey.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
-- **2026-09-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 1 verifiable artifact reference.
-  - Scope: B-142
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`
-- **2026-09-27 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
 <!-- registry-requirements:end -->
 
 ## Feature History

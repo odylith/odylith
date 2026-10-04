@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
+import math
 import time
 from typing import Any
 
@@ -21,6 +22,7 @@ def run_compiled_greenfield_journey(
     repair_tier: str,
     invoke_cli: Callable[[Sequence[str], int], Any],
     invoke_propose: Callable[[int], Any],
+    read_proposal_stage_seconds: Callable[[], float],
     raw_streams: dict[str, str] | None = None,
 ) -> CompiledCreateExecution:
     profile_id = model_profile_id_for_repair_tier(repair_tier)
@@ -33,7 +35,13 @@ def run_compiled_greenfield_journey(
         raise RuntimeError("installed Greenfield journey failed its initial capability show")
     started = time.perf_counter()
     proposed = invoke_propose(int(get_greenfield_model_profile(profile_id).operational_timeout_seconds))
-    proposal_seconds = round(time.perf_counter() - started, 3)
+    whole_journey_seconds = round(time.perf_counter() - started, 3)
+    proposal_seconds = read_proposal_stage_seconds()
+    if (type(proposal_seconds) is not float or not math.isfinite(proposal_seconds)
+            or proposal_seconds <= 0.0 or proposal_seconds > whole_journey_seconds + 1.0):
+        raise RuntimeError("installed Greenfield journey lacks measured proposal-stage timing")
+    if raw_streams is not None:
+        raw_streams["timing.whole-journey-seconds"] = str(whole_journey_seconds)
     execution = commit_precompiled_transaction(
         repo_root=repo_root, proposed=proposed, proposal_seconds=proposal_seconds,
         invoke_cli=lambda command: invoke_cli(command, 60),

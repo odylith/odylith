@@ -50,6 +50,7 @@ MAX_AUTHORED_FIELD_VALUE_CHARS = 2_400
 MAX_AUTHORED_LIST_ITEMS = 32
 MAX_AUTHORED_CITATIONS = 256
 AUTHORED_LIST_FIELDS = (
+    "supporting_events",
     "success_metrics",
     "evidence_requirements",
     "operational_constraints",
@@ -471,6 +472,10 @@ def _model_authoring_observations(value: Mapping[str, Any] | None) -> dict[str, 
             "source_sha256",
             "raw_candidate_sha256",
             "canonical_candidate_sha256",
+            "source_duty_ledger_sha256",
+            "source_duty_verifier_task_sha256",
+            "source_duty_decision_set_sha256",
+            "source_duty_binding_sha256",
         }
         or any(
             not isinstance(candidate.get(key), str) or not candidate.get(key)
@@ -482,6 +487,10 @@ def _model_authoring_observations(value: Mapping[str, Any] | None) -> dict[str, 
                 "source_sha256",
                 "raw_candidate_sha256",
                 "canonical_candidate_sha256",
+                "source_duty_ledger_sha256",
+                "source_duty_verifier_task_sha256",
+                "source_duty_decision_set_sha256",
+                "source_duty_binding_sha256",
             )
         )
     ):
