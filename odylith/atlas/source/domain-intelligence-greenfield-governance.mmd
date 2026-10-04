@@ -6,8 +6,8 @@ flowchart TB
       contract["Public candidate contract<br/>Sealed source context and typed schema"]
       model_pass["Normalized source-duty ledger v5<br/>One source owner for role, action and target meaning"]
       typed_graph["Compact source bank v3 evidence<br/>Host resolves every ID; compiler verifies each exact<br/>quote and context against the full source"]
-      identity_check["Exact transition-state identity preflight<br/>Resolve every effect by declared object and field<br/>before verifier; binding and passive projection reuse it"]
-      source_custody["Compact source-only verifier and canonical ledger<br/>Closed keyed decisions and source-wide completeness;<br/>unused bank storage drops only after source validation"]
+      identity_check["Source field and performer custody preflight<br/>Resolve declared object and field identities;<br/>retain exact performer quotes in normalized statements"]
+      source_custody["Compact source-only verifier and canonical ledger<br/>Judge one performer and complete source duties;<br/>closed keyed decisions bind the stronger task hash"]
       candidate_author["One candidate authoring pass<br/>Lossless compact accepted inventory and custody hashes;<br/>full accepted receipt remains compiler-owned"]
       ambiguity{"Material meaning complete?"}
       clarify["One focused clarification<br/>No transaction or governed write"]
@@ -18,7 +18,7 @@ flowchart TB
 
     subgraph projection_lane["Deterministic package construction"]
       direction LR
-      custody["Deterministic candidate admission<br/>Reuse exact transition-state identities; restore verified<br/>action and target; validate lifecycle, relations and hashes"]
+      custody["Deterministic candidate admission<br/>Reuse verified performer and state identities; restore<br/>action and target; validate lifecycle, relations and hashes"]
       invalid_candidate["Invalid or tampered candidate<br/>Fail closed with no model, repair, retry,<br/>fallback, transaction, or governed write"]
       projections["Deterministic source and design projections<br/>4–5 Radar, 4–5 Registry, five Atlas views<br/>Exact release membership and dependency-ready task"]
       staged_surfaces["Temporary-root surface rendering<br/>Shared read lock holds the validated baseline<br/>No detached narration queue or worker"]

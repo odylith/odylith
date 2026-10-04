@@ -36,11 +36,13 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring impor
     GREENFIELD_INTENT_AUTHORING_VERSION,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    declared_source_action_fixture,
     synthetic_source_duty_receipt,
 )
 
 
-SOURCE = "Build a useful product."
+# Explicit synthetic transport evidence; it does not qualify public semantics.
+SOURCE = "Build a useful product. A test operator records a test outcome. The record variant remains unspecified."
 MISSING = object()
 
 
@@ -59,7 +61,7 @@ def _raw_and_receipt() -> tuple[dict[str, object], dict[str, object]]:
     _authored, receipt = admit_greenfield_host_candidate(
         raw,
         evidence_text=SOURCE,
-        source_duty_receipt=synthetic_source_duty_receipt(raw, evidence_text=SOURCE),
+        source_duty_receipt=_source_receipt(raw),
         clock=lambda: 1.0,
     )
     return raw, receipt
@@ -74,7 +76,14 @@ def _observed(receipt: dict[str, object]) -> dict[str, object]:
 
 
 def _source_receipt(raw: dict[str, object]) -> dict[str, object]:
-    return synthetic_source_duty_receipt(raw, evidence_text=SOURCE)
+    return synthetic_source_duty_receipt(raw, evidence_text=SOURCE, declared_actions=[
+        declared_source_action_fixture(
+            duty_id="operator-record", actor_quote="A test operator",
+            event_quote="A test operator records a test outcome.",
+            statement="A test operator records a test outcome", action="records", target="a test outcome",
+            performer_role="human_actor", observable_result="test outcome recorded",
+        )
+    ])
 
 
 def _stage(receipt: dict[str, object]) -> dict[str, object]:

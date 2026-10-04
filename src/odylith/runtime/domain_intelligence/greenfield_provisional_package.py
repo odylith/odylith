@@ -72,10 +72,15 @@ def _source_lifecycle_text(transition: Mapping[str, Any]) -> str:
     effects = transition["effects"]
     citations = transition["source_refs"]
     lines = [
-        f"Source state transition — {transition['governed_object']}; trigger: {transition['trigger']}.",
+        f"Source state transition — {transition['governed_object']}",
+        f"Trigger: {transition['trigger']}",
         *[
-            f"Field {effect['field']}: {effect['change']}; observable check: {effect['observable_check']}."
+            line
             for effect in effects
+            for line in (
+                f"Field {effect['field']}: {effect['change']}",
+                f"Observable check: {effect['observable_check']}",
+            )
         ],
         *[
             f"Source citation (occurrence {citation['occurrence']}): {citation['quote']}"
@@ -109,19 +114,19 @@ def _source_design_duties(
 
 def _source_design_duty_text(role: str, duty: Mapping[str, Any]) -> str:
     if role == "conditional_guards":
-        statement = (
-            f"Source conditional guard — when {duty['trigger']}, "
-            f"protect {duty['protected_action']}: {duty['rule']}."
-        )
+        statements = [
+            "Source conditional guard", f"Trigger: {duty['trigger']}",
+            f"Protected action: {duty['protected_action']}", f"Rule: {duty['rule']}",
+        ]
     elif role == "boundaries":
-        statement = f"Source {duty['kind']} boundary — {duty['rule']}"
+        statements = [f"Source {duty['kind']} boundary", f"Rule: {duty['rule']}"]
     else:
-        statement = (
-            f"Source proof duty — {duty['dossier_or_artifact']} must show "
-            f"{duty['must_show']}."
-        )
+        statements = [
+            "Source proof duty", f"Dossier or artifact: {duty['dossier_or_artifact']}",
+            f"Required evidence: {duty['must_show']}",
+        ]
     return "\n".join([
-        statement,
+        *statements,
         *[
             f"Source citation (occurrence {citation['occurrence']}): {citation['quote']}"
             for citation in duty["source_refs"]

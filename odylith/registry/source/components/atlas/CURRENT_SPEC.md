@@ -75,6 +75,16 @@ different typed owner system may add an ownership edge. This guarantees useful
 relationship depth for a valid single-event path without inventing a second
 concept from keywords or treating diagram layout as product truth.
 
+The supporting component set includes the upstream closure of declared exchanges
+and delivery prerequisites for selected event components. Support-only components
+are labeled separately; unrelated downstream consumers are excluded. This adds
+required architecture without changing source-owned action membership or order.
+Sequence rendering belongs to the shared authored design-view owner. Lifecycle,
+safety and proof labels preserve complete source statements as separate labeled
+fields, without punctuation joins or clipping. Bounded characterization and real
+Mermaid rendering pass; fresh installed package and browser qualification remain
+required under CB-324.
+
 `odylith atlas update --updates-file <file>` accepts a versioned list of explicit
 patches for existing diagrams. It preserves omitted metadata and immutable diagram
 identity/source paths. The existing catalog builder, artifact Tribunal, path

@@ -2,7 +2,7 @@
 
 Receipt version: `odylith.greenfield-operating-envelope.v6`
 
-Document revision: `11`
+Document revision: `12`
 
 Profile: `single-product-governance-onboarding`
 
@@ -170,13 +170,21 @@ material clarifications with no writes. Sol diagnostic evidence cannot qualify a
 release-success profile.
 
 Canonical authoring `odylith.greenfield.intent-authoring.v79` receives one
-host-owned candidate in host format v21 under candidate contract v46. The
+host-owned candidate in host format v21 under candidate contract v47. The
 source-duty host returns one compact citation bank and typed rows that refer
 to it; deterministic expansion restores the same complete cited ledger before
 preflight. This path remains unqualified. Earlier v44 public evidence failed
 duplicate-action custody; the fresh v45 installed civic run stopped on one
 unused exact opening-outcome citation before verification or package creation.
-Neither failed result becomes a positive for v46. Each host
+Neither failed result qualifies the current contract. Fresh v46 civic evidence
+passes admission and publication but fails independent actor-custody review;
+it also remains unqualified. Contract v47 strengthens the existing source-owned
+actor reference: it must cite one performer identity, retained as a proper
+literal slice of the normalized statement. Wider action and role context stays
+in separate citations. The existing verifier must judge identity atomicity and
+performer assignment; literal containment establishes only custody. A changed
+verifier-task hash refuses earlier looser receipts without migrating their
+meaning. Fresh independent semantic proof remains required. Each host
 stage returns only its schema-matching JSON; the external controller owns file
 custody, CLI checks, and the separate verifier call. The host first returns one
 authority decision. An admitted request receives one
@@ -325,7 +333,11 @@ The raw host format v21 selects that actor through `actor_fact: {field, row}`
 using the same one-based fact-row convention as terminal results. The compiler
 projects this into canonical authoring v79. The verified source-duty ledger
 supplies each normalized event statement, action, and target with exact event,
-actor, and role citations. Actor references
+actor, and role citations. The ledger rejects actor quotes that equal or are
+absent from the normalized statement before verifier dispatch. The verifier
+must reject full action sentences, multiple performers and whole paragraph
+context as identity quotes, preserve role-context/pronoun interpretation, and
+keep repeated performer identities distinct from other performers. Actor references
 may select only title, human actors, internal systems, or external systems; scalar
 title uses row 1. The compiler resolves the original selected row through source
 custody and derives the canonical kind, path and exact quotation. Identical names

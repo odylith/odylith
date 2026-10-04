@@ -596,10 +596,10 @@ def _project_brief(
         ))
     if operational_constraints:
         sections.append(
-            _brief_section("Operational constraints", "; ".join(operational_constraints), "Source-stated operating limits.")
+            _brief_section("Operational constraints", "\n".join(operational_constraints), "Source-stated operating limits.")
         )
     if non_goals:
-        sections.append(_brief_section("Non-goals", "; ".join(non_goals), "Explicitly excluded scope."))
+        sections.append(_brief_section("Non-goals", "\n".join(non_goals), "Explicitly excluded scope."))
     if assumption_values:
         sections.append(
             _brief_section(

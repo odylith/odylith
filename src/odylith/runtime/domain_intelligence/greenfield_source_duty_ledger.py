@@ -205,6 +205,23 @@ def _canonical_sha256(value: Mapping[str, Any]) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
+def resolve_greenfield_action_actor_identity(
+    row: Mapping[str, Any], *, path: str
+) -> str:
+    """Retain the source identity inside its normalized action statement.
+
+    Literal containment establishes custody, not that the quote names one
+    performer. The source-only verifier owns that semantic judgment.
+    """
+    actor = row["actor_ref"]["quote"]
+    statement = row["statement"]
+    if not actor.strip() or actor == statement or actor not in statement:
+        raise GreenfieldSourceDutyLedgerError(
+            f"{path}: actor identity must be a proper exact statement slice"
+        )
+    return actor
+
+
 def resolve_greenfield_transition_state_fields(
     ledger: Mapping[str, Any],
 ) -> dict[str, tuple[Mapping[str, Any], ...]]:
@@ -324,6 +341,7 @@ def preflight_greenfield_source_duty_ledger(
                             f"{path}: actor citation overlaps reference-only context"
                         )
                 _require_text(row["action"], f"{path}.action")
+                resolve_greenfield_action_actor_identity(row, path=path)
                 for field in ("action", "target"):
                     if row[field] and row[field] not in row["statement"]:
                         raise GreenfieldSourceDutyLedgerError(
@@ -499,6 +517,7 @@ __all__ = [
     "greenfield_source_duty_ledger_schema",
     "load_greenfield_source_duty_file",
     "preflight_greenfield_source_duty_ledger",
+    "resolve_greenfield_action_actor_identity",
     "resolve_greenfield_transition_state_fields",
     "validate_greenfield_source_duty_ledger",
     "verify_greenfield_source_duty_ledger_receipt",

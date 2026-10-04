@@ -1,5 +1,126 @@
 - Bug ID: CB-324
 
+## Actor v47 and view corrections: bounded proof (2026-10-03)
+
+The chosen correction passes 307 bounded checks. The existing source-only
+verifier judges one performer; one literal-custody check serves preflight,
+compact decoding and receipt/binding validation. The retained faulty v17
+receipt is rejected without changing its bytes. Five synthetic performers
+retain seven canonical assignments and repeated citations alias only the same
+performer. In-process real CLI/driver tests with mocked host responses prove
+early refusal and zero later calls; they are not installed model proof.
+Changed verifier-task hash retires earlier judgments; wire shapes stay intact.
+
+The two view corrections pass 118 checks and real Mermaid rendering. Required
+upstream support closure preserves selected actions and excludes unrelated
+downstream components. Separate labeled copy preserves source statements.
+Sequence rendering moved completely into the existing design-view owner.
+Independent Astra review finds zero actionable P0/P1/P2 issues and passes
+35 focused checks. Reports and exact file hashes are retained at
+`/private/tmp/odylith-greenfield-v47-combined-independent-review-20261003.json`,
+`/private/tmp/odylith-actor-identity-v47-handoff.json` and
+`/private/tmp/odylith-greenfield-v17-view-patch-handoff-20261003.json`.
+
+The first wider v47 run reports 2,816 passes and 111 failures in 270.07 seconds.
+109 fail before their original assertions because old clarification fixtures
+fabricate whole-source actors instead of declaring duties. Two integration
+expectations retain old punctuation or omit the declared normalized actor.
+Their corrected expectations pass both integration checks in 7.76 seconds.
+Migrate explicit synthetic declarations while preserving source spans and all
+boundary assertions, then rerun the required lane with source assets fixed.
+Retain the failed run at
+`/private/tmp/odylith-greenfield-broad-after-actor-identity-20261003.log`.
+No fresh public v47 package or release qualification is claimed.
+
+Explicit test-only action declarations resolve all 109 setup failures; their
+143 affected tests and 125 actor-protection checks pass without weakening the
+original assertions. The full settled Greenfield runtime/install/integration
+lane passes 2,927 tests in 273.68 seconds with source assets held fixed,
+including browser recovery. Preserve both the failed and passing logs.
+D-043/D-045 source/render/freshness checks pass; catalog comparison proves
+only those two rows changed and all 24 unqualified dates remain unchanged.
+Fresh civic v19 prediction is sealed externally before execution; admission,
+source-first semantics, whole-flow timing and release qualification stay open.
+
+## Independent v17 semantic review fails actor custody (2026-10-03)
+
+Source-first Astra review rejects the retained civic package with one P1 and
+two P2 findings. Five separate human roles collapse into one paragraph-valued
+actor in canonical relations, Atlas, Radar/Registry event headings, Project
+and handoffs. Supporting first-run architecture omits Consent registry and
+its eligibility/revalidation exchanges, although another diagram retains them.
+Generated safety/lifecycle sentences contain malformed repeated punctuation.
+All nine safety obligations, seven ordered actions, six dossier fields and
+withdrawal exclusion/invalidation otherwise survive. All 56 generated
+write-set files match their sealed hashes; custody cannot replace semantics.
+Reports: `/private/tmp/odylith-greenfield-civic-v17-independent-review.json`
+and `.md`; the source checklist was saved before candidate inspection.
+
+V17 remains failed semantic evidence despite passing admission/publication.
+Hold broader positive runs; diagnose how accepted actor identities bind to
+canonical facts and how a whole workflow paragraph becomes one actor. Compare
+the smallest existing-owner correction against that failure, without another
+model stage, semantic parser, fixture tuning or retained candidate repair.
+The completed field-identity correction improved lifecycle fidelity; the
+remaining role ownership and two view defects still prevent qualification.
+
+Read-only diagnosis establishes that inventory actor_ref, not candidate
+deduplication, owns the bad identity. Exact binding requires the paragraph
+copy; narrow roles would currently be rejected. Prefer strengthening existing
+actor_ref over a new catalog: require an identity-only source quote as a proper
+literal slice of normalized statement, with role/event context separate. The
+existing verifier must affirm one performer and reject whole action sentences,
+multiple performers and paragraph/duty context. Literal containment alone
+does not prove semantic atomicity. One ledger resolver serves preflight,
+compact expansion, receipt revalidation and binding. Retain external role
+context, pronouns/inherited verbs and existing exact candidate-span equality.
+Host contract v47 and changed verifier-task hash retire looser receipt credit;
+valid schema shapes and receipt versions stay unchanged.
+
+Falsifiers: paragraph identity passes authentic CLI/driver preflight or later
+calls occur; valid inherited/context roles fail; five performers collapse or
+seven assignments change; wrong actor/human-system substitution, candidate
+paragraph substitution or old/tampered receipt binds; fields, safety or
+withdrawal effects drift. Keep semantic judgment in the existing source-only
+verifier. Do not restore disjoint exact action microspans, disable duplicate
+collapse, introduce source parsers or repair v17.
+
+The fresh agricultural v18 negative carries the existing frozen public
+annotation without changing its case/prompt/provenance. Metadata preflight
+passes; discovery proves one first_path question in 9.259 seconds, one gate
+call, zero inventory/verifier/candidate/proposal calls, identical 168-record
+snapshots, zero write attempts and no transaction. Original v17 harness
+failure remains unqualified and unchanged.
+
+## Fresh immutable v17 admits and publishes; subsequent semantic review fails (2026-10-03)
+
+Clean implementation `9dc042deeaf97795b8f156d351bfe8481b687540` is committed
+and pushed. Its complete distribution builds successfully, with clean source
+provenance and 87 distinctive fixture-term leakage checks. Manifest SHA-256:
+`35cf414766441bb3bbb3874fddaef35fce6cedb035c2d1af77d40a9ce366d1d4`.
+Fresh civic v17 admits the source inventory, verifies completeness, authors
+one candidate, seals and publishes the package, and passes discovery contracts.
+Inventory: 115.258 seconds; verifier: 37.485 seconds; shared gate/candidate/
+proposal phase: 223.903 seconds; whole source flow: 376.646 seconds within the
+660-second diagnostic cap. Four host calls, one proposal, zero post-receipt
+provider calls. Commit-only publication takes 0.362 seconds. Transaction:
+`3adac977f72607459784a4cfaab136d1d5bb02f3d660b1d39ceb750976cc2f7c`.
+The field-identity prediction passes deterministic admission. Subsequent
+source-first Astra review fails actor custody as recorded above; five Radar,
+five Registry and five Atlas artifacts do not establish semantic quality. This is discovery proof,
+with browser/recovery omitted, and cannot qualify the release or timing floor.
+Retain `/private/tmp/odylith-greenfield-public-civic-057-v17-evidence/` unchanged.
+
+The parallel frozen agricultural source-only negative returns one first_path
+question in 10.468 seconds, with one gate call, no later semantic or proposal
+calls, identical 168-record snapshots, zero write/subprocess attempts and no
+transaction. Harness quality still fails because the isolated control envelope
+omits frozen expected-field annotations. The case and prompt exactly match
+the frozen public operating-envelope v2 row, whose annotation already declares
+first_path. Preserve the failed harness result; carry that unchanged frozen
+annotation into a new external control envelope and preflight it before a
+fresh proof. Do not weaken the validator or relabel v17 as qualified.
+
 ## Broad proof and serialized browser rerun (2026-10-03)
 
 After the field-identity correction, the broad Greenfield lane reports 2,891

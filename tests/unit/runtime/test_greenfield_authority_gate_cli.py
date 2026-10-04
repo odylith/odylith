@@ -28,6 +28,7 @@ from odylith.runtime.domain_intelligence.greenfield_source_duty_view import (
     duty_references,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    declared_source_action_fixture,
     write_synthetic_source_duty_receipt,
 )
 from tests.unit.runtime.test_greenfield_source_duty_ledger import _material_duty_case
@@ -58,6 +59,18 @@ def _admit() -> dict[str, object]:
         "result_quote": "verifies a decision receipt",
         "question": "",
     }
+
+
+def _declared_coordinator_actions():
+    event = "A coordinator opens an intake request and verifies a decision receipt."
+    return [declared_source_action_fixture(
+        duty_id=f"coordinator-{index}", actor_quote="A coordinator", event_quote=event,
+        statement=f"A coordinator {action} {target}", action=action, target=target,
+        performer_role="human_actor", observable_result=result,
+    ) for index, (action, target, result) in enumerate((
+        ("opens", "an intake request", "intake request opened"),
+        ("verifies", "a decision receipt", "decision receipt verified"),
+    ), 1)]
 
 
 def _yes_decisions(decision_task: dict[str, object]) -> dict[str, object]:
@@ -218,6 +231,7 @@ def test_admitted_gate_does_not_replace_the_host_candidate(
         tmp_path.parent / f"{tmp_path.name}-source-ledger.json",
         {"result": {"status": "clarification_required"}},
         evidence_text=combined_prompt_evidence_source(prompt=prompt, edit_evidence=""),
+        declared_actions=_declared_coordinator_actions(),
     )
 
     rc = greenfield_proposals_cli.main(
@@ -282,6 +296,7 @@ def test_source_ledger_check_requires_source_only_decisions_before_receipt(
         tmp_path.parent / f"{tmp_path.name}-source-ledger.json",
         {"result": {"status": "clarification_required"}},
         evidence_text=combined_prompt_evidence_source(prompt=prompt, edit_evidence=""),
+        declared_actions=_declared_coordinator_actions(),
     )
     raw_ledger = json.loads(ledger.read_text(encoding="utf-8"))["ledger"]
     ledger.write_text(json.dumps(_compact_ledger(raw_ledger)), encoding="utf-8")
@@ -478,6 +493,7 @@ def test_source_ledger_check_rejects_negative_decision_before_candidate(
         tmp_path.parent / f"{tmp_path.name}-source-ledger.json",
         {"result": {"status": "clarification_required"}},
         evidence_text=combined_prompt_evidence_source(prompt=prompt, edit_evidence=""),
+        declared_actions=_declared_coordinator_actions(),
     )
     raw_ledger = json.loads(ledger.read_text(encoding="utf-8"))["ledger"]
     ledger.write_text(json.dumps(_compact_ledger(raw_ledger)), encoding="utf-8")
@@ -536,6 +552,7 @@ def test_propose_rejects_tampered_source_only_decision_receipt_before_candidate(
         tmp_path.parent / f"{tmp_path.name}-source-ledger.json",
         {"result": {"status": "clarification_required"}},
         evidence_text=combined_prompt_evidence_source(prompt=prompt, edit_evidence=""),
+        declared_actions=_declared_coordinator_actions(),
     )
     receipt = json.loads(ledger_path.read_text(encoding="utf-8"))
     receipt[tamper_field] = tamper_value

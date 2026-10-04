@@ -184,10 +184,10 @@ def test_source_binding_separates_first_path_from_supporting_event_custody(
     authored, _receipt = _admit(source, candidate)
 
     assert authored.intent["first_path"] == (
-        "Dock attendant Ivo enters a vessel tag\n" "the berth map shows the placement"
+        "Dock attendant Ivo enters a vessel tag\n" "Berth map: the berth map shows the placement"
     )
     assert authored.intent["supporting_events"] == [
-        "the product records berth occupancy"
+        "Berth map: the product records berth occupancy"
     ]
     assert [row["order"] for row in authored.first_path_relations] == [1, 2, 3]
     assert any(
@@ -255,7 +255,7 @@ def test_ledger_owns_two_actions_with_one_complete_joined_citation() -> None:
     ]
     assert [row["event_quote"] for row in authored.first_path_relations[:2]] == [
         "Dock attendant Ivo enters a vessel tag",
-        "the product records berth occupancy",
+        "Berth map: the product records berth occupancy",
     ]
     assert joined not in authored.intent["first_path"]
     assert set(candidate["result"]["events"][0]) == {"actor_fact"}
@@ -336,9 +336,9 @@ def test_cross_role_joined_clause_keeps_first_path_and_system_duty_separate(
         prepared_evidence=prepared,
     )
     assert materialized["first_path"] == (
-        "Dock attendant Ivo enters a vessel tag\n" "the berth map shows the placement"
+        "Dock attendant Ivo enters a vessel tag\n" "Berth map: the berth map shows the placement"
     )
-    assert materialized["supporting_events"] == ["the product records berth occupancy"]
+    assert materialized["supporting_events"] == ["Berth map: the product records berth occupancy"]
     relations = materialized["authored_semantics"]["first_path_relations"]
     assert [row["action_verb_quote"] for row in relations] == [
         "enters",
@@ -362,9 +362,7 @@ def test_unbound_legacy_candidate_is_rejected() -> None:
 
 
 def test_material_ambiguity_asks_once_and_writes_nothing(tmp_path) -> None:
-    source = (
-        "Build a useful product, but the first task and visible result are unspecified."
-    )
+    source = _source() + " Choose between the draft and final record workflows."
     response = clarification_response(
         question="Which task and result should the product prove first?",
         material_dimension="first_path",
@@ -373,6 +371,9 @@ def test_material_ambiguity_asks_once_and_writes_nothing(tmp_path) -> None:
     )
     candidate = host_candidate_response(response, evidence_text=source)
     prepared = prepare_model_authoring_evidence(prompt=source)
+    inventory_candidate = host_candidate_response(
+        _response(prepared.evidence_source), evidence_text=prepared.evidence_source
+    )
 
     with pytest.raises(GreenfieldClarificationRequired) as raised:
         materialize_host_authored_intent(
@@ -380,7 +381,7 @@ def test_material_ambiguity_asks_once_and_writes_nothing(tmp_path) -> None:
             repo_root=tmp_path,
             host_candidate=candidate,
             source_duty_receipt=synthetic_source_duty_receipt(
-                candidate, evidence_text=prepared.evidence_source
+                inventory_candidate, evidence_text=prepared.evidence_source
             ),
             prepared_evidence=prepared,
         )

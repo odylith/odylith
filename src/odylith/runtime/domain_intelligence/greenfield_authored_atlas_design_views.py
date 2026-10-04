@@ -174,6 +174,158 @@ def styled_mermaid(lines: Sequence[str]) -> str:
     ) + "\n"
 
 
+def required_atlas_string(value: Any, name: str) -> str:
+    if not isinstance(value, str) or not value or value != value.strip():
+        raise ValueError(f"{name} must be a non-empty, whitespace-exact string")
+    return value
+
+
+def build_provisional_first_run_atlas_view(
+    relations: Sequence[Mapping[str, Any]],
+    *,
+    design: Mapping[str, Any],
+    source_precedence: Sequence[Mapping[str, Any]],
+) -> tuple[str, list[dict[str, str]]]:
+    """Project selected events and their declared upstream design support."""
+
+    lines = ["flowchart LR"]
+    boxes: list[dict[str, str]] = []
+    performers: dict[tuple[str, str], str] = {}
+    orders = design["first_run"]["event_orders"]
+    selected = set(orders)
+    for relation in relations:
+        if relation["order"] not in selected:
+            continue
+        index = relation["order"]
+        event_quote = required_atlas_string(relation.get("event_quote"), "first-path event quote")
+        actor_kind = required_atlas_string(relation.get("actor_kind"), "first-path actor kind")
+        performer = required_atlas_string(
+            relation.get("actor_fact_quote"), "first-path actor fact"
+        )
+        event_display = authored_event_display_text(relation)
+        lines.append(f'  event{index}["{mermaid_label(event_display)}"]')
+        boxes.append(
+            atlas_box(
+                f"event{index}",
+                event_display,
+                f"{actor_kind} event",
+                f"Source action {index}, performed by {performer}: {event_quote}",
+            )
+        )
+        identity = (actor_kind, performer)
+        if identity not in performers:
+            performer_id = f"performer{len(performers) + 1}"
+            performers[identity] = performer_id
+            lines.append(f'  {performer_id}["{mermaid_label(performer)}"]')
+            boxes.append(
+                atlas_box(
+                    performer_id,
+                    performer,
+                    "Typed event performer",
+                    f"Source-stated {actor_kind} performer for one or more first-path events: "
+                    f"{performer}",
+                )
+            )
+        lines.append(f'  {performers[identity]} -->|"performs"| event{index}')
+        owner = relation.get("owner_system_quote")
+        if isinstance(owner, str) and owner and owner != performer:
+            owner_identity = ("owner_system", owner)
+            if owner_identity not in performers:
+                owner_id = f"performer{len(performers) + 1}"
+                performers[owner_identity] = owner_id
+                lines.append(f'  {owner_id}["{mermaid_label(owner)}"]')
+                boxes.append(
+                    atlas_box(
+                        owner_id,
+                        owner,
+                        "Typed event owner",
+                        f"Accepted owner system for one or more first-path events: {owner}",
+                    )
+                )
+            lines.append(f'  {performers[owner_identity]} -->|"owns event state"| event{index}')
+    required = {
+        (row["before_event"], row["after_event"]): row["constraint_index"]
+        for row in source_precedence
+        if row["before_event"] in selected and row["after_event"] in selected
+    }
+    for (before, after), constraint_index in required.items():
+        lines.append(f'  event{before} -->|"source constraint {constraint_index}"| event{after}')
+    for before, after in zip(orders, orders[1:]):
+        if (before, after) not in required:
+            lines.append(f'  event{before} -. "proposed next step" .-> event{after}')
+    direct_components = {
+        component["key"] for component in design["components"]
+        if selected.intersection(component["supported_event_orders"])
+    }
+    supporting_components = set(direct_components)
+    workstreams = {row["key"]: row for row in design["workstreams"]}
+    # An exchange input or a delivery prerequisite remains necessary support
+    # even when its own source actions are outside this walkthrough. Never
+    # traverse outgoing exchanges to unrelated downstream consumers.
+    while True:
+        required_components = set(supporting_components)
+        required_components.update(
+            exchange["from_component"] for exchange in design["exchanges"]
+            if exchange["to_component"] in supporting_components
+        )
+        for workstream in design["workstreams"]:
+            if supporting_components.intersection(workstream["component_keys"]):
+                for prerequisite in workstream["depends_on"]:
+                    required_components.update(workstreams[prerequisite]["component_keys"])
+        if required_components == supporting_components:
+            break
+        supporting_components = required_components
+    component_nodes = {
+        component["key"]: f"proposed_component{index}"
+        for index, component in enumerate(design["components"], start=1)
+        if component["key"] in supporting_components
+    }
+    for component in design["components"]:
+        if component["key"] not in component_nodes:
+            continue
+        node_id = component_nodes[component["key"]]
+        direct = component["key"] in direct_components
+        label = "Proposed stage" if direct else "Proposed supporting component"
+        lines.append(
+            f'  {node_id}["{label}<br/>{mermaid_label(component["name"])}"]'
+        )
+        boxes.append(
+            atlas_box(
+                node_id,
+                component["name"],
+                "Proposed first-run stage" if direct else "Proposed supporting component",
+                f"Proposed responsibility: {component['responsibility']}",
+            )
+        )
+        for order in component["supported_event_orders"]:
+            if order in selected:
+                lines.append(f'  event{order} -. "proposed support" .-> {node_id}')
+    for exchange in design["exchanges"]:
+        if exchange["from_component"] not in component_nodes or exchange["to_component"] not in component_nodes:
+            continue
+        lines.append(
+            f'  {component_nodes[exchange["from_component"]]} '
+            f'-->|"Proposed exchange: {mermaid_label(exchange["contract"])}"| '
+            f'{component_nodes[exchange["to_component"]]}'
+        )
+    delivery_edges: set[tuple[str, str]] = set()
+    for workstream in design["workstreams"]:
+        for prerequisite in workstream["depends_on"]:
+            for origin in workstreams[prerequisite]["component_keys"]:
+                for target in workstream["component_keys"]:
+                    edge = (origin, target)
+                    if (
+                        origin != target and origin in component_nodes and target in component_nodes
+                        and edge not in delivery_edges
+                    ):
+                        delivery_edges.add(edge)
+                        lines.append(
+                            f'  {component_nodes[origin]} -. "proposed delivery prerequisite" .-> '
+                            f'{component_nodes[target]}'
+                        )
+    return styled_mermaid(lines), boxes
+
+
 def _component_exchange_view(
     design: Mapping[str, Any],
 ) -> tuple[str, list[dict[str, str]]]:
@@ -391,7 +543,7 @@ def _append_source_lifecycle(
         lines.append(f'  {node}["State field<br/>{mermaid_label(label, width=44)}"]')
         boxes.append(atlas_box(
             node, label, "Source-stated state field",
-            f"Source: {quote}. Meaning: {field['meaning']}",
+            f"Source: {quote}\nMeaning: {field['meaning']}",
         ))
     for index, transition in enumerate(lifecycle["off_path_transitions"], 1):
         node = f"off_path_transition{index}"
@@ -403,16 +555,19 @@ def _append_source_lifecycle(
         )
         boxes.append(atlas_box(
             node, label, "Source-stated off-path transition",
-            f"Source: {quote}. Trigger: {transition['trigger']}. "
-            f"Governed object: {transition['governed_object']}.",
+            f"Source: {quote}\nTrigger: {transition['trigger']}\n"
+            f"Governed object: {transition['governed_object']}",
         ))
         component = component_ids[transition["component_key"]]
         lines.append(f'  {component} -. "proposed lifecycle support" .-> {node}')
         for effect_index, effect in enumerate(transition["effects"], 1):
             field = field_nodes[effect["state_field_id"]]
-            change = f"{effect['change']}; check: {effect['observable_check']}"
+            change = f"Change: {effect['change']}\nObservable check: {effect['observable_check']}"
             effect_node = f"{node}_effect{effect_index}"
-            lines.append(f'  {effect_node}["{mermaid_label(change, width=44)}"]')
+            change_label = "<br/>".join(
+                mermaid_label(line, width=44) for line in change.splitlines()
+            )
+            lines.append(f'  {effect_node}["{change_label}"]')
             lines.append(
                 f'  {node} -->|"source-stated effect"| {effect_node}'
             )
@@ -421,8 +576,8 @@ def _append_source_lifecycle(
                 effect_node,
                 change,
                 "Source-stated state effect",
-                f"{transition['trigger']} changes {effect['field']}: "
-                f"{effect['change']}; observable check: {effect['observable_check']}.",
+                f"Trigger: {transition['trigger']}\nField: {effect['field']}\n"
+                f"Change: {effect['change']}\nObservable check: {effect['observable_check']}",
             ))
 
 
@@ -435,6 +590,8 @@ def _source_quote(source_refs: Sequence[Mapping[str, Any]]) -> str:
 __all__ = [
     "atlas_box",
     "build_provisional_design_atlas_specs",
+    "build_provisional_first_run_atlas_view",
+    "required_atlas_string",
     "mermaid_label",
     "styled_mermaid",
 ]

@@ -56,7 +56,7 @@ from odylith.runtime.domain_intelligence.greenfield_authority_gate import (
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v7"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v46"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v47"
 HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION = "odylith.greenfield.host-candidate-authoring-transport.v1"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
 
@@ -201,7 +201,14 @@ def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
                 "text only; the independent verifier judges their source meaning. Cite the "
                 "complete event context supporting that actor/action/target meaning; inherited "
                 "verbs may be normalized without inventing source microcitations. actor_ref "
-                "must cite the source actor occurrence; role_refs supply exact source contexts "
+                "must cite only ONE source-owned performer identity, excluding whole action "
+                "sentences, extra performers, and whole duty or paragraph context. Its exact "
+                "quote must be a proper literal substring of statement. Retain the identity "
+                "quote when normalizing pronouns or inherited verbs; actor_ref may come from "
+                "explicit role context. Reuse one canonical actor citation across that actor's "
+                "actions and supporting duties where possible. Literal containment proves "
+                "custody only; the existing source-only verifier judges identity atomicity "
+                "and performer entailment. role_refs supply exact source contexts "
                 "supporting its typed duty role. If the actor is outside event_ref, cite an "
                 "explicit source or role context containing that exact occurrence. source_refs "
                 "contains only extra support; the compiler derives the event support and "

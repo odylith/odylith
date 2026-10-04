@@ -11,6 +11,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     combined_prompt_evidence_source,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    declared_source_action_fixture,
     write_synthetic_source_duty_receipt,
 )
 from tests.unit.runtime.greenfield_authored_proposal_fixtures import (
@@ -72,22 +73,29 @@ def test_public_preview_offers_three_hash_bound_terminal_decisions(
     candidate_path = tmp_path.parent / f"{tmp_path.name}-host-candidate.json"
     candidate_path.write_text("{}\n", encoding="utf-8")
     gate_path = tmp_path.parent / f"{tmp_path.name}-authority-gate.json"
+    prompt = "Example. A reviewer creates a reviewable plan."
     gate_path.write_text(json.dumps({
         "decision": "admit",
         "required_fields": [],
-        "owner_quote": "Example",
-        "task_quote": "Example",
-        "result_quote": "Example",
+        "owner_quote": "A reviewer",
+        "task_quote": "creates a reviewable plan",
+        "result_quote": "a reviewable plan",
         "question": "",
     }), encoding="utf-8")
     ledger_path = write_synthetic_source_duty_receipt(
         tmp_path.parent / f"{tmp_path.name}-source-ledger.json",
         {"result": {"status": "clarification_required"}},
-        evidence_text=combined_prompt_evidence_source(prompt="Example", edit_evidence=""),
+        evidence_text=combined_prompt_evidence_source(prompt=prompt, edit_evidence=""),
+        declared_actions=[declared_source_action_fixture(
+            duty_id="reviewer-create", actor_quote="A reviewer",
+            event_quote="A reviewer creates a reviewable plan.",
+            statement="A reviewer creates a reviewable plan", action="creates", target="a reviewable plan",
+            performer_role="human_actor", observable_result="reviewable plan created",
+        )],
     )
 
     assert greenfield_proposals_cli.main([
-        command, "--repo-root", str(tmp_path), "--prompt", "Example",
+        command, "--repo-root", str(tmp_path), "--prompt", prompt,
         "--candidate-file", str(candidate_path),
         "--ledger-file", str(ledger_path),
         "--gate-file", str(gate_path),

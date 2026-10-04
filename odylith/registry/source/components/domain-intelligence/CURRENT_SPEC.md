@@ -1,10 +1,10 @@
 # Domain Intelligence
-Last updated: 2026-10-02
+Last updated: 2026-10-03
 
 
 ## Overview
 
-### Verified duty ownership and keyed judgments (2026-10-02)
+### Verified duty ownership and keyed judgments (2026-10-03)
 
 The unreleased v5 ledger owns normalized action meaning and first-path
 membership before candidate design. One source-only verifier sees the complete
@@ -20,10 +20,34 @@ preflight rejects absent or duplicate identities before verifier dispatch.
 Inventory guidance requires canonical field-label reuse while distinct effect
 changes and observable checks preserve their complete meaning. Candidate
 binding and passive lifecycle projection use the same exact identity owner,
-without interpreting labels or inferring parent fields. Fresh public admission
-must prove this correction; v16's completed candidate was rejected and is not
-package qualification.
-Compact v3/host contract v46 moves citation-bank census to the compiler.
+without interpreting labels or inferring parent fields. Fresh v17 admission
+and sealed publication pass; independent source-first review still fails actor
+custody, so that package does not qualify semantics or release.
+
+Host contract v47 strengthens the existing source-owned actor_ref. One ledger
+resolver requires the exact identity quote as a proper literal statement slice
+through preflight, compact expansion, receipt revalidation and binding. Wider
+event and role context remain separate. The existing source-only verifier must
+judge that it names one performer of the asserted role, refusing whole action
+sentences, multiple performers or paragraph context. Literal containment proves
+custody only. External role context may resolve pronouns and inherited verbs;
+repeated actor citations preserve one identity without merging other performers.
+Candidate exact-span binding and canonical alias deduplication remain intact.
+Changed verifier-task hashes reject earlier looser receipts; valid schema shapes
+and receipt versions remain unchanged. Fresh independent source-first proof is
+required, including actor assignments and retained safety/lifecycle duties.
+
+Bounded actor proof passes 307 checks, including old receipt refusal and
+in-process CLI/driver stopping with mocked host responses. Strong independent
+code review reports no actionable P0/P1/P2 and passes 35 checks. This qualifies
+the bounded correction, not fresh model authoring or consumer release quality.
+The first wider run exposes legacy synthetic clarification fixtures and old
+display expectations. Explicit declaration migration preserves the original
+boundary assertions; the full settled Greenfield lane passes 2,927 tests with
+source assets fixed through browser recovery. A clean installed v47 journey
+and independent source-first semantic qualification remain required.
+
+Compact v3/host contract v47 keeps citation-bank census with the compiler.
 Complete-source validation covers every bank entry, including unused ones;
 only unused storage is omitted. Material rows and canonical ledger v5 hash
 meaning remain intact. Missing/unknown/duplicate references and invalid used

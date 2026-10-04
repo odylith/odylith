@@ -39,12 +39,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 273,
+    "explicit_event_count": 275,
     "mapped_workstream_evidence_count": 180,
     "recent_path_match_count": 0,
     "spec_history_event_count": 26,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 273
+    "timeline_event_count": 275
   },
   "name": "Dashboard",
   "path_prefixes": [
@@ -60,6 +60,52 @@
   ],
   "spec_ref": "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 1519,
+      "explicit_components": [
+        "dashboard",
+        "domain-intelligence"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "dashboard",
+        "domain-intelligence"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. 2 verifiable artifact references.",
+      "ts_iso": "2026-10-03T18:32:14-07:00",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 1518,
+      "explicit_components": [
+        "dashboard",
+        "domain-intelligence",
+        "release"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "dashboard",
+        "domain-intelligence",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. 2 verifiable artifact references.",
+      "ts_iso": "2026-10-03T18:17:42-07:00",
+      "workstreams": []
+    },
     {
       "artifact_count": 3,
       "artifacts": [

@@ -67,8 +67,8 @@ _LIST_FIELDS = {
 _AUTHORED_FIRST_PATH = "\n".join(
     (
         "Dock attendant Ivo enters a vessel tag",
-        "the product records berth occupancy",
-        "the berth map shows the placement",
+        "Berth map: the product records berth occupancy",
+        "Berth map: the berth map shows the placement",
     )
 )
 
@@ -265,7 +265,7 @@ def test_product_led_path_keeps_review_recipient_without_inventing_human_event()
     )
 
     assert [row["actor_kind"] for row in result.first_path_relations] == ["product"]
-    assert [row["event_quote"] for row in result.first_path_relations] == [event]
+    assert [row["event_quote"] for row in result.first_path_relations] == [f"Berth map: {event}"]
     assert result.intent["human_actors"] == ["Engineering reviewer Mara"]
     assert result.intent["proof_boundary"] == proof
     assert result.intent["assumptions"] == []

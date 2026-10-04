@@ -1,5 +1,105 @@
 Status: In progress
 
+## V47 correction proof and next decisive gate (2026-10-03)
+
+Actor ownership passes 307 bounded checks; the retained v17 receipt is refused
+and stays unchanged. View closure/copy passes 118 checks and real Mermaid
+rendering. Strong independent code review passes 35 checks and reports no
+actionable P0/P1/P2. Literal containment proves custody only; fresh source-only
+judgment and independently reviewed installed output remain required.
+
+The required wider run exposes 109 legacy clarification fixture failures
+before boundary assertions and two outdated integration expectations:
+2,816 pass / 111 fail in 270.07 seconds. Preserve that run. Replace fake
+whole-source actors with explicit test duties and retain all source/hash/
+privacy/timing/EDIT assertions. Both integration expectation corrections pass.
+Rerun the lane without concurrent source/generated view writes, settle governed
+contracts, checkpoint and build a fresh immutable full distribution. Then run
+unchanged civic evidence with four fresh host phases and strong source-first
+review. Do not reuse v17 receipts or credit synthetic checks as model proof.
+
+The v18 agricultural negative passes after carrying the existing frozen
+annotation unchanged: one material question, no later calls, no writes or
+transaction. Broader positive and actual EDIT proof follow the fresh civic
+semantic gate. Timing remains diagnostic: a measured whole-flow release bound,
+public/private semantic slices, equivalent-source digests, actual EDIT/REJECT,
+host/browser/install proof and the untouched final holdout still require
+qualification. The shipping lane's origin/main and detached-worktree contract
+must be reconciled with the explicit existing-branch/no-worktree instruction
+at the concrete delivery boundary; do not bypass its guards.
+
+The explicit fixture migration passes all 143 affected tests and 125 actor
+protections; the complete settled lane passes 2,927 tests in 273.68 seconds.
+Source assets remain fixed through browser recovery. Scoped Atlas proof
+refreshes only D-043/D-045 and preserves all 24 unqualified dates. Record this
+bounded proof, settle component evidence and owned views, push the clean
+checkpoint and build the predeclared civic v19 distribution. Fresh complete
+source-first qualification remains the next decisive gate.
+
+## V17 adjudication: role custody remains the semantic blocker (2026-10-03)
+
+Independent source-first Astra review fails civic v17: one P1 collapses five
+human roles into a paragraph-valued actor across canonical/package surfaces.
+Two P2s omit Consent registry exchanges from first-run supporting topology
+and produce malformed safety/lifecycle punctuation. Seven ordered actions,
+six fields, nine safety obligations and withdrawal effects otherwise survive;
+all 56 write-set files match their seals. This improves the prior path/state
+failure without satisfying the full semantic gate. Hold broader positives.
+
+Read-only diagnosis owns exact accepted actor labels and canonical bindings,
+the missing invariant, projection propagation and prior failed role mechanisms.
+Compare at most two minimal corrections under one existing identity owner;
+reject role collapse before authoring/admission as appropriate, preserve broad
+free-form input, and require fresh independent source-first proof after fixes.
+Address the two bounded view defects in their actual shared owners. Do not
+repair v17, reuse its receipt, add model stages/parsers or access the holdout.
+
+Read-only diagnosis locates the bad identity in inventory: every actor_ref
+is the whole path paragraph, despite separate role context. Existing binding
+forces exact copies and canonical deduplication correctly produces one actor.
+Select a wire-preserving correction over a new actor catalog: actor_ref is an
+exact identity-only source quote; wider action/role context stays separate.
+One ledger identity check requires it as a proper literal statement slice;
+the existing source-only verifier must judge atomic performer identity and
+reject action sentences/multiple actors. Literal containment proves custody,
+not semantic atomicity. Preserve pronoun/inherited-verb context, repeated actor
+identity reuse and candidate exact equality. Publish the stronger host contract
+revision and hash-bound verifier task; old looser receipts receive no credit.
+
+Falsifiers: paragraph identity fails authentic driver preflight with no later
+calls; five distinct identities retain their seven action assignments across
+canonical and surface graphs; repeated identity deduplicates only itself;
+wrong actor, human/system reassignment, substituted candidate or old receipt
+fails. Keep existing fields/safety/lifecycle proof. The two view fixes retain
+required support closure without inventing happy-path events, and render source
+statements intact without punctuation stacking.
+
+## v17 deterministic admission passes; independent qualification subsequently fails (2026-10-03)
+
+Clean checkpoint `9dc042deeaf97795b8f156d351bfe8481b687540` is pushed and its
+full distribution passes build/leakage controls. Fresh unchanged civic v17
+passes inventory preflight, source-only verification, candidate admission,
+sealed publication/readback and same-hash retry discovery contracts. Whole
+source flow is 376.646 seconds; shared gate/candidate/proposal phase is 223.903
+seconds. Four host calls, one proposal and zero post-receipt provider calls;
+publication takes 0.362 seconds. Subsequent independent source-first Astra
+review fails actor custody as recorded above. Do not
+credit artifact counts, skipped browser/recovery, or diagnostic timing as
+release qualification. The exact v17 evidence remains immutable.
+
+The frozen agricultural negative asks one first_path question in 10.468
+seconds and proves zero writes/transaction, but its harness fails because
+the isolated envelope lacks frozen expected material fields. Its complete
+case/prompt/provenance exactly match the frozen public v2 row and annotation.
+Mechanically carry that existing annotation into a new external envelope,
+preflight case/source equality and expected-field metadata, then run fresh
+negative proof. Preserve the failed v17 result. The planned agricultural
+positive from that distribution is now held by the actor-custody failure;
+use a fresh corrected distribution after civic qualification, then edited
+confirmation. No production change,
+source tuning, validator weakening, historical receipt reuse or protected
+holdout access follows from the harness assembly correction.
+
 ## Serialized proof settlement and fresh installed journey (2026-10-03)
 
 The broad Greenfield lane after field-identity correction has 2,891 passes and

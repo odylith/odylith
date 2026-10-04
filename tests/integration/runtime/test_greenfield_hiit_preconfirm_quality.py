@@ -119,11 +119,11 @@ def test_hiit_structured_fixture_preserves_path_and_sealed_package_under_sixty_s
     ]
     assert [event["text"] for event in first_path["events"]] == [
         "A trainee chooses a workout",
-        "starts it",
+        "trainee: starts it",
         "the timer drives each work and rest interval with audio and on-screen cues",
-        "keeps the screen awake",
-        "marks the session complete",
-        "saves the session to history with date, workout, and total time",
+        "the timer: keeps the screen awake",
+        "the timer: marks the session complete",
+        "the timer: saves the session to history with date, workout, and total time",
     ]
     assert first_path["actor"] == "trainee"
     assert first_path["visible_result"] == "session to history with date, workout, and total time"

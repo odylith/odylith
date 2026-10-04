@@ -119,8 +119,8 @@ def test_cited_passive_lifecycle_renders_trigger_and_both_field_effects(tmp_path
         if element.attrib.get("class") in {"nodeLabel", "edgeLabel"}
     }
     assert any("Withdrawal closes placement access and erases the cached placement" in label for label in labels)
-    assert "closed; check: access closed" in labels
-    assert "erased; check: cache empty" in labels
+    assert "Change: closed Observable check: access closed" in labels
+    assert "Change: erased Observable check: cache empty" in labels
     assert "changes access" in labels
     assert "changes cache" in labels
     assert png.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")

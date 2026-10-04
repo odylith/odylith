@@ -490,6 +490,7 @@ def test_external_actor_may_be_a_span_within_an_explicit_role_reference() -> Non
     ledger = _ledger()
     first = ledger["first_path_actions"][0]
     first["actor_ref"] = _citation("The reviewer", "The reviewer checks a submission")
+    first["statement"] = "The reviewer defines scope"
     first["role_refs"] = [_citation("The reviewer checks a submission")]
     preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=EVIDENCE)
     assert preflight["claims"][0]["actor_ref"]["quote"] == "The reviewer"

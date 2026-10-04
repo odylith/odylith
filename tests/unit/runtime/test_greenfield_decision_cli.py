@@ -27,6 +27,7 @@ from tests.unit.runtime.greenfield_proposal_fixtures import (
     compiled_greenfield_package_fixture,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    declared_source_action_fixture,
     write_synthetic_source_duty_receipt,
 )
 from tests.unit.runtime.test_greenfield_transaction_provenance import (
@@ -112,6 +113,12 @@ def _write_ledger_stub(tmp_path: Path, prompt: str, correction: str) -> Path:
         tmp_path.parent / f"{tmp_path.name}-source-ledger.json",
         {"result": {"status": "clarification_required"}},
         evidence_text=evidence,
+        declared_actions=[declared_source_action_fixture(
+            duty_id="shopper-open", actor_quote="Shopper",
+            event_quote="Shopper opens Storefront and adds one product to the cart.",
+            statement="Shopper opens Storefront", action="opens", target="Storefront",
+            performer_role="human_actor", observable_result="Storefront opened",
+        )],
     )
 
 

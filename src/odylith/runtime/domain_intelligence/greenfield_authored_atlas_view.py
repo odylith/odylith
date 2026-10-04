@@ -17,6 +17,8 @@ from typing import Any
 from odylith.runtime.domain_intelligence.greenfield_authored_atlas_design_views import (
     atlas_box as _box,
     build_provisional_design_atlas_specs,
+    build_provisional_first_run_atlas_view,
+    required_atlas_string,
     mermaid_label as _mermaid_label,
     styled_mermaid as _styled_mermaid,
 )
@@ -66,18 +68,18 @@ def build_authored_atlas_diagrams(
     """Project source facts and one separately authoritative provisional design."""
 
     selected_roles = _selected_diagram_roles(diagram_roles)
-    title = _required_string(title, "project title")
-    product_story = _required_string(product_story, "source product story")
-    state_object = _required_string(state_object, "state object")
-    visible_result = _required_string(visible_result, "visible result")
-    proof_boundary = _required_string(proof_boundary, "proof boundary")
+    title = required_atlas_string(title, "project title")
+    product_story = required_atlas_string(product_story, "source product story")
+    state_object = required_atlas_string(state_object, "state object")
+    visible_result = required_atlas_string(visible_result, "visible result")
+    proof_boundary = required_atlas_string(proof_boundary, "proof boundary")
     if bool(any(row.get("visible_result_quote") for row in relations)) == proof_is_provisional:
         raise ValueError("authored Atlas checkpoint authority disagrees with source relations")
 
     source_component_rows = [
         {
-            "name": _required_string(row.get("label"), "component label"),
-            "description": _required_string(
+            "name": required_atlas_string(row.get("label"), "component label"),
+            "description": required_atlas_string(
                 row.get("responsibility"),
                 "component responsibility",
             ),
@@ -109,7 +111,7 @@ def build_authored_atlas_diagrams(
         source_precedence=source_precedence,
         source_lifecycle=source_lifecycle,
     )
-    sequence_source, sequence_boxes = _sequence_view(
+    sequence_source, sequence_boxes = build_provisional_first_run_atlas_view(
         relations,
         design=provisional_design,
         source_precedence=source_precedence,
@@ -147,6 +149,9 @@ def build_authored_atlas_diagrams(
                 "Solid event arrows show source prerequisites; dotted arrows show additional "
                 "proposed next steps. Event IDs retain source identity, not execution rank. "
                 "Owner boxes retain source ownership. This is one first run, not all possible paths. "
+                "Declared exchange inputs and delivery prerequisites retain supporting components "
+                "without adding their actions to this walkthrough. Dotted delivery-prerequisite links "
+                "show proposed delivery support, not runtime exchanges or event order. "
                 + provisional_design["first_run"]["rationale"]
                 + (" Source constraints: " + " ".join(
                     f"{index}. {quote}" for index, quote in enumerate(operational_constraints, 1)
@@ -166,7 +171,7 @@ def build_authored_atlas_diagrams(
     for key in selected_roles:
         spec = specs[key]
         row: dict[str, Any] = {
-            "slug": _required_string(diagram_slugs.get(key), f"{key} diagram slug"),
+            "slug": required_atlas_string(diagram_slugs.get(key), f"{key} diagram slug"),
             "title": spec["title"],
             "kind": "flowchart",
             "summary": spec["summary"],
@@ -204,7 +209,7 @@ def _selected_diagram_roles(values: Sequence[str] | None) -> tuple[str, ...]:
 
 def _workstream_titles(backlog: Sequence[Mapping[str, Any]]) -> list[str]:
     titles = [
-        _required_string(row.get("title"), "workstream title") for row in backlog
+        required_atlas_string(row.get("title"), "workstream title") for row in backlog
     ]
     if not titles:
         raise ValueError("model-authored Atlas view requires at least one workstream")
@@ -277,14 +282,14 @@ def validate_authored_atlas_view(
             raise ValueError(f"authored Atlas diagram_boxes[{index}] must be an object")
         if set(raw_box) != {"node_id", "label", "role", "description"}:
             raise ValueError(f"authored Atlas diagram_boxes[{index}] has an invalid schema")
-        node_id = _required_string(raw_box.get("node_id"), f"diagram_boxes[{index}].node_id")
+        node_id = required_atlas_string(raw_box.get("node_id"), f"diagram_boxes[{index}].node_id")
         box_ids.append(node_id)
         boxes.append(
             {
                 "node_id": node_id,
-                "label": _required_string(raw_box.get("label"), f"diagram_boxes[{index}].label"),
-                "role": _required_string(raw_box.get("role"), f"diagram_boxes[{index}].role"),
-                "description": _required_string(
+                "label": required_atlas_string(raw_box.get("label"), f"diagram_boxes[{index}].label"),
+                "role": required_atlas_string(raw_box.get("role"), f"diagram_boxes[{index}].role"),
+                "description": required_atlas_string(
                     raw_box.get("description"),
                     f"diagram_boxes[{index}].description",
                 ),
@@ -307,8 +312,8 @@ def validate_authored_atlas_view(
     if box_ids != node_order:
         raise ValueError("authored Atlas diagram_boxes are reordered from sealed node IDs")
 
-    summary = _required_string(row.get("summary"), "authored Atlas summary")
-    read_guide = _required_string(row.get("read_guide"), "authored Atlas read guide")
+    summary = required_atlas_string(row.get("summary"), "authored Atlas summary")
+    read_guide = required_atlas_string(row.get("read_guide"), "authored Atlas read guide")
     components = _component_rows(row.get("components"), authority_kind=authority_kind)
     surface_payload = _surface_payload(
         source_sha256=source_sha256,
@@ -335,7 +340,7 @@ def _authority_for_row(row: Mapping[str, Any]) -> dict[str, Any]:
     if not isinstance(boxes, list):
         raise ValueError("authored Atlas diagram_boxes must be a list")
     node_order = [
-        _required_string(box.get("node_id"), "authored Atlas box node id")
+        required_atlas_string(box.get("node_id"), "authored Atlas box node id")
         for box in boxes
         if isinstance(box, Mapping)
     ]
@@ -344,8 +349,8 @@ def _authority_for_row(row: Mapping[str, Any]) -> dict[str, Any]:
         source_sha256=source_sha256,
         node_order=node_order,
         boxes=boxes,
-        summary=_required_string(row.get("summary"), "authored Atlas summary"),
-        read_guide=_required_string(row.get("read_guide"), "authored Atlas read guide"),
+        summary=required_atlas_string(row.get("summary"), "authored Atlas summary"),
+        read_guide=required_atlas_string(row.get("read_guide"), "authored Atlas read guide"),
         components=_component_rows(row.get("components"), authority_kind=_authority_kind(row)),
         authority_kind=_authority_kind(row),
     )
@@ -391,11 +396,11 @@ def _context_view(
 ) -> tuple[str, list[dict[str, str]]]:
     performer_events: dict[tuple[str, str], list[str]] = {}
     for relation in relations:
-        kind = _required_string(relation.get("actor_kind"), "first-path actor kind")
-        performer = _required_string(relation.get("actor_fact_quote"), "first-path actor fact")
+        kind = required_atlas_string(relation.get("actor_kind"), "first-path actor kind")
+        performer = required_atlas_string(relation.get("actor_fact_quote"), "first-path actor fact")
         if kind == "product" and relation.get("owner_system_quote") != performer:
             raise ValueError("authored Atlas product performer does not match its typed owner")
-        event = _required_string(relation.get("event_quote"), "first-path event")
+        event = required_atlas_string(relation.get("event_quote"), "first-path event")
         performer_events.setdefault((kind, performer), []).append(event)
     lines = ["flowchart LR"]
     boxes: list[dict[str, str]] = []
@@ -493,111 +498,6 @@ def _context_view(
     return _styled_mermaid(lines), boxes
 
 
-def _sequence_view(
-    relations: Sequence[Mapping[str, Any]],
-    *,
-    design: Mapping[str, Any],
-    source_precedence: Sequence[Mapping[str, Any]],
-) -> tuple[str, list[dict[str, str]]]:
-    lines = ["flowchart LR"]
-    boxes: list[dict[str, str]] = []
-    performers: dict[tuple[str, str], str] = {}
-    orders = design["first_run"]["event_orders"]
-    selected = set(orders)
-    for relation in relations:
-        if relation["order"] not in selected:
-            continue
-        index = relation["order"]
-        event_quote = _required_string(relation.get("event_quote"), "first-path event quote")
-        actor_kind = _required_string(relation.get("actor_kind"), "first-path actor kind")
-        performer = _required_string(
-            relation.get("actor_fact_quote"), "first-path actor fact"
-        )
-        event_display = authored_event_display_text(relation)
-        lines.append(f'  event{index}["{_mermaid_label(event_display)}"]')
-        boxes.append(
-            _box(
-                f"event{index}",
-                event_display,
-                f"{actor_kind} event",
-                f"Source action {index}, performed by {performer}: {event_quote}",
-            )
-        )
-        identity = (actor_kind, performer)
-        if identity not in performers:
-            performer_id = f"performer{len(performers) + 1}"
-            performers[identity] = performer_id
-            lines.append(f'  {performer_id}["{_mermaid_label(performer)}"]')
-            boxes.append(
-                _box(
-                    performer_id,
-                    performer,
-                    "Typed event performer",
-                    f"Source-stated {actor_kind} performer for one or more first-path events: "
-                    f"{performer}",
-                )
-            )
-        lines.append(f'  {performers[identity]} -->|"performs"| event{index}')
-        owner = relation.get("owner_system_quote")
-        if isinstance(owner, str) and owner and owner != performer:
-            owner_identity = ("owner_system", owner)
-            if owner_identity not in performers:
-                owner_id = f"performer{len(performers) + 1}"
-                performers[owner_identity] = owner_id
-                lines.append(f'  {owner_id}["{_mermaid_label(owner)}"]')
-                boxes.append(
-                    _box(
-                        owner_id,
-                        owner,
-                        "Typed event owner",
-                        f"Accepted owner system for one or more first-path events: {owner}",
-                    )
-                )
-            lines.append(f'  {performers[owner_identity]} -->|"owns event state"| event{index}')
-    required = {
-        (row["before_event"], row["after_event"]): row["constraint_index"]
-        for row in source_precedence
-        if row["before_event"] in selected and row["after_event"] in selected
-    }
-    for (before, after), constraint_index in required.items():
-        lines.append(f'  event{before} -->|"source constraint {constraint_index}"| event{after}')
-    for before, after in zip(orders, orders[1:]):
-        if (before, after) not in required:
-            lines.append(f'  event{before} -. "proposed next step" .-> event{after}')
-    component_nodes = {
-        component["key"]: f"proposed_component{index}"
-        for index, component in enumerate(design["components"], start=1)
-        if selected.intersection(component["supported_event_orders"])
-    }
-    for component in design["components"]:
-        if component["key"] not in component_nodes:
-            continue
-        node_id = component_nodes[component["key"]]
-        lines.append(
-            f'  {node_id}["Proposed stage<br/>{_mermaid_label(component["name"])}"]'
-        )
-        boxes.append(
-            _box(
-                node_id,
-                component["name"],
-                "Proposed first-run stage",
-                f"Proposed responsibility: {component['responsibility']}",
-            )
-        )
-        for order in component["supported_event_orders"]:
-            if order in selected:
-                lines.append(f'  event{order} -. "proposed support" .-> {node_id}')
-    for exchange in design["exchanges"]:
-        if exchange["from_component"] not in component_nodes or exchange["to_component"] not in component_nodes:
-            continue
-        lines.append(
-            f'  {component_nodes[exchange["from_component"]]} '
-            f'-->|"Proposed exchange: {_mermaid_label(exchange["contract"])}"| '
-            f'{component_nodes[exchange["to_component"]]}'
-        )
-    return _styled_mermaid(lines), boxes
-
-
 def _product_boundary_projection(
     *,
     title: str,
@@ -619,8 +519,8 @@ def _product_boundary_projection(
         )
     rows = tuple(
         (
-            _required_string(component.get("label"), "component label"),
-            _required_string(component.get("responsibility"), "component responsibility"),
+            required_atlas_string(component.get("label"), "component label"),
+            required_atlas_string(component.get("responsibility"), "component responsibility"),
         )
         for component in components
     )
@@ -697,8 +597,8 @@ def _component_rows(value: Any, *, authority_kind: str) -> list[dict[str, str]]:
             raise ValueError(f"authored Atlas components[{index}] has an invalid schema")
         rows.append(
             {
-                "name": _required_string(raw_row.get("name"), f"components[{index}].name"),
-                "description": _required_string(
+                "name": required_atlas_string(raw_row.get("name"), f"components[{index}].name"),
+                "description": required_atlas_string(
                     raw_row.get("description"),
                     f"components[{index}].description",
                 ),
@@ -710,19 +610,13 @@ def _component_rows(value: Any, *, authority_kind: str) -> list[dict[str, str]]:
 def _string_list(value: Any, name: str) -> list[str]:
     if not isinstance(value, list) or not value:
         raise ValueError(f"{name} must be a non-empty list")
-    return [_required_string(item, f"{name} item") for item in value]
+    return [required_atlas_string(item, f"{name} item") for item in value]
 
 
 def _string_sequence(value: Any) -> tuple[str, ...]:
     if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
         return ()
     return tuple(item for item in value if isinstance(item, str) and item)
-
-
-def _required_string(value: Any, name: str) -> str:
-    if not isinstance(value, str) or not value or value != value.strip():
-        raise ValueError(f"{name} must be a non-empty, whitespace-exact string")
-    return value
 
 
 def _authority_kind(row: Mapping[str, Any]) -> str:

@@ -16,6 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
     _validate_shape,
     _check_citation,
     greenfield_source_duty_ledger_schema,
+    resolve_greenfield_action_actor_identity,
     resolve_greenfield_transition_state_fields,
 )
 
@@ -172,6 +173,9 @@ def expand_compact_source_duty_ledger(
                     resolve(ref, f"{section}[{row_index}].role_refs[{ref_index}]")
                     for ref_index, ref in enumerate(compact_row["role_refs"])
                 ]
+                resolve_greenfield_action_actor_identity(
+                    row, path=f"{section}[{row_index}]"
+                )
             expanded_rows.append(row)
         expanded[section] = expanded_rows
     unused = set(citations) - used

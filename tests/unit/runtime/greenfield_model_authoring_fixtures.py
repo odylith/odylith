@@ -87,8 +87,14 @@ def _fixture_action_refs(atom: Mapping[str, Any]) -> list[dict[str, str]]:
 
 
 def _fixture_action_atom(atom: Mapping[str, Any]) -> dict[str, Any]:
+    statement = atom["projection_ref"]["quote"]
+    identity = atom["actor_ref"]["quote"]
+    if identity not in statement:
+        # Source role context already declares this identity; retain it while
+        # normalizing the fixture's explicitly declared action and target.
+        statement = f"{identity}: {statement}"
     return {
-        "statement": atom["projection_ref"]["quote"],
+        "statement": statement,
         "event_ref": copy.deepcopy(atom["event_ref"]),
         "actor_ref": copy.deepcopy(atom["actor_ref"]),
         "action": atom["action_quote"],
@@ -97,8 +103,28 @@ def _fixture_action_atom(atom: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def declared_source_action_fixture(
+    *, duty_id: str, actor_quote: str, event_quote: str, statement: str,
+    action: str, target: str, performer_role: str, observable_result: str,
+) -> dict[str, Any]:
+    """Declare a test action whose exact performer occurs in its event context.
+
+    Every meaning-bearing value comes from the caller. This builds citation
+    custody for boundary tests; it does not interpret or qualify source meaning.
+    """
+    event_ref = {"quote": event_quote, "context": event_quote}
+    return {
+        "id": duty_id, "source_refs": [], "performer_role": performer_role,
+        "observable_result": observable_result, "statement": statement,
+        "event_ref": event_ref,
+        "actor_ref": {"quote": actor_quote, "context": event_quote},
+        "action": action, "target": target, "role_refs": [copy.deepcopy(event_ref)],
+    }
+
+
 def synthetic_source_duty_receipt(
     host_candidate: Mapping[str, Any], *, evidence_text: str,
+    declared_actions: Sequence[Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Make a test-only exact-cited ledger; this does not prove semantic roles.
 
@@ -107,20 +133,21 @@ def synthetic_source_duty_receipt(
     Public semantic qualification must use a separately authored source ledger.
     """
 
+    if declared_actions is not None:
+        ledger = {
+            "version": SOURCE_DUTY_LEDGER_VERSION, "status": "inventory", "question": "",
+            "evidence_controls": [], "first_path_actions": copy.deepcopy(list(declared_actions)),
+            "supporting_human_actions": [], "system_duties": [], "state_fields": [],
+            "off_path_transitions": [], "conditional_guards": [], "boundaries": [], "proof_duties": [],
+        }
+        return synthetic_source_duty_receipt_for_ledger(ledger, evidence_text=evidence_text)
     result = host_candidate.get("result")
     if not isinstance(result, Mapping):
         raise ValueError("synthetic source duties require a fixture result")
     if result.get("status") == "clarification_required":
-        citation = {"quote": evidence_text, "context": evidence_text}
-        citations = [(1, {
-            "event_ref": citation,
-            "projection_ref": citation,
-            "actor_ref": citation,
-            "action_quote": evidence_text,
-            "target_quote": "",
-        })]
-        supporting: list[tuple[int, dict[str, str]]] = []
-        systems: list[tuple[int, dict[str, str]]] = []
+        raise ValueError(
+            "clarification fixture requires a separately declared source duty receipt"
+        )
     elif result.get("status") == "authored":
         events = result["events"]
         orders = result["provisional_design"]["first_run"]["event_orders"]
@@ -380,6 +407,7 @@ def write_synthetic_source_duty_receipt(
     host_candidate: Mapping[str, Any],
     *,
     evidence_text: str,
+    declared_actions: Sequence[Mapping[str, Any]] | None = None,
 ) -> Path:
     """Write test-only source custody for public CLI fixture calls."""
 
@@ -387,6 +415,7 @@ def write_synthetic_source_duty_receipt(
         json.dumps(
             synthetic_source_duty_receipt(
                 host_candidate, evidence_text=evidence_text,
+                declared_actions=declared_actions,
             )
         ),
         encoding="utf-8",

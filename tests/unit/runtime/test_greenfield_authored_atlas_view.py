@@ -897,8 +897,8 @@ def test_cited_off_path_lifecycle_keeps_two_effects_out_of_first_run() -> None:
         "off_path_transition1"
     ]["description"]
     assert boxes["off_path_transition1"]["role"] == "Source-stated off-path transition"
-    assert boxes["off_path_transition1_effect1"]["label"] == "closed; check: access closed"
-    assert boxes["off_path_transition1_effect2"]["label"] == "erased; check: cache empty"
+    assert boxes["off_path_transition1_effect1"]["label"] == "Change: closed\nObservable check: access closed"
+    assert boxes["off_path_transition1_effect2"]["label"] == "Change: erased\nObservable check: cache empty"
     assert "placement access" in boxes["state_field1"]["description"]
     assert "cached placement" in boxes["state_field2"]["description"]
     assert 'component2 -. "proposed lifecycle support" .-> off_path_transition1' in source
