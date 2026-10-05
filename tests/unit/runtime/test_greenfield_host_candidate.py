@@ -27,6 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import 
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
     GreenfieldModelAuthoringError,
+    validate_greenfield_authoring_response,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
     GreenfieldClarificationRequired,
@@ -35,6 +36,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     PRODUCT_INTENT_AUTHORITY_KEY,
 )
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import STANDARD_PROFILE_ID
 from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
     preflight_greenfield_source_duty_ledger,
     validate_greenfield_source_duty_ledger,
@@ -112,7 +114,8 @@ def test_contract_requires_one_complete_host_candidate() -> None:
 
     assert contract["version"] == HOST_CANDIDATE_CONTRACT_VERSION
     assert contract["candidate_version"] == HOST_CANDIDATE_FORMAT_VERSION
-    assert {"components", "source_precedence", "source_duty_binding"} <= set(
+    assert "components" not in authored["properties"]
+    assert {"source_precedence", "source_duty_binding"} <= set(
         authored["required"]
     )
     event = authored["properties"]["events"]["items"]
@@ -392,7 +395,8 @@ def test_material_ambiguity_asks_once_and_writes_nothing(tmp_path) -> None:
 
 
 def test_partial_component_constraint_overlap_is_rejected() -> None:
-    source, candidate = _candidate()
+    source = _source()
+    candidate = _response(source)
     constraint = candidate["result"]["facts"]["operational_constraints"][0]
     quote = constraint["quote"]
     if len(quote) < 2:
@@ -403,18 +407,27 @@ def test_partial_component_constraint_overlap_is_rejected() -> None:
     }
 
     with pytest.raises(GreenfieldModelAuthoringError, match="overlap only"):
-        _admit(source, candidate)
+        validate_greenfield_authoring_response(
+            candidate, evidence_text=source, elapsed_seconds=0.0, provider={},
+            profile_id=STANDARD_PROFILE_ID, effective_timeout_seconds=300.0, semantic_model_call_count=1,
+            allow_exact_dual_role_constraints=True,
+        )
 
 
 def test_exact_component_constraint_dual_role_is_retained() -> None:
-    source, candidate = _candidate()
+    source = _source()
+    candidate = _response(source)
     constraint = candidate["result"]["facts"]["operational_constraints"][0]
     candidate["result"]["components"][0]["responsibilities"][0] = {
         "quote": constraint["quote"],
         "occurrence": 1,
     }
 
-    authored, _ = _admit(source, candidate)
+    authored = validate_greenfield_authoring_response(
+        candidate, evidence_text=source, elapsed_seconds=0.0, provider={},
+        profile_id=STANDARD_PROFILE_ID, effective_timeout_seconds=300.0, semantic_model_call_count=1,
+        allow_exact_dual_role_constraints=True,
+    )
 
     exact = [
         row
@@ -455,6 +468,8 @@ def test_multisource_receipt_preserves_exact_combined_evidence_and_citations(
 
     authority = materialized[PRODUCT_INTENT_AUTHORITY_KEY]
     assert prepared.source_document_count == 2
+    assert materialized["prompt"] == prepared.evidence_source
+    assert materialized["authored_semantics"]["source_duty"]["ledger_receipt"]["source_sha256"] == receipt["source_sha256"]
     assert (
         authority["operating_envelope"]["evidence_contract"]["observed"]["documents"]
         == 2

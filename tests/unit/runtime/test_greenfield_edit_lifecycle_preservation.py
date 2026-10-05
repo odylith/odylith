@@ -112,7 +112,7 @@ def test_host_receipt_passive_approval_is_an_explicit_closed_version_pair(tmp_pa
     from tests.unit.runtime.test_greenfield_create_transaction import _transaction
 
     transaction = _transaction(repo_root=tmp_path)
-    for version, approved in ((49, True), (50, True), (51, True), (48, False), (52, False)):
+    for version, approved in ((49, True), (50, True), (51, True), (52, True), (48, False), (53, False)):
         model = deepcopy(transaction.quality_manifest["model_authoring"])
         model["host_candidate"]["contract_version"] = f"odylith.greenfield.host-candidate-contract.v{version}"
         assert greenfield_model_authoring_receipt_approved(

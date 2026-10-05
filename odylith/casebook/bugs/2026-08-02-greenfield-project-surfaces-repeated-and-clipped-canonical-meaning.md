@@ -1,6 +1,39 @@
 - Bug ID: CB-303
 
-## Current installed semantic frontier (2026-10-05)
+## Current v52 source patch and v27 admission frontier (2026-10-05)
+
+Fresh independent proposal audit passes Research H0 13/13, Agriculture H0 26/26
+and changed-hash Agriculture H1 31/31 (26 originals plus five corrections).
+The original source-first lenses and 1.0 floors are unchanged; verifier Yes is
+not fidelity proof. Agriculture preserves the previously lost provisional-
+analysis safeguard in actionable generated contracts.
+
+Research EDIT admits fresh v6/v9 source custody, then refuses candidate
+component/constraint citations on unequal overlapping bytes. Four calls finish
+in 259.332 measured diagnostic seconds; no H1 exists. Exact retained error:
+`Greenfield component and constraint custody may overlap only on the exact same
+source bytes; no records were created.` This is a safe refusal and a failed
+complete-input control. Actual denied-stage bytes are retained.
+
+The implemented v52 source patch derives responsibilities from verified product
+duties and exact event/actor bindings. Admission and sealed reload reuse the full
+source/task/receipt validator. Typed guards, boundaries, constraints and proofs
+retain their lifecycle allocations; shared spans do not merge duties or transfer
+human work. The frozen patch passes 171 focused checks and independent review;
+all 24 publication writers remain unchanged. Intermediate failures establish that
+normalized component claims need the existing atomic provenance lane and the
+exact source snapshot before candidate staging. Duplicate validation and artificial
+placeholder rows are removed. Full installation passes 2,140 checks; the broad
+runtime run passes 1,734 and retains two fixture-wrapper failures resolved in a
+148-check adopter proof. CB-347 retains both failed broad runs and the 324-check
+fixture migration review. Fresh installed semantic qualification remains open.
+
+Evidence: Research final H0 audit `b53260b7…2448`; EDIT stdout `f1cf785f…f444`;
+Agriculture H0 audit `02f6a9da…f18f`, H1 audit `6608f6ca…d258` (full hashes/paths
+in the v27 evidence manifest). CB-347 owns partial terminal proof. Preserve v49
+bad H1 and v26 refusals; Public40 and full release qualification remain held.
+
+## Previous v26 installed semantic frontier (2026-10-05)
 
 The once-only v26 controls do not qualify the v50 mechanism. Research H0
 admits in four calls and independently preserves all 13 original duties in

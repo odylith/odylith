@@ -35,8 +35,10 @@ def _proposal(
     if forward_references:
         original_design = authoring_fixtures.structural_design_fixture
 
-        def reordered_design(event_orders: Any) -> dict[str, Any]:
-            design = original_design(event_orders)
+        def reordered_design(
+            event_orders: Any, *, first_run_event_orders: Any = None,
+        ) -> dict[str, Any]:
+            design = original_design(event_orders, first_run_event_orders=first_run_event_orders)
             design["workstreams"] = list(reversed(design["workstreams"]))
             return design
 

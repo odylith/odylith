@@ -384,36 +384,18 @@ def test_terminal_edit_without_retained_source_fails_closed_before_compilation(
         **retained.proposal,
         "intent": {**retained.proposal["intent"], "prompt": ""},
     }
-    package = compiled_greenfield_package_fixture(proposal, repo_root=tmp_path)
-    legacy = build_product_create_transaction(
-        proposal=proposal,
-        release_selector=retained.release_selector,
-        validation_gate=retained.validation_gate,
-        prewrite_package=package,
-        backlog_result=package.backlog_result or {},
-        intent_authority=retained.intent_authority,
-        quality_manifest=retained.quality_manifest,
-        repo_root=tmp_path,
-    )
-    pending_path = greenfield_pending_transaction_store.stage_pending_transaction(
-        repo_root=tmp_path,
-        transaction=legacy,
-    )
     governed_before = _tree_digest(tmp_path / "odylith")
     monkeypatch.setattr(
         greenfield_proposals_cli,
         "_compile_prompt_evidence_transaction",
         lambda **_kwargs: pytest.fail("missing retained source reached proposal compilation"),
     )
-
-    assert greenfield_cli.main([
-        "decide", "EDIT", legacy.transaction_hash, "--repo-root", str(tmp_path),
-        "--edit", "Keep the correction bounded.",
-    ]) == 2
-
-    assert "no retained source evidence" in capsys.readouterr().out
-    assert pending_path.is_file()
+    # Current verified responsibilities bind the retained source at canonical
+    # reload, so source stripping is refused before a pending seal can exist.
+    with pytest.raises(ValueError, match="derived responsibilities lack exact source evidence"):
+        compiled_greenfield_package_fixture(proposal, repo_root=tmp_path)
     assert _tree_digest(tmp_path / "odylith") == governed_before
+    assert not list((tmp_path / ".odylith/runtime/greenfield/pending").glob("**/*"))
 
 
 @pytest.mark.parametrize(

@@ -18,12 +18,13 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 )
 from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
     greenfield_source_duty_binding_schema,
+    validate_greenfield_source_duty_binding,
 )
 from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
     verify_greenfield_source_duty_ledger_receipt,
 )
 
-HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v21"
+HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v22"
 HOST_SOURCE_DUTY_BINDING_FIELD = "source_duty_binding"
 
 
@@ -61,6 +62,8 @@ def greenfield_host_candidate_schema() -> dict[str, Any]:
     schema = greenfield_authoring_schema()
     schema["properties"]["version"]["enum"] = [HOST_CANDIDATE_FORMAT_VERSION]
     authored = schema["properties"]["result"]["anyOf"][0]
+    authored["required"].remove("components")
+    authored["properties"].pop("components")
     authored["required"].append(HOST_SOURCE_DUTY_BINDING_FIELD)
     authored["properties"][HOST_SOURCE_DUTY_BINDING_FIELD] = (
         greenfield_source_duty_binding_schema()
@@ -85,8 +88,8 @@ def greenfield_host_candidate_schema() -> dict[str, Any]:
     )
     facts["properties"]["operational_constraints"]["description"] = (
         "Every exact source-stated operational, safety, ordering, or actor restriction. "
-        "Keep each constraint global and preserve exact dual-role custody when the same "
-        "source bytes also carry one component responsibility."
+        "Keep each constraint global. Verified lifecycle duties preserve guards, boundaries "
+        "and proof independently of the compiler-derived action responsibilities."
     )
     facts["required"] = [
         field for field in facts["required"] if field not in {"first_path", "supporting_events"}
@@ -167,7 +170,10 @@ def canonical_greenfield_host_candidate(
     canonical_events: list[dict[str, Any]] = []
     path_citations: list[Any] = []
     supporting_citations: list[Any] = []
-    binding = result[HOST_SOURCE_DUTY_BINDING_FIELD]
+    binding = validate_greenfield_source_duty_binding(
+        result[HOST_SOURCE_DUTY_BINDING_FIELD], ledger_receipt=source_duty_receipt,
+        candidate_result=result, evidence_text=evidence_text,
+    )
     first_path_orders = {
         row["event_order"] for row in binding["first_path_actions"]
     }
@@ -210,6 +216,7 @@ def canonical_greenfield_host_candidate(
     canonical_result.pop(HOST_SOURCE_DUTY_BINDING_FIELD)
     canonical_result["facts"] = canonical_facts
     canonical_result["events"] = canonical_events
+    canonical_result["components"] = []  # Verified duties own the accepted responsibilities.
     terminal = canonical_result.get("terminal")
     if isinstance(terminal, dict) and isinstance(terminal.get("result_fact"), dict):
         result_fact = terminal["result_fact"]

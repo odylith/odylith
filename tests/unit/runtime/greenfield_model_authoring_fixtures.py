@@ -277,6 +277,25 @@ def _fixture_source_duty_binding(
     }
 
 
+def source_duty_fixture(
+    host_candidate: Mapping[str, Any], *, evidence_text: str,
+) -> dict[str, Any]:
+    """Retain the declared fixture receipt, binding, and lifecycle together."""
+    from odylith.runtime.domain_intelligence.greenfield_source_lifecycle import (
+        project_greenfield_source_lifecycle,
+    )
+
+    receipt = synthetic_source_duty_receipt(host_candidate, evidence_text=evidence_text)
+    binding = host_candidate["result"][HOST_SOURCE_DUTY_BINDING_FIELD]
+    return {
+        "ledger_receipt": receipt, "binding": copy.deepcopy(binding),
+        "lifecycle": project_greenfield_source_lifecycle(
+            ledger_receipt=receipt, binding=binding,
+            candidate_result=host_candidate["result"], evidence_text=evidence_text,
+        ),
+    }
+
+
 def admit_complete_host_candidate(
     *,
     evidence_text: str,
@@ -344,6 +363,7 @@ def host_candidate_response(
     result = candidate.get("result")
     if not isinstance(result, dict) or result.get("status") == "clarification_required":
         return candidate
+    result.pop("components", None)
     facts = result.get("facts")
     events = result.get("events")
     if not isinstance(facts, dict) or not isinstance(events, list):
@@ -454,6 +474,7 @@ def authored_response(
     evidence_text: str = "",
     first_path_segments: Sequence[str] | None = None,
     first_path_relations: Sequence[Mapping[str, Any]] | None = None,
+    supporting_event_relations: Sequence[Mapping[str, Any]] = (),
     component_responsibility_owners: Sequence[str] | None = None,
     provisional_design: Mapping[str, Any] | None = None,
     source_precedence: Sequence[Mapping[str, Any]] = (),
@@ -463,6 +484,8 @@ def authored_response(
     source_relations = tuple(
         first_path_relations or _default_first_path_relations(intent)
     )
+    path_relations = source_relations
+    source_relations += tuple(supporting_event_relations)
     path_segments = (
         [str(row).strip() for row in first_path_segments]
         if first_path_segments is not None
@@ -521,7 +544,7 @@ def authored_response(
     if not relation_rows:
         raise ValueError("authored fixture requires one event")
     terminal = _terminal_row(
-        relations=source_relations,
+        relations=path_relations,
         facts=selected_facts,
         evidence_text=evidence_text,
     )
@@ -543,7 +566,10 @@ def authored_response(
             "ambiguities": list(intent.get("ambiguities") or []),
             "consistency": {"status": "consistent", "evidence_quotes": []},
             "provisional_design": copy.deepcopy(provisional_design) if provisional_design is not None
-            else structural_design_fixture(range(1, len(relation_rows) + 1)),
+            else structural_design_fixture(
+                range(1, len(relation_rows) + 1),
+                first_run_event_orders=range(1, len(path_relations) + 1),
+            ),
         },
     }
 

@@ -210,7 +210,7 @@ def test_proposal_construction_rejects_rebound_product_event_responsibility_owne
 
     with pytest.raises(
         GreenfieldAuthoredSemanticsError,
-        match="do not match sealed Product Intent authority",
+        match="assign contradictory owners to one product event",
     ):
         greenfield_proposals.build_greenfield_proposal(
             repo_root=tmp_path,
@@ -330,8 +330,10 @@ def test_verified_relation_authority_issues_structural_tribunal_context(tmp_path
         ],
     )
     contract = contracts[0]
-    assert contracts[0]["responsibility_facts"] == ["Record berth occupancy"]
-    assert contracts[1]["responsibility_facts"] == ["Show berth placement"]
+    assert contracts[0]["responsibility_facts"] == [
+        "Berth recorder: the berth recorder records berth occupancy"
+    ]
+    assert contracts[1]["responsibility_facts"] == ["Berth map: the berth map shows the placement"]
     custody = authored_source_custody(
         intent=candidate,
         authority=candidate[PRODUCT_INTENT_AUTHORITY_KEY],

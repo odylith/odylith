@@ -43,7 +43,7 @@ def test_atomic_fact_ledger_accepts_exact_authored_custody(tmp_path: Path) -> No
     assert all(
         row["entailment_relationship"] == "exact_source_span"
         for row in atoms
-        if row["projection_links"][0]["field"] not in {"first_path", "supporting_events"}
+        if row["projection_links"][0]["field"] not in {"first_path", "supporting_events", "component_responsibilities"}
     )
     assert all(row["source_span_refs"] for row in atoms)
     assert all(row["projection_links"] for row in atoms)

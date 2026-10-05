@@ -199,7 +199,7 @@ def snapshot_relation_evidence(
         edit_evidence=str(getattr(case, "confirmed_intent_markdown", "") or ""),
     )
     source_bytes = source_text.encode("utf-8")
-    intent = {**facts, "authored_semantics": semantics}
+    intent = {**facts, "authored_semantics": semantics, "prompt": source_text}
     try:
         events = first_path_relations_from_intent(intent)
         contexts = first_path_context_relations_from_intent(intent)

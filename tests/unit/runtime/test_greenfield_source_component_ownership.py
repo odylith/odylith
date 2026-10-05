@@ -7,6 +7,7 @@ import pytest
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     GreenfieldAuthoredSemanticsError,
     authored_component_relation_facts,
+    authored_semantics_mapping,
     validate_component_responsibility_relations,
 )
 from odylith.runtime.domain_intelligence.greenfield_proposals import (
@@ -20,6 +21,7 @@ from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     admit_complete_host_candidate,
     host_candidate_response,
     materialize_complete_host_candidate,
+    source_duty_fixture,
 )
 
 
@@ -58,7 +60,13 @@ def _scenario(kind: str, *, explicit_owner: str = ""):
     )
     source = ". ".join(str(row) for value in intent.values()
                        for row in (value if isinstance(value, list) else [value]) if row)
+    supporting = [dict(
+        actor_kind="product", actor_fact_quote=explicit_owner, owner_system_quote=explicit_owner,
+        event_quote=f"{explicit_owner} retains receipts for seven years",
+        action_verb_quote="retains", target_quote="receipts", visible_result_quote="",
+    )] if explicit_owner else []
     response = authored_response(intent, evidence_text=source, first_path_relations=events,
+        supporting_event_relations=supporting,
         component_responsibility_owners=[explicit_owner] if explicit_owner else None,
         )
     if not explicit_owner:
@@ -67,9 +75,13 @@ def _scenario(kind: str, *, explicit_owner: str = ""):
 
 
 def _author(source, response):
-    result = admit_complete_host_candidate(
-        evidence_text=source,
-        host_candidate=host_candidate_response(response, evidence_text=source),
+    candidate = host_candidate_response(response, evidence_text=source)
+    result = admit_complete_host_candidate(evidence_text=source, host_candidate=candidate)
+    result.intent["authored_semantics"] = authored_semantics_mapping(
+        result.first_path_relations, result.component_responsibility_relations,
+        first_path_context_relations=result.first_path_context_relations,
+        provisional_design=result.provisional_design,
+        source_duty=source_duty_fixture(candidate, evidence_text=source),
     )
     return result
 
@@ -79,8 +91,17 @@ def test_no_source_capability_does_not_promote_terminal_ownership(kind):
     source, response, events = _scenario(kind)
     result = _author(source, response)
 
-    assert result.intent["component_responsibilities"] == []
-    assert result.component_responsibility_relations == ()
+    product_events = [row for row in events if row["actor_kind"] == "product"]
+    assert result.intent["component_responsibilities"] == [row["event_quote"] for row in product_events]
+    assert [row["responsibility_quote"] for row in result.component_responsibility_relations] == [
+        row["event_quote"] for row in product_events
+    ]
+    assert all(row["responsibility_source"] == "accepted_fact"
+               and row["first_path_event_order"] in {index for index, event in enumerate(events, 1)
+                                                    if event["actor_kind"] == "product"}
+               for row in result.component_responsibility_relations)
+    assert all(row["responsibility_quote"] != "the review receipt"
+               for row in result.component_responsibility_relations)
     assert [(row["actor_kind"], row["actor_fact_quote"], row["event_quote"])
             for row in result.first_path_relations] == [
         (row["actor_kind"], row["actor_fact_quote"], row["event_quote"]) for row in events
@@ -111,7 +132,12 @@ def test_explicit_non_path_source_capability_keeps_its_owner(owner):
     assert relation["owner_system_quote"] == owner
     assert relation["responsibility_quote"] == f"{owner} retains receipts for seven years"
     assert relation["responsibility_source"] == "accepted_fact"
-    assert relation["first_path_event_order"] == 0
+    assert relation["first_path_event_order"] == 3
+    assert relation["source_duty_id"] == "fixture-system-3"
+    duty = result.intent["authored_semantics"]["source_duty"]
+    assert duty["binding"]["system_duties"] == [{"duty_id": "fixture-system-3", "event_order": 3}]
+    assert result.provisional_design["first_run"]["event_orders"] == [1, 2]
+    assert result.intent["supporting_events"] == [relation["responsibility_quote"]]
 
 
 def test_terminal_result_relation_is_rejected_at_the_typed_boundary():

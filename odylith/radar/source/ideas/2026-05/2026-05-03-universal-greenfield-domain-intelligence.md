@@ -60,7 +60,30 @@ supersedes:
 
 superseded_by: 
 
-## Current installed failure frontier (2026-10-05)
+## Current v52 source and v27 convergence frontier (2026-10-05)
+
+- Fresh independent proposal audits pass Research H0 13/13 and Agriculture H0
+  26/26 plus changed-hash H1 31/31 at unchanged source lenses/1.0 floors.
+- Research EDIT admits v6/v9 source then refuses candidate component/constraint
+  partial overlap; no H1. Agriculture REJECT/copied-old refusal pass, then harness
+  `NameError: SEALED_PROGRAM` stops before CONFIRM. A continuation publishes H1
+  with exit 0/CLOSED and zero model/provider/projection entries, then fails the
+  external zero-process assertion; repeat confirmation is unexecuted. Preserve
+  both failed diagnostics. CB-303/CB-347 retain evidence.
+- Implemented host v52/format v22 derives per-duty product responsibilities from
+  verified actions and exact actor addresses. Typed lifecycle ownership retains
+  guards, boundaries and proofs; shared spans cannot transfer human work. The
+  frozen patch passes 171 focused checks and independent review, with all 24
+  publication writers unchanged. Full installation passes 2,140 checks; the
+  broad gate retains 3,874 passes and two test-wrapper failures resolved by
+  148 affected checks. Fixture migration passes 324 checks and review; CB-347
+  retains every failed run. Fresh v28 semantics remain pending; no model stage
+  or cap increase follows.
+- Clean a372 CI passes 9,653 tests/six warnings; earlier failed CI stays retained.
+  B-142 remains in implementation. Public40 and private/protected, migration,
+  host, full-browser, timing and release gates remain held. No winning mechanism.
+
+## Previous v26 installed failure frontier (2026-10-05)
 
 - V51 code and both independent reviews are settled. Full installation passes
   2,126 checks; the combined gate retains 3,840 passes and one stale version-pin

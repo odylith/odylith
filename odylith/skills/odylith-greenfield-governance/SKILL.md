@@ -48,6 +48,10 @@ mechanism-level learning.
    After candidate receipt, no model, semantic or provider call is allowed.
    Independent semantic and UX review qualifies frozen release evidence only;
    it cannot admit, mutate or deny an individual consumer transaction.
+   Verified product actions and exact actor bindings supply accepted component
+   responsibilities. The candidate proposes architecture; typed lifecycle ownership
+   preserves guards, boundaries and proof duties. Do not author duplicate
+   responsibility quotations or infer product ownership from overlapping source.
 3. Show the read-only, transaction-bound preview directly. The product writes
    its delivered receipt file and prints terminal commands naming it with
    `--completion-receipt '<path>'`. CONFIRM/REJECT use `odylith greenfield decide`;

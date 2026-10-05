@@ -297,6 +297,37 @@ _CASES = (
 )
 
 
+# Explicit declarations preserve non-path capabilities; these are test atoms,
+# never facts inferred from source prose or selected provisional components.
+_SUPPORTING_ACTIONS = {
+    "protocol-outcome": (
+        ("Record", "protocol setup and required-source blockers"),
+        ("Record", "intervention timing and amount-as-recorded"),
+        ("Align", "baseline measurement, follow-up measurement, and outcome review"),
+    ),
+    "symptom-relief": (
+        ("Record", "symptom episode fields and edit history"),
+        ("Record", "relief action and non-advice boundaries"),
+        ("Show", "the corrected timeline and safety notice"),
+    ),
+    "fare-choice": (
+        ("Record", "origin, destination, and required-field blockers"),
+        ("Record", "fare option, travel time, and stale-quote evidence"),
+        ("Show", "the selected option and saved rationale"),
+    ),
+    "service-visit": (
+        ("Record", "service address and missing-detail blockers"),
+        ("Record", "visit window and technician assignment"),
+        ("Show", "quote estimate, confirmation, and readiness blockers"),
+    ),
+    "decision-review": (
+        ("Record", "application packet identity and missing-packet blockers"),
+        ("Record", "eligibility, score, rationale, and conflict state"),
+        ("Show", "the outcome notice and appeal blocker context"),
+    ),
+}
+
+
 def _source(intent: dict[str, Any]) -> str:
     return ". ".join(
         str(item)
@@ -387,6 +418,17 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
                 "visible_result_quote": visible_result,
             }
         ],
+        supporting_event_relations=[
+            {
+                "actor_kind": "product", "actor_fact_quote": owner, "owner_system_quote": owner,
+                "event_quote": quote, "action_verb_quote": action_quote, "target_quote": target_quote,
+                "visible_result_quote": "",
+            }
+            for owner, quote, (action_quote, target_quote) in zip(
+                intent["internal_systems"], intent["component_responsibilities"],
+                _SUPPORTING_ACTIONS[name], strict=True,
+            )
+        ],
         component_responsibility_owners=intent["internal_systems"],
     )
     candidate_path = write_host_candidate_fixture(
@@ -448,7 +490,19 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
     accepted_intent = accepted["proposal"]["intent"]
     assert accepted_intent["first_path"] == intent["first_path"]
     assert accepted_intent["human_actors"] == intent["human_actors"]
-    assert accepted_intent["component_responsibilities"] == intent["component_responsibilities"]
+    assert accepted_intent["component_responsibilities"] == [
+        f"{owner}: {quote}" for owner, quote in zip(
+            intent["internal_systems"], intent["component_responsibilities"], strict=True,
+        )
+    ]
+    semantics = accepted_intent["authored_semantics"]
+    assert semantics["first_path_relations"][0]["actor_kind"] == "human"
+    assert [row["owner_system_quote"] for row in semantics["component_responsibility_relations"]] == intent["internal_systems"]
+    assert [row["source_duty_id"] for row in semantics["component_responsibility_relations"]] == [
+        "fixture-system-2", "fixture-system-3", "fixture-system-4",
+    ]
+    assert semantics["provisional_design"]["first_run"]["event_orders"] == [1]
+    assert len(semantics["source_duty"]["ledger_receipt"]["ledger"]["system_duties"]) == 3
     design = accepted_intent["authored_semantics"]["provisional_design"]
     assert len(list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))) >= 2
     assert len(registry["components"]) == len(design["components"])

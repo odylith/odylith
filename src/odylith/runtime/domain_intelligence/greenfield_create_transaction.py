@@ -376,10 +376,13 @@ def _require_host_candidate_authority_binding(
     lifecycle = source_duty.get("lifecycle") if isinstance(source_duty, Mapping) else None
     edit_versions = {(EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION, HOST_CANDIDATE_CONTRACT_VERSION)}
     if passive:
+        edit_versions.add((EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+                           "odylith.greenfield.host-candidate-contract.v51"))
         edit_versions.add((LEGACY_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
                            PREVIOUS_HOST_CANDIDATE_CONTRACT_VERSION))
     if (
         not isinstance(ledger_receipt, Mapping)
+        or (not passive and host.get("contract_version") != HOST_CANDIDATE_CONTRACT_VERSION)
         or not isinstance(lifecycle, Mapping)
         or ("edit_preservation" not in ledger_receipt
             and ledger_receipt.get("version") != SOURCE_DUTY_LEDGER_RECEIPT_VERSION)
@@ -399,6 +402,15 @@ def _require_host_candidate_authority_binding(
     ):
         raise ValueError(
             "ProductCreateTransaction host candidate source-duty hashes do not match its reviewed proposal"
+        )
+
+    if host.get("contract_version") == HOST_CANDIDATE_CONTRACT_VERSION:
+        from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+            validate_component_responsibility_relations, first_path_relations_from_intent,
+        )
+        validate_component_responsibility_relations(
+            authored_semantics["component_responsibility_relations"], intent=intent,
+            first_path_relations=first_path_relations_from_intent(intent), require_verified_duties=True,
         )
 
 

@@ -56,7 +56,12 @@ from odylith.runtime.domain_intelligence.greenfield_authority_gate import (
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v7"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v51"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v52"
+PASSIVE_HOST_CANDIDATE_CONTRACT_VERSIONS = (
+    "odylith.greenfield.host-candidate-contract.v51",
+    "odylith.greenfield.host-candidate-contract.v50",
+    "odylith.greenfield.host-candidate-contract.v49",
+)
 PREVIOUS_HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v50"
 LEGACY_HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v49"
 HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION = "odylith.greenfield.host-candidate-authoring-transport.v1"
@@ -139,16 +144,16 @@ def greenfield_host_candidate_contract(
                 "fact. The bound actor fact must cite the ledger actor_ref exactly. Two actions "
                 "in one joined clause remain two atoms and may share the same complete event_ref, "
                 "while the accepted ledger statement carries distinct role-local meaning. "
-                "Never narrow a cited event to an inherited fragment. Supply every "
-                "accepted component and responsibility directly, including exact source "
-                "occurrences and source-bound owners."
+                "Never narrow a cited event to an inherited fragment. Odylith derives each "
+                "accepted product responsibility from its verified action duty and exact actor; "
+                "do not author independent component responsibility citations."
             ),
             (
                 "Keep every accepted operational constraint in facts.operational_constraints and "
                 "supply the complete source_precedence relation between existing source-supported "
-                "events. Passive or unowned timing creates no edge. An exact cited clause may be "
-                "both an event responsibility and an operational constraint only when the same "
-                "source bytes genuinely carry both typed meanings."
+                "events. Passive or unowned timing creates no edge. Bind every verified guard, "
+                "boundary and proof duty to its existing lifecycle component/workstream allocation. "
+                "Preserve its complete meaning and references independently of action responsibilities."
             ),
             "Keep accepted source facts separate from assumptions and provisional design decisions.",
             (
@@ -462,6 +467,7 @@ def _canonical_candidate_bytes(response: Mapping[str, Any]) -> bytes:
 __all__ = [
     "LEGACY_HOST_CANDIDATE_CONTRACT_VERSION",
     "PREVIOUS_HOST_CANDIDATE_CONTRACT_VERSION",
+    "PASSIVE_HOST_CANDIDATE_CONTRACT_VERSIONS",
     "HOST_CANDIDATE_CONTRACT_VERSION",
     "HOST_CANDIDATE_RECEIPT_VERSION",
     "MAX_HOST_CANDIDATE_BYTES",

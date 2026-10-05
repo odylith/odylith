@@ -130,13 +130,14 @@ def test_preview_preserves_explicit_systems_and_constraints_verbatim() -> None:
 
 
 def test_radar_required_decisions_point_to_assumptions_not_missing_facts() -> None:
-    _, _, authored = _authored()
+    source, response, authored = _authored()
     intent = dict(authored.intent)
     intent["authored_semantics"] = authored_semantics_mapping(
         authored.first_path_relations,
         authored.component_responsibility_relations,
         first_path_context_relations=authored.first_path_context_relations,
         provisional_design=authored.provisional_design,
+        source_duty=_source_duty_for_response(response, source),
     )
     proposal = build_authored_greenfield_proposal(
         observed_source={}, release_selector="0.0.1", confirmed_intent=intent,

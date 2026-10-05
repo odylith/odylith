@@ -21,6 +21,7 @@ from odylith.runtime.domain_intelligence.greenfield_repository_write_set import 
 AUDIT_ROOT_ENV = "ODYLITH_GREENFIELD_WRITE_AUDIT_ROOT"
 AUDIT_FD_ENV = "ODYLITH_GREENFIELD_WRITE_AUDIT_FD"
 AUDIT_MUTATION_ROOTS_ENV = "ODYLITH_GREENFIELD_WRITE_AUDIT_MUTATION_ROOTS"
+AUDIT_DASHBOARD_ENV = "ODYLITH_GREENFIELD_WRITE_AUDIT_DASHBOARD"
 _GREENFIELD_MUTATION_ROOTS = (*GREENFIELD_REPOSITORY_WRITE_PATHS, GREENFIELD_RUNTIME_ROOT)
 
 
@@ -32,6 +33,7 @@ class WriteAuditEvidence:
     write_attempts: tuple[str, ...] = ()
     subprocess_attempts: tuple[str, ...] = ()
     error: str = ""
+    process_observations: tuple[Mapping[str, Any], ...] = ()
 
 
 @dataclass
@@ -41,6 +43,7 @@ class InstalledWriteAudit:
     repo_root: Path
     read_fd: int
     write_fd: int
+    dashboard_opener: Mapping[str, str] | None = None
     _finished: WriteAuditEvidence | None = field(default=None, init=False, repr=False)
     _reader: threading.Thread = field(init=False, repr=False)
     _trace_chunks: list[bytes] = field(default_factory=list, init=False, repr=False)
@@ -75,11 +78,14 @@ class InstalledWriteAudit:
             self.read_fd = -1
 
     def environment(self) -> dict[str, str]:
-        return {
+        values = {
             AUDIT_ROOT_ENV: str(self.repo_root),
             AUDIT_FD_ENV: str(self.write_fd),
             AUDIT_MUTATION_ROOTS_ENV: json.dumps(_GREENFIELD_MUTATION_ROOTS),
         }
+        if self.dashboard_opener is not None:
+            values[AUDIT_DASHBOARD_ENV] = json.dumps(dict(self.dashboard_opener), sort_keys=True)
+        return values
 
     @property
     def pass_fds(self) -> tuple[int, ...]:
@@ -109,6 +115,7 @@ class InstalledWriteAudit:
                     write_attempts=evidence.write_attempts,
                     subprocess_attempts=evidence.subprocess_attempts,
                     error=self._reader_error + (f"; {evidence.error}" if evidence.error else ""),
+                    process_observations=evidence.process_observations,
                 )
                 if self._reader_error
                 else evidence
@@ -123,14 +130,17 @@ class InstalledWriteAudit:
             self.write_fd = -1
 
 
-def begin_installed_write_audit(*, repo_root: Path) -> InstalledWriteAudit:
+def begin_installed_write_audit(
+    *, repo_root: Path, dashboard_opener: Mapping[str, str] | None = None,
+) -> InstalledWriteAudit:
     """Create a parent-owned audit pipe for one isolated managed-Python process."""
 
     root = Path(repo_root).expanduser().resolve()
     if not root.is_dir():
         raise FileNotFoundError(f"clarification repository does not exist: {root}")
     read_fd, write_fd = os.pipe()
-    return InstalledWriteAudit(repo_root=root, read_fd=read_fd, write_fd=write_fd)
+    return InstalledWriteAudit(repo_root=root, read_fd=read_fd, write_fd=write_fd,
+                               dashboard_opener=dashboard_opener)
 
 
 def _close_fd(descriptor: int) -> None:
@@ -156,6 +166,8 @@ def _read_trace(raw_trace: bytes) -> WriteAuditEvidence:
             return WriteAuditEvidence(active=False, error=f"invalid write-audit trace line {index}: {exc.msg}")
         if not isinstance(record, dict):
             return WriteAuditEvidence(active=False, error=f"invalid write-audit trace record {index}")
+        if record.get("kind") == "subprocess" and not isinstance(record.get("process", {}), dict):
+            return WriteAuditEvidence(active=False, error=f"invalid process detail record {index}")
         records.append(record)
     if not any(record.get("kind") == "ready" for record in records):
         return WriteAuditEvidence(active=False, error="installed write audit did not activate")
@@ -181,7 +193,53 @@ def _read_trace(raw_trace: bytes) -> WriteAuditEvidence:
         error=("installed write audit could not resolve a write target: " + ", ".join(audit_errors))
         if audit_errors
         else "",
+        process_observations=tuple(dict(record.get("process") or {}) for record in records
+                                   if record.get("kind") == "subprocess"),
     )
+
+
+def dashboard_opener_issues(
+    evidence: WriteAuditEvidence, *, expected: Mapping[str, str] | None = None,
+) -> tuple[str, ...]:
+    """Qualify at most one observed canonical opener; never hide process attempts."""
+
+    if not evidence.active or evidence.error:
+        return ("installed process audit is inactive or failed",)
+    if len(evidence.process_observations) != len(evidence.subprocess_attempts):
+        return ("process detail count differs from actual event count",)
+    if len(evidence.subprocess_attempts) > 1:
+        return ("more than one process attempt occurred",)
+    for event, record in zip(evidence.subprocess_attempts, evidence.process_observations):
+        if event != "subprocess.Popen" or record.get("classification") != "post_closed_dashboard_opener":
+            return ("unattributed or forbidden process attempt occurred",)
+        if (set(record) != {"classification", "event", "executable", "argv", "transaction_hash",
+                            "write_set_hash", "project_url", "journal_state", "lifecycle_state", "journal_sha256",
+                            "canonical_call_context", "owner_sha256"}
+                or record.get("event") != event
+                or record.get("executable") != "/bin/sh"
+                or record.get("argv") != ["/bin/sh", "-c", "osascript"]
+                or record.get("journal_state") != "closed"
+                or record.get("lifecycle_state") != "CLOSED"
+                or not record.get("journal_sha256") or not record.get("project_url")):
+            return ("canonical opener evidence is incomplete",)
+        if expected is None:
+            return ("canonical opener has no sealed expected binding",)
+        try:
+            url = (Path(expected["repo_root"]) / ".odylith/runtime/greenfield/generations"
+                   / expected["write_set_hash"] / "repository/odylith/index.html").as_uri() + "?tab=project"
+            if (record["transaction_hash"] != expected["transaction_hash"]
+                    or record["write_set_hash"] != expected["write_set_hash"] or record["project_url"] != url
+                    or record["canonical_call_context"] != ["_confirm_pending_transaction", "open_committed_dashboard",
+                                                             "MacOSXOSAScript.open", "os.popen"]
+                    or record["owner_sha256"] != {key: expected[key] for key in (
+                        "navigation_source_sha256", "confirmation_source_sha256", "webbrowser_source_sha256",
+                        "os_source_sha256", "shell_sha256", "osascript_sha256")}
+                    or len(record["journal_sha256"]) != 64
+                    or any(character not in "0123456789abcdef" for character in record["journal_sha256"])):
+                return ("canonical opener differs from sealed expected binding",)
+        except (KeyError, TypeError, ValueError):
+            return ("canonical opener expected binding is invalid",)
+    return ()
 
 
 def _record_summary(record: Mapping[str, Any]) -> str:
@@ -197,6 +255,8 @@ from pathlib import Path
 import stat
 import sys
 import threading
+import hashlib
+import shutil
 
 try:
     import fcntl
@@ -219,6 +279,21 @@ _audit_fsdecode = os.fsdecode
 _audit_os_open = os.open
 _audit_readlink = os.readlink
 _open_context = threading.local()
+_dashboard = json.loads(os.environ.get("ODYLITH_GREENFIELD_WRITE_AUDIT_DASHBOARD", "null"))
+_browser_context = threading.local()
+if _dashboard is not None:
+    from odylith.runtime.domain_intelligence import greenfield_post_confirm_handoff as _navigation_owner
+    from odylith.runtime.surfaces import greenfield_host_confirmation as _confirmation_owner
+    import webbrowser
+    _navigation_code = _navigation_owner.open_committed_dashboard.__code__
+    _confirmation_code = _confirmation_owner._confirm_pending_transaction.__code__
+    _browser_code = getattr(webbrowser, "MacOSXOSAScript", None)
+    _browser_code = _browser_code.open.__code__ if _browser_code is not None else None
+    _popen_code = os.popen.__code__
+    _owner_files = ((_navigation_owner.__file__, "navigation_source_sha256"),
+                    (_confirmation_owner.__file__, "confirmation_source_sha256"),
+                    (webbrowser.__file__, "webbrowser_source_sha256"),
+                    (os.__file__, "os_source_sha256"))
 
 
 def _emit(kind, event, path=""):
@@ -226,6 +301,76 @@ def _emit(kind, event, path=""):
     if path:
         record["path"] = str(path)
     _audit_write(_audit_fd, (_audit_json_dumps(record, sort_keys=True) + "\n").encode("utf-8"))
+
+
+def _dashboard_process(event, arguments):
+    # Unknown arguments may contain secrets: compare in RAM, retain digests only.
+    facts = {"classification": "unattributed", "event": event}
+    try:
+        facts["arguments_sha256"] = hashlib.sha256(repr(arguments[:2]).encode()).hexdigest()
+        if event != "subprocess.Popen" or _dashboard is None or sys.platform != "darwin":
+            return facts
+        executable, argv, _cwd, child_env = arguments
+        if executable != "/bin/sh" or argv != ["/bin/sh", "-c", "osascript"]:
+            return facts
+        frames = []
+        frame = sys._getframe(1)
+        while frame is not None:
+            frames.append(frame)
+            frame = frame.f_back
+        navigation = next(frame for frame in frames if frame.f_code is _navigation_code)
+        confirmation = next(frame for frame in frames if frame.f_code is _confirmation_code)
+        if not any(frame.f_code is _browser_code for frame in frames):
+            return facts
+        if not any(frame.f_code is _popen_code for frame in frames):
+            return facts
+        if any(hashlib.sha256(Path(path).read_bytes()).hexdigest() != _dashboard[key]
+               for path, key in _owner_files):
+            return facts
+        transaction = _dashboard["transaction_hash"]
+        write_set = _dashboard["write_set_hash"]
+        if confirmation.f_locals["transaction_hash"] != transaction or confirmation.f_locals["root"].resolve() != _root:
+            return facts
+        entry = _root / ".odylith/runtime/greenfield/generations" / write_set / "repository/odylith/index.html"
+        url = entry.as_uri() + "?tab=project"
+        nav = navigation.f_locals["navigation"]
+        if (entry.is_symlink() or nav.get("project_url") != url
+                or nav.get("dashboard_path") != str(entry)
+                or getattr(_browser_context, "url", None) != url):
+            return facts
+        journal_path = _root / ".odylith/runtime/greenfield/create-journal" / transaction / "state.v1.json"
+        raw = journal_path.read_bytes()
+        journal = json.loads(raw)
+        if (journal.get("state") != "closed" or journal.get("lifecycle_state") != "CLOSED"
+                or journal.get("transaction_hash") != transaction
+                or journal.get("repository_write_set_hash") != write_set):
+            return facts
+        from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
+        pinned = GreenfieldCommitJournal.pin_reviewed_generation(repo_root=_root, transaction_hash=transaction)
+        if (pinned.repository_root / "odylith/index.html" != entry
+                or pinned.manifest_sha256 != journal["generation_manifest_sha256"]
+                or journal_path.read_bytes() != raw
+                or hashlib.sha256((_root / "odylith/index.html").read_bytes()).hexdigest() != _dashboard["publication_sha256"]):
+            return facts
+        effective_env = os.environ if child_env is None else child_env
+        if shutil.which("osascript", path=effective_env.get("PATH", "")) != "/usr/bin/osascript":
+            return facts
+        if any(hashlib.sha256(Path(path).read_bytes()).hexdigest() != _dashboard[key]
+               for path, key in (("/bin/sh", "shell_sha256"), ("/usr/bin/osascript", "osascript_sha256"))):
+            return facts
+        return {"classification": "post_closed_dashboard_opener", "event": event,
+                "executable": executable, "argv": argv, "transaction_hash": transaction,
+                "write_set_hash": write_set, "project_url": url,
+                "journal_state": "closed", "lifecycle_state": "CLOSED",
+                "journal_sha256": hashlib.sha256(raw).hexdigest(),
+                "canonical_call_context": ["_confirm_pending_transaction", "open_committed_dashboard",
+                                           "MacOSXOSAScript.open", "os.popen"],
+                "owner_sha256": {key: _dashboard[key] for _path, key in (
+                    *_owner_files, ("/bin/sh", "shell_sha256"), ("/usr/bin/osascript", "osascript_sha256"))}}
+    except Exception:
+        return facts
+    finally:
+        _browser_context.url = None
 
 
 def _relative_to_root(candidate):
@@ -310,6 +455,9 @@ def _audited_os_open(path, flags, mode=0o777, *, dir_fd=None):
 
 
 def _audit(event, arguments):
+    if event == "webbrowser.open":
+        _browser_context.url = arguments[0] if arguments else None
+        return
     if event == "open":
         path, _mode, flags = arguments
         if isinstance(flags, int) and flags & _write_flags:
@@ -336,7 +484,8 @@ def _audit(event, arguments):
         _record_path(event, arguments[0])
         return
     if event in {"subprocess.Popen", "os.system", "os.posix_spawn", "os.exec"}:
-        _emit("subprocess", event)
+        record = {"kind": "subprocess", "event": event, "process": _dashboard_process(event, arguments)}
+        _audit_write(_audit_fd, (_audit_json_dumps(record, sort_keys=True) + "\n").encode("utf-8"))
 
 
 sys.addaudithook(_audit)
@@ -369,4 +518,5 @@ __all__ = [
     "WriteAuditEvidence",
     "audited_program",
     "begin_installed_write_audit",
+    "dashboard_opener_issues",
 ]

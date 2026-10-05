@@ -4,6 +4,33 @@ Last updated: 2026-10-05
 
 ## Overview
 
+### Verified responsibility custody and v27 proof (2026-10-05)
+
+Actual sealed proposal audits pass Research H0 13/13 and Agriculture H0 26/26
+plus changed-hash H1 31/31 at unchanged source-first lenses/1.0 floors. Research
+EDIT admits v6/v9 source but refuses unequal component/constraint overlap; no H1.
+Source completeness remains separate from generated fidelity. CB-303/CB-347 and
+the v27 evidence manifest retain exact proof and failure bindings.
+
+Host v52/format v22 removes redundant host responsibility selection. The compiler
+derives each responsibility from a verified product duty and exact event/actor
+binding. Admission and sealed reload reuse the complete source/task/receipt
+validator against the immutable evidence snapshot. Typed lifecycle allocations
+retain guards, boundaries, constraints and proofs; shared source bytes cannot
+transfer human work or merge product duties. The source patch passes 171 focused
+checks; all 24 publication writers remain byte-identical. Installation and fixture
+integration proof is recorded in CB-347, including retained broad failures and
+their bounded corrections. Fresh installed semantic
+qualification is pending. Initial/passive/current custody and correction
+precedence remain unchanged; no new model stage or runtime owner is added.
+
+Agriculture REJECT/copied-old refusal pass; harness `NameError: SEALED_PROGRAM`
+stops before CONFIRM. A continuation publishes H1 (exit 0/CLOSED, returned
+readback success, zero model/provider/projection entries), then fails its external
+zero-process assertion on one process launch. Repeat confirmation is unexecuted;
+full terminal qualification stays open. Clean a372 CI passes
+9,653 tests, while Public40 and remaining release qualification stay held.
+
 ### Correction authority and diagnostic custody revision (2026-10-05)
 
 The v51 correction revision is implemented and independently reviewed; installed
@@ -2129,6 +2156,9 @@ semantic/design findings.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-10-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_semantics.py`
 - **2026-10-02 · Implementation:** Implementation evidence linked this component to governed work with 4 verifiable artifact references.
   - Evidence: `odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_source_duty_ledger.py`, `tests/unit/install/test_greenfield_driver_field_inventory_stop.py`
 - **2026-10-02 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
@@ -2140,8 +2170,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-10-01 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_source_duty_entailment.py`
-- **2026-10-01 · Decision:** Decision evidence linked this component to governed work with 1 verifiable artifact reference.
-  - Evidence: `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
 <!-- registry-requirements:end -->
 
 ## Feature History

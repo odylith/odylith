@@ -32,8 +32,8 @@ _COMMAND_TIMEOUT_SECONDS = 300
 _CANDIDATE_CONTRACT_SMOKE_PROMPT = (
     "Create a project governance package for a first-time user."
 )
-_EXPECTED_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v51"
-_EXPECTED_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v21"
+_EXPECTED_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v52"
+_EXPECTED_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v22"
 
 
 def _has_current_host_candidate_schema(candidate_schema: object) -> bool:
@@ -96,9 +96,11 @@ def _has_current_host_candidate_schema(candidate_schema: object) -> bool:
                 return False
         return bool(
             isinstance(constraint, dict)
-            and "components" in authored_properties
-            and {"components", "events", "source_duty_binding"}
+            and "components" not in authored_properties
+            and "components" not in authored.get("required", ())
+            and {"provisional_design", "events", "source_duty_binding"}
             <= set(authored.get("required") or ())
+            and isinstance(authored_properties["provisional_design"]["properties"]["components"], dict)
             and constraint.get("type") == "object"
             and constraint.get("additionalProperties") is False
             and set(constraint.get("required") or ()) == {"quote", "context"}

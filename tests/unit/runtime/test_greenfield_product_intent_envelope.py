@@ -253,7 +253,7 @@ def test_envelope_construction_rejects_relation_free_input() -> None:
 
 def test_envelope_rejects_source_digest_or_span_rebinding() -> None:
     source, result, intent = _authored_inputs()
-    with pytest.raises(ValueError, match="evidence digest"):
+    with pytest.raises(ValueError, match="source duty ledger receipt hash is invalid"):
         build_product_intent_envelope(
             intent,
             source_text=source + " changed",

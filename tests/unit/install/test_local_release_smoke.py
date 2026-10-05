@@ -234,7 +234,8 @@ def test_run_reports_timeout_with_command_and_cwd(monkeypatch, tmp_path: Path) -
         "missing_evidence",
         "bad_schema",
         "custody_leak",
-        "missing_components",
+        "duplicate_component_authority",
+        "missing_proposed_components",
         "missing_context",
         "non_string_context",
         "candidate_review",
@@ -308,9 +309,11 @@ def test_greenfield_install_smoke_requires_read_only_candidate_contract(
             payload["candidate_schema"] = {"type": "object", "required": ["version"]}
         elif defect == "custody_leak":
             constraint_schema["properties"]["constraint_custody"] = {"type": "object"}
-        elif defect == "missing_components":
-            authored["properties"].pop("components")
-            authored["required"].remove("components")
+        elif defect == "duplicate_component_authority":
+            authored["properties"]["components"] = {"type": "array"}
+            authored["required"].append("components")
+        elif defect == "missing_proposed_components":
+            authored["properties"]["provisional_design"]["properties"].pop("components")
         elif defect == "missing_context":
             constraint_schema["required"] = ["quote"]
         elif defect == "non_string_context":
@@ -371,10 +374,10 @@ def test_release_smoke_pins_the_real_current_candidate_contract() -> None:
     module = _module()
     contract = greenfield_host_candidate_contract(module._CANDIDATE_CONTRACT_SMOKE_PROMPT)
 
-    assert module._EXPECTED_CANDIDATE_CONTRACT_VERSION == "odylith.greenfield.host-candidate-contract.v51"
-    assert module._EXPECTED_CANDIDATE_FORMAT_VERSION == "odylith.greenfield.host-candidate-format.v21"
-    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v51"
-    assert contract["candidate_version"] == "odylith.greenfield.host-candidate-format.v21"
+    assert module._EXPECTED_CANDIDATE_CONTRACT_VERSION == "odylith.greenfield.host-candidate-contract.v52"
+    assert module._EXPECTED_CANDIDATE_FORMAT_VERSION == "odylith.greenfield.host-candidate-format.v22"
+    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v52"
+    assert contract["candidate_version"] == "odylith.greenfield.host-candidate-format.v22"
     assert "source-only" in contract["task"]
     assert "without another semantic call" in contract["task"]
     assert module._has_current_host_candidate_schema(contract["candidate_schema"])

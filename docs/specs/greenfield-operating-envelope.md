@@ -87,7 +87,7 @@ proof.
 
 ### EDIT lifecycle verification
 
-Host contract `odylith.greenfield.host-candidate-contract.v51` gives the existing
+Host contract `odylith.greenfield.host-candidate-contract.v52` gives the existing
 source-only verifier a required disposition for every prior sealed state field,
 transition, conditional guard, boundary and proof duty. A preserved or changed
 duty requires an affirmative current carrier in the same typed section. Changed
@@ -292,7 +292,7 @@ material clarifications with no writes. Sol diagnostic evidence cannot qualify a
 release-success profile.
 
 Canonical authoring `odylith.greenfield.intent-authoring.v79` receives one
-host-owned candidate in host format v21 under candidate contract v49. The
+host-owned candidate in host format v22 under candidate contract v52. The
 source-duty host returns one compact citation bank and typed rows that refer
 to it; deterministic expansion restores the same complete cited ledger before
 preflight. This path remains unqualified. Earlier v44 public evidence failed
@@ -464,7 +464,7 @@ an explicitly labeled assumption, never a human actor, dependency, or accepted f
 projections do not infer a customer from the first participant.
 Authored semantics v18 stores one actor identity per event: the selected actor fact,
 and separately binds the required provisional design.
-The raw host format v21 selects that actor through `actor_fact: {field, row}`
+The raw host format v22 selects that actor through `actor_fact: {field, row}`
 using the same one-based fact-row convention as terminal results. The compiler
 projects this into canonical authoring v79. The verified source-duty ledger
 supplies each normalized event statement, action, and target with exact event,
@@ -481,6 +481,14 @@ This structural address does not establish entailment: independent semantic
 release review must verify that the selected actor performs the action.
 Confirmation does not migrate old raw authoring responses or reinterpret
 their actor references.
+Fresh host candidates do not select component responsibility quotations a
+second time. The compiler derives each accepted responsibility from one verified
+product action, its normalized statement, complete event citation and exact actor
+binding. Shared source bytes do not merge duties or transfer human or external
+work to a product component. Admission and sealed readback revalidate duty,
+decision, event and actor provenance. Proposed architecture retains its separate
+component and workstream ownership. Verified guards, boundaries and proof duties
+retain their complete meaning and citations through those lifecycle allocations.
 Aliases, pronouns, and omitted subjects remain in the original event text; they do
 not create a second actor field or a grammatical carry state. Event-actor atomic
 links in atomic ledger v4 cite the selected fact directly, not a substring of the action.

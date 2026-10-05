@@ -247,6 +247,8 @@ def build_product_intent_envelope(
         raise ValueError(
             "Product Intent envelope requires exact canonical-candidate custody"
         )
+    # Canonical validation uses this exact supplied source, never a reframed prompt.
+    intent = {**intent, "prompt": source_text}
     authored_relations = first_path_relations_from_intent(intent)
     first_path_context_relations = first_path_context_relations_from_intent(intent)
     component_responsibility_relations = component_responsibility_relations_from_intent(
@@ -277,6 +279,10 @@ def build_product_intent_envelope(
     normalized_duties = require_verified_source_action_relations(
         authored_relations, source_duty=source_duty, source_text=str(source_text or "")
     )
+    by_id = {duty["id"]: duty for duty in normalized_duties.values()}
+    for row_index, relation in enumerate(component_responsibility_relations, start=1):
+        if "source_duty_id" in relation:
+            normalized_duties[("component_responsibilities", row_index)] = by_id[relation["source_duty_id"]]
     spans, source_span_ids_by_field, product_claim_span_ids_by_field = _authored_source_spans(
         authored_source_spans,
         source_bytes=source_bytes,
@@ -491,7 +497,7 @@ def _authored_source_spans(
             or classification not in {"product_claim", "supporting_evidence"}
             or normalized != (normalized_duty is not None)
             or (normalized and (
-                field not in {"first_path", "supporting_events"}
+                field not in {"first_path", "supporting_events", "component_responsibilities"}
                 or raw.get("source_duty_id") != normalized_duty["id"]
                 or raw.get("decision_set_sha256") != normalized_duty["decision_set_sha256"]
                 or text != duty_quote
@@ -639,7 +645,7 @@ def _verify_authored_atomic_claim_source(
             or source_bytes[start:end] != quote_bytes
             or claim.get("quote_sha256") != hashlib.sha256(quote_bytes).hexdigest()
             or (normalized_claim and (
-                field not in {"first_path", "supporting_events"}
+                field not in {"first_path", "supporting_events", "component_responsibilities"}
                 or normalized_parent is None
                 or not _normalized_claim_matches_projection(claim, normalized_parent)
             ))

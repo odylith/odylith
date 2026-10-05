@@ -80,6 +80,7 @@ FIRST_PATH_CONTEXT_KINDS = (
 )
 COMPONENT_RESPONSIBILITY_SOURCES = ("accepted_fact",)
 MAX_COMPONENT_RESPONSIBILITY_RELATIONS = 32
+VERIFIED_COMPONENT_PROVENANCE_FIELDS = frozenset({"source_duty_id", "decision_set_sha256"})
 
 
 def combined_prompt_evidence_source(*, prompt: str, edit_evidence: str) -> str:
@@ -719,8 +720,9 @@ def validate_component_responsibility_relations(
     *,
     intent: Mapping[str, Any],
     first_path_relations: Sequence[Mapping[str, Any]],
+    require_verified_duties: bool = False,
 ) -> tuple[dict[str, Any], ...]:
-    """Require exact paths and quotes for every accepted responsibility fact."""
+    """Bind responsibility owners, including receipt-selected derived duty provenance."""
 
     if (
         not isinstance(value, Sequence)
@@ -766,12 +768,32 @@ def validate_component_responsibility_relations(
         for row in first_path_relations
         if _positive_index(row.get("order"))
     }
+    source_duty = intent.get(AUTHORED_SEMANTICS_KEY, {}).get("source_duty")
+    verified_rows = any(isinstance(row, Mapping) and VERIFIED_COMPONENT_PROVENANCE_FIELDS & set(row)
+                        for row in value)
+    duties_by_order: dict[int, Mapping[str, Any]] = {}
+    receipt: Mapping[str, Any] = {}
+    if verified_rows or require_verified_duties:
+        if not isinstance(source_duty, Mapping):
+            raise GreenfieldAuthoredSemanticsError("Greenfield derived responsibilities lack source duties")
+        from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
+            require_verified_source_action_relations,
+        )
+        source_text = intent.get("prompt")
+        if not isinstance(source_text, str) or not source_text:
+            raise GreenfieldAuthoredSemanticsError("Greenfield derived responsibilities lack exact source evidence")
+        duties = require_verified_source_action_relations(
+            first_path_relations, source_duty=source_duty, source_text=source_text,
+        )
+        duties_by_order = {duty["event_order"]: duty for duty in duties.values()}
+        receipt = source_duty["ledger_receipt"]
     rows: list[dict[str, Any]] = []
     seen_paths: set[str] = set()
     for index, raw in enumerate(value):
         if (
             not isinstance(raw, Mapping)
-            or set(raw) != COMPONENT_RESPONSIBILITY_RELATION_FIELDS
+            or set(raw) != (COMPONENT_RESPONSIBILITY_RELATION_FIELDS
+                           | (VERIFIED_COMPONENT_PROVENANCE_FIELDS if verified_rows or require_verified_duties else set()))
         ):
             raise GreenfieldAuthoredSemanticsError(
                 "Greenfield authored component-responsibility relations are malformed"
@@ -805,6 +827,21 @@ def validate_component_responsibility_relations(
                 raise GreenfieldAuthoredSemanticsError(
                     "Greenfield authored semantics assign contradictory owners to one product event"
                 )
+        if verified_rows or require_verified_duties:
+            duty = duties_by_order.get(event_order)
+            if (duty is None or linked_event is None or linked_event.get("actor_kind") != "product"
+                or raw.get("source_duty_id") != duty.get("id")
+                or raw.get("decision_set_sha256") != receipt.get("decision_set_sha256")
+                or raw.get("responsibility_quote") != duty.get("statement")
+                or linked_event.get("event_quote") != duty.get("statement")
+                or linked_event.get("action_verb_quote") != duty.get("action")
+                or linked_event.get("target_quote") != duty.get("target")
+                or linked_event.get("actor_fact_quote") != duty.get("actor_ref", {}).get("quote")
+                or owner_quote != linked_event.get("actor_fact_quote")
+                or (duty.get("binding_role") == "first_path_actions"
+                    and duty.get("performer_role") not in {"internal_system", "product_title"})
+                or duty.get("binding_role") == "supporting_human_actions"):
+                raise GreenfieldAuthoredSemanticsError("Greenfield derived responsibility differs from its verified duty")
         expected_path = expected_paths[index] if index < len(expected_paths) else ""
         responsibility = responsibilities[index] if index < len(responsibilities) else ""
         if (
@@ -818,6 +855,10 @@ def validate_component_responsibility_relations(
             )
         seen_paths.add(responsibility_path)
         rows.append(dict(raw))
+    if verified_rows or require_verified_duties:
+        product_orders = {row["order"] for row in first_path_relations if row.get("actor_kind") == "product"}
+        if len(rows) != len(product_orders) or {row["first_path_event_order"] for row in rows} != product_orders:
+            raise GreenfieldAuthoredSemanticsError("Greenfield derived responsibilities do not cover exact product duties")
     return tuple(rows)
 
 
@@ -843,7 +884,8 @@ def authored_relation_set_sha256(
     for relation in component_responsibility_relations:
         if (
             not isinstance(relation, Mapping)
-            or set(relation) != COMPONENT_RESPONSIBILITY_RELATION_FIELDS
+            or set(relation) not in (COMPONENT_RESPONSIBILITY_RELATION_FIELDS,
+                                    COMPONENT_RESPONSIBILITY_RELATION_FIELDS | VERIFIED_COMPONENT_PROVENANCE_FIELDS)
         ):
             raise GreenfieldAuthoredSemanticsError("Greenfield authored relation custody is malformed")
         component_payload.append(dict(relation))

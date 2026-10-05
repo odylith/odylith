@@ -1,6 +1,51 @@
 Status: In progress
 
-## Current installed frontier and bounded v51 scope (2026-10-05)
+## Current v52 implementation and v27 proof frontier (2026-10-05)
+
+Fresh independent proposal audit passes Research H0 13/13, Agriculture H0 26/26
+and changed-hash Agriculture H1 31/31 at unchanged source lenses/1.0 floors.
+Research EDIT admits v6/v9 source, then refuses unequal component/constraint
+citation overlap (four calls, 259.332 diagnostic seconds); no H1. Agriculture
+REJECT/copied-old refusal pass, then harness `NameError: SEALED_PROGRAM` stops
+before CONFIRM. The first-unexecuted continuation publishes H1 (exit 0/CLOSED,
+56 sealed writes, readback success); zero model/provider/projection entries and
+one process launch are observed. The external zero-process assertion fails;
+repeat confirmation is unexecuted. Preserve both failures; no replay.
+CB-303/CB-347 retain exact audits, commands and failures.
+
+Implemented host v52/format v22 removes redundant host responsibility selection.
+Each responsibility derives from one verified product duty and exact event/actor
+binding. Admission and sealed reload reuse the full source/task/receipt validator
+against the immutable source snapshot. Existing typed lifecycle allocations retain
+guards, boundaries, constraints and proofs. Shared spans cannot merge duties or
+transfer human work. No new runtime owner, model stage or cap increase follows.
+
+Unit controls cover mixed human/product spans, multiple owners, standalone
+capabilities, exact dual roles and passive custody. Fresh changed-contract
+Research/Agriculture H0/H1 must independently preserve every frozen
+original/correction duty. Verifier Yes/admission cannot replace fidelity. Preserve
+all earlier refusals and bad v49 H1. Clean a372 Linux CI passes 9,653 tests/six
+warnings; prior failed CI stays retained. Status stays In progress; Public40 and
+private/protected, migration, host, full-browser, timing and release gates stay held.
+
+Implementation ownership: host shape/contract, intent authoring, relation graph,
+existing canonical envelope/semantics and approval/transaction provenance owners
+and atomic fact custody (nine existing modules). Revalidate derived duty/event/actor provenance at fresh
+admission and sealed reload; no new runtime owner. Keep each below 1,200 lines.
+
+The frozen v52 patch passes 171 focused checks, including real current PCT
+roundtrip, fresh EDIT and exact passive version pairs. Nine source owners add
+156/remove 27 lines; all remain below 1,200 lines. All 24 publication writers
+retain their exact identity. Earlier failing runs remain retained: normalized
+component claims needed the existing atomic provenance lane, and the exact source
+snapshot must be present before candidate staging. Duplicate validation and
+placeholder rows are removed. Independent source and fixture review is clear.
+The broad gate passes 2,140 installation and 1,734 runtime checks, retaining two
+dependency-wrapper failures resolved by 148 affected checks. The earlier fixture
+migration passes 324 checks; CB-347 retains all failed runs and exact proof.
+One fresh installed v28 comparison precedes public qualification.
+
+## Previous v51 implementation and v26 installed frontier (2026-10-05)
 
 The final clean `16a470d1b` v26 distribution passes build integrity and canonical
 install/upgrade smoke. Research H0 independently passes 13/13 source duties;

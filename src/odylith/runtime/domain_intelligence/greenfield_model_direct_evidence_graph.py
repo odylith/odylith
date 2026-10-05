@@ -479,13 +479,45 @@ def _derive_component_relations(
     first_path_relations: Sequence[Mapping[str, Any]],
     allow_exact_dual_role_constraints: bool,
 ) -> tuple[dict[str, Any], ...]:
-    model_rows = model_component_responsibility_rows(value)
-    owner_facts = _selected_product_owner_facts(selected_facts)
     responsibility_facts = tuple(
         fact
         for fact in selected_facts
         if str(fact.get("field") or "") == "component_responsibilities"
     )
+    verified = any(fact.get("entailment_relationship") == "verified_source_action"
+                   for fact in responsibility_facts)
+    if verified:
+        if value != [] or any(fact.get("entailment_relationship") != "verified_source_action"
+                              for fact in responsibility_facts):
+            raise GreenfieldComponentOwnershipError("Greenfield responsibilities mix verified and independent authority")
+        rows: list[dict[str, Any]] = []
+        for responsibility_fact in responsibility_facts:
+            order = responsibility_fact.get("source_event_order")
+            event = next((row for row in first_path_relations if row["order"] == order), None)
+            source_fact = next((fact for fact in selected_facts
+                                if fact.get("field") in {"first_path", "supporting_events"}
+                                and fact.get("source_event_order") == order), None)
+            if (event is None or source_fact is None
+                or event["actor_kind"] != "product"
+                or event["event_quote"] != responsibility_fact["quote"]
+                or any(source_fact.get(key) != responsibility_fact.get(key) for key in (
+                    "source_duty_id", "decision_set_sha256", "source_start_byte",
+                    "source_end_byte", "verified_action", "verified_target"))):
+                raise GreenfieldComponentOwnershipError(
+                    "Greenfield derived responsibility differs from its verified product duty")
+            rows.append({
+                "responsibility_path": responsibility_fact["projection_path"],
+                "responsibility_quote": responsibility_fact["quote"],
+                "owner_system_path": event["owner_system_path"],
+                "owner_system_quote": event["owner_system_quote"],
+                "first_path_event_order": order,
+                "responsibility_source": "accepted_fact",
+                "source_duty_id": responsibility_fact["source_duty_id"],
+                "decision_set_sha256": responsibility_fact["decision_set_sha256"],
+            })
+        return tuple(rows)
+    model_rows = model_component_responsibility_rows(value)
+    owner_facts = _selected_product_owner_facts(selected_facts)
     constraint_locations = {
         (
             fact.get("source_start_byte"),

@@ -113,9 +113,13 @@ def _provisional_inputs() -> tuple[str, dict[str, Any], list[dict[str, Any]], li
         {**row, "visible_result_quote": ""}
         for row in authored.first_path_relations
     ]
+    responsibilities = [
+        {**row, "decision_set_sha256": ledger_receipt["decision_set_sha256"]}
+        for row in authored.component_responsibility_relations
+    ]
     provisional[AUTHORED_SEMANTICS_KEY] = authored_semantics_mapping(
         relations,
-        authored.component_responsibility_relations,
+        responsibilities,
         first_path_context_relations=authored.first_path_context_relations,
         provisional_design=authored.provisional_design,
         source_duty=source_duty,

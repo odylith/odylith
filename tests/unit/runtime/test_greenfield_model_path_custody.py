@@ -219,10 +219,11 @@ def test_authoring_accepts_only_byte_verified_source_citations() -> None:
         )
         for row in result.component_responsibility_relations
     ] == [
-        ("Record berth occupancy", "/internal_systems/0", "Berth map", 0),
+        ("Berth map: the product records berth occupancy", "/internal_systems/0", "Berth map", 2),
+        ("Berth map: the berth map shows the placement", "/internal_systems/0", "Berth map", 3),
     ]
     assert result.tier == "rescue"
-    assert len(result.source_spans) == 19
+    assert len(result.source_spans) == 20
 
 
 def test_product_led_path_keeps_review_recipient_without_inventing_human_event() -> None:

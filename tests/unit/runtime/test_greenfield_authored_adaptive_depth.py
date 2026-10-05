@@ -1177,7 +1177,7 @@ def test_sparse_source_facts_remain_visible_with_structural_design_projection(
                 "relations": [human_event, intake_event, receipt_event],
                 "responsibility_owners": ["Intake Board", "Receipt Ledger"],
             },
-            "Publish the signed request receipt.",
+            receipt_event["event_quote"],
         ),
         (
             "proof-only",

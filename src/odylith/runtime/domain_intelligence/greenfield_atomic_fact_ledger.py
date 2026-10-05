@@ -282,7 +282,7 @@ def _require_authored_claims(
         or any(
             not isinstance(claim, Mapping)
             or set(claim) not in {_CLAIM_FIELDS, _NORMALIZED_CLAIM_FIELDS}
-            or ("projection_quote" in claim and claim.get("field") not in {"first_path", "supporting_events"})
+            or ("projection_quote" in claim and claim.get("field") not in {"first_path", "supporting_events", "component_responsibilities"})
             for claim in value
         )
     ):

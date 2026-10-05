@@ -13,7 +13,9 @@ from odylith.runtime.domain_intelligence.greenfield_authored_proposal import (
     authored_projection_parity_issues,
     build_authored_greenfield_proposal,
 )
-from odylith.runtime.domain_intelligence.greenfield_authored_semantics import AUTHORED_SEMANTICS_KEY
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_SEMANTICS_KEY, authored_semantics_mapping,
+)
 from odylith.runtime.domain_intelligence.greenfield_candidate_intent_stage import (
     render_candidate_intent_markdown,
 )
@@ -28,6 +30,7 @@ from odylith.runtime.domain_intelligence.greenfield_provisional_package import (
 )
 from odylith.runtime.domain_intelligence.greenfield_source_lifecycle import (
     _sha256 as _lifecycle_sha256,
+    _project_verified_source_lifecycle,
     project_greenfield_source_lifecycle,
 )
 from odylith.runtime.domain_intelligence.project_intelligence_binding import (
@@ -39,6 +42,39 @@ from odylith.runtime.governance.validate_backlog_contract import default_section
 from tests.unit.runtime.test_greenfield_authored_component_spec_projection import _authored_proposal
 from tests.unit.runtime.test_greenfield_source_lifecycle import _case as _source_duty_case
 from tests.unit.runtime.test_greenfield_source_duty_binding import _with_design_duties
+from tests.unit.runtime.greenfield_model_authoring_fixtures import synthetic_source_duty_receipt_for_ledger
+
+
+def _attach_lifecycle_duties(intent: dict, *, evidence: str, receipt: dict, binding: dict) -> dict:
+    """Combine declared lifecycle atoms with the intent's unchanged action atoms."""
+    semantics = intent[AUTHORED_SEMANTICS_KEY]
+    prior = semantics["source_duty"]
+    ledger = deepcopy(prior["ledger_receipt"]["ledger"])
+    combined_binding = deepcopy(prior["binding"])
+    for section in ("state_fields", "off_path_transitions", "conditional_guards", "boundaries", "proof_duties"):
+        assert not ledger[section]
+        ledger[section] = deepcopy(receipt["ledger"][section])
+        if section != "state_fields":
+            combined_binding[section] = deepcopy(binding[section])
+    source = intent["prompt"] + "\n" + evidence
+    verified = synthetic_source_duty_receipt_for_ledger(ledger, evidence_text=source)
+    combined_binding.update(source_sha256=verified["source_sha256"], ledger_sha256=verified["ledger_sha256"])
+    lifecycle = _project_verified_source_lifecycle(
+        receipt=verified, binding=combined_binding, evidence_text=source,
+    )
+    responsibilities = [
+        {**row, "decision_set_sha256": verified["decision_set_sha256"]}
+        for row in semantics["component_responsibility_relations"]
+    ]
+    intent["prompt"] = source
+    intent[AUTHORED_SEMANTICS_KEY] = authored_semantics_mapping(
+        semantics["first_path_relations"], responsibilities,
+        first_path_context_relations=semantics["first_path_context_relations"],
+        source_precedence=semantics["source_precedence"],
+        provisional_design=semantics["provisional_design"],
+        source_duty={"ledger_receipt": verified, "binding": combined_binding, "lifecycle": lifecycle},
+    )
+    return lifecycle
 
 
 def _allocated(proposal: dict) -> dict:
@@ -392,16 +428,8 @@ def test_off_path_lifecycle_is_projected_only_to_bound_component_and_workstream(
     binding["off_path_transitions"][0].update({
         "component_key": component_key, "workstream_key": workstream_key,
     })
-    lifecycle = project_greenfield_source_lifecycle(
-        ledger_receipt=receipt, binding=binding,
-        candidate_result=candidate, evidence_text=evidence,
-    )
+    lifecycle = _attach_lifecycle_duties(intent, evidence=evidence, receipt=receipt, binding=binding)
     transition = lifecycle["off_path_transitions"][0]
-    intent[AUTHORED_SEMANTICS_KEY]["source_duty"] = {
-        "ledger_receipt": receipt,
-        "binding": binding,
-        "lifecycle": lifecycle,
-    }
     original_intent = deepcopy(intent)
 
     components = build_provisional_components(intent=intent, product_slug="harbor-planner")
@@ -473,13 +501,7 @@ def test_guard_boundary_and_proof_duty_survive_canonical_package_projection(tmp_
         binding[role][0].update({
             "component_key": component_key, "workstream_key": workstream_key,
         })
-    lifecycle = project_greenfield_source_lifecycle(
-        ledger_receipt=receipt, binding=binding,
-        candidate_result=candidate, evidence_text=evidence,
-    )
-    intent[AUTHORED_SEMANTICS_KEY]["source_duty"] = {
-        "ledger_receipt": receipt, "binding": binding, "lifecycle": lifecycle,
-    }
+    lifecycle = _attach_lifecycle_duties(intent, evidence=evidence, receipt=receipt, binding=binding)
     preview = render_candidate_intent_markdown(intent)
     for heading in ("Source conditional guards", "Source boundaries", "Source proof duties"):
         assert f"## {heading}" in preview

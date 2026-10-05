@@ -76,6 +76,7 @@ from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
 )
 from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
     verify_greenfield_source_duty_ledger_receipt,
+    resolve_greenfield_action_actor_identity,
 )
 
 GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v79"
@@ -275,11 +276,23 @@ def validate_greenfield_authoring_response(
         normalized_actions = _accepted_source_actions(
             accepted_source_duties,
             accepted_source_duty_binding,
-            evidence_text=evidence_text,
+            evidence_text=evidence_text, events=result.get("events"),
         )
-        component_rows = model_component_responsibility_rows(
-            result.get("components")
-        )
+        if accepted_source_duties is not None:
+            if result.get("components") != []:
+                raise GreenfieldModelAuthoringError("Verified duties own component responsibility authority")
+            component_rows = []
+            for (field, _), duty in normalized_actions.items():
+                if field == "component_responsibilities":
+                    citation = canonical_citation_from_host_selection(
+                        evidence_text.encode("utf-8"), duty["event_ref"],
+                    )
+                    component_rows.append({
+                        "responsibility_quote": citation["quote"],
+                        "responsibility_occurrence": citation["occurrence"],
+                    })
+        else:
+            component_rows = model_component_responsibility_rows(result.get("components"))
         intent, source_spans, selected_facts = _intent_from_typed_source_spans(
             result.get("facts"),
             component_rows=component_rows,
@@ -467,7 +480,9 @@ def _accepted_source_actions(
     binding: Mapping[str, Any] | None,
     *,
     evidence_text: str,
+    events: Sequence[Mapping[str, Any]],
 ) -> dict[tuple[str, int], dict[str, Any]]:
+    """Project each verified duty independently, preserving exact actor ownership."""
     if receipt is None and binding is None:
         return {}
     if receipt is None or binding is None:
@@ -498,6 +513,7 @@ def _accepted_source_actions(
         raise GreenfieldModelAuthoringError("Greenfield source action binding is incomplete")
     result: dict[tuple[str, int], dict[str, Any]] = {}
     path_row = supporting_row = 0
+    component_row = 0
     for order in sorted(by_order):
         if order in path_orders:
             path_row += 1
@@ -508,7 +524,14 @@ def _accepted_source_actions(
         result[key] = {
             **by_order[order],
             "decision_set_sha256": verified["decision_set_sha256"],
+            "event_order": order,
         }
+        actor_field = events[order - 1]["actor_fact"]["field"]
+        if actor_field in {"title", "internal_systems"}:
+            duty = result[key]
+            resolve_greenfield_action_actor_identity(duty, path=key[0])
+            component_row += 1
+            result[("component_responsibilities", component_row)] = duty
     return result
 
 
@@ -567,6 +590,8 @@ def _intent_from_typed_source_spans(
     spans: list[dict[str, Any]] = []
     seen: dict[tuple[str, int, int], dict[str, Any]] = {}
     intent: dict[str, Any] = {field: "" for field in _TEXT_FIELDS}
+    if normalized_actions:
+        intent["prompt"] = evidence_text
     intent.update({field: [] for field in _LIST_FIELDS})
     try:
         intent["assumptions"] = assumption_rows(assumptions)
@@ -649,6 +674,7 @@ def _intent_from_typed_source_spans(
                     "decision_set_sha256": action["decision_set_sha256"],
                     "verified_action": action["action"],
                     "verified_target": action["target"],
+                    "source_event_order": action["event_order"],
                 } if action is not None else {}),
             }
         )

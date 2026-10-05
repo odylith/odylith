@@ -113,7 +113,10 @@ def test_post_result_action_survives_authoring_custody_and_all_projections(tmp_p
         events[2]["event_quote"],
     ]
     product_constraint = candidate["operational_constraints"][1]
-    assert candidate["component_responsibilities"].count(product_constraint) == 1
+    assert product_constraint not in candidate["component_responsibilities"]
+    assert candidate["authored_semantics"]["source_precedence"][1] == {
+        "before_event": 1, "after_event": 3, "constraint_index": 2,
+    }
     assert candidate["operational_constraints"][0] not in candidate["component_responsibilities"]
     relations = require_relation_authority_parity(candidate, candidate[PRODUCT_INTENT_AUTHORITY_KEY])
     assert relations[0]["visible_result_quote"] == "the review receipt"
@@ -161,6 +164,8 @@ def ordered_package(tmp_path):
             "owner_system_quote": "Receipt Desk",
             "responsibility_source": "accepted_fact",
             "first_path_event_order": 1,
+            "source_duty_id": "fixture-first-path-3",
+            "decision_set_sha256": candidate["authored_semantics"]["source_duty"]["ledger_receipt"]["decision_set_sha256"],
         },
         {
             "responsibility_path": "/component_responsibilities/1",
@@ -169,6 +174,8 @@ def ordered_package(tmp_path):
             "owner_system_quote": "Receipt Desk",
             "responsibility_source": "accepted_fact",
             "first_path_event_order": 3,
+            "source_duty_id": "fixture-first-path-2",
+            "decision_set_sha256": candidate["authored_semantics"]["source_duty"]["ledger_receipt"]["decision_set_sha256"],
         },
     ]
     proposal = build_greenfield_proposal(

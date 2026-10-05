@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import errno
+import hashlib
+import json
 import os
 from pathlib import Path
 import subprocess
@@ -535,8 +537,10 @@ def _assert_retired(audit, descriptors: tuple[int, int]) -> None:
         assert error.value.errno == errno.EBADF
 
 
-def _run_audited(repo_root: Path, program: str) -> tuple[subprocess.CompletedProcess[str], object]:
-    audit = begin_installed_write_audit(repo_root=repo_root)
+def _run_audited(
+    repo_root: Path, program: str, *, dashboard_opener=None,
+) -> tuple[subprocess.CompletedProcess[str], object]:
+    audit = begin_installed_write_audit(repo_root=repo_root, dashboard_opener=dashboard_opener)
     try:
         completed = subprocess.run(
             [sys.executable, "-I", "-c", audited_program(program)],
@@ -546,7 +550,171 @@ def _run_audited(repo_root: Path, program: str) -> tuple[subprocess.CompletedPro
             capture_output=True,
             text=True,
             check=False,
+            timeout=15,
         )
     finally:
         evidence = audit.finish()
     return completed, evidence
+
+
+@pytest.fixture
+def closed_dashboard(tmp_path: Path, monkeypatch):
+    from odylith.runtime.domain_intelligence import greenfield_pending_transaction_store as pending
+    from odylith.runtime.domain_intelligence import greenfield_post_confirm_handoff as handoff
+    from odylith.runtime.surfaces import greenfield_host_confirmation as confirmation
+    from tests.unit.runtime.test_greenfield_create_transaction import _transaction
+    import webbrowser
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    transaction = _transaction(repo_root=repo)
+    path = pending.stage_pending_transaction(repo_root=repo, transaction=transaction)
+    monkeypatch.setenv("ODYLITH_NO_BROWSER", "1")
+    result = confirmation.handle_greenfield_decision(
+        repo_root=repo, command="CONFIRM", transaction_hash=transaction.transaction_hash,
+    )
+    assert result["status"] == "CLOSED"
+    journal = repo / ".odylith/runtime/greenfield/create-journal" / transaction.transaction_hash / "state.v1.json"
+    record = json.loads(journal.read_bytes())
+    digest = lambda p: hashlib.sha256(Path(p).read_bytes()).hexdigest()
+    binding = {
+        "repo_root": str(repo.resolve()),
+        "transaction_hash": transaction.transaction_hash,
+        "write_set_hash": record["repository_write_set_hash"],
+        "publication_sha256": digest(repo / "odylith/index.html"),
+        "navigation_source_sha256": digest(handoff.__file__),
+        "confirmation_source_sha256": digest(confirmation.__file__),
+        "webbrowser_source_sha256": digest(webbrowser.__file__),
+        "os_source_sha256": digest(os.__file__),
+        "shell_sha256": digest("/bin/sh"),
+        "osascript_sha256": digest("/usr/bin/osascript") if sys.platform == "darwin" else "",
+    }
+    return repo, path, journal, binding
+
+
+def _opener_program(path, binding, *, mutation="", process_event=""):
+    # Genuine CLOSED fixture and canonical callback/stdlib code; replace only the
+    # final OS spawn to observe its event without opening the operator's browser.
+    return f'''
+import io, subprocess, webbrowser
+from odylith.runtime.surfaces import greenfield_host_confirmation as confirmation
+from odylith.runtime.domain_intelligence import greenfield_post_confirm_handoff as handoff
+for name in ("ODYLITH_NO_BROWSER", "CI", "GITHUB_ACTIONS", "BUILD_BUILDID", "BROWSER"):
+    os.environ.pop(name, None)
+os.environ["PATH"] = "/usr/bin:/bin"
+class ObservedSpawn:
+    def __init__(self, *args, **kwargs):
+        self.stdin = io.StringIO()
+        sys.audit("subprocess.Popen", "/bin/sh", ["/bin/sh", "-c", "osascript"], None, None)
+        {process_event or 'pass'}
+    def wait(self):
+        return 0
+subprocess.Popen = ObservedSpawn
+webbrowser.register("audit-browser", None, webbrowser.MacOSXOSAScript("default"), preferred=True)
+{mutation}
+response = confirmation._confirm_pending_transaction(
+    root=_root, transaction_path=Path({str(path)!r}), transaction_hash={binding['transaction_hash']!r})
+assert response["status"] == "CLOSED", response
+'''
+
+
+@pytest.mark.skipif(sys.platform != "darwin", reason="only declared macOS opener is qualified")
+def test_dashboard_opener_retains_process_count_from_real_closed_callback(closed_dashboard):
+    repo, path, _journal, binding = closed_dashboard
+    completed, evidence = _run_audited(repo, _opener_program(path, binding), dashboard_opener=binding)
+
+    assert completed.returncode == 0, completed.stderr
+    assert evidence.subprocess_attempts == ("subprocess.Popen",)
+    assert write_audit.dashboard_opener_issues(evidence, expected=binding) == ()
+    assert write_audit.dashboard_opener_issues(evidence)
+    fact = evidence.process_observations[0]
+    assert fact["argv"] == ["/bin/sh", "-c", "osascript"]
+    assert fact["transaction_hash"] == binding["transaction_hash"]
+    assert fact["journal_state"] == "closed" and fact["lifecycle_state"] == "CLOSED"
+    assert fact["project_url"].endswith("/repository/odylith/index.html?tab=project")
+
+
+@pytest.mark.skipif(sys.platform != "darwin", reason="only declared macOS opener is qualified")
+@pytest.mark.parametrize("failure", ["not_closed", "wrong_source", "wrong_url", "missing_context", "extra_process", "secret_argv", "wrong_hash", "wrong_publication", "pin_race"])
+def test_dashboard_opener_refuses_incomplete_or_other_process_work(closed_dashboard, failure):
+    repo, path, journal, binding = closed_dashboard
+    actual_binding = dict(binding)
+    mutation = process_event = ""
+    if failure == "wrong_source":
+        binding = {**binding, "navigation_source_sha256": "0" * 64}
+    if failure == "wrong_hash":
+        binding = {**binding, "transaction_hash": "0" * 64}
+    if failure == "wrong_publication":
+        binding = {**binding, "publication_sha256": "0" * 64}
+    if failure == "pin_race":
+        mutation = f'''from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
+original_pin=GreenfieldCommitJournal.pin_reviewed_generation
+def changed_pin(**kwargs):
+    pinned=original_pin(**kwargs)
+    p=Path({str(journal)!r});p.write_bytes(p.read_bytes()+b" ")
+    return pinned
+GreenfieldCommitJournal.pin_reviewed_generation=changed_pin
+'''
+    if failure in {"not_closed", "wrong_url", "missing_context"}:
+        record = json.loads(journal.read_bytes())
+        navigation = {
+            "dashboard_path": str(repo / ".odylith/runtime/greenfield/generations" / binding["write_set_hash"] / "repository/odylith/index.html"),
+            "project_url": (repo / ".odylith/runtime/greenfield/generations" / binding["write_set_hash"] / "repository/odylith/index.html").as_uri() + "?tab=project",
+        }
+        mutation = f'saved_result=json.loads(Path({str(journal)!r}).read_bytes())["commit_result"]\nconfirmation.greenfield_create_commit.commit_greenfield_create_transaction = lambda **kw: saved_result\nhandoff.post_confirm_navigation = lambda *a, **kw: {navigation!r}\n'
+        if failure == "not_closed":
+            mutation += f'p=Path({str(journal)!r}); record=json.loads(p.read_bytes()); record["state"]="published"; p.write_text(json.dumps(record))\n'
+        elif failure == "wrong_url":
+            mutation += 'original=handoff.post_confirm_navigation\nhandoff.post_confirm_navigation=lambda *a,**kw: {{**original(), "project_url":"file:///wrong.html"}}\n'.replace('{{','{').replace('}}','}')
+        else:
+            mutation += 'handoff.open_committed_dashboard=lambda navigation: webbrowser.open(navigation["project_url"]) and {"status":"opened"}\n'
+    if failure == "extra_process":
+        process_event = 'sys.audit("subprocess.Popen", "/bin/sh", ["/bin/sh", "-c", "osascript"], None, None)'
+    if failure == "secret_argv":
+        process_event = 'sys.audit("subprocess.Popen", "/bad", ["/bad", "secret-must-not-leak"], None, {"TOKEN":"env-must-not-leak"})'
+    completed, evidence = _run_audited(repo, _opener_program(path, actual_binding, mutation=mutation, process_event=process_event), dashboard_opener=binding)
+
+    assert completed.returncode == 0, completed.stderr
+    assert evidence.subprocess_attempts
+    assert write_audit.dashboard_opener_issues(evidence)
+    retained = repr(evidence)
+    assert "secret-must-not-leak" not in retained and "env-must-not-leak" not in retained
+
+
+def test_process_details_do_not_allow_unknown_real_subprocess(tmp_path):
+    tmp_path.mkdir(exist_ok=True)
+    completed, evidence = _run_audited(tmp_path, "import subprocess,sys\nsubprocess.run([sys.executable,'-c','pass'],check=True)")
+    assert completed.returncode == 0, completed.stderr
+    assert write_audit.dashboard_opener_issues(evidence)
+    assert evidence.process_observations[0]["classification"] == "unattributed"
+
+
+def test_process_summary_failure_cannot_erase_real_popen_attempt(tmp_path):
+    completed, evidence = _run_audited(tmp_path, '''
+import subprocess, sys
+class UnprintableExecutable:
+    def __fspath__(self):
+        return sys.executable
+    def __repr__(self):
+        raise ValueError("controlled argument summary failure")
+try:
+    child = subprocess.Popen([UnprintableExecutable(), "-c", "pass"])
+    child.wait()
+except ValueError:
+    pass
+''')
+    assert completed.returncode == 0, completed.stderr
+    assert evidence.active and not evidence.error
+    assert evidence.subprocess_attempts[0] == "subprocess.Popen"
+    assert len(evidence.process_observations) == len(evidence.subprocess_attempts)
+    assert evidence.process_observations[0]["classification"] == "unattributed"
+    assert write_audit.dashboard_opener_issues(evidence)
+
+
+def test_process_details_fail_closed_for_missing_malformed_or_extra_rows():
+    from dataclasses import replace
+    evidence = write_audit._read_trace(b'{"kind":"ready"}\n{"kind":"subprocess","event":"subprocess.Popen"}\n')
+    assert write_audit.dashboard_opener_issues(evidence)
+    assert write_audit.dashboard_opener_issues(replace(evidence, process_observations=()))
+    malformed = write_audit._read_trace(b'{"kind":"ready"}\n{"kind":"subprocess","process":"invalid"}\n')
+    assert not malformed.active and malformed.error.startswith("invalid process detail")

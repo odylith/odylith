@@ -1,5 +1,80 @@
 - Bug ID: CB-347
 
+## V52 confirmation observer correction (2026-10-05)
+
+The first combined gate retains 3,795 passes, 29 failures and 52 setup errors,
+with all 2,313 frozen files unchanged. The release snapshot reader omitted the
+complete source input when invoking the shared responsibility validator. The
+one-line adopter correction forwards its already owned exact source and passes
+133 release-reader checks with all custody guards intact. Remaining runtime
+fixture integrations pass 324 affected and adjacent checks; independent review
+clears their exact source/receipt rebinding and explicit supporting product duties.
+The second broad gate retains 3,874 passes and two failures, with zero setup
+errors and all 2,313 frozen files unchanged. All 2,140 installation checks pass.
+Both remaining failures are the same dependency-test wrapper omitting the new
+`first_run_event_orders` keyword. Its narrow forwarding correction passes 148
+checks across the complete dependency module and six direct fixture adopters;
+all dependency assertions and production owners remain unchanged. This composed
+source proof closes those integrations; neither failed broad run is relabeled.
+Fresh installed semantic and terminal proof remains required.
+
+The existing audit owner now retains structured process facts alongside unchanged
+raw process counts. The fresh CONFIRM observer distinguishes only the exact
+canonical dashboard opener with matching source/code, sealed URL and independently
+CLOSED journal at the event. Missing or mismatched custody, journal changes and
+unknown processes refuse; model/provider/projection entries still must be zero.
+The adopted terminal tail resolves every required global before any mutable phase.
+
+The corrected audit module and two existing adopters pass 112 focused checks,
+including 36 audit controls. The positive uses a real CLOSED fixture and canonical navigation
+with a simulated final OS spawn; actual installed opener attribution is unproved.
+Independent review found a P1 in the first external adapter: its terminal override
+omitted inherited REJECT custody, including copied-old refusal and exact denial/
+snapshot checks. Adapter SHA-256 `9a1a4d75a4515f5eb062892cdd3fee2cf509f0c93068dfc4958828632b139624`
+is retained as failed/unexecuted. Restore the existing REJECT owner and prove the
+complete adopter call graph before any consumer control. A separate P2 found that
+argument repr occurred before the observer error boundary and could erase a process
+attempt; unknown detail failures must still emit an unattributed counted event.
+The corrected adapter delegates REJECT to its existing owner and scopes the old
+zero count to preview evidence; seven inert adopter controls pass. The observer
+now counts unattributed processes even when optional detail repr fails; its real
+Popen negative passes. Final independent byte review clears all three harness findings. Fresh v28
+terminal proof remains pending. V27 retains its failed process
+assertion and unexecuted repeat; no result is reclassified.
+
+## V27 partial terminal proof and source CI (2026-10-05)
+
+Read-only installed diagnosis proves the durable H1 journal is closed and
+all exact sealed/publication checks pass (56 writes, zero issues), with unchanged
+consumer and failed-evidence inventories. Journal SHA-256:
+`4fc35bad612c09249d1957ee3aab33d9495c215927a88c3350379b0e161b59bb`.
+The one process launch is consistent with the required post-commit macOS browser
+opener; attribution remains an inference because the trace retained no arguments.
+The process assertion and unexecuted repeat retain their failed/incomplete status.
+Diagnosis SHA-256: `2094a056e32cfdae64b12c8514326444503fbaeade2ab62f6208f0a3f853ff2f`.
+
+Agriculture independently passes H0 26/26 and H1 31/31. Its reviewed six-command
+terminal prefix proves original REJECT and copied rejected-old refusal, with
+managed publication snapshots unchanged. The external harness then raises
+`NameError: SEALED_PROGRAM` before successor CONFIRM. Failed `terminal_invocations:
+0` is incomplete aggregation; it does not erase completed command records.
+
+The first-unexecuted continuation ran H1 CONFIRM: exit 0/CLOSED, 56 sealed writes
+and returned readback success with reported dashboard navigation. Installed
+instrumentation observed zero model/provider/projection entries and one
+subprocess.Popen. The external zero-process assertion failed; repeat CONFIRM did
+not run. Missing process arguments prevent conclusive attribution. Preserve both
+failed diagnostics; full terminal qualification remains incomplete.
+
+Clean pushed `a3721bc4881d40de193aa6a976ee0eb4eecc285c` passes all Linux CI
+jobs: 9,653 tests, six warnings, 3,841.43s. Run `37302863434` log SHA-256:
+`1d8bbb637b8c364f02c0ba621c86a94ed2e5302b295f2ca5810397b7d178d8de`.
+Prior `37288154604` remains 9,584 passes/six failures. CI proves this source
+checkpoint only. Research H0 passes 13/13, but its v6/v9 EDIT admits source then
+refuses candidate custody overlap; no H1 exists. Public40 and remaining release
+gates stay held. Exact audit/prefix/result paths and full hashes are retained in
+the v27 evidence manifest; no new semantic or terminal qualification is inferred.
+
 ## V26 source refusals and missing diagnostic custody (2026-10-05)
 
 Clean `16a470d1b` produces the separately retained v26 distribution. All 11
