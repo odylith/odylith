@@ -34,6 +34,11 @@ from odylith.runtime.domain_intelligence.greenfield_source_duty_view import (
 
 
 SOURCE_DUTY_DECISION_SET_VERSION = "odylith.greenfield.source-duty-decisions.v4"
+EDIT_SOURCE_DUTY_DECISION_SET_VERSION = "odylith.greenfield.source-duty-decisions.v5"
+EDIT_PRESERVATION_VERSION = "odylith.greenfield.edit-lifecycle-preservation.v1"
+_LIFECYCLE_SECTIONS = tuple(
+    section for section, _ in _CLAIM_SECTIONS if section not in _ACTION_SECTIONS
+)
 
 
 class GreenfieldSourceDutyEntailmentError(ValueError):
@@ -45,6 +50,86 @@ def _canonical_sha256(value: Mapping[str, Any]) -> str:
         value, ensure_ascii=False, sort_keys=True, separators=(",", ":")
     )
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def greenfield_edit_preservation_context(
+    *, transaction_hash: str, prior_lifecycle: Mapping[str, Any],
+    correction: str, evidence_text: str,
+) -> dict[str, Any]:
+    """Bind the prior verified seal as a checklist, never as current authority.
+
+    The CLI derives this input only after resolving the pending transaction with
+    its delivered completion receipt and validating its compiler receipt.
+    """
+    if (not isinstance(transaction_hash, str) or len(transaction_hash) != 64
+            or any(char not in "0123456789abcdef" for char in transaction_hash)
+            or not isinstance(correction, str) or not correction.strip()
+            or not evidence_text.endswith(correction + "\n")):
+        raise GreenfieldSourceDutyEntailmentError("EDIT preservation custody is invalid")
+    expected_fields = {"version", "source_sha256", "ledger_sha256", "binding_sha256",
+                       "lifecycle_sha256", *_LIFECYCLE_SECTIONS}
+    if (not isinstance(prior_lifecycle, Mapping)
+            or set(prior_lifecycle) != expected_fields
+            or prior_lifecycle.get("version") != "odylith.greenfield.source-lifecycle.v2"
+            or prior_lifecycle.get("lifecycle_sha256") != _canonical_sha256({
+                key: value for key, value in prior_lifecycle.items()
+                if key != "lifecycle_sha256"
+            })):
+        raise GreenfieldSourceDutyEntailmentError("EDIT prior lifecycle is invalid")
+    identities: set[str] = set()
+    for section in _LIFECYCLE_SECTIONS:
+        rows = prior_lifecycle[section]
+        if not isinstance(rows, list) or len(rows) > 32:
+            raise GreenfieldSourceDutyEntailmentError("EDIT prior lifecycle exceeds its bound")
+        for row in rows:
+            duty_id = row.get("duty_id") if isinstance(row, Mapping) else None
+            if (not isinstance(duty_id, str) or not duty_id.strip()
+                    or len(duty_id) > 200 or duty_id in identities):
+                raise GreenfieldSourceDutyEntailmentError("EDIT prior duty identity is invalid")
+            identities.add(duty_id)
+    return {
+        "version": EDIT_PRESERVATION_VERSION,
+        "transaction_hash": transaction_hash,
+        "prior_lifecycle": deepcopy(dict(prior_lifecycle)),
+        "correction": correction,
+        "correction_sha256": hashlib.sha256(correction.encode("utf-8")).hexdigest(),
+        "source_sha256": hashlib.sha256(evidence_text.encode("utf-8")).hexdigest(),
+    }
+
+
+def _validate_edit_context(context: Mapping[str, Any], *, evidence_text: str) -> None:
+    if not isinstance(context, Mapping) or set(context) != {
+        "version", "transaction_hash", "prior_lifecycle", "correction",
+        "correction_sha256", "source_sha256",
+    }:
+        raise GreenfieldSourceDutyEntailmentError("EDIT preservation context is malformed")
+    expected = greenfield_edit_preservation_context(
+        transaction_hash=context["transaction_hash"], prior_lifecycle=context["prior_lifecycle"],
+        correction=context["correction"], evidence_text=evidence_text,
+    )
+    if dict(context) != expected:
+        raise GreenfieldSourceDutyEntailmentError("EDIT preservation context hash is invalid")
+
+
+def _prior_duties(context: Mapping[str, Any]):
+    for section in _LIFECYCLE_SECTIONS:
+        for row in context["prior_lifecycle"][section]:
+            yield section, f"{section}/{row['duty_id']}", row
+
+
+def greenfield_edit_preservation_view(context: Mapping[str, Any]) -> dict[str, Any]:
+    """Keep semantic fields and exact prior citations; omit unrelated design ownership."""
+    lifecycle = context["prior_lifecycle"]
+    return {
+        "version": context["version"], "transaction_hash": context["transaction_hash"],
+        "correction": context["correction"], "correction_sha256": context["correction_sha256"],
+        "prior_lifecycle": {
+            "version": lifecycle["version"], "lifecycle_sha256": lifecycle["lifecycle_sha256"],
+            **{section: [{key: deepcopy(value) for key, value in row.items()
+                         if key not in {"component_key", "workstream_key"}}
+                        for row in lifecycle[section]] for section in _LIFECYCLE_SECTIONS},
+        },
+    }
 
 
 def source_duty_claims(
@@ -87,6 +172,7 @@ def source_duty_claims(
 
 def greenfield_source_duty_decision_set_schema(
     claims: list[Mapping[str, Any]] | None = None,
+    *, edit_preservation: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Return a closed table keyed by exactly the compiler-owned duty identities."""
 
@@ -137,7 +223,7 @@ def greenfield_source_duty_decision_set_schema(
             "omissions": {"type": "array", "maxItems": 32, "items": omission},
         },
     }
-    return {
+    schema = {
         "type": "object",
         "additionalProperties": False,
         "required": [
@@ -147,7 +233,9 @@ def greenfield_source_duty_decision_set_schema(
             "source_completeness",
         ],
         "properties": {
-            "version": {"type": "string", "enum": [SOURCE_DUTY_DECISION_SET_VERSION]},
+            "version": {"type": "string", "enum": [
+                EDIT_SOURCE_DUTY_DECISION_SET_VERSION if edit_preservation is not None
+                else SOURCE_DUTY_DECISION_SET_VERSION]},
             "verifier_task_sha256": digest,
             "decisions": {
                 "type": "object",
@@ -160,10 +248,36 @@ def greenfield_source_duty_decision_set_schema(
             "source_completeness": completeness,
         },
     }
+    if edit_preservation is not None:
+        preservation = {}
+        for section, key, _ in _prior_duties(edit_preservation):
+            preservation[key] = {
+                "type": "object", "additionalProperties": False,
+                "required": ["verdict", "current_duty_id", "correction_ref_indexes"],
+                "properties": {
+                    "verdict": {"type": "string", "enum": [
+                        "preserved", "changed", "removed", "missing", "uncertain"]},
+                    "current_duty_id": {"type": "string", "enum": ["", *[
+                        claim["duty_id"] for claim in claims or []
+                        if claim["section"] == section]]},
+                    "correction_ref_indexes": {**indexes, "items": {
+                        "type": "integer", "minimum": 0,
+                        "maximum": MAX_COMPACT_CITATIONS - 1}},
+                },
+            }
+        schema["required"].extend(("edit_preservation", "edit_correction_refs"))
+        schema["properties"].update({
+            "edit_preservation": {"type": "object", "additionalProperties": False,
+                                  "required": list(preservation), "properties": preservation},
+            "edit_correction_refs": {"type": "array", "maxItems": MAX_COMPACT_CITATIONS,
+                                     "items": citation},
+        })
+    return schema
 
 
 def source_duty_entailment_task(
-    preflight: Mapping[str, Any], *, evidence_text: str
+    preflight: Mapping[str, Any], *, evidence_text: str,
+    edit_preservation: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Package the bounded full authority source for one verifier pass."""
 
@@ -181,6 +295,8 @@ def source_duty_entailment_task(
             "source duty authority source hash is invalid"
         )
 
+    if edit_preservation is not None:
+        _validate_edit_context(edit_preservation, evidence_text=evidence_text)
     view = compact_source_duty_view(preflight["ledger"])
     if len(view["citations"]) > MAX_COMPACT_CITATIONS:
         raise GreenfieldSourceDutyEntailmentError(
@@ -238,9 +354,30 @@ def source_duty_entailment_task(
             "cannot change workflow order. Return compact JSON only."
         ),
         "decision_set_schema": greenfield_source_duty_decision_set_schema(
-            preflight["claims"]
+            preflight["claims"], edit_preservation=edit_preservation,
         ),
     }
+    if edit_preservation is not None:
+        task["edit_preservation"] = greenfield_edit_preservation_view(edit_preservation)
+        task["edit_preservation_task"] = (
+            "Give one decision for every compiler-owned prior lifecycle key. The prior seal "
+            "is a coverage checklist, not current truth; do not copy it or let it override "
+            "the explicit correction. Compare each prior condition, actor, target, scope, "
+            "timing, effect and consequence with a current duty in the SAME typed section. "
+            "Prose, another section or an unrelated current duty cannot preserve it. "
+            "Select preserved only for equivalent meaning with an ordinary yes decision; "
+            "changed requires a current same-section yes duty and exact correction evidence "
+            "explicitly changing that prior duty; removed requires exact correction evidence "
+            "explicitly withdrawing it and an empty current_duty_id. Original source and "
+            "general preservation statements cannot authorize change or removal. Return "
+            "missing or uncertain when unsupported. A compound current duty may carry "
+            "multiple prior duties; compare each prior meaning independently and require "
+            "exact correction evidence for every changed duty. Put distinct correction-only "
+            "quote/context pairs in "
+            "edit_correction_refs and cite their zero-based indexes; context locates, never "
+            "adds meaning. preserved/missing/uncertain use no correction indexes. This is "
+            "part of this same source-only pass; do not author a candidate or another review."
+        )
     task["verifier_task_sha256"] = _canonical_sha256(task)
     return task
 
@@ -324,6 +461,57 @@ def _validate_source_completeness(value: Any, *, evidence_text: str) -> None:
         )
 
 
+def _validate_edit_preservation(
+    decision_set: Mapping[str, Any], *, context: Mapping[str, Any],
+    claims: list[Mapping[str, Any]], evidence_text: str,
+) -> None:
+    _validate_edit_context(context, evidence_text=evidence_text)
+    table, refs = decision_set["edit_preservation"], decision_set["edit_correction_refs"]
+    prior = list(_prior_duties(context))
+    if (not isinstance(table, Mapping) or set(table) != {key for _, key, _ in prior}
+            or not isinstance(refs, list) or len(refs) > MAX_COMPACT_CITATIONS):
+        raise GreenfieldSourceDutyEntailmentError("EDIT preservation decisions are incomplete")
+    correction_bytes = context["correction"].encode("utf-8")
+    seen_refs = set()
+    for ref in refs:
+        try:
+            canonical_citation_from_host_selection(correction_bytes, ref)
+        except GreenfieldModelAuthoringError as exc:
+            raise GreenfieldSourceDutyEntailmentError(
+                "EDIT override citation is outside the exact correction"
+            ) from exc
+        pair = (ref["quote"], ref["context"])
+        if pair in seen_refs:
+            raise GreenfieldSourceDutyEntailmentError("EDIT correction citation is duplicated")
+        seen_refs.add(pair)
+    current = {claim["duty_id"]: claim for claim in claims}
+    used_refs = set()
+    for section, key, _ in prior:
+        decision = table[key]
+        if not isinstance(decision, Mapping) or set(decision) != {
+            "verdict", "current_duty_id", "correction_ref_indexes",
+        }:
+            raise GreenfieldSourceDutyEntailmentError(f"EDIT preservation {key} is malformed")
+        verdict, carrier, indexes = (
+            decision["verdict"], decision["current_duty_id"], decision["correction_ref_indexes"]
+        )
+        if verdict not in ("preserved", "changed", "removed"):
+            raise GreenfieldSourceDutyEntailmentError(f"EDIT preservation {key} is not affirmative")
+        if (not isinstance(carrier, str)
+                or not _valid_indexes(indexes, limit=len(refs), allow_empty=verdict == "preserved")
+                or (verdict == "preserved" and indexes)):
+            raise GreenfieldSourceDutyEntailmentError(f"EDIT preservation {key} has invalid override")
+        if verdict == "removed":
+            if carrier:
+                raise GreenfieldSourceDutyEntailmentError(f"EDIT removed duty {key} has a current carrier")
+        elif (carrier not in current or current[carrier]["section"] != section
+                or decision_set["decisions"][carrier]["verdict"] != "yes"):
+            raise GreenfieldSourceDutyEntailmentError(f"EDIT preservation {key} has invalid typed carrier")
+        used_refs.update(indexes)
+    if used_refs != set(range(len(refs))):
+        raise GreenfieldSourceDutyEntailmentError("EDIT correction citation bank has unused references")
+
+
 def validate_source_duty_decision_set(
     decision_set: Mapping[str, Any],
     *,
@@ -331,20 +519,25 @@ def validate_source_duty_decision_set(
     source_sha256: str,
     verifier_task_sha256: str,
     evidence_text: str,
+    edit_preservation: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Require a complete affirmative decision for every fixed material duty."""
 
-    if not isinstance(decision_set, Mapping) or set(decision_set) != {
+    fields = {
         "version",
         "verifier_task_sha256",
         "decisions",
         "source_completeness",
-    }:
+    }
+    if edit_preservation is not None:
+        fields.update(("edit_preservation", "edit_correction_refs"))
+    if not isinstance(decision_set, Mapping) or set(decision_set) != fields:
         raise GreenfieldSourceDutyEntailmentError(
             "source duty decision set is malformed"
         )
     if (
-        decision_set["version"] != SOURCE_DUTY_DECISION_SET_VERSION
+        decision_set["version"] != (EDIT_SOURCE_DUTY_DECISION_SET_VERSION
+                                    if edit_preservation is not None else SOURCE_DUTY_DECISION_SET_VERSION)
         or decision_set["verifier_task_sha256"] != verifier_task_sha256
         or any(claim["source_sha256"] != source_sha256 for claim in claims)
     ):
@@ -418,6 +611,10 @@ def validate_source_duty_decision_set(
                 f"source duty decision {index} is not affirmative"
             )
         canonical_decisions[claim["duty_id"]] = deepcopy(dict(decision))
+    if edit_preservation is not None:
+        _validate_edit_preservation(
+            decision_set, context=edit_preservation, claims=claims, evidence_text=evidence_text,
+        )
     _validate_source_completeness(
         decision_set["source_completeness"], evidence_text=evidence_text
     )
@@ -425,8 +622,12 @@ def validate_source_duty_decision_set(
 
 
 __all__ = [
+    "EDIT_SOURCE_DUTY_DECISION_SET_VERSION",
+    "EDIT_PRESERVATION_VERSION",
     "GreenfieldSourceDutyEntailmentError",
     "SOURCE_DUTY_DECISION_SET_VERSION",
+    "greenfield_edit_preservation_context",
+    "greenfield_edit_preservation_view",
     "greenfield_source_duty_decision_set_schema",
     "source_duty_claims",
     "source_duty_entailment_task",

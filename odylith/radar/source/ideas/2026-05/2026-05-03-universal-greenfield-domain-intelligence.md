@@ -60,7 +60,28 @@ supersedes:
 
 superseded_by: 
 
-## Current convergence checkpoint (2026-10-04)
+## Current v50 implementation checkpoint (2026-10-05)
+
+- The existing EDIT source-only verifier now requires a disposition for each
+  prior sealed lifecycle duty. Current typed carriers and exact correction
+  evidence retain explicit correction precedence; compound carriers support
+  intentional merges. Initial v4/v7 custody remains intact; EDIT uses v5/v8.
+  No inference stage, model call, repair, retry or fallback is added. Runtime
+  growth is 313 lines across eight existing owners, including moving the source
+  checker out of the flow owner, which is now 784 lines.
+- All 283 affected-owner checks and 64 separate guidance/smoke checks pass.
+  Independent final review is clear with three positive controls for merges and
+  two successive compiler EDITs under both receipt policies. Passive v49
+  readback preserves exact historical bytes and runtime execution refusal.
+  CB-303 and CB-347 retain the original failures, patch findings and proof limits.
+- The broader flow run retains 110 passes and eight initial fixture failures;
+  all eight corrected refusal variants now pass using actual EDIT contract and
+  source-check owners with unchanged assertions. Fresh clean installed additive/change/removal
+  semantic and terminal proof follows this checkpoint. Public/private campaigns,
+  host/timing qualification, five migration approvals and protected custody stay
+  open. Deterministic controls do not establish live semantic accuracy.
+
+## Previous convergence checkpoint (2026-10-04)
 
 - Independent v49 source audit passes H0 26/26, but H1 loses one original
   provisional-analysis guard despite affirmative verifier completeness. It

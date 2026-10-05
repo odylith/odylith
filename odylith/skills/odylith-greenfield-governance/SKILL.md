@@ -66,6 +66,17 @@ mechanism-level learning.
    preview/hash or one question. It adds no repair or fallback. The explicit
    file-based `decide EDIT` interface remains available with its source gate,
    candidate and accepted ledger receipt; it alone does not establish parent timing.
+   Its `source-ledger-check` calls require the prior `--transaction-hash`, exact
+   retained `--prompt` and separate `--edit` or `--edit-evidence`; bounded prior
+   seals also require their delivered `--completion-receipt`. Do not pass combined
+   source as the retained prompt. The same source-only verifier gives a required
+   disposition for every prior lifecycle duty. Preserved or changed duties need
+   affirmative current carriers in the same typed section; each change or removal
+   needs exact correction evidence. A compound carrier may support multiple prior
+   duties, each judged independently. Missing or uncertain rows stop before the
+   candidate. Initial tasks/receipts stay v4/v7; EDIT uses v5/v8 with prior seal and
+   correction custody. The checklist cannot replace current truth or override an
+   explicit correction. Complete keys and citations do not prove semantic accuracy.
 5. `odylith greenfield create` with `--transaction-file`, `--transaction-hash`,
    and `--confirm` (plus `--completion-receipt` for bounded seals) remains a separate
    commit-only interface, not a fallback for

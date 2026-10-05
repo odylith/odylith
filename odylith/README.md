@@ -124,7 +124,7 @@ check admits only that complete source-bound decision set. If `authority-check` 
 without a candidate or transaction. A denied, uncertain, or missing duty, or
 a nonaffirmative source-completeness verdict, stops before candidate authoring.
 Only after both authority and source duty
-admit does the host reason once over the candidate contract. The accepted v6
+admit does the host reason once over the candidate contract. The accepted v7 initial
 source-duty receipt binds the verified task and source roles; neither gate nor
 candidate may redefine them. `propose` then
 deterministically validates that untrusted candidate, compiles typed custody facts,
@@ -149,9 +149,19 @@ human view, not product truth. Staging retains the compiled package and hash und
 EDIT reruns `candidate-contract`, the gate pass, `authority-check`, source
 duty inventory, preflight, one bounded source-only verifier decision set, and
 the decision-file check against sealed original source plus the new untrusted
-correction. Clarification or a nonaffirmative duty stops before a new candidate or
-transaction. On admission, pass the correction, `--gate-file`, `--candidate-file`,
-and accepted `--ledger-file` receipt to `decide EDIT`. It preserves
+correction. Both manual source checks require the prior `--transaction-hash`,
+exact retained source as `--prompt` and separate `--edit` or `--edit-evidence`.
+Bounded prior seals additionally require their delivered `--completion-receipt`.
+The verifier must give a disposition for every prior lifecycle duty. Preserved or
+changed duties need affirmative current carriers in the same typed section;
+changes and removals need exact correction evidence. Explicit compound carriers
+may support multiple prior duties, each judged separately. Missing or uncertain
+rows stop before the candidate. Initial tasks/receipts remain v4/v7; EDIT uses
+v5/v8 bound to the prior seal and correction. Prior rows are a comparison checklist,
+not current truth. Citation custody does not establish semantic accuracy.
+Clarification or a nonaffirmative duty stops before a new candidate or transaction.
+On admission, pass the correction, `--gate-file`, `--candidate-file`,
+and accepted v8 `--ledger-file` receipt to `decide EDIT`. It preserves
 the original tier and advisory 90/120/150 targets, retains the immutable old seal,
 and returns a new hash and preview. The standard proposal limit is 315 seconds
 with one shared 300-second gate/candidate model window. CONFIRM and REJECT use

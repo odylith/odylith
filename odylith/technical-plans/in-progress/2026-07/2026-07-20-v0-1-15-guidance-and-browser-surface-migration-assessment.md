@@ -1,11 +1,21 @@
 Status: In progress
 Created: 2026-07-20
-Updated: 2026-10-04
+Updated: 2026-10-05
 Backlog: B-145
 
 # v0.1.15 Guidance And Browser Surface Migration Assessment
 
 ## Current migration frontier (2026-10-04)
+
+The help-tail continuation then reaches the author wrapper, which refuses
+before the seeder runs. Two legitimate published-v14 import caches are the
+only additions; all 9,191 existing bytes and modes remain exact. Offline code
+comparison confirms both compiled bodies match unchanged published sources.
+CB-347 records their exact hashes. Preserve both failed results and the current
+consumer. A narrowly predeclared continuation may accept only those two cache
+additions and start at the first unexecuted seeder; completed install/start/help
+phases and failed wrappers are not rerun. Linked-plan preflight and actual upgrade
+remain unexecuted, and all five migration classes remain unapproved.
 
 The new linked-fixture driver stops before application authoring: published-v14
 installation and version checks pass, but its empty-repo startup requests one

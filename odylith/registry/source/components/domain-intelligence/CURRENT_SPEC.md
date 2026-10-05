@@ -1,8 +1,40 @@
 # Domain Intelligence
-Last updated: 2026-10-04
+Last updated: 2026-10-05
 
 
 ## Overview
+
+### EDIT lifecycle comparison (2026-10-05)
+
+Host contract v50 adds a required decision for each prior sealed state field,
+off-path transition, conditional guard, boundary and proof duty to the existing
+source-only verifier. Preserved or changed rows require affirmative current
+carriers in the same typed section. Changes and removals require exact explicit
+correction evidence; missing or uncertain rows refuse before candidate authoring.
+A compound carrier may support several prior duties, each judged independently.
+The prior checklist is comparison evidence, never copied current truth; explicit
+corrections take precedence over history. Initial tasks/receipts retain v4/v7.
+EDIT uses v5/v8 bound to the prior transaction, lifecycle, complete source,
+correction, task and decision set. The same four passes and phase limits apply.
+
+Both manual source-ledger checks independently resolve the prior seal using its
+transaction hash, exact retained prompt and separate correction. Bounded seals
+require their delivered completion receipt; unmarked seals retain the existing
+resolver policy. An initial receipt or already-combined retained prompt cannot
+admit EDIT. Passive v49 readback remains supported; execution eligibility still
+requires the exact sealed identity of the 24 runtime owners. Old seals are not
+rewritten or made executable under changed code. The corrected affected-owner
+run passes all 283 checks; separate guidance/smoke checks pass 64. Independent
+final review is clear and its three positive controls pass explicit guard
+merging and two successive v8 compiler seals under bounded/unmarked custody.
+Passive exact v49 readback passes while retaining the expected runtime identity
+refusal and original bytes. Review:
+`/private/tmp/odylith-edit-lifecycle-preservation-independent-final-review-20261005.json`,
+SHA-256 `b1d664d7e9615b790e2b98291d27384b59ef5ddb2daf9928d786267d28908bf5`.
+Eight corrected proposal-refusal variants pass with lawful EDIT context and
+unchanged assertions; CB-347 retains the original result and correction.
+Fresh installed semantic, terminal and complete release qualification remain open.
+Complete keys and exact citations alone cannot establish semantic accuracy.
 
 ### Product-owned bounded preparation (2026-10-04)
 

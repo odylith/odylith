@@ -747,16 +747,75 @@ def test_proposal_refusal_preserves_bounded_detail_and_prior_seal(
     tmp_path, monkeypatch, capsys, output_format, refusal,
 ):
     import hashlib
+    import io
     from odylith.runtime.domain_intelligence import greenfield_host_flow as host
     from odylith.runtime.domain_intelligence import greenfield_prepare_cli as prepare
+    from odylith.runtime.domain_intelligence import greenfield_proposals_cli as proposal_cli
+    from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import prepare_model_authoring_evidence
+    from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import EDIT_SOURCE_DUTY_DECISION_SET_VERSION, source_duty_entailment_task
+    from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import preflight_greenfield_source_duty_ledger
+    from odylith.runtime.domain_intelligence.greenfield_source_duty_view import compact_source_duty_view
     from tests.unit.install.test_greenfield_matrix_host_candidate import _flow
+    from tests.unit.runtime.test_greenfield_source_duty_ledger import _yes_decisions
 
     candidate = {"version": "candidate", "result": {"status": "authored"}}
-    flow, host_run, installed_calls, host_calls, _paths, repo = _flow(
+    flow, _host_run, installed_calls, host_calls, _paths, repo = _flow(
         tmp_path, contract={"version": "contract"}, candidate=candidate,
     )
     old_transaction = _transaction(repo_root=repo)
     old_path = pending.stage_pending_transaction(repo_root=repo, transaction=old_transaction)
+    prompt = old_transaction.proposal["intent"]["prompt"]
+    prepared = prepare_model_authoring_evidence(prompt=prompt, edit_evidence=flow.edit_evidence)
+    source = prepared.evidence_source
+    context = proposal_cli._edit_preservation(
+        old_transaction, correction=prepared.edit_evidence, evidence_text=source,
+    )
+    semantics = old_transaction.proposal["intent"]["authored_semantics"]
+    ledger = semantics["source_duty"]["ledger_receipt"]["ledger"]
+    preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=source)
+    task = source_duty_entailment_task(preflight, evidence_text=source, edit_preservation=context)
+    # This supplier fixture has no prior passive duties; EDIT custody still binds its seal.
+    assert task["decision_set_schema"]["properties"]["edit_preservation"]["required"] == []
+    decisions = _yes_decisions(preflight, evidence_text=source)
+    decisions.update(version=EDIT_SOURCE_DUTY_DECISION_SET_VERSION,
+                     verifier_task_sha256=task["verifier_task_sha256"],
+                     edit_preservation={}, edit_correction_refs=[])
+    gate = {"decision": "admit", "required_fields": [], "question": "",
+            "owner_quote": old_transaction.proposal["intent"]["human_actors"][0],
+            "task_quote": semantics["first_path_relations"][0]["event_quote"],
+            "result_quote": semantics["first_path_relations"][-1]["visible_result_quote"]}
+
+    def installed(command, timeout):
+        installed_calls.append((list(command), timeout))
+        captured = io.StringIO()
+        args = list(command[command.index("greenfield") + 1:])
+        # The real installed transport runs with cwd=repo; make that boundary explicit in-process.
+        args[args.index("--repo-root") + 1] = str(repo)
+        with contextlib.redirect_stdout(captured):
+            status = proposal_cli.main(args)
+        assert status == 0, captured.getvalue()
+        payload = json.loads(captured.getvalue())
+        if "candidate-contract" in command:
+            assert payload["source_ledger"]["edit_preservation"] == context
+        elif "source-ledger-check" in command:
+            if "--decision-file" in command:
+                assert payload["receipt"]["edit_preservation"] == context
+                assert payload["receipt"]["version"] == "odylith.greenfield.source-duty-ledger-receipt.v8"
+            else:
+                assert payload["decision_task"] == task
+        return subprocess.CompletedProcess(command, status, captured.getvalue(), "")
+
+    def host_run(command, **kwargs):
+        host_calls.append((list(command), str(kwargs["contract_text"]),
+                           float(kwargs["timeout"]), Path(kwargs["cwd"])))
+        schema = Path(command[command.index("--output-schema") + 1])
+        assert schema.is_file() and schema.parent == Path(kwargs["cwd"])
+        result = {"authority-gate-schema.json": gate,
+                  "source-ledger-schema.json": compact_source_duty_view(ledger),
+                  "source-duty-decision-schema.json": decisions,
+                  "candidate-schema.json": candidate}[schema.name]
+        return subprocess.CompletedProcess(command, 0, json.dumps(result), "")
+
     before = {p.relative_to(repo): p.read_bytes() for p in repo.rglob("*") if p.is_file()}
     stdout = json.dumps({"mode": "error", "error": "Diagnostic only: CONFIRM cannot authorize create. " + "x" * 900})
     stderr = "compiler diagnostic: " + "y" * 900 if refusal == "nonzero-stderr" else ""
@@ -772,6 +831,8 @@ def test_proposal_refusal_preserves_bounded_detail_and_prior_seal(
         return subprocess.CompletedProcess(["odylith", "greenfield", "propose"], returncode, stdout, stderr)
 
     flow = host.HostCandidateFlow(**{**flow.__dict__, "invoke_propose": denied,
+                                    "invoke_installed": installed, "prompt": prompt,
+                                    "edit_evidence": prepared.edit_evidence,
                                     "transaction_hash": old_transaction.transaction_hash})
     monkeypatch.setattr(host, "_invoke_host", host_run)
     monkeypatch.setattr(prepare, "prepare_request", lambda _args: host.run_host_candidate_flow(flow))

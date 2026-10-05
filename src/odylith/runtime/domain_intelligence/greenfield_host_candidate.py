@@ -56,12 +56,15 @@ from odylith.runtime.domain_intelligence.greenfield_authority_gate import (
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v7"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v49"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v50"
+LEGACY_HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v49"
 HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION = "odylith.greenfield.host-candidate-authoring-transport.v1"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
 
 
-def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
+def greenfield_host_candidate_contract(
+    evidence_text: str, *, edit_preservation: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
     """Return the public host reasoning contract for one exact evidence source."""
 
     return {
@@ -182,6 +185,8 @@ def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
         ],
         "request": greenfield_authoring_payload(evidence_text),
         "source_ledger": {
+            **({"edit_preservation": deepcopy(dict(edit_preservation))}
+               if edit_preservation is not None else {}),
             "task": (
                 "Inventory only source-stated duties and evidence controls from the complete "
                 "untrusted evidence. "
@@ -192,7 +197,10 @@ def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
                 "consequences. When the evidence includes an explicit operator EDIT, retain earlier "
                 "duties except where that correction explicitly changes or removes them, and "
                 "incorporate each added or refined duty. A statement that earlier requirements remain "
-                "in force does not replace those requirements in the inventory. Distinct obligations "
+                "in force does not replace those requirements in the inventory. Prior lifecycle duties "
+                "in edit_preservation.prior_lifecycle are a coverage checklist when present; "
+                "compare them against the explicit correction before authoring current typed rows. "
+                "Never copy historical truth or let it override the correction. Distinct obligations "
                 "in one clause may belong to different typed sections and may reuse the same citation; "
                 "do not collapse an action, its governing condition, or its required evidence into one "
                 "incomplete meaning. Represent each obligation once in its appropriate existing "
@@ -259,8 +267,12 @@ def greenfield_host_candidate_authoring_request(
     source = request.get("evidence") if isinstance(request, Mapping) else None
     if not isinstance(source, str) or not source.strip():
         raise ValueError("Greenfield candidate authoring requires the complete authority source")
+    edit_preservation = contract.get("source_ledger", {}).get("edit_preservation")
+    if source_duty_receipt.get("edit_preservation") != edit_preservation:
+        raise ValueError("Greenfield candidate source duties have a different EDIT baseline")
     receipt = verify_greenfield_source_duty_ledger_receipt(
         source_duty_receipt, evidence_text=source,
+        edit_preservation=edit_preservation,
     )
     if receipt["ledger"]["status"] != "inventory":
         raise ValueError("Greenfield candidate authoring requires an accepted inventory")
@@ -446,6 +458,7 @@ def _canonical_candidate_bytes(response: Mapping[str, Any]) -> bytes:
 
 
 __all__ = [
+    "LEGACY_HOST_CANDIDATE_CONTRACT_VERSION",
     "HOST_CANDIDATE_CONTRACT_VERSION",
     "HOST_CANDIDATE_RECEIPT_VERSION",
     "MAX_HOST_CANDIDATE_BYTES",

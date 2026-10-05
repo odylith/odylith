@@ -63,6 +63,7 @@ from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
     verify_greenfield_source_duty_ledger_receipt,
 )
 from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import (
+    greenfield_edit_preservation_context,
     source_duty_entailment_task,
 )
 from odylith.runtime.domain_intelligence.greenfield_source_duty_compact import (
@@ -258,6 +259,8 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     )
     source_ledger_check.add_argument("--repo-root", default=".")
     source_ledger_check.add_argument("--prompt", required=True)
+    source_ledger_check.add_argument("--transaction-hash", default="")
+    source_ledger_check.add_argument("--completion-receipt", default="")
     source_ledger_check.add_argument("--edit", default="")
     source_ledger_check.add_argument("--edit-evidence", default="")
     source_ledger_check.add_argument("--ledger-file", required=True)
@@ -373,7 +376,8 @@ def rebuild_pending_transaction(
         )
         _require_admitted_authority_gate(decision)
         ledger_receipt = _source_duty_receipt_from_args(
-            argparse.Namespace(ledger_file=source_duty_file, evidence_language="en"),
+            argparse.Namespace(ledger_file=source_duty_file, evidence_language="en",
+                               transaction_hash=transaction_hash, completion_receipt=completion_receipt),
             repo_root=repo_root, prompt=prompt, edit_evidence=correction,
         )
         if not str(host_candidate_file or "").strip():
@@ -514,6 +518,36 @@ def _authority_gate_from_args(
     )
 
 
+def _edit_transaction_from_args(args: argparse.Namespace, *, repo_root: Path, correction: str):
+    transaction_hash = str(getattr(args, "transaction_hash", "") or "")
+    if not transaction_hash:
+        if correction.strip():
+            raise ValueError("Greenfield EDIT requires the prior transaction hash; bounded packages also require their delivered completion receipt.")
+        return None
+    if not correction.strip():
+        raise ValueError("Greenfield EDIT requires an explicit correction.")
+    from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
+        load_compiled_product_create_transaction_file,
+    )
+    return load_compiled_product_create_transaction_file(
+        greenfield_pending_transaction_store.resolve_pending_transaction(
+            repo_root=repo_root, transaction_hash=transaction_hash,
+            completion_receipt=getattr(args, "completion_receipt", None) or None,
+        )
+    )
+
+
+def _edit_preservation(previous, *, correction: str, evidence_text: str):
+    if previous is None:
+        return None
+    semantic = previous.proposal.get("semantic_model")
+    lifecycle = semantic.get("source_lifecycle") if isinstance(semantic, Mapping) else None
+    return greenfield_edit_preservation_context(
+        transaction_hash=previous.transaction_hash, prior_lifecycle=lifecycle,
+        correction=correction, evidence_text=evidence_text,
+    )
+
+
 def _source_duty_receipt_from_args(
     args: argparse.Namespace, *, repo_root: Path, prompt: str, edit_evidence: str,
 ) -> dict[str, Any]:
@@ -527,9 +561,17 @@ def _source_duty_receipt_from_args(
         prompt=prompt, edit_evidence=edit_evidence,
         source_language=str(getattr(args, "evidence_language", "en")),
     )
+    previous = _edit_transaction_from_args(args, repo_root=repo_root, correction=edit_evidence)
+    if previous is not None and previous.proposal.get("intent", {}).get("prompt") != prompt:
+        raise ValueError("Greenfield EDIT source does not match the prior sealed request.")
     receipt = verify_greenfield_source_duty_ledger_receipt(
         load_greenfield_source_duty_file(path), evidence_text=prepared.evidence_source,
+        edit_preservation=_edit_preservation(
+            previous, correction=prepared.edit_evidence, evidence_text=prepared.evidence_source,
+        ),
     )
+    if previous is None and "edit_preservation" in receipt:
+        raise ValueError("An EDIT receipt requires its prior sealed transaction.")
     return receipt
 
 
@@ -713,16 +755,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         try:
             edit_evidence = _edit_evidence_from_args(args, repo_root=repo_root)
             prompt = str(args.prompt or "")
-            if args.transaction_hash:
-                from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
-                    load_compiled_product_create_transaction_file,
-                )
-
-                path = greenfield_pending_transaction_store.resolve_pending_transaction(
-                    repo_root=repo_root,
-                    transaction_hash=str(args.transaction_hash), completion_receipt=args.completion_receipt or None,
-                )
-                previous = load_compiled_product_create_transaction_file(path)
+            previous = _edit_transaction_from_args(args, repo_root=repo_root, correction=edit_evidence)
+            if previous is not None:
                 prompt = str(previous.proposal.get("intent", {}).get("prompt") or "")
                 if not prompt.strip():
                     raise ValueError(
@@ -733,7 +767,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                 edit_evidence=edit_evidence,
                 source_language=str(args.evidence_language),
             )
-            contract = greenfield_host_candidate_contract(prepared.evidence_source)
+            contract = greenfield_host_candidate_contract(
+                prepared.evidence_source, edit_preservation=_edit_preservation(
+                    previous, correction=prepared.edit_evidence, evidence_text=prepared.evidence_source,
+                ),
+            )
             contract["authority_gate"] = greenfield_authority_gate_contract(
                 prompt=prompt,
                 edit_evidence=edit_evidence,
@@ -768,9 +806,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "source-ledger-check":
         try:
             edit_evidence = _edit_evidence_from_args(args, repo_root=repo_root)
+            previous = _edit_transaction_from_args(args, repo_root=repo_root, correction=edit_evidence)
+            if previous is not None and previous.proposal.get("intent", {}).get("prompt") != str(args.prompt):
+                raise ValueError("Greenfield EDIT source does not match the prior sealed request.")
             prepared = prepare_model_authoring_evidence(
                 prompt=str(args.prompt), edit_evidence=edit_evidence,
                 source_language="en",
+            )
+            edit_preservation = _edit_preservation(
+                previous, correction=prepared.edit_evidence, evidence_text=prepared.evidence_source,
             )
             path = Path(str(args.ledger_file)).expanduser()
             if not path.is_absolute():
@@ -792,6 +836,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "preflight": preflight,
                     "decision_task": source_duty_entailment_task(
                         preflight, evidence_text=prepared.evidence_source,
+                        edit_preservation=edit_preservation,
                     ),
                 }
             else:
@@ -802,6 +847,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 receipt = validate_greenfield_source_duty_ledger(
                     ledger, evidence_text=prepared.evidence_source,
                     decision_set=decision_set,
+                    edit_preservation=edit_preservation,
                 )
                 result = {"mode": "source_duty_admitted", "receipt": receipt}
         except (OSError, ValueError, RuntimeError, TypeError) as exc:

@@ -62,6 +62,15 @@ superseded_by:
 
 ## Current migration proof (2026-10-04)
 
+The next help-tail continuation stops at its author wrapper before seeding.
+It detects exactly two new published-v14 Python import caches while all 9,191
+existing bytes and modes remain exact. Offline code-body comparison matches
+unchanged published sources; CB-347 retains the two exact hashes and failed
+results. Continue only from the first unexecuted seeder under an exact two-cache
+predeclaration, without resetting the consumer or repeating install/start/help
+or failed wrappers. Positive linked-plan preflight and upgrade remain pending;
+this diagnosis does not approve a migration class.
+
 The fresh linked-fixture driver executes published-v14 installation and version
 checks successfully, then stops at startup's explicit `Need one code path.`
 narrowing response (exit 1, `gated_ambiguous`). The fresh repo has no application

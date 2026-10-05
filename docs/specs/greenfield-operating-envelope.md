@@ -2,7 +2,7 @@
 
 Receipt version: `odylith.greenfield-operating-envelope.v6`
 
-Document revision: `14`
+Document revision: `15`
 
 Profile: `single-product-governance-onboarding`
 
@@ -78,12 +78,41 @@ Ordinary chat approval is not a terminal decision. Explicit terminal `CONFIRM`
 and `REJECT` share a bounded deterministic owner and invoke neither compiler nor
 model. EDIT verifies the retained hash and receipt, runs one new bounded journey
 with the sealed original source and untrusted correction, retains the old seal,
-and returns a new hash, receipt and preview on success. It adds no schema, stage,
-retry, or repair mechanism. Unmarked file-based previews retain their `decide`
+and returns a new hash, receipt and preview on success. It uses the existing four
+passes. Unmarked file-based previews retain their `decide`
 choices and source-custody contract; file-based EDIT requires its gate, candidate
 and admitted ledger. The sealed-byte `create` CLI remains a separate commit-only
 interface. Native automatic delivery and visible completion require their own
 proof.
+
+### EDIT lifecycle verification
+
+Host contract `odylith.greenfield.host-candidate-contract.v50` gives the existing
+source-only verifier a required disposition for every prior sealed state field,
+transition, conditional guard, boundary and proof duty. A preserved or changed
+duty requires an affirmative current carrier in the same typed section. Changed
+or removed duties require exact citations from the explicit new correction.
+Missing or uncertain duties refuse before candidate authoring. Prior rows are a
+comparison checklist; current lifecycle and governance still come from the
+accepted current inventory. Explicit corrections take precedence over history.
+
+Initial verifier tasks and receipts retain versions v4/v7. EDIT uses v5/v8,
+binding the prior transaction, its lifecycle, the complete source, correction,
+task and decisions. A global completeness yes or an initial receipt cannot
+authorize EDIT. Citation custody and complete keys do not prove a semantic
+verdict correct; independent fresh source review remains required.
+
+For manual EDIT source checks, pass the prior `--transaction-hash`, the exact
+retained source as `--prompt`, and the separate correction as `--edit` or
+`--edit-evidence`. Bounded prior packages also require their delivered
+`--completion-receipt`; the existing resolver retains unmarked package policy.
+Passing already-combined evidence as the retained prompt refuses.
+
+Passive legacy v49/v7 readback remains supported. Execution still requires the
+original sealed runtime identity: changing any of its 24 owners makes a prior
+pending package ineligible under the changed runtime. Historical v49 failures
+remain preserved; this contract does not make them executable or qualify the
+new mechanism. Fresh installed semantic and terminal proof is required.
 
 Model-profile contract `odylith.greenfield.model-profile-contract.v25`
 declares three pinned real-model profiles. Only the

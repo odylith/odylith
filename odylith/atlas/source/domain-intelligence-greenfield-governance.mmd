@@ -6,16 +6,19 @@ flowchart TB
       guardian["Independent deadline guardian<br/>Cancel blocked work and owned child groups;<br/>660 seconds remains diagnostic and unqualified"]
       baseline["Complete installed baseline<br/>Immutable view exists before proposal admission"]
       contract["Public candidate contract<br/>Sealed source context and typed schema"]
+      prior_lifecycle["EDIT comparison checklist from the prior seal<br/>Every prior lifecycle duty needs a disposition;<br/>exact correction evidence authorizes changes or removal"]
       model_pass["Normalized source-duty ledger v5<br/>One source owner for role, action and target meaning"]
       typed_graph["Compact source bank v3 evidence<br/>Host resolves every ID; compiler verifies each exact<br/>quote and context against the full source"]
       identity_check["Source field and performer custody preflight<br/>Resolve declared object and field identities;<br/>retain exact performer quotes in normalized statements"]
-      source_custody["Compact source-only verifier and canonical ledger<br/>Judge one performer and complete source duties;<br/>closed keyed decisions bind the stronger task hash"]
+      source_custody["Compact source-only verifier and canonical ledger<br/>Judge performers, source completeness and each prior EDIT duty;<br/>current typed carriers and correction citations bind v5/v8 EDIT custody"]
       candidate_author["One candidate authoring pass<br/>Lossless compact accepted inventory and custody hashes;<br/>full accepted receipt remains compiler-owned"]
       ambiguity{"Material meaning complete?"}
       clarify["One focused clarification<br/>No transaction or governed write"]
       request --> prepare --> contract --> model_pass --> typed_graph --> identity_check --> source_custody --> candidate_author --> ambiguity
       prepare -. "whole journey supervision" .-> guardian
       baseline -. "required" .-> contract
+      prior_lifecycle -. "comparison only; current correction takes precedence" .-> model_pass
+      prior_lifecycle -. "required per-prior judgment; compound carriers allowed" .-> source_custody
       ambiguity -- "no" --> clarify
     end
 
@@ -70,6 +73,7 @@ flowchart TB
       decision -- "explicit terminal CONFIRM" --> confirm --> publish
       decision -- "explicit terminal EDIT" --> edit
       edit --> request
+      edit --> prior_lifecycle
       decision -- "explicit terminal REJECT" --> reject
       publish --> later
       later -. "fresh predecessor-bound transition" .-> publish
@@ -104,7 +108,7 @@ flowchart TB
     classDef governance fill:#F5F3FF,stroke:#DDD6FE,color:#132033,stroke-width:1px;
     classDef constraint fill:#FFF8E6,stroke:#F6D98B,color:#132033,stroke-width:1px;
     classDef invalid fill:#FFF1F0,stroke:#F7B4AE,color:#132033,stroke-width:1px;
-    class request,prepare,guardian,baseline,contract,model_pass,typed_graph,identity_check,source_custody,candidate_author primary;
+    class request,prepare,guardian,baseline,contract,prior_lifecycle,model_pass,typed_graph,identity_check,source_custody,candidate_author primary;
     class custody,projections,staged_surfaces,delivery_proof,quality,execution_handoff,intervention_fallback,timing,bundle_scope,live_telemetry,direct_live execution;
     class write_set,generation_manifest,entry,sealed,quarantine,finalize,receipt,decision,edit,reject,confirm,publish,observed,navigate,captured_status,later,recovery,owners,evaluator,acceptance,confidence,retained governance;
     class ambiguity,drift constraint;

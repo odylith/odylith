@@ -74,10 +74,16 @@ placeholder products in response to a show-me request.
    CONFIRM and REJECT share one bounded owner without compiler or model work. EDIT
    verifies the retained hash, repeats the gate, source-ledger preflight, one
    bounded source-only verifier, and receipt check with `--decision-file` against
-   sealed original source plus new untrusted correction, passes the accepted
-   `--ledger-file` receipt,
-   preserves original tier and 90/120/150 limits, retains the immutable old seal, and
-   returns a new hash and preview. Explicit terminal operator `greenfield create` with `--transaction-file`,
+   sealed original source plus new untrusted correction. Both source checks require
+   the prior `--transaction-hash`, exact retained `--prompt` and separate correction
+   via `--edit` or `--edit-evidence`; bounded seals also require the delivered
+   `--completion-receipt`. Every prior lifecycle duty requires its own disposition;
+   changes/removals require exact correction evidence, and missing/uncertain rows
+   stop before the candidate. Current affirmative carriers must remain in the same
+   typed section; an explicitly merged carrier may support several prior duties.
+   Pass the accepted v8 `--ledger-file` receipt to `decide EDIT`. Retain the immutable
+   old seal and return a new hash and preview. The standard gate/candidate share
+   300 seconds plus 15 for completion; 90/120/150 targets remain advisory. Explicit terminal operator `greenfield create` with `--transaction-file`,
    `--transaction-hash`, and `--confirm` remains a separate deterministic interface:
    receipt/hash/precondition verification, sealed bytes under rollback guard and
    exact readback, with no model, generation or repair after confirmation.

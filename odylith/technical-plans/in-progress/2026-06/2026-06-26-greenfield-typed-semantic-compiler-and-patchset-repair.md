@@ -1,6 +1,36 @@
 Status: In progress
 
-## Current release frontier (2026-10-04)
+## Current v50 implementation frontier (2026-10-05)
+
+The per-prior EDIT lifecycle table is applied in the existing source-only pass.
+It preserves each relevant prior meaning through affirmative same-section
+current carriers, or requires exact explicit correction evidence for changes
+and removals. Missing or uncertain rows refuse before candidate authoring.
+Intentional compound carriers remain supported with separate prior judgments.
+Initial v4/v7 task and receipt bytes remain compatible; EDIT uses v5/v8 bound to
+the verified prior transaction, lifecycle, full source, correction and verdict.
+No new semantic stage, repair, retry or model ladder is introduced. The prior
+checklist cannot replace current truth or override an explicit correction.
+
+Corrected owner tests pass 283 checks. Separate guidance/smoke passes 64 while
+retaining the 12,400-byte limit. Independent final review is clear, including
+three merge and first/second v8 compiler controls under bounded and unmarked
+receipt policies. Exact passive v49 readback preserves its task hash and source
+bytes while the terminal loader retains the runtime identity refusal. The
+initial fixture failures and one-to-one carrier finding remain in Casebook.
+Review: `/private/tmp/odylith-edit-lifecycle-preservation-independent-final-review-20261005.json`,
+SHA-256 `b1d664d7e9615b790e2b98291d27384b59ef5ddb2daf9928d786267d28908bf5`.
+
+All eight corrected proposal-refusal variants now pass with actual EDIT
+context and unchanged diagnostic/immutability assertions; retain their original
+110-pass/eight-fail flow evidence. Commit the governed checkpoint and freeze a
+new clean installed distribution. Run fresh once-only
+source-first additive/change/removal controls and independently inspect their
+actual semantics before terminal publication. Preserve the failed v49 H1 and
+all prior journals; it is not a recovery target. Full public/private, browser,
+host, timing, migration and protected-custody qualification remain required.
+
+## Previous release frontier (2026-10-04)
 
 Independent v49 audit fails H1 lifecycle preservation: H0 passes 26/26; H1
 passes 25/26 original duties and 4/5 correction units. Original provisional

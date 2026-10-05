@@ -640,22 +640,6 @@ def _invoke_installed_authority_check(
     return flow.invoke_installed(command, remaining)
 
 
-def _invoke_installed_source_ledger_check(
-    flow: HostCandidateFlow, *, ledger_path: Path, remaining: float,
-    decision_path: Path | None = None,
-) -> Any:
-    command = [
-        *flow.installed_command,
-        "greenfield", "source-ledger-check", "--repo-root", ".",
-        "--prompt", flow.prompt,
-    ]
-    if flow.edit_evidence.strip():
-        command.extend(("--edit", flow.edit_evidence))
-    command.extend(("--ledger-file", str(ledger_path), "--format", "json"))
-    if decision_path is not None:
-        command.extend(("--decision-file", str(decision_path)))
-    return flow.invoke_installed(command, remaining)
-
 
 def _invoke_host(
     host_argv: Sequence[str],

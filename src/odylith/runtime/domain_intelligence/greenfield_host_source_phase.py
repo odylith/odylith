@@ -12,12 +12,18 @@ from odylith.runtime.domain_intelligence.greenfield_host_flow import (
     PROVISIONAL_SOURCE_LEDGER_TIMEOUT_SECONDS, PROVISIONAL_SOURCE_DUTY_VERIFIER_TIMEOUT_SECONDS,
     PROVISIONAL_SOURCE_CHECK_TIMEOUT_SECONDS, _remaining, _fail, _single_json_object,
     _retain_host_output, _text_stream, _sha256_text, _is_within, _stream_excerpt,
-    _invoke_installed_source_ledger_check, SOURCE_DUTY_DECISION_SET_VERSION,
+    SOURCE_DUTY_DECISION_SET_VERSION,
     SOURCE_DUTY_LEDGER_RECEIPT_VERSION, preflight_greenfield_source_duty_ledger,
     expand_compact_source_duty_ledger, source_duty_entailment_task,
 )
 from odylith.runtime.domain_intelligence.greenfield_host_transport import (
     qualify_host_candidate_argv, _resolved_host_argv,
+)
+from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import (
+    EDIT_SOURCE_DUTY_DECISION_SET_VERSION, greenfield_edit_preservation_view,
+)
+from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
+    EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
 )
 
 @dataclass(frozen=True)
@@ -38,10 +44,18 @@ def run_source_duty_phase(*, flow, contract, source, host_workspace, host_argv,
         ledger_contract = contract.get("source_ledger")
         if not isinstance(ledger_contract, Mapping) or set(ledger_contract) != {
             "task", "source_ledger_schema",
+            *(("edit_preservation",) if flow.transaction_hash else ()),
         } or not str(ledger_contract.get("task") or "").strip() or not isinstance(
             ledger_contract.get("source_ledger_schema"), Mapping
         ):
             _fail("host-native candidate contract has no closed source ledger",
+                  observation=observation, stage="contract")
+        edit_preservation = ledger_contract.get("edit_preservation")
+        if flow.transaction_hash and (
+            not isinstance(edit_preservation, Mapping)
+            or edit_preservation.get("transaction_hash") != flow.transaction_hash
+        ):
+            _fail("EDIT source ledger lacks its prior sealed lifecycle",
                   observation=observation, stage="contract")
         ledger_schema_path = host_workspace / "source-ledger-schema.json"
         ledger_schema_path.write_text(
@@ -70,7 +84,9 @@ def run_source_duty_phase(*, flow, contract, source, host_workspace, host_argv,
         ledger_result = invoke_host(
             ledger_argv,
             contract_text=json.dumps(
-                {"source_ledger": dict(ledger_contract), "request": request,
+                {"source_ledger": {**ledger_contract, **({
+                    "edit_preservation": greenfield_edit_preservation_view(edit_preservation),
+                } if edit_preservation is not None else {})}, "request": request,
                  "authority_admission": check_payload},
                 ensure_ascii=False, sort_keys=True, separators=(",", ":"),
             ),
@@ -142,7 +158,7 @@ def run_source_duty_phase(*, flow, contract, source, host_workspace, host_argv,
             evidence_text=source,
         )
         expected_task = source_duty_entailment_task(
-            expected_preflight, evidence_text=source,
+            expected_preflight, evidence_text=source, edit_preservation=edit_preservation,
         )
         if (preflight_payload.get("mode") != "source_duty_preflight"
                 or not isinstance(preflight_receipt, Mapping)
@@ -267,13 +283,18 @@ def run_source_duty_phase(*, flow, contract, source, host_workspace, host_argv,
         )
         observation["source_ledger_check_mode"] = ledger_check_payload.get("mode")
         receipt = ledger_check_payload.get("receipt")
+        receipt_version = (EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION if edit_preservation is not None
+                           else SOURCE_DUTY_LEDGER_RECEIPT_VERSION)
+        decision_version = (EDIT_SOURCE_DUTY_DECISION_SET_VERSION if edit_preservation is not None
+                            else SOURCE_DUTY_DECISION_SET_VERSION)
         if (ledger_check_payload.get("mode") != "source_duty_admitted"
                 or not isinstance(receipt, Mapping)
-                or receipt.get("version") != SOURCE_DUTY_LEDGER_RECEIPT_VERSION
+                or receipt.get("version") != receipt_version
                 or receipt.get("source_sha256") != observation["source_sha256"]
+                or receipt.get("edit_preservation") != edit_preservation
                 or receipt.get("ledger_sha256") != preflight_receipt.get("ledger_sha256")
                 or receipt.get("verifier_task_sha256") != observation["source_duty_verifier_task_sha256"]
-                or decision_set.get("version") != SOURCE_DUTY_DECISION_SET_VERSION
+                or decision_set.get("version") != decision_version
                 or receipt.get("decision_set") != decision_set
                 or not isinstance(decision_set.get("source_completeness"), Mapping)
                 or decision_set["source_completeness"].get("verdict") != "yes"
@@ -298,3 +319,23 @@ def run_source_duty_phase(*, flow, contract, source, host_workspace, host_argv,
             observation["source_ledger_elapsed_seconds"] = round(time.monotonic()-ledger_started, 3)
         if verifier_started is not None and "source_duty_verifier_elapsed_seconds" not in observation:
             observation["source_duty_verifier_elapsed_seconds"] = round(time.monotonic()-verifier_started, 3)
+
+
+def _invoke_installed_source_ledger_check(
+    flow, *, ledger_path: Path, remaining: float,
+    decision_path: Path | None = None,
+) -> Any:
+    command = [
+        *flow.installed_command,
+        "greenfield", "source-ledger-check", "--repo-root", ".",
+        "--prompt", flow.prompt,
+    ]
+    if flow.transaction_hash:
+        command.extend(("--transaction-hash", flow.transaction_hash,
+                        "--completion-receipt", flow.completion_receipt))
+    if flow.edit_evidence.strip():
+        command.extend(("--edit", flow.edit_evidence))
+    command.extend(("--ledger-file", str(ledger_path), "--format", "json"))
+    if decision_path is not None:
+        command.extend(("--decision-file", str(decision_path)))
+    return flow.invoke_installed(command, remaining)

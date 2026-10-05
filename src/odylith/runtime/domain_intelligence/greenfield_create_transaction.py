@@ -67,7 +67,11 @@ from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_author
     CANONICAL_CANDIDATE_SHA256_KEY,
 )
 from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
+    EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
     SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
+    HOST_CANDIDATE_CONTRACT_VERSION,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_FACTS_HASH_KEY
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_facts_hash
@@ -370,7 +374,11 @@ def _require_host_candidate_authority_binding(
     if (
         not isinstance(ledger_receipt, Mapping)
         or not isinstance(lifecycle, Mapping)
-        or ledger_receipt.get("version") != SOURCE_DUTY_LEDGER_RECEIPT_VERSION
+        or ledger_receipt.get("version") != (
+            EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION if "edit_preservation" in ledger_receipt
+            else SOURCE_DUTY_LEDGER_RECEIPT_VERSION)
+        or ("edit_preservation" in ledger_receipt
+            and host.get("contract_version") != HOST_CANDIDATE_CONTRACT_VERSION)
         or ledger_receipt.get("source_sha256") != authority.get("markdown_source_sha256")
         or not ledger_receipt.get("ledger_sha256")
         or not ledger_receipt.get("verifier_task_sha256")

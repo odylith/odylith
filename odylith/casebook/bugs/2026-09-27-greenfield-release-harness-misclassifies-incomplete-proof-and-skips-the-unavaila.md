@@ -1,5 +1,90 @@
 - Bug ID: CB-347
 
+## New EDIT test-fixture failures (2026-10-05)
+
+The retained linked-migration help continuation fails before its first author
+call because its whole-consumer equality guard treats two legitimate v14 import
+caches as source mutation. All 9,191 preexisting file bytes and modes are exact;
+only `component_authoring.cpython-313.pyc` and
+`scaffold_mermaid_diagram.cpython-313.pyc` are added. Offline code-body comparison
+matches the unchanged published Python sources. Their respective hashes are
+`60c408a7f910ccff5a1f5e42d7f2ee7c1592c41818cf8cd8c893ff701c7c32fb`
+and `f53c11d4ee8a7f65504c12d92dd0a05465fb320d03f89525da14434e026f388f`.
+Published isolated Python ignores the environment bytecode suppression flag.
+Retain the original failed wrapper, startup/help results and current consumer.
+A continuation may predeclare only these exact additions and begin at the first
+unexecuted seeder, without repeating installation, startup, help or wrappers.
+No blanket cache exclusion, reset or migration approval is justified.
+
+The first eight-module v50 regression run preserves 280 passes and three
+failures in 21.12 seconds. Two bounded controls stage a compiler transaction
+but do not receive a guardian completion receipt, then fail on its missing
+`transaction_hash`. The unmarked positive v8 compiler control reaches the
+quality gate and is refused as unapproved. These new fixture paths remain
+unqualified pending exact diagnosis; no receipt, quality, or runtime identity
+law may be weakened to make them pass. Original evidence:
+`/private/tmp/odylith-v50-edit-preservation-targeted-20261004.log`.
+
+Owner diagnosis attributes both bounded failures to direct parent-process
+staging, which cannot register through the child-only guardian channel. The
+unmarked fixture bypasses the canonical authoring-manifest projection and
+supplies an extra observation field. Correct those test paths using the real
+owned child transport and existing manifest projector; preserve closed receipt
+and quality laws. The guidance/smoke run separately records 63 passes and one
+failure: added kernel wording grows the managed block to 12,946 bytes, above
+the existing 12,400-byte limit. Compress shared guidance while retaining its
+laws and move detailed EDIT protocol instructions into the existing skill.
+Do not increase the prompt budget. Original guidance log:
+`/private/tmp/odylith-v50-guidance-smoke-tests-20261005.log`.
+
+The test-only custody/manifest correction now passes all 283 affected-owner
+checks, including bounded and unmarked first v8 compilation, readback and a
+second EDIT. The combined continuation retains its pre-compaction kernel
+failure. Subsequent compaction passes all 64 guidance/smoke checks with consumer
+and maintainer blocks at 12,398 and 11,536 bytes. The two intermediate compacted
+wording failures are retained; required public-confirmation and JSON-boundary
+wording is restored without changing limits or test assertions. Final guidance
+log: `/private/tmp/odylith-v50-guidance-smoke-qualified-20261005.log`.
+
+A separate nine-module flow-adopter run has 110 passes and eight failures in
+53.19 seconds. All eight parameterizations of the proposal-refusal control
+stop at the contract boundary: their initial-only mocked contract is reused
+after adding an EDIT transaction hash, omitting required prior lifecycle context
+and using a prompt unrelated to the prior seal. Preserve the original result at
+`/private/tmp/odylith-v50-flow-adopter-regression-20261005.log`. Correct that fixture
+through the real read-only contract/source-check owners while preserving the
+targeted proposal-refusal diagnostics and old-seal byte assertions. Runtime
+EDIT context requirements remain unchanged.
+
+The one-function fixture correction now passes all eight refusal variants in
+5.32 seconds. It uses the actual read-only contract and source-check owners,
+verified prior prompt, v5 task and v8 receipt; every original bounded diagnostic,
+zero-provider, receipt-sink, cleanup and whole-repo/old-seal byte assertion
+remains intact. Continuation:
+`/private/tmp/odylith-v50-proposal-refusal-fixture-continuation-20261005.log`.
+Original 110-pass/eight-fail flow evidence remains unchanged. Guidance behavior
+passes six cases and 11 checks. Guidance/Discipline matched-pair diagnostics
+clear their hard gates for six/seven cases respectively, with provisional
+status and no full-corpus/public qualification claim. Discipline validation
+passes; the current move and its explanation remain local with zero host,
+provider, subagent, broad-scan, projection or full-validation calls.
+
+## Current populated-migration harness frontier (2026-10-04)
+
+The fresh published-v14 linked fixture installs successfully, then its pre-seed
+startup returns intentional scope narrowing (`gated_ambiguous`, exit 1).
+The first continuation runs previously unexecuted help phases 05-12 once, then
+its author wrapper fails before invoking the unchanged seeder. The full consumer
+inventory differs only by two installed Python bytecode caches:
+`component_authoring.cpython-313.pyc` and
+`scaffold_mermaid_diagram.cpython-313.pyc`. No application, authored governance,
+plan preflight, baseline or upgrade has run. The harness incorrectly assumes
+help cannot create import caches. Original failed results and startup status
+remain failed under `/private/tmp/odylith-v22-linked-predecessor-proof-20261004/`
+and `/private/tmp/odylith-v22-linked-migration-continuation-proof-20261004/`.
+Diagnose the exact cache-to-source custody and first unexecuted seeder boundary
+before continuation; never exempt authored bytes or replay completed phases.
+
 ## Current installed CONFIRM audit frontier (2026-10-04)
 
 Current semantic qualification is failed: independent v49 audit passes H0

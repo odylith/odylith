@@ -42,6 +42,48 @@ refuse before candidate authoring. The checklist is evidence for comparison,
 never copied current truth, and cannot override a new explicit correction.
 No implementation or live reliability is established by this design alone.
 
+Pre-application compatibility review identifies two draft regressions: a global
+receipt-version bump rejects retained v4/v7 transaction readback, and requiring
+a completion receipt unconditionally rejects unmarked manual seals. Retain
+exact initial/legacy v4 tasks and v7 receipts; use v5/v8 only for new EDIT
+verification. Exact explicit host-contract/version parity and the existing
+bounded-versus-unmarked pending resolver own those checks. Passive historical
+readback is distinct from execution eligibility: the existing 24-owner runtime
+identity law still refuses pre-patch pending seals under changed code. Do not
+rewrite identities, add historical-input fallback, or treat an old global-yes
+receipt as new EDIT admission. The reviewed base patch is now applied locally;
+implementation proof and fresh installed qualification remain pending.
+
+Independent review of base patch SHA-256
+`2035418a45a87c6a061ab8b719f4345c88ec0390ef91a11f574c4eeddf53e3ea`
+found an unnecessary one-to-one carrier restriction. An explicit correction may
+merge two prior guards into one current guard; the existing lifecycle contract
+permits this. Requiring distinct current IDs for each prior decision narrows the
+supported free-form envelope. Remove only that uniqueness rule. Retain a required
+decision for every prior row, same-section affirmative current carriers and exact
+correction evidence for each change or removal. The independent report is
+`/private/tmp/odylith-edit-lifecycle-preservation-independent-base-review-20261004.json`,
+SHA-256 `0d2e75bb26332cfd31c7f8b6dd63e80e548e61f754db8be42a403c613582651a`.
+Positive v8 compiler sealing, readback and a subsequent EDIT must be demonstrated
+before this mechanism is claimed complete.
+
+The corrected v50 implementation now passes 283 affected-owner checks, including
+required-key refusals, correction custody, bounded/unmarked receipts, explicit
+two-guard merging, actual first v8 compiler sealing/readback and a second EDIT
+from that v8 seal. Independent final review is clear and separately passes the
+three positive merge/compiler controls. Its report is
+`/private/tmp/odylith-edit-lifecycle-preservation-independent-final-review-20261005.json`,
+SHA-256 `b1d664d7e9615b790e2b98291d27384b59ef5ddb2daf9928d786267d28908bf5`.
+Passive exact v49 readback preserves the old v4 task hash and transaction bytes;
+the terminal reader still refuses execution under changed runtime identity.
+Runtime growth is 313 lines across eight existing owners with no new stage or
+model call. The source-check helper moves into its existing phase owner, leaving
+the flow owner at 784 lines. Fixture failures and their corrections remain under
+CB-347. These deterministic controls establish custody and supported compilation,
+not the accuracy of a live semantic verdict. Fresh installed source-first proof
+must independently establish retention, explicit changes and removals before
+release qualification. The original failed H1 remains untouched and unqualified.
+
 ## Single-authority public replay UX findings (2026-09-29)
 
 Clean installed distribution from pushed commit `0ab2929d9` passed the exact
