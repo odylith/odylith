@@ -1,5 +1,62 @@
 - Bug ID: CB-347
 
+## Complete b694 freeze and remaining corrections (2026-10-05)
+
+The new clean b694/v24 freeze executes every collected check once: 8,474 pass
+and four fail out of 8,478, with no tracked-source drift. Preserve its failed
+receipt at `.odylith/release-evidence/v50-release-freeze-fixture-continuation-20261005/`.
+The six terminal EDIT failures from the previous stopped freeze now pass.
+Remaining failures are the stale v49 current-contract assertion, two compacted
+guidance assertions (manual `source-ledger-check` name and explicit seal wording),
+and the HIIT integration's initial request with `--edit-evidence` but no prior
+transaction hash. That integration stops before proposal compilation. Diagnose
+its initial evidence contract against real EDIT custody before changing either
+runtime or fixture; a missing prior in an actual EDIT must remain a refusal.
+Restore guidance within the existing prompt budget. No skip, floor reduction,
+retry of live authoring, or blanket passing freeze claim is justified.
+
+The separate v24 canonical local release smoke completes with exit 0. All 11
+manifest assets and 12 checksum entries match; clean b694 provenance and the
+87-term leakage check pass. V24 is retained unchanged. Fresh v50 Agriculture,
+Research and public40 controls are predeclared but remain unexecuted; their
+strict clean-checkpoint bindings must be refreshed after any correction.
+The b694 migration observer still requires all five current surface assessments;
+no migration approval is inferred from install smoke. The prior 9ed CI is
+reported failed; its failed-log download is unavailable (`log not found`).
+Do not infer a failure cause or Linux pass from missing logs.
+
+The first guidance/pin continuation retains 115 passes and one manager wording
+failure in 2.59 seconds. It reveals the compacted stored-record clause omitted
+the explicit digest/diagnostic distinction. Installed integration checks also
+require explicitly delivered receipts. Restore that precise custody wording
+within the unchanged byte limit and inspect all remaining assertions together.
+Preserve the intermediate log; do not weaken the tests or receipt boundary.
+
+Independent HIIT diagnosis finds the bounded initial route already refused
+correction flags without a prior hash at pre-v50 9ed; help and source framing
+defined the supplied file as EDIT evidence. The manual proposal path had
+tolerated that ambiguous usage. Move the unchanged reviewed HIIT source into
+its explicit initial prompt and use one consistent prompt-only citation frame.
+Keep all 30 package/path/timing assertions and genuine EDIT custody refusals.
+External fixture patch:
+`36a019507c1efcd738e83c9136c97e53040a84898e8aa99bcef0de29655086b1`.
+
+The corrected six-module continuation now passes all 117 checks in 10.36
+seconds, including all four failures from the complete freeze. Static inspection
+also finds two installed integration modules still asserting the older verbose
+kernel wording. Align those independent assertions with the compact equivalent
+custody, timing-exclusion and refusal statements; keep every enforcement check.
+Their actual install and bundle entrypoint behavior still requires fresh proof.
+
+Both installed/bundle integration checks now pass in 1.32 seconds. All their
+assertions and line counts remain intact; equivalent kernel phrasing preserves
+source custody, nonreplenishing timing, receipt-delivery exclusions and refusal
+semantics. Final consumer/product kernels are 12,395/11,533 bytes under the
+unchanged 12,400-byte limit, with exact scoped/bundle mirrors. Production
+Greenfield runtime and compiler owners remain unchanged from b694. The complete
+freeze is still the original failed 8,474-pass/four-fail run; these targeted
+continuations and static equivalence do not rewrite it as passing.
+
 ## Frozen v50 terminal EDIT fixture mismatch (2026-10-05)
 
 The clean `9d8598c02` freeze collects 8,478 checks and stops after 2,600:

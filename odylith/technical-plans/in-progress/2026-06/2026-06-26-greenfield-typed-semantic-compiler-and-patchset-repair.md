@@ -2,6 +2,23 @@ Status: In progress
 
 ## Current v50 implementation frontier (2026-10-05)
 
+The complete b694/v24 freeze preserves 8,474 passes and four failures across
+all 8,478 collected checks with no source drift. The six previously blocked
+terminal EDIT controls now pass. CB-347 records the stale contract pin, two
+guidance wording regressions and the HIIT initial-evidence refusal. Settle all
+four together, preserving broad current-source intake and real EDIT custody,
+then qualify the corrected checkpoint. V24 install/upgrade smoke, all asset
+digests and leakage checks pass; new live semantic controls remain unexecuted.
+Preserve both failed freezes and every unexecuted driver declaration.
+
+All four corrected controls now pass within the 117-check continuation;
+two installed/bundle integration checks also pass. Original assertions and
+byte budgets remain intact. The final guidance kernel restores explicit receipt
+custody and source-check naming at 12,395 consumer bytes. Checkpoint the reviewed
+corrections, freeze fresh validation/build custody, then execute the once-only
+installed semantic controls. Greenfield runtime/compiler bytes are unchanged;
+new installed fidelity and full release readiness remain unproved.
+
 The per-prior EDIT lifecycle table is applied in the existing source-only pass.
 It preserves each relevant prior meaning through affirmative same-section
 current carriers, or requires exact explicit correction evidence for changes

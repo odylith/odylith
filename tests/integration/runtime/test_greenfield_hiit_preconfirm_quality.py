@@ -30,15 +30,14 @@ def test_hiit_structured_fixture_preserves_path_and_sealed_package_under_sixty_s
     """
     _seed_empty_governance_repo(tmp_path)
     activate_greenfield_baseline_fixture(tmp_path)
-    intent_path = tmp_path / ".odylith" / "runtime" / "greenfield" / "confirmed-intent.md"
-    intent_path.parent.mkdir(parents=True, exist_ok=True)
-    intent_path.write_text(HIIT_CONFIRMED_INTENT_TEXT, encoding="utf-8")
-
-    prompt = "Draft a greenfield proposal for a guided HIIT interval training app"
+    prompt = (
+        "Draft a greenfield proposal for a guided HIIT interval training app\n\n"
+        + HIIT_CONFIRMED_INTENT_TEXT
+    )
     response = _hiit_host_response(prompt)
     evidence = combined_prompt_evidence_source(
         prompt=prompt,
-        edit_evidence=HIIT_CONFIRMED_INTENT_TEXT,
+        edit_evidence="",
     )
     candidate_path = write_host_candidate_fixture(
         tmp_path.parent / f"{tmp_path.name}-host-candidate.json",
@@ -252,7 +251,7 @@ def _hiit_host_response(prompt: str) -> dict:
     ]
     evidence = combined_prompt_evidence_source(
         prompt=prompt,
-        edit_evidence=HIIT_CONFIRMED_INTENT_TEXT,
+        edit_evidence="",
     )
     return authored_response(
         intent,
@@ -278,8 +277,6 @@ def _run_proposed_transaction_create(
             str(tmp_path),
             "--prompt",
             prompt,
-            "--edit-evidence",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
             "--candidate-file",
             str(candidate_path),
             "--gate-file",

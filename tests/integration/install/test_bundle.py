@@ -9,22 +9,22 @@ def test_bundle_root_contains_installed_agents_entrypoint() -> None:
     assert "odylith greenfield prepare --repo-root . --prompt" in agents_text
     assert "One product-owned parent runs the authority gate, source-duty inventory, source-only verifier, and one candidate" in agents_text
     assert "Admission checks citations, relations, invariants and hashes, then seals ProductCreateTransaction" in agents_text
-    assert "File-based candidate-contract/authority-check/source-ledger-check/propose retain source custody; they do not prove parent timing" in agents_text
+    assert "Manual commands keep source custody." in agents_text
     assert "Clarification: show one question and stop; no candidate or transaction" in agents_text
     assert "After candidate receipt, no model/semantic/provider call" in agents_text
     assert "No full-candidate reviewer, parser/regex, repair, retry, fallback or model ladder" in agents_text
     assert "90/120/150s advisory" in agents_text
     assert "Standard shares 300s gate/candidate plus 15s completion" in agents_text
-    assert "One nonreplenishing 660s diagnostic parent" in agents_text
-    assert "receipt delivery, guardian retirement and final preview serialization follow that interval" in agents_text
-    assert "Cancellation grace is 2s; no measured qualified bound is claimed" in agents_text
+    assert "The nonreplenishing 660s diagnostic parent" in agents_text
+    assert "Receipt delivery, guardian retirement and final preview serialization follow." in agents_text
+    assert "Cancellation grace: 2s; timing remains unqualified." in agents_text
     assert "Terminal `odylith greenfield decide` CONFIRM/REJECT remain model-free" in agents_text
     assert "Public chat has no qualified confirmation interface. Chat/hooks cannot authorize create" in agents_text
     assert 'odylith greenfield prepare --transaction-hash HASH --completion-receipt PATH --edit "<correction>"' in agents_text
     assert "old/equal seals retain their original receipt" in agents_text
     assert "Bounded CONFIRM/create require the explicitly delivered --completion-receipt; stored digest/diagnostic records cannot authorize" in agents_text
-    assert "Late/error work never delivers confirmation proof, even if cleanup fails" in agents_text
-    assert "Receipt delivery failures are accepted-or-unknown environment outcomes, never cancellation; lost receipts cannot be reissued" in agents_text
+    assert "Late/error work delivers no proof, even if cleanup fails." in agents_text
+    assert "Receipt delivery failures are accepted-or-unknown, never cancellation; lost receipts cannot be reissued." in agents_text
     assert "odylith greenfield create --transaction-file PATH --transaction-hash HASH --completion-receipt PATH --confirm" in agents_text
     assert "verifies receipt, hash, and preconditions under rollback guard without model, generation, or repair" in agents_text
     assert "Markdown is view, not truth; proposal or transaction JSON stays compiler-owned" in agents_text
