@@ -696,6 +696,10 @@
       line-height: 1.45;
     }
 
+    .read-guide > summary {
+      cursor: pointer;
+    }
+
     .diagram-box-section,
     .ownership-section {
       display: grid;
@@ -796,6 +800,42 @@
     .diagram-box-description {
       margin: 0;
       min-width: 0;
+    }
+
+    .diagram-box-content {
+      display: grid;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .diagram-box-details {
+      min-width: 0;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .diagram-box-details > summary {
+      cursor: pointer;
+      color: #36566f;
+    }
+
+    .diagram-box-details > summary:focus-visible {
+      outline: 2px solid #0369a1;
+      outline-offset: 2px;
+    }
+
+    .diagram-box-details dl {
+      margin: 8px 0 0;
+    }
+
+    .diagram-box-details dt {
+      font-weight: 600;
+      white-space: pre-wrap;
+    }
+
+    .diagram-box-details dd {
+      margin: 3px 0 10px;
+      white-space: pre-wrap;
     }
 
     .component-list {
@@ -901,6 +941,21 @@
 
     .linked-context-section .artifact-group:last-child {
       border-bottom: 0;
+    }
+
+    .linked-context-section .artifact-group:has(> .artifact-list:empty) {
+      display: none;
+    }
+
+    .engineering-context-empty {
+      margin: 0;
+      padding: 10px 11px;
+      color: #34475d;
+      overflow-wrap: anywhere;
+    }
+
+    .engineering-context-list:has(> .artifact-group > .artifact-list:not(:empty)) > .engineering-context-empty {
+      display: none;
     }
 
     .linked-context-section .artifact-label {
@@ -1387,10 +1442,10 @@
               <p class="artifact-label">Summary</p>
               <p id="diagramSummary" class="summary"></p>
             </div>
-            <div class="diagram-guide-panel read-guide">
-              <p class="artifact-label">How To Read This View</p>
+            <details class="diagram-guide-panel read-guide">
+              <summary class="artifact-label">How to read this diagram</summary>
               <p id="diagramReadGuide" class="read-guide-body"></p>
-            </div>
+            </details>
           </div>
           <div id="diagramBoxesSection" class="diagram-box-section" hidden>
             <p class="artifact-label">Boxes In This Diagram</p>
@@ -1405,6 +1460,7 @@
         <article class="section linked-context-section">
           <h3>Linked Engineering Context</h3>
           <div class="engineering-context-list">
+            <p class="engineering-context-empty" role="status">No engineering context is linked to this diagram yet.</p>
             <div class="artifact-group">
               <p class="artifact-label">Backlog</p>
               <ul id="backlogLinks" class="artifact-list"></ul>
@@ -1481,7 +1537,7 @@
   }
 })();
 </script>
-  <script id="catalogData" src="mermaid-payload.v1.js?v=08386ffd74e9"></script>
+  <script id="catalogData" src="mermaid-payload.v1.js?v=4ab474b5bb88"></script>
   <script>
 (() => {
   'use strict';
@@ -1606,6 +1662,6 @@
   window.OdylithFrameBridge = {surface, frame};
 })();
 </script>
-  <script src="mermaid-app.v1.js?v=08386ffd74e9"></script>
+  <script src="mermaid-app.v1.js?v=4ab474b5bb88"></script>
 </body>
 </html>

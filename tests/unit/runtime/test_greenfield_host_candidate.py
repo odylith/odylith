@@ -596,3 +596,66 @@ def test_candidate_task_aligns_bound_first_run_with_exact_prerequisite_closure()
     assert "retain their source roles" in requirement
     assert "exclude every unrelated" in requirement
     assert "without supporting inventory or system duties" not in requirement
+
+
+
+def test_fresh_candidate_requires_summary_in_schema_and_deterministic_admission() -> None:
+    source, candidate = _candidate()
+    contract = greenfield_host_candidate_contract(source)
+    design_schema = contract["candidate_schema"]["properties"]["result"]["anyOf"][0]["properties"]["provisional_design"]
+    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v54"
+    assert contract["candidate_version"] == "odylith.greenfield.host-candidate-format.v23"
+    assert "project_summary" in design_schema["required"]
+    assert design_schema["properties"]["project_summary"]["maxLength"] == 600
+    assert any("not an accepted source fact" in requirement for requirement in contract["requirements"])
+    del candidate["result"]["provisional_design"]["project_summary"]
+    with pytest.raises(ValueError, match="requires an authored project summary"):
+        _admit(source, candidate)
+
+
+@pytest.mark.parametrize("summary", [None, "", " \r\n", "a" * 601])
+def test_fresh_candidate_refuses_invalid_summary_without_a_repair(summary) -> None:
+    source, candidate = _candidate()
+    candidate["result"]["provisional_design"]["project_summary"] = summary
+    with pytest.raises((ValueError, GreenfieldModelAuthoringError), match="bounded nonblank"):
+        _admit(source, candidate)
+
+
+def test_same_candidate_summary_is_preserved_to_proposal_without_rewriting_accepted_excerpt(tmp_path) -> None:
+    from odylith.runtime.domain_intelligence import greenfield_proposals
+    source = _source()
+    prepared = prepare_model_authoring_evidence(prompt=source)
+    evidence = prepared.evidence_source
+    candidate = host_candidate_response(_response(evidence), evidence_text=evidence)
+    summary = "The proposed Berth map gives dock attendant Ivo a visible placement for a vessel."
+    candidate["result"]["provisional_design"]["project_summary"] = summary
+    intent = materialize_host_authored_intent(
+        prompt=source, repo_root=tmp_path, host_candidate=candidate,
+        source_duty_receipt=synthetic_source_duty_receipt(candidate, evidence_text=evidence),
+        prepared_evidence=prepared,
+    )
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path, prompt=source, release_selector="0.0.1", confirmed_intent=intent,
+        require_completion_ready=False,
+    )
+    assert intent["authored_semantics"]["provisional_design"]["project_summary"] == summary
+    assert proposal["semantic_model"]["provisional_design"]["project_summary"] == summary
+    assert proposal["intent"]["summary"] == proposal["intent"]["product_story"] != summary
+    assert proposal["intent"]["product_story"] == intent["product_story"]
+    assert "project_summary" not in intent
+    assert proposal["provider_calls"] == 0
+
+
+def test_summary_changes_candidate_hash_without_source_duty_fact_or_atom_changes() -> None:
+    source, candidate = _candidate()
+    authored, receipt = _admit(source, candidate)
+    candidate["result"]["provisional_design"]["project_summary"] = "A proposed source-supported overview."
+    changed, changed_receipt = _admit(source, candidate)
+    assert changed.intent == authored.intent
+    assert changed.atomic_claims == authored.atomic_claims
+    assert changed.source_spans == authored.source_spans
+    assert changed.provisional_design["project_summary"] != authored.provisional_design["project_summary"]
+    assert changed_receipt["canonical_candidate_sha256"] != receipt["canonical_candidate_sha256"]
+    for field in ("source_sha256", "source_duty_ledger_sha256", "source_duty_verifier_task_sha256",
+                  "source_duty_decision_set_sha256", "source_duty_binding_sha256"):
+        assert changed_receipt[field] == receipt[field]

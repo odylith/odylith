@@ -190,7 +190,7 @@ def _build_scoped_standup_fact_packet(
     purpose = why_context.get("purpose", "")
     benefit = why_context.get("benefit", "")
     use_story = why_context.get("use_story", "") or purpose
-    architecture_consequence = why_context.get("architecture_consequence", "") or benefit
+    architecture_consequence = why_context.get("architecture_consequence", "")
     direction_clause = _direction_clause_for_story(
         label=label,
         purpose=purpose,
@@ -577,7 +577,7 @@ def _build_global_standup_fact_packet(
     primary_purpose = primary_why_context.get("purpose", "")
     primary_benefit = primary_why_context.get("benefit", "")
     primary_use_story = primary_why_context.get("use_story", "") or primary_purpose
-    primary_architecture_consequence = primary_why_context.get("architecture_consequence", "") or primary_benefit
+    primary_architecture_consequence = primary_why_context.get("architecture_consequence", "")
     direction_clause = _direction_clause_for_story(
         label=primary_label,
         purpose=primary_purpose,

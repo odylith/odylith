@@ -9,7 +9,7 @@ from typing import Any
 
 from odylith.runtime.project_intelligence.authored_fact_presenter import (
     render_authored_actor_cards,
-    render_authored_focus,
+    render_authored_risk_cards,
     render_product_story_contract,
 )
 from odylith.runtime.project_intelligence.deeplinks import deeplink_title_context
@@ -52,7 +52,7 @@ def _mappings(value: object) -> list[Mapping[str, Any]]:
     return [item for item in _sequence(value) if isinstance(item, Mapping)]
 
 
-def _cards(items: object, class_name: str = "project-card") -> str:
+def _cards(items: object, class_name: str = "project-card", *, show_body: bool = True) -> str:
     cards: list[str] = []
     for raw in _sequence(items):
         item = list(raw) if isinstance(raw, Sequence) and not isinstance(raw, (str, bytes, bytearray)) else []
@@ -71,8 +71,8 @@ def _cards(items: object, class_name: str = "project-card") -> str:
             f'<article class="{class_name}">'
             f"{kicker_html}"
             f"<h3>{_d(title)}</h3>"
-            f"<span>{_d(body)}</span>"
-            "</article>"
+            + (f"<span>{_d(body)}</span>" if show_body else "")
+            + "</article>"
         )
     return "".join(cards)
 
@@ -131,7 +131,7 @@ def _risk_cards(items: object) -> str:
     return "".join(cards)
 
 
-def _use_cases(items: object) -> str:
+def _use_cases(items: object, *, authored: bool = False) -> str:
     rows: list[str] = []
     for raw in _sequence(items):
         if isinstance(raw, Mapping):
@@ -149,7 +149,7 @@ def _use_cases(items: object) -> str:
             workstream_id = _workstream_id(item[3] if len(item) > 3 else "")
         title_html = _job_title_html(title=title, workstream_id=workstream_id)
         id_html = _job_workstream_link(workstream_id=workstream_id, title=title)
-        status_html = _project_label_chip(status)
+        status_html = "" if authored else _project_label_chip(status)
         meta_html = (
             f'<div class="project-job-meta">{id_html}{status_html}</div>' if status_html or id_html else ""
         )
@@ -239,7 +239,7 @@ def _host_handoff(project: Mapping[str, Any]) -> str:
     if not rows:
         return ""
     steps = [_d(item) for item in _sequence(project.get("host_handoff_steps")) if str(item or "").strip()]
-    steps_html = f'<ol>{"".join(f"<li>{item}</li>" for item in steps)}</ol>' if steps else ""
+    steps_html = f'<ol>{"".join(f"<li>{item}</li>" for item in steps)}</ol>' if steps and "authored_facts" not in project else ""
     cards: list[str] = []
     for row in rows:
         label = row.get("label")
@@ -265,14 +265,18 @@ def _host_handoff(project: Mapping[str, Any]) -> str:
         )
     if not cards:
         return ""
-    return (
-        '<div class="project-host-handoff">'
+    body = (
         f"<h3>{_d(project.get('host_handoff_title'))}</h3>"
         f"<p>{_d(project.get('host_handoff_note'))}</p>"
         f"{steps_html}"
         f'<div class="project-host-prompt-grid">{"".join(cards)}</div>'
-        "</div>"
     )
+    if "authored_facts" in project:
+        projection = project.get("projection")
+        accepted = isinstance(projection, Mapping) and projection.get("maturity") == "accepted greenfield direction"
+        summary = "Implementation steps" if accepted else "Decision details"
+        return f'<details class="project-host-handoff"><summary>{summary}</summary>{body}</details>'
+    return f'<div class="project-host-handoff">{body}</div>'
 
 
 def _table(items: object, columns: Sequence[tuple[str, str]]) -> str:
@@ -509,7 +513,9 @@ def _prose_lines(value: object) -> str:
     return '<div class="project-prose-lines">' + "".join(f"<p>{_d(line)}</p>" for line in lines) + "</div>"
 
 
-def _product_story(value: object, *, project: Mapping[str, Any]) -> str:
+def _product_story(
+    value: object, *, project: Mapping[str, Any], supporting_html: str | None = None,
+) -> str:
     story = value if isinstance(value, Mapping) else {}
     headline = story.get("headline")
     standfirst = story.get("standfirst")
@@ -534,6 +540,7 @@ def _product_story(value: object, *, project: Mapping[str, Any]) -> str:
         release_contract=release_contract,
         supporting_records=supporting_records,
         project=project,
+        supporting_html=supporting_html,
     )
 
 
@@ -544,17 +551,36 @@ def _product_story_narrative(
     release_contract: Sequence[Mapping[str, Any]],
     supporting_records: Sequence[str],
     project: Mapping[str, Any],
+    supporting_html: str | None = None,
 ) -> str:
     contract_html = render_product_story_contract(
         release_contract,
         project=project,
         render_text=_d,
     )
+    records_html = (
+        '<ul class="project-story-records">'
+        + "".join(f"<li>{_d(row)}</li>" for row in supporting_records if str(row or "").strip())
+        + "</ul>"
+        if supporting_records
+        else ""
+    )
+    if supporting_html is not None and (records_html or supporting_html):
+        records_html = (
+            '<details class="project-evidence-excerpt"><summary>Supporting details</summary>'
+            f"{records_html}{supporting_html}</details>"
+        )
     if contract_html:
         return (
             '<article class="project-story-narrative project-story-card-stack">'
-            f"{contract_html}"
-            "</article>"
+            + (f'<details class="project-evidence-excerpt"><summary>Source evidence</summary>'
+               f'<p>{_d(paragraphs[0])}</p></details>'
+               if "authored_facts" in project and paragraphs else "")
+            + contract_html + records_html
+            + (f'<details class="project-open-questions"><summary>{_d(project.get("open_label"))}</summary>'
+               f'{_bullets(project.get("open"))}</details>'
+               if "authored_facts" in project and project.get("open") else "")
+            + "</article>"
         )
     clean_headline = _display_title(headline)
     headline_html = f"<h3>{_d(clean_headline)}</h3>" if clean_headline else ""
@@ -563,13 +589,6 @@ def _product_story_narrative(
     remaining_paragraphs = paragraph_rows[1:]
     first_html = "".join(f"<p>{_d(paragraph)}</p>" for paragraph in first_paragraph)
     remaining_html = "".join(f"<p>{_d(paragraph)}</p>" for paragraph in remaining_paragraphs)
-    records_html = (
-        '<ul class="project-story-records">'
-        + "".join(f"<li>{_d(row)}</li>" for row in supporting_records if str(row or "").strip())
-        + "</ul>"
-        if supporting_records
-        else ""
-    )
     return (
         '<article class="project-story-narrative">'
         f"{headline_html}{first_html}{contract_html}{remaining_html}{records_html}"
@@ -580,11 +599,11 @@ def _render_blank_actions(items: object) -> str:
     for row in _mappings(items):
         command = str(row.get("command") or "").strip()
         command_html = f"<code>{_e(command)}</code>" if command else ""
+        title_html = f"<h3>{_d(row['title'])}</h3>" if row.get("title") else ""
+        body_html = f"<p>{_d(row['body'])}</p>" if row.get("body") else ""
         rows.append(
             '<article class="project-empty-action">'
-            f"<h3>{_d(row.get('title'))}</h3>"
-            f"<p>{_d(row.get('body'))}</p>"
-            f"{command_html}"
+            f"{title_html}{body_html}{command_html}"
             "</article>"
         )
     return "".join(rows)
@@ -613,10 +632,15 @@ def _render_blank_readout(items: object) -> str:
 
 def _render_blank_project(project: Mapping[str, Any]) -> str:
     chips = "".join(_project_label_chip(chip) for chip in _sequence(project.get("chips")))
+    preview = _render_blank_preview(project.get("blank_preview"))
+    preview_html = f"""<section class="project-panel project-empty-preview">
+      <div class="project-panel-head"><h2>{_d(project.get("blank_preview_title"))}</h2></div>
+      <div class="project-empty-preview-grid">{preview}</div>
+    </section>""" if preview else ""
     return f"""
 <div class="project-surface project-surface-empty">
   <header class="project-hero project-hero-empty">
-    <div class="project-hero-main project-hero-main-empty">
+    <div class="project-hero-main project-hero-main-single">
       <div class="project-hero-copy">
         <p class="project-eyebrow"><span></span>{_d(project.get("eyebrow"))}</p>
         <h1>{_d(_display_title(project.get("title")))}</h1>
@@ -632,10 +656,7 @@ def _render_blank_project(project: Mapping[str, Any]) -> str:
       <div class="project-empty-action-grid">{_render_blank_actions(project.get("blank_actions"))}</div>
       {_render_blank_readout(project.get("blank_readout"))}
     </section>
-    <section class="project-panel project-empty-preview">
-      <div class="project-panel-head"><h2>{_d(project.get("blank_preview_title"))}</h2></div>
-      <div class="project-empty-preview-grid">{_render_blank_preview(project.get("blank_preview"))}</div>
-    </section>
+    {preview_html}
   </main>
 </div>
 """.strip()
@@ -648,86 +669,16 @@ def _enabled(project: Mapping[str, Any], key: str) -> bool:
 
 def _fallback_payload() -> dict[str, Any]:
     return {
-        "eyebrow": "Project lens · inferred",
+        "mode": "blank",
+        "eyebrow": "Project",
         "title": "Project",
-        "intro": "No project projection is available yet.",
-        "chips": ["Evidence: inferred"],
-        "focus_label": "Current project focus",
-        "focus": "No source-backed project state is available.",
-        "open_label": "Open project risks",
-        "open": ["Project source payload missing"],
-        "answers": [],
-        "scenario": ["Current slice", "Project", "Source-backed page unavailable", "", ""],
-        "scenario_title": "Project scenario",
-        "scenario_note": "Source-backed scenario unavailable.",
-        "actors": [],
-        "participants_title": "Who participates?",
-        "participants_note": "No source-backed participants found.",
-        "participants": [],
-        "jobs": [],
-        "jobs_title": "What is active?",
-        "jobs_note": "No source-backed jobs found.",
-        "boundary_title": "What is inside the current boundary?",
-        "boundary_note": "No source-backed boundary found.",
-        "included_label": "Source-backed coverage",
-        "excluded_label": "Unresolved boundary",
-        "included": [],
-        "excluded": [],
-        "current": "Project source projection is missing.",
-        "desired": "The Project tab renders from current source-backed project state.",
-        "question": "How should the Project page be refreshed?",
-        "recommendation": "Rebuild the dashboard after source records exist.",
-        "options": [],
-        "next": ["Refresh Project page", "Rebuild the Project tab.", "Dashboard", "Source-backed Project tab", "Source records", "Project page stays stale"],
-        "known": [],
-        "unknown": ["Project source payload missing"],
-        "confidence": "Low",
-        "blockers": [("Project source payload", "Missing", "dashboard")],
-        "projection": {
-            "refreshed_at": "not found",
-            "origin": "unknown",
-            "maturity": "thin evidence",
-            "work_mode": "orienting",
-            "topology_profile": "unknown",
-        },
-        "claim_evidence": [],
-        "artifact_coverage": [],
-        "topology_spine": [],
-        "contradictions": ["Project source payload missing."],
-        "delta": ["No previous source-backed Project snapshot is available."],
-        "risk_classes": [],
-        "validation_posture": [],
-        "audience_emphasis": [],
-        "degraded_state": ["Project source payload missing."],
-        "claim_evidence_title": "What evidence exists?",
-        "claim_evidence_note": "No Project claim evidence is available yet.",
-        "topology_spine_title": "Topology spine",
-        "topology_spine_note": "No source-backed topology spine is available yet.",
-        "artifact_coverage_title": "Source coverage",
-        "artifact_coverage_note": "No source-backed artifact coverage is available yet.",
-        "trust_title": "What changed or degrades trust?",
-        "trust_note": "No source-backed delta is available yet.",
-        "delta_label": "Delta from previous state",
-        "contradictions_label": "Contradictions",
-        "degraded_label": "Degraded state intelligence",
-        "posture_title": "What risk and validation posture matters?",
-        "posture_note": "No source-backed risk posture is available yet.",
-        "validation_label": "Validation posture",
-        "risk_label": "Risk classes",
-        "work_state_kicker": "Project status now",
-        "state_title": "Project state unavailable",
-        "state_note": "No source-backed execution state is available yet.",
-        "current_state_label": "Current state",
-        "desired_state_label": "Desired state",
-        "next_title": "What should move next?",
-        "next_note": "No source-backed next action is available yet.",
-        "proof_title": "What is known and unproven?",
-        "proof_note": "No source-backed proof state is available yet.",
-        "known_label": "Known from source records",
-        "unknown_label": "Unresolved in current projection",
-        "confidence_label": "Confidence",
-        **_default_table_columns(),
-        "sources": {},
+        "intro": "The Project view could not be loaded.",
+        "chips": [],
+        "blank_title": "Refresh the dashboard",
+        "blank_note": "Run this command in your repository, then reload the page.",
+        "blank_actions": [{
+            "command": "odylith dashboard refresh --repo-root . --surfaces tooling_shell",
+        }],
     }
 
 
@@ -744,6 +695,9 @@ def render_project_html(payload: Mapping[str, Any]) -> str:
 def _render_project_html_project(project: Mapping[str, Any]) -> str:
     if str(project.get("mode") or "").strip().lower() == "blank":
         return _render_blank_project(project)
+    authored = "authored_facts" in project
+    operating = not authored and isinstance(project.get("sources"), Mapping)
+    operating_details = operating and _enabled(project, "product_story")
     default_columns = _default_table_columns()
     claim_columns = _columns(project, "claim_evidence_columns", default_columns["claim_evidence_columns"])
     scenario = _sequence(project.get("scenario"))
@@ -764,15 +718,6 @@ def _render_project_html_project(project: Mapping[str, Any]) -> str:
         if _enabled(project, "scenario")
         else ""
     )
-    product_story_html = (
-        f"""      <section class="project-panel project-product-story">
-        <div class="project-panel-head"><h2>{_d(project.get("product_story_title"))}</h2>{f'<p>{_d(project.get("product_story_note"))}</p>' if str(project.get("product_story_note") or "").strip() else ''}</div>
-        {_product_story(project.get("product_story"), project=project)}
-      </section>
-"""
-        if _enabled(project, "product_story")
-        else ""
-    )
     answer_table = _answer_table(project.get("answers"))
     answers_html = (
         f"""      <section class="project-panel project-answer-strip" aria-label="Project summary table">{answer_table}</section>
@@ -780,7 +725,9 @@ def _render_project_html_project(project: Mapping[str, Any]) -> str:
         if answer_table
         else ""
     )
-    risk_cards = _risk_cards(project.get("risk_items") or project.get("risk_classes"))
+    risk_items = project.get("risk_items") or project.get("risk_classes")
+    risk_cards = (render_authored_risk_cards(risk_items, render_text=_d) if authored
+                  else _risk_cards(risk_items))
     risks_html = (
         f"""      <section class="project-panel project-risks"><div class="project-panel-head"><h2>{_d(project.get("risk_title"))}</h2>{f'<p>{_d(project.get("risk_note"))}</p>' if str(project.get("risk_note") or "").strip() else ''}</div><div class="project-card-grid project-risk-grid">{risk_cards}</div></section>
 """
@@ -795,7 +742,9 @@ def _render_project_html_project(project: Mapping[str, Any]) -> str:
     actor_cards = (
         authored_actor_cards
         if authored_actor_cards is not None
-        else _cards(project.get("actors") or project.get("participants"), "project-actor-card")
+        else _cards(project.get("actors") or project.get("participants"),
+                    "project-actor-card project-actor-card-name" if operating_details else "project-actor-card",
+                    show_body=not operating_details)
     )
     participants_html = (
         f"""      <section class="project-panel project-participants"><div class="project-panel-head"><h2>{_d(project.get("participants_title"))}</h2><p>{_d(project.get("participants_note"))}</p></div><div class="project-card-grid project-actor-grid">{actor_cards}</div></section>
@@ -803,15 +752,31 @@ def _render_project_html_project(project: Mapping[str, Any]) -> str:
         if _enabled(project, "participants")
         else ""
     )
+    supporting_html = None
+    jobs = _sequence(project.get("jobs"))
+    if operating_details:
+        # The source builder already marks this repeated recommendation row.
+        next_jobs = [row for row in jobs if isinstance(row, (list, tuple))
+                     and len(row) >= 3 and row[2] == "Next action"]
+        jobs = [row for row in jobs if row not in next_jobs]
+        role_details = _cards(project.get("actors") or project.get("participants"), "project-actor-card")
+        supporting_html = f'{role_details}{answers_html}{scenario_html}{_use_cases(next_jobs)}'
+        answers_html = scenario_html = ""
     jobs_html = (
-        f"""      <section class="project-panel"><div class="project-panel-head"><h2>{_d(project.get("jobs_title"))}</h2><p>{_d(project.get("jobs_note"))}</p></div><div class="project-job-grid">{_use_cases(project.get("jobs"))}</div></section>
+        f"""      <section class="project-panel"><div class="project-panel-head"><h2>{_d(project.get("jobs_title"))}</h2><p>{_d(project.get("jobs_note"))}</p></div><div class="project-job-grid">{_use_cases(jobs, authored=authored)}</div></section>
 """
         if _enabled(project, "jobs")
         else ""
     )
     claim_html = ""
+    trust_signals = "".join(
+        f'<article><h3>{_d(project.get(label))}</h3>{_bullets(project.get(key))}</article>'
+        for key, label in (("delta", "delta_label"), ("contradictions", "contradictions_label"),
+                           ("degraded_state", "degraded_label"))
+        if not authored or project.get(key)
+    )
     trust_html = (
-        f"""      <section class="project-panel"><div class="project-panel-head"><h2>{_d(project.get("trust_title"))}</h2><p>{_d(project.get("trust_note"))}</p></div><div class="project-signal-grid"><article><h3>{_d(project.get("delta_label"))}</h3>{_bullets(project.get("delta"))}</article><article><h3>{_d(project.get("contradictions_label"))}</h3>{_bullets(project.get("contradictions"))}</article><article><h3>{_d(project.get("degraded_label"))}</h3>{_bullets(project.get("degraded_state"))}</article></div></section>
+        f"""      <section class="project-panel project-trust"><div class="project-panel-head"><h2>{_d(project.get("trust_title"))}</h2><p>{_d(project.get("trust_note"))}</p></div>{f'<div class="project-signal-grid">{trust_signals}</div>' if trust_signals else ''}</section>
 """
         if _enabled(project, "trust")
         else ""
@@ -826,8 +791,9 @@ def _render_project_html_project(project: Mapping[str, Any]) -> str:
         else ""
     )
     host_handoff_html = _host_handoff(project)
+    next_action_html = f'<p>{_d(project.get("recommendation"))}</p>' if operating and project.get("recommendation") else ""
     next_html = (
-        f"""      <section class="project-panel"><div class="project-panel-head"><h2>{_d(project.get("next_title"))}</h2><p>{_d(project.get("next_note"))}</p></div>{host_handoff_html}</section>
+        f"""      <section class="project-panel"><div class="project-panel-head"><h2>{_d(project.get("next_title"))}</h2><p>{_d(project.get("next_note"))}</p></div>{next_action_html}{host_handoff_html}</section>
 """
         if _enabled(project, "next")
         else ""
@@ -838,26 +804,43 @@ def _render_project_html_project(project: Mapping[str, Any]) -> str:
         if _enabled(project, "proof")
         else ""
     )
+    if operating_details:
+        supporting_html += proof_html
+        proof_html = ""
+    product_story_html = (
+        f"""      <section class="project-panel project-product-story">
+        <div class="project-panel-head"><h2>{_d(project.get("product_story_title"))}</h2>{f'<p>{_d(project.get("product_story_note"))}</p>' if str(project.get("product_story_note") or "").strip() else ''}</div>
+        {_product_story(project.get("product_story"), project=project, supporting_html=supporting_html)}
+      </section>
+"""
+        if _enabled(project, "product_story")
+        else ""
+    )
+    hero_rail = "" if authored else f"""<aside class="project-hero-rail">
+        <section class="project-focus-card"><p>{_d(_hero_rail_label(project.get("focus_label"), title=project.get("title"), fallback="Current focus"))}</p><h2>{_d(project.get("focus"))}</h2></section>
+        <section class="project-open-card"><p>{_d(_hero_rail_label(project.get("open_label"), title=project.get("title"), fallback="Open questions"))}</p>{_bullets(project.get("open"))}</section>
+      </aside>"""
+    eyebrow = "" if authored else f'<p class="project-eyebrow"><span></span>{_d(project.get("eyebrow"))}</p>'
+    chips_html = f'<div class="project-chips">{chips}</div>' if chips and not authored else ""
+    intro_html = f'<p class="project-intro">{_d(project.get("intro"))}</p>' if project.get("intro") else ""
+    status_html = f'<p class="project-status">{_d(project.get("current"))}</p>' if authored and project.get("current") else ""
+    hero_class = "project-hero-main-single" if authored else ""
     return f"""
 <div class="project-surface">
   <header class="project-hero">
-    <div class="project-hero-main">
+    <div class="project-hero-main {hero_class}">
       <div class="project-hero-copy">
-        <p class="project-eyebrow"><span></span>{_d(project.get("eyebrow"))}</p>
+        {eyebrow}
         <h1>{_d(_display_title(project.get("title")))}</h1>
-        <p class="project-intro">{_d(project.get("intro"))}</p>
-        <div class="project-chips">{chips}</div>
+        {intro_html}{status_html}{chips_html}
       </div>
-      <aside class="project-hero-rail">
-        <section class="project-focus-card"><p>{_d(_hero_rail_label(project.get("focus_label"), title=project.get("title"), fallback="Current focus"))}</p>{render_authored_focus(project, render_text=_d)}</section>
-        <section class="project-open-card"><p>{_d(_hero_rail_label(project.get("open_label"), title=project.get("title"), fallback="Open questions"))}</p>{_bullets(project.get("open"))}</section>
-      </aside>
+      {hero_rail}
     </div>
   </header>
 
   <div class="project-page-grid">
     <main class="project-main">
-{product_story_html}{participants_html}{risks_html}{answers_html}{scenario_html}{jobs_html}{claim_html}{trust_html}{posture_html}{boundary_html}{state_html}{next_html}{proof_html}
+{next_html if authored else ""}{product_story_html}{participants_html}{risks_html}{answers_html}{scenario_html}{jobs_html}{claim_html}{trust_html}{posture_html}{boundary_html}{state_html}{next_html if not authored else ""}{proof_html}
     </main>
   </div>
 </div>

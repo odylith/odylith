@@ -43,6 +43,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
     const runtimeStatusKicker = document.getElementById("shellRuntimeStatusKicker");
     const runtimeStatusTitle = document.getElementById("shellRuntimeStatusTitle");
     const runtimeStatusBody = document.getElementById("shellRuntimeStatusBody");
+    const runtimeStatusDetails = document.getElementById("shellRuntimeStatusDetails");
     const runtimeStatusMeta = document.getElementById("shellRuntimeStatusMeta");
     const runtimeStatusDismiss = document.getElementById("shellRuntimeStatusDismiss");
     const runtimeStatusReload = document.getElementById("shellRuntimeStatusReload");
@@ -719,6 +720,9 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       runtimeStatusBody.textContent = visible ? String(posture.body || "").trim() : "";
       runtimeStatusMeta.textContent = visible ? String(posture.meta || "").trim() : "";
       runtimeStatusMeta.hidden = !(visible && String(posture.meta || "").trim());
+      if (runtimeStatusDetails) {
+        runtimeStatusDetails.hidden = !(visible && String(posture.meta || "").trim());
+      }
       runtimeStatusReload.hidden = !(visible && posture.showReload);
       runtimeStatusReload.setAttribute("aria-hidden", String(runtimeStatusReload.hidden));
       runtimeStatusReload.textContent = visible && posture.showReload

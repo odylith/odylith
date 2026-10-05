@@ -67,14 +67,14 @@ bytes. Only a complete prepared append or an exact recorded terminal phase can
 continue; unknown interruptions, foreign requests and changed inputs refuse.
 Completion never appends again or rolls back an observed successor.
 
-An exact unpublished append in the `prepared` or `appended` phase, with no
+An exact unpublished append in the `prepared`, `appended` or `rendering` phase, with no
 successor, may instead be retired with
 `compass log --abandon-restored <review hash> --receipt-hash <original SHA-256>`
 after the existing reviewed restoration restores only the canonical stream.
 This is abandonment, not cross-runtime completion. Under the repository writer
 lease, require unchanged publication, exact event/preimage custody, unchanged
 authored inventory, complete working equality and settled journals. A prepared
-receipt binds the restored working state; an appended receipt must instead bind
+receipt binds the restored working state; an appended or rendering receipt must bind
 the CLOSED restoration plan's exact pre-restoration fingerprint map. Both require
 the restored live tree to equal the unchanged publication. Archive the
 original receipt and abandonment witness durably before retiring the active
@@ -83,6 +83,16 @@ the original event remains recoverable. Changed or newer custody refuses, and
 the same archived receipt identity cannot be prepared again. Independent review,
 309 earlier adjacent checks, 132 phase-aware module controls and both exact live
 recoveries support this bounded contract.
+
+CB-359 adds interrupted rendering to this existing archive path after exact
+restoration. If rendering changed derived outputs, restore those first through
+their reviewed receipt; the final restoration receipt must select only the
+canonical stream. Future runtime code identities exclude only exact `.DS_Store`
+basenames; actual code, resources, modes and runtime selection remain guarded.
+Root proof passes 139 continuation tests. The actual interrupted receipt was
+archived unchanged, the stream returned to its exact pre-append bytes, and the
+whole published generation remained valid. The original runtime code delta's
+sole cause is unproved. Installed release qualification remains pending.
 
 Refresh custody uses the actual originating request ID, terminal state, status,
 integer return code and non-coalesced provenance. Terminal `pid=0` is not foreign

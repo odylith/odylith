@@ -679,7 +679,8 @@ def test_render_backlog_ui_promotes_workstream_id_into_detail_kpi_grid() -> None
     assert ".kpi.kpi-section.kpi-section-finished {" in html
     assert ".kpi.kpi-section.kpi-section-parked {" in html
     assert 'class="detail-id"' not in html
-    assert html.index('data-kpi="workstream-id"') < html.index('<div class="chips">')
+    assert html.index('<div class="chips">') < html.index('data-kpi="workstream-id"')
+    assert '<summary class="disclosure-title">Assessment and dates</summary>' in html
     assert html.index('data-kpi="workstream-placement"') < html.index("Ordering Score")
 
 
@@ -697,10 +698,10 @@ def test_render_backlog_ui_orders_traceability_links_with_spec_first() -> None:
 def test_render_backlog_ui_places_product_view_below_problem() -> None:
     html = render_backlog_ui._render_html(payload={"entries": []})
 
-    problem_idx = html.index("<h3>Problem</h3>")
+    problem_idx = html.index('summaryBlockHtml("Problem", selected.problem')
     product_idx = html.index("<h3>Product View</h3>")
     decision_idx = html.index("<h3>Decision Basis</h3>")
-    customer_idx = html.index("<h3>Customer</h3>")
+    customer_idx = html.index('summaryBlockHtml("Customer", selected.customer')
 
     assert problem_idx < product_idx < customer_idx
     assert problem_idx < decision_idx < customer_idx
@@ -791,6 +792,16 @@ def test_render_backlog_ui_panel_headers_use_quiet_title_case() -> None:
     assert "Selected Workstream Detail" not in html
     assert ".panel-head-title {\n  margin: 0;\n  color: var(--ink);\n  font-size: 15px;" in html
     assert "  line-height: 1.35;\n  letter-spacing: 0em;\n  font-weight: 700;\n  text-transform: none;\n}" in html
+
+
+def test_render_backlog_ui_places_phase_and_activity_help_in_native_details() -> None:
+    html = render_backlog_ui._render_html(payload={"entries": []})
+
+    assert '<details class="execution-legend">' in html
+    assert "<summary>How Phase and Activity work</summary>" in html
+    assert "<strong>Plan: Active/Quiet</strong>" in html
+    assert "<strong>Live: Active/Quiet</strong>" in html
+    assert "Delivery Pipeline is two-dimensional:" not in html
 
 
 def test_render_backlog_ui_hides_internal_index_source_path_from_meta_bar() -> None:

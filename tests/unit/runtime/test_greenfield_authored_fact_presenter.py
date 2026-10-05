@@ -94,7 +94,7 @@ def test_boundary_labels_preserve_source_scope_without_imposing_release_scope(sc
     view = authored_fact_presenter.authored_fact_view(project)
     group = next(row for row in view.boundary_groups if row.key == "non_goals")
 
-    assert group.label == "Source-stated scope limits"
+    assert group.label == "Scope limits"
     assert group.items == (scope_limit,)
     scalar = greenfield_authored_dashboard.authored_product_boundary(
         components=({"label": "Receipt review"},), internal_systems=(),
@@ -127,9 +127,9 @@ def test_authored_fact_view_preserves_unseen_typed_facts_without_prose_parsing()
     ]
 
 
-def test_authored_fact_presenter_renders_repeated_nodes_in_exact_order() -> None:
+def test_authored_fact_presenter_lists_people_once_and_preserves_first_path() -> None:
     project = _project()
-    focus = authored_fact_presenter.render_authored_focus(project, render_text=_render_text)
+    frozen = deepcopy(project)
     actors = authored_fact_presenter.render_authored_actor_cards(
         project["actors"],
         project=project,
@@ -144,7 +144,7 @@ def test_authored_fact_presenter_renders_repeated_nodes_in_exact_order() -> None
                 "body": "structured fallback",
             },
             {
-                "label": "Owned Capabilities",
+                "label": "Proposed capabilities",
                 "semantic_slot": "owned_capabilities",
                 "body": "structured fallback",
             },
@@ -153,26 +153,29 @@ def test_authored_fact_presenter_renders_repeated_nodes_in_exact_order() -> None
         render_text=_render_text,
     )
 
-    assert focus.count("data-authored-fact-item") == 3
-    assert "Proposed first run:" in focus
-    assert focus.count("data-authored-event-actor-label") == 3
-    assert focus.count("data-authored-event-quote") == 3
-    assert "Quartz Keeper — Quartz Keeper" not in focus
-    assert 'data-authority-kind="provisional_design"' in focus
-    assert focus.index(EVENTS[0]) < focus.index(EVENTS[1]) < focus.index(EVENTS[2])
+    assert story.count("data-authored-event-actor-label") == 3
+    assert story.count("data-authored-event-quote") == 3
+    assert story.index(EVENTS[0]) < story.index(EVENTS[1]) < story.index(EVENTS[2])
     assert actors is not None
-    assert actors.count('data-authored-fact-list="actor"') == 1
-    assert actors.count("data-authored-fact-item") == 2
-    assert actors.index(EVENTS[0]) < actors.index(EVENTS[2])
-    assert "Named in project evidence; no first-path action is assigned." in actors
+    assert actors.count("data-authored-actor=") == 2
+    assert actors.count('class="project-actor-card project-actor-card-name"') == 2
+    assert actors.count('data-authored-fact-list="actor"') == 0
+    assert actors.count("data-authored-fact-item") == 0
+    assert '<h3>Quartz Keeper</h3>' in actors
+    assert '<h3>Silent Reviewer</h3>' in actors
+    assert actors.index("Quartz Keeper") < actors.index("Silent Reviewer")
+    assert all(event not in actors for event in EVENTS)
+    assert "Named in project evidence; no first-path action is assigned." not in actors
+    assert project == frozen
     assert story.count('data-authored-fact-list="first_path"') == 1
     assert '<p data-proposed-first-run-label>Proposed first run:</p>' in story
     assert story.count('data-authored-fact-list="owned_capabilities"') == 1
     assert story.count("data-authored-boundary-group") == 4
     assert 'data-authority-kind="provisional_design"' in story
-    assert '<p data-provisional-design-label>Proposed capabilities:</p>' in story
-    assert "Proposed logical components (not deployment commitments)" in story
-    assert "Source-stated systems:" in story
+    assert '<h3 data-provisional-design-label>Proposed capabilities</h3>' in story
+    assert '<p data-provisional-design-label>' not in story
+    assert "Proposed components:" in story
+    assert "Named systems:" in story
     assert "Own blue-receipt custody." not in story
     assert "Own amber-ferry evidence." not in story
     assert story.index("Rill Engine") < story.index("Harbor Ledger")
@@ -223,14 +226,15 @@ def test_greenfield_story_fallback_bodies_preserve_structured_boundaries() -> No
     )
 
 
-def test_authored_fact_presenter_keeps_scalar_fallback_for_legacy_project() -> None:
+def test_authored_fact_presenter_keeps_scalar_story_for_legacy_project() -> None:
     project = {"focus": "One legacy focus sentence."}
-
     assert authored_fact_presenter.authored_fact_view(project) is None
-    assert authored_fact_presenter.render_authored_focus(
-        project,
-        render_text=_render_text,
-    ) == "<h2>One legacy focus sentence.</h2>"
+    rendered = authored_fact_presenter.render_product_story_contract(
+        [{"label": "First Path", "semantic_slot": "first_path", "body": project["focus"]}],
+        project=project, render_text=_render_text,
+    )
+    assert "One legacy focus sentence." in rendered
+    assert "data-authored-fact-item" not in rendered
 
 
 def test_result_first_inventory_displays_only_proposed_order_with_stable_source_ids() -> None:
@@ -252,7 +256,6 @@ def test_result_first_inventory_displays_only_proposed_order_with_stable_source_
         (2, EVENTS[0]), (3, EVENTS[1]), (1, EVENTS[2]),
     ]
     for rendered in (
-        authored_fact_presenter.render_authored_focus(project, render_text=_render_text),
         authored_fact_presenter.render_product_story_contract(
             [{"label": "First Path", "semantic_slot": "first_path", "body": "Stale source order"}],
             project=project, render_text=_render_text,
@@ -276,7 +279,10 @@ def test_authored_fact_presenter_retains_actions_after_the_result() -> None:
 
     assert view is not None
     assert [(event.order, event.event_quote) for event in view.events] == list(enumerate(EVENTS, 1))
-    rendered = authored_fact_presenter.render_authored_focus(project, render_text=_render_text)
+    rendered = authored_fact_presenter.render_product_story_contract(
+        [{"label": "First Path", "semantic_slot": "first_path", "body": ""}],
+        project=project, render_text=_render_text,
+    )
     assert rendered.index(EVENTS[1]) < rendered.index(EVENTS[2])
 
 
@@ -301,8 +307,6 @@ def test_invalid_authored_order_never_revives_source_order(mutation: str) -> Non
     else:
         facts["first_path_relations"][2]["visible_result_quote"] = ""
     with pytest.raises(GreenfieldAuthoredSemanticsError):
-        authored_fact_presenter.render_authored_focus(project, render_text=_render_text)
-    with pytest.raises(GreenfieldAuthoredSemanticsError):
         authored_fact_presenter.render_product_story_contract(
             [{"label": "First Path", "semantic_slot": "first_path", "body": "Stale source order"}],
             project=project, render_text=_render_text,
@@ -321,5 +325,25 @@ def test_malformed_design_cannot_fall_back_to_source_owned_capabilities(mutation
         facts["provisional_design"]["components"][0]["supported_event_orders"] = [99]
     with pytest.raises(GreenfieldAuthoredSemanticsError):
         authored_fact_presenter.authored_fact_view(project)
-    with pytest.raises(GreenfieldAuthoredSemanticsError):
-        authored_fact_presenter.render_authored_focus(project, render_text=_render_text)
+
+
+def test_structured_risk_card_preserves_exact_fields_and_traceability() -> None:
+    row = {
+        "key": "retention-boundary", "risk": "Data retention risk",
+        "statement": "Personal records could outlive the stated retention period.",
+        "mitigation": "Delete only after the review period ends.",
+        "trigger": "The review period ends before deletion succeeds.",
+        "verification": "A failed deletion retains the pending status.",
+        "scope": "Components: archive; workstreams: cleanup; source events: 2.",
+        "scope_paths": [{"event_order": 2, "component_key": "archive", "workstream_key": "cleanup"}],
+    }
+    before = deepcopy(row)
+    rendered = authored_fact_presenter.render_authored_risk_cards([row], render_text=_render_text)
+    assert '<p class="project-risk-statement" data-risk-statement>' in rendered
+    assert '<p data-risk-mitigation>' in rendered
+    assert '<details class="project-risk-details"><summary>Risk details</summary>' in rendered
+    for key in ("statement", "mitigation", "trigger", "verification", "scope"):
+        assert rendered.count(row[key]) == 1
+    assert "Source event 2 · Component archive · Workstream cleanup" in rendered
+    assert 'data-risk-key="retention-boundary"' in rendered
+    assert row == before

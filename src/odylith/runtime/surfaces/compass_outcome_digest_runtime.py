@@ -207,9 +207,8 @@ def _build_outcome_digest_for_workstream(
 
     why_context = _ws_why_context(row)
     purpose = why_context.get("purpose", "")
-    benefit = why_context.get("benefit", "")
     use_story = why_context.get("use_story", "") or purpose
-    architecture_consequence = why_context.get("architecture_consequence", "") or benefit
+    architecture_consequence = why_context.get("architecture_consequence", "")
     label = _ws_label(row)
 
     completed_match = [item for item in recent_completed if str(item.get("backlog", "")).strip() == idea_id]
@@ -295,18 +294,18 @@ def _build_outcome_digest_for_workstream(
     else:
         next_line = f"Next planned: convert remaining {idea_id} plan items into merged implementation artifacts and close planning gaps."
 
-    why_benefit_line = (
-        f"Why this matters: {use_story or f'{idea_id} is a prerequisite lane for dependent platform execution.'} "
-        f"Architecture consequence: {architecture_consequence or f'{idea_id} gives operators a clearer contract and lowers coordination risk across dependent workstreams.'}"
+    why_benefit_line = " ".join(
+        part for part in (
+            f"Why this matters: {use_story}" if use_story else "",
+            f"Architecture consequence: {architecture_consequence}" if architecture_consequence else "",
+        ) if part
     )
     risk_line = f"Risks to watch: {_periodize(_risk_phrase(risk_posture))}"
 
     return [
-        _normalize_sentence(completed_line),
-        _normalize_sentence(current_execution_line),
-        _normalize_sentence(next_line),
-        _normalize_sentence(why_benefit_line),
-        _normalize_sentence(risk_line),
+        _normalize_sentence(line) for line in (
+            completed_line, current_execution_line, next_line, why_benefit_line, risk_line,
+        ) if line
     ]
 
 
@@ -327,9 +326,8 @@ def _build_outcome_digest_global(
     focused_primary = focused[0] if focused else {}
     primary_why_context = _ws_why_context(focused_primary if isinstance(focused_primary, Mapping) else {})
     primary_purpose = primary_why_context.get("purpose", "")
-    primary_benefit = primary_why_context.get("benefit", "")
     primary_use_story = primary_why_context.get("use_story", "") or primary_purpose
-    primary_architecture_consequence = primary_why_context.get("architecture_consequence", "") or primary_benefit
+    primary_architecture_consequence = primary_why_context.get("architecture_consequence", "")
     primary_label = _ws_label(focused_primary) if focused_primary else ""
     primary_status = str(focused_primary.get("status", "")).strip() if isinstance(focused_primary, Mapping) else "unknown"
     eta_days, eta_source = _estimate_remaining_days(focused_primary) if focused_primary else (0, "unavailable")
@@ -440,19 +438,23 @@ def _build_outcome_digest_global(
         f"{highlight_clause}"
         f"Timeline: {_timeline_clause(eta_days=eta_days, eta_source=eta_source, status=primary_status, has_execution_signal=has_execution_signal)}; "
         f"{focus_clause}."
-    ) if focused_primary else "Current execution: No active workstreams."
+    ) if focused_primary else ""
     why_focus = _narrative_excerpt(
-        primary_use_story or "focused execution remains prerequisite for dependent follow-on workstreams.",
+        primary_use_story,
         max_sentences=1,
         max_chars=280,
     )
     impact_focus = _narrative_excerpt(
-        primary_architecture_consequence
-        or "gives operators a clearer contract and lower coordination risk across dependent work.",
+        primary_architecture_consequence,
         max_sentences=1,
         max_chars=280,
     )
-    why_benefit_line = f"Why this matters: {why_focus} Architecture consequence: {impact_focus}" if focused_primary else ""
+    why_benefit_line = " ".join(
+        part for part in (
+            f"Why this matters: {why_focus}" if why_focus else "",
+            f"Architecture consequence: {impact_focus}" if impact_focus else "",
+        ) if part
+    ) if focused_primary else ""
 
     action_tokens: list[str] = []
     for item in next_actions:

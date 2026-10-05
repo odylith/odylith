@@ -1,5 +1,41 @@
 Status: In progress
 
+## Current v53 proof and presentation checkpoint (2026-10-05)
+
+At `23881abd0e8bd15ddc64fb869b581060d50c3302`, fixed Research H0/H1
+source-first review cleared `13/18` forward and `75/108` reverse units; fixed
+Agriculture H0/H1 cleared `26/31` forward units. Separate actual terminal
+continuations cleared reject, copied-old refusal, H1 `CLOSED`, sealed readback,
+and same-hash idempotence in `20.785s` (Research) and `22.855s` (Agriculture),
+with zero observed terminal model/provider/projection entries and one canonical
+opener for confirmation and repeat. This remains bounded evidence, never final
+release, aggregate, browser, protected-holdout, migration, or whole-journey
+timing proof.
+
+The narrow source change is complete: `design.project_summary` is canonical in
+the existing v54/format 23 candidate pass, v53 pairs remain passive history, and
+canonical custody retires the old `fbbb` execution seals. Five captured UX defects
+now use direct narrative. Registry search precedes optional Activity and coverage
+without hiding its actual unmapped warning; Radar puts human status before optional
+assessment and dates while retaining exact fields; Atlas puts descriptions before
+optional reading help; native keyboard helpers open ancestor details for original
+route/ID recovery. Exact warnings, authority, evidence, commands, and timestamps
+remain available.
+
+The 22 human-maintained UI owners/templates change `+539/-557` lines; root unit
+proof passes `385` checks. Final r6 UI44 passes `44/44` states with zero issues
+and `119` screenshots in `41.827595s`, source pins unchanged, plus four actual
+Atlas-guide keyboard controls (SHA-256 `d77f3c65653b0626d9abf3ed445aea401298ab0a875c41283de6b9a2da969eb6`).
+Preserve the original two-failure Radar lane as history. Existing CLI recovery
+backed up eight outputs, restored reviewed state `e7b9823c1deefee325239f6e9a31157a7c89a3f35a699276e7727ff7ffd0a9a2`,
+and passed forced Radar/Atlas refresh in `10s`: `47/47` Atlas records fresh,
+zero stale, Radar pass, and no runtime fallback. Bundle mirrors are regenerable
+outputs of unchanged renderers, not unique authored sources; 660 authoring pins
+are unchanged. Current published-root Radar proof passes the original two tests
+in `2.34s` with the same default-closed/native Enter/exact field/route-ID/geometry
+assertions. B-145 installed upgrade, fresh v33 build/install semantic evidence,
+Public40, migration, holdout, and release gates remain required before any closure claim.
+
 ## Current passive compatibility checkpoint (2026-10-05)
 
 V53 first-run closure is committed at `6d65bb271`; its 435 checks, v31 build
@@ -16162,3 +16198,11 @@ Current proposal/confirmation/recovery operations and versioned semantic/timing 
   campaign from case one. Only a 100% public pass plus retained-output semantic
   review may unlock exactly one newly blind holdout; completion remains
   unclaimed until that holdout passes.
+
+## Source checkpoint and authored history completion (2026-10-05)
+
+Saving this UX correction exposed two bounded completion defects: the commit-ready checker treated the active publication carrier as release source, and selective sync had no owner for an existing Radar narrative update. The fixes add 38 and 33 lines to their existing owners without new modules. Maintainer source checkpoints require a valid whole publication and an exact staged logical shell, including Git executable mode; consumer and pinned-runtime checks stay strict. Radar narrative admission requires unchanged metadata, one exact published index registration, and valid required content.
+
+Root checks pass 35 checkpoint tests in 2.39s and 75 authored-admission tests in 5.13s. Independent reviews are clear: `/private/tmp/odylith-maintainer-logical-shell-checkpoint-independent-review-20261005.json` (SHA-256 `009ede75f764c9fe5358c7107b6453a18f57b926a0c5c5e81edb92cbebae3020`) and `/private/tmp/odylith-radar-authored-sync-admission-independent-review-20261005.json` (SHA-256 `111a65f89f7b0c62503e6e1c6f7182da0fa9fceb924319dd3e6e1c4a1c89d27c`). Actual four-record selective sync then passes in 25.3s without runtime fallback. Five affected published navigation, warning, and source-alignment tests pass in 10.74s after retaining exact identity assertions for collapsed fields. Original refused operations and the earlier failed publication remain recorded in `/private/tmp/odylith-ux-publication-recovery-20261005`. These checks do not qualify the installed release or Greenfield semantics.
+
+CB-359 records the next actual completion failure: Compass rendered the new event but refused its changed runtime code identity. Exact reviewed restoration and the existing abandonment path now support an unpublished rendering phase with no successor. The original receipt was archived unchanged, the old event was not replayed, and full working-generation equality passed. The existing continuation owner has no net line growth; it excludes only exact `.DS_Store` metadata from future code identities. Root proof passes 139 tests in 10.08s and independent review is clear (SHA-256 `11e8b6185c99918d1f9d78638f7d9e5aa679057a68a2cfeb509ba53d2a47ac8e`). Finder metadata is not certified as the original delta's sole cause. Preserve the original refusal and abandonment separately from the next new execution event. Fresh installed release and semantic gates remain open.

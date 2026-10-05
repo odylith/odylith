@@ -260,7 +260,7 @@ def _default_cards() -> tuple[AgentCheatsheetCard, ...]:
             card_id="narrow-to-slice",
             category="Start",
             title="Open a known component or workstream",
-            summary="Use this when you already know the name, like example-component or workstream B-025, and want the files, plans, bugs, and diagrams tied to it.",
+            summary="Use this when you already know a component or workstream and want its files, plans, bugs, and diagrams.",
             prompt="Show me the files and records for example-component.",
             command="odylith context --repo-root . example-component",
             tags=("context", "component", "workstream", "scope"),
@@ -603,7 +603,7 @@ def build_agent_cheatsheet_state(payload: Mapping[str, Any]) -> AgentCheatsheetS
         title=str(raw_state.get("title", "")).strip() or "Odylith Dashboard Cheatsheet",
         note=(
             str(raw_state.get("note", "")).strip()
-            or "Release planning has two steps: create the target release, then assign workstreams to it. Program/wave planning picks execution order under one umbrella, like `B-021 -> W1, W2, W3`. A workstream can belong to a release and a program wave at the same time. Replace the names and ids; when a prompt names a component like example-component or a workstream id like B-025, Odylith scopes to the tied files and governed records."
+            or "Release planning creates a target release before workstreams are assigned. Program and wave planning sets execution order under one umbrella. Examples below use placeholder names and IDs; replace them with records from this repository."
         ),
         search_placeholder=(
             str(raw_state.get("search_placeholder", "")).strip()
@@ -675,10 +675,10 @@ def render_agent_cheatsheet_html(payload: Mapping[str, Any]) -> str:
                 "</div>"
                 f'<h3 class="cheatsheet-card-title">{html.escape(card.title)}</h3>'
                 f'<p class="cheatsheet-card-summary">{html.escape(card.summary)}</p>'
-                '<section class="cheatsheet-command-section">'
+                '<details class="cheatsheet-command-section">'
+                '<summary class="cheatsheet-command-label">Examples</summary>'
                 '<p class="cheatsheet-command-label">Example prompt</p>'
                 f'<pre class="cheatsheet-command-block"><code>{html.escape(card.agent_prompt)}</code></pre>'
-                "</section>"
                 '<section class="cheatsheet-command-section">'
                 f'<p class="cheatsheet-command-label">{html.escape(card.secondary_label)}</p>'
                 f'<pre class="cheatsheet-command-block cheatsheet-command-block-cli"><code>{html.escape(card.cli_command)}</code></pre>'
@@ -691,6 +691,7 @@ def render_agent_cheatsheet_html(payload: Mapping[str, Any]) -> str:
                 f'data-cheatsheet-copy-button="true" data-copy-text="{html.escape(card.cli_command, quote=True)}" '
                 f'data-copy-success="{html.escape(f"{card.secondary_label} copied.", quote=True)}">{html.escape(_secondary_copy_label(card.secondary_label))}</button>'
                 "</div>"
+                "</details>"
                 "</article>"
             )
         )

@@ -67,11 +67,32 @@ def test_initial_publication_has_no_external_status_dependencies(tmp_path, monke
                     assert not any("odylith-context-engine-state.v1.js" in url for url in requests)
                     assert not any("odylith-version-state.v1.js" in url for url in requests)
                     assert page.locator(".toolbar-version").inner_text() == "v1.2.3"
-                    assert "Status captured" in page.locator(".shell-snapshot-note").inner_text()
+                    snapshot_note = page.locator(".shell-snapshot-note")
+                    assert snapshot_note.inner_text() == "Snapshot details"
+                    captured_status = snapshot_note.locator("p").text_content()
+                    assert "Status captured" in captured_status
+                    assert not snapshot_note.locator("p").is_visible()
+                    snapshot_note.locator("summary").focus()
+                    snapshot_note.locator("summary").press("Enter")
+                    assert captured_status in snapshot_note.inner_text()
+                    snapshot_note.locator("summary").press("Enter")
+                    assert not snapshot_note.locator("p").is_visible()
                     assert not page.locator("body").evaluate("node => node.scrollWidth > innerWidth + 1")
                     assert page.locator("#shellRuntimeStatus").is_visible() == (status == "failed")
                     if status == "failed":
-                        assert page.locator("#shellRuntimeStatusTitle").inner_text() == "Showing prior Compass snapshot"
+                        assert page.locator("#shellRuntimeStatusTitle").inner_text() == "Showing the previous Compass snapshot"
+                        details = page.locator("#shellRuntimeStatusDetails")
+                        assert details.get_attribute("open") is None
+                        assert not page.locator("#shellRuntimeStatusMeta").is_visible()
+                        assert "2026-09-09T18:00:00Z" not in page.locator("#shellRuntimeStatus").inner_text()
+                        details.locator("summary").focus()
+                        page.keyboard.press("Enter")
+                        assert page.locator("#shellRuntimeStatusMeta").is_visible()
+                        assert "Snapshot: 2026-09-09T18:00:00Z" in details.inner_text()
+                        assert "Attempted: 2026-09-09T18:01:00Z" in details.inner_text()
+                        assert "odylith dashboard refresh --repo-root . --surfaces compass" in details.inner_text()
+                        details.locator("summary").focus()
+                        page.keyboard.press("Enter")
                     page.locator("#welcomeDismiss").click(timeout=2000)
                     page.locator("#shellWelcomeState").wait_for(state="hidden")
                     _capture(page, f"snapshot-status-{protocol}-{width}-{status}-initial")

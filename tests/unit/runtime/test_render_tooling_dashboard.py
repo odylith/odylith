@@ -271,6 +271,8 @@ def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path,
     assert "shellRecoveryDock" in html
     assert "shellRuntimeStatus" in html
     assert "shellRuntimeStatusKicker" in html
+    assert "shellRuntimeStatusDetails" in html
+    assert "Technical details" in html
     assert "shellRuntimeStatusReload" in html
     assert "shellRuntimeStatusDismiss" in html
     assert "runtimeStatusReopen" not in html
@@ -307,9 +309,9 @@ def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path,
     assert "Create a target release" in html
     assert "Assign a workstream to a release" in html
     assert "Create programs and waves" in html
-    assert "Release planning has two steps: create the target release" in html
-    assert "Program/wave planning picks execution order under one umbrella" in html
-    assert "A workstream can belong to a release and a program wave at the same time." in html
+    assert "Release planning creates a target release before workstreams are assigned." in html
+    assert "Program and wave planning sets execution order under one umbrella." in html
+    assert "Examples below use placeholder names and IDs; replace them with records from this repository." in html
     assert "Create target release 0.1.15" in html
     assert "odylith release create release-v0-1-15" in html
     assert "Add B-067 to release 0.1.11." in html
@@ -333,8 +335,7 @@ def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path,
     assert "Find the Atlas diagram for workstream B-025." in html
     assert "Open a known component or workstream" in html
     assert "Show me the files and records for example-component." in html
-    assert "component like example-component or a workstream id like B-025" in html
-    assert "Odylith scopes to the tied files and governed records." in html
+    assert "Use this when you already know a component or workstream and want its files, plans, bugs, and diagrams." in html
     assert "Validate plan bindings before closing workstream B-025." in html
     assert "Show the critical risks for workstream B-025." in html
     assert "What should I work on next after workstream B-025?" in html
@@ -666,10 +667,10 @@ def test_render_tooling_dashboard_projects_failed_compass_refresh_into_shell_sta
     payload_js = _load_externalized_payload_js(tmp_path / "odylith" / "tooling-payload.v1.js")
     compass_status = dict(payload_js["surface_runtime_status"]["compass"])
     assert compass_status["tone"] == "warning"
-    assert compass_status["title"] == "Showing prior Compass snapshot"
+    assert compass_status["title"] == "Showing the previous Compass snapshot"
     assert compass_status["body"] == (
-        "Requested Compass refresh failed before a fresh payload was written. "
-        "Showing the prior runtime snapshot from 2026-04-07T17:06:12Z."
+        "Compass did not refresh. You are viewing the previous snapshot; "
+        "refresh Compass when you are ready to update it."
     )
     assert "Snapshot: 2026-04-07T17:06:12Z" in compass_status["meta"]
     assert "Attempted: 2026-04-07T17:17:57Z" in compass_status["meta"]
@@ -797,6 +798,7 @@ def test_render_tooling_dashboard_uses_tab_local_state_for_shell_surface_switche
     assert "const welcomeReopen = document.getElementById(\"welcomeReopen\");" in control_js
     assert "const runtimeStatusReopen = document.getElementById(\"runtimeStatusReopen\");" not in control_js
     assert "const runtimeStatusKicker = document.getElementById(\"shellRuntimeStatusKicker\");" in control_js
+    assert "const runtimeStatusDetails = document.getElementById(\"shellRuntimeStatusDetails\");" in control_js
     assert "const runtimeStatusDismiss = document.getElementById(\"shellRuntimeStatusDismiss\");" in control_js
     assert "const upgradeReopen = document.getElementById(\"upgradeReopen\");" in control_js
     assert "initToolingShellCheatsheetDrawer" in control_js
@@ -863,6 +865,8 @@ def test_render_tooling_dashboard_uses_tab_local_state_for_shell_surface_switche
     assert 'id="upgradeReopen"' in html
     assert 'id="runtimeStatusReopen"' not in html
     assert 'id="shellRuntimeStatusKicker"' in html
+    assert 'id="shellRuntimeStatusDetails"' in html
+    assert '<summary>Technical details</summary>' in html
     assert 'id="shellRuntimeStatusDismiss"' in html
     assert 'id="shellRecoveryDock"' in html
     assert 'id="agentCheatsheetSearch"' in html

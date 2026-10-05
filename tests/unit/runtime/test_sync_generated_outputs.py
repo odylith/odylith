@@ -78,3 +78,133 @@ def test_step_and_batch_callbacks_use_output_owner_directly(tmp_path: Path, monk
 def test_sync_orchestrator_does_not_keep_removed_output_owner_or_layout_alias() -> None:
     assert not hasattr(sync, "_surface_render_outputs")
     assert not hasattr(sync, "greenfield_repository_layout")
+
+
+@pytest.fixture
+def logical_checkpoint_repo(tmp_path: Path, monkeypatch, request):
+    from types import SimpleNamespace
+    from odylith.install import manager
+    from odylith.runtime.domain_intelligence import greenfield_managed_mutation_boundary as boundary
+    from tests.unit.runtime.test_greenfield_baseline_activation import _activate, _complete
+
+    _complete(tmp_path)
+    (tmp_path / "odylith/index.html").chmod(getattr(request, "param", 0o644))
+    (tmp_path / ".gitignore").write_text(".odylith/\n")
+    _checkpoint_git(tmp_path, "init", "--quiet")
+    _checkpoint_git(tmp_path, "add", ".")
+    _checkpoint_git(tmp_path, "-c", "user.name=freedom-research", "-c",
+                    "user.email=freedom@freedompreetham.org", "commit", "--quiet", "-m", "baseline")
+    _activate(tmp_path)
+    before = (tmp_path / "odylith/tooling-shell.html").read_bytes()
+
+    def synthetic_render(_fd):
+        (tmp_path / "odylith/tooling-shell.html").write_bytes(b"<!doctype html><title>Current published shell</title>\n")
+        return 0
+
+    assert boundary.run_with_greenfield_managed_mutation_boundary(
+        repo_root=tmp_path, command_tokens=("dashboard", "refresh"), operation=synthetic_render,
+    ) == 0
+    status = SimpleNamespace(repo_role=manager.PRODUCT_REPO_ROLE,
+                             posture=manager.DETACHED_SOURCE_LOCAL_POSTURE,
+                             runtime_source=manager.SOURCE_CHECKOUT_RUNTIME_SOURCE)
+    monkeypatch.setattr(manager, "version_status", lambda **_kwargs: status)
+    _stage_checkpoint_shell(tmp_path)
+    return tmp_path, status, before
+
+
+def _checkpoint_git(root: Path, *arguments, data=None):
+    import subprocess
+    return subprocess.run(["git", "-C", str(root), *arguments], input=data,
+                          capture_output=True, check=True).stdout
+
+
+def _stage_checkpoint_shell(root: Path, *, data=None, mode="100644"):
+    if data is None:
+        data = (root / "odylith/tooling-shell.html").read_bytes()
+    blob = _checkpoint_git(root, "hash-object", "-w", "--stdin", data=data).decode().strip()
+    _checkpoint_git(root, "update-index", "--cacheinfo", mode, blob, "odylith/index.html")
+
+
+@pytest.mark.parametrize("logical_checkpoint_repo", (0o644, 0o600), indirect=True)
+def test_exact_published_logical_shell_checkpoint_preserves_carrier_and_generation(logical_checkpoint_repo):
+    from odylith.runtime.domain_intelligence import greenfield_generation_state as publication
+    from odylith.runtime.domain_intelligence import greenfield_generation_store as generations
+
+    root, _, _ = logical_checkpoint_repo
+    carrier = (root / "odylith/index.html").read_bytes()
+    active = publication.active_generation_identity(root)
+    pinned = generations.require_greenfield_working_generation(root)
+    assert "odylith/index.html" in outputs.git_dirty_generated_outputs(repo_root=root)
+    assert "?? odylith/tooling-shell.html" in outputs.git_dirty_generated_outputs(repo_root=root)
+    assert outputs.git_commit_ready_generated_outputs(repo_root=root) == ""
+    assert _checkpoint_git(root, "show", ":odylith/index.html") == (pinned.repository_root / "odylith/index.html").read_bytes()
+    assert (root / "odylith/index.html").read_bytes() == carrier
+    assert (root / "odylith/tooling-shell.html").stat().st_mode & 0o777 == (pinned.repository_root / "odylith/index.html").stat().st_mode & 0o777
+    assert publication.active_generation_identity(root) == active
+    assert generations.require_greenfield_working_generation(root) == pinned
+
+
+@pytest.mark.parametrize("defect", ("wrong_bytes", "old_shell", "carrier", "wrong_index_mode", "wrong_working_mode", "stale_publication", "corrupt_generation"))
+def test_logical_checkpoint_rejects_wrong_seal_or_staged_identity(logical_checkpoint_repo, defect):
+    from odylith.runtime.domain_intelligence import greenfield_generation_state as publication
+    from odylith.runtime.domain_intelligence import greenfield_generation_store as generations
+
+    root, _, old = logical_checkpoint_repo
+    if defect == "wrong_bytes":
+        _stage_checkpoint_shell(root, data=b"different shell")
+    elif defect == "old_shell":
+        _stage_checkpoint_shell(root, data=old)
+    elif defect == "carrier":
+        _checkpoint_git(root, "add", "odylith/index.html")
+    elif defect == "wrong_index_mode":
+        _stage_checkpoint_shell(root, mode="100755")
+    elif defect == "wrong_working_mode":
+        (root / "odylith/tooling-shell.html").chmod(0o755)
+    elif defect == "stale_publication":
+        (root / "odylith/index.html").write_text(publication.compile_greenfield_publication_entry(
+            write_set_hash="a" * 64, generation_manifest_sha256="b" * 64,
+        ))
+    else:
+        pinned = generations.pin_active_greenfield_generation(root)
+        (pinned.repository_root / "odylith/index.html").write_bytes(b"corrupt immutable shell")
+    assert outputs.git_commit_ready_generated_outputs(repo_root=root)
+
+
+@pytest.mark.parametrize("field,value", (("repo_role", "consumer_repo"), ("posture", "pinned_release"), ("runtime_source", "pinned_runtime")))
+def test_logical_export_does_not_change_consumer_or_pinned_checks(logical_checkpoint_repo, field, value):
+    root, status, _ = logical_checkpoint_repo
+    setattr(status, field, value)
+    result = outputs.git_commit_ready_generated_outputs(repo_root=root)
+    assert "odylith/index.html" in result
+    assert "?? odylith/tooling-shell.html" in result
+
+
+def test_unrelated_generated_untracked_file_still_refuses_checkpoint(logical_checkpoint_repo):
+    from odylith.runtime.domain_intelligence import greenfield_managed_mutation_boundary as boundary
+    root, _, _ = logical_checkpoint_repo
+
+    def synthetic_render(_fd):
+        (root / "odylith/registry/registry-payload.v1.js").write_bytes(b"window.registry = {};\n")
+        return 0
+
+    assert boundary.run_with_greenfield_managed_mutation_boundary(
+        repo_root=root, command_tokens=("registry", "refresh"), operation=synthetic_render,
+    ) == 0
+    assert outputs.git_commit_ready_generated_outputs(repo_root=root) == "?? odylith/registry/registry-payload.v1.js"
+
+
+def test_publication_changed_during_staged_read_refuses_logical_export(logical_checkpoint_repo, monkeypatch):
+    from odylith.runtime.domain_intelligence import greenfield_generation_state as publication
+    root, _, _ = logical_checkpoint_repo
+    real_run = outputs.subprocess.run
+
+    def changed_during_read(arguments, **kwargs):
+        result = real_run(arguments, **kwargs)
+        if "show" in arguments:
+            (root / "odylith/index.html").write_text(publication.compile_greenfield_publication_entry(
+                write_set_hash="c" * 64, generation_manifest_sha256="d" * 64,
+            ))
+        return result
+
+    monkeypatch.setattr(outputs.subprocess, "run", changed_during_read)
+    assert outputs.git_commit_ready_generated_outputs(repo_root=root)

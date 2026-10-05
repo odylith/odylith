@@ -127,9 +127,7 @@ def _write_project_page(page_path: Path, payload: dict[str, object]) -> Path:
 
 
 def _degraded_project_payload() -> dict[str, object]:
-    payload = project_intelligence_presenter._fallback_payload()
-    payload.update(
-        {
+    return {
             "mode": "operating",
             "title": "Cross-Region Permit Review and Recovery Workspace",
             "intro": (
@@ -137,6 +135,25 @@ def _degraded_project_payload() -> dict[str, object]:
                 "through the final clause on both compact and desktop screens."
             ),
             "sections": ["scenario", "trust", "state", "next"],
+            "focus_label": "Current focus",
+            "focus": "Recover the unavailable permit source.",
+            "open_label": "Open risk",
+            "open": ["The unavailable source cannot establish a replacement decision."],
+            "trust_title": "Evidence boundary",
+            "trust_note": "Available evidence remains valid; replacement state is unverified.",
+            "delta_label": "Changes",
+            "delta": ["One permit source became unavailable."],
+            "contradictions_label": "Conflicts",
+            "contradictions": [],
+            "degraded_label": "Unavailable evidence",
+            "degraded_state": ["The latest permit source could not be loaded."],
+            "work_state_kicker": "Current status",
+            "state_title": "Permit review",
+            "state_note": "Keep the last verified decision until its replacement is supported.",
+            "current_state_label": "Current state",
+            "desired_state_label": "Recovery outcome",
+            "next_title": "Next action",
+            "next_note": "Identify the unavailable source before starting recovery.",
             "answers": [
                 (
                     "What changed?",
@@ -189,9 +206,7 @@ def _degraded_project_payload() -> dict[str, object]:
                     "stop": "Stop before changing product or governance truth.",
                 }
             ],
-        }
-    )
-    return payload
+    }
 
 
 def _clipped_project_text(page) -> list[str]:  # noqa: ANN001
@@ -219,13 +234,30 @@ def _clipped_project_text(page) -> list[str]:  # noqa: ANN001
 
 def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # noqa: ANN001
     page.locator(".project-product-story").wait_for(timeout=15000)
-    page.locator(".project-host-handoff").wait_for(timeout=15000)
+    handoff = page.locator(".project-host-handoff")
+    handoff.wait_for(timeout=15000)
+    assert handoff.evaluate("node => node.tagName") == "DETAILS"
+    assert handoff.get_attribute("open") is None
+    assert handoff.locator(":scope > summary").inner_text() == "Implementation steps"
+    assert not handoff.locator(".project-host-prompt-grid").is_visible()
+    assert handoff.locator(":scope > ol").count() == 0
+    compact_text = page.locator(".project-surface").inner_text()
+    assert "Start source creation" in compact_text
+    assert "Choose implementation language" not in compact_text
+    handoff.locator(":scope > summary").focus()
+    page.keyboard.press("Enter")
+    assert handoff.get_attribute("open") is not None
+    assert handoff.locator(".project-host-prompt-grid").is_visible()
     surface_text = page.locator(".project-surface").inner_text()
     assert "Project overview" in surface_text
-    assert "Accepted evidence excerpt:" in surface_text
+    assert "Source evidence" in surface_text
+    assert "Accepted evidence excerpt:" not in surface_text
+    evidence = page.locator(".project-evidence-excerpt")
+    assert evidence.locator("summary").inner_text() == "Source evidence"
+    assert evidence.get_attribute("open") is None
+    assert not evidence.locator("p").is_visible()
     assert "Risks" in surface_text
-    assert "Proposed risk posture from the model-authored design." in surface_text
-    assert "Proposed risk posture: no material risk identified" in surface_text
+    assert "No material risk identified" in surface_text
     assert "This structural fixture carries no product-domain risk claim." in surface_text
     assert "Project not defined yet" not in surface_text
     assert "Current orienting work" not in surface_text
@@ -250,25 +282,29 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
     assert page.locator(".project-scenario").count() == 0
     assert page.locator(".project-risks").count() == 1
     assert page.locator(".project-risk-card").count() == 1
-    signal_grid = page.locator(".project-signal-grid")
-    assert signal_grid.count() == 1
-    assert signal_grid.locator("xpath=../div[contains(@class, 'project-panel-head')]/h2").inner_text() == (
-        "What can this Project view claim?"
+    assert page.locator(".project-hero-rail").count() == 0
+    assert page.locator(".project-hero .project-chips").count() == 0
+    assert page.locator(".project-hero .project-intro").inner_text() == (
+        "This structural fixture supports test authors checking exact source and design custody."
     )
-    assert signal_grid.locator("article h3").all_inner_texts() == [
-        "What this proposal adds",
-        "What is not yet evidenced",
-        "What remains unavailable",
-    ]
-    assert signal_grid.locator("article li").all_inner_texts() == [
-        "This projection begins from the model-authored product intent.",
-        "No source-backed implementation state exists yet.",
-        "Implementation claims remain unavailable until source and validation evidence exist.",
-    ]
-    signal_box = signal_grid.bounding_box()
+    assert "Accepted evidence excerpt:" not in page.locator(".project-hero").inner_text()
+    assert page.locator(".project-hero-main").evaluate(
+        "node => getComputedStyle(node).gridTemplateColumns.split(' ').length"
+    ) == 1
+    assert page.locator(".project-hero .project-status").inner_text() == (
+        "Project direction accepted. Implementation has not been verified."
+    )
+    assert page.locator(".project-signal-grid").count() == 0
+    trust = page.locator(".project-trust")
+    assert trust.locator("h2").inner_text() == "Evidence boundary"
+    assert trust.locator(".project-panel-head p").inner_text() == (
+        "This page records project requirements and proposed design. "
+        "Working behavior must be established through source and validation evidence."
+    )
     handoff_box = page.locator(".project-host-handoff").bounding_box()
-    assert signal_box is not None and handoff_box is not None
-    assert signal_box["y"] < handoff_box["y"]
+    overview_box = page.locator(".project-product-story").bounding_box()
+    assert handoff_box is not None and overview_box is not None
+    assert handoff_box["y"] < overview_box["y"]
     assert page.locator(".project-answer-strip").count() == 0
     assert page.locator('.project-job-card a[href*="tab=radar"][href*="workstream="]').count() >= 1
     assert page.locator(".project-job-card em").count() == 0
@@ -292,25 +328,11 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
         "paddingTop": "1px",
         "paddingRight": "8px",
     }
-    label_contract = page.locator(".project-job-card .project-label-chip").first.evaluate(
-        """(node) => {
-            const style = window.getComputedStyle(node);
-            return {
-              borderRadius: style.borderRadius,
-              fontSize: style.fontSize,
-              fontWeight: style.fontWeight,
-              paddingTop: style.paddingTop,
-              paddingRight: style.paddingRight,
-            };
-        }"""
+    assert page.locator(".project-job-card .project-label-chip").count() == 0
+    assert page.locator(".project-actor-card-name").count() >= 1
+    assert page.locator(".project-actor-card-name").evaluate_all(
+        "nodes => nodes.every(node => node.getBoundingClientRect().height < 112)"
     )
-    assert label_contract == {
-        "borderRadius": "4px",
-        "fontSize": "12px",
-        "fontWeight": "700",
-        "paddingTop": "4px",
-        "paddingRight": "10px",
-    }
 
     handoff_layout = page.locator(".project-host-handoff").evaluate(
         """(node) => {
@@ -330,7 +352,7 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
         }"""
     )
     assert handoff_layout["cardCount"] == 5
-    assert handoff_layout["stepCount"] == 5
+    assert handoff_layout["stepCount"] == 0
     assert handoff_layout["codeFontSize"] == "14px"
     assert int(handoff_layout["scrollDelta"]) <= 4
     assert int(handoff_layout["maxCardOverflow"]) <= 4
@@ -399,9 +421,11 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
     if story_layout["pathColumns"] == 2:
         assert story_layout["pathBodyLeft"] > story_layout["pathHeadingRight"]
     assert story_layout["distinctBodyCount"] == 5
-    assert story_layout["focusEventCount"] >= 1
-    assert story_layout["firstPathEventCount"] == story_layout["focusEventCount"]
-    assert story_layout["actorEventCount"] >= 1
+    assert story_layout["focusEventCount"] == 0
+    assert story_layout["firstPathEventCount"] >= 1
+    assert story_layout["actorEventCount"] == 0
+    source_names = page.locator("#payload").evaluate("node => JSON.parse(node.textContent).authored_facts.human_actors")
+    assert page.locator("[data-authored-actor] h3").all_inner_texts() == source_names
     assert story_layout["capabilityCount"] >= 1
     assert story_layout["boundaryGroupCount"] >= 1
     assert story_layout["semanticSlots"] == [
@@ -418,7 +442,7 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
 
     _assert_project_sections_do_not_overflow(
         page,
-        [".project-product-story", ".project-signal-grid", ".project-host-handoff"],
+        [".project-product-story", ".project-trust", ".project-host-handoff"],
     )
 
 
@@ -498,6 +522,12 @@ def test_project_handoff_scope_is_visible_and_copyable_at_both_widths(tmp_path: 
                         with _new_page(context) as (page, observation):
                             response = page.goto(base_url + f"/{name}.html", wait_until="domcontentloaded")
                             assert response is not None and response.ok
+                            handoff_details = page.locator(".project-host-handoff")
+                            assert handoff_details.get_attribute("open") is None
+                            assert not handoff_details.locator(".project-host-prompt-grid").is_visible()
+                            handoff_details.locator(":scope > summary").focus()
+                            page.keyboard.press("Enter")
+                            assert handoff_details.get_attribute("open") is not None
                             prompts = page.locator(".project-host-prompt code")
                             assert prompts.count() == 5
                             expected_block = (
@@ -557,7 +587,7 @@ def test_project_tab_result_first_source_renders_labeled_proposed_order_at_both_
                     with _new_page(context) as (page, observation):
                         response = page.goto(base_url + "/index.html", wait_until="domcontentloaded")
                         assert response is not None and response.ok
-                        for key in ("focus", "first_path"):
+                        for key in ("first_path",):
                             sequence = page.locator(f'[data-authored-fact-list="{key}"]')
                             assert sequence.get_attribute("data-authority-kind") == "provisional_design"
                             items = sequence.locator("[data-authored-fact-item]")
@@ -575,7 +605,7 @@ def test_project_tab_result_first_source_renders_labeled_proposed_order_at_both_
                             assert all(" — " not in text for text in items.all_text_contents())
                             assert items.evaluate_all("nodes => nodes.map(node => node.dataset.eventOrder)") == ["2", "1"]
                         assert page.locator("[data-proposed-first-run-label]").all_text_contents() == [
-                            "Proposed first run:", "Proposed first run:",
+                            "Proposed first run:",
                         ]
                         card = page.locator('[data-semantic-slot="first_path"]')
                         assert card.locator(":scope > *").count() == 2
@@ -614,6 +644,7 @@ def test_project_tab_blank_and_degraded_states_wrap_at_desktop_and_mobile_widths
     assert blank["mode"] == "blank"
     _write_project_page(tmp_path / "blank.html", blank)
     _write_project_page(tmp_path / "degraded.html", _degraded_project_payload())
+    _write_project_page(tmp_path / "unavailable.html", project_intelligence_presenter._fallback_payload())
 
     cases = (
         (
@@ -625,6 +656,11 @@ def test_project_tab_blank_and_degraded_states_wrap_at_desktop_and_mobile_widths
             "degraded.html",
             [".project-scenario", ".project-answer-strip", ".project-state-grid", ".project-host-handoff"],
             "Keep the last verified permit decision visible until the unavailable source is restored.",
+        ),
+        (
+            "unavailable.html",
+            [".project-empty-panel", ".project-empty-action"],
+            "odylith dashboard refresh --repo-root . --surfaces tooling_shell",
         ),
     )
     viewports = ({"width": 1440, "height": 1100}, {"width": 430, "height": 932})
@@ -640,8 +676,92 @@ def test_project_tab_blank_and_degraded_states_wrap_at_desktop_and_mobile_widths
                             assert response is not None and response.ok
                             assert terminal_text in page.locator(".project-surface").inner_text()
                             assert "['The" not in page.locator(".project-surface").inner_text()
+                            if filename == "unavailable.html":
+                                assert "The Project view could not be loaded." in page.locator(".project-surface").inner_text()
+                                assert page.locator(".project-empty-action").count() == 1
+                                assert page.locator(".project-empty-preview, .project-signal-grid, .project-proof-grid").count() == 0
                             _assert_project_sections_do_not_overflow(page, selectors)
                             page.screenshot(path=str(tmp_path / f"{Path(filename).stem}-{viewport['width']}.png"), full_page=True)
                             _assert_clean_page(page, observation)
                     finally:
                         context.close()
+
+
+def test_project_summary_and_structured_risks_are_readable_at_both_widths(tmp_path: Path) -> None:
+    proposal = _result_first_proposal()
+    design = proposal["intent"]["authored_semantics"]["provisional_design"]
+    summary = "A receipt workspace helps reviewers preserve evidence through a complete custody path."
+    design["project_summary"] = summary
+    component = design["components"][0]
+    event_order = component["supported_event_orders"][0]
+    workstream = next(row for row in design["workstreams"]
+                     if component["key"] in row["component_keys"]
+                     and event_order in row["verification_event_orders"])
+    risk = {
+        "key": "retention-boundary", "category": "data_retention",
+        "statement": "Evidence could outlive its stated review period.",
+        "trigger": "The review period ends before deletion succeeds.",
+        "mitigation": "Retain the pending deletion state until deletion is verified.",
+        "verification": "An unavailable archive must not report a completed deletion.",
+        "scope_paths": [{"event_order": event_order, "component_key": component["key"],
+                         "workstream_key": workstream["key"]}],
+    }
+    design["risk_posture"] = {
+        "status": "material_risks_identified", "rationale": "The review period constrains evidence custody.",
+        "items": [risk],
+    }
+    payload = preview_project_dashboard_payload(
+        root=tmp_path, proposal=proposal, accepted_project_preview=_accepted_preview(proposal=proposal, root=tmp_path),
+        source_launch_context=_source_launch_context(proposal=proposal, root=tmp_path),
+    )
+    _write_project_page(tmp_path / "structured-risks.html", payload)
+    with _static_server(root=tmp_path) as base_url:
+        for _pw, browser in _browser():
+            for viewport in ({"width": 1440, "height": 1100}, {"width": 430, "height": 932}):
+                context = browser.new_context(viewport=viewport)
+                try:
+                    with _new_page(context) as (page, observation):
+                        response = page.goto(base_url + "/structured-risks.html", wait_until="domcontentloaded")
+                        assert response is not None and response.ok
+                        evidence = page.locator(".project-evidence-excerpt")
+                        assert evidence.get_attribute("open") is None
+                        assert not evidence.locator("p").is_visible()
+                        evidence.locator("summary").focus()
+                        page.keyboard.press("Enter")
+                        assert evidence.locator("p").is_visible()
+                        assert evidence.locator("p").inner_text() == (
+                            f"Accepted evidence excerpt: “{payload['authored_facts']['product_story']}”"
+                        )
+                        evidence.locator("summary").focus()
+                        page.keyboard.press("Enter")
+                        assert not evidence.locator("p").is_visible()
+                        header = page.locator(".project-hero")
+                        assert header.locator(".project-intro").inner_text() == summary
+                        assert "Accepted evidence excerpt:" not in header.inner_text()
+                        assert header.locator(".project-chips, .project-hero-rail").count() == 0
+                        card = page.locator('[data-risk-key="retention-boundary"]')
+                        assert card.locator("h3").inner_text() == "Data retention risk"
+                        assert card.locator("[data-risk-statement]").inner_text() == risk["statement"]
+                        assert card.locator("[data-risk-mitigation]").inner_text() == risk["mitigation"]
+                        details = card.locator("details")
+                        assert details.get_attribute("open") is None
+                        assert not details.locator("dl").is_visible()
+                        details.locator("summary").focus()
+                        page.keyboard.press("Enter")
+                        assert details.locator("dl").is_visible()
+                        values = details.locator("dd").all_inner_texts()
+                        assert values[0] == risk["trigger"]
+                        assert values[1] == risk["verification"]
+                        assert values[2] == payload["risk_items"][0]["scope"]
+                        assert values[3] == (f"Source event {event_order} · Component {component['key']} · "
+                                             f"Workstream {workstream['key']}")
+                        details.locator("summary").focus()
+                        page.keyboard.press("Enter")
+                        assert not details.locator("dl").is_visible()
+                        _assert_project_sections_do_not_overflow(page, [".project-hero", ".project-risks", ".project-product-story"])
+                        screenshot = _failure_screenshot_path(f"summary-risks-{viewport['width']}") or tmp_path / f"summary-risks-{viewport['width']}.png"
+                        screenshot.parent.mkdir(parents=True, exist_ok=True)
+                        page.screenshot(path=str(screenshot), full_page=True)
+                        _assert_clean_page(page, observation)
+                finally:
+                    context.close()

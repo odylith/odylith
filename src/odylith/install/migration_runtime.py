@@ -977,6 +977,14 @@ def apply_release_migrations(*, plan: MigrationPlan, runtime_root: str | Path | 
             )
             continue
         if decision.migration_id == ATLAS_SURFACE_MIGRATION_ID:
+            if runtime is not None and not Path(__file__).resolve().is_relative_to(runtime):
+                results.append(MigrationResult(
+                    migration_id=decision.migration_id, state=STATE_SELECTED,
+                    reason="Atlas rendering awaits the activated target runtime's dashboard completion",
+                    written_paths=(), removed_paths=(), ledger_path=decision.ledger_path,
+                    verification_result={"status": "pending", "mode": "target_runtime_completion"},
+                ))
+                continue
             atlas_result = migrate_atlas_surface_polish(
                 repo_root=plan.repo_root,
                 previous_version=plan.previous_version,

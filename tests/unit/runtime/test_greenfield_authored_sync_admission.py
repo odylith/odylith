@@ -554,3 +554,128 @@ def test_manifest_identity_must_match_the_pinned_generation_before_dispatch(acti
         **identity(repo_root), "generation_manifest_sha256": "a" * 64,
     })
     _assert_refused_without_dispatch(root, _tokens(AUTHORED))
+
+
+RADAR = "odylith/radar/source/ideas/2026-03/2026-03-30-seed-workstream.md"
+RADAR_INDEX = "odylith/radar/source/INDEX.md"
+RADAR_ORIGINAL_PROBLEM = "Seed workstream problem detail is grounded enough for validation."
+RADAR_NEW_PROBLEM = "The reproduced dashboard admission failure blocks a registered workstream narrative update."
+
+
+def _published_radar(root, *, registration="valid"):
+    from tests.unit.runtime.test_backlog_authoring import _seed_backlog_repo
+
+    _complete(root)
+    index = _seed_backlog_repo(root)
+    text = index.read_text(encoding="utf-8")
+    row = next(line for line in text.splitlines(keepends=True) if line.startswith("| 1 | B-101 |"))
+    if registration == "absent":
+        text = text.replace(row, "")
+    elif registration == "duplicate":
+        text = text.replace(row, row + row)
+    elif registration == "wrong-link":
+        text = text.replace(f"[seed]({RADAR})", "[seed](odylith/radar/source/ideas/another.md)")
+    elif registration == "wrong-title":
+        text = text.replace("| Seed Workstream |", "| Different Workstream |")
+    index.write_text(text, encoding="utf-8")
+    for token in (RADAR, RADAR_INDEX):
+        (root / token).chmod(0o644)
+    _activate(root)
+    generations.require_greenfield_working_generation(root)
+    return root
+
+
+def _edit_radar(root):
+    target = root / RADAR
+    before = target.read_text(encoding="utf-8")
+    edited = before.replace(RADAR_ORIGINAL_PROBLEM, RADAR_NEW_PROBLEM)
+    assert edited != before
+    target.write_text(edited, encoding="utf-8")
+    return before, edited
+
+
+def test_registered_radar_narrative_publishes_exact_bytes_under_existing_boundary(tmp_path):
+    root = _published_radar(tmp_path)
+    previous = generations.pin_active_greenfield_generation(root)
+    before_index = (root / RADAR_INDEX).read_bytes()
+    entry = (root / "odylith/index.html").read_bytes()
+    before, edited = _edit_radar(root)
+    called = []
+
+    def synthetic_radar_refresh(descriptor):
+        assert isinstance(descriptor, int)
+        with pytest.raises(locks.GreenfieldRepositoryBusyError):
+            with locks.greenfield_repository_lock(root):
+                pytest.fail("Radar admission lost the publication lease")
+        assert (root / "odylith/index.html").read_bytes() == entry
+        assert generations.pin_active_greenfield_generation(root).write_set_hash == previous.write_set_hash
+        assert (previous.repository_root / RADAR).read_bytes() == before.encode()
+        (root / "odylith/radar/radar.html").write_text("<!doctype html><title>Updated Radar</title>\n")
+        called.append(True)
+        return 0
+
+    assert _run(root, _tokens(RADAR), synthetic_radar_refresh) == 0
+    assert called == [True]
+    current = generations.require_greenfield_working_generation(root)
+    assert current.write_set_hash != previous.write_set_hash
+    assert (current.repository_root / RADAR).read_bytes() == edited.encode()
+    assert stat.S_IMODE((current.repository_root / RADAR).stat().st_mode) == 0o644
+    assert (previous.repository_root / RADAR).read_bytes() == before.encode()
+    assert (previous.repository_root / RADAR_INDEX).read_bytes() == before_index
+    assert (current.repository_root / RADAR_INDEX).read_bytes() == before_index
+
+
+@pytest.mark.parametrize("registration", ("absent", "duplicate", "wrong-link", "wrong-title"))
+def test_radar_requires_one_unchanged_valid_published_registration(tmp_path, registration):
+    root = _published_radar(tmp_path, registration=registration)
+    _edit_radar(root)
+    _assert_refused_without_dispatch(root, _tokens(RADAR))
+
+
+@pytest.mark.parametrize(("before", "after"), (
+    ("idea_id: B-101", "idea_id: B-102"),
+    ("title: Seed Workstream", "title: Updated Workstream"),
+    ("status: queued", "status: implemented"),
+    ("priority: P1", "priority: P0"),
+    ("promoted_to_plan:", "promoted_to_plan: odylith/technical-plans/in-progress/other.md"),
+    ("workstream_children:", "workstream_children: B-102"),
+    ("## Problem", "idea_id: B-102\n\n## Problem"),
+))
+def test_radar_narrative_admission_freezes_all_metadata(tmp_path, before, after):
+    root = _published_radar(tmp_path)
+    _, edited = _edit_radar(root)
+    assert before in edited
+    (root / RADAR).write_text(edited.replace(before, after), encoding="utf-8")
+    _assert_refused_without_dispatch(root, _tokens(RADAR))
+
+
+@pytest.mark.parametrize("defect", ("empty", "placeholder", "title-only", "missing-section"))
+def test_radar_uses_existing_required_and_rich_content_checks(tmp_path, defect):
+    root = _published_radar(tmp_path)
+    _, edited = _edit_radar(root)
+    if defect == "missing-section":
+        edited = edited.replace("## Validation\n", "## Additional notes\n")
+    else:
+        replacement = {"empty": "", "placeholder": "TBD", "title-only": "Seed Workstream"}[defect]
+        edited = edited.replace(RADAR_NEW_PROBLEM, replacement)
+    (root / RADAR).write_text(edited, encoding="utf-8")
+    _assert_refused_without_dispatch(root, _tokens(RADAR))
+
+
+@pytest.mark.parametrize("token", (RADAR_INDEX, "odylith/radar/radar.html"))
+def test_radar_selection_does_not_admit_unrelated_or_generated_drift(tmp_path, token):
+    root = _published_radar(tmp_path)
+    _edit_radar(root)
+    with (root / token).open("a", encoding="utf-8") as handle:
+        handle.write("\nUnselected change.\n")
+    _assert_refused_without_dispatch(root, _tokens(RADAR))
+
+
+def test_failed_radar_operation_preserves_selected_intent_and_old_publication(tmp_path):
+    root = _published_radar(tmp_path)
+    old = publication.read_active_publication(root)
+    before, edited = _edit_radar(root)
+    assert _run(root, _tokens(RADAR), lambda _descriptor: 1) == 1
+    assert publication.read_active_publication(root) == old
+    assert (root / RADAR).read_bytes() == edited.encode()
+    assert (generations.pin_active_greenfield_generation(root).repository_root / RADAR).read_bytes() == before.encode()

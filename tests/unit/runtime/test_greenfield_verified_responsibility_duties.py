@@ -15,7 +15,9 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
     _require_host_candidate_authority_binding, product_create_transaction_from_dict,
     product_create_transaction_to_dict,
 )
-from odylith.runtime.domain_intelligence.greenfield_host_candidate import admit_greenfield_host_candidate
+from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
+    HOST_CANDIDATE_CONTRACT_VERSION, admit_greenfield_host_candidate,
+)
 from odylith.runtime.domain_intelligence.greenfield_host_candidate_materialization import materialize_host_authored_intent
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import prepare_model_authoring_evidence
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
@@ -171,7 +173,7 @@ def test_current_compiled_transaction_round_trips_without_source_reinterpretatio
     loaded = product_create_transaction_from_dict(json.loads(json.dumps(product_create_transaction_to_dict(transaction))))
     assert loaded.transaction_hash == transaction.transaction_hash
     assert loaded.proposal["intent"]["prompt"] == transaction.proposal["intent"]["prompt"]
-    assert loaded.quality_manifest["model_authoring"]["host_candidate"]["contract_version"].endswith(".v52")
+    assert loaded.quality_manifest["model_authoring"]["host_candidate"]["contract_version"] == HOST_CANDIDATE_CONTRACT_VERSION
 
 
 def test_human_only_source_keeps_proposed_components_without_accepted_roles():

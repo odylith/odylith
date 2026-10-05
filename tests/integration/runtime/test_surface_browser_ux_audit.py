@@ -16,6 +16,7 @@ from tests.integration.runtime.surface_browser_test_support import (
     _open_radar_topology_relations,
     _wait_for_compass_ready,
     _wait_for_registry_detail_id,
+    _wait_for_radar_detail_id,
     _wait_for_shell_query_param,
     _wait_for_shell_tab,
     browser_context,
@@ -212,7 +213,7 @@ def test_radar_b048_brutal_topology_and_surface_link_audit(browser_context) -> N
 
         radar = page.frame_locator("#frame-radar")
         radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
-        radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=source_id).wait_for(timeout=15000)
+        _wait_for_radar_detail_id(radar, source_id)
         _open_radar_topology_relations(radar)
 
         relation_ids = radar.locator("#detail").evaluate(
@@ -229,7 +230,7 @@ def test_radar_b048_brutal_topology_and_surface_link_audit(browser_context) -> N
         for target_id in relation_ids:
             response = page.goto(source_url, wait_until="domcontentloaded")
             assert response is not None and response.ok
-            radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=source_id).wait_for(timeout=15000)
+            _wait_for_radar_detail_id(radar, source_id)
             _open_radar_topology_relations(radar)
             radar.locator(f'#detail [data-link-idea="{target_id}"]').first.evaluate("node => node.click()")
             _assert_radar_selection(page, str(target_id))
@@ -237,14 +238,14 @@ def test_radar_b048_brutal_topology_and_surface_link_audit(browser_context) -> N
 
         response = page.goto(source_url, wait_until="domcontentloaded")
         assert response is not None and response.ok
-        radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=source_id).wait_for(timeout=15000)
+        _wait_for_radar_detail_id(radar, source_id)
         _open_radar_topology_relations(radar)
         surface_actions = _frame_anchor_actions(radar, "#detail a.chip-topology-diagram, #detail a.chip-registry-component")
         assert surface_actions, "expected B-048 cross-surface shell links"
         for href in dict.fromkeys(str(action["href"]) for action in surface_actions):
             response = page.goto(source_url, wait_until="domcontentloaded")
             assert response is not None and response.ok
-            radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=source_id).wait_for(timeout=15000)
+            _wait_for_radar_detail_id(radar, source_id)
             _open_radar_topology_relations(radar)
             selector = "a.chip-topology-diagram" if "tab=atlas" in href else "a.chip-registry-component"
             _click_frame_anchor_by_href(radar, "#detail", selector, href)
@@ -288,7 +289,7 @@ def test_radar_default_warning_cards_hide_maintainer_traceability_diagnostics(br
             wait_until="domcontentloaded",
         )
         assert response is not None and response.ok
-        radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=source_id).wait_for(timeout=15000)
+        _wait_for_radar_detail_id(radar, source_id)
 
         warning_text = " ".join(radar.locator("#detail .warning-item").all_inner_texts())
         assert str(diagnostic["message"]) not in warning_text
@@ -516,11 +517,11 @@ def test_casebook_agent_band_links_stay_distinct_and_non_repetitive(browser_cont
             _assert_casebook_selection(page, str(row["bug"]))
             _wait_for_shell_query_param(page, tab="casebook", key="bug", value=str(row["bug"]))
             casebook.locator("#detailPane .detail-title", has_text=str(row["title"])).wait_for(timeout=15000)
-            casebook.locator("#detailPane .section-heading", has_text="Odylith Agent Learnings").wait_for(timeout=15000)
-
             blocks = [block for block in _casebook_agent_link_blocks(casebook) if block.get("title")]
             if not blocks:
+                assert casebook.locator("#detailPane .section-heading", has_text="Lessons and evidence").count() == 0
                 continue
+            casebook.locator("#detailPane .section-heading", has_text="Lessons and evidence").wait_for(timeout=15000)
             inspected_blocks += 1
 
             seen_hrefs: dict[str, str] = {}

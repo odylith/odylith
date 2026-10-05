@@ -132,11 +132,6 @@ def build_authored_greenfield_payload(
         [accepted_evidence_excerpt, first_path, visible_result, proof_boundary, *source_scope]
     )
     unknown = questions
-    contradictions = ["No source-backed implementation state exists yet."]
-    delta = ["This projection begins from the model-authored product intent."]
-    degraded_state = [
-        "Implementation claims remain unavailable until source and validation evidence exist."
-    ]
     sections = ["product_story"]
     if actors:
         sections.append("participants")
@@ -150,16 +145,12 @@ def build_authored_greenfield_payload(
     return {
         "eyebrow": "Project type: greenfield",
         "title": title,
-        "intro": accepted_evidence_excerpt,
-        "chips": [
-            "greenfield",
-            "accepted greenfield project" if accepted_project else "greenfield proposal",
-            "model-authored typed intent",
-        ],
+        "intro": _first_text(provisional_design, "project_summary"),
+        "chips": [],
         "focus_label": "Accepted focus" if accepted_project else "Proposed focus",
         "focus": first_path,
         "open_label": open_label,
-        "open": open_items or ["No authored open question."],
+        "open": open_items,
         "product_story_title": "Project overview",
         "product_story_note": "",
         "product_story": _product_story(
@@ -180,7 +171,7 @@ def build_authored_greenfield_payload(
         ),
         "answers": [],
         "risk_title": "Risks",
-        "risk_note": "Proposed risk posture from the model-authored design.",
+        "risk_note": _first_text(provisional_design["risk_posture"], "rationale"),
         "risk_items": risk_items,
         "scenario": [
             "Proposed first run",
@@ -203,21 +194,21 @@ def build_authored_greenfield_payload(
         "actors": actors,
         "participants": actors,
         "participants_title": "Who participates?",
-        "participants_note": "Source-stated people; only assigned first-path actions are shown.",
+        "participants_note": "",
         "jobs": jobs,
         "jobs_title": f"What is proposed for {release}?",
-        "jobs_note": "Model-authored workstreams allocated to the first release.",
+        "jobs_note": "Work planned for the first release.",
         "current": (
-            "The model-authored product direction is accepted; implementation evidence does not exist yet."
+            "Project direction accepted. Implementation has not been verified."
             if accepted_project
-            else "The model-authored product direction is proposed; implementation evidence does not exist yet."
+            else "Project direction proposed. Awaiting decision. Implementation has not been verified."
         ),
         "desired": visible_result,
         "question": "What should move next?",
         "recommendation": (
-            "Open the first implementation plan from the accepted authored package."
+            "Open the first implementation plan."
             if accepted_project
-            else "Review and either accept or revise the authored package."
+            else "Review and either accept or revise the project proposal."
         ),
         "options": [
             ("A", "Accept proposed path", "Publish the sealed authored transaction."),
@@ -230,7 +221,7 @@ def build_authored_greenfield_payload(
         "host_handoff_note": (
             source_launch["note"]
             if accepted_project
-            else "Use the hash-bound proposal rail to confirm, edit, or reject this authored package."
+            else "Confirm, revise, or reject the project proposal before work begins."
         ),
         "host_handoff_steps": (
             source_launch["steps"]
@@ -268,16 +259,16 @@ def build_authored_greenfield_payload(
         ),
         "artifact_coverage": list(governance_titles),
         "topology_spine": _unique([*internal_systems, *external_systems]),
-        "contradictions": contradictions,
-        "delta": delta,
-        "trust_title": "What can this Project view claim?",
-        "trust_note": "The proposal carries product intent, but no implementation evidence yet.",
+        "contradictions": [],
+        "delta": [],
+        "trust_title": "Evidence boundary",
+        "trust_note": "This page records project requirements and proposed design. Working behavior must be established through source and validation evidence.",
         "delta_label": "What this proposal adds",
         "contradictions_label": "What is not yet evidenced",
         "degraded_label": "What remains unavailable",
         "risk_classes": risk_items,
         "audience_emphasis": list(human_actors),
-        "degraded_state": degraded_state,
+        "degraded_state": [],
         "known": known,
         "unknown": unknown,
         "confidence": "Medium",
@@ -285,12 +276,12 @@ def build_authored_greenfield_payload(
         "sections": sections,
         "work_state_kicker": "Status now",
         "state_title": "Where does this stand?",
-        "state_note": "Model-authored direction is separate from source-backed implementation.",
+        "state_note": "Project direction is separate from verified implementation.",
         "current_state_label": "Current state",
         "desired_state_label": "Desired state",
         "next_title": "Start source creation" if accepted_project else "What should move next?",
         "next_note": (
-            "Start with the first implementation plan from the accepted authored package."
+            "Start with the first implementation plan."
             if accepted_project
             else "No implementation starts until the sealed proposal is accepted."
         ),
@@ -373,6 +364,8 @@ def _product_story(
                     if slot == "owned_capabilities"
                     else "Proposed proof checkpoint"
                     if slot == "proof" and proof_is_provisional
+                    else "Observable result"
+                    if slot == "proof"
                     else label
                 ),
                 "semantic_slot": slot,
@@ -505,7 +498,7 @@ def _job_rows(
     return rows
 
 
-def _authored_risk_rows(design: Any) -> list[dict[str, str]]:
+def _authored_risk_rows(design: Any) -> list[dict[str, Any]]:
     """Project the complete validated risk posture without flattening typed fields."""
 
     if not isinstance(design, Mapping):
@@ -517,7 +510,7 @@ def _authored_risk_rows(design: Any) -> list[dict[str, str]]:
     rationale = _first_text(value, "rationale")
     if status == "no_material_risks_identified":
         return [{
-            "risk": "Proposed risk posture: no material risk identified",
+            "risk": "No material risk identified",
             "meaning": rationale,
             "status": status,
             "scope": "Complete provisional design.",
@@ -539,13 +532,13 @@ def _authored_risk_rows(design: Any) -> list[dict[str, str]]:
             + "."
         )
         rows.append({
-            "risk": f"{category.capitalize()} risk",
-            "meaning": (
-                f"{statement}\nCategory: {category}\nTrigger: {trigger}\n"
-                f"Mitigation: {mitigation}\nVerification: {verification}\nScope: {scope}"
-            ),
+            "risk": f"{category.replace('_', ' ').capitalize()} risk",
+            "key": item["key"],
+            "statement": statement,
+            "meaning": statement,
             "status": status,
             "category": category,
+            "scope_paths": deepcopy(item["scope_paths"]),
             "trigger": trigger,
             "mitigation": mitigation,
             "verification": verification,

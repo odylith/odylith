@@ -183,3 +183,45 @@ def test_empty_legacy_digest_retains_history_without_fabricating_current_work() 
     assert "Implementation setup is active" not in text
     assert "Timeline:" not in text
     assert "Why this matters:" not in text
+
+
+@pytest.mark.parametrize("why", [
+    {},
+    {"proposed_solution": "Preserve reviewer-recorded approval."},
+    {"problem": "Reviewers need current evidence."},
+])
+@pytest.mark.parametrize("scoped", [False, True])
+def test_focused_legacy_digest_uses_actual_context_without_empty_or_invented_labels(why: dict, scoped: bool) -> None:
+    row = {"idea_id": "B-002", "title": "Reliable review", "status": "in-progress", "why": why}
+    if scoped:
+        digest = outcome._build_outcome_digest_for_workstream(
+            row=row, next_actions=[], recent_completed=[], window_events=[], window_transactions=[],
+            risk_posture="readback is blocked",
+        )
+    else:
+        digest = outcome._build_outcome_digest_global(
+            **{**_scope_inputs(), "ws_rows": [row], "ws_index": {"B-002": row}, "active_ws_rows": [row]},
+            risks_summary="Risk posture: readback is blocked.",
+        )
+    text = " ".join(digest)
+    assert "Reliable review" in text and "readback is blocked" in text
+    assert "Why this matters: Architecture consequence:" not in text
+    assert "gives operators a clearer contract and lower coordination risk" not in text
+    assert ("Why this matters:" in text) == bool(why.get("problem"))
+    if why.get("proposed_solution"):
+        assert why["proposed_solution"] in text
+    assert ("Architecture consequence:" in text) == bool(why.get("proposed_solution"))
+    if scoped:
+        packet = packets._build_scoped_standup_fact_packet(
+            row=row, next_actions=[], recent_completed=[], window_events=[], window_transactions=[],
+            window_hours=24, risk_rows={"bugs": [], "traceability": [], "stale_diagrams": []},
+            risk_summary="Risk posture: readback is blocked.",
+            now=dt.datetime(2026, 9, 7, tzinfo=dt.timezone.utc),
+        )
+    else:
+        packet = _packet(ws_rows=[row], ws_index={"B-002": row}, active_ws_rows=[row],
+                         risk_summary="Risk posture: readback is blocked.")
+    assert packet["summary"]["architecture_consequence"] == why.get("proposed_solution", "")
+    assert packet["summary"]["storyline"]["architecture_consequence"] == why.get("proposed_solution", "")
+    assert packet["summary"]["benefit"] == why.get("problem", "").rstrip(".")
+    assert packet["summary"]["risk_summary"] == "Risk posture: readback is blocked."

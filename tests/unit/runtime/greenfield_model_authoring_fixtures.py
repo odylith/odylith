@@ -364,6 +364,12 @@ def host_candidate_response(
     if not isinstance(result, dict) or result.get("status") == "clarification_required":
         return candidate
     result.pop("components", None)
+    design = result.get("provisional_design")
+    if isinstance(design, dict) and "project_summary" not in design:
+        # Explicit synthetic narrative; no source parsing or product-quality claim.
+        design["project_summary"] = (
+            "This structural fixture supports test authors checking exact source and design custody."
+        )
     facts = result.get("facts")
     events = result.get("events")
     if not isinstance(facts, dict) or not isinstance(events, list):

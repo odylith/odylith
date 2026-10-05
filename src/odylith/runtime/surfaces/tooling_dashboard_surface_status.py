@@ -95,8 +95,8 @@ def _failed_refresh_posture(
     if warning:
         return {}
     warning = (
-        "Requested Compass refresh failed before a fresh payload was written. "
-        f"Showing the prior runtime snapshot from {generated_utc or 'the last successful render'}."
+        "Compass did not refresh. You are viewing the previous snapshot; "
+        "refresh Compass when you are ready to update it."
     )
     meta_parts = []
     if generated_utc:
@@ -113,7 +113,7 @@ def _failed_refresh_posture(
         "visible": True,
         "tone": "warning",
         "kicker": "Compass refresh failed",
-        "title": "Showing prior Compass snapshot",
+        "title": "Showing the previous Compass snapshot",
         "body": warning,
         "meta": " · ".join(meta_parts),
         "showReload": False,

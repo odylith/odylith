@@ -185,3 +185,86 @@ def test_upgrade_failed_dashboard_does_not_publish_partial_working_output(
     else:
         assert "Dashboard ready" not in output.out
         assert "dashboard refresh failed" in output.out
+
+
+
+def _legacy_dashboard_args(root, descriptor, **changes):
+    return SimpleNamespace(**{
+        "repo_root": root, "surfaces": "tooling_shell,radar,compass", "runtime_mode": "auto",
+        "atlas_sync": False, "dry_run": False, "verbose": False, "force": False,
+        "repository_lock_fd": descriptor, **changes,
+    })
+
+
+def test_published_predecessor_public_refresh_completes_selected_target_before_fresh(monkeypatch, rendered_repo):
+    order = []
+    def complete(*, repo_root, repository_lock_fd, force):
+        assert repo_root == rendered_repo and force is False
+        assert os.path.samestat(os.fstat(repository_lock_fd), (repo_root / ".odylith/runtime/greenfield/create.lock").stat())
+        order.append("target-migration-verified")
+    def refresh(**arguments):
+        assert order == ["target-migration-verified"]
+        assert arguments["surfaces"] == ["tooling_shell", "radar", "compass"]
+        order.append("dashboard-refresh")
+        return 0
+    monkeypatch.setattr(cli.upgrade_dashboard_recovery, "complete_selected_render_migrations", complete)
+    monkeypatch.setattr(cli.sync_workstream_artifacts, "refresh_dashboard_surfaces", refresh)
+    with greenfield_repository_lock(rendered_repo) as descriptor:
+        assert cli._cmd_dashboard_refresh(_legacy_dashboard_args(rendered_repo, descriptor)) == 0
+    assert order == ["target-migration-verified", "dashboard-refresh"]
+
+
+@pytest.mark.parametrize("options", [
+    {"dry_run": True}, {"atlas_sync": True}, {"runtime_mode": "standalone"}, {"surfaces": "radar"},
+])
+def test_other_dashboard_refresh_scope_does_not_dispatch_selected_migration(monkeypatch, rendered_repo, options):
+    monkeypatch.setattr(cli.upgrade_dashboard_recovery, "complete_selected_render_migrations", lambda **_: pytest.fail("unrequested migration"))
+    monkeypatch.setattr(cli.sync_workstream_artifacts, "refresh_dashboard_surfaces", lambda **_: 0)
+    with greenfield_repository_lock(rendered_repo) as descriptor:
+        assert cli._cmd_dashboard_refresh(_legacy_dashboard_args(rendered_repo, descriptor, **options)) == 0
+
+
+def test_selected_target_failure_stops_legacy_dashboard_before_refresh_or_activation(monkeypatch, rendered_repo):
+    activate_greenfield_baseline_fixture(rendered_repo)
+    before = (rendered_repo / "odylith/index.html").read_bytes()
+    def refused(**_):
+        raise cli.upgrade_dashboard_recovery.UpgradeDashboardRecoveryError("target migration failed")
+    monkeypatch.setattr(cli.upgrade_dashboard_recovery, "complete_selected_render_migrations", refused)
+    monkeypatch.setattr(cli.sync_workstream_artifacts, "refresh_dashboard_surfaces", lambda **_: pytest.fail("failed target dispatched dashboard"))
+    monkeypatch.setattr(cli.dashboard_refresh_contract, "activate_initial_dashboard_baseline", lambda **_: pytest.fail("failed target activated"))
+    assert cli.main(["dashboard", "refresh", "--repo-root", str(rendered_repo),
+                     "--surfaces", "tooling_shell,radar,compass"]) == 1
+    assert (rendered_repo / "odylith/index.html").read_bytes() == before
+
+
+def test_target_worker_completes_selected_migration_under_inherited_lease(monkeypatch, rendered_repo):
+    from odylith.runtime.governance import sync_workstream_artifacts
+    order = []
+    def complete(*, repo_root, repository_lock_fd):
+        assert repo_root == rendered_repo
+        assert os.path.samestat(os.fstat(repository_lock_fd), (repo_root / ".odylith/runtime/greenfield/create.lock").stat())
+        order.append("target-migration-verified")
+    def refresh(**arguments):
+        assert order == ["target-migration-verified"]
+        assert arguments["repository_lock_fd"] is not None
+        order.append("dashboard-refresh")
+        return 0
+    monkeypatch.setattr(cli.upgrade_dashboard_recovery, "complete_selected_render_migrations", complete)
+    monkeypatch.setattr(sync_workstream_artifacts, "refresh_dashboard_surfaces", refresh)
+    with greenfield_repository_lock(rendered_repo) as descriptor:
+        worker_fd = os.dup(descriptor)
+        assert cli.upgrade_dashboard.worker_main(["--repo-root", str(rendered_repo), "--lock-fd", str(worker_fd)]) == 0
+    assert order == ["target-migration-verified", "dashboard-refresh"]
+    assert state.read_active_publication(rendered_repo) is None
+
+
+def test_target_worker_render_refusal_has_no_dashboard_dispatch(monkeypatch, rendered_repo, capsys):
+    def refused(**_):
+        raise cli.upgrade_dashboard_recovery.UpgradeDashboardRecoveryError("target migration failed")
+    monkeypatch.setattr(cli.upgrade_dashboard_recovery, "complete_selected_render_migrations", refused)
+    monkeypatch.setattr(cli.sync_workstream_artifacts, "refresh_dashboard_surfaces", lambda **_: pytest.fail("refused worker dispatched dashboard"))
+    with greenfield_repository_lock(rendered_repo) as descriptor:
+        worker_fd = os.dup(descriptor)
+        assert cli.upgrade_dashboard.worker_main(["--repo-root", str(rendered_repo), "--lock-fd", str(worker_fd)]) == 1
+    assert "target migration failed" in capsys.readouterr().err
+    assert state.read_active_publication(rendered_repo) is None

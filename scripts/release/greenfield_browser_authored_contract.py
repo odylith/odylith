@@ -24,22 +24,17 @@ AUTHORED_STRUCTURE_EXPRESSION = """(node) => {
   const eventRows = (selector) => Array.from(node.querySelectorAll(selector)).map((item) => ({
     order: Number(item.dataset.eventOrder || "0"), text: visibleText(item)
   }));
-  const focus = node.querySelector('[data-authored-fact-list="focus"]');
   const firstPath = node.querySelector('[data-authored-fact-list="first_path"]');
   const capabilities = node.querySelector('[data-authored-fact-list="owned_capabilities"]');
   return {
-    focus: eventRows('[data-authored-fact-list="focus"] [data-authored-fact-item]'),
     first_path: eventRows('[data-authored-fact-list="first_path"] [data-authored-fact-item]'),
-    focus_authority: String(focus?.dataset.authorityKind || ""),
-    focus_label: visibleText(focus?.querySelector('[data-proposed-first-run-label]')),
     first_path_authority: String(firstPath?.dataset.authorityKind || ""),
     first_path_label: visibleText(firstPath?.closest('[data-semantic-slot="first_path"]')
       ?.querySelector('[data-proposed-first-run-label]')),
     actors: Array.from(node.querySelectorAll("[data-authored-actor]")).map((card) => ({
-      actor: String(card.dataset.authoredActor || "").trim(),
-      events: Array.from(card.querySelectorAll('[data-authored-fact-list="actor"] [data-authored-fact-item]'))
-        .map((item) => ({order: Number(item.dataset.eventOrder || "0"), text: visibleText(item)}))
-    })).filter((row) => row.events.length),
+      actor: visibleText(card.querySelector("h3")),
+      source_name: String(card.dataset.authoredActor || "").trim()
+    })),
     capabilities_authority: String(capabilities?.dataset.authorityKind || ""),
     capabilities_label: visibleText(node.querySelector('[data-provisional-design-label]')),
     capabilities: Array.from(capabilities?.querySelectorAll('[data-authored-fact-item]') || []).map((item) => ({
@@ -270,7 +265,7 @@ def expected_proof_card(authored_facts: Any) -> tuple[str, str]:
         raise ValueError(
             "Greenfield source proof requires exactly one matching source result"
         )
-    return "Proof", proof_boundary
+    return "Observable result", proof_boundary
 
 
 def authored_structure_issues(rendered: Any, authored_facts: Any) -> tuple[str, ...]:
@@ -317,7 +312,7 @@ def authored_structure_issues(rendered: Any, authored_facts: Any) -> tuple[str, 
         for row in event_rows
     ]
     issues: list[str] = []
-    for surface in ("focus", "first_path"):
+    for surface in ("first_path",):
         actual = rendered.get(surface)
         if actual != expected_events:
             issues.append(
@@ -341,18 +336,12 @@ def authored_structure_issues(rendered: Any, authored_facts: Any) -> tuple[str, 
         if isinstance(raw_human_actors, (list, tuple))
         else []
     )
-    expected_actors = []
-    for actor in human_actors:
-        actor_events = [
-            {"order": source["order"], "text": _browser_visible_text(source["event_quote"])}
-            for source in event_rows
-            if source.get("actor_kind") == "human"
-            and source.get("actor_fact_quote") == actor
-        ]
-        if actor_events:
-            expected_actors.append({"actor": actor, "events": actor_events})
+    expected_actors = [
+        {"actor": _browser_visible_text(actor), "source_name": actor}
+        for actor in human_actors
+    ]
     if rendered.get("actors") != expected_actors:
-        issues.append("browser surface project actor cards do not preserve typed human event nodes")
+        issues.append("browser surface project participants do not preserve all source-stated human names")
 
     expected_capabilities = [
         {
@@ -365,19 +354,19 @@ def authored_structure_issues(rendered: Any, authored_facts: Any) -> tuple[str, 
         issues.append("browser surface project capability rows do not preserve canonical proposed responsibilities")
     if (
         rendered.get("capabilities_authority") != "provisional_design"
-        or rendered.get("capabilities_label") != "Proposed capabilities:"
+        or rendered.get("capabilities_label") != "Proposed capabilities"
     ):
         issues.append("browser surface project capabilities lost their explicit proposed-design marker")
 
     expected_boundary_groups = [{
         "key": "provisional_components",
-        "label": "Proposed logical components (not deployment commitments):",
+        "label": "Proposed components:",
         "items": [_browser_visible_text(row["name"]) for row in design["components"]],
     }]
     for key, label, values in (
-        ("source_product_systems", "Source-stated systems:", authored_facts.get("internal_systems", ())),
+        ("source_product_systems", "Named systems:", authored_facts.get("internal_systems", ())),
         ("external_systems", "External systems:", authored_facts.get("external_systems", ())),
-        ("non_goals", "Source-stated scope limits:", authored_facts.get("non_goals", ())),
+        ("non_goals", "Scope limits:", authored_facts.get("non_goals", ())),
     ):
         items = (
             [

@@ -3,9 +3,10 @@ from __future__ import annotations
 import ast
 import json
 import re
+from html.parser import HTMLParser
 from pathlib import Path
 
-from odylith.runtime.project_intelligence import assets, builder, deeplinks, focus, presenter
+from odylith.runtime.project_intelligence import assets, builder, deeplinks, focus, presenter, product_story
 from odylith.runtime.project_intelligence.participants import participant_title
 from odylith.runtime.project_intelligence.utils import complete_text, short, tidy_fragment
 from odylith.runtime.surfaces import dashboard_shell_links
@@ -157,7 +158,98 @@ def test_project_answer_summary_renders_as_full_table_without_markdown_noise() -
     assert "Who uses it?" in html
     assert "Account owner" in html
     assert "last sentence that used to disappear" in html
+    assert "Supporting details" not in html
     assert "title=" not in html
+
+
+def test_operating_project_purpose_and_next_action_have_one_visible_owner() -> None:
+    purpose = "Cerulean helps reviewers understand the complete launch evidence."
+    next_action = "Publish the complete mRNA & QBER evidence for review."
+    role_body = "The maintainer preserves mRNA & QBER source evidence."
+    risk = "The consent evidence remains unverified."
+    story = product_story.build_source_product_story(
+        project_title="Cerulean", project_intro=purpose, release_label="0.8",
+        current_focus="Review the launch evidence", next_title="Publish evidence",
+        next_action_text=next_action, active_workstreams=[], backlog={}, components=[],
+        atlas={}, evidence_sources=["Registry component records"],
+        blockers=[("Consent review", risk, "Reviewer")],
+    )
+    project = {
+        "title": "Cerulean", "intro": purpose, "focus": "Review the launch evidence",
+        "sources": {"registry": "odylith/registry/source/component_registry.v1.json"},
+        "product_story_title": "Product Story", "product_story": story,
+        "actors": [("", "Maintainer", role_body)], "participants_title": "Who participates?",
+        "answers": [("What matters now?", "Publish evidence", next_action)],
+        "scenario_title": "Current review work",
+        "scenario": ["Current work", "Cerulean", "0.8 review work", "One review remains open.", risk],
+        "scenario_details": [("Next move", next_action), ("Open risk", risk)],
+        "next_title": "What should move next?", "recommendation": next_action,
+        "jobs_title": "Current work", "jobs": [
+            ("Publish evidence", next_action, "Next action", ""),
+            ("Preserve custody", "Keep the complete source records.", "Current release", "B-321"),
+        ],
+        "sections": ["product_story", "participants", "scenario", "jobs", "next"],
+    }
+    rendered = presenter.render_project_html({"project_intelligence": project})
+
+    class VisibleText(HTMLParser):
+        def __init__(self) -> None:
+            super().__init__()
+            self.details_depth = 0
+            self.text: list[str] = []
+
+        def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+            if tag == "details":
+                self.details_depth += 1
+
+        def handle_endtag(self, tag: str) -> None:
+            if tag == "details":
+                self.details_depth -= 1
+
+        def handle_data(self, data: str) -> None:
+            if not self.details_depth:
+                self.text.append(data)
+
+    parsed = VisibleText()
+    parsed.feed(rendered)
+    visible = " ".join(parsed.text)
+    assert visible.count(purpose) == 1
+    assert visible.count(next_action) == 1
+    assert "Maintainer" in visible
+    assert "Preserve custody" in visible and "Keep the complete source records." in visible
+    assert "Publish evidence" not in visible
+    assert role_body not in visible
+    assert "Current review work" not in visible
+    assert "One review remains open." not in visible
+    assert "Consent review" not in visible
+    assert '<details class="project-evidence-excerpt"><summary>Supporting details</summary>' in rendered
+    assert "The maintainer preserves mRNA &amp; QBER source evidence." in rendered
+    assert "Current review work" in rendered and "One review remains open." in rendered
+    assert risk in rendered
+    assert "Publish evidence" in rendered and "Next action" in rendered
+    assert 'href="?tab=radar&amp;workstream=B-321"' in rendered
+    assert all(row in rendered for row in story["supporting_records"])
+    assert story["headline"] == ""
+    assert purpose not in story["paragraphs"]
+    assert all(next_action not in row for row in story["paragraphs"])
+
+    with_contract = {**project, "product_story": {**story, "release_contract": [
+        {"label": "Outcome", "body": "The supported outcome remains visible."},
+    ]}}
+    contract_html = presenter.render_project_html({"project_intelligence": with_contract})
+    assert "The supported outcome remains visible." in contract_html
+    assert "Supporting details" in contract_html
+    assert "The maintainer preserves mRNA &amp; QBER source evidence." in contract_html
+    assert "Current review work" in contract_html and "One review remains open." in contract_html
+    assert risk in contract_html and "Next action" in contract_html
+    assert all(row in contract_html for row in story["supporting_records"])
+
+    # A caller that omits the story still retains its displayed role/context evidence.
+    without_story = {**project, "sections": ["participants", "scenario", "next"]}
+    standalone = presenter.render_project_html({"project_intelligence": without_story})
+    assert "Supporting details" not in standalone
+    assert "The maintainer preserves mRNA &amp; QBER source evidence." in standalone
+    assert "Current review work" in standalone
 
 
 def test_project_intelligence_compiles_current_repo_state_from_sources(tmp_path: Path) -> None:
@@ -314,13 +406,14 @@ def test_project_intelligence_compiles_current_repo_state_from_sources(tmp_path:
     assert payload["governance_titles"]["D-001"] == "Human Project Entry Map"
     assert payload["product_story_title"] == "Product Story"
     assert payload["product_story_note"] == ""
-    assert payload["product_story"]["headline"].startswith("How Odylith helps")
+    assert payload["product_story"]["headline"] == ""
     assert payload["product_story"]["standfirst"] == ""
-    assert payload["product_story"]["paragraphs"][0].startswith("Odylith helps repository operators")
+    assert payload["intro"] not in payload["product_story"]["paragraphs"]
     assert any("first usable workflow" in row for row in payload["product_story"]["paragraphs"])
-    assert any("Release 0.2.0: Human Project Entry is coherent" in row for row in payload["product_story"]["paragraphs"])
-    assert any("Evidence stays bounded" in row for row in payload["product_story"]["paragraphs"])
+    assert all("The next move" not in row for row in payload["product_story"]["paragraphs"])
     source_records = payload["product_story"]["supporting_records"]
+    assert any("Release 0.2.0: Human Project Entry is coherent" in row for row in source_records)
+    assert any("Evidence stays bounded" in row for row in source_records)
     assert any("Radar carries" in row and "B-201" in row for row in source_records)
     assert any("Registry names the owned boundaries" in row for row in source_records)
     assert any("Atlas gives reviewers" in row for row in source_records)
@@ -406,6 +499,13 @@ def test_project_intelligence_compiles_current_repo_state_from_sources(tmp_path:
     assert "Decision now" not in html
     assert "What must be decided?" not in html
     assert "What should move next?" in html
+    assert html.split("</header>", 1)[0].count(payload["intro"]) == 1
+    supporting = html.split('<summary>Supporting details</summary>', 1)[1].split("</details>", 1)[0]
+    assert 'project-proof-grid' in supporting
+    assert payload["intro"] in supporting
+    assert "<h3>How Odylith helps" not in html
+    assert '<details class="project-evidence-excerpt"><summary>Supporting details</summary>' in html
+    assert '<p>Bind Project tab content to current source records.</p>' in html
     assert "What can be trusted about Odylith right now?" not in html
     assert "Observed now" not in html
     assert "Proof gaps" not in html
@@ -458,6 +558,21 @@ def test_project_intelligence_compiles_current_repo_state_from_sources(tmp_path:
     assert "project-projection-strip" not in html
     assert '<article class="project-card"><p></p>' not in html
 
+    for observation in ({}, {"status": "unknown", "meaningful_changed_count": 0, "generated_changed_count": 0}):
+        missing = builder.build_project_intelligence_payload(
+            repo_root=tmp_path, shell_payload={"live_refresh": {"worktree": observation}},
+        )
+        assert "Working tree information is unavailable." in missing["current"]
+        assert "0 meaningful" not in missing["current"]
+        assert "0 generated" not in missing["current"]
+    observed_clean = builder.build_project_intelligence_payload(
+        repo_root=tmp_path,
+        shell_payload={"live_refresh": {"worktree": {
+            "status": "clean", "meaningful_changed_count": 0, "generated_changed_count": 0,
+        }}},
+    )
+    assert "Worktree: clean with 0 meaningful and 0 generated changed paths." in observed_clean["current"]
+
 
 def test_project_focus_uses_release_workstreams_when_runtime_headline_is_generic() -> None:
     backlog = {
@@ -479,8 +594,14 @@ def test_project_focus_uses_release_workstreams_when_runtime_headline_is_generic
 def test_project_intelligence_presenter_renders_fallback_without_payload() -> None:
     html = presenter.render_project_html({})
 
-    assert "No project projection is available yet." in html
-    assert "Project source payload missing" in html
+    assert "The Project view could not be loaded." in html
+    assert "odylith dashboard refresh --repo-root . --surfaces tooling_shell" in html
+    assert html.count('class="project-empty-action"') == 1
+    assert "project-empty-preview" not in html
+    assert "<h3></h3>" not in html
+    assert "project-proof-grid" not in html
+    assert "project-signal-grid" not in html
+    assert "Project source payload missing" not in html
     assert "project-side" not in html
     assert "Main blockers" not in html
 
@@ -725,7 +846,7 @@ def test_project_intelligence_css_uses_shared_surface_typography() -> None:
     assert ".project-scenario .project-panel-head h2" in css
     assert ".project-scenario-cover strong" in css
     assert ".project-scenario-copy .project-scenario-prose" in css
-    assert ".project-hero-main-empty" in css
+    assert ".project-hero-main-single" in css
     assert ".project-empty-action-grid" in css
     assert ".project-empty-preview-grid" in css
     assert ".project-prose-lines" in css

@@ -210,7 +210,8 @@ def test_render_mermaid_catalog_explains_diagram_and_moves_context_to_bottom_lis
     )
 
     assert "What This Diagram Shows" in html
-    assert "How To Read This View" in html
+    assert '<summary class="artifact-label">How to read this diagram</summary>' in html
+    assert '<details class="diagram-guide-panel read-guide">' in html
     assert 'id="diagramReadGuide"' in html
     assert "function diagramReadGuide(diagram)" in html
     assert "const catalogGuide = String(diagram && diagram.read_guide ? diagram.read_guide : \"\").trim();" in html

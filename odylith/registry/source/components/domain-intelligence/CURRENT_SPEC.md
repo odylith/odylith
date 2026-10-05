@@ -2201,6 +2201,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-10-05: Existing registered Radar narrative updates can settle through explicit selective sync. Metadata, index identity, file modes, unrelated managed files, and prior immutable publication remain guarded; required content is validated by the existing backlog owner. Root 75 tests pass in 5.13s and actual four-record sync passes in 25.3s without runtime fallback. This is governance completion proof, with installed release and semantic qualification still open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
 - 2026-09-07: Bound temporary prewrite refresh roots so Compass can render without queuing or launching detached narration. Exact-cache and explicit unavailable states remain unchanged, as does durable-repository warming. The settled source passes 4311 runtime tests, 1101 install tests and 34 synthetic staged-browser checks, plus native synthetic success/malformed/timeout controls. Real-model quality, timing and installed-release qualification remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
 
 - 2026-09-04: Qualified v30 on the unchanged flood source discriminator. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-303`, `CB-329`; Diagram: D-043)
@@ -5800,6 +5801,12 @@ projection coherence, confirmation, and readback.
   retry, repair, parser, regex stack, or alternate model ladder is allowed.
 
 ## Greenfield Host Citation Byte Custody (2026-09-26)
+
+## Current Greenfield semantic and summary contract (2026-10-05)
+
+- Fixed Research and Agriculture H0/H1 source-first review at checkpoint `23881abd0e8bd15ddc64fb869b581060d50c3302` supports only the independently audited fixed-case semantics and model-free terminal mechanics. It does not expand release, aggregate, browser, protected-holdout, migration, or timing authority.
+- The next canonical candidate contract requires a `design.project_summary` in host format 23 / contract v54: concise purpose, intended users, and intended outcome derived from the candidate's source-cited meaning. Evidence excerpts, source links, and raw source text remain evidence and must never substitute for that summary. Earlier v53 sealed pairs remain passive exact history.
+- Risk and presentation projections may simplify visible copy, but must retain source-backed triggers, mitigation, verification, traceability, and links in accessible detail. No projection may invent meaning or alter candidate custody.
 
 - Host candidate contract v20 requires every quote and locator context to be
   copied byte-for-byte from source without normalization or rewriting. This

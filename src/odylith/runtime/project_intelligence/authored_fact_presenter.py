@@ -127,15 +127,15 @@ def authored_fact_view(project: Mapping[str, Any]) -> AuthoredFactView | None:
         row
         for row in (
             AuthoredBoundaryGroup(
-                "provisional_components", "Proposed logical components (not deployment commitments)",
+                "provisional_components", "Proposed components",
                 proposed_components,
             ),
             AuthoredBoundaryGroup(
-                "source_product_systems", "Source-stated systems",
+                "source_product_systems", "Named systems",
                 _authored_text_items(raw_facts.get("internal_systems")),
             ),
             AuthoredBoundaryGroup("external_systems", "External systems", external_systems),
-            AuthoredBoundaryGroup("non_goals", "Source-stated scope limits", non_goals),
+            AuthoredBoundaryGroup("non_goals", "Scope limits", non_goals),
         )
         if row.items
     )
@@ -146,19 +146,45 @@ def authored_fact_view(project: Mapping[str, Any]) -> AuthoredFactView | None:
     )
 
 
-def render_authored_focus(project: Mapping[str, Any], *, render_text: RenderText) -> str:
-    view = authored_fact_view(project)
-    if view is None:
-        return f"<h2>{render_text(project.get('focus'))}</h2>"
-    items = "<br aria-hidden=\"true\">".join(
-        _event_content(event, render_text=render_text, include_actor=True, container="span")
-        for event in view.events
-    )
-    return (
-        '<h2 data-authored-fact-list="focus" data-authority-kind="provisional_design">'
-        '<span data-proposed-first-run-label>Proposed first run:</span><br aria-hidden="true">'
-        f'{items}</h2>'
-    )
+def render_authored_risk_cards(items: object, *, render_text: RenderText) -> str:
+    cards: list[str] = []
+    for row in _sequence_items(items):
+        if not isinstance(row, Mapping):
+            continue
+        statement = row.get("statement") or row.get("meaning")
+        mitigation = row.get("mitigation")
+        mitigation_html = (
+            '<div class="project-risk-mitigation"><h4>Mitigation</h4>'
+            f'<p data-risk-mitigation>{render_text(mitigation)}</p></div>'
+            if mitigation else ""
+        )
+        fields = "".join(
+            f'<dt>{label}</dt><dd>{render_text(row[key])}</dd>'
+            for key, label in (("trigger", "When this applies"), ("verification", "Verification"),
+                               ("scope", "Scope"))
+            if row.get(key)
+        )
+        paths = "".join(
+            '<li>' + render_text(
+                f"Source event {path['event_order']} · Component {path['component_key']} · "
+                f"Workstream {path['workstream_key']}"
+            ) + '</li>'
+            for path in _sequence_items(row.get("scope_paths"))
+        )
+        if paths:
+            fields += f'<dt>Traceability</dt><dd><ul>{paths}</ul></dd>'
+        details = (
+            '<details class="project-risk-details"><summary>Risk details</summary>'
+            f'<dl>{fields}</dl></details>' if fields else ""
+        )
+        cards.append(
+            '<article class="project-risk-card" data-authority-kind="provisional_design" '
+            f'data-risk-key="{html.escape(str(row.get("key") or ""), quote=True)}">'
+            f'<h3>{render_text(row.get("risk"))}</h3>'
+            f'<p class="project-risk-statement" data-risk-statement>{render_text(statement)}</p>'
+            f'{mitigation_html}{details}</article>'
+        )
+    return "".join(cards)
 
 
 def render_authored_actor_cards(
@@ -167,8 +193,7 @@ def render_authored_actor_cards(
     project: Mapping[str, Any],
     render_text: RenderText,
 ) -> str | None:
-    view = authored_fact_view(project)
-    if view is None:
+    if authored_fact_view(project) is None:
         return None
 
     cards: list[str] = []
@@ -176,30 +201,13 @@ def render_authored_actor_cards(
         item = list(raw) if isinstance(raw, Sequence) and not isinstance(raw, (str, bytes, bytearray)) else []
         if len(item) < 2:
             continue
-        kicker, title, body = (item[:3] + [""] * 3)[:3] if len(item) >= 3 else ("", item[0], item[1])
+        title = item[1] if len(item) >= 3 else item[0]
         actor = str(title or "").strip()
-        if not actor:
-            continue
-        actor_events = tuple(
-            event
-            for event in view.events
-            if event.actor_kind == "human" and event.actor_label == actor
-        )
-        kicker_html = f"<p>{render_text(kicker)}</p>" if str(kicker or "").strip() else ""
-        body_html = (
-            _event_list(
-                actor_events,
-                list_key="actor",
-                render_text=render_text,
-                include_actor=False,
+        if actor:
+            cards.append(
+                f'<article class="project-actor-card project-actor-card-name" data-authored-actor="{html.escape(actor, quote=True)}">'
+                f"<h3>{render_text(actor)}</h3></article>"
             )
-            if actor_events
-            else f"<span>{render_text(body)}</span>"
-        )
-        cards.append(
-            f'<article class="project-actor-card" data-authored-actor="{html.escape(actor, quote=True)}">'
-            f"{kicker_html}<h3>{render_text(actor)}</h3>{body_html}</article>"
-        )
     return "".join(cards)
 
 
@@ -230,10 +238,11 @@ def render_product_story_contract(
             render_text=render_text,
         )
         body_html = structured_body or f'<p class="project-story-contract-body">{render_text(body)}</p>'
+        heading_marker = " data-provisional-design-label" if view is not None and semantic_slot == "owned_capabilities" else ""
         cells.append(
             '<article class="project-story-contract-card" role="listitem" '
             f'data-semantic-slot="{html.escape(semantic_slot, quote=True)}">'
-            f"<h3>{render_text(label)}</h3>{body_html}</article>"
+            f"<h3{heading_marker}>{render_text(label)}</h3>{body_html}</article>"
         )
     return f'<div class="project-story-contract" role="list">{"".join(cells)}</div>'
 
@@ -262,7 +271,6 @@ def _structured_story_body(
         )
         return (
             '<div class="project-story-contract-body">'
-            '<p data-provisional-design-label>Proposed capabilities:</p>'
             '<ul class="project-story-records project-authored-fact-list" '
             'data-authored-fact-list="owned_capabilities" data-authority-kind="provisional_design">'
             f'{rows}</ul></div>'
@@ -347,6 +355,6 @@ __all__ = [
     "AuthoredFactView",
     "authored_fact_view",
     "render_authored_actor_cards",
-    "render_authored_focus",
+    "render_authored_risk_cards",
     "render_product_story_contract",
 ]

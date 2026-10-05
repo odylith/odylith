@@ -68,7 +68,7 @@ def test_provisional_proof_is_visible_without_becoming_an_authored_fact(
     proposal = _provisional_proof_proposal()
     payload = _dashboard(proposal, root=tmp_path)
 
-    assert payload["intro"] == f"Accepted evidence excerpt: “{PRODUCT_STORY}”"
+    assert payload["intro"] == ""
     assert payload["desired"] == PROPOSED_CHECKPOINT_COPY
     assert payload["open_label"] == "Assumptions"
     assert payload["open"] == [PROPOSED_CHECKPOINT]

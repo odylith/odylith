@@ -147,9 +147,11 @@ If apply is interrupted, retain its receipt and resume the same hash. Canonical
 governed writes, Greenfield commit, and baseline activation refuse while an
 admitted restoration is unclosed. Do not delete the receipt to clear that refusal.
 
-A prepared Compass log receipt whose event reached only the working canonical
-stream is a narrower case: the published stream is still unchanged and remains
-the append-only historical authority. Use only this reviewed sequence:
+A Compass log receipt in `prepared`, `appended` or `rendering`, without a
+publication successor, can be archived after exact restoration. If rendering
+changed derived outputs, first restore only those exact outputs through a
+separate reviewed receipt. Then restore the canonical stream through the
+stream-only sequence below. The published stream remains the historical authority.
 
 ```sh
 odylith governance restore-published-files --repo-root . --preview --path odylith/compass/runtime/agent-stream.v1.jsonl
@@ -158,7 +160,7 @@ odylith compass log --repo-root . --abandon-restored <restoration-review-hash> -
 ```
 
 Abandonment requires the restoration to be closed, archives the exact unpublished
-event and original receipt, and removes only that prepared continuation. It never
+event and original receipt, and removes only that unpublished continuation. It never
 removes published history, replays the event, renders Compass, or treats a changed
 runtime as authority to complete the old writer.
 

@@ -13,6 +13,7 @@ from tests.integration.runtime.surface_browser_test_support import (
     _failure_screenshot_path,
     _new_page,
     _wait_for_compass_ready,
+    _wait_for_radar_detail_id,
     _wait_for_shell_query_param,
     browser_context,
     compact_browser_context,
@@ -303,7 +304,7 @@ def test_compass_and_radar_expose_b099_context_execution_release_truth(browser_c
         assert response is not None and response.ok
         radar = page.frame_locator("#frame-radar")
         radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
-        radar.locator('#detail [data-kpi="workstream-id"] .v', has_text="B-099").wait_for(timeout=15000)
+        _wait_for_radar_detail_id(radar, "B-099")
         radar_detail_text = radar.locator("#detail").inner_text().lower()
         assert "context engine" in radar_detail_text
         assert "execution engine" in radar_detail_text

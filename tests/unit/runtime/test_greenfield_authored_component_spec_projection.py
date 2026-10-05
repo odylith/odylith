@@ -149,6 +149,13 @@ def test_authored_component_spec_is_structural_and_bypasses_legacy_owners(
     assert "## Feature History" in spec
     assert "(Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))" in spec
     assert "## Proposed responsibility" in spec
+    registry_entry = previews[0]["registry_entry"]
+    assert registry_entry["what_it_is"] == "Retain the test value at boundary 1."
+    assert registry_entry["why_tracked"] == (
+        "Implement structural test boundary 1: An independent read returns the test value from boundary 1."
+    )
+    assert registry_entry["status"] == authoring_input["status"] == "planned"
+    assert registry_entry["qualification"] == authoring_input["qualification"] == "candidate"
     assert "## Proposed inputs and outputs" in spec
     assert "## Proposed verification" in spec
     assert "### Event 1 — Planner" in spec

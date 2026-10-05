@@ -164,7 +164,7 @@ def build_authored_component_authoring_inputs(
 
 def build_authored_component_registry_entry(row: Mapping[str, Any]) -> dict[str, Any]:
     _require_authored_custody(row)
-    _provisional_component_contract(row)
+    contract = _provisional_component_contract(row)
     component_id, label = _required_scalar(row, "component_id"), _required_scalar(row, "label")
     return {
         "component_id": component_id, "name": label,
@@ -174,10 +174,10 @@ def build_authored_component_registry_entry(row: Mapping[str, Any]) -> dict[str,
         "workstreams": list(_required_sequence(row, "workstreams")),
         "diagrams": list(_required_sequence(row, "diagrams")),
         "owner": _required_scalar(row, "owner"), "status": _required_scalar(row, "status"),
-        "what_it_is": f"{label} is a proposed logical component. Proposed responsibility: {row['responsibility']}",
-        "why_tracked": (
-            "The provisional design assigns this capability a delivery and verification contract. "
-            "Source-event support does not establish implementation or transfer actor ownership."
+        "what_it_is": row["responsibility"],
+        "why_tracked": "\n".join(
+            f"{delivery['provisional_workstream']['title']}: {delivery['provisional_workstream']['verification']}"
+            for delivery in contract["delivery_workstreams"]
         ),
         "spec_ref": f"odylith/registry/source/components/{component_id}/CURRENT_SPEC.md",
         "sources": list(_required_sequence(row, "sources")), "subcomponents": [],

@@ -579,7 +579,7 @@ def test_actual_owned_output_inventory_is_admitted_as_derived_not_authored(activ
     generations.require_greenfield_working_generation(repo)
 
 
-@pytest.mark.parametrize("mutation", ["package_bytes", "package_mode", "new_code", "interpreter", "activation_mode", "verification", "selection", "bundle_template"])
+@pytest.mark.parametrize("mutation", ["package_bytes", "package_mode", "new_code", "interpreter", "activation_mode", "verification", "selection", "bundle_template", "finder_named_resource"])
 def test_runtime_identity_binds_loaded_code_interpreter_selection_and_install(tmp_path, monkeypatch, mutation):
     repo = tmp_path / "repo"
     package = tmp_path / "installed/odylith"
@@ -612,6 +612,8 @@ def test_runtime_identity_binds_loaded_code_interpreter_selection_and_install(tm
     elif mutation == "selection":
         current.unlink()
         current.symlink_to("versions/../versions/v1")
+    elif mutation == "finder_named_resource":
+        _write(package / ".DS_Store.py", b"real code despite name prefix\n")
     else:
         (package / "bundle/assets/odylith/frontend.js").write_bytes(b"changed template\n")
     assert continuation._runtime_identity(repo) != before
@@ -1248,3 +1250,103 @@ def test_abandonment_boundary_never_publishes_an_induced_managed_delta(active, m
         )
     assert publication.active_generation_identity(repo) == active_before
     assert published == []
+
+
+def test_runtime_identity_ignores_only_exact_finder_metadata(tmp_path, monkeypatch):
+    repo = tmp_path / "repo"
+    package = tmp_path / "installed/odylith"
+    code = package / "__init__.py"
+    executable = repo / ".odylith/runtime/versions/v1/bin/python"
+    _write(code, b"# frozen real code\n")
+    _write(executable, b"frozen interpreter\n")
+    _write(package / ".DS_Store", b"old Finder metadata\n")
+    monkeypatch.setattr(continuation.odylith, "__file__", str(code))
+    monkeypatch.setattr(continuation.sys, "executable", str(executable))
+    before = continuation._runtime_identity(repo)
+    _write(package / ".DS_Store", b"new Finder metadata\n")
+    (package / ".DS_Store").chmod(0o600)
+    _write(package / "resources/.DS_Store", b"new nested Finder metadata\n")
+    assert continuation._runtime_identity(repo) == before
+    (package / ".DS_Store").unlink()
+    assert continuation._runtime_identity(repo) == before
+    _write(package / "resources/config.json", b'{"actual_resource": true}\n')
+    assert continuation._runtime_identity(repo) != before
+
+
+def _interrupted_rendering_append(repo, monkeypatch):
+    # Seed a published terminal request so both changed derived files have exact
+    # published preimages, just like the retained maintainer failure.
+    def publish_derived(_descriptor):
+        _terminal(repo)
+        _write(repo / "odylith/compass/compass.html", b"published Compass shell\n")
+        return 0
+
+    assert boundary.run_with_greenfield_managed_mutation_boundary(
+        repo_root=repo, command_tokens=["synthetic-published-terminal-request"],
+        operation=publish_derived,
+    ) == 0
+    _prepare_appended_unpublished_append(repo)
+
+    def render_then_change_runtime(**kwargs):
+        _write(repo / "odylith/compass/compass.html", b"interrupted derived shell\n")
+        result = _success(repo, **kwargs)
+        monkeypatch.setattr(continuation, "_runtime_identity", lambda root: {"code": "changed-during-render"})
+        return result
+
+    monkeypatch.setattr(continuation.owned_surface_refresh, "refresh_owned_surfaces", render_then_change_runtime)
+    with leases.greenfield_repository_lock(repo) as descriptor:
+        admitted = continuation.require_completion(repo_root=repo, repository_lock_fd=descriptor)
+        with pytest.raises(continuation.CompassLogContinuationError, match="runtime identity changed"):
+            admitted.render()
+    raw = (repo / continuation.RECEIPT_PATH).read_bytes()
+    assert json.loads(raw)["phase"] == "rendering"
+    assert refresh._load_state(repo_root=repo)["status"] == "passed"
+    monkeypatch.setattr(continuation.owned_surface_refresh, "refresh_owned_surfaces", _no_render)
+    return raw, hashlib.sha256(raw).hexdigest()
+
+
+def test_exact_published_restoration_archives_interrupted_rendering_without_replay(active, monkeypatch):
+    repo, _ = active
+    raw, receipt_hash = _interrupted_rendering_append(repo, monkeypatch)
+    before_publication = publication.active_generation_identity(repo)
+    with pytest.raises(continuation.CompassLogContinuationError, match="runtime identity changed"):
+        _run(repo, complete=True)
+    _restore(repo, paths=("odylith/compass/compass.html", continuation._REQUEST_PATH))
+    review_hash = _restore(repo)
+    assert _abandon(repo, review_hash=review_hash, receipt_hash=receipt_hash) == 0
+    assert publication.active_generation_identity(repo) == before_publication
+    generations.require_greenfield_working_generation(repo)
+    assert (repo / continuation.STREAM_PATH).read_bytes() == PREFIX
+    assert not (repo / continuation.RECEIPT_PATH).exists()
+    archive = repo / continuation._ABANDONMENTS / receipt_hash
+    assert (archive / "original-receipt.json").read_bytes() == raw
+    witness = json.loads((archive / "abandonment.json").read_text())
+    assert witness["state"] == "abandoned"
+    assert witness["stream"]["event_sha256"] == hashlib.sha256(EVENT).hexdigest()
+    assert _abandon(repo, review_hash=review_hash, receipt_hash=receipt_hash) == 0
+    assert (archive / "original-receipt.json").read_bytes() == raw
+
+
+@pytest.mark.parametrize("drift", ["unrestored_derived", "authored_bytes", "authored_mode", "receipt_fingerprints"])
+def test_rendering_abandonment_does_not_waive_exact_restored_state(active, monkeypatch, drift):
+    repo, _ = active
+    raw, receipt_hash = _interrupted_rendering_append(repo, monkeypatch)
+    if drift != "unrestored_derived":
+        _restore(repo, paths=("odylith/compass/compass.html", continuation._REQUEST_PATH))
+    review_hash = _restore(repo)
+    if drift == "authored_bytes":
+        _write(repo / "odylith/radar/source/keep.md", b"unreviewed source change\n")
+    elif drift == "authored_mode":
+        target = repo / "odylith/radar/source/keep.md"
+        target.chmod((target.stat().st_mode & 0o777) ^ 0o100)
+    elif drift == "receipt_fingerprints":
+        receipt = json.loads(raw)
+        receipt["working"]["odylith/compass"] = "0" * 64
+        raw = (json.dumps(receipt, sort_keys=True) + "\n").encode()
+        _write(repo / continuation.RECEIPT_PATH, raw)
+        receipt_hash = hashlib.sha256(raw).hexdigest()
+    expected_publication = publication.active_generation_identity(repo)
+    assert _abandon(repo, review_hash=review_hash, receipt_hash=receipt_hash, bounded=False) == 1
+    assert publication.active_generation_identity(repo) == expected_publication
+    assert (repo / continuation.RECEIPT_PATH).read_bytes() == raw
+    assert not (repo / continuation._ABANDONMENTS / receipt_hash).exists()

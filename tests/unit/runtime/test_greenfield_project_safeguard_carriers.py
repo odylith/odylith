@@ -161,13 +161,10 @@ def test_project_carriers_preserve_advisory_safeguards_without_source_promotion(
     }
     assert dashboard["risk_items"] == [{
         "risk": "Privacy risk",
-        "meaning": (
-            f"{RISK_STATEMENT}\nCategory: privacy\n"
-            "Trigger: A user without an intake assignment requests the record.\n"
-            "Mitigation: Require assignment-scoped authorization before disclosure.\n"
-            f"Verification: {RISK_VERIFICATION}\nScope: Components: test-boundary-1; "
-            "workstreams: test-work-1; source events: 1."
-        ),
+        "key": response_risk["key"],
+        "statement": RISK_STATEMENT,
+        "meaning": RISK_STATEMENT,
+        "scope_paths": response_risk["scope_paths"],
         "status": "material_risks_identified",
         "category": "privacy",
         "trigger": "A user without an intake assignment requests the record.",

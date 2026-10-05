@@ -25,6 +25,11 @@ _METADATA = {
         "Do not remove __late restriction__: review must precede publication."
     ),
 }
+_METADATA["details"] = [
+    {"label": "Proposed boundary verification — café", "text": "Preserve **exact** <img src=x onerror=window.__atlas_box_injected__=1> & `proof`.\nKeep the final 日本語 condition."},
+    {"label": "Source actions", "text": "Source action 1 · human\nThe named steward registers cited datasets.\n" + "UnbrokenSourceIdentifier" * 35},
+]
+_RESPONSIBILITY = "Retain the steward's cited datasets and authorization boundaries. Preserve café  IDs and the final 日本語 condition."
 _ACTION_LINES = ["Record café intake.", "Inspect tag.", "Record café intake."]
 _ACTIONS = {
     "node_id": "source_actions", "label": "\n".join(_ACTION_LINES),
@@ -32,7 +37,7 @@ _ACTIONS = {
 }
 
 
-def _metadata_html(*, empty: bool) -> str:
+def _metadata_html(*, empty: bool, related: dict | None = None) -> str:
     return renderer._render_html(
         diagrams=[] if empty else [{
             "diagram_id": "D-001", "slug": "metadata-custody", "title": "Source metadata custody",
@@ -42,7 +47,9 @@ def _metadata_html(*, empty: bool) -> str:
             "last_reviewed_utc": "2026-09-08", "review_age_days": 0, "freshness": "fresh",
             "source_svg_href": "/metadata-preview.svg", "source_png_href": "/metadata-preview.png",
             "svg_viewbox_width": 2400, "svg_viewbox_height": 1400, "initial_view_fit_factor": 1,
-            "diagram_boxes": [_METADATA, _ACTIONS], "components": [],
+            "diagram_boxes": [_METADATA, _ACTIONS],
+            "components": [{"name": "Dataset support", "description": _RESPONSIBILITY}],
+            **(related or {}),
         }],
         stats={"total": 0 if empty else 1, "fresh": 0 if empty else 1, "stale": 0},
         max_review_age_days=21, tooltip_lookup={}, generated_utc="2026-09-08T00:00:00Z",
@@ -51,7 +58,7 @@ def _metadata_html(*, empty: bool) -> str:
 
 
 @contextmanager
-def _open_metadata(browser_context, width: int, state: str):  # noqa: ANN001
+def _open_metadata(browser_context, width: int, state: str, *, related: dict | None = None):  # noqa: ANN001
     base_url, context = browser_context
     with _new_page(context) as (page, observation):
         page.set_viewport_size({"width": width, "height": 1100 if width == 1440 else 932})
@@ -69,7 +76,7 @@ def _open_metadata(browser_context, width: int, state: str):  # noqa: ANN001
         page.route("**/metadata-preview.svg", asset)
         page.route("**/metadata-preview.png", asset)
         page.route("**/odylith/atlas/atlas.html*", lambda route: route.fulfill(
-            status=200, content_type="text/html", body=_metadata_html(empty=state == "empty"),
+            status=200, content_type="text/html", body=_metadata_html(empty=state == "empty", related=related),
         ))
         response = page.goto(base_url + "/odylith/index.html?tab=atlas", wait_until="networkidle")
         assert response is not None and response.ok
@@ -185,6 +192,132 @@ def test_empty_atlas_has_no_box_metadata_or_injected_action_rows(browser_context
         assert atlas.locator("#viewerImage").is_hidden()
         assert atlas.locator("#viewerAssetError").is_hidden()
         assert atlas.locator("#reset").is_disabled()
+        assert atlas.locator('.engineering-context-empty').is_hidden()
         assert not atlas.locator("body").evaluate("body => body.scrollWidth > innerWidth+1")
         _capture(page, f"atlas-box-empty-{width}", {"text": empty.inner_text(), "rows": 0})
+        _assert_clean_page(page, observation)
+
+
+@pytest.mark.parametrize('width', [1440, 430], ids=['desktop', 'mobile'])
+@pytest.mark.parametrize('state', ['normal', 'fallback', 'error'])
+def test_box_supporting_details_are_keyboard_accessible_exact_and_unclipped(browser_context, width: int, state: str) -> None:  # noqa: ANN001
+    with _open_metadata(browser_context, width, state) as (page, atlas, observation):
+        row = atlas.locator('.diagram-box-row').first
+        disclosure = row.locator('details.diagram-box-details')
+        summary = disclosure.locator('summary')
+        assert summary.inner_text() == 'Supporting details'
+        assert disclosure.get_attribute('open') is None
+        assert disclosure.locator('dd').first.is_hidden()
+        assert row.locator('.diagram-box-description').text_content() == _METADATA['description']
+        summary.scroll_into_view_if_needed()
+        summary.focus()
+        assert summary.evaluate('node => node === node.ownerDocument.activeElement')
+        summary.press('Space')
+        assert disclosure.get_attribute('open') is not None
+        actual, geometry = [], []
+        for index, expected in enumerate(_METADATA['details']):
+            actual.append({})
+            for field, selector in [('label', 'dt'), ('text', 'dd')]:
+                target = disclosure.locator(selector).nth(index)
+                target.scroll_into_view_if_needed()
+                assert target.is_visible()
+                actual[-1][field] = target.text_content()
+                assert actual[-1][field] == expected[field]
+                assert target.locator('*').count() == 0
+                geometry.append(_text_bounds(target))
+        assert all(not bounds['clipped'] and not bounds['hidden'] for bounds in geometry), geometry
+        assert not atlas.locator('body').evaluate('() => Boolean(window.__atlas_box_injected__)')
+        assert not atlas.locator('body').evaluate('body => body.scrollWidth > innerWidth+1')
+        assert atlas.locator('.diagram-box-row').nth(1).locator('details').count() == 0
+        component = atlas.locator('.component-description')
+        component.scroll_into_view_if_needed()
+        assert component.text_content() == _RESPONSIBILITY
+        assert component.locator('*').count() == 0
+        bounds = _text_bounds(component)
+        assert not bounds['clipped'] and not bounds['hidden'], bounds
+        _capture(page, f'atlas-box-details-{width}-{state}', {'actual': actual, 'geometry': geometry})
+        summary.scroll_into_view_if_needed()
+        summary.press('Enter')
+        assert disclosure.get_attribute('open') is None
+        assert disclosure.locator('dd').first.is_hidden()
+        _assert_clean_page(page, observation)
+
+
+@pytest.mark.parametrize("width", [1440, 430], ids=["desktop", "mobile"])
+@pytest.mark.parametrize("state", ["normal", "error"])
+@pytest.mark.parametrize("context_kind", ["absent", "partial", "complete"])
+def test_engineering_context_omits_empty_categories_and_preserves_links(
+    browser_context, width: int, state: str, context_kind: str,
+) -> None:  # noqa: ANN001
+    categories = {
+        "backlog": "backlogLinks", "plans": "planLinks", "docs": "docLinks",
+        "code": "codeLinks", "registry": "registryLinks", "surfaces": "surfaceLinks",
+    }
+    populated = set(categories) if context_kind == "complete" else (
+        {"plans", "code"} if context_kind == "partial" else set()
+    )
+    related = {f"related_{name}": [{
+        "file": f"Exact {name} reference — café", "href": f"/odylith/index.html?context={name}",
+        "target": "_top" if name == "plans" else "_blank",
+    }] for name in populated}
+    with _open_metadata(browser_context, width, state, related=related) as (page, atlas, observation):
+        section = atlas.locator(".linked-context-section")
+        availability = section.locator(".engineering-context-empty")
+        assert section.locator(".artifact-group:visible").count() == len(populated)
+        if populated:
+            assert availability.is_hidden()
+        else:
+            availability.scroll_into_view_if_needed()
+            assert availability.is_visible() and availability.get_attribute("role") == "status"
+            assert availability.inner_text() == "No engineering context is linked to this diagram yet."
+            bounds = _text_bounds(availability)
+            assert not bounds["clipped"] and not bounds["hidden"], bounds
+        for name, node_id in categories.items():
+            links = atlas.locator(f"#{node_id}")
+            if name not in populated:
+                assert links.is_hidden() and links.locator("a").count() == 0
+                continue
+            link = links.locator("a")
+            link.scroll_into_view_if_needed()
+            assert link.is_visible() and link.count() == 1
+            assert {field: link.get_attribute(field) for field in ("href", "target")} == {
+                field: related[f"related_{name}"][0][field] for field in ("href", "target")
+            }
+            assert link.text_content() == related[f"related_{name}"][0]["file"]
+            bounds = _text_bounds(link)
+            assert not bounds["clipped"] and not bounds["hidden"], bounds
+        assert atlas.locator("#viewerAssetError").is_visible() if state == "error" else atlas.locator("#viewerAssetError").is_hidden()
+        assert not atlas.locator("body").evaluate("body => body.scrollWidth > innerWidth+1")
+        _capture(page, f"atlas-context-{width}-{state}-{context_kind}", {"populated": sorted(populated)})
+        _assert_clean_page(page, observation)
+
+
+@pytest.mark.parametrize("width", [1440, 430], ids=["desktop", "mobile"])
+@pytest.mark.parametrize("generated_role", [
+    "Container", "Proposed component", "Proposed component support",
+    "Proposed logical component", "Proposed workstream",
+])
+def test_generated_box_badges_are_omitted_without_changing_authored_roles(
+    browser_context, monkeypatch, width: int, generated_role: str,
+) -> None:  # noqa: ANN001
+    custom_role = "Source steward — café <owner> & **exact** authority"
+    proposed_title = "Proposed Capability Support and Source Facts"
+    monkeypatch.setitem(_METADATA, "role", generated_role)
+    monkeypatch.setitem(_ACTIONS, "role", custom_role)
+    with _open_metadata(browser_context, width, "normal", related={"title": proposed_title}) as (page, atlas, observation):
+        rows = atlas.locator(".diagram-box-row")
+        assert rows.count() == 2 and rows.first.locator(".diagram-box-role").count() == 0
+        role = rows.nth(1).locator(".diagram-box-role")
+        role.scroll_into_view_if_needed()
+        assert role.is_visible() and role.text_content() == custom_role
+        assert role.locator("*").count() == 0
+        bounds = _text_bounds(role)
+        assert not bounds["clipped"] and not bounds["hidden"], bounds
+        assert atlas.locator("#diagramTitle").text_content() == proposed_title
+        supplied = json.loads(atlas.locator("#catalogData").text_content())["diagrams"][0]["diagram_boxes"]
+        assert supplied == [_METADATA, _ACTIONS]
+        assert atlas.locator("body").evaluate("() => allDiagrams[0].diagram_boxes") == supplied
+        assert rows.first.locator(".diagram-box-description").text_content() == _METADATA["description"]
+        assert not atlas.locator("body").evaluate("body => body.scrollWidth > innerWidth+1")
+        _capture(page, f"atlas-generic-badge-{width}-{generated_role}", {"raw_role": generated_role, "retained_custom_role": role.text_content()})
         _assert_clean_page(page, observation)

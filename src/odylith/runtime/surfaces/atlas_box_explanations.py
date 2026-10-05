@@ -10,6 +10,7 @@ from typing import Any, Iterable, Mapping, Sequence
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import (
     capitalize_sentence_start_preserving_source_terms,
 )
+from odylith.runtime.domain_intelligence.greenfield_authored_atlas_design_views import atlas_box_details
 from odylith.runtime.common.display_text import present_verb
 from odylith.runtime.domain_intelligence.greenfield_deferral_predicates import terminal_deferral_subject
 from odylith.runtime.surfaces import atlas_diagram_intelligence
@@ -104,14 +105,18 @@ class DiagramBoxExplanation:
     role: str
     description: str
     generated: bool = False
+    details: tuple[Mapping[str, str], ...] | None = None
 
-    def as_dict(self) -> dict[str, str]:
+    def as_dict(self) -> dict[str, Any]:
         """Return the box explanation as a JSON-ready Atlas payload row."""
-        return {
+        row: dict[str, Any] = {
             "label": self.label,
             "role": self.role,
             "description": self.description,
         }
+        if self.details is not None:
+            row["details"] = [dict(detail) for detail in self.details]
+        return row
 
 
 @dataclass(frozen=True)
@@ -1016,6 +1021,13 @@ def normalize_catalog_diagram_boxes(
         label = _clean_label(str(box.get("label", "")).strip())
         description = display_text.strip_inline_markdown_emphasis(box.get("description", ""))
         role = str(box.get("role", "")).strip()
+        details = None
+        if "details" in box:
+            try:
+                details = tuple(atlas_box_details(box["details"]))
+            except ValueError as exc:
+                errors.append(f"{box_context}: {exc}")
+                continue
         key = _label_key(label)
         if not label or not description:
             continue
@@ -1029,6 +1041,7 @@ def normalize_catalog_diagram_boxes(
                 role=role,
                 description=description,
                 generated=False,
+                details=details,
             )
         )
     return tuple(normalized)
@@ -1041,7 +1054,7 @@ def merge_diagram_box_explanations(
     component_rows: Sequence[Mapping[str, str]] = (),
     diagram_title: str = "",
     diagram_summary: str = "",
-) -> tuple[dict[str, str], ...]:
+) -> tuple[dict[str, Any], ...]:
     """Merge Mermaid-derived box inventory with catalog-authored explanations."""
     generated = extract_diagram_boxes_from_mermaid(
         source_text,
@@ -1065,6 +1078,7 @@ def merge_diagram_box_explanations(
                     role=override.role or generated_box.role,
                     description=override.description,
                     generated=False,
+                    details=override.details,
                 )
             )
             used.add(key)

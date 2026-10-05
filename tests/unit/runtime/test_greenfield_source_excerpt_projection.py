@@ -56,7 +56,7 @@ def test_accepted_evidence_excerpt_labels_cover_all_product_story_views(
         source_launch_context=_source_launch_context(proposal=proposal, root=tmp_path),
     )
     display = f"Accepted evidence excerpt: “{excerpt}”"
-    assert payload["intro"] == display
+    assert payload["intro"] == ""
     assert display in payload["known"]
     assert payload["product_story"]["paragraphs"][0] == display
     assert payload["product_story_title"] == "Project overview"
@@ -71,4 +71,11 @@ def test_accepted_evidence_excerpt_labels_cover_all_product_story_views(
     assert intent == before
     assert proposal["intent"]["product_story"] == excerpt
     assert payload["authored_facts"]["product_story"] == excerpt
+    from html import escape
+    from odylith.runtime.project_intelligence.presenter import render_project_html
+    rendered = render_project_html({"project_intelligence": payload})
+    assert '<details class="project-evidence-excerpt"><summary>Source evidence</summary>' in rendered
+    rendered_excerpt = escape(" ".join(display.split()), quote=True)
+    assert rendered_excerpt in rendered
+    assert rendered_excerpt not in rendered.split("</header>", 1)[0]
     assert proposal["intent"]["authored_semantics"] == before["authored_semantics"]

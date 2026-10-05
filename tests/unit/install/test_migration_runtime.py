@@ -1160,3 +1160,39 @@ def test_atlas_surface_migration_ledger_stale_blocks_upgrade(tmp_path: Path) -> 
     decision = _decision_for(plan, ATLAS_SURFACE_MIGRATION_ID)
     assert decision.state == migration_runtime.STATE_LEDGER_STALE
     assert "migration ledger is stale" in plan.blocked_reason
+
+
+
+@pytest.mark.parametrize("loaded_target", [False, True])
+def test_selected_atlas_render_runs_only_from_target_owner(tmp_path, monkeypatch, loaded_target):
+    from dataclasses import replace
+    from types import SimpleNamespace
+    _seed_repo(tmp_path, active_version="0.1.14")
+    _seed_atlas_catalog(tmp_path)
+    target_runtime = tmp_path / ".odylith/runtime/versions/0.1.15"
+    target_runtime.mkdir(parents=True, exist_ok=True)
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path, repo_role="consumer_repo", previous_version="0.1.14", target_version="0.1.15",
+    )
+    decision = _decision_for(plan, ATLAS_SURFACE_MIGRATION_ID)
+    assert decision.state == migration_runtime.STATE_SELECTED
+    plan = replace(plan, selected=(decision,), blocked=())
+    calls = []
+    def target_producer(**arguments):
+        assert loaded_target
+        assert arguments == {"repo_root": tmp_path, "previous_version": "0.1.14", "target_version": "0.1.15"}
+        calls.append("target-render")
+        return SimpleNamespace(migration_id=ATLAS_SURFACE_MIGRATION_ID, applied=True, skipped_reason="",
+                               written_paths=(), removed_paths=(), ledger_path=decision.ledger_path,
+                               verification_result={"status": "passed"})
+    monkeypatch.setattr(migration_runtime, "migrate_atlas_surface_polish", target_producer)
+    if loaded_target:
+        monkeypatch.setattr(migration_runtime, "__file__", str(target_runtime / "lib/odylith/install/migration_runtime.py"))
+    before = {str(p.relative_to(tmp_path)): p.read_bytes() for p in (tmp_path / "odylith/atlas").rglob("*") if p.is_file()}
+    results = migration_runtime.apply_release_migrations(plan=plan, runtime_root=target_runtime)
+    assert len(results) == 1
+    assert results[0].state == (migration_runtime.STATE_APPLIED if loaded_target else migration_runtime.STATE_SELECTED)
+    assert results[0].verification_result == ({"status": "passed"} if loaded_target else {"status": "pending", "mode": "target_runtime_completion"})
+    assert results[0].written_paths == results[0].removed_paths == ()
+    assert calls == (["target-render"] if loaded_target else [])
+    assert {str(p.relative_to(tmp_path)): p.read_bytes() for p in (tmp_path / "odylith/atlas").rglob("*") if p.is_file()} == before

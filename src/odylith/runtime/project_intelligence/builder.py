@@ -762,12 +762,18 @@ def build_project_intelligence_payload(
         "Casebook" if int(casebook.get("open_count", 0) or 0) else "",
     ]
     evidence_sources = [source for source in evidence_sources if source]
-    current_state = (
-        f"{current_focus}. Current release: {release_label}. "
-        f"Worktree: {_sentence(worktree.get('status'), 'unknown')} with "
-        f"{worktree.get('meaningful_changed_count', 0) or 0} meaningful and "
-        f"{worktree.get('generated_changed_count', 0) or 0} generated changed paths."
-    )
+    current_state = f"{current_focus}. Current release: {release_label}. "
+    worktree_status = _sentence(worktree.get("status"))
+    if worktree_status.casefold() in {"", "unknown", "unavailable", "error"}:
+        current_state += "Working tree information is unavailable."
+    elif all(worktree.get(key) is not None for key in ("meaningful_changed_count", "generated_changed_count")):
+        current_state += (
+            f"Worktree: {worktree_status} with "
+            f"{worktree['meaningful_changed_count']} meaningful and "
+            f"{worktree['generated_changed_count']} generated changed paths."
+        )
+    else:
+        current_state += f"Working tree: {worktree_status}. Change counts are unavailable."
     desired_state = _desired_state(
         project_title=project_title,
         project_intro=project_intro,

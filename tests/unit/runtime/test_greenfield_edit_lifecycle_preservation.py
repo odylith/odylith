@@ -112,7 +112,7 @@ def test_host_receipt_passive_approval_is_an_explicit_closed_version_pair(tmp_pa
     from tests.unit.runtime.test_greenfield_create_transaction import _transaction
 
     transaction = _transaction(repo_root=tmp_path)
-    for version, approved in ((49, True), (50, True), (51, True), (52, True), (53, True), (48, False), (54, False)):
+    for version, approved in ((49, True), (50, True), (51, True), (52, True), (53, True), (54, True), (48, False), (55, False)):
         model = deepcopy(transaction.quality_manifest["model_authoring"])
         model["host_candidate"]["contract_version"] = f"odylith.greenfield.host-candidate-contract.v{version}"
         assert greenfield_model_authoring_receipt_approved(
@@ -590,3 +590,43 @@ def test_fresh_v9_compiler_seal_can_be_read_and_used_for_a_second_edit(tmp_path,
         if edit_index:
             assert set(decisions["edit_preservation"]) == {"conditional_guards/supplier-evidence-visible"}
     assert all(path.read_bytes() == original for path, original in sealed)
+
+
+
+@pytest.mark.parametrize("host_version, receipt_version, passive, accepted", [
+    (53, 9, True, True), (52, 9, True, True),
+    (55, 9, True, False), (53, 8, True, False), (52, 8, True, False),
+    (53, 9, False, False),
+])
+def test_passive_edit_source_receipt_pairs_remain_exact_at_transaction_guard(
+    host_version, receipt_version, passive, accepted,
+):
+    """Isolate the closed tuple guard with a real admitted v9 source receipt.
+
+    These declared binding hashes test this guard, not a complete compiler seal;
+    the existing full v9 initial/EDIT/EDIT readback test owns that proof.
+    """
+    from odylith.runtime.domain_intelligence.greenfield_create_transaction import _require_host_candidate_authority_binding
+    from odylith.runtime.domain_intelligence.greenfield_authored_semantics import AUTHORED_RELATION_SET_SHA256_KEY
+    receipt = deepcopy(_admit(_edit_case()))
+    receipt["version"] = f"odylith.greenfield.source-duty-ledger-receipt.v{receipt_version}"
+    authority = {"markdown_source_sha256": receipt["source_sha256"], "canonical_candidate_sha256": "c" * 64,
+                 "product_facts_sha256": "f" * 64, AUTHORED_RELATION_SET_SHA256_KEY: "a" * 64}
+    canonical = {"source_sha256": receipt["source_sha256"], "canonical_candidate_sha256": "c" * 64,
+                 "product_facts_sha256": "f" * 64, AUTHORED_RELATION_SET_SHA256_KEY: "a" * 64}
+    host = {"contract_version": f"odylith.greenfield.host-candidate-contract.v{host_version}",
+            "source_sha256": receipt["source_sha256"], "canonical_candidate_sha256": "c" * 64,
+            "source_duty_ledger_sha256": receipt["ledger_sha256"],
+            "source_duty_verifier_task_sha256": receipt["verifier_task_sha256"],
+            "source_duty_decision_set_sha256": receipt["decision_set_sha256"],
+            "source_duty_binding_sha256": "b" * 64}
+    quality = {"model_authoring": {"host_candidate": host, "canonical_authority": canonical,
+                                   "runtime_semantic_model_call_count": 0}}
+    proposal = {"intent": {"authored_semantics": {"source_duty": {
+        "ledger_receipt": receipt, "lifecycle": {"binding_sha256": "b" * 64},
+    }}}}
+    if accepted:
+        _require_host_candidate_authority_binding(quality, authority, proposal=proposal, passive=passive)
+    else:
+        with pytest.raises(ValueError, match="source-duty hashes"):
+            _require_host_candidate_authority_binding(quality, authority, proposal=proposal, passive=passive)

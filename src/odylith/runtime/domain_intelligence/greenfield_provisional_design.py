@@ -158,6 +158,15 @@ PROVISIONAL_DESIGN_SCHEMA = {
     "properties": {
         "version": {"type": "string", "const": PROVISIONAL_DESIGN_VERSION},
         "authority_kind": {"type": "string", "const": PROVISIONAL_DESIGN_AUTHORITY_KIND},
+        "project_summary": {
+            **_TEXT, "maxLength": 600,
+            "description": (
+                "One or two concise sentences explaining what the proposed project is, who it serves, "
+                "and its source-supported value or visible outcome. Keep proposed scope explicit; "
+                "do not recite the workflow, introduce implementation facts, promote assumptions "
+                "to accepted facts, or include host/model jargon."
+            ),
+        },
         "components": _row_schema(_COMPONENT_FIELDS, minimum=4, maximum=5),
         "workstreams": _row_schema(_WORKSTREAM_FIELDS, minimum=4, maximum=5),
         "exchanges": _row_schema(_EXCHANGE_FIELDS, minimum=0, maximum=32),
@@ -175,11 +184,14 @@ def validate_provisional_design(
 
     if (
         not isinstance(value, Mapping)
-        or set(value) != set(PROVISIONAL_DESIGN_SCHEMA["required"])
+        or not set(PROVISIONAL_DESIGN_SCHEMA["required"]).issubset(value)
+        or not set(value).issubset(PROVISIONAL_DESIGN_SCHEMA["properties"])
         or value.get("version") != PROVISIONAL_DESIGN_VERSION
         or value.get("authority_kind") != PROVISIONAL_DESIGN_AUTHORITY_KIND
     ):
         raise ValueError("Greenfield provisional design has an unsupported authority contract")
+    if "project_summary" in value:
+        _require_text(value["project_summary"], maximum=600)
     if (
         not isinstance(event_orders, Sequence)
         or isinstance(event_orders, (str, bytes, bytearray))

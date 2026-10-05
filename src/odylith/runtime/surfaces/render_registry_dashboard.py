@@ -888,8 +888,8 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     <section class="registry-hero">
       <p class="hero-overline">Component Ownership and Evidence Map</p>
       <h1 class="registry-title">Component Registry</h1>
-      <p class="registry-subtitle">See what exists, who owns it, and which specs, workstreams, and diagrams back it.</p>
-      <div class="kpis" id="kpis"></div>
+      <p class="registry-subtitle">Components and responsibilities</p>
+      <details><summary id="registryActivitySummary">Activity and coverage</summary><div class="kpis" id="kpis"></div></details>
     </section>
 
     <section class="registry-filters-shell">
@@ -1588,12 +1588,12 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         { label: "Visible Components", value: Number(visibleCount || 0), tooltip: "Components visible under current search and filters." },
         { label: "All Components", value: Number(counts.components || 0), tooltip: "Total first-class component inventory size." },
         { label: "Events", value: Number(counts.events || 0), tooltip: "Codex stream events visible to Registry." },
-        { label: "Meaningful", value: Number(counts.meaningful_events || 0), tooltip: "Governance-relevant events." },
-        { label: "Mapped Meaningful", value: Number(counts.mapped_meaningful_events || 0), tooltip: "Meaningful events with mapped components." },
+        { label: "Governance Events", value: Number(counts.meaningful_events || 0), tooltip: "Governance-relevant events." },
+        { label: "Events Linked to Components", value: Number(counts.mapped_meaningful_events || 0), tooltip: "Meaningful events with mapped components." },
       ];
       if (Number(counts.unmapped_meaningful_events || 0) > 0) {
         rows.push({
-          label: "Unmapped Meaningful",
+          label: "Events Missing Component Links",
           value: Number(counts.unmapped_meaningful_events || 0),
           tooltip: "Meaningful events without mapped components.",
           warn: true,
@@ -1606,6 +1606,10 @@ def _render_html(*, payload: dict[str, Any]) -> str:
           tooltip: "Unresolved component tokens pending curated review.",
         });
       }
+      const missingLinks = Number(counts.unmapped_meaningful_events || 0);
+      document.getElementById("registryActivitySummary").textContent = missingLinks > 0
+        ? `Activity and coverage · ${missingLinks} ${missingLinks === 1 ? "event needs" : "events need"} component links`
+        : "Activity and coverage";
       kpisEl.innerHTML = rows
         .map((row) => (
           `<article class="kpi-card${row.warn ? " warn" : ""}" data-tooltip="${escapeHtml(row.tooltip || "")}">`
@@ -2367,11 +2371,11 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         specDeveloperDocs: Array.isArray(row.spec_developer_docs) ? row.spec_developer_docs : [],
       };
       const metadata = [
+        staticLabel(`ID: ${row.component_id}`, "Exact component identifier."),
         staticLabel(`Category: ${humanizeToken(row.category)}`, categoryDescription(row.category)),
         staticLabel(`Qualification: ${humanizeToken(row.qualification)}`, qualificationDescription(row.qualification)),
         staticLabel(`Kind: ${humanizeToken(row.kind)}`, "Component structure class."),
         staticLabel(`Owner: ${row.owner || "unknown"}`, "Declared ownership for governance routing."),
-        staticLabel(`Status: ${humanizeToken(row.status || "unknown")}`, "Lifecycle state of this component record."),
       ].join("");
 
       const wsLinks = workstreams.length
@@ -2441,7 +2445,12 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         ? `<p class="desc">${escapeHtml(forensicCoverageLabel(forensicCoverage))}. ${escapeHtml(emptyReasons.length ? ensureSentence(naturalList(emptyReasons)) : "No mapped forensic evidence channels are currently attached.")}</p>`
         : `<p class="desc">${escapeHtml(forensicCoverageSummary(forensicCoverage))}</p>`;
 
+      const whyTracked = String(row.why_tracked || "").trim();
+      const rawWhatItIs = String(row.what_it_is || "").trim();
+      const whatItIs = compactRegistryNarrative(rawWhatItIs, row);
       const rows = [
+        whatItIs !== rawWhatItIs ? contextRow("Registry description", 1, `<p class="desc">${escapeHtml(rawWhatItIs)}</p>`, "Exact stored description; the header omits only generated scaffolding.", true) : "",
+        contextRow("Why tracked", whyTracked ? 1 : 0, `<p class="desc">${escapeHtml(whyTracked)}</p>`, "Declared delivery or governance rationale.", true),
         contextRow("Forensic Coverage", Number(row.timeline_count || 0), forensicCoverageBody, "Registry coverage truth derived from explicit Compass events, recent path matches, and mapped workstream evidence.", true),
         contextRow("Metadata", 5, metadata, "Category, qualification, and ownership qualifiers."),
         contextRow("Product Layer", productLayer ? 1 : 0, productLayerBody, "Odylith product-layer placement for this component."),
@@ -2453,12 +2462,11 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         contextRow("Path Prefixes", pathPrefixes.length, pathLabels, "Artifact prefixes used in event mapping."),
       ].join("");
 
-      const displayName = componentCompactName(row, 72);
-      const rawDisplayName = componentRawName(row);
+      const displayName = componentRawName(row);
       const fullIdentity = componentFullIdentity(row);
       const fallbackToken = String(row.component_id || "").trim();
       const specPath = String(row.spec_ref || "").trim();
-      const specLastUpdated = String(row.spec_last_updated || "").trim() || "Unknown";
+      const specLastUpdated = String(row.spec_last_updated || "").trim();
       const specHistory = Array.isArray(row.spec_feature_history) ? row.spec_feature_history : [];
       const specMarkdown = String(row.spec_markdown || "").trim();
       const specRunbooks = Array.isArray(row.spec_runbooks) ? row.spec_runbooks : [];
@@ -2478,20 +2486,12 @@ def _render_html(*, payload: dict[str, Any]) -> str:
             </div>
           </details>
         `
-        : '<p class="summary-row"><strong>Triggers:</strong> No trigger phrases documented.</p>';
-      const whatItIsParts = splitInitialSourceBoundary(compactRegistryNarrative(row.what_it_is || "", row));
-      const whyTracked = compactRegistryNarrative(row.why_tracked || "Not documented.", row);
-      const fullNameSubtitle = rawDisplayName && rawDisplayName !== displayName ? `<p class="component-full-name">${escapeHtml(rawDisplayName)}</p>` : "";
-      const idSubtitle = componentDisplayIdLine(row, displayName || fallbackToken);
+        : "";
 
       detailEl.innerHTML = `
-        <div class="component-identity"><h2 class="component-name" title="${escapeHtml(fullIdentity)}">${escapeHtml(displayName || fallbackToken)}</h2>${fullNameSubtitle}${idSubtitle}</div>
+        <div class="component-identity"><h2 class="component-name" title="${escapeHtml(fullIdentity)}">${escapeHtml(displayName || fallbackToken)}</h2>${staticLabel(humanizeToken(row.status || "unknown"), "Lifecycle state of this component record.")}</div>
         <div class="summary-strip">
-          ${summaryTextRow("What it is", whatItIsParts.body || row.what_it_is || "Not documented.")}
-          ${summaryArtifactRow("Source boundary", whatItIsParts.source, "Source boundary")}
-          ${summaryTextRow("Why tracked", whyTracked || "Not documented.")}
-          ${productLayer ? `<p class="summary-row"><strong>Product layer:</strong> ${escapeHtml(productLayerLabel(productLayer))}</p>` : ""}
-          <p class="summary-row"><strong>Forensic coverage:</strong> ${escapeHtml(forensicCoverageSummary(forensicCoverage))}</p>
+          <p class="summary-row component-purpose">${escapeHtml(whatItIs || "Purpose not documented.")}</p>
           ${triggerBlock}
         </div>
         <details class="spec-expand">
@@ -2500,11 +2500,12 @@ def _render_html(*, payload: dict[str, Any]) -> str:
               <p class="detail-disclosure-title spec-summary-title">Current Spec</p>
             </div>
             <span class="spec-summary-meta">
-              <span class="label">Last updated ${escapeHtml(specLastUpdated)}</span>
+              ${specLastUpdated ? `<span class="label">Last updated ${escapeHtml(specLastUpdated)}</span>` : ""}
               <span class="label">Feature entries ${escapeHtml(String(specHistory.length))}</span>
             </span>
           </summary>
           <div class="spec-expand-body">
+            ${specLastUpdated ? "" : summaryTextRow("Last updated", "Not documented.")}
             ${specPath ? summaryArtifactRow("Spec source", specPath, compactPathLabel(specPath, "Component spec")) : '<p class="summary-row"><strong>Spec source:</strong> Not documented.</p>'}
             ${renderSpecLinkGroup(
               "Runbooks",

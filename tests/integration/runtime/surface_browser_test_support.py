@@ -284,7 +284,7 @@ def _select_radar_row_with_link(
         if not idea_id:
             continue
         _click_visible_radar_row(button)
-        radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=idea_id).wait_for(timeout=15000)
+        _wait_for_radar_detail_id(radar, idea_id)
         links = radar.locator(f"#detail {link_selector}")
         if links.count():
             href = str(links.first.get_attribute("href") or "").strip()
@@ -376,7 +376,7 @@ def _wait_for_radar_detail_id(radar, idea_id: str) -> None:  # noqa: ANN001
     """Wait for the Radar detail pane to settle on the requested workstream id."""
     radar.locator(f'button[data-idea-id="{idea_id}"].active').wait_for(timeout=15000)
     radar.locator("#detail .detail-title").wait_for(timeout=15000)
-    radar.locator("#detail").filter(has_text=idea_id).wait_for(timeout=15000)
+    playwright_sync.expect(radar.locator('#detail [data-kpi="workstream-id"] .v')).to_have_text(idea_id, timeout=15000)
 
 
 def _wait_for_radar_frame_workstream(page, workstream: str) -> None:  # noqa: ANN001
@@ -660,10 +660,11 @@ def _assert_radar_selection(page, workstream: str) -> None:  # noqa: ANN001
         radar.locator("a.back", has_text=re.compile(r"Back to Backlog .*Radar")).wait_for(timeout=15000)
         radar.locator("p.id", has_text=workstream).wait_for(timeout=15000)
         return
-    radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=workstream).wait_for(timeout=15000)
+    _wait_for_radar_detail_id(radar, workstream)
 
 
 def _assert_registry_selection(page, component_id: str) -> None:  # noqa: ANN001
+    page.locator('#tab-registry[aria-selected="true"]').wait_for(timeout=15000)
     assert page.locator("#tab-registry").get_attribute("aria-selected") == "true"
     registry = page.frame_locator("#frame-registry")
     registry.locator("h1", has_text="Component Registry").wait_for(timeout=15000)

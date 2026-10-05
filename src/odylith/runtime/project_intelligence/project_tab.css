@@ -36,6 +36,7 @@
 }
 
 .project-hero {
+  overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 16px;
   background:
@@ -44,11 +45,9 @@
   box-shadow: var(--surface-shadow);
 }
 
-.project-hero {
-  overflow: hidden;
-}
-
 .project-panel {
+  min-width: 0;
+  padding: 16px 18px;
   border: 1px solid #dbeafe;
   border-radius: 12px;
   background: linear-gradient(180deg, #ffffff, #fbfdff);
@@ -62,7 +61,7 @@
   padding: 22px;
 }
 
-.project-hero-main-empty {
+.project-hero-main-single {
   grid-template-columns: minmax(0, 1fr);
 }
 
@@ -219,12 +218,17 @@
   padding: 13px 14px;
 }
 
+.project-risk-card,
 .project-job-card {
   display: grid;
   align-content: start;
   gap: 8px;
 }
 
+.project-empty-action h3,
+.project-empty-preview-card h3,
+.project-risk-mitigation h4,
+.project-risk-details dt,
 .project-card h3,
 .project-actor-card h3,
 .project-risk-card h3,
@@ -251,6 +255,9 @@
   text-underline-offset: 0.18em;
 }
 
+.project-risk-card p,
+.project-risk-details dd,
+.project-evidence-excerpt,
 .project-card span,
 .project-actor-card span,
 .project-job-card p,
@@ -347,11 +354,6 @@
   min-width: 0;
 }
 
-.project-panel {
-  min-width: 0;
-  padding: 16px 18px;
-}
-
 .project-panel-head h2 {
   margin: 0;
   color: var(--ink);
@@ -390,15 +392,6 @@
   border-radius: 10px;
   background: linear-gradient(180deg, #f8fbff, #ffffff);
   padding: 16px;
-}
-
-.project-empty-action h3,
-.project-empty-preview-card h3 {
-  margin: 0;
-  color: var(--ink);
-  font-size: var(--project-type-card-title-size);
-  font-weight: var(--project-type-card-title-weight);
-  line-height: 1.18;
 }
 
 .project-empty-action p,
@@ -455,6 +448,15 @@
     linear-gradient(180deg, rgba(248, 251, 255, 0.96), rgba(255, 255, 255, 0.98)),
     var(--panel);
   padding: 18px 20px;
+}
+
+.project-risk-details dd + dt {
+  margin-top: 12px;
+}
+
+.project-evidence-excerpt,
+.project-open-questions {
+  padding: 14px 0;
 }
 
 .project-story-card-stack {
@@ -514,7 +516,7 @@
   font-weight: 600;
   letter-spacing: 0.06em;
   line-height: 1.15;
-  text-transform: uppercase;
+  text-transform: none;
 }
 
 .project-story-contract-card p {
@@ -667,7 +669,7 @@
   margin-top: 8px;
 }
 
-.project-actor-card {
+.project-actor-card:not(.project-actor-card-name) {
   min-height: 112px;
 }
 
@@ -681,14 +683,7 @@
 }
 
 .project-risk-grid {
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-}
-
-.project-risk-card p {
-  margin: 0;
-  color: var(--muted);
-  font-size: var(--project-type-content-size);
-  line-height: 1.45;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .project-job-grid {
@@ -885,6 +880,9 @@
   margin-top: 12px;
 }
 
+.project-risk-details summary,
+.project-open-questions summary,
+.project-evidence-excerpt summary,
 .project-evidence-audit summary {
   cursor: pointer;
   color: var(--chip-active-ink);

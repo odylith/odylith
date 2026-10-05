@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import stat
 import subprocess
 
 from odylith.runtime.domain_intelligence.greenfield_repository_write_set import greenfield_repository_layout
@@ -120,10 +121,47 @@ def _commit_ready_dirty_status_line(line: str) -> bool:
     return status[1] != " "
 
 
+def _verified_maintainer_shell_export(repo_root: Path) -> bool:
+    """Accept only the exact published logical shell staged for a source checkpoint."""
+    from odylith.install import manager
+    from odylith.runtime.domain_intelligence import greenfield_generation_state as publication
+    from odylith.runtime.domain_intelligence import greenfield_generation_store as generations
+
+    try:
+        status = manager.version_status(repo_root=repo_root, deep_integrity=False)
+        if (status.repo_role != manager.PRODUCT_REPO_ROLE
+                or status.posture != manager.DETACHED_SOURCE_LOCAL_POSTURE
+                or status.runtime_source != manager.SOURCE_CHECKOUT_RUNTIME_SOURCE):
+            return False
+        before = publication.active_generation_identity(repo_root)
+        generations.require_greenfield_working_generation(repo_root)
+        shell = greenfield_repository_layout(repo_root).target_path("odylith/index.html")
+        contents, mode = shell.read_bytes(), stat.S_IMODE(shell.stat().st_mode)
+        staged = subprocess.run(
+            ["git", "-C", str(repo_root), "show", ":odylith/index.html"],
+            capture_output=True, check=False,
+        )
+        staged_mode = subprocess.run(
+            ["git", "-C", str(repo_root), "ls-files", "--format=%(objectmode)", "--", "odylith/index.html"],
+            capture_output=True, check=False,
+        )
+        return (staged.returncode == staged_mode.returncode == 0
+                and staged.stdout == contents
+                and staged_mode.stdout == (b"100755\n" if mode & stat.S_IXUSR else b"100644\n")
+                and shell.read_bytes() == contents and stat.S_IMODE(shell.stat().st_mode) == mode
+                and publication.active_generation_identity(repo_root) == before)
+    except (OSError, RuntimeError, ValueError):
+        return False
+
+
 def git_commit_ready_generated_outputs(*, repo_root: Path) -> str:
     lines = [
         line
         for line in git_status_generated_outputs(repo_root=repo_root)
         if _commit_ready_dirty_status_line(line)
     ]
+    if (any(line[3:] == "odylith/index.html" or line == "?? odylith/tooling-shell.html" for line in lines)
+            and _verified_maintainer_shell_export(repo_root)):
+        lines = [line for line in lines if line[3:] != "odylith/index.html"
+                 and line != "?? odylith/tooling-shell.html"]
     return "\n".join(lines).rstrip()

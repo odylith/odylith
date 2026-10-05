@@ -6,6 +6,7 @@ Last updated (UTC): 2026-10-05
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-359 | 2026-10-05 | Compass cannot archive an unpublished append after rendering identity changes | P2 | compass | Open | [2026-10-05-compass-cannot-archive-an-unpublished-append-after-rendering-identity-changes.md](2026-10-05-compass-cannot-archive-an-unpublished-append-after-rendering-identity-changes.md) |
 | CB-358 | 2026-10-05 | Atlas upgrade rejects clusterless diagrams after correct rendering | P1 | odylith | Open | [2026-10-05-atlas-upgrade-rejects-clusterless-diagrams-after-correct-rendering.md](2026-10-05-atlas-upgrade-rejects-clusterless-diagrams-after-correct-rendering.md) |
 | CB-355 | 2026-10-04 | Historical judgment hints raise confidence without current evidence | P2 | odylith-context-engine | FixedPendingRelease | [2026-10-04-historical-judgment-hints-raise-confidence-without-current-evidence.md](2026-10-04-historical-judgment-hints-raise-confidence-without-current-evidence.md) |
 | CB-354 | 2026-10-04 | Greenfield capability inventory describes retired confirmation behavior | P2 | domain-intelligence | FixedPendingRelease | [2026-10-04-greenfield-capability-inventory-describes-retired-confirmation-behavior.md](2026-10-04-greenfield-capability-inventory-describes-retired-confirmation-behavior.md) |

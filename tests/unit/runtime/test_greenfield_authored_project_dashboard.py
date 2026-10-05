@@ -34,7 +34,8 @@ from odylith.runtime.domain_intelligence.greenfield_preconfirm_handoff_quality i
     project_dashboard_preview_issues,
 )
 from odylith.runtime.domain_intelligence.greenfield_experience import build_next_steps
-from odylith.runtime.project_intelligence import greenfield
+from odylith.runtime.project_intelligence import greenfield, presenter
+from odylith.runtime.project_intelligence.greenfield_authored_dashboard import build_authored_greenfield_payload
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     authored_response,
     host_candidate_response,
@@ -405,7 +406,7 @@ def test_authored_dashboard_bypasses_legacy_projection_and_preserves_exact_facts
     )
 
     assert payload["title"] == "eXact Ω Forge"
-    assert payload["intro"] == f"Accepted evidence excerpt: “{PRODUCT_STORY}”"
+    assert payload["intro"] == ""
     assert payload["focus"] == PROPOSED_FIRST_RUN
     assert payload["desired"] == "Ω-Receipt"
     assert payload["sources"]["proposal"] == "odylith/runtime/source/accepted-project.v1.json"
@@ -442,7 +443,7 @@ def test_authored_dashboard_bypasses_legacy_projection_and_preserves_exact_facts
         "Source-stated scope limits:\nBatch Æther migration"
     )
     assert payload["risk_items"] == [{
-        "risk": "Proposed risk posture: no material risk identified",
+        "risk": "No material risk identified",
         "meaning": "This structural fixture carries no product-domain risk claim.",
         "status": "no_material_risks_identified",
         "scope": "Complete provisional design.",
@@ -461,18 +462,13 @@ def test_authored_dashboard_bypasses_legacy_projection_and_preserves_exact_facts
         "trust",
         "next",
     ]
-    assert payload["delta"] == [
-        "This projection begins from the model-authored product intent."
-    ]
-    assert payload["contradictions"] == [
-        "No source-backed implementation state exists yet."
-    ]
-    assert payload["degraded_state"] == [
-        "Implementation claims remain unavailable until source and validation evidence exist."
-    ]
-    assert payload["trust_title"] == "What can this Project view claim?"
+    assert payload["delta"] == []
+    assert payload["contradictions"] == []
+    assert payload["degraded_state"] == []
+    assert payload["trust_title"] == "Evidence boundary"
     assert payload["trust_note"] == (
-        "The proposal carries product intent, but no implementation evidence yet."
+        "This page records project requirements and proposed design. "
+        "Working behavior must be established through source and validation evidence."
     )
     assert payload["delta_label"] == "What this proposal adds"
     assert payload["contradictions_label"] == "What is not yet evidenced"
@@ -1110,3 +1106,135 @@ def test_non_authored_proposal_fails_closed_without_a_legacy_owner(
         match="requires a sealed authored projection",
     ):
         greenfield.build_greenfield_payload(proposal=proposal, repo_root=tmp_path)
+
+
+def test_project_header_uses_only_the_sealed_project_summary(tmp_path: Path) -> None:
+    from odylith.runtime.project_intelligence.presenter import render_project_html
+
+    proposal = _proposal()
+    summary = "A receipt workspace helps custodians preserve one reviewable evidence transfer."
+    proposal["intent"]["authored_semantics"]["provisional_design"]["project_summary"] = summary
+    payload = preview_project_dashboard_payload(
+        root=tmp_path, proposal=proposal,
+        accepted_project_preview=_accepted_preview(proposal=proposal, root=tmp_path),
+        source_launch_context=_source_launch_context(proposal=proposal, root=tmp_path),
+    )
+    assert payload["intro"] == summary
+    rendered = render_project_html({"project_intelligence": payload})
+    header = rendered.split("</header>", 1)[0]
+    assert summary in header
+    assert "Accepted evidence excerpt:" not in header
+    assert "model-authored" not in header
+    assert "project-focus-card" not in rendered
+    assert 'data-authored-fact-list="first_path"' in rendered
+    assert f"Accepted evidence excerpt: “{PRODUCT_STORY}”" in rendered
+    assert '<details class="project-evidence-excerpt"><summary>Source evidence</summary>' in rendered
+    assert "No authored open question." not in str(payload)
+    assert payload["open"] == []
+    assert "project-open-questions" not in rendered
+
+
+@pytest.mark.parametrize("accepted", [True, False])
+def test_authored_project_status_and_next_action_preserve_exact_evidence(
+    tmp_path: Path, accepted: bool,
+) -> None:
+    proposal = _proposal()
+    frozen = deepcopy(proposal)
+    project = build_authored_greenfield_payload(
+        proposal={
+            **proposal,
+            "_accepted_project": _accepted_preview(proposal=proposal, root=tmp_path) if accepted else {},
+            "_source_launch": _source_launch_context(proposal=proposal, root=tmp_path),
+        },
+        repo_root=tmp_path,
+    )
+    before = deepcopy(project)
+    rendered = presenter.render_project_html({"project_intelligence": project})
+    header = rendered.split("</header>", 1)[0]
+    status = ("Project direction accepted. Implementation has not been verified." if accepted
+              else "Project direction proposed. Awaiting decision. Implementation has not been verified.")
+    assert f'<p class="project-status">{status}</p>' in header
+    assert "project-chips" not in header
+    assert rendered.index(f'<h2>{project["next_title"]}</h2>') < rendered.index('<h2>Project overview</h2>')
+    assert rendered.count(f'<h2>{project["next_title"]}</h2>') == 1
+    handoff = presenter._host_handoff(project)
+    summary = "Implementation steps" if accepted else "Decision details"
+    assert handoff.startswith(f'<details class="project-host-handoff"><summary>{summary}</summary>')
+    assert handoff.endswith("</details>")
+    assert '<details class="project-host-handoff" open' not in handoff
+    assert "<ol>" not in handoff
+    for row in project["host_handoff_prompts"]:
+        assert f'<h4>{presenter._d(row["label"])}</h4>' in handoff
+        assert presenter._d(row["when"]) in handoff
+        assert presenter._d(row["result"]) in handoff
+        assert presenter._d(row["stop"]) in handoff
+        assert f'<code>{presenter._e(row["prompt"])}</code>' in handoff
+    proof = next(row for row in project["product_story"]["release_contract"] if row["semantic_slot"] == "proof")
+    assert proof == {"label": "Observable result", "semantic_slot": "proof", "body": PROOF_BOUNDARY}
+    assert '<h3>Observable result</h3>' in rendered
+    assert presenter._d(PROOF_BOUNDARY) in rendered
+    assert rendered.count(project["trust_note"]) == 1
+    assert "project-signal-grid" not in rendered
+    assert "No current source-backed item found." not in rendered
+    jobs = presenter._use_cases(project["jobs"], authored=True)
+    generic_jobs = presenter._use_cases(project["jobs"])
+    assert "project-label-chip" not in jobs
+    assert generic_jobs.count("project-label-chip ") == len(project["jobs"])
+    rendered_jobs = rendered.split('<div class="project-job-grid">', 1)[1].split("</section>", 1)[0]
+    assert "project-label-chip" not in rendered_jobs
+    for title, deliverable, evidence, reference in project["jobs"]:
+        assert presenter._e(title) in jobs and presenter._e(title) in generic_jobs
+        assert presenter._d(deliverable) in jobs and presenter._d(deliverable) in generic_jobs
+        assert presenter._d(evidence) in generic_jobs
+        if reference:
+            assert f'workstream={reference}' in jobs and f'workstream={reference}' in generic_jobs
+    assert project["blockers"] == before["blockers"]
+    assert project["authored_facts"] == before["authored_facts"]
+    assert project == before
+    assert proposal == frozen
+
+
+def test_authored_trust_preserves_distinct_supplied_signals_and_real_blockers(tmp_path: Path) -> None:
+    proposal = _proposal()
+    project = preview_project_dashboard_payload(
+        root=tmp_path, proposal=proposal,
+        accepted_project_preview=_accepted_preview(proposal=proposal, root=tmp_path),
+        source_launch_context=_source_launch_context(proposal=proposal, root=tmp_path),
+    )
+    project.update(
+        delta=["One source requirement changed."],
+        contradictions=["Two recorded dependencies disagree."],
+        degraded_state=["Validation output is unavailable."],
+        open=["Which runtime owns the durable journal?"],
+        blockers=[("Which runtime owns the durable journal?", "Open", "authored intent")],
+    )
+    before = deepcopy(project)
+    rendered = presenter.render_project_html({"project_intelligence": project})
+    for value in [*project["delta"], *project["contradictions"], *project["degraded_state"], *project["open"]]:
+        assert value in rendered
+    assert "No current source-backed item found." not in rendered
+    assert project == before
+
+
+def test_existing_source_backed_project_next_action_order_is_preserved() -> None:
+    project = {
+        "title": "Existing source-backed project", "current": "A real source state.",
+        "sections": ["product_story", "next"],
+        "product_story_title": "Existing overview",
+        "product_story": {"paragraphs": ["Existing source fact."]},
+        "next_title": "Existing next action", "next_note": "Existing prerequisite.",
+        "host_handoff_steps": ["Inspect source", "Run tests"],
+        "host_handoff_prompts": [{"label": "Inspect source", "when": "Before testing.",
+                                  "result": "A source explanation.", "stop": "Before changes.",
+                                  "prompt": "Inspect the unchanged source."}],
+    }
+    before = deepcopy(project)
+    rendered = presenter.render_project_html({"project_intelligence": project})
+    assert rendered.index('<h2>Existing overview</h2>') < rendered.index('<h2>Existing next action</h2>')
+    assert "project-status" not in rendered
+    handoff = presenter._host_handoff(project)
+    assert handoff.startswith('<div class="project-host-handoff">')
+    assert '<ol><li>Inspect source</li><li>Run tests</li></ol>' in handoff
+    assert '<code>Inspect the unchanged source.</code>' in handoff
+    assert '<details class="project-host-handoff">' not in handoff
+    assert project == before

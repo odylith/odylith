@@ -655,6 +655,9 @@ def test_shell_cheatsheet_drawer_filters_and_copies_commands(tmp_path: Path, mon
             assert page.locator("#agentCheatsheetEmpty").count() == 0
 
             note_card = page.locator(".cheatsheet-card", has_text="Add a developer note").first
+            assert note_card.locator("details").get_attribute("open") is None
+            note_card.locator("details > summary").focus()
+            page.keyboard.press("Enter")
             _click_visible(note_card.locator("button", has_text="Copy prompt"))
             page.locator("#agentCheatsheetCopyStatus", has_text="Prompt copied.").wait_for(timeout=15000)
             writes = _clipboard_writes(page)
@@ -666,6 +669,8 @@ def test_shell_cheatsheet_drawer_filters_and_copies_commands(tmp_path: Path, mon
             assert page.locator(".cheatsheet-card", has_text="Add a developer note").first.is_hidden()
 
             deep_refresh_card = page.locator(".cheatsheet-card", has_text="Deep-refresh Compass").first
+            deep_refresh_card.locator("details > summary").focus()
+            page.keyboard.press("Enter")
             _click_visible(deep_refresh_card.locator("button", has_text="Copy CLI"))
             page.locator("#agentCheatsheetCopyStatus", has_text="CLI equivalent copied.").wait_for(timeout=15000)
             writes = _clipboard_writes(page)
@@ -677,6 +682,8 @@ def test_shell_cheatsheet_drawer_filters_and_copies_commands(tmp_path: Path, mon
             assert page.locator(".cheatsheet-card", has_text="Add a developer note").first.is_hidden()
 
             watch_card = page.locator(".cheatsheet-card", has_text="Keep Compass warm").first
+            watch_card.locator("details > summary").focus()
+            page.keyboard.press("Enter")
             _click_visible(watch_card.locator("button", has_text="Copy CLI"))
             page.locator("#agentCheatsheetCopyStatus", has_text="CLI equivalent copied.").wait_for(timeout=15000)
             writes = _clipboard_writes(page)
@@ -688,6 +695,8 @@ def test_shell_cheatsheet_drawer_filters_and_copies_commands(tmp_path: Path, mon
             assert page.locator(".cheatsheet-card", has_text="Create programs and waves").first.is_hidden()
 
             release_create_card = page.locator(".cheatsheet-card", has_text="Create a target release").first
+            release_create_card.locator("details > summary").focus()
+            page.keyboard.press("Enter")
             _click_visible(release_create_card.locator("button", has_text="Copy CLI"))
             page.locator("#agentCheatsheetCopyStatus", has_text="CLI equivalent copied.").wait_for(timeout=15000)
             writes = _clipboard_writes(page)
@@ -702,6 +711,8 @@ def test_shell_cheatsheet_drawer_filters_and_copies_commands(tmp_path: Path, mon
             assert page.locator(".cheatsheet-card", has_text="Create programs and waves").first.is_hidden()
 
             release_card = page.locator(".cheatsheet-card", has_text="Assign a workstream to a release").first
+            release_card.locator("details > summary").focus()
+            page.keyboard.press("Enter")
             _click_visible(release_card.locator("button", has_text="Copy CLI"))
             page.locator("#agentCheatsheetCopyStatus", has_text="CLI equivalent copied.").wait_for(timeout=15000)
             writes = _clipboard_writes(page)
@@ -713,6 +724,8 @@ def test_shell_cheatsheet_drawer_filters_and_copies_commands(tmp_path: Path, mon
             assert page.locator(".cheatsheet-card", has_text="Assign a workstream to a release").first.is_hidden()
 
             wave_card = page.locator(".cheatsheet-card", has_text="Create programs and waves").first
+            wave_card.locator("details > summary").focus()
+            page.keyboard.press("Enter")
             _click_visible(wave_card.locator("button", has_text="Copy CLI"))
             page.locator("#agentCheatsheetCopyStatus", has_text="CLI copied.").wait_for(timeout=15000)
             writes = _clipboard_writes(page)

@@ -113,7 +113,7 @@ def _file_state(path: Path) -> dict[str, Any] | None:
 def _runtime_identity(root: Path) -> dict[str, Any]:
     package = Path(odylith.__file__).resolve().parent
     code = sorted(path for path in package.rglob("*") if path.is_file()
-                  and "__pycache__" not in path.parts and path.suffix != ".pyc"
+                  and "__pycache__" not in path.parts and path.suffix != ".pyc" and path.name != ".DS_Store"
                   and not (package == root / "src/odylith"
                            and path.is_relative_to(package / "bundle/assets/odylith")))
     executable = Path(sys.executable).resolve()
@@ -372,8 +372,8 @@ def _require_abandonment_state(
     GreenfieldCommitJournal.require_settled_journals(repo_root=root)
     _quiescent_request(root)
     phase = receipt["phase"]
-    if phase not in {"prepared", "appended"} or receipt["successor"] is not None:
-        raise _refuse("only an unpublished prepared or appended Compass append can be abandoned")
+    if phase not in {"prepared", "appended", "rendering"} or receipt["successor"] is not None:
+        raise _refuse("only an unpublished prepared, appended, or interrupted rendering append can be abandoned")
     if receipt["anchors"]["repository"] != _repository_anchor(root):
         raise _refuse("the original repository identity changed")
     if publication.active_generation_identity(root) != receipt["publication"]:
@@ -395,15 +395,15 @@ def _require_abandonment_state(
         raise _refuse("the restored live managed tree differs from the unchanged published generation")
     if phase == "prepared" and fingerprints != receipt["working"]:
         raise _refuse("the prepared receipt differs from the unchanged published generation")
-    if phase == "appended" and receipt["working"] != restoration_before:
-        raise _refuse("the appended receipt differs from the exact pre-restoration working state")
+    if phase in {"appended", "rendering"} and receipt["working"] != restoration_before:
+        raise _refuse("the appended or rendering receipt differs from the exact pre-restoration working state")
 
 
 def abandon_restored(
     *, repo_root: Path, restoration_review_hash: str, receipt_hash: str,
     repository_lock_fd: int | None,
 ) -> dict[str, str]:
-    """Retire one prepared or appended receipt after exact rollback of its unpublished append."""
+    """Retire an unpublished receipt after exact rollback, never certify its completion."""
     root = Path(repo_root).resolve()
     archive = _abandonment_archive(root, receipt_hash)
     try:

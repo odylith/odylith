@@ -739,9 +739,7 @@ def test_provisional_views_keep_authority_and_complete_labels_separate_from_sour
     assert "event1 --> event2" not in first_run["mermaid_source"]
     exchanges = design_rows[1]
     assert "Proposed berth-occupancy<br/>state" in exchanges["mermaid_source"]
-    assert exchanges["diagram_boxes"][1]["description"].startswith(
-        "Proposed responsibility:"
-    )
+    assert exchanges["diagram_boxes"][1]["description"] == _provisional_design()["components"][0]["responsibility"]
     assert {row["name"] for row in exchanges["components"]} == {
         "Vessel Intake",
         "Occupancy Record",
@@ -770,7 +768,7 @@ def test_single_human_event_sequence_preserves_typed_performer_edge() -> None:
     )
     assert 'performer1 --> event1' in sequence["mermaid_source"]
     assert 'event1 -. "proposed support" .-> proposed_component1' in sequence["mermaid_source"]
-    assert "Proposed exchange 1 to Occupancy Record: Proposed vessel-tag record" in boxes["proposed_component1"]["description"]
+    assert {"label": "Proposed exchange 1 to Occupancy Record", "text": "Proposed vessel-tag record"} in boxes["proposed_component1"]["details"]
     assert "proposed exchange" not in sequence["mermaid_source"]
 
 
@@ -959,15 +957,25 @@ def test_capability_support_compact_map_preserves_complete_many_to_many_detail(
     for index, component in enumerate(design["components"], 1):
         box = boxes[f"component{index}"]
         actions = "Source actions: " + ", ".join(map(str, component["supported_event_orders"]))
-        assert actions in box["description"]
+        details = {row["label"]: row["text"] for row in box["details"]}
+        assert details["Source actions"] == "\n\n".join(
+            f"Source action {order} · human\n{authored_event_display_text(next(event for event in relations if event['order'] == order))}"
+            for order in component["supported_event_orders"]
+        )
         assert mermaid_label(actions, width=32) in source
-        assert component["responsibility"] in box["description"]
-        assert component["verification"] in box["description"]
+        assert box["description"] == component["responsibility"]
+        assert details["Proposed boundary verification"] == component["verification"]
+        assert details["Verification source actions"] == "\n\n".join(
+            f"Source action {order} · human\n{authored_event_display_text(next(event for event in relations if event['order'] == order))}"
+            for order in component["verification_event_orders"]
+        )
         assert box["role"] == "Proposed component support"
     for index, workstream in enumerate(design["workstreams"], 1):
-        detail = boxes[f"workstream{index}_acceptance"]["description"]
-        assert workstream["verification"] in detail
-        assert workstream["deliverable"] in detail
+        box = boxes[f"workstream{index}_acceptance"]
+        details = {row["label"]: row["text"] for row in box["details"]}
+        assert details["Proposed verification"] == workstream["verification"]
+        assert box["description"] == workstream["deliverable"]
+        assert details["Participating components"] == ", ".join(workstream["component_keys"])
     assert "Source-stated state object: berth occupancy" in boxes["source_facts"]["description"]
     assert "Source-stated visible result:" in boxes["source_facts"]["description"]
     assert "Source-stated proof boundary:" in boxes["source_facts"]["description"]
@@ -991,8 +999,9 @@ def test_long_statements_change_sealed_detail_without_expanding_support_topology
     support = _authored_diagrams(provisional_design=design)[-1]
     assert support["mermaid_source"] == baseline["mermaid_source"]
     details = {box["node_id"]: box for box in support["diagram_boxes"]}
-    assert details["component1"]["description"].count(long_statement) == 2
-    assert details["workstream1_acceptance"]["description"].count(long_statement) == 2
+    for node, verification_label in (("component1", "Proposed boundary verification"), ("workstream1_acceptance", "Proposed verification")):
+        assert details[node]["description"] == long_statement
+        assert {"label": verification_label, "text": long_statement} in details[node]["details"]
     assert support["authored_atlas_view_authority"]["surface_sha256"] != baseline["authored_atlas_view_authority"]["surface_sha256"]
 
 
@@ -1011,9 +1020,10 @@ def test_first_path_keeps_upstream_support_without_selecting_its_actions_or_down
     assert set(boxes) == {"event3", "performer1", "proposed_component1", "proposed_component2", "proposed_component3"}
     assert boxes["proposed_component1"]["role"] == "Proposed supporting component"
     for index, exchange in enumerate(design["exchanges"][:2], 1):
-        assert f"Proposed exchange {index} to" in boxes[f"proposed_component{index}"]["description"]
-        assert exchange["contract"] in boxes[f"proposed_component{index}"]["description"]
-    assert "Proposed delivery prerequisite: Vessel Intake through Deliver vessel intake." in boxes["proposed_component2"]["description"]
+        detail = boxes[f"proposed_component{index}"]["details"][0]
+        assert detail["label"].startswith(f"Proposed exchange {index} to")
+        assert detail["text"] == exchange["contract"]
+    assert {"label": "Proposed delivery prerequisite", "text": "Vessel Intake through Deliver vessel intake."} in boxes["proposed_component2"]["details"]
     assert "proposed delivery" not in sequence["mermaid_source"]
 
 
@@ -1045,10 +1055,11 @@ def test_first_path_preserves_long_contracts_and_empty_action_support_in_detail(
     first_run, support = rows[1], rows[-1]
     boxes = {box["node_id"]: box for box in first_run["diagram_boxes"]}
     assert boxes["proposed_component2"]["role"] == "Proposed supporting component"
-    assert long_contract in boxes["proposed_component1"]["description"]
+    assert long_contract == boxes["proposed_component1"]["details"][0]["text"]
+    assert boxes["proposed_component1"]["description"] == design["components"][0]["responsibility"]
     assert long_contract not in first_run["mermaid_source"]
     support_boxes = {box["node_id"]: box for box in support["diagram_boxes"]}
-    assert "Source actions: 2" in support_boxes["component2"]["description"]
+    assert support_boxes["component2"]["details"][0]["text"].startswith("Source action 2 · product\n")
     assert "Withdrawal closes placement access and erases the cached placement" in support_boxes["off_path_transition1"]["description"]
     assert "Observable check: cache empty" in support_boxes["off_path_transition1_effect2"]["description"]
     assert design == before
@@ -1267,3 +1278,65 @@ def test_public_authored_propose_never_calls_legacy_semantic_rule_families(
         assert compiled_row["summary"] == proposal_row["summary"]
         assert compiled_row["read_guide"] == proposal_row["read_guide"]
         assert compiled_row["components"] == proposal_row["components"]
+
+
+def test_authored_responsibility_and_detail_text_are_exact_and_separately_sealed() -> None:
+    design = _provisional_design()
+    narrative = 'Preserve café  IDs and **authored** boundaries.\nKeep <tag> & `proof` without rewriting the second sentence.'
+    verification = 'Inspect 日本語 evidence and <img src=x onerror=alert(1)> literally. ' * 30 + 'Retain the final condition.'
+    design['components'][0]['responsibility'] = narrative
+    design['components'][0]['verification'] = verification
+    before = deepcopy(design)
+    rows = _authored_diagrams(provisional_design=design)
+    for row in rows[1:]:
+        assert row['components'][0]['description'] == narrative
+    for row, node in ((rows[1], 'proposed_component1'), (rows[2], 'component1'), (rows[-1], 'component1')):
+        box = next(box for box in row['diagram_boxes'] if box['node_id'] == node)
+        assert box['description'] == narrative
+        projection = greenfield_authored_atlas_view.validate_authored_atlas_view(row, source_text=row['mermaid_source'])
+        assert projection['diagram_boxes'] == row['diagram_boxes']
+    support = rows[-1]
+    box = next(box for box in support['diagram_boxes'] if box['node_id'] == 'component1')
+    assert box['details'][1] == {'label': 'Proposed boundary verification', 'text': verification}
+    assert 'actor' not in box['description']
+    assert box['role'] == 'Proposed component support'
+    assert support['read_guide'].count("does not transfer the stated actor's action") == 1
+    assert design == before
+
+
+@pytest.mark.parametrize('mutation', ['text', 'label', 'drop', 'reorder', 'add'])
+def test_authored_detail_custody_rejects_unsealed_changes(mutation: str) -> None:
+    row = _authored_diagrams()[-1]
+    box = next(box for box in row['diagram_boxes'] if box['node_id'] == 'component1')
+    if mutation in ('text', 'label'):
+        box['details'][0][mutation] += ' altered'
+    elif mutation == 'drop':
+        box.pop('details')
+    elif mutation == 'reorder':
+        box['details'].reverse()
+    else:
+        box['details'].append({'label': 'Additional check', 'text': 'A newly asserted check.'})
+    with pytest.raises(ValueError, match='sealed hash'):
+        greenfield_authored_atlas_view.validate_authored_atlas_view(row, source_text=row['mermaid_source'])
+
+
+@pytest.mark.parametrize('details', [None, '', {}, [None], [{'label': 'Check'}],
+    [{'label': 'Check', 'text': 'Exact.', 'authority': 'source'}],
+    [{'label': '', 'text': 'Exact.'}], [{'label': 'Check', 'text': 1}],
+    [{'label': 'Check', 'text': ' altered '}],
+])
+def test_authored_detail_schema_fails_before_custody_admission(details: Any) -> None:
+    row = _authored_diagrams()[-1]
+    row['diagram_boxes'][0]['details'] = details
+    with pytest.raises(ValueError, match='Atlas box details'):
+        greenfield_authored_atlas_view.validate_authored_atlas_view(row, source_text=row['mermaid_source'])
+
+
+def test_absent_detail_v3_projection_keeps_observed_prechange_digest() -> None:
+    # Captured from the unchanged pre-disclosure compiler and fixture; no new builder supplies the expected digest.
+    row = _authored_diagrams()[0]
+    assert all('details' not in box for box in row['diagram_boxes'])
+    authority = row[greenfield_authored_atlas_view.AUTHORED_ATLAS_AUTHORITY_KEY]
+    assert authority['version'] == 'odylith.greenfield.authored-atlas-view.v3'
+    assert authority['surface_sha256'] == 'fa50c2a875f91fc6f34124a2b14bb94f3ad9baadb16041eb8a9175085ddb1798'
+    assert greenfield_authored_atlas_view.validate_authored_atlas_view(row, source_text=row['mermaid_source'])['diagram_boxes'] == row['diagram_boxes']

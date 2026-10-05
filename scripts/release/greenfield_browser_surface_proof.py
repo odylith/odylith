@@ -27,7 +27,7 @@ from greenfield_browser_capture import capture_state_screenshot as _capture_stat
 from greenfield_browser_atlas_readability import prove_atlas_native_reading
 from greenfield_browser_layout import layout_assertion_issues as _layout_assertion_issues
 from greenfield_browser_layout import layout_issues as _layout_issues
-from greenfield_browser_selection_proof import prove_clicked_selection, prove_missing_selection, wait_for_selection_route
+from greenfield_browser_selection_proof import prove_clicked_selection, prove_missing_selection, reveal_selection_detail, wait_for_selection_route
 from local_release_smoke import _serve_directory
 
 BROWSER_SURFACE_PROOF_SCOPE = "per_case_headless_generated_surface_state_matrix"
@@ -284,19 +284,27 @@ def _project_degraded_state_issues(
         if response is None or not response.ok:
             return ("browser surface project degraded state did not load",)
         _dismiss_shell_obstructions(page)
-        page.locator("#pane-project .project-signal-grid").wait_for(timeout=timeout_ms)
+        page.locator("#pane-project .project-surface").wait_for(timeout=timeout_ms)
+        page.locator("#pane-project .project-open-questions").evaluate_all("nodes => nodes.forEach(node => {node.open = true;})")
         state = page.locator("#pane-project").evaluate(
             """node => {
-              const rows = (window.__ODYLITH_TOOLING_DATA__?.project_intelligence?.degraded_state || [])
-                .map(value => String(value || "").trim())
-                .filter(value => value && !value.startsWith("No degraded source condition"));
-              return {rows, text: String(node.innerText || "")};
+              const project = window.__ODYLITH_TOOLING_DATA__?.project_intelligence || {};
+              const authored = Object.hasOwn(project, "authored_facts");
+              const visible = selector => [...node.querySelectorAll(selector)].filter(n => n.getClientRects().length).map(n => n.innerText.trim()).join(" ");
+              const signals = authored ? [...(project.delta || []), ...(project.contradictions || []), ...(project.degraded_state || [])] : (project.degraded_state || []);
+              const rows = [...signals, ...(authored ? [project.current, project.trust_note, ...(project.open || []), ...(project.blockers || []).map(row => row[0])] : [])]
+                .map(value => String(value || "").trim()).filter(value => value && !value.startsWith("No degraded source condition"));
+              return {rows, text: String(node.innerText || ""), authored,
+                expected: [project.current || "", project.trust_note || ""],
+                visible: [visible(".project-hero .project-status"), visible(".project-trust .project-panel-head p")]};
             }"""
         )
         rows = state.get("rows", []) if isinstance(state, dict) else []
         text = str(state.get("text", "") if isinstance(state, dict) else "")
         if not rows or any(str(row) not in text for row in rows):
             issues.append("browser surface project does not visibly explain its degraded proof boundary")
+        if isinstance(state, dict) and state.get("authored") and (not all(state.get("expected", [])) or state.get("visible") != state.get("expected")):
+            issues.append("browser surface project does not visibly preserve its exact status and evidence boundary")
         issues.extend(_layout_issues(page.locator("body"), label="project degraded state"))
     except Exception as exc:
         issues.append(f"browser surface project degraded state failed render: {type(exc).__name__}: {exc}")
@@ -453,7 +461,12 @@ def _project_generated_state_issues(
             issues.append("browser surface project did not select its shell tab")
         page.locator("#pane-project .project-surface").wait_for(timeout=timeout_ms)
         page.locator("#pane-project .project-product-story").wait_for(timeout=timeout_ms)
-        page.locator("#pane-project .project-host-handoff").wait_for(timeout=timeout_ms)
+        handoff = page.locator("#pane-project .project-host-handoff")
+        if handoff.evaluate("node => node.tagName === 'DETAILS'", timeout=timeout_ms):
+            if handoff.get_attribute("open") is not None or handoff.locator(".project-host-prompt-grid").is_visible():
+                issues.append("browser surface project implementation details are not initially compact and closed")
+            handoff.locator(":scope > summary").focus()
+            page.keyboard.press("Enter")
         issues.extend(_layout_issues(page.locator("body"), label="tooling shell"))
         project_state = page.locator("#pane-project").evaluate(
             """(node) => {
@@ -1022,10 +1035,9 @@ def _unknown_tab_recovery_issues(
         page.frame_locator("#frame-radar").locator("h1", has_text="Backlog Workstream Radar").wait_for(
             timeout=timeout_ms
         )
-        page.frame_locator("#frame-radar").locator(
-            '#detail [data-kpi="workstream-id"] .v',
-            has_text=active,
-        ).wait_for(timeout=timeout_ms)
+        reveal_selection_detail(page.frame_locator("#frame-radar").locator(
+            '#detail [data-kpi="workstream-id"] .v', has_text=active,
+        ), timeout_ms=timeout_ms)
         issues.extend(_layout_issues(page.locator("body"), label="tooling shell"))
     except Exception as exc:
         issues.append(f"browser shell unknown tab failed recovery render: {type(exc).__name__}: {exc}")

@@ -598,6 +598,14 @@ Standard, rescue, and deep target the full installed proposal, confirmation, rea
 
 ## Current Completion Gate
 
+### 2026-10-05 fixed-case and UX checkpoint
+
+At source checkpoint `23881abd0e8bd15ddc64fb869b581060d50c3302`, independent source-first H0/H1 review cleared the fixed Research (`13/18` forward; `75/108` reverse) and Agriculture (`26/31` forward) controls. Separate actual terminal continuations cleared their declared reject, copied-old refusal, H1 `CLOSED`, sealed-readback, and same-hash idempotence controls in `20.785s` (Research) and `22.855s` (Agriculture). These bounded records do not meet any final release, aggregate, protected, browser, migration, or whole-journey timing gate.
+
+The active checkpoint has canonical `design.project_summary` v54 / format 23 in the existing candidate pass, retaining v53 sealed pairs as passive evidence and retiring `fbbb` execution seals through canonical v54 custody. Source UI implementation resolves five captures: repeated Accepted focus, source excerpt replacing Project summary, flattened risks, boilerplate Atlas narrative, and repeated Registry purpose copy. It puts purpose, human status, and next action before optional details; retains the actual unmapped Registry warning and all exact evidence; keeps Radar status before optional assessment and dates; and uses native details that support original route/ID recovery.
+
+The 22 human-maintained UI owners/templates change `+539/-557` lines. Root unit proof passes `385` checks; r6 UI44 passes `44/44` states with zero issues and `119` screenshots in `41.827595s`, source pins unchanged, plus four actual Atlas-guide keyboard controls (SHA-256 `d77f3c65653b0626d9abf3ed445aea401298ab0a875c41283de6b9a2da969eb6`). Preserve the original two-failure Radar lane as history. Existing CLI recovery backed up eight outputs, restored reviewed state `e7b9823c1deefee325239f6e9a31157a7c89a3f35a699276e7727ff7ffd0a9a2`, then passed forced Radar/Atlas refresh in `10s`: all `47/47` Atlas records are fresh, stale count is zero, Radar passes, and no runtime fallback ran. Bundle mirrors are regenerable outputs of unchanged renderers, not unique authored sources; all 660 authoring pins are unchanged. Current published-root Radar proof passes the original two tests in `2.34s` with default-closed details, native Enter, ten exact fields, route/ID recovery, and geometry. B-145 installed upgrade, fresh v33 build/install semantic evidence, Public40, migration, holdout, and release gates remain open.
+
 Runner-native outcome authority is now implemented. Evaluation-splits v6 and
 final-holdout v7 require a hash-bound independent source-sufficiency decision
 for every exact case before ledger claim: commit expectations must be confirmed

@@ -56,8 +56,9 @@ from odylith.runtime.domain_intelligence.greenfield_authority_gate import (
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v7"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v53"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v54"
 PASSIVE_HOST_CANDIDATE_CONTRACT_VERSIONS = (
+    "odylith.greenfield.host-candidate-contract.v53",
     "odylith.greenfield.host-candidate-contract.v52",
     "odylith.greenfield.host-candidate-contract.v51",
     "odylith.greenfield.host-candidate-contract.v50",
@@ -161,6 +162,15 @@ def greenfield_host_candidate_contract(
                 "Preserve its complete meaning and references independently of action responsibilities."
             ),
             "Keep accepted source facts separate from assumptions and provisional design decisions.",
+            (
+                "Author provisional_design.project_summary in this same candidate: one or two concise "
+                "sentences, at most 600 characters, explaining what the proposed project is, who it "
+                "serves, and its source-supported value or visible outcome. Use only supplied source "
+                "support and clearly proposed scope. Do not substitute a first-path workflow recital, "
+                "invent implementation, actors, benefits or commitments, promote assumptions to "
+                "accepted facts, or include host/model jargon. This is proposed narrative, not an "
+                "accepted source fact or a substitute for any source-duty or proof obligation."
+            ),
             (
                 "An authored candidate must bind one source-supported participant, beneficiary, "
                 "or explicit product/system task owner; one usable task event; and one source-supported "

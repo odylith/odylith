@@ -129,7 +129,8 @@ def test_render_casebook_dashboard_splits_brief_from_agent_learnings(tmp_path: P
     assert "padding: 10px 12px;" in html
     assert "-webkit-line-clamp: 2;" in html
     assert "-webkit-line-clamp: 4;" not in html
-    assert "Odylith Agent Learnings" in app_js
+    assert "Lessons and evidence" in app_js
+    assert "Odylith Agent Learnings" not in app_js
     assert '<h2 class="detail-title">${escapeHtml(detail.title || detail.bug_key || "Bug detail")}</h2>' in app_js
     assert '<h1 class="detail-title">' not in app_js
     assert "Human Readout" not in app_js
@@ -514,11 +515,16 @@ def test_render_casebook_dashboard_emits_proof_control_panel_contract(tmp_path: 
     assert rc == 0
     app_js = (tmp_path / "odylith" / "casebook" / "casebook-app.v1.js").read_text(encoding="utf-8")
     payload_js = (tmp_path / "odylith" / "casebook" / "casebook-payload.v1.js").read_text(encoding="utf-8")
-    assert "Proof Control Panel" in app_js
-    assert "Pinned blocker, frontier, and proof tier for this bug lane." in app_js
+    assert "Proof status" in app_js
+    assert "Technical evidence" in app_js
+    assert "Proof Control Panel" not in app_js
+    assert "Pinned blocker, frontier, and proof tier for this bug lane." not in app_js
     assert "No dominant proof lane is resolved for this bug yet." in app_js
     assert "Proof state is ambiguous across multiple blocker lanes" in app_js
-    assert "Deployed vs local truth" in app_js
+    assert "Local HEAD" in app_js
+    assert '<details class="detail-disclosure"><summary class="disclosure-title">Technical evidence</summary>' in app_js
+    assert '"runner_fingerprint": "runner-v3"' in payload_js
+    assert '"failure_fingerprint": "aws:lambda:Permission doesn\'t support update"' in payload_js
     assert "Highest truthful claim" in app_js
     assert '"proof_state"' in payload_js
     assert '"current_blocker": "Lambda permission lifecycle on ecs-drift-monitor invoke"' in payload_js

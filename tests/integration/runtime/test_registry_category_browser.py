@@ -123,8 +123,31 @@ def test_registry_category_labels_survive_filter_empty_and_runtime_fallback(
 ) -> None:
     ensure_customer_bootstrap(repo_root=tmp_path, version=__version__)
     manifest = _seed_application_registry(tmp_path)
+    purpose = (
+        "Maintain experiment-version bindings for consent material and supply the evidence used by the console and coordinator. "
+        "Keep the experiment version, consent version, reviewer disposition and joint readiness state together for every approved dossier. "
+        "Readers must retain the full responsibility, including this final boundary beyond a compact preview: "
+        "either failed readiness check blocks the advertised-ready result without changing the independent approval gate."
+    )
+    rationale = "Consent readiness delivery: Both version and reviewer checks precede the readiness result."
+    stored_purpose = (
+        "Consent-material registry is a proposed logical component. Proposed responsibility: " + purpose
+        if with_table else purpose
+    )
+    curated_description = "Odylith is a proposed logical component. Proposed responsibility: Preserve this user-authored description."
+    manifest_data = json.loads(manifest.read_text())
+    component = next(row for row in manifest_data["components"] if row["component_id"] == "radar")
+    component.update(name="Consent-material registry", what_it_is=stored_purpose, why_tracked=rationale,
+                     status="planned", qualification="candidate", sources=["intent.authored_semantics"])
+    next(row for row in manifest_data["components"] if row["component_id"] == "odylith")["what_it_is"] = curated_description
+    manifest.write_text(json.dumps(manifest_data, indent=2) + "\n")
     source_bytes = manifest.read_bytes()
     spec = tmp_path / "odylith/registry/source/components/radar/CURRENT_SPEC.md"
+    if not with_table:
+        before_triggers, trigger_section = spec.read_text().split("## Skill Triggers\n", 1)
+        no_triggers = before_triggers + "## Requirements Trace\n" + trigger_section.split("## Requirements Trace\n", 1)[1]
+        spec.write_text("\n".join(line for line in no_triggers.splitlines()
+                                  if not line.startswith("Last updated:")) + "\n", encoding="utf-8")
     reading = (
         "\n## Reading boundary\n\nReaders must see every word of this ordinary specification paragraph.\n\n"
         + "Evidence identifier: `" + "retained_evidence_identifier_" * 8 + "`.\n"
@@ -143,28 +166,40 @@ def test_registry_category_labels_survive_filter_empty_and_runtime_fallback(
             try:
                 with _new_page(context) as (page, observation):
                     unavailable_requests = []
+                    payload = json.loads(payload_script.split(" = ", 1)[1].rsplit(";", 1)[0])
+                    payload["counts"]["unmapped_meaningful_events"] = 2 if with_table else 0
                     if runtime_unavailable:
-                        payload = json.loads(payload_script.split(" = ", 1)[1].rsplit(";", 1)[0])
                         # Inject only backend availability; keep the production category payload unchanged.
                         payload["data_source"] = {
                             **payload["data_source"], "preferred_backend": "runtime",
                             "runtime_base_url": base_url + "/unavailable-runtime/",
                         }
-                        page.route("**/registry-payload.v1.js*", lambda route: route.fulfill(
-                            status=200, content_type="application/javascript",
-                            body='window["__ODYLITH_REGISTRY_DATA__"] = ' + json.dumps(payload) + ";",
-                        ))
 
                         def unavailable(route):  # noqa: ANN001
                             unavailable_requests.append(route.request.url)
                             route.fulfill(status=503, content_type="application/json", body='{"error":"unavailable"}')
 
                         page.route("**/unavailable-runtime/**", unavailable)
+                    page.route("**/registry-payload.v1.js*", lambda route: route.fulfill(
+                        status=200, content_type="application/javascript",
+                        body='window["__ODYLITH_REGISTRY_DATA__"] = ' + json.dumps(payload) + ";",
+                    ))
                     response = page.goto(base_url + "/odylith/index.html?tab=registry", wait_until="domcontentloaded")
                     assert response is not None and response.ok
                     page.get_by_role("button", name="Close starter guide").click()
                     registry = page.frame_locator("#frame-registry")
                     registry.locator('button[data-component="radar"]').wait_for(timeout=15000)
+                    activity = registry.locator("#registryActivitySummary")
+                    expected_summary = "Activity and coverage" + (" · 2 events need component links" if with_table else "")
+                    assert activity.inner_text() == expected_summary
+                    assert not registry.locator("#kpis").is_visible()
+                    assert registry.locator("#search").evaluate("node => node.getBoundingClientRect().top < innerHeight - 40")
+                    activity.focus(); activity.press("Enter")
+                    assert registry.locator("#kpis").is_visible()
+                    if with_table:
+                        assert registry.locator(".kpi-card.warn .kpi-value").inner_text() == "2"
+                    activity.press("Enter")
+                    assert not registry.locator("#kpis").is_visible()
                     assert registry.locator('#categoryFilter option[value="application"]').inner_text() == "Application (1)"
                     assert registry.locator('#categoryFilter option[value="governance_engine"]').inner_text() == "Governance Engine (1)"
                     assert registry.locator('button[data-component="radar"] .label').first.inner_text() == "Application"
@@ -173,9 +208,40 @@ def test_registry_category_labels_survive_filter_empty_and_runtime_fallback(
                     registry.locator("#categoryFilter").select_option("application")
                     assert registry.locator("button[data-component]").count() == 1
                     assert registry.locator(".group-head").inner_text() == "APPLICATION · 1"
+                    assert registry.locator(".component-name").inner_text() == "Consent-material registry"
+                    assert registry.locator(".registry-subtitle").inner_text() == "Components and responsibilities"
+                    assert registry.locator(".component-identity").get_by_text("Planned", exact=True).count() == 1
+                    assert "radar" not in registry.locator(".component-identity").inner_text()
+                    assert registry.locator(".component-purpose").inner_text() == purpose
+                    assert registry.locator(".component-purpose").evaluate("""node => {
+                        const box = node.getBoundingClientRect();
+                        const range = document.createRange(); range.selectNodeContents(node);
+                        return [...range.getClientRects()].every(rect =>
+                            rect.left >= box.left - 1 && rect.right <= box.right + 1
+                            && rect.top >= box.top - 1 && rect.bottom <= box.bottom + 1);
+                    }""")
+                    if with_table:
+                        assert registry.locator(".trigger-expand").count() == 1
+                        registry.locator(".trigger-expand > summary").click()
+                        assert registry.locator(".trigger-list li").all_inner_texts() == [
+                            "sync workstreams", "refresh backlog radar", "enforce critical odylith policies",
+                        ]
+                        registry.locator(".trigger-expand > summary").click()
+                        assert "Last updated 2026-03-04" in registry.locator(".spec-summary-meta").inner_text()
+                    else:
+                        assert registry.locator(".summary-strip").inner_text() == purpose
+                        assert registry.locator(".trigger-expand").count() == 0
+                        assert "Last updated" not in registry.locator(".spec-summary-meta").inner_text()
+                    assert "Unknown" not in registry.locator(".spec-summary-meta").inner_text()
                     registry.locator("details.context-section summary").wait_for(timeout=15000)
                     registry.locator("details.context-section summary").click()
                     registry.get_by_text("Category: Application", exact=True).wait_for(timeout=15000)
+                    assert registry.get_by_text("ID: radar", exact=True).count() == 1
+                    assert registry.get_by_text("Qualification: Candidate", exact=True).count() == 1
+                    assert registry.get_by_text(rationale, exact=True).count() == 1
+                    if with_table:
+                        assert registry.get_by_text(stored_purpose, exact=True).count() == 1
+                    assert registry.locator(".summary-strip").get_by_text("Forensic coverage", exact=False).count() == 0
                     _assert_topology_paragraph_accessible(
                         page, registry,
                         screenshot_name=f"registry-topology-{viewport['width']}-{'fallback' if runtime_unavailable else 'normal'}",
@@ -184,6 +250,9 @@ def test_registry_category_labels_survive_filter_empty_and_runtime_fallback(
                         page, registry, width=viewport["width"], with_table=with_table,
                         screenshot_name=f"registry-spec-{viewport['width']}-{'fallback' if runtime_unavailable else 'normal'}-{'table' if with_table else 'prose'}",
                     )
+                    registry.locator(".spec-expand > summary").click()
+                    assert registry.locator(".spec-expand-body").get_by_text("Last updated: Not documented.", exact=True).count() == (0 if with_table else 1)
+                    registry.locator(".spec-expand > summary").click()
 
                     registry.locator("#search").fill("no-match-category-proof")
                     assert registry.locator("button[data-component]").count() == 0
@@ -194,6 +263,9 @@ def test_registry_category_labels_survive_filter_empty_and_runtime_fallback(
                     registry.locator("#resetFilters").click()
                     assert registry.locator("button[data-component]").count() == 2
                     assert registry.locator('button[data-component="radar"] .label').first.inner_text() == "Application"
+                    registry.locator('button[data-component="odylith"]').click()
+                    registry.get_by_text(curated_description, exact=True).wait_for(timeout=15000)
+                    assert registry.locator(".component-purpose").inner_text() == curated_description
                     if runtime_unavailable:
                         assert any("/surfaces/registry/detail?component=radar" in url for url in unavailable_requests)
                         snapshot = observation.finish()

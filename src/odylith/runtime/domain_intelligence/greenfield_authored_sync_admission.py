@@ -148,6 +148,37 @@ def _require_plan(token: str, before: str, after: str) -> None:
         raise _refuse(f"selected plan body requires risk/mitigation normalization: {token}")
 
 
+def _require_radar(root: Path, published: Path, token: str, before: str, after: str) -> None:
+    from odylith.runtime.governance import reconcile_plan_workstream_binding as plans
+    from odylith.runtime.governance import validate_backlog_contract as backlog
+
+    if plans.plan_metadata_preamble(before) != plans.plan_metadata_preamble(after):
+        raise _refuse(f"CLI-owned Radar metadata changed: {token}")
+    previous = backlog._parse_idea_spec_uncached(target=published / token, repo_root=None, signature={})
+    current = backlog._parse_idea_spec_uncached(target=root / token, repo_root=None, signature={})
+    if not backlog._IDEA_ID_RE.fullmatch(previous.idea_id):
+        raise _refuse(f"Radar admission requires a valid existing workstream identity: {token}")
+    index_path = published / "odylith/radar/source/INDEX.md"
+    snapshot = backlog._build_backlog_index_snapshot(index_path)
+    rows = [row for section in ("active", "execution", "finished", "parked")
+            for row in backlog.rows_as_mapping(section=snapshot[section], expected_headers=backlog._INDEX_COLS)
+            if row["idea_id"].strip() == previous.idea_id]
+    if len(rows) != 1:
+        raise _refuse(f"selected Radar source lacks one exact published ownership mapping: {token}")
+    errors: list[str] = []
+    backlog._validate_row_against_idea(
+        payload=rows[0], ideas={previous.idea_id: previous}, errors=errors,
+        index_path=index_path, repo_root=published,
+    )
+    errors.extend(f"missing or empty required section: {section}" for section in backlog._REQUIRED_SECTIONS
+                  if not current.section_bodies.get(section, "").strip())
+    errors.extend(backlog.core_detail_section_errors(
+        title=current.metadata.get("title", ""), sections=current.section_bodies, path=root / token,
+    ))
+    if errors:
+        raise _refuse(f"selected Radar source is invalid: {token}: {errors[0]}")
+
+
 def _require_mapping(root: Path, manifest: str, collection: str, field: str, token: str) -> None:
     try:
         rows = json.loads((root / manifest).read_text(encoding="utf-8"))[collection]
@@ -195,6 +226,8 @@ def _require_authored_surface(root: Path, published: Path, token: str, before: b
     elif (any(token.startswith(f"odylith/technical-plans/{folder}/") for folder in ("in-progress", "done", "parked"))
             and path.suffix == ".md"):
         _require_plan(token, old_text, new_text)
+    elif token.startswith("odylith/radar/source/ideas/") and path.suffix == ".md":
+        _require_radar(root, published, token, old_text, new_text)
     elif token.startswith("odylith/registry/source/components/") and path.name == "CURRENT_SPEC.md":
         _require_mapping(published, _REGISTRY, "components", "spec_ref", token)
         if _requirements_region(old_text) != _requirements_region(new_text):

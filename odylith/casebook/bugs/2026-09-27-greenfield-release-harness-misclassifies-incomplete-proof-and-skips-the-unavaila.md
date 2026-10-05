@@ -1861,6 +1861,12 @@ the protected holdout remains untouched.
 
 ## Post-application bounded checks (2026-10-05)
 
+## Current upgrade and evidence posture (2026-10-05)
+
+The actual v14-to-v32 upgrade release candidate returned `RC=0`, but the old theme-fingerprint source-owner check failed. A four-owner production correction was independently cleared at SHA-256 `89d5025041a9c94026900630561fdfbc83a9ad4900cc2c38d9154a7b42ba0d11`. Seven full unit modules then reported `169 PASS/1 FAIL`; the single failure was a new worker test that patched a CLI proxy rather than its real owner. The corrected real-owner CLI test passes `14/14` and production code is unchanged. Fresh installed upgrade proof remains pending under B-145. Preserve the old failed consumer evidence; do not promote the source correction or RC to release qualification.
+
+At `23881abd0e8bd15ddc64fb869b581060d50c3302`, the Research and Agriculture fixed-case H0/H1 source reviews and separate terminal adjudications are CLEAR. The terminal records prove only their declared rejection/refusal/confirmation/idempotence controls, with zero observed terminal model/provider/projection entries and one canonical opener per confirmation/repeat. They do not restore release, aggregate, browser, protected, migration, or timing credit. CB-303 holds the source semantic and presentation findings; its exact external reports are the custody references for this checkpoint.
+
 Root applied the reviewed Atlas correction and CI test-import correction.
 With `PYTHONPATH` unset, 33 actual Atlas/CI checks pass in 2.99 seconds and
 90 adjacent installation/migration checks pass in 3.60 seconds. Logs:

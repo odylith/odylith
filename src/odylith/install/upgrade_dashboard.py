@@ -7,6 +7,7 @@ from pathlib import Path
 import subprocess
 import sys
 
+from odylith.install import upgrade_dashboard_recovery
 from odylith.runtime.domain_intelligence.greenfield_repository_lock import (
     GreenfieldRepositoryBusyError,
     GreenfieldRepositoryLockError,
@@ -41,11 +42,15 @@ def worker_main(argv: list[str]) -> int:
         with inherited_greenfield_repository_lock(args.repo_root, args.lock_fd) as descriptor:
             from odylith.runtime.governance import sync_workstream_artifacts
 
+            upgrade_dashboard_recovery.complete_selected_render_migrations(
+                repo_root=args.repo_root.resolve(), repository_lock_fd=descriptor,
+            )
             return sync_workstream_artifacts.refresh_dashboard_surfaces(
                 repo_root=args.repo_root.resolve(), surfaces=UPGRADE_DASHBOARD_SURFACES,
                 runtime_mode="auto", atlas_sync=False, force=True,
                 repository_lock_fd=descriptor, on_completed=lambda: 0,
             )
-    except (GreenfieldRepositoryBusyError, GreenfieldRepositoryLockError, OSError) as exc:
+    except (GreenfieldRepositoryBusyError, GreenfieldRepositoryLockError, OSError,
+            upgrade_dashboard_recovery.UpgradeDashboardRecoveryError) as exc:
         print(f"Odylith upgrade dashboard render refused: {exc}", file=sys.stderr)
         return 75 if isinstance(exc, GreenfieldRepositoryBusyError) else 1

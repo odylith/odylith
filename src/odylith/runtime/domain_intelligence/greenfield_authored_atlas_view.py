@@ -16,6 +16,7 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_authored_atlas_design_views import (
     atlas_box as _box,
+    atlas_box_details,
     build_provisional_design_atlas_specs,
     build_provisional_first_run_atlas_view,
     required_atlas_string,
@@ -278,12 +279,13 @@ def validate_authored_atlas_view(
     raw_boxes = row.get("diagram_boxes")
     if not isinstance(raw_boxes, list) or not raw_boxes:
         raise ValueError("authored Atlas diagram_boxes must be a non-empty list")
-    boxes: list[dict[str, str]] = []
+    boxes: list[dict[str, Any]] = []
     box_ids: list[str] = []
     for index, raw_box in enumerate(raw_boxes):
         if not isinstance(raw_box, Mapping):
             raise ValueError(f"authored Atlas diagram_boxes[{index}] must be an object")
-        if set(raw_box) != {"node_id", "label", "role", "description"}:
+        required_keys = {"node_id", "label", "role", "description"}
+        if set(raw_box) not in (required_keys, required_keys | {"details"}):
             raise ValueError(f"authored Atlas diagram_boxes[{index}] has an invalid schema")
         node_id = required_atlas_string(raw_box.get("node_id"), f"diagram_boxes[{index}].node_id")
         box_ids.append(node_id)
@@ -298,6 +300,8 @@ def validate_authored_atlas_view(
                 ),
             }
         )
+        if "details" in raw_box:
+            boxes[-1]["details"] = atlas_box_details(raw_box["details"])
     if len(box_ids) != len(set(box_ids)):
         raise ValueError("authored Atlas diagram_boxes contain duplicate node IDs")
     if set(box_ids) != set(node_order):

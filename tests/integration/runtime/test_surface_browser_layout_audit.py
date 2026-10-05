@@ -15,6 +15,7 @@ from tests.integration.runtime.surface_browser_test_support import (
     _new_page,
     _static_server,
     _wait_for_registry_detail_id,
+    _wait_for_radar_detail_id,
     _wait_for_shell_query_param,
     browser_context,
     compact_browser_context,
@@ -368,7 +369,8 @@ def _radar_detail_layout(radar) -> dict[str, object]:  # noqa: ANN001
               kpiCount: kpis.length,
               kpiLabels: kpis.map((kpi) => kpi.label),
               childOrder: Array.from(node.children || []).map((child) => String(child.className || child.tagName || "").trim()),
-              kpisBeforeChips: Boolean(!kpisNode || !chipsNode || kpisNode.compareDocumentPosition(chipsNode) & Node.DOCUMENT_POSITION_FOLLOWING),
+              chipsBeforeAssessment: Boolean(chipsNode && kpisNode && chipsNode.compareDocumentPosition(kpisNode) & Node.DOCUMENT_POSITION_FOLLOWING),
+              kpisInDisclosure: Boolean(kpisNode && kpisNode.closest("details.detail-disclosure")),
               workstreamIdValue: String((idValue && idValue.textContent) || "").trim(),
               unstackedKpis: kpis.filter((kpi) => !kpi.stacked).map((kpi) => kpi.label),
             };
@@ -395,6 +397,12 @@ def _select_radar_layout_stress_row(page):  # noqa: ANN001
         radar.locator(f'button[data-idea-id="{row["idea"]}"]').click()
         _wait_for_shell_query_param(page, tab="radar", key="workstream", value=str(row["idea"]))
         radar.locator("#detail .detail-title", has_text=str(row["title"])).wait_for(timeout=15000)
+        assessment = radar.locator("#detail .detail-header details.detail-disclosure")
+        assert not assessment.evaluate("node => node.open")
+        assert "Ordering Score" not in radar.locator("#detail .detail-header").inner_text()
+        assessment.locator("summary").focus()
+        assessment.locator("summary").press("Enter")
+        assert assessment.evaluate("node => node.open")
         layout = _radar_detail_layout(radar)
         if int(layout["kpiCount"]) >= 9:
             return radar, row, layout
@@ -414,9 +422,8 @@ def test_radar_detail_header_promotes_workstream_id_into_kpi_grid(browser_contex
 
         assert "Workstream ID" in layout["kpiLabels"]
         assert layout["kpiLabels"][0] == "Workstream ID"
-        assert "kpis" in layout["childOrder"]
-        assert layout["childOrder"].index("kpis") < layout["childOrder"].index("chips")
-        assert layout["kpisBeforeChips"], "Radar KPI grid should render before the secondary chip row"
+        assert layout["childOrder"].index("chips") < layout["childOrder"].index("detail-disclosure")
+        assert layout["chipsBeforeAssessment"] and layout["kpisInDisclosure"]
         assert layout["workstreamIdValue"] == row["idea"]
         assert layout["unstackedKpis"] == [], f"Radar KPI labels and values collapsed inline: {layout['unstackedKpis']}"
         assert int(layout["kpisScrollWidth"]) - int(layout["kpisClientWidth"]) <= 4
@@ -436,9 +443,8 @@ def test_radar_detail_header_keeps_kpi_grid_readable_in_compact_view(compact_bro
 
         assert "Workstream ID" in layout["kpiLabels"]
         assert layout["kpiLabels"][0] == "Workstream ID"
-        assert "kpis" in layout["childOrder"]
-        assert layout["childOrder"].index("kpis") < layout["childOrder"].index("chips")
-        assert layout["kpisBeforeChips"], "Radar KPI grid should stay ahead of the secondary chip row in compact view"
+        assert layout["childOrder"].index("chips") < layout["childOrder"].index("detail-disclosure")
+        assert layout["chipsBeforeAssessment"] and layout["kpisInDisclosure"]
         assert layout["workstreamIdValue"] == row["idea"]
         assert layout["unstackedKpis"] == [], f"Radar KPI labels and values collapsed inline: {layout['unstackedKpis']}"
         assert int(layout["headerScrollWidth"]) - int(layout["headerClientWidth"]) <= 16
@@ -572,7 +578,7 @@ def _select_radar_workstream_chip_for_style_audit(page):  # noqa: ANN001
     if preferred_button.count():
         preferred_button.click()
         _wait_for_shell_query_param(page, tab="radar", key="workstream", value=preferred_idea_id)
-        radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=preferred_idea_id).wait_for(timeout=15000)
+        _wait_for_radar_detail_id(radar, preferred_idea_id)
         if _open_radar_topology_relations_for_style_audit(radar):
             chips = radar.locator("#detail button.execution-wave-chip-link, #detail button.entity-id-chip")
             if chips.count():
@@ -584,7 +590,7 @@ def _select_radar_workstream_chip_for_style_audit(page):  # noqa: ANN001
         detail_selector="button.execution-wave-chip-link, #detail button.entity-id-chip",
         failure_message="expected a Radar detail with a rendered workstream chip for style audit",
     )
-    radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=_idea_id).wait_for(timeout=15000)
+    _wait_for_radar_detail_id(radar, _idea_id)
     _open_radar_topology_relations_for_style_audit(radar)
     chips = radar.locator("#detail button.execution-wave-chip-link, #detail button.entity-id-chip")
     chips.first.wait_for(timeout=15000)
@@ -699,11 +705,7 @@ def test_registry_compacts_sentence_shaped_component_names_without_losing_identi
             "qualification": "candidate",
             "owner": "governance",
             "status": "planned",
-            "what_it_is": (
-                f"{long_name} is planned as a service boundary. "
-                "It owns review state and prevents stale recommendation evidence from looking current. "
-                f"Initial source boundary: {long_source}"
-            ),
+            "what_it_is": "It owns review state and prevents stale recommendation evidence from looking current.",
             "why_tracked": "Tracked from user-stated intent as a named ownership boundary.",
             "product_layer": "intelligence",
             "timeline_count": 1,
@@ -748,29 +750,32 @@ def test_registry_compacts_sentence_shaped_component_names_without_losing_identi
                     registry.locator(f'button[data-component="{component_id}"]').wait_for(timeout=15000)
                     registry.locator(f'button[data-component="{component_id}"]').click()
                     _wait_for_shell_query_param(page, tab="registry", key="component", value=component_id)
-                    registry.locator("#detail .component-name", has_text="Evidence Review Service").wait_for(timeout=15000)
+                    registry.locator("#detail .component-name", has_text=long_name).wait_for(timeout=15000)
+                    topology = registry.locator("#detail details.context-section")
+                    assert topology.get_attribute("open") is None
+                    assert not topology.locator(".context-body").is_visible()
+                    assert component_id not in registry.locator("#detail").inner_text()
+                    assert long_source not in registry.locator("#detail").inner_text()
+                    topology.locator(":scope > summary").focus()
+                    page.keyboard.press("Enter")
+                    assert topology.locator(".context-body").is_visible()
+                    assert f"ID: {component_id}" in topology.inner_text()
+                    assert long_source in topology.inner_text()
 
                     layout = registry.locator("body").evaluate(
                         """(body) => {
                       const title = body.querySelector("#detail .component-name");
-                      const fullName = body.querySelector("#detail .component-full-name");
-                      const idLine = body.querySelector("#detail .component-id-line");
                       const cardTitle = body.querySelector(".component-card-title");
                       const cardButton = body.querySelector(`button[data-component="${CSS.escape("evidence-review-that-explains-the-recommended-option-and-orders-the-alternatives")}"]`);
                       const summary = body.querySelector("#detail .summary-strip");
-                      const sourceChip = body.querySelector("#detail .summary-artifact-row .artifact-compact");
                       const html = body.ownerDocument.documentElement;
                       const rowBox = cardButton ? cardButton.getBoundingClientRect() : { height: 0 };
                       return {
                         title: String(title && title.textContent || "").trim(),
-                        fullName: String(fullName && fullName.textContent || "").trim(),
-                        idLine: String(idLine && idLine.textContent || "").trim(),
                         cardTitle: String(cardTitle && cardTitle.textContent || "").trim(),
                         cardTitleHeight: cardTitle ? Number(cardTitle.getBoundingClientRect().height.toFixed(2)) : 0,
                         rowHeight: Number(rowBox.height.toFixed(2)),
                         summaryText: String(summary && summary.textContent || "").trim(),
-                        sourceChipText: String(sourceChip && sourceChip.textContent || "").trim(),
-                        sourceChipTooltip: String(sourceChip && sourceChip.getAttribute("data-tooltip") || "").trim(),
                         documentOverflow: html.scrollWidth > html.clientWidth + 4,
                         bodyOverflow: body.scrollWidth > body.clientWidth + 4,
                         detailOverflow: Boolean(summary && summary.scrollWidth > summary.clientWidth + 4),
@@ -778,14 +783,11 @@ def test_registry_compacts_sentence_shaped_component_names_without_losing_identi
                     }"""
                     )
 
-                    assert layout["title"] == "Evidence Review Service"
+                    assert layout["title"] == long_name
                     assert layout["cardTitle"] == "Evidence Review Service"
-                    assert layout["fullName"] == long_name
-                    assert layout["idLine"] == component_id
                     assert long_name not in str(layout["summaryText"])
                     assert long_source not in str(layout["summaryText"])
-                    assert layout["sourceChipText"] == "Source boundary"
-                    assert layout["sourceChipTooltip"] == long_source
+                    assert layout["summaryText"] == components[-1]["what_it_is"]
                     assert float(layout["cardTitleHeight"]) <= 40
                     assert float(layout["rowHeight"]) <= 112
                     assert not layout["documentOverflow"], layout
@@ -1116,6 +1118,8 @@ def _assert_shared_governance_kpi_cards_keep_compact_style_contract(  # noqa: AN
         page.locator("#tab-registry").click()
         registry = page.frame_locator("#frame-registry")
         registry.locator("h1", has_text="Registry").wait_for(timeout=15000)
+        registry.locator("#registryActivitySummary").focus()
+        registry.locator("#registryActivitySummary").press("Enter")
         registry.locator(".kpis .kpi-card").first.wait_for(timeout=15000)
         registry_style = _governance_kpi_style(registry, ".kpis .kpi-card", ".kpi-label", ".kpi-value")
 

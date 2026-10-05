@@ -899,13 +899,10 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
         : {};
       const lastFalsificationBits = [
         String(lastFalsification.recorded_at || "").trim(),
-        String(lastFalsification.failure_fingerprint || "").trim(),
         String(lastFalsification.frontier_phase || "").trim(),
       ].filter(Boolean);
       const proofRows = [
-        proofState.lane_id ? { label: "Proof lane", value: String(proofState.lane_id || "").trim() } : null,
         proofState.current_blocker ? { label: "Current blocker", value: String(proofState.current_blocker || "").trim() } : null,
-        proofState.failure_fingerprint ? { label: "Failure fingerprint", value: String(proofState.failure_fingerprint || "").trim() } : null,
         proofState.first_failing_phase ? { label: "First failing phase", value: String(proofState.first_failing_phase || "").trim() } : null,
         proofState.frontier_phase ? { label: "Frontier", value: String(proofState.frontier_phase || "").trim() } : null,
         proofState.clearance_condition ? { label: "Clear only when", value: String(proofState.clearance_condition || "").trim() } : null,
@@ -913,6 +910,12 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
         proofState.evidence_tier ? { label: "Evidence tier", value: String(proofState.evidence_tier || "").trim().replace(/_/g, " ") } : null,
         claimGuard.highest_truthful_claim ? { label: "Highest truthful claim", value: String(claimGuard.highest_truthful_claim || "").trim() } : null,
         lastFalsificationBits.length ? { label: "Last falsification", value: lastFalsificationBits.join(" / ") } : null,
+      ].filter(Boolean);
+      const technicalEvidenceRows = [
+        proofState.lane_id ? { label: "Proof lane", value: String(proofState.lane_id || "").trim() } : null,
+        proofState.failure_fingerprint ? { label: "Failure fingerprint", value: String(proofState.failure_fingerprint || "").trim() } : null,
+        lastFalsification.failure_fingerprint ? { label: "Last falsification fingerprint", value: String(lastFalsification.failure_fingerprint || "").trim() } : null,
+        ...deploymentTruthRows,
       ].filter(Boolean);
       const allowedNextWork = Array.isArray(proofState.allowed_next_work)
         ? proofState.allowed_next_work.map((item) => String(item || "").trim()).filter(Boolean)
@@ -933,7 +936,10 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
       ].filter(Boolean);
       const proofOverview = renderLabeledNarratives(proofRows);
       const proofContext = renderLabeledNarratives(proofContextRows);
-      const proofDeployment = renderLabeledNarratives(deploymentTruthRows);
+      const technicalEvidence = renderLabeledNarratives(technicalEvidenceRows);
+      const technicalEvidenceHtml = technicalEvidence
+        ? `<details class="detail-disclosure"><summary class="disclosure-title">Technical evidence</summary><div class="detail-disclosure-body detail-copy">${technicalEvidence}</div></details>`
+        : "";
       const proofWarningsHtml = proofWarnings.length
         ? `
           <div class="agent-band-block">
@@ -942,17 +948,16 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
           </div>
         `
         : "";
-      const proofSection = (proofResolutionText || proofOverview || proofContext || proofDeployment || proofWarningsHtml)
+      const proofSection = (proofResolutionText || proofOverview || proofContext || technicalEvidenceHtml || proofWarningsHtml)
         ? `
           <article class="detail-section detail-section-proof">
-            <h2 class="section-heading">Proof Control Panel</h2>
-            <p class="section-lede">Pinned blocker, frontier, and proof tier for this bug lane.</p>
+            <h2 class="section-heading">Proof status</h2>
             <div class="agent-band">
               ${proofResolutionText ? `<div class="agent-band-block"><p class="coverage-note proof-resolution-note">${escapeHtml(proofResolutionText)}</p></div>` : ""}
               ${proofOverview ? `<div class="agent-band-block"><p class="agent-band-title">Primary blocker lane</p>${proofOverview}</div>` : ""}
               ${proofContext ? `<div class="agent-band-block"><p class="agent-band-title">Proof discipline</p>${proofContext}</div>` : ""}
-              ${proofDeployment ? `<div class="agent-band-block"><p class="agent-band-title">Deployed vs local truth</p>${proofDeployment}</div>` : ""}
               ${proofWarningsHtml}
+              ${technicalEvidenceHtml}
             </div>
           </article>
         `
@@ -989,7 +994,7 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
                 <span class="meta-chip">${capturedCount} of ${totalFields} recommended fields captured</span>
                 ${requiredMissingFields.length ? `<span class="meta-chip warn-chip">Missing critical signals: ${requiredMissingFields.length}</span>` : ""}
               </div>
-              <p class="coverage-note">Casebook still renders this bug, but the record is missing some of the surrounding context that makes nearby implementation work easier and safer.</p>
+              <p class="coverage-note">Review the listed missing fields before using this record for implementation.</p>
               ${requiredMissingFields.length ? `
                 <div class="detail-copy">
                   <p class="signal-label">Missing critical signals</p>
@@ -1097,25 +1102,14 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
           `
           : "",
       ].filter(Boolean).join("");
-      const agentEmptyState = !agentBlocks && !remainingDetailSections && !intelligenceSection
-        ? `
-          <div class="agent-band">
-            <div class="agent-band-block">
-              <p class="component-note">No structured Odylith agent learnings have been captured for this bug yet.</p>
-            </div>
-          </div>
-        `
-        : "";
-      const agentSection = `
+      const agentSection = (agentBlocks || remainingDetailSections || intelligenceSection) ? `
         <article class="detail-section detail-section-agent">
-          <h2 class="section-heading">Odylith Agent Learnings</h2>
-          <p class="section-lede">Deeper guardrails, evidence, and nearby context for future Odylith-assisted changes.</p>
+          <h2 class="section-heading">Lessons and evidence</h2>
           ${agentBlocks ? `<div class="agent-band">${agentBlocks}</div>` : ""}
           ${remainingDetailSections}
           ${intelligenceSection}
-          ${agentEmptyState}
         </article>
-      `;
+      ` : "";
       const sectionBlocks = [
         humanSection,
         proofSection,

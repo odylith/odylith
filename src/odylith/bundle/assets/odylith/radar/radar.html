@@ -2488,12 +2488,10 @@ h1 {
       </select>
     </section>
 
-    <div class="execution-legend">
-      Delivery Pipeline is two-dimensional:
-      <strong>Phase</strong> (<strong>Planning</strong> or <strong>Implementation</strong>) and
-      <strong>Execution Signal</strong> (planning shows <strong>Plan: Active/Quiet</strong>;
-      implementation shows <strong>Live: Active/Quiet</strong>).
-    </div>
+    <details class="execution-legend">
+      <summary>How Phase and Activity work</summary>
+      <p><strong>Phase</strong> is <strong>Planning</strong> or <strong>Implementation</strong>. <strong>Activity</strong> is <strong>Plan: Active/Quiet</strong> during planning and <strong>Live: Active/Quiet</strong> during implementation.</p>
+    </details>
 
     <div class="meta" id="meta"></div>
     <section class="workspace">
@@ -2561,7 +2559,7 @@ h1 {
   }
 })();
 </script>
-  <script id="backlogData" src="backlog-payload.v1.js?v=bdb37efbd296"></script>
+  <script id="backlogData" src="backlog-payload.v1.js?v=d3c21d1d2b5b"></script>
   <script>
 (() => {
   'use strict';
@@ -2686,6 +2684,6 @@ h1 {
   window.OdylithFrameBridge = {surface, frame};
 })();
 </script>
-  <script src="backlog-app.v1.js?v=bdb37efbd296"></script>
+  <script src="backlog-app.v1.js?v=d3c21d1d2b5b"></script>
 </body>
 </html>

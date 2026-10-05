@@ -62,6 +62,10 @@ DETAIL_LAYOUT_CSS = r"""
       line-height: 1.45;
     }
 
+    .read-guide > summary {
+      cursor: pointer;
+    }
+
     .diagram-box-section,
     .ownership-section {
       display: grid;
@@ -135,6 +139,42 @@ DETAIL_LAYOUT_CSS = r"""
     .diagram-box-description {
       margin: 0;
       min-width: 0;
+    }
+
+    .diagram-box-content {
+      display: grid;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .diagram-box-details {
+      min-width: 0;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .diagram-box-details > summary {
+      cursor: pointer;
+      color: #36566f;
+    }
+
+    .diagram-box-details > summary:focus-visible {
+      outline: 2px solid #0369a1;
+      outline-offset: 2px;
+    }
+
+    .diagram-box-details dl {
+      margin: 8px 0 0;
+    }
+
+    .diagram-box-details dt {
+      font-weight: 600;
+      white-space: pre-wrap;
+    }
+
+    .diagram-box-details dd {
+      margin: 3px 0 10px;
+      white-space: pre-wrap;
     }
 
     .component-list {
@@ -228,6 +268,21 @@ DETAIL_LAYOUT_CSS = r"""
 
     .linked-context-section .artifact-group:last-child {
       border-bottom: 0;
+    }
+
+    .linked-context-section .artifact-group:has(> .artifact-list:empty) {
+      display: none;
+    }
+
+    .engineering-context-empty {
+      margin: 0;
+      padding: 10px 11px;
+      color: #34475d;
+      overflow-wrap: anywhere;
+    }
+
+    .engineering-context-list:has(> .artifact-group > .artifact-list:not(:empty)) > .engineering-context-empty {
+      display: none;
     }
 
     .linked-context-section .artifact-label {
@@ -364,10 +419,10 @@ DETAIL_LAYOUT_HTML = r"""
               <p class="artifact-label">Summary</p>
               <p id="diagramSummary" class="summary"></p>
             </div>
-            <div class="diagram-guide-panel read-guide">
-              <p class="artifact-label">How To Read This View</p>
+            <details class="diagram-guide-panel read-guide">
+              <summary class="artifact-label">How to read this diagram</summary>
               <p id="diagramReadGuide" class="read-guide-body"></p>
-            </div>
+            </details>
           </div>
           <div id="diagramBoxesSection" class="diagram-box-section" hidden>
             <p class="artifact-label">Boxes In This Diagram</p>
@@ -382,6 +437,7 @@ DETAIL_LAYOUT_HTML = r"""
         <article class="section linked-context-section">
           <h3>Linked Engineering Context</h3>
           <div class="engineering-context-list">
+            <p class="engineering-context-empty" role="status">No engineering context is linked to this diagram yet.</p>
             <div class="artifact-group">
               <p class="artifact-label">Backlog</p>
               <ul id="backlogLinks" class="artifact-list"></ul>
@@ -413,6 +469,10 @@ DETAIL_LAYOUT_HTML = r"""
 
 DETAIL_RUNTIME_HELPERS_JS = r"""
     function renderDiagramBoxes(diagram, sectionEl, listEl) {
+      const genericRoles = new Set([
+        "Container", "Proposed component", "Proposed component support",
+        "Proposed logical component", "Proposed workstream",
+      ]);
       listEl.replaceChildren();
       const boxes = Array.isArray(diagram.diagram_boxes)
         ? diagram.diagram_boxes.filter((box) => box && typeof box === "object")
@@ -432,7 +492,7 @@ DETAIL_RUNTIME_HELPERS_JS = r"""
         heading.textContent = String(box.label ?? "");
         name.appendChild(heading);
         const roleText = String(box.role ?? "");
-        if (roleText.trim()) {
+        if (roleText.trim() && !genericRoles.has(roleText)) {
           const role = document.createElement("span");
           role.className = "diagram-box-role";
           role.textContent = roleText;
@@ -443,9 +503,31 @@ DETAIL_RUNTIME_HELPERS_JS = r"""
         description.className = "diagram-box-description";
         description.textContent = String(box.description ?? "");
 
+        const content = document.createElement("div");
+        content.className = "diagram-box-content";
+        content.appendChild(description);
+        if (Array.isArray(box.details) && box.details.length) {
+          const disclosure = document.createElement("details");
+          disclosure.className = "diagram-box-details";
+          const summary = document.createElement("summary");
+          summary.textContent = "Supporting details";
+          const entries = document.createElement("dl");
+          box.details.forEach((detail) => {
+            const label = document.createElement("dt");
+            label.textContent = String(detail.label ?? "");
+            const text = document.createElement("dd");
+            text.textContent = String(detail.text ?? "");
+            entries.appendChild(label);
+            entries.appendChild(text);
+          });
+          disclosure.appendChild(summary);
+          disclosure.appendChild(entries);
+          content.appendChild(disclosure);
+        }
+
         row.appendChild(number);
         row.appendChild(name);
-        row.appendChild(description);
+        row.appendChild(content);
         listEl.appendChild(row);
       });
     }

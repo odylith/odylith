@@ -2,7 +2,7 @@
 
 Receipt version: `odylith.greenfield-operating-envelope.v6`
 
-Document revision: `15`
+Document revision: `16`
 
 Profile: `single-product-governance-onboarding`
 
@@ -11,6 +11,15 @@ still requires semantic, transaction, host, browser, and holdout proof within
 this envelope.
 
 ## Projection authority and readability
+
+Fresh host candidates include `provisional_design.project_summary`: one or two
+concise sentences about the proposed project's purpose, users and supported
+outcome, limited to 600 characters. The existing candidate pass authors it; it
+does not become an accepted source fact or add a model pass. Project presents
+that exact sealed narrative and keeps the complete source excerpt in expandable
+evidence. Historical packages without this field remain readable without an
+invented summary. Main views show meaningful status, responsibilities, risks
+and next actions; technical identifiers and audit evidence remain in details.
 
 Project shows accepted scope boundaries from the verified source-duty record as
 known facts, retaining their exact rule and source citations. Candidate advisory
@@ -87,7 +96,7 @@ proof.
 
 ### EDIT lifecycle verification
 
-Host contract `odylith.greenfield.host-candidate-contract.v52` gives the existing
+Fresh host contract `odylith.greenfield.host-candidate-contract.v54` retains the existing
 source-only verifier a required disposition for every prior sealed state field,
 transition, conditional guard, boundary and proof duty. A preserved or changed
 duty requires an affirmative current carrier in the same typed section. Changed

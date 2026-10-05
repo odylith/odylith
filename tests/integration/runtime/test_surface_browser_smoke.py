@@ -35,6 +35,7 @@ from tests.integration.runtime.surface_browser_test_support import (
     _run_in_browser_thread,
     _select_radar_row_with_link,
     _static_server,
+    _wait_for_radar_detail_id,
     _wait_for_shell_query_param,
     _wait_for_shell_tab,
 )
@@ -1247,7 +1248,7 @@ def test_shell_history_and_cross_surface_deeplinks_round_trip_cleanly(browser_co
             key="workstream",
             value=idea_id,
         )
-        radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=idea_id).wait_for(timeout=15000)
+        _wait_for_radar_detail_id(radar, idea_id)
 
         idea_id, diagram_id, diagram_href = _select_radar_row_with_link(
             radar,
@@ -1279,7 +1280,7 @@ def test_shell_history_and_cross_surface_deeplinks_round_trip_cleanly(browser_co
             key="workstream",
             value=idea_id,
         )
-        radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=idea_id).wait_for(timeout=15000)
+        _wait_for_radar_detail_id(radar, idea_id)
         page.go_back(wait_until="domcontentloaded")
         if left_compass_plan_view:
             page.go_back(wait_until="domcontentloaded")
@@ -1959,7 +1960,7 @@ def test_atlas_tab_switch_restores_atlas_state_instead_of_leaking_radar_scope(br
             _assert_clean_page(page, observation)
             pytest.skip(f"Radar fixture does not currently expose workstream {mismatched_workstream}.")
         radar_row.first.click()
-        radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=mismatched_workstream).wait_for(timeout=15000)
+        _wait_for_radar_detail_id(radar, mismatched_workstream)
         _wait_for_shell_query_param(page, tab="radar", key="workstream", value=mismatched_workstream)
 
         page.locator("#tab-atlas").click()

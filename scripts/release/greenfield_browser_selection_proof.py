@@ -40,6 +40,15 @@ def recovered_selection_issues(*, expected: str, active: str, detail: str) -> tu
     return ()
 
 
+def reveal_selection_detail(detail: Any, *, timeout_ms: int) -> None:
+    detail.wait_for(state="attached", timeout=timeout_ms)
+    for disclosure in detail.locator("xpath=ancestor::details").all():
+        if not disclosure.evaluate("node => node.open"):
+            disclosure.locator(":scope > summary").focus()
+            disclosure.locator(":scope > summary").press("Enter")
+    detail.wait_for(state="visible", timeout=timeout_ms)
+
+
 def prove_clicked_selection(*, page: Any, frame: Any, query_key: str,
                             active_selector: str, active_attribute: str,
                             detail_selector: str, detail_attribute: str,
@@ -51,7 +60,7 @@ def prove_clicked_selection(*, page: Any, frame: Any, query_key: str,
     active = frame.locator(active_selector).first
     active.wait_for(state="visible", timeout=timeout_ms)
     detail = frame.locator(detail_selector)
-    detail.wait_for(state="visible", timeout=timeout_ms)
+    reveal_selection_detail(detail, timeout_ms=timeout_ms)
     wait_for_selection_route(page, query_key, expected, timeout_ms)
     return recovered_selection_issues(
         expected=expected, active=str(active.get_attribute(active_attribute) or "").strip(),

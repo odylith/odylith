@@ -632,25 +632,22 @@ def _source_design_structure() -> tuple[dict, dict]:
         {"order": 2, "text": "Actor: Relay Relay writes blue receipt"},
     ]
     rendered = {
-        "focus": events,
         "first_path": events,
-        "focus_authority": "provisional_design",
-        "focus_label": "Proposed first run:",
         "first_path_authority": "provisional_design",
         "first_path_label": "Proposed first run:",
-        "actors": [{"actor": "Keeper", "events": [{"order": 1, "text": "Keeper signals amber ferry"}]}],
+        "actors": [{"actor": "Keeper", "source_name": "Keeper"}],
         "capabilities_authority": "provisional_design",
-        "capabilities_label": "Proposed capabilities:",
+        "capabilities_label": "Proposed capabilities",
         "capabilities": [
             {"owner": row["name"], "responsibility": row["responsibility"]}
             for row in design["components"]
         ],
         "boundary_groups": [
-            {"key": "provisional_components", "label": "Proposed logical components (not deployment commitments):",
+            {"key": "provisional_components", "label": "Proposed components:",
              "items": [row["name"] for row in design["components"]]},
-            {"key": "source_product_systems", "label": "Source-stated systems:", "items": ["Relay", "Audit Console"]},
+            {"key": "source_product_systems", "label": "Named systems:", "items": ["Relay", "Audit Console"]},
             {"key": "external_systems", "label": "External systems:", "items": ["North Archive"]},
-            {"key": "non_goals", "label": "Source-stated scope limits:", "items": ["Do not claim live settlement."]},
+            {"key": "non_goals", "label": "Scope limits:", "items": ["Do not claim live settlement."]},
         ],
         "deliveries": [{"title": row["title"], "deliverable": row["deliverable"]} for row in design["workstreams"]],
     }
@@ -721,12 +718,8 @@ def _result_first_structure() -> tuple[dict, dict]:
         {"order": 1, "text": "Actor: Keeper Keeper publishes blue receipt"},
     ]
     rendered.update(
-        focus=events,
         first_path=events,
-        actors=[{"actor": "Keeper", "events": [
-            {"order": 3, "text": "Keeper reviews blue receipt"},
-            {"order": 1, "text": "Keeper publishes blue receipt"},
-        ]}],
+        actors=[{"actor": "Keeper", "source_name": "Keeper"}],
     )
     return rendered, facts
 
@@ -824,8 +817,7 @@ def _post_result_structure() -> tuple[dict, dict]:
         {"order": order, "text": f"Actor: Keeper {quote}"}
         for order, quote in enumerate(quotes, 1)
     ]
-    actor_events = [{"order": order, "text": quote} for order, quote in enumerate(quotes, 1)]
-    rendered.update(focus=events, first_path=events, actors=[{"actor": "Keeper", "events": actor_events}])
+    rendered.update(first_path=events, actors=[{"actor": "Keeper", "source_name": "Keeper"}])
     return rendered, facts
 
 
@@ -835,20 +827,16 @@ def test_authored_browser_oracle_accepts_required_post_result_archiving() -> Non
     assert module.authored_structure_issues(rendered, facts) == ()
 
 
-@pytest.mark.parametrize("surface", ["focus", "first_path", "actors"])
-def test_authored_browser_oracle_rejects_raw_source_order_in_proposed_walk(surface: str) -> None:
+def test_authored_browser_oracle_rejects_raw_source_order_in_proposed_walk() -> None:
     module = _authored_contract_module()
     rendered, facts = _result_first_structure()
     assert module.authored_structure_issues(rendered, facts) == ()
-    if surface == "actors":
-        rendered[surface][0]["events"] = list(reversed(rendered[surface][0]["events"]))
-    else:
-        rendered[surface] = sorted(rendered[surface], key=lambda event: event["order"])
+    rendered["first_path"] = sorted(rendered["first_path"], key=lambda event: event["order"])
     assert module.authored_structure_issues(rendered, facts)
 
 
-@pytest.mark.parametrize("field", ["focus_authority", "focus_label", "first_path_authority", "first_path_label"])
-def test_authored_browser_oracle_requires_both_proposed_walk_markers(field: str) -> None:
+@pytest.mark.parametrize("field", ["first_path_authority", "first_path_label"])
+def test_authored_browser_oracle_requires_proposed_walk_markers(field: str) -> None:
     module = _authored_contract_module()
     rendered, facts = _source_design_structure()
     rendered[field] = ""
@@ -947,21 +935,20 @@ def test_atlas_native_reading_uses_real_keyboard_or_touch_pointer_pan(
 
 def _authored_contract_html(facts: dict) -> str:
     from odylith.runtime.project_intelligence.authored_fact_presenter import (
-        render_authored_actor_cards, render_authored_focus, render_product_story_contract,
+        render_authored_actor_cards, render_product_story_contract,
     )
 
     project = {"authored_facts": facts}
     render_text = lambda value: html.escape(str(value))
-    focus = render_authored_focus(project, render_text=render_text)
     actors = render_authored_actor_cards(
-        [("Human participant", "Keeper", "Reviews and publishes receipts.")],
+        [("Human participant", name, "") for name in facts["human_actors"]],
         project=project, render_text=render_text,
     )
     story = render_product_story_contract([
         {"label": label, "semantic_slot": slot, "body": "Rendered from typed facts."}
         for label, slot in (
             ("First Path", "first_path"), ("Product Boundary", "product_boundary"),
-            ("Proposed Capabilities", "owned_capabilities"),
+            ("Proposed capabilities", "owned_capabilities"),
         )
     ], project=project, render_text=render_text)
     deliveries = "".join(
@@ -969,7 +956,7 @@ def _authored_contract_html(facts: dict) -> str:
         f'<p>{render_text(row["deliverable"])}</p></article>'
         for row in facts["provisional_design"]["workstreams"]
     )
-    return f'<!doctype html><main id="authored">{focus}{actors}{story}{deliveries}</main>'
+    return f'<!doctype html><main id="authored">{actors}{story}{deliveries}</main>'
 
 
 @pytest.mark.parametrize("width,height", [(1440, 1100), (430, 932)], ids=["desktop", "mobile"])
@@ -983,7 +970,7 @@ def test_authored_dom_oracle_preserves_publication_and_post_result_archiving(
         page.set_content(_authored_contract_html(facts))
         actual = page.locator("#authored").evaluate(module.AUTHORED_STRUCTURE_EXPRESSION)
         assert module.authored_structure_issues(actual, facts) == ()
-        for surface in ("focus", "first_path"):
+        for surface in ("first_path",):
             assert [row["text"] for row in actual[surface]] == [
                 "Actor: Keeper Keeper publishes blue receipt",
                 "Actor: Keeper Keeper archives receipt evidence",
@@ -1005,7 +992,6 @@ def test_authored_dom_oracle_detects_hidden_labels_and_source_order(
         root = page.locator("#authored")
         assert module.authored_structure_issues(root.evaluate(module.AUTHORED_STRUCTURE_EXPRESSION), facts) == ()
         for surface, parent_selector in (
-            ("focus", '[data-authored-fact-list="focus"]'),
             ("first_path", '[data-semantic-slot="first_path"]'),
         ):
             for damage in ("display", "visibility", "opacity", "removed", "lost_copy"):
@@ -1101,7 +1087,7 @@ def test_project_story_proof_label_is_selected_by_payload_authority() -> None:
     module = _module()
     _rendered, source_facts = _source_design_structure()
     _rendered, proposed_facts = _provisional_proof_structure()
-    source_rows = _story_rows("Proof", source_facts["proof_boundary"])
+    source_rows = _story_rows("Observable result", source_facts["proof_boundary"])
     proposed_rows = _story_rows(
         "Proposed Proof Checkpoint",
         "Assumption — Use a reviewable blue-receipt record as the proposed checkpoint.",
@@ -1123,9 +1109,9 @@ def test_project_story_proof_label_is_selected_by_payload_authority() -> None:
         "unexpected semantic label: `Proposed Proof Checkpoint`" in issue
         for issue in source_with_proposed
     )
-    assert any("missing its `Proof` card" in issue for issue in source_with_proposed)
+    assert any("missing its `Observable result` card" in issue for issue in source_with_proposed)
     assert any(
-        "unexpected semantic label: `Proof`" in issue
+        "unexpected semantic label: `Observable result`" in issue
         for issue in proposed_with_source
     )
     assert any(
@@ -1201,3 +1187,121 @@ def test_project_state_assertion_fails_closed_when_authored_nodes_are_missing() 
     )
 
     assert "browser surface project has invalid canonical source events" in issues
+
+
+@pytest.mark.parametrize("failure", ["none", "hidden_status", "boundary_drift", "missing_error", "missing_blocker", "generic_empty", "generic_error"])
+def test_project_degraded_oracle_keeps_exact_status_boundary_errors_and_blockers(
+    monkeypatch: pytest.MonkeyPatch, failure: str,
+) -> None:
+    module = _module()
+    current = "Project direction accepted. Implementation has not been verified."
+    boundary = "Requirements describe intended behavior; validation must establish working software."
+    error = "Source validation output cannot be loaded."
+    blocker = "Which runtime owns the durable journal?"
+    rows = [current, boundary, error, blocker]
+    state = {"authored": True, "expected": [current, boundary], "visible": [current, boundary],
+             "rows": rows, "text": "\n".join(rows)}
+    if failure == "hidden_status":
+        state["visible"] = ["", boundary]
+    elif failure == "boundary_drift":
+        state["visible"] = [current, "Unsupported implementation claim."]
+    elif failure in {"missing_error", "missing_blocker"}:
+        missing = error if failure == "missing_error" else blocker
+        state["text"] = "\n".join(row for row in rows if row != missing)
+    elif failure == "generic_empty":
+        state.update(authored=False, rows=[], text="A generic page without a degradation reason.")
+    elif failure == "generic_error":
+        state.update(authored=False, rows=[error], text=error)
+    calls = []
+
+    class Locator:
+        def __init__(self, selector):
+            self.selector = selector
+        def wait_for(self, **kwargs):
+            calls.append(("wait", self.selector))
+        def evaluate_all(self, expression):
+            assert self.selector == "#pane-project .project-open-questions"
+            assert "node.open = true" in expression
+            calls.append(("questions", self.selector))
+        def evaluate(self, expression):
+            assert "project.current" in expression and "project.trust_note" in expression
+            assert "project.degraded_state" in expression and "project.blockers" in expression
+            assert "getClientRects" in expression
+            return state
+
+    class Page:
+        def goto(self, *args, **kwargs):
+            return type("Response", (), {"ok": True})()
+        def locator(self, selector):
+            return Locator(selector)
+        def close(self):
+            calls.append(("close", "page"))
+
+    monkeypatch.setattr(module, "_new_page", lambda *args, **kwargs: (Page(), lambda: ()))
+    monkeypatch.setattr(module, "_dismiss_shell_obstructions", lambda page: None)
+    monkeypatch.setattr(module, "_layout_issues", lambda *args, **kwargs: ())
+    issues = module._project_degraded_state_issues(
+        context=None, base_url="http://127.0.0.1", timeout_ms=100,
+        screenshot_output_dir=None, coverage_cell=("mobile", "project", "degraded"), covered=None,
+    )
+    assert bool(issues) == (failure not in {"none", "generic_error"})
+    if failure in {"hidden_status", "boundary_drift"}:
+        assert issues == ("browser surface project does not visibly preserve its exact status and evidence boundary",)
+    elif failure in {"missing_error", "missing_blocker", "generic_empty"}:
+        assert issues == ("browser surface project does not visibly explain its degraded proof boundary",)
+    assert calls == [("wait", "#pane-project .project-surface"),
+                     ("questions", "#pane-project .project-open-questions"), ("close", "page")]
+
+
+@pytest.mark.parametrize("damage", ["none", "missing_unassigned", "hidden", "renamed", "reordered", "marker_lost"])
+def test_authored_participants_require_every_exact_visible_source_name(damage: str) -> None:
+    module = _authored_contract_module()
+    rendered, facts = _source_design_structure()
+    facts["human_actors"].append("Silent observer")
+    rendered["actors"].append({"actor": "Silent observer", "source_name": "Silent observer"})
+    original_path = deepcopy(rendered["first_path"])
+    if damage == "missing_unassigned":
+        rendered["actors"].pop()
+    elif damage == "hidden":
+        rendered["actors"][1]["actor"] = ""
+    elif damage == "renamed":
+        rendered["actors"][1]["actor"] = "Unsupported participant"
+    elif damage == "reordered":
+        rendered["actors"].reverse()
+    elif damage == "marker_lost":
+        rendered["actors"][1]["source_name"] = ""
+    issues = module.authored_structure_issues(rendered, facts)
+    assert bool(issues) == (damage != "none")
+    assert rendered["first_path"] == original_path
+    if damage != "none":
+        assert issues == ("browser surface project participants do not preserve all source-stated human names",)
+
+
+@pytest.mark.parametrize("width,height", [(1440, 1100), (430, 932)], ids=["desktop", "mobile"])
+def test_authored_dom_oracle_keeps_unassigned_participants_visible(
+    authored_contract_browser, width: int, height: int,
+) -> None:
+    module = _authored_contract_module()
+    _, facts = _source_design_structure()
+    facts["human_actors"].append("Silent observer")
+    document = _authored_contract_html(facts)
+    page = authored_contract_browser.new_page(viewport={"width": width, "height": height})
+    try:
+        page.set_content(document)
+        root = page.locator("#authored")
+        actual = root.evaluate(module.AUTHORED_STRUCTURE_EXPRESSION)
+        assert module.authored_structure_issues(actual, facts) == ()
+        assert [row["actor"] for row in actual["actors"]] == ["Keeper", "Silent observer"]
+        for damage in ("hidden", "removed", "renamed"):
+            page.set_content(document)
+            person = page.locator('[data-authored-actor="Silent observer"]')
+            person.evaluate("""(node, damage) => {
+              if (damage === "removed") node.remove();
+              else if (damage === "hidden") node.style.display = "none";
+              else node.querySelector("h3").textContent = "Unsupported participant";
+            }""", damage)
+            assert module.authored_structure_issues(root.evaluate(module.AUTHORED_STRUCTURE_EXPRESSION), facts) == (
+                "browser surface project participants do not preserve all source-stated human names",
+            )
+    finally:
+        page.close()

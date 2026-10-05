@@ -680,3 +680,51 @@ def test_hash_requires_design_for_every_authored_contract_but_keeps_empty_case()
         authored_relation_set_sha256((), provisional_design=_design())
     with pytest.raises(ValueError):
         authored_semantics_mapping(relations, provisional_design=None)
+
+
+
+def test_project_summary_is_optional_proposed_narrative_without_legacy_defaulting() -> None:
+    legacy = _design()
+    assert "project_summary" not in legacy
+    assert validate_provisional_design(legacy, event_orders=(1, 2)) == legacy
+    assert "project_summary" not in validate_provisional_design(legacy, event_orders=(1, 2))
+    summary = "The proposed desk helps people obtain a visible result.\r\nIt preserves café notes."
+    design = {**legacy, "project_summary": summary}
+    assert validate_provisional_design(design, event_orders=(1, 2)) == design
+    assert validate_provisional_design(design, event_orders=(1, 2))["project_summary"] == summary
+    assert "project_summary" not in PROVISIONAL_DESIGN_SCHEMA["required"]
+    assert PROVISIONAL_DESIGN_SCHEMA["properties"]["project_summary"]["maxLength"] == 600
+    design["project_summary"] = "é" * 600
+    assert validate_provisional_design(design, event_orders=(1, 2))["project_summary"] == "é" * 600
+
+
+@pytest.mark.parametrize("summary", [None, "", " \r\n", [], {}, 1, "é" * 601])
+def test_invalid_project_summary_is_refused_without_opening_design_shape(summary) -> None:
+    with pytest.raises(ValueError, match="bounded nonblank"):
+        validate_provisional_design({**_design(), "project_summary": summary}, event_orders=(1, 2))
+    with pytest.raises(ValueError, match="unsupported authority"):
+        validate_provisional_design({**_design(), "invented_summary_field": "unsupported"}, event_orders=(1, 2))
+
+
+def test_summary_enters_existing_design_hash_and_never_source_fact_or_atom_authority() -> None:
+    intent, envelope, authority = _enveloped_intent()
+    before = deepcopy(intent)
+    changed = deepcopy(intent)
+    changed[AUTHORED_SEMANTICS_KEY]["provisional_design"]["project_summary"] = (
+        "The proposed desk helps a person obtain a visible result."
+    )
+    design = provisional_design_from_intent(changed)
+    assert design["project_summary"].startswith("The proposed desk")
+    assert product_facts_payload(changed) == product_facts_payload(before) == envelope["product_facts"]
+    assert "project_summary" not in envelope["product_facts"]
+    assert all("project_summary" not in row for row in envelope["custody_ledger"]["atomic_facts"])
+    semantics = changed[AUTHORED_SEMANTICS_KEY]
+    changed_hash = authored_relation_set_sha256(
+        semantics["first_path_relations"], semantics["component_responsibility_relations"],
+        first_path_context_relations=semantics["first_path_context_relations"],
+        source_precedence=semantics["source_precedence"], provisional_design=design,
+    )
+    assert changed_hash != authority[AUTHORED_RELATION_SET_SHA256_KEY]
+    with pytest.raises((ValueError, GreenfieldAuthoredSemanticsError)):
+        require_relation_authority_parity(changed, authority)
+    assert intent == before

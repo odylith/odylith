@@ -374,22 +374,6 @@ function componentFullIdentity(row) {
   return raw || componentId || "Component";
 }
 
-function componentIdPreview(componentId, limit = 54) {
-  return clipText(String(componentId || "").trim(), limit);
-}
-
-function componentComparableIdentity(value) {
-  return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
-}
-
-function componentDisplayIdLine(row, displayName) {
-  const componentId = String(row && row.component_id || "").trim();
-  if (!componentId) return "";
-  const displayed = String(displayName || componentRawName(row) || "").trim();
-  if (componentComparableIdentity(componentId) === componentComparableIdentity(displayed)) return "";
-  return `<p class="component-full-name component-id-line">${escapeHtml(componentId)}</p>`;
-}
-
 function compactPathLabel(path, fallback = "Artifact") {
   const raw = String(path || "").trim();
   if (!raw) return fallback;
@@ -398,25 +382,11 @@ function compactPathLabel(path, fallback = "Artifact") {
   return clipText(basenamePath(raw) || raw, 54);
 }
 
-function compactRegistryNarrative(value, row, limit = 420) {
-  let text = String(value || "").replace(/\s+/g, " ").trim();
-  if (!text) return "";
-  const rawName = componentRawName(row);
-  const compactName = componentCompactName(row, 72);
-  if (rawName && compactName && rawName !== compactName) {
-    text = text.split(rawName).join(compactName);
-  }
-  return clipText(text, limit);
-}
-
-function splitInitialSourceBoundary(value) {
-  const raw = String(value || "").replace(/\s+/g, " ").trim();
-  if (!raw) return { body: "", source: "" };
-  const match = raw.match(/\bInitial source boundary:\s*(.+)$/i);
-  if (!match) return { body: raw, source: "" };
-  const body = raw.slice(0, match.index).trim().replace(/[. ]*$/, ".");
-  const source = String(match[1] || "").trim().replace(/[. ]+$/, "");
-  return { body, source };
+function compactRegistryNarrative(value, row) {
+  const text = String(value || "").trim();
+  const prefix = `${String(row && row.name || "")} is a proposed logical component. Proposed responsibility: `;
+  const generated = row && row.status === "planned" && row.qualification === "candidate";
+  return generated && text.startsWith(prefix) ? text.slice(prefix.length) : text;
 }
 
 function summaryTextRow(title, body) {
@@ -444,10 +414,8 @@ function summaryArtifactRow(title, path, label) {
 
 function renderComponentListButton(row, selectedId) {
   const categoryToken = String(row.category || "").trim().toLowerCase();
-  const coverage = row && typeof row.forensic_coverage === "object" ? row.forensic_coverage : {};
   const fullIdentity = componentFullIdentity(row);
-  const eventCount = Number(row.timeline_count || 0);
-  const metaText = [componentIdPreview(row.component_id), humanizeToken(row.kind), humanizeToken(row.status || "active"), forensicCoverageLabel(coverage), `${eventCount} ${pluralize(eventCount, "event", "events")}`].filter(Boolean).join(" · ");
+  const metaText = humanizeToken(row.status || "active");
   return `
     <li>
       <button type="button" class="component-btn${row.component_id === selectedId ? " active" : ""}" data-component="${escapeHtml(row.component_id)}" title="${escapeHtml(fullIdentity)}" aria-label="${escapeHtml(fullIdentity)}">
@@ -455,7 +423,6 @@ function renderComponentListButton(row, selectedId) {
         <span class="component-meta" title="${escapeHtml(fullIdentity)}">${escapeHtml(metaText)}</span>
         <span class="inline">
           <span class="label ${escapeHtml(toneClassForCategory(categoryToken))}">${escapeHtml(humanizeToken(categoryToken))}</span>
-          <span class="label">${escapeHtml(humanizeToken(row.qualification || "curated"))}</span>
         </span>
       </button>
     </li>
@@ -935,12 +902,12 @@ function renderComponentListButton(row, selectedId) {
         { label: "Visible Components", value: Number(visibleCount || 0), tooltip: "Components visible under current search and filters." },
         { label: "All Components", value: Number(counts.components || 0), tooltip: "Total first-class component inventory size." },
         { label: "Events", value: Number(counts.events || 0), tooltip: "Codex stream events visible to Registry." },
-        { label: "Meaningful", value: Number(counts.meaningful_events || 0), tooltip: "Governance-relevant events." },
-        { label: "Mapped Meaningful", value: Number(counts.mapped_meaningful_events || 0), tooltip: "Meaningful events with mapped components." },
+        { label: "Governance Events", value: Number(counts.meaningful_events || 0), tooltip: "Governance-relevant events." },
+        { label: "Events Linked to Components", value: Number(counts.mapped_meaningful_events || 0), tooltip: "Meaningful events with mapped components." },
       ];
       if (Number(counts.unmapped_meaningful_events || 0) > 0) {
         rows.push({
-          label: "Unmapped Meaningful",
+          label: "Events Missing Component Links",
           value: Number(counts.unmapped_meaningful_events || 0),
           tooltip: "Meaningful events without mapped components.",
           warn: true,
@@ -953,6 +920,10 @@ function renderComponentListButton(row, selectedId) {
           tooltip: "Unresolved component tokens pending curated review.",
         });
       }
+      const missingLinks = Number(counts.unmapped_meaningful_events || 0);
+      document.getElementById("registryActivitySummary").textContent = missingLinks > 0
+        ? `Activity and coverage · ${missingLinks} ${missingLinks === 1 ? "event needs" : "events need"} component links`
+        : "Activity and coverage";
       kpisEl.innerHTML = rows
         .map((row) => (
           `<article class="kpi-card${row.warn ? " warn" : ""}" data-tooltip="${escapeHtml(row.tooltip || "")}">`
@@ -1714,11 +1685,11 @@ function renderComponentListButton(row, selectedId) {
         specDeveloperDocs: Array.isArray(row.spec_developer_docs) ? row.spec_developer_docs : [],
       };
       const metadata = [
+        staticLabel(`ID: ${row.component_id}`, "Exact component identifier."),
         staticLabel(`Category: ${humanizeToken(row.category)}`, categoryDescription(row.category)),
         staticLabel(`Qualification: ${humanizeToken(row.qualification)}`, qualificationDescription(row.qualification)),
         staticLabel(`Kind: ${humanizeToken(row.kind)}`, "Component structure class."),
         staticLabel(`Owner: ${row.owner || "unknown"}`, "Declared ownership for governance routing."),
-        staticLabel(`Status: ${humanizeToken(row.status || "unknown")}`, "Lifecycle state of this component record."),
       ].join("");
 
       const wsLinks = workstreams.length
@@ -1788,7 +1759,12 @@ function renderComponentListButton(row, selectedId) {
         ? `<p class="desc">${escapeHtml(forensicCoverageLabel(forensicCoverage))}. ${escapeHtml(emptyReasons.length ? ensureSentence(naturalList(emptyReasons)) : "No mapped forensic evidence channels are currently attached.")}</p>`
         : `<p class="desc">${escapeHtml(forensicCoverageSummary(forensicCoverage))}</p>`;
 
+      const whyTracked = String(row.why_tracked || "").trim();
+      const rawWhatItIs = String(row.what_it_is || "").trim();
+      const whatItIs = compactRegistryNarrative(rawWhatItIs, row);
       const rows = [
+        whatItIs !== rawWhatItIs ? contextRow("Registry description", 1, `<p class="desc">${escapeHtml(rawWhatItIs)}</p>`, "Exact stored description; the header omits only generated scaffolding.", true) : "",
+        contextRow("Why tracked", whyTracked ? 1 : 0, `<p class="desc">${escapeHtml(whyTracked)}</p>`, "Declared delivery or governance rationale.", true),
         contextRow("Forensic Coverage", Number(row.timeline_count || 0), forensicCoverageBody, "Registry coverage truth derived from explicit Compass events, recent path matches, and mapped workstream evidence.", true),
         contextRow("Metadata", 5, metadata, "Category, qualification, and ownership qualifiers."),
         contextRow("Product Layer", productLayer ? 1 : 0, productLayerBody, "Odylith product-layer placement for this component."),
@@ -1800,12 +1776,11 @@ function renderComponentListButton(row, selectedId) {
         contextRow("Path Prefixes", pathPrefixes.length, pathLabels, "Artifact prefixes used in event mapping."),
       ].join("");
 
-      const displayName = componentCompactName(row, 72);
-      const rawDisplayName = componentRawName(row);
+      const displayName = componentRawName(row);
       const fullIdentity = componentFullIdentity(row);
       const fallbackToken = String(row.component_id || "").trim();
       const specPath = String(row.spec_ref || "").trim();
-      const specLastUpdated = String(row.spec_last_updated || "").trim() || "Unknown";
+      const specLastUpdated = String(row.spec_last_updated || "").trim();
       const specHistory = Array.isArray(row.spec_feature_history) ? row.spec_feature_history : [];
       const specMarkdown = String(row.spec_markdown || "").trim();
       const specRunbooks = Array.isArray(row.spec_runbooks) ? row.spec_runbooks : [];
@@ -1825,20 +1800,12 @@ function renderComponentListButton(row, selectedId) {
             </div>
           </details>
         `
-        : '<p class="summary-row"><strong>Triggers:</strong> No trigger phrases documented.</p>';
-      const whatItIsParts = splitInitialSourceBoundary(compactRegistryNarrative(row.what_it_is || "", row));
-      const whyTracked = compactRegistryNarrative(row.why_tracked || "Not documented.", row);
-      const fullNameSubtitle = rawDisplayName && rawDisplayName !== displayName ? `<p class="component-full-name">${escapeHtml(rawDisplayName)}</p>` : "";
-      const idSubtitle = componentDisplayIdLine(row, displayName || fallbackToken);
+        : "";
 
       detailEl.innerHTML = `
-        <div class="component-identity"><h2 class="component-name" title="${escapeHtml(fullIdentity)}">${escapeHtml(displayName || fallbackToken)}</h2>${fullNameSubtitle}${idSubtitle}</div>
+        <div class="component-identity"><h2 class="component-name" title="${escapeHtml(fullIdentity)}">${escapeHtml(displayName || fallbackToken)}</h2>${staticLabel(humanizeToken(row.status || "unknown"), "Lifecycle state of this component record.")}</div>
         <div class="summary-strip">
-          ${summaryTextRow("What it is", whatItIsParts.body || row.what_it_is || "Not documented.")}
-          ${summaryArtifactRow("Source boundary", whatItIsParts.source, "Source boundary")}
-          ${summaryTextRow("Why tracked", whyTracked || "Not documented.")}
-          ${productLayer ? `<p class="summary-row"><strong>Product layer:</strong> ${escapeHtml(productLayerLabel(productLayer))}</p>` : ""}
-          <p class="summary-row"><strong>Forensic coverage:</strong> ${escapeHtml(forensicCoverageSummary(forensicCoverage))}</p>
+          <p class="summary-row component-purpose">${escapeHtml(whatItIs || "Purpose not documented.")}</p>
           ${triggerBlock}
         </div>
         <details class="spec-expand">
@@ -1847,11 +1814,12 @@ function renderComponentListButton(row, selectedId) {
               <p class="detail-disclosure-title spec-summary-title">Current Spec</p>
             </div>
             <span class="spec-summary-meta">
-              <span class="label">Last updated ${escapeHtml(specLastUpdated)}</span>
+              ${specLastUpdated ? `<span class="label">Last updated ${escapeHtml(specLastUpdated)}</span>` : ""}
               <span class="label">Feature entries ${escapeHtml(String(specHistory.length))}</span>
             </span>
           </summary>
           <div class="spec-expand-body">
+            ${specLastUpdated ? "" : summaryTextRow("Last updated", "Not documented.")}
             ${specPath ? summaryArtifactRow("Spec source", specPath, compactPathLabel(specPath, "Component spec")) : '<p class="summary-row"><strong>Spec source:</strong> Not documented.</p>'}
             ${renderSpecLinkGroup(
               "Runbooks",

@@ -48,7 +48,7 @@ def build_provisional_design_atlas_specs(
     components = [
         {
             "name": row["name"],
-            "description": f"Proposed responsibility: {row['responsibility']}",
+            "description": row["responsibility"],
         }
         for row in design["components"]
     ]
@@ -118,12 +118,13 @@ def build_provisional_design_atlas_specs(
                 )
             ),
             "read_guide": (
-                "Select a diagram box in Read mode for complete statements. Component boxes "
-                "retain their proposed responsibility, source-action references and boundary check. "
+                "Select a diagram box in Read mode for complete statements. Open Supporting details "
+                "for source-action references and proposed boundary checks. Component support "
+                "does not transfer the stated actor's action to a component. "
                 "Linked workstream boxes retain the full deliverable and shared acceptance; no "
                 "check is claimed to have passed or be exhaustive proof. The source-action "
                 "reference box retains every full action and stated performer. References do not "
-                "create additional events or execution order, or transfer actor ownership. "
+                "create additional events or execution order. "
                 "Source facts and lifecycle boxes preserve their complete statements and citations. "
                 "Compact labels are references, not summaries. Source-stated facts are "
                 + source_fact_guide
@@ -134,15 +135,37 @@ def build_provisional_design_atlas_specs(
     }
 
 
-def atlas_box(node_id: str, label: str, role: str, description: str) -> dict[str, str]:
+def atlas_box(
+    node_id: str, label: str, role: str, description: str,
+    *, details: list[dict[str, str]] | None = None,
+) -> dict[str, Any]:
     """Build one exact display box for sealing by the Atlas custody owner."""
 
-    return {
+    box: dict[str, Any] = {
         "node_id": node_id,
         "label": label,
         "role": role,
         "description": description,
     }
+    if details is not None:
+        box["details"] = atlas_box_details(details)
+    return box
+
+
+def atlas_box_details(value: Any) -> list[dict[str, str]]:
+    """Validate optional literal detail rows without interpreting their meaning."""
+
+    if not isinstance(value, list):
+        raise ValueError("Atlas box details must be a list")
+    rows = []
+    for index, row in enumerate(value):
+        if not isinstance(row, Mapping) or set(row) != {"label", "text"}:
+            raise ValueError(f"Atlas box details[{index}] must contain exactly label and text")
+        rows.append({
+            key: required_atlas_string(row[key], f"Atlas box details[{index}].{key}")
+            for key in ("label", "text")
+        })
+    return rows
 
 
 def mermaid_label(value: str, *, width: int = 28) -> str:
@@ -187,11 +210,11 @@ def build_provisional_first_run_atlas_view(
     *,
     design: Mapping[str, Any],
     source_precedence: Sequence[Mapping[str, Any]],
-) -> tuple[str, list[dict[str, str]]]:
+) -> tuple[str, list[dict[str, Any]]]:
     """Project selected events and their declared upstream design support."""
 
     lines = ["flowchart TD"]
-    boxes: list[dict[str, str]] = []
+    boxes: list[dict[str, Any]] = []
     performers: dict[tuple[str, str], str] = {}
     orders = design["first_run"]["event_orders"]
     selected = set(orders)
@@ -303,7 +326,8 @@ def build_provisional_first_run_atlas_view(
                 node_id,
                 component["name"],
                 "Proposed first-run stage" if direct else "Proposed supporting component",
-                f"Proposed responsibility: {component['responsibility']}",
+                component["responsibility"],
+                details=[],
             )
         )
         for order in component["supported_event_orders"]:
@@ -315,11 +339,10 @@ def build_provisional_first_run_atlas_view(
         if exchange["from_component"] not in component_nodes or exchange["to_component"] not in component_nodes:
             continue
         origin_box = boxes_by_id[component_nodes[exchange["from_component"]]]
-        origin_box["description"] += (
-            f"\nProposed exchange {exchange_index} to "
-            f"{component_names[exchange['to_component']]}: "
-            f"{exchange['contract']}"
-        )
+        origin_box["details"].append({
+            "label": f"Proposed exchange {exchange_index} to {component_names[exchange['to_component']]}",
+            "text": exchange["contract"],
+        })
     delivery_edges: set[tuple[str, str]] = set()
     for workstream in design["workstreams"]:
         for prerequisite in workstream["depends_on"]:
@@ -332,17 +355,16 @@ def build_provisional_first_run_atlas_view(
                     ):
                         delivery_edges.add(edge)
                         target_box = boxes_by_id[component_nodes[target]]
-                        target_box["description"] += (
-                            f"\nProposed delivery prerequisite: "
-                            f"{component_names[origin]} "
-                            f"through {workstreams[prerequisite]['title']}."
-                        )
+                        target_box["details"].append({
+                            "label": "Proposed delivery prerequisite",
+                            "text": f"{component_names[origin]} through {workstreams[prerequisite]['title']}.",
+                        })
     return styled_mermaid(lines), boxes
 
 
 def _component_exchange_view(
     design: Mapping[str, Any],
-) -> tuple[str, list[dict[str, str]]]:
+) -> tuple[str, list[dict[str, Any]]]:
     components = design["components"]
     component_ids = {row["key"]: f"component{index}" for index, row in enumerate(components, 1)}
     lines = ["flowchart TD", '  subgraph proposed["Proposed logical design — not deployments"]']
@@ -355,7 +377,7 @@ def _component_exchange_view(
         lines.append(f'    {node_id}["{mermaid_label(component["name"])}"]')
         boxes.append(atlas_box(
             node_id, component["name"], "Proposed component",
-            f"Proposed responsibility: {component['responsibility']}",
+            component["responsibility"],
         ))
     lines.append("  end")
     for exchange in design["exchanges"]:
@@ -369,11 +391,11 @@ def _component_exchange_view(
 
 def _delivery_view(
     design: Mapping[str, Any],
-) -> tuple[str, list[dict[str, str]]]:
+) -> tuple[str, list[dict[str, Any]]]:
     workstreams = design["workstreams"]
     workstream_ids = {row["key"]: f"workstream{index}" for index, row in enumerate(workstreams, 1)}
     lines = ["flowchart TD"]
-    boxes: list[dict[str, str]] = []
+    boxes: list[dict[str, Any]] = []
     for index, workstream in enumerate(workstreams, 1):
         node_id = f"workstream{index}"
         acceptance_id = f"workstream{index}_acceptance"
@@ -415,12 +437,16 @@ def _capability_support_view(
     non_goals: Sequence[str],
     proof_is_provisional: bool,
     source_lifecycle: Mapping[str, Any] | None,
-) -> tuple[str, list[dict[str, str]]]:
+) -> tuple[str, list[dict[str, Any]]]:
     lines = ["flowchart LR"]
-    boxes: list[dict[str, str]] = []
+    boxes: list[dict[str, Any]] = []
     component_ids = {
         component["key"]: f"component{index}"
         for index, component in enumerate(design["components"], 1)
+    }
+    event_details = {
+        event["order"]: f"Source action {event['order']} · {event['actor_kind']}\n{authored_event_display_text(event)}"
+        for event in relations
     }
     for index, component in enumerate(design["components"], 1):
         component_id = component_ids[component["key"]]
@@ -432,9 +458,16 @@ def _capability_support_view(
         )
         boxes.append(atlas_box(
             component_id, component["name"], "Proposed component support",
-            f"Proposed responsibility: {component['responsibility']}\n"
-            f"{actions}\nProposed boundary verification: {component['verification']}\n"
-            "Support does not transfer the stated actor's action to this component.",
+            component["responsibility"],
+            details=[
+                {"label": "Source actions", "text": "\n\n".join(
+                    event_details[order] for order in component["supported_event_orders"]
+                ) or "No source action is assigned."},
+                {"label": "Proposed boundary verification", "text": component["verification"]},
+                {"label": "Verification source actions", "text": "\n\n".join(
+                    event_details[order] for order in component["verification_event_orders"]
+                ) or "No source action is assigned."},
+            ],
         ))
     for index, workstream in enumerate(design["workstreams"], 1):
         acceptance_id = f"workstream{index}_acceptance"
@@ -444,16 +477,19 @@ def _capability_support_view(
         )
         boxes.append(atlas_box(
             acceptance_id, workstream["title"], "Proposed delivery acceptance",
-            f"Participating components: {', '.join(workstream['component_keys'])}\n"
-            f"Proposed deliverable: {workstream['deliverable']}\n"
-            f"Proposed verification: {workstream['verification']}",
+            workstream["deliverable"],
+            details=[
+                {"label": "Participating components", "text": ", ".join(workstream["component_keys"])},
+                {"label": "Proposed verification", "text": workstream["verification"]},
+                {"label": "Verification source actions", "text": "\n\n".join(
+                    event_details[order] for order in workstream["verification_event_orders"]
+                ) or "No source action is assigned."},
+            ],
         ))
         for key in workstream["component_keys"]:
             lines.append(f'  {component_ids[key]} -. "participates in delivery" .-> {acceptance_id}')
     actions = "\n\n".join(
-        f"Source action {event['order']} · {event['actor_kind']}\n"
-        f"{authored_event_display_text(event)}"
-        for event in sorted(relations, key=lambda row: row["order"])
+        event_details[event["order"]] for event in sorted(relations, key=lambda row: row["order"])
     )
     lines.append('  source_actions["Source action reference<br/>Select for full actions and performers"]')
     boxes.append(atlas_box(
@@ -489,7 +525,7 @@ def _capability_support_view(
 def _append_source_lifecycle(
     *,
     lines: list[str],
-    boxes: list[dict[str, str]],
+    boxes: list[dict[str, Any]],
     lifecycle: Mapping[str, Any],
     component_ids: Mapping[str, str],
 ) -> None:
@@ -548,6 +584,7 @@ def _source_quote(source_refs: Sequence[Mapping[str, Any]]) -> str:
 
 __all__ = [
     "atlas_box",
+    "atlas_box_details",
     "build_provisional_design_atlas_specs",
     "build_provisional_first_run_atlas_view",
     "required_atlas_string",

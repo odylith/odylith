@@ -2309,6 +2309,15 @@ def _cmd_dashboard_refresh(args: argparse.Namespace) -> int:
     except ValueError as exc:
         print(str(exc), file=sys.stderr)
         return 2
+    if (
+        tuple(surfaces) == _DEFAULT_DASHBOARD_REFRESH_SURFACES
+        and str(args.runtime_mode) == "auto" and not args.atlas_sync and not args.dry_run
+    ):
+        upgrade_dashboard_recovery.complete_selected_render_migrations(
+            repo_root=Path(args.repo_root).expanduser().resolve(),
+            repository_lock_fd=getattr(args, "repository_lock_fd", None),
+            force=bool(getattr(args, "force", False)),
+        )
     return _sync_workstream_artifacts().refresh_dashboard_surfaces(
         repo_root=Path(args.repo_root).expanduser().resolve(),
         surfaces=surfaces,

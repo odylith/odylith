@@ -113,24 +113,13 @@ def build_source_product_story(
 ) -> dict[str, Any]:
     """Build source-backed story prose for existing projects and operations."""
 
-    title = sentence(project_title, "Project")
-    headline = _source_headline(
-        title=title,
-        project_intro=project_intro,
-        current_focus=current_focus,
-        active_workstreams=active_workstreams,
-        backlog=backlog,
-    )
-    narrative = _source_narrative_paragraphs(
-        title=title,
-        project_intro=project_intro,
+    workflow = _source_workflow_paragraph(
         release_label=release_label,
         current_focus=current_focus,
         active_workstreams=active_workstreams,
         backlog=backlog,
-        next_action_text=next_action_text,
-        blockers=blockers,
     )
+    proof = _source_proof_paragraph(release_label=release_label, blockers=blockers)
     artifact = _source_artifact_paragraph(
         active_workstreams=active_workstreams,
         backlog=backlog,
@@ -145,12 +134,11 @@ def build_source_product_story(
         atlas=atlas,
         evidence_sources=evidence_sources,
     )
-    paragraphs = [*narrative, *([artifact] if artifact else [])]
     return {
-        "headline": headline,
+        "headline": "",
         "standfirst": "",
-        "paragraphs": paragraphs,
-        "supporting_records": supporting_records,
+        "paragraphs": [workflow] if workflow else [],
+        "supporting_records": [row for row in (proof, artifact, *supporting_records) if row],
         "actors": [],
     }
 
@@ -195,100 +183,24 @@ def _display_title(value: object) -> str:
     return text or "Project"
 
 
-def _source_headline(
-    *,
-    title: str,
-    project_intro: str,
-    current_focus: str,
-    active_workstreams: Sequence[str],
-    backlog: Mapping[str, Any],
-) -> str:
-    intro_headline = _headline_from_intro(title=title, intro=project_intro)
-    if intro_headline:
-        return intro_headline
-    work = _workstream_names(active_workstreams=active_workstreams, backlog=backlog)
-    focus = concise_text(current_focus, limit=92)
-    if focus:
-        return focus
-    if work:
-        return f"{title} is centered on {work}"
-    return f"{title} has one current project story"
-
-
-def _headline_from_intro(*, title: str, intro: str) -> str:
-    text = sentence(intro).rstrip(".")
-    if not text or _is_component_inventory_line(text):
-        return ""
-    lowered = text.casefold()
-    title_lower = title.casefold()
-    for marker in (" helps ", " enables ", " lets "):
-        if marker.strip() not in lowered:
-            continue
-        before, sep, after = text.partition(marker)
-        if sep and before.strip().casefold() == title_lower and after.strip():
-            return short(f"How {title} {marker.strip()} {after.strip()}", limit=92)
-    if lowered.startswith(f"{title_lower} turns "):
-        return short(text, limit=92)
-    if lowered.startswith(f"{title_lower} is "):
-        return short(text, limit=92)
-    return ""
-
-
-def _source_narrative_paragraphs(
-    *,
-    title: str,
-    project_intro: str,
-    release_label: str,
-    current_focus: str,
-    active_workstreams: Sequence[str],
-    backlog: Mapping[str, Any],
-    next_action_text: str,
-    blockers: Sequence[tuple[str, str, str]],
-) -> list[str]:
-    intro = _source_product_intro(title=title, project_intro=project_intro)
-    workflow = _source_workflow_paragraph(
-        release_label=release_label,
-        current_focus=current_focus,
-        active_workstreams=active_workstreams,
-        backlog=backlog,
-        next_action_text=next_action_text,
-    )
-    proof = _source_proof_paragraph(release_label=release_label, blockers=blockers)
-    return [row for row in (intro, workflow, proof) if row]
-
-
-def _source_product_intro(*, title: str, project_intro: str) -> str:
-    intro = sentence(project_intro).rstrip(".")
-    if intro and not _is_component_inventory_line(intro):
-        return f"{intro}."
-    return (
-        f"{title} is a product with a source-backed governance view, but its product story still needs "
-        "a clearer user, problem, workflow, and proof boundary before implementation claims move forward."
-    )
-
-
 def _source_workflow_paragraph(
     *,
     release_label: str,
     current_focus: str,
     active_workstreams: Sequence[str],
     backlog: Mapping[str, Any],
-    next_action_text: str,
 ) -> str:
     release = sentence(release_label, "current release")
     workflow = _source_workflow_phrase(active_workstreams=active_workstreams, backlog=backlog)
     focus = concise_text(current_focus, limit=120)
     if _is_acceptance_headline(focus):
         focus = ""
-    next_move = _lower_first(action_sentence(next_action_text).rstrip("."))
     if workflow:
         body = f"The first usable workflow for {release} is {workflow}."
     elif focus:
         body = f"The first usable workflow for {release} is the current focus: {_lower_first(focus).rstrip('.')}."
     else:
         body = f"The first usable workflow for {release} still needs to be named in source records."
-    if next_move:
-        body += f" The next move is to {next_move.removeprefix('to ')}."
     return body
 
 

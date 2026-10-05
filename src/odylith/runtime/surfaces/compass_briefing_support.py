@@ -23,13 +23,6 @@ from odylith.runtime.surfaces import compass_transaction_runtime
 _FRESHNESS_LIVE_MAX_MINUTES = 90
 _FRESHNESS_RECENT_MAX_MINUTES = 6 * 60
 _FRESHNESS_AGING_MAX_MINUTES = 24 * 60
-_OPERATOR_IMPACT_LEADS = (
-    "help operators ",
-    "let operators ",
-    "gives operators ",
-    "gives teams ",
-    "keeps operators ",
-)
 _WHY_PRIORITY_LEAD_RE = re.compile(
     r"^(?:for\s+)?(?:[-*]\s*)?(?:primary|secondary|tertiary)\s*:\s*",
     re.IGNORECASE,
@@ -217,20 +210,9 @@ def _remove_implementation_lead(text: str) -> str:
     return token
 
 
-def _architecture_consequence_text(*, proposed_solution: str, benefit: str) -> str:
+def _architecture_consequence_text(*, proposed_solution: str) -> str:
     solution_token = _trim_dangling_fragment(_sentence_without_period(_remove_implementation_lead(proposed_solution)))
-    benefit_token = _trim_dangling_fragment(_sentence_without_period(benefit))
-    if solution_token:
-        solution_clause = _decapitalize_clause(solution_token)
-        move_clause = solution_clause if solution_clause.lower().startswith("to ") else f"to {solution_clause}"
-        return (
-            f"The architecture move is {move_clause}, which gives operators a clearer contract and lower coordination risk."
-        )
-    if benefit_token:
-        benefit_clause = _decapitalize_clause(benefit_token)
-        if benefit_clause.lower().startswith(_OPERATOR_IMPACT_LEADS):
-            return f"This gives operators a clearer contract and {benefit_clause}."
-    return "This gives operators a clearer contract and lower coordination risk across dependent lanes."
+    return _periodize(solution_token) if solution_token else ""
 
 
 def _ws_why_context(row: Mapping[str, Any]) -> dict[str, str]:
@@ -259,7 +241,6 @@ def _ws_why_context(row: Mapping[str, Any]) -> dict[str, str]:
     use_story = _use_story_text(customer=customer, problem=problem, fallback=purpose)
     architecture_consequence = _architecture_consequence_text(
         proposed_solution=proposed_solution,
-        benefit=benefit,
     )
     return {
         "problem": problem,

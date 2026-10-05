@@ -24,7 +24,7 @@ from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
     verify_greenfield_source_duty_ledger_receipt,
 )
 
-HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v22"
+HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v23"
 HOST_SOURCE_DUTY_BINDING_FIELD = "source_duty_binding"
 
 
@@ -62,6 +62,7 @@ def greenfield_host_candidate_schema() -> dict[str, Any]:
     schema = greenfield_authoring_schema()
     schema["properties"]["version"]["enum"] = [HOST_CANDIDATE_FORMAT_VERSION]
     authored = schema["properties"]["result"]["anyOf"][0]
+    authored["properties"]["provisional_design"]["required"].append("project_summary")
     authored["required"].remove("components")
     authored["properties"].pop("components")
     authored["required"].append(HOST_SOURCE_DUTY_BINDING_FIELD)
@@ -128,6 +129,9 @@ def canonical_greenfield_host_candidate(
     ][0]
     if set(result) != set(authored_schema["required"]):
         raise ValueError("Greenfield host candidate result has an invalid shape")
+    design = result.get("provisional_design")
+    if not isinstance(design, Mapping) or "project_summary" not in design:
+        raise ValueError("Greenfield host candidate requires an authored project summary")
     facts = result.get("facts")
     events = result.get("events")
     if not isinstance(facts, Mapping) or {"first_path", "supporting_events"} & set(facts):

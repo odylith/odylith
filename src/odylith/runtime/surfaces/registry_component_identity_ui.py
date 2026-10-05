@@ -51,21 +51,6 @@ def css() -> str:
   word-break: normal;
 }
 
-.component-full-name {
-  min-width: 0;
-  max-width: 100%;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow-wrap: anywhere;
-}
-
-.component-id-line {
-  color: #48617f;
-  font-size: 12px;
-  -webkit-line-clamp: 1;
-}
 """.strip()
 
 
@@ -111,22 +96,6 @@ function componentFullIdentity(row) {
   return raw || componentId || "Component";
 }
 
-function componentIdPreview(componentId, limit = 54) {
-  return clipText(String(componentId || "").trim(), limit);
-}
-
-function componentComparableIdentity(value) {
-  return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").replace(/\\s+/g, " ").trim();
-}
-
-function componentDisplayIdLine(row, displayName) {
-  const componentId = String(row && row.component_id || "").trim();
-  if (!componentId) return "";
-  const displayed = String(displayName || componentRawName(row) || "").trim();
-  if (componentComparableIdentity(componentId) === componentComparableIdentity(displayed)) return "";
-  return `<p class="component-full-name component-id-line">${escapeHtml(componentId)}</p>`;
-}
-
 function compactPathLabel(path, fallback = "Artifact") {
   const raw = String(path || "").trim();
   if (!raw) return fallback;
@@ -135,25 +104,11 @@ function compactPathLabel(path, fallback = "Artifact") {
   return clipText(basenamePath(raw) || raw, 54);
 }
 
-function compactRegistryNarrative(value, row, limit = 420) {
-  let text = String(value || "").replace(/\\s+/g, " ").trim();
-  if (!text) return "";
-  const rawName = componentRawName(row);
-  const compactName = componentCompactName(row, 72);
-  if (rawName && compactName && rawName !== compactName) {
-    text = text.split(rawName).join(compactName);
-  }
-  return clipText(text, limit);
-}
-
-function splitInitialSourceBoundary(value) {
-  const raw = String(value || "").replace(/\\s+/g, " ").trim();
-  if (!raw) return { body: "", source: "" };
-  const match = raw.match(/\\bInitial source boundary:\\s*(.+)$/i);
-  if (!match) return { body: raw, source: "" };
-  const body = raw.slice(0, match.index).trim().replace(/[. ]*$/, ".");
-  const source = String(match[1] || "").trim().replace(/[. ]+$/, "");
-  return { body, source };
+function compactRegistryNarrative(value, row) {
+  const text = String(value || "").trim();
+  const prefix = `${String(row && row.name || "")} is a proposed logical component. Proposed responsibility: `;
+  const generated = row && row.status === "planned" && row.qualification === "candidate";
+  return generated && text.startsWith(prefix) ? text.slice(prefix.length) : text;
 }
 
 function summaryTextRow(title, body) {
@@ -181,10 +136,8 @@ function summaryArtifactRow(title, path, label) {
 
 function renderComponentListButton(row, selectedId) {
   const categoryToken = String(row.category || "").trim().toLowerCase();
-  const coverage = row && typeof row.forensic_coverage === "object" ? row.forensic_coverage : {};
   const fullIdentity = componentFullIdentity(row);
-  const eventCount = Number(row.timeline_count || 0);
-  const metaText = [componentIdPreview(row.component_id), humanizeToken(row.kind), humanizeToken(row.status || "active"), forensicCoverageLabel(coverage), `${eventCount} ${pluralize(eventCount, "event", "events")}`].filter(Boolean).join(" · ");
+  const metaText = humanizeToken(row.status || "active");
   return `
     <li>
       <button type="button" class="component-btn${row.component_id === selectedId ? " active" : ""}" data-component="${escapeHtml(row.component_id)}" title="${escapeHtml(fullIdentity)}" aria-label="${escapeHtml(fullIdentity)}">
@@ -192,7 +145,6 @@ function renderComponentListButton(row, selectedId) {
         <span class="component-meta" title="${escapeHtml(fullIdentity)}">${escapeHtml(metaText)}</span>
         <span class="inline">
           <span class="label ${escapeHtml(toneClassForCategory(categoryToken))}">${escapeHtml(humanizeToken(categoryToken))}</span>
-          <span class="label">${escapeHtml(humanizeToken(row.qualification || "curated"))}</span>
         </span>
       </button>
     </li>

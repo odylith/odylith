@@ -771,12 +771,10 @@ def _render_html(*, payload: dict[str, object]) -> str:
       </select>
     </section>
 
-    <div class="execution-legend">
-      Delivery Pipeline is two-dimensional:
-      <strong>Phase</strong> (<strong>Planning</strong> or <strong>Implementation</strong>) and
-      <strong>Execution Signal</strong> (planning shows <strong>Plan: Active/Quiet</strong>;
-      implementation shows <strong>Live: Active/Quiet</strong>).
-    </div>
+    <details class="execution-legend">
+      <summary>How Phase and Activity work</summary>
+      <p><strong>Phase</strong> is <strong>Planning</strong> or <strong>Implementation</strong>. <strong>Activity</strong> is <strong>Plan: Active/Quiet</strong> during planning and <strong>Live: Active/Quiet</strong> during implementation.</p>
+    </details>
 
     <div class="meta" id="meta"></div>
     <section class="workspace">
@@ -2374,7 +2372,13 @@ def _render_html(*, payload: dict[str, object]) -> str:
       if (rich) {
         return `<div class="detail-copy">${rich}</div>`;
       }
+      if (!String(value || "").trim()) return "";
       return `<div class="detail-copy">${readableTextHtml(value, fallback)}</div>`;
+    }
+
+    function summaryBlockHtml(title, value, renderedHtml = "", className = "") {
+      const body = summarySectionHtml(value, "", renderedHtml);
+      return body ? `<section class="block ${className}"><h3>${escapeHtml(title)}</h3>${body}</section>` : "";
     }
 
     function orderingRationaleBlockHtml(row) {
@@ -3135,9 +3139,24 @@ def _render_html(*, payload: dict[str, object]) -> str:
         </section>
       `
         : "";
+      const missingRequiredNarratives = [
+        ["Problem", selected.problem, selected.problem_html],
+        ["Product View", selected.founder_pov, selected.founder_pov_html],
+        ["Customer", selected.customer, selected.customer_html],
+        ["Opportunity", selected.opportunity, selected.opportunity_html],
+      ].filter(([, value, renderedHtml]) => !summarySectionHtml(value, "", renderedHtml)).map(([label]) => label);
+      const missingRequiredNarrativesHtml = missingRequiredNarratives.length
+        ? `<details class="detail-disclosure"><summary class="disclosure-title">Missing required source fields</summary><div class="detail-disclosure-body detail-copy"><p>${escapeHtml(missingRequiredNarratives.join(", "))}</p></div></details>`
+        : "";
       el.detail.innerHTML = `
         <header class="detail-header">
           <h2 class="detail-title">${escapeHtml(selected.title)}</h2>
+          <div class="chips">
+            <span class="chip ${statusClass}">${escapeHtml(stageDisplay)}</span>
+            ${executionSignalChip}
+            ${activeReleaseLabel ? `<span class="chip">${escapeHtml(activeReleaseLabel)}</span>` : ""}
+          </div>
+          <details class="detail-disclosure"><summary class="disclosure-title">Assessment and dates</summary><div class="detail-disclosure-body">
           <div class="kpis">
             <div class="kpi" data-kpi="workstream-id"><div class="k">Workstream ID</div><div class="v">${escapeHtml(selected.idea_id)}</div></div>
             <div class="kpi kpi-section ${escapeHtml(sectionBadge.kpiClassName)}" data-kpi="workstream-placement"><div class="k">Placement</div><div class="v">${escapeHtml(sectionBadge.label)}</div></div>
@@ -3152,9 +3171,6 @@ def _render_html(*, payload: dict[str, object]) -> str:
           </div>
           <div class="chips">
             <span class="chip chip-priority">${escapeHtml(assessment.priority)}</span>
-            <span class="chip ${statusClass}">${escapeHtml(stageDisplay)}</span>
-            ${executionSignalChip}
-            ${activeReleaseLabel ? `<span class="chip">${escapeHtml(activeReleaseLabel)}</span>` : ""}
             <span class="chip chip-sizing">${escapeHtml(assessment.sizing)}</span>
             <span class="chip ${assessment.rankingClass}">${assessment.rankingText}</span>
           </div>
@@ -3165,6 +3181,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
             ${assessment.meter}
             ${assessment.provenance ? `<p class="assessment-provenance">${escapeHtml(assessment.provenance)}</p>` : ""}
           </div>
+          </div></details>
         </header>
 
         <section class="block">
@@ -3193,17 +3210,11 @@ def _render_html(*, payload: dict[str, object]) -> str:
 
         ${implementedSummaryHtml}
 
-        <section class="block block-problem">
-          <h3>Problem</h3>
-          ${summarySectionHtml(selected.problem, "Not captured in the idea spec yet.", selected.problem_html)}
-        </section>
+        ${summaryBlockHtml("Problem", selected.problem, selected.problem_html, "block-problem")}
 
         <section class="block">
           <div class="split-grid">
-            <article class="split-card">
-              <h3>Product View</h3>
-              ${summarySectionHtml(selected.founder_pov, "Not captured in the idea spec yet.", selected.founder_pov_html)}
-            </article>
+            ${summarySectionHtml(selected.founder_pov, "", selected.founder_pov_html) ? `<article class="split-card"><h3>Product View</h3>${summarySectionHtml(selected.founder_pov, "", selected.founder_pov_html)}</article>` : ""}
             <article class="split-card">
               <h3>Decision Basis</h3>
               ${toBulletHtml(selected)}
@@ -3211,15 +3222,11 @@ def _render_html(*, payload: dict[str, object]) -> str:
           </div>
         </section>
 
-        <section class="block">
-          <h3>Customer</h3>
-          ${summarySectionHtml(selected.customer, "Not captured in the idea spec yet.", selected.customer_html)}
-        </section>
+        ${summaryBlockHtml("Customer", selected.customer, selected.customer_html)}
 
-        <section class="block">
-          <h3>Opportunity</h3>
-          ${summarySectionHtml(selected.opportunity, "Not captured in the idea spec yet.", selected.opportunity_html)}
-        </section>
+        ${summaryBlockHtml("Opportunity", selected.opportunity, selected.opportunity_html)}
+
+        ${missingRequiredNarrativesHtml}
 
         <section class="block">
           <h3>Success Metrics</h3>

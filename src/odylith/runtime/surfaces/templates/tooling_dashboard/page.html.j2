@@ -38,7 +38,7 @@
         </nav>
       </div>
     </header>
-{% if status_snapshot_captured_utc %}    <p class="shell-snapshot-note">Dashboard snapshot · Status captured {{ status_snapshot_captured_utc }}. Reopen the published dashboard after a refresh to see newer status.</p>
+{% if status_snapshot_captured_utc %}    <details class="shell-snapshot-note"><summary>Snapshot details</summary><p>Status captured {{ status_snapshot_captured_utc }}. Reopen the published dashboard after a refresh to see newer status.</p></details>
 {% endif %}
 
     <section class="viewport" aria-live="polite">
@@ -52,7 +52,10 @@
           <p id="shellRuntimeStatusKicker" class="shell-runtime-status-kicker"></p>
           <p id="shellRuntimeStatusTitle" class="shell-runtime-status-title"></p>
           <p id="shellRuntimeStatusBody" class="shell-runtime-status-body"></p>
-          <p id="shellRuntimeStatusMeta" class="shell-runtime-status-meta"></p>
+          <details id="shellRuntimeStatusDetails" class="shell-runtime-status-details" hidden>
+            <summary>Technical details</summary>
+            <p id="shellRuntimeStatusMeta" class="shell-runtime-status-meta"></p>
+          </details>
         </div>
         <div class="shell-runtime-status-actions">
           <button id="shellRuntimeStatusDismiss" type="button" class="shell-runtime-status-dismiss" hidden aria-label="Hide runtime status">Hide</button>
