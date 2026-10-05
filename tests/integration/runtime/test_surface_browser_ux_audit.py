@@ -15,6 +15,7 @@ from tests.integration.runtime.surface_browser_test_support import (
     _new_page,
     _open_radar_topology_relations,
     _wait_for_compass_ready,
+    _wait_for_registry_detail_id,
     _wait_for_shell_query_param,
     _wait_for_shell_tab,
     browser_context,
@@ -160,7 +161,7 @@ def _select_registry_component_with_actions(registry) -> str:  # noqa: ANN001
             continue
         button.click()
         registry.locator(f'button[data-component="{component_id}"].active').wait_for(timeout=15000)
-        registry.locator("#detail .component-name").wait_for(timeout=15000)
+        _wait_for_registry_detail_id(registry, component_id)
         if registry.locator("#detail a.detail-action-chip").count():
             return component_id
     raise AssertionError("expected a Registry component with detail action chips")
@@ -308,6 +309,7 @@ def test_registry_detail_action_chip_audit_round_trips_cleanly(browser_context) 
         registry = page.frame_locator("#frame-registry")
         registry.locator("h1", has_text="Component Registry").wait_for(timeout=15000)
         component_id = _select_registry_component_with_actions(registry)
+        _wait_for_shell_query_param(page, tab="registry", key="component", value=component_id)
         source_url = base_url + f"/odylith/index.html?tab=registry&component={quote(component_id, safe='')}"
         actions = _frame_anchor_actions(registry, "#detail a.detail-action-chip")
         assert actions, "expected Registry detail action chips"
@@ -324,6 +326,8 @@ def test_registry_detail_action_chip_audit_round_trips_cleanly(browser_context) 
             response = page.goto(source_url, wait_until="domcontentloaded")
             assert response is not None and response.ok
             registry.locator(f'button[data-component="{component_id}"].active').wait_for(timeout=15000)
+            _wait_for_registry_detail_id(registry, component_id)
+            assert href in {str(action["href"]) for action in _frame_anchor_actions(registry, "#detail a.detail-action-chip")}
             _click_frame_anchor_by_href(registry, "#detail", "a.detail-action-chip", href)
             _assert_shell_target_from_href(page, href)
 

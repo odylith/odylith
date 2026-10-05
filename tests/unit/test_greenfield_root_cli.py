@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from odylith import cli
-from odylith.runtime.domain_intelligence import greenfield_repository_write_set
+from odylith.runtime.domain_intelligence import greenfield_proposals_cli, greenfield_repository_write_set
 from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
 
 
@@ -30,6 +30,7 @@ def test_greenfield_create_help_exposes_precompiled_transaction_contract(capsys)
     assert "usage: odylith greenfield create" in output
     assert "--transaction-file" in output
     assert "--transaction-hash" in output
+    assert "--completion-receipt" in output
     assert "--confirm" in output
     assert "--intent-file" not in output
     assert "--confirm-intent" not in output
@@ -59,13 +60,25 @@ def test_greenfield_authority_check_is_routed_by_root_cli(tmp_path: Path, capsys
 
 def test_greenfield_propose_command_returns_one_pre_author_clarification(
     tmp_path: Path,
+    monkeypatch,
     capsys,
 ) -> None:
+    from odylith.runtime.reasoning import odylith_reasoning
+
+    def unexpected_work(*_args, **_kwargs):
+        pytest.fail("Authority clarification must precede ledger, candidate, model, and compiler work")
+
+    for name in ("_source_duty_receipt_from_args", "_host_candidate_from_args", "_compile_prompt_evidence_transaction"):
+        monkeypatch.setattr(greenfield_proposals_cli, name, unexpected_work)
+    monkeypatch.setattr(odylith_reasoning, "provider_from_config", unexpected_work)
     activate_greenfield_baseline_fixture(tmp_path)
     publication = (tmp_path / "odylith/index.html").read_bytes()
     baseline = greenfield_repository_write_set.greenfield_managed_fingerprints(tmp_path)
     prompt = "Build an ecommerce site"
     gate_path = tmp_path.parent / f"{tmp_path.name}-authority-gate.json"
+    ledger_path = tmp_path.parent / f"{tmp_path.name}-unused-ledger.json"
+    assert not ledger_path.exists()
+    baseline_paths = set(tmp_path.rglob("*"))
     gate_path.write_text(json.dumps({
         "decision": "clarify",
         "required_fields": ["first_path"],
@@ -84,6 +97,8 @@ def test_greenfield_propose_command_returns_one_pre_author_clarification(
             prompt,
             "--gate-file",
             str(gate_path),
+            "--ledger-file",
+            str(ledger_path),
             "--format",
             "json",
         ]
@@ -97,6 +112,8 @@ def test_greenfield_propose_command_returns_one_pre_author_clarification(
     assert clarification["required_fields"] == ["first_path"]
     assert (tmp_path / "odylith/index.html").read_bytes() == publication
     assert greenfield_repository_write_set.greenfield_managed_fingerprints(tmp_path) == baseline
+    assert set(tmp_path.rglob("*")) == baseline_paths
+    assert not ledger_path.exists()
     assert not (tmp_path / ".odylith/runtime/greenfield/pending").exists()
     assert "provider_calls" not in payload
     assert "host_reasoning_task" not in payload

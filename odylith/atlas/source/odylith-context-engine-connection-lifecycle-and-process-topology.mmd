@@ -1,6 +1,6 @@
-%% Reviewed 2026-04-17 for v0.1.11 to connect the Context Engine hot path to cached packet summaries, Execution Engine snapshots, visible-intervention status, and latency-budgeted benchmark checks.
+%% Reviewed 2026-10-04 to show local open-close retrieval alongside daemon-backed client reuse, projection caches, and the remaining warm-handle gap.
 flowchart TB
-    subgraph Current["Current: stateless open-close per CLI call"]
+    subgraph Current["Local mode: stateless open-close retrieval"]
         CLI["CLI invocation<br/>odylith start / context / query"] --> PythonStart["Python process start<br/>~200ms startup + import"]
         PythonStart --> LanceOpen["lancedb.connect(lance_root)<br/>open metadata from disk"]
         PythonStart --> TantivyOpen["tantivy.Index.open(tantivy_root)<br/>open index segments from disk"]
@@ -12,9 +12,10 @@ flowchart TB
         TantivyClose --> Exit
     end
 
-    subgraph Daemon["Daemon: exists but unused"]
+    subgraph Daemon["Daemon-backed client: reuse or opt-in autospawn"]
         Serve["odylith context-engine serve<br/>Unix socket + TCP + in-process"] --> Dispatch["_dispatch_daemon_command<br/>per-request thread"]
-        Dispatch --> NoCache["No warm connections held<br/>each dispatch opens + closes<br/>its own LanceDB and Tantivy handles"]
+        Dispatch --> ProjectionCache["Projection and runtime-read caches<br/>per repo root + fingerprint"]
+        Dispatch --> NoCache["No warm LanceDB or Tantivy handles<br/>each retrieval still opens + closes<br/>its own backend handles"]
     end
 
     subgraph Planned["Planned: B-094 connection caching"]
@@ -37,8 +38,8 @@ flowchart TB
         Materialize["materialize_local_backend<br/>clears cache + changes fingerprint"]
     end
 
-    CLI -.->|"today: new process every call"| Current
-    CLI -.->|"planned: route through daemon"| Daemon
+    CLI -.->|"local mode: new process every call"| Current
+    CLI -.->|"auto or daemon mode: reuse or autospawn"| Daemon
     Daemon -.->|"planned: hold warm handles"| Planned
     Planned -.->|"safety contract"| MultiSafety
     Planned -.->|"benchmark budget checks"| Bench["Latency and token-budget proof<br/>packet build + snapshot time + payload tokens"]

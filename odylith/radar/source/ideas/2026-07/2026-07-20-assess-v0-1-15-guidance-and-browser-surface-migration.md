@@ -60,6 +60,37 @@ supersedes:
 
 superseded_by:
 
+## Current migration proof (2026-10-04)
+
+The fresh linked-fixture driver executes published-v14 installation and version
+checks successfully, then stops at startup's explicit `Need one code path.`
+narrowing response (exit 1, `gated_ambiguous`). The fresh repo has no application
+source yet. No authoring, plan preflight or upgrade has executed. Keep this
+original failed result and consumer at
+`/private/tmp/odylith-v22-linked-predecessor-proof-20261004/`. Diagnose a guarded
+continuation from the first unexecuted step without repeating completed phases;
+this is not migration qualification.
+
+Published v0.1.14 populated governance upgrades through the retained v21
+continuation. Original strict source-byte gates remain failed; documented UTC
+INDEX date normalization is considered separately, not a blanket exception.
+The predecessor has no forward plan binding, so its standalone plan cannot
+prove positive linked-plan migration. Retain the original consumer and failures.
+
+Explicit supported Registry refresh succeeds, preserving all 11 authored files
+and modes. It also advances the canonical publication pointer in `odylith/index.html`;
+the old immutable shell body and predecessor generation remain unchanged.
+The guard's undeclared-pointer failure is retained. Browser-only continuation
+then passes 47 screenshots across selected desktop/mobile normal, empty,
+degraded and error states, with zero consumer mutations. Evidence:
+`/private/tmp/odylith-v21-post-registry-browser-proof-20261004/result.json`.
+This is selected-state evidence, not a full browser matrix or migration approval.
+
+Next, use a fresh published-v14 fixture with a proper forward plan relationship
+and actual desktop/mobile served-plan preflight before freezing its authored
+baseline, then attempt the frozen v22 upgrade once. All five release migration
+classes, native host visibility and complete timing qualification remain open.
+
 ## Problem
 The assessed clean candidate at `d0021184faba41b8fac887ce107ee452d8dc2722` changes 877
 consumer-sensitive paths relative to published v0.1.14 at

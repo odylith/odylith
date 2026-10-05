@@ -1,5 +1,47 @@
 - Bug ID: CB-303
 
+## Current additive EDIT lifecycle omission (2026-10-04)
+
+Independent review of exact retained v49 Agriculture seals finds initial H0
+faithful to all 26 original requirements, but H1 preserves only 25. The additive
+correction adds publication-proof and mismatch controls correctly while removing
+the original provisional-analysis safeguard from typed conditional guards,
+operational constraints, and generated crop workstream/spec enforcement. The
+source sentence remains only in project problem prose. A narrower modeled-crop
+versus-observed boundary does not preserve the broader provisional-analysis
+versus-established-fact rule. Both A01 and additive preservation E04 fail.
+
+The source-only verifier returned affirmative completeness with no omissions;
+its judgment and sealed hashes therefore do not establish semantic fidelity.
+This is an inventory/verification omission, not a missing generated rendering of
+an accepted guard. Stop qualification on this H1. Its interrupted PREPARED
+journal, pending seal and original failed CONFIRM evidence remain untouched;
+no recovery publication, candidate repair or authoring replay is performed.
+Initial H0 remains separately source-faithful. The beneficiary taxonomy note
+is low severity and grants no extra action or authority.
+
+Audit: `/private/tmp/odylith-v49-agriculture-h0-h1-semantic-audit-20261004.json`,
+SHA-256 `c2323e44a7cf2401b7207ffcf9d88eb9c95d0a4320ef4d67d85e4b1cc460ac6d`.
+Use the existing source-only verification boundary to prove actionable typed
+coverage of each material source requirement. Do not repeat the previously
+failed complete-source paragraph, add domain vocabulary, let history override
+explicit correction, or add a full-candidate reviewer/model/repair cascade.
+
+The admitting gap is now grounded: the verifier schema requires only current
+ledger IDs. An omitted prior lifecycle duty creates no required key, leaving a
+single global completeness assertion as its sole witness. Candidate problem
+prose does not literally satisfy that verifier, which runs before candidate
+authoring; it masks the downstream loss. Diagnosis:
+`/private/tmp/odylith-v49-lifecycle-verifier-diagnosis-20261004.json`, SHA-256
+`bb7c8b065243ca6512a22b2b098e0101518605c18ce738eaf9e7fd2253974abc`.
+The next bounded mechanism is an EDIT-only per-prior-lifecycle decision table
+inside the existing verifier. Derive its checklist from the validated prior
+seal; require current IDs in the same typed section, and require exact operator
+correction evidence for changes or removals. Missing or uncertain decisions
+refuse before candidate authoring. The checklist is evidence for comparison,
+never copied current truth, and cannot override a new explicit correction.
+No implementation or live reliability is established by this design alone.
+
 ## Single-authority public replay UX findings (2026-09-29)
 
 Clean installed distribution from pushed commit `0ab2929d9` passed the exact

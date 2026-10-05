@@ -7,6 +7,7 @@ import errno
 import json
 import os
 from pathlib import Path
+import threading
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.domain_intelligence.greenfield_pending_transaction_store import (
@@ -35,12 +36,43 @@ class WriteAuditEvidence:
 
 @dataclass
 class InstalledWriteAudit:
-    """Own the parent pipe consumed after one isolated managed-Python process exits."""
+    """Drain one isolated process's audit pipe while that process is running."""
 
     repo_root: Path
     read_fd: int
     write_fd: int
     _finished: WriteAuditEvidence | None = field(default=None, init=False, repr=False)
+    _reader: threading.Thread = field(init=False, repr=False)
+    _trace_chunks: list[bytes] = field(default_factory=list, init=False, repr=False)
+    _reader_error: str = field(default="", init=False, repr=False)
+
+    def __post_init__(self) -> None:
+        reader = None
+        try:
+            reader = threading.Thread(target=self._drain, name="greenfield-write-audit", daemon=True)
+            self._reader = reader
+            reader.start()
+        except BaseException:
+            self._close_write_fd()
+            if reader is not None and reader.ident is not None:
+                reader.join()
+            else:
+                _close_fd(self.read_fd)
+                self.read_fd = -1
+            raise
+
+    def _drain(self) -> None:
+        try:
+            while chunk := os.read(self.read_fd, 65536):
+                self._trace_chunks.append(chunk)
+        except Exception as exc:
+            self._reader_error = f"installed write audit reader failed: {type(exc).__name__}: {exc}"
+        finally:
+            try:
+                _close_fd(self.read_fd)
+            except OSError as exc:
+                self._reader_error = f"installed write audit reader failed: {type(exc).__name__}: {exc}"
+            self.read_fd = -1
 
     def environment(self) -> dict[str, str]:
         return {
@@ -60,13 +92,29 @@ class InstalledWriteAudit:
         return [str(python), "-I", "-c", AUDIT_CLI_WRAPPER, *[str(argument) for argument in arguments]]
 
     def finish(self) -> WriteAuditEvidence:
+        """Collect the complete trace after the child and its writers have exited."""
+
         if self._finished is not None:
             return self._finished
         try:
             self._close_write_fd()
-            self._finished = _read_trace(_read_all(self.read_fd))
+            self._reader.join()
+            raw_trace = b"".join(self._trace_chunks)
+            if self._reader_error and not raw_trace.endswith(b"\n"):
+                raw_trace = raw_trace[:raw_trace.rfind(b"\n") + 1]
+            evidence = _read_trace(raw_trace)
+            self._finished = (
+                WriteAuditEvidence(
+                    active=False,
+                    write_attempts=evidence.write_attempts,
+                    subprocess_attempts=evidence.subprocess_attempts,
+                    error=self._reader_error + (f"; {evidence.error}" if evidence.error else ""),
+                )
+                if self._reader_error
+                else evidence
+            )
         finally:
-            _close_fd(self.read_fd)
+            self._trace_chunks.clear()
         return self._finished
 
     def _close_write_fd(self) -> None:
@@ -83,13 +131,6 @@ def begin_installed_write_audit(*, repo_root: Path) -> InstalledWriteAudit:
         raise FileNotFoundError(f"clarification repository does not exist: {root}")
     read_fd, write_fd = os.pipe()
     return InstalledWriteAudit(repo_root=root, read_fd=read_fd, write_fd=write_fd)
-
-
-def _read_all(read_fd: int) -> bytes:
-    chunks: list[bytes] = []
-    while chunk := os.read(read_fd, 65536):
-        chunks.append(chunk)
-    return b"".join(chunks)
 
 
 def _close_fd(descriptor: int) -> None:

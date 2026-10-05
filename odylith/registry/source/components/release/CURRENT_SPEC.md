@@ -1171,6 +1171,9 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-10-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142, B-145
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
 - **2026-10-02 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
   - Evidence: `odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
 - **2026-10-02 · Decision:** Decision evidence linked this component to governed work with 3 verifiable artifact references.
@@ -1181,8 +1184,6 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: `odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
 - **2026-09-30 · Decision:** Decision evidence linked this component to governed work with 2 verifiable artifact references.
   - Evidence: `odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
-- **2026-09-27 · Decision:** Decision evidence linked this component to governed work with 1 verifiable artifact reference.
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`
 <!-- registry-requirements:end -->
 
 ## Feature History

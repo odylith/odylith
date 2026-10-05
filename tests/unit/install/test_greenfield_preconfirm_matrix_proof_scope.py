@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import importlib
 import importlib.util
 import json
@@ -657,28 +658,35 @@ def test_lower_capability_control_rejects_non_luna_profile_tag(tmp_path: Path) -
         module._load_lower_capability_control_case(str(case_file))  # noqa: SLF001
 
 
-def test_host_argv_template_resolves_exact_profile_tokens_and_rejects_missing_tokens() -> None:
+def test_host_argv_template_resolves_exact_profile_tokens_and_rejects_missing_tokens(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from tests.unit.install.test_greenfield_preconfirm_matrix_campaign import _host_candidate_argv
     module = _module()
+    exact_template = _host_candidate_argv(tmp_path, monkeypatch)
     template = (
-        "codex", "exec", "--model", "{model}", "--config",
+        exact_template[0], "exec", "--model", "{model}", "--config",
         "{reasoning_effort}", "-",
     )
     with pytest.raises(RuntimeError, match="reasoning_effort"):
         module._require_profile_argv_template(template)  # noqa: SLF001
-    exact_template = (
-        "codex", "exec", "--ephemeral", "--ignore-user-config",
-        "--skip-git-repo-check", "--sandbox", "read-only",
-        "--model", "{model}", "--config",
-        "model_reasoning_effort={reasoning_effort}", "--output-schema",
-        "{candidate_schema}", "-",
+    assert module._require_profile_argv_template(exact_template) == exact_template  # noqa: SLF001
+    qualified, receipt = module.qualify_host_candidate_argv(
+        exact_template, trusted_codex_executable=exact_template[0],
+        expected_model="{model}", expected_reasoning_effort="{reasoning_effort}",
+        expected_output_schema="{candidate_schema}",
     )
-    module._require_profile_argv_template(exact_template)  # noqa: SLF001
+    assert qualified == exact_template
+    assert receipt["executable_sha256"] == hashlib.sha256(Path(exact_template[0]).read_bytes()).hexdigest()
     resolved = module._host_candidate_argv_for_profile(  # noqa: SLF001
         exact_template,
         profile_id=module.LOWER_CAPABILITY_CONTROL_PROFILES[0],
     )
     assert resolved[8] == "gpt-5.6-luna"
     assert resolved[10] == "model_reasoning_effort=medium"
+    monkeypatch.setenv("ODYLITH_REASONING_CODEX_BIN", sys.executable)
+    with pytest.raises(ValueError, match="configured Codex executable"):
+        module._require_profile_argv_template(exact_template)  # noqa: SLF001
 
 
 def test_luna_host_control_uses_standard_product_compiler_route(

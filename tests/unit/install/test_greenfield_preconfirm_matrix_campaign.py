@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import os
 import subprocess
 import sys
 from dataclasses import replace
@@ -41,10 +42,16 @@ def _write(path: Path, text: str) -> None:
     path.write_text(text, encoding="utf-8")
 
 
-def _host_candidate_argv() -> tuple[str, ...]:
-    return sys.modules[
+def _host_candidate_argv(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> tuple[str, ...]:
+    executable = tmp_path / "trusted/bin/codex"
+    _write(executable, "#!/bin/sh\nexit 97\n")
+    executable.chmod(0o755)
+    monkeypatch.setenv("PATH", str(executable.parent) + os.pathsep + os.environ.get("PATH", ""))
+    monkeypatch.delenv("ODYLITH_REASONING_CODEX_BIN", raising=False)
+    template = sys.modules[
         "odylith.runtime.domain_intelligence.greenfield_host_transport"
     ].canonical_host_candidate_argv_template()
+    return (str(executable.resolve()), *template[1:])
 
 
 def _case(module, name: str, *, stressors: tuple[str, ...] = ()):
@@ -250,7 +257,7 @@ def test_discovery_uses_ephemeral_case_proof_without_publishing_release_evidence
         temp_parent=tmp_path,
         cases=(_case(module, "discovery proof capture"),),
         proof_tier="discovery",
-        host_candidate_argv=_host_candidate_argv(),
+        host_candidate_argv=_host_candidate_argv(tmp_path, monkeypatch),
     )
 
     retained_case = observations["retained_case"]
@@ -402,7 +409,7 @@ def test_run_matrix_writes_incremental_telemetry_and_stops_on_failure_threshold(
         stop_after_failures=1,
         required_stressors=("modal-expert-lens",),
         incremental_output_json=incremental_output,
-        host_candidate_argv=_host_candidate_argv(),
+        host_candidate_argv=_host_candidate_argv(tmp_path, monkeypatch),
     )
 
     rows = [json.loads(line) for line in telemetry_path.read_text(encoding="utf-8").splitlines()]
@@ -454,7 +461,7 @@ def test_run_matrix_emits_redacted_process_lifecycle_events(tmp_path: Path, monk
         install_mode="full",
         telemetry_jsonl=telemetry_path,
         proof_tier="discovery",
-        host_candidate_argv=_host_candidate_argv(),
+        host_candidate_argv=_host_candidate_argv(tmp_path, monkeypatch),
     )
 
     rows = [json.loads(line) for line in telemetry_path.read_text(encoding="utf-8").splitlines()]
@@ -500,7 +507,7 @@ def test_seeded_matrix_emits_lifecycle_events_for_prepare_and_clone_subprocesses
         install_mode="seeded",
         telemetry_jsonl=telemetry_path,
         proof_tier="discovery",
-        host_candidate_argv=_host_candidate_argv(),
+        host_candidate_argv=_host_candidate_argv(tmp_path, monkeypatch),
     )
 
     rows = [json.loads(line) for line in telemetry_path.read_text(encoding="utf-8").splitlines()]
@@ -547,7 +554,7 @@ def test_run_matrix_reports_terminal_telemetry_failure_without_mislabeling_the_c
         install_mode="full",
         telemetry_jsonl=telemetry_path,
         proof_tier="discovery",
-        host_candidate_argv=_host_candidate_argv(),
+        host_candidate_argv=_host_candidate_argv(tmp_path, monkeypatch),
     )
 
     assert results[0].status == "command-lifecycle-telemetry-failed"
@@ -585,7 +592,7 @@ def test_run_matrix_emits_failed_case_completion_when_run_case_raises(
         campaign_phase="volume-discovery",
         proof_tier="discovery",
         incremental_output_json=incremental_output,
-        host_candidate_argv=_host_candidate_argv(),
+        host_candidate_argv=_host_candidate_argv(tmp_path, monkeypatch),
     )
 
     rows = [json.loads(line) for line in telemetry_path.read_text(encoding="utf-8").splitlines()]
@@ -659,7 +666,7 @@ def test_run_matrix_applies_platform_leakage_before_live_stop(
         proof_tier="discovery",
         stop_after_failures=1,
         incremental_output_json=incremental_output,
-        host_candidate_argv=_host_candidate_argv(),
+        host_candidate_argv=_host_candidate_argv(tmp_path, monkeypatch),
     )
 
     rows = [json.loads(line) for line in telemetry_path.read_text(encoding="utf-8").splitlines()]
@@ -707,7 +714,7 @@ def test_run_matrix_flushes_failed_incremental_payload_before_cleanup_abort(
         campaign_phase="failed-subset",
         proof_tier="discovery",
         incremental_output_json=incremental_output,
-        host_candidate_argv=_host_candidate_argv(),
+        host_candidate_argv=_host_candidate_argv(tmp_path, monkeypatch),
     )
 
     rows = [json.loads(line) for line in telemetry_path.read_text(encoding="utf-8").splitlines()]
@@ -779,7 +786,7 @@ def test_main_persists_campaign_summary_for_discovery_runs(
             "--allow-skipped-browser-proof",
             *(
                 f"--host-candidate-arg={argument}"
-                for argument in _host_candidate_argv()
+                for argument in _host_candidate_argv(tmp_path, monkeypatch)
             ),
             "--json",
         ]

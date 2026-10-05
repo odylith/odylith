@@ -236,7 +236,7 @@ def test_capabilities_command_prints_host_agnostic_engine_inventory(capsys) -> N
     assert "odylith greenfield apply" not in output
     assert "Activation:" in output
     assert "attach the normalized execution handshake" in output
-    assert "deterministic proposal gating" in output
+    assert "deterministic admission and hash-verified publication of precompiled bytes" in output
     assert "Codex and Claude Code are adapters" in output
     assert "Use `odylith --help` for command syntax." in output
 
@@ -409,7 +409,23 @@ def test_greenfield_create_help_forwards_commit_only_backend_flags(capsys) -> No
     assert "--repair-tier" not in output
 
 
-def test_greenfield_propose_confirm_intent_json_is_provider_free(tmp_path: Path, capsys) -> None:
+def test_greenfield_propose_confirm_intent_json_is_provider_free(tmp_path: Path, monkeypatch, capsys) -> None:
+    from odylith.runtime.domain_intelligence import greenfield_proposals_cli
+    from odylith.runtime.reasoning import odylith_reasoning
+
+    def unexpected_work(*_args, **_kwargs):
+        pytest.fail("Retired intent refusal must precede authority, ledger, candidate, model, and compiler work")
+
+    for name in (
+        "_edit_evidence_from_args", "_authority_gate_from_args", "_source_duty_receipt_from_args",
+        "_host_candidate_from_args", "_compile_prompt_evidence_transaction",
+    ):
+        monkeypatch.setattr(greenfield_proposals_cli, name, unexpected_work)
+    monkeypatch.setattr(odylith_reasoning, "provider_from_config", unexpected_work)
+    gate_path = tmp_path.parent / f"{tmp_path.name}-unused-gate.json"
+    ledger_path = tmp_path.parent / f"{tmp_path.name}-unused-ledger.json"
+    assert not gate_path.exists()
+    assert not ledger_path.exists()
     intent_file = tmp_path / ".odylith/runtime/greenfield/confirmed-intent.md"
     intent_file.parent.mkdir(parents=True, exist_ok=True)
     intent_file.write_text(
@@ -445,6 +461,8 @@ Release 0.0.1 succeeds when a supervisor can inspect one permit review file, see
 """,
         encoding="utf-8",
     )
+    baseline_paths = set(tmp_path.rglob("*"))
+    baseline_bytes = {path: path.read_bytes() for path in baseline_paths if path.is_file()}
     rc = cli.main(
         [
             "greenfield",
@@ -453,6 +471,10 @@ Release 0.0.1 succeeds when a supervisor can inspect one permit review file, see
             str(tmp_path),
             "--prompt",
             "Build a permit review workspace",
+            "--gate-file",
+            str(gate_path),
+            "--ledger-file",
+            str(ledger_path),
             "--intent-file",
             ".odylith/runtime/greenfield/confirmed-intent.md",
             "--confirm-intent",
@@ -465,6 +487,12 @@ Release 0.0.1 succeeds when a supervisor can inspect one permit review file, see
     assert rc == 2
     assert payload["mode"] == "error"
     assert "separate Product Intent confirmation flow is retired" in payload["error"]
+
+    assert set(tmp_path.rglob("*")) == baseline_paths
+    assert {path: path.read_bytes() for path in baseline_paths if path.is_file()} == baseline_bytes
+    assert not gate_path.exists()
+    assert not ledger_path.exists()
+    assert not (tmp_path / ".odylith/runtime/greenfield/pending").exists()
 
 
 def test_component_register_help_forwards_backend_flags(capsys) -> None:

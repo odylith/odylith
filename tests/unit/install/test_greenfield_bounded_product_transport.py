@@ -91,27 +91,36 @@ with p.supervise_greenfield_journey(seconds=0.3):
     assert not [row for row in state.stdout.splitlines() if int(row.split()[1]) == leader and not row.split()[2].startswith('Z')]
 
 
+def _compile_transaction_fixture(tmp_path):
+    from odylith.runtime.domain_intelligence.greenfield_create_transaction import write_compiled_product_create_transaction_file
+    return write_compiled_product_create_transaction_file(
+        tmp_path / "fixture-transaction.json", _transaction(repo_root=tmp_path),
+    )
+
+
 def _stage_under_parent(tmp_path, *, transaction_hash=None, completion_receipt=None):
     source = '''from pathlib import Path
-from tests.unit.runtime.test_greenfield_create_transaction import _transaction
+from odylith.runtime.domain_intelligence.greenfield_create_transaction import load_compiled_product_create_transaction_file
 from odylith.runtime.domain_intelligence import greenfield_pending_transaction_store as store
 root=Path.cwd()
-tx=_transaction(repo_root=root)
+transaction_path=root/"fixture-transaction.json"
+tx=load_compiled_product_create_transaction_file(transaction_path)
 path=store.stage_pending_transaction(repo_root=root,transaction=tx,completion_receipt=RECEIPT)
 (root/"hash").write_text(tx.transaction_hash)
 print(path)
 '''
     source = source.replace('RECEIPT', repr(str(completion_receipt) if completion_receipt else None))
     if transaction_hash is not None:
-        source = source.replace('tx=_transaction(repo_root=root)',
-            'from odylith.runtime.domain_intelligence.greenfield_create_transaction import load_compiled_product_create_transaction_file\n'
-            + 'tx=load_compiled_product_create_transaction_file(store.resolve_pending_transaction(repo_root=root, transaction_hash='+repr(transaction_hash)+',completion_receipt='+repr(str(completion_receipt) if completion_receipt else None)+'))')
+        source = source.replace('transaction_path=root/"fixture-transaction.json"',
+            'transaction_path=store.resolve_pending_transaction(repo_root=root, transaction_hash='
+            + repr(transaction_hash)+',completion_receipt='+repr(str(completion_receipt) if completion_receipt else None)+')')
     script = tmp_path/'stage.py';script.write_text(source)
     return process.run_command_with_group_timeout(cwd=tmp_path, env=_env(),
         command=[sys.executable,str(script)],timeout=5)
 
 
 def test_new_pending_seal_is_hidden_until_guarded_completion(tmp_path):
+    _compile_transaction_fixture(tmp_path)
     receipt = {}
     with process.supervise_greenfield_journey(seconds=5,completion_receipt_sink=receipt):
         result = _stage_under_parent(tmp_path)
@@ -126,6 +135,7 @@ def test_new_pending_seal_is_hidden_until_guarded_completion(tmp_path):
 
 
 def test_cancelled_journey_cannot_leave_a_confirmable_new_seal(tmp_path):
+    _compile_transaction_fixture(tmp_path)
     source = '''import hashlib
 from pathlib import Path
 from odylith.runtime.domain_intelligence import greenfield_process as process
@@ -134,12 +144,20 @@ process.JOURNEY_CANCELLATION_GRACE_SECONDS=0.2
 with process.supervise_greenfield_journey(seconds=2.0):
     result=_stage_under_parent(Path.cwd())
     assert result.returncode==0,result.stderr
+    Path("blocked").write_text("native cancellation after pending stage")
     hashlib.pbkdf2_hmac("sha256",b"s",b"s",500_000_000)
+Path("preview").write_text("success")
 '''
     result = _run_script(tmp_path, source)
     assert result.returncode == -signal.SIGKILL, result.stderr
+    assert (tmp_path/'blocked').read_text() == 'native cancellation after pending stage'
+    assert not (tmp_path/'preview').exists()
     digest = (tmp_path/'hash').read_text()
-    with pytest.raises(ValueError):
+    path = pending.pending_transaction_path(tmp_path,digest)
+    assert (path.parent/'.bounded-journey.v1.json').is_file()
+    assert not (path.parent/'.bounded-completion.v1.json').exists()
+    assert not (tmp_path/pending.GREENFIELD_RUNTIME_ROOT/'completion-receipts').exists()
+    with pytest.raises(ValueError,match='has not released'):
         pending.resolve_pending_transaction(repo_root=tmp_path,transaction_hash=digest)
 
 
@@ -189,6 +207,7 @@ def test_detached_manual_marker_or_dead_parent_does_not_stage(tmp_path, monkeypa
 
 
 def test_commit_only_entry_cannot_bypass_quarantined_pending_resolver(tmp_path):
+    _compile_transaction_fixture(tmp_path)
     from odylith.runtime.domain_intelligence.greenfield_create_commit import commit_greenfield_create_transaction
     with process.supervise_greenfield_journey(seconds=5):
         result = _stage_under_parent(tmp_path)
@@ -250,6 +269,7 @@ def test_preexisting_equal_hash_quarantine_cannot_be_adopted_or_released(tmp_pat
 
 
 def test_native_stall_at_authoritative_settlement_keeps_new_seal_quarantined(tmp_path):
+    _compile_transaction_fixture(tmp_path)
     source = '''import hashlib
 from pathlib import Path
 from odylith.runtime.domain_intelligence import greenfield_process as process
@@ -261,12 +281,18 @@ def settled():
 with process.supervise_greenfield_journey(seconds=2.0,on_settled=settled):
     result=_stage_under_parent(Path.cwd())
     assert result.returncode==0,result.stderr
+Path("preview").write_text("success")
 '''
     result = _run_script(tmp_path,source)
     assert result.returncode == -signal.SIGKILL,result.stderr
-    assert (tmp_path/'settled').is_file()
+    assert (tmp_path/'settled').read_text() == 'blocked before release'
+    assert not (tmp_path/'preview').exists()
     digest=(tmp_path/'hash').read_text()
-    with pytest.raises(ValueError):
+    path = pending.pending_transaction_path(tmp_path,digest)
+    assert (path.parent/'.bounded-journey.v1.json').is_file()
+    assert not (path.parent/'.bounded-completion.v1.json').exists()
+    assert not (tmp_path/pending.GREENFIELD_RUNTIME_ROOT/'completion-receipts').exists()
+    with pytest.raises(ValueError,match='has not released'):
         pending.resolve_pending_transaction(repo_root=tmp_path,transaction_hash=digest)
 
 
@@ -275,6 +301,7 @@ def test_final_budget_rejection_precedes_release_of_actual_pending_seal(tmp_path
     from odylith.runtime.domain_intelligence import greenfield_host_flow as host
     from tests.unit.install.test_greenfield_matrix_host_candidate import _flow,_completed
     flow,host_run,*_rest=_flow(tmp_path,contract={'version':'contract'},candidate={'result':{'status':'authored'}})
+    _compile_transaction_fixture(flow.repo_root)
     clock=[0.0]
     monkeypatch.setattr(host.time,'monotonic',lambda:clock[0])
     monkeypatch.setattr(host,'_invoke_host',host_run)
@@ -303,6 +330,7 @@ def test_final_budget_rejection_precedes_release_of_actual_pending_seal(tmp_path
 
 
 def test_copied_transaction_stays_denied_after_aborted_bytes_are_removed(tmp_path):
+    _compile_transaction_fixture(tmp_path)
     from odylith.runtime.domain_intelligence.greenfield_create_commit import commit_greenfield_create_transaction
     with pytest.raises(RuntimeError, match='abort'):
         with process.supervise_greenfield_journey(seconds=5):
@@ -383,6 +411,7 @@ def test_publication_late_or_partial_error_preserves_all_canonical_denials(tmp_p
 
 
 def test_post_certification_callback_error_preserves_delivered_authority(tmp_path):
+    _compile_transaction_fixture(tmp_path)
     from odylith.runtime.domain_intelligence.greenfield_create_commit import commit_greenfield_create_transaction
     receipt = {}
     def failed_delivery(_finished):
@@ -430,28 +459,41 @@ def test_publication_sample_is_included_in_both_elapsed_intervals():
 
 
 def test_multiple_new_seals_stop_before_any_successful_completion_record(tmp_path):
+    roots = [tmp_path/name for name in ('first','second')]
+    for root in roots:
+        root.mkdir()
+        _compile_transaction_fixture(root)
     paths = []
+    receipt = {}
     with pytest.raises(process.JourneyCancelled,match='settlement'):
-        with process.supervise_greenfield_journey(seconds=5):
-            for name in ('first','second'):
-                root = tmp_path/name
-                root.mkdir()
+        with process.supervise_greenfield_journey(seconds=5,completion_receipt_sink=receipt):
+            for root in roots:
                 result = _stage_under_parent(root)
                 assert result.returncode == 0,result.stderr
                 paths.append((root,(root/'hash').read_text()))
+            (tmp_path/'settlement-ready').write_text('two staged seals')
+    assert len(paths) == 2 and receipt == {}
+    assert (tmp_path/'settlement-ready').read_text() == 'two staged seals'
     for root,digest in paths:
+        path = pending.pending_transaction_path(root,digest)
+        assert (path.parent/'.bounded-journey.v1.json').is_file()
+        assert not (path.parent/'.bounded-completion.v1.json').exists()
+        assert not (root/pending.GREENFIELD_RUNTIME_ROOT/'completion-receipts').exists()
         with pytest.raises(ValueError,match='has not released'):
             pending.resolve_pending_transaction(repo_root=root,transaction_hash=digest)
 
 
 def test_parent_timeout_of_blocked_guardian_publication_keeps_tentative_state_denied(tmp_path,monkeypatch):
+    _compile_transaction_fixture(tmp_path)
     original = subprocess.Popen
     code = '''import hashlib,socket,sys
+from pathlib import Path
 from odylith.runtime.domain_intelligence import greenfield_process as p
 original=p._finish_journey_pending
 def finish(path,**kwargs):
     result=original(path,**kwargs)
     if kwargs["release"]:
+        (path/"publication-blocked").write_text("native guardian publication")
         hashlib.pbkdf2_hmac("sha256",b"s",b"s",500_000_000)
     return result
 p._finish_journey_pending=finish
@@ -462,11 +504,17 @@ p._journey_guardian(socket.socket(fileno=int(sys.argv[2])),parent=int(sys.argv[3
             command = [command[0],'-c',code,*command[3:]]
         return original(command,*args,**kwargs)
     monkeypatch.setattr(subprocess,'Popen',launch)
+    receipt = {}
     with pytest.raises(process.JourneyDeliveryError,match="delivery is unknown"):
-        with process.supervise_greenfield_journey(seconds=2):
+        with process.supervise_greenfield_journey(seconds=2,completion_receipt_sink=receipt):
             result = _stage_under_parent(tmp_path)
             assert result.returncode == 0,result.stderr
             digest = (tmp_path/'hash').read_text()
+    path = pending.pending_transaction_path(tmp_path,digest)
+    assert (path.parent/'publication-blocked').read_text() == 'native guardian publication'
+    assert receipt == {}
+    assert not (path.parent/'.bounded-completion.v1.json').exists()
+    assert not (tmp_path/pending.GREENFIELD_RUNTIME_ROOT/'completion-receipts').exists()
     with pytest.raises(ValueError,match='has not released'):
         pending.resolve_pending_transaction(repo_root=tmp_path,transaction_hash=digest)
 
@@ -504,6 +552,7 @@ def test_prepare_refusal_exposes_stage_reason_without_confirmation(
 
 
 def test_completed_bounded_seal_remains_confirmable_after_custodian_retirement(tmp_path):
+    _compile_transaction_fixture(tmp_path)
     from odylith.runtime.domain_intelligence.greenfield_create_commit import commit_greenfield_create_transaction
     receipt = {}
     with process.supervise_greenfield_journey(seconds=5,completion_receipt_sink=receipt):
@@ -519,6 +568,7 @@ def test_completed_bounded_seal_remains_confirmable_after_custodian_retirement(t
 
 @pytest.mark.parametrize('failure', ('record_error','record_late'))
 def test_completion_record_failure_denies_even_when_both_pending_rollbacks_fail(tmp_path,monkeypatch,failure):
+    _compile_transaction_fixture(tmp_path)
     from odylith.runtime.domain_intelligence.greenfield_create_commit import commit_greenfield_create_transaction
     original = subprocess.Popen
     code = '''import json,socket,sys
@@ -572,6 +622,7 @@ p._journey_guardian(socket.socket(fileno=int(sys.argv[2])),parent=int(sys.argv[3
 
 @pytest.mark.parametrize('change', ('missing','nonce','journey_id','transaction_hash','extra'))
 def test_explicit_completion_receipt_is_required_and_bound_at_actual_create(tmp_path,change):
+    _compile_transaction_fixture(tmp_path)
     from odylith.runtime.domain_intelligence.greenfield_create_commit import commit_greenfield_create_transaction
     receipt = {}
     with process.supervise_greenfield_journey(seconds=5,completion_receipt_sink=receipt):
@@ -593,6 +644,7 @@ def test_explicit_completion_receipt_is_required_and_bound_at_actual_create(tmp_
 
 
 def test_original_bounded_receipt_is_preserved_for_equal_hash_and_edit_lookup(tmp_path):
+    _compile_transaction_fixture(tmp_path)
     from odylith.runtime.domain_intelligence.greenfield_cli import terminal_decision_offer
     receipt = {}
     with process.supervise_greenfield_journey(seconds=5,completion_receipt_sink=receipt):
@@ -625,6 +677,7 @@ def test_original_bounded_receipt_is_preserved_for_equal_hash_and_edit_lookup(tm
 
 
 def test_reject_can_retire_failed_bounded_state_without_reopening_copied_create(tmp_path):
+    _compile_transaction_fixture(tmp_path)
     from odylith.runtime.surfaces.greenfield_host_confirmation import handle_greenfield_decision
     from odylith.runtime.domain_intelligence.greenfield_create_commit import commit_greenfield_create_transaction
     with pytest.raises(RuntimeError,match='cancel'):
@@ -644,6 +697,7 @@ def test_reject_can_retire_failed_bounded_state_without_reopening_copied_create(
 
 @pytest.mark.parametrize('command', ('CONFIRM','create'))
 def test_real_source_cli_confirmation_requires_delivered_receipt(tmp_path,command):
+    _compile_transaction_fixture(tmp_path)
     receipt = {}
     with process.supervise_greenfield_journey(seconds=5,completion_receipt_sink=receipt):
         assert _stage_under_parent(tmp_path).returncode == 0
@@ -664,6 +718,7 @@ def test_real_source_cli_confirmation_requires_delivered_receipt(tmp_path,comman
 
 
 def test_prepare_delivery_file_error_reports_accepted_environment_outcome(tmp_path,monkeypatch):
+    _compile_transaction_fixture(tmp_path)
     from argparse import Namespace
     from odylith.runtime.domain_intelligence import greenfield_prepare_cli as prepare
     monkeypatch.setattr(prepare,'resolve_trusted_codex_executable',lambda **_kwargs:sys.executable)

@@ -202,7 +202,7 @@ def test_atlas_context_execution_diagrams_render_assets_and_canonical_links(brow
         ),
         (
             "D-025",
-            ("session streams", "delivery-ledger visibility proof", "visible intervention decisions"),
+            ("session stream contract", "delivery ledger contract", "visible intervention broker", "current authority", "judgment continuity"),
         ),
         (
             "D-026",
@@ -222,7 +222,7 @@ def test_atlas_context_execution_diagrams_render_assets_and_canonical_links(brow
         ),
         (
             "D-037",
-            ("execution engine snapshot reuse", "visibility-status cache", "benchmark latency"),
+            ("execution engine snapshot reuse", "visibility-status cache", "latency and token-budget proof"),
         ),
     ],
 )

@@ -1,6 +1,115 @@
 - Bug ID: CB-347
 
-## Current actor-custody and EDIT frontier (2026-10-04)
+## Current installed CONFIRM audit frontier (2026-10-04)
+
+Current semantic qualification is failed: independent v49 audit passes H0
+26/26 but finds an H1 guard omission, passing 25/26 originals and 4/5 correction
+units. The verifier's affirmative completeness was false. CB-303 owns the
+material semantic regression. Do not publish or recover that known-bad H1.
+Retain its PREPARED journal and all original failed evidence. Audit JSON:
+`/private/tmp/odylith-v49-agriculture-h0-h1-semantic-audit-20261004.json`, SHA-256
+`c2323e44a7cf2401b7207ffcf9d88eb9c95d0a4320ef4d67d85e4b1cc460ac6d`.
+
+Clean `3eaa1ff5646d368e3dc4b381c82ee94a29eed25c` builds v22 and passes
+canonical local release smoke. The once-only v49 Agriculture control admits
+both initial and changed-hash EDIT preparations in four calls each, at 306.344
+and 318.489 diagnostic seconds. Original REJECT and copied-old refusal pass
+with zero observed model, projection or subprocess entries. Independent review
+of these new bytes fails H1 as above; earlier v48 review cannot qualify them.
+
+Successor CONFIRM returns 124 after its unchanged 60-second outer timeout and
+process-group termination. Its absent final counter file is a secondary symptom,
+not the primary failure. The original failed result remains at
+`/private/tmp/odylith-greenfield-v49-installed-edit-result-20261004.json`, SHA-256
+`1591287215b8b56c45b6b93dcc9fc5321f31d9f6f0fdc7c1f9877198723501c4`.
+The retained write audit records 353 writes and zero subprocess attempts, ending
+during immutable generation staging. The canonical audit emitter uses blocking
+pipe writes, while `InstalledWriteAudit.finish` starts reading only after the
+child returns. This permits pipe backpressure to stop CONFIRM before publication.
+The surviving journal, pending seal, receipt, staging tree and failed evidence
+must remain intact. Missing final counters cannot prove zero semantic entries.
+Research's predeclared v49 control remains unexecuted while this shared audit
+defect is corrected; it must not inherit the known blocking reader.
+
+Read-only diagnosis confirms the journal is PREPARED, the original baseline
+publication remains active, and all snapshot-owned bytes and modes still match
+the live repository. Eleven finished staged files match the sealed after-image.
+The exact audit rows occupy 65,371 bytes of a 65,536-byte pipe; a replay-free
+new-pipe control rejects the next 213-byte row with EAGAIN. Production blocking
+emission therefore explains the stopped generation write. Diagnosis:
+`/private/tmp/odylith-v49-confirm-timeout-diagnosis-20261004.md` and adjacent JSON.
+
+End this frozen control wave at its retained failure. Correct only the existing
+audit reader, keep exact event and failure evidence, and prove a trace larger
+than pipe capacity completes before `finish`, with reader/FD cleanup and
+malformed-trace refusal. Do not raise the timeout, rerun authoring for luck, or
+turn the original failure green. Any deterministic recovery requires a separate
+receipt against the exact retained successor and its interrupted journal.
+
+The concurrent-reader change passes 96 owner/adopter checks, but independent
+review finds one medium evidence-retention defect: a read failure after a
+partial trailing JSON row makes the existing parser discard earlier complete
+rows. The result remains inactive, so this is not false admission; diagnostic
+prefix custody is nevertheless incomplete. On reader error only, retain complete
+newline-terminated rows before the trailing fragment while preserving failure
+classification. Normal EOF malformed traces must remain fail closed. Add the
+partial-row fault control and rerun the bounded owner/adopter proof before
+checkpoint. Review:
+`/private/tmp/odylith-write-audit-concurrent-reader-independent-review-20261004.md`.
+
+The d75 Ubuntu run executes 9,529 checks: 9,494 pass and 35 fail. Its failures
+are diagnosed individually; local passes are not Linux qualification. Selected
+remaining populated-browser continuation passes 47 screenshots and preserves
+all 11 authored files and modes. Positive linked-plan migration, the complete
+browser matrix, all five migration classes and protected custody remain open.
+
+The independently CLEAR Linux fixture proposals pass 623 local checks with
+Codex absent from PATH, but one installation check still contains a second
+obsolete root-guidance admission phrase. The first proposal missed that duplicate
+assertion. Preserve the failed log and update all remaining assertions in the
+same owned function against the installed guidance contract before a focused
+continuation; do not suppress the check or reinterpret this 623/624 result as
+Linux success. Log:
+`/private/tmp/odylith-linux-fixture-corrections-local-validation-20261004.log`.
+
+The selected 12 reviewed Atlas records are fresh with zero selected stale;
+24 unrelated stale records remain explicit. Browser correction proof passes
+30 checks, then fails D-037's old `benchmark latency` summary phrase after its
+truthful summary update. The visible canonical node retains `Latency and
+token-budget proof`; align that assertion to the maintained source contract
+and rerun only this failed case. Incomplete observer finalization accompanies
+the assertion failure and does not count as a clean browser pass. Original log:
+`/private/tmp/odylith-atlas-and-registry-browser-corrections-validation-20261004.log`.
+
+### Reviewed audit and fixture corrections (2026-10-04)
+
+The audit reader now drains concurrently. On reader failure it preserves every
+complete newline-terminated event before an incomplete trailing row and stays
+inactive; ordinary malformed EOF still refuses. All 98 owner/adopter checks
+pass, including a real child producing 4,096 ordered writes before `finish`,
+nonzero child exit, partial-row faults and reader/FD retirement. Final independent
+review is CLEAR with two additional controls. Handoff:
+`/private/tmp/odylith-v49-write-audit-prefix-fix-20261004/handoff.json`, SHA-256
+`38648e8476fb05587840d6871d9e7c73b369bdf694bf2687218c0bfb08fcda64`.
+Final review JSON SHA-256:
+`ec6ac967480c7ebaa443f51fc637f8b8d476b3b6eab1026681bc3050c8f775a1`.
+The original killed CONFIRM and intermediate failed review remain failed.
+
+Canonical selective sync passes all 19 steps. Besides the 12 rendered reviews,
+it refreshes four impacted review-only records (D-022, D-023, D-034, D-038)
+without changing their source or rendered assets. Atlas now reports 27 fresh
+and 20 stale; this supersedes the earlier 23/24 count above.
+
+The missed assertions in the same guidance function are corrected; the single
+failed installation check passes its focused continuation. D-037's maintained
+latency phrase is also corrected; its single browser continuation passes with
+clean observation. Preserve both original failed logs. These continuations plus
+623 installation checks and 30 browser checks establish local affected coverage,
+not a fresh complete Linux or browser campaign. Logs:
+`/private/tmp/odylith-linux-fixture-root-guidance-continuation-20261004.log` and
+`/private/tmp/odylith-atlas-d037-browser-continuation-20261004.log`.
+
+## Previous actor-custody and EDIT frontier (2026-10-04)
 
 Frozen d75/v21 executes all 8,423 collected runtime/install/selected-browser
 checks with zero input drift: 8,422 pass and one actor-law assertion still pins

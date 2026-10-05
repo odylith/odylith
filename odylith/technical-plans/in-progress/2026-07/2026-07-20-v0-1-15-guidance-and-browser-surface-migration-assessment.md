@@ -1,9 +1,34 @@
 Status: In progress
 Created: 2026-07-20
-Updated: 2026-09-24
+Updated: 2026-10-04
 Backlog: B-145
 
 # v0.1.15 Guidance And Browser Surface Migration Assessment
+
+## Current migration frontier (2026-10-04)
+
+The new linked-fixture driver stops before application authoring: published-v14
+installation and version checks pass, but its empty-repo startup requests one
+code path and returns `gated_ambiguous`/exit 1. The original failed result and
+same installed consumer are retained under
+`/private/tmp/odylith-v22-linked-predecessor-proof-20261004/`. A possible guarded
+continuation must begin at the first unexecuted step and repeat no completed
+phase. Positive linked-plan preflight and upgrade remain unexecuted.
+
+The original populated v14 fixture lacks a forward plan binding. Its strict
+byte-preservation failures and later unlinked-plan browser failure remain
+retained. Explicit supported Registry refresh succeeds with 11/11 authored
+bytes and modes preserved; its managed publication-pointer advance explains
+the separately retained guard failure. Browser-only remaining continuation
+passes 47 screenshots and leaves the whole consumer unchanged. This covers
+selected desktop/mobile authored, fallback, degraded and error states, not the
+complete matrix or positive linked-plan migration. Result:
+`/private/tmp/odylith-v21-post-registry-browser-proof-20261004/result.json`.
+Use a new properly linked published-v14 fixture with a real served-plan
+preflight before its frozen baseline and one v22 upgrade attempt. No original
+failure is rewritten. All five migration classes remain unapproved; current
+native Codex status is unverified, and historical readiness below cannot qualify
+this session. Actual Claude host delivery and complete timing remain unqualified.
 
 ## Native intervention qualification checkpoint (2026-09-24)
 

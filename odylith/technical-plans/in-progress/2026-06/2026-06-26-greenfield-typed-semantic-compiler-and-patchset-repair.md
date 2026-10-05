@@ -2,6 +2,53 @@ Status: In progress
 
 ## Current release frontier (2026-10-04)
 
+Independent v49 audit fails H1 lifecycle preservation: H0 passes 26/26; H1
+passes 25/26 original duties and 4/5 correction units. Original provisional
+analysis cannot become established fact; H1 retains that sentence only in
+problem prose and omits the typed guard and operational projection. The
+affirmative source completeness decision is false. CB-303 owns this regression.
+Preserve the interrupted H1 and stop its recovery/publication. Correct the
+existing source-only actionable-coverage mechanism, without a new stage or
+history overriding an explicit correction; do not repeat the failed authoring
+paragraph. Actual semantic audit JSON SHA-256 is
+`c2323e44a7cf2401b7207ffcf9d88eb9c95d0a4320ef4d67d85e4b1cc460ac6d`.
+
+Next mechanism: give the existing source-only EDIT verifier a required decision
+for every prior sealed lifecycle duty. Current carrier IDs must belong to the
+same typed section; changes/removals need exact correction-only citations.
+Missing or uncertain decisions refuse before candidate authoring. Preserve
+correction precedence and all four-call/no-repair/bounded receipt contracts.
+The old lifecycle is a checklist, not copied authority. Diagnose and prove this
+at the existing admission boundary; no new platform layer or candidate review.
+Design: `/private/tmp/odylith-v49-lifecycle-verifier-diagnosis-20261004.json`,
+SHA-256 `bb7c8b065243ca6512a22b2b098e0101518605c18ce738eaf9e7fd2253974abc`.
+
+Clean 3eaa/v22 passes canonical local smoke. The once-only v49 Agriculture
+control admits initial and changed-hash EDIT preparation; REJECT and copied-old
+refusal pass. CONFIRM times out at 60 seconds during immutable generation
+staging. The canonical write-audit emitter blocks on a pipe drained only after
+the child returns. Preserve all interrupted state and original failed evidence;
+replace that shared reader with concurrent draining and exact evidence/cleanup
+proof before any future valid-seal deterministic recovery observation. Do not
+raise the timeout or repeat semantic authoring. Research v49 is still unexecuted
+and must use the corrected reader. Independent review fails actual v49 H1 as
+documented above. Selected remaining populated-browser checks pass 47 screenshots with
+11/11 authored bytes and modes preserved; positive linked-plan migration and
+the complete matrix remain unproved. D75 Ubuntu executes 9,529 checks with
+9,494 passing and 35 failing; reviewed fixture and truthful Atlas corrections
+are required. B-142, B-145, public/private proof and protected custody stay open.
+
+The audit correction now passes 98 owner/adopter checks and final independent
+review is CLEAR. Local fixture continuations correct the sole remaining guidance
+assertion and D-037 phrase, preserving original 623-pass/one-fail and
+30-pass/one-fail logs. Twelve reviewed Atlas records are fresh with zero selected
+stale; 24 unrelated stale records remain. This proves the affected local changes,
+not Linux, the full browser matrix or the failed H1's semantic qualification.
+The lifecycle preservation patch is being prepared externally for review; it
+has not yet changed runtime source or produced a fresh semantic observation.
+
+## Previous actor-custody frontier (2026-10-04)
+
 Frozen d75/v21 runs all 8,423 checks with zero source drift: 8,422 pass and one
 actor-law test has an obsolete v47 contract pin. Canonical local release smoke
 passes. The actual populated installer succeeds and installed Atlas verification

@@ -62,6 +62,38 @@ superseded_by:
 
 ## Current convergence checkpoint (2026-10-04)
 
+- Independent v49 source audit passes H0 26/26, but H1 loses one original
+  provisional-analysis guard despite affirmative verifier completeness. It
+  passes 25/26 original and 4/5 correction units. CB-303 owns this material
+  regression. Stop H1 recovery/publication; preserve its interrupted state and
+  tighten the existing source-only actionable-coverage mechanism before new
+  qualification. Repeating the complete-source paragraph is not a new fix.
+- V49 Agriculture admits initial and changed-hash EDIT in four calls each.
+  Original REJECT and copied-old refusal pass. CONFIRM then times out at 60s
+  during generation staging; the shared write-audit pipe is read only after
+  child exit and can block a full trace. Preserve the interrupted journal and
+  failed result; correct that audit owner before deterministic recovery or the
+  still-unexecuted Research control. Mechanical admission does not satisfy the
+  independent semantic finding above.
+- The remaining populated-browser continuation passes 47 screenshots with all
+  11 authored files and modes preserved. This does not prove positive linked-plan
+  migration or the complete browser matrix. The d75 Ubuntu run has 35 failures
+  among 9,529 executed checks; exact fixture and Atlas corrections are in review.
+- The audit reader correction passes 98 owner/adopter checks and final independent
+  review is CLEAR. Local fixture proof retains its original 623-pass/one-fail
+  log and passes that failed check's focused correction; browser proof likewise
+  retains 30-pass/one-fail and passes the corrected D-037 case. Twelve reviewed
+  Atlas records are fresh; 24 unrelated stale records remain. Linux and the
+  complete browser campaign remain unqualified.
+- The next bounded EDIT mechanism requires an explicit disposition for every
+  prior sealed lifecycle duty in the existing source-only verification call.
+  Changes/removals require exact correction-only evidence. Missing duties refuse
+  before candidate authoring; prior history cannot override current corrections.
+- B-142 remains in implementation. Public/private qualification, five migration
+  classes and original protected-custody recovery remain required.
+
+## Previous actor-custody checkpoint (2026-10-04)
+
 - V48 once-only agriculture and research controls admit H0, then fail EDIT at
   distinct boundaries. Independent strong review finds all 26 agriculture H0
   duties materially faithful, with two minor labeling findings. No complete
