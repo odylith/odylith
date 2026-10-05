@@ -1,5 +1,36 @@
 - Bug ID: CB-347
 
+## V28 external preflight failure (2026-10-05)
+
+The fresh v28 build and canonical installation smoke pass from clean pushed
+`9c698e77d`. Both actual external preview entries then refuse in 0.169/0.168
+seconds before installation, consumer creation or any model/provider/prepare call.
+Exact error: `unresolved inherited terminal wrapper global before mutable phase`.
+No initial or EDIT seal, product journey, terminal action or semantic result exists.
+Retain both execution logs/receipts and all nine sealed external binding records
+under `/private/tmp/odylith-greenfield-v52-v28-controls-release-20261005/`.
+
+Read-only diagnosis against the real immutable methods proves that parsing the
+method in isolation marks its implicit `__class__` as an unresolved global. The
+live `FreshComparison.terminal` method has that name in a nonempty lexical closure.
+Other checked wrappers have no missing globals. Earlier seven inert adopter
+controls and static declaration review did not exercise this real closure gate;
+they do not prove operational preflight. The correction must validate actual
+captured cells, preserve refusal for missing globals or empty cells, and exercise
+the real imported methods while stopping before product work. This is an external
+harness defect; the v52 product code and failed v28 evidence remain unchanged.
+
+The minimal external v3 correction adds four net lines to validate captured cells
+before including their names in the existing scope check. Ten native controls
+reproduce both v2 failures, reach a deliberate hold before mutation with v3 in
+both domains, and refuse real missing globals and empty closures. Python also
+refuses constructing the original methods without their required closure.
+Product/model/provider/install/prepare/terminal and observed side-effect counts
+are zero at that guard boundary. Adapter SHA-256:
+`f21d743c70c02af3ef3da7529163db0c2f485c0dec75f5617f6f31eca393bdfc`;
+result SHA-256 `061954136b94d3ad720c7630126469d72d3cf8b415e73c41352ffac11c6a1983`.
+This proves the corrected scope guard, not complete preflight or product fidelity.
+
 ## V52 confirmation observer correction (2026-10-05)
 
 The first combined gate retains 3,795 passes, 29 failures and 52 setup errors,

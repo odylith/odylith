@@ -62,6 +62,10 @@ superseded_by:
 
 ## Current v52 source and v27 convergence frontier (2026-10-05)
 
+- V28 build and canonical installation smoke pass. Both external comparison
+  entries refuse an incorrectly classified Python closure before installation
+  or model calls; neither product journey ran. CB-347 owns the retained failure
+  and required proof of the real preflight before fresh source comparisons.
 - Fresh independent proposal audits pass Research H0 13/13 and Agriculture H0
   26/26 plus changed-hash H1 31/31 at unchanged source lenses/1.0 floors.
 - Research EDIT admits v6/v9 source then refuses candidate component/constraint

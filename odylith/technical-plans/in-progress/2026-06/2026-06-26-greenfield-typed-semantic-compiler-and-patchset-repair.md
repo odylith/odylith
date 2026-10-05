@@ -2,6 +2,12 @@ Status: In progress
 
 ## Current v52 implementation and v27 proof frontier (2026-10-05)
 
+V28 build and canonical installation smoke pass. Both external entries refuse
+an actual lexical `__class__` cell misclassified as a global, before installation,
+model calls or any product journey. Preserve the failed external attempts; prove
+the corrected guard with real imported methods and missing-global/empty-cell
+negatives before the first fresh v52 source journey. CB-347 owns this harness defect.
+
 Fresh independent proposal audit passes Research H0 13/13, Agriculture H0 26/26
 and changed-hash Agriculture H1 31/31 at unchanged source lenses/1.0 floors.
 Research EDIT admits v6/v9 source, then refuses unequal component/constraint
