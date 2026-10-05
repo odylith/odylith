@@ -1,6 +1,19 @@
 - Bug ID: CB-347
 
-## Current v30 terminal and CI boundaries (2026-10-05)
+## Current v31 package and caller hold (2026-10-05)
+
+V31 build and canonical smoke pass from clean pushed `6d65bb271`; all 696
+packaged Python files match that checkpoint. Before consumer execution, external
+final binding stops on an overbroad assertion equating host-specific wrappers
+with the shared canonical skill. Each wrapper instead binds to its own wheel
+asset. Retain `v31-final-binding-held.json`; no final argv, consumer or execution
+exists. Full v52 EDIT readback then exposes the separate product P1 in CB-303.
+The reviewed two-line passive correction requires a fresh checkpoint/v32 build.
+Keep frozen source-only baselines and caller templates; final binding must use
+the corrected package and per-asset equality without repeating product attempts.
+No held setup or package smoke earns semantic or migration qualification.
+
+## Previous v30 terminal and CI boundaries (2026-10-05)
 
 The first actual Agriculture terminal finishes once, exit 0 in 20.170 seconds.
 Its result SHA-256 is `568eeae22889d461da36f0230185fed5857072373c508c954a82eb192391ed91`;

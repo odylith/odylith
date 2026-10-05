@@ -60,7 +60,20 @@ supersedes:
 
 superseded_by: 
 
-## Current v30 result and bounded v53 correction (2026-10-05)
+## Current passive compatibility checkpoint (2026-10-05)
+
+V53 first-run closure is committed at `6d65bb271`; its 435 checks, v31 build
+(226.554 seconds) and canonical smoke (468.687 seconds) pass. Full historical
+readback then exposes a missing known v52/v9 passive EDIT pair. Add that pair
+only in the existing guard: two source lines, 27 transaction/receipt checks pass,
+and unchanged genuine v30 H0/H1 canonical readback passes with no writes or
+compiler attestation. Independent review is CLEAR (`d551b636198711409d4c75797a3a16dfaa4fca20a29cc8038ace1b55abd3baaa`).
+CB-303 owns exact proof; CB-347 retains the held v31 caller setup. Build v32 from
+the corrected checkpoint, then run each fixed Research/Agriculture source once
+with unchanged lenses and floors. Original failed consumers remain frozen.
+Installed semantic comparison and broader release gates remain open.
+
+## Previous v30 result and bounded v53 correction (2026-10-05)
 
 Agriculture's initial and EDIT proposals pass independent source fidelity
 (26/26 and 31/31); its first terminal continuation now passes rejection,

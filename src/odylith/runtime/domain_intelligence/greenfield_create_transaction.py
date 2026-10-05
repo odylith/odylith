@@ -377,6 +377,8 @@ def _require_host_candidate_authority_binding(
     edit_versions = {(EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION, HOST_CANDIDATE_CONTRACT_VERSION)}
     if passive:
         edit_versions.add((EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+                           "odylith.greenfield.host-candidate-contract.v52"))
+        edit_versions.add((EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
                            "odylith.greenfield.host-candidate-contract.v51"))
         edit_versions.add((LEGACY_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
                            PREVIOUS_HOST_CANDIDATE_CONTRACT_VERSION))

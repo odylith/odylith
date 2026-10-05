@@ -15,6 +15,12 @@ independently certify candidate precedence. No edge creation, repair, parser or
 new semantic owner is added. Initial v4/v7 and EDIT v6/v9 custody, all four host
 passes, profile and bounds remain unchanged; passive v52/51/50/49 stays explicit.
 The 24 publication owners retain their exact source fingerprint.
+Passive full transaction readback explicitly accepts the known v52/v9 EDIT pair,
+in addition to v51/v9 and v50/v8. Fresh admission remains current-v53-only;
+unknown or mismatched pairs refuse. The two-line compatibility correction passes
+27 transaction/receipt checks and full unchanged v30 H0/H1 readback with no
+compiler attestation or write/process/network events. V31 build/smoke passes
+before that correction; fresh v32 installed comparison is pending.
 
 Research v30 H0 passes 13/13 source obligations; EDIT exposes the prior contract
 contradiction and remains failed/frozen. Agriculture v30 H0/H1 passes 26/26 and

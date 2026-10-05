@@ -1,5 +1,24 @@
 - Bug ID: CB-303
 
+## Current passive v52 EDIT compatibility correction (2026-10-05)
+
+Full canonical readback at `6d65bb271` reproduced a P1: the existing passive
+transaction guard omitted the known v52/v9 EDIT pair. The correction adds only
+two source lines; fresh admission still requires v53 and v8 pairs only with v50.
+The full transaction-parity and model-receipt modules pass 27 tests in 3.88 seconds.
+Actual unchanged Agriculture v30 H0/H1 packages now pass full canonical readback,
+with exact original byte/hash custody, no compiler attestation and zero observed
+write, process or network events. All 24 publication owners remain unchanged.
+Independent review is CLEAR: `/private/tmp/odylith-v53-passive-v52-final-review-20261005.json`,
+SHA-256 `d551b636198711409d4c75797a3a16dfaa4fca20a29cc8038ace1b55abd3baaa`.
+
+Retain the actual before-fix refusal, first parameter run (25 passed, two
+incorrect expectations failed), and wrapper property error alongside final proof
+under `.odylith/release-evidence/v53-first-run-closure-20261005/`. V31 build and
+canonical smoke passed but are held because they precede this correction. No v53
+consumer attempt occurred. Commit the correction and build v32 before the same
+fixed comparisons; populated predecessor migration and release remain unproved.
+
 ## Current v30 fidelity frontier and first-run contract defect (2026-10-05)
 
 Clean pushed `3575ded39` builds and passes canonical installation smoke. Research
