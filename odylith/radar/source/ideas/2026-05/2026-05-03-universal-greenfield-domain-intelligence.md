@@ -60,7 +60,26 @@ supersedes:
 
 superseded_by: 
 
-## Current source inventory simplification (2026-10-05)
+## Current v30 result and bounded v53 correction (2026-10-05)
+
+Agriculture's initial and EDIT proposals pass independent source fidelity
+(26/26 and 31/31); its first terminal continuation now passes rejection,
+copied-old refusal, exact publication/CLOSED readback and repeat confirmation
+in the caller, with zero model/provider/projection work. Independent terminal adjudication is CLEAR. Research H0 passes 13/13, but EDIT exposes a P1 contract
+contradiction: authoring and two membership guards exclude supporting checks
+that the ordering guard requires. CB-303/CB-347 retain actual evidence and CI's
+single stale custody-test failure; all failed consumers remain frozen.
+
+Apply the reviewed four-owner correction: existing first-run validation closes
+only cited prerequisites and preserves ordered source-path membership plus typed
+supporting roles. Admission and canonical reload share it; host contract v53
+keeps all other versions, profiles and bounds. The stale schema test, lifecycle fixture and smoke pin are aligned; 435 tests
+pass across 12 complete affected/adjacent modules, with the 24 publication owners
+unchanged. Settle governance and commit/push. Then build once and compare the same fixed public controls under
+v53 with unchanged sources, lenses and floors. Broader release gates remain open;
+no new features, parser, repair/retry, semantic owner or failed-consumer replay.
+
+## Previous source inventory simplification (2026-10-05)
 
 - One production line removes the duplicate inventory schema from stdin while
   retaining its qualified schema file and every source/EDIT custody field.
@@ -69,7 +88,7 @@ superseded_by:
 - Fresh fixed-case comparisons keep original requests, duties, floors and caps;
   both V29 failures remain retained. No complete case or release is qualified.
 
-## Current v52/v29 actual comparison frontier (2026-10-05)
+## Previous v52/v29 actual comparison frontier (2026-10-05)
 
 - V29 build, smoke, and final native preflight pass; CB-347 retains two setup
   stops before product/write work and unchanged final bindings.

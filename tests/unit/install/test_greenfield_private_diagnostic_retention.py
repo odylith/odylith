@@ -132,11 +132,14 @@ def test_private_custody_binds_actual_stdin_schema_and_returned_utf8(tmp_path, m
         stdin = json.loads(hosts[position][1])
         expected_schema = {
             0: json.loads(emitted["contract"].stdout)["authority_gate"]["response_schema"],
-            1: json.loads(hosts[1][1])["source_ledger"]["source_ledger_schema"],
+            1: json.loads(emitted["contract"].stdout)["source_ledger"]["source_ledger_schema"],
             2: json.loads(hosts[2][1])["decision_set_schema"],
             3: json.loads(emitted["contract"].stdout)["candidate_schema"],
         }
         assert schema == expected_schema[position]
+        if position == 1:
+            assert "source_ledger_schema" not in stdin["source_ledger"]
+            assert hashlib.sha256((directory / schema_name).read_bytes()).hexdigest() == observation["source_ledger_schema_sha256"]
     index = _index(directory)
     assert index["authority"] == "none" and index["status"] == "retained_through_returned_stage"
     assert "not pipe octets" in index["representation"]

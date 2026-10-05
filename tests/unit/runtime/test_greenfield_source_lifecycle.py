@@ -106,7 +106,10 @@ def _case(noun: str) -> tuple[str, dict, dict, dict]:
         ]},
         "terminal": {"event_order": 2},
         "provisional_design": {
-            "first_run": {"event_orders": [1, 2]},
+            "first_run": {
+                "event_orders": [1, 2],
+                "rationale": f"The steward opens the {noun}, then the reviewer approves it.",
+            },
             "components": [{"key": "record-state"}],
             "workstreams": [
                 {"key": "record-delivery", "component_keys": ["record-state"]}

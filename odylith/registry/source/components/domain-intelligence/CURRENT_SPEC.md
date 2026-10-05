@@ -4,7 +4,28 @@ Last updated: 2026-10-05
 
 ## Overview
 
-### Verified responsibility custody and v27 proof (2026-10-05)
+### Prerequisite closure and v30 consumer evidence (2026-10-05)
+
+Host contract v53/format v22 requires the first run to contain the ordered source
+path and exactly its cited transitive prerequisites. Supporting human/system
+duties keep their roles; unrelated duties, missing predecessors, reversed order,
+cycles and invalid citations refuse. Source binding and canonical reload reuse
+the existing first-run validator. The affirmative source-duty receipt does not
+independently certify candidate precedence. No edge creation, repair, parser or
+new semantic owner is added. Initial v4/v7 and EDIT v6/v9 custody, all four host
+passes, profile and bounds remain unchanged; passive v52/51/50/49 stays explicit.
+The 24 publication owners retain their exact source fingerprint.
+
+Research v30 H0 passes 13/13 source obligations; EDIT exposes the prior contract
+contradiction and remains failed/frozen. Agriculture v30 H0/H1 passes 26/26 and
+31/31 source obligations and the first terminal caller passes REJECT/copied-old
+refusal/CONFIRM/CLOSED/exact readback/repeat idempotence, with zero observed
+model/provider/projection work. Independent terminal adjudication is CLEAR.
+The v53 implementation passes 435 tests across 12 complete modules; fresh
+installed v53 semantic comparisons and broader release gates remain open.
+CB-303/CB-347 and B-142 own exact retained evidence and failed mechanisms.
+
+### Previous responsibility custody and v27 proof (2026-10-05)
 
 Actual sealed proposal audits pass Research H0 13/13 and Agriculture H0 26/26
 plus changed-hash H1 31/31 at unchanged source-first lenses/1.0 floors. Research
@@ -2158,6 +2179,9 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:start -->
 - **2026-10-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_event_ordering.py`
+- **2026-10-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_host_source_phase.py`
 - **2026-10-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
@@ -2167,8 +2191,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-10-02 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py`
 - **2026-10-02 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
-  - Evidence: `odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
-- **2026-10-02 · Decision:** Decision evidence linked this component to governed work with 2 verifiable artifact references.
   - Evidence: `odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
 <!-- registry-requirements:end -->
 

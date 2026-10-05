@@ -56,8 +56,9 @@ from odylith.runtime.domain_intelligence.greenfield_authority_gate import (
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v7"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v52"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v53"
 PASSIVE_HOST_CANDIDATE_CONTRACT_VERSIONS = (
+    "odylith.greenfield.host-candidate-contract.v52",
     "odylith.greenfield.host-candidate-contract.v51",
     "odylith.greenfield.host-candidate-contract.v50",
     "odylith.greenfield.host-candidate-contract.v49",
@@ -111,8 +112,12 @@ def greenfield_host_candidate_contract(
             ),
             (
                 "Bind every accepted first-path action in ledger order to one actor fact address. "
-                "The proposed first_run must contain exactly those bound events, without "
-                "supporting inventory or system duties. Bind every supporting human action "
+                "The proposed first_run must contain every bound first-path event and "
+                "exactly its transitive prerequisites from the cited source_precedence graph. "
+                "Keep the first-path events as an ordered subsequence in ledger order, and "
+                "place every prerequisite before its dependent event. Supporting human and "
+                "system prerequisites retain their source roles; exclude every unrelated "
+                "supporting or system duty. Bind every supporting human action "
                 "and system duty to its own actor fact address; every event must have one "
                 "source-duty role. Bind every passive off-path transition "
                 "and its effects to governed state fields and owned design components without "

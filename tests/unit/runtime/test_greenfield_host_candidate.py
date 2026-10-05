@@ -499,3 +499,100 @@ def test_canonical_candidate_hash_changes_on_semantic_tamper() -> None:
         tampered_receipt["canonical_candidate_sha256"]
         != receipt["canonical_candidate_sha256"]
     )
+
+
+@pytest.mark.parametrize("include_prerequisite", [False, True])
+@pytest.mark.parametrize("edit_evidence", ["", "Keep every earlier behavior and its evidence."])
+def test_bound_system_prerequisite_survives_admission_and_canonical_reload(
+    tmp_path, include_prerequisite, edit_evidence,
+) -> None:
+    from odylith.runtime.domain_intelligence.greenfield_authored_first_run import authored_first_run_relations
+    from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import GreenfieldSourceDutyBindingError
+
+    source = _source()
+    prepared = prepare_model_authoring_evidence(prompt=source, edit_evidence=edit_evidence)
+    response = _response(prepared.evidence_source)
+    response["result"]["facts"]["operational_constraints"].append({
+        "quote": "the product records berth occupancy before the berth map shows the placement",
+        "occurrence": 1,
+    })
+    response["result"]["source_precedence"] = [{
+        "before_event": 2, "after_event": 3, "constraint_index": 2,
+    }]
+    response["result"]["provisional_design"]["first_run"]["event_orders"] = [1, 3]
+    candidate = host_candidate_response(response, evidence_text=prepared.evidence_source)
+    # Declare source roles before the proposed walk includes its system prerequisite.
+    receipt = synthetic_source_duty_receipt(candidate, evidence_text=prepared.evidence_source)
+    if edit_evidence:
+        from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import (
+            EDIT_SOURCE_DUTY_DECISION_SET_VERSION, greenfield_edit_preservation_context,
+        )
+        from odylith.runtime.domain_intelligence.greenfield_source_lifecycle import project_greenfield_source_lifecycle
+
+        prior_source, prior_candidate = _candidate()
+        prior_receipt = synthetic_source_duty_receipt(prior_candidate, evidence_text=prior_source)
+        prior_lifecycle = project_greenfield_source_lifecycle(
+            ledger_receipt=prior_receipt,
+            binding=prior_candidate["result"]["source_duty_binding"],
+            candidate_result=prior_candidate["result"], evidence_text=prior_source,
+        )
+        context = greenfield_edit_preservation_context(
+            transaction_hash="a" * 64, prior_lifecycle=prior_lifecycle,
+            correction=edit_evidence, evidence_text=prepared.evidence_source,
+        )
+        preflight = preflight_greenfield_source_duty_ledger(
+            receipt["ledger"], evidence_text=prepared.evidence_source,
+        )
+        task = source_duty_entailment_task(
+            preflight, evidence_text=prepared.evidence_source, edit_preservation=context,
+        )
+        decisions = copy.deepcopy(receipt["decision_set"])
+        decisions.update(
+            version=EDIT_SOURCE_DUTY_DECISION_SET_VERSION,
+            verifier_task_sha256=task["verifier_task_sha256"], edit_preservation={},
+        )
+        receipt = validate_greenfield_source_duty_ledger(
+            receipt["ledger"], evidence_text=prepared.evidence_source,
+            decision_set=decisions, edit_preservation=context,
+        )
+    original_receipt = copy.deepcopy(receipt)
+    if not include_prerequisite:
+        with pytest.raises(GreenfieldSourceDutyBindingError, match="prerequisite"):
+            admit_greenfield_host_candidate(
+                candidate, evidence_text=prepared.evidence_source, source_duty_receipt=receipt,
+            )
+        assert receipt == original_receipt
+        return
+    candidate["result"]["provisional_design"]["first_run"]["event_orders"] = [1, 2, 3]
+    materialized = materialize_host_authored_intent(
+        prompt=source, repo_root=tmp_path, host_candidate=candidate,
+        source_duty_receipt=receipt, prepared_evidence=prepared, edit_evidence=edit_evidence,
+    )
+    assert receipt == original_receipt
+    assert materialized["prompt"] == prepared.evidence_source
+    assert "the product records berth occupancy" not in materialized["first_path"]
+    assert materialized["supporting_events"] == [
+        "Berth map: the product records berth occupancy"
+    ]
+    source_duty = materialized["authored_semantics"]["source_duty"]
+    assert source_duty["ledger_receipt"] == original_receipt
+    assert source_duty["ledger_receipt"]["version"].endswith(".v9" if edit_evidence else ".v7")
+    assert source_duty["ledger_receipt"]["decision_set"]["version"].endswith(".v6" if edit_evidence else ".v4")
+    assert [row["event_order"] for row in source_duty["binding"]["first_path_actions"]] == [1, 3]
+    assert [row["event_order"] for row in source_duty["binding"]["system_duties"]] == [2]
+    reloaded = json.loads(json.dumps(materialized))
+    assert [row["order"] for row in first_path_relations_from_intent(reloaded)] == [1, 2, 3]
+    assert [row["order"] for row in authored_first_run_relations(reloaded)] == [1, 2, 3]
+    reloaded["authored_semantics"]["source_precedence"] = []
+    with pytest.raises(ValueError, match="only their cited source prerequisites"):
+        first_path_relations_from_intent(reloaded)
+
+
+def test_candidate_task_aligns_bound_first_run_with_exact_prerequisite_closure():
+    source, _ = _candidate()
+    requirement = greenfield_host_candidate_contract(source)["requirements"][1]
+    assert "exactly its transitive prerequisites" in requirement
+    assert "ordered subsequence in ledger order" in requirement
+    assert "retain their source roles" in requirement
+    assert "exclude every unrelated" in requirement
+    assert "without supporting inventory or system duties" not in requirement

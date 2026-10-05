@@ -384,3 +384,88 @@ def test_design_validation_requires_the_explicit_first_run_binding():
         validate_provisional_design(
             design, event_orders=(1, 2, 3), source_precedence=result["source_precedence"], result_event_order=1,
         )
+
+
+@pytest.mark.parametrize("orders", [(2, 3, 1, 4), (3, 2, 1, 4)])
+def test_bound_first_run_includes_only_transitive_prerequisites(orders):
+    edges = _validate(
+        [_edge(2, 1), _edge(3, 1), _edge(1, 4)],
+        events=(1, 2, 3, 4, 5),
+    )
+    walk = _walk(orders)
+    assert validate_first_run(
+        walk, event_orders=(1, 2, 3, 4, 5), source_precedence=edges,
+        result_event_order=4, first_path_event_orders=(1, 4),
+    ) == walk
+
+
+def test_bound_first_run_closes_prerequisites_transitively_without_sorting_ids():
+    edges = _validate([_edge(4, 2), _edge(2, 3)], events=(1, 2, 3, 4))
+    walk = _walk((4, 2, 3, 1))
+    assert validate_first_run(
+        walk, event_orders=(1, 2, 3, 4), source_precedence=edges,
+        result_event_order=3, first_path_event_orders=(3, 1),
+    ) == walk
+
+
+@pytest.mark.parametrize("orders,match", [
+    ((3, 1), "prerequisite"),
+    ((2, 3, 1), "prerequisite"),
+    ((4, 2, 3, 1, 5), "only their cited source prerequisites"),
+    ((4, 2, 1, 3), "ledger workflow order"),
+    ((2, 4, 3, 1), "precedence"),
+])
+def test_bound_first_run_refuses_missing_extra_and_reordered_work(orders, match):
+    edges = _validate([_edge(4, 2), _edge(2, 3)], events=(1, 2, 3, 4, 5))
+    with pytest.raises(ValueError, match=match):
+        validate_first_run(
+            _walk(orders), event_orders=(1, 2, 3, 4, 5), source_precedence=edges,
+            result_event_order=3, first_path_event_orders=(3, 1),
+        )
+
+
+def test_bound_first_run_does_not_close_a_disconnected_branch():
+    edges = _validate([_edge(4, 5)], events=(1, 2, 3, 4, 5))
+    walk = _walk((3, 1))
+    assert validate_first_run(
+        walk, event_orders=(1, 2, 3, 4, 5), source_precedence=edges,
+        result_event_order=1, first_path_event_orders=(3, 1),
+    ) == walk
+    with pytest.raises(ValueError, match="only their cited source prerequisites"):
+        validate_first_run(
+            _walk((3, 4, 5, 1)), event_orders=(1, 2, 3, 4, 5),
+            source_precedence=edges, result_event_order=1, first_path_event_orders=(3, 1),
+        )
+
+
+def test_bound_first_run_does_not_fabricate_unknown_base_events():
+    with pytest.raises(ValueError, match="unknown source first-path"):
+        validate_first_run(
+            _walk((2, 1)), event_orders=(1, 2), source_precedence=(),
+            result_event_order=1, first_path_event_orders=(3,),
+        )
+
+
+@pytest.mark.parametrize("orders,accepted", [
+    ((1, 2, 3, 4, 5, 6), False),
+    ((1, 2, 3, 4, 5, 7, 8, 6), True),
+    ((1, 2, 3, 4, 5, 8, 7, 6), True),
+    ((1, 2, 3, 4, 5, 7, 8, 9, 6), False),
+])
+def test_two_supporting_checks_before_a_path_result_have_exact_membership(orders, accepted):
+    # The retained v30 EDIT witness has these exact IDs and seven cited edges.
+    edges = _validate(
+        [_edge(before, before + 1) for before in range(1, 6)]
+        + [_edge(7, 6, 2), _edge(8, 6, 2)],
+        events=tuple(range(1, 10)),
+        constraints=("The six source path actions are ordered.", "Both checks precede the result."),
+    )
+    arguments = dict(
+        event_orders=tuple(range(1, 10)), source_precedence=edges,
+        result_event_order=6, first_path_event_orders=tuple(range(1, 7)),
+    )
+    if accepted:
+        assert validate_first_run(_walk(orders), **arguments) == _walk(orders)
+    else:
+        with pytest.raises(ValueError, match="prerequisite"):
+            validate_first_run(_walk(orders), **arguments)

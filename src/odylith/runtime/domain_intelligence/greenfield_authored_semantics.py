@@ -26,7 +26,9 @@ from odylith.runtime.domain_intelligence.greenfield_authored_relation_validation
     validate_first_path_relations,
 )
 from odylith.runtime.domain_intelligence.greenfield_provisional_design import validate_provisional_design
-from odylith.runtime.domain_intelligence.greenfield_event_ordering import validate_source_precedence
+from odylith.runtime.domain_intelligence.greenfield_event_ordering import (
+    validate_first_run, validate_source_precedence,
+)
 from odylith.runtime.governance.artifact_tribunal import _bind_verified_source_custody
 
 AUTHORED_SEMANTICS_KEY = "authored_semantics"
@@ -678,9 +680,13 @@ def _authored_relations_from_intent(
             ),
         )
         if selected_orders is not None:
-            proposed_orders = semantics["provisional_design"]["first_run"]["event_orders"]
-            if len(proposed_orders) != len(selected_orders) or set(proposed_orders) != set(selected_orders):
-                raise ValueError("Greenfield first run does not match source first-path duties")
+            validate_first_run(
+                semantics["provisional_design"]["first_run"],
+                event_orders=tuple(row["order"] for row in first_path_relations),
+                source_precedence=source_precedence,
+                result_event_order=None,
+                first_path_event_orders=selected_orders,
+            )
     except ValueError as exc:
         raise GreenfieldAuthoredSemanticsError(str(exc)) from exc
     return first_path_relations, context_relations, component_relations
@@ -690,7 +696,8 @@ def first_path_relations_from_intent(intent: Mapping[str, Any] | None) -> tuple[
     """Return the complete typed event inventory after validating source roles.
 
     The historical field name also contains supporting events. Consumers that
-    render the first run must select the source-duty binding's event orders.
+    render the first run must select provisional_design.first_run.event_orders,
+    including validated prerequisites of the source path.
     """
 
     relations, _context_relations, _component_relations = _authored_relations_from_intent(intent)

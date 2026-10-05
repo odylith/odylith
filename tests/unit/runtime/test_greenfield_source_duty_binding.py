@@ -762,3 +762,40 @@ def test_same_field_label_on_different_objects_resolves_exact_declared_identity(
         validate_greenfield_source_duty_binding(
             binding, ledger_receipt=receipt, candidate_result=candidate, evidence_text=evidence,
         )
+
+
+@pytest.mark.parametrize("edges,orders", [
+    ([{"before_event": 4, "after_event": 3, "constraint_index": 1}], [2, 4, 3]),
+    ([{"before_event": 1, "after_event": 3, "constraint_index": 1}], [2, 1, 3]),
+    ([{"before_event": 1, "after_event": 4, "constraint_index": 1},
+      {"before_event": 4, "after_event": 3, "constraint_index": 1}], [2, 1, 4, 3]),
+])
+def test_binding_includes_cited_human_and_system_prerequisites_without_role_transfer(
+    edges, orders,
+) -> None:
+    evidence, receipt, candidate, binding = _case("harbor")
+    original_receipt, original_binding = deepcopy(receipt), deepcopy(binding)
+    candidate["source_precedence"] = edges
+    candidate["provisional_design"]["first_run"]["event_orders"] = orders
+    assert validate_greenfield_source_duty_binding(
+        binding, ledger_receipt=receipt, candidate_result=candidate, evidence_text=evidence,
+    ) == binding
+    assert receipt == original_receipt
+    assert binding == original_binding
+    assert [row["event_order"] for row in binding["first_path_actions"]] == [2, 3]
+    assert binding["supporting_human_actions"] == [{"duty_id": "H1", "event_order": 4}]
+    assert binding["system_duties"] == [{"duty_id": "S1", "event_order": 1}]
+
+
+@pytest.mark.parametrize("orders", [[2, 3], [2, 4, 3], [2, 4, 1, 3], [1, 4, 3, 2]])
+def test_binding_refuses_missing_transitive_or_reversed_prerequisite_work(orders) -> None:
+    evidence, receipt, candidate, binding = _case("harbor")
+    candidate["source_precedence"] = [
+        {"before_event": 1, "after_event": 4, "constraint_index": 1},
+        {"before_event": 4, "after_event": 3, "constraint_index": 1},
+    ]
+    candidate["provisional_design"]["first_run"]["event_orders"] = orders
+    with pytest.raises(GreenfieldSourceDutyBindingError, match="first run"):
+        validate_greenfield_source_duty_binding(
+            binding, ledger_receipt=receipt, candidate_result=candidate, evidence_text=evidence,
+        )

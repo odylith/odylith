@@ -113,6 +113,7 @@ def _validated_edges(
 def validate_first_run(
     value: Any, *, event_orders: Sequence[int],
     source_precedence: Sequence[Mapping[str, int]], result_event_order: int | None,
+    first_path_event_orders: Sequence[int] | None = None,
 ) -> dict[str, Any]:
     """Validate one selected proposed branch, never infer a runtime ordering."""
 
@@ -135,15 +136,39 @@ def validate_first_run(
     if result_event_order is not None and result_event_order not in selected:
         raise ValueError("Greenfield first run must include its explicit result event")
     positions = {order: index for index, order in enumerate(value["event_orders"])}
-    for edge in _validated_edges(
+    edges = _validated_edges(
         source_precedence, accepted=accepted, constraint_count=MAX_AUTHORED_LIST_ITEMS,
-    ):
+    )
+    for edge in edges:
         if edge["after_event"] not in selected:
             continue
         if edge["before_event"] not in selected:
             raise ValueError("Greenfield first run omits a cited source prerequisite")
         if positions[edge["before_event"]] >= positions[edge["after_event"]]:
             raise ValueError("Greenfield first run violates cited source precedence")
+    if first_path_event_orders is not None:
+        first_path = _event_identities(first_path_event_orders)
+        if not first_path <= accepted:
+            raise ValueError("Greenfield first run has unknown source first-path duties")
+        prerequisites: dict[int, list[int]] = {}
+        for edge in edges:
+            prerequisites.setdefault(edge["after_event"], []).append(edge["before_event"])
+        required = set(first_path)
+        pending = list(first_path)
+        while pending:
+            for before in prerequisites.get(pending.pop(), ()):
+                if before not in required:
+                    required.add(before)
+                    pending.append(before)
+        if selected != required:
+            raise ValueError(
+                "Greenfield first run must contain source first-path duties and only "
+                "their cited source prerequisites exactly once"
+            )
+        if tuple(order for order in value["event_orders"] if order in first_path) != tuple(
+            first_path_event_orders
+        ):
+            raise ValueError("Greenfield first run must preserve ledger workflow order")
     return deepcopy(dict(value))
 
 

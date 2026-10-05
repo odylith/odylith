@@ -11,6 +11,7 @@ from collections.abc import Mapping, Sequence
 from copy import deepcopy
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_event_ordering import validate_first_run
 from odylith.runtime.domain_intelligence.greenfield_model_outcomes import (
     GreenfieldModelAuthoringError,
 )
@@ -446,15 +447,20 @@ def validate_greenfield_source_duty_binding(
         raise GreenfieldSourceDutyBindingError(
             "candidate events must be covered by exactly one source-duty role"
         )
-    first_run_orders = first_run.get("event_orders")
-    if (
-        not isinstance(first_run_orders, list)
-        or any(type(order) is not int for order in first_run_orders)
-        or first_run_orders != expected_run
-    ):
-        raise GreenfieldSourceDutyBindingError(
-            "candidate first run must contain each bound first-path event exactly once in ledger workflow order"
+    try:
+        validate_first_run(
+            first_run,
+            event_orders=tuple(range(1, len(events) + 1)),
+            source_precedence=candidate_result.get("source_precedence", ()),
+            result_event_order=None,
+            first_path_event_orders=expected_run,
         )
+    except ValueError as exc:
+        raise GreenfieldSourceDutyBindingError(
+            "candidate first run must preserve ledger workflow order and contain each "
+            "bound first-path event and its cited source prerequisites exactly once: "
+            f"{exc}"
+        ) from exc
     terminal = candidate_result.get("terminal")
     if terminal is not None:
         if (

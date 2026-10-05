@@ -1,5 +1,47 @@
 - Bug ID: CB-303
 
+## Current v30 fidelity frontier and first-run contract defect (2026-10-05)
+
+Clean pushed `3575ded39` builds and passes canonical installation smoke. Research
+H0 passes independent source-first review, 13/13 obligations. Its EDIT completes
+four calls in 252.716 diagnostic seconds, then refuses: `Greenfield first run
+omits a cited source prerequisite; no records were created.` The host instruction
+excludes supporting duties from first_run, while cited checks 7 and 8 precede
+result 6. Source binding and canonical reload require exactly events 1..6, but
+the event-ordering owner correctly requires those prerequisites. This is a P1
+product contract contradiction. H1 is absent; the failed consumer stays frozen.
+Diagnosis: `/private/tmp/odylith-v52-research-edit-first-run-mechanism-v30-20261005/report.json`,
+SHA-256 `881834552c49a0ad7f73c02a37f525e46c2ecc392303d8bb530b2f4da665b68a`.
+
+The bounded correction belongs in existing `validate_first_run`: preserve the
+ordered source path and include exactly its cited transitive prerequisites,
+while retaining each supporting duty's role. Both admission and canonical reload
+reuse that owner; unrelated extras, missing prerequisites and order violations
+still refuse. Host contract advances to v53; format, receipts, profile and caps
+stay unchanged. Private patch independent review is CLEAR for static application;
+runtime validation now passes 270 tests in eight complete modules and 165 in
+four adjacent receipt/transport/install/smoke modules. The custody test preserves
+the attached schema; the smoke pin is v53. The 24 publication owners retain
+source-files fingerprint `fbbb92c812bf1c8f5e7b747f0153311f8b6615a87b256026492df24ab0461ace`.
+Fresh installed v53 comparisons remain unproved.
+The first root run records 211 passes and 31 failures from one shared lifecycle
+fixture missing the already-required first-run rationale. Retain the failed log;
+complete that fixture and rerun without weakening product or test assertions.
+
+Agriculture H0 passes 26/26 obligations and H1 preserves all 26 plus five
+corrections; reverse support passes 22/22, with no P0/P1 findings. The first actual
+terminal continuation exits 0: REJECT, copied-old refusal, CONFIRM H1, CLOSED,
+exact sealed publication readback and same-hash repeat confirmation pass the
+caller. Model/provider/projection counters are zero; confirmation and repeat
+each observe one canonical dashboard opener. Independent terminal adjudication is CLEAR. Result: `/private/tmp/odylith-greenfield-v52-v28-controls-v3-v30-build-20261005/agriculture/terminal-continuation/result.json`,
+SHA-256 `568eeae22889d461da36f0230185fed5857072373c508c954a82eb192391ed91`.
+Independent adjudication verifies 116 generation files and 115 ordinary working
+files against the sealed bytes/modes, plus the separate working index. Repeat
+lock attempts do not change journal, result or publication. Report:
+`/private/tmp/odylith-v30-agriculture-actual-terminal-independent-adjudication-20261005.json`,
+SHA-256 `77987df4571655d207ee02d0f573af596b414ffe337e9b415175e13574b0bb5d`.
+This advances the diagnostic frontier, without qualifying the broader release.
+
 ## Source inventory input reduction (2026-10-05)
 
 The initial and EDIT transport now sends the full unchanged inventory schema
@@ -14,7 +56,7 @@ unproved: V29 remains failed, and fresh fixed-case comparisons retain the same
 requests, source-first duties and 1.0 floors. A flat tagged-atom rewrite was
 rejected because it adds bytes and repeats prior cardinality/role risks.
 
-## Current v52/v29 first actual comparison frontier (2026-10-05)
+## Previous v52/v29 first actual comparison frontier (2026-10-05)
 
 The first actual v52/v29 public comparisons stop without a complete successful
 case. V29 build (201.014 seconds) and canonical smoke (366.618 seconds) pass;

@@ -1,5 +1,29 @@
 - Bug ID: CB-347
 
+## Current v30 terminal and CI boundaries (2026-10-05)
+
+The first actual Agriculture terminal finishes once, exit 0 in 20.170 seconds.
+Its result SHA-256 is `568eeae22889d461da36f0230185fed5857072373c508c954a82eb192391ed91`;
+CB-303 owns semantic and publication evidence. Frozen external v3 preparation
+could not bind runtime/current aliases under its strict canonical-path check.
+The terminal-only v4 adapter resolves six owner paths consistently and retains
+strict hashes, unknown-process refusal and CLOSED/sealed-URL opener attribution.
+Native preflight and five custody controls pass without product actions;
+independent static review is CLEAR. No failed consumer was replayed. Existing
+preview, source, diagnostic and semantic artifacts remain unchanged; actual terminal adjudication is CLEAR. Preserve the original setup blocker and v4
+review alongside the first execution receipt.
+
+Exact-head CI `37345012135` for `3575ded39` reports 9,683 passes, one failure,
+10 skips and six warnings. The sole failing private-custody test reads the
+removed duplicate schema from inventory stdin; the unchanged attached schema
+remains the authority. Update that test to compare retained schema bytes with
+the emitted contract and assert that stdin omits the duplicate. Keep all UTF-8,
+stream, hash, mode, no-write and no-leak assertions. This is stale test wiring,
+not evidence that custody was lost. Full failure log SHA-256:
+`228a79f1ad345536756eaf6d578d4e1e6060ed8b580f6f29670c902b5e8fa10b`.
+Public40, browser, original protected/private custody, migration and final release
+gates remain open. No partial or unavailable proof earns release credit.
+
 ## V29 first actual comparison and external setup boundary (2026-10-05)
 
 The clean `0d265d402beedb46ae8abd835527fd153b9f71ee` V29 build passes in
