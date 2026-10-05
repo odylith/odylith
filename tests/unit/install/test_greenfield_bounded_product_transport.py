@@ -471,6 +471,38 @@ p._journey_guardian(socket.socket(fileno=int(sys.argv[2])),parent=int(sys.argv[3
         pending.resolve_pending_transaction(repo_root=tmp_path,transaction_hash=digest)
 
 
+@pytest.mark.parametrize('output_format', ['json', 'text'])
+@pytest.mark.parametrize('verdict', ['no', 'uncertain', 'missing'])
+def test_prepare_refusal_exposes_stage_reason_without_confirmation(
+    tmp_path, monkeypatch, capsys, output_format, verdict,
+):
+    from odylith.runtime.domain_intelligence import greenfield_prepare_cli as prepare
+    detail = '{"mode":"error","error":"controlled source inventory refusal"}'
+    observation = {'stage':'source-ledger-check','source_completeness_verdict':verdict,
+                   'source_completeness_omission_count':1 if verdict != 'missing' else -1,
+                   'detail':detail,'candidate_host_invocations':0,'proposal_command_invocations':0}
+
+    def refuse(_args):
+        raise prepare.HostCandidateFlowError('installed source ledger decision check returned nonzero',
+                                             observation=observation)
+
+    monkeypatch.setattr(prepare,'prepare_request',refuse)
+    result = prepare.main(['--repo-root',str(tmp_path),'--prompt','A controlled project request',
+                           '--format',output_format])
+    text = capsys.readouterr().out
+    assert result == 2 and list(tmp_path.iterdir()) == []
+    assert 'source inventory verification' in text
+    if output_format == 'json':
+        payload = json.loads(text)
+        assert payload['mode'] == 'error' and payload['bounded_journey'] == observation
+        assert not {'confirmation','completion_receipt','product_create_transaction'} & payload.keys()
+    else:
+        assert detail in text and 'not an admitted decision' in text
+    assert ('reported an incomplete source inventory' in text if verdict == 'no' else
+            'could not confirm source inventory completeness' in text if verdict == 'uncertain' else
+            'did not report source completeness' in text)
+
+
 def test_completed_bounded_seal_remains_confirmable_after_custodian_retirement(tmp_path):
     from odylith.runtime.domain_intelligence.greenfield_create_commit import commit_greenfield_create_transaction
     receipt = {}

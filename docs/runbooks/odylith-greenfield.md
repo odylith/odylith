@@ -49,22 +49,30 @@ external systems, proposed ownership boundaries, assumptions, and proof. Check
 that Radar, Registry, and Atlas explain different responsibilities instead of
 repeating one paragraph. Counts alone do not prove useful governance depth.
 
-Propose and compile previews publish nothing. Each preview prints the three full
-shell-quoted terminal decisions for its repository path and transaction hash:
-`odylith greenfield decide --repo-root '<path>' CONFIRM '<hash>'`, `odylith
-greenfield decide --repo-root '<path>' EDIT '<hash>' --edit '<corrections>'`,
-and `odylith greenfield decide --repo-root '<path>' REJECT '<hash>'`. `EDIT` may
-instead use `--edit-evidence '<file>'`. These explicit terminal invocations are
-the only preview-attached decisions; ordinary chat approval, host names, and hook
-registration do not establish eligibility.
+Previews publish nothing. A bounded `prepare` preview prints three full,
+shell-quoted terminal choices using its transaction hash and delivered
+completion receipt:
+
+```sh
+odylith greenfield decide --repo-root '<path>' CONFIRM '<hash>' --completion-receipt '<receipt-file>'
+odylith greenfield prepare --repo-root '<path>' --transaction-hash '<hash>' --completion-receipt '<receipt-file>' --edit '<corrections>'
+odylith greenfield decide --repo-root '<path>' REJECT '<hash>' --completion-receipt '<receipt-file>'
+```
+
+Use the exact printed paths and hash. EDIT may use `--edit-evidence '<file>'`
+instead of `--edit`. Keep the delivered receipt private and unchanged; stored
+diagnostic records cannot replace it. Ordinary chat approval, host names, and
+hook registration do not authorize these decisions.
 
 `CONFIRM` and `REJECT` use the shared bounded deterministic owner and never run a
-compiler or model. For a correction, run `odylith greenfield prepare --repo-root
-'<path>' --transaction-hash '<old-hash>' --edit '<correction>'` or use
-`--edit-evidence '<file>'`. This starts one new bounded journey using the retained
-source plus correction and preserves the old seal. The explicit `decide EDIT`
-file-based interface still accepts its gate, candidate and admitted ledger;
-it alone does not establish the complete parent deadline.
+compiler or model. EDIT starts one new bounded journey using the retained source
+plus correction, preserves the old seal and receipt, and returns a new seal and
+receipt on success. A failed EDIT preserves the original package.
+
+Unmarked file-based previews retain their source-custody contract and print
+`decide` choices without a completion receipt. Their explicit `decide EDIT`
+interface requires the correction, gate, candidate and admitted ledger files;
+those files do not establish the complete parent deadline.
 
 The commit CLI is `odylith greenfield create`; inspect its `--help` for the
 transaction-file, transaction-hash, and confirmation arguments. It is not a
@@ -96,6 +104,10 @@ Distinguish the outcome before acting:
   a new confirmation if the reviewed package changes.
 - An already-active repeated hash returns its existing receipt. Preserve that
   identity rather than creating a duplicate project to recover a lost response.
+- A preparation delivery failure after certification is an accepted-or-unknown
+  environment outcome. Preserve the sealed package and any delivered receipt.
+  A lost completion receipt is not reissued and can leave the package
+  unconfirmable; diagnostic records do not grant confirmation authority.
 - `RECOVERY_REQUIRED` or an uncertain post-publication outcome: preserve staged
   bytes, journal, immutable generation, and active-generation evidence. Do not
   delete them, silently roll back an observed package, or run a new semantic

@@ -119,6 +119,7 @@ class _SvgStyleInspection:
     lowered_text: str
     cluster_blocks: tuple[str, ...]
     node_blocks: tuple[str, ...]
+    valid_xml: bool
 
 
 @dataclass(frozen=True)
@@ -349,6 +350,7 @@ def _svg_style_inspection(path: Path) -> _SvgStyleInspection | None:
         lowered_text=lowered_text,
         cluster_blocks=class_blocks.get("cluster", ()),
         node_blocks=class_blocks.get("node", ()),
+        valid_xml=bool(class_blocks),
     )
 
 
@@ -358,12 +360,9 @@ def _svg_cluster_needs_polish(path: Path) -> bool:
 
 
 def _svg_cluster_needs_polish_from_inspection(inspection: _SvgStyleInspection) -> bool:
-    if "cluster" not in inspection.lowered_text:
-        return False
-    cluster_blocks = inspection.cluster_blocks
-    if not cluster_blocks:
-        return any(token in inspection.lowered_text for token in _LEGACY_CLUSTER_STYLE_TOKENS)
-    for block in cluster_blocks:
+    if not inspection.valid_xml:
+        return True
+    for block in inspection.cluster_blocks:
         actual_fill = _cluster_rect_fill(block)
         actual_stroke = _cluster_rect_stroke(block)
         if actual_fill in _POLISHED_CLUSTER_FILLS:

@@ -414,3 +414,31 @@ def test_atlas_surface_migration_reports_stale_ledger(tmp_path: Path) -> None:
 
     assert state == "ledger_stale"
     assert "migration ledger is stale" in reason
+
+
+def test_clusterless_svg_ignores_unused_legacy_cluster_css(tmp_path: Path) -> None:
+    svg = tmp_path / "clusterless.svg"
+    for fill in ("#fbfdff", "#f7fdfb"):
+        svg.write_text(
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            f'<style>.cluster rect{{fill:{fill};stroke:#b8e1db;}}</style>'
+            '<g class="node default"><rect '
+            'style="fill:#FBFDFF !important;stroke:#BFD7FE !important;" />'
+            '</g></svg>',
+            encoding="utf-8",
+        )
+        assert atlas_surface_migration._svg_cluster_needs_polish(svg) is False
+        assert atlas_surface_migration._svg_node_needs_polish(svg) is False
+
+
+def test_real_legacy_cluster_still_requires_polish(tmp_path: Path) -> None:
+    svg = tmp_path / "legacy-cluster.svg"
+    _write_legacy_palette_svg(svg)
+    assert atlas_surface_migration._svg_cluster_needs_polish(svg) is True
+
+
+def test_malformed_svg_requires_polish(tmp_path: Path) -> None:
+    svg = tmp_path / "malformed.svg"
+    for text in ("<svg>", "<svg><g class='cluster'>", "not XML"):
+        svg.write_text(text, encoding="utf-8")
+        assert atlas_surface_migration._svg_cluster_needs_polish(svg) is True

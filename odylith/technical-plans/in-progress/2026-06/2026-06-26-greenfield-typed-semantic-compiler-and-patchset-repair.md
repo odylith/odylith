@@ -1,6 +1,35 @@
 Status: In progress
 
-## Current transport proof frontier (2026-10-04)
+## Current release frontier (2026-10-04)
+
+D002 passes 8,410 frozen runtime/install/selected-browser tests and local release
+smoke. One civic package passes independent source-first review and 44 browser
+cells. These controls do not qualify the full public/private population.
+The populated predecessor upgrade failed Atlas verification after activation;
+CB-358's applied predicate correction passes 123 focused checks. Actual Linux
+CI failed collection; the import correction now collects 9,519 local tests.
+Installed forward recovery and new Linux execution remain required.
+
+The actual agriculture EDIT stops before candidate authorship with a reported
+negative completeness verdict. Its omitted duty was discarded and is unknown.
+Independent source review found an instruction asymmetry: the inventory author
+lacks the explicit complete-source sweep required by the verifier. Contract v48
+adds one domain-neutral paragraph in that existing authoring task. Schema,
+four-call flow, acceptance and all caps remain fixed. Prediction: the changed
+contract preserves the original source duties and the added correction duties
+in one agriculture regression and one frozen research source+correction control,
+without promoting reference-only authority. Independent source mapping must
+confirm completeness; a model's yes alone does not pass. Preserve fresh refusal
+details, stop on nonaffirmative evidence, and do not replay unchanged failures.
+Diagnosis: `/private/tmp/odylith-v20-agriculture-edit-source-stage-diagnosis-20261004.json`,
+SHA-256 `220bed8e8d142974956854d8b4d01625d0e1bfa856ea5b8b8c261bd5ea8cf126`.
+This experiment is unqualified until those fixed observations exist. Full EDIT,
+public/private qualification and timing remain open. The originally recorded
+protected payload and manifest directory are now absent; blind exact-copy
+custody diagnosis is required before final qualification. No protected content
+was newly read or evaluated.
+
+## Transport proof history (2026-10-04)
 
 Independent final review is CLEAR on fixed hashes: 14 receipt-boundary controls
 and the exact bootstrap control pass. Failed cleanup cannot confer bounded

@@ -61,7 +61,7 @@ supersedes:
 superseded_by:
 
 ## Problem
-The clean candidate at `bbe312144e75bdde37d1fa93f569d9d27df06eb0` changes 809
+The assessed clean candidate at `d0021184faba41b8fac887ce107ee452d8dc2722` changes 877
 consumer-sensitive paths relative to published v0.1.14 at
 `fae446995e13e12409e50f944a336dbc846db90a`. CB-337 established that earlier
 dirty-only checks could forget committed changes. This assessment is reopened:
@@ -107,8 +107,76 @@ the assessment is complete; do not infer source preservation from an empty repo.
 ## Success Metrics
 Every final classified path has an explicit compatibility decision and current
 evidence; the exact predecessor-bound migration gate passes; populated authored
-source bytes and modes survive managed replacement; upgraded governance is
+source bytes and modes survive managed replacement under the exact catalog
+leaf rule below, with raw whole-file equality reported separately; upgraded governance is
 readable in the installed desktop/mobile dashboard. No required empty check passes.
+
+## V20 populated migration checkpoint (2026-10-05)
+
+The current assessed candidate is `d0021184faba41b8fac887ce107ee452d8dc2722`
+against published v0.1.14 `fae446995e13e12409e50f944a336dbc846db90a`.
+The independent ledger classifies all 877 distinct changed paths and 1,016
+category memberships into 44 ownership groups. Five current fingerprints remain
+unapproved: guidance-and-skills `b5af43f5a39c`, operator-cli-contracts
+`adae86a8e731`, public-docs-and-release-guidance `b92026adb597`, browser-surfaces
+`51dba106a014`, and install-managed-assets `b09d28725509`. This is complete path
+assessment with explicit open obligations, not compatibility approval.
+Ledger: `/private/tmp/odylith-v20-migration-path-assessment-20261004.json`,
+SHA-256 `9c82eb1fcad487e3dfa25a5f56ca5c40ca69cbb056fae13e645f2203ce0b9777`.
+
+The actual published predecessor holds 11 nonempty inventoried files across six
+governance source families. Its old-parent refusal is retained; supported hosted
+continuation runs on that same consumer without reset or manual source repair.
+Activation reaches 0.1.15, then Atlas verification fails on a correctly rendered
+clusterless SVG (CB-358). Active runtime, pin and last-known-good all remain
+0.1.15; this is not a rollback to v0.1.14. Exactly 10/11 raw file byte sequences
+and 11/11 modes remain unchanged. The catalog changes only its existing derived
+render fingerprint. Topology scores 100 and generated-surface violations are
+zero, but migration is incomplete and installed browser proof does not execute.
+Retained evidence: `/private/tmp/odylith-v20-populated-migration-proof-20261004/failed-outcome.json`,
+`failed-atlas-read-only-inspection.json`, and `atlas-catalog-exact-change.patch`
+in that directory. Preserve all original failure bytes and the consumer.
+
+The bounded proposed Atlas predicate correction passes 15 independent controls,
+including the retained SVG and malformed XML refusal, without mutating that
+consumer. Review: `/private/tmp/odylith-v20-atlas-proposed-correction-review-20261004.json`,
+SHA-256 `f97f72edad6526dc108534fb30831fd64960cf92757ca8c2b752e956aae774a2`.
+Subsequent application checks pass 33 Atlas/CI tests and 90 adjacent migration
+tests with PYTHONPATH unset; exact logs and hashes are in CB-358. Actual installed
+recovery, a new complete freeze and Ubuntu execution remain required; CB-358 stays Open. No authored-source schema or experimental Greenfield journal
+converter is required by this evidence.
+
+The exact d002 frozen runtime/install/selected-browser gate passes 8,410 tests
+with zero drift; v20 local assets and empty-baseline smoke also pass. Actual
+Ubuntu CI collection fails with missing `greenfield_model_profiles`. One civic
+source-first review is independently CLEAR with stated limits and its saved
+snapshot passes 44 browser cells with zero issues; this does not substitute for
+the failed populated-upgrade browser gate. CB-347 retains those receipts, both
+agriculture harness errors, and the one actual EDIT source-verification refusal
+(one omission, three calls, zero candidate calls, 214.023 diagnostic seconds).
+No full semantic release, measured qualified bound or protected run is claimed.
+The later documentation correction passes current-command readback without a
+model or transaction; CB-347 retains its exact receipt. This does not approve
+the original d002 path ledger or a new candidate.
+
+### Exact catalog preservation boundary
+
+Preserve every consumer-authored field, every file mode, and raw bytes for all
+inventoried source files except the explicitly named renderer-owned catalog
+leaf `diagrams[<same diagram identity>].render_source_fingerprint`. Published
+v0.1.14 already defines this leaf as the Mermaid source/theme render fingerprint
+in the Atlas current spec (Freshness And Review Semantics); its existing render
+owner refreshes it. This narrow ownership clarification does not permit changing
+catalog identity, source paths, labels, descriptions, relations, review dates,
+watch fingerprints, any other field, or whole catalog formatting.
+
+Before a new witness, bind the exact selected diagram and allowed leaf, retain
+the old catalog bytes/mode, and require an exact JSON diff containing only that
+leaf plus independent recomputation of its new source/theme fingerprint. Compare
+all remaining catalog content and all modes unchanged. Report raw whole-file
+byte equality separately even when this derived-field check passes. The original
+witness remains a failed 10/11 raw-byte result and 11/11 mode result; this rule
+neither rewrites its receipt nor grants a general catalog exemption.
 
 ## Validation
 

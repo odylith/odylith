@@ -234,8 +234,34 @@ def run_source_duty_phase(*, flow, contract, source, host_workspace, host_argv,
             deadline.remaining()
         observation["source_ledger_check_stdout_sha256"] = _sha256_text(ledger_check_text)
         if observation["source_ledger_check_returncode"] != 0:
+            if isinstance(omissions, list) and omissions and isinstance(omissions[0], Mapping):
+                first = omissions[0]
+                selected, omitted_fields = {}, []
+                for key, limit in (("omission_id", 200), ("typed_role", 80)):
+                    value = first.get(key)
+                    if isinstance(value, str) and len(value) <= limit:
+                        selected[key] = value
+                    else:
+                        omitted_fields.append(key)
+                reference = first.get("source_ref")
+                if isinstance(reference, Mapping):
+                    selected["source_ref"] = {}
+                    for key in ("quote", "context"):
+                        value = reference.get(key)
+                        if isinstance(value, str) and len(value) <= 800:
+                            selected["source_ref"][key] = value
+                        else:
+                            omitted_fields.append("source_ref." + key)
+                else:
+                    omitted_fields.append("source_ref")
+                observation["source_completeness_diagnostic"] = {
+                    "origin": "untrusted_verifier_report", "authority": "none",
+                    "selection": "first_omission", "omission": selected,
+                    "omitted_fields": omitted_fields,
+                }
             _fail("installed source ledger decision check returned nonzero",
-                  observation=observation, stage="source-ledger-check")
+                  observation=observation, stage="source-ledger-check",
+                  detail=_stream_excerpt(ledger_check))
         ledger_check_payload = _single_json_object(
             ledger_check_text, label="source ledger decision check"
         )

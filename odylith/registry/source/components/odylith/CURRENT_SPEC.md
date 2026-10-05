@@ -10,13 +10,18 @@ boundaries, and proof duties. Ledger v5 owns each normalized action, target,
 statement, typed performer role, and exact event/actor/role citations once.
 One shared ledger identity owner also requires unique declared object/field
 pairs and exact transition-effect references before source verification.
+The inventory author must account for every material duty across the complete
+source in order, preserving its conditions and effects. Explicit EDIT changes
+replace only the duties they change; unchanged original duties remain required.
+Distinct action, guard and proof meanings retain their own existing typed roles.
+This task refinement remains unqualified pending fixed independent source proof.
 The inventory author receives that requirement where field labels originate;
 candidate binding and lifecycle projection enforce the same identity, while
 ordered changes and observable checks retain distinct effects on one field.
 No string-prefix inference, additional semantic stage, or receipt repair is
 part of this correction. Fresh complete-package admission remains required.
 Verb and target microcitations and duplicated actor/action fields are removed.
-Host contract v46 authors compact v3; the installed CLI expands it to v5 for
+Host contract v48 authors compact v3; the installed CLI expands it to v5 for
 preflight, while the verifier receives compact material rows and citations
 once with the complete authority source. Duplicate and unknown bank entries
 reject. Every bank quote/context, including unused selections, must validate
@@ -33,7 +38,9 @@ order, derived event/actor/role indexes, claim hashes, and receipt expansion.
 Missing, extra, or duplicate IDs, absent event/actor/role support, and invalid
 selections fail closed. Source workflow order remains in the ledger.
 Any negative,
-uncertain, missing, or mismatched decision stops the path. The accepted receipt
+uncertain, missing, or mismatched decision stops the path. Preparation preserves
+bounded checker refusal details; any reported omission excerpt is explicitly
+untrusted diagnostic evidence and cannot authorize admission. The accepted receipt
 binds source, ledger, the full verifier task, claims, and decisions by hash through
 proposal and create. Action-only and rows-only receipts are rejected by the
 current contract.

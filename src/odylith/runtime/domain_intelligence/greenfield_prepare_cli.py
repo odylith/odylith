@@ -103,6 +103,21 @@ def prepare_request(args) -> tuple[dict, dict]:
     return payload, observation
 
 
+def _flow_failure_message(exc: HostCandidateFlowError) -> str:
+    stage = str(exc.observation.get("stage") or "preparation")
+    label = "source inventory verification" if stage == "source-ledger-check" else stage.replace("-", " ")
+    message = f"Greenfield preparation stopped during {label} before publication."
+    if stage == "source-ledger-check":
+        verdict = exc.observation.get("source_completeness_verdict")
+        if verdict == "no":
+            message += " The verifier reported an incomplete source inventory."
+        elif verdict == "uncertain":
+            message += " The verifier could not confirm source inventory completeness."
+        elif verdict == "missing":
+            message += " The verifier did not report source completeness."
+    return message
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="odylith greenfield prepare", allow_abbrev=False,
         description="Prepare one read-only sealed package or one material question under one owned deadline.")
@@ -135,9 +150,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                 print(f"\n**{choice['label']}**\n\n```sh\n{choice['command']}\n```")
         return 0
     except (OSError, ValueError, RuntimeError, TypeError, HostCandidateFlowError) as exc:
-        message = ("Greenfield preparation stopped before publication." if isinstance(exc, HostCandidateFlowError) else str(exc))
+        message = _flow_failure_message(exc) if isinstance(exc, HostCandidateFlowError) else str(exc)
         payload = {"mode": "error", "error": message}
         if isinstance(exc, HostCandidateFlowError):
             payload["bounded_journey"] = exc.observation
         print(json.dumps(payload) if args.format == "json" else message)
+        if args.format == "text" and isinstance(exc, HostCandidateFlowError) and exc.observation.get("detail"):
+            print("\nChecker detail (not an admitted decision):\n" + exc.observation["detail"])
         return 2

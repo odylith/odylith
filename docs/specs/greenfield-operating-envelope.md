@@ -2,7 +2,7 @@
 
 Receipt version: `odylith.greenfield-operating-envelope.v6`
 
-Document revision: `13`
+Document revision: `14`
 
 Profile: `single-product-governance-onboarding`
 
@@ -68,18 +68,22 @@ legal, or production claims.
 ## Host and model profiles
 
 Codex and Claude host names, callbacks, and registration do not qualify a native
-decision interface. Propose and compile previews publish nothing; they print only
-three full shell-quoted terminal commands for their repository path and retained
-transaction hash. In shorthand: `decide ... CONFIRM <hash>`, `decide ... EDIT <hash> --edit
-<corrections>` (or `--edit-evidence <file>`), and `decide ... REJECT <hash>`.
+decision interface. Previews publish nothing. Bounded `prepare` previews print
+three full shell-quoted terminal choices: `decide ... CONFIRM <hash>
+--completion-receipt <file>`, `prepare ... --transaction-hash <hash>
+--completion-receipt <file> --edit <corrections>` (or `--edit-evidence <file>`), and
+`decide ... REJECT <hash> --completion-receipt <file>`. The exact delivered
+receipt is required; stored diagnostic records cannot substitute for it.
 Ordinary chat approval is not a terminal decision. Explicit terminal `CONFIRM`
 and `REJECT` share a bounded deterministic owner and invoke neither compiler nor
-model. `EDIT` verifies the retained hash, lazily uses the existing compiler with
-the sealed original source and new untrusted correction, preserves tier and the
-timing contract, retains the old seal, and returns a new hash and
-preview. It adds no schema, stage, retry, or repair mechanism. The sealed-byte
-`create` CLI remains a separate commit-only interface. Native automatic delivery
-and visible completion require their own proof.
+model. EDIT verifies the retained hash and receipt, runs one new bounded journey
+with the sealed original source and untrusted correction, retains the old seal,
+and returns a new hash, receipt and preview on success. It adds no schema, stage,
+retry, or repair mechanism. Unmarked file-based previews retain their `decide`
+choices and source-custody contract; file-based EDIT requires its gate, candidate
+and admitted ledger. The sealed-byte `create` CLI remains a separate commit-only
+interface. Native automatic delivery and visible completion require their own
+proof.
 
 Model-profile contract `odylith.greenfield.model-profile-contract.v25`
 declares three pinned real-model profiles. Only the
@@ -230,7 +234,7 @@ material clarifications with no writes. Sol diagnostic evidence cannot qualify a
 release-success profile.
 
 Canonical authoring `odylith.greenfield.intent-authoring.v79` receives one
-host-owned candidate in host format v21 under candidate contract v47. The
+host-owned candidate in host format v21 under candidate contract v48. The
 source-duty host returns one compact citation bank and typed rows that refer
 to it; deterministic expansion restores the same complete cited ledger before
 preflight. This path remains unqualified. Earlier v44 public evidence failed
@@ -244,7 +248,13 @@ literal slice of the normalized statement. Wider action and role context stays
 in separate citations. The existing verifier must judge identity atomicity and
 performer assignment; literal containment establishes only custody. A changed
 verifier-task hash refuses earlier looser receipts without migrating their
-meaning. Fresh independent semantic proof remains required. Each host
+meaning. Contract v48 adds a complete-source sweep to the existing inventory
+authoring task: preserve every still-current original duty during EDIT, include
+added or changed duties, and retain distinct action, guard and proof meanings.
+It changes no schema, verifier, stage count or acceptance floor. This authoring
+experiment requires fixed agriculture and research correction controls with
+independent source mapping before claiming improved reliability.
+Fresh independent semantic proof remains required. Each host
 stage returns only its schema-matching JSON; the external controller owns file
 custody, CLI checks, and the separate verifier call. The host first returns one
 authority decision. An admitted request receives one

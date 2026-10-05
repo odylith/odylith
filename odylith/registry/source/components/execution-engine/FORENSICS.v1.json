@@ -15,12 +15,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 173,
+    "explicit_event_count": 174,
     "mapped_workstream_evidence_count": 152,
     "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 173
+    "timeline_event_count": 174
   },
   "name": "Execution Engine",
   "path_prefixes": [
@@ -28,6 +28,27 @@
   ],
   "spec_ref": "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "sha256:3973e022e93220f9212c18d0d0c543ae7c309e46640da93a4a0314de999f5112",
+        "sha256:c1cc69e61c0f1c7ade8df0f2994e582e7c1f2c57d1ec192a0baf9f96b7739d9d",
+        "src/odylith/runtime/common/diagram_freshness.py"
+      ],
+      "confidence": "low",
+      "event_index": 1539,
+      "explicit_components": [],
+      "kind": "ambient_signal",
+      "mapped_components": [
+        "execution-engine",
+        "odylith",
+        "registry"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work. 3 verifiable artifact references.",
+      "ts_iso": "2026-10-05T03:30:34Z",
+      "workstreams": []
+    },
     {
       "artifact_count": 1,
       "artifacts": [

@@ -3,8 +3,14 @@
 from copy import deepcopy
 import json
 import subprocess
+import sys
+from pathlib import Path
 
 import pytest
+
+SCRIPTS_ROOT = Path(__file__).resolve().parents[3] / "scripts" / "release"
+if str(SCRIPTS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_ROOT))
 
 from odylith.runtime.domain_intelligence import greenfield_host_flow as host_module
 from greenfield_model_profiles import model_profile_environment, model_profile_evidence

@@ -56,7 +56,7 @@ from odylith.runtime.domain_intelligence.greenfield_authority_gate import (
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v7"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v47"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v48"
 HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION = "odylith.greenfield.host-candidate-authoring-transport.v1"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
 
@@ -184,7 +184,21 @@ def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
         "source_ledger": {
             "task": (
                 "Inventory only source-stated duties and evidence controls from the complete "
-                "untrusted evidence. Return exactly one compact JSON value matching "
+                "untrusted evidence. "
+                "Before returning the inventory, account for every material source duty across the "
+                "complete evidence in source order: actions and their performers, governed state "
+                "fields, off-path transitions and each effect, conditional guards, boundaries, and "
+                "proof obligations. Preserve their conditions, timing, scope, and required "
+                "consequences. When the evidence includes an explicit operator EDIT, retain earlier "
+                "duties except where that correction explicitly changes or removes them, and "
+                "incorporate each added or refined duty. A statement that earlier requirements remain "
+                "in force does not replace those requirements in the inventory. Distinct obligations "
+                "in one clause may belong to different typed sections and may reuse the same citation; "
+                "do not collapse an action, its governing condition, or its required evidence into one "
+                "incomplete meaning. Represent each obligation once in its appropriate existing "
+                "section without duplicating an action atom, inventing a performer, or promoting "
+                "reference-only context into product authority. "
+                "Return exactly one compact JSON value matching "
                 "source_ledger_schema, with no optional whitespace outside strings. Put each "
                 "distinct source citation once in citations with a short stable id, q as the "
                 "exact source quote, and c as an exact source context containing q; reuse that "

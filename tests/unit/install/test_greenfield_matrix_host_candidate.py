@@ -4,10 +4,15 @@ from copy import deepcopy
 import hashlib
 import json
 import subprocess
+import sys
 import time
 from pathlib import Path
 
 import pytest
+
+SCRIPTS_ROOT = Path(__file__).resolve().parents[3] / "scripts" / "release"
+if str(SCRIPTS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_ROOT))
 
 from odylith.runtime.domain_intelligence import greenfield_host_flow as host_module
 from odylith.runtime.domain_intelligence import greenfield_host_transport as transport_module
@@ -1377,3 +1382,80 @@ def test_canonical_host_candidate_argv_template_is_the_exact_release_grammar() -
         "-",
     )
     assert transport_module.HOST_NATIVE_ARGV_ARGUMENT_COUNT == 14
+
+
+@pytest.mark.parametrize("verdict", ["no", "uncertain", None, "over-bound"])
+def test_checker_refusal_retains_exact_reason_and_untrusted_omission_without_new_seal(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, verdict: str | None,
+) -> None:
+    from odylith.runtime.domain_intelligence import greenfield_pending_transaction_store as pending
+    from tests.unit.runtime.test_greenfield_create_transaction import _transaction
+
+    flow, original_host, _installed, host_calls, proposals, repo = _flow(
+        tmp_path, contract={"version": "contract"}, candidate={},
+    )
+    old = pending.stage_pending_transaction(repo_root=repo, transaction=_transaction(repo))
+    before = {str(p.relative_to(repo)): hashlib.sha256(p.read_bytes()).hexdigest()
+              for p in repo.rglob("*") if p.is_file()}
+    omission = {"omission_id": "controlled-missing-proof", "typed_role": "proof_duty",
+                "source_ref": {"quote": "A reviewer creates a reviewable plan.",
+                               "context": "A reviewer creates a reviewable plan."}}
+    if verdict == "over-bound":
+        omission["source_ref"] = {"quote": "q" * 801, "context": "c" * 801}
+    original_installed = flow.invoke_installed
+    checker_output = []
+
+    def verifier(command, **kwargs):
+        result = original_host(command, **kwargs)
+        if Path(command[command.index("--output-schema") + 1]).name != "source-duty-decision-schema.json":
+            return result
+        decision = json.loads(result.stdout)
+        if verdict is None:
+            decision.pop("source_completeness")
+        else:
+            decision["source_completeness"] = {"verdict": "no" if verdict == "over-bound" else verdict,
+                                               "omissions": [omission]}
+        return _completed(list(command), stdout=json.dumps(decision))
+
+    def checker(command, timeout):
+        if "source-ledger-check" not in command or "--decision-file" not in command:
+            return original_installed(command, timeout)
+        ledger = json.loads(Path(command[command.index("--ledger-file") + 1]).read_bytes())
+        decision = json.loads(Path(command[command.index("--decision-file") + 1]).read_bytes())
+        with pytest.raises(ValueError) as refused:
+            validate_greenfield_source_duty_ledger(
+                expand_compact_source_duty_ledger(ledger, evidence_text=flow.prompt),
+                evidence_text=flow.prompt, decision_set=decision,
+            )
+        checker_output.append(json.dumps({"mode": "error", "error": str(refused.value)}))
+        return _completed(list(command), stdout=checker_output[-1], returncode=2)
+
+    flow = host_module.HostCandidateFlow(**{**flow.__dict__, "invoke_installed": checker})
+    monkeypatch.setattr(host_module, "_invoke_host", verifier)
+    with pytest.raises(host_module.HostCandidateFlowError) as failure:
+        host_module.run_host_candidate_flow(flow)
+    observed = failure.value.observation
+    assert observed["detail"] == checker_output[0][:800]
+    assert observed["source_ledger_check_stdout_sha256"] == hashlib.sha256(checker_output[0].encode()).hexdigest()
+    if verdict is None:
+        assert "decision set is malformed" in observed["detail"]
+        assert "source_completeness_diagnostic" not in observed
+    else:
+        assert ("invalid source citation" in observed["detail"] if verdict == "over-bound" else
+                "source completeness is not affirmative" in observed["detail"])
+        diagnostic = observed["source_completeness_diagnostic"]
+        assert diagnostic["origin"] == "untrusted_verifier_report" and diagnostic["authority"] == "none"
+        assert diagnostic["selection"] == "first_omission"
+        if verdict == "over-bound":
+            assert diagnostic["omission"] == {**omission, "source_ref": {}}
+            assert diagnostic["omitted_fields"] == ["source_ref.quote", "source_ref.context"]
+        else:
+            assert diagnostic["omission"] == omission and diagnostic["omitted_fields"] == []
+    assert observed["source_completeness_verdict"] == (
+        "missing" if verdict is None else "no" if verdict == "over-bound" else verdict)
+    assert len(host_calls) == 3 and proposals == []
+    assert observed["candidate_host_invocations"] == observed["proposal_command_invocations"] == 0
+    assert observed["source_duty_decision_temp_cleaned"] and observed["host_workspace_cleaned"]
+    assert flow.completion_receipt_sink == {} and old.is_file()
+    assert {str(p.relative_to(repo)): hashlib.sha256(p.read_bytes()).hexdigest()
+            for p in repo.rglob("*") if p.is_file()} == before

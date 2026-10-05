@@ -1,5 +1,92 @@
 - Bug ID: CB-347
 
+## Bounded source-inventory experiment (2026-10-04)
+
+The required original final-holdout payload and frozen manifest directory are
+absent at their recorded paths during the checkpoint guard. No new protected
+content was opened or run; exact-copy and prior-custody diagnosis is read-only
+and blind to case content. Final qualification cannot rely on presumed custody.
+Public and installed proof can proceed while that evidence boundary is settled.
+
+The existing source-phase and preparation owners now retain the bounded checker
+refusal and label the first reported omission as untrusted diagnostic evidence,
+with no admission authority. Original H0 bytes, refusal and call budgets are
+preserved. Full adopter tests pass 122 checks; independent review is CLEAR with
+36 focused checks and five separate controls. Review:
+`/private/tmp/odylith-v48-feedback-independent-review-20261004.json`, SHA-256
+`f53b266316b86b398c6b005060fbbd421dda0b713e0dbb3277ab6896ecd9b27c`.
+These controls prove feedback behavior, not inventory reliability.
+
+The discarded EDIT verdict does not identify its exact missing fact. Independent
+source/schema inspection finds the correction representable and identifies an
+instruction asymmetry, without proving that asymmetry caused this refusal.
+Host contract v48 adds one complete-source and EDIT-preservation paragraph to
+the existing inventory task. The verifier, schemas, four calls and caps are
+unchanged. One changed-contract agriculture regression and one frozen research
+source+correction pair must preserve every original and added duty under
+independent source-first mapping; negative authority controls remain required.
+No reliability improvement is claimed before those observations. Diagnosis:
+`/private/tmp/odylith-v20-agriculture-edit-source-stage-diagnosis-20261004.json`,
+SHA-256 `220bed8e8d142974956854d8b4d01625d0e1bfa856ea5b8b8c261bd5ea8cf126`.
+
+## V20 retained qualification and installed EDIT evidence (2026-10-05)
+
+Clean candidate `d0021184faba41b8fac887ce107ee452d8dc2722` passes the
+complete frozen runtime/install/selected-browser scope: 8,410 tests, zero input
+drift. This new pass does not erase the earlier 8,387-pass/23-failure diagnostic.
+Receipt: `/private/tmp/odylith-greenfield-release-freeze-v20-reconciled-20261004/receipt.json`,
+SHA-256 `a30b0319b3c2589f6c178f29b513084545faf27ad2c6344bccfc02bf88619ad5`.
+V20 local assets and canonical local release smoke pass; manifest SHA-256 is
+`ea17a37122c64b5ff621691b59abec2f118d2a2175c8d5d201a0d8711e73aecd`.
+That smoke has an empty source baseline. Actual Ubuntu CI run `37255496696`
+fails at collection with `ModuleNotFoundError: greenfield_model_profiles`;
+local passes do not qualify Linux. Gate receipt:
+`/private/tmp/odylith-v20-test-install-gate-20261004.json`.
+
+The civic public source-first independent review is CLEAR with stated limits,
+with no material omission, invented authority or cross-artifact semantic drift.
+Its exact reviewer model identifier is unavailable, so no stronger profile claim
+is inferred. Review: `/private/tmp/odylith-v20-public-civic-independent-review-20261004.json`,
+SHA-256 `9a9c615b2413f6d864ff6e1a4dbdb9ea380398c705feac24a6a7ae468f04672e`.
+The saved exact civic snapshot passes 44 desktop/mobile browser cells with 111
+screenshots, zero issues and zero drift across 116 source files. Browser receipt:
+`/private/tmp/odylith-v20-civic-browser-proof-20261004/result.json`, SHA-256
+`d27114313235269e3279d1b48a0cbd005cfa7768ea7ef13c39cde447c8bbcdd7`.
+Both bind output SHA-256 `49168a162d38b2d9715f0301ac1e1b82062dc3c9298b79c80ef98e437b4370cf`.
+This is one public control and saved-snapshot UX proof, not full release approval.
+
+Retain three distinct agriculture observations. The original harness wrongly
+rejects the already published empty bootstrap baseline before any model call.
+The reconciled run obtains H0 successfully in 392.335 diagnostic seconds, then
+its observation helper fails with `AttributeError` because the lightweight
+pending loader has no `.proposal`. A read-only continuation uses the existing
+full pre-confirm loader and canonical source frames without replaying initial
+provider calls or reissuing the initial receipt. Its one actual installed EDIT
+then returns source-completeness verdict `no`, one omission, three host calls
+and zero candidate calls after 214.023 measured diagnostic seconds (215.447
+caller wall seconds). The command returns 2 before publication. The actual
+semantic refusal is separate from the two earlier harness errors; its cause
+remains under independent read-only diagnosis.
+
+Original and reconciled results remain at
+`/private/tmp/odylith-greenfield-v20-installed-edit-result-20261004.json` and
+`/private/tmp/odylith-greenfield-v20-installed-edit-result-reconciled-20261004.json`
+(the latter SHA-256 `be276b2125cefab9b2c4a84681a38ab09e5da09f5b91c993ac743596ef8efbcb`).
+Continuation: `/private/tmp/odylith-greenfield-v20-installed-edit-result-continuation-20261004.json`;
+raw command evidence is retained under
+`/private/tmp/odylith-greenfield-v20-installed-edit-proof-continuation-20261004/commands/06-edit-installed-prepare`.
+The 660-second cap remains diagnostic and unqualified; measured scope excludes
+receipt delivery and final preview serialization. Do not retry for a better
+semantic draw, weaken acceptance, or attribute the omission before diagnosis.
+
+CB-358 and B-145 separately retain the populated migration failure after
+activation: 10/11 raw file byte sequences and 11/11 modes preserved, with only
+the pre-existing derived catalog `render_source_fingerprint` leaf changing.
+Its proposed Atlas correction passes 15 independent external-copy controls;
+installed recovery remains unproved. CB-347, B-142 and B-145 remain active
+implementation work. No five-class migration approval, release success or
+protected evaluation follows from these observations.
+
 ## Final fixed-source diagnostic reconciliation (2026-10-04)
 
 The corrected eight-file pack passes 220 checks in 28.08 seconds. It covers
@@ -1052,3 +1139,24 @@ the protected holdout remains untouched.
 - scripts/release/greenfield_model_profile_proof.py
 
 - Runbook References: - odylith/MAINTAINER_RELEASE_RUNBOOK.md
+
+## Post-application bounded checks (2026-10-05)
+
+Root applied the reviewed Atlas correction and CI test-import correction.
+With `PYTHONPATH` unset, 33 actual Atlas/CI checks pass in 2.99 seconds and
+90 adjacent installation/migration checks pass in 3.60 seconds. Logs:
+`/private/tmp/odylith-v20-concrete-corrections-target-tests-20261004.log`, SHA-256
+`88fd61e0c2bd8a6f3de4277d18d8784ad66e5910e169d996a4f34fcd33164b4f`, and
+`/private/tmp/odylith-v20-atlas-migration-neighbors-20261004.log`, SHA-256
+`3e19cb5b7fa67596ccafec9c85abe62aa74054885036291c9f5160176688aa17`.
+These 123 application checks are separate from the earlier 15 proposed-code
+controls. No new complete 8,410-test freeze, Ubuntu pass or installed recovery
+has run. CB-358 remains Open and all five migration classes remain unapproved.
+
+The bounded continuation documentation is corrected to the current terminal
+offer and authoritative CLI help, including receipt-bearing CONFIRM/REJECT
+and `prepare` EDIT. Readback passes without transaction or model invocation:
+`/private/tmp/odylith-v20-greenfield-doc-command-readback-20261004.json`, SHA-256
+`b0498cdafa2cfa6a85fa2e181616b50dd02ff01eca7acf1e1d24c4433a6c46c0`.
+This later source check does not alter the d002 path assessment or certify a
+new release candidate.
