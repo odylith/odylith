@@ -1,5 +1,40 @@
 - Bug ID: CB-347
 
+## Complete 912f freeze and post-output timeout setup (2026-10-05)
+
+The clean 912f/v25 freeze executes all 8,480 checks once: 8,479 pass,
+one fails, and six warnings remain. No tracked source drifts. Preserve the
+failed receipt and shard 35 at
+`.odylith/release-evidence/v50-release-freeze-final-controls-20261005/`.
+Every prior guidance, contract-pin, HIIT and terminal EDIT failure passes.
+The sole failure is the authority-gate/124 parameter of the real terminal
+lifecycle stream-custody test. Its 0.3-second flow expires before the fake
+Python host emits JSON. The timeout result, failure observation, terminal
+event, no-proposal boundary and cleanup assertions pass; parsing empty retained
+stdout fails. Empty output is valid for a timeout before first emission.
+
+The intended test proves custody after both streams were emitted. Synchronize
+that setup explicitly before the unchanged short communication timeout,
+retaining real subprocess termination, exact streams and all existing
+assertions. Do not accept empty output, replenish the production deadline,
+fabricate a result, retry the failed frozen run or replace the original receipt.
+This setup proof does not establish a 0.3-second whole-journey guarantee.
+The separately built v25 distribution passes clean 912f provenance, all 11
+manifest assets, all 12 checksums and the 87-term leakage check. Its canonical
+smoke completes with exit 0; its fresh installed semantic controls remain
+unexecuted.
+
+The exact test-only readiness patch now passes all 15 module checks in 6.20
+seconds. All 59 original assertions remain byte-equivalent ASTs. The fake host
+flushes both streams before an exclusive marker, and the existing started
+observer waits finitely before the unchanged real 0.3-second communication
+timeout. No product owner, clock, process mock, stream expectation or threshold
+changes. Patch SHA-256:
+`331bc0b5b9788418f203d8ff892ca4059a1296216a0ba3efd40d747aa2499b50`.
+The original 8,479-pass/one-fail frozen run remains failed; its unchanged
+passing scope and this corrected-module continuation are separate evidence.
+Do not repeat the broad suite to obtain another scheduling outcome.
+
 ## Complete b694 freeze and remaining corrections (2026-10-05)
 
 The new clean b694/v24 freeze executes every collected check once: 8,474 pass

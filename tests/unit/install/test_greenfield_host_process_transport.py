@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import signal
 import sys
+import time
 
 import pytest
 
@@ -227,14 +228,19 @@ def test_real_terminal_lifecycle_failure_preserves_primary_result_and_stream_cus
     }
     target = {"authority-gate": "authority-gate-schema.json", "source-ledger": "source-ledger-schema.json",
               "source-duty-verifier": "source-duty-decision-schema.json", "candidate": "candidate-schema.json"}[phase]
+    output_ready = tmp_path / "terminal-host-output-ready"
     script = f'''import json, pathlib, sys, time
-sys.stdin.buffer.read()
+if {returncode} != 124:
+    sys.stdin.buffer.read()
 name = pathlib.Path(sys.argv[sys.argv.index("--output-schema") + 1]).name
 payloads = json.loads({json.dumps(json.dumps(payloads))})
 print(json.dumps(payloads[name]), flush=True)
 print("private stderr " + name, file=sys.stderr, flush=True)
 if name == {target!r}:
     if {returncode} == 124:
+        with pathlib.Path({str(output_ready)!r}).open("x") as marker:
+            marker.write("stdout and stderr flushed")
+        sys.stdin.buffer.read()
         time.sleep(60)
     sys.exit({returncode})
 '''
@@ -252,6 +258,14 @@ if name == {target!r}:
     terminals = []
 
     def failing_terminal_observer(event):
+        if returncode == 124 and event["state"] == "started":
+            # Establish output custody before the unchanged communicate timeout.
+            # This startup wait is measured; this case does not prove flow latency.
+            ready_deadline = time.monotonic() + 5.0
+            while not output_ready.is_file():
+                if time.monotonic() >= ready_deadline:
+                    raise AssertionError("host stub did not flush output before readiness deadline")
+                time.sleep(0.005)
         if event["state"] in {"completed", "timed_out"}:
             terminals.append(dict(event))
             if len(terminals) == expected_calls:

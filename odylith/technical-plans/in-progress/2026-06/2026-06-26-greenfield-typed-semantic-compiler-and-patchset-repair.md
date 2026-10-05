@@ -2,6 +2,26 @@ Status: In progress
 
 ## Current v50 implementation frontier (2026-10-05)
 
+The complete clean 912f freeze executes all 8,480 checks: 8,479 pass and
+one post-output timeout setup assumption fails, with no tracked-source drift.
+CB-347 retains that failure and the earlier failed freezes. All four previous
+failures and the installed/bundle guidance controls pass. Synchronize only the
+fake host's output readiness without changing product deadlines, stream
+assertions or runtime owners; validate that correction and checkpoint its
+evidence. Do not repeat the broad suite merely to obtain a different scheduling
+outcome. V25 build integrity and clean provenance pass. Preserve its unexecuted
+driver declarations if the final checkpoint changes; then execute the fresh
+source-first Agriculture and Research controls, independently audit actual
+meaning, and qualify terminal laws and the public corpus. No live v50 semantic
+control or full release gate is yet qualified.
+
+The corrected after-output setup passes all 15 transport module checks in
+6.20 seconds with all 59 original assertions retained. Runtime, compiler and
+guidance owners are unchanged from clean 912f. V25 canonical install/upgrade
+smoke passes. Preserve the failed full freeze and unexecuted v25 declarations;
+checkpoint the test and governance evidence, bind one clean final distribution,
+and proceed directly to the installed semantic controls.
+
 The complete b694/v24 freeze preserves 8,474 passes and four failures across
 all 8,478 collected checks with no source drift. The six previously blocked
 terminal EDIT controls now pass. CB-347 records the stale contract pin, two
