@@ -1,6 +1,29 @@
 Status: In progress
 
-## Current v52 implementation and v27 proof frontier (2026-10-05)
+## Current source inventory simplification (2026-10-05)
+
+Use the unchanged qualified schema file as the sole schema delivery and remove
+its duplicate stdin field in the shared initial/EDIT owner. The one-line change
+passes 223 focused tests and independent review, saving 5,708 input bytes. Every
+source/task/authority/correction/lifecycle field, receipt, profile and cap stays
+exact. CB-303 owns immutable proof and the rejected flat rewrite. Build a fresh
+package and compare the same two complete inputs once under their original
+source-first duties and 1.0 floors; retain all V29 failures. Semantic and timing
+benefits remain hypotheses. Broader release gates stay held.
+
+## Current v52/v29 actual comparison frontier (2026-10-05)
+
+V29 build, smoke, and final native preflight pass; CB-347 retains two external
+setup stops before product/write work and unchanged final bindings. Agriculture
+safely refuses omitted material steward-registration action A03 before candidate
+authoring. Research H0 seals and immutable independent review passes all
+13 obligations without P0/P1 semantic findings; EDIT stops in inventory, so H1 is
+absent. These stops establish no complete success, winning mechanism, or release
+qualification. CI `37324284688` passes 9,678 tests without replacing retained
+local failures. Freeze consumer inventories and keep H1 explicitly unproved;
+CB-303/CB-347 own the detailed proof and retained immutable Research report.
+
+## Previous v52 implementation and v27 proof frontier (2026-10-05)
 
 V28 build and canonical installation smoke pass. Both external entries refuse
 an actual lexical `__class__` cell misclassified as a global, before installation,

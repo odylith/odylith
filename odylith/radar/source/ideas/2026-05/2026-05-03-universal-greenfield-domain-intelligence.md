@@ -60,7 +60,28 @@ supersedes:
 
 superseded_by: 
 
-## Current v52 source and v27 convergence frontier (2026-10-05)
+## Current source inventory simplification (2026-10-05)
+
+- One production line removes the duplicate inventory schema from stdin while
+  retaining its qualified schema file and every source/EDIT custody field.
+- 223 focused tests and independent review pass; 5,708 stdin bytes are saved.
+  Semantic and timing effects remain unproved. CB-303 owns exact proof.
+- Fresh fixed-case comparisons keep original requests, duties, floors and caps;
+  both V29 failures remain retained. No complete case or release is qualified.
+
+## Current v52/v29 actual comparison frontier (2026-10-05)
+
+- V29 build, smoke, and final native preflight pass; CB-347 retains two setup
+  stops before product/write work and unchanged final bindings.
+- Agriculture safely refuses omitted material steward-registration action A03
+  after three source-stage calls; candidate and terminal work are zero.
+- Research H0 seals; immutable independent review passes all 13 obligations
+  with no P0/P1 semantic findings. EDIT stops in inventory, so H1 is
+  absent. This is neither a complete semantic success nor a winning mechanism.
+- CI `37324284688` passes 9,678 tests. CB-303/CB-347 retain details; Public40,
+  protected, migration, host, browser, timing, terminal, and release gates hold.
+
+## Previous v52 source and v27 convergence frontier (2026-10-05)
 
 - V28 build and canonical installation smoke pass. Both external comparison
   entries refuse an incorrectly classified Python closure before installation

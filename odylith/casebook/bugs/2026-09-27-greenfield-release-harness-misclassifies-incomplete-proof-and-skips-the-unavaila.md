@@ -1,5 +1,45 @@
 - Bug ID: CB-347
 
+## V29 first actual comparison and external setup boundary (2026-10-05)
+
+The clean `0d265d402beedb46ae8abd835527fd153b9f71ee` V29 build passes in
+201.014 seconds and canonical smoke passes in 366.618 seconds. The final
+native parent preflight reaches two deliberate constructor holds using six
+read-only Git commands and records zero installation, product, provider,
+prepare, terminal, network, or consumer-write actions. Independent review is
+clear (`c233f55e5011748ec625e32a2351ce2d905f2a62bee21620fe768649b4e3cc65`).
+
+Two external binding setup defects also stopped before all product/write
+operations: a clean binding setup `KeyError`, and a root outer-wrapper
+`TypeError` because `final_file_manifest` values were SHA strings. Retain
+`binding-setup-observation.json` and `root-launch-setup-failure.json`; the final
+bindings are unchanged. These setup stops do not reclassify the immutable V28
+failed entries or grant preflight/product credit.
+
+The first actual V29 Agriculture preview exits 2 after the authority, inventory,
+and verifier calls (197.094 seconds). It omits material steward-registration
+action A03 and reports no supporting human actions, so no candidate is authored.
+Research H0 seals after four calls; its immutable independent semantic audit
+passes all 13 obligations with no P0/P1 findings (CB-303 owns the report and
+manifest). Research EDIT times out during inventory
+with zero stdout and process-group termination in stderr; verifier, candidate,
+and proposal work are zero. The observed H0-to-EDIT input growth (11,785 to
+17,928 bytes) is not a proven cause. H1 is absent and both terminal counts are
+zero. The frozen consumer inventories remain Agriculture 9,686 entries
+(`e1135fefa720fe64e8e39c60e78fce99c5134039deb2b837b09c78f9e67a8d0a`) and
+Research 9,745 entries
+(`7be393e98508b7b1e1030db78c5c2722b2e8e48ee7db72fdc195638acfc1a1ad`).
+
+CI run `37324284688` passes for byte-identical product Python checkpoint
+`9c698e77d`: 9,678 passed, 10 skipped, six warnings in 3,997.20 seconds; full
+log SHA-256 `15ad52970c898940ab072bd70675bb2e17570c63447be29db30e4dcfb7d437f3`.
+The later `0d` CI `37329570228` also passes: 9,678 passed, 10 skipped, six
+warnings in 3,627.54 seconds; full log SHA-256
+`70e8e21a579e1df8b017ce788decc9ce0eff759bc665f3a5c26f68f4587e8a9f`.
+These results precede the one-line inventory input reduction. They do not replace local retained
+failures or qualify semantic fidelity, terminal behavior, Public40, browser,
+holdout, or release proof.
+
 ## V28 external preflight failure (2026-10-05)
 
 The fresh v28 build and canonical installation smoke pass from clean pushed

@@ -75,7 +75,7 @@ def run_source_duty_phase(*, flow, contract, source, host_workspace, host_argv,
             ledger_schema_path.read_text(encoding="utf-8")
         )
         ledger_input = json.dumps(
-            {"source_ledger": {**ledger_contract, **({
+            {"source_ledger": {"task": ledger_contract["task"], **({
                 "edit_preservation": greenfield_edit_preservation_view(edit_preservation),
             } if edit_preservation is not None else {})}, "request": request,
              "authority_admission": check_payload},

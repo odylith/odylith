@@ -1,6 +1,66 @@
 - Bug ID: CB-303
 
-## Current v52 source patch and v27 admission frontier (2026-10-05)
+## Source inventory input reduction (2026-10-05)
+
+The initial and EDIT transport now sends the full unchanged inventory schema
+once through the qualified `--output-schema` file, removing only its duplicate
+stdin field. One production line changes; source, task, authority, correction,
+material lifecycle context, receipts, four-pass profile and caps remain exact.
+Six complete modules pass 223 tests, including captured input and refusal checks.
+Independent review is clear (`b3fd64b9995ee1b08b05b37b18ff1b3a4bcee9ed9f6cee915f0b87978aa0bc4d`);
+the sealed handoff is `1fc6834a003105a65319eca41c9c2a1b89169c5bf35ec56315707763a41550db`.
+The deterministic saving is 5,708 stdin bytes. Recall and timing gains are
+unproved: V29 remains failed, and fresh fixed-case comparisons retain the same
+requests, source-first duties and 1.0 floors. A flat tagged-atom rewrite was
+rejected because it adds bytes and repeats prior cardinality/role risks.
+
+## Current v52/v29 first actual comparison frontier (2026-10-05)
+
+The first actual v52/v29 public comparisons stop without a complete successful
+case. V29 build (201.014 seconds) and canonical smoke (366.618 seconds) pass;
+the final native preflight reaches two constructor holds with six read-only Git
+commands and zero product actions. The original v28 failed entries remain
+immutable. CB-347 retains two later external setup stops, before all product and
+write operations, and the final bindings are unchanged.
+
+Agriculture stops safely after authority, inventory, and source-only verifier
+calls (197.094 seconds): the inventory omits material steward-registration
+action A03 and has no supporting human actions. Candidate authoring is zero.
+The retained diagnosis is
+`/private/tmp/odylith-v52-agriculture-source-first-audit-v29-20261005/initial-source-refusal-diagnosis.json`
+(SHA-256 `42d6f6632319290da783366717d234cf855658c891c17ab275f198c4fd99870a`).
+The source instruction matches v27, so this is neither a candidate-code
+regression nor a success-rate measurement.
+
+Research H0 mechanically seals
+`5dd63cd132fbaab5899e840ec33de44f495668f245024f7e7d5061ea8b29633b`
+after four calls (121.035 proposal seconds; 196.457 whole seconds). Independent
+review passes all 13 obligations at the unchanged 1.0 floor with no P0/P1
+semantic finding across plans, specs, and Atlas. The immutable report is
+`/private/tmp/odylith-v52-research-source-first-audit-v29-20261005/H0-source-fidelity-audit.json`
+(SHA-256 `b815cad5dea566dae291e852227ac43e03b27a3d92b5d62d247f33a3b5545605`).
+EDIT times out during inventory
+with zero stdout and process-group termination in stderr; verifier, candidate,
+and proposal work are zero. The observed H0-to-EDIT input growth
+(11,785 to 17,928 bytes) is not a proven cause. H1 is absent and both controls
+have zero terminal actions. Do not infer a complete success, winning mechanism,
+or release readiness.
+
+The independent EDIT diagnosis is retained beside the H0 audit
+(`f244afbe278d7d45ff34d72553654ca8444ee7556e7964905e0d5aa20dbff106`);
+the audit manifest is `0d07181d84f75e467167841941ef90699af5e623699e2a023736760c9bb12722`.
+H1 scores are unproved, not zero or a semantic judgment. Timeout cause is unknown.
+
+Source CI for the byte-identical product Python checkpoint `9c698e77d` passes
+9,678 tests, 10 skips, and six warnings in 3,997.20 seconds (run
+`37324284688`); its full log SHA-256 is
+`15ad52970c898940ab072bd70675bb2e17570c63447be29db30e4dcfb7d437f3`.
+This supersedes only the pending CI claim. It does not rewrite retained local
+failures or qualify consumer semantics or terminal behavior. Preserve frozen
+Agriculture and Research inventories; Public40, browser, protected, migration,
+host, timing, and release gates remain held.
+
+## Previous v52 source patch and v27 admission frontier (2026-10-05)
 
 Fresh independent proposal audit passes Research H0 13/13, Agriculture H0 26/26
 and changed-hash Agriculture H1 31/31 (26 originals plus five corrections).
