@@ -60,7 +60,29 @@ supersedes:
 
 superseded_by: 
 
-## Current v50 implementation checkpoint (2026-10-05)
+## Current installed failure frontier (2026-10-05)
+
+- V51 code and both independent reviews are settled. Full installation passes
+  2,126 checks; the combined gate retains 3,840 passes and one stale version-pin
+  failure, corrected in a 25-check continuation. Date portability and affected
+  Atlas browser checks pass. This checkpoint removes EDIT locator bookkeeping
+  and adds private denial evidence; it does not qualify new semantic behavior.
+  Next: one clean v27 build and source-audited installed comparison, preserving
+  every earlier failure and the held public/private/protected gates.
+- Clean 16a/v26 build integrity and install/upgrade smoke pass. Research H0
+  independently preserves all 13 source duties, but EDIT refuses before candidate
+  authoring. Agriculture initial completeness refuses one reported supporting
+  action omission; exact governed publication remains unchanged. Neither control
+  passes the full flow. CB-303/CB-347 retain failures and diagnostic limits.
+- The existing plan bounds v51 to compiler-owned correction authorization and
+  private retention of actual source-phase denial evidence. Preserve prior duty
+  semantics, broad intake, initial and historical custody, four calls and caps.
+  This removes literal citation bookkeeping from the verifier; initial inventory
+  completeness and live semantic reliability remain unproved.
+- Public40 stays held. No release approval, protected run or original v49 H1
+  recovery is authorized by these diagnostics.
+
+## Previous v50 implementation checkpoint (2026-10-05)
 
 - The existing EDIT source-only verifier now requires a disposition for each
   prior sealed lifecycle duty. Current typed carriers and exact correction

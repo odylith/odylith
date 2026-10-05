@@ -36,12 +36,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 768,
-    "mapped_workstream_evidence_count": 719,
+    "explicit_event_count": 770,
+    "mapped_workstream_evidence_count": 721,
     "recent_path_match_count": 0,
     "spec_history_event_count": 19,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 768
+    "timeline_event_count": 770
   },
   "name": "Atlas",
   "path_prefixes": [
@@ -51,6 +51,79 @@
   ],
   "spec_ref": "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "odylith/release-evidence/v51-implementation-20261005/combined-contract-gate-receipt.json",
+        "odylith/release-evidence/v51-implementation-20261005/source-checkpoint-proof.json"
+      ],
+      "confidence": "high",
+      "event_index": 1555,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
+      "ts_iso": "2026-10-05T04:12:05-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "odylith/release-evidence/v50-implementation-20261005/agriculture-initial-source-refusal-v26.json",
+        "odylith/release-evidence/v50-implementation-20261005/research-edit-refusal-v26-evidence.json",
+        "odylith/release-evidence/v50-implementation-20261005/research-h0-audit-citation-diagnosis-v26.json"
+      ],
+      "confidence": "high",
+      "event_index": 1551,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-10-05T03:01:53-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 3,
       "artifacts": [

@@ -4,7 +4,63 @@ Last updated: 2026-10-05
 
 ## Overview
 
-### EDIT lifecycle comparison (2026-10-05)
+### Correction authority and diagnostic custody revision (2026-10-05)
+
+The v51 correction revision is implemented and independently reviewed; installed
+semantic and release qualification remain open. Fresh EDIT v6
+asks for explicit correction authorization for every prior changed or removed
+meaning. The compiler binds that judgment to the complete exact correction;
+the verifier no longer authors a duplicate quote/context locator. Preserved
+rows retain affirmative same-section current carriers without correction
+authorization. Missing, uncertain or unsupported changes refuse. Compound
+carriers still require separate judgments for all prior meanings.
+
+Fresh EDIT uses v6 decisions and v9 receipts. Passive v5/v8 readback must retain
+its exact old task, receipt and v50 authority binding; it cannot authorize fresh
+candidate authoring or admission. Initial v4/v7 bytes stay unchanged. Runtime
+identity continues to govern execution eligibility independently. No extra
+inference stage, parser, repair, retry or new engine is introduced.
+
+That identity covers 24 post-confirm writer owners. A pre-confirm-only protocol
+change does not itself retire a compatible already sealed package when those
+exact writer bytes remain unchanged. Passive validation and historical commit
+eligibility remain distinct from fresh candidate admission; actual failed seals
+are not release-qualified or authorized for recovery by this compatibility.
+
+Explicit private diagnostic retention belongs to supported prepare and existing
+transport callbacks. It retains actual source/task/returned decision and checker
+bytes at an explicitly selected private destination before refusal and cleanup,
+within the existing deadline. The destination is outside the consumer under an
+operator-controlled stable parent; descriptor custody cannot promise pathname
+residency after same-user external reparenting. Detected parent or leaf changes
+must refuse before later dispatch or a completion receipt. These files have no
+admission or completion authority. The transport
+currently proves UTF-8 encoding of returned streams, not original pipe octets.
+Retention failure must stop progression and leave incomplete evidence.
+
+The v26 Research initial seal independently preserves 13/13 source duties;
+its EDIT refuses correction citation, and Agriculture initial completeness
+refuses one reported omission. Neither passes the full consumer flow. Raw denied
+inventory/verdict bytes were not retained, so the reported omission and rejected
+reference subtype cannot be independently adjudicated. CB-303, CB-347 and B-142
+retain those facts. V51 does not establish or repair initial source completeness;
+independent semantic proof remains due. Correction-owner tests pass 59 checks,
+adjacent custody tests pass 110, and root decision/smoke adopters pass 82. Six
+independent controls close both fresh/passive P1 design findings. Review:
+`/private/tmp/odylith-v51-correction-authorization-independent-final-review-20261005.json`,
+SHA-256 `2cd6eec704ebbeee559d751161725537e0c62e7c0a38d8ffcf61715c8c03ffbc`.
+The corrected diagnostic writer passes 38 focused controls; independent final
+review closes both directory-race findings under the stable private-parent
+boundary and passes its post-fsync refusal control. Original failed proof remains
+retained. Neither these deterministic results nor path custody qualifies semantic
+behavior. The combined once-only gate passes all 2,126 installation controls and
+3,840 of 3,841 total checks with no source drift. Its sole stale v50 test pin is
+corrected; the full actor/spec-sync continuation passes 25 checks. The original
+failed gate remains retained. Twenty affected Atlas browser controls pass across
+normal, empty, fallback and error states. Fresh installed meaning and full
+release qualification remain required.
+
+### Previous v50 EDIT lifecycle comparison (2026-10-05)
 
 Host contract v50 adds a required decision for each prior sealed state field,
 off-path transition, conditional guard, boundary and proof duty to the existing

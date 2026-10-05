@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from pathlib import Path
 import subprocess
+import sys
 
 from odylith.runtime.governance import component_registry_intelligence as component_registry
 from odylith.runtime.governance import sync_component_spec_requirements as sync
@@ -122,6 +124,28 @@ def _init_git_repo(tmp_path: Path) -> None:
     subprocess.run(["git", "config", "user.email", "codex@example.com"], cwd=tmp_path, check=True, capture_output=True, text=True)
     subprocess.run(["git", "add", "."], cwd=tmp_path, check=True, capture_output=True, text=True)
     subprocess.run(["git", "commit", "-m", "baseline"], cwd=tmp_path, check=True, capture_output=True, text=True)
+
+
+def test_event_calendar_dates_are_identical_across_host_timezones() -> None:
+    timestamps = [
+        "2026-10-04T23:15:52-07:00", "2026-10-05T00:15:52+14:00",
+        "2026-10-05T00:15:52Z", "2026-10-04T23:15:52", "2026-10-04", "", "invalid",
+    ]
+    expected = ["2026-10-04", "2026-10-05", "2026-10-05", "2026-10-04",
+                "2026-10-04", "2026-01-02", "2026-01-02"]
+    code = (
+        "import json,sys; "
+        "from odylith.runtime.governance.sync_component_spec_requirements import _event_date; "
+        "print(json.dumps([_event_date(value,fallback_date='2026-01-02') "
+        "for value in json.load(sys.stdin)]))"
+    )
+    for timezone in ("America/Los_Angeles", "UTC"):
+        result = subprocess.run(
+            [sys.executable, "-B", "-c", code], input=json.dumps(timestamps),
+            env={**os.environ, "TZ": timezone}, text=True, capture_output=True,
+            check=True, timeout=30,
+        )
+        assert json.loads(result.stdout) == expected, timezone
 
 
 def test_resolve_forensics_path_keeps_product_dossier_layout(tmp_path: Path) -> None:

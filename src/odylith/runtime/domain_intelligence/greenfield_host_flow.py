@@ -125,6 +125,7 @@ class HostCandidateFlow:
     retain_candidate_bytes: Callable[[bytes], None] | None = None
     retain_proposal_bytes: Callable[[str, bytes], None] | None = None
     retain_host_stderr_bytes: Callable[[str, bytes], None] | None = None
+    retain_diagnostic_bytes: Callable[[str, bytes], None] | None = None
 
 
 def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
@@ -217,6 +218,10 @@ def _run_host_candidate_flow(flow: HostCandidateFlow, *, started: float,
     host_workspace: Path | None = None
     try:
         observation["stage"] = "contract"
+        if flow.retain_diagnostic_bytes is not None:
+            for name, text in (("operator-request.exact.txt", flow.prompt),
+                               ("correction.exact.txt", flow.edit_evidence)):
+                flow.retain_diagnostic_bytes(name, text.encode("utf-8"))
         contract_timeout = deadline.request_timeout(_remaining(started, timeout))
         observation["contract_command_invocations"] = 1
         contract_result = _invoke_installed_contract(
@@ -243,6 +248,8 @@ def _run_host_candidate_flow(flow: HostCandidateFlow, *, started: float,
                 stage="contract",
             )
         observation["source_sha256"] = _sha256_text(source)
+        if flow.retain_diagnostic_bytes is not None:
+            flow.retain_diagnostic_bytes("compiler-source.exact.txt", source.encode("utf-8"))
         with tempfile.TemporaryDirectory(
             prefix="odylith-greenfield-host-candidate-",
             dir=str(temp_parent),
@@ -287,14 +294,18 @@ def _run_host_candidate_flow(flow: HostCandidateFlow, *, started: float,
             observation["authority_gate_schema_sha256"] = _sha256_text(
                 gate_schema_path.read_text(encoding="utf-8")
             )
+            gate_input = json.dumps(dict(gate_contract), ensure_ascii=False,
+                                    sort_keys=True, separators=(",", ":"))
+            if flow.retain_diagnostic_bytes is not None:
+                flow.retain_diagnostic_bytes("authority-gate-schema.json", gate_schema_path.read_bytes())
+                flow.retain_diagnostic_bytes("authority-gate.stdin.json", gate_input.encode("utf-8"))
             observation["stage"] = "authority-gate"
             gate_timeout = deadline.request_timeout(_remaining(started, model_timeout))
             observation["host_invocations"] = 1
             observation["authority_gate_host_invocations"] = 1
             gate_result = _invoke_host(
                 gate_argv,
-                contract_text=json.dumps(dict(gate_contract), ensure_ascii=False,
-                                         sort_keys=True, separators=(",", ":")),
+                contract_text=gate_input,
                 cwd=host_workspace,
                 env=flow.env,
                 timeout=gate_timeout,
@@ -409,6 +420,9 @@ def _run_host_candidate_flow(flow: HostCandidateFlow, *, started: float,
                 + "\n",
                 encoding="utf-8",
             )
+            if flow.retain_diagnostic_bytes is not None:
+                flow.retain_diagnostic_bytes("candidate-schema.json", schema_path.read_bytes())
+                flow.retain_diagnostic_bytes("candidate.stdin.json", candidate_request_bytes)
             resolved_host_argv = _resolved_host_argv(
                 host_argv,
                 candidate_schema_path=schema_path,

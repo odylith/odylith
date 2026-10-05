@@ -72,11 +72,15 @@ mechanism-level learning.
    source as the retained prompt. The same source-only verifier gives a required
    disposition for every prior lifecycle duty. Preserved or changed duties need
    affirmative current carriers in the same typed section; each change or removal
-   needs exact correction evidence. A compound carrier may support multiple prior
+   needs affirmative authorization from the complete compiler-bound correction.
+   The verifier supplies that semantic judgment without a duplicate quote/context
+   locator. A compound carrier may support multiple prior
    duties, each judged independently. Missing or uncertain rows stop before the
-   candidate. Initial tasks/receipts stay v4/v7; EDIT uses v5/v8 with prior seal and
+   candidate. Initial tasks/receipts stay v4/v7; fresh EDIT uses v6/v9 with prior seal and
    correction custody. The checklist cannot replace current truth or override an
-   explicit correction. Complete keys and citations do not prove semantic accuracy.
+   explicit correction. Exact historical v5/v8 remains passive sealed-readback
+   compatibility and cannot authorize fresh authoring or admission. Complete keys
+   and custody do not prove semantic accuracy.
 5. `odylith greenfield create` with `--transaction-file`, `--transaction-hash`,
    and `--confirm` (plus `--completion-receipt` for bounded seals) remains a separate
    commit-only interface, not a fallback for

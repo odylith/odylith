@@ -30,7 +30,7 @@ def _run_script(tmp_path, source, *, timeout=5):
                           capture_output=True, text=True, timeout=timeout)
 
 
-@pytest.mark.parametrize("phase", ["contract", "source-check", "retention", "observer"])
+@pytest.mark.parametrize("phase", ["contract", "source-check", "retention", "diagnostic-retention", "observer"])
 def test_native_block_is_cancelled_without_later_phase_or_success_preview(tmp_path, phase):
     script = '''import hashlib, json
 from pathlib import Path
@@ -43,7 +43,10 @@ host.PROVISIONAL_WHOLE_JOURNEY_TIMEOUT_SECONDS = 0.15
 budget.PROVISIONAL_WHOLE_JOURNEY_TIMEOUT_SECONDS = 0.15
 phase = PHASE
 flow, host_run, installed, calls, proposals, repo = _flow(Path.cwd(), contract={"version":"contract"}, candidate={}, gate_decision="clarify" if phase=="observer" else "admit")
-host._invoke_host = host_run
+def recorded_host(*args, **kwargs):
+    Path("hosts").open("a").write("host\\n")
+    return host_run(*args, **kwargs)
+host._invoke_host = recorded_host
 original = flow.invoke_installed
 def block(*args):
     Path("blocked").write_text(phase)
@@ -55,6 +58,7 @@ def invoke(command, timeout):
     return original(command, timeout)
 changes = {"invoke_installed":invoke}
 if phase=="retention": changes["retain_authority_gate_bytes"] = block
+if phase=="diagnostic-retention": changes["retain_diagnostic_bytes"] = block
 if phase=="observer": changes["observe"] = block
 flow = host.HostCandidateFlow(**{**flow.__dict__, **changes})
 host.run_host_candidate_flow(flow)
@@ -66,7 +70,11 @@ Path("preview").write_text("success")
     assert time.monotonic()-started < 2
     assert (tmp_path/'blocked').read_text() == phase
     assert not (tmp_path/'preview').exists()
-    assert 'propose' not in (tmp_path/'commands').read_text()
+    if phase == "diagnostic-retention":
+        assert not (tmp_path/'commands').exists()  # Input retention precedes the first command.
+        assert not (tmp_path/'hosts').exists()
+    else:
+        assert 'propose' not in (tmp_path/'commands').read_text()
 
 
 def test_guardian_stops_active_child_and_grandchild_before_stalled_runner(tmp_path):
@@ -545,7 +553,8 @@ def test_prepare_refusal_exposes_stage_reason_without_confirmation(
         assert payload['mode'] == 'error' and payload['bounded_journey'] == observation
         assert not {'confirmation','completion_receipt','product_create_transaction'} & payload.keys()
     else:
-        assert detail in text and 'not an admitted decision' in text
+        assert detail not in text and 'Checker detail' not in text
+        assert '"mode"' not in text and '"error"' not in text
     assert ('reported an incomplete source inventory' in text if verdict == 'no' else
             'could not confirm source inventory completeness' in text if verdict == 'uncertain' else
             'did not report source completeness' in text)
@@ -779,7 +788,7 @@ def test_proposal_refusal_preserves_bounded_detail_and_prior_seal(
     decisions = _yes_decisions(preflight, evidence_text=source)
     decisions.update(version=EDIT_SOURCE_DUTY_DECISION_SET_VERSION,
                      verifier_task_sha256=task["verifier_task_sha256"],
-                     edit_preservation={}, edit_correction_refs=[])
+                     edit_preservation={})
     gate = {"decision": "admit", "required_fields": [], "question": "",
             "owner_quote": old_transaction.proposal["intent"]["human_actors"][0],
             "task_quote": semantics["first_path_relations"][0]["event_quote"],
@@ -800,7 +809,7 @@ def test_proposal_refusal_preserves_bounded_detail_and_prior_seal(
         elif "source-ledger-check" in command:
             if "--decision-file" in command:
                 assert payload["receipt"]["edit_preservation"] == context
-                assert payload["receipt"]["version"] == "odylith.greenfield.source-duty-ledger-receipt.v8"
+                assert payload["receipt"]["version"] == "odylith.greenfield.source-duty-ledger-receipt.v9"
             else:
                 assert payload["decision_task"] == task
         return subprocess.CompletedProcess(command, status, captured.getvalue(), "")
@@ -862,5 +871,5 @@ def test_proposal_refusal_preserves_bounded_detail_and_prior_seal(
         assert payload["mode"] == "error" and payload["bounded_journey"]["detail"] == observation["detail"]
         assert not {"confirmation", "completion_receipt", "product_create_transaction"} & payload.keys()
     else:
-        assert "Checker detail (not an admitted decision):" in rendered
-        assert observation["detail"] in rendered
+        assert "Checker detail" not in rendered
+        assert observation["detail"] not in rendered

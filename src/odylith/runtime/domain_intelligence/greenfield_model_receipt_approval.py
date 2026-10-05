@@ -13,6 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
     HOST_CANDIDATE_CONTRACT_VERSION,
     HOST_CANDIDATE_RECEIPT_VERSION,
     LEGACY_HOST_CANDIDATE_CONTRACT_VERSION,
+    PREVIOUS_HOST_CANDIDATE_CONTRACT_VERSION,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
@@ -85,7 +86,8 @@ def greenfield_model_authoring_receipt_approved(
         }
         and host.get("version") == HOST_CANDIDATE_RECEIPT_VERSION
         and host.get("contract_version") in (
-            LEGACY_HOST_CANDIDATE_CONTRACT_VERSION, HOST_CANDIDATE_CONTRACT_VERSION)
+            LEGACY_HOST_CANDIDATE_CONTRACT_VERSION,
+            PREVIOUS_HOST_CANDIDATE_CONTRACT_VERSION, HOST_CANDIDATE_CONTRACT_VERSION)
         and host.get("canonical_version") == GREENFIELD_INTENT_AUTHORING_VERSION
         and all(
             _is_sha256(host.get(key))

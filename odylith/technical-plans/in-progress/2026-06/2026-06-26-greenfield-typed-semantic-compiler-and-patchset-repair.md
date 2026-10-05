@@ -1,6 +1,93 @@
 Status: In progress
 
-## Current v50 implementation frontier (2026-10-05)
+## Current installed frontier and bounded v51 scope (2026-10-05)
+
+The final clean `16a470d1b` v26 distribution passes build integrity and canonical
+install/upgrade smoke. Research H0 independently passes 13/13 source duties;
+Research EDIT refuses an invalid correction reference before candidate authoring.
+Agriculture refuses initial completeness with one reported dataset-registration
+omission, before any candidate or EDIT. All failed controls remain retained;
+their discarded inventory/verifier bytes prevent further causal conclusions.
+CB-303 and CB-347 own this learning. The public40 campaign remains held.
+
+Use existing source-only owners for the next bounded change. Fresh EDIT v6
+replaces model-authored quote/context bookkeeping with a per-prior explicit
+correction-authorization judgment. The compiler binds affirmative changes and
+removals to the complete exact correction already in its preservation context.
+Preserved rows require no correction authorization; unsupported, missing or
+uncertain changes still refuse. Fresh EDIT receipt v9 retains initial v4/v7
+bytes and passive v5/v8 reconstruction. No new engine, inference pass, parser,
+repair, retry, model ladder, evidence restriction or cap increase is added.
+
+Wire private outside-repository diagnostic retention into supported prepare
+using its existing callbacks. Keep actual source/inventory/task/verdict/checker
+streams and bindings before denial or cleanup; distinguish decoded transport
+bytes from unavailable original pipe octets. Retention failure is incomplete
+nonpassing evidence and must prevent advancement. Normal output stays concise.
+
+Falsifiable prediction: the new EDIT wire cannot produce a model-authored literal
+or locator mismatch, while every semantic authorization and carrier law remains
+enforced. This does not predict or fix initial inventory omissions. Prove Unicode
+and large corrections, explicit change/removal/merge, legacy readback, no new
+calls, denial custody and unchanged deadlines before a new frozen comparison.
+Independently audit actual generated meaning. Do not claim success from guard
+refusal, schema checks or deterministic tests. Preserve original v49 H1 and all
+v26 evidence. Full public/private, browser, host, timing, migration and protected
+custody gates remain open.
+
+Design: `/private/tmp/odylith-v6-correction-authorization-design-20261005.json`,
+SHA-256 `54a16a3b75b6b9d5ba36216bdb2165fad9a7093f58c3e1cb920b4d64eaffc875`.
+
+Independent design review requires full v8 PCT passive loading, explicit legacy
+refusal at both fresh candidate entrypoints, and pinned diagnostic directory
+identity under parent retargeting. CB-347 records the two P1 and one P2 findings;
+close them in code and independent behavior proof before another installed run.
+
+The correction implementation passes 59 owned and 110 adjacent deterministic
+checks; root decision/smoke adopters pass 82. Independent final review is clear
+and six targeted controls close both fresh/passive P1 findings. Initial v4/v7
+and historical v5/v8 compiler goldens rebuild exactly; the actual compiler-built
+v8 PCT retains its detached receipt and post-confirm writer custody. Preserve
+the original 56-pass/three-fail fixture evidence separately. These are custody
+and compatibility results, not evidence of live semantic reliability.
+
+Independent diagnostic review retains two directory-race falsifiers and one
+correct model-four refusal. Apply only observed-leaf binding and before/after
+write mutation checks in the existing CLI owner. The supported destination has
+an operator-controlled stable parent; do not claim unconditional pathname
+residency against concurrent same-user rename. No retries, new owner, model
+pass or timing change follows. Complete independent review and the combined
+Greenfield/runtime plus full-install gate, synchronize public guidance and its
+mirror, checkpoint, then bind one fresh installed v27 comparison with exact
+private evidence destinations. The original v26 failures remain failed.
+
+The diagnostic custody correction now passes 38 focused controls and final
+independent review; original directory-race falsifiers remain retained. The
+combined installation/Greenfield gate is running against frozen source. A
+separate bounded CI-convergence wave fixes the existing spec-sync date owner:
+preserve the recorded event's calendar date across Pacific and UTC, with signed
+offset, Z, naive and fallback characterization. CI's five stale Atlas payloads
+need only selected review fingerprints for D-004/005/006/018/020; their diagrams
+and ownership are unchanged. Capture proof in CB-347, synchronize release spec
+through its CLI, and run the exact browser and Registry controls. Do not change
+semantic limits, weaken freshness assertions or globally acknowledge Atlas debt.
+
+The source checkpoint's combined gate passes 3,840 checks and retains one stale
+v50 test pin failure; all 2,126 installation cases pass and 2,312 frozen files
+stay unchanged. The explicit pin correction and complete actor/spec-sync modules
+pass 25 checks. Source-date correction clears independent review with exact
+13-line historical trace reconstruction in Pacific and UTC. Registry contracts
+pass 18 checks per timezone. The affected Atlas matrix passes 20 checks, including
+current D-043 and normal/empty/fallback/error desktop/mobile metadata. All five
+reviewed diagrams retain source/render bytes; unrelated catalog metadata remains
+exact. Preserve failed combined/CI results; do not relabel them as passing runs.
+Commit this code/governance checkpoint and build a new v27 namespace once. Bind
+the retained control design to that clean source and manifest before execution.
+Pause after genuine H0/H1 previews for independent source review before any
+terminal publication. New installed semantic success remains unproved and the
+40-case public campaign stays held.
+
+## Previous v50 implementation frontier (2026-10-05)
 
 The complete clean 912f freeze executes all 8,480 checks: 8,479 pass and
 one post-output timeout setup assumption fails, with no tracked-source drift.

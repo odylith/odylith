@@ -87,20 +87,24 @@ proof.
 
 ### EDIT lifecycle verification
 
-Host contract `odylith.greenfield.host-candidate-contract.v50` gives the existing
+Host contract `odylith.greenfield.host-candidate-contract.v51` gives the existing
 source-only verifier a required disposition for every prior sealed state field,
 transition, conditional guard, boundary and proof duty. A preserved or changed
 duty requires an affirmative current carrier in the same typed section. Changed
-or removed duties require exact citations from the explicit new correction.
+or removed duties require affirmative authorization from the complete explicit
+correction. The compiler binds its exact accepted bytes; the verifier supplies
+the semantic judgment without authoring a duplicate quote or context locator.
 Missing or uncertain duties refuse before candidate authoring. Prior rows are a
 comparison checklist; current lifecycle and governance still come from the
 accepted current inventory. Explicit corrections take precedence over history.
 
-Initial verifier tasks and receipts retain versions v4/v7. EDIT uses v5/v8,
+Initial verifier tasks and receipts retain versions v4/v7. Fresh EDIT uses v6/v9,
 binding the prior transaction, its lifecycle, the complete source, correction,
 task and decisions. A global completeness yes or an initial receipt cannot
 authorize EDIT. Citation custody and complete keys do not prove a semantic
-verdict correct; independent fresh source review remains required.
+verdict correct; independent fresh source review remains required. Exact
+historical v5/v8 tasks and receipts retain passive validation only; they cannot
+authorize fresh candidate authoring or admission.
 
 For manual EDIT source checks, pass the prior `--transaction-hash`, the exact
 retained source as `--prompt`, and the separate correction as `--edit` or
@@ -108,11 +112,36 @@ retained source as `--prompt`, and the separate correction as `--edit` or
 `--completion-receipt`; the existing resolver retains unmarked package policy.
 Passing already-combined evidence as the retained prompt refuses.
 
-Passive legacy v49/v7 readback remains supported. Execution still requires the
+Passive legacy v49/v7 and v50/v8 sealed readback remains supported. Execution still requires the
 original sealed runtime identity: changing any of its 24 owners makes a prior
 pending package ineligible under the changed runtime. Historical v49 failures
 remain preserved; this contract does not make them executable or qualify the
-new mechanism. Fresh installed semantic and terminal proof is required.
+new mechanism. A pre-confirm revision leaves an already valid seal eligible
+when its exact post-confirm writers and existing execution preconditions remain
+unchanged. Fresh installed semantic and terminal proof is required.
+
+### Private diagnostic evidence
+
+Pass `--diagnostic-evidence-dir <new-absolute-directory>` to `prepare` when a
+failed run needs inspection. The destination must be outside the consumer and
+have an operator-controlled stable private parent. Directory and file modes
+are 0700 and 0600. The capture retains the exact accepted input, actual schema
+and stdin encodings for all four passes, and returned model/checker streams
+before refusal or temporary cleanup. Returned text is encoded as UTF-8; original
+pipe octets are not proved. Existing output bounds still apply.
+
+Writes use exclusive artifact names and pinned directory descriptors. Detected
+parent or destination changes refuse the journey before later dispatch or a
+completion receipt. Same-user external renames must not mutate the destination
+during capture: descriptor custody cannot guarantee pathname residency or zero
+consumer bytes after another process reparents the directory. No check loop can
+make filesystem ancestry validation and a write atomic against that mutation.
+
+Capture consumes the existing deadline. Its artifact index is advisory, has no
+admission authority and cannot certify final timing or replace a completion
+receipt. Retention errors stop progression. Without the option, no diagnostic
+directory is created. Normal text keeps the concise outcome; machine JSON
+retains checker detail.
 
 Model-profile contract `odylith.greenfield.model-profile-contract.v25`
 declares three pinned real-model profiles. Only the

@@ -56,7 +56,8 @@ from odylith.runtime.domain_intelligence.greenfield_authority_gate import (
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v7"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v50"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v51"
+PREVIOUS_HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v50"
 LEGACY_HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v49"
 HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION = "odylith.greenfield.host-candidate-authoring-transport.v1"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
@@ -273,6 +274,7 @@ def greenfield_host_candidate_authoring_request(
     receipt = verify_greenfield_source_duty_ledger_receipt(
         source_duty_receipt, evidence_text=source,
         edit_preservation=edit_preservation,
+        allow_legacy_edit=False,
     )
     if receipt["ledger"]["status"] != "inventory":
         raise ValueError("Greenfield candidate authoring requires an accepted inventory")
@@ -351,7 +353,7 @@ def admit_greenfield_host_candidate(
     profile = get_greenfield_model_profile(profile_id)
     started = clock()
     verified_ledger = verify_greenfield_source_duty_ledger_receipt(
-        source_duty_receipt, evidence_text=evidence_text
+        source_duty_receipt, evidence_text=evidence_text, allow_legacy_edit=False
     )
     if verified_ledger["ledger"]["status"] != "inventory":
         raise ValueError("Greenfield source duties require one material clarification")
@@ -459,6 +461,7 @@ def _canonical_candidate_bytes(response: Mapping[str, Any]) -> bytes:
 
 __all__ = [
     "LEGACY_HOST_CANDIDATE_CONTRACT_VERSION",
+    "PREVIOUS_HOST_CANDIDATE_CONTRACT_VERSION",
     "HOST_CANDIDATE_CONTRACT_VERSION",
     "HOST_CANDIDATE_RECEIPT_VERSION",
     "MAX_HOST_CANDIDATE_BYTES",

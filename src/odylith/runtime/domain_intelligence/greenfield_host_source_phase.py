@@ -74,6 +74,16 @@ def run_source_duty_phase(*, flow, contract, source, host_workspace, host_argv,
         observation["source_ledger_schema_sha256"] = _sha256_text(
             ledger_schema_path.read_text(encoding="utf-8")
         )
+        ledger_input = json.dumps(
+            {"source_ledger": {**ledger_contract, **({
+                "edit_preservation": greenfield_edit_preservation_view(edit_preservation),
+            } if edit_preservation is not None else {})}, "request": request,
+             "authority_admission": check_payload},
+            ensure_ascii=False, sort_keys=True, separators=(",", ":"),
+        )
+        if flow.retain_diagnostic_bytes is not None:
+            flow.retain_diagnostic_bytes("source-ledger-schema.json", ledger_schema_path.read_bytes())
+            flow.retain_diagnostic_bytes("source-ledger.stdin.json", ledger_input.encode("utf-8"))
         observation["stage"] = "source-ledger"
         ledger_started = time.monotonic()
         ledger_timeout = deadline.request_timeout(
@@ -83,13 +93,7 @@ def run_source_duty_phase(*, flow, contract, source, host_workspace, host_argv,
         observation["source_ledger_host_invocations"] = 1
         ledger_result = invoke_host(
             ledger_argv,
-            contract_text=json.dumps(
-                {"source_ledger": {**ledger_contract, **({
-                    "edit_preservation": greenfield_edit_preservation_view(edit_preservation),
-                } if edit_preservation is not None else {})}, "request": request,
-                 "authority_admission": check_payload},
-                ensure_ascii=False, sort_keys=True, separators=(",", ":"),
-            ),
+            contract_text=ledger_input,
             cwd=host_workspace,
             env=flow.env,
             timeout=ledger_timeout,
@@ -123,14 +127,14 @@ def run_source_duty_phase(*, flow, contract, source, host_workspace, host_argv,
             flow, ledger_path=ledger_path,
             remaining=preflight_timeout,
         )
+        if flow.retain_source_ledger_preflight_bytes is not None:
+            flow.retain_source_ledger_preflight_bytes(_text_stream(
+                getattr(preflight, "stdout", "")).encode("utf-8"))
         deadline.remaining()
         observation["source_ledger_preflight_returncode"] = int(
             getattr(preflight, "returncode", 1)
         )
         preflight_text = _text_stream(getattr(preflight, "stdout", ""))
-        if flow.retain_source_ledger_preflight_bytes is not None:
-            flow.retain_source_ledger_preflight_bytes(preflight_text.encode("utf-8"))
-            deadline.remaining()
         observation["source_ledger_preflight_stdout_sha256"] = _sha256_text(preflight_text)
         if observation["source_ledger_preflight_returncode"] != 0:
             _fail("installed source ledger preflight returned nonzero",
@@ -185,6 +189,11 @@ def run_source_duty_phase(*, flow, contract, source, host_workspace, host_argv,
         observation["source_duty_decision_schema_sha256"] = _sha256_text(
             decision_schema_path.read_text(encoding="utf-8")
         )
+        decision_input = json.dumps(dict(decision_task), ensure_ascii=False,
+                                    sort_keys=True, separators=(",", ":"))
+        if flow.retain_diagnostic_bytes is not None:
+            flow.retain_diagnostic_bytes("source-duty-decision-schema.json", decision_schema_path.read_bytes())
+            flow.retain_diagnostic_bytes("source-duty-verifier.stdin.json", decision_input.encode("utf-8"))
         observation["stage"] = "source-duty-verifier"
         verifier_started = time.monotonic()
         verifier_timeout = deadline.request_timeout(
@@ -194,8 +203,7 @@ def run_source_duty_phase(*, flow, contract, source, host_workspace, host_argv,
         observation["source_duty_verifier_host_invocations"] = 1
         decision_result = invoke_host(
             decision_argv,
-            contract_text=json.dumps(dict(decision_task), ensure_ascii=False,
-                                     sort_keys=True, separators=(",", ":")),
+            contract_text=decision_input,
             cwd=host_workspace, env=flow.env,
             timeout=verifier_timeout,
         )
@@ -240,14 +248,14 @@ def run_source_duty_phase(*, flow, contract, source, host_workspace, host_argv,
             flow, ledger_path=ledger_path, decision_path=decision_path,
             remaining=check_timeout,
         )
+        if flow.retain_source_ledger_check_bytes is not None:
+            flow.retain_source_ledger_check_bytes(_text_stream(
+                getattr(ledger_check, "stdout", "")).encode("utf-8"))
         deadline.remaining()
         observation["source_ledger_check_returncode"] = int(
             getattr(ledger_check, "returncode", 1)
         )
         ledger_check_text = _text_stream(getattr(ledger_check, "stdout", ""))
-        if flow.retain_source_ledger_check_bytes is not None:
-            flow.retain_source_ledger_check_bytes(ledger_check_text.encode("utf-8"))
-            deadline.remaining()
         observation["source_ledger_check_stdout_sha256"] = _sha256_text(ledger_check_text)
         if observation["source_ledger_check_returncode"] != 0:
             if isinstance(omissions, list) and omissions and isinstance(omissions[0], Mapping):

@@ -197,6 +197,10 @@ def test_atlas_context_execution_diagrams_render_assets_and_canonical_links(brow
             ("intervention visibility ledgers", "benchmark proof", "runtime/write/validation boundaries"),
         ),
         (
+            "D-043",
+            ("compiler-bound correction", "correction authorization bind v6/v9", "no admission authority"),
+        ),
+        (
             "D-024",
             ("full-product odylith-on versus raw-agent proof", "execution engine snapshot accuracy"),
         ),

@@ -1,0 +1,11 @@
+{
+  "post_confirm_runtime_identity": {
+    "odylith_version": "0.1.15",
+    "source_file_count": 24,
+    "source_files_sha256": "fbbb92c812bf1c8f5e7b747f0153311f8b6615a87b256026492df24ab0461ace",
+    "version": "odylith.greenfield.compiler_identity.v6"
+  },
+  "transaction_file_sha256": "39546111c3eda9f3e258894665c053408d8962f0da26f3ec765d7d50823cf6fa",
+  "transaction_hash": "bf7f6b6186c30eb86e93a9194dd2eed43f330cdd89ff145d2268583f64db6b6a",
+  "version": "odylith.greenfield.compiler_receipt.v1"
+}

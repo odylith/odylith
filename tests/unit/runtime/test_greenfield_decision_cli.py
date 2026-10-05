@@ -123,10 +123,10 @@ def _write_edit_ledger_receipt(tmp_path: Path, previous, correction: str) -> Pat
     decisions = _yes_decisions(preflight, evidence_text=prepared.evidence_source)
     decisions.update(
         version=EDIT_SOURCE_DUTY_DECISION_SET_VERSION,
-        verifier_task_sha256=task["verifier_task_sha256"], edit_correction_refs=[],
+        verifier_task_sha256=task["verifier_task_sha256"],
         edit_preservation={
             f"{section}/{row['duty_id']}": {
-                "verdict": "preserved", "current_duty_id": row["duty_id"], "correction_ref_indexes": [],
+                "verdict": "preserved", "current_duty_id": row["duty_id"], "correction_authorization": "not_required",
             }
             for section in ("state_fields", "off_path_transitions", "conditional_guards", "boundaries", "proof_duties")
             for row in context["prior_lifecycle"][section]
@@ -315,7 +315,7 @@ def test_terminal_edit_rebuilds_once_from_verified_retained_source_and_correctio
     assert call["host_candidate"] == {}
     assert call["source_duty_receipt"]["ledger"]["status"] == "inventory"
     assert call["source_duty_receipt"]["decision_set_sha256"]
-    assert call["source_duty_receipt"]["version"] == "odylith.greenfield.source-duty-ledger-receipt.v8"
+    assert call["source_duty_receipt"]["version"] == "odylith.greenfield.source-duty-ledger-receipt.v9"
     assert call["source_duty_receipt"]["decision_set"]["version"] == EDIT_SOURCE_DUTY_DECISION_SET_VERSION
     assert call["source_duty_receipt"]["edit_preservation"]["transaction_hash"] == previous.transaction_hash
     assert call["source_duty_receipt"]["edit_preservation"]["correction"] == correction

@@ -1,0 +1,1129 @@
+{
+  "context": {
+    "correction": "Show the approval status alongside the record. Keep all earlier safeguards.",
+    "correction_sha256": "a5f9080c7a5ad4362166bd091ff604d3e0aea3464cf7d2cabbe1730f0fcaf31f",
+    "prior_lifecycle": {
+      "binding_sha256": "000475116ec77484c3f5aad3a5b63fc29bc6aae508b65c32adfb93849a9f489f",
+      "boundaries": [],
+      "conditional_guards": [
+        {
+          "component_key": "record-state",
+          "duty_id": "G1",
+          "protected_action": "approval",
+          "rule": "access must remain open",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "Before approval, access must remain open."
+            }
+          ],
+          "trigger": "before approval",
+          "workstream_key": "record-delivery"
+        }
+      ],
+      "ledger_sha256": "497b6ef745a0a5246ad488be41c6affee410e86e6e33c798dfbafd29d437d13a",
+      "lifecycle_sha256": "b2c3f3847757a1a093a42ab9ce94910b5033223be7cb12855f214d3cd7c50214",
+      "off_path_transitions": [
+        {
+          "component_key": "record-state",
+          "duty_id": "T1",
+          "effects": [
+            {
+              "change": "closed",
+              "field": "access",
+              "observable_check": "access closed",
+              "state_field_id": "F1"
+            },
+            {
+              "change": "erased",
+              "field": "cache",
+              "observable_check": "cache empty",
+              "state_field_id": "F2"
+            }
+          ],
+          "governed_object": "dossier",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "Withdrawal closes dossier access and erases the cached copy"
+            }
+          ],
+          "trigger": "withdrawal",
+          "workstream_key": "record-delivery"
+        }
+      ],
+      "proof_duties": [],
+      "source_sha256": "33a57855a50c9e230744942e4a14f408165f672b12a739846d9295ebbf595566",
+      "state_fields": [
+        {
+          "duty_id": "F1",
+          "field": "access",
+          "meaning": "access status",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "dossier access"
+            }
+          ],
+          "state_object": "dossier"
+        },
+        {
+          "duty_id": "F2",
+          "field": "cache",
+          "meaning": "cached copy",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "cached copy"
+            }
+          ],
+          "state_object": "dossier"
+        }
+      ],
+      "version": "odylith.greenfield.source-lifecycle.v2"
+    },
+    "source_sha256": "697695241018fdcd685ed3554a677fa8d8cba2ccf87e9553ae8de26433ac31f6",
+    "transaction_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "version": "odylith.greenfield.edit-lifecycle-preservation.v1"
+  },
+  "receipt": {
+    "decision_set": {
+      "decisions": {
+        "A1": {
+          "role_ref_indexes": [
+            0,
+            1
+          ],
+          "support_ref_indexes": [
+            0
+          ],
+          "verdict": "yes"
+        },
+        "A2": {
+          "role_ref_indexes": [
+            0,
+            1
+          ],
+          "support_ref_indexes": [
+            0
+          ],
+          "verdict": "yes"
+        },
+        "F1": {
+          "role_ref_indexes": [
+            0
+          ],
+          "support_ref_indexes": [
+            0
+          ],
+          "verdict": "yes"
+        },
+        "F2": {
+          "role_ref_indexes": [
+            0
+          ],
+          "support_ref_indexes": [
+            0
+          ],
+          "verdict": "yes"
+        },
+        "G1": {
+          "role_ref_indexes": [
+            0
+          ],
+          "support_ref_indexes": [
+            0
+          ],
+          "verdict": "yes"
+        },
+        "T1": {
+          "role_ref_indexes": [
+            0
+          ],
+          "support_ref_indexes": [
+            0
+          ],
+          "verdict": "yes"
+        }
+      },
+      "edit_correction_refs": [],
+      "edit_preservation": {
+        "conditional_guards/G1": {
+          "correction_ref_indexes": [],
+          "current_duty_id": "G1",
+          "verdict": "preserved"
+        },
+        "off_path_transitions/T1": {
+          "correction_ref_indexes": [],
+          "current_duty_id": "T1",
+          "verdict": "preserved"
+        },
+        "state_fields/F1": {
+          "correction_ref_indexes": [],
+          "current_duty_id": "F1",
+          "verdict": "preserved"
+        },
+        "state_fields/F2": {
+          "correction_ref_indexes": [],
+          "current_duty_id": "F2",
+          "verdict": "preserved"
+        }
+      },
+      "source_completeness": {
+        "omissions": [],
+        "verdict": "yes"
+      },
+      "verifier_task_sha256": "1a34fbdacb4673803d1cdd3a68f4794fe46eac6c95c7b42442284b6ad24a1643",
+      "version": "odylith.greenfield.source-duty-decisions.v5"
+    },
+    "decision_set_sha256": "77b2e4523b8827d01ad81c9af755abd08510efeb7644f39b89909410d2811e12",
+    "edit_preservation": {
+      "correction": "Show the approval status alongside the record. Keep all earlier safeguards.",
+      "correction_sha256": "a5f9080c7a5ad4362166bd091ff604d3e0aea3464cf7d2cabbe1730f0fcaf31f",
+      "prior_lifecycle": {
+        "binding_sha256": "000475116ec77484c3f5aad3a5b63fc29bc6aae508b65c32adfb93849a9f489f",
+        "boundaries": [],
+        "conditional_guards": [
+          {
+            "component_key": "record-state",
+            "duty_id": "G1",
+            "protected_action": "approval",
+            "rule": "access must remain open",
+            "source_refs": [
+              {
+                "occurrence": 1,
+                "quote": "Before approval, access must remain open."
+              }
+            ],
+            "trigger": "before approval",
+            "workstream_key": "record-delivery"
+          }
+        ],
+        "ledger_sha256": "497b6ef745a0a5246ad488be41c6affee410e86e6e33c798dfbafd29d437d13a",
+        "lifecycle_sha256": "b2c3f3847757a1a093a42ab9ce94910b5033223be7cb12855f214d3cd7c50214",
+        "off_path_transitions": [
+          {
+            "component_key": "record-state",
+            "duty_id": "T1",
+            "effects": [
+              {
+                "change": "closed",
+                "field": "access",
+                "observable_check": "access closed",
+                "state_field_id": "F1"
+              },
+              {
+                "change": "erased",
+                "field": "cache",
+                "observable_check": "cache empty",
+                "state_field_id": "F2"
+              }
+            ],
+            "governed_object": "dossier",
+            "source_refs": [
+              {
+                "occurrence": 1,
+                "quote": "Withdrawal closes dossier access and erases the cached copy"
+              }
+            ],
+            "trigger": "withdrawal",
+            "workstream_key": "record-delivery"
+          }
+        ],
+        "proof_duties": [],
+        "source_sha256": "33a57855a50c9e230744942e4a14f408165f672b12a739846d9295ebbf595566",
+        "state_fields": [
+          {
+            "duty_id": "F1",
+            "field": "access",
+            "meaning": "access status",
+            "source_refs": [
+              {
+                "occurrence": 1,
+                "quote": "dossier access"
+              }
+            ],
+            "state_object": "dossier"
+          },
+          {
+            "duty_id": "F2",
+            "field": "cache",
+            "meaning": "cached copy",
+            "source_refs": [
+              {
+                "occurrence": 1,
+                "quote": "cached copy"
+              }
+            ],
+            "state_object": "dossier"
+          }
+        ],
+        "version": "odylith.greenfield.source-lifecycle.v2"
+      },
+      "source_sha256": "697695241018fdcd685ed3554a677fa8d8cba2ccf87e9553ae8de26433ac31f6",
+      "transaction_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "odylith.greenfield.edit-lifecycle-preservation.v1"
+    },
+    "ledger": {
+      "boundaries": [],
+      "conditional_guards": [
+        {
+          "id": "G1",
+          "protected_action": "approval",
+          "rule": "access must remain open",
+          "source_refs": [
+            {
+              "context": "Before approval, access must remain open.",
+              "quote": "Before approval, access must remain open."
+            }
+          ],
+          "trigger": "before approval"
+        }
+      ],
+      "evidence_controls": [],
+      "first_path_actions": [
+        {
+          "action": "opens",
+          "actor_ref": {
+            "context": "A steward opens the dossier",
+            "quote": "steward"
+          },
+          "event_ref": {
+            "context": "steward opens the dossier",
+            "quote": "steward opens the dossier"
+          },
+          "id": "A1",
+          "observable_result": "dossier opened",
+          "performer_role": "human_actor",
+          "role_refs": [
+            {
+              "context": "steward opens the dossier",
+              "quote": "steward opens the dossier"
+            }
+          ],
+          "source_refs": [],
+          "statement": "steward opens the dossier",
+          "target": "the dossier"
+        },
+        {
+          "action": "approves",
+          "actor_ref": {
+            "context": "reviewer",
+            "quote": "reviewer"
+          },
+          "event_ref": {
+            "context": "reviewer approves the dossier",
+            "quote": "reviewer approves the dossier"
+          },
+          "id": "A2",
+          "observable_result": "dossier approved",
+          "performer_role": "human_actor",
+          "role_refs": [
+            {
+              "context": "reviewer approves the dossier",
+              "quote": "reviewer approves the dossier"
+            }
+          ],
+          "source_refs": [],
+          "statement": "reviewer approves the dossier",
+          "target": "the dossier"
+        }
+      ],
+      "off_path_transitions": [
+        {
+          "effects": [
+            {
+              "change": "closed",
+              "field": "access",
+              "observable_check": "access closed"
+            },
+            {
+              "change": "erased",
+              "field": "cache",
+              "observable_check": "cache empty"
+            }
+          ],
+          "governed_object": "dossier",
+          "id": "T1",
+          "source_refs": [
+            {
+              "context": "Withdrawal closes dossier access and erases the cached copy",
+              "quote": "Withdrawal closes dossier access and erases the cached copy"
+            }
+          ],
+          "trigger": "withdrawal"
+        }
+      ],
+      "proof_duties": [],
+      "question": "",
+      "state_fields": [
+        {
+          "field": "access",
+          "id": "F1",
+          "meaning": "access status",
+          "source_refs": [
+            {
+              "context": "dossier access",
+              "quote": "dossier access"
+            }
+          ],
+          "state_object": "dossier"
+        },
+        {
+          "field": "cache",
+          "id": "F2",
+          "meaning": "cached copy",
+          "source_refs": [
+            {
+              "context": "cached copy",
+              "quote": "cached copy"
+            }
+          ],
+          "state_object": "dossier"
+        }
+      ],
+      "status": "inventory",
+      "supporting_human_actions": [],
+      "system_duties": [],
+      "version": "odylith.greenfield.source-duty-ledger.v5"
+    },
+    "ledger_sha256": "497b6ef745a0a5246ad488be41c6affee410e86e6e33c798dfbafd29d437d13a",
+    "source_sha256": "697695241018fdcd685ed3554a677fa8d8cba2ccf87e9553ae8de26433ac31f6",
+    "verifier_task_sha256": "1a34fbdacb4673803d1cdd3a68f4794fe46eac6c95c7b42442284b6ad24a1643",
+    "version": "odylith.greenfield.source-duty-ledger-receipt.v8"
+  },
+  "source": "<!-- odylith:preconfirm-staging -->\n\n# Operator prompt evidence\n\nA steward opens the dossier. A reviewer approves the dossier. Withdrawal closes dossier access and erases the cached copy. Before approval, access must remain open.\n\n# Operator edit evidence\n\nShow the approval status alongside the record. Keep all earlier safeguards.\n",
+  "task": {
+    "authority_source": "<!-- odylith:preconfirm-staging -->\n\n# Operator prompt evidence\n\nA steward opens the dossier. A reviewer approves the dossier. Withdrawal closes dossier access and erases the cached copy. Before approval, access must remain open.\n\n# Operator edit evidence\n\nShow the approval status alongside the record. Keep all earlier safeguards.\n",
+    "decision_set_schema": {
+      "additionalProperties": false,
+      "properties": {
+        "decisions": {
+          "additionalProperties": false,
+          "properties": {
+            "A1": {
+              "additionalProperties": false,
+              "properties": {
+                "role_ref_indexes": {
+                  "items": {
+                    "maximum": 4,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "maxItems": 5,
+                  "type": "array"
+                },
+                "support_ref_indexes": {
+                  "items": {
+                    "maximum": 4,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "maxItems": 5,
+                  "type": "array"
+                },
+                "verdict": {
+                  "enum": [
+                    "yes",
+                    "no",
+                    "uncertain"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "verdict",
+                "support_ref_indexes",
+                "role_ref_indexes"
+              ],
+              "type": "object"
+            },
+            "A2": {
+              "additionalProperties": false,
+              "properties": {
+                "role_ref_indexes": {
+                  "items": {
+                    "maximum": 4,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "maxItems": 5,
+                  "type": "array"
+                },
+                "support_ref_indexes": {
+                  "items": {
+                    "maximum": 4,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "maxItems": 5,
+                  "type": "array"
+                },
+                "verdict": {
+                  "enum": [
+                    "yes",
+                    "no",
+                    "uncertain"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "verdict",
+                "support_ref_indexes",
+                "role_ref_indexes"
+              ],
+              "type": "object"
+            },
+            "F1": {
+              "additionalProperties": false,
+              "properties": {
+                "role_ref_indexes": {
+                  "items": {
+                    "maximum": 4,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "maxItems": 5,
+                  "type": "array"
+                },
+                "support_ref_indexes": {
+                  "items": {
+                    "maximum": 4,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "maxItems": 5,
+                  "type": "array"
+                },
+                "verdict": {
+                  "enum": [
+                    "yes",
+                    "no",
+                    "uncertain"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "verdict",
+                "support_ref_indexes",
+                "role_ref_indexes"
+              ],
+              "type": "object"
+            },
+            "F2": {
+              "additionalProperties": false,
+              "properties": {
+                "role_ref_indexes": {
+                  "items": {
+                    "maximum": 4,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "maxItems": 5,
+                  "type": "array"
+                },
+                "support_ref_indexes": {
+                  "items": {
+                    "maximum": 4,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "maxItems": 5,
+                  "type": "array"
+                },
+                "verdict": {
+                  "enum": [
+                    "yes",
+                    "no",
+                    "uncertain"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "verdict",
+                "support_ref_indexes",
+                "role_ref_indexes"
+              ],
+              "type": "object"
+            },
+            "G1": {
+              "additionalProperties": false,
+              "properties": {
+                "role_ref_indexes": {
+                  "items": {
+                    "maximum": 4,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "maxItems": 5,
+                  "type": "array"
+                },
+                "support_ref_indexes": {
+                  "items": {
+                    "maximum": 4,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "maxItems": 5,
+                  "type": "array"
+                },
+                "verdict": {
+                  "enum": [
+                    "yes",
+                    "no",
+                    "uncertain"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "verdict",
+                "support_ref_indexes",
+                "role_ref_indexes"
+              ],
+              "type": "object"
+            },
+            "T1": {
+              "additionalProperties": false,
+              "properties": {
+                "role_ref_indexes": {
+                  "items": {
+                    "maximum": 4,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "maxItems": 5,
+                  "type": "array"
+                },
+                "support_ref_indexes": {
+                  "items": {
+                    "maximum": 4,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "maxItems": 5,
+                  "type": "array"
+                },
+                "verdict": {
+                  "enum": [
+                    "yes",
+                    "no",
+                    "uncertain"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "verdict",
+                "support_ref_indexes",
+                "role_ref_indexes"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "A1",
+            "A2",
+            "F1",
+            "F2",
+            "T1",
+            "G1"
+          ],
+          "type": "object"
+        },
+        "edit_correction_refs": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "context": {
+                "maxLength": 2400,
+                "type": "string"
+              },
+              "quote": {
+                "maxLength": 2400,
+                "type": "string"
+              }
+            },
+            "required": [
+              "quote",
+              "context"
+            ],
+            "type": "object"
+          },
+          "maxItems": 256,
+          "type": "array"
+        },
+        "edit_preservation": {
+          "additionalProperties": false,
+          "properties": {
+            "conditional_guards/G1": {
+              "additionalProperties": false,
+              "properties": {
+                "correction_ref_indexes": {
+                  "items": {
+                    "maximum": 255,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "maxItems": 5,
+                  "type": "array"
+                },
+                "current_duty_id": {
+                  "enum": [
+                    "",
+                    "G1"
+                  ],
+                  "type": "string"
+                },
+                "verdict": {
+                  "enum": [
+                    "preserved",
+                    "changed",
+                    "removed",
+                    "missing",
+                    "uncertain"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "verdict",
+                "current_duty_id",
+                "correction_ref_indexes"
+              ],
+              "type": "object"
+            },
+            "off_path_transitions/T1": {
+              "additionalProperties": false,
+              "properties": {
+                "correction_ref_indexes": {
+                  "items": {
+                    "maximum": 255,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "maxItems": 5,
+                  "type": "array"
+                },
+                "current_duty_id": {
+                  "enum": [
+                    "",
+                    "T1"
+                  ],
+                  "type": "string"
+                },
+                "verdict": {
+                  "enum": [
+                    "preserved",
+                    "changed",
+                    "removed",
+                    "missing",
+                    "uncertain"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "verdict",
+                "current_duty_id",
+                "correction_ref_indexes"
+              ],
+              "type": "object"
+            },
+            "state_fields/F1": {
+              "additionalProperties": false,
+              "properties": {
+                "correction_ref_indexes": {
+                  "items": {
+                    "maximum": 255,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "maxItems": 5,
+                  "type": "array"
+                },
+                "current_duty_id": {
+                  "enum": [
+                    "",
+                    "F1",
+                    "F2"
+                  ],
+                  "type": "string"
+                },
+                "verdict": {
+                  "enum": [
+                    "preserved",
+                    "changed",
+                    "removed",
+                    "missing",
+                    "uncertain"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "verdict",
+                "current_duty_id",
+                "correction_ref_indexes"
+              ],
+              "type": "object"
+            },
+            "state_fields/F2": {
+              "additionalProperties": false,
+              "properties": {
+                "correction_ref_indexes": {
+                  "items": {
+                    "maximum": 255,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "maxItems": 5,
+                  "type": "array"
+                },
+                "current_duty_id": {
+                  "enum": [
+                    "",
+                    "F1",
+                    "F2"
+                  ],
+                  "type": "string"
+                },
+                "verdict": {
+                  "enum": [
+                    "preserved",
+                    "changed",
+                    "removed",
+                    "missing",
+                    "uncertain"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "verdict",
+                "current_duty_id",
+                "correction_ref_indexes"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "state_fields/F1",
+            "state_fields/F2",
+            "off_path_transitions/T1",
+            "conditional_guards/G1"
+          ],
+          "type": "object"
+        },
+        "source_completeness": {
+          "additionalProperties": false,
+          "properties": {
+            "omissions": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "omission_id": {
+                    "maxLength": 200,
+                    "type": "string"
+                  },
+                  "source_ref": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "context": {
+                        "maxLength": 2400,
+                        "type": "string"
+                      },
+                      "quote": {
+                        "maxLength": 2400,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "quote",
+                      "context"
+                    ],
+                    "type": "object"
+                  },
+                  "typed_role": {
+                    "enum": [
+                      "first_path_action",
+                      "supporting_human_action",
+                      "system_duty",
+                      "state_field",
+                      "off_path_transition",
+                      "conditional_guard",
+                      "boundary",
+                      "proof_duty"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "omission_id",
+                  "typed_role",
+                  "source_ref"
+                ],
+                "type": "object"
+              },
+              "maxItems": 32,
+              "type": "array"
+            },
+            "verdict": {
+              "enum": [
+                "yes",
+                "no",
+                "uncertain"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "verdict",
+            "omissions"
+          ],
+          "type": "object"
+        },
+        "verifier_task_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "version": {
+          "enum": [
+            "odylith.greenfield.source-duty-decisions.v5"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "version",
+        "verifier_task_sha256",
+        "decisions",
+        "source_completeness",
+        "edit_preservation",
+        "edit_correction_refs"
+      ],
+      "type": "object"
+    },
+    "edit_preservation": {
+      "correction": "Show the approval status alongside the record. Keep all earlier safeguards.",
+      "correction_sha256": "a5f9080c7a5ad4362166bd091ff604d3e0aea3464cf7d2cabbe1730f0fcaf31f",
+      "prior_lifecycle": {
+        "boundaries": [],
+        "conditional_guards": [
+          {
+            "duty_id": "G1",
+            "protected_action": "approval",
+            "rule": "access must remain open",
+            "source_refs": [
+              {
+                "occurrence": 1,
+                "quote": "Before approval, access must remain open."
+              }
+            ],
+            "trigger": "before approval"
+          }
+        ],
+        "lifecycle_sha256": "b2c3f3847757a1a093a42ab9ce94910b5033223be7cb12855f214d3cd7c50214",
+        "off_path_transitions": [
+          {
+            "duty_id": "T1",
+            "effects": [
+              {
+                "change": "closed",
+                "field": "access",
+                "observable_check": "access closed",
+                "state_field_id": "F1"
+              },
+              {
+                "change": "erased",
+                "field": "cache",
+                "observable_check": "cache empty",
+                "state_field_id": "F2"
+              }
+            ],
+            "governed_object": "dossier",
+            "source_refs": [
+              {
+                "occurrence": 1,
+                "quote": "Withdrawal closes dossier access and erases the cached copy"
+              }
+            ],
+            "trigger": "withdrawal"
+          }
+        ],
+        "proof_duties": [],
+        "state_fields": [
+          {
+            "duty_id": "F1",
+            "field": "access",
+            "meaning": "access status",
+            "source_refs": [
+              {
+                "occurrence": 1,
+                "quote": "dossier access"
+              }
+            ],
+            "state_object": "dossier"
+          },
+          {
+            "duty_id": "F2",
+            "field": "cache",
+            "meaning": "cached copy",
+            "source_refs": [
+              {
+                "occurrence": 1,
+                "quote": "cached copy"
+              }
+            ],
+            "state_object": "dossier"
+          }
+        ],
+        "version": "odylith.greenfield.source-lifecycle.v2"
+      },
+      "transaction_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "odylith.greenfield.edit-lifecycle-preservation.v1"
+    },
+    "edit_preservation_task": "Give one decision for every compiler-owned prior lifecycle key. The prior seal is a coverage checklist, not current truth; do not copy it or let it override the explicit correction. Compare each prior condition, actor, target, scope, timing, effect and consequence with a current duty in the SAME typed section. Prose, another section or an unrelated current duty cannot preserve it. Select preserved only for equivalent meaning with an ordinary yes decision; changed requires a current same-section yes duty and exact correction evidence explicitly changing that prior duty; removed requires exact correction evidence explicitly withdrawing it and an empty current_duty_id. Original source and general preservation statements cannot authorize change or removal. Return missing or uncertain when unsupported. A compound current duty may carry multiple prior duties; compare each prior meaning independently and require exact correction evidence for every changed duty. Put distinct correction-only quote/context pairs in edit_correction_refs and cite their zero-based indexes; context locates, never adds meaning. preserved/missing/uncertain use no correction indexes. This is part of this same source-only pass; do not author a candidate or another review.",
+    "reference_index_order": "Resolve citation IDs through the citation bank. For action rows, support references are event_ref followed by source_refs; role references are actor_ref followed by role_refs. Deduplicate identical quote/context pairs in each list, preserving first occurrence. For other rows, both lists equal source_refs with identical-pair deduplication. Return zero-based indexes of those derived lists. A yes action must select its event, actor, and every authored role context. Judge every normalized statement, action, target and role semantically against the full source; substring placement in a normalized statement does not prove entailment. Object key order cannot change workflow order. Return compact JSON only.",
+    "source_duty_ledger": {
+      "boundaries": [],
+      "citations": [
+        {
+          "c": "steward opens the dossier",
+          "id": "c0",
+          "q": "steward opens the dossier"
+        },
+        {
+          "c": "A steward opens the dossier",
+          "id": "c1",
+          "q": "steward"
+        },
+        {
+          "c": "reviewer approves the dossier",
+          "id": "c2",
+          "q": "reviewer approves the dossier"
+        },
+        {
+          "c": "reviewer",
+          "id": "c3",
+          "q": "reviewer"
+        },
+        {
+          "c": "dossier access",
+          "id": "c4",
+          "q": "dossier access"
+        },
+        {
+          "c": "cached copy",
+          "id": "c5",
+          "q": "cached copy"
+        },
+        {
+          "c": "Withdrawal closes dossier access and erases the cached copy",
+          "id": "c6",
+          "q": "Withdrawal closes dossier access and erases the cached copy"
+        },
+        {
+          "c": "Before approval, access must remain open.",
+          "id": "c7",
+          "q": "Before approval, access must remain open."
+        }
+      ],
+      "conditional_guards": [
+        {
+          "id": "G1",
+          "protected_action": "approval",
+          "rule": "access must remain open",
+          "source_refs": [
+            "c7"
+          ],
+          "trigger": "before approval"
+        }
+      ],
+      "evidence_controls": [],
+      "first_path_actions": [
+        {
+          "action": "opens",
+          "actor_ref": "c1",
+          "event_ref": "c0",
+          "id": "A1",
+          "observable_result": "dossier opened",
+          "performer_role": "human_actor",
+          "role_refs": [
+            "c0"
+          ],
+          "source_refs": [],
+          "statement": "steward opens the dossier",
+          "target": "the dossier"
+        },
+        {
+          "action": "approves",
+          "actor_ref": "c3",
+          "event_ref": "c2",
+          "id": "A2",
+          "observable_result": "dossier approved",
+          "performer_role": "human_actor",
+          "role_refs": [
+            "c2"
+          ],
+          "source_refs": [],
+          "statement": "reviewer approves the dossier",
+          "target": "the dossier"
+        }
+      ],
+      "off_path_transitions": [
+        {
+          "effects": [
+            {
+              "change": "closed",
+              "field": "access",
+              "observable_check": "access closed"
+            },
+            {
+              "change": "erased",
+              "field": "cache",
+              "observable_check": "cache empty"
+            }
+          ],
+          "governed_object": "dossier",
+          "id": "T1",
+          "source_refs": [
+            "c6"
+          ],
+          "trigger": "withdrawal"
+        }
+      ],
+      "proof_duties": [],
+      "question": "",
+      "state_fields": [
+        {
+          "field": "access",
+          "id": "F1",
+          "meaning": "access status",
+          "source_refs": [
+            "c4"
+          ],
+          "state_object": "dossier"
+        },
+        {
+          "field": "cache",
+          "id": "F2",
+          "meaning": "cached copy",
+          "source_refs": [
+            "c5"
+          ],
+          "state_object": "dossier"
+        }
+      ],
+      "status": "inventory",
+      "supporting_human_actions": [],
+      "system_duties": [],
+      "version": "odylith.greenfield.source-duty-compact.v3"
+    },
+    "task": "Judge every material duty row against the complete authority source, including hierarchy, reference-only controls, and contradictions outside its cited excerpt. Assess every source-asserted field in each ledger row and its typed section/role. For actions, the cited event and typed role must support the full actor, action, target, and normalized statement; a shared verb can support distinct targets. A yes action decision must affirm that actor_ref names exactly ONE action performer of the asserted typed role. Reject an actor quote containing a whole action sentence, additional performers, or whole duty or paragraph context, even when its bytes are source-cited. Event and role refs carry that wider context separately. An identity from explicit role context may resolve a pronoun or inherited verb; judge that performer assignment against the complete source. Check that repeated actor citations identify the same performer across actions and supporting duties while distinct source performers retain distinct identities. The identity quote must be retained literally in the normalized statement, but containment alone proves custody, not semantic atomicity or performer entailment. For state fields, transitions, guards, boundaries, and proof duties, verify the meaning of every field against the exact source refs. A transition observable_check may express a consistent check of its cited effect without literal source wording. Do not promote reference context into a product duty. Return one decision per material row, keyed by its exact duty ID. The compiler owns claim hashes and canonical order; do not return or invent hashes. A yes decision must cite indexes of exact source and role references; use no or uncertain otherwise. Then scan the complete authority source from start to end for material actions, state fields, off-path transitions, guards, boundaries, and proof duties missing from the inventory. Return one source_completeness verdict: yes with no omissions only if every material source duty is represented; no or uncertain with at least one omission_id, typed_role, and exact source quote/context otherwise. Reference-only material is not a product duty. Do not author a candidate, add or omit row decisions, or give a second global pass.",
+    "verifier_task_sha256": "1a34fbdacb4673803d1cdd3a68f4794fe46eac6c95c7b42442284b6ad24a1643"
+  }
+}

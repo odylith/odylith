@@ -1,6 +1,40 @@
 - Bug ID: CB-303
 
-## Current additive EDIT lifecycle omission (2026-10-04)
+## Current installed semantic frontier (2026-10-05)
+
+The once-only v26 controls do not qualify the v50 mechanism. Research H0
+admits in four calls and independently preserves all 13 original duties in
+typed lifecycle/events and the actual sealed governance package. Reverse audit
+finds no unsupported approval authority or runtime dependency. Its EDIT stops
+after three calls, before candidate authoring, with `EDIT override citation is
+outside the exact correction`. The rejected reference was discarded; the
+actual invalid-reference subtype and H1 semantic fidelity are unknown.
+
+Agriculture's first source journey stops after three calls and 103.501 measured
+seconds. The verifier reports one omitted supporting human action: registering
+cited crop and weather datasets. Candidate and proposal counts are zero; the
+governed fingerprints and active generation remain exact. This is a safe
+refusal and a failed complete-input consumer control. Missing raw inventory and
+verdict bytes prevent independent adjudication of the reported omission. No H0,
+EDIT or terminal result exists for this control. Do not replay either source
+journey to obtain a different verdict or recover discarded bytes.
+
+Retained evidence is linked under
+`.odylith/release-evidence/v50-implementation-20261005/` in
+`research-h0-audit-citation-diagnosis-v26.json`,
+`research-edit-refusal-v26-evidence.json`, and
+`agriculture-initial-source-refusal-v26.json`. Research H0 independent audit:
+`/private/tmp/odylith-v50-research-h0-independent-audit-v26-20261005/audit.json`,
+SHA-256 `65497e0407679e2a9c50fe3db69f023871e9bb392e5e2787d523098d25496cec`.
+
+The bounded next change moves correction citation bookkeeping into the compiler
+and retains source-phase denial evidence privately. The same verifier must
+still affirm each prior semantic change or removal against the exact correction;
+this does not repair or prove initial inventory completeness. Keep the original
+v49 failed H1, v26 failures, fixed sources, four-call limit and semantic gates.
+No winning mechanism or release qualification is established.
+
+## Previous additive EDIT lifecycle omission (2026-10-04)
 
 Independent review of exact retained v49 Agriculture seals finds initial H0
 faithful to all 26 original requirements, but H1 preserves only 25. The additive

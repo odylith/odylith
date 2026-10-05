@@ -16,12 +16,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 179,
+    "explicit_event_count": 180,
     "mapped_workstream_evidence_count": 155,
     "recent_path_match_count": 0,
     "spec_history_event_count": 16,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 179
+    "timeline_event_count": 180
   },
   "name": "Odylith Chatter",
   "path_prefixes": [
@@ -54,6 +54,24 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "tests/unit/install/test_greenfield_private_diagnostic_retention.py"
+      ],
+      "confidence": "low",
+      "event_index": 1552,
+      "explicit_components": [],
+      "kind": "ambient_signal",
+      "mapped_components": [
+        "odylith",
+        "odylith-chatter"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work. 1 verifiable artifact reference.",
+      "ts_iso": "2026-10-05T10:13:22Z",
+      "workstreams": []
+    },
     {
       "artifact_count": 3,
       "artifacts": [

@@ -30,7 +30,8 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 SOURCE_DUTY_LEDGER_VERSION = "odylith.greenfield.source-duty-ledger.v5"
 SOURCE_DUTY_LEDGER_PREFLIGHT_VERSION = "odylith.greenfield.source-duty-preflight.v4"
 SOURCE_DUTY_LEDGER_RECEIPT_VERSION = "odylith.greenfield.source-duty-ledger-receipt.v7"
-EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION = "odylith.greenfield.source-duty-ledger-receipt.v8"
+EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION = "odylith.greenfield.source-duty-ledger-receipt.v9"
+LEGACY_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION = "odylith.greenfield.source-duty-ledger-receipt.v8"
 MAX_SOURCE_DUTY_LEDGER_FILE_BYTES = 512 * 1024
 
 _DUTY_SECTIONS: dict[str, tuple[int, tuple[str, ...]]] = {
@@ -376,6 +377,7 @@ def preflight_greenfield_source_duty_ledger(
 def validate_greenfield_source_duty_ledger(
     ledger: Mapping[str, Any], *, evidence_text: str, decision_set: Mapping[str, Any],
     edit_preservation: Mapping[str, Any] | None = None,
+    _passive_legacy_edit: bool = False,
 ) -> dict[str, Any]:
     """Admit only complete, source-bound affirmative action decisions."""
 
@@ -388,6 +390,7 @@ def validate_greenfield_source_duty_ledger(
         )
     verifier_task_sha256 = source_duty_entailment_task(
         preflight, evidence_text=evidence_text, edit_preservation=edit_preservation,
+        _passive_legacy_edit=_passive_legacy_edit,
     )["verifier_task_sha256"]
     try:
         accepted_decisions = validate_source_duty_decision_set(
@@ -397,11 +400,13 @@ def validate_greenfield_source_duty_ledger(
             verifier_task_sha256=verifier_task_sha256,
             evidence_text=evidence_text,
             edit_preservation=edit_preservation,
+            _passive_legacy_edit=_passive_legacy_edit,
         )
     except GreenfieldSourceDutyEntailmentError as exc:
         raise GreenfieldSourceDutyLedgerError(str(exc)) from exc
     return {
-        "version": (EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION if edit_preservation is not None
+        "version": ((LEGACY_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION if _passive_legacy_edit
+                     else EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION) if edit_preservation is not None
                     else SOURCE_DUTY_LEDGER_RECEIPT_VERSION),
         "source_sha256": preflight["source_sha256"],
         "ledger_sha256": preflight["ledger_sha256"],
@@ -417,6 +422,7 @@ def validate_greenfield_source_duty_ledger(
 def verify_greenfield_source_duty_ledger_receipt(
     receipt: Mapping[str, Any], *, evidence_text: str,
     edit_preservation: Mapping[str, Any] | None = None,
+    allow_legacy_edit: bool = True,
 ) -> dict[str, Any]:
     """Revalidate custody when a prior ledger receipt enters admission."""
 
@@ -438,8 +444,12 @@ def verify_greenfield_source_duty_ledger_receipt(
         raise GreenfieldSourceDutyLedgerError("source duty ledger receipt is malformed")
     if edit_preservation is not None and retained_edit != edit_preservation:
         raise GreenfieldSourceDutyLedgerError("source duty EDIT preservation baseline is invalid")
-    if receipt["version"] != (EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION if retained_edit is not None
-                              else SOURCE_DUTY_LEDGER_RECEIPT_VERSION):
+    # Only a retained receipt selects passive legacy custody. Fresh admission
+    # always expects the current EDIT protocol; host decisions cannot select it.
+    allowed_versions = (((LEGACY_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,) if allow_legacy_edit else ())
+                        + (EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,) if retained_edit is not None
+                        else (SOURCE_DUTY_LEDGER_RECEIPT_VERSION,))
+    if receipt["version"] not in allowed_versions:
         raise GreenfieldSourceDutyLedgerError(
             "source duty ledger receipt version is invalid"
         )
@@ -456,6 +466,7 @@ def verify_greenfield_source_duty_ledger_receipt(
         evidence_text=evidence_text,
         decision_set=receipt["decision_set"],
         edit_preservation=retained_edit,
+        _passive_legacy_edit=receipt["version"] == LEGACY_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
     )
     if dict(receipt) != expected:
         raise GreenfieldSourceDutyLedgerError(
@@ -506,6 +517,7 @@ def load_greenfield_source_duty_file(path: Path) -> dict[str, Any]:
 
 __all__ = [
     "EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION",
+    "LEGACY_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION",
     "GreenfieldSourceDutyLedgerError",
     "SOURCE_DUTY_LEDGER_PREFLIGHT_VERSION",
     "SOURCE_DUTY_LEDGER_RECEIPT_VERSION",

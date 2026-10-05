@@ -127,9 +127,8 @@ def _event_date(raw_ts: str, *, fallback_date: str) -> str:
         parsed = dt.datetime.fromisoformat(token)
     except ValueError:
         return fallback_date
-    if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=dt.datetime.now().astimezone().tzinfo)
-    return parsed.astimezone().date().isoformat()
+    # Historical dates belong to the recorded event, not the syncing host.
+    return parsed.date().isoformat()
 
 
 def _find_h2_section(lines: Sequence[str], heading: str) -> tuple[int, int] | None:

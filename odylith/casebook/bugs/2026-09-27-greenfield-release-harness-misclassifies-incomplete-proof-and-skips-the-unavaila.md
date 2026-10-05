@@ -1,5 +1,166 @@
 - Bug ID: CB-347
 
+## V26 source refusals and missing diagnostic custody (2026-10-05)
+
+Clean `16a470d1b` produces the separately retained v26 distribution. All 11
+manifest assets, 12 checksums, compiler/runtime identities, provenance and the
+87-term leakage check pass; canonical install/upgrade smoke exits zero. These
+results do not qualify semantic authoring or the full release.
+
+The first Agriculture wrapper stops before any source call because root starts
+execution while the owner is still sealing the predeclaration. The exact-input
+guard correctly refuses the changed declaration. Preserve its result, eight
+successful prefix commands and missing intermediate-metadata limitation. The
+reviewed continuation reuses that exact installed consumer and begins only the
+first unexecuted source step; no install or semantic call is replayed.
+
+That source step returns a completeness refusal in three calls and 103.501
+measured seconds. Its first untrusted omission report identifies dataset
+registration. No candidate/proposal/EDIT/terminal action follows. Read-only
+comparison verifies exact governed fingerprints and active generation. Research
+H0 independently passes 13/13 duties, but EDIT refuses an invalid correction
+reference after three calls and 135.511 measured seconds. Retain both failures.
+
+Supported prepare supplies none of its existing raw retain callbacks. Inventory,
+task and denied verifier bytes disappear during temporary-workspace cleanup;
+hashes cannot recover them. The Research checker collapses wrong literal,
+absent/ambiguous context and malformed references into one outward message.
+No model-authored occurrence field exists, and the actual rejected subtype is
+unknown. The Agriculture report alone cannot prove which current duty was
+omitted. Add explicit private diagnostic retention through existing owners,
+before parsing, refusal or deadline checks discard returned bytes. Retention
+must consume the same deadline and cannot authorize a candidate or transaction.
+
+The immutable failure and audit records are in
+`.odylith/release-evidence/v50-implementation-20261005/`. Original failed freeze
+and controls remain unchanged. Research is not replayed for missing bytes;
+the 40-case public qualification remains held.
+
+Independent review of the v51 designs identifies two P1 compatibility gaps and
+one P2 path-custody gap. The transaction authority checker must retain exact
+passive v50/v8 readback when the current EDIT constant becomes v9. Conversely,
+both fresh candidate entrypoints must require current v6/v9; receipt-selected
+passive validation cannot grant new admission. Prove this with a real compiler
+v8 PCT load and legacy-receipt refusals at both fresh entrypoints. Diagnostic
+creation and writes must pin directory identity against parent-path retargeting;
+file-level `O_NOFOLLOW` alone is insufficient. These are pending-design findings,
+not proof of an escaped v26 defect. Report:
+`/private/tmp/odylith-v6-and-private-retention-independent-design-review-20261005.json`,
+SHA-256 `be1f9c9656a8382f3f2db45fb4819c7ccde2dfcabc65b52e783782118194a8d2`.
+Implementation and fresh independent review must close all three findings.
+
+The first v51 retention/adopter run retains 166 passes and nine failures at
+`/private/tmp/odylith-private-retention-bounded-20261005.log`. Eight existing
+proposal-refusal variants supply old EDIT reference fields/v8 receipt custody,
+so current v6 admission refuses before their intended proposal boundary. Update
+only that supplier to explicit fresh authorization rows/current receipt; retain
+all detail, seal, call-count and timing assertions. A new native retention-error
+case correctly dispatches no installed command, but its shared test assertion
+reads a nonexistent command log. Assert zero dispatch directly for that case.
+Preserve the failed run separately; neither finding permits changing production
+admission or deadlines. The owner reports 28 focused diagnostic controls passing;
+combined continuation and independent review remain required.
+
+The retention corrections pass 41 focused checks in 10.38 seconds: 28 diagnostic
+controls, five native stall cases and all eight migrated refusal suppliers.
+The final model-input capture delta still requires its own proof. The first
+authorization run separately retains 56 passes and three failures at
+`/private/tmp/odylith-v51-authorization-tests-first-20261005.log`. Two artificial
+fixtures preserve outer correction whitespace that the existing authoring frame
+strips; use exact retained internal Unicode/newlines and keep custody rejection.
+The third expects all old v8 packages to be execution-ineligible. That expectation
+is broader than the actual contract: the 24-owner identity fingerprints
+post-confirm writers, unchanged by this pre-confirm revision. An already sealed,
+valid v50/v8 package may remain eligible with exact writer identity; this does
+not grant fresh candidate admission. Characterize that compatibility and existing
+writer-identity refusal instead of adding an unnecessary commit-loader guard.
+No actual publication or recovery of the failed v49 H1 is authorized.
+
+### Private capture directory race findings (2026-10-05)
+
+Independent implementation controls retain two failures and one pass in 0.29
+seconds at `/private/tmp/odylith-private-retention-independent-controls-20261005.log`.
+A same-user concurrent rename can replace the newly created directory between
+`mkdir` and its first descriptor open, or move the pinned directory into the
+consumer after the last pathname check. The current code therefore cannot claim
+unconditional new-directory identity or outside-consumer residency during writes.
+These findings affect diagnostic path custody; the candidate-input retention
+failure control correctly stops the fourth model and proposal. Preserve the
+failed controls and adjudicate the supported trust boundary before further proof.
+POSIX `mkdir` does not return a directory descriptor; repeated pathname checks
+cannot make ancestry validation and writing atomic against same-user mutation.
+Do not build a retry loop or claim hostile same-user rename protection from a
+finite check. Private evidence requires an operator-controlled stable parent;
+detected mutations must refuse, and inode custody must not be described as an
+unconditional location guarantee.
+
+Independent report:
+`/private/tmp/odylith-private-retention-independent-final-review-20261005.json`,
+SHA-256 `add407a936088e9b4aac41a85c906bdaae85728d4c49248d3c1e0e4ca4027a31`.
+The bounded correction binds the observed newly created leaf before descriptor
+adoption and checks parent/leaf identity after writes as well as before them.
+Fresh independent proof remains due; the original two failures stay retained.
+
+The corrected writer passes 38 focused controls in 3.62 seconds. Independent
+final review is clear under the stable private-parent boundary and its one
+post-artifact-fsync control passes in 0.29 seconds. All 89 original assertions
+remain. The original two-failure/one-pass log is hash-unchanged. Review:
+`/private/tmp/odylith-private-retention-custody-correction-independent-final-review-20261005.json`,
+SHA-256 `7cc5054072e711db23fcbacd1b49b85f4aa01bf9d8a12381c57035ce786e1923`.
+This closes both P2 findings within the stated trust boundary; it grants no
+semantic, timing, installed or release qualification.
+
+### Actual 16a Linux CI governance failures (2026-10-05)
+
+Run `37288154604` finishes with 9,584 passes, six failures and six warnings in
+3,917.49 seconds. The exact failed log is retained at
+`.odylith/release-evidence/v51-implementation-20261005/ci-16a-failed.log`,
+SHA-256 `2abe24f701eb7e005fb1c6e5b2e3d849b7daf21083dbf269362a750edcdc399b`.
+Five Atlas browser failures truthfully see committed stale payloads. D-004,
+D-005 and D-006 miss only the changed dashboard spec history; D-018 and D-020
+miss only the changed Chatter spec history. Each previous stored fingerprint
+matches that spec's prior commit. Their topology/source bytes remain correct.
+Review and refresh only those five catalog entries, preserving authored dates
+and SVG/PNG bytes; leave unrelated stale debt untouched.
+
+The release spec convergence failure is a separate timezone defect. Identical
+frozen 16a stream and manifest reproduce the committed trace in Pacific time,
+but UTC changes only the first event date from October 4 to October 5. Source
+stream line 1545 records `2026-10-04T23:15:52-07:00`.
+`sync_component_spec_requirements._event_date` converts that recorded timestamp
+through the executing machine's local timezone. A refresh cannot converge both
+hosts. Preserve the calendar date carried by the source timestamp, including
+naive timestamps; retain invalid/empty fallback behavior. CB-212's prior UTC
+INDEX repair and CB-018's local-window repair are distinct date contracts and
+must not be blindly applied here. Prove both host timezones, signed offsets,
+`Z`, naive and invalid input before selected release-spec synchronization. This
+is a bounded existing-owner correction, not a new time or memory engine.
+
+### V51 combined current-source gate (2026-10-05)
+
+The once-only full-install plus 106-module Greenfield runtime gate finishes with
+3,840 passes, one failure and 12 warnings in 347.82 seconds; all 2,312 frozen
+source/test/doc files stay exact. Preserve its log, XML, declaration and receipt
+under `.odylith/release-evidence/v51-implementation-20261005/`. The sole failure
+is an old `.v50` literal in the actor-identity contract test; its returned
+contract truthfully reports v51. Update only that explicit version expectation
+and prove the complete actor-identity module, retaining all custody/reuse
+assertions. The production source does not change for this correction. Do not
+repeat the combined gate for a passing count or relabel its failed result.
+
+The complete actor/spec-sync continuation passes 25 checks in 0.47 seconds,
+including source-date portability, with all prior actor assertions retained.
+The full Registry contract module passes 18 checks in each host timezone.
+Independent review rebuilds all 13 frozen 16a release-trace lines exactly in
+Pacific and UTC; the original recorded date remains October 4 and the raw
+stream is untouched. The selected five-diagram review refresh preserves all
+15 MMD/SVG/PNG assets and all 42 unrelated catalog entries. The five previously
+failed browser cases, current D-043 and desktop/mobile normal, empty, fallback
+and error metadata controls pass 20 checks in 23.73 seconds. These are source
+and affected-surface continuations; original Linux CI remains failed until a
+new run settles. All 2,126 installation cases in the combined XML pass. Neither
+these results nor the corrected literal qualifies live semantic authoring.
+
 ## Complete 912f freeze and post-output timeout setup (2026-10-05)
 
 The clean 912f/v25 freeze executes all 8,480 checks once: 8,479 pass,
