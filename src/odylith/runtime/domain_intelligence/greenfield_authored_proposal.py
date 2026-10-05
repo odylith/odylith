@@ -95,7 +95,6 @@ def build_authored_greenfield_proposal(
     external_systems = _strings(confirmed_intent.get("external_systems"))
     non_goals = _strings(confirmed_intent.get("non_goals"))
     assumptions = assumption_rows(confirmed_intent.get("assumptions", []))
-    ambiguities = _strings(confirmed_intent.get("ambiguities"))
     operational_constraints = _strings(confirmed_intent.get("operational_constraints"))
     evidence_requirements = _strings(confirmed_intent.get("evidence_requirements"))
     success_metrics = _strings(confirmed_intent.get("success_metrics"))
@@ -193,10 +192,7 @@ def build_authored_greenfield_proposal(
             "write_guardrail": "No product records are written until CONFIRM publishes the sealed transaction.",
             "next_best_action": "Review the sealed project package and choose CONFIRM, EDIT, or REJECT.",
         },
-        "assumptions": _assumption_rows([
-            *assumptions,
-            *({"applies_to": "general", "statement": value} for value in ambiguities),
-        ]),
+        "assumptions": _assumption_rows(assumptions),
         "open_questions": [],
         "risks": copy.deepcopy(risk_posture["items"]),
         "security_compliance": {

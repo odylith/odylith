@@ -118,12 +118,14 @@ def build_provisional_design_atlas_specs(
                 )
             ),
             "read_guide": (
-                "Each group pairs a proposed responsibility with source-action references "
-                "and a proposed boundary check. Linked workstream acceptance stays shared across "
-                "its participating components; neither check is passed or exhaustive proof. The source-action "
-                "reference inventory shows each full action once; repeated IDs do not create "
-                "additional events or execution order. Support does not "
-                "transfer the stated actor's action to a component. Source-stated facts are "
+                "Select a diagram box in Read mode for complete statements. Component boxes "
+                "retain their proposed responsibility, source-action references and boundary check. "
+                "Linked workstream boxes retain the full deliverable and shared acceptance; no "
+                "check is claimed to have passed or be exhaustive proof. The source-action "
+                "reference box retains every full action and stated performer. References do not "
+                "create additional events or execution order, or transfer actor ownership. "
+                "Source facts and lifecycle boxes preserve their complete statements and citations. "
+                "Compact labels are references, not summaries. Source-stated facts are "
                 + source_fact_guide
             ),
             "source": support_source,
@@ -188,7 +190,7 @@ def build_provisional_first_run_atlas_view(
 ) -> tuple[str, list[dict[str, str]]]:
     """Project selected events and their declared upstream design support."""
 
-    lines = ["flowchart LR"]
+    lines = ["flowchart TD"]
     boxes: list[dict[str, str]] = []
     performers: dict[tuple[str, str], str] = {}
     orders = design["first_run"]["event_orders"]
@@ -203,7 +205,14 @@ def build_provisional_first_run_atlas_view(
             relation.get("actor_fact_quote"), "first-path actor fact"
         )
         event_display = authored_event_display_text(relation)
-        lines.append(f'  event{index}["{mermaid_label(event_display)}"]')
+        action_reference = (
+            f"{relation['action_verb_quote']} {relation['target_quote']}"
+            if relation.get("action_verb_quote") and relation.get("target_quote")
+            else event_quote
+        )
+        lines.append(
+            f'  event{index}["Source action {index}<br/>{mermaid_label(action_reference)}"]'
+        )
         boxes.append(
             atlas_box(
                 f"event{index}",
@@ -226,7 +235,7 @@ def build_provisional_first_run_atlas_view(
                     f"{performer}",
                 )
             )
-        lines.append(f'  {performers[identity]} -->|"performs"| event{index}')
+        lines.append(f'  {performers[identity]} --> event{index}')
         owner = relation.get("owner_system_quote")
         if isinstance(owner, str) and owner and owner != performer:
             owner_identity = ("owner_system", owner)
@@ -252,7 +261,7 @@ def build_provisional_first_run_atlas_view(
         lines.append(f'  event{before} -->|"source constraint {constraint_index}"| event{after}')
     for before, after in zip(orders, orders[1:]):
         if (before, after) not in required:
-            lines.append(f'  event{before} -. "proposed next step" .-> event{after}')
+            lines.append(f'  event{before} -.-> event{after}')
     direct_components = {
         component["key"] for component in design["components"]
         if selected.intersection(component["supported_event_orders"])
@@ -300,13 +309,16 @@ def build_provisional_first_run_atlas_view(
         for order in component["supported_event_orders"]:
             if order in selected:
                 lines.append(f'  event{order} -. "proposed support" .-> {node_id}')
-    for exchange in design["exchanges"]:
+    component_names = {row["key"]: row["name"] for row in design["components"]}
+    boxes_by_id = {box["node_id"]: box for box in boxes}
+    for exchange_index, exchange in enumerate(design["exchanges"], 1):
         if exchange["from_component"] not in component_nodes or exchange["to_component"] not in component_nodes:
             continue
-        lines.append(
-            f'  {component_nodes[exchange["from_component"]]} '
-            f'-->|"Proposed exchange: {mermaid_label(exchange["contract"])}"| '
-            f'{component_nodes[exchange["to_component"]]}'
+        origin_box = boxes_by_id[component_nodes[exchange["from_component"]]]
+        origin_box["description"] += (
+            f"\nProposed exchange {exchange_index} to "
+            f"{component_names[exchange['to_component']]}: "
+            f"{exchange['contract']}"
         )
     delivery_edges: set[tuple[str, str]] = set()
     for workstream in design["workstreams"]:
@@ -319,9 +331,11 @@ def build_provisional_first_run_atlas_view(
                         and edge not in delivery_edges
                     ):
                         delivery_edges.add(edge)
-                        lines.append(
-                            f'  {component_nodes[origin]} -. "proposed delivery prerequisite" .-> '
-                            f'{component_nodes[target]}'
+                        target_box = boxes_by_id[component_nodes[target]]
+                        target_box["description"] += (
+                            f"\nProposed delivery prerequisite: "
+                            f"{component_names[origin]} "
+                            f"through {workstreams[prerequisite]['title']}."
                         )
     return styled_mermaid(lines), boxes
 
@@ -402,126 +416,73 @@ def _capability_support_view(
     proof_is_provisional: bool,
     source_lifecycle: Mapping[str, Any] | None,
 ) -> tuple[str, list[dict[str, str]]]:
-    events = {row["order"]: row for row in relations}
     lines = ["flowchart LR"]
     boxes: list[dict[str, str]] = []
-    for index, component in enumerate(design["components"], 1):
-        component_id = f"component{index}"
-        support_id = f"component{index}_support"
-        actions_id = f"component{index}_actions"
-        verification_id = f"component{index}_verification"
-        actions = ", ".join(f"Source action {order}" for order in component["supported_event_orders"])
-        actions_label = mermaid_label(actions, width=44)
-        lines.extend([
-            f'  subgraph {support_id}["Proposed support: {mermaid_label(component["name"])}"]',
-            '    direction LR',
-            f'    {component_id}["Responsibility<br/>{mermaid_label(component["responsibility"], width=44)}"]',
-            f'    {actions_id}["{actions_label}"]',
-            f'    {verification_id}["Boundary check<br/>{mermaid_label(component["verification"], width=44)}"]',
-            f'    {component_id} -->|"proposed support"| {actions_id}',
-            f'    {component_id} -. "proposed boundary check" .-> {verification_id}',
-            "  end",
-        ])
-        boxes.extend([
-            atlas_box(
-                support_id, component["name"], "Proposed support group",
-                "Groups one proposed responsibility, its source-action references and verification.",
-            ),
-            atlas_box(
-                component_id, component["name"], "Proposed component",
-                f"Proposed responsibility: {component['responsibility']}",
-            ),
-            atlas_box(
-                actions_id, actions, "Supported source actions",
-                "Exact source-action references; support does not transfer actor ownership.",
-            ),
-            atlas_box(
-                verification_id, component["verification"],
-                "Proposed boundary verification",
-                f"Proposed verification for {component['name']}: {component['verification']}",
-            ),
-        ])
     component_ids = {
         component["key"]: f"component{index}"
         for index, component in enumerate(design["components"], 1)
     }
+    for index, component in enumerate(design["components"], 1):
+        component_id = component_ids[component["key"]]
+        orders = ", ".join(str(order) for order in component["supported_event_orders"])
+        actions = f"Source actions: {orders}"
+        lines.append(
+            f'  {component_id}["Proposed: {mermaid_label(component["name"], width=32)}'
+            f'<br/>{mermaid_label(actions, width=32)}<br/>Select for responsibility and check"]'
+        )
+        boxes.append(atlas_box(
+            component_id, component["name"], "Proposed component support",
+            f"Proposed responsibility: {component['responsibility']}\n"
+            f"{actions}\nProposed boundary verification: {component['verification']}\n"
+            "Support does not transfer the stated actor's action to this component.",
+        ))
     for index, workstream in enumerate(design["workstreams"], 1):
         acceptance_id = f"workstream{index}_acceptance"
-        label = f"{workstream['title']}\n{workstream['verification']}"
-        acceptance_label = mermaid_label(workstream["title"], width=44) + "<br/><br/>" + mermaid_label(workstream["verification"], width=44)
-        lines.append(f'  {acceptance_id}["Delivery acceptance<br/>{acceptance_label}"]')
+        lines.append(
+            f'  {acceptance_id}["Proposed delivery<br/>{mermaid_label(workstream["title"], width=32)}'
+            '<br/>Select for acceptance"]'
+        )
         boxes.append(atlas_box(
-            acceptance_id, label, "Proposed delivery acceptance",
-            f"Shared workstream acceptance for {', '.join(workstream['component_keys'])}: "
-            f"{workstream['verification']}",
+            acceptance_id, workstream["title"], "Proposed delivery acceptance",
+            f"Participating components: {', '.join(workstream['component_keys'])}\n"
+            f"Proposed deliverable: {workstream['deliverable']}\n"
+            f"Proposed verification: {workstream['verification']}",
         ))
         for key in workstream["component_keys"]:
             lines.append(f'  {component_ids[key]} -. "participates in delivery" .-> {acceptance_id}')
-    lines.append('  subgraph source_actions["Source action reference"]')
+    actions = "\n\n".join(
+        f"Source action {event['order']} · {event['actor_kind']}\n"
+        f"{authored_event_display_text(event)}"
+        for event in sorted(relations, key=lambda row: row["order"])
+    )
+    lines.append('  source_actions["Source action reference<br/>Select for full actions and performers"]')
     boxes.append(atlas_box(
         "source_actions", "Source action reference", "Source-grounded context",
-        "Full actions and stated performers for the local support references; no inferred sequence.",
+        actions + "\n\nSource identities do not imply execution order.",
     ))
-    for order, event in sorted(events.items()):
-        action = (
-            f"Source action {order} · {event['actor_kind']}\n"
-            f"{authored_event_display_text(event)}"
-        )
-        label = "<br/>".join(mermaid_label(line, width=44) for line in action.splitlines())
-        lines.append(f'    source_action{order}["{label}"]')
-        boxes.append(atlas_box(
-            f"source_action{order}", action, "Source action reference",
-            "Complete source action and stated performer; local support references this identity.",
-        ))
-    lines.append("  end")
-    lines.extend([
-        '  subgraph source_facts["Source-stated facts"]',
-        f'    state["State object<br/>{mermaid_label(state_object)}"]',
-    ])
-    boxes.extend([
-        atlas_box(
-            "source_facts", "Source-stated facts", "Source-grounded context",
-            "Groups source-stated context without "
-            "inferring transitions.",
-        ),
-        atlas_box(
-            "state", state_object, "State object",
-            f"Source-stated state object: {state_object}",
-        ),
-    ])
+    facts = [f"Source-stated state object: {state_object}"]
     if not proof_is_provisional:
-        lines.extend([
-            f'    result["Visible result<br/>{mermaid_label(visible_result)}"]',
-            f'    proof["Proof boundary<br/>{mermaid_label(proof_boundary)}"]',
+        facts.extend([
+            f"Source-stated visible result: {visible_result}",
+            f"Source-stated proof boundary: {proof_boundary}",
         ])
-        boxes.extend([
-            atlas_box("result", visible_result, "Visible result", f"Source-stated visible result: {visible_result}"),
-            atlas_box("proof", proof_boundary, "Proof boundary", f"Source-stated proof boundary: {proof_boundary}"),
-        ])
-    for index, non_goal in enumerate(non_goals, 1):
-        lines.append(f'    non_goal{index}["Non-goal<br/>{mermaid_label(non_goal)}"]')
-        boxes.append(atlas_box(
-            f"non_goal{index}", non_goal, "Non-goal",
-            f"Source-stated work outside scope: {non_goal}",
-        ))
-    lines.append("  end")
+    facts.extend(f"Source-stated non-goal {index}: {value}" for index, value in enumerate(non_goals, 1))
+    facts_reference = "state and scope" if proof_is_provisional else "state, scope and proof"
+    lines.append(f'  source_facts["Source-stated facts<br/>Select for {facts_reference}"]')
+    boxes.append(atlas_box(
+        "source_facts", "Source-stated facts", "Source-grounded context", "\n\n".join(facts),
+    ))
     if source_lifecycle is not None:
         _append_source_lifecycle(
-            lines=lines,
-            boxes=boxes,
-            lifecycle=source_lifecycle,
-            component_ids=component_ids,
+            lines=lines, boxes=boxes, lifecycle=source_lifecycle, component_ids=component_ids,
         )
     if proof_is_provisional:
-        lines.extend([
-            '  subgraph proposed_checkpoint["Proposed proof checkpoint — assumption"]',
-            f'    proof["{mermaid_label(proof_boundary)}"]',
-            '  end',
-        ])
-        boxes.extend([
-            atlas_box("proposed_checkpoint", "Proposed proof checkpoint — assumption", "Provisional decision", "This checkpoint is proposed for review, not established by the source."),
-            atlas_box("proof", proof_boundary, "Proposed proof checkpoint", "An explicit assumption; no source-stated producer or terminal result is asserted."),
-        ])
+        lines.append('  proof["Proposed proof checkpoint<br/>Assumption — select for detail"]')
+        boxes.append(atlas_box(
+            "proof", proof_boundary, "Proposed proof checkpoint",
+            "An explicit assumption; no source-stated producer or terminal result is asserted.\n"
+            f"Proposed checkpoint: {proof_boundary}",
+        ))
     return styled_mermaid(lines), boxes
 
 
@@ -551,7 +512,7 @@ def _append_source_lifecycle(
         label = f"{transition['governed_object']} · {transition['trigger']}"
         lines.append(
             f'  {node}["Off-path state transition<br/>{mermaid_label(label, width=44)}'
-            f'<br/>Source: {mermaid_label(quote, width=44)}"]'
+            '<br/>Select for source detail"]'
         )
         boxes.append(atlas_box(
             node, label, "Source-stated off-path transition",
@@ -564,9 +525,7 @@ def _append_source_lifecycle(
             field = field_nodes[effect["state_field_id"]]
             change = f"Change: {effect['change']}\nObservable check: {effect['observable_check']}"
             effect_node = f"{node}_effect{effect_index}"
-            change_label = "<br/>".join(
-                mermaid_label(line, width=44) for line in change.splitlines()
-            )
+            change_label = f"Effect {index}.{effect_index}<br/>{mermaid_label(effect['change'], width=32)}"
             lines.append(f'  {effect_node}["{change_label}"]')
             lines.append(
                 f'  {node} -->|"source-stated effect"| {effect_node}'

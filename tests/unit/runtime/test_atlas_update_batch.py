@@ -92,6 +92,128 @@ def _spies(monkeypatch, catalog: Path):
     return writes, refreshes
 
 
+def _scoped_refresh_fixture(root: Path, monkeypatch):
+    from odylith.runtime.common import diagram_freshness
+    from odylith.runtime.governance import sync_workstream_artifacts as sync
+
+    catalog = _seed_catalog(root)
+    payload = json.loads(catalog.read_text())
+    original = payload["diagrams"][0]
+    cache = diagram_freshness.ContentFingerprintCache()
+    rows = []
+    for index in range(3):
+        row = deepcopy(original)
+        row.update(diagram_id=f"D-{110 + index}", slug=f"scope-{index}", last_reviewed_utc="1970-01-01")
+        for extension in ("mmd", "svg", "png"):
+            row[f"source_{extension}"] = f"odylith/atlas/source/scope-{index}.{extension}"
+            target = root / row[f"source_{extension}"]
+            target.write_text('flowchart LR\n  A["Intake"] --> B["Review"]\n' if extension == "mmd" else "<svg />\n")
+        row["render_source_fingerprint"] = cache.mermaid_render_fingerprint(root / row["source_mmd"])
+        rows.append(row)
+    payload["diagrams"] = rows
+    catalog.write_text(json.dumps(payload, indent=2) + "\n")
+    # Use the real authoring, refresh, auto-update and renderer chain in one process.
+    monkeypatch.setattr(sync, "_runtime_fast_path_prerequisites_met", lambda root: True)
+    return catalog, payload
+
+
+@pytest.mark.parametrize("count", [1, 2])
+def test_real_selected_refresh_preserves_unrelated_review_debt(tmp_path, monkeypatch, count):
+    import datetime as dt
+
+    catalog, before = _scoped_refresh_fixture(tmp_path, monkeypatch)
+    updates = [{"diagram_id": row["diagram_id"], "summary": "Shows current intake and review ownership.",
+                "last_reviewed_utc": dt.date.today().isoformat()} for row in before["diagrams"][:count]]
+
+    assert _cli(tmp_path, _input(tmp_path, updates)) == 0
+
+    after = json.loads(catalog.read_text())
+    assert after["diagrams"][count:] == before["diagrams"][count:]
+    for row in after["diagrams"][:count]:
+        assert row["last_reviewed_utc"] == dt.date.today().isoformat()
+        assert row["reviewed_watch_fingerprints"]["src/old.py"] != "old-hash"
+    assert (tmp_path / "odylith/atlas/atlas.html").is_file()
+
+
+def test_real_selected_refresh_preserves_explicit_date_and_reports_its_stale_debt(tmp_path, monkeypatch):
+    catalog, before = _scoped_refresh_fixture(tmp_path, monkeypatch)
+    updates = [{"diagram_id": "D-110", "summary": "Shows current intake and review ownership.",
+                "last_reviewed_utc": "2000-01-01"}]
+
+    assert _cli(tmp_path, _input(tmp_path, updates)) == 1
+
+    after = json.loads(catalog.read_text())
+    assert after["diagrams"][0]["last_reviewed_utc"] == "2000-01-01"
+    assert after["diagrams"][1:] == before["diagrams"][1:]
+
+
+@pytest.mark.parametrize("diagram_ids", [["D-999"], ["D-110", "D-110"], ["d-110"]])
+def test_exact_auto_update_invalid_scope_has_no_catalog_or_asset_writes(tmp_path, monkeypatch, diagram_ids):
+    from odylith.runtime.surfaces import auto_update_mermaid_diagrams as auto
+
+    catalog, _before = _scoped_refresh_fixture(tmp_path, monkeypatch)
+    before = {p: p.read_bytes() for p in (tmp_path / "odylith/atlas/source").rglob("*") if p.is_file()}
+    args = ["--repo-root", str(tmp_path), "--skip-render-catalog"]
+    for diagram_id in diagram_ids:
+        args.extend(["--diagram-id", diagram_id])
+
+    assert auto.main(args) == 2
+    assert {p: p.read_bytes() for p in before} == before
+    assert catalog.read_bytes() == before[catalog]
+
+
+def test_selected_render_failure_propagates_without_acknowledging_unrelated_rows(tmp_path, monkeypatch):
+    import datetime as dt
+    from odylith.runtime.surfaces import auto_update_mermaid_diagrams as auto
+
+    catalog, before = _scoped_refresh_fixture(tmp_path, monkeypatch)
+    (tmp_path / before["diagrams"][0]["source_mmd"]).write_text('flowchart LR\n  A["Changed"] --> B["Review"]\n')
+
+    def unavailable(**kwargs):
+        assert [job["diagram_id"] for job in kwargs["render_jobs"]] == ["D-110"]
+        raise RuntimeError("selected Mermaid render unavailable")
+
+    monkeypatch.setattr(auto, "_render_diagrams_batch", unavailable)
+    updates = [{"diagram_id": "D-110", "summary": "Shows current intake and review ownership.",
+                "last_reviewed_utc": dt.date.today().isoformat()}]
+    assert _cli(tmp_path, _input(tmp_path, updates)) == 1
+    assert json.loads(catalog.read_text())["diagrams"][1:] == before["diagrams"][1:]
+
+
+def test_explicit_full_atlas_sync_still_acknowledges_global_stale_rows(tmp_path, monkeypatch):
+    import datetime as dt
+    from odylith.runtime.governance import sync_workstream_artifacts as sync
+
+    catalog, before = _scoped_refresh_fixture(tmp_path, monkeypatch)
+    assert sync.refresh_dashboard_surfaces(repo_root=tmp_path, surfaces=("atlas",), runtime_mode="auto",
+                                          atlas_sync=True) == 0
+    after = json.loads(catalog.read_text())
+    assert all(row["last_reviewed_utc"] == dt.date.today().isoformat() for row in after["diagrams"])
+    assert all(row["reviewed_watch_fingerprints"] != old["reviewed_watch_fingerprints"]
+               for row, old in zip(after["diagrams"], before["diagrams"]))
+
+
+def test_explicit_selected_auto_update_keeps_automatic_date_acknowledgement(tmp_path, monkeypatch):
+    import datetime as dt
+    from odylith.runtime.surfaces import auto_update_mermaid_diagrams as auto
+
+    catalog, before = _scoped_refresh_fixture(tmp_path, monkeypatch)
+    assert auto.main(["--repo-root", str(tmp_path), "--diagram-id", "D-110", "--fail-on-stale"]) == 0
+    after = json.loads(catalog.read_text())
+    assert after["diagrams"][0]["last_reviewed_utc"] == dt.date.today().isoformat()
+    assert after["diagrams"][1:] == before["diagrams"][1:]
+
+
+@pytest.mark.parametrize("conflict", [["--all-stale"], ["--changed-path", "src/old.py"], ["--from-git-head"]])
+def test_selected_auto_update_rejects_widening_flags_before_writes(tmp_path, monkeypatch, conflict):
+    from odylith.runtime.surfaces import auto_update_mermaid_diagrams as auto
+
+    catalog, _before = _scoped_refresh_fixture(tmp_path, monkeypatch)
+    before = catalog.read_bytes()
+    assert auto.main(["--repo-root", str(tmp_path), "--diagram-id", "D-110", *conflict]) == 2
+    assert catalog.read_bytes() == before
+
+
 def test_five_row_cli_batch_writes_once_and_preserves_unsupplied_truth(tmp_path, monkeypatch):
     catalog, before, updates = _fixture(tmp_path)
     writes, refreshes = _spies(monkeypatch, catalog)

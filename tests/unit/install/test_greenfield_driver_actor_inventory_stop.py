@@ -9,7 +9,7 @@ import subprocess
 
 import pytest
 
-import greenfield_matrix_host_candidate as host
+from odylith.runtime.domain_intelligence import greenfield_host_flow as host
 from odylith.runtime.domain_intelligence import greenfield_proposals_cli as cli
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import STANDARD_PROFILE_ID
 from odylith.runtime.domain_intelligence.greenfield_source_duty_view import compact_source_duty_view

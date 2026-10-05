@@ -7,10 +7,10 @@ from types import SimpleNamespace
 
 import pytest
 
-from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_ARGUMENT_COUNT
-from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_SHAPE_SHA256
-from greenfield_matrix_host_candidate import HOST_NATIVE_MATRIX_OBSERVATION_VERSION
-from greenfield_whole_journey_budget import PROVISIONAL_WHOLE_JOURNEY_TIMEOUT_SECONDS
+from odylith.runtime.domain_intelligence.greenfield_host_transport import (HOST_NATIVE_ARGV_ARGUMENT_COUNT)
+from odylith.runtime.domain_intelligence.greenfield_host_transport import (HOST_NATIVE_ARGV_SHAPE_SHA256)
+from odylith.runtime.domain_intelligence.greenfield_host_flow import HOST_NATIVE_MATRIX_OBSERVATION_VERSION
+from odylith.runtime.domain_intelligence.greenfield_whole_journey_budget import PROVISIONAL_WHOLE_JOURNEY_TIMEOUT_SECONDS
 from greenfield_model_profile_proof import authored_model_result_binding_issues
 from greenfield_model_profile_proof import model_profile_release_proof
 from greenfield_model_profiles import STANDARD_PROFILE_ID
@@ -109,8 +109,10 @@ def _stage(receipt: dict[str, object]) -> dict[str, object]:
         "source_duty_verifier_diagnostic_cap_seconds": 120.0,
         "whole_journey_diagnostic_cap_seconds": PROVISIONAL_WHOLE_JOURNEY_TIMEOUT_SECONDS,
         "candidate_completion_reserve_seconds": 15.0,
+        "whole_journey_route": "odylith-greenfield-prepare.v1",
+        "whole_journey_supervision": {"version": "odylith.greenfield.journey-supervision.v1", "guardian_pid": 12345, "cancellation_grace_seconds": 2.0},
         "whole_journey_bound_status": "diagnostic_unqualified",
-        "whole_journey_elapsed_scope": "through_observer_return_before_final_snapshot_serialization",
+        "whole_journey_elapsed_scope": "through_guardian_completion_record_and_final_clock_check_before_receipt_delivery",
         "whole_journey_deadline_status": "within",
         "host_request": {
             "version": "odylith.greenfield.host-argv-receipt.v1",

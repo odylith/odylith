@@ -7,7 +7,7 @@
 - Retention classes include `hot_recent`, `durable_practice`,
   `casebook_failure`, `benchmark_pressure`, `tribunal_doctrine_candidate`, and
   `noise_suppressed`, with decay and suppression preserved.
-Last updated: 2026-07-20
+Last updated: 2026-10-04
 
 
 ## Purpose
@@ -54,6 +54,31 @@ Context Engine.
   raw thread retention.
 
 ## Runtime Contract
+### Evidence authority metadata
+
+The shared compiler-table document builder carries Context Engine's
+`memory_record.v1` through existing document provenance into LanceDB/Tantivy.
+Indexed retrieval and compiler fallback apply the same authority-first
+selection policy; the backend does not invent another authority or decay
+model. Source witness/fingerprint, evidence and observation time, validity and
+derivation provenance survive transport. Current tracked truth takes precedence
+over historical learning, while relevant failed mechanisms remain retrievable.
+Judgment continuity is admitted by the Context Engine source owner before it
+can influence routing confidence. Backend readiness is separate from evidence
+truth and from demonstrated retrieval accuracy.
+
+Initial live maintainer posture lacked the declared local index dependencies.
+Restoring them permits indexed diagnostics. Settled H1 source controls exercise
+the real compiler -> LanceDB/Tantivy -> public indexed/fallback retrieval path.
+All six fixed current-authority controls pass on both transports while useful
+failure history remains retrievable. Observed indexed median latency changes
+from 0.868 to 1.011 ms and compiler median from 0.137 to 0.339 ms. These are local
+measurements, not a production SLA, whole-repo activation or universal accuracy
+claim. Independent H1 authority review is clear after the cache/actionability
+corrections; complete frozen regression and installed proof remain open;
+the Context Engine spec and H1 plan retain the exact source/control handoff.
+Remote retrieval stays opt-in.
+
 ### Runtime inputs
 - `.odylith/runtime/odylith-compiler/projection-manifest.v1.json`
 - `.odylith/runtime/odylith-compiler/documents.v1.jsonl`

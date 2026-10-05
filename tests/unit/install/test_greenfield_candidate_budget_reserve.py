@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-import greenfield_matrix_host_candidate as host_module
-from greenfield_whole_journey_budget import WholeJourneyDeadline
+from odylith.runtime.domain_intelligence import greenfield_host_flow as host_module
+from odylith.runtime.domain_intelligence.greenfield_whole_journey_budget import WholeJourneyDeadline
 from tests.unit.install.test_greenfield_matrix_host_candidate import _flow
 
 

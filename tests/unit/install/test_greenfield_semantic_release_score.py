@@ -23,6 +23,7 @@ from greenfield_matrix_types import GreenfieldMatrixResult
 from greenfield_matrix_types import GreenfieldQualityVerdict
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 from greenfield_preconfirm_matrix_cases import case_evidence
+import greenfield_relation_fidelity as relation_module
 from greenfield_relation_fidelity import RELATION_FIDELITY_ANNOTATION_VERSION
 from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import append_atomic_source_spans
 from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import atomic_fact_ledger_hash
@@ -44,6 +45,7 @@ from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
 )
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_facts_hash
 from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     greenfield_operating_envelope_receipt,
 )
@@ -91,6 +93,7 @@ _RUNTIME_REQUIRE_ATOMIC_LEDGER = score_module.require_atomic_fact_ledger
 @pytest.fixture(autouse=True)
 def _isolate_structural_scoring_from_runtime_ledger_validation(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(score_module, "require_atomic_fact_ledger", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(relation_module, "require_atomic_fact_ledger", lambda *_args, **_kwargs: None)
 
 
 def test_structural_release_passes_exact_commit_and_clarification() -> None:
@@ -923,6 +926,7 @@ def _commit_result(
         "title": "Permit Desk",
         "first_path": FIRST_PATH,
         "human_actors": ["Operator"],
+        "proof_boundary": FIRST_PATH,
     }
     operating_envelope = _operating_envelope(case, facts=sealed_facts)
     semantics = _authored_semantics(case, facts=sealed_facts)
@@ -939,6 +943,7 @@ def _commit_result(
                     "facts": {
                         **sealed_facts,
                     },
+                    "product_facts_sha256": product_facts_hash(sealed_facts),
                     "atomic_facts": ledger,
                     "atomic_custody_sha256": atomic_fact_ledger_hash(ledger),
                     "operating_envelope": operating_envelope,
@@ -1001,6 +1006,7 @@ def _authored_semantics(
         "first_path_context_relations": [],
         "component_responsibility_relations": [],
         "source_precedence": [],
+        "source_duty": None,
         "provisional_design": provisional_design,
     }
 
@@ -1293,6 +1299,7 @@ def _rich_relation_bundle(
             }
         ],
         "source_precedence": [],
+        "source_duty": None,
         "provisional_design": provisional_design,
     }
     result = _commit_result(case, atoms=actual_atoms, facts=facts)
@@ -1326,6 +1333,7 @@ def _rich_relation_bundle(
 def _refresh_relation_hash(result: GreenfieldMatrixResult) -> None:
     snapshot = result.evidence["preconfirm_dry_run"]["semantic_snapshot"]
     semantics = snapshot["authored_semantics"]
+    snapshot["product_facts_sha256"] = product_facts_hash(snapshot["facts"])
     snapshot["authored_relation_set_sha256"] = authored_relation_set_sha256(
         semantics["first_path_relations"],
         semantics["component_responsibility_relations"],
@@ -1396,6 +1404,7 @@ def _repeated_relation_evidence() -> tuple[GreenfieldMatrixCase, dict[str, objec
         "first_path_context_relations": [],
         "component_responsibility_relations": [],
         "source_precedence": [],
+        "source_duty": None,
         "provisional_design": provisional_design,
     }
     snapshot = {
@@ -1403,7 +1412,10 @@ def _repeated_relation_evidence() -> tuple[GreenfieldMatrixCase, dict[str, objec
             "title": "Repeat Desk",
             "first_path": first_path,
             "human_actors": ["Operator"],
+            "proof_boundary": "one receipt",
         },
+        "atomic_facts": [],
+        "atomic_custody_sha256": atomic_fact_ledger_hash([]),
         "authored_semantics": semantics,
         "authored_relation_set_sha256": authored_relation_set_sha256(
             semantic_events,
@@ -1413,6 +1425,7 @@ def _repeated_relation_evidence() -> tuple[GreenfieldMatrixCase, dict[str, objec
             provisional_design=provisional_design,
         ),
     }
+    snapshot["product_facts_sha256"] = product_facts_hash(snapshot["facts"])
     atoms = [
         _expected_atom(prompt=prompt, quote="Operator", relation_order=1),
         _expected_atom(

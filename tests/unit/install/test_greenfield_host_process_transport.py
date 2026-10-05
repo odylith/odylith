@@ -10,8 +10,8 @@ import sys
 
 import pytest
 
-import greenfield_matrix_host_candidate as host
-from greenfield_process import run_command_with_group_timeout
+from odylith.runtime.domain_intelligence import greenfield_host_flow as host
+from odylith.runtime.domain_intelligence.greenfield_process import run_command_with_group_timeout
 from tests.unit.install.test_greenfield_matrix_host_candidate import _flow
 
 
@@ -146,7 +146,7 @@ def test_callers_retain_private_gate_streams_and_authoritative_failed_snapshot(t
     import greenfield_preconfirm_matrix as matrix
     import greenfield_commit_recovery_transaction as recovery
     from greenfield_matrix_release_artifacts import begin_retained_case_evidence
-    from greenfield_process import GroupTimeoutCompletedProcess
+    from odylith.runtime.domain_intelligence.greenfield_process import GroupTimeoutCompletedProcess
     flow, _host_stub, installed, _hosts, proposals, repo = _flow(
         tmp_path, contract={"version": "contract"}, candidate={},
     )
@@ -202,7 +202,7 @@ def test_callers_retain_private_gate_streams_and_authoritative_failed_snapshot(t
 def test_real_terminal_lifecycle_failure_preserves_primary_result_and_stream_custody(
     tmp_path, phase, returncode,
 ):
-    from greenfield_process import command_lifecycle_observer
+    from odylith.runtime.domain_intelligence.greenfield_process import command_lifecycle_observer
     from tests.unit.install.test_greenfield_matrix_host_candidate import _fixture_host_ledger
     from odylith.runtime.domain_intelligence.greenfield_source_duty_compact import expand_compact_source_duty_ledger
     from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import preflight_greenfield_source_duty_ledger

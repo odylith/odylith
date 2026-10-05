@@ -236,6 +236,18 @@ def test_run_reports_timeout_with_command_and_cwd(monkeypatch, tmp_path: Path) -
         "custody_leak",
         "missing_components",
         "missing_context",
+        "non_string_context",
+        "candidate_review",
+        "missing_binding",
+        "non_object_binding",
+        "optional_binding",
+        "bad_binding_version",
+        "bad_source_digest",
+        "missing_boundary_bindings",
+        "reauthored_action_binding",
+        "reauthored_event",
+        "non_object_event",
+        "optional_actor",
         "attempt",
         "subprocess",
         "missing_audit",
@@ -244,6 +256,10 @@ def test_run_reports_timeout_with_command_and_cwd(monkeypatch, tmp_path: Path) -
 def test_greenfield_install_smoke_requires_read_only_candidate_contract(
     monkeypatch, tmp_path: Path, defect: str,
 ) -> None:
+    from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
+        greenfield_host_candidate_contract,
+    )
+
     module = _module()
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
@@ -276,52 +292,16 @@ def test_greenfield_install_smoke_requires_read_only_candidate_contract(
         assert kwargs["env"]["ODYLITH_REASONING_MODE"] == "disabled"
         assert kwargs["env"]["audit"] == "enabled" and kwargs["pass_fds"] == (42,)
         time.sleep(0.002)
-        constraint_schema = {
-            "type": "object",
-            "additionalProperties": False,
-            "required": ["quote", "context"],
-            "properties": {
-                "quote": {"type": "string"},
-                "context": {"type": "string"},
-            },
-        }
-        payload = {
-            "version": "odylith.greenfield.host-candidate-contract.v33",
-            "candidate_version": "odylith.greenfield.host-candidate-format.v18",
-            "canonical_version": "odylith.greenfield.intent-authoring.v77",
-            "request": {
-                "version": "odylith.greenfield.intent-authoring.v77",
-                "evidence": module._CANDIDATE_CONTRACT_SMOKE_PROMPT,
-            },
-            "requirements": ["Return exactly one candidate."],
-            "task": "Author one source-grounded candidate.",
-            "candidate_schema": {
-                "type": "object",
-                "required": ["version", "result"],
-                "properties": {
-                    "version": {"enum": ["odylith.greenfield.host-candidate-format.v18"]},
-                    "result": {
-                        "anyOf": [{
-                            "properties": {
-                                "components": {"type": "array"},
-                                "facts": {
-                                    "properties": {
-                                        "operational_constraints": {
-                                            "items": constraint_schema,
-                                        },
-                                    },
-                                },
-                            },
-                            "required": ["components"],
-                        }],
-                    },
-                },
-            },
-        }
+        payload = greenfield_host_candidate_contract(module._CANDIDATE_CONTRACT_SMOKE_PROMPT)
+        authored = payload["candidate_schema"]["properties"]["result"]["anyOf"][0]
+        constraint_schema = authored["properties"]["facts"]["properties"][
+            "operational_constraints"
+        ]["items"]
+        binding = authored["properties"]["source_duty_binding"]
         if defect == "wrong_version":
-            payload["version"] = "odylith.greenfield.host-candidate-contract.v29"
+            payload["version"] = "odylith.greenfield.host-candidate-contract.v33"
         elif defect == "wrong_candidate_version":
-            payload["candidate_version"] = "odylith.greenfield.host-candidate-format.v15"
+            payload["candidate_version"] = "odylith.greenfield.host-candidate-format.v18"
         elif defect == "missing_evidence":
             payload["request"]["evidence"] = "different evidence"
         elif defect == "bad_schema":
@@ -329,11 +309,37 @@ def test_greenfield_install_smoke_requires_read_only_candidate_contract(
         elif defect == "custody_leak":
             constraint_schema["properties"]["constraint_custody"] = {"type": "object"}
         elif defect == "missing_components":
-            authored = payload["candidate_schema"]["properties"]["result"]["anyOf"][0]
             authored["properties"].pop("components")
             authored["required"].remove("components")
         elif defect == "missing_context":
             constraint_schema["required"] = ["quote"]
+        elif defect == "non_string_context":
+            constraint_schema["properties"]["context"] = {"type": "object"}
+        elif defect == "candidate_review":
+            authored["properties"]["candidate_review"] = {"type": "object"}
+        elif defect == "missing_binding":
+            authored["properties"].pop("source_duty_binding")
+        elif defect == "non_object_binding":
+            authored["properties"]["source_duty_binding"] = None
+        elif defect == "optional_binding":
+            authored["required"].remove("source_duty_binding")
+        elif defect == "bad_binding_version":
+            binding["properties"]["version"]["const"] = "odylith.greenfield.source-duty-binding.v2"
+        elif defect == "bad_source_digest":
+            binding["properties"]["source_sha256"]["minLength"] = 1
+        elif defect == "missing_boundary_bindings":
+            binding["properties"].pop("boundaries")
+            binding["required"].remove("boundaries")
+        elif defect == "reauthored_action_binding":
+            binding["properties"]["first_path_actions"]["items"]["properties"]["action"] = {
+                "type": "string",
+            }
+        elif defect == "reauthored_event":
+            authored["properties"]["events"]["items"]["properties"]["event_ref"] = constraint_schema
+        elif defect == "non_object_event":
+            authored["properties"]["events"]["items"] = []
+        elif defect == "optional_actor":
+            authored["properties"]["events"]["items"]["required"] = []
         stdout = "not-json" if defect == "invalid_json" else json.dumps(payload)
         return SimpleNamespace(
             returncode=2 if defect == "nonzero" else 0,
@@ -355,6 +361,23 @@ def test_greenfield_install_smoke_requires_read_only_candidate_contract(
         assert baseline_checks == [repo_root, repo_root]
     assert commands[0] == (str(odylith), "show", "--repo-root", ".")
     assert len(commands) == 2 and "candidate-contract" in commands[1]
+
+
+def test_release_smoke_pins_the_real_current_candidate_contract() -> None:
+    from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
+        greenfield_host_candidate_contract,
+    )
+
+    module = _module()
+    contract = greenfield_host_candidate_contract(module._CANDIDATE_CONTRACT_SMOKE_PROMPT)
+
+    assert module._EXPECTED_CANDIDATE_CONTRACT_VERSION == "odylith.greenfield.host-candidate-contract.v47"
+    assert module._EXPECTED_CANDIDATE_FORMAT_VERSION == "odylith.greenfield.host-candidate-format.v21"
+    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v47"
+    assert contract["candidate_version"] == "odylith.greenfield.host-candidate-format.v21"
+    assert "source-only" in contract["task"]
+    assert "without another semantic call" in contract["task"]
+    assert module._has_current_host_candidate_schema(contract["candidate_schema"])
 
 
 def test_install_smoke_does_not_claim_positive_greenfield_qualification() -> None:

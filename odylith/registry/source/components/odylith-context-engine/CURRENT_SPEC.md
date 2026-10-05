@@ -15,9 +15,59 @@
   the B-110 workstream anchor when measuring the v0.1.11 Odylith Discipline program,
   so Context/Execution adoption metrics can distinguish real ambiguity from a
   missing program tag.
-Last updated: 2026-09-14
+Last updated: 2026-10-04
+
+## Current authority and useful history in memory
+
+Context Engine owns the shared `memory_record.v1` admission and usefulness
+policy. Derived governance records distinguish current truth, historical
+learning and observations, with explicit validity, source refs/fingerprints,
+evidence time, observation time and projection provenance. Legacy missing
+metadata stays unknown. Age alone does not establish truth or supersession.
+Authority and validity precede weighted relevance, evidence strength and age;
+current active constraints retain authority regardless of age. Closed failures
+remain useful history and cannot become current policy through a high score.
+Record currency does not turn historical or proposed statements inside the
+record into verified implementation evidence; their original dates, status and
+proof limits remain part of the retrieved evidence.
+
+Compiler records, entity retrieval, indexed/fallback selection and compact
+packets share the same policy. Current derivation must match before a record
+confers authority; contradictory current claims remain visible uncertainty.
+Judgment continuity additionally validates the canonical workstream source,
+current fingerprint and confirmation evidence before routing confidence can
+increase. Rebuilding a cache does not reconfirm a remembered decision. Existing
+shared-only ambiguity and session-intent non-replay laws remain intact.
+
+B-133 H1/CB-355 owns this unreleased contract and its executed source-less hint
+failure. The settled source passes 318 focused tests. Six fixed controls across
+Radar, plans and Casebook, each using actual indexed and compiler retrieval,
+improve current recall/precision at one from 0/6 to 6/6 and wrong historical
+promotions from six to zero. Valid continuity and useful failed-mechanism recall
+remain; memory-only session reuse cannot renew confirmation. Thirty-one warm
+continuity reads require zero source-byte reads. These local controls do not
+establish universal semantic accuracy. Independent re-review verifies restored-
+mtime and atomic-replacement invalidation, source identity/lifecycle refresh and
+final guidance actionability, with 15 adversarial controls. CB-356 corrects the
+separate cap telemetry mismatch. Final independent supplement reports no
+actionable P0/P1/P2 in H1; complete frozen regression and installed/migration
+proof remain required before release claims.
+Exact sources, control inputs, before/after results and costs are retained in
+/private/tmp/odylith-history-memory-h1-owner-handoff-20261004.json,
+SHA-256 37d7dd9f5540d077c353cb05d23d14a505334e3d34ddc38627cf7b8b687dee0e.
+That initial handoff is retained historical proof. Current correction and final
+independent hashes are recorded in the B-133 H1 plan and CB-355/CB-356.
 
 ## Supporting context and workstream ownership
+
+Radar assessment metadata retains its original authority during compilation
+and retrieval. Provisional unassessed records keep unknown numeric values and
+their provenance in snapshots, detailed retrieval and direct-source fallback;
+they never receive a fabricated numeric score. Store detail shaping adopts the
+existing backlog projection owner instead of keeping a second implementation.
+Assessed source remains governed by the shared assessment policy. CB-324 Wave
+Q1 carries source/index/snapshot/retrieval and malformed-record proof; no engine
+is disabled or replaced by a source parser.
 
 Documentation and runbooks may support several workstreams without identifying
 an exclusive owner. Selection must preserve that cross-workstream relationship:

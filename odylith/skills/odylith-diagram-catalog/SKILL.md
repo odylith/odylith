@@ -27,6 +27,11 @@ that already failed, and capture new mechanism-level learning.
 - Keep Atlas source of truth in `odylith/atlas/source/`.
 - Keep the canonical Atlas component dossier under `odylith/registry/source/components/atlas/`.
 - Search existing Atlas coverage first and update the current diagram before creating a duplicate.
+- Selected update/scaffold authoring refreshes only its validated diagram IDs
+  and preserves authored review dates. Recover a selected refresh with
+  `odylith atlas auto-update --diagram-id D-123 --preserve-review-date --fail-on-stale`.
+  Supply a new review date only after actually reviewing that diagram; unrelated
+  stale review debt does not authorize global acknowledgement.
 - If no truthful Atlas coverage exists for a materially changed or newly tracked flow, create a new diagram in the same slice instead of leaving the seam undocumented.
 - Treat `related_backlog`, `related_plans`, `related_docs`, `related_code`, and `change_watch_paths` as mandatory context, not optional metadata.
 - Keep linked workstreams, components, docs, and code synchronized with the diagram change so Atlas does not drift away from the rest of Odylith truth.

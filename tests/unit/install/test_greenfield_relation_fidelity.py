@@ -8,14 +8,14 @@ import pytest
 from tests.unit.install import test_greenfield_semantic_release_score as support
 
 
+import greenfield_relation_fidelity as relation_module
 from greenfield_relation_fidelity import annotation_relation_evidence
 from greenfield_relation_fidelity import _annotation_context_keys
-from greenfield_relation_fidelity import _snapshot_context_keys
-from greenfield_relation_fidelity import _snapshot_event_keys
 from greenfield_relation_fidelity import snapshot_relation_evidence
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     GreenfieldAuthoredSemanticsError,
     combined_prompt_evidence_source,
+    validate_first_path_context_relations,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_atomic_projection import (
     derive_model_atomic_claims,
@@ -46,6 +46,7 @@ _RELATION_FAILURE_CASES = tuple(
 @pytest.fixture(autouse=True)
 def _isolate_structural_scoring(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(score_module, "require_atomic_fact_ledger", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(relation_module, "require_atomic_fact_ledger", lambda *_args, **_kwargs: None)
 
 
 def test_relation_fidelity_reports_exact_family_and_worst_slice_evidence() -> None:
@@ -177,17 +178,11 @@ def test_snapshot_rejects_target_only_adjacent_in_selected_fact() -> None:
     facts["product_story"] = f"The {event} for the {target}"
     relations[0]["target_quote"] = target
 
-    _keys, issues = _snapshot_event_keys(
-        relations,
-        facts=facts,
-        source_bytes=combined_prompt_evidence_source(
-            prompt=case.prompt,
-            edit_evidence=str(case.confirmed_intent_markdown or ""),
-        ).encode("utf-8"),
-    )
+    _refresh_relation_hash(result)
+    issues = snapshot_relation_evidence(case=case, snapshot=snapshot).issues
 
     assert issues == (
-        "sealed first_path_relations[1] target is not exactly grounded in its event",
+        "Greenfield authoring returned ungrounded first-path relations",
     )
 
 
@@ -205,14 +200,8 @@ def test_snapshot_accepts_selected_actor_and_terminal_result_from_source_fact() 
     )
     relations[-1]["visible_result_quote"] = facts["proof_boundary"]
 
-    _keys, issues = _snapshot_event_keys(
-        relations,
-        facts=facts,
-        source_bytes=combined_prompt_evidence_source(
-            prompt=case.prompt,
-            edit_evidence=str(case.confirmed_intent_markdown or ""),
-        ).encode("utf-8"),
-    )
+    _refresh_relation_hash(result)
+    issues = snapshot_relation_evidence(case=case, snapshot=snapshot).issues
 
     assert issues == ()
 
@@ -223,16 +212,9 @@ def test_snapshot_rejects_retired_actor_surface_fields() -> None:
     relations = snapshot["authored_semantics"]["first_path_relations"]
     relations[0]["actor_quote"] = "Reviewer"
 
-    _keys, issues = _snapshot_event_keys(
-        relations,
-        facts=snapshot["facts"],
-        source_bytes=combined_prompt_evidence_source(
-            prompt=case.prompt,
-            edit_evidence=str(case.confirmed_intent_markdown or ""),
-        ).encode("utf-8"),
-    )
+    issues = snapshot_relation_evidence(case=case, snapshot=snapshot).issues
 
-    assert issues == ("sealed first_path_relations[1] has an invalid closed schema",)
+    assert issues == ("Greenfield authoring returned invalid first-path relations",)
 
 
 def test_event_actor_atom_uses_only_its_selected_actor_fact() -> None:
@@ -301,16 +283,9 @@ def test_snapshot_rejects_removed_recovery_classification() -> None:
     relations = snapshot["authored_semantics"]["first_path_relations"]
     relations[0]["recovery_path"] = True
 
-    _keys, issues = _snapshot_event_keys(
-        relations,
-        facts=snapshot["facts"],
-        source_bytes=combined_prompt_evidence_source(
-            prompt=case.prompt,
-            edit_evidence=str(case.confirmed_intent_markdown or ""),
-        ).encode("utf-8"),
-    )
+    issues = snapshot_relation_evidence(case=case, snapshot=snapshot).issues
 
-    assert issues == ("sealed first_path_relations[1] has an invalid closed schema",)
+    assert issues == ("Greenfield authoring returned invalid first-path relations",)
 
 
 @pytest.mark.parametrize(
@@ -546,7 +521,7 @@ def test_state_object_without_one_overlapping_event_uses_independent_order_zero(
         first_path_relations=first_path_relations,
         projection_identities=frozenset({("/state_object", digest)}),
     )
-    _snapshot_keys, snapshot_issues = _snapshot_context_keys(
+    snapshot_rows = validate_first_path_context_relations(
         (
             {
                 "context_kind": "state_object",
@@ -555,10 +530,10 @@ def test_state_object_without_one_overlapping_event_uses_independent_order_zero(
                 **source_range,
             },
         ),
-        facts={"state_object": quote},
-        source_bytes=source,
+        intent={"state_object": quote},
         first_path_relations=first_path_relations,
     )
 
     assert annotation_issues == ()
-    assert snapshot_issues == ()
+    assert len(snapshot_rows) == 1
+    assert snapshot_rows[0]["first_path_event_order"] == 0

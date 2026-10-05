@@ -17,72 +17,64 @@ mechanism-level learning.
 1. Do not refuse merely because the repo has no app source. Greenfield intent is
    proposal evidence, not source evidence.
    Product meaning comes before artifact mapping.
-2. Use the active host for bounded gate, source-ledger, and candidate passes. First run
-   `./.odylith/bin/odylith greenfield candidate-contract --repo-root . --prompt
-   "<operator request>"`. Its nested `authority_gate` supplies the task, request,
-   edit, and response schema alongside `source_ledger_schema` and the candidate
-   schema. Run one separate
-   constrained host authority-gate pass and write its JSON to a temporary file
-   outside the repository. Then run `./.odylith/bin/odylith greenfield
-   authority-check --repo-root . --prompt "<operator request>" --gate-file
-   '<gate-file>' --format json`. If the gate asks for clarification, show its one
-   question and stop: do not author a candidate or stage a transaction. On
-   admission, inventory source-stated duties and evidence controls using
-   `source_ledger_schema`; write that JSON outside the repository. Run
-   `./.odylith/bin/odylith greenfield source-ledger-check --repo-root . --prompt
-   "<operator request>" --ledger-file '<ledger-file>' --format json`.
-   Stop on ledger clarification. The first check returns a structural preflight
-   and `decision_task`, not an admitted receipt. Give that complete-source task
-   to one bounded source-only verifier, save its decision JSON outside the repo,
-   and rerun `source-ledger-check` with the same inputs plus
-   `--decision-file '<decision-file>'`. Any missing, negative, uncertain, or
-   malformed decision stops before candidate authoring. Save the admitted
-   `receipt` outside the repository. Only then reason once over the candidate contract, write exactly
-   one JSON candidate matching its schema to another temporary file outside the
-   repository, and run `./.odylith/bin/odylith greenfield propose --repo-root .
-   --prompt "<operator request>" --gate-file '<gate-file>' --candidate-file
-   '<candidate-file>' --ledger-file '<receipt-file>'`. The accepted ledger binds
-   source roles; the candidate cannot redefine them. Odylith revalidates every source
-   citation, typed relation, semantic invariant, and custody hash, seals the
-   canonical candidate, and quality-gates the complete staged
-   ProductCreateTransaction with zero semantic/model/provider calls after
-   candidate receipt. Independent semantic and UX review runs only over frozen
-   release evidence; it may qualify or block a pinned release profile, but it
-   never admits, mutates, or denies an individual consumer transaction.
-   Do not inspect source code to infer either schema. Do not add a full-candidate
-   reviewer, parser, regex extraction pass, participant selector, remainder
-   author, join, repair, retry, fallback candidate, or alternate model ladder.
-   Do not call a model after candidate receipt. Stop on the first
-   deterministic validation failure and record that mechanism evidence.
-3. Show the read-only, transaction-bound preview directly. It publishes nothing, but prints
-   three full shell-quoted terminal commands: `odylith greenfield decide --repo-root
-   '<path>' CONFIRM '<hash>'`, `odylith greenfield decide --repo-root '<path>' EDIT
-   '<hash>' --edit '<corrections>'` (or `--edit-evidence '<file>'`), and `odylith
-   greenfield decide --repo-root '<path>' REJECT '<hash>'`. No qualified confirmation
-   interface comes from ordinary chat approval, host names, or hooks.
-4. `CONFIRM` and `REJECT` use the shared bounded deterministic owner without
-   compiler or model work. For `EDIT`, run `greenfield candidate-contract` with
-   `--transaction-hash '<old-hash>'` and the new `--edit` or `--edit-evidence`.
-   Repeat the separate gate pass and `greenfield authority-check` against the
-   sealed source plus correction, then inventory source duties and run
-   `greenfield source-ledger-check` with that correction and
-   `--ledger-file '<ledger-file>' --format json`. Stop on clarification. Run one
-   bounded source-only verifier over the returned `decision_task`, then rerun
-   the check with `--decision-file '<decision-file>'`; stop on any non-yes duty.
-   Save the new accepted receipt outside the repository. Only after admission, author one
-   new host candidate, then pass that same correction, `--gate-file '<gate-file>'`,
-   `--candidate-file '<candidate-file>'`, and `--ledger-file '<receipt-file>'` to
-   `greenfield decide EDIT`. EDIT verifies the retained hash, compiles the sealed original source plus correction,
-   preserves the original tier and advisory 90/120/150 targets, retains the old
-   seal, and returns a new preview/hash. It adds no repair or fallback path.
+2. Run `./.odylith/bin/odylith greenfield prepare --repo-root . --prompt
+   "<operator request>"`. This product-owned parent supervises the four existing
+   passes: authority gate, source-duty inventory, source-only verifier, and one
+   candidate. It acquires and validates the same compiler-owned contracts and
+   source receipts, stops on one material question, and returns the sealed
+   read-only ProductCreateTransaction preview. Codex and Claude orchestration hosts may call this same
+   route. Its pinned inference transport is direct Codex with Astra medium;
+   this does not establish native Claude inference or confirmation eligibility.
+   Missing Codex returns an environment error with no package publication.
+   There is no alternate profile, retry, repair, fallback or full-candidate review.
+   The gate and candidate share 300 seconds plus a 15-second completion reserve;
+   inventory has 300 seconds, the source-only verifier 120, and each ledger check
+   30. One nonreplenishing 660-second diagnostic parent covers contract acquisition,
+   inference, local checks, retention, cleanup, observer return and pending
+   diagnostic completion-record I/O and final raw whole/proposal checks. Receipt
+   delivery, guardian retirement and final presentation are outside that interval. An independent
+   guardian cancels blocked native work and owned descendants within a further
+   two-second cancellation grace. The 660-second diagnostic cap is not a
+   public-data-backed qualified bound. Newly staged seals remain unavailable to
+   CONFIRM without its delivered completion receipt. The guardian stores only a
+   digest, disclosing its private nonce after timed work passes. Late/error flows
+   cannot disclose it even if cleanup fails. Post-certification delivery failures
+   are accepted-or-unknown environment outcomes, never cancellation. Lost receipts
+   cannot be regenerated. Old seals and their original receipts are preserved.
+   Separate `candidate-contract`, `authority-check`, `source-ledger-check`, and
+   `propose` commands remain available for explicit file-based source-custody
+   workflows. Their receipts alone do not prove execution under the bounded parent.
+   Do not inspect source to infer schemas or hand-author compiler transactions.
+   After candidate receipt, no model, semantic or provider call is allowed.
+   Independent semantic and UX review qualifies frozen release evidence only;
+   it cannot admit, mutate or deny an individual consumer transaction.
+3. Show the read-only, transaction-bound preview directly. The product writes
+   its delivered receipt file and prints terminal commands naming it with
+   `--completion-receipt '<path>'`. CONFIRM/REJECT use `odylith greenfield decide`;
+   bounded EDIT uses `odylith greenfield prepare --transaction-hash '<hash>'
+   --completion-receipt '<path>' --edit '<corrections>'`. An explicit receipt proves
+   completed custody; it does not itself authorize publication. Public chat has no
+   qualified confirmation interface. Ordinary chat or
+   hooks cannot authorize creation. Unmarked manual seals retain their existing
+   file-based confirmation contract.
+4. `CONFIRM` and `REJECT` use the existing deterministic terminal owner with
+   no compiler or model work. For a correction, run `odylith greenfield prepare
+   --repo-root '<path>' --transaction-hash '<old-hash>' --completion-receipt '<path>'
+   --edit '<correction>'`
+   (or `--edit-evidence '<file>'`). One new supervised journey uses the sealed
+   original source plus correction, preserves the old seal, and returns a new
+   preview/hash or one question. It adds no repair or fallback. The explicit
+   file-based `decide EDIT` interface remains available with its source gate,
+   candidate and accepted ledger receipt; it alone does not establish parent timing.
 5. `odylith greenfield create` with `--transaction-file`, `--transaction-hash`,
-   and `--confirm` remains a separate commit-only interface, not a fallback for
+   and `--confirm` (plus `--completion-receipt` for bounded seals) remains a separate
+   commit-only interface, not a fallback for
    chat approval or `decide`. Do not create from a chat approval. It verifies the compiler receipt, hash and
    preconditions, publishes sealed bytes under rollback guard, validates readback,
    and returns its outcome. It never interprets evidence, calls a model, generates
    artifacts, or rebuilds persistent projections after confirmation. Native host
    eligibility remains open. If JSON is explicitly requested, use `greenfield
-   propose --format json`; this is the proposal JSON boundary; never rebuild
+   prepare --format json`; this is the proposal JSON boundary; never rebuild
    transaction data by hand.
    After an explicit terminal decision or create invocation, relay its returned
    outcome without reinterpretation. Relay the returned post-confirm navigation

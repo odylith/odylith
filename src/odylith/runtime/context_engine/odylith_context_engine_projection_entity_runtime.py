@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Mapping
 
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime
+from odylith.runtime.context_engine import memory_record_policy
 from odylith.runtime.context_engine import odylith_context_engine_runtime_learning_runtime
 from odylith.runtime.context_engine import odylith_context_engine_runtime_support
 from odylith.runtime.governance import release_planning_contract
@@ -16,6 +17,14 @@ _odylith_ablation_active = odylith_context_engine_runtime_learning_runtime._odyl
 record_runtime_timing = odylith_context_engine_runtime_support.record_runtime_timing
 
 def _entity_from_row(*, kind: str, row: Mapping[str, Any]) -> dict[str, Any]:
+    row = dict(row)
+    entity = _entity_payload_from_row(kind=kind, row=row)
+    if isinstance(row.get("memory_record"), Mapping):
+        entity["memory_record"] = dict(row["memory_record"])
+    return entity
+
+
+def _entity_payload_from_row(*, kind: str, row: Mapping[str, Any]) -> dict[str, Any]:
     if kind == "workstream":
         metadata = context_engine_store.json.loads(str(row["metadata_json"] or "{}"))
         return {
@@ -420,6 +429,10 @@ def _projection_exact_search_results(
         seen.add(key)
         results.append(row)
 
+    def _ranked() -> list[dict[str, Any]]:
+        expected = odylith_context_engine_projection_search_runtime.compiled_record_provenance(repo_root=repo_root)
+        return memory_record_policy.rank_records(results, expected_provenance=expected)[:max(1, int(limit))]
+
     if normalized_query:
         _add(_entity_by_path(connection, repo_root=repo_root, path_ref=normalized_query))
 
@@ -429,54 +442,48 @@ def _projection_exact_search_results(
             _add(_entity_by_kind_id(connection, kind=entity_kind, entity_id=raw_query.upper()))
         if normalized_query and normalized_query != raw_query:
             _add(_entity_by_kind_id(connection, kind=entity_kind, entity_id=normalized_query))
-        if len(results) >= max(1, int(limit)):
-            return results[: max(1, int(limit))]
 
     for row in connection.execute("SELECT * FROM workstreams").fetchall():
         aliases = context_engine_store._workstream_lookup_aliases(dict(row), repo_root=repo_root)
         if lowered in aliases or (compact_lookup and compact_lookup in aliases):
             _add(_entity_from_row(kind="workstream", row=row))
-            break
 
     for row in connection.execute("SELECT * FROM plans").fetchall():
         aliases = context_engine_store._plan_lookup_aliases(dict(row), repo_root=repo_root)
         if lowered in aliases or (compact_lookup and compact_lookup in aliases):
             _add(_entity_from_row(kind="plan", row=row))
-            break
 
     for row in connection.execute("SELECT * FROM components").fetchall():
         aliases = context_engine_store._component_lookup_aliases(dict(row), repo_root=repo_root)
         if lowered in aliases or (compact_lookup and compact_lookup in aliases):
             _add(_entity_from_row(kind="component", row=row))
-            break
 
     if results:
-        return results[: max(1, int(limit))]
+        return _ranked()
 
     title_queries: tuple[tuple[str, str, str], ...] = (
-        ("workstream", "SELECT * FROM workstreams WHERE lower(title) = ? LIMIT 1", lowered),
-        ("bug", "SELECT * FROM bugs WHERE lower(title) = ? LIMIT 1", lowered),
-        ("diagram", "SELECT * FROM diagrams WHERE lower(title) = ? LIMIT 1", lowered),
-        ("component", "SELECT * FROM components WHERE lower(name) = ? LIMIT 1", lowered),
-        ("test", "SELECT * FROM test_cases WHERE lower(test_name) = ? LIMIT 1", lowered),
+        ("workstream", "SELECT * FROM workstreams WHERE lower(title) = ?", lowered),
+        ("bug", "SELECT * FROM bugs WHERE lower(title) = ?", lowered),
+        ("diagram", "SELECT * FROM diagrams WHERE lower(title) = ?", lowered),
+        ("component", "SELECT * FROM components WHERE lower(name) = ?", lowered),
+        ("test", "SELECT * FROM test_cases WHERE lower(test_name) = ?", lowered),
     )
     for entity_kind, sql, token in title_queries:
         if allowed and entity_kind not in allowed:
             continue
-        row = connection.execute(sql, (token,)).fetchone()
-        if row is not None:
+        for row in connection.execute(sql, (token,)).fetchall():
             _add(_entity_from_row(kind=entity_kind, row=row))
     if not allowed or any(kind in allowed for kind in context_engine_store._ENGINEERING_NOTE_KIND_SET):
         for note_kind in context_engine_store._ENGINEERING_NOTE_KINDS:
             if allowed and note_kind not in allowed:
                 continue
-            row = connection.execute(
-                "SELECT * FROM engineering_notes WHERE note_kind = ? AND lower(title) = ? LIMIT 1",
+            rows = connection.execute(
+                "SELECT * FROM engineering_notes WHERE note_kind = ? AND lower(title) = ?",
                 (note_kind, lowered),
-            ).fetchone()
-            if row is not None:
+            ).fetchall()
+            for row in rows:
                 _add(_entity_from_row(kind=note_kind, row=row))
-    return results[: max(1, int(limit))]
+    return _ranked()
 
 def _repo_scan_candidate_search_results(
     connection: Any,

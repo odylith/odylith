@@ -18,7 +18,7 @@ import greenfield_commit_recovery_evidence as recovery_evidence
 import greenfield_commit_recovery_transaction as recovery_transaction
 from greenfield_commit_recovery_evidence import as_mapping
 
-from greenfield_process import run_command_with_group_timeout as _run
+from odylith.runtime.domain_intelligence.greenfield_process import run_command_with_group_timeout as _run
 from greenfield_commit_recovery_cases import RECOVERY_CASE_SCOPE
 from greenfield_commit_recovery_cases import recovery_case_evidence
 from greenfield_commit_recovery_cases import select_recovery_case  # noqa: F401
@@ -353,7 +353,7 @@ def _run_sigkill_recovery_phase(
     )
     command = _create_command(
         transaction_file=compiled.transaction_file,
-        transaction_hash=compiled.transaction_hash,
+        transaction_hash=compiled.transaction_hash, completion_receipt=compiled.completion_receipt,
     )
     crashed = _run_faulted_create(repo_root=repo_root, env=env, command=command, fault_script=_SIGKILL_FAULT)
     if crashed.returncode != -signal.SIGKILL:
@@ -512,7 +512,7 @@ def _run_operator_conflict_recovery_phase(
     )
     command = _create_command(
         transaction_file=compiled.transaction_file,
-        transaction_hash=compiled.transaction_hash,
+        transaction_hash=compiled.transaction_hash, completion_receipt=compiled.completion_receipt,
     )
     crashed = _run_faulted_create(repo_root=repo_root, env=env, command=command, fault_script=_SIGKILL_FAULT)
     if crashed.returncode != -signal.SIGKILL:
@@ -693,7 +693,7 @@ def _run_fsync_rollback_phase(
     )
     command = _create_command(
         transaction_file=compiled.transaction_file,
-        transaction_hash=compiled.transaction_hash,
+        transaction_hash=compiled.transaction_hash, completion_receipt=compiled.completion_receipt,
     )
     failed = _run_faulted_create(repo_root=repo_root, env=env, command=command, fault_script=_FSYNC_FAILURE_FAULT)
     failure_payload = _require_error_payload(failed, label="installed fsync rollback create")
@@ -916,7 +916,7 @@ def _installed_generation_observation(
     )
 
 
-def _create_command(*, transaction_file: str, transaction_hash: str) -> list[str]:
+def _create_command(*, transaction_file: str, transaction_hash: str, completion_receipt: str = "") -> list[str]:
     return [
         "./.odylith/bin/odylith",
         "greenfield",
@@ -927,6 +927,7 @@ def _create_command(*, transaction_file: str, transaction_hash: str) -> list[str
         transaction_file,
         "--transaction-hash",
         transaction_hash,
+        *(["--completion-receipt", completion_receipt] if completion_receipt else []),
         "--confirm",
         "--json",
     ]

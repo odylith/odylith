@@ -1,5 +1,117 @@
 - Bug ID: CB-324
 
+## Fresh v19 preserves core semantics; three quality defects remain (2026-10-03)
+
+The settled Q1 lane passes all 8,119 runtime/install/Greenfield integration
+checks in 41 fresh processes. Its 3,288 source/assets remain byte-identical.
+One existing parameter ID exceeds the OS argument limit; native pytest argument
+files preserve exact remaining node IDs after 800 passing checks. The separate
+test-name correction adds four readable IDs without changing values or bodies;
+all 70 checks in that file pass. The original failed launch stays retained.
+Complete receipt:
+`/private/tmp/odylith-greenfield-q1-settled-runtime-install-receipt-20261004.json`.
+
+Follow-through finds an authority error in the first Q1 default projection:
+advisory ambiguity strings have no value-level source join. Delete the added
+proposal field and its automatic source-grounded promotion. The existing
+verified source-duty boundary reader instead supplies exact kind=scope rules
+to known facts, with existing lifecycle citations. Civic boundary b10 preserves
+all three choices; the two actual proposed assumptions remain open. This
+bounded correction changes two runtime files, adds no net runtime lines and
+passes 93 custody/sealing checks. A stale receipt or an unrelated advisory
+string cannot gain known/source-grounded authority. Retained candidate, ledger,
+receipt, transaction and accepted-project hashes stay unchanged. Evidence:
+`/private/tmp/odylith-source-scope-authority-handoff-20261004.json`.
+Fresh installed semantic and browser qualification remain open.
+
+The complete Q1 runtime/install/Greenfield integration run retains 8,109 passes
+and nine failures in 704.66 seconds. All 3,288 frozen source, test and generated
+asset hashes remain unchanged throughout the run. Eight failures assert the
+old crowded Atlas representation: labels on dotted sequence edges, crosscutting
+arrows, full checks inside every node, and combined effect/check labels.
+Read-only follow-through confirms the exact required meaning remains in visible
+nodes, sealed selectable details or companion views. Update only those layout
+assertions while retaining custody, source-copy, topology and rendering checks.
+The ninth is a 500ms Stop fixture expecting sync to begin although its deadline
+expires safely during start; all seven Stop checks pass in isolation. Preserve
+the timeout safety contract and use the existing fresh-process shard runner
+for the settled lane. Failed run and frozen-byte receipt are retained under
+`/private/tmp/odylith-greenfield-q1-runtime-install-20261004.log` and
+`/private/tmp/odylith-greenfield-q1-first-broad-run-receipt-20261004.json`.
+
+The independent Q1 rereview passes all four direct repros and 117 focused
+unit/browser checks in 13.42 seconds, with zero actionable P0/P1/P2 findings.
+Reviewed owner source hashes match. The source fallback reads only three
+index-linked specs in its three-record fixture and reads no Markdown on its
+cached repeat; missing or external links cause no parser calls or fabricated
+provenance. Reports are retained at
+`/private/tmp/odylith-greenfield-q1-combined-independent-rereview-20261004.json`
+and `.md`. This closes the bounded code review, not installed release proof.
+
+Wave Q1's first combined code review passes 206 bounded checks but reproduces
+three remaining assessment defects. Compact packets stringify null scores as
+the text None and drop assessment provenance; source fallback omits provenance
+that snapshot retrieval keeps; an unassessed execution row resets the previous
+comparable assessed score and hides a later score inversion. Preserve these
+failures and correct the existing field-shaping/comparison owners. Unknown
+scores must retain custody and must not disable comparison of assessed records.
+The wave remains incomplete until these exact repros pass independent review.
+Review also exposes an old writer test accepting score 101 although the source
+validator caps scores at 100; preserve that range and prove zero-write refusal,
+with valid 99 and 0 overrides retaining their behavior.
+
+The fourth review defect reverses unassessed source order at B-999/B-1000
+because hidden numeric ranks fall through to lexicographic ID sorting. A real
+browser control fails before the one-line stable-tie correction. All four
+corrections remain in existing owners. Backend repros first show three failures
+and 33 passes, then pass 176 focused checks; view/browser checks pass 110 after
+the source-order correction. Accepted default/producer integration passes 122,
+Atlas passes 50 with dense civic and inherited PNG/SVG proof, and the corrected
+install smoke schema passes 83 checks. No fresh installed output is credited.
+
+One shared 199-line assessment owner replaces duplicated score policy; source
+normalization adopts the existing backlog projection owner and removes its
+store duplicate. Greenfield producer source shrinks seven lines, and the Atlas
+design renderer shrinks while preserving complete selectable statements.
+The runtime adds no semantic stage, host call, source inference or candidate
+schema. Independent rereview, complete runtime/install proof, canonical
+generated assets and a clean immutable distribution remain required before
+the next public release campaign. Retain all first failures and passing scoped
+reports; do not treat test counts or static rendering as release qualification.
+
+Clean pushed checkpoint `4c4a9d8c74f8cd2e30205f8d223cecd36b04d5dd`
+builds a complete v19 distribution. The unchanged civic source completes four
+host phases, admission, exact publication and readback. Whole source flow is
+374.722 seconds; the shared proposal phase is 217.696 seconds, and deterministic
+publication takes 0.346 seconds. There are zero post-receipt provider calls.
+Timing remains diagnostic and browser/recovery proof was skipped.
+
+Independent source-first Astra review finds no P0/P1 and confirms the actual
+performers, ordered actions, state fields, safety boundaries, consent withdrawal
+effects, supporting topology and proof duties. Complete package quality fails
+three P2s: source-authorized defaults are projected as evidence-required open
+assumptions; first-path exchange labels collide and the capability-support
+raster downscales its text beyond readability; Radar introduces ungrounded
+uniform value, effort, priority and confidence judgments. Preserve the v19
+candidate, receipt, transaction and all retained artifacts without repair.
+Evidence: `/private/tmp/odylith-greenfield-civic-v19-independent-review.json`
+and `.md`, with the checklist saved before output inspection.
+
+The separate full local install smoke fails its candidate-contract check.
+Its release pins are stale v33/v18 while the installed contract is v47/v21;
+the helper repeats the old candidate version. Correct the explicit pins and
+exercise the actual current schema without weakening audit, custody or no-write
+guards. Failed log: `/private/tmp/odylith-greenfield-v19-local-smoke-20261003.log`.
+
+Correct the three quality defects in their existing projection owners. Keep
+accepted default authority separate from proposed decisions; expose estimate
+provenance rather than invented evaluation; preserve full source meaning while
+making sequence and support views readable. No new semantic stage, parser,
+retry, candidate repair or holdout access. Require characterization tests,
+real PNG/SVG inspection, independent review, a clean immutable build and fresh
+public output before crediting the correction. The earlier closure/copy patch
+proved source preservation but did not prove complete diagram readability.
+
 ## Actor v47 and view corrections: bounded proof (2026-10-03)
 
 The chosen correction passes 307 bounded checks. The existing source-only

@@ -137,3 +137,54 @@ def _render_section_body(*, repo_root: Path, lines: list[str]) -> str:
     """Render markdown body lines through the shared backlog HTML formatter."""
 
     return backlog_rich_text.render_section_body(repo_root=repo_root, lines=lines)
+
+
+def assessment_display(value: object) -> str:
+    """Display an absent judgment without inventing a numeric value."""
+    token = str(value).strip() if value is not None else ""
+    return "Not assessed" if token.lower() in {"", "unassessed"} else token
+
+
+def assessment_provenance_label(value: object) -> str:
+    token = str(value or "").strip()
+    return "Provisional Greenfield design" if token == "greenfield_provisional_design" else token
+
+
+def assessment_runtime_js() -> str:
+    """Own Radar's assessment presentation and nullable numeric comparison."""
+    return """
+    function assessmentNumber(value) {
+      if (value === null || value === undefined || String(value).trim() === "" || typeof value === "boolean") return null;
+      const number = Number(value);
+      return Number.isFinite(number) ? number : null;
+    }
+
+    function compareAssessmentNumbers(left, right, descending = false) {
+      const a = assessmentNumber(left);
+      const b = assessmentNumber(right);
+      if (a === null || b === null) return a === b ? 0 : (a === null ? 1 : -1);
+      return descending ? b - a : a - b;
+    }
+
+    function assessmentLabel(value) {
+      if (value === null || value === undefined || String(value).trim() === "" || String(value).toLowerCase() === "unassessed") return "Not assessed";
+      return String(value);
+    }
+
+    function assessmentView(row) {
+      const unassessed = row.assessment_status === "unassessed";
+      const score = unassessed ? null : assessmentNumber(row.ordering_score);
+      const label = value => assessmentLabel(unassessed ? null : value);
+      const provenance = row.assessment_provenance === "greenfield_provisional_design"
+        ? "Provisional Greenfield design" : String(row.assessment_provenance || "");
+      return {
+        score: assessmentLabel(score),
+        confidence: label(row.confidence), priority: label(row.priority),
+        sizing: unassessed ? "Not assessed" : `${label(row.sizing)} / ${label(row.complexity)}`,
+        rankingClass: score === null ? "assessment-unassessed" : (row.founder_override === "yes" ? "founder-override" : "score-ordered"),
+        rankingText: score === null ? "Not assessed" : (row.founder_override === "yes" ? "Priority Override" : "Score Ordered"),
+        meter: score === null ? "" : `<div class="bar"><div class="fill" style="width: ${Math.max(3, Math.min(100, score))}%"></div></div>`,
+        provenance,
+      };
+    }
+    """.strip()

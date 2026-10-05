@@ -465,11 +465,34 @@ def validate_greenfield_source_duty_binding(
             raise GreenfieldSourceDutyBindingError(
                 "candidate terminal is outside the first run"
             )
+    validate_greenfield_source_duty_design_binding(
+        binding, ledger=ledger, provisional_design=design,
+    )
+    return deepcopy(dict(binding))
+
+
+def validate_greenfield_source_duty_design_binding(
+    binding: Mapping[str, Any], *, ledger: Mapping[str, Any],
+    provisional_design: Mapping[str, Any],
+) -> None:
+    """Validate passive duty identities and ownership against an accepted ledger.
+
+    Raw candidate admission separately owns actor citations, event coverage and
+    first-run selection. Exported lifecycle readback can reuse this design seam
+    without constructing those omitted candidate records.
+    """
+    binding = _closed(
+        binding, set(greenfield_source_duty_binding_schema()["required"]), "source duty binding",
+    )
+    if binding["version"] != SOURCE_DUTY_BINDING_VERSION:
+        raise GreenfieldSourceDutyBindingError("source duty binding version is invalid")
+    if not isinstance(provisional_design, Mapping):
+        raise GreenfieldSourceDutyBindingError("candidate provisional design is missing")
     components = _rows(
-        design.get("components"), minimum=1, maximum=5, path="components"
+        provisional_design.get("components"), minimum=1, maximum=5, path="components"
     )
     workstreams = _rows(
-        design.get("workstreams"), minimum=1, maximum=5, path="workstreams"
+        provisional_design.get("workstreams"), minimum=1, maximum=5, path="workstreams"
     )
     if any(
         not isinstance(row, Mapping) or not isinstance(row.get("key"), str)
@@ -500,7 +523,6 @@ def validate_greenfield_source_duty_binding(
             workstreams=workstream_by_key,
             role=role,
         )
-    return deepcopy(dict(binding))
 
 
 __all__ = [
@@ -508,4 +530,5 @@ __all__ = [
     "SOURCE_DUTY_BINDING_VERSION",
     "greenfield_source_duty_binding_schema",
     "validate_greenfield_source_duty_binding",
+    "validate_greenfield_source_duty_design_binding",
 ]

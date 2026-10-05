@@ -97,6 +97,9 @@ def test_atlas_lifecycle_fields_keep_full_statements_without_punctuation_join() 
         "Change: Close future access.\nObservable check: Affected unpublished analysis is invalidated."
     )
     assert "Trigger: An approval is withdrawn.\n" in boxes["off_path_transition1"]["description"]
-    assert "Change: Close future access.<br/>Observable check:" in support["mermaid_source"]
+    assert 'off_path_transition1_effect1["Effect 1.1<br/>Close future access."]' in support["mermaid_source"]
+    assert "Change: Close future access.\nObservable check: Affected unpublished analysis is invalidated." in boxes[
+        "off_path_transition1_effect1"
+    ]["description"]
     assert "withdrawn.." not in str(boxes)
     assert lifecycle == original

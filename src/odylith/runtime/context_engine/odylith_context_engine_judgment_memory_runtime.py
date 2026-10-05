@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import os
+
+from odylith.runtime.context_engine import judgment_memory_records
+from odylith.runtime.context_engine import memory_record_policy
 from pathlib import Path
 from typing import Any
 from typing import Mapping
@@ -307,6 +310,18 @@ def build_judgment_memory_snapshot(
                 surfaces=("casebook",),
             )
         )
+    closed_failures = sorted(
+        (row for row in bug_projection if str(row.get("Status", "")).strip().lower() == "closed"),
+        key=lambda row: str(row.get("Date", "")), reverse=True,
+    )
+    for row in closed_failures[:1]:
+        negative_items.append(context_engine_store._judgment_memory_item(
+            kind="historical_failure",
+            summary=f"{str(row.get('Title', '')).strip()} is a closed failure retained for later investigation.",
+            recorded_utc=str(row.get("Date", "")),
+            source_path=context_engine_store._parse_link_target(str(row.get("Link", ""))),
+            source_kind="casebook", surfaces=("casebook",),
+        ))
     if benchmark_comparison and float(benchmark_comparison.get("median_total_payload_token_delta", 0.0) or 0.0) > 0.0:
         negative_items.append(
             context_engine_store._judgment_memory_item(
@@ -328,7 +343,7 @@ def build_judgment_memory_snapshot(
         label="Negative memory",
         state=negative_state,
         summary=(
-            f"{len(negative_items)} unresolved failure or drag signal(s) are retained from bugs and benchmark proof."
+            f"{len(negative_items)} current risks, historical failures or drag signals are retained from bugs and benchmark proof."
             if negative_items
             else "No retained failure or drag signals are recorded yet."
         ),
@@ -357,41 +372,14 @@ def build_judgment_memory_snapshot(
         else {}
     )
     previous_starter = dict(previous.get("starter_slice", {})) if isinstance(previous.get("starter_slice"), Mapping) else {}
-    starter_path = str(current_starter.get("path", "")).strip() or str(previous_starter.get("path", "")).strip()
-    starter_status = "current" if str(current_starter.get("path", "")).strip() else "inferred" if starter_path else ""
-    starter_workstream = context_engine_store._workstream_token(str(previous_starter.get("workstream_id", "")).strip())
-    first_seen_utc = str(previous_starter.get("first_seen_utc", "")).strip()
+    starter_slice_payload = judgment_memory_records.build_starter(
+        store=context_engine_store, root=root, current=current_starter, previous=previous_starter,
+        rows=backlog_rows, packets=recent_bootstrap_packets, sessions=active_sessions,
+        observed_utc=projection_updated_utc, runtime_state=runtime_state,
+    )
+    starter_path = starter_slice_payload["path"]
+    starter_workstream = starter_slice_payload["workstream_id"]
     onboarding_items: list[dict[str, Any]] = []
-    if starter_path:
-        for packet in recent_bootstrap_packets:
-            packet_workstream = context_engine_store._payload_workstream_hint(packet)
-            packet_paths = [
-                str(token).strip()
-                for token in packet.get("changed_paths", [])
-                if isinstance(packet.get("changed_paths"), list) and str(token).strip()
-            ]
-            packet_path = packet_paths[0] if packet_paths else ""
-            if (
-                packet_path
-                and context_engine_store._repo_paths_overlap(repo_root=root, left=packet_path, right=starter_path)
-                and not first_seen_utc
-            ):
-                first_seen_utc = str(packet.get("bootstrapped_at", "")).strip()
-                starter_workstream = packet_workstream or starter_workstream
-                break
-        if not starter_workstream:
-            for session_row in active_sessions:
-                session_workstream = context_engine_store._workstream_token(str(session_row.get("workstream", "")).strip())
-                session_path = str(session_row.get("path", "")).strip()
-                if (
-                    session_workstream
-                    and session_path
-                    and context_engine_store._repo_paths_overlap(repo_root=root, left=session_path, right=starter_path)
-                ):
-                    starter_workstream = session_workstream
-                    if not first_seen_utc:
-                        first_seen_utc = str(session_row.get("started_utc", "")).strip()
-                    break
     if starter_path:
         onboarding_items.append(
             context_engine_store._judgment_memory_item(
@@ -400,7 +388,7 @@ def build_judgment_memory_snapshot(
                     f"Odylith retains the first governed slice at `{starter_path}`"
                     + (f" and workstream `{starter_workstream}`." if starter_workstream else ".")
                 ),
-                recorded_utc=str(previous_starter.get("last_seen_utc", "")).strip() or projection_updated_utc,
+                recorded_utc=starter_slice_payload["confirmed_utc"],
                 source_kind="onboarding_observation",
                 surfaces=("dashboard", "radar", "registry", "atlas"),
             )
@@ -422,16 +410,6 @@ def build_judgment_memory_snapshot(
             )
         )
     onboarding_state = "strong" if starter_path and recent_bootstrap_packets else "partial" if onboarding_items else "cold"
-    starter_slice_payload = {
-        "path": starter_path,
-        "seam": str(current_starter.get("seam", "")).strip() or str(previous_starter.get("seam", "")).strip(),
-        "component_label": str(current_starter.get("component_label", "")).strip()
-        or str(previous_starter.get("component_label", "")).strip(),
-        "workstream_id": starter_workstream,
-        "first_seen_utc": first_seen_utc,
-        "last_seen_utc": projection_updated_utc or context_engine_store._utc_now(),
-        "status": starter_status,
-    }
     onboarding_area = context_engine_store._judgment_memory_area(
         key="onboarding",
         label="Onboarding memory",
@@ -626,6 +604,21 @@ def build_judgment_memory_snapshot(
         contradiction_area,
         freshness_area,
     ]
+    provenance = judgment_memory_records.projection_provenance(runtime_state)
+    for area in areas:
+        for item in area.get("items", []):
+            memory = item["memory_record"]
+            source_ref = str(item.get("source_path", ""))
+            if source_ref and item.get("source_kind") in {"repo_truth", "casebook"}:
+                item["memory_record"] = judgment_memory_records.source_record(
+                    store=context_engine_store, root=root, source_ref=source_ref,
+                    role="current_truth" if item.get("kind") == "open_bug" else memory["role"],
+                    observed_utc=projection_updated_utc, provenance=provenance,
+                )
+            if item.get("kind") == "starter_slice":
+                item["memory_record"] = dict(starter_slice_payload["memory_record"])
+        ranked = memory_record_policy.rank_records(area.get("items", []), expected_provenance=provenance)
+        area["items"] = ranked
     kind_counts: dict[str, int] = {}
     for area in areas:
         for item in area.get("items", []):

@@ -8,7 +8,7 @@ import pytest
 
 from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import canonical_greenfield_host_candidate
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import validate_greenfield_authoring_response, GreenfieldModelAuthoringError
-from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import _verify_authored_atomic_claim_source, _verify_normalized_relation_roles
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import _verify_authored_atomic_claim_source, require_verified_source_action_relations
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import STANDARD_PROFILE_ID
 from odylith.runtime.domain_intelligence.greenfield_host_candidate_materialization import (
     materialize_host_authored_intent,
@@ -235,7 +235,10 @@ def test_sealed_relation_rejects_verified_role_override(field, value) -> None:
     relations = copy.deepcopy(result.first_path_relations)
     relations[1][field] = value
     with pytest.raises(ValueError, match="verified source action"):
-        _verify_normalized_relation_roles(relations, source_spans=result.source_spans)
+        require_verified_source_action_relations(
+            relations, source_duty={"ledger_receipt": receipt, "binding": candidate["result"]["source_duty_binding"], "lifecycle": {}},
+            source_text=prepared.evidence_source,
+        )
 
 
 def test_candidate_cannot_replace_verified_human_actor_with_system(tmp_path) -> None:

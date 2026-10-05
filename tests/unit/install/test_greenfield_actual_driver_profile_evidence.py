@@ -6,7 +6,7 @@ import subprocess
 
 import pytest
 
-import greenfield_matrix_host_candidate as host_module
+from odylith.runtime.domain_intelligence import greenfield_host_flow as host_module
 from greenfield_model_profiles import model_profile_environment, model_profile_evidence
 from odylith.runtime.domain_intelligence.greenfield_authority_gate import (
     greenfield_authority_gate_contract, validate_greenfield_authority_gate,
@@ -107,7 +107,7 @@ def test_actual_authored_driver_observation_passes_profile_evidence(tmp_path, mo
     evidence = evaluate()
     assert evidence["status"] == "passed", evidence["issues"]
     assert evidence["stage_observation"] == stage
-    assert stage["version"].endswith(".v12")
+    assert stage["version"].endswith(".v17")
     assert stage["model_window_seconds"] == 300.0
     assert stage["operational_timeout_seconds"] == 315.0
     assert stage["candidate_completion_reserve_seconds"] == 15.0

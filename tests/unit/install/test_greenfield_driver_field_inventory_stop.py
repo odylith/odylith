@@ -9,7 +9,7 @@ import subprocess
 
 import pytest
 
-import greenfield_matrix_host_candidate as host
+from odylith.runtime.domain_intelligence import greenfield_host_flow as host
 from greenfield_matrix_release_artifacts import begin_retained_case_evidence, record_retained_case_bytes
 from odylith.runtime.domain_intelligence import greenfield_proposals_cli as cli
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import combined_prompt_evidence_source
@@ -88,7 +88,7 @@ def test_actual_driver_real_cli_preflight_stops_invalid_exact_field_identity(tmp
     assert "state-field" in json.dumps(preflight_error)
     stage = flow.observation_sink
     assert caught.value.observation == stage
-    assert stage["version"].endswith(".v12")
+    assert stage["version"].endswith(".v17")
     assert stage["status"] == "failed" and stage["stage"] == "source-ledger-preflight"
     assert stage["authority_gate_returncode"] == stage["authority_check_returncode"] == 0
     assert stage["source_ledger_preflight_returncode"] == 2

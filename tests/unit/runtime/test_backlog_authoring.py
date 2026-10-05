@@ -373,9 +373,9 @@ def test_backlog_create_writes_queued_item_and_updates_index(tmp_path: Path) -> 
             "--override-review-date",
             "2026-04-15",
                 "--override-note",
-                "Promote this above the seed workstream.",
+                "Set an explicit score below the seed workstream.",
                 "--ordering-score",
-                "101",
+                "99",
             ]
         )
 
@@ -387,9 +387,9 @@ def test_backlog_create_writes_queued_item_and_updates_index(tmp_path: Path) -> 
     assert "title: Portable guidance cleanup" in created_text
 
     index_text = backlog_index.read_text(encoding="utf-8")
-    assert "| 1 | B-102 | Portable guidance cleanup | P1 | 101 | 3 | 3 | 3 | M | Medium | queued |" in index_text
+    assert "| 2 | B-102 | Portable guidance cleanup | P1 | 99 | 3 | 3 | 3 | M | Medium | queued |" in index_text
     assert "[portable-guidance-cleanup](odylith/radar/source/ideas/" in index_text
-    assert "### B-102 (rank 1)" in index_text
+    assert "### B-102 (rank 2)" in index_text
     assert "Review checkpoint: 2026-04-15." in index_text
     assert "Last updated (UTC): " in index_text
 

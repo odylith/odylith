@@ -6,27 +6,32 @@ from collections import Counter
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 import hashlib
+import json
 from typing import Any
 
 from greenfield_matrix_release_artifacts import is_sha256
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_RELATION_ROLES,
-    AUTHORED_SEMANTICS_VERSION,
-    COMPONENT_RESPONSIBILITY_RELATION_FIELDS,
     COMPONENT_RESPONSIBILITY_SOURCES,
     FIRST_PATH_ACTOR_KINDS,
     FIRST_PATH_CONTEXT_KINDS,
-    FIRST_PATH_CONTEXT_RELATION_FIELDS,
-    FIRST_PATH_RELATION_FIELDS,
     GreenfieldAuthoredSemanticsError,
     authored_relation_set_sha256,
     combined_prompt_evidence_source,
     expected_first_path_context_event_order,
+    component_responsibility_relations_from_intent,
+    first_path_context_relations_from_intent,
+    first_path_relations_from_intent,
 )
-from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
-    event_target_is_source_bound,
-    intent_terminal_result_values,
+from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
+    atomic_fact_ledger_hash,
+    require_atomic_fact_ledger,
 )
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
+    product_facts_hash,
+    require_verified_source_action_relations,
+)
+from odylith.runtime.domain_intelligence.greenfield_source_lifecycle import require_verified_greenfield_source_lifecycle
 
 
 RELATION_FIDELITY_ANNOTATION_VERSION = "odylith.greenfield.relation-fidelity-annotation.v4"
@@ -36,16 +41,6 @@ RELATION_FAMILIES = (
     "component_responsibility_relations",
 )
 _ANNOTATION_FIELDS = frozenset({"version", *RELATION_FAMILIES})
-_SEMANTICS_FIELDS = frozenset(
-    {
-        "version",
-        "first_path_relations",
-        "first_path_context_relations",
-        "component_responsibility_relations",
-        "source_precedence",
-        "provisional_design",
-    }
-)
 _EVENT_FIELDS = frozenset(
     {
         "order",
@@ -190,95 +185,172 @@ def snapshot_relation_evidence(
     case: Any,
     snapshot: Mapping[str, Any],
 ) -> RelationFidelityEvidence:
-    """Read exact sealed relation identities without reinterpreting their language."""
+    """Validate exported custody using producer owners, then serialize relation identities.
 
+    The snapshot omits raw candidate citations and source-span records. These
+    checks do not reconstruct those records or constitute semantic qualification.
+    """
     facts = _mapping(snapshot.get("facts"))
     semantics = snapshot.get("authored_semantics")
     if not isinstance(semantics, Mapping):
         return _empty_evidence("sealed semantic snapshot lacks authored_semantics")
-    if (
-        semantics.get("version") != AUTHORED_SEMANTICS_VERSION
-        or set(semantics) != _SEMANTICS_FIELDS
-    ):
-        return _empty_evidence("sealed authored_semantics has an invalid closed schema")
-    events = _mapping_rows(semantics.get("first_path_relations"))
-    contexts = _mapping_rows(semantics.get("first_path_context_relations"))
-    components = _mapping_rows(semantics.get("component_responsibility_relations"))
-    precedence = _mapping_rows(semantics.get("source_precedence"))
-    if events is None or contexts is None or components is None or precedence is None:
-        return _empty_evidence("sealed authored_semantics contains malformed relation rows")
-    try:
-        digest = authored_relation_set_sha256(
-            events,
-            components,
-            first_path_context_relations=contexts,
-            source_precedence=precedence,
-            provisional_design=semantics.get("provisional_design"),
-        )
-    except (TypeError, ValueError):
-        return _empty_evidence("sealed authored_semantics relation set is malformed")
-    if str(snapshot.get("authored_relation_set_sha256") or "") != digest:
-        return _empty_evidence("sealed authored_semantics does not match its authority digest")
-
-    source_bytes = combined_prompt_evidence_source(
+    source_text = combined_prompt_evidence_source(
         prompt=str(getattr(case, "prompt", "") or ""),
         edit_evidence=str(getattr(case, "confirmed_intent_markdown", "") or ""),
-    ).encode("utf-8")
-    event_keys, event_issues = _snapshot_event_keys(
-        events,
-        facts=facts,
-        source_bytes=source_bytes,
     )
-    context_keys, context_issues = _snapshot_context_keys(
-        contexts,
-        facts=facts,
-        source_bytes=source_bytes,
-        first_path_relations=events,
+    source_bytes = source_text.encode("utf-8")
+    intent = {**facts, "authored_semantics": semantics}
+    try:
+        events = first_path_relations_from_intent(intent)
+        contexts = first_path_context_relations_from_intent(intent)
+        components = component_responsibility_relations_from_intent(intent)
+        digest = authored_relation_set_sha256(
+            events, components, first_path_context_relations=contexts,
+            source_precedence=semantics["source_precedence"],
+            source_duty=semantics["source_duty"],
+            provisional_design=semantics["provisional_design"],
+        )
+        if snapshot.get("authored_relation_set_sha256") != digest:
+            raise ValueError("sealed authored_semantics does not match its authority digest")
+        require_verified_source_action_relations(
+            events, source_duty=semantics["source_duty"], source_text=source_text,
+        )
+        if semantics["source_duty"] is not None:
+            require_verified_greenfield_source_lifecycle(
+                semantics["source_duty"], evidence_text=source_text,
+                provisional_design=semantics["provisional_design"],
+            )
+        atoms = snapshot.get("atomic_facts")
+        require_atomic_fact_ledger(atoms, facts=facts)
+        if snapshot.get("atomic_custody_sha256") != atomic_fact_ledger_hash(atoms):
+            raise ValueError("sealed atomic facts do not match their authority digest")
+        if snapshot.get("product_facts_sha256") != product_facts_hash(facts):
+            raise ValueError("sealed product facts do not match their authority digest")
+        for atom in atoms:
+            for witness in atom["source_span_refs"]:
+                if not _source_hash_matches(
+                    source_bytes, _range(witness["source_start_byte"], witness["source_end_byte"]),
+                    witness["text_sha256"],
+                ):
+                    raise ValueError("sealed atomic witness does not match the exact source bytes")
+        exact_rows = contexts if semantics["source_duty"] is not None else (*events, *contexts)
+        for row in exact_rows:
+            quote = row.get("event_quote", row.get("fact_quote"))
+            if not _exact_slice(
+                source_bytes, _range(row["source_start_byte"], row["source_end_byte"]), quote,
+            ):
+                raise ValueError("sealed relation does not match the exact source bytes")
+    except (ValueError, TypeError, KeyError) as exc:
+        return _empty_evidence(str(exc))
+
+    event_keys = tuple(
+        ("event", row["order"], row["source_start_byte"], row["source_end_byte"],
+         row["event_start_byte"], row["event_end_byte"], _sha256(row["event_quote"]),
+         row["actor_kind"], row["actor_fact_path"], _sha256(row["actor_fact_quote"]),
+         row["owner_system_path"], _sha256(row["owner_system_quote"]) if row["owner_system_quote"] else "",
+         _sha256(row["action_verb_quote"]), _sha256(row["target_quote"]) if row["target_quote"] else "",
+         _sha256(row["visible_result_quote"]) if row["visible_result_quote"] else "")
+        for row in events
     )
-    selected_contexts = _snapshot_context_facts(facts)
-    context_issues = (
-        *context_issues,
-        *_context_completeness_issues(
-            expected=selected_contexts,
-            observed=Counter((key[1], key[2], key[3]) for key in context_keys),
-            label="sealed authored_semantics",
-        ),
+    context_keys = tuple(
+        ("context", row["context_kind"], row["fact_path"], _sha256(row["fact_quote"]),
+         row["source_start_byte"], row["source_end_byte"], row["first_path_event_order"])
+        for row in contexts
     )
-    component_keys, component_issues = _snapshot_component_keys(
-        components,
-        facts=facts,
-        events_by_order={
-            order: row
-            for row in events
-            if (order := _positive_int(row.get("order"))) is not None
-        },
-    )
-    selected_responsibilities = _snapshot_responsibility_facts(facts)
-    component_issues = (
-        *component_issues,
-        *_component_completeness_issues(
-            selected=selected_responsibilities,
-            observed=component_keys,
-            label="sealed authored_semantics",
-        ),
+    component_keys = tuple(
+        ("component", row["responsibility_path"], _sha256(row["responsibility_quote"]),
+         row["owner_system_path"], _sha256(row["owner_system_quote"]),
+         row["first_path_event_order"], row["responsibility_source"])
+        for row in components
     )
     return RelationFidelityEvidence(
-        keys={
-            "first_path_events": event_keys,
-            "context_relations": context_keys,
-            "component_responsibility_relations": component_keys,
-        },
-        minimum_samples={
-            "first_path_events": len(event_keys),
-            "context_relations": sum(selected_contexts.values()),
-            "component_responsibility_relations": (
-                sum(selected_responsibilities.values())
-            ),
-        },
-        issues=tuple(
-            dict.fromkeys((*event_issues, *context_issues, *component_issues))
-        ),
+        keys={"first_path_events": event_keys, "context_relations": context_keys,
+              "component_responsibility_relations": component_keys},
+        minimum_samples={"first_path_events": len(events), "context_relations": len(contexts),
+                         "component_responsibility_relations": len(components)},
+        issues=(),
     )
+
+
+def canonical_evidence_sha256(value: Any) -> str:
+    """Hash a complete JSON value; source witness hashes instead hash exact bytes."""
+    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"),
+                                    ensure_ascii=True, allow_nan=False).encode("utf-8")).hexdigest()
+
+
+def observed_semantic_universe(*, case: Any, snapshot: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
+    """Enumerate all exported claims after canonical R1 custody validation.
+
+    A fact outside the atomic ledger still needs reverse support.  Separate
+    lifecycle effects and supporting events retain separate audit identities.
+    """
+    evidence = snapshot_relation_evidence(case=case, snapshot=snapshot)
+    if evidence.issues:
+        raise ValueError("; ".join(evidence.issues))
+    universe: dict[str, dict[str, Any]] = {}
+    semantics = snapshot["authored_semantics"]
+    source = combined_prompt_evidence_source(prompt=case.prompt, edit_evidence=case.confirmed_intent_markdown).encode("utf-8")
+    first_run = set(semantics["provisional_design"]["first_run"]["event_orders"])
+
+    def add(path: str, value: Any, kind: str, *, row: Mapping[str, Any] | None = None) -> None:
+        witness = ""
+        roles: dict[str, str] = {}
+        if row is not None:
+            start, end = row.get("source_start_byte"), row.get("source_end_byte")
+            if type(start) is int and type(end) is int:
+                witness = hashlib.sha256(source[start:end]).hexdigest()
+            roles = {key: _sha256(row[key]) for key in AUTHORED_RELATION_ROLES if isinstance(row.get(key), str) and row[key]}
+        universe[path] = {"id": path, "kind": kind, "destination_sha256": canonical_evidence_sha256(value),
+                          "source_witness_sha256": witness, "normalized_role_sha256": roles,
+                          "custody_state": row.get("custody_state", "accepted_fact") if row else (
+                              "assumption" if path.startswith("/facts/assumptions/") else
+                              "ambiguity" if path.startswith("/facts/ambiguities/") else "accepted_fact")}
+
+    def facts(value: Any, path: str) -> None:
+        if isinstance(value, Mapping):
+            for key, nested in value.items():
+                facts(nested, path + "/" + str(key).replace("~", "~0").replace("/", "~1"))
+        elif isinstance(value, list):
+            for index, nested in enumerate(value):
+                facts(nested, path + "/" + str(index))
+        elif isinstance(value, str) and value:
+            add(path, value, "semantic_fact")
+
+    facts(snapshot["facts"], "/facts")
+    for index, row in enumerate(snapshot["atomic_facts"]):
+        add(f"/atomic_facts/{index}", row, "atomic_fact", row=row)
+    for family in RELATION_FAMILIES:
+        field = "first_path_relations" if family == "first_path_events" else "first_path_context_relations" if family == "context_relations" else family
+        for index, row in enumerate(semantics[field]):
+            kind = family
+            if family == "first_path_events":
+                kind = "main_event" if row["order"] in first_run else "supporting_event"
+            add(f"/authored_semantics/{field}/{index}", row, kind, row=row)
+    material_custody = snapshot.get("material_custody", {})
+    if not isinstance(material_custody, Mapping):
+        raise ValueError("sealed material custody must be an object")
+    for field, value in material_custody.items():
+        if not isinstance(value, Mapping) or not isinstance(value.get("custody_state"), str) or not value["custody_state"].strip():
+            raise ValueError(f"sealed material custody `{field}` must be an object with its actual custody state")
+        add(f"/material_custody/{field}", value, "material_custody", row=value)
+    design = semantics["provisional_design"]
+    for field, value in design.items():
+        if isinstance(value, list):
+            for index, row in enumerate(value):
+                add(f"/authored_semantics/provisional_design/{field}/{index}", row, "provisional_design")
+        else:
+            add(f"/authored_semantics/provisional_design/{field}", value, "provisional_design")
+    for index, row in enumerate(semantics["source_precedence"]):
+        add(f"/authored_semantics/source_precedence/{index}", row, "source_precedence")
+    duty = semantics["source_duty"]
+    if duty is not None:
+        for family in ("state_fields", "off_path_transitions", "conditional_guards", "boundaries", "proof_duties"):
+            for index, row in enumerate(duty["lifecycle"][family]):
+                path = f"/authored_semantics/source_duty/lifecycle/{family}/{index}"
+                add(path, row, "lifecycle_" + family)
+                for effect_index, effect in enumerate(row.get("effects", ())):
+                    add(path + f"/effects/{effect_index}", effect, "lifecycle_effect")
+    return universe
 
 
 def _annotation_event_keys(
@@ -489,142 +561,6 @@ def _annotation_component_keys(
     return tuple(keys), tuple(issues)
 
 
-def _snapshot_event_keys(
-    rows: Sequence[Mapping[str, Any]],
-    *,
-    facts: Mapping[str, Any],
-    source_bytes: bytes,
-) -> tuple[tuple[tuple[Any, ...], ...], tuple[str, ...]]:
-    first_path = str(facts.get("first_path") or "")
-    path_bytes = first_path.encode("utf-8")
-    issues: list[str] = []
-    keys: list[tuple[Any, ...]] = []
-    cursor = 0
-    for index, row in enumerate(rows, start=1):
-        label = f"sealed first_path_relations[{index}]"
-        if set(row) != FIRST_PATH_RELATION_FIELDS:
-            issues.append(f"{label} has an invalid closed schema")
-            continue
-        order = _positive_int(row.get("order"))
-        source_range = _range(row.get("source_start_byte"), row.get("source_end_byte"))
-        projection_range = _range(row.get("event_start_byte"), row.get("event_end_byte"))
-        event_quote = str(row.get("event_quote") or "")
-        actor_kind = str(row.get("actor_kind") or "")
-        actor_fact_path = str(row.get("actor_fact_path") or "")
-        actor_fact_quote = str(row.get("actor_fact_quote") or "")
-        owner_path = str(row.get("owner_system_path") or "")
-        owner_quote = str(row.get("owner_system_quote") or "")
-        action_quote = str(row.get("action_verb_quote") or "")
-        target_quote = str(row.get("target_quote") or "")
-        visible_quote = str(row.get("visible_result_quote") or "")
-        if order != index:
-            issues.append(f"{label} order is not contiguous and one-based")
-        if not _exact_slice(source_bytes, source_range, event_quote):
-            issues.append(f"{label} source range does not contain its exact event")
-        if (
-            projection_range is None
-            or projection_range[0] < cursor
-            or not _exact_slice(path_bytes, projection_range, event_quote)
-        ):
-            issues.append(f"{label} projection range does not contain its exact event")
-        else:
-            cursor = projection_range[1]
-        if actor_kind not in FIRST_PATH_ACTOR_KINDS:
-            issues.append(f"{label} actor identity is invalid")
-        if not action_quote or action_quote not in event_quote:
-            issues.append(f"{label} action is not exactly grounded in its event")
-        if not event_target_is_source_bound(
-            event_quote=event_quote,
-            target_quote=target_quote,
-        ):
-            issues.append(f"{label} target is not exactly grounded in its event")
-        if (
-            not _actor_path_matches_kind(actor_fact_path, actor_kind)
-            or _projection_value(facts, actor_fact_path) != actor_fact_quote
-        ):
-            issues.append(f"{label} actor fact does not match its exact selected fact")
-        if actor_kind == "product":
-            if (
-                owner_path != actor_fact_path
-                or owner_quote != actor_fact_quote
-                or not _product_owner_path(owner_path)
-            ):
-                issues.append(f"{label} product owner is not bound to its exact selected fact")
-        elif owner_path or owner_quote:
-            issues.append(f"{label} non-product event declares a product owner")
-        if visible_quote and not any(
-            visible_quote in fact for fact in intent_terminal_result_values(facts)
-        ):
-            issues.append(f"{label} visible result is not bound to an eligible source fact")
-        keys.append(
-            (
-                "event",
-                order,
-                *(source_range or (-1, -1)),
-                *(projection_range or (-1, -1)),
-                _sha256(event_quote),
-                actor_kind,
-                actor_fact_path,
-                _sha256(actor_fact_quote) if actor_fact_quote else "",
-                owner_path,
-                _sha256(owner_quote) if owner_quote else "",
-                _sha256(action_quote) if action_quote else "",
-                _sha256(target_quote) if target_quote else "",
-                _sha256(visible_quote) if visible_quote else "",
-            )
-        )
-    if not keys:
-        issues.append("sealed authored_semantics has no first_path events")
-    if len(keys) != len(set(keys)):
-        issues.append("sealed first_path event identities are duplicated")
-    return tuple(keys), tuple(issues)
-
-
-def _snapshot_context_keys(
-    rows: Sequence[Mapping[str, Any]],
-    *,
-    facts: Mapping[str, Any],
-    source_bytes: bytes,
-    first_path_relations: Sequence[Mapping[str, Any]],
-) -> tuple[tuple[tuple[Any, ...], ...], tuple[str, ...]]:
-    issues: list[str] = []
-    keys: list[tuple[Any, ...]] = []
-    for index, row in enumerate(rows, start=1):
-        label = f"sealed first_path_context_relations[{index}]"
-        if set(row) != FIRST_PATH_CONTEXT_RELATION_FIELDS:
-            issues.append(f"{label} has an invalid closed schema")
-            continue
-        kind = str(row.get("context_kind") or "")
-        path = str(row.get("fact_path") or "")
-        quote = str(row.get("fact_quote") or "")
-        source_range = _range(row.get("source_start_byte"), row.get("source_end_byte"))
-        event_order = _nonnegative_int(row.get("first_path_event_order"))
-        if kind not in FIRST_PATH_CONTEXT_KINDS or not _context_path_matches_kind(path, kind):
-            issues.append(f"{label} has an invalid typed fact path")
-        if _projection_value(facts, path) != quote:
-            issues.append(f"{label} does not match its exact selected fact")
-        if not _exact_slice(source_bytes, source_range, quote):
-            issues.append(f"{label} does not match its exact source range")
-        if event_order is None or event_order != _product_context_event_order(
-            source_range=source_range,
-            first_path_relations=first_path_relations,
-        ):
-            issues.append(f"{label} has an invalid event linkage")
-        keys.append(
-            (
-                "context",
-                kind,
-                path,
-                _sha256(quote),
-                *(source_range or (-1, -1)),
-                event_order if event_order is not None else -1,
-            )
-        )
-    if len(keys) != len(set(keys)):
-        issues.append("sealed context relation identities are duplicated")
-    return tuple(keys), tuple(issues)
-
-
 def _product_context_event_order(
     *,
     source_range: tuple[int, int] | None,
@@ -640,55 +576,6 @@ def _product_context_event_order(
         )
     except GreenfieldAuthoredSemanticsError:
         return None
-
-
-def _snapshot_component_keys(
-    rows: Sequence[Mapping[str, Any]],
-    *,
-    facts: Mapping[str, Any],
-    events_by_order: Mapping[int, Mapping[str, Any]],
-) -> tuple[tuple[tuple[Any, ...], ...], tuple[str, ...]]:
-    issues: list[str] = []
-    keys: list[tuple[Any, ...]] = []
-    for index, row in enumerate(rows, start=1):
-        label = f"sealed component_responsibility_relations[{index}]"
-        if set(row) != COMPONENT_RESPONSIBILITY_RELATION_FIELDS:
-            issues.append(f"{label} has an invalid closed schema")
-            continue
-        responsibility_path = str(row.get("responsibility_path") or "")
-        responsibility_quote = str(row.get("responsibility_quote") or "")
-        owner_path = str(row.get("owner_system_path") or "")
-        owner_quote = str(row.get("owner_system_quote") or "")
-        event_order = _nonnegative_int(row.get("first_path_event_order"))
-        source = str(row.get("responsibility_source") or "")
-        event = events_by_order.get(event_order or -1)
-        if _projection_value(facts, owner_path) != owner_quote or not _product_owner_path(owner_path):
-            issues.append(f"{label} does not match its exact product owner")
-        if event_order is None or (event_order and event is None):
-            issues.append(f"{label} has an invalid event linkage")
-        if event is not None and str(event.get("actor_kind") or "") == "product" and (
-            str(event.get("owner_system_path") or "") != owner_path
-        ):
-            issues.append(f"{label} contradicts its linked product event owner")
-        if source == "accepted_fact":
-            if _projection_value(facts, responsibility_path) != responsibility_quote:
-                issues.append(f"{label} does not match its exact responsibility fact")
-        else:
-            issues.append(f"{label} has an invalid responsibility_source")
-        keys.append(
-            (
-                "component",
-                responsibility_path,
-                _sha256(responsibility_quote),
-                owner_path,
-                _sha256(owner_quote),
-                event_order if event_order is not None else -1,
-                source,
-            )
-        )
-    if len(keys) != len(set(keys)):
-        issues.append("sealed component relation identities are duplicated")
-    return tuple(keys), tuple(issues)
 
 
 def _annotation_atom_indexes(
@@ -753,24 +640,6 @@ def _annotation_context_facts(
     )
 
 
-def _snapshot_context_facts(
-    facts: Mapping[str, Any],
-) -> Counter[tuple[str, str, str]]:
-    rows: list[tuple[str, str, str]] = []
-    state = facts.get("state_object")
-    if isinstance(state, str) and state:
-        rows.append(("state_object", "/state_object", _sha256(state)))
-    for kind, field in (
-        ("external_system", "external_systems"),
-        ("operational_constraint", "operational_constraints"),
-    ):
-        rows.extend(
-            (kind, f"/{field}/{index}", _sha256(value))
-            for index, value in enumerate(_string_rows(facts.get(field)))
-        )
-    return Counter(rows)
-
-
 def _context_kind_for_path(path: str) -> str:
     if path == "/state_object":
         return "state_object"
@@ -799,17 +668,6 @@ def _annotation_responsibility_facts(
         (path, digest)
         for path, digest in projections
         if _list_path(path, "component_responsibilities")
-    )
-
-
-def _snapshot_responsibility_facts(
-    facts: Mapping[str, Any],
-) -> Counter[tuple[str, str]]:
-    return Counter(
-        (f"/component_responsibilities/{index}", _sha256(value))
-        for index, value in enumerate(
-            _string_rows(facts.get("component_responsibilities"))
-        )
     )
 
 

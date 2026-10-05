@@ -127,7 +127,7 @@ def test_post_result_action_survives_authoring_custody_and_all_projections(tmp_p
     assert [row["visible_result"] for row in run] == [False, True, False]
     atlas = proposal["diagrams"][1]["mermaid_source"]
     assert 'event1 -->|"source constraint 2"| event3' in atlas
-    assert 'event3 -. "proposed next step" .-> event1' not in atlas
+    assert 'event3 -.-> event1' not in atlas
     for owner, contract in (("components", "component_contract"), ("backlog", "provisional_workstream_contract")):
         supported = [event["event_quote"] for row in proposal[owner] for event in row[contract]["supporting_events"]]
         assert events[2]["event_quote"] in supported
@@ -244,11 +244,15 @@ def test_atlas_proposes_order_but_registry_and_radar_keep_source_support_ids(ord
     assert sequence["authority_kind"] == "provisional_design"
     mermaid = sequence["mermaid_source"]
     assert 'event2 -->|"source constraint 1"| event3' in mermaid
-    assert 'event3 -. "proposed next step" .-> event1' in mermaid
-    assert 'event2 -. "proposed next step" .-> event3' not in mermaid
+    assert 'event3 -.-> event1' in mermaid
+    assert 'event2 -.-> event3' not in mermaid
     assert "event3 --> event1" not in mermaid
     assert "event1 --> event2" not in mermaid
     assert "source order" not in sequence["summary"].casefold()
+    assert "dotted arrows show additional proposed next steps" in sequence["read_guide"]
+    boxes = {box["node_id"]: box for box in sequence["diagram_boxes"]}
+    for order, event in enumerate(events, 1):
+        assert event["event_quote"] in boxes[f"event{order}"]["description"]
     for owner, contract_key in (("components", "component_contract"), ("backlog", "provisional_workstream_contract")):
         for row in proposal[owner]:
             contract = row[contract_key]

@@ -27,6 +27,7 @@ from odylith.runtime.common import generated_refresh_guard
 from odylith.runtime.common import repo_path_resolver
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import AUTHORED_PROJECTION_ORIGIN
 from odylith.runtime.domain_intelligence.greenfield_authored_atlas_view import is_authored_atlas_view
+from odylith.runtime.governance.component_registry_intelligence import normalize_diagram_id
 from odylith.runtime.surfaces import generated_flowchart_assets
 from odylith.runtime.surfaces import mermaid_worker_session as _mermaid_worker_session
 from odylith.runtime.surfaces import surface_path_helpers
@@ -70,6 +71,10 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--repo-root", default=".", help="Repository root path")
     parser.add_argument("--catalog", default="odylith/atlas/source/catalog/diagrams.v1.json", help="Catalog JSON path")
+    parser.add_argument("--diagram-id", action="append", default=[],
+                        help="Refresh only this exact existing diagram ID (repeatable); excludes path/global selection.")
+    parser.add_argument("--preserve-review-date", action="store_true",
+                        help="Keep authored review dates during an exact selected-diagram metadata refresh.")
     parser.add_argument(
         "--changed-path",
         action="append",
@@ -558,6 +563,24 @@ def _select_stale_diagram_indexes(
     return selected
 
 
+def _select_exact_diagram_indexes(diagrams: Sequence[object], diagram_ids: Sequence[str]) -> list[int]:
+    if any(not isinstance(value, str) or normalize_diagram_id(value) != value for value in diagram_ids):
+        raise ValueError("diagram IDs must be exact canonical D-### identifiers")
+    if len(set(diagram_ids)) != len(diagram_ids):
+        raise ValueError("duplicate selected diagram ID")
+    indexes: dict[str, int] = {}
+    for index, row in enumerate(diagrams):
+        if isinstance(row, dict):
+            diagram_id = row.get("diagram_id")
+            if diagram_id in indexes:
+                raise ValueError(f"duplicate catalog diagram ID: {diagram_id}")
+            indexes[diagram_id] = index
+    missing = [value for value in diagram_ids if value not in indexes]
+    if missing:
+        raise ValueError("selected diagram IDs do not exist: " + ", ".join(missing))
+    return [indexes[value] for value in diagram_ids]
+
+
 def _render_diagram(*, repo_root: Path, source_mmd: str, source_svg: str, source_png: str, cli_version: str) -> None:
     mmdc_bin = _mermaid_worker_session.resolve_mermaid_cli_bin(repo_root=repo_root, cli_version=cli_version)
     base_cmd = ["node", str(mmdc_bin)] if mmdc_bin.suffix == ".js" else [str(mmdc_bin)]
@@ -686,13 +709,17 @@ def _render_diagrams_batch(
         )
 
 
-def _render_catalog(*, repo_root: Path, fail_on_stale: bool, runtime_mode: str) -> None:
+def _render_catalog(
+    *, repo_root: Path, fail_on_stale: bool, runtime_mode: str, diagram_ids: Sequence[str] = (),
+) -> None:
     if str(runtime_mode) != "standalone":
         from odylith.runtime.surfaces import render_mermaid_catalog_refresh
 
         argv = ["--repo-root", str(repo_root), "--runtime-mode", str(runtime_mode)]
         if fail_on_stale:
             argv.append("--fail-on-stale")
+        for diagram_id in diagram_ids:
+            argv.extend(["--diagram-id", diagram_id])
         rc = render_mermaid_catalog_refresh.main(argv)
         if rc != 0:
             raise subprocess.CalledProcessError(
@@ -712,6 +739,8 @@ def _render_catalog(*, repo_root: Path, fail_on_stale: bool, runtime_mode: str) 
     if fail_on_stale:
         cmd.append("--fail-on-stale")
     cmd.extend(["--runtime-mode", str(runtime_mode)])
+    for diagram_id in diagram_ids:
+        cmd.extend(["--diagram-id", diagram_id])
     subprocess.run(cmd, cwd=str(repo_root), env=_command_env(), check=True)
 
 
@@ -729,6 +758,13 @@ def _print_failure_summary(*, elapsed: float, error: Exception) -> None:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
+    if (args.diagram_id and (args.all_stale or args.changed_path or args.from_git_head
+                            or args.from_git_staged or args.from_git_working_tree)):
+        print("FAILED: exact diagram selection cannot be combined with path or global selection")
+        return 2
+    if args.preserve_review_date and not args.diagram_id:
+        print("FAILED: preserving authored review dates requires exact diagram selection")
+        return 2
     repo_root = Path(args.repo_root).resolve()
     catalog_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.catalog)
 
@@ -746,7 +782,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         changed.extend(_git_changed_paths(repo_root=repo_root, args=["diff", "--name-only"]))
 
     changed = _normalize_paths(changed)
-    if not changed and not bool(args.all_stale):
+    if not changed and not bool(args.all_stale) and not args.diagram_id:
         print("no changed paths provided; nothing to sync")
         return 0
 
@@ -763,7 +799,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             diagrams=diagrams,
             max_review_age_days=max(0, int(args.max_review_age_days)),
         )
-    provisional_impacted_indexes = list(stale_indexes)
+    try:
+        provisional_impacted_indexes = (_select_exact_diagram_indexes(diagrams, args.diagram_id)
+                                       if args.diagram_id else list(stale_indexes))
+    except (TypeError, ValueError) as exc:
+        print(f"FAILED: {exc}")
+        return 2
     for idx, item in enumerate(diagrams):
         if not isinstance(item, dict):
             continue
@@ -830,6 +871,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "changed_paths": changed,
                 "diagram_ids": [str(item.get("diagram_id", "")).strip() for item in provisional_items],
                 "all_stale": bool(args.all_stale),
+                "preserve_review_date": bool(args.preserve_review_date),
                 "skip_render_catalog": bool(args.skip_render_catalog),
                 "runtime_mode": str(args.runtime_mode),
             },
@@ -965,7 +1007,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 cache=content_fingerprint_cache,
             )
             item["render_source_fingerprint"] = content_fingerprint_cache.mermaid_render_fingerprint(source_mmd_path)
-            item["last_reviewed_utc"] = today
+            if not args.preserve_review_date:
+                item["last_reviewed_utc"] = today
 
         catalog_path.write_text(f"{json.dumps(payload, indent=2)}\n", encoding="utf-8")
         print(f"catalog updated: {_as_repo_path(repo_root, catalog_path)}")
@@ -975,6 +1018,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 repo_root=repo_root,
                 fail_on_stale=args.fail_on_stale,
                 runtime_mode=str(args.runtime_mode),
+                **({"diagram_ids": tuple(args.diagram_id)} if args.diagram_id else {}),
             )
         final_fingerprint = generated_refresh_guard.compute_input_fingerprint(
             repo_root=repo_root,
@@ -983,6 +1027,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "changed_paths": changed,
                 "diagram_ids": [str(item.get("diagram_id", "")).strip() for item in classification.impacted_items],
                 "all_stale": bool(args.all_stale),
+                "preserve_review_date": bool(args.preserve_review_date),
                 "skip_render_catalog": bool(args.skip_render_catalog),
                 "runtime_mode": str(args.runtime_mode),
             },

@@ -2,13 +2,38 @@
 
 Receipt version: `odylith.greenfield-operating-envelope.v6`
 
-Document revision: `12`
+Document revision: `13`
 
 Profile: `single-product-governance-onboarding`
 
 This defines Greenfield's bounded support target. A production release claim
 still requires semantic, transaction, host, browser, and holdout proof within
 this envelope.
+
+## Projection authority and readability
+
+Project shows accepted scope boundaries from the verified source-duty record as
+known facts, retaining their exact rule and source citations. Candidate advisory
+ambiguity strings do not acquire source authority from an intent pointer and are
+not automatically promoted into known facts or open assumptions. Genuine proposed
+decisions remain separately labeled and open to review.
+
+Greenfield does not assess commercial value, impact, effort, urgency or
+confidence from an authored design. Radar carries explicit unassessed metadata
+and provisional-design provenance through records, indexing, Context Engine,
+plan continuation and UI. Unknown numeric judgments remain null in typed data;
+they do not acquire a numeric score, rank or bar. Dependency reasoning remains
+available independently. Existing assessed workstreams retain their validated
+score formula and explicit override rules.
+
+Atlas sequence and support views use readable structure and references to
+complete sealed statements in selectable details and companion diagrams.
+Source performers, selected events, required upstream support and lifecycle
+effects remain intact. Withdrawal changes remain distinguishable in the visual.
+Static readability checks do not qualify Read selection or the browser matrix.
+Fresh v19 passes independent core civic semantics but fails three projection
+quality findings; its retained evidence remains unchanged. Corrected-source
+characterizations require a new installed public proof before qualification.
 
 ## Supported evidence
 
@@ -82,21 +107,56 @@ verification precede `propose` for the broad free-form path. The inventory's
 current 300-second cap and verifier's 120-second cap are diagnostic; the finite
 whole-journey release limit must be selected from fixed public complete runs.
 Each local source-ledger preflight and receipt check has its own 30-second
-limit after its host stage. The release harness additionally enforces one
+limit after its host stage. The product-owned `odylith greenfield prepare` parent enforces one
 660-second diagnostic deadline across all phases, retained-evidence callbacks,
-and cleanup. This hard ceiling stays fixed at 660 seconds; phase maxima are
-not additive allocations. It is explicitly `diagnostic_unqualified`, not a
-public-data-backed consumer limit. Each dispatched request receives at most
-the whole journey's remaining time. Candidate dispatch additionally reserves
-15 seconds for completion. A callback returning after expiry makes the flow
-fail before confirmation. Observation v12 samples elapsed time after the advisory observer
-returns and publishes an owned final snapshot. Its explicit elapsed scope
-includes model calls, local checks, raw artifact retention, cleanup, and the
-observer; the final timestamp JSON serialization follows that sample.
-It distinguishes `proposal_phase_elapsed_seconds`
-from `whole_journey_seconds`; legacy `elapsed_seconds` retains the proposal
-phase value. Product-owned timing custody across separate CLI invocations and
-a measured release bound remain unproved. Citation context is a verbatim source excerpt that
+cleanup and observer return. Release adapters execute that same runtime owner.
+The cap stays fixed; phase maxima are not additive allocations. It remains
+`diagnostic_unqualified` until fixed public complete runs establish a measured
+release bound. Each request receives at most the parent’s remaining allowance;
+candidate dispatch reserves 15 seconds for deterministic completion.
+
+On the declared macOS/Linux process envelope, an independent guardian interrupts
+Python work and force-stops a runner blocked in native work within a separate
+2-second cancellation grace. It stops registered, kernel-identity-verified child
+groups and their live descendants. A descendant deliberately escaping and
+reparenting before cancellation is not proved; unclosed escaped output pipes
+remain a failure. The guardian preserves caller alarm state. Newly staged
+bounded-route pending packages carry an atomic quarantine marker; the public
+resolver and CONFIRM reject them until the parent completes. Cancellation
+preserves old and preexisting seals and never grants a success preview.
+
+Observation v17 starts before contract acquisition and measures model calls,
+local checks, raw retention, cleanup, observer return, guardian settlement,
+diagnostic completion-record I/O and the final raw whole/proposal clock check.
+One candidate may stage at most one new package; multiple new seals fail closed.
+The guardian keeps a fresh completion nonce private in RAM. Canonical quarantine
+and diagnostic records contain its digest only. After all measured work and both
+strict time checks succeed, it irreversibly certifies completion and discloses
+the nonce to the trusted parent through a private channel; children receive a
+separate registration channel. Stored records or a dead guardian cannot authorize
+creation. Bounded CONFIRM/create require the explicitly supplied delivered
+`--completion-receipt` matching the canonical repository/hash and journey digest.
+No receipt is disclosed on late/error paths, even if every cleanup operation
+fails. Cancellation retains canonical repository/hash denial for copied input.
+Old/equal seals retain their original receipt; EDIT produces one fresh journey
+and new receipt without changing the old seal. Unmarked file-based transactions
+retain their existing source-custody contract. REJECT can retire failed staging
+while preserving canonical denial.
+Receipt file persistence, guardian retirement, final preparation JSON decoding,
+text/JSON rendering and stdout printing follow the measured interval. Their
+latency is not qualified. A post-certification delivery failure is an explicit
+accepted-or-unknown environment outcome, not cancellation; a lost receipt may
+leave a package permanently unconfirmable. Compiler sealed-preview generation
+is inside the interval. No post-check filesystem write grants completion.
+It distinguishes
+`proposal_phase_elapsed_seconds` from `whole_journey_seconds`; legacy
+`elapsed_seconds` retains the proposal value. Direct file-based CLI commands
+prove local source custody but cannot establish parent timing from elapsed
+numbers, copied receipts or an environment duration. Codex and Claude
+orchestration may call `prepare`; the pinned inference transport remains the
+existing direct Codex Astra-medium profile. Native Claude inference or
+confirmation qualification is not claimed. A measured release bound remains
+unproved. Citation context is a verbatim source excerpt that
 contains the selected quote and occurs once in the complete evidence.
 Ledger v5 owns each normalized action, target, and statement once. Exact event
 and actor citations plus role context support that meaning; the compiler

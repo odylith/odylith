@@ -35,7 +35,8 @@ def test_pending_resolution_deadline_returns_blocked_identity(
 
     monkeypatch.setattr(
         confirmation.greenfield_pending_transaction_store,
-        "resolve_pending_transaction", delayed_resolution,
+        "resolve_pending_transaction_directory" if command == "REJECT" else "resolve_pending_transaction",
+        delayed_resolution,
     )
     monkeypatch.setattr(confirmation, "_confirm_pending_transaction", forbidden_mutation)
     monkeypatch.setattr(confirmation, "_reject_pending_transaction", forbidden_mutation)

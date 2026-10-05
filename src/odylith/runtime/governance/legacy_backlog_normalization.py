@@ -9,6 +9,7 @@ from typing import Any, Iterable, Mapping
 
 from odylith.install.fs import atomic_write_text
 from odylith.runtime.common.consumer_profile import truth_root_path
+from odylith.runtime.governance import backlog_assessment
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import execution_wave_contract
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
@@ -96,6 +97,7 @@ def normalize_legacy_backlog_index(*, repo_root: str | Path, today: dt.date | No
             idea_id=idea_id,
             title=title,
             existing_lines=list(existing.get("lines", [])),
+            ordering_score=backlog_assessment.numeric_value(spec.metadata.get("ordering_score")) if spec else None,
             founder_override=bool(spec.founder_override) if spec is not None else False,
             today=current_day,
             require_ordering=True,
@@ -117,6 +119,7 @@ def normalize_legacy_backlog_index(*, repo_root: str | Path, today: dt.date | No
             idea_id=idea_id,
             title=title,
             existing_lines=list(existing.get("lines", [])),
+            ordering_score=backlog_assessment.numeric_value(spec.metadata.get("ordering_score")) if spec else None,
             founder_override=bool(spec.founder_override) if spec is not None else False,
             today=current_day,
             require_ordering=bool(spec.founder_override) if spec is not None else False,
@@ -368,12 +371,14 @@ def _normalized_rationale_lines(
     founder_override: bool,
     today: dt.date,
     require_ordering: bool,
+    ordering_score: int | None = None,
 ) -> list[str]:
     defaults = _default_rationale_lines(
         idea_id=idea_id,
         title=title,
         founder_override=founder_override,
         today=today,
+        ordering_score=ordering_score,
     )
     lines = _trim_empty_boundary_lines(existing_lines)
     bullet_indexes = {
@@ -411,6 +416,7 @@ def _default_rationale_lines(
     title: str,
     founder_override: bool,
     today: dt.date,
+    ordering_score: int | None,
 ) -> dict[str, str]:
     lines = backlog_authoring._build_rationale_lines(  # noqa: SLF001
         item=backlog_authoring.CreatedBacklogItem(
@@ -419,7 +425,7 @@ def _default_rationale_lines(
             idea_path=Path(
                 f"odylith/radar/source/ideas/{today.isoformat()[:7]}/{today.isoformat()}-{idea_id.lower()}.md"
             ),
-            ordering_score=0,
+            ordering_score=ordering_score,
             founder_override=founder_override,
         ),
         override_note="",

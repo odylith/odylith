@@ -6,7 +6,6 @@ import hashlib
 import json
 import math
 import os
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -16,7 +15,14 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from greenfield_process import CommandLifecycleObserverError, run_command_with_group_timeout
+from odylith.runtime.domain_intelligence.greenfield_process import (
+    CommandLifecycleObserverError, run_command_with_group_timeout,
+    JourneyCancelled, supervise_greenfield_journey, _REAL_MONOTONIC, register_bounded_workspace,
+)
+
+from odylith.runtime.domain_intelligence.greenfield_host_transport import (
+    qualify_host_candidate_argv, _resolved_host_argv,
+)
 
 _MAX_HOST_DIAGNOSTIC_STDERR_BYTES = 256 * 1024
 
@@ -38,85 +44,19 @@ from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
     SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
     preflight_greenfield_source_duty_ledger,
 )
-from greenfield_whole_journey_budget import (
+from odylith.runtime.domain_intelligence.greenfield_whole_journey_budget import (
     WHOLE_JOURNEY_ELAPSED_SCOPE,
-    WholeJourneyDeadline,
+    PROVISIONAL_WHOLE_JOURNEY_TIMEOUT_SECONDS,
+    WholeJourneyDeadline, JourneyObservationFinalizer,
 )
 
 HOST_NATIVE_MATRIX_OBSERVATION_VERSION = (
-    "odylith.greenfield.host-native-matrix-observation.v12"
+    "odylith.greenfield.host-native-matrix-observation.v17"
 )
-HOST_NATIVE_ARGV_RECEIPT_VERSION = "odylith.greenfield.host-argv-receipt.v1"
 # Diagnostic phase cap. A release-wide journey bound needs measured public proof.
 PROVISIONAL_SOURCE_LEDGER_TIMEOUT_SECONDS = 300.0
 PROVISIONAL_SOURCE_DUTY_VERIFIER_TIMEOUT_SECONDS = 120.0
 PROVISIONAL_SOURCE_CHECK_TIMEOUT_SECONDS = 30.0
-
-
-def _canonical_host_candidate_tokens(
-    *, model: str, reasoning_effort: str, output_schema: str
-) -> tuple[str, ...]:
-    """Return the exact direct-Codex token contract used by release authoring."""
-
-    return (
-        "exec",
-        "--ephemeral",
-        "--ignore-user-config",
-        "--skip-git-repo-check",
-        "--sandbox",
-        "read-only",
-        "--model",
-        model,
-        "--config",
-        f"model_reasoning_effort={reasoning_effort}",
-        "--output-schema",
-        output_schema,
-        "-",
-    )
-
-
-def canonical_host_candidate_argv_template() -> tuple[str, ...]:
-    """Return the one placeholder argv accepted by Greenfield release proof."""
-
-    return (
-        "codex",
-        *_canonical_host_candidate_tokens(
-            model="{model}",
-            reasoning_effort="{reasoning_effort}",
-            output_schema="{candidate_schema}",
-        ),
-    )
-
-
-def post_receipt_runtime_env(environ: Mapping[str, str]) -> dict[str, str]:
-    """Disable every runtime provider route after host-candidate receipt."""
-
-    values = dict(environ)
-    values.update(
-        {
-            "ODYLITH_REASONING_MODE": "disabled",
-            "ODYLITH_REASONING_PROVIDER": "auto-local",
-            "ODYLITH_REASONING_TIMEOUT_SECONDS": "1",
-            "ODYLITH_REASONING_CODEX_BIN": "/usr/bin/false",
-            "ODYLITH_REASONING_CLAUDE_BIN": "/usr/bin/false",
-        }
-    )
-    return values
-
-
-HOST_NATIVE_ARGV_ARGUMENT_COUNT = 1 + len(
-    _canonical_host_candidate_tokens(model="", reasoning_effort="", output_schema="")
-)
-HOST_NATIVE_ARGV_SHAPE_SHA256 = hashlib.sha256(
-    json.dumps(
-        (
-            "exec", "ephemeral", "ignore-user-config", "skip-git-repo-check",
-            "sandbox:read-only", "model", "config:model_reasoning_effort",
-            "output-schema", "stdin",
-        ),
-        separators=(",", ":"),
-    ).encode("utf-8")
-).hexdigest()
 
 
 class HostCandidateFlowError(RuntimeError):
@@ -174,6 +114,9 @@ class HostCandidateFlow:
     # final timing after observer return. Final telemetry serialization follows it.
     observation_sink: dict[str, Any] = field(default_factory=dict)
     observe: Callable[[Mapping[str, Any]], None] | None = None
+    transaction_hash: str = ""
+    completion_receipt: str = ""
+    completion_receipt_sink: dict[str, Any] = field(default_factory=dict)
     retain_authority_gate_bytes: Callable[[bytes], None] | None = None
     retain_source_ledger_bytes: Callable[[bytes], None] | None = None
     retain_source_ledger_preflight_bytes: Callable[[bytes], None] | None = None
@@ -185,6 +128,28 @@ class HostCandidateFlow:
 
 
 def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
+    """The product-owned parent route for both consumers and release drivers."""
+    parent_started = _REAL_MONOTONIC()
+    started = time.monotonic()
+    finalizer = JourneyObservationFinalizer(flow.observation_sink, started, time.monotonic, _REAL_MONOTONIC)
+    try:
+        with supervise_greenfield_journey(seconds=PROVISIONAL_WHOLE_JOURNEY_TIMEOUT_SECONDS,
+                                         started_at=parent_started,on_settled=finalizer.settled,
+                                         on_published=finalizer.published,
+                                         completion_receipt_sink=flow.completion_receipt_sink) as custody:
+            result = _run_host_candidate_flow(flow,started=started,supervision=custody,finalizer=finalizer)
+        if flow.completion_receipt_sink:
+            result.completion_receipt = dict(flow.completion_receipt_sink)
+        return result
+    except JourneyCancelled as exc:
+        elapsed = time.monotonic() - started
+        flow.observation_sink.update(status="failed", whole_journey_seconds=round(elapsed, 3),
+            whole_journey_deadline_status=("expired" if elapsed >= PROVISIONAL_WHOLE_JOURNEY_TIMEOUT_SECONDS else "within"))
+        raise HostCandidateFlowError(str(exc), observation=flow.observation_sink) from exc
+
+
+def _run_host_candidate_flow(flow: HostCandidateFlow, *, started: float,
+                             supervision: Mapping[str, Any], finalizer: JourneyObservationFinalizer) -> Any:
     """Obtain a contract, invoke exactly one configured host, and propose its candidate.
 
     The callback for ``invoke_propose`` receives temporary candidate and gate
@@ -213,13 +178,8 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
     _require_temp_parent_outside_repo(temp_parent=temp_parent, repo_root=repo_root)
     temp_parent.mkdir(parents=True, exist_ok=True)
 
-    started = time.monotonic()
     deadline = WholeJourneyDeadline(started, time.monotonic)
     proposal_started = started
-    ledger_started: float | None = None
-    ledger_elapsed = 0.0
-    verifier_started: float | None = None
-    verifier_elapsed = 0.0
     observation: dict[str, Any] = {
         "version": HOST_NATIVE_MATRIX_OBSERVATION_VERSION,
         "status": "running",
@@ -242,6 +202,8 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
         "whole_journey_diagnostic_cap_seconds": deadline.cap_seconds,
         "candidate_completion_reserve_seconds": GREENFIELD_COMPLETION_RESERVE_SECONDS,
         "whole_journey_bound_status": "diagnostic_unqualified",
+        "whole_journey_route": "odylith-greenfield-prepare.v1",
+        "whole_journey_supervision": dict(supervision),
         "whole_journey_elapsed_scope": WHOLE_JOURNEY_ELAPSED_SCOPE,
         "candidate_temp_cleaned": False,
         "authority_gate_temp_cleaned": False,
@@ -286,6 +248,7 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
             dir=str(temp_parent),
         ) as candidate_dir:
             host_workspace = Path(candidate_dir)
+            register_bounded_workspace(host_workspace)
             gate_contract = contract.get("authority_gate")
             if not isinstance(gate_contract, Mapping) or set(gate_contract) != {
                 "version", "task", "operator_request", "operator_edit", "response_schema",
@@ -400,236 +363,24 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
                     _fail("installed authority check did not admit",
                           observation=observation, stage="authority-check")
             _remaining(proposal_started, model_timeout)
-            ledger_contract = contract.get("source_ledger")
-            if not isinstance(ledger_contract, Mapping) or set(ledger_contract) != {
-                "task", "source_ledger_schema",
-            } or not str(ledger_contract.get("task") or "").strip() or not isinstance(
-                ledger_contract.get("source_ledger_schema"), Mapping
-            ):
-                _fail("host-native candidate contract has no closed source ledger",
-                      observation=observation, stage="contract")
-            ledger_schema_path = host_workspace / "source-ledger-schema.json"
-            ledger_schema_path.write_text(
-                json.dumps(ledger_contract["source_ledger_schema"], ensure_ascii=False,
-                           sort_keys=True, separators=(",", ":")) + "\n", encoding="utf-8",
-            )
-            ledger_argv, ledger_request = qualify_host_candidate_argv(
-                _resolved_host_argv(host_argv, candidate_schema_path=ledger_schema_path),
-                trusted_codex_executable=flow.trusted_codex_executable,
-                expected_model=flow.expected_model,
-                expected_reasoning_effort=flow.expected_reasoning_effort,
-                expected_output_schema=str(ledger_schema_path),
-                path_value=str(flow.env.get("PATH") or os.environ.get("PATH") or ""),
-            )
-            observation["source_ledger_request"] = ledger_request
-            observation["source_ledger_schema_sha256"] = _sha256_text(
-                ledger_schema_path.read_text(encoding="utf-8")
-            )
-            observation["stage"] = "source-ledger"
-            ledger_started = time.monotonic()
-            ledger_timeout = deadline.request_timeout(
-                _remaining(ledger_started, PROVISIONAL_SOURCE_LEDGER_TIMEOUT_SECONDS)
-            )
-            observation["host_invocations"] = 2
-            observation["source_ledger_host_invocations"] = 1
-            ledger_result = _invoke_host(
-                ledger_argv,
-                contract_text=json.dumps(
-                    {"source_ledger": dict(ledger_contract), "request": request,
-                     "authority_admission": check_payload},
-                    ensure_ascii=False, sort_keys=True, separators=(",", ":"),
-                ),
-                cwd=host_workspace,
-                env=flow.env,
-                timeout=ledger_timeout,
-            )
-            observation["source_ledger_returncode"] = int(
-                getattr(ledger_result, "returncode", 1)
-            )
-            _retain_host_output(flow, observation, ledger_result, flow.retain_source_ledger_bytes)
-            ledger_text = _text_stream(getattr(ledger_result, "stdout", ""))
-            ledger_bytes = ledger_text.encode("utf-8")
-            observation["source_ledger_output_sha256"] = hashlib.sha256(ledger_bytes).hexdigest()
-            observation["source_ledger_output_bytes"] = len(ledger_bytes)
-            if observation["source_ledger_returncode"] != 0:
-                _fail("host-native source ledger command returned nonzero",
-                      observation=observation, stage="source-ledger",
-                      terminal_error=getattr(ledger_result, "lifecycle_observer_error", None))
-            deadline.remaining()
-            host_ledger = _single_json_object(ledger_text, label="source ledger")
-            ledger_path = host_workspace / "source-ledger.json"
-            ledger_path.write_bytes(ledger_bytes)
-            observation["source_ledger_temp_outside_repo"] = not _is_within(
-                ledger_path, repo_root
-            )
-            if not observation["source_ledger_temp_outside_repo"]:
-                _fail("host-native source ledger path is inside the consumer repo",
-                      observation=observation, stage="source-ledger-file")
-            observation["stage"] = "source-ledger-preflight"
-            preflight_timeout = deadline.request_timeout(PROVISIONAL_SOURCE_CHECK_TIMEOUT_SECONDS)
-            observation["source_ledger_check_command_invocations"] = 1
-            preflight = _invoke_installed_source_ledger_check(
-                flow, ledger_path=ledger_path,
-                remaining=preflight_timeout,
-            )
-            deadline.remaining()
-            observation["source_ledger_preflight_returncode"] = int(
-                getattr(preflight, "returncode", 1)
-            )
-            preflight_text = _text_stream(getattr(preflight, "stdout", ""))
-            if flow.retain_source_ledger_preflight_bytes is not None:
-                flow.retain_source_ledger_preflight_bytes(preflight_text.encode("utf-8"))
-                deadline.remaining()
-            observation["source_ledger_preflight_stdout_sha256"] = _sha256_text(preflight_text)
-            if observation["source_ledger_preflight_returncode"] != 0:
-                _fail("installed source ledger preflight returned nonzero",
-                      observation=observation, stage="source-ledger-preflight",
-                      detail=_stream_excerpt(preflight))
-            preflight_payload = _single_json_object(
-                preflight_text, label="source ledger preflight"
-            )
-            observation["source_ledger_preflight_mode"] = preflight_payload.get("mode")
-            ledger_elapsed = time.monotonic() - ledger_started
-            proposal_started += ledger_elapsed
-            observation["source_ledger_elapsed_seconds"] = round(ledger_elapsed, 3)
-            if preflight_payload.get("mode") == "clarification_required":
-                observation["response_kind"] = "clarification_required"
-                observation["proposal_mode"] = "clarification_required"
-                observation["candidate_temp_cleaned"] = True
-                observation["status"] = "passed"
-                return preflight
-            preflight_receipt = preflight_payload.get("preflight")
-            decision_task = preflight_payload.get("decision_task")
-            # Share the compiler's custody owners: the task's hashes live in the
-            # preflight and schema, rather than duplicated top-level task fields.
-            expected_preflight = preflight_greenfield_source_duty_ledger(
-                expand_compact_source_duty_ledger(host_ledger, evidence_text=source),
-                evidence_text=source,
-            )
-            expected_task = source_duty_entailment_task(
-                expected_preflight, evidence_text=source,
-            )
-            if (preflight_payload.get("mode") != "source_duty_preflight"
-                    or not isinstance(preflight_receipt, Mapping)
-                    or preflight_receipt.get("source_sha256") != observation["source_sha256"]
-                    or preflight_receipt != expected_preflight
-                    or decision_task != expected_task):
-                _fail("installed source ledger preflight lacks a bound decision task",
-                      observation=observation, stage="source-ledger-preflight")
-            observation["source_duty_verifier_task_sha256"] = decision_task["verifier_task_sha256"]
-            decision_schema_path = host_workspace / "source-duty-decision-schema.json"
-            decision_schema_path.write_text(
-                json.dumps(decision_task["decision_set_schema"], ensure_ascii=False,
-                           sort_keys=True, separators=(",", ":")) + "\n", encoding="utf-8",
-            )
-            decision_argv, decision_request = qualify_host_candidate_argv(
-                _resolved_host_argv(host_argv, candidate_schema_path=decision_schema_path),
-                trusted_codex_executable=flow.trusted_codex_executable,
-                expected_model=flow.expected_model,
-                expected_reasoning_effort=flow.expected_reasoning_effort,
-                expected_output_schema=str(decision_schema_path),
-                path_value=str(flow.env.get("PATH") or os.environ.get("PATH") or ""),
-            )
-            observation["source_duty_verifier_request"] = decision_request
-            observation["source_duty_decision_schema_sha256"] = _sha256_text(
-                decision_schema_path.read_text(encoding="utf-8")
-            )
-            observation["stage"] = "source-duty-verifier"
-            verifier_started = time.monotonic()
-            verifier_timeout = deadline.request_timeout(
-                _remaining(verifier_started, PROVISIONAL_SOURCE_DUTY_VERIFIER_TIMEOUT_SECONDS)
-            )
-            observation["host_invocations"] = 3
-            observation["source_duty_verifier_host_invocations"] = 1
-            decision_result = _invoke_host(
-                decision_argv,
-                contract_text=json.dumps(dict(decision_task), ensure_ascii=False,
-                                         sort_keys=True, separators=(",", ":")),
-                cwd=host_workspace, env=flow.env,
-                timeout=verifier_timeout,
-            )
-            observation["source_duty_verifier_returncode"] = int(
-                getattr(decision_result, "returncode", 1)
-            )
-            _retain_host_output(flow, observation, decision_result, flow.retain_source_duty_decision_bytes)
-            decision_text = _text_stream(getattr(decision_result, "stdout", ""))
-            decision_bytes = decision_text.encode("utf-8")
-            observation["source_duty_decision_output_sha256"] = hashlib.sha256(decision_bytes).hexdigest()
-            observation["source_duty_decision_output_bytes"] = len(decision_bytes)
-            if observation["source_duty_verifier_returncode"] != 0:
-                _fail("host-native source duty verifier returned nonzero",
-                      observation=observation, stage="source-duty-verifier",
-                      terminal_error=getattr(decision_result, "lifecycle_observer_error", None))
-            deadline.remaining()
-            decision_set = _single_json_object(decision_text, label="source duty decision set")
-            source_completeness = decision_set.get("source_completeness")
-            observation["source_completeness_verdict"] = (
-                str(source_completeness.get("verdict") or "")
-                if isinstance(source_completeness, Mapping) else "missing"
-            )
-            omissions = (
-                source_completeness.get("omissions")
-                if isinstance(source_completeness, Mapping) else None
-            )
-            observation["source_completeness_omission_count"] = (
-                len(omissions) if isinstance(omissions, list) else -1
-            )
-            decision_path = host_workspace / "source-duty-decisions.json"
-            decision_path.write_bytes(decision_bytes)
-            observation["source_duty_decision_temp_outside_repo"] = not _is_within(
-                decision_path, repo_root
-            )
-            if not observation["source_duty_decision_temp_outside_repo"]:
-                _fail("host-native source duty decision path is inside the consumer repo",
-                      observation=observation, stage="source-duty-decision-file")
-            observation["stage"] = "source-ledger-check"
-            check_timeout = deadline.request_timeout(PROVISIONAL_SOURCE_CHECK_TIMEOUT_SECONDS)
-            observation["source_ledger_check_command_invocations"] = 2
-            ledger_check = _invoke_installed_source_ledger_check(
-                flow, ledger_path=ledger_path, decision_path=decision_path,
-                remaining=check_timeout,
-            )
-            deadline.remaining()
-            observation["source_ledger_check_returncode"] = int(
-                getattr(ledger_check, "returncode", 1)
-            )
-            ledger_check_text = _text_stream(getattr(ledger_check, "stdout", ""))
-            if flow.retain_source_ledger_check_bytes is not None:
-                flow.retain_source_ledger_check_bytes(ledger_check_text.encode("utf-8"))
-                deadline.remaining()
-            observation["source_ledger_check_stdout_sha256"] = _sha256_text(ledger_check_text)
-            if observation["source_ledger_check_returncode"] != 0:
-                _fail("installed source ledger decision check returned nonzero",
-                      observation=observation, stage="source-ledger-check")
-            ledger_check_payload = _single_json_object(
-                ledger_check_text, label="source ledger decision check"
-            )
-            observation["source_ledger_check_mode"] = ledger_check_payload.get("mode")
-            receipt = ledger_check_payload.get("receipt")
-            if (ledger_check_payload.get("mode") != "source_duty_admitted"
-                    or not isinstance(receipt, Mapping)
-                    or receipt.get("version") != SOURCE_DUTY_LEDGER_RECEIPT_VERSION
-                    or receipt.get("source_sha256") != observation["source_sha256"]
-                    or receipt.get("ledger_sha256") != preflight_receipt.get("ledger_sha256")
-                    or receipt.get("verifier_task_sha256") != observation["source_duty_verifier_task_sha256"]
-                    or decision_set.get("version") != SOURCE_DUTY_DECISION_SET_VERSION
-                    or receipt.get("decision_set") != decision_set
-                    or not isinstance(decision_set.get("source_completeness"), Mapping)
-                    or decision_set["source_completeness"].get("verdict") != "yes"
-                    or decision_set["source_completeness"].get("omissions") != []
-                    or not isinstance(receipt.get("decision_set_sha256"), str)
-                    or not receipt["decision_set_sha256"]):
-                _fail("installed source ledger decision check did not admit",
-                      observation=observation, stage="source-ledger-check")
-            ledger_path.write_text(
-                json.dumps(dict(receipt), ensure_ascii=False, sort_keys=True,
-                           separators=(",", ":")) + "\n", encoding="utf-8",
-            )
-            verifier_elapsed = time.monotonic() - verifier_started
-            proposal_started += verifier_elapsed
-            observation["source_duty_verifier_elapsed_seconds"] = round(verifier_elapsed, 3)
-            observation["source_ledger_sha256"] = str(receipt.get("ledger_sha256") or "")
-            observation["source_duty_decision_set_sha256"] = receipt["decision_set_sha256"]
+            from odylith.runtime.domain_intelligence.greenfield_host_source_phase import run_source_duty_phase
+            source_phase = None
+            try:
+                source_phase = run_source_duty_phase(
+                    flow=flow, contract=contract, source=source, host_workspace=host_workspace,
+                    host_argv=host_argv, deadline=deadline, observation=observation,
+                    invoke_host=_invoke_host, check_payload=check_payload,
+                )
+            finally:
+                # Only the measured inventory/verifier intervals are excluded;
+                # their setup and custody work stays in the proposal budget.
+                proposal_started += (source_phase.elapsed_seconds if source_phase is not None
+                    else sum(float(observation.get(key, 0.0)) for key in (
+                        "source_ledger_elapsed_seconds", "source_duty_verifier_elapsed_seconds")))
+            ledger_path, decision_path = source_phase.ledger_path, source_phase.decision_path
+            if source_phase.clarification is not None:
+                return source_phase.clarification
+            receipt = source_phase.receipt
             candidate_contract = greenfield_host_candidate_authoring_request(
                 contract, source_duty_receipt=receipt, authority_admission=check_payload,
             )
@@ -812,14 +563,6 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
         )
     finally:
         primary_error = sys.exc_info()[1]
-        if ledger_started is not None and "source_ledger_elapsed_seconds" not in observation:
-            ledger_elapsed = time.monotonic() - ledger_started
-            observation["source_ledger_elapsed_seconds"] = round(ledger_elapsed, 3)
-            proposal_started += ledger_elapsed
-        if verifier_started is not None and "source_duty_verifier_elapsed_seconds" not in observation:
-            verifier_elapsed = time.monotonic() - verifier_started
-            observation["source_duty_verifier_elapsed_seconds"] = round(verifier_elapsed, 3)
-            proposal_started += verifier_elapsed
         observation["proposal_phase_elapsed_seconds"] = round(time.monotonic() - proposal_started, 3)
         # Legacy proof field: this measures only the proposal phase, not the journey.
         observation["elapsed_seconds"] = observation["proposal_phase_elapsed_seconds"]
@@ -839,6 +582,7 @@ def run_host_candidate_flow(flow: HostCandidateFlow) -> Any:
             observation["observer_error"] = type(exc).__name__
             observation["status"] = "failed"
         finished = time.monotonic()
+        finalizer.record_body(finished-started, finished-proposal_started)
         expired = finished - started >= deadline.cap_seconds
         observation["whole_journey_seconds"] = round(finished - started, 3)
         observation["proposal_phase_elapsed_seconds"] = round(finished - proposal_started, 3)
@@ -871,9 +615,10 @@ def _invoke_installed_contract(flow: HostCandidateFlow, *, remaining: float) -> 
         "candidate-contract",
         "--repo-root",
         ".",
-        "--prompt",
-        flow.prompt,
     ]
+    command.extend(("--transaction-hash", flow.transaction_hash) if flow.transaction_hash else ("--prompt", flow.prompt))
+    if flow.transaction_hash and flow.completion_receipt:
+        command.extend(("--completion-receipt", flow.completion_receipt))
     if flow.edit_evidence.strip():
         command.extend(("--edit", flow.edit_evidence))
     return flow.invoke_installed(command, remaining)
@@ -921,7 +666,7 @@ def _invoke_host(
     try:
         return run_command_with_group_timeout(
             command=list(host_argv), cwd=cwd, env=env,
-            stdin_text=contract_text, timeout=timeout,
+            stdin_text=contract_text, timeout=timeout, inherit_journey=False,
         )
     except CommandLifecycleObserverError as exc:
         exc.result.lifecycle_observer_error = exc
@@ -969,108 +714,6 @@ def _single_json_object(value: str, *, label: str) -> dict[str, Any]:
     if not isinstance(payload, Mapping):
         raise TypeError(f"{label} output must be exactly one JSON object")
     return dict(payload)
-
-
-def resolve_trusted_codex_executable(
-    *,
-    environ: Mapping[str, str] | None = None,
-) -> str:
-    """Resolve the one PATH-trusted Codex executable used by release proof."""
-
-    values = dict(os.environ if environ is None else environ)
-    path_value = str(values.get("PATH") or "")
-    located = shutil.which("codex", path=path_value)
-    if not located:
-        raise ValueError("trusted Codex executable is unavailable")
-    trusted = _resolved_executable(located, path_value=path_value)
-    configured = str(values.get("ODYLITH_REASONING_CODEX_BIN") or "").strip()
-    if configured:
-        configured_path = _resolved_executable(configured, path_value=path_value)
-        if configured_path != trusted:
-            raise ValueError("configured Codex executable does not match the trusted Codex binary")
-    return str(trusted)
-
-
-def qualify_host_candidate_argv(
-    value: Sequence[str],
-    *,
-    trusted_codex_executable: str,
-    expected_model: str,
-    expected_reasoning_effort: str,
-    expected_output_schema: str,
-    path_value: str = "",
-) -> tuple[tuple[str, ...], dict[str, Any]]:
-    """Validate one direct Codex argv and return only a safe derived receipt."""
-
-    argv = tuple(str(argument) for argument in value)
-    if not argv or any(not argument for argument in argv):
-        raise ValueError("host-native candidate command requires a non-empty argv")
-    trusted = _resolved_executable(
-        trusted_codex_executable,
-        path_value=path_value or str(os.environ.get("PATH") or ""),
-    )
-    executable = _resolved_executable(
-        argv[0],
-        path_value=path_value or str(os.environ.get("PATH") or ""),
-    )
-    if executable != trusted:
-        raise ValueError("host-native candidate command must invoke the trusted Codex binary directly")
-    tokens = argv[1:]
-    expected_tokens = _canonical_host_candidate_tokens(
-        model=expected_model,
-        reasoning_effort=expected_reasoning_effort,
-        output_schema=expected_output_schema,
-    )
-    if tokens != expected_tokens:
-        raise ValueError(
-            "host-native candidate command does not match the canonical release argv contract"
-        )
-    canonical_argv = (str(trusted), *tokens)
-    receipt = {
-        "version": HOST_NATIVE_ARGV_RECEIPT_VERSION,
-        "executable_sha256": _sha256_file(trusted),
-        "argument_count": HOST_NATIVE_ARGV_ARGUMENT_COUNT,
-        "model": expected_model,
-        "reasoning_effort": expected_reasoning_effort,
-        "output_schema_present": True,
-        "argv_shape_sha256": HOST_NATIVE_ARGV_SHAPE_SHA256,
-    }
-    return canonical_argv, receipt
-
-
-def _resolved_executable(value: str, *, path_value: str) -> Path:
-    token = str(value or "").strip()
-    candidate = Path(token).expanduser()
-    located = (
-        str(candidate)
-        if candidate.is_absolute() or token != candidate.name
-        else str(shutil.which(token, path=path_value) or "")
-    )
-    if not located:
-        raise ValueError("host-native candidate executable is unavailable")
-    resolved = Path(located).expanduser().resolve()
-    if not resolved.is_file() or not os.access(resolved, os.X_OK):
-        raise ValueError("host-native candidate executable is not executable")
-    return resolved
-
-
-def _sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
-def _resolved_host_argv(
-    argv: Sequence[str],
-    *,
-    candidate_schema_path: Path,
-) -> tuple[str, ...]:
-    return tuple(
-        str(argument).replace("{candidate_schema}", str(candidate_schema_path))
-        for argument in argv
-    )
 
 
 def _positive_timeout(value: float) -> float:
@@ -1153,31 +796,3 @@ def _fail(
     if terminal_error is not None:
         raise error from terminal_error
     raise error
-
-
-__all__ = [
-    "HOST_NATIVE_ARGV_ARGUMENT_COUNT",
-    "HOST_NATIVE_MATRIX_OBSERVATION_VERSION",
-    "HOST_NATIVE_ARGV_RECEIPT_VERSION",
-    "HOST_NATIVE_ARGV_SHAPE_SHA256",
-    "HostCandidateFlow",
-    "HostCandidateFlowError",
-    "canonical_host_candidate_argv_template",
-    "post_receipt_runtime_env",
-    "qualify_host_candidate_argv",
-    "resolve_trusted_codex_executable",
-    "run_host_candidate_flow",
-]
-
-
-def _main(argv: Sequence[str]) -> int:
-    """Expose the canonical template to maintained shell entrypoints."""
-
-    if tuple(argv) != ("--print-argv-template",):
-        raise SystemExit("usage: greenfield_matrix_host_candidate.py --print-argv-template")
-    print("\n".join(canonical_host_candidate_argv_template()))
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(_main(sys.argv[1:]))

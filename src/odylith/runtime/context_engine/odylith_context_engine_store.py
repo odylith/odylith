@@ -1758,92 +1758,6 @@ def _runtime_backlog_detail_rows(
     return dict(rows) if isinstance(rows, Mapping) else {}
 
 
-def _metadata_id_list(value: object, pattern: re.Pattern[str]) -> list[str]:
-    values: list[str] = []
-    seen: set[str] = set()
-    for raw in str(value or "").replace(";", ",").split(","):
-        token = str(raw or "").strip().upper()
-        if not token or not pattern.fullmatch(token) or token in seen:
-            continue
-        seen.add(token)
-        values.append(token)
-    return values
-
-
-def _normalize_backlog_detail_payload(
-    *,
-    idea_id: str,
-    idea_file: str,
-    metadata: Mapping[str, object],
-    sections: Mapping[str, str],
-    promoted_to_plan: str,
-) -> dict[str, Any]:
-    normalized_sections = {
-        str(key).strip(): str(value).strip()
-        for key, value in sections.items()
-        if str(key).strip()
-    }
-    founder_pov = (
-        str(normalized_sections.get("Product View", "")).strip()
-        or str(normalized_sections.get("Founder POV", "")).strip()
-    )
-    return {
-        "idea_id": str(idea_id or "").strip().upper(),
-        "idea_file": str(idea_file or "").strip(),
-        "metadata": dict(metadata) if isinstance(metadata, Mapping) else {},
-        "sections": normalized_sections,
-        "promoted_to_plan": str(promoted_to_plan or "").strip(),
-        "title": str(metadata.get("title", "")).strip(),
-        "priority": str(metadata.get("priority", "")).strip(),
-        "ordering_score": str(metadata.get("ordering_score", "")).strip(),
-        "commercial_value": str(metadata.get("commercial_value", "")).strip(),
-        "product_impact": str(metadata.get("product_impact", "")).strip(),
-        "market_value": str(metadata.get("market_value", "")).strip(),
-        "sizing": str(metadata.get("sizing", "")).strip(),
-        "complexity": str(metadata.get("complexity", "")).strip(),
-        "status": str(metadata.get("status", "")).strip(),
-        "confidence": str(metadata.get("confidence", "")).strip(),
-        "founder_override": str(metadata.get("founder_override", "")).strip(),
-        "ordering_rationale": str(metadata.get("ordering_rationale", "")).strip(),
-        "impacted_parts": str(metadata.get("impacted_parts", "")).strip(),
-        "implemented_summary": str(metadata.get("implemented_summary", "")).strip(),
-        "workstream_type": str(metadata.get("workstream_type", "")).strip().lower(),
-        "problem": str(normalized_sections.get("Problem", "")).strip(),
-        "customer": str(normalized_sections.get("Customer", "")).strip(),
-        "opportunity": str(normalized_sections.get("Opportunity", "")).strip(),
-        "founder_pov": founder_pov,
-        "success_metrics": (
-            str(normalized_sections.get("Success Metrics", "")).strip()
-            or str(normalized_sections.get("Success Metric", "")).strip()
-        ),
-        "workstream_parent": str(metadata.get("workstream_parent", "")).strip(),
-        "workstream_children": _metadata_id_list(metadata.get("workstream_children", ""), _WORKSTREAM_ID_RE),
-        "workstream_depends_on": _metadata_id_list(metadata.get("workstream_depends_on", ""), _WORKSTREAM_ID_RE),
-        "workstream_blocks": _metadata_id_list(metadata.get("workstream_blocks", ""), _WORKSTREAM_ID_RE),
-        "related_diagram_ids": _metadata_id_list(metadata.get("related_diagram_ids", ""), _DIAGRAM_ID_RE),
-        "workstream_reopens": _metadata_id_list(metadata.get("workstream_reopens", ""), _WORKSTREAM_ID_RE),
-        "workstream_reopened_by": _metadata_id_list(metadata.get("workstream_reopened_by", ""), _WORKSTREAM_ID_RE),
-        "workstream_split_from": _metadata_id_list(metadata.get("workstream_split_from", ""), _WORKSTREAM_ID_RE),
-        "workstream_split_into": _metadata_id_list(metadata.get("workstream_split_into", ""), _WORKSTREAM_ID_RE),
-        "workstream_merged_into": _metadata_id_list(metadata.get("workstream_merged_into", ""), _WORKSTREAM_ID_RE),
-        "workstream_merged_from": _metadata_id_list(metadata.get("workstream_merged_from", ""), _WORKSTREAM_ID_RE),
-    }
-
-
-def _grounding_light_backlog_detail_payload(
-    *,
-    idea_id: str,
-    idea_file: str,
-    metadata: Mapping[str, object],
-    promoted_to_plan: str,
-) -> dict[str, Any]:
-    return {
-        "idea_id": str(idea_id or "").strip().upper(),
-        "idea_file": str(idea_file or "").strip(),
-        "metadata": dict(metadata) if isinstance(metadata, Mapping) else {},
-        "promoted_to_plan": str(promoted_to_plan or "").strip(),
-    }
-
 
 def _runtime_backlog_detail(
     *,
@@ -1869,14 +1783,14 @@ def _runtime_backlog_detail(
         metadata["promoted_to_plan"] = _normalize_repo_token(promoted_to_plan, repo_root=root)
     idea_file = str(idea_path.relative_to(root)) if idea_path.is_relative_to(root) else str(idea_path)
     if str(detail_level or "").strip().lower() == "grounding_light":
-        return _grounding_light_backlog_detail_payload(
+        return odylith_context_engine_projection_backlog_runtime._grounding_light_backlog_detail_payload(
             idea_id=str(workstream_id or "").strip().upper(),
             idea_file=idea_file,
             metadata=metadata,
             promoted_to_plan=str(metadata.get("promoted_to_plan", "")).strip(),
         )
     raw_text = _raw_text(idea_path)
-    normalized = _normalize_backlog_detail_payload(
+    normalized = odylith_context_engine_projection_backlog_runtime._normalize_backlog_detail_payload(
         idea_id=str(workstream_id or "").strip().upper(),
         idea_file=idea_file,
         metadata=metadata,
@@ -1921,14 +1835,14 @@ def load_backlog_detail(
         metadata["promoted_to_plan"] = _normalize_repo_token(str(metadata.get("promoted_to_plan", "")).strip(), repo_root=root)
     idea_file = str(spec.path.relative_to(root)) if spec.path.is_relative_to(root) else str(spec.path)
     if normalized_detail_level == "grounding_light":
-        return _grounding_light_backlog_detail_payload(
+        return odylith_context_engine_projection_backlog_runtime._grounding_light_backlog_detail_payload(
             idea_id=token,
             idea_file=idea_file,
             metadata=metadata,
             promoted_to_plan=str(metadata.get("promoted_to_plan", "")).strip(),
         )
     raw_text = _raw_text(spec.path)
-    normalized = _normalize_backlog_detail_payload(
+    normalized = odylith_context_engine_projection_backlog_runtime._normalize_backlog_detail_payload(
         idea_id=token,
         idea_file=idea_file,
         metadata=metadata,

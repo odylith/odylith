@@ -6,7 +6,7 @@
   affordances, admissible action, proof, compact learning, benchmark evidence,
   updated priors, and the cross-system loop through Context, Execution,
   Memory, Intervention, Tribunal, Surfaces, and Benchmarks.
-Last updated: 2026-10-02
+Last updated: 2026-10-04
 
 
 ## Purpose
@@ -16,6 +16,19 @@ architecture evidence that Context Engine consumes for topology-sensitive
 grounding.
 
 ## Scope And Non-Goals
+### Readable Greenfield source support
+
+The existing authored design-view owner renders first-path order and required
+upstream supporting components without crowding the sequence with full exchange
+and delivery contracts. Those contracts remain complete in the associated box
+details and dedicated diagrams. Capability support uses selectable references
+to exact responsibilities, verification, actions, scope and proof; source
+lifecycle changes remain visibly distinct. Compact references do not summarize
+or replace accepted source facts. Dense civic and inherited lifecycle PNG/SVG
+characterizations cover readability and preservation; installed Read selection
+and the full browser state matrix remain separate gates. CB-324 retains the
+failed v19 artifacts and tracks fresh output qualification.
+
 ### Viewer lifecycle and empty states
 `atlas_viewer_asset_runtime.py` owns loading, clear state, asset fallback and
 selected-versus-empty presentation. A truly empty catalog hides selection-only
@@ -91,6 +104,18 @@ identity/source paths. The existing catalog builder, artifact Tribunal, path
 validation and box inventory validate the entire merged catalog before one atomic
 catalog write and one refresh. A bad final row must leave every row unchanged.
 Full `diagram_boxes` replacements must explain exactly the visible source labels.
+
+Selected `atlas update` and `atlas scaffold` authoring carry their validated
+diagram IDs through the shared refresh, renderer, freshness check and cache.
+They retain authored review dates and leave every unrelated catalog row and
+asset unchanged. Selected failure advice uses exact-ID `atlas auto-update`
+with `--preserve-review-date --fail-on-stale`. Unknown, duplicate or conflicting
+selectors fail before writes. Direct automatic selection and explicitly
+requested `--all-stale`/`--atlas-sync` retain their acknowledgement semantics;
+cache identities keep selected and global proof separate. CB-357's final
+independent actual-chain review is clear; root's corrected D-025 CLI replay
+preserves every unrelated catalog object exactly. The initial failed scaffold
+review is retained. Full runtime and installed proof remain required.
 
 Prewrite metadata validation skips only generated-asset existence and rendered
 presentation/freshness work; ordinary rendering retains those checks. A refresh

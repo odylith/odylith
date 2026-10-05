@@ -5,7 +5,7 @@
   B-111 through B-117. The surface should show the umbrella, execution waves,
   release target `release-0-1-11`, and proof gates without turning Odylith Discipline
   into noisy task theater.
-Last updated: 2026-09-17
+Last updated: 2026-10-04
 
 
 ## Purpose
@@ -15,6 +15,19 @@ execution evidence into the ranked workstream view used by operators and other
 Odylith surfaces.
 
 ## Scope And Non-Goals
+### Assessment custody
+
+`backlog_assessment.py` owns assessment state, provenance, score validation and
+the existing assessed formula. Provisional Greenfield designs are unassessed:
+numeric judgments are unknown, categorical judgments say unassessed, and
+source/index/context/plan continuation preserve that state. Mixed numeric and
+unassessed metadata fails closed. Views say Not assessed without a score bar or
+assessed rank. Explicit dependency ordering is retained independently. Existing
+valid assessed records preserve the formula, ranges and manual override rules.
+Authoring refuses scores beyond the existing validator's 0–100 range before
+publishing source truth. CB-324 Wave Q1 owns strict source/readback, assessed
+parity, projection and desktop/mobile normal/empty/error proof.
+
 ### Decision-rationale custody
 Shared backlog authoring and legacy normalization preserve supplied product
 decisions. Missing why-now, outcome, tradeoff and deferred-scope fields are not

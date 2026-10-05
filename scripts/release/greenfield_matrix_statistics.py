@@ -18,6 +18,7 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     SUPPORTED_COMPLEXITY_BANDS,
     SUPPORTED_PUBLIC_INPUT_FORMATS,
     greenfield_complexity_band,
+    greenfield_operating_envelope_receipt,
     require_supported_greenfield_operating_envelope,
 )
 
@@ -464,6 +465,7 @@ def release_slice_evidence(
     case: Any,
     result: GreenfieldMatrixResult,
     annotated_complexity: Mapping[str, Any] | None = None,
+    source_predicate_complexity: Mapping[str, Any] | None = None,
     allow_unsealed_clarification: bool = False,
 ) -> tuple[dict[str, str], tuple[str, ...]]:
     """Return support slices from sealed evidence, never from mutable case tags."""
@@ -488,7 +490,21 @@ def release_slice_evidence(
             issues.append("has an invalid sealed operating-envelope receipt")
         complexity = _mapping(envelope.get("complexity"))
         dimensions = _mapping(complexity.get("dimensions"))
-        if annotated and dimensions != annotated:
+        if source_predicate_complexity is not None:
+            observed = _mapping(_mapping(envelope.get("evidence_contract")).get("observed"))
+            try:
+                expected_envelope = greenfield_operating_envelope_receipt(
+                    facts=_mapping(snapshot.get("facts")), source_format=expected_format,
+                    source_size_bytes=source_dimensions["evidence_bytes"],
+                    source_document_count=source_dimensions["documents"],
+                    source_language=str(observed.get("language") or ""),
+                    model_authoring=_mapping(_mapping(envelope.get("model_contract")).get("observed")),
+                )
+                if envelope != expected_envelope:
+                    issues.append("sealed representation census or operating-envelope custody changed")
+            except (ValueError, TypeError, KeyError):
+                issues.append("cannot verify sealed representation operating envelope")
+        elif annotated and dimensions != annotated:
             issues.append("annotated complexity does not match the sealed operating-envelope dimensions")
         complexity_band = str(complexity.get("band") or "").strip()
         evidence_format = str(envelope.get("evidence_format") or "").strip()
@@ -505,6 +521,10 @@ def release_slice_evidence(
 
     if evidence_format != expected_format:
         issues.append("sealed evidence format does not match the frozen case input")
+    if source_predicate_complexity is not None:
+        if dict(source_predicate_complexity) != annotated:
+            issues.append("source-predicate census does not match frozen source annotation")
+        complexity_band = greenfield_complexity_band(source_predicate_complexity)
     model_evidence = _mapping(evidence.get("model_profile"))
     observed_profile = str(model_evidence.get("profile_id") or "").strip()
     if not observed_profile:

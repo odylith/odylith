@@ -44,6 +44,31 @@ agent reasons, plans, edits, or delegates.
 Common packet shapes include `bootstrap-session`, `impact`, `architecture`,
 `governance-slice`, `session-brief`, `context`, and `query`.
 
+## Retrieval and Judgment Memory
+
+Retrieval memory indexes tracked governance and its compiler projections through
+local LanceDB/Tantivy and optional remote retrieval. Judgment/session memory
+retains source-backed decisions, routing continuity, proof and useful failures.
+Tracked source remains authoritative; those stores are derived read models.
+
+Derived records carry `memory_record.v1`: current truth, historical learning or
+observation; current, superseded, refuted, rejected or unknown validity; source
+reference and fingerprint; separate evidence, confirmation and observation
+times; and derivation provenance. Missing legacy metadata remains unknown.
+
+Admission checks current source and compatible derivation before ranking.
+Within an admitted role, usefulness combines relevance, evidence and freshness
+with 70/20/10 weights. Historical freshness factors are 1.0 through 24 hours,
+0.85 through 72 hours, 0.6 through 14 days and 0.3 thereafter; unknown time uses
+0.2. Active current constraints retain authority as they age. A high historical
+score cannot replace current evidence. Conflicting current claims are exposed
+for resolution. Reading an old decision does not renew its confirmation or
+raise confidence without independently verified current source.
+
+Use historical failures to understand why a mechanism failed; use the current
+accepted contract to decide what to do now. Source currency alone does not
+prove that every proposed or historical statement in a document is implemented.
+
 ## What It Does Not Do
 
 - It does not decide whether an intended action is admissible. That is the

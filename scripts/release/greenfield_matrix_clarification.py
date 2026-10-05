@@ -14,7 +14,7 @@ from greenfield_matrix_quality_scoring import INDEPENDENT_SEMANTIC_LENS_DIMENSIO
 from greenfield_matrix_quality_scoring import QUALITY_SCORE_DIMENSIONS
 from greenfield_matrix_quality_scoring import UNSCORED_QUALITY_SCORE
 from greenfield_matrix_types import GreenfieldQualityVerdict
-from greenfield_matrix_host_candidate import HOST_NATIVE_MATRIX_OBSERVATION_VERSION
+from odylith.runtime.domain_intelligence.greenfield_host_flow import HOST_NATIVE_MATRIX_OBSERVATION_VERSION
 from greenfield_model_profiles import (
     host_native_clarification_stage_observation_issues,
 )

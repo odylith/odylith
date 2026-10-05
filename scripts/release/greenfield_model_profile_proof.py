@@ -8,12 +8,12 @@ import hashlib
 import math
 from typing import Any
 
-from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_ARGUMENT_COUNT
-from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_RECEIPT_VERSION
-from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_SHAPE_SHA256
-from greenfield_matrix_host_candidate import PROVISIONAL_SOURCE_CHECK_TIMEOUT_SECONDS
-from greenfield_matrix_host_candidate import PROVISIONAL_SOURCE_DUTY_VERIFIER_TIMEOUT_SECONDS
-from greenfield_matrix_host_candidate import PROVISIONAL_SOURCE_LEDGER_TIMEOUT_SECONDS
+from odylith.runtime.domain_intelligence.greenfield_host_transport import (HOST_NATIVE_ARGV_ARGUMENT_COUNT)
+from odylith.runtime.domain_intelligence.greenfield_host_transport import (HOST_NATIVE_ARGV_RECEIPT_VERSION)
+from odylith.runtime.domain_intelligence.greenfield_host_transport import (HOST_NATIVE_ARGV_SHAPE_SHA256)
+from odylith.runtime.domain_intelligence.greenfield_host_flow import PROVISIONAL_SOURCE_CHECK_TIMEOUT_SECONDS
+from odylith.runtime.domain_intelligence.greenfield_host_flow import PROVISIONAL_SOURCE_DUTY_VERIFIER_TIMEOUT_SECONDS
+from odylith.runtime.domain_intelligence.greenfield_host_flow import PROVISIONAL_SOURCE_LEDGER_TIMEOUT_SECONDS
 from greenfield_model_profiles import DEEP_PROFILE_ID
 from greenfield_model_profiles import LOWER_CAPABILITY_CONTROL_PROFILES
 from greenfield_model_profiles import MODEL_PROFILES
@@ -21,7 +21,7 @@ from greenfield_model_profiles import UNAVAILABLE_PROVIDER_PROFILE
 from greenfield_retained_candidate_proof import (
     retained_canonical_candidate_hash_issues,
 )
-from greenfield_whole_journey_budget import whole_journey_observation_issues
+from odylith.runtime.domain_intelligence.greenfield_whole_journey_budget import whole_journey_observation_issues
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
 )
@@ -177,6 +177,8 @@ def model_profile_release_proof(
     results: Sequence[Any],
     *,
     require_complete: bool,
+    whole_journey_bound_evidence: Mapping[str, Any] | None = None,
+    public_source_evidence: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Require host/profile parity and zero post-receipt calls for every row."""
 
@@ -184,9 +186,15 @@ def model_profile_release_proof(
     rows: dict[str, list[Any]] = {profile_id: [] for profile_id in qualified}
     validation_issues: list[str] = []
     coverage_issues: list[str] = []
-    # No public-data-backed finite release bound is sealed yet. A caller cannot
-    # pass a bare number to turn this provisional phase cap into release proof.
-    if require_complete:
+    measured_bound = None
+    bound_report: dict[str, Any] | None = None
+    if whole_journey_bound_evidence is not None or public_source_evidence is not None:
+        from greenfield_public_qualification import validate_measured_public_bound
+        measured_bound, bound_report, bound_issues = validate_measured_public_bound(
+            results=results, source_evidence=public_source_evidence,
+            bound_evidence=whole_journey_bound_evidence)
+        validation_issues.extend(bound_issues)
+    if require_complete and measured_bound is None:
         coverage_issues.append(
             "release proof lacks a public-data-backed finite whole-journey bound"
         )
@@ -205,7 +213,8 @@ def model_profile_release_proof(
             )
             continue
         rows[profile_id].append(result)
-        if not _result_proves_profile(result, profile_id):
+        if not _result_proves_profile(result, profile_id,
+                whole_journey_release_bound_seconds=measured_bound):
             validation_issues.append(
                 f"model profile `{profile_id}` lacks gate/candidate call and zero-runtime-call proof"
             )
@@ -317,13 +326,13 @@ def model_profile_release_proof(
         if validation_issues or (require_complete and coverage_issues)
         else "passed"
     )
-    return {
+    proof = {
         "version": MODEL_PROFILE_PROOF_VERSION,
         "status": status,
         "coverage_status": "passed" if not coverage_issues else "incomplete",
         "required_complete_coverage": bool(require_complete),
-        "whole_journey_release_bound_seconds": None,
-        "whole_journey_bound_status": "unqualified",
+        "whole_journey_release_bound_seconds": measured_bound,
+        "whole_journey_bound_status": "qualified_measured_public_evidence" if measured_bound is not None else "unqualified",
         "profiles": profiles,
         "lower_capability_scope": {
             "status": (
@@ -348,6 +357,9 @@ def model_profile_release_proof(
         },
         "issues": [*validation_issues, *coverage_issues],
     }
+    if bound_report is not None:
+        proof["measured_public_bound"] = bound_report
+    return proof
 
 
 def unavailable_provider_proof_issues(
@@ -355,6 +367,8 @@ def unavailable_provider_proof_issues(
     returncode: int,
     proposal_seconds: float,
     detail: str,
+    before_record_count: int,
+    after_record_count: int,
     write_audit_active: bool,
     write_audit_error: str,
     write_attempts: Sequence[str],
@@ -364,12 +378,31 @@ def unavailable_provider_proof_issues(
 ) -> tuple[str, ...]:
     """Require deterministic admission to ignore disabled runtime providers."""
 
-    del detail, subprocess_attempts
     contract = get_greenfield_model_profile(UNAVAILABLE_PROVIDER_PROFILE)
     issues: list[str] = []
+    for name, value, expected in (
+        ("returncode", returncode, int), ("proposal_seconds", proposal_seconds, float),
+        ("detail", detail, str), ("write_audit_active", write_audit_active, bool),
+        ("write_audit_error", write_audit_error, str),
+        ("staged_transaction_present", staged_transaction_present, bool),
+    ):
+        if type(value) is not expected:
+            issues.append(f"post-receipt provider isolation {name} has invalid type")
+    for name, count in (("before_record_count", before_record_count), ("after_record_count", after_record_count)):
+        if type(count) is not int or count < 0:
+            issues.append(f"post-receipt provider isolation {name} must be a nonnegative integer")
+    for name, values in (
+        ("write_attempts", write_attempts), ("subprocess_attempts", subprocess_attempts),
+        ("changed_records", changed_records),
+    ):
+        if (not isinstance(values, Sequence) or isinstance(values, (str, bytes, bytearray))
+                or any(type(value) is not str for value in values)):
+            issues.append(f"post-receipt provider isolation {name} must be a text sequence")
+    if issues:
+        return tuple(issues)
     if returncode != 0:
         issues.append("post-receipt provider isolation proposal did not succeed")
-    if not 0.0 < _float_value(proposal_seconds) < contract.operational_timeout_seconds:
+    if not math.isfinite(proposal_seconds) or not 0.0 < proposal_seconds < contract.operational_timeout_seconds:
         issues.append("post-receipt provider isolation exceeded its operational timeout")
     if not write_audit_active:
         issues.append("post-receipt provider isolation did not activate the write audit")
@@ -380,7 +413,7 @@ def unavailable_provider_proof_issues(
     unexpected_changes = tuple(
         path
         for path in changed_records
-        if not str(path).startswith(".odylith/runtime/greenfield/pending/")
+        if not path.startswith(".odylith/runtime/greenfield/pending/")
     )
     if unexpected_changes:
         issues.append("post-receipt provider isolation changed governed records")

@@ -32,6 +32,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import 
 from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
     derive_risk_scope, provisional_design_from_intent,
 )
+from odylith.runtime.domain_intelligence.greenfield_source_lifecycle import verified_source_design_duties
 from odylith.runtime.project_intelligence.product_story_contract import (
     PRODUCT_STORY_CARD_SLOTS,
 )
@@ -73,6 +74,13 @@ def build_authored_greenfield_payload(
     operational_constraints = _text_values(intent.get("operational_constraints"))
     evidence_requirements = _text_values(intent.get("evidence_requirements"))
     success_metrics = _text_values(intent.get("success_metrics"))
+    source_duty = intent[AUTHORED_SEMANTICS_KEY]["source_duty"]
+    source_scope = [
+        row["rule"] for row in verified_source_design_duties(
+            source_duty, role="boundaries", components=provisional_design["components"],
+            workstreams=provisional_design["workstreams"],
+        ) if row["kind"] == "scope"
+    ] if source_duty is not None else []
     source_visible_result = authored_visible_result(relations)
     visible_result = authored_checkpoint_text(intent)
     event_quotes = [_required_relation_text(row, "event_quote") for row in first_run_relations]
@@ -121,7 +129,7 @@ def build_authored_greenfield_payload(
     else:
         open_label = "Open questions"
     known = _unique(
-        [accepted_evidence_excerpt, first_path, visible_result, proof_boundary]
+        [accepted_evidence_excerpt, first_path, visible_result, proof_boundary, *source_scope]
     )
     unknown = questions
     contradictions = ["No source-backed implementation state exists yet."]

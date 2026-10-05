@@ -87,6 +87,7 @@ def maybe_handle_greenfield_decision(
 def handle_greenfield_decision(
     *, repo_root: Path | str, command: str, transaction_hash: str,
     edit_evidence: str | None = None,
+    completion_receipt: Path | str | None = None,
 ) -> dict[str, Any]:
     """Execute an explicit decision without inferring host or chat eligibility."""
     if _parse_decision(f"{command} {transaction_hash}") is None:
@@ -100,7 +101,7 @@ def handle_greenfield_decision(
             root = Path(repo_root).expanduser().resolve()
             decision = _handle_pending_decision(
                 root=root, command=command, transaction_hash=transaction_hash,
-                edit_evidence=edit_evidence,
+                edit_evidence=edit_evidence, completion_receipt=completion_receipt,
             )
         return decision
     except host_hook_execution.HookBudgetExpired:
@@ -122,11 +123,16 @@ def handle_greenfield_decision(
 
 def _handle_pending_decision(
     *, root: Path, command: str, transaction_hash: str, edit_evidence: str | None,
+    completion_receipt: Path | str | None = None,
 ) -> dict[str, Any]:
     try:
+        if command == "REJECT":
+            greenfield_pending_transaction_store.resolve_pending_transaction_directory(
+                repo_root=root, transaction_hash=transaction_hash)
+            return _reject_pending_transaction(root=root, transaction_hash=transaction_hash)
         transaction_path = greenfield_pending_transaction_store.resolve_pending_transaction(
             repo_root=root,
-            transaction_hash=transaction_hash,
+            transaction_hash=transaction_hash, completion_receipt=completion_receipt,
         )
     except (OSError, RuntimeError, ValueError, json.JSONDecodeError) as error:
         return _decision(
@@ -158,12 +164,10 @@ def _handle_pending_decision(
                 else "No transaction was committed. Ask only for the user's correction; do not reinterpret or write artifacts."
             ),
         )
-    if command == "REJECT":
-        return _reject_pending_transaction(root=root, transaction_hash=transaction_hash)
     return _confirm_pending_transaction(
         root=root,
         transaction_path=transaction_path,
-        transaction_hash=transaction_hash,
+        transaction_hash=transaction_hash, completion_receipt=completion_receipt,
     )
 
 
@@ -196,6 +200,7 @@ def _confirm_pending_transaction(
     root: Path,
     transaction_path: Path,
     transaction_hash: str,
+    completion_receipt: Path | str | None = None,
 ) -> dict[str, Any]:
     try:
         result = greenfield_create_commit.commit_greenfield_create_transaction(
@@ -203,6 +208,7 @@ def _confirm_pending_transaction(
             transaction_file=transaction_path,
             transaction_hash=transaction_hash,
             confirm=True,
+            completion_receipt=completion_receipt,
         )
     except greenfield_create_commit.GreenfieldCreateCommitError as error:
         if error.failure_kind == "post_confirm_repository_busy":
@@ -287,10 +293,8 @@ def _confirm_pending_transaction(
 def _reject_pending_transaction(*, root: Path, transaction_hash: str) -> dict[str, Any]:
     try:
         with greenfield_repository_lock.greenfield_repository_lock(root):
-            greenfield_pending_transaction_store.resolve_pending_transaction(
-                repo_root=root,
-                transaction_hash=transaction_hash,
-            )
+            greenfield_pending_transaction_store.resolve_pending_transaction_directory(
+                repo_root=root, transaction_hash=transaction_hash)
             journal = root / ".odylith/runtime/greenfield/create-journal" / transaction_hash
             if journal.exists() or journal.is_symlink():
                 if _journal_is_closed(journal):

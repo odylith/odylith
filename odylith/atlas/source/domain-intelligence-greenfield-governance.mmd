@@ -2,6 +2,8 @@ flowchart TB
     subgraph evidence_lane["Evidence and interpretation"]
       direction LR
       request["Greenfield request and EDIT evidence<br/>Untrusted input with exact source custody"]
+      prepare["Product-owned Greenfield prepare<br/>One monotonic parent spans contract acquisition,<br/>four host passes and preparation certification"]
+      guardian["Independent deadline guardian<br/>Cancel blocked work and owned child groups;<br/>660 seconds remains diagnostic and unqualified"]
       baseline["Complete installed baseline<br/>Immutable view exists before proposal admission"]
       contract["Public candidate contract<br/>Sealed source context and typed schema"]
       model_pass["Normalized source-duty ledger v5<br/>One source owner for role, action and target meaning"]
@@ -11,7 +13,8 @@ flowchart TB
       candidate_author["One candidate authoring pass<br/>Lossless compact accepted inventory and custody hashes;<br/>full accepted receipt remains compiler-owned"]
       ambiguity{"Material meaning complete?"}
       clarify["One focused clarification<br/>No transaction or governed write"]
-      request --> contract --> model_pass --> typed_graph --> identity_check --> source_custody --> candidate_author --> ambiguity
+      request --> prepare --> contract --> model_pass --> typed_graph --> identity_check --> source_custody --> candidate_author --> ambiguity
+      prepare -. "whole journey supervision" .-> guardian
       baseline -. "required" .-> contract
       ambiguity -- "no" --> clarify
     end
@@ -20,13 +23,13 @@ flowchart TB
       direction LR
       custody["Deterministic candidate admission<br/>Reuse verified performer and state identities; restore<br/>action and target; validate lifecycle, relations and hashes"]
       invalid_candidate["Invalid or tampered candidate<br/>Fail closed with no model, repair, retry,<br/>fallback, transaction, or governed write"]
-      projections["Deterministic source and design projections<br/>4–5 Radar, 4–5 Registry, five Atlas views<br/>Exact release membership and dependency-ready task"]
+      projections["Deterministic source and design projections<br/>Proportional Radar, owned Registry and distinct Atlas views<br/>Exact release membership and dependency-ready task"]
       staged_surfaces["Temporary-root surface rendering<br/>Shared read lock holds the validated baseline<br/>No detached narration queue or worker"]
       delivery_proof["Staged Delivery Intelligence proof<br/>v4 artifact validated before sealing"]
       quality["Pre-confirm complete-package gates<br/>Host canonical receipt and zero post-receipt semantic calls<br/>Independent release qualification remains open"]
       execution_handoff["Typed Execution Engine handoff<br/>Canonical handshake, snapshot and validation bundle"]
       intervention_fallback["Host-neutral intervention fallback<br/>Observation / Proposal / Assist remain distinct"]
-      timing["Bounded asynchronous timing<br/>300-second shared gate and candidate model window;<br/>315-second proposal cap includes 15-second completion reserve;<br/>fixed 660-second whole deadline is non-additive, diagnostic and unqualified"]
+      timing["Shared phase budgets<br/>300-second gate and candidate window, 15-second completion reserve;<br/>source inventory and verifier use separate caps;<br/>every phase consumes the same whole deadline"]
       custody -- "valid and hash-bound" --> projections --> staged_surfaces --> delivery_proof --> quality --> execution_handoff --> intervention_fallback --> timing
       custody -- "invalid or tampered" --> invalid_candidate
     end
@@ -49,16 +52,21 @@ flowchart TB
       generation_manifest["Pre-confirm generation manifest<br/>Exact bytes bound to the write set<br/>No enclosing transaction hash"]
       entry["Sole sealed HTML publication entry<br/>Write-set and manifest identity<br/>No second JSON selector"]
       sealed["Sealed ProductCreateTransaction<br/>Write set, manifest and entry bytes<br/>Verify distinct confirmation hash, then release read lock"]
+      quarantine["Bounded-route pending seal<br/>Quarantine holds a completion digest;<br/>stored state alone cannot permit confirmation"]
+      finalize["Complete the owned journey<br/>Retain, clean, finish observer and completion-record I/O;<br/>certify only within the final whole and proposal deadlines"]
+      receipt["Deliver the completion receipt<br/>Private nonce issued only after certification;<br/>receipt delivery follows measured preparation"]
+      cancelled["Expired or interrupted journey<br/>Keep new seals unconfirmable;<br/>preserve old EDIT seals and recovery journals"]
       decision["Validated preview with three terminal commands<br/>Hash-bound CONFIRM, EDIT and REJECT<br/>Ordinary chat approval is not qualified"]
       edit["EDIT from retained untrusted source and correction<br/>Same pinned profile and a new canonical hash<br/>Preserve the old immutable package"]
       reject["REJECT exact pending hash under lock<br/>No governed writes; preserve recovery evidence"]
-      confirm["Explicit terminal CONFIRM<br/>Verify hash and write sealed bytes;<br/>no model, parser, generation, or repair"]
+      confirm["Explicit terminal CONFIRM<br/>Verify delivered receipt and exact sealed hash;<br/>no model, parser, generation, or repair"]
       publish["Publish exact sealed HTML entry<br/>Journal retains admitted transaction evidence<br/>Readers pin immutable shell and child resources"]
       observed["Opened or historical snapshot<br/>Pinned package and captured status<br/>No automatic successor discovery"]
       navigate["Navigate the canonical entry<br/>Resolve the current published package"]
       later["Successful later update<br/>Require no pending working-file restoration<br/>Recover creates and verify working bytes<br/>Publish a complete immutable successor"]
       recovery["Recovery boundary<br/>Rollback snapshot, journal,<br/>interrupt cleanup, and safe retry"]
-      write_set --> generation_manifest --> entry --> sealed --> decision
+      write_set --> generation_manifest --> entry --> sealed --> quarantine --> finalize --> receipt --> decision
+      guardian -- "deadline or cancellation" --> cancelled
       decision -- "explicit terminal CONFIRM" --> confirm --> publish
       decision -- "explicit terminal EDIT" --> edit
       edit --> request
@@ -74,7 +82,7 @@ flowchart TB
     subgraph proof_lane["Release evidence"]
       direction LR
       owners["Product semantic owners<br/>Canonical graph and Mermaid parser"]
-      evaluator["Detached independent semantic and UX evaluator<br/>Reads frozen immutable outputs only;<br/>never admits, mutates or denies a consumer transaction"]
+      evaluator["Detached independent semantic and UX evaluator<br/>Checks frozen source predicates and forward/reverse coverage;<br/>reads immutable outputs without changing consumer transactions"]
       acceptance["Independent semantic, transaction and UX gates<br/>Qualify or block the pinned release profile<br/>Report advisory target overruns<br/>Separate commit gate under 60 seconds"]
       confidence["Confidence report<br/>Intervals stay separate<br/>from hard acceptance"]
       retained["Retained raw and browser proof<br/>Captured before temporary cleanup"]
@@ -96,11 +104,11 @@ flowchart TB
     classDef governance fill:#F5F3FF,stroke:#DDD6FE,color:#132033,stroke-width:1px;
     classDef constraint fill:#FFF8E6,stroke:#F6D98B,color:#132033,stroke-width:1px;
     classDef invalid fill:#FFF1F0,stroke:#F7B4AE,color:#132033,stroke-width:1px;
-    class request,baseline,contract,model_pass,typed_graph,identity_check,source_custody,candidate_author primary;
+    class request,prepare,guardian,baseline,contract,model_pass,typed_graph,identity_check,source_custody,candidate_author primary;
     class custody,projections,staged_surfaces,delivery_proof,quality,execution_handoff,intervention_fallback,timing,bundle_scope,live_telemetry,direct_live execution;
-    class write_set,generation_manifest,entry,sealed,decision,edit,reject,confirm,publish,observed,navigate,captured_status,later,recovery,owners,evaluator,acceptance,confidence,retained governance;
+    class write_set,generation_manifest,entry,sealed,quarantine,finalize,receipt,decision,edit,reject,confirm,publish,observed,navigate,captured_status,later,recovery,owners,evaluator,acceptance,confidence,retained governance;
     class ambiguity,drift constraint;
-    class clarify,invalid_candidate,replace invalid;
+    class clarify,invalid_candidate,cancelled,replace invalid;
 
     style evidence_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#293D52
     style projection_lane fill:#F8FFFE,stroke:#A7E9E3,stroke-width:1px,color:#293D52

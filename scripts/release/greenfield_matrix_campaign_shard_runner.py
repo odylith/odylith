@@ -40,7 +40,7 @@ from greenfield_matrix_corpus_provenance import release_subset_membership_issues
 from greenfield_matrix_failure_response import write_synthetic_shard_payload  # noqa: E402
 from greenfield_final_holdout_guard import complete_final_holdout_run  # noqa: E402
 from greenfield_final_holdout_guard import read_final_holdout_run  # noqa: E402
-from greenfield_matrix_host_candidate import canonical_host_candidate_argv_template  # noqa: E402
+from odylith.runtime.domain_intelligence.greenfield_host_transport import (canonical_host_candidate_argv_template)
 from greenfield_matrix_release_artifacts import retained_evidence_manifest_issues  # noqa: E402
 from greenfield_matrix_release_artifacts import seal_interrupted_retained_evidence  # noqa: E402
 from greenfield_matrix_release_artifacts import sha256_file  # noqa: E402

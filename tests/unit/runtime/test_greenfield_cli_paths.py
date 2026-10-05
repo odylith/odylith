@@ -654,7 +654,7 @@ def test_greenfield_create_cli_rejects_uncompiled_input_overrides(
 
     payload = json.loads(capsys.readouterr().out)
     assert rc == 2
-    assert "greenfield create accepts only --transaction-file, --transaction-hash, and --confirm" in payload["error"]
+    assert "greenfield create accepts only --transaction-file, --transaction-hash, --completion-receipt, and --confirm" in payload["error"]
     assert flag in payload["error"]
     assert "Use EDIT to add evidence and rebuild the ProductCreateTransaction" in payload["error"]
 
@@ -822,7 +822,7 @@ def test_greenfield_create_cli_requires_compiled_transaction_before_writes(tmp_p
 
     out = capsys.readouterr().out
     assert rc == 2
-    assert "greenfield create accepts only --transaction-file, --transaction-hash, and --confirm" in out
+    assert "greenfield create accepts only --transaction-file, --transaction-hash, --completion-receipt, and --confirm" in out
     assert "unexpected options: --prompt, --release" in out
     assert "Use EDIT to add evidence and rebuild the ProductCreateTransaction" in out
     assert "create only verifies the hash and commits the compiled package" in out

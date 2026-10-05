@@ -91,11 +91,13 @@ def test_atlas_many_to_many_acceptance_has_one_node_per_workstream() -> None:
     for index, workstream in enumerate(design["workstreams"], 1):
         node = f"workstream{index}_acceptance"
         assert source.count(f'{node}["') == 1
-        assert workstream["verification"] in boxes[node]["label"]
+        assert boxes[node]["label"] == workstream["title"]
+        assert f"Proposed verification: {workstream['verification']}" in boxes[node]["description"]
+        assert f"Proposed deliverable: {workstream['deliverable']}" in boxes[node]["description"]
         for component_index, component in enumerate(design["components"], 1):
             edge = f'component{component_index} -. "participates in delivery" .-> {node}'
             assert (edge in source) == (component["key"] in workstream["component_keys"])
-    assert "neither check is passed or exhaustive proof" in view["read_guide"]
+    assert "no check is claimed to have passed or be exhaustive proof" in view["read_guide"]
 
 
 @pytest.fixture

@@ -3,8 +3,30 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from odylith.runtime.governance import surface_refresh_fingerprint_dag
 from odylith.runtime.surfaces import registry_spec_reading_ui
+
+
+@pytest.mark.parametrize("recorded,requested,expected", [
+    (("D-110",), (), False),
+    ((), ("D-110",), False),
+    (("D-110",), ("D-111",), False),
+    (("D-110",), ("D-110",), True),
+    (("D-111", "D-110"), ("D-110", "D-111"), True),
+])
+def test_atlas_refresh_cache_keeps_exact_selection_distinct_from_global(tmp_path, recorded, requested, expected):
+    output = tmp_path / "odylith/atlas/atlas.html"
+    output.parent.mkdir(parents=True)
+    output.write_text("Atlas inventory with retained unrelated review debt.\n")
+    options = {"repo_root": tmp_path, "surface": "atlas", "atlas_sync": True,
+               "outputs": ("odylith/atlas/atlas.html",)}
+    surface_refresh_fingerprint_dag.record_surface_refresh(**options, atlas_diagram_ids=recorded)
+    reused, _details = surface_refresh_fingerprint_dag.can_reuse_surface_refresh(
+        **options, atlas_diagram_ids=requested,
+    )
+    assert reused is expected
 
 
 def _seed_registry_fingerprint_repo(repo_root: Path) -> Path:

@@ -232,6 +232,7 @@ def build_session_brief(
             turn_context=turn_context_runtime.compact_turn_context(normalized_turn_context),
             claim_mode=claim_mode,
             selection_state=selection_state,
+            selection_ambiguity_class=str(selection.get("ambiguity_class", "")).strip(),
             selection_reason=str(selection.get("reason", "")).strip(),
             working_tree_scope=str(path_scope.get("working_tree_scope", "")).strip(),
             auto_claim_paths=auto_claim_paths,

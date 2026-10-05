@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 COMMANDS = (
+    ("prepare", "Prepare one sealed read-only package under one product-owned bounded host journey."),
     ("candidate-contract", "Show the typed host reasoning contract for one request."),
     ("authority-check", "Validate one source-bound pre-author decision without staging a package."),
     ("source-ledger-check", "Preflight source duties or admit one source-only decision set."),
@@ -23,7 +24,8 @@ COMMANDS = (
 COMMAND_NAMES = frozenset(command for command, _help_text in COMMANDS)
 
 
-def terminal_decision_offer(*, repo_root: Path, transaction_hash: str) -> dict[str, Any]:
+def terminal_decision_offer(*, repo_root: Path, transaction_hash: str,
+                            completion_receipt: Path | str | None = None) -> dict[str, Any]:
     """Offer operator process invocation, never unqualified ordinary-chat approval."""
     prefix = ["odylith", "greenfield", "decide", "--repo-root", str(repo_root)]
     return {
@@ -37,7 +39,10 @@ def terminal_decision_offer(*, repo_root: Path, transaction_hash: str) -> dict[s
             {
                 "label": command,
                 "command": shlex.join([
-                    *prefix, command, transaction_hash,
+                    *(["odylith", "greenfield", "prepare", "--repo-root", str(repo_root),
+                       "--transaction-hash", transaction_hash] if command == "EDIT" and completion_receipt
+                      else [*prefix, command, transaction_hash]),
+                    *(["--completion-receipt", str(completion_receipt)] if completion_receipt else []),
                     *(["--edit", "<corrections>"] if command == "EDIT" else []),
                 ]),
             }
@@ -49,6 +54,9 @@ def terminal_decision_offer(*, repo_root: Path, transaction_hash: str) -> dict[s
 def main(argv: Sequence[str] | None = None) -> int:
     started_at = time.perf_counter()
     tokens = list(argv or ())
+    if tokens[:1] == ["prepare"]:
+        from odylith.runtime.domain_intelligence.greenfield_prepare_cli import main as prepare_main
+        return prepare_main(tokens[1:])
     if tokens[:1] == ["create"]:
         from odylith.runtime.domain_intelligence.greenfield_create_cli import (
             main as create_main,
@@ -66,6 +74,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("command", choices=("CONFIRM", "EDIT", "REJECT"))
     parser.add_argument("transaction_hash")
     parser.add_argument("--repo-root", default=".")
+    parser.add_argument("--completion-receipt", default="", help="Original delivered receipt for a bounded prepare package.")
     evidence = parser.add_mutually_exclusive_group()
     evidence.add_argument("--edit")
     evidence.add_argument("--edit-evidence")
@@ -109,7 +118,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
         try:
             greenfield_pending_transaction_store.resolve_pending_transaction(
-                repo_root=root, transaction_hash=args.transaction_hash,
+                repo_root=root, transaction_hash=args.transaction_hash, completion_receipt=args.completion_receipt or None,
             )
         except (OSError, RuntimeError, ValueError) as error:
             message = f"This sealed package is unavailable: {error}. No governed records were written."
@@ -125,7 +134,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             as_json=args.as_json, started_at=started_at,
             host_candidate_file=args.candidate_file,
             authority_gate_file=args.gate_file,
-            source_duty_file=args.ledger_file,
+            source_duty_file=args.ledger_file, completion_receipt=args.completion_receipt or None,
         )
 
     from odylith.runtime.surfaces.greenfield_host_confirmation import (
@@ -134,6 +143,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     decision = handle_greenfield_decision(
         repo_root=root, command=args.command, transaction_hash=args.transaction_hash, edit_evidence=None,
+        completion_receipt=args.completion_receipt or None,
     )
     if decision["status"] == "edit_evidence_required":
         decision["visible_markdown"] = (
@@ -144,7 +154,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     elif decision["status"] == "BUSY_NO_WRITE":
         choice = next(
             choice for choice in terminal_decision_offer(
-                repo_root=root, transaction_hash=args.transaction_hash,
+                repo_root=root, transaction_hash=args.transaction_hash, completion_receipt=args.completion_receipt or None,
             )["choices"] if choice["label"] == args.command
         )
         decision["visible_markdown"] += f"\n\nRetry in a terminal:\n\n```sh\n{choice['command']}\n```"

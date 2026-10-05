@@ -149,6 +149,8 @@ def commit_precompiled_transaction(
             dry_run_receipt=receipt,
             proposal_payload=proposed_payload,
         )
+    completion_args = (("--completion-receipt", str(proposed.completion_receipt_path))
+                       if getattr(proposed, "completion_receipt_path", None) else ())
     started = time.perf_counter()
     decision = invoke_cli(
         (
@@ -158,7 +160,7 @@ def commit_precompiled_transaction(
             "--repo-root",
             ".",
             "CONFIRM",
-            transaction_hash,
+            transaction_hash, *completion_args,
             "--json",
         )
     )
@@ -191,7 +193,7 @@ def commit_precompiled_transaction(
     retry_decision = invoke_cli(
         (
             "./.odylith/bin/odylith", "greenfield", "decide", "--repo-root", ".",
-            "CONFIRM", transaction_hash, "--json",
+            "CONFIRM", transaction_hash, *completion_args, "--json",
         )
     )
     retry_seconds = round(time.perf_counter() - started, 3)

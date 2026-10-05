@@ -148,10 +148,13 @@ def build_authored_atlas_diagrams(
             "read_guide": (
                 "Solid event arrows show source prerequisites; dotted arrows show additional "
                 "proposed next steps. Event IDs retain source identity, not execution rank. "
-                "Owner boxes retain source ownership. This is one first run, not all possible paths. "
+                "Solid performer-to-action links retain source ownership. Action labels use exact source verb and target "
+                "references; select an action box in Read mode for the complete source event. "
+                "This is one first run, not all possible paths. "
                 "Declared exchange inputs and delivery prerequisites retain supporting components "
-                "without adding their actions to this walkthrough. Dotted delivery-prerequisite links "
-                "show proposed delivery support, not runtime exchanges or event order. "
+                "without adding their actions to this walkthrough. Select a component box in Read "
+                "mode for its complete exchange contracts and delivery prerequisites. The Component "
+                "Exchanges and Delivery Dependencies views show those relationships separately. "
                 + provisional_design["first_run"]["rationale"]
                 + (" Source constraints: " + " ".join(
                     f"{index}. {quote}" for index, quote in enumerate(operational_constraints, 1)

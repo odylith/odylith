@@ -16,7 +16,7 @@
   ephemeral local execution paths such as `/tmp`, `/var/folders`,
   `/private/var`, and `/dev/fd`. Temporary intent files and shell descriptors
   are not durable learning anchors.
-Last updated: 2026-07-20
+Last updated: 2026-10-04
 
 
 ## Purpose
@@ -53,6 +53,28 @@ secret-safe structures.
   optimization detail.
 
 ## Core Contract Areas
+### Memory evidence metadata
+
+Compact transport retains the shared memory record's role, validity, source
+refs/fingerprints, evidence/observation time and derivation, plus the admitted
+use and explainable usefulness result. It preserves current authority versus
+historical learning without deciding truth or ranking independently. Existing
+allowlists, secret suppression and compact packet budgets still apply; raw
+transcripts and temporary artifacts are not durable evidence anchors.
+B-133 H1/CB-355 owns the unreleased round-trip and non-regression proof. Metadata
+presence alone does not qualify retrieval accuracy or better later decisions.
+The settled focused suite proves real indexed/fallback metadata round trips and
+existing redaction/caps. Three retained authority/provenance/explainability
+records add 2902 bytes in the fixed measurement. This cost remains explicit;
+complete frozen packet and installed regression proof are required before a
+release-wide efficiency claim. The Context Engine spec and H1 plan retain the
+exact source/control handoff.
+Final independent actual-assembler proof retains 12 metadata rows from seven
+sources and two current actionable guidance rows within existing limits:
+22,473/24,000 bytes and 5,619/6,000 tokens. CB-356 aligns reported truncation
+limits with the actual estimator; matching metrics and enforced caps are
+separate from semantic truth. No allocation was increased.
+
 ### Execution-profile encoding
 - `execution_profile_mapping(...)`
 - `compact_execution_profile_mapping(...)`

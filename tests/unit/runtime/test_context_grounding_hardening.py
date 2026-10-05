@@ -957,6 +957,8 @@ def test_projection_compiler_runtime_reuses_full_projection_when_reasoning_is_re
         code_version=derivation_provenance.fingerprint_source_files(
             [
                 Path(projection_compiler_runtime.__file__),
+                Path(projection_compiler_runtime.memory_record_policy.__file__),
+                Path(projection_compiler_runtime.judgment_memory_records.__file__),
                 Path(store.odylith_projection_snapshot.__file__),
                 Path(store.odylith_projection_bundle.__file__),
             ]

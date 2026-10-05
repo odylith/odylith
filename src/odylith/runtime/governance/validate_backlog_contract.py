@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common.consumer_profile import consumer_profile_path, truth_root_path
+from odylith.runtime.governance import backlog_assessment
 from odylith.runtime.governance import backlog_title_contract
 from odylith.runtime.governance import execution_wave_contract
 from odylith.runtime.governance import release_planning_contract
@@ -82,9 +83,6 @@ _PLACEHOLDER_LIKE_TOKENS: frozenset[str] = frozenset(
 )
 _MIN_CORE_DETAIL_WORDS = 6
 
-_VALID_PRIORITIES: set[str] = {"P0", "P1", "P2", "P3"}
-_VALID_SIZING: dict[str, int] = {"XS": 1, "S": 2, "M": 3, "L": 5, "XL": 8}
-_VALID_COMPLEXITY: dict[str, int] = {"Low": 1, "Medium": 2, "High": 3, "VeryHigh": 5}
 _VALID_STATUS: set[str] = {
     "queued",
     "planning",
@@ -490,75 +488,6 @@ def _parse_idea_spec(path: Path) -> IdeaSpec:
             ),
         )
     return _parse_idea_spec_uncached(target=target, repo_root=repo_root, signature=signature)
-
-
-def _parse_int_in_range(
-    *,
-    value: str,
-    field: str,
-    low: int,
-    high: int,
-    errors: list[str],
-    path: Path,
-) -> int | None:
-    token = str(value or "").strip()
-    if not token:
-        errors.append(f"{path}: missing `{field}`")
-        return None
-    try:
-        parsed = int(token)
-    except ValueError:
-        errors.append(f"{path}: `{field}` must be an integer, got `{token}`")
-        return None
-    if parsed < low or parsed > high:
-        errors.append(f"{path}: `{field}` out of range [{low}, {high}], got `{parsed}`")
-        return None
-    return parsed
-
-
-def _compute_score(metadata: dict[str, str], *, errors: list[str], path: Path) -> int | None:
-    commercial = _parse_int_in_range(
-        value=metadata.get("commercial_value", ""),
-        field="commercial_value",
-        low=1,
-        high=5,
-        errors=errors,
-        path=path,
-    )
-    product = _parse_int_in_range(
-        value=metadata.get("product_impact", ""),
-        field="product_impact",
-        low=1,
-        high=5,
-        errors=errors,
-        path=path,
-    )
-    market = _parse_int_in_range(
-        value=metadata.get("market_value", ""),
-        field="market_value",
-        low=1,
-        high=5,
-        errors=errors,
-        path=path,
-    )
-    sizing = str(metadata.get("sizing", "")).strip()
-    complexity = str(metadata.get("complexity", "")).strip()
-    if sizing not in _VALID_SIZING:
-        errors.append(f"{path}: `sizing` must be one of {sorted(_VALID_SIZING)}, got `{sizing}`")
-        return None
-    if complexity not in _VALID_COMPLEXITY:
-        errors.append(
-            f"{path}: `complexity` must be one of {sorted(_VALID_COMPLEXITY)}, got `{complexity}`"
-        )
-        return None
-    if commercial is None or product is None or market is None:
-        return None
-
-    opportunity = (0.40 * commercial) + (0.35 * product) + (0.25 * market)
-    execution_drag = (0.60 * _VALID_SIZING[sizing]) + (0.40 * _VALID_COMPLEXITY[complexity])
-    raw_score = (opportunity / execution_drag) * 100
-    rounded = int(raw_score + 0.5)
-    return max(0, min(100, rounded))
 
 
 def _collect_section_table(content: str, section_title: str) -> tuple[list[str], list[list[str]], str | None]:
@@ -1199,10 +1128,6 @@ def _validate_idea_specs_uncached(
                     f"{path}: month directory `{month_dir}` must match file date month `{expected_month}`"
                 )
 
-        priority = str(spec.metadata.get("priority", "")).strip()
-        if priority and priority not in _VALID_PRIORITIES:
-            errors.append(f"{path}: invalid `priority` `{priority}`")
-
         status = spec.status
         if status and status not in _VALID_STATUS:
             errors.append(f"{path}: invalid `status` `{status}`")
@@ -1218,24 +1143,7 @@ def _validate_idea_specs_uncached(
                 f"{sorted(execution_wave_contract.VALID_EXECUTION_MODELS)}, got `{execution_model}`"
             )
 
-        declared_score = _parse_int_in_range(
-            value=spec.metadata.get("ordering_score", ""),
-            field="ordering_score",
-            low=0,
-            high=100,
-            errors=errors,
-            path=path,
-        )
-        computed_score = _compute_score(spec.metadata, errors=errors, path=path)
-        if (
-            declared_score is not None
-            and computed_score is not None
-            and declared_score != computed_score
-            and founder_override != "yes"
-        ):
-            errors.append(
-                f"{path}: `ordering_score` ({declared_score}) does not match formula ({computed_score})"
-            )
+        backlog_assessment.validate_assessment(spec.metadata, errors=errors, path=path)
 
     return ideas, errors
 
@@ -1441,11 +1349,10 @@ def _validate_backlog_index(
         active_ids.add(idea_id)
         active_ranks[idea_id] = rank
 
-        score = _parse_int_in_range(
-            value=payload["ordering_score"],
-            field=f"ordering_score ({idea_id})",
-            low=0,
-            high=100,
+        score = backlog_assessment.index_score(
+            payload["ordering_score"],
+            metadata=ideas[idea_id].metadata if idea_id in ideas else {},
+            idea_id=idea_id,
             errors=errors,
             path=backlog_index,
         )
@@ -1477,10 +1384,10 @@ def _validate_backlog_index(
         )
 
     execution_prev_status_rank: int | None = None
-    execution_prev_status: str | None = None
     execution_prev_score: int | None = None
     execution_prev_id: str | None = None
     execution_prev_override = False
+    execution_prev_score_override = False
     for row in rows_execution:
         if len(row) != len(_INDEX_COLS):
             errors.append(f"{backlog_index}: malformed execution row with {len(row)} columns")
@@ -1505,42 +1412,42 @@ def _validate_backlog_index(
                 f"{backlog_index}: execution table status must be one of {sorted(_EXECUTION_STATUSES)} for `{idea_id}`"
             )
 
-        score = _parse_int_in_range(
-            value=payload["ordering_score"],
-            field=f"ordering_score ({idea_id})",
-            low=0,
-            high=100,
+        score = backlog_assessment.index_score(
+            payload["ordering_score"],
+            metadata=ideas[idea_id].metadata if idea_id in ideas else {},
+            idea_id=idea_id,
             errors=errors,
             path=backlog_index,
         )
-        if score is not None:
-            status_rank = _EXECUTION_STATUS_ORDER.get(normalized_status, 99)
-            if (
-                execution_prev_status_rank is not None
-                and status_rank < execution_prev_status_rank
-                and not (current_override or execution_prev_override)
-            ):
-                errors.append(
-                    f"{backlog_index}: execution ordering violation `{idea_id}`({normalized_status}) appears above "
-                    f"higher-priority status sequence; required order is implementation before planning"
-                )
-            if (
-                execution_prev_status_rank is not None
-                and status_rank == execution_prev_status_rank
-                and execution_prev_score is not None
-                and score > execution_prev_score
-                and not (current_override or execution_prev_override)
-            ):
-                errors.append(
-                    f"{backlog_index}: execution ranking score inversion `{idea_id}`({score}) over "
-                    f"`{execution_prev_id}`({execution_prev_score}) within status `{normalized_status}`; "
-                    "execution rows must be sorted by highest score first within each status bucket"
-                )
-            execution_prev_status_rank = status_rank
-            execution_prev_status = normalized_status
+        status_rank = _EXECUTION_STATUS_ORDER.get(normalized_status, 99)
+        if (
+            execution_prev_status_rank is not None
+            and status_rank < execution_prev_status_rank
+            and not (current_override or execution_prev_override)
+        ):
+            errors.append(
+                f"{backlog_index}: execution ordering violation `{idea_id}`({normalized_status}) appears above "
+                f"higher-priority status sequence; required order is implementation before planning"
+            )
+        if (
+            execution_prev_status_rank is not None
+            and status_rank == execution_prev_status_rank
+            and score is not None
+            and execution_prev_score is not None
+            and score > execution_prev_score
+            and not (current_override or execution_prev_score_override)
+        ):
+            errors.append(
+                f"{backlog_index}: execution ranking score inversion `{idea_id}`({score}) over "
+                f"`{execution_prev_id}`({execution_prev_score}) within status `{normalized_status}`; "
+                "execution rows must be sorted by highest score first within each status bucket"
+            )
+        if status_rank != execution_prev_status_rank or score is not None:
             execution_prev_score = score
             execution_prev_id = idea_id
-            execution_prev_override = current_override
+            execution_prev_score_override = current_override
+        execution_prev_status_rank = status_rank
+        execution_prev_override = current_override
 
         _validate_row_against_idea(
             payload=payload,

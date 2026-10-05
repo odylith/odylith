@@ -1,5 +1,93 @@
 # Release
-Last updated: 2026-10-02
+Last updated: 2026-10-04
+
+## Detached public qualification and shared preparation (2026-10-04)
+
+The immutable onboarding finalizer accepts exact saved public source evidence
+and separately reviewed complete timing evidence through
+`--public-source-evidence` and `--whole-journey-bound-evidence`.
+`greenfield_public_qualification.py` owns this release-only phase. It hydrates
+saved matrix types with an exact roundtrip, invokes the current R2 scorer and
+published floors, and authenticates the original diagnostic failure before
+recomputing only the absent semantic and measured-bound reports in a detached
+sidecar. Unexplained or residual failures stop qualification. Base results,
+source expectations, retention manifests and review inputs remain immutable.
+
+All fixed primary and declared Luna observations must bind to the saved source,
+output and manifest. A separately retained independent decision must cover
+every observed journey with a finite bound at or below the diagnostic cap.
+The unavailable-provider v2 control separately proves disabled-provider
+isolation after candidate receipt using its canonical validator; it does not
+invent a full host stage observation. Browser, recovery, statistics, corpus,
+profile and independent four-lens gates remain required. Saved reviewer
+metadata and hashes authenticate records but cannot establish authorship,
+independence or natural-language entailment by themselves.
+
+Release orchestration directly adopts the product-owned bounded preparation
+flow instead of retaining release-only host, process and deadline owners.
+Observation v17 measures through completion-attempt I/O and final monotonic
+certification before receipt and preview delivery, and requires the supervised
+product route. The strict
+proposal allowance and whole deadline precede private completion-receipt
+issuance. Bounded confirmation requires that delivered receipt; a stored
+positive record cannot qualify a failed or late preparation. Receipt delivery
+does not establish complete user-visible latency, which remains unqualified.
+The 660-second whole cap remains diagnostic and unqualified until genuine
+complete public measurements and review qualify a finite operating bound.
+The detached measured-evidence decision also keeps consumer timing custody
+explicitly unproved; installed entry and cancellation proof must establish
+that separate boundary. Synthetic bridge tests cannot qualify a release.
+
+The malformed unavailable-provider proof finding is independently resolved.
+The canonical validator rejects incorrect primitive types, malformed text
+sequences, invalid record counts and nonfinite timing before success checks.
+Both producers pass genuine counts. Independent rereview passes 89 tests and
+22 controls with no remaining actionable P0/P1/P2 in that bounded scope,
+including all original coherently rebound red controls. Review:
+/private/tmp/odylith-greenfield-public-qualification-independent-rereview-20261004.md,
+SHA-256 e827e022d2131a4edf3c07a99a270e42908471fb8d7cc7a710a0c9ca0e99ab1d.
+Independent final receipt-transport review is CLEAR on fixed source hashes:
+14 boundary controls and the exact bootstrap control pass. Its original
+expanded result retains one startup-window failure; the full final source gate
+must still pass. Installed/public release findings remain open, and the detached
+scorer cannot qualify them from saved metadata. Review:
+/private/tmp/odylith-nonce-independent-final-review-20261004.md,
+SHA-256 ea0244a8b310430608f136ba63357971a93c6af968390bbad9bd652336c7e652.
+
+## Greenfield public source-predicate evaluation (2026-10-04)
+
+The release-only evaluator supports an explicit disclosed-public mode,
+`odylith.greenfield.public-source-predicate-evaluation.v1`. Frozen source-only
+expectations are checked independently of observed forward/reverse coverage.
+The complete coverage mapping, exact source/output/snapshot/transaction,
+retained evidence manifest and independent review record must bind to pinned
+hashes. Reviewer eligibility uses the existing onboarding owner; every audited
+entry requires its exact digest, verdict and rationale. Eligibility metadata
+and matching hashes do not themselves prove reviewer authorship or semantic
+entailment. Missing, partial, contradictory or unaudited evidence fails closed.
+
+`scripts/release/greenfield_semantic_case_score.py` owns the actual moved native
+case-scoring phase and public audited case scoring. The parent semantic scorer
+retains aggregate floors and statistics. `greenfield_evaluation_contract.py`
+owns frozen source preflight, `greenfield_relation_fidelity.py` retains current
+canonical R1 custody and complete reverse inventory, and
+`greenfield_matrix_statistics.py` distinguishes frozen source census from
+authenticated representation census. Source witness, normalized-role and full
+destination hashes keep separate meanings. Repeated projections do not create
+extra source successes. Native scoring, protected once-only rules, fixed
+denominators, model profiles, samples, confidence bounds and floors remain
+strict. This release path adds no consumer model phase.
+
+CB-347/B-142 Wave R2 preserves the original 40-case/425-ID public preflight.
+Canonical custody forbids accepted-fact relabeling, clarification refuses
+compiled evidence, and malformed material rows return incomplete/unscored
+evidence with zero samples and an explicit issue. Genuine assumptions remain
+valid. The final independent 11-control rereview reports no actionable
+P0/P1/P2; initial failed reviews and red artifacts remain retained. Proof:
+/private/tmp/odylith-greenfield-r2-independent-rereview-20261004.md,
+SHA-256 2ebc3a1d8218449e0c8f3b8a7c8a70cca32146abe5f5376e0a9299aeadbf8efe.
+These are structural proof results. Full frozen regression and fresh installed
+semantic adjudication remain open; synthetic audits cannot qualify a release.
 
 ## Greenfield host process boundary (2026-10-02)
 

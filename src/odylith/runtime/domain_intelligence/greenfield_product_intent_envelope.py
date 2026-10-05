@@ -49,7 +49,14 @@ from odylith.runtime.domain_intelligence.greenfield_model_source_citations impor
     canonical_citation_from_host_selection,
     resolve_source_citation,
 )
-from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import verify_greenfield_source_duty_ledger_receipt
+from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
+    SOURCE_DUTY_BINDING_VERSION,
+    greenfield_source_duty_binding_schema,
+)
+from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
+    resolve_greenfield_action_actor_identity,
+    verify_greenfield_source_duty_ledger_receipt,
+)
 
 
 PRODUCT_FACTS_HASH_KEY = "product_facts_sha256"
@@ -267,8 +274,8 @@ def build_product_intent_envelope(
             "model-authored Product Intent source custody does not match the exact authoring evidence digest"
         )
     source_duty = intent[AUTHORED_SEMANTICS_KEY]["source_duty"]
-    normalized_duties = _verified_normalized_action_duties(
-        source_duty, source_text=str(source_text or "")
+    normalized_duties = require_verified_source_action_relations(
+        authored_relations, source_duty=source_duty, source_text=str(source_text or "")
     )
     spans, source_span_ids_by_field, product_claim_span_ids_by_field = _authored_source_spans(
         authored_source_spans,
@@ -281,7 +288,6 @@ def build_product_intent_envelope(
         source_bytes=source_bytes,
         source_spans=spans,
     )
-    _verify_normalized_relation_roles(authored_relations, source_spans=spans)
     require_authored_relation_source_custody(
         authored_relations,
         context_relations=first_path_context_relations,
@@ -348,7 +354,9 @@ def _verified_normalized_action_duties(
 ) -> dict[tuple[str, int], dict[str, Any]]:
     if source_duty is None:
         return {}
-    if not isinstance(source_duty, Mapping):
+    if not isinstance(source_duty, Mapping) or set(source_duty) != {
+        "ledger_receipt", "binding", "lifecycle"
+    }:
         raise ValueError("model-authored Product Intent source-duty custody is malformed")
     receipt = source_duty.get("ledger_receipt")
     binding = source_duty.get("binding")
@@ -357,6 +365,13 @@ def _verified_normalized_action_duties(
     verified = verify_greenfield_source_duty_ledger_receipt(
         receipt, evidence_text=source_text
     )
+    if (
+        set(binding) != set(greenfield_source_duty_binding_schema()["required"])
+        or binding.get("version") != SOURCE_DUTY_BINDING_VERSION
+        or binding.get("source_sha256") != verified["source_sha256"]
+        or binding.get("ledger_sha256") != verified["ledger_sha256"]
+    ):
+        raise ValueError("model-authored Product Intent source-duty binding digest or schema is invalid")
     ledger = verified["ledger"]
     by_order: dict[int, Mapping[str, Any]] = {}
     path_orders: set[int] = set()
@@ -366,12 +381,16 @@ def _verified_normalized_action_duties(
         if not isinstance(bound, list) or len(bound) != len(duties):
             raise ValueError("model-authored Product Intent source-duty custody is malformed")
         for duty, row in zip(duties, bound, strict=True):
-            if not isinstance(row, Mapping) or row.get("duty_id") != duty["id"]:
+            if (
+                not isinstance(row, Mapping)
+                or set(row) != {"duty_id", "event_order"}
+                or row.get("duty_id") != duty["id"]
+            ):
                 raise ValueError("model-authored Product Intent source-duty custody is malformed")
             order = row.get("event_order")
             if type(order) is not int or order < 1 or order in by_order:
                 raise ValueError("model-authored Product Intent source-duty custody is malformed")
-            by_order[order] = duty
+            by_order[order] = {**duty, "binding_role": section, "event_order": order}
             if section == "first_path_actions":
                 path_orders.add(order)
     if set(by_order) != set(range(1, len(by_order) + 1)):
@@ -634,24 +653,60 @@ def _verify_authored_atomic_claim_source(
             )
 
 
-def _verify_normalized_relation_roles(
-    relations: Sequence[Mapping[str, Any]], *, source_spans: Sequence[Mapping[str, Any]]
-) -> None:
+def require_verified_source_action_relations(
+    relations: Sequence[Mapping[str, Any]], *, source_duty: Any, source_text: str
+) -> dict[tuple[str, int], dict[str, Any]]:
+    """Return accepted duties after checking their exact relation custody.
+
+    Callers still own relation structure and projection ranges. Admission also
+    verifies the raw candidate, source spans and atomic claims independently.
+    """
+    duties = _verified_normalized_action_duties(source_duty, source_text=source_text)
+    if source_duty is None:
+        return {}
+    by_order = {duty["event_order"]: duty for duty in duties.values()}
+    if (
+        any(not isinstance(row, Mapping) or type(row.get("order")) is not int for row in relations)
+        or len(relations) != len(by_order)
+        or {row.get("order") for row in relations} != set(by_order)
+    ):
+        raise ValueError("model-authored Product Intent source-duty roles do not exactly cover relations")
+    source_bytes = source_text.encode("utf-8")
+    actor_roles = {
+        "human_actor": ("human", {"human_actors"}),
+        "internal_system": ("product", {"internal_systems", "title"}),
+        "external_system": ("external_system", {"external_systems"}),
+        "product_title": ("product", {"internal_systems", "title"}),
+    }
     for relation in relations:
-        parents = [
-            span for span in source_spans
-            if span.get("entailment_relationship") == "verified_source_action"
-            and span.get("source_start_byte") == relation.get("source_start_byte")
-            and span.get("source_end_byte") == relation.get("source_end_byte")
-            and span.get("projection_start_byte") == relation.get("event_start_byte")
-            and span.get("projection_end_byte") == relation.get("event_end_byte")
-            and span.get("projection_text") == relation.get("event_quote")
-        ]
-        if parents and (len(parents) != 1 or (
-            relation.get("action_verb_quote") != parents[0].get("verified_action")
-            or relation.get("target_quote") != parents[0].get("verified_target")
-        )):
+        duty = by_order[relation["order"]]
+        witness, start = resolve_source_citation(
+            source_bytes, canonical_citation_from_host_selection(source_bytes, duty["event_ref"])
+        )
+        actor = resolve_greenfield_action_actor_identity(duty, path=duty["binding_role"])
+        role = duty["binding_role"]
+        path = relation.get("actor_fact_path", "")
+        actor_field = path.split("/")[1] if isinstance(path, str) and path.startswith("/") else ""
+        if role == "first_path_actions":
+            # Canonical product identity may use its equally named internal-system fact.
+            kind, fields = actor_roles.get(duty.get("performer_role"), ("", set()))
+        elif role == "supporting_human_actions":
+            kind, fields = "human", {"human_actors"}
+        else:
+            kind = "external_system" if actor_field == "external_systems" else "product"
+            fields = {"internal_systems", "external_systems", "title"}
+        if (
+            relation.get("event_quote") != duty["statement"]
+            or relation.get("action_verb_quote") != duty["action"]
+            or relation.get("target_quote") != duty["target"]
+            or relation.get("source_start_byte") != start
+            or relation.get("source_end_byte") != start + len(witness.encode("utf-8"))
+            or relation.get("actor_fact_quote") != actor
+            or relation.get("actor_kind") != kind
+            or actor_field not in fields
+        ):
             raise ValueError("model-authored Product Intent relation differs from its verified source action")
+    return duties
 
 
 def _normalized_claim_matches_projection(

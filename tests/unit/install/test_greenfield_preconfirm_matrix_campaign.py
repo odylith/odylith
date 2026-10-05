@@ -15,10 +15,10 @@ SCRIPTS_ROOT = REPO_ROOT / "scripts" / "release"
 if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
-from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_ARGUMENT_COUNT
-from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_RECEIPT_VERSION
-from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_SHAPE_SHA256
-from greenfield_matrix_host_candidate import HOST_NATIVE_MATRIX_OBSERVATION_VERSION
+from odylith.runtime.domain_intelligence.greenfield_host_transport import (HOST_NATIVE_ARGV_ARGUMENT_COUNT)
+from odylith.runtime.domain_intelligence.greenfield_host_transport import (HOST_NATIVE_ARGV_RECEIPT_VERSION)
+from odylith.runtime.domain_intelligence.greenfield_host_transport import (HOST_NATIVE_ARGV_SHAPE_SHA256)
+from odylith.runtime.domain_intelligence.greenfield_host_flow import HOST_NATIVE_MATRIX_OBSERVATION_VERSION
 
 def _load_module(path: Path, name: str):
     spec = importlib.util.spec_from_file_location(name, path)
@@ -43,7 +43,7 @@ def _write(path: Path, text: str) -> None:
 
 def _host_candidate_argv() -> tuple[str, ...]:
     return sys.modules[
-        "greenfield_matrix_host_candidate"
+        "odylith.runtime.domain_intelligence.greenfield_host_transport"
     ].canonical_host_candidate_argv_template()
 
 
@@ -172,8 +172,10 @@ def test_discovery_uses_ephemeral_case_proof_without_publishing_release_evidence
             "operational_timeout_seconds": profile.operational_timeout_seconds,
             "whole_journey_diagnostic_cap_seconds": 660.0,
             "candidate_completion_reserve_seconds": 15.0,
-            "whole_journey_bound_status": "diagnostic_unqualified",
-            "whole_journey_elapsed_scope": "through_observer_return_before_final_snapshot_serialization",
+            "whole_journey_route": "odylith-greenfield-prepare.v1",
+        "whole_journey_supervision": {"version": "odylith.greenfield.journey-supervision.v1", "guardian_pid": 12345, "cancellation_grace_seconds": 2.0},
+        "whole_journey_bound_status": "diagnostic_unqualified",
+            "whole_journey_elapsed_scope": "through_guardian_completion_record_and_final_clock_check_before_receipt_delivery",
             "whole_journey_deadline_status": "within",
             "source_ledger_diagnostic_cap_seconds": 300.0,
             "source_duty_verifier_diagnostic_cap_seconds": 120.0,

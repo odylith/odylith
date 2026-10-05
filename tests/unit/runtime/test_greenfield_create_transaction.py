@@ -804,7 +804,7 @@ def test_commit_product_create_transaction_rejects_bad_hash_before_write(
         greenfield_create_commit.commit_greenfield_create_transaction(
             repo_root=tmp_path,
             transaction_file=transaction.transaction_file,
-            transaction_hash="not-the-compiled-hash",
+            transaction_hash="0" * 64,
             confirm=True,
             started_at=0.0,
         )
@@ -826,7 +826,7 @@ def test_commit_product_create_transaction_requires_a_receipt_file(
         greenfield_create_commit.commit_greenfield_create_transaction(
             repo_root=tmp_path,
             transaction_file=transaction_file,
-            transaction_hash="untrusted-in-memory-object",
+            transaction_hash="0" * 64,
             confirm=True,
             started_at=0.0,
         )

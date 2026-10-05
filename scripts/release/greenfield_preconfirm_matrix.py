@@ -107,18 +107,12 @@ from greenfield_preconfirm_matrix_cases import VALID_CASE_EXPECTATIONS  # noqa: 
 from greenfield_preconfirm_matrix_cases import case_evidence  # noqa: E402
 from greenfield_preconfirm_matrix_cases import case_expectation  # noqa: E402
 from greenfield_preconfirm_matrix_cases import default_cases  # noqa: E402
-from greenfield_process import CommandLifecycleObserverError  # noqa: E402
-from greenfield_process import command_lifecycle_observer  # noqa: E402
-from greenfield_matrix_host_candidate import (  # noqa: E402
-    HostCandidateFlow,
-    HostCandidateFlowError,
-    post_receipt_runtime_env,
-    qualify_host_candidate_argv,
-    resolve_trusted_codex_executable,
-    run_host_candidate_flow,
-)
+from odylith.runtime.domain_intelligence.greenfield_process import CommandLifecycleObserverError  # noqa: E402
+from odylith.runtime.domain_intelligence.greenfield_process import command_lifecycle_observer  # noqa: E402
+from odylith.runtime.domain_intelligence.greenfield_host_flow import (HostCandidateFlow, HostCandidateFlowError, run_host_candidate_flow)
+from odylith.runtime.domain_intelligence.greenfield_host_transport import (post_receipt_runtime_env, qualify_host_candidate_argv, resolve_trusted_codex_executable)
 
-from greenfield_process import run_command_with_group_timeout as _run  # noqa: E402
+from odylith.runtime.domain_intelligence.greenfield_process import run_command_with_group_timeout as _run  # noqa: E402
 from greenfield_matrix_types import GreenfieldArtifactCounts  # noqa: E402
 from greenfield_matrix_types import GreenfieldMatrixResult  # noqa: E402
 from greenfield_matrix_types import GreenfieldQualityVerdict  # noqa: E402
@@ -1171,6 +1165,8 @@ def run_unavailable_provider_proof(
             returncode=execution.returncode,
             proposal_seconds=float(observed_stage.get("elapsed_seconds") or 0.0),
             detail=detail,
+            before_record_count=execution.before_record_count,
+            after_record_count=execution.after_record_count,
             write_audit_active=audit_evidence.active,
             write_audit_error=audit_evidence.error,
             write_attempts=audit_evidence.write_attempts,
@@ -1609,7 +1605,7 @@ def _run_host_candidate_propose(
     profile_id = str(env.get("ODYLITH_GREENFIELD_MODEL_PROFILE") or "").strip()
     profile = get_greenfield_model_profile(profile_id)
     try:
-        return run_host_candidate_flow(
+        completed = run_host_candidate_flow(
             HostCandidateFlow(
                 repo_root=repo_root,
                 temp_parent=repo_root.parent,
@@ -1637,6 +1633,11 @@ def _run_host_candidate_propose(
                     if retained_case is not None or retain_diagnostic_bytes is not None else None),
             )
         )
+        if getattr(completed, "completion_receipt", None):
+            from odylith.runtime.domain_intelligence.greenfield_pending_transaction_store import write_completion_receipt_delivery
+            completed.completion_receipt_path = str(write_completion_receipt_delivery(
+                repo_root=repo_root, receipt=completed.completion_receipt))
+        return completed
     except HostCandidateFlowError:
         completed = proposal_attempt.get("completed")
         if (
@@ -1647,8 +1648,8 @@ def _run_host_candidate_propose(
             return completed
         raise
     finally:
-        # Final telemetry serialization is the explicit endpoint of the measured
-        # journey. All raw retention and opaque observer work completed before it.
+        # Final telemetry and completion-receipt delivery follow the measured
+        # guardian completion I/O and final clock check.
         if final_observation:
             if stage_observation is not None:
                 dict.update(stage_observation, final_observation)

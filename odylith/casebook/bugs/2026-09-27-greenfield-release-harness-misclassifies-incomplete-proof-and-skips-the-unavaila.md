@@ -1,5 +1,297 @@
 - Bug ID: CB-347
 
+## Final fixed-source diagnostic reconciliation (2026-10-04)
+
+The corrected eight-file pack passes 220 checks in 28.08 seconds. It covers
+all 23 diagnosed failures and preserves valid-hash mismatch, missing compiler
+receipt, exact runtime execution inventory, model-free commit, manual source
+custody, bounded receipt guidance and existing prompt-byte ceilings. Shared
+guidance is shorter than the first correction. The original failed diagnostic
+remains retained; fresh installed/public semantic qualification remains open.
+Proof: /private/tmp/odylith-v20-final-boundary-corrections-rereview-20261004.log.
+
+The retained 8,410-test diagnostic completes with 8,387 passing and 23
+failures across five shards, with no source drift. Browser checks pass. The
+failures are four obsolete create refusal strings, two malformed-hash fixtures
+that no longer reach their intended boundary, two stale execution inventories,
+ten test helper calls to the moved transport owner, and five guidance/smoke
+expectations for the retired manual default. Preserve the original failure
+receipt and unchanged continuation under
+/private/tmp/odylith-greenfield-release-freeze-v20-final-20261004/.
+
+Correct the fixtures at their actual boundary and keep the publication guards,
+semantic acceptance and release floors intact. Name the compiler-owned
+ProductCreateTransaction explicitly in bounded guidance, preserve the ban on
+hand-authored proposal/transaction JSON and internal schema chatter, and make
+the smoke validator recognize the supported prepare route. Validate all affected
+files before a stable checkpoint. The diagnostic remains failed; it is not
+release qualification.
+
+## Bounded transport independent falsification (2026-10-04)
+
+Independent final review is CLEAR for the nonce receipt boundary: all fixed
+hashes match, 14 focused controls pass, and the exact previously failed
+bootstrap control passes independently. Ordinary failed cleanup cannot
+substitute for the receipt. Preserve the original one-failure expanded result;
+complete final runtime/install/browser and installed/public gates remain open.
+Review: /private/tmp/odylith-nonce-independent-final-review-20261004.md,
+SHA-256 ea0244a8b310430608f136ba63357971a93c6af968390bbad9bd652336c7e652.
+
+Before final clearance, the fixed nonce implementation awaited review. A private
+guardian channel issues the completion receipt only after completion-attempt
+I/O and strict raw deadline checks. Canonical digest state alone cannot grant
+confirmation; copied transactions require the explicitly delivered matching
+receipt. Post-certification delivery errors preserve accepted or uncertain
+outcomes. Expanded regression passes 502 checks; one shell-bootstrap readiness
+poll fails, and that exact test plus all boundary controls then pass 40 checks.
+Preserve both logs and require the complete final freeze. Handoff:
+/private/tmp/odylith-bounded-greenfield-nonce-transport-handoff-20261004.json,
+SHA-256 95f024a9a80aa02d292c582345d627f6e98ff06eb62a5a65594d542c3bb6f77c.
+
+The positive-completion correction passes 388 targeted checks, including 29
+boundary controls. It rejects the original copied-create control when tentative
+readiness and sealed bytes survive rollback. One final risk remains: completion
+publication precedes its post-write clock sample, so late or erroneous
+publication still depends on successful removal of the positive record.
+Another revocable flag would repeat this failure. Establish one authoritative
+acceptance boundary that ordinary cleanup errors cannot turn into permission;
+retain the complete measured scope and fail closed on late acceptance.
+Handoff: /private/tmp/odylith-bounded-greenfield-completion-transport-handoff-20261004.json,
+SHA-256 9531049698fd05b458ef81a44e542660b961f630697e91e567b1851b4508ccd4.
+Final independent clearance and release qualification remain open.
+
+The first corrective pass passes 386 adopter tests. Independent rereview
+passes 27 boundary tests and closes all four original supported findings.
+It reproduces one remaining P1: if the first rollback unlink fails after
+a tentative ready write, transaction bytes and that ready state can remain;
+guardian exit then makes a copied transaction commit-admissible despite failed
+publication. Readiness must require an actual successful protocol outcome,
+not infer it from custodian death. Correct this in the existing owners and
+retain the real failing copied-create control and mixed rollback failures.
+Review: /private/tmp/odylith-bounded-rereview-20261004/review.json,
+SHA-256 9cf1752c1493cfe198e1b789760eb12c1d0514824be8356fda3b56967ed9ce25.
+
+The moved runtime flow passes 376 targeted checks but fails four independent
+supported-operation controls. A copied sealed transaction and compiler receipt
+can be committed after abort because cleanup removes the only repository-owned
+deny marker. Marker release can cross the deadline and still acknowledge
+completion. A numeric process-group snapshot can outlive its original identity
+across the TERM/KILL grace. An ordinary same-group background grandchild can
+survive successful cleanup after its leader exits. Preserve the failing
+controls and correct these boundaries in the existing pending and process
+owners before another freeze or installed run. Evidence lives under
+/private/tmp/odylith-bounded-independent-20261004/.
+
+Deliberately killing the independent guardian from another process also leaves
+native blocked work unbounded. Adjudicate this separately against the declared
+environment: the operator excludes arbitrary hostile external mutation and
+hardware failure. Check for a supported internal route to the same state;
+do not add a watchdog hierarchy or silently claim resilience beyond proof.
+
+## Detached public bridge review (2026-10-04)
+
+The corrected canonical validator and genuine record-count callers pass 71
+bounded checks. Independent rereview passes 89 tests and all 22 independent
+controls, including the original four coherently rebound malformed proofs.
+No actionable P0/P1/P2 remains in that bounded bridge. Original red evidence
+is retained; actual public semantics and consumer timing stay unqualified.
+Review: /private/tmp/odylith-greenfield-public-qualification-independent-rereview-20261004.md,
+SHA-256 e827e022d2131a4edf3c07a99a270e42908471fb8d7cc7a710a0c9ca0e99ab1d.
+
+The bridge passes 316 targeted checks, including 39 new controls, but remains
+unqualified. Independent review passes 292 checks and reproduces malformed
+unavailable-provider evidence acceptance after coherent hash rebinding:
+string values for `write_audit_active` and `staged_transaction_present`, an
+object for `write_attempts`, and boolean `returncode` can pass the canonical
+validator through Python truthiness. This is a P2 evidence validation defect;
+it is not actual consumer semantic failure. Correct exact shapes in the
+existing canonical validator, retain the original failing control and require
+independent rereview before the final freeze. Invalid measured timing
+decisions and missing semantic/four-lens evidence continue to refuse.
+
+## Consumer deadline ownership gap (2026-10-04)
+
+Independent source inspection finds a second timing gap: the installed host
+instructions run separate CLI and inference passes without one product-owned
+parent deadline. The release runner has a monotonic 660-second diagnostic
+budget, but checks synchronous retention and observer callbacks only after
+return. Local CLI receipts authenticate source meaning without timing
+provenance; `propose` starts a new local clock. Neither route establishes a
+complete consumer deadline. Evidence:
+/private/tmp/odylith-whole-flow-custody-design-20261004.md.
+
+Move existing four-pass orchestration, deadline and process supervision into
+one supported product route and make release callers adopt that same owner.
+Bound blocked callbacks and descendants with a declared cancellation grace;
+preserve the existing semantic phases, model budgets and sealed transaction
+laws. Manual file-based commands remain valid source-custody interfaces and
+cannot acquire bounded-route credit from caller-authored timing. Keep 660
+diagnostic and unqualified until fresh fixed public observations and an
+authenticated decision support a finite release bound. Require real deadline,
+child-cleanup, clarification-stop and EDIT-seal controls before release proof.
+
+The parent also needs a pending-seal boundary: existing `propose` stages before
+retention and observer return. A parent timeout must not leave a newly staged
+seal confirmable. Quarantine only newly staged, journey-owned pending bytes
+before exposure; release them only after bounded completion. Preserve old EDIT
+and preexisting equal-hash seals, exact sealed transaction bytes and recovery
+journals. This is deterministic pending-state custody, not another semantic
+gate or a change to chat authorization.
+
+## Frozen regression boundary correction (2026-10-04)
+
+All eight diagnosed test-contract failures are corrected. The four affected
+test files pass 81 checks and actual R1 ledger, relation and source-duty custody
+families pass 114 more. The patch adds nine test lines; product acceptance,
+published floors and memory source remain unchanged. The hygiene guard pins
+the already approved B-133 1588-line exception exactly. Original failed
+diagnostic evidence remains retained, and a fresh complete freeze is required.
+Handoff: /private/tmp/odylith-freeze-test-boundary-corrections-20261004/handoff.json,
+SHA-256 d429e8ae577a3b519e727bb7437fd0aacc913e6ec4133da7be8f8e44f903dc77.
+
+## Public detached qualification bridge missing (2026-10-04)
+
+Read-only invocation audit finds R2's public scorer reachable through its API
+but not the immutable onboarding finalizer. A saved public result retains
+`semantic_release=not_requested`; the finalizer requires embedded passing
+semantics, so independent public audit cannot qualify it without an impermissible
+base rewrite or replay. The complete model-profile owner also deliberately
+refuses a finite whole-journey claim until public measurements support one.
+These are release qualification gaps, not demonstrated consumer semantic
+failures. Audit: /private/tmp/odylith-v20-public-qualification-invocation-20261004.md.
+
+Adopt the exact seven-ref public audit through the existing detached finalizer,
+authenticated against immutable base/output/manifest and unchanged floors.
+The existing profile owner must validate separately retained, fixed-public
+complete timing evidence and a bounded decision before granting timing credit.
+All unrelated browser, recovery, corpus, statistics, profile, retention and
+independent-lens gates remain required. Never relabel diagnostic observations,
+overwrite base results, replay generation to attach review, or enter protected
+scoring for public evidence. Product timing custody remains separately open.
+
+The exact frozen runtime/install/browser diagnostic executes 8,301 tests:
+8,293 pass and eight fail. One assertion expects a superseded refusal message,
+one guard lacks B-133's documented bounded 12-line allowance, and six isolated
+statistics/identity fixtures omit the newly canonical relation ledger boundary.
+Retain all failures; repair those test contracts without weakening real custody
+or floors. Receipt:
+/private/tmp/odylith-greenfield-release-freeze-v20-corrected-20261004/diagnostic-receipt.json.
+
+## Source-predicate evaluator correction independently verified (2026-10-04)
+
+The bounded R2 correction now refuses both original P1 controls: canonical
+custody prevents accepted facts being relabeled as assumptions, and compiled
+evidence cannot receive clarification-only credit. Genuine advisory and
+material assumptions remain accepted. Independent review also exposed a P2
+malformed material-row crash; the corrected actual loader returns incomplete,
+unscored evidence with zero samples and an explicit issue, without omitting it.
+Final independent verification passes 11 focused controls with no actionable
+P0/P1/P2. The unchanged civic reverse universe remains 219 entries, including
+212 accepted facts, four assumptions and three ambiguities. Review:
+/private/tmp/odylith-greenfield-r2-independent-rereview-20261004.md,
+SHA-256 2ebc3a1d8218449e0c8f3b8a7c8a70cca32146abe5f5376e0a9299aeadbf8efe.
+The initial failed review and all three red artifacts remain retained. Full
+frozen regression, actual independent public semantic audit and release
+qualification remain open.
+
+Independent review of the fixed initial R2 handoff passes 223 existing checks
+but reproduces two P1 fail-open controls. Relabeling an accepted fact as an
+assumption, then recomputing its audit, hides the source-support obligation.
+Separately, an exact clarification accompanied by a valid compiled snapshot
+receives passing clarification credit. Neither demonstrates an actual consumer
+write; both permit false release evidence. Retain the original failed review
+/private/tmp/odylith-greenfield-r2-independent-review-20261004.md,
+SHA-256 39dbe91d8ac4c6de0caf46a1e136096b8ab24123499e40c6b3f920d8929f163e,
+and its two red controls. Require canonical custody to govern reverse labels,
+preserve genuine advisory/material assumptions, and refuse compiled evidence
+on the clarification outcome before re-review. Matching outer hashes do not
+repair either semantic contract.
+
+R2 preserves native/protected rules and the original 40-case/425-ID public
+source predeclaration while adding an explicit disclosed-public audit mode to
+the existing evaluator. Source-only expectations and independently reviewed
+observed forward/reverse support remain separate. Authentic civic custody and
+its 219-entry complete reverse universe pass structural checks; source census
+five actors and sealed representation six remain distinct. A real case phase
+owns moved scoring, reducing the parent 1231 to 1020 lines. The settled slice
+passes 375 initial tests, followed by 391 correction checks and 133 final
+material-shape checks. Actual fresh semantic adjudication remains open;
+synthetic unit audits are not real
+reviewer evidence and no semantic fidelity or release pass is claimed.
+
+Exact handoff: /private/tmp/odylith-greenfield-r2-evaluation-owner-handoff-20261004.json,
+SHA-256 eaf05aca623e55f10387b053aaa96d66174e661438ddb2736dda8aacda6cf219.
+No protected input, source expectation or original failed mechanism was changed.
+
+## Full lifecycle readback correction verified (2026-10-04)
+
+The corrected R1 slice reuses one passive lifecycle projector and one shared
+design-binding validator in admission and release readback. The unchanged civic
+package passes with 13 events, 12 contexts, five responsibilities, 89 witnesses,
+six state fields and one off-path transition. All six original rehashed bypasses
+and coordinated binding/lifecycle owner corruption now fail. Independent
+rereview reports no actionable P0/P1/P2 and independently passes 259 checks in
+2.35 seconds. Four runtime/release owners remove 97 lines relative to HEAD.
+
+Proof: `/private/tmp/odylith-greenfield-r1-independent-rereview-20261004.md`,
+SHA-256 628f1eeb1dcc89e26daa232ac50c9dcb965f7bdac884e57d44529785f33ae429.
+Keep the original red evidence below. This closes the bounded lifecycle
+readback defect; independent semantic-predicate coverage, annotation ontology,
+source-versus-representation counting and complete release qualification remain
+open. No protected holdout or frozen evidence was changed.
+
+## Rehashed lifecycle corruption escapes partial readback (2026-10-04)
+
+Independent R1 review reproduces a P1 in release readback, while consumer
+admission remains protected. The initial canonical-reader correction passes
+230 focused tests and unchanged civic custody, but only validates three design
+duty families. Six detached civic mutations still pass after recomputing outer
+hashes: an invalid lifecycle version, replaced state meaning or source quote,
+changed off-path effect, nonexistent off-path owner, and invalid boundary
+citation occurrence. A matching checksum does not establish valid custody.
+
+Retain the failed review and exact red variants:
+`/private/tmp/odylith-greenfield-r1-independent-review-20261004.md` and
+`/private/tmp/odylith-greenfield-r1-lifecycle-red-20261004/red-result.json`.
+No frozen output, source, receipt or seal was changed. No release semantic
+qualification is claimed and the protected holdout remains unopened.
+
+Reuse the existing source-duty design-binding owner in full admission and full
+lifecycle readback. Rederive passive lifecycle with its current projector,
+validate exact source citations, and compare every field and version. Do not
+add a parallel lifecycle interpretation, model, schema, guessed raw candidate
+or permissive hash-only check. Require all six rehashed controls to fail and
+the original accepted package/admission to pass before independent rereview.
+
+## Current source-duty custody is rejected by an older scorer (2026-10-04)
+
+Read-only checks of unchanged civic v19 pass current canonical v18 relation
+validation (13 events, 12 contexts, five responsibilities), receipt v7, the
+source-duty-inclusive digest and all 89 exact atomic witnesses. Moved local
+support coordinates, first-run pollution and swapped actors fail. The release
+scorer still rejects source_duty as an extra field, omits it from its digest,
+equates normalized actions with their whole source witness, and checks every
+supporting event against first_path. This is verified evaluator drift; retain
+its failures without modifying actual evidence or treating it as semantic loss.
+
+The existing canonical readers and receipt/atomic validators own the correction.
+Keep source witness, normalized role and full projected-value hashes separate;
+retain exact source bytes, actor identity, role-local coordinates, disjoint
+first-run selection and accepted-duty binding. No new semantic phase, parser,
+fallback or scoring framework. Source-only semantic predicates and producer
+bookkeeping counts are different; preserve every frozen expected obligation,
+reverse-check invention and report those independent qualification issues.
+Pure external projection binding alone cannot make the old scorer compatible.
+Evidence:
+`/private/tmp/odylith-greenfield-release-custody-contract-diagnosis-20261004/REPORT.md`
+and the source-first public scoring feasibility report. No score or release
+qualification is claimed. The protected holdout remains unopened.
+
+The Q1 test transport also exposed a one-megabyte automatically generated
+parameter name. Native pytest argument files complete the exact frozen suite;
+four readable explicit IDs then repair canonical shard invocation without
+changing the parameter values or test body. The focused file passes 70 checks.
+
 ## Public campaign clarification false failure (2026-09-29)
 
 The fixed 40-case installed public campaign stopped on its first expected

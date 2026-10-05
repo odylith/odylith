@@ -9,6 +9,7 @@ from odylith.runtime.context_engine import execution_engine_handshake
 from odylith.runtime.context_engine import governance_signal_codec
 from odylith.runtime.context_engine import packet_quality_codec
 from odylith.runtime.context_engine import path_bundle_codec
+from odylith.runtime.governance import backlog_assessment
 from odylith.runtime.governance import proof_state as proof_state_runtime
 
 _BENCHMARK_RUNNER_REVIEWER_GUIDE = "docs/benchmarks/REVIEWER_GUIDE.md"
@@ -909,12 +910,15 @@ def _trim_route_ready_hot_path_prompt_payload(
     return trimmed
 
 def _compact_workstream_metadata_for_packet(metadata: Mapping[str, Any]) -> dict[str, Any]:
-    keep = ("priority", "ordering_score", "date", "promoted_to_plan")
-    return {
+    keep = ("priority", "ordering_score", "date", "promoted_to_plan", "assessment_status", "assessment_provenance")
+    compact = {
         field: str(metadata.get(field, "")).strip()
         for field in keep
         if str(metadata.get(field, "")).strip()
     }
+    if "ordering_score" in metadata and metadata["ordering_score"] in (None, backlog_assessment.UNASSESSED):
+        compact["ordering_score"] = None
+    return compact
 
 def _compact_workstream_evidence_for_packet(evidence: Mapping[str, Any]) -> dict[str, Any]:
     keep_scalar = (
@@ -950,6 +954,7 @@ def _compact_workstream_row_for_packet(row: Mapping[str, Any]) -> dict[str, Any]
         "status": str(row.get("status", "")).strip(),
         "rank": int(row.get("rank", 0) or 0),
     }
+    compact.update(context_engine_store.tooling_memory_contracts._compact_memory_record(row))
     metadata = row.get("metadata", {})
     if isinstance(metadata, Mapping):
         compact["metadata"] = _compact_workstream_metadata_for_packet(metadata)
@@ -962,6 +967,7 @@ def _compact_workstream_reference_for_packet(row: Mapping[str, Any]) -> dict[str
     return {
         key: value
         for key, value in {
+            **context_engine_store.tooling_memory_contracts._compact_memory_record(row),
             "entity_id": str(row.get("entity_id", "")).strip(),
             "title": str(row.get("title", "")).strip(),
             "status": str(row.get("status", "")).strip(),

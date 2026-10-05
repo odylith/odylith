@@ -21,6 +21,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_radar_ordering impo
     authored_ordering_decision,
     render_authored_ordering_rationale,
 )
+from odylith.runtime.governance.backlog_assessment import UNASSESSED_BACKLOG_METADATA
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_repository_lock
@@ -159,9 +160,7 @@ def _backlog_section_overrides(proposal: Mapping[str, Any]) -> dict[str, dict[st
             "success_metrics": success_metrics,
             "domain_risk": "",
             "security_posture": "",
-            "priority": str(row.get("priority", "P1")).strip() or "P1",
-            "sizing": str(row.get("sizing", "M")).strip() or "M",
-            "complexity": str(row.get("complexity", "Medium")).strip() or "Medium",
+            **{field: row[field] for field in UNASSESSED_BACKLOG_METADATA},
             "impacted_parts": _authored_impacted_parts(row, proposal),
             "ordering_rationale": ordering_decision["ranking_basis"],
             "rationale_lines": render_authored_ordering_rationale(ordering_decision),
@@ -229,16 +228,9 @@ def _backlog_apply_args(proposal: Mapping[str, Any], *, release_selector: str) -
         success_metrics="\n".join(f"- {item}" for item in row_text_tuple(first, "success_metrics")),
         domain_risk="",
         security_posture="",
-        priority=str(first.get("priority", "P1")).strip() or "P1",
-        commercial_value=3,
-        product_impact=4,
-        market_value=3,
+        **{field: first[field] for field in UNASSESSED_BACKLOG_METADATA},
         impacted_parts=_authored_impacted_parts(first, proposal),
-        sizing=str(first.get("sizing", "M")).strip() or "M",
-        complexity=str(first.get("complexity", "Medium")).strip() or "Medium",
-        ordering_score=None,
         ordering_rationale=ordering_decision["ranking_basis"],
-        confidence="medium",
         founder_override=False,
         override_note="",
         override_review_date="",

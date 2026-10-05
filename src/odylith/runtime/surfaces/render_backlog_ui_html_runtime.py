@@ -8,6 +8,7 @@ from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
 from odylith.runtime.surfaces import execution_wave_ui_runtime_primitives
 from odylith.runtime.surfaces import backlog_selection_ui
+from odylith.runtime.surfaces import backlog_render_support
 from odylith.runtime.surfaces import governance_frame_bridge
 
 
@@ -1188,6 +1189,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
     function prettyLabel(value) {
       const token = String(value || "").trim();
       if (!token) return "-";
+      if (token === "unassessed") return "Not assessed";
       if (token.includes("-")) return token;
       return token.charAt(0).toUpperCase() + token.slice(1);
     }
@@ -1235,7 +1237,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
       });
     }
 
-    seedSelect(el.priority, uniqueValues("priority"));
+    seedSelect(el.priority, uniqueValues("priority"), assessmentLabel);
     seedSelect(
       el.release,
       releaseCatalog()
@@ -1951,6 +1953,8 @@ def _render_html(*, payload: dict[str, object]) -> str:
       return Number.isFinite(direct) ? direct : 0;
     }
 
+    __ODYLITH_RADAR_ASSESSMENT_RUNTIME__
+
     function sortRows(rows) {
       const sectionOrder = { execution: 0, parked: 1, active: 2, finished: 3 };
       const executionStatusOrder = { implementation: 0, planning: 1 };
@@ -1998,12 +2002,15 @@ def _render_html(*, payload: dict[str, object]) -> str:
           const rankDelta = scopeSignalRank(b) - scopeSignalRank(a);
           if (rankDelta !== 0) return rankDelta;
         } else if (a.section !== "finished" && state.sort === "score") {
-          if (b.ordering_score !== a.ordering_score) return b.ordering_score - a.ordering_score;
+          const scoreDelta = compareAssessmentNumbers(a.ordering_score, b.ordering_score, true);
+          if (scoreDelta !== 0) return scoreDelta;
         } else if (a.section !== "finished" && state.sort === "date") {
           const dateCmp = String(b.date).localeCompare(String(a.date));
           if (dateCmp !== 0) return dateCmp;
         }
-        if (a.rank_num !== b.rank_num) return a.rank_num - b.rank_num;
+        const rankDelta = compareAssessmentNumbers(a.rank_num, b.rank_num);
+        if (rankDelta !== 0) return rankDelta;
+        if (a.assessment_status === "unassessed" && b.assessment_status === "unassessed") return 0;
         return String(a.idea_id).localeCompare(String(b.idea_id));
       });
       return copy;
@@ -2094,7 +2101,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
       if (section === "parked") {
         return { label: "Parked", chipClassName: "rank-chip-parked", kpiClassName: "kpi-section-parked" };
       }
-      return { label: `Rank #${row.rank}`, chipClassName: "rank-chip-active", kpiClassName: "kpi-section-active" };
+      return { label: row.assessment_status === "unassessed" || assessmentNumber(row.rank) === null ? "Not assessed" : `Rank #${row.rank}`, chipClassName: "rank-chip-active", kpiClassName: "kpi-section-active" };
     }
 
     function rowHtml(row) {
@@ -3028,9 +3035,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
 
     function renderDetail(selected) {
       const sectionBadge = sectionBadgeInfo(selected);
-      const rankingClass = selected.founder_override === "yes" ? "founder-override" : "score-ordered";
-      const rankingText = selected.founder_override === "yes" ? "Priority Override" : "Score Ordered";
-      const scoreWidth = Math.max(3, Math.min(100, selected.ordering_score));
+      const assessment = assessmentView(selected);
       const statusClass = statusChipClass(selected.status);
       const stageDisplay = executionStageLabel(selected.status);
       const executionState = String(selected.execution_state || "").trim().toLowerCase();
@@ -3136,28 +3141,29 @@ def _render_html(*, payload: dict[str, object]) -> str:
           <div class="kpis">
             <div class="kpi" data-kpi="workstream-id"><div class="k">Workstream ID</div><div class="v">${escapeHtml(selected.idea_id)}</div></div>
             <div class="kpi kpi-section ${escapeHtml(sectionBadge.kpiClassName)}" data-kpi="workstream-placement"><div class="k">Placement</div><div class="v">${escapeHtml(sectionBadge.label)}</div></div>
-            <div class="kpi"><div class="k">Ordering Score</div><div class="v">${escapeHtml(selected.ordering_score)}</div></div>
+            <div class="kpi"><div class="k">Ordering Score</div><div class="v">${escapeHtml(assessment.score)}</div></div>
             <div class="kpi"><div class="k">Created Date</div><div class="v">${escapeHtml(selected.idea_date_display || selected.idea_date || "-")}</div></div>
             <div class="kpi"><div class="k">Age (days)</div><div class="v">${escapeHtml(selected.idea_age_days || "-")}</div></div>
             <div class="kpi"><div class="k">Execution Start</div><div class="v">${escapeHtml(selected.execution_start_date_display || selected.execution_start_date || "-")}</div></div>
             <div class="kpi"><div class="k">Execution End</div><div class="v">${escapeHtml(selected.execution_end_date_display || selected.execution_end_date || "-")}</div></div>
             <div class="kpi"><div class="k">Execution Days</div><div class="v">${escapeHtml(selected.execution_duration_days || selected.execution_age_days || "-")}</div></div>
             <div class="kpi"><div class="k">Live Signal At</div><div class="v v-compact" title="${escapeHtml(executionSignalAt || "-")}">${escapeHtml(executionSignalLabel)}</div></div>
-            <div class="kpi"><div class="k">Confidence</div><div class="v">${escapeHtml(selected.confidence || "-")}</div></div>
+            <div class="kpi"><div class="k">Confidence</div><div class="v">${escapeHtml(assessment.confidence)}</div></div>
           </div>
           <div class="chips">
-            <span class="chip chip-priority">${escapeHtml(selected.priority)}</span>
+            <span class="chip chip-priority">${escapeHtml(assessment.priority)}</span>
             <span class="chip ${statusClass}">${escapeHtml(stageDisplay)}</span>
             ${executionSignalChip}
             ${activeReleaseLabel ? `<span class="chip">${escapeHtml(activeReleaseLabel)}</span>` : ""}
-            <span class="chip chip-sizing">${escapeHtml(selected.sizing)} / ${escapeHtml(selected.complexity)}</span>
-            <span class="chip ${rankingClass}">${rankingText}</span>
+            <span class="chip chip-sizing">${escapeHtml(assessment.sizing)}</span>
+            <span class="chip ${assessment.rankingClass}">${assessment.rankingText}</span>
           </div>
           <div class="meter">
             <div class="meter-head">
-              <span>Score Signal</span><strong>${escapeHtml(selected.ordering_score)}</strong>
+              <span>Score Signal</span><strong>${escapeHtml(assessment.score)}</strong>
             </div>
-            <div class="bar"><div class="fill" style="width: ${scoreWidth}%"></div></div>
+            ${assessment.meter}
+            ${assessment.provenance ? `<p class="assessment-provenance">${escapeHtml(assessment.provenance)}</p>` : ""}
           </div>
         </header>
 
@@ -4091,5 +4097,6 @@ def _render_html(*, payload: dict[str, object]) -> str:
         .replace("__ODYLITH_RADAR_TOOLTIP_SURFACE__", tooltip_surface_css)
         .replace("__ODYLITH_RADAR_QUICK_TOOLTIP_RUNTIME__", tooltip_runtime_js)
         .replace("__STANDALONE_PAGES_HREF__", "standalone-pages.v1.js")
+        .replace("__ODYLITH_RADAR_ASSESSMENT_RUNTIME__", backlog_render_support.assessment_runtime_js())
         .replace("__DATA__", data_blob)
     )

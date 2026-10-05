@@ -1,8 +1,90 @@
 # Domain Intelligence
-Last updated: 2026-10-03
+Last updated: 2026-10-04
 
 
 ## Overview
+
+### Product-owned bounded preparation (2026-10-04)
+
+`odylith greenfield prepare` owns the existing four inference passes and returns
+one sealed preview or one material question. The shared runtime owners are
+`greenfield_host_flow.py`, `greenfield_host_source_phase.py`,
+`greenfield_host_transport.py`, `greenfield_process.py` and
+`greenfield_whole_journey_budget.py`; release callers adopt them directly.
+The source phase and trusted transport have separate responsibilities, without
+a second interpretation path or compatibility wrapper.
+
+An independently spawned guardian covers contract acquisition, host calls,
+deterministic checks, retention, descendant cleanup and observer return.
+Guardian settlement and completion-record I/O precede the final monotonic
+certification. Both the 315-second proposal allowance and the 660-second
+diagnostic whole deadline must pass before the guardian releases a private
+completion nonce. Canonical quarantine holds its digest; bounded confirmation
+requires the matching delivered completion receipt, including direct create
+with a copied transaction file. Stored completion state or custodian death
+alone cannot grant permission. Failed preparation never releases its nonce,
+even when rollback I/O fails. Cancellation has a declared two-second grace.
+Old EDIT seals and preexisting equal-hash transactions keep their own receipts.
+Sealed transaction bytes, source receipts and commit-only confirmation laws
+are unchanged.
+
+The existing source inventory, source-only verifier and gate/candidate passes
+retain their 300/120/300-second maxima and 15-second completion reserve. Phase
+maxima cannot extend the single parent deadline. Manual file-based commands
+retain local source custody but cannot claim complete bounded-route proof.
+The currently supported inference transport is direct Codex/Astra; both
+orchestration hosts can invoke the same product command. Native Claude inference
+and native chat confirmation are not established by that shared command.
+Current deterministic controls do not qualify actual installed consumer timing
+or public semantics. CB-347/B-142 retain those release proof obligations.
+Independent review of the initial moved owner found three P1 findings in
+copied-after-abort custody, late release and ordinary same-group child cleanup,
+plus one P2 in identity revalidation across cancellation grace. Independent
+rereview closed those four findings; failed completion rollback then falsified
+readiness based on custodian death and a revocable positive record. The delivered
+receipt correction is independently CLEAR: 14 focused controls and the exact
+bootstrap control pass on fixed owner hashes. Ordinary failed cleanup cannot
+substitute for the delivered receipt. This proves the final completion seam;
+installed, changed-hash full EDIT and release qualification remain open.
+Review: /private/tmp/odylith-nonce-independent-final-review-20261004.md,
+SHA-256 ea0244a8b310430608f136ba63357971a93c6af968390bbad9bd652336c7e652.
+Deliberate external termination of
+the guardian is outside the declared environment; no supported internal crash
+trigger was established by that review. Final decode, rendering and printing
+remain outside measured preparation; completion-receipt delivery shares that
+explicit scope. Sealed preview generation and completion-record I/O are inside.
+After successful certification, a delivery error is an explicit environment or
+uncertain outcome; it cannot revoke acceptance or be reported as cancellation.
+Lost receipt delivery cannot be recovered by reissuing a nonce from stored state.
+
+### Shared source-duty lifecycle custody in release readback (2026-10-04)
+
+Raw candidate admission and release readback share the existing passive
+design-binding validator and lifecycle projector. Readback verifies the accepted
+receipt, exact source and ledger hashes, closed binding and complete canonical
+lifecycle equality, including state meanings, transition effects, ownership and
+source citations. Normalized role values, source witnesses and whole destination
+hashes retain their distinct meanings. Candidate-only citation, actor, coverage,
+first-run and terminal checks remain in admission; omitted raw records are not
+invented during readback. Independent R1 rereview passes the immutable civic
+baseline, rejects six original rehashed bypasses and coordinated owner damage,
+and passes 259 checks with no actionable P0/P1/P2. This proves structural custody;
+independent semantic coverage and full installed release qualification remain
+open under CB-347/B-142.
+
+### Projection authority after source admission (2026-10-04)
+
+Project known facts use the existing verified source-duty boundary reader for
+kind=scope rules, retaining exact statements and citations. Advisory ambiguity
+strings have no automatic value-to-source join and are not promoted into known
+facts or open assumptions. Genuine proposed assumptions retain their separate
+authority. Greenfield workstreams receive the shared Radar unassessed policy;
+the design does not supply invented value, effort, priority or confidence.
+Dependency rationale stays separate from a numeric assessment. These are
+deterministic projection changes, with no candidate/ledger schema or semantic
+stage change. Fresh v19 independently preserves core civic meaning but fails
+three consumer projection quality findings. The corrected source passes scoped
+characterizations; fresh installed public and complete release proof stay open.
 
 ### Verified duty ownership and keyed judgments (2026-10-03)
 

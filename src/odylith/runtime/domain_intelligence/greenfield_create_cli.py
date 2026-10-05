@@ -16,6 +16,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--repo-root", default=".")
     parser.add_argument("--transaction-file", default="")
     parser.add_argument("--transaction-hash", default="")
+    parser.add_argument("--completion-receipt", default="", help="Delivered bounded-journey receipt; required for bounded prepare packages.")
     parser.add_argument("--confirm", action="store_true")
     parser.add_argument("--json", action="store_true", dest="as_json")
     parser.add_argument("--prompt", default="", help=argparse.SUPPRESS)
@@ -38,7 +39,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     overrides = _create_input_overrides(args, unknown)
     if overrides:
         return _error(
-            "greenfield create accepts only --transaction-file, --transaction-hash, and --confirm; unexpected options: "
+            "greenfield create accepts only --transaction-file, --transaction-hash, --completion-receipt, and --confirm; unexpected options: "
             + ", ".join(overrides)
             + ". Use EDIT to add evidence and rebuild the ProductCreateTransaction; create only verifies the hash and commits the compiled package.",
             as_json=args.as_json,
@@ -66,6 +67,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             transaction_file=path,
             transaction_hash=args.transaction_hash,
             confirm=True,
+            completion_receipt=args.completion_receipt or None,
         )
     except (ValueError, RuntimeError, OSError, json.JSONDecodeError) as error:
         return _error(str(error), as_json=args.as_json, error=error)

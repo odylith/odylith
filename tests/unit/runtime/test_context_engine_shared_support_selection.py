@@ -226,7 +226,14 @@ def test_memory_confirmation_retains_the_current_ownership_boundary(projection, 
 
     selection = store._workstream_selection(
         connection=connection, candidates=candidates,
-        judgment_hint={"workstream_id": "B-101", "confidence": "high"},
+        judgment_hint={
+            "workstream_id": "B-101", "confidence": "high", "memory_admission": "current_source_confirmed",
+            "memory_record": {
+                "version": "memory_record.v1", "role": "current_truth", "validity": "current",
+                "source_ref": "odylith/radar/source/ideas/B-101.md", "source_fingerprint": "a" * 64,
+                "provenance": {"version": "v1", "repo_root": ".", "projection_fingerprint": "b" * 64, "projection_scope": "reasoning", "code_version": "c" * 64, "sync_generation": 0, "flags": {}},
+            },
+        },
     )
 
     if shared:

@@ -20,7 +20,7 @@ from urllib import error as urllib_error
 from odylith.install.release_assets import fetch_release
 from odylith.install.state import AUTHORITATIVE_RELEASE_REPO
 from greenfield_matrix_write_audit import begin_installed_write_audit
-from greenfield_process import run_command_with_group_timeout
+from odylith.runtime.domain_intelligence.greenfield_process import run_command_with_group_timeout
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 _TEMP_ROOT_CLEANUP_RETRY_COUNT = 5
@@ -32,12 +32,12 @@ _COMMAND_TIMEOUT_SECONDS = 300
 _CANDIDATE_CONTRACT_SMOKE_PROMPT = (
     "Create a project governance package for a first-time user."
 )
-_EXPECTED_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v33"
-_EXPECTED_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v18"
+_EXPECTED_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v47"
+_EXPECTED_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v21"
 
 
 def _has_current_host_candidate_schema(candidate_schema: object) -> bool:
-    """Require one complete host-owned candidate with no later semantic owner."""
+    """Require ledger-owned action meaning and one candidate with no later semantic owner."""
 
     try:
         serialized = json.dumps(candidate_schema, sort_keys=True)
@@ -65,18 +65,60 @@ def _has_current_host_candidate_schema(candidate_schema: object) -> bool:
         constraint = authored["properties"]["facts"]["properties"][
             "operational_constraints"
         ]["items"]
-    except (AssertionError, KeyError, IndexError, TypeError):
+        event = authored_properties["events"]["items"]
+        binding = authored_properties["source_duty_binding"]
+        binding_fields = {
+            "version", "source_sha256", "ledger_sha256", "first_path_actions",
+            "supporting_human_actions", "system_duties", "off_path_transitions",
+            "conditional_guards", "boundaries", "proof_duties",
+        }
+        if (binding.get("type") != "object" or binding.get("additionalProperties") is not False
+                or set(binding.get("required") or ()) != binding_fields
+                or set(binding.get("properties") or {}) != binding_fields
+                or binding["properties"]["version"].get("const")
+                != "odylith.greenfield.source-duty-binding.v3"):
+            return False
+        for role, fields in (
+            ("first_path_actions", {"duty_id", "event_order"}),
+            ("supporting_human_actions", {"duty_id", "event_order"}),
+            ("system_duties", {"duty_id", "event_order"}),
+            ("off_path_transitions", {"duty_id", "component_key", "workstream_key", "effects"}),
+            ("conditional_guards", {"duty_id", "component_key", "workstream_key"}),
+            ("boundaries", {"duty_id", "component_key", "workstream_key"}),
+            ("proof_duties", {"duty_id", "component_key", "workstream_key"}),
+        ):
+            rows = binding["properties"][role]
+            item = rows["items"]
+            if (rows.get("type") != "array" or item.get("type") != "object"
+                    or item.get("additionalProperties") is not False
+                    or set(item.get("required") or ()) != fields
+                    or set(item.get("properties") or {}) != fields):
+                return False
+        return bool(
+            isinstance(constraint, dict)
+            and "components" in authored_properties
+            and {"components", "events", "source_duty_binding"}
+            <= set(authored.get("required") or ())
+            and constraint.get("type") == "object"
+            and constraint.get("additionalProperties") is False
+            and set(constraint.get("required") or ()) == {"quote", "context"}
+            and set(constraint.get("properties") or {}) == {"quote", "context"}
+            and "constraint_custody" not in constraint
+            and all(
+                constraint["properties"][field].get("type") == "string"
+                for field in ("quote", "context")
+            )
+            and event.get("type") == "object"
+            and event.get("additionalProperties") is False
+            and set(event.get("required") or ()) == {"actor_fact"}
+            and set(event.get("properties") or {}) == {"actor_fact"}
+            and all(
+                binding["properties"][field] == {"type": "string", "minLength": 64, "maxLength": 64}
+                for field in ("source_sha256", "ledger_sha256")
+            )
+        )
+    except (AssertionError, AttributeError, KeyError, IndexError, TypeError):
         return False
-    return bool(
-        isinstance(constraint, dict)
-        and "components" in authored_properties
-        and "components" in set(authored.get("required") or ())
-        and constraint.get("type") == "object"
-        and constraint.get("additionalProperties") is False
-        and set(constraint.get("required") or ()) == {"quote", "context"}
-        and set(constraint.get("properties") or {}) == {"quote", "context"}
-        and "constraint_custody" not in constraint
-    )
 
 
 def _run(*, cwd: Path, env: dict[str, str], command: list[str]) -> subprocess.CompletedProcess[str]:
@@ -306,7 +348,7 @@ _OBSOLETE_GREENFIELD_COMMAND_RAIL_TOKENS = (
     "## choose one command",
 )
 _GREENFIELD_PROPOSAL_FIRST_GUIDANCE_CONCEPTS = (
-    ("proposal command", ("greenfield propose",)),
+    ("proposal command", ("greenfield prepare", "greenfield propose")),
     ("sealed transaction", ("ProductCreateTransaction",)),
     ("read-only public proposal", ("read-only", "read only")),
     ("unavailable public confirmation interface", ("no qualified confirmation interface",)),
@@ -346,6 +388,7 @@ _GREENFIELD_PROPOSAL_FIRST_GUIDANCE_CONCEPTS = (
             "schema retries",
             "narrate retries",
             "narrate internal schema failures",
+            "narrate schema failures",
         ),
     ),
 )

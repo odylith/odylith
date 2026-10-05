@@ -1,11 +1,15 @@
 # Bug Index
 
-Last updated (UTC): 2026-10-04
+Last updated (UTC): 2026-10-05
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-355 | 2026-10-04 | Historical judgment hints raise confidence without current evidence | P2 | odylith-context-engine | FixedPendingRelease | [2026-10-04-historical-judgment-hints-raise-confidence-without-current-evidence.md](2026-10-04-historical-judgment-hints-raise-confidence-without-current-evidence.md) |
+| CB-354 | 2026-10-04 | Greenfield capability inventory describes retired confirmation behavior | P2 | domain-intelligence | FixedPendingRelease | [2026-10-04-greenfield-capability-inventory-describes-retired-confirmation-behavior.md](2026-10-04-greenfield-capability-inventory-describes-retired-confirmation-behavior.md) |
+| CB-356 | 2026-10-04 | Context packet truncation reports zero budget limits from valid estimator metric | P2 | odylith-context-engine | FixedPendingRelease | [2026-10-04-context-packet-truncation-reports-zero-budget-limits-from-valid-estimator-metric.md](2026-10-04-context-packet-truncation-reports-zero-budget-limits-from-valid-estimator-metric.md) |
+| CB-357 | 2026-10-04 | Atlas single diagram update acknowledges unrelated catalog review debt | P1 | atlas | FixedPendingRelease | [2026-10-04-atlas-single-diagram-update-acknowledges-unrelated-catalog-review-debt.md](2026-10-04-atlas-single-diagram-update-acknowledges-unrelated-catalog-review-debt.md) |
 | CB-353 | 2026-10-02 | Greenfield release scorecard claims transactions compiled when cases failed befo | P2 | domain-intelligence-greenfield | Open | [2026-10-02-greenfield-release-scorecard-claims-transactions-compiled-when-cases-failed-befo.md](2026-10-02-greenfield-release-scorecard-claims-transactions-compiled-when-cases-failed-befo.md) |
 | CB-349 | 2026-09-30 | Queued compass refresh loses source local dependency environment | P2 | compass | Open | [2026-09-30-queued-compass-refresh-loses-source-local-dependency-environment.md](2026-09-30-queued-compass-refresh-loses-source-local-dependency-environment.md) |
 | CB-351 | 2026-09-30 | Greenfield unique source quote accepts fabricated context | P1 | domain-intelligence | FixedPendingRelease | [2026-09-30-greenfield-unique-source-quote-accepts-fabricated-context.md](2026-09-30-greenfield-unique-source-quote-accepts-fabricated-context.md) |

@@ -67,6 +67,7 @@ def refresh_owned_surface(*, repo_root: Path, surface: str) -> int:
 def refresh_owned_surfaces(
     *, repo_root: Path, surfaces: tuple[str, ...] | list[str],
     on_results: Callable[[Sequence[Mapping[str, Any]]], None] | None = None,
+    atlas_diagram_ids: Sequence[str] = (),
 ) -> int:
     from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime
     from odylith.runtime.governance import sync_workstream_artifacts
@@ -79,6 +80,7 @@ def refresh_owned_surfaces(
         surfaces=tuple(policy.surface for policy in policies),
         runtime_mode="auto",
         atlas_sync=any(policy.atlas_sync for policy in policies),
+        **({"atlas_diagram_ids": tuple(atlas_diagram_ids)} if atlas_diagram_ids else {}),
         **({"on_results": on_results} if on_results is not None else {}),
     )
 
@@ -86,6 +88,7 @@ def refresh_owned_surfaces(
 def raise_for_failed_refresh(
     *, repo_root: Path, surface: str, operation_label: str, detail: str = "", retry_command: tuple[str, ...] = (),
     on_results: Callable[[Sequence[Mapping[str, Any]]], None] | None = None,
+    atlas_diagram_ids: Sequence[str] = (),
 ) -> None:
     raise_for_failed_refreshes(
         repo_root=repo_root,
@@ -93,6 +96,7 @@ def raise_for_failed_refresh(
         operation_label=operation_label,
         detail=detail,
         retry_command=retry_command,
+        **({"atlas_diagram_ids": tuple(atlas_diagram_ids)} if atlas_diagram_ids else {}),
         **({"on_results": on_results} if on_results is not None else {}),
     )
 
@@ -105,10 +109,12 @@ def raise_for_failed_refreshes(
     detail: str = "",
     retry_command: tuple[str, ...] = (),
     on_results: Callable[[Sequence[Mapping[str, Any]]], None] | None = None,
+    atlas_diagram_ids: Sequence[str] = (),
 ) -> None:
     policies = _policies_for_surfaces(surfaces)
     refresh_rc, refresh_output = _run_owned_surface_refresh_captured(
         repo_root=repo_root, policies=policies,
+        **({"atlas_diagram_ids": tuple(atlas_diagram_ids)} if atlas_diagram_ids else {}),
         **({"on_results": on_results} if on_results is not None else {}),
     )
     if refresh_rc == 0:
@@ -117,8 +123,17 @@ def raise_for_failed_refreshes(
     suffix = f" {detail.strip()}" if str(detail).strip() else ""
     output_suffix = f" Refresh output: {refresh_detail}" if refresh_detail else ""
     surface_names = ", ".join(policy.surface for policy in policies)
-    retry_commands = (display_command(*retry_command) if retry_command
-                      else "; ".join(display_command(*policy.retry_command) for policy in policies))
+    if atlas_diagram_ids and not retry_command:
+        from odylith.runtime.governance import sync_workstream_artifacts
+
+        retry_commands = "; ".join(
+            sync_workstream_artifacts._owned_surface_refresh_command(
+                surface=policy.surface, atlas_sync=policy.atlas_sync, atlas_diagram_ids=atlas_diagram_ids,
+            ) for policy in policies
+        )
+    else:
+        retry_commands = (display_command(*retry_command) if retry_command
+                          else "; ".join(display_command(*policy.retry_command) for policy in policies))
     raise RuntimeError(
         f"{operation_label.strip()} succeeded, but the {surface_names} surface refresh did not fully complete; "
         f"retry with `{retry_commands}`.{suffix}{output_suffix}"
@@ -146,12 +161,15 @@ def _run_owned_surface_refresh_captured(
     repo_root: Path,
     policies: tuple[OwnedSurfaceRefreshPolicy, ...],
     on_results: Callable[[Sequence[Mapping[str, Any]]], None] | None = None,
+    atlas_diagram_ids: Sequence[str] = (),
 ) -> tuple[int, str]:
     """Run refresh with Python and subprocess stdout/stderr hidden from operator chat."""
 
     stdout_fd = 1
     stderr_fd = 2
-    result_options = {"on_results": on_results} if on_results is not None else {}
+    result_options: dict[str, Any] = {"on_results": on_results} if on_results is not None else {}
+    if atlas_diagram_ids:
+        result_options["atlas_diagram_ids"] = tuple(atlas_diagram_ids)
     refresh_started = False
     try:
         with tempfile.TemporaryFile(mode="w+t", encoding="utf-8") as captured:

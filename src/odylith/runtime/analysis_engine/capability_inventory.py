@@ -44,10 +44,9 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                 layer="analysis",
                 kind="engine",
                 owns=(
-                    "greenfield/project-shape contracts, host-narrated Product Intent confirmation, "
-                    "ProductCreateTransaction compilation, project-specific artifact enrichment, "
-                    "pre-confirm repair and quality gates, deterministic proposal validation, "
-                    "deterministic proposal gating, hash-verified commit, and final visible surface refresh before source exists"
+                    "greenfield source-authority and verified-duty contracts, host-authored canonical intent, "
+                    "differentiated governance projections, sealed ProductCreateTransaction compilation, "
+                    "deterministic admission and hash-verified publication of precompiled bytes"
                 ),
                 commands=(
                     "odylith greenfield propose",
@@ -55,9 +54,11 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                 ),
                 anchors=("src/odylith/runtime/domain_intelligence/",),
                 activation=(
-                    "greenfield propose compiles and quality-gates the governed package before it shows the sole "
-                    "hash-bound CONFIRM, EDIT, and REJECT rail; confirmed create verifies the transaction hash, "
-                    "commits records atomically, validates readback, and refreshes surfaces"
+                    "greenfield propose validates and quality-gates one source-verified candidate and seals a "
+                    "read-only preview; a supported confirmation interface binds CONFIRM, EDIT, and REJECT to "
+                    "its hash. Confirmed create verifies the receipt, hash, and preconditions, publishes sealed "
+                    "bytes under journaled recovery, validates readback, and returns a receipt without model "
+                    "calls or projection generation"
                 ),
             ),
             InventoryItem(

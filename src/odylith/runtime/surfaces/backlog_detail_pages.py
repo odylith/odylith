@@ -83,18 +83,20 @@ def _render_idea_spec_html(
     meta_pairs = [
         ("Workstream ID", entry.get("idea_id", "")),
         ("Status", metadata.get("status", "")),
-        ("Priority", metadata.get("priority", "")),
+        ("Priority", backlog_render_support.assessment_display(metadata.get("priority"))),
         ("Created Date", entry.get("idea_date_display", entry.get("idea_date", metadata.get("date", "")))),
         ("Age (days)", entry.get("idea_age_days", "")),
         ("Execution Start", entry.get("execution_start_date_display", entry.get("execution_start_date", ""))),
         ("Execution End", entry.get("execution_end_date_display", entry.get("execution_end_date", ""))),
         ("Execution Days", entry.get("execution_duration_days", entry.get("execution_age_days", ""))),
-        ("Sizing", metadata.get("sizing", "")),
-        ("Complexity", metadata.get("complexity", "")),
-        ("Ordering Score", metadata.get("ordering_score", "")),
-        ("Confidence", metadata.get("confidence", "")),
+        ("Sizing", backlog_render_support.assessment_display(metadata.get("sizing"))),
+        ("Complexity", backlog_render_support.assessment_display(metadata.get("complexity"))),
+        ("Ordering Score", backlog_render_support.assessment_display(metadata.get("ordering_score"))),
+        ("Confidence", backlog_render_support.assessment_display(metadata.get("confidence"))),
         ("Priority Override", metadata.get("founder_override", "")),
     ]
+    if metadata.get("assessment_provenance"):
+        meta_pairs.append(("Assessment source", backlog_render_support.assessment_provenance_label(metadata["assessment_provenance"])))
     meta_html = "".join(
         (
             f"<div class=\"meta-item\">"
@@ -180,9 +182,9 @@ def _render_idea_spec_html(
 
     title = html.escape(str(entry.get("title", "")).strip() or "Workstream Spec")
     idea_id = html.escape(str(entry.get("idea_id", "")).strip())
-    priority = html.escape(str(entry.get("priority", "")).strip())
+    priority = html.escape(backlog_render_support.assessment_display(entry.get("priority")))
     status = html.escape(str(entry.get("status", "")).strip())
-    score = html.escape(str(entry.get("ordering_score", "")).strip())
+    score = html.escape(backlog_render_support.assessment_display(entry.get("ordering_score")))
     page_body_css = dashboard_ui_primitives.page_body_typography_css(
         selector="body",
         color="var(--ink)",

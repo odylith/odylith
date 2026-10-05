@@ -2478,7 +2478,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-09-25",
+      "last_reviewed_utc": "2026-10-04",
       "source_mmd": "odylith/atlas/source/odylith-memory-substrate-compile-retrieval-and-packet-topology.mmd",
       "source_svg": "odylith/atlas/source/odylith-memory-substrate-compile-retrieval-and-packet-topology.svg",
       "source_png": "odylith/atlas/source/odylith-memory-substrate-compile-retrieval-and-packet-topology.png",
@@ -2508,17 +2508,34 @@
         "src/odylith/runtime/intervention_engine/alignment_context.py",
         "src/odylith/runtime/intervention_engine/visibility_broker.py",
         "src/odylith/runtime/reasoning/tribunal_engine.py",
-        "src/odylith/runtime/evaluation/odylith_benchmark_execution_engine.py"
+        "src/odylith/runtime/evaluation/odylith_benchmark_execution_engine.py",
+        "odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-durable-decisions-annotations-and-memory-hygiene.md",
+        "odylith/technical-plans/in-progress/2026-10/2026-10-04-current-authority-and-useful-history-in-memory.md",
+        "src/odylith/runtime/context_engine/memory_record_policy.py",
+        "src/odylith/runtime/context_engine/judgment_memory_records.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_judgment_memory_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_projection_compiler_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_runtime_learning_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_packet_session_runtime.py"
       ],
-      "summary": "Shows how compiler-owned projection artifacts, local and optional remote retrieval, session streams, delivery-ledger visibility proof, and packet-safe memory contracts feed Context Engine packets, Execution Engine snapshots, Tribunal summaries, visible intervention decisions, and benchmark proof.",
+      "summary": "Tracked governance is compiled into source-backed memory records. One Context Engine policy admits current authority before ranking useful history, and verifies judgment continuity before raising routing confidence. Local and optional remote retrieval retain provenance through compact contracts into execution, intervention and analysis.",
       "components": [
         {
           "name": "Compiler read models",
           "description": "Projection bundle and snapshot are compiler-owned read models that make downstream memory deterministic."
         },
         {
+          "name": "Shared authority and history policy",
+          "description": "Context Engine admits valid current source before relevance and decay; useful historical failures remain available without becoming current instructions."
+        },
+        {
           "name": "Retrieval lanes",
           "description": "Local backend and optional remote retrieval consume compiler outputs without becoming source-of-truth writers."
+        },
+        {
+          "name": "Judgment continuity",
+          "description": "Current source, derivation and evidence confirmation are required before memory raises routing confidence; reuse does not renew its own confirmation."
         },
         {
           "name": "Packet contract boundary",
@@ -2532,12 +2549,14 @@
       "related_backlog": [
         "odylith/radar/source/ideas/2026-03/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md",
         "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md"
+        "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-durable-decisions-annotations-and-memory-hygiene.md"
       ],
       "related_plans": [
         "odylith/technical-plans/done/2026-03/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md",
         "odylith/technical-plans/done/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md",
-        "odylith/technical-plans/done/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md"
+        "odylith/technical-plans/done/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md",
+        "odylith/technical-plans/in-progress/2026-10/2026-10-04-current-authority-and-useful-history-in-memory.md"
       ],
       "related_docs": [
         "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
@@ -2553,7 +2572,14 @@
         "src/odylith/runtime/memory/odylith_projection_snapshot.py",
         "src/odylith/runtime/memory/odylith_memory_backend.py",
         "src/odylith/runtime/memory/odylith_remote_retrieval.py",
-        "src/odylith/runtime/memory/tooling_memory_contracts.py"
+        "src/odylith/runtime/memory/tooling_memory_contracts.py",
+        "src/odylith/runtime/context_engine/memory_record_policy.py",
+        "src/odylith/runtime/context_engine/judgment_memory_records.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_judgment_memory_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_projection_compiler_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_runtime_learning_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_packet_session_runtime.py"
       ],
       "related_workstreams": [
         "B-010",
@@ -2572,7 +2598,8 @@
         "tribunal",
         "benchmark"
       ],
-      "render_source_fingerprint": "97d3584baeee16e51d467f2d54107722e8b9ea103201174e2ab1715cb591a365",
+      "render_source_fingerprint": "c403ca64eb250165c06d08cbb13c1ec299ef6d5876f8e81a7e319967610bf894",
+      "read_guide": "Start with tracked source and its compiler provenance. Follow the shared policy into projection records and retrieval selection: authority and validity precede relevance and age. Judgment continuity checks current source before increasing confidence. Memory Contracts redacts and limits packets; downstream engines consume that evidence. Optional remote retrieval remains an explicit lane.",
       "reviewed_watch_fingerprints": {
         "odylith/radar/source/ideas/2026-03/2026-03-28-odylith-durable-judgment-memory-and-memory-backend-productization.md": "1f16b94051ffc8aec2339b84acde01391b860ab419fbf9fa3dc10dfde14b698e",
         "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md": "9b1efb9f8d935beeaaa9fb6b35e063a596a79bf8912391c611f92c96e9362a1a",
@@ -2581,24 +2608,33 @@
         "odylith/technical-plans/done/2026-04/2026-04-07-odylith-memory-substrate-registry-componentization-and-spec-deepening.md": "a0767542bc39bc743cba0c03d854f6eb76a9c01ea97b6fd08539a7ae0ef16d37",
         "odylith/technical-plans/done/2026-04/2026-04-07-odylith-atlas-memory-substrate-and-runtime-topology-refresh.md": "e1c2cc0349a220c76800ab584448a557e253f6f5a91233550921e4d2fabe6ca3",
         "odylith/registry/source/component_registry.v1.json": "cde55ce2eba82e67ee574d58385bf8711f58adb40498c2e576a81b6bc1817b6f",
-        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md": "bb3e20c06807137818b9c2594d7c8a7f443d7d9c4f619db924905d22a193c740",
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md": "84543054885fd16154b3ba039d933ad8459e8c6dfb56ecd0e2869aa239075d71",
         "odylith/registry/source/components/odylith-projection-bundle/CURRENT_SPEC.md": "f5479af66951d67a378595f401382cee2d9aebbd5f58685dad6d52609c4a139b",
         "odylith/registry/source/components/odylith-projection-snapshot/CURRENT_SPEC.md": "b5e772d9716afa98af13b6fe5f064d36675a9ac5d0f6fe74456db0ea24cb63a2",
-        "odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md": "399826d44cfb7b7eb98b964c3b4f1bd4bb458dd7efff76a91b353771f2587c67",
+        "odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md": "925d1b132ffcf513bd713b96a4e1bdcef31344589d5c82d8cba446069c48f838",
         "odylith/registry/source/components/odylith-remote-retrieval/CURRENT_SPEC.md": "412f81c8e390ac8d5fd9f184a41bd8d2e50f3e8764bcbee3bbb51ddb0bef36cd",
-        "odylith/registry/source/components/odylith-memory-contracts/CURRENT_SPEC.md": "46f214aa27972b4809615ee63967d94533e3b87628c1a7842b4441b2dacf85d0",
-        "src/odylith/runtime/context_engine/odylith_context_engine_store.py": "7c5da676974a5dc6ca77dcd28586f350fa787e8170dd43ac12a7b164707c527d",
+        "odylith/registry/source/components/odylith-memory-contracts/CURRENT_SPEC.md": "b5fcd83d20cf59d0d1d6dfd9e3057206ee68e57648ab8e0007abf81da611ee16",
+        "src/odylith/runtime/context_engine/odylith_context_engine_store.py": "a8bfcdd7720df135317dd8b249be1123cd712653538db033e2f87cfbe12234f8",
         "src/odylith/runtime/memory/odylith_projection_bundle.py": "b03cd6f866c36d88bfbbff34becfe1b43b11e69d9409a13c5330b37f48462221",
         "src/odylith/runtime/memory/odylith_projection_snapshot.py": "b2ef0610a3f3c59acb6621846d5d422626d0407c97277686d9a799d41a4f0a6d",
-        "src/odylith/runtime/memory/odylith_memory_backend.py": "e3f3e5c9b63ae45e8185a1e77d27718b6437785fa11b9755cffd2995f44798d0",
+        "src/odylith/runtime/memory/odylith_memory_backend.py": "7382725b704179bf02a6fa878c1df7f70afb24acdd94cc8a543a2590833ef870",
         "src/odylith/runtime/memory/odylith_remote_retrieval.py": "cc30e6ff323e101785fa3902036b5fe15ec127d2951fbdc6026980f36a03e238",
-        "src/odylith/runtime/memory/tooling_memory_contracts.py": "a8166981883ec6d1e59382b6463ce530fe56f6569a7f4837a38ae5fa734fdcf7",
+        "src/odylith/runtime/memory/tooling_memory_contracts.py": "efd6b2e538a5eee2d909d8e2fff8a034325f0064a8d2bce544fea99b95ef1f26",
         "src/odylith/runtime/context_engine/execution_engine_handshake.py": "86fe40878555e8652d766ceb03a7bc22804646c1a18959414a90f1c3eb44e20b",
         "src/odylith/runtime/execution_engine": "7a8bb08f3a5f2b1edc26c4cc9370dc4777a7f677dc14e2dd054e7007790d6d3f",
         "src/odylith/runtime/intervention_engine/alignment_context.py": "17b1401bbc022f634375125c8cae7e3d03f0edc2428a2c51494a7a73909f3be0",
         "src/odylith/runtime/intervention_engine/visibility_broker.py": "e55a80119c8df478243b4f54f4ba95fc1ce85bdcae42cb3eddf20a76eb938e13",
         "src/odylith/runtime/reasoning/tribunal_engine.py": "2351fffa53bd1f49ae0948b5369518bbf1ec2ba56a8d18d5f4b7930720e31baf",
-        "src/odylith/runtime/evaluation/odylith_benchmark_execution_engine.py": "fd4c87a39eaca52ab261c10a41a0ac25915fcf61da072e7802305ecfba081209"
+        "src/odylith/runtime/evaluation/odylith_benchmark_execution_engine.py": "fd4c87a39eaca52ab261c10a41a0ac25915fcf61da072e7802305ecfba081209",
+        "odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-durable-decisions-annotations-and-memory-hygiene.md": "d03c3cc41f04ec2de70f0cf57e7f0ca34b3e8b67526dda2da06d2aac6279a2b4",
+        "odylith/technical-plans/in-progress/2026-10/2026-10-04-current-authority-and-useful-history-in-memory.md": "440b5bed2d43702be86dd83f75b5054a199dce133c206442ad09af36db21c36f",
+        "src/odylith/runtime/context_engine/memory_record_policy.py": "ebcb048ab8b6a112bb5d7ca747e0bf7ae71ddf1611d6e562a9cf19221f70f383",
+        "src/odylith/runtime/context_engine/judgment_memory_records.py": "808a71e61047105389805fea81c1af8e203a27ec23a1b9d294ef8ba3e2d78019",
+        "src/odylith/runtime/context_engine/odylith_context_engine_judgment_memory_runtime.py": "39483753e199ed254fae6a98e7d69557179124ff07e14921718bdc9140645eaa",
+        "src/odylith/runtime/context_engine/odylith_context_engine_projection_compiler_runtime.py": "d26b915052b94e11aedb593104dc767aa10c353b59eba68e65019af77ca251e2",
+        "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py": "27525e081df0a1158d283b995930147152c8e4255d70da222d4f47a4383cb1f9",
+        "src/odylith/runtime/context_engine/odylith_context_engine_runtime_learning_runtime.py": "07f14e72f8f824a7e8eaef8072bbf363d56c4e4a76b4a9573fc228054a5d1b32",
+        "src/odylith/runtime/context_engine/odylith_context_engine_packet_session_runtime.py": "cf5327e77e2e405335bd2e9f679216d3c1824652a831f187541279986bb9f7c0"
       }
     },
     {
@@ -4223,7 +4259,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-10-03",
+      "last_reviewed_utc": "2026-10-04",
       "source_mmd": "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
       "source_svg": "odylith/atlas/source/domain-intelligence-greenfield-governance.svg",
       "source_png": "odylith/atlas/source/domain-intelligence-greenfield-governance.png",
@@ -4238,12 +4274,21 @@
         "src/odylith/runtime/domain_intelligence/greenfield_host_candidate_shape.py",
         "src/odylith/runtime/domain_intelligence/greenfield_model_atomic_projection.py",
         "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py",
-        "scripts/release/greenfield_matrix_host_candidate.py",
-        "scripts/release/greenfield_whole_journey_budget.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_host_flow.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_whole_journey_budget.py",
         "scripts/release/greenfield_model_profiles.py",
-        "scripts/release/greenfield_model_profile_proof.py"
+        "scripts/release/greenfield_model_profile_proof.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_host_source_phase.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_host_transport.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_process.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_prepare_cli.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_pending_transaction_store.py",
+        "scripts/release/greenfield_onboarding_review.py",
+        "scripts/release/greenfield_public_qualification.py",
+        "scripts/release/greenfield_semantic_case_score.py",
+        "scripts/release/greenfield_evaluation_contract.py"
       ],
-      "summary": "Shows broad Greenfield intake through the v5 normalized source-duty ledger and compact source bank v3. Source preflight resolves every off-path effect by exact state object and canonical field identity before the source-only verifier; the same deterministic resolver is reused by candidate binding and passive lifecycle projection. The sole candidate author receives the lossless compact accepted inventory plus custody hashes, while the complete accepted receipt remains compiler-owned outside the model for propose. Gate and candidate share a 300-second model window; the 315-second proposal cap includes a 15-second completion reserve. The fixed 660-second whole-journey deadline is non-additive, diagnostic, and unqualified.",
+      "summary": "Shows the supported supervised Greenfield journey from exact operator evidence through four host passes, deterministic package admission, quarantined pending seals and explicit terminal publication. One product-owned parent deadline covers retention and cleanup; independent release review cannot authorize consumer writes.",
       "read_guide": "Follow the request through authority admission, source-bank verification, exact transition-state identity preflight, source-only verification, and one candidate authoring pass. The resolver fails closed before verifier dispatch when an effect lacks the exact declared state object and field identity; binding and passive projection reuse its result. No new semantic stage or schema is introduced. The candidate author receives a lossless compact accepted inventory and custody hashes, but the full accepted receipt remains outside the model for deterministic propose. Gate and candidate share one 300-second model window. The 315-second proposal safety cap includes a 15-second completion reserve; the fixed 660-second whole journey is non-additive diagnostic evidence and does not establish a public consumer bound.",
       "components": [
         {
@@ -4285,27 +4330,45 @@
         "src/odylith/runtime/domain_intelligence/greenfield_host_candidate_shape.py",
         "src/odylith/runtime/domain_intelligence/greenfield_model_atomic_projection.py",
         "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py",
-        "scripts/release/greenfield_matrix_host_candidate.py",
-        "scripts/release/greenfield_whole_journey_budget.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_host_flow.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_whole_journey_budget.py",
         "scripts/release/greenfield_model_profiles.py",
-        "scripts/release/greenfield_model_profile_proof.py"
+        "scripts/release/greenfield_model_profile_proof.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_host_source_phase.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_host_transport.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_process.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_prepare_cli.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_pending_transaction_store.py",
+        "scripts/release/greenfield_onboarding_review.py",
+        "scripts/release/greenfield_public_qualification.py",
+        "scripts/release/greenfield_semantic_case_score.py",
+        "scripts/release/greenfield_evaluation_contract.py"
       ],
-      "render_source_fingerprint": "eac467830f97cbdb4b297568065ee5c3c9e1f04c321817a4baf0045d6e3f98f7",
+      "render_source_fingerprint": "53e53e178cf97d4139cec0a1afddc461b5ea071e18e78d2831a7b05fef4c9b43",
       "reviewed_watch_fingerprints": {
         "src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py": "2e62ac52f42927d66602acdf59ed0571fc4631c6302a08cbb285e9ec174529a4",
         "src/odylith/runtime/domain_intelligence/greenfield_model_profile_contract.py": "0d045bb1710a7bf2e75b6dfa4439350e1eb8022edaee8e901bbc9acbbc53d632",
         "src/odylith/runtime/domain_intelligence/greenfield_source_duty_ledger.py": "9952be4e94b34b4db9a1e7ad330034a774f3a1a81a3ea15261bf5ea84fdafc95",
-        "src/odylith/runtime/domain_intelligence/greenfield_source_lifecycle.py": "2d202a8b1259b1da67a7be4b468926c9650919dba27c7d78425626c53b2b0c05",
+        "src/odylith/runtime/domain_intelligence/greenfield_source_lifecycle.py": "53bda2f8054fbda7376e4149189d7f5c24591ebaad7dd791831402638f632996",
         "src/odylith/runtime/domain_intelligence/greenfield_source_duty_compact.py": "87884d83d72ca7fca039f17c50ff25ab827ebe2d495ba0e5d90a1b8b0412f934",
         "src/odylith/runtime/domain_intelligence/greenfield_source_duty_entailment.py": "9f72409d1dadf22392c471af809e9dc0db9ec93468b1481b0e2faa83ec4a865c",
-        "src/odylith/runtime/domain_intelligence/greenfield_source_duty_binding.py": "c2b33639fb1c995caa1b0d9f7c9bdf9c313dbb48bb7bd61d2d3c6ea82b551da7",
+        "src/odylith/runtime/domain_intelligence/greenfield_source_duty_binding.py": "d4bd53fa607a750ff81c7a75a297fb3dc30639f5a702985d5ec7bbbf4e1d8328",
         "src/odylith/runtime/domain_intelligence/greenfield_host_candidate_shape.py": "d361c6ab8fa59c1a74a76fda45bc2046ef0352acd1bd89c1ec51a24ab22a4d7e",
         "src/odylith/runtime/domain_intelligence/greenfield_model_atomic_projection.py": "8e95d01cee49231360b0d3ab2ad58d5503623525f7a32b1a8a24d38d23ce9f06",
-        "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py": "f2fc89fb1ee02fb433a4b654838010558958b577af4e5330918494f4739d2eba",
-        "scripts/release/greenfield_matrix_host_candidate.py": "3e611d7a4f7bd41abd7251b36b83316f6e45f6d6b96f4f9ccdb3502994ca8bc7",
-        "scripts/release/greenfield_whole_journey_budget.py": "db4b1037b05228ce81dd166c31339b8ff8ebc376720dd8054744053a8fde4fda",
-        "scripts/release/greenfield_model_profiles.py": "6f68f4f13449bbf988fb859f679538054331b51d7063cc71815fa4f8fe667adc",
-        "scripts/release/greenfield_model_profile_proof.py": "a85916a2f215d273556d3cad32d8fb8a02d53da5f3c5acb27b7061f5d1205037"
+        "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py": "3c768b53ce716238555ce78ad80b635019c4833b6d57e30e1b3defb30d583796",
+        "src/odylith/runtime/domain_intelligence/greenfield_host_flow.py": "86d2c6d7946eb279a746421af2d65e45418e81964c049b1a7e249a54c7f5e741",
+        "src/odylith/runtime/domain_intelligence/greenfield_whole_journey_budget.py": "a1226dc3e9e28c1ac80316ba4fbdaafa16ec7a241fd34fe0ed1364963e1ca084",
+        "scripts/release/greenfield_model_profiles.py": "5f02e7b683d38e149c8dbfcb05eb0b84aa2adabb8d30311198db60062431fe64",
+        "scripts/release/greenfield_model_profile_proof.py": "9d9cdd902d3f28f53b3d9ef14dd11efef9d319bf7319ec55be83b540e180b8b4",
+        "src/odylith/runtime/domain_intelligence/greenfield_host_source_phase.py": "6fda6dc8ecb97bb5dd338127218a457b0be0f02e29b2b131651d6d8d9af6a084",
+        "src/odylith/runtime/domain_intelligence/greenfield_host_transport.py": "f59c67b8957cc215e1ff4b5ec2924337c9d6f04c5c1d6f4a2019d6a997eacb2a",
+        "src/odylith/runtime/domain_intelligence/greenfield_process.py": "e652440f15515de780f2efc5e3e2df35a58b899acb76e633b1cb7614465fd271",
+        "src/odylith/runtime/domain_intelligence/greenfield_prepare_cli.py": "823cc05abe48242fd697a4b8221650319641dbbde0efd1d797c11edf8d76219d",
+        "src/odylith/runtime/domain_intelligence/greenfield_pending_transaction_store.py": "ba6e5ebce6d7c7aa228af92ac6bf530be320f667a26648a5c42615126b99d402",
+        "scripts/release/greenfield_onboarding_review.py": "d2eb772cd24ffd5986a57cb86bbb7452fd81fe694862a4d68f26e8dd185c920e",
+        "scripts/release/greenfield_public_qualification.py": "a351d02c8b182c400a2c83e0f4ed679d6a78e066f232128fbc001ee7f9a6cea3",
+        "scripts/release/greenfield_semantic_case_score.py": "bb5da26632db52742e581db0201d66cfa1b614f2cde94912807e646b171ea6d0",
+        "scripts/release/greenfield_evaluation_contract.py": "15618729c5c23d9d8df4b36adbc6c8927663a8f80c4dceb8608c15a5d7dc7153"
       }
     },
     {
@@ -4395,7 +4458,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-10-03",
+      "last_reviewed_utc": "2026-10-04",
       "source_mmd": "odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd",
       "source_svg": "odylith/atlas/source/greenfield-first-path-semantic-copy-custody.svg",
       "source_png": "odylith/atlas/source/greenfield-first-path-semantic-copy-custody.png",
@@ -4410,12 +4473,21 @@
         "src/odylith/runtime/domain_intelligence/greenfield_host_candidate_shape.py",
         "src/odylith/runtime/domain_intelligence/greenfield_model_atomic_projection.py",
         "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py",
-        "scripts/release/greenfield_matrix_host_candidate.py",
-        "scripts/release/greenfield_whole_journey_budget.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_host_flow.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_whole_journey_budget.py",
         "scripts/release/greenfield_model_profiles.py",
-        "scripts/release/greenfield_model_profile_proof.py"
+        "scripts/release/greenfield_model_profile_proof.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_host_source_phase.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_host_transport.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_process.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_prepare_cli.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_pending_transaction_store.py",
+        "scripts/release/greenfield_onboarding_review.py",
+        "scripts/release/greenfield_public_qualification.py",
+        "scripts/release/greenfield_semantic_case_score.py",
+        "scripts/release/greenfield_evaluation_contract.py"
       ],
-      "summary": "Shows the first-path custody chain after broad input admission: the v5 normalized source-duty ledger and compact source bank v3 own role, action, target, lifecycle, and off-path meaning. Source preflight resolves every transition effect through one exact object-and-field identity resolver before the source-only verifier, and binding plus passive lifecycle projection reuse it. The sole candidate author receives the lossless compact accepted inventory plus custody hashes; the full accepted receipt stays compiler-owned outside the model for propose. Gate and candidate share one 300-second model window, and the 315-second proposal cap reserves 15 seconds for completion. The fixed 660-second journey deadline is non-additive, diagnostic, and unqualified.",
+      "summary": "Shows source-role and lifecycle custody through the product-owned bounded prepare route, source-only verification, canonical projections, quarantined pending state and explicit CONFIRM, EDIT or REJECT. Detached public qualification preserves frozen source expectations and exact immutable output evidence.",
       "read_guide": "Read left to right. Authority admission either asks one focused clarification or starts source-bank verification. Before the source-only verifier, deterministic preflight resolves each off-path effect to its exact declared state object and canonical field; any mismatch stops the flow. Binding and passive lifecycle projection reuse that resolved identity. This adds no semantic authoring stage or schema. The candidate author receives a lossless compact accepted inventory and custody hashes, while the full accepted receipt stays outside the model for deterministic propose. Gate and candidate share the 300-second model window. The 315-second proposal safety cap includes a 15-second completion reserve; the fixed 660-second whole journey is non-additive diagnostic evidence, separate from any public consumer bound. Detached qualification reads frozen evidence only.",
       "components": [
         {
@@ -4455,27 +4527,45 @@
         "src/odylith/runtime/domain_intelligence/greenfield_host_candidate_shape.py",
         "src/odylith/runtime/domain_intelligence/greenfield_model_atomic_projection.py",
         "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py",
-        "scripts/release/greenfield_matrix_host_candidate.py",
-        "scripts/release/greenfield_whole_journey_budget.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_host_flow.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_whole_journey_budget.py",
         "scripts/release/greenfield_model_profiles.py",
-        "scripts/release/greenfield_model_profile_proof.py"
+        "scripts/release/greenfield_model_profile_proof.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_host_source_phase.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_host_transport.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_process.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_prepare_cli.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_pending_transaction_store.py",
+        "scripts/release/greenfield_onboarding_review.py",
+        "scripts/release/greenfield_public_qualification.py",
+        "scripts/release/greenfield_semantic_case_score.py",
+        "scripts/release/greenfield_evaluation_contract.py"
       ],
-      "render_source_fingerprint": "97e4f44f01c2f1736861e28a525c1d3a0d895169c7f9c250a5b28b2fab878980",
+      "render_source_fingerprint": "405c39c394853b820ceb91c0f9225ddd37de5fe94cc836aaa70308654afab0ea",
       "reviewed_watch_fingerprints": {
         "src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py": "2e62ac52f42927d66602acdf59ed0571fc4631c6302a08cbb285e9ec174529a4",
         "src/odylith/runtime/domain_intelligence/greenfield_model_profile_contract.py": "0d045bb1710a7bf2e75b6dfa4439350e1eb8022edaee8e901bbc9acbbc53d632",
         "src/odylith/runtime/domain_intelligence/greenfield_source_duty_ledger.py": "9952be4e94b34b4db9a1e7ad330034a774f3a1a81a3ea15261bf5ea84fdafc95",
-        "src/odylith/runtime/domain_intelligence/greenfield_source_lifecycle.py": "2d202a8b1259b1da67a7be4b468926c9650919dba27c7d78425626c53b2b0c05",
+        "src/odylith/runtime/domain_intelligence/greenfield_source_lifecycle.py": "53bda2f8054fbda7376e4149189d7f5c24591ebaad7dd791831402638f632996",
         "src/odylith/runtime/domain_intelligence/greenfield_source_duty_compact.py": "87884d83d72ca7fca039f17c50ff25ab827ebe2d495ba0e5d90a1b8b0412f934",
         "src/odylith/runtime/domain_intelligence/greenfield_source_duty_entailment.py": "9f72409d1dadf22392c471af809e9dc0db9ec93468b1481b0e2faa83ec4a865c",
-        "src/odylith/runtime/domain_intelligence/greenfield_source_duty_binding.py": "c2b33639fb1c995caa1b0d9f7c9bdf9c313dbb48bb7bd61d2d3c6ea82b551da7",
+        "src/odylith/runtime/domain_intelligence/greenfield_source_duty_binding.py": "d4bd53fa607a750ff81c7a75a297fb3dc30639f5a702985d5ec7bbbf4e1d8328",
         "src/odylith/runtime/domain_intelligence/greenfield_host_candidate_shape.py": "d361c6ab8fa59c1a74a76fda45bc2046ef0352acd1bd89c1ec51a24ab22a4d7e",
         "src/odylith/runtime/domain_intelligence/greenfield_model_atomic_projection.py": "8e95d01cee49231360b0d3ab2ad58d5503623525f7a32b1a8a24d38d23ce9f06",
-        "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py": "f2fc89fb1ee02fb433a4b654838010558958b577af4e5330918494f4739d2eba",
-        "scripts/release/greenfield_matrix_host_candidate.py": "3e611d7a4f7bd41abd7251b36b83316f6e45f6d6b96f4f9ccdb3502994ca8bc7",
-        "scripts/release/greenfield_whole_journey_budget.py": "db4b1037b05228ce81dd166c31339b8ff8ebc376720dd8054744053a8fde4fda",
-        "scripts/release/greenfield_model_profiles.py": "6f68f4f13449bbf988fb859f679538054331b51d7063cc71815fa4f8fe667adc",
-        "scripts/release/greenfield_model_profile_proof.py": "a85916a2f215d273556d3cad32d8fb8a02d53da5f3c5acb27b7061f5d1205037"
+        "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py": "3c768b53ce716238555ce78ad80b635019c4833b6d57e30e1b3defb30d583796",
+        "src/odylith/runtime/domain_intelligence/greenfield_host_flow.py": "86d2c6d7946eb279a746421af2d65e45418e81964c049b1a7e249a54c7f5e741",
+        "src/odylith/runtime/domain_intelligence/greenfield_whole_journey_budget.py": "a1226dc3e9e28c1ac80316ba4fbdaafa16ec7a241fd34fe0ed1364963e1ca084",
+        "scripts/release/greenfield_model_profiles.py": "5f02e7b683d38e149c8dbfcb05eb0b84aa2adabb8d30311198db60062431fe64",
+        "scripts/release/greenfield_model_profile_proof.py": "9d9cdd902d3f28f53b3d9ef14dd11efef9d319bf7319ec55be83b540e180b8b4",
+        "src/odylith/runtime/domain_intelligence/greenfield_host_source_phase.py": "6fda6dc8ecb97bb5dd338127218a457b0be0f02e29b2b131651d6d8d9af6a084",
+        "src/odylith/runtime/domain_intelligence/greenfield_host_transport.py": "f59c67b8957cc215e1ff4b5ec2924337c9d6f04c5c1d6f4a2019d6a997eacb2a",
+        "src/odylith/runtime/domain_intelligence/greenfield_process.py": "e652440f15515de780f2efc5e3e2df35a58b899acb76e633b1cb7614465fd271",
+        "src/odylith/runtime/domain_intelligence/greenfield_prepare_cli.py": "823cc05abe48242fd697a4b8221650319641dbbde0efd1d797c11edf8d76219d",
+        "src/odylith/runtime/domain_intelligence/greenfield_pending_transaction_store.py": "ba6e5ebce6d7c7aa228af92ac6bf530be320f667a26648a5c42615126b99d402",
+        "scripts/release/greenfield_onboarding_review.py": "d2eb772cd24ffd5986a57cb86bbb7452fd81fe694862a4d68f26e8dd185c920e",
+        "scripts/release/greenfield_public_qualification.py": "a351d02c8b182c400a2c83e0f4ed679d6a78e066f232128fbc001ee7f9a6cea3",
+        "scripts/release/greenfield_semantic_case_score.py": "bb5da26632db52742e581db0201d66cfa1b614f2cde94912807e646b171ea6d0",
+        "scripts/release/greenfield_evaluation_contract.py": "15618729c5c23d9d8df4b36adbc6c8927663a8f80c4dceb8608c15a5d7dc7153"
       }
     },
     {
@@ -4661,7 +4751,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "release",
-      "last_reviewed_utc": "1970-01-01",
+      "last_reviewed_utc": "2026-10-04",
       "source_mmd": "odylith/atlas/source/greenfield-matrix-tiered-campaign-progress.mmd",
       "source_svg": "odylith/atlas/source/greenfield-matrix-tiered-campaign-progress.svg",
       "source_png": "odylith/atlas/source/greenfield-matrix-tiered-campaign-progress.png",
@@ -4682,9 +4772,16 @@
         "scripts/release/greenfield_preconfirm_matrix.py",
         "bin/greenfield-matrix-campaign",
         "bin/greenfield-matrix-generate-cases",
-        "bin/greenfield-matrix-shards"
+        "bin/greenfield-matrix-shards",
+        "scripts/release/greenfield_onboarding_review.py",
+        "scripts/release/greenfield_model_profile_proof.py",
+        "scripts/release/greenfield_public_qualification.py",
+        "scripts/release/greenfield_semantic_case_score.py",
+        "scripts/release/greenfield_evaluation_contract.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_host_flow.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_whole_journey_budget.py"
       ],
-      "summary": "Shows how high-variance greenfield discovery runs move through case-text canonicalization, failed-subset replay, regression, volume discovery, and strict release proof while the shared stressor taxonomy, source-grounded required and leakage term provenance, stressor-outcome summaries, 10-point variance scoring, merged per-case progress, telemetry-origin stop decisions, child stressor propagation, replayable synthetic shard payloads, failure clusters, failure-response packet, cleanup evidence, browser proof, rescue proof, and release-readiness boundaries stay separate.",
+      "summary": "Shows disclosed variance collection, exact campaign progress and strict release qualification. Full installation, browser, recovery, declared model controls and independent source-predicate and measured-bound audits remain separate gates; discovery and incomplete evidence cannot grant release readiness.",
       "read_guide": "Read left to right: external stressor-tagged cases and the maintained case catalog first canonicalize accidental adjacent duplicate source words, then flow through the shared taxonomy and source-grounded required/leakage term gates before tier shards are built. Discovery shards stream per-case telemetry into merged campaign progress files, telemetry-derived cluster thresholds stop later work at the shard that emitted failure evidence, and only the release-proof tier can claim release readiness because direct matrix and campaign paths require full install mode with browser, rescue, natural rescue proof, requested stressor coverage, and completed release execution rather than a preflight abort or discovery-only pass.",
       "components": [
         {
@@ -4722,8 +4819,16 @@
         "scripts/release/greenfield_preconfirm_matrix.py",
         "bin/greenfield-matrix-campaign",
         "bin/greenfield-matrix-generate-cases",
-        "bin/greenfield-matrix-shards"
+        "bin/greenfield-matrix-shards",
+        "scripts/release/greenfield_onboarding_review.py",
+        "scripts/release/greenfield_model_profile_proof.py",
+        "scripts/release/greenfield_public_qualification.py",
+        "scripts/release/greenfield_semantic_case_score.py",
+        "scripts/release/greenfield_evaluation_contract.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_host_flow.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_whole_journey_budget.py"
       ],
+      "render_source_fingerprint": "8d739dfdf5d58b4eccf34e1cb2a04feb2a5f21ff0aca4d5b1650fde57e16c0e8",
       "reviewed_watch_fingerprints": {
         "scripts/release/greenfield_matrix_campaign_runner.py": "db7e7a918c97b92ede5c8aadd43473159bdc276b429bb61f1daa98f8bf274132",
         "scripts/release/greenfield_matrix_campaign_progress.py": "afd0d70cf2fe5841103b457286a8c7fad35724b44d5b4121056877a2ae1ef069",
@@ -4738,12 +4843,18 @@
         "scripts/release/greenfield_tooling_payload_reader.py": "ef37db89aafbdf691f215ed07819d1fd1c15d3f002bde1ea5223a2b2dbae02f5",
         "scripts/release/platform_domain_leakage_check.py": "948e5f20700ec374840c7bc7a361cfae430b0f0e53113ca74257052a371efdc0",
         "scripts/release/greenfield_preconfirm_matrix_cases.py": "4fb4fff64fb98f283e7f4883b889c21ac1025a3954265b6a2d6ffc58f75f160e",
-        "scripts/release/greenfield_preconfirm_matrix.py": "8dfdb692485c544da953dbf770c66245621618ba8c3dce1d610491048f2a7d94",
+        "scripts/release/greenfield_preconfirm_matrix.py": "97b33dc1df5247da8484fa937195d0cb4727557a8f662c43bcacfdee12b4e6b4",
         "bin/greenfield-matrix-campaign": "42325fc58bb864c64d905824513ac622f7bd594b960c624a65a0082bf981dbaf",
         "bin/greenfield-matrix-generate-cases": "942aa6e15b5bfc7ed4a033cca712065ace45b6ac575374612541c6999d4c6821",
-        "bin/greenfield-matrix-shards": "72f7ce10e9c1c8889d0fb82ff11de710f8843c4b6a5babafca1070e879debe0a"
-      },
-      "render_source_fingerprint": "b50d86d97c79dddf75b84abab98b20b2926c8e4dbf881ff4e970aaa2ab52f707"
+        "bin/greenfield-matrix-shards": "72f7ce10e9c1c8889d0fb82ff11de710f8843c4b6a5babafca1070e879debe0a",
+        "scripts/release/greenfield_onboarding_review.py": "d2eb772cd24ffd5986a57cb86bbb7452fd81fe694862a4d68f26e8dd185c920e",
+        "scripts/release/greenfield_model_profile_proof.py": "9d9cdd902d3f28f53b3d9ef14dd11efef9d319bf7319ec55be83b540e180b8b4",
+        "scripts/release/greenfield_public_qualification.py": "a351d02c8b182c400a2c83e0f4ed679d6a78e066f232128fbc001ee7f9a6cea3",
+        "scripts/release/greenfield_semantic_case_score.py": "bb5da26632db52742e581db0201d66cfa1b614f2cde94912807e646b171ea6d0",
+        "scripts/release/greenfield_evaluation_contract.py": "15618729c5c23d9d8df4b36adbc6c8927663a8f80c4dceb8608c15a5d7dc7153",
+        "src/odylith/runtime/domain_intelligence/greenfield_host_flow.py": "86d2c6d7946eb279a746421af2d65e45418e81964c049b1a7e249a54c7f5e741",
+        "src/odylith/runtime/domain_intelligence/greenfield_whole_journey_budget.py": "a1226dc3e9e28c1ac80316ba4fbdaafa16ec7a241fd34fe0ed1364963e1ca084"
+      }
     }
   ]
 }

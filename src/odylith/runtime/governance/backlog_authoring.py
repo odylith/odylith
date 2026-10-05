@@ -14,6 +14,7 @@ from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common import repo_path_resolver
 from odylith.runtime.governance import artifact_tribunal
+from odylith.runtime.governance import backlog_assessment
 from odylith.runtime.governance import backlog_title_contract
 from odylith.runtime.governance import execution_wave_contract
 from odylith.runtime.governance import owned_surface_refresh
@@ -37,7 +38,7 @@ class CreatedBacklogItem:
     idea_id: str
     title: str
     idea_path: Path
-    ordering_score: int
+    ordering_score: int | None
     founder_override: bool
     rationale_lines: tuple[str, ...] = ()
 
@@ -224,6 +225,8 @@ def _render_idea_text(*, metadata: Mapping[str, str], sections: Mapping[str, str
         "idea_id",
         "title",
         "date",
+        "assessment_status",
+        "assessment_provenance",
         "priority",
         "commercial_value",
         "product_impact",
@@ -406,6 +409,13 @@ def _title_specific_args(*, title: str, args: argparse.Namespace) -> argparse.Na
         "domain_risk",
         "security_posture",
         "priority",
+        "assessment_status",
+        "assessment_provenance",
+        "commercial_value",
+        "product_impact",
+        "market_value",
+        "ordering_score",
+        "confidence",
         "impacted_parts",
         "sizing",
         "complexity",
@@ -417,6 +427,9 @@ def _title_specific_args(*, title: str, args: argparse.Namespace) -> argparse.Na
             value = override[key]
             if key == "success_metrics" and isinstance(value, (list, tuple)):
                 value = "\n".join(f"- {item}" for item in value if str(item).strip())
+            if key in backlog_assessment.NUMERIC_FIELDS:
+                setattr(resolved, key, value)
+                continue
             if key == "rationale_lines":
                 setattr(resolved, key, _rationale_line_tuple(value))
                 continue
@@ -463,17 +476,9 @@ def _build_metadata(
         "idea_id": idea_id,
         "title": str(title).strip(),
         "date": today.isoformat(),
-        "priority": str(args.priority).strip(),
-        "commercial_value": str(int(args.commercial_value)),
-        "product_impact": str(int(args.product_impact)),
-        "market_value": str(int(args.market_value)),
+        **backlog_assessment.author_assessment(args),
         "impacted_parts": str(args.impacted_parts).strip(),
-        "sizing": str(args.sizing).strip(),
-        "complexity": str(args.complexity).strip(),
-        "ordering_score": "",
         "ordering_rationale": str(args.ordering_rationale).strip(),
-        "confidence": str(args.confidence).strip(),
-        "founder_override": "yes" if bool(args.founder_override) else "no",
         "promoted_to_plan": "",
         execution_wave_contract.EXECUTION_MODEL_FIELD: execution_wave_contract.EXECUTION_MODEL_STANDARD,
         "workstream_type": resolved_type,
@@ -491,16 +496,6 @@ def _build_metadata(
         "supersedes": "",
         "superseded_by": "",
     }
-    validation_errors: list[str] = []
-    computed_score = backlog_contract._compute_score(payload, errors=validation_errors, path=Path("<generated>"))
-    if validation_errors or computed_score is None:
-        raise ValueError("; ".join(validation_errors) or "could not compute backlog ordering score")
-    declared_score = int(args.ordering_score) if args.ordering_score is not None else int(computed_score)
-    if declared_score != computed_score and not bool(args.founder_override):
-        raise ValueError(
-            f"ordering_score override `{declared_score}` requires --founder-override because the computed score is `{computed_score}`"
-        )
-    payload["ordering_score"] = str(declared_score)
     return payload
 
 
@@ -662,6 +657,8 @@ def _build_rationale_lines(
 ) -> list[str]:
     if item.rationale_lines:
         return [str(line).strip() for line in item.rationale_lines if str(line).strip()]
+    if item.ordering_score is None:
+        return ["- ranking basis: assessment pending; no numeric ranking assigned."]
     if item.founder_override:
         note = override_note or "Manual priority override applied to keep this workstream in a deliberate queue position."
         return [
@@ -938,7 +935,7 @@ def create_queued_backlog_items(
             idea_id=idea_id,
             title=title,
             idea_path=idea_path,
-            ordering_score=int(metadata["ordering_score"]),
+            ordering_score=backlog_assessment.numeric_value(metadata["ordering_score"]),
             founder_override=bool(args.founder_override),
             rationale_lines=_rationale_line_tuple(getattr(row_args, "rationale_lines", ())),
         )
@@ -974,7 +971,7 @@ def create_queued_backlog_items(
                 "idea_id": str(row["idea_id"]).strip(),
                 "title": str(row["title"]).strip(),
                 "priority": str(row["priority"]).strip(),
-                "ordering_score": int(str(row["ordering_score"]).strip()),
+                "ordering_score": backlog_assessment.numeric_value(row["ordering_score"]),
                 "commercial_value": str(row["commercial_value"]).strip(),
                 "product_impact": str(row["product_impact"]).strip(),
                 "market_value": str(row["market_value"]).strip(),
@@ -993,7 +990,7 @@ def create_queued_backlog_items(
                 "idea_id": item.idea_id,
                 "title": item.title,
                 "priority": metadata["priority"],
-                "ordering_score": int(metadata["ordering_score"]),
+                "ordering_score": backlog_assessment.numeric_value(metadata["ordering_score"]),
                 "commercial_value": metadata["commercial_value"],
                 "product_impact": metadata["product_impact"],
                 "market_value": metadata["market_value"],
@@ -1011,7 +1008,7 @@ def create_queued_backlog_items(
         )
     row_records.sort(
         key=lambda row: (
-            -int(row["ordering_score"]),
+            *backlog_assessment.score_sort_key(row["ordering_score"]),
             1 if bool(row["is_new"]) else 0,
             int(row["existing_order"]),
             str(row["idea_id"]),
@@ -1037,7 +1034,7 @@ def create_queued_backlog_items(
                 idea_id,
                 str(row["title"]).strip(),
                 str(row["priority"]).strip(),
-                str(row["ordering_score"]).strip(),
+                backlog_assessment.markdown_value(row["ordering_score"]),
                 str(row["commercial_value"]).strip(),
                 str(row["product_impact"]).strip(),
                 str(row["market_value"]).strip(),

@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import re
+import hashlib
 import time
 from pathlib import Path
 from typing import Any, Mapping
 
 from odylith.runtime.common import derivation_provenance
+from odylith.runtime.context_engine import memory_record_policy
+from odylith.runtime.context_engine import judgment_memory_records
 from odylith.runtime.context_engine import odylith_architecture_mode
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine import odylith_context_engine_projection_query_runtime
@@ -16,6 +19,7 @@ from odylith.runtime.context_engine import odylith_context_engine_projection_sea
 from odylith.runtime.context_engine import odylith_context_engine_runtime_learning_runtime
 from odylith.runtime.context_engine import odylith_context_engine_runtime_support
 from odylith.runtime.context_engine import odylith_control_state
+from odylith.runtime.governance import backlog_assessment
 from odylith.runtime.governance import sync_session as governed_sync_session
 from odylith.runtime.governance import component_registry_intelligence as component_registry
 from odylith.runtime.governance import delivery_intelligence_engine
@@ -65,6 +69,19 @@ projection_snapshot_path = odylith_projection_snapshot.snapshot_path
 preferred_watcher_backend = odylith_context_engine_runtime_support.preferred_watcher_backend
 
 
+def compiler_code_version() -> str:
+    """Version the owners which determine compiled memory classifications."""
+    return derivation_provenance.fingerprint_source_files(
+        [
+            Path(__file__),
+            Path(memory_record_policy.__file__),
+            Path(judgment_memory_records.__file__),
+            Path(odylith_projection_snapshot.__file__),
+            Path(odylith_projection_bundle.__file__),
+        ]
+    )
+
+
 def append_runtime_event(*, repo_root: Path, event_type: str, payload: Mapping[str, Any]) -> None:
     """Append one compiler event row to the shared runtime event ledger."""
     odylith_control_state.append_event(
@@ -91,13 +108,7 @@ def warm_projections(
     root = Path(repo_root).resolve()
     session = governed_sync_session.active_sync_session()
     generation, require_generation, last_invalidation_step = derivation_provenance.active_sync_generation(repo_root=root)
-    compiler_code_version = derivation_provenance.fingerprint_source_files(
-        [
-            Path(__file__),
-            Path(odylith_projection_snapshot.__file__),
-            Path(odylith_projection_bundle.__file__),
-        ]
-    )
+    code_version = compiler_code_version()
     backend_code_version = derivation_provenance.fingerprint_source_files(
         [
             Path(odylith_memory_backend.__file__),
@@ -111,7 +122,7 @@ def warm_projections(
             projection_scope=candidate_scope,
             projection_fingerprint=candidate_fingerprint,
             sync_generation=generation,
-            code_version=compiler_code_version,
+            code_version=code_version,
             flags={"projection_names": sorted(_projection_names_for_scope(candidate_scope))},
         )
 
@@ -327,12 +338,12 @@ def warm_projections(
                             "section": section_name,
                             "rank": str(row.get("rank", "")).strip(),
                             "priority": str(row.get("priority", "")).strip(),
-                            "ordering_score": int(str(row.get("ordering_score", "0") or "0")),
+                            "ordering_score": backlog_assessment.numeric_value(row.get("ordering_score")),
                             "idea_file": idea_file or "",
                             "promoted_to_plan": normalized_plan,
                             "archive_bucket": "",
                             "source_path": str(source_path or "").strip(),
-                            "metadata_json": _safe_json(metadata),
+                            "metadata_json": _safe_json(backlog_assessment.typed_metadata(metadata)),
                             "search_title": search_title,
                             "search_body": search_body,
                         }
@@ -453,6 +464,7 @@ def warm_projections(
                         "archive_bucket": archive_bucket,
                         "source_path": str(row.get("IndexPath", "")).strip() or "odylith/casebook/bugs/INDEX.md",
                         "search_body": search_body,
+                        "memory_source_fingerprint": hashlib.sha256(bug_markdown.encode()).hexdigest() if bug_markdown else "",
                     }
                 )
             tables["bugs"] = rows
@@ -876,6 +888,7 @@ def warm_projections(
         }
         compiler_input_fingerprint = odylith_context_cache.fingerprint_payload(requested_fingerprints)
         compiler_provenance = _compiler_provenance_for(scope_token, projection_fingerprint)
+        memory_record_policy.annotate_projection_tables(tables, provenance=compiler_provenance, observed_utc=_utc_now())
         compiler_started = time.perf_counter()
         snapshot_summary = odylith_projection_snapshot.write_snapshot(
             repo_root=root,

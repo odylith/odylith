@@ -148,7 +148,7 @@ def test_terminal_decision_prints_human_completion_without_json_wrapper(
         "repo_root": tmp_path.resolve(),
         "command": "CONFIRM",
         "transaction_hash": _HASH,
-        "edit_evidence": None,
+        "edit_evidence": None, "completion_receipt": None,
     }]
 
 
@@ -241,7 +241,7 @@ def test_terminal_edit_without_evidence_requests_a_correction_without_compiling(
         "repo_root": tmp_path.resolve(),
         "command": "EDIT",
         "transaction_hash": _HASH,
-        "edit_evidence": None,
+        "edit_evidence": None, "completion_receipt": None,
     }]
     assert not tmp_path.exists() or not list(tmp_path.iterdir())
 

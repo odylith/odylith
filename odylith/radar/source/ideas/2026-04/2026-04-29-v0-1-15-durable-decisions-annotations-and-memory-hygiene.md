@@ -1,4 +1,4 @@
-status: queued
+status: implementation
 
 idea_id: B-133
 
@@ -28,7 +28,7 @@ confidence: high
 
 founder_override: no
 
-promoted_to_plan: 
+promoted_to_plan: odylith/technical-plans/in-progress/2026-10/2026-10-04-current-authority-and-useful-history-in-memory.md
 
 execution_model: standard
 
@@ -42,7 +42,7 @@ workstream_depends_on:
 
 workstream_blocks: 
 
-related_diagram_ids: 
+related_diagram_ids: D-025
 
 workstream_reopens: 
 
@@ -70,47 +70,82 @@ Primary customers are maintainers and agents that need decisions, approvals, rev
 Odylith can turn collaboration memory into a governed advantage by retaining only resolved summaries, durable decisions, contradiction records, proof outcomes, and provenance. That lets humans and agents operate from shared memory without turning every chat or trace into authoritative context.
 
 ## Proposed Solution
-Create the workstream for v0.1.15+ Durable Decisions Annotations and Memory Hygiene and refine the exact implementation plan during execution.
+The operator authorizes first-wave current-authority and useful-history policy
+while Greenfield converges. Add explicit record role/validity metadata and
+weighted relevance/evidence/freshness after authority admission. Use one shared
+Context Engine owner for judgment synthesis, retrieval and hint admission;
+Memory Contracts carries compact provenance and reasons. Rebuilding a cache
+must not reconfirm old evidence or let a stale hint manufacture confidence.
 
 ## Scope
-- Define and land the bounded work for v0.1.15+ Durable Decisions Annotations and Memory Hygiene.
-- Keep the first implementation wave narrow and test-backed.
+- H1: source-backed history-use metadata, authority precedence, weighted
+  usefulness/decay, evidence-time preservation and current-source hint admission.
+- Snapshot, retrieval, compact packet and later-decision round-trip proof.
+- Fixed-case recall/precision, stale-authority, continuity, packet and latency
+  comparisons; independent current/history boundary review.
+- Wider collaboration annotations remain subsequent work under this record.
+- Preserve historically honest Atlas review evidence during the H1 topology
+  update: CB-357 bounds selected authoring refresh to its validated diagrams.
 
 ## Non-Goals
-- Do not widen this queued workstream into unrelated product cleanup.
+- No enterprise collaboration or general annotation platform in H1.
+- No new consumer model phase, remote activation or transcript archive.
 
 ## Risks
-- The title may need refinement once the implementation owner confirms the exact boundary.
+- Age is not truth: decay must not suppress active safety constraints or turn
+  unknown legacy records into accepted or superseded facts.
+- Metadata-only changes cannot establish better retrieval or judgment; prove
+  actual live-caller selection, useful recall and bounded cost.
 
 ## Dependencies
-- No explicit dependency recorded yet; confirm related workstreams before implementation starts.
+- Reuse existing source-fingerprint/generation contracts and workstream lineage.
+- Preserve B-010/B-011 memory boundaries and CB-053's freshness discipline.
+- B-142 consumes this shared memory boundary while retaining all Greenfield laws.
 
 ## Success Metrics
 Context Engine grounding prefers resolved decisions and durable annotations over raw threads. Memory validation rejects placeholder summaries, transcript-shaped durable refs, secret-bearing annotations, and unproven policy changes. Compass can show pending versus resolved annotations. Casebook and Radar can link decisions to bugs, plans, and workstreams. Benchmarks prove lower stale-memory and decision-loss rates.
 
 ## Validation
-- Run focused validation for the touched paths once implementation begins.
+- Prove current valid authority over recent historical claims, useful historical
+  failure recall, unknown legacy status, source drift, current contradictions,
+  rebuild without reconfirmation and valid current continuity.
+- Verify producer -> snapshot -> retrieval -> compact packet -> later decision,
+  preserving shared-only ambiguity and session-intent non-replay.
 
 ## Rollout
-- Queue now, then bind a technical plan when the implementation wave starts.
+- Bind the authorized H1 plan and implement on the existing release branch.
+- Assess installed compatibility and preserve original evidence before release.
 
 ## Why Now
-This slice is active enough that it should exist as explicit backlog truth now.
+The operator explicitly requests historically useful knowledge without stale
+context overriding current evidence, and measurable Retrieval and Judgment/
+session memory improvements while Greenfield reaches production quality.
 
 ## Product View
 Add a durable annotation and decision-memory contract. Raw comments, chat threads, and full traces remain transient or hosted-only. Tracked truth receives resolved annotation summaries with actor, artifact, timestamp, status, decision class, affected component, and evidence links. Memory Contracts compact those summaries into packets; Memory Backend retains freshness, contradiction, outcome, and provenance signals; Context Engine excludes transcript-shaped source refs from durable grounding.
 
 ## Impacted Components
 - `odylith`
+- `odylith-context-engine`
+- `odylith-memory-backend`
+- `odylith-memory-contracts`
+- `atlas`
 
 ## Interface Changes
-- None decided yet; record interface changes once implementation is scoped.
+- Explicit derived record role/validity, usefulness/decay reasons and source
+  provenance must survive retrieval and compaction. Final fields are owned by
+  the shared implementation and must not imply inferred semantic authority.
 
 ## Migration/Compatibility
-- No migration impact recorded yet.
+- Legacy missing metadata remains unknown; derived caches must preserve the
+  current source/fingerprint contract. Assess actual installed changes before
+  release; no consumer source truth is rewritten to manufacture new authority.
 
 ## Test Strategy
-- Add targeted regression coverage when implementation begins.
+- Use current source versus historical/rejected/refuted/superseded controls and
+  valid later recall with fixed expected meaning. Existing memory, shared-scope,
+  session, provenance and compact-contract guards remain required.
 
 ## Open Questions
-- Which existing workstreams or component specs should this attach to first?
+- No operator decision is needed for the authorized H1 policy wave. Wider
+  enterprise annotation/collaboration interfaces remain outside this first wave.

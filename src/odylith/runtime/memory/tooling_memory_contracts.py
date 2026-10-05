@@ -186,6 +186,39 @@ def _guidance_source_path(row: Mapping[str, Any]) -> str:
     )
 
 
+def _compact_memory_record(row: Mapping[str, Any]) -> dict[str, Any]:
+    memory = row.get("memory_record")
+    if not isinstance(memory, Mapping):
+        return {}
+    path = _sanitize_contract_path(memory.get("source_ref"))
+    if not path:
+        return {}
+    compact = {
+        key: memory[key] for key in (
+            "version", "role", "validity", "source_fingerprint", "confirmed_utc", "evidence_utc", "observed_utc", "superseded_by",
+        ) if key in memory
+    }
+    compact["source_ref"] = path
+    provenance = _mapping_value(memory.get("provenance"))
+    compact["provenance"] = {
+        key: provenance[key] for key in ("version", "repo_root", "projection_scope", "projection_fingerprint", "sync_generation", "code_version")
+        if key in provenance
+    }
+    flags = _mapping_value(provenance.get("flags"))
+    compact["provenance"]["flags"] = {
+        "projection_names": _string_rows(flags.get("projection_names"))
+    } if isinstance(flags.get("projection_names"), list) else {}
+    output = {"memory_record": compact}
+    usefulness = _mapping_value(row.get("memory_usefulness"))
+    if usefulness:
+        output["memory_usefulness"] = {
+            key: usefulness[key] for key in (
+                "authority_class", "current_authority", "use", "reason", "freshness", "decay_factor", "score", "score_components"
+            ) if key in usefulness
+        }
+    return output
+
+
 def _compact_guidance_source_rows(
     rows: Sequence[Mapping[str, Any]],
     *,
@@ -213,6 +246,7 @@ def _compact_guidance_source_rows(
         actionability = _mapping_value(row.get("actionability"))
         evidence_summary = _mapping_value(row.get("evidence_summary"))
         compact = {
+            **_compact_memory_record(row),
             "chunk_id": str(row.get("chunk_id", "")).strip(),
             "title": str(row.get("title", "")).strip(),
             "read_path": safe_path,
@@ -374,6 +408,7 @@ def _compact_workstream_rows(rows: Sequence[Mapping[str, Any]], *, limit: int) -
             if value in (None, "", [], {}):
                 continue
             compact[key] = value
+        compact.update(_compact_memory_record(row))
         if compact:
             compacted.append(compact)
     return compacted
@@ -389,6 +424,7 @@ def _compact_component_rows(rows: Sequence[Mapping[str, Any]], *, limit: int) ->
             token = str(row.get(key, "")).strip()
             if token:
                 compact[key] = token
+        compact.update(_compact_memory_record(row))
         if compact:
             compacted.append(compact)
     return compacted

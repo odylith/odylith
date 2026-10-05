@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from odylith.runtime.governance import backlog_assessment
 from odylith.runtime.common import casebook_metadata
 from odylith.runtime.common.casebook_bug_ids import BUG_ID_FIELD, resolve_casebook_bug_id
 
@@ -71,19 +72,22 @@ def load_backlog_rows(
                         """,
                         (section,),
                     ).fetchall()
-                    values: list[dict[str, str]] = []
+                    values: list[dict[str, Any]] = []
                     for row in rows:
                         metadata = context_engine_store.json.loads(str(row["metadata_json"] or "{}"))
+                        unassessed = backlog_assessment.is_unassessed(metadata)
                         values.append(
                             {
                                 "rank": str(row["rank"]),
                                 "idea_id": str(row["idea_id"]),
                                 "title": str(row["title"]),
                                 "priority": str(row["priority"]),
-                                "ordering_score": str(row["ordering_score"]),
-                                "commercial_value": str(metadata.get("commercial_value", "")).strip(),
-                                "product_impact": str(metadata.get("product_impact", "")).strip(),
-                                "market_value": str(metadata.get("market_value", "")).strip(),
+                                "ordering_score": row["ordering_score"] if row["ordering_score"] is None else str(row["ordering_score"]),
+                                "assessment_status": metadata.get("assessment_status", ""),
+                                "assessment_provenance": metadata.get("assessment_provenance", ""),
+                                "commercial_value": metadata.get("commercial_value") if unassessed else str(metadata.get("commercial_value", "")).strip(),
+                                "product_impact": metadata.get("product_impact") if unassessed else str(metadata.get("product_impact", "")).strip(),
+                                "market_value": metadata.get("market_value") if unassessed else str(metadata.get("market_value", "")).strip(),
                                 "sizing": str(metadata.get("sizing", "")).strip(),
                                 "complexity": str(metadata.get("complexity", "")).strip(),
                                 "status": str(metadata.get("status", "")).strip(),
@@ -105,7 +109,21 @@ def load_backlog_rows(
             loader=_load_runtime_rows,
             scope="default",
         )
-    return _load_backlog_projection(repo_root=root)
+    projected = _load_backlog_projection(repo_root=root)
+    for section in ("active", "execution", "finished", "parked"):
+        for row in projected.get(section, []):
+            target = context_engine_store._parse_link_target(str(row.get("link", "")))
+            path = (root / target).resolve() if target else None
+            metadata = (
+                context_engine_store.backlog_contract._parse_idea_spec(path).metadata
+                if path is not None and path.is_relative_to(root) and path.is_file() else {}
+            )
+            for field in ("assessment_status", "assessment_provenance"):
+                row[field] = metadata.get(field, "")
+            for field in backlog_assessment.NUMERIC_FIELDS:
+                if row.get(field) == backlog_assessment.UNASSESSED:
+                    row[field] = None
+    return projected
 
 def _markdown_section_bodies(text: str) -> dict[str, str]:
     sections: dict[str, str] = {}
@@ -146,6 +164,7 @@ def _normalize_backlog_detail_payload(
     sections: Mapping[str, str],
     promoted_to_plan: str,
 ) -> dict[str, Any]:
+    metadata = backlog_assessment.typed_metadata(metadata)
     normalized_sections = {
         str(key).strip(): str(value).strip()
         for key, value in sections.items()
@@ -158,15 +177,17 @@ def _normalize_backlog_detail_payload(
     payload: dict[str, Any] = {
         "idea_id": str(idea_id or "").strip().upper(),
         "idea_file": str(idea_file or "").strip(),
-        "metadata": dict(metadata) if isinstance(metadata, context_engine_store.Mapping) else {},
+        "metadata": backlog_assessment.typed_metadata(metadata),
         "sections": normalized_sections,
         "promoted_to_plan": str(promoted_to_plan or "").strip(),
         "title": str(metadata.get("title", "")).strip(),
         "priority": str(metadata.get("priority", "")).strip(),
-        "ordering_score": str(metadata.get("ordering_score", "")).strip(),
-        "commercial_value": str(metadata.get("commercial_value", "")).strip(),
-        "product_impact": str(metadata.get("product_impact", "")).strip(),
-        "market_value": str(metadata.get("market_value", "")).strip(),
+        "ordering_score": metadata.get("ordering_score") if backlog_assessment.is_unassessed(metadata) else str(metadata.get("ordering_score", "")).strip(),
+        "assessment_status": metadata.get("assessment_status", ""),
+        "assessment_provenance": metadata.get("assessment_provenance", ""),
+        "commercial_value": metadata.get("commercial_value") if backlog_assessment.is_unassessed(metadata) else str(metadata.get("commercial_value", "")).strip(),
+        "product_impact": metadata.get("product_impact") if backlog_assessment.is_unassessed(metadata) else str(metadata.get("product_impact", "")).strip(),
+        "market_value": metadata.get("market_value") if backlog_assessment.is_unassessed(metadata) else str(metadata.get("market_value", "")).strip(),
         "sizing": str(metadata.get("sizing", "")).strip(),
         "complexity": str(metadata.get("complexity", "")).strip(),
         "status": str(metadata.get("status", "")).strip(),
@@ -209,7 +230,7 @@ def _grounding_light_backlog_detail_payload(
     return {
         "idea_id": str(idea_id or "").strip().upper(),
         "idea_file": str(idea_file or "").strip(),
-        "metadata": dict(metadata) if isinstance(metadata, context_engine_store.Mapping) else {},
+        "metadata": backlog_assessment.typed_metadata(metadata),
         "promoted_to_plan": str(promoted_to_plan or "").strip(),
     }
 
@@ -248,7 +269,7 @@ def _runtime_backlog_detail_rows(
             except context_engine_store.json.JSONDecodeError:
                 metadata = {}
             payload[token] = {
-                "metadata": dict(metadata) if isinstance(metadata, context_engine_store.Mapping) else {},
+                "metadata": backlog_assessment.typed_metadata(metadata),
                 "idea_file": str(row["idea_file"] or "").strip(),
             }
         return payload

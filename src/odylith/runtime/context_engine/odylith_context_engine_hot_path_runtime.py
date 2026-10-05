@@ -246,6 +246,7 @@ def _base_workstream_candidate(entity: Mapping[str, Any]) -> dict[str, Any]:
         "workstream_parent": workstream_parent,
         "workstream_children": workstream_children,
         "metadata": metadata,
+        **({"memory_record": dict(entity["memory_record"])} if isinstance(entity.get("memory_record"), Mapping) else {}),
         "evidence": {
             "score": 0,
             "matched_paths": [],

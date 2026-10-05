@@ -691,17 +691,8 @@ def test_authored_atlas_depth_is_five_distinct_semantic_views_not_a_count_floor(
         "harbor-desk-delivery-dependencies"
     ]
     assert {
-        "component1_support",
-        "component1_actions",
-        "component1",
-        "component1_verification",
-        "source_actions",
-        "source_action1",
-        "source_facts",
-        "state",
-        "result",
-        "proof",
-        "non_goal1",
+        "component1", "component4", "source_actions", "source_facts",
+        "workstream1_acceptance",
     } <= node_ids_by_slug["harbor-desk-capability-support"]
     assert len({row["summary"] for row in rows}) == 5
     assert len({row["mermaid_source"] for row in rows}) == 5
@@ -716,7 +707,7 @@ def test_authored_atlas_depth_is_five_distinct_semantic_views_not_a_count_floor(
         "harbor-desk-delivery-dependencies"
     ]
     support = source_by_slug["harbor-desk-capability-support"]
-    assert 'component1 -->|"proposed support"| component1_actions' in support
+    assert 'component1 -. "participates in delivery" .-> workstream1_acceptance' in support
     assert "exact source overlap" not in support
     assert "exact source containment" not in support
     assert "state -->" not in support
@@ -744,7 +735,7 @@ def test_provisional_views_keep_authority_and_complete_labels_separate_from_sour
     first_run = design_rows[0]
     assert first_run["components"] == design_rows[1]["components"]
     assert "one first run, not all possible paths" in first_run["read_guide"]
-    assert 'event1 -. "proposed next step" .-> event2' in first_run["mermaid_source"]
+    assert 'event1 -.-> event2' in first_run["mermaid_source"]
     assert "event1 --> event2" not in first_run["mermaid_source"]
     exchanges = design_rows[1]
     assert "Proposed berth-occupancy<br/>state" in exchanges["mermaid_source"]
@@ -777,12 +768,10 @@ def test_single_human_event_sequence_preserves_typed_performer_edge() -> None:
     assert boxes["event1"]["label"] == authored_event_display_text(
         _relation(1, "extension publishers", event)
     )
-    assert 'performer1 -->|"performs"| event1' in sequence["mermaid_source"]
+    assert 'performer1 --> event1' in sequence["mermaid_source"]
     assert 'event1 -. "proposed support" .-> proposed_component1' in sequence["mermaid_source"]
-    assert (
-        'proposed_component1 -->|"Proposed exchange: Proposed vessel-tag record"| '
-        'proposed_component2'
-    ) in sequence["mermaid_source"]
+    assert "Proposed exchange 1 to Occupancy Record: Proposed vessel-tag record" in boxes["proposed_component1"]["description"]
+    assert "proposed exchange" not in sequence["mermaid_source"]
 
 
 def test_first_run_keeps_result_first_source_ids_and_proposed_links() -> None:
@@ -806,9 +795,9 @@ def test_first_run_keeps_result_first_source_ids_and_proposed_links() -> None:
         "event1", "event2", "event3",
     ]
     source = first_run["mermaid_source"]
-    assert 'event2 -. "proposed next step" .-> event3' in source
-    assert 'event3 -. "proposed next step" .-> event1' in source
-    assert 'event1 -. "proposed next step" .-> event2' not in source
+    assert 'event2 -.-> event3' in source
+    assert 'event3 -.-> event1' in source
+    assert 'event1 -.-> event2' not in source
     design["first_run"]["event_orders"] = [2, 1]
     rows = _authored_diagrams(
         relations=relations, provisional_design=design,
@@ -819,12 +808,12 @@ def test_first_run_keeps_result_first_source_ids_and_proposed_links() -> None:
         box["node_id"] for box in selected["diagram_boxes"]
         if box["node_id"].startswith("event")
     ] == ["event1", "event2"]
-    assert 'event2 -. "proposed next step" .-> event1' in selected["mermaid_source"]
+    assert 'event2 -.-> event1' in selected["mermaid_source"]
     proposed_steps = [
         line.strip() for line in selected["mermaid_source"].splitlines()
-        if "proposed next step" in line
+        if line.strip().startswith("event") and " -.-> event" in line
     ]
-    assert proposed_steps == ['event2 -. "proposed next step" .-> event1']
+    assert proposed_steps == ['event2 -.-> event1']
     assert "event3" not in selected["mermaid_source"]
 
 
@@ -852,7 +841,7 @@ def test_context_does_not_call_unselected_supporting_relation_a_first_path_actio
     assert "Harbor liaison inventories old berths" not in context["mermaid_source"]
     assert "event4" not in sequence["mermaid_source"]
     assert "proposed_component4" not in sequence["mermaid_source"]
-    assert "source_action4" in support["mermaid_source"]
+    assert "Source action 4" in next(box["description"] for box in support["diagram_boxes"] if box["node_id"] == "source_actions")
 
 
 def _source_lifecycle() -> dict[str, Any]:
@@ -904,11 +893,36 @@ def test_cited_off_path_lifecycle_keeps_two_effects_out_of_first_run() -> None:
     assert 'component2 -. "proposed lifecycle support" .-> off_path_transition1' in source
     assert 'off_path_transition1_effect1 -->|"changes access"| state_field1' in source
     assert 'off_path_transition1_effect2 -->|"changes cache"| state_field2' in source
+    assert 'off_path_transition1_effect1["Effect 1.1<br/>closed"]' in source
+    assert 'off_path_transition1_effect2["Effect 1.2<br/>erased"]' in source
     assert "off_path_transition" not in first_run["mermaid_source"]
     assert "withdrawal" not in first_run["mermaid_source"].lower()
     assert [box["node_id"] for box in first_run["diagram_boxes"] if box["node_id"].startswith("event")] == [
         "event1", "event2", "event3"
     ]
+
+
+def test_lifecycle_effects_on_the_same_field_show_their_distinct_exact_changes() -> None:
+    lifecycle = _source_lifecycle()
+    lifecycle["off_path_transitions"][0]["effects"] = [
+        {
+            "state_field_id": "F2", "field": "cache",
+            "change": "Exclude the withdrawn record from future cached results.",
+            "observable_check": "A new query excludes the withdrawn record.",
+        },
+        {
+            "state_field_id": "F2", "field": "cache",
+            "change": "Invalidate existing unpublished cached results that include the withdrawn record.",
+            "observable_check": "Existing unpublished results cannot be released.",
+        },
+    ]
+    support = _authored_diagrams(source_lifecycle=lifecycle)[-1]
+    boxes = {box["node_id"]: box for box in support["diagram_boxes"]}
+    for index, effect in enumerate(lifecycle["off_path_transitions"][0]["effects"], 1):
+        node = f"off_path_transition1_effect{index}"
+        assert f'{node}["Effect 1.{index}<br/>{mermaid_label(effect["change"], width=32)}"]' in support["mermaid_source"]
+        assert effect["observable_check"] in boxes[node]["description"]
+        assert f'{node} -->|"changes cache"| state_field2' in support["mermaid_source"]
 
 
 def test_absent_lifecycle_does_not_invent_atlas_transition() -> None:
@@ -917,111 +931,127 @@ def test_absent_lifecycle_does_not_invent_atlas_transition() -> None:
     assert not any(box["role"] == "Source-stated off-path transition" for box in support["diagram_boxes"])
 
 
-@pytest.mark.parametrize("event_count", [1, 3])
-def test_capability_support_displays_each_full_source_action_once(event_count: int) -> None:
+@pytest.mark.parametrize("event_count", [1, 3, 13])
+@pytest.mark.parametrize("reverse_rows", [False, True])
+def test_capability_support_compact_map_preserves_complete_many_to_many_detail(
+    event_count: int, reverse_rows: bool,
+) -> None:
     relations = tuple(
         _relation(order, "Dock attendant Ivo", f"Dock attendant Ivo reviews source record {order}")
         for order in range(1, event_count + 1)
     )
+    if reverse_rows:
+        relations = tuple(reversed(relations))
     design = _provisional_design(event_orders=tuple(range(1, event_count + 1)))
+    before = deepcopy((relations, design))
     support = _authored_diagrams(
         relations=relations, provisional_design=design, result_event_order=event_count,
     )[-1]
     boxes = {box["node_id"]: box for box in support["diagram_boxes"]}
-    for relation in relations:
-        complete = (
-            f"Source action {relation['order']} · {relation['actor_kind']}\n"
-            f"{authored_event_display_text(relation)}"
-        )
-        assert sum(complete in box["label"] for box in boxes.values()) == 1
-    for index, component in enumerate(design["components"], 1):
-        assert boxes[f"component{index}_actions"]["label"] == ", ".join(
-            f"Source action {order}" for order in component["supported_event_orders"]
-        )
-
-
-def test_capability_support_keeps_source_events_and_proposed_ownership_distinct() -> None:
-    rows = _authored_diagrams()
-    support = next(
-        row for row in rows if row["slug"] == "harbor-desk-capability-support"
-    )
-    boxes = {row["node_id"]: row for row in support["diagram_boxes"]}
-
-    assert boxes["component1_actions"]["label"] == "Source action 1"
-    assert boxes["source_action1"]["label"] == (
-        "Source action 1 · human\nActor: Dock attendant Ivo\n"
-        "Source event: Dock attendant Ivo enters a vessel tag"
-    )
-    assert boxes["component1_actions"]["role"] == "Supported source actions"
-    assert boxes["component1"]["role"] == "Proposed component"
-    assert 'component1 -->|"proposed support"| component1_actions' in support["mermaid_source"]
-    assert "event1 --> component1" not in support["mermaid_source"]
-    assert "owner" not in support["mermaid_source"]
-    assert "source_action1 -->" not in support["mermaid_source"]
-    assert boxes["source_facts"]["label"] == "Source-stated facts"
-    assert support["summary"] == (
-        "Proposed component support for source-stated actions, with source-stated "
-        "state, result, and proof."
-    )
-    assert "Accepted" not in json.dumps(support)
-
-
-@pytest.mark.parametrize("reverse_rows", [False, True])
-def test_capability_support_local_groups_preserve_exact_many_to_many_references(
-    reverse_rows: bool,
-) -> None:
-    relations = (
-        _relation(1, "Dispatch coordinator", "submits the request; retains its receipt"),
-        _relation(2, "Audit reviewer", "checks the receipt without approving payment"),
-        _relation(3, "Berth map", "shows the receipt & its `review` status", actor_kind="product", owner="Berth map"),
-    )
-    if reverse_rows:
-        relations = tuple(reversed(relations))
-    design = _provisional_design()
-    before = deepcopy((relations, design))
-    support = _authored_diagrams(
-        relations=relations, provisional_design=design,
-        human_actors=("Dispatch coordinator", "Audit reviewer"),
-    )[-1]
-    boxes = {row["node_id"]: row for row in support["diagram_boxes"]}
     source = support["mermaid_source"]
-    by_order = {row["order"]: row for row in relations}
-    for index, component in enumerate(design["components"], 1):
-        actions = ", ".join(
-            f"Source action {order}"
-            for order in component["supported_event_orders"]
-        )
-        assert boxes[f"component{index}_actions"]["label"] == actions
-        assert mermaid_label(actions, width=44) in source
-        assert mermaid_label(component["responsibility"], width=44) in source
-        assert mermaid_label(component["verification"], width=44) in source
-        group = source.split(f"  subgraph component{index}_support[", 1)[1].split("  end", 1)[0]
-        assert f'component{index} -->|"proposed support"| component{index}_actions' in group
-        assert f'component{index} -. "proposed boundary check" .-> component{index}_verification' in group
-        assert group.count("-->") == 1
-        assert group.count(".->") == 1
-    inventory = source.split('  subgraph source_actions[', 1)[1].split("  end", 1)[0]
-    assert "-->" not in inventory
-    assert ".->" not in inventory
-    for order, event in by_order.items():
-        action = (
-            f"Source action {order} · {event['actor_kind']}\n"
+    action_detail = boxes["source_actions"]["description"]
+    for event in sorted(relations, key=lambda row: row["order"]):
+        complete = (
+            f"Source action {event['order']} · {event['actor_kind']}\n"
             f"{authored_event_display_text(event)}"
         )
-        assert boxes[f"source_action{order}"]["label"] == action
-        label = "<br/>".join(mermaid_label(line, width=44) for line in action.splitlines())
-        assert source.count(f'source_action{order}["{label}"]') == 1
-    assert [box["node_id"] for box in boxes.values() if box["role"] == "Source action reference"] == [
-        "source_action1", "source_action2", "source_action3",
-    ]
-    assert source.count("-->") == len(design["components"])
-    assert source.count(".->") == len(design["components"]) + sum(
-        len(workstream["component_keys"]) for workstream in design["workstreams"]
-    )
-    assert "source_path" not in source
-    assert "reference inventory shows each full action once" in support["read_guide"]
-    assert "repeated IDs do not create additional events or execution order" in support["read_guide"]
+        assert action_detail.count(complete) == 1
+    for index, component in enumerate(design["components"], 1):
+        box = boxes[f"component{index}"]
+        actions = "Source actions: " + ", ".join(map(str, component["supported_event_orders"]))
+        assert actions in box["description"]
+        assert mermaid_label(actions, width=32) in source
+        assert component["responsibility"] in box["description"]
+        assert component["verification"] in box["description"]
+        assert box["role"] == "Proposed component support"
+    for index, workstream in enumerate(design["workstreams"], 1):
+        detail = boxes[f"workstream{index}_acceptance"]["description"]
+        assert workstream["verification"] in detail
+        assert workstream["deliverable"] in detail
+    assert "Source-stated state object: berth occupancy" in boxes["source_facts"]["description"]
+    assert "Source-stated visible result:" in boxes["source_facts"]["description"]
+    assert "Source-stated proof boundary:" in boxes["source_facts"]["description"]
+    assert "Source-stated non-goal 1: Do not manage vessel scheduling" in boxes["source_facts"]["description"]
+    assert "source_actions -->" not in source and "source_facts -->" not in source
+    assert source.count(".->") == sum(len(row["component_keys"]) for row in design["workstreams"])
+    assert "Select a diagram box in Read mode for complete statements" in support["read_guide"]
     assert (relations, design) == before
+
+
+def test_long_statements_change_sealed_detail_without_expanding_support_topology() -> None:
+    baseline = _authored_diagrams()[-1]
+    design = _provisional_design()
+    long_statement = "Keep every retained record and its original safety boundary; " * 35 + "the final clause remains."
+    for component in design["components"]:
+        component["responsibility"] = long_statement
+        component["verification"] = long_statement
+    for workstream in design["workstreams"]:
+        workstream["deliverable"] = long_statement
+        workstream["verification"] = long_statement
+    support = _authored_diagrams(provisional_design=design)[-1]
+    assert support["mermaid_source"] == baseline["mermaid_source"]
+    details = {box["node_id"]: box for box in support["diagram_boxes"]}
+    assert details["component1"]["description"].count(long_statement) == 2
+    assert details["workstream1_acceptance"]["description"].count(long_statement) == 2
+    assert support["authored_atlas_view_authority"]["surface_sha256"] != baseline["authored_atlas_view_authority"]["surface_sha256"]
+
+
+def test_first_path_keeps_upstream_support_without_selecting_its_actions_or_downstream_consumers() -> None:
+    design = _provisional_design(event_orders=(1, 2, 3, 4))
+    design["first_run"]["event_orders"] = [3]
+    design["components"][3]["supported_event_orders"] = [4]
+    design["components"][3]["verification_event_orders"] = [4]
+    design["workstreams"][3]["verification_event_orders"] = [4]
+    rows = _authored_diagrams(
+        relations=tuple(_relation(order, "Dock attendant Ivo", f"reviews record {order}") for order in range(1, 5)),
+        provisional_design=design,
+    )
+    sequence = rows[1]
+    boxes = {box["node_id"]: box for box in sequence["diagram_boxes"]}
+    assert set(boxes) == {"event3", "performer1", "proposed_component1", "proposed_component2", "proposed_component3"}
+    assert boxes["proposed_component1"]["role"] == "Proposed supporting component"
+    for index, exchange in enumerate(design["exchanges"][:2], 1):
+        assert f"Proposed exchange {index} to" in boxes[f"proposed_component{index}"]["description"]
+        assert exchange["contract"] in boxes[f"proposed_component{index}"]["description"]
+    assert "Proposed delivery prerequisite: Vessel Intake through Deliver vessel intake." in boxes["proposed_component2"]["description"]
+    assert "proposed delivery" not in sequence["mermaid_source"]
+
+
+def test_compact_support_keeps_provisional_proof_out_of_source_facts() -> None:
+    from odylith.runtime.domain_intelligence.greenfield_authored_atlas_design_views import build_provisional_design_atlas_specs
+
+    relations = [{**_relation(order, "Dock attendant Ivo", f"reviews record {order}"), "visible_result_quote": ""} for order in (1, 2, 3)]
+    support = build_provisional_design_atlas_specs(
+        provisional_design=_provisional_design(), relations=relations,
+        state_object="berth occupancy", visible_result="Proposed visible result",
+        proof_boundary="Proposed retention checkpoint", non_goals=["No scheduling"],
+        source_precedence=(), proof_is_provisional=True,
+    )["capability_support"]
+    boxes = {box["node_id"]: box for box in support["boxes"]}
+    assert "Proposed retention checkpoint" not in boxes["source_facts"]["description"]
+    assert "visible result" not in boxes["source_facts"]["description"]
+    assert boxes["proof"]["label"] == "Proposed retention checkpoint"
+    assert boxes["proof"]["role"] == "Proposed proof checkpoint"
+    assert "Assumption" in support["source"]
+
+
+def test_first_path_preserves_long_contracts_and_empty_action_support_in_detail() -> None:
+    design = _provisional_design()
+    design["first_run"]["event_orders"] = [1, 3]
+    long_contract = "Retain authorization, withdrawal and privacy boundaries across the handoff; " * 25 + "preserve the final condition."
+    design["exchanges"][0]["contract"] = long_contract
+    before = deepcopy(design)
+    rows = _authored_diagrams(provisional_design=design, source_lifecycle=_source_lifecycle())
+    first_run, support = rows[1], rows[-1]
+    boxes = {box["node_id"]: box for box in first_run["diagram_boxes"]}
+    assert boxes["proposed_component2"]["role"] == "Proposed supporting component"
+    assert long_contract in boxes["proposed_component1"]["description"]
+    assert long_contract not in first_run["mermaid_source"]
+    support_boxes = {box["node_id"]: box for box in support["diagram_boxes"]}
+    assert "Source actions: 2" in support_boxes["component2"]["description"]
+    assert "Withdrawal closes placement access and erases the cached placement" in support_boxes["off_path_transition1"]["description"]
+    assert "Observable check: cache empty" in support_boxes["off_path_transition1_effect2"]["description"]
+    assert design == before
 
 
 def test_authored_atlas_authority_kind_is_sealed_with_the_display() -> None:

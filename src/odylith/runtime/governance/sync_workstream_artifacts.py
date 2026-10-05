@@ -1023,6 +1023,7 @@ def _atlas_auto_update_command(
     force: bool,
     impact_mode: str,
     runtime_mode: str,
+    atlas_diagram_ids: Sequence[str] = (),
 ) -> tuple[str, ...]:
     command: list[str] = [
         "python",
@@ -1035,7 +1036,11 @@ def _atlas_auto_update_command(
     command.extend(_runtime_args(runtime_mode))
     for token in changed_paths:
         command.extend(["--changed-path", str(token)])
-    if force or str(impact_mode).strip().lower() != "selective":
+    if atlas_diagram_ids:
+        for diagram_id in atlas_diagram_ids:
+            command.extend(["--diagram-id", diagram_id])
+        command.append("--preserve-review-date")
+    elif force or str(impact_mode).strip().lower() != "selective":
         command.append("--all-stale")
     return tuple(command)
 
@@ -1128,11 +1133,16 @@ def _casebook_render_step(
     )
 
 
-def _owned_surface_refresh_command(*, surface: str, atlas_sync: bool = False) -> str:
+def _owned_surface_refresh_command(
+    *, surface: str, atlas_sync: bool = False, atlas_diagram_ids: Sequence[str] = (),
+) -> str:
     normalized = str(surface).strip().lower()
     if normalized in {"radar", "registry", "casebook"}:
         return display_command(normalized, "refresh", "--repo-root", ".")
     if normalized == "atlas":
+        if atlas_diagram_ids:
+            return display_command("atlas", "auto-update", "--repo-root", ".", "--preserve-review-date", "--fail-on-stale",
+                                   *(token for diagram_id in atlas_diagram_ids for token in ("--diagram-id", diagram_id)))
         argv: list[str] = ["atlas", "refresh", "--repo-root", "."]
         if atlas_sync:
             argv.append("--atlas-sync")
@@ -1215,9 +1225,10 @@ def _dashboard_surface_steps(
     surface: str,
     runtime_mode: str,
     atlas_sync: bool,
+    atlas_diagram_ids: Sequence[str] = (),
 ) -> list[ExecutionStep]:
     normalized_runtime_mode = str(runtime_mode).strip().lower() or "auto"
-    refresh_command = _owned_surface_refresh_command(surface=surface, atlas_sync=atlas_sync)
+    refresh_command = _owned_surface_refresh_command(surface=surface, atlas_sync=atlas_sync, atlas_diagram_ids=atlas_diagram_ids)
     steps: list[ExecutionStep] = []
     if surface in {"registry", "tooling_shell"}:
         command = _delivery_intelligence_command(repo_root=repo_root, check_only=False)
@@ -1239,10 +1250,12 @@ def _dashboard_surface_steps(
             force=True,
             impact_mode="full",
             runtime_mode=normalized_runtime_mode,
+            **({"atlas_diagram_ids": atlas_diagram_ids} if atlas_diagram_ids else {}),
         )
         steps.append(
             _execution_step(
-                "Refresh stale Atlas Mermaid diagrams before rerendering the Atlas surface.",
+                "Refresh selected Atlas Mermaid diagrams before rerendering the Atlas surface." if atlas_diagram_ids
+                else "Refresh stale Atlas Mermaid diagrams before rerendering the Atlas surface.",
                 surface=surface,
                 command=command,
                 standalone_command=_runtime_retry_command(command),
@@ -1252,7 +1265,8 @@ def _dashboard_surface_steps(
                     "odylith/atlas/source/*.svg",
                     "odylith/atlas/source/*.png",
                 ),
-                next_command_on_failure=display_command("atlas", "auto-update", "--repo-root", ".", "--all-stale"),
+                next_command_on_failure=refresh_command if atlas_diagram_ids
+                else display_command("atlas", "auto-update", "--repo-root", ".", "--all-stale"),
                 timeout_seconds=dashboard_refresh_contract.dashboard_refresh_timeout_seconds(surface="atlas"),
             )
         )
@@ -1320,6 +1334,7 @@ def _dashboard_surface_steps(
                         "--fail-on-stale",
                         "--runtime-mode",
                         normalized_runtime_mode,
+                        *(token for diagram_id in atlas_diagram_ids for token in ("--diagram-id", diagram_id)),
                     ]
                 ),
                 next_command_on_failure=refresh_command,
@@ -1395,6 +1410,7 @@ def _build_dashboard_refresh_steps(
     selected: Sequence[str],
     runtime_mode: str,
     atlas_sync: bool,
+    atlas_diagram_ids: Sequence[str] = (),
 ) -> list[ExecutionStep]:
     steps: list[ExecutionStep] = []
     for surface in selected:
@@ -1404,6 +1420,7 @@ def _build_dashboard_refresh_steps(
                 surface=surface,
                 runtime_mode=runtime_mode,
                 atlas_sync=atlas_sync,
+                **({"atlas_diagram_ids": atlas_diagram_ids} if atlas_diagram_ids else {}),
             )
         )
     return steps
@@ -1416,6 +1433,7 @@ def build_dashboard_refresh_plan(
     runtime_mode: str,
     atlas_sync: bool = False,
     force: bool = False,
+    atlas_diagram_ids: Sequence[str] = (),
 ) -> ExecutionPlan:
     selected = normalize_dashboard_surfaces(surfaces)
     normalized_runtime_mode = str(runtime_mode).strip().lower() or "auto"
@@ -1425,6 +1443,9 @@ def build_dashboard_refresh_plan(
         atlas_sync=bool(atlas_sync),
         force=bool(force),
     )
+    if atlas_diagram_ids:
+        notes.append("Atlas refresh is restricted to " + ", ".join(atlas_diagram_ids)
+                     + "; authored review dates and unrelated review debt remain intact.")
     return _execution_plan(
         headline=(
             f"Refresh {', '.join(selected)} with runtime mode `{normalized_runtime_mode}`."
@@ -1434,6 +1455,7 @@ def build_dashboard_refresh_plan(
             selected=selected,
             runtime_mode=normalized_runtime_mode,
             atlas_sync=atlas_sync,
+            **({"atlas_diagram_ids": atlas_diagram_ids} if atlas_diagram_ids else {}),
         ),
         notes=notes,
         repo_root=repo_root,
@@ -1719,6 +1741,7 @@ def _run_surface_worker(
     force: bool = False,
     run_impl: Callable[..., int],
     include_action_results: bool = False,
+    atlas_diagram_ids: Sequence[str] = (),
 ) -> tuple[str, dict[str, Any]]:
     """Execute one surface's step chain and capture its stdout.
 
@@ -1740,6 +1763,7 @@ def _run_surface_worker(
                 surface=surface,
                 atlas_sync=atlas_sync if surface == "atlas" else False,
                 outputs=outputs,
+                **({"atlas_diagram_ids": atlas_diagram_ids} if surface == "atlas" and atlas_diagram_ids else {}),
             )
         if cache_hit and surface == "casebook":
             validation_rc = _casebook_source_validation_action(repo_root=repo_root)
@@ -1769,6 +1793,7 @@ def _run_surface_worker(
                 surface=surface,
                 runtime_mode=runtime_mode,
                 atlas_sync=atlas_sync,
+                **({"atlas_diagram_ids": atlas_diagram_ids} if surface == "atlas" and atlas_diagram_ids else {}),
             )
             result = _execute_dashboard_refresh_surface(
                 repo_root=repo_root,
@@ -1785,6 +1810,7 @@ def _run_surface_worker(
                     atlas_sync=atlas_sync if surface == "atlas" else False,
                     outputs=outputs,
                     details={"runtime_mode": runtime_mode},
+                    **({"atlas_diagram_ids": atlas_diagram_ids} if surface == "atlas" and atlas_diagram_ids else {}),
                 )
     finally:
         _dashboard_thread_capture.buf = None
@@ -1800,6 +1826,7 @@ def _refresh_surfaces_parallel(
     force: bool,
     run_impl: Callable[..., int],
     include_action_results: bool = False,
+    atlas_diagram_ids: Sequence[str] = (),
 ) -> list[dict[str, Any]]:
     """Refresh multiple dashboard surfaces concurrently.
 
@@ -1830,6 +1857,7 @@ def _refresh_surfaces_parallel(
                     force=force,
                     run_impl=run_impl,
                     **({"include_action_results": True} if include_action_results else {}),
+                    **({"atlas_diagram_ids": atlas_diagram_ids} if surface == "atlas" and atlas_diagram_ids else {}),
                 )
                 future_map[future] = surface
     finally:
@@ -1881,8 +1909,11 @@ def refresh_dashboard_surfaces(
     on_completed: Callable[[], int] | None = None,
     repository_lock_fd: int | None = None,
     on_results: Callable[[Sequence[Mapping[str, Any]]], None] | None = None,
+    atlas_diagram_ids: Sequence[str] = (),
 ) -> int:
     selected = normalize_dashboard_surfaces(surfaces)
+    if atlas_diagram_ids and ("atlas" not in selected or not atlas_sync):
+        raise ValueError("selected Atlas diagrams require an Atlas sync refresh")
     normalized_runtime_mode = str(runtime_mode).strip().lower() or "auto"
     plan = build_dashboard_refresh_plan(
         repo_root=repo_root,
@@ -1890,6 +1921,7 @@ def refresh_dashboard_surfaces(
         runtime_mode=normalized_runtime_mode,
         atlas_sync=atlas_sync,
         force=bool(force),
+        **({"atlas_diagram_ids": atlas_diagram_ids} if atlas_diagram_ids else {}),
     )
     _print_execution_plan("dashboard refresh", plan, dry_run=bool(dry_run), verbose=bool(verbose))
     if dry_run:
@@ -1929,6 +1961,7 @@ def refresh_dashboard_surfaces(
                             force=bool(force),
                             run_impl=run_impl,
                             **({"include_action_results": True} if on_results is not None else {}),
+                            **({"atlas_diagram_ids": atlas_diagram_ids} if atlas_diagram_ids else {}),
                         )
                     )
                     continue
@@ -1941,6 +1974,7 @@ def refresh_dashboard_surfaces(
                         force=bool(force),
                         run_impl=run_impl,
                         **({"include_action_results": True} if on_results is not None else {}),
+                        **({"atlas_diagram_ids": atlas_diagram_ids} if surface == "atlas" and atlas_diagram_ids else {}),
                     )
                     if output:
                         sys.stdout.write(output)

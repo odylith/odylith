@@ -257,7 +257,7 @@ def test_memory_backend_sticky_snapshot_accepts_full_scope_as_reasoning_superset
     assert compatible is True
 
 
-def test_load_judgment_workstream_hint_matches_overlapping_slice(tmp_path: Path) -> None:
+def test_legacy_judgment_workstream_hint_requires_current_evidence(tmp_path: Path) -> None:
     judgment_path = store.judgment_memory_path(repo_root=tmp_path)
     judgment_path.parent.mkdir(parents=True, exist_ok=True)
     judgment_path.write_text(
@@ -281,10 +281,7 @@ def test_load_judgment_workstream_hint_matches_overlapping_slice(tmp_path: Path)
         changed_paths=["src/odylith/runtime/context_engine/odylith_context_engine_store.py"],
     )
 
-    assert hint["workstream_id"] == "B-010"
-    assert hint["slice_path"] == "src/odylith/runtime/context_engine"
-    assert hint["confidence"] == "high"
-    assert hint["matched_paths"] == ["src/odylith/runtime/context_engine/odylith_context_engine_store.py"]
+    assert hint == {}
 
 
 def test_workstream_selection_uses_judgment_hint_to_break_low_signal_ambiguity() -> None:
@@ -293,6 +290,7 @@ def test_workstream_selection_uses_judgment_hint_to_break_low_signal_ambiguity()
         candidates=[
             {
                 "entity_id": "B-010",
+                "path": "odylith/radar/source/ideas/memory.md",
                 "title": "Durable memory",
                 "evidence": {
                     "score": 60,
@@ -315,6 +313,12 @@ def test_workstream_selection_uses_judgment_hint_to_break_low_signal_ambiguity()
             },
         ],
         judgment_hint={
+            "memory_admission": "current_source_confirmed",
+            "memory_record": {
+                "version": "memory_record.v1", "role": "current_truth", "validity": "current",
+                "source_ref": "odylith/radar/source/ideas/memory.md", "source_fingerprint": "a" * 64,
+                "provenance": {"version": "v1", "repo_root": ".", "projection_fingerprint": "b" * 64, "projection_scope": "reasoning", "code_version": "c" * 64, "sync_generation": 0, "flags": {}},
+            },
             "workstream_id": "B-010",
             "confidence": "medium",
             "reason": "Durable slice memory already ties `src/odylith/runtime/context_engine` to `B-010`.",

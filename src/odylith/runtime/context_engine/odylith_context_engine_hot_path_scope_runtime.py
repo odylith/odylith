@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from odylith.runtime.context_engine import memory_record_policy
+
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.context_engine import odylith_context_engine_intent_anchor_runtime as intent_anchor_runtime
 from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime
@@ -608,9 +610,12 @@ def _workstream_selection(
     hinted_workstream = context_engine_store._workstream_token(str(judgment.get("workstream_id", "")).strip())
     top_workstream = context_engine_store._workstream_token(str(top.get("entity_id", "")).strip())
     top_matches_judgment = bool(
-        hinted_workstream
+        judgment.get("memory_admission") == "current_source_confirmed"
+        and memory_record_policy.assess(judgment.get("memory_record"))["current_authority"]
+        and hinted_workstream
         and top_workstream
         and hinted_workstream == top_workstream
+        and str(top.get("path", "")).removeprefix("./") == str(dict(judgment.get("memory_record", {})).get("source_ref", "")).removeprefix("./")
         and context_engine_store._workstream_has_path_signal(top)
         and (not broad_only or strong_signals > 0)
     )
@@ -658,7 +663,7 @@ def _workstream_selection(
         )
         if int(top_evidence.get("strong_signal_count", 0) or 0) > 0 and strong_candidate_count > 1:
             ambiguity_class = "historical_fanout"
-        if top_matches_judgment:
+        if top_matches_judgment and ambiguity_class != "historical_fanout":
             return _selection_payload(
                 state="inferred_confident",
                 reason=(
@@ -948,6 +953,8 @@ def list_session_states(
                 "claimed_surfaces": claim_sets["claimed_surfaces"],
                 "working_tree_scope": str(payload.get("working_tree_scope", "")).strip(),
                 "selection_state": str(payload.get("selection_state", "")).strip(),
+                "selection_ambiguity_class": str(payload.get("selection_ambiguity_class", "")).strip(),
+                "evidence_confirmed_utc": str(payload.get("evidence_confirmed_utc", "")).strip(),
                 "selection_reason": str(payload.get("selection_reason", "")).strip(),
                 "branch_name": str(payload.get("branch_name", "")).strip(),
                 "head_oid": str(payload.get("head_oid", "")).strip(),
@@ -971,6 +978,7 @@ def register_session_state(
     turn_context: Mapping[str, Any] | None = None,
     claim_mode: str = "shared",
     selection_state: str = "",
+    selection_ambiguity_class: str = "",
     selection_reason: str = "",
     working_tree_scope: str = "",
     auto_claim_paths: Sequence[str] = (),
@@ -983,6 +991,13 @@ def register_session_state(
         generated_surfaces=generated_surfaces,
         auto_claim_paths=auto_claim_paths,
         claimed_paths=claimed_paths,
+    )
+    previous = _load_session_state(repo_root=repo_root, session_id=session_id, include_stale=True) or {}
+    confirmed = (
+        context_engine_store._utc_now()
+        if memory_record_policy.independent_selection(selection_state, selection_ambiguity_class)
+        else str(previous.get("evidence_confirmed_utc", ""))
+        if previous.get("workstream") == str(workstream or "").strip().upper() else ""
     )
     record = {
         "session_id": agent_runtime_contract.fallback_session_token(session_id),
@@ -1004,6 +1019,8 @@ def register_session_state(
         "claim_mode": _normalize_claim_mode(claim_mode),
         "lease_expires_utc": _lease_expires_utc(lease_seconds=int(lease_seconds)),
         "selection_state": str(selection_state or "").strip(),
+        "selection_ambiguity_class": str(selection_ambiguity_class or "").strip(),
+        "evidence_confirmed_utc": confirmed,
         "selection_reason": str(selection_reason or "").strip(),
         "working_tree_scope": str(working_tree_scope or "").strip().lower(),
         "claimed_workstreams": claims["claimed_workstreams"],

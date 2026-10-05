@@ -20,6 +20,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import 
 from odylith.runtime.domain_intelligence.greenfield_authored_radar_ordering import (
     build_authored_ordering_decision,
 )
+from odylith.runtime.governance.backlog_assessment import UNASSESSED_BACKLOG_METADATA
 from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
     authored_event_display_text,
 )
@@ -363,9 +364,7 @@ def build_provisional_backlog(
             "opportunity": local_opportunity,
             "product_view": product_view,
             "success_metrics": verification,
-            "priority": "P1",
-            "sizing": "M",
-            "complexity": "Medium",
+            **UNASSESSED_BACKLOG_METADATA,
             "recommended_first_slice": deliverable,
             "deliverable": workstream["deliverable"],
             "component_focus": list(component_keys),

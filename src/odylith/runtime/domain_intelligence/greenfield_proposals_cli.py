@@ -97,6 +97,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     subparsers = parser.add_subparsers(dest="command", required=True)
     propose = subparsers.add_parser("propose", help="Stage a complete Greenfield package and show a read-only proposal.")
     propose.add_argument("--repo-root", default=".")
+    propose.add_argument("--completion-receipt", default="")
     propose.add_argument("--prompt", required=True)
     propose.add_argument(
         "--candidate-file",
@@ -233,6 +234,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         "--transaction-hash",
         help="Use the retained source from this sealed package for an EDIT candidate.",
     )
+    candidate_contract.add_argument("--completion-receipt", default="")
     candidate_contract.add_argument("--edit", default="")
     candidate_contract.add_argument("--edit-evidence", default="")
     candidate_contract.add_argument(
@@ -344,6 +346,7 @@ def rebuild_pending_transaction(
     host_candidate_file: str = "",
     authority_gate_file: str = "",
     source_duty_file: str = "",
+    completion_receipt: Path | str | None = None,
 ) -> int:
     """Re-author from verified retained evidence; never alter the sealed package."""
     from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
@@ -353,7 +356,7 @@ def rebuild_pending_transaction(
     started = time.perf_counter() if started_at is None else started_at
     try:
         path = greenfield_pending_transaction_store.resolve_pending_transaction(
-            repo_root=repo_root, transaction_hash=transaction_hash,
+            repo_root=repo_root, transaction_hash=transaction_hash, completion_receipt=completion_receipt,
         )
         previous = load_compiled_product_create_transaction_file(path)
         correction = _edit_evidence_from_args(
@@ -388,7 +391,7 @@ def rebuild_pending_transaction(
             repair_tier=previous.quality_manifest["requested_repair_tier"],
             source_language="en", started_at=started,
             host_candidate=host_candidate,
-            source_duty_receipt=ledger_receipt,
+            source_duty_receipt=ledger_receipt, completion_receipt=completion_receipt,
         )
         if transaction.transaction_hash == transaction_hash:
             raise RuntimeError("The correction did not produce a new sealed package. The old package is unchanged.")
@@ -550,6 +553,7 @@ def _compile_prompt_evidence_transaction(
     clock: Callable[[], float] | None = None,
     host_candidate: Mapping[str, Any],
     source_duty_receipt: Mapping[str, Any],
+    completion_receipt: Path | str | None = None,
 ) -> tuple[dict[str, Any], Any, Path]:
     now = clock or time.perf_counter
     started = now() if started_at is None else float(started_at)
@@ -624,7 +628,7 @@ def _compile_prompt_evidence_transaction(
         repo_root=repo_root,
         transaction=transaction,
         started_at=started,
-        clock=now,
+        clock=now, completion_receipt=completion_receipt,
     )
     return candidate_intent, transaction, transaction_path
 
@@ -635,6 +639,7 @@ def _stage_pending_transaction_with_deadline(
     transaction: Any,
     started_at: float,
     clock: Callable[[], float],
+    completion_receipt: Path | str | None = None,
 ) -> Path:
     """Publish only while the sealed operational timeout remains valid."""
 
@@ -650,11 +655,11 @@ def _stage_pending_transaction_with_deadline(
     pending_preexisted = pending_directory.exists()
     transaction_path = greenfield_pending_transaction_store.stage_pending_transaction(
         repo_root=repo_root,
-        transaction=transaction,
+        transaction=transaction, completion_receipt=completion_receipt,
     )
     final_elapsed_seconds = max(0.0, clock() - started_at)
     if final_elapsed_seconds >= operational_timeout_seconds:
-        if not pending_preexisted:
+        if not pending_preexisted and not (pending_directory / ".bounded-journey.v1.json").exists():
             try:
                 greenfield_pending_transaction_store.discard_pending_transaction(
                     repo_root=repo_root,
@@ -715,7 +720,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
                 path = greenfield_pending_transaction_store.resolve_pending_transaction(
                     repo_root=repo_root,
-                    transaction_hash=str(args.transaction_hash),
+                    transaction_hash=str(args.transaction_hash), completion_receipt=args.completion_receipt or None,
                 )
                 previous = load_compiled_product_create_transaction_file(path)
                 prompt = str(previous.proposal.get("intent", {}).get("prompt") or "")
@@ -828,7 +833,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 source_language=str(args.evidence_language),
                 started_at=started_at,
                 host_candidate=host_candidate,
-                source_duty_receipt=source_duty_receipt,
+                source_duty_receipt=source_duty_receipt, completion_receipt=args.completion_receipt or None,
             )
         except GreenfieldClarificationRequired as exc:
             return _finish_clarification(exc=exc, as_json=args.output_format == "json")

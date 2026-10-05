@@ -6,7 +6,7 @@ import json
 from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
     HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION,
 )
-import greenfield_matrix_host_candidate as host_module
+from odylith.runtime.domain_intelligence import greenfield_host_flow as host_module
 from tests.unit.install.test_greenfield_matrix_host_candidate import _flow
 
 

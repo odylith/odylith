@@ -105,6 +105,7 @@ def test_update_replaces_only_supplied_fields_and_refreshes(tmp_path: Path, monk
             "repo_root": tmp_path.resolve(),
             "surface": "atlas",
             "operation_label": "Atlas update",
+            "atlas_diagram_ids": ("D-010",),
         }
     ]
     assert "updated diagram: D-010 / example" in capsys.readouterr().out

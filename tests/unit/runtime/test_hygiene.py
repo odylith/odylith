@@ -247,7 +247,8 @@ RUNTIME_HOTFILE_LIMITS = {
     "src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py": 1940,
     "src/odylith/runtime/memory/odylith_memory_backend.py": 1849,
     "src/odylith/runtime/evaluation/odylith_evaluation_ledger.py": 1576,
-    "src/odylith/runtime/context_engine/odylith_context_engine_hot_path_scope_runtime.py": 1576,
+    # B-133 H1 permits 1571 -> 1588 LOC for adopted shared memory/session policy calls.
+    "src/odylith/runtime/context_engine/odylith_context_engine_hot_path_scope_runtime.py": 1588,
     "src/odylith/runtime/surfaces/compass_dashboard_runtime.py": 1556,
     "src/odylith/runtime/context_engine/odylith_context_engine_grounding_runtime.py": 1508,
 }

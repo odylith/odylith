@@ -18,6 +18,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_source_citations impor
 from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
     GreenfieldSourceDutyBindingError,
     validate_greenfield_source_duty_binding,
+    validate_greenfield_source_duty_design_binding,
 )
 from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
     GreenfieldSourceDutyLedgerError,
@@ -166,6 +167,15 @@ def project_greenfield_source_lifecycle(
     except (GreenfieldSourceDutyLedgerError, GreenfieldSourceDutyBindingError) as exc:
         raise GreenfieldSourceLifecycleError("source lifecycle custody is invalid") from exc
 
+    return _project_verified_source_lifecycle(
+        receipt=receipt, binding=accepted_binding, evidence_text=evidence_text,
+    )
+
+
+def _project_verified_source_lifecycle(
+    *, receipt: Mapping[str, Any], binding: Mapping[str, Any], evidence_text: str,
+) -> dict[str, Any]:
+    """Project already verified records for both admission and exact readback."""
     ledger = receipt["ledger"]
     evidence = evidence_text.encode("utf-8")
     fields = ledger["state_fields"]
@@ -183,7 +193,7 @@ def project_greenfield_source_lifecycle(
 
     off_path_transitions: list[dict[str, Any]] = []
     for duty, owner in zip(
-        ledger["off_path_transitions"], accepted_binding["off_path_transitions"]
+        ledger["off_path_transitions"], binding["off_path_transitions"]
     ):
         effects: list[dict[str, Any]] = []
         for source_effect, field in zip(duty["effects"], resolved_fields[duty["id"]], strict=True):
@@ -211,12 +221,12 @@ def project_greenfield_source_lifecycle(
         "version": SOURCE_LIFECYCLE_VERSION,
         "source_sha256": receipt["source_sha256"],
         "ledger_sha256": receipt["ledger_sha256"],
-        "binding_sha256": _sha256(accepted_binding),
+        "binding_sha256": _sha256(binding),
         "state_fields": state_fields,
         "off_path_transitions": off_path_transitions,
         **{
             role: _design_duties(
-                ledger=ledger, binding=accepted_binding, evidence=evidence, role=role,
+                ledger=ledger, binding=binding, evidence=evidence, role=role,
             )
             for role in _DESIGN_DUTY_FIELDS
         },
@@ -225,9 +235,48 @@ def project_greenfield_source_lifecycle(
     return lifecycle
 
 
+def require_verified_greenfield_source_lifecycle(
+    source_duty: Mapping[str, Any], *, evidence_text: str,
+    provisional_design: Mapping[str, Any],
+) -> None:
+    """Require the complete passive projection of accepted source duties.
+
+    Rehashing exported records cannot authorize new state meaning, effects,
+    citations or owners. Raw candidate citations remain admission-owned and
+    are neither reconstructed nor inferred during this readback.
+    """
+    if not isinstance(source_duty, Mapping) or set(source_duty) != {
+        "ledger_receipt", "binding", "lifecycle"
+    }:
+        raise GreenfieldSourceLifecycleError("source duty custody is incomplete")
+    receipt, binding, lifecycle = (
+        source_duty["ledger_receipt"], source_duty["binding"], source_duty["lifecycle"]
+    )
+    if not all(isinstance(row, Mapping) for row in (receipt, binding, lifecycle)):
+        raise GreenfieldSourceLifecycleError("source duty custody is incomplete")
+    try:
+        receipt = verify_greenfield_source_duty_ledger_receipt(receipt, evidence_text=evidence_text)
+        if (
+            binding.get("source_sha256") != receipt["source_sha256"]
+            or binding.get("ledger_sha256") != receipt["ledger_sha256"]
+        ):
+            raise GreenfieldSourceLifecycleError("source duty projection custody is stale")
+        validate_greenfield_source_duty_design_binding(
+            binding, ledger=receipt["ledger"], provisional_design=provisional_design,
+        )
+        expected = _project_verified_source_lifecycle(
+            receipt=receipt, binding=binding, evidence_text=evidence_text,
+        )
+    except (GreenfieldSourceDutyLedgerError, GreenfieldSourceDutyBindingError) as exc:
+        raise GreenfieldSourceLifecycleError("source lifecycle custody is invalid") from exc
+    if dict(lifecycle) != expected or _sha256(lifecycle) != _sha256(expected):
+        raise GreenfieldSourceLifecycleError("source lifecycle differs from its accepted duty projection")
+
+
 __all__ = [
     "GreenfieldSourceLifecycleError",
     "SOURCE_LIFECYCLE_VERSION",
     "project_greenfield_source_lifecycle",
+    "require_verified_greenfield_source_lifecycle",
     "verified_source_design_duties",
 ]

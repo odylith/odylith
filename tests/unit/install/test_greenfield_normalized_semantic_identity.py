@@ -27,6 +27,7 @@ SOURCE_HASH = "d" * 64
 @pytest.fixture(autouse=True)
 def _use_structural_ledger_boundary(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(score_module, "require_atomic_fact_ledger", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(support.relation_module, "require_atomic_fact_ledger", lambda *_args, **_kwargs: None)
 
 
 def test_paraphrased_sources_with_the_same_canonical_ids_and_graph_pass() -> None:

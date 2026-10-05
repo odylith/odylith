@@ -9,8 +9,8 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "9c60b6bd847b8716f02240a521572d1091fd182df56f6aa17ef06ec45b762944",
-    "file_count": 317,
+    "digest": "2760d3fc5038aea1e95e42223b432b86bccc80c84b7c73f2b474c716d1ab4724",
+    "file_count": 318,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
       "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
@@ -195,6 +195,7 @@
       "odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md",
       "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
       "odylith/technical-plans/in-progress/2026-07/2026-07-20-v0-1-15-guidance-and-browser-surface-migration-assessment.md",
+      "odylith/technical-plans/in-progress/2026-10/2026-10-04-current-authority-and-useful-history-in-memory.md",
       "odylith/technical-plans/done/.DS_Store",
       "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
       "odylith/technical-plans/done/2026-03/2026-03-27-compass-history-retention-compressed-archive-and-restore.md",
@@ -8202,7 +8203,7 @@
     {
       "idea_id": "B-133",
       "title": "v0.1.15+ Durable Decisions Annotations and Memory Hygiene",
-      "status": "queued",
+      "status": "implementation",
       "workstream_type": "standalone",
       "workstream_parent": "",
       "workstream_children": [],
@@ -8214,24 +8215,40 @@
       "workstream_split_into": [],
       "workstream_merged_into": "",
       "workstream_merged_from": [],
-      "related_diagram_ids": [],
+      "related_diagram_ids": [
+        "D-025"
+      ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-durable-decisions-annotations-and-memory-hygiene.md",
-      "promoted_to_plan": "",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-10/2026-10-04-current-authority-and-useful-history-in-memory.md",
       "plan_traceability": {
-        "runbooks": [],
-        "developer_docs": [],
-        "code_references": []
+        "runbooks": [
+          "docs/runbooks/odylith-governance.md"
+        ],
+        "developer_docs": [
+          "docs/CONTEXT_ENGINE.md",
+          "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+          "odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md",
+          "odylith/registry/source/components/odylith-memory-contracts/CURRENT_SPEC.md"
+        ],
+        "code_references": [
+          "src/odylith/runtime/context_engine/judgment_memory_records.py",
+          "src/odylith/runtime/context_engine/memory_record_policy.py",
+          "src/odylith/runtime/context_engine/odylith_context_engine_hot_path_scope_runtime.py",
+          "src/odylith/runtime/context_engine/odylith_context_engine_judgment_memory_runtime.py",
+          "src/odylith/runtime/context_engine/odylith_context_engine_runtime_learning_runtime.py",
+          "src/odylith/runtime/memory/tooling_memory_contracts.py"
+        ]
       },
       "active_release_id": "",
       "active_release": {},
       "release_history": [],
       "release_history_summary": "",
       "coverage": {
-        "linked_plan_count": 0,
-        "linked_diagram_count": 0,
-        "runbook_count": 0,
-        "developer_doc_count": 0,
-        "code_reference_count": 0
+        "linked_plan_count": 1,
+        "linked_diagram_count": 1,
+        "runbook_count": 1,
+        "developer_doc_count": 4,
+        "code_reference_count": 6
       },
       "execution_wave_refs": []
     },
@@ -10935,7 +10952,7 @@
       "id": "B-133",
       "type": "workstream",
       "label": "v0.1.15+ Durable Decisions Annotations and Memory Hygiene",
-      "status": "queued",
+      "status": "implementation",
       "workstream_type": "standalone",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-durable-decisions-annotations-and-memory-hygiene.md"
     },
@@ -11190,6 +11207,27 @@
       "file": "odylith/registry/source/components/compass/CURRENT_SPEC.md"
     },
     {
+      "id": "artifact:odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+      "type": "artifact",
+      "label": "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+      "bucket": "developer_docs",
+      "file": "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md"
+    },
+    {
+      "id": "artifact:odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md",
+      "type": "artifact",
+      "label": "odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md",
+      "bucket": "developer_docs",
+      "file": "odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md"
+    },
+    {
+      "id": "artifact:odylith/registry/source/components/odylith-memory-contracts/CURRENT_SPEC.md",
+      "type": "artifact",
+      "label": "odylith/registry/source/components/odylith-memory-contracts/CURRENT_SPEC.md",
+      "bucket": "developer_docs",
+      "file": "odylith/registry/source/components/odylith-memory-contracts/CURRENT_SPEC.md"
+    },
+    {
       "id": "artifact:odylith/registry/source/components/radar/CURRENT_SPEC.md",
       "type": "artifact",
       "label": "odylith/registry/source/components/radar/CURRENT_SPEC.md",
@@ -11321,6 +11359,41 @@
       "label": "src/odylith/runtime/common/host_runtime.py",
       "bucket": "code_references",
       "file": "src/odylith/runtime/common/host_runtime.py"
+    },
+    {
+      "id": "artifact:src/odylith/runtime/context_engine/judgment_memory_records.py",
+      "type": "artifact",
+      "label": "src/odylith/runtime/context_engine/judgment_memory_records.py",
+      "bucket": "code_references",
+      "file": "src/odylith/runtime/context_engine/judgment_memory_records.py"
+    },
+    {
+      "id": "artifact:src/odylith/runtime/context_engine/memory_record_policy.py",
+      "type": "artifact",
+      "label": "src/odylith/runtime/context_engine/memory_record_policy.py",
+      "bucket": "code_references",
+      "file": "src/odylith/runtime/context_engine/memory_record_policy.py"
+    },
+    {
+      "id": "artifact:src/odylith/runtime/context_engine/odylith_context_engine_hot_path_scope_runtime.py",
+      "type": "artifact",
+      "label": "src/odylith/runtime/context_engine/odylith_context_engine_hot_path_scope_runtime.py",
+      "bucket": "code_references",
+      "file": "src/odylith/runtime/context_engine/odylith_context_engine_hot_path_scope_runtime.py"
+    },
+    {
+      "id": "artifact:src/odylith/runtime/context_engine/odylith_context_engine_judgment_memory_runtime.py",
+      "type": "artifact",
+      "label": "src/odylith/runtime/context_engine/odylith_context_engine_judgment_memory_runtime.py",
+      "bucket": "code_references",
+      "file": "src/odylith/runtime/context_engine/odylith_context_engine_judgment_memory_runtime.py"
+    },
+    {
+      "id": "artifact:src/odylith/runtime/context_engine/odylith_context_engine_runtime_learning_runtime.py",
+      "type": "artifact",
+      "label": "src/odylith/runtime/context_engine/odylith_context_engine_runtime_learning_runtime.py",
+      "bucket": "code_references",
+      "file": "src/odylith/runtime/context_engine/odylith_context_engine_runtime_learning_runtime.py"
     },
     {
       "id": "artifact:src/odylith/runtime/context_engine/runtime_read_session.py",
@@ -11491,6 +11564,13 @@
       "file": "src/odylith/runtime/intervention_engine/apply.py"
     },
     {
+      "id": "artifact:src/odylith/runtime/memory/tooling_memory_contracts.py",
+      "type": "artifact",
+      "label": "src/odylith/runtime/memory/tooling_memory_contracts.py",
+      "bucket": "code_references",
+      "file": "src/odylith/runtime/memory/tooling_memory_contracts.py"
+    },
+    {
       "id": "artifact:src/odylith/runtime/orchestration/subagent_router.py",
       "type": "artifact",
       "label": "src/odylith/runtime/orchestration/subagent_router.py",
@@ -11619,6 +11699,7 @@
         "B-110",
         "B-109",
         "B-105",
+        "B-133",
         "B-142"
       ],
       "diagrams": [
@@ -12619,6 +12700,7 @@
         "B-108",
         "B-109",
         "B-106",
+        "B-133",
         "B-141"
       ],
       "diagrams": [
@@ -12698,7 +12780,8 @@
         "B-011",
         "B-038",
         "B-094",
-        "B-110"
+        "B-110",
+        "B-133"
       ],
       "diagrams": [
         "D-002",
@@ -12742,7 +12825,8 @@
         "B-099",
         "B-110",
         "B-109",
-        "B-106"
+        "B-106",
+        "B-133"
       ],
       "diagrams": [
         "D-002",
@@ -14030,11 +14114,14 @@
       "related_workstreams": [
         "B-010",
         "B-058",
-        "B-059"
+        "B-059",
+        "B-133"
       ],
       "component_names": [
         "Compiler read models",
+        "Shared authority and history policy",
         "Retrieval lanes",
+        "Judgment continuity",
         "Packet contract boundary",
         "Alignment consumers"
       ],
@@ -15098,6 +15185,12 @@
       "type": "plan",
       "label": "odylith/technical-plans/in-progress/2026-07/2026-07-20-v0-1-15-guidance-and-browser-surface-migration-assessment.md",
       "file": "odylith/technical-plans/in-progress/2026-07/2026-07-20-v0-1-15-guidance-and-browser-surface-migration-assessment.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-10/2026-10-04-current-authority-and-useful-history-in-memory.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-10/2026-10-04-current-authority-and-useful-history-in-memory.md",
+      "file": "odylith/technical-plans/in-progress/2026-10/2026-10-04-current-authority-and-useful-history-in-memory.md"
     },
     {
       "id": "program:B-072",
@@ -21750,8 +21843,93 @@
     },
     {
       "source": "B-133",
+      "target": "artifact:docs/CONTEXT_ENGINE.md",
+      "edge_type": "plan_traceability:developer_docs"
+    },
+    {
+      "source": "B-133",
+      "target": "artifact:docs/runbooks/odylith-governance.md",
+      "edge_type": "plan_traceability:runbooks"
+    },
+    {
+      "source": "B-133",
+      "target": "artifact:odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+      "edge_type": "plan_traceability:developer_docs"
+    },
+    {
+      "source": "B-133",
+      "target": "artifact:odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md",
+      "edge_type": "plan_traceability:developer_docs"
+    },
+    {
+      "source": "B-133",
+      "target": "artifact:odylith/registry/source/components/odylith-memory-contracts/CURRENT_SPEC.md",
+      "edge_type": "plan_traceability:developer_docs"
+    },
+    {
+      "source": "B-133",
+      "target": "artifact:src/odylith/runtime/context_engine/judgment_memory_records.py",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-133",
+      "target": "artifact:src/odylith/runtime/context_engine/memory_record_policy.py",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-133",
+      "target": "artifact:src/odylith/runtime/context_engine/odylith_context_engine_hot_path_scope_runtime.py",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-133",
+      "target": "artifact:src/odylith/runtime/context_engine/odylith_context_engine_judgment_memory_runtime.py",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-133",
+      "target": "artifact:src/odylith/runtime/context_engine/odylith_context_engine_runtime_learning_runtime.py",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-133",
+      "target": "artifact:src/odylith/runtime/memory/tooling_memory_contracts.py",
+      "edge_type": "plan_traceability:code_references"
+    },
+    {
+      "source": "B-133",
+      "target": "component:atlas",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-133",
       "target": "component:odylith",
       "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-133",
+      "target": "component:odylith-context-engine",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-133",
+      "target": "component:odylith-memory-backend",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-133",
+      "target": "component:odylith-memory-contracts",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-133",
+      "target": "diagram:D-025",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-133",
+      "target": "plan:odylith/technical-plans/in-progress/2026-10/2026-10-04-current-authority-and-useful-history-in-memory.md",
+      "edge_type": "promoted_to_plan"
     },
     {
       "source": "B-134",
@@ -26080,11 +26258,11 @@
       "code_reference_count": 0
     },
     "B-133": {
-      "linked_plan_count": 0,
-      "linked_diagram_count": 0,
-      "runbook_count": 0,
-      "developer_doc_count": 0,
-      "code_reference_count": 0
+      "linked_plan_count": 1,
+      "linked_diagram_count": 1,
+      "runbook_count": 1,
+      "developer_doc_count": 4,
+      "code_reference_count": 6
     },
     "B-134": {
       "linked_plan_count": 0,
@@ -26264,7 +26442,7 @@
     },
     "connectivity": {
       "spine_node_count": 262,
-      "structural_edge_count": 1711,
+      "structural_edge_count": 1716,
       "connected_component_count": 3,
       "largest_component_size": 260,
       "isolated_node_count": 2,
@@ -26282,12 +26460,12 @@
     "active_release_assignment_count": 20,
     "execution_program_count": 5,
     "execution_wave_count": 30,
-    "node_count": 432,
-    "edge_count": 1936,
+    "node_count": 442,
+    "edge_count": 1953,
     "warning_count": 7,
     "warning_item_count": 7,
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-10-04 01:58:58Z"
+  "generated_utc": "2026-10-05 02:16:51Z"
 }

@@ -10,14 +10,14 @@ import math
 from pathlib import Path
 from typing import Any
 
-from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_ARGUMENT_COUNT
-from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_RECEIPT_VERSION
-from greenfield_matrix_host_candidate import HOST_NATIVE_ARGV_SHAPE_SHA256
-from greenfield_matrix_host_candidate import HOST_NATIVE_MATRIX_OBSERVATION_VERSION
-from greenfield_matrix_host_candidate import PROVISIONAL_SOURCE_LEDGER_TIMEOUT_SECONDS
-from greenfield_matrix_host_candidate import PROVISIONAL_SOURCE_DUTY_VERIFIER_TIMEOUT_SECONDS
-from greenfield_matrix_host_candidate import PROVISIONAL_SOURCE_CHECK_TIMEOUT_SECONDS
-from greenfield_whole_journey_budget import whole_journey_observation_issues
+from odylith.runtime.domain_intelligence.greenfield_host_transport import (HOST_NATIVE_ARGV_ARGUMENT_COUNT)
+from odylith.runtime.domain_intelligence.greenfield_host_transport import (HOST_NATIVE_ARGV_RECEIPT_VERSION)
+from odylith.runtime.domain_intelligence.greenfield_host_transport import (HOST_NATIVE_ARGV_SHAPE_SHA256)
+from odylith.runtime.domain_intelligence.greenfield_host_flow import HOST_NATIVE_MATRIX_OBSERVATION_VERSION
+from odylith.runtime.domain_intelligence.greenfield_host_flow import PROVISIONAL_SOURCE_LEDGER_TIMEOUT_SECONDS
+from odylith.runtime.domain_intelligence.greenfield_host_flow import PROVISIONAL_SOURCE_DUTY_VERIFIER_TIMEOUT_SECONDS
+from odylith.runtime.domain_intelligence.greenfield_host_flow import PROVISIONAL_SOURCE_CHECK_TIMEOUT_SECONDS
+from odylith.runtime.domain_intelligence.greenfield_whole_journey_budget import whole_journey_observation_issues
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 from greenfield_preconfirm_matrix_cases import case_expectation
 from greenfield_retained_candidate_proof import (
@@ -156,6 +156,8 @@ _HOST_STAGE_FIELDS = frozenset(
         "whole_journey_seconds",
         "whole_journey_diagnostic_cap_seconds",
         "candidate_completion_reserve_seconds",
+        "whole_journey_route",
+        "whole_journey_supervision",
         "whole_journey_bound_status",
         "whole_journey_elapsed_scope",
         "whole_journey_deadline_status",

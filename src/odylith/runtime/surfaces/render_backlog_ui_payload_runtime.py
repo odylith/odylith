@@ -10,6 +10,7 @@ from typing import Any, Mapping
 from odylith.runtime.context_engine import odylith_context_engine_delivery_surface_payload_runtime as delivery_surface_payload_runtime
 from odylith.runtime.context_engine import odylith_context_engine_store
 from odylith.runtime.governance import component_registry_intelligence as component_registry
+from odylith.runtime.governance import backlog_assessment
 from odylith.runtime.governance import plan_progress
 from odylith.runtime.governance import validate_backlog_contract as contract
 from odylith.runtime.governance.delivery import scope_signal_ladder
@@ -488,11 +489,11 @@ def _build_entry(
         if idea_delta >= 0:
             idea_age_days = str(idea_delta)
 
-    score = int(str(payload["ordering_score"]).strip())
-    commercial = int(str(payload["commercial_value"]).strip())
-    product = int(str(payload["product_impact"]).strip())
-    market = int(str(payload["market_value"]).strip())
-    opportunity = round((0.40 * commercial) + (0.35 * product) + (0.25 * market), 2)
+    unassessed = backlog_assessment.is_unassessed(metadata)
+    score = None if unassessed else backlog_assessment.numeric_value(payload["ordering_score"])
+    commercial = None if unassessed else backlog_assessment.numeric_value(payload["commercial_value"])
+    product = None if unassessed else backlog_assessment.numeric_value(payload["product_impact"])
+    market = None if unassessed else backlog_assessment.numeric_value(payload["market_value"])
     idea_ui_path = output_path
     plan_ui_path: Path | None = output_path if promoted_to_plan_path is not None and promoted_to_plan_path.is_file() else None
     progress_view = workstream_progress_runtime.derive_workstream_progress(
@@ -513,18 +514,19 @@ def _build_entry(
 
     return {
         "section": section,
-        "rank": payload["rank"].strip(),
-        "rank_num": 999 if payload["rank"].strip() == "-" else int(payload["rank"].strip()),
+        "rank": "unassessed" if unassessed else payload["rank"].strip(),
+        "rank_num": None if unassessed or payload["rank"].strip() == "-" else backlog_assessment.numeric_value(payload["rank"]),
+        "assessment_status": "unassessed" if unassessed else str(metadata.get("assessment_status", "assessed")),
+        "assessment_provenance": str(metadata.get("assessment_provenance", "")),
         "idea_id": idea_id,
         "title": _display_text(payload["title"]),
-        "priority": payload["priority"].strip(),
+        "priority": backlog_assessment.UNASSESSED if unassessed else payload["priority"].strip(),
         "ordering_score": score,
-        "opportunity": opportunity,
         "commercial_value": commercial,
         "product_impact": product,
         "market_value": market,
-        "sizing": payload["sizing"].strip(),
-        "complexity": payload["complexity"].strip(),
+        "sizing": backlog_assessment.UNASSESSED if unassessed else payload["sizing"].strip(),
+        "complexity": backlog_assessment.UNASSESSED if unassessed else payload["complexity"].strip(),
         "status": payload["status"].strip(),
         "idea_file": backlog_render_support._as_repo_path(repo_root=repo_root, target=idea_path),
         "idea_href": backlog_render_support._as_relative_href(output_path=output_path, target=idea_path),

@@ -60,6 +60,44 @@ supersedes:
 
 superseded_by: 
 
+## Current convergence checkpoint (2026-10-04)
+
+- R1 full lifecycle/custody readback independently passes 259 checks and rejects
+  all original rehashed corruption controls; structural correction is complete.
+- R2 disclosed-public evaluation preserves all 40 cases/425 source IDs and all
+  219 authentic civic reverse obligations. Final independent rereview passes
+  11 controls with no actionable P0/P1/P2 after custody, clarification and
+  malformed-material corrections. Actual independently adjudicated semantic
+  qualification remains open. Review:
+  /private/tmp/odylith-greenfield-r2-independent-rereview-20261004.md,
+  SHA-256 2ebc3a1d8218449e0c8f3b8a7c8a70cca32146abe5f5376e0a9299aeadbf8efe.
+- Authorized B-133 H1 memory controls improve fixed current retrieval 0/6 to
+  6/6. Independent re-review verifies both P1 cache/actionability corrections;
+  CB-355 and adjacent packet telemetry CB-356 are FixedPendingRelease. Actual
+  packet bytes/tokens fit unchanged caps and preserve useful admitted evidence.
+- CB-357's selected update/scaffold correction is independently clear. Exact
+  root-owned catalog recovery succeeds. The subsequent bounded-flow update
+  changes only owned D-025/D-043/D-045/D-047; unrelated review history is
+  preserved. CB-357 is FixedPendingRelease.
+- The detached public qualification bridge independently passes 89 tests and
+  22 controls after exact unavailable-provider shape correction, with no
+  remaining actionable P0/P1/P2 in that bounded scope. Actual public semantics
+  and complete installed timing remain unqualified.
+- Independent rereview closes the four original transport defects. The latest
+  388-test correction still depends on revoking a completion record after
+  late publication. The existing owners now issue a private completion receipt
+  only after record I/O and final deadline checks; every bounded confirmation
+  must supply it. This removes cleanup success from completion authority.
+  Independent final review passes 14 controls and the exact bootstrap test
+  with no blocking completion finding. The original expanded one-failure log
+  remains retained; proceed to the full final freeze. The declared environment excludes
+  deliberate external guardian termination; review found no supported internal
+  trigger for that additional fault-injection outcome.
+- Next gates: complete frozen runtime/install/browser regression, clean
+  checkpoint/full installed build, fresh public semantics and actual EDIT,
+  fixed public/private matrix, then the original unopened one-shot holdout.
+  Earlier dated checkpoints below remain historical evidence.
+
 ## Exact public replay checkpoint (2026-09-29)
 
 - Pushed commit `0ab2929d9` passed the immutable one-case accessibility

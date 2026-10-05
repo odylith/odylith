@@ -1,8 +1,9 @@
-flowchart LR
+flowchart TB
     subgraph evidence_lane["Operator evidence"]
       direction TB
       request["Original request<br/>Retained as untrusted evidence"]
       edit["EDIT correction<br/>Bound to the retained sealed source"]
+      prepare["Product-owned prepare route<br/>One supervised parent before contract acquisition;<br/>manual commands retain local source custody only"]
       contract["Candidate contract<br/>Public schemas and exact operator source"]
     end
 
@@ -29,17 +30,21 @@ flowchart LR
     subgraph projection_lane["Deterministic governance projections"]
       direction TB
       project["Project story and one coherent first run<br/>Alternate events remain retained"]
-      radar["4–5 grounded Radar workstreams"]
-      registry["4–5 Registry components"]
-      atlas["5+ detailed Atlas diagrams<br/>Typed performer-to-event relations preserved"]
+      radar["Proportional grounded Radar workstreams"]
+      registry["Genuinely owned Registry components"]
+      atlas["Distinct detailed Atlas diagrams<br/>Typed performer-to-event relations preserved"]
       compass["Compass decisions and proof"]
     end
 
     subgraph transaction_lane["Sealed transaction"]
       direction TB
       seal["Sealed transaction<br/>Exact projections, canonical host receipt<br/>and zero post-receipt semantic calls"]
+      quarantine["New pending seal quarantined before visibility<br/>Completion digest alone cannot permit confirmation"]
+      finalize["Retain, clean, finish observer and completion-record I/O<br/>Certify only within both final deadlines;<br/>preserve the original EDIT seal and receipt"]
+      receipt["Completion receipt delivery<br/>Private nonce issued after certification;<br/>delivery follows measured preparation"]
+      cancelled["Expired journey<br/>No confirmable new seal or successful preview"]
       decision{"Operator decision"}
-      confirm["CONFIRM<br/>Commit-only publication"]
+      confirm["CONFIRM with delivered receipt<br/>Commit-only publication"]
       revise["EDIT<br/>New candidate contract from old seal + correction"]
       reject["REJECT<br/>No governed writes"]
       readback["Readback equals sealed bytes"]
@@ -48,13 +53,14 @@ flowchart LR
     subgraph release_lane["Detached release qualification"]
       direction TB
       frozen["Frozen campaign evidence<br/>Immutable retained outputs and browser states"]
-      timing["Budget contract<br/>300-second shared gate and candidate model window;<br/>315-second proposal cap includes 15-second completion reserve;<br/>fixed 660-second whole deadline is non-additive and unqualified"]
+      timing["Shared runtime supervision<br/>300-second gate and candidate window plus 15-second reserve;<br/>independent guardian cancels blocked work and child groups;<br/>660-second whole cap remains diagnostic and unqualified"]
+      source_predicates["Frozen public source predicates<br/>Exact forward coverage and reverse invention audit;<br/>independent review binds retained evidence"]
       evaluator["Independent semantic and UX evaluator<br/>Reads evidence only; never changes<br/>consumer candidate or transaction"]
       qualified["Pinned profile qualified or blocked<br/>Transaction authority remains unchanged"]
     end
 
-    request --> contract
-    edit --> contract
+    request --> prepare --> contract
+    edit --> prepare
     contract --> gate --> gate_check
     gate_check -- "first path missing" --> clarify
       gate_check -- "operator-owned witnesses" --> host --> candidate --> identity_check --> source_control --> candidate_author --> validator --> complete
@@ -71,23 +77,24 @@ flowchart LR
     registry --> seal
     atlas --> seal
     compass --> seal
-    seal --> decision
+    seal --> quarantine --> finalize --> receipt --> decision
+    prepare -. "nonreplenishing deadline" .-> timing
+    timing -- "expiry" --> cancelled
     decision -- "CONFIRM" --> confirm --> readback
-    decision -- "EDIT" --> revise --> contract
+    decision -- "EDIT" --> revise --> prepare
     decision -- "REJECT" --> reject
-    canonical -. "immutable campaign input" .-> frozen --> evaluator --> qualified
-    canonical -. "bounded asynchronous flow" .-> timing
+    canonical -. "immutable campaign input" .-> frozen --> source_predicates --> evaluator --> qualified
 
     classDef evidence fill:#EFF6FF,stroke:#BFD7FE,color:#132033,stroke-width:1px;
     classDef semantic fill:#ECFDFB,stroke:#A7E9E3,color:#132033,stroke-width:1px;
     classDef governance fill:#F5F3FF,stroke:#DDD6FE,color:#132033,stroke-width:1px;
     classDef constraint fill:#FFF8E6,stroke:#F6D98B,color:#132033,stroke-width:1px;
-    class request,edit,contract,gate,host,candidate,identity_check,candidate_author evidence;
+    class request,edit,prepare,contract,gate,host,candidate,identity_check,candidate_author evidence;
     class source_control semantic;
     class validator,canonical,project,radar,registry,atlas,compass semantic;
-    class seal,decision,confirm,revise,reject,readback governance;
-    class frozen,evaluator,qualified governance;
-    class gate_check,complete,clarify,invalid_candidate,timing constraint;
+    class seal,quarantine,finalize,receipt,decision,confirm,revise,reject,readback governance;
+    class frozen,source_predicates,evaluator,qualified governance;
+    class gate_check,complete,clarify,invalid_candidate,cancelled,timing constraint;
 
     style evidence_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#293D52
     style host_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#293D52

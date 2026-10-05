@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 from typing import Iterable
 from typing import Mapping
+from typing import Sequence
 
 from odylith.runtime.common.consumer_profile import truth_root_path
 from odylith.runtime.context_engine import odylith_context_cache
@@ -67,6 +68,7 @@ def can_reuse_surface_refresh(
     surface: str,
     atlas_sync: bool,
     outputs: Iterable[str],
+    atlas_diagram_ids: Sequence[str] = (),
 ) -> tuple[bool, dict[str, Any]]:
     root = Path(repo_root).resolve()
     surface_token = str(surface).strip().lower()
@@ -74,6 +76,7 @@ def can_reuse_surface_refresh(
         repo_root=root,
         surface=surface_token,
         atlas_sync=atlas_sync,
+        **({"atlas_diagram_ids": atlas_diagram_ids} if atlas_diagram_ids else {}),
     )
     output_fingerprint, outputs_exist = surface_output_fingerprint(
         repo_root=root,
@@ -81,7 +84,8 @@ def can_reuse_surface_refresh(
     )
     manifest = _load_manifest(repo_root=root)
     entries = dict(manifest.get("surfaces", {})) if isinstance(manifest.get("surfaces"), Mapping) else {}
-    cached = dict(entries.get(_entry_key(surface=surface_token, atlas_sync=atlas_sync), {}))
+    cached = dict(entries.get(_entry_key(surface=surface_token, atlas_sync=atlas_sync,
+                                       atlas_diagram_ids=atlas_diagram_ids), {}))
     reusable = bool(
         outputs_exist
         and cached
@@ -102,6 +106,7 @@ def record_surface_refresh(
     atlas_sync: bool,
     outputs: Iterable[str],
     details: Mapping[str, Any] | None = None,
+    atlas_diagram_ids: Sequence[str] = (),
 ) -> None:
     root = Path(repo_root).resolve()
     surface_token = str(surface).strip().lower()
@@ -111,14 +116,16 @@ def record_surface_refresh(
         repo_root=root,
         surface=surface_token,
         atlas_sync=atlas_sync,
+        **({"atlas_diagram_ids": atlas_diagram_ids} if atlas_diagram_ids else {}),
     )
     output_fingerprint, outputs_exist = surface_output_fingerprint(
         repo_root=root,
         outputs=outputs,
     )
-    entries[_entry_key(surface=surface_token, atlas_sync=atlas_sync)] = {
+    entries[_entry_key(surface=surface_token, atlas_sync=atlas_sync, atlas_diagram_ids=atlas_diagram_ids)] = {
         "surface": surface_token,
         "atlas_sync": bool(atlas_sync),
+        **({"atlas_diagram_ids": sorted(atlas_diagram_ids)} if atlas_diagram_ids else {}),
         "input_fingerprint": input_fingerprint,
         "output_fingerprint": output_fingerprint,
         "outputs_exist": bool(outputs_exist),
@@ -133,7 +140,9 @@ def record_surface_refresh(
     )
 
 
-def surface_input_fingerprint(*, repo_root: Path, surface: str, atlas_sync: bool) -> str:
+def surface_input_fingerprint(
+    *, repo_root: Path, surface: str, atlas_sync: bool, atlas_diagram_ids: Sequence[str] = (),
+) -> str:
     root = Path(repo_root).resolve()
     token = str(surface).strip().lower()
     if token in {"compass", "tooling_shell"}:
@@ -201,6 +210,7 @@ def surface_input_fingerprint(*, repo_root: Path, surface: str, atlas_sync: bool
             {
                 "surface": token,
                 "atlas_sync": bool(atlas_sync),
+                "atlas_diagram_ids": sorted(atlas_diagram_ids),
                 "catalog": odylith_context_cache.path_signature(atlas_root / "catalog" / "diagrams.v1.json"),
                 "mmd": odylith_context_cache.fingerprint_tree(atlas_root, glob="*.mmd"),
             }
@@ -241,8 +251,9 @@ def surface_output_fingerprint(*, repo_root: Path, outputs: Iterable[str]) -> tu
     )
 
 
-def _entry_key(*, surface: str, atlas_sync: bool) -> str:
-    return f"{str(surface).strip().lower()}:{'atlas-sync' if atlas_sync else 'default'}"
+def _entry_key(*, surface: str, atlas_sync: bool, atlas_diagram_ids: Sequence[str] = ()) -> str:
+    key = f"{str(surface).strip().lower()}:{'atlas-sync' if atlas_sync else 'default'}"
+    return f"{key}:{odylith_context_cache.fingerprint_payload(sorted(atlas_diagram_ids))}" if atlas_diagram_ids else key
 
 
 def _load_manifest(*, repo_root: Path) -> dict[str, Any]:

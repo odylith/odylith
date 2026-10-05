@@ -4,6 +4,8 @@ import json
 import os
 from pathlib import Path
 
+import pytest
+
 from odylith.runtime.common import log_compass_timeline_event
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import component_authoring
@@ -440,9 +442,57 @@ def test_atlas_scaffold_refreshes_atlas_with_shared_lane(tmp_path: Path, monkeyp
             "repo_root": tmp_path.resolve(),
             "surface": "atlas",
             "operation_label": "Atlas scaffold",
+            "atlas_diagram_ids": ("D-999",),
         }
     ]
     assert "view: odylith/index.html?tab=atlas&diagram=D-999 (reload browser tab if already open)" in output
+
+
+@pytest.mark.parametrize("mode", ["current", "old_date", "render_failure"])
+def test_atlas_scaffold_real_refresh_preserves_existing_review_debt_and_assets(tmp_path, monkeypatch, mode):
+    import datetime as dt
+    from odylith.runtime.surfaces import auto_update_mermaid_diagrams as auto
+    from tests.unit.runtime.test_atlas_update_batch import _scoped_refresh_fixture
+
+    catalog, before = _scoped_refresh_fixture(tmp_path, monkeypatch)
+    old_assets = {tmp_path / row[field]: (tmp_path / row[field]).read_bytes()
+                  for row in before["diagrams"] for field in ("source_mmd", "source_svg", "source_png")}
+    (tmp_path / "src/new-selected.py").write_text("CURRENT_OWNER = True\n")
+
+    def render(**kwargs):
+        assert [job["diagram_id"] for job in kwargs["render_jobs"]] == ["D-999"]
+        if mode == "render_failure":
+            raise RuntimeError("selected scaffold render unavailable")
+        for job in kwargs["render_jobs"]:
+            (tmp_path / job["source_svg"]).write_text("<svg />\n")
+            (tmp_path / job["source_png"]).write_bytes(b"png")
+
+    monkeypatch.setattr(auto, "_render_diagrams_batch", render)
+    date = "2000-01-01" if mode == "old_date" else dt.date.today().isoformat()
+    rc, logs = scaffold_mermaid_diagram.scaffold_diagram(
+        repo_root=tmp_path, catalog="odylith/atlas/source/catalog/diagrams.v1.json",
+        diagram_id="D-999", slug="new-selected", title="New selected diagram", kind="flowchart", owner="product",
+        summary="Shows the selected authoring scope.", read_guide="Read intake before review.",
+        components=[{"name": "Demo", "description": "Owns selected Atlas authoring."}],
+        related_backlog=[], related_plans=[], related_docs=[], related_code=[], watch_paths=["src/new-selected.py"],
+        review_date=date, starter_source='flowchart LR\n  A["Intake"] --> B["Review"]', refresh=True,
+    )
+
+    after = json.loads(catalog.read_text())
+    assert after["diagrams"][:3] == before["diagrams"]
+    assert all(path.read_bytes() == data for path, data in old_assets.items())
+    assert after["diagrams"][-1]["diagram_id"] == "D-999"
+    assert after["diagrams"][-1]["last_reviewed_utc"] == date
+    assert rc == (0 if mode == "current" else 1)
+    if rc:
+        recovery = " ".join(logs)
+        assert "--diagram-id D-999" in recovery
+        assert "--preserve-review-date" in recovery
+        assert "--fail-on-stale" in recovery
+        assert "--all-stale" not in recovery
+        assert "odylith atlas refresh --repo-root . --atlas-sync" not in recovery
+    else:
+        assert (tmp_path / "odylith/atlas/atlas.html").is_file()
 
 
 def test_atlas_scaffold_allows_atlas_first_draft_without_governance_links(
@@ -510,6 +560,7 @@ def test_atlas_scaffold_allows_atlas_first_draft_without_governance_links(
             "repo_root": tmp_path.resolve(),
             "surface": "atlas",
             "operation_label": "Atlas scaffold",
+            "atlas_diagram_ids": ("D-100",),
         }
     ]
     assert "view: odylith/index.html?tab=atlas&diagram=D-100 (reload browser tab if already open)" in output

@@ -77,6 +77,8 @@ def build_onboarding_review_sidecar(
     base_result_path: Path,
     retained_manifest_path: Path,
     review_package: Mapping[str, Any] | None,
+    public_source_evidence: Mapping[str, Any] | None = None,
+    whole_journey_bound_evidence: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Return a hash-bound final review sidecar without changing its inputs."""
 
@@ -105,7 +107,13 @@ def build_onboarding_review_sidecar(
     if str(base_retained.get("status") or "") != "passed":
         custody_issues.append("base result retained evidence gate did not pass")
 
-    automated_issues = _automated_gate_issues(base, result_rows)
+    public_qualification = None
+    if public_source_evidence is not None or whole_journey_bound_evidence is not None:
+        from greenfield_public_qualification import qualify_saved_public_evidence
+        public_qualification = qualify_saved_public_evidence(base=base, base_result_path=base_path,
+            retained_manifest_path=retained_path, source_evidence=public_source_evidence,
+            bound_evidence=whole_journey_bound_evidence)
+    automated_issues = _automated_gate_issues(base, result_rows, public_qualification=public_qualification)
     review, review_issues, awaiting = _validate_review_package(
         review_package=review_package,
         base_sha256=base_sha256,
@@ -132,6 +140,7 @@ def build_onboarding_review_sidecar(
     finalized_scorecard = _finalized_onboarding_quality_scorecard(
         base=base,
         validated_lenses=validated_lenses,
+        public_qualification=public_qualification,
     )
     scorecard_status = str(finalized_scorecard.get("status") or "")
     if (
@@ -146,7 +155,7 @@ def build_onboarding_review_sidecar(
     else:
         status = "passed"
 
-    return {
+    sidecar = {
         "version": ONBOARDING_REVIEW_SIDECAR_VERSION,
         "status": status,
         "base_result": {
@@ -174,12 +183,16 @@ def build_onboarding_review_sidecar(
             "awaiting": list(awaiting_issues),
         },
     }
+    if public_qualification is not None:
+        sidecar["public_qualification"] = public_qualification
+    return sidecar
 
 
 def _finalized_onboarding_quality_scorecard(
     *,
     base: Mapping[str, Any],
     validated_lenses: Mapping[str, Mapping[str, str]],
+    public_qualification: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     primary = base.get("results")
     primary_results = (
@@ -195,7 +208,9 @@ def _finalized_onboarding_quality_scorecard(
         browser_proof=_mapping(base.get("browser_surface_proof")),
         platform_leakage_proof=_mapping(base.get("platform_domain_leakage_proof")),
         metamorphic_output=_mapping(base.get("metamorphic_output")),
-        model_profile_proof=_mapping(base.get("model_profile_proof")),
+        model_profile_proof=_mapping(_mapping(public_qualification).get("model_profile_proof"))
+        if public_qualification is not None and "model_profile_proof" in public_qualification
+        else _mapping(base.get("model_profile_proof")),
         unavailable_provider_proof=_mapping(base.get("unavailable_provider_proof")),
         commit_recovery_proof=base.get("commit_recovery_proof"),
         validated_independent_reviews=validated_lenses,
@@ -267,6 +282,8 @@ def finalize_onboarding_review(
     retained_manifest_path: Path,
     review_path: Path,
     output_path: Path,
+    public_source_evidence: Mapping[str, Any] | None = None,
+    whole_journey_bound_evidence: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Validate a saved review package and create one immutable sidecar."""
 
@@ -278,6 +295,10 @@ def finalize_onboarding_review(
         Path(retained_manifest_path).expanduser().resolve(),
         review_file,
     }
+    for configuration in (public_source_evidence, whole_journey_bound_evidence):
+        if isinstance(configuration, Mapping):
+            protected.update(Path(ref["path"]).expanduser().resolve() for ref in configuration.values()
+                if isinstance(ref, Mapping) and isinstance(ref.get("path"), str))
     if output in protected:
         raise RuntimeError("review sidecar output must be detached from all inputs")
     try:
@@ -290,6 +311,8 @@ def finalize_onboarding_review(
         base_result_path=base_result_path,
         retained_manifest_path=retained_manifest_path,
         review_path=review_file,
+        public_source_evidence=public_source_evidence,
+        whole_journey_bound_evidence=whole_journey_bound_evidence,
     )
     sidecar["review_package"] = {
         "path": str(review_file),
@@ -304,6 +327,8 @@ def validate_independent_review_bundle(
     base_result_path: Path,
     retained_manifest_path: Path,
     review_path: Path,
+    public_source_evidence: Mapping[str, Any] | None = None,
+    whole_journey_bound_evidence: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Validate a saved review package and return its detached sidecar payload."""
 
@@ -315,6 +340,8 @@ def validate_independent_review_bundle(
         base_result_path=base_result_path,
         retained_manifest_path=retained_manifest_path,
         review_package=package,
+        public_source_evidence=public_source_evidence,
+        whole_journey_bound_evidence=whole_journey_bound_evidence,
     )
 
 
@@ -371,7 +398,7 @@ def _validate_review_package(
         issues=issues,
         awaiting=awaiting,
     )
-    _validate_reviewer(
+    validate_independent_reviewer(
         package.get("reviewer"),
         forbidden_context_ids={base_sha256, retained_sha256},
         issues=issues,
@@ -687,13 +714,18 @@ def _validate_findings(
     return normalized
 
 
-def _validate_reviewer(
+def validate_independent_reviewer(
     value: Any,
     *,
     forbidden_context_ids: set[str],
     issues: list[str],
     awaiting: list[str],
 ) -> None:
+    """Validate reviewer eligibility; callers must also bind the reviewed evidence.
+
+    This same owner serves final onboarding review and pre-score semantic audit.
+    Eligibility does not independently attest artifact authorship or entailment.
+    """
     if not isinstance(value, Mapping):
         awaiting.append("qualified independent reviewer evidence is missing")
         return
@@ -789,13 +821,21 @@ def _validate_hash_binding(
         issues.append(f"independent review {label} hash does not match")
 
 
-def _automated_gate_issues(base: Mapping[str, Any], results: Sequence[Any]) -> tuple[str, ...]:
+def _automated_gate_issues(base: Mapping[str, Any], results: Sequence[Any], *,
+    public_qualification: Mapping[str, Any] | None = None,
+) -> tuple[str, ...]:
     issues: list[str] = []
+    public = _mapping(public_qualification)
+    public_ready = (public.get("status") == "passed" and public.get("original_failure_authenticated") is True
+        and _mapping(public.get("review_readiness_scorecard")).get("status") == "awaiting-independent-review")
+    if public_qualification is not None and not public_ready:
+        issues.extend(str(issue) for issue in public.get("issues", ()))
+        issues.append("public detached evidence did not establish review readiness")
     if str(base.get("version") or "") != "greenfield-preconfirm-installed-matrix-v2":
         issues.append("base result is not the supported installed Greenfield matrix")
-    if str(base.get("status") or "") != "awaiting-independent-review":
+    if not public_ready and str(base.get("status") or "") != "awaiting-independent-review":
         issues.append("base result did not reach independent review")
-    if str(_mapping(base.get("onboarding_quality_scorecard")).get("status") or "") != "awaiting-independent-review":
+    if not public_ready and str(_mapping(base.get("onboarding_quality_scorecard")).get("status") or "") != "awaiting-independent-review":
         issues.append("base result scorecard did not reach independent review")
     if not results:
         issues.append("base result contains no matrix cases")
@@ -830,13 +870,15 @@ def _automated_gate_issues(base: Mapping[str, Any], results: Sequence[Any]) -> t
         "retained_evidence": {"passed"},
     }
     for key, accepted in required_statuses.items():
-        if str(_mapping(base.get(key)).get("status") or "") not in accepted:
+        value = public.get(key) if public_qualification is not None and key in {"semantic_release", "model_profile_proof"} else base.get(key)
+        if str(_mapping(value).get("status") or "") not in accepted:
             issues.append(f"automated release gate `{key}` did not pass")
     if _mapping(base.get("metamorphic_output")).get("passed") is not True:
         issues.append("automated release gate `metamorphic_output` did not pass")
     if str(_mapping(base.get("commit_recovery_proof")).get("status") or "") != "passed":
         issues.append("automated release gate `commit_recovery_proof` did not pass")
-    if _mapping(base.get("semantic_release")).get("passed") is not True:
+    semantic = public.get("semantic_release") if public_qualification is not None else base.get("semantic_release")
+    if _mapping(semantic).get("passed") is not True:
         issues.append("automated release gate `semantic_release` lacks a passing verdict")
     return tuple(dict.fromkeys(issues))
 
@@ -884,6 +926,8 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--retained-manifest", type=Path, required=True)
     parser.add_argument("--review", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--public-source-evidence", type=Path)
+    parser.add_argument("--whole-journey-bound-evidence", type=Path)
     return parser
 
 
@@ -894,6 +938,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         retained_manifest_path=args.retained_manifest,
         review_path=args.review,
         output_path=args.output,
+        public_source_evidence=_read_json_object(args.public_source_evidence, label="public source evidence")
+        if args.public_source_evidence is not None else None,
+        whole_journey_bound_evidence=_read_json_object(args.whole_journey_bound_evidence, label="whole journey bound evidence")
+        if args.whole_journey_bound_evidence is not None else None,
     )
     print(json.dumps(sidecar, indent=2, sort_keys=True))
     return 0 if sidecar["status"] == "passed" else 1
@@ -910,4 +958,5 @@ __all__ = [
     "build_onboarding_review_sidecar",
     "finalize_onboarding_review",
     "validate_independent_review_bundle",
+    "validate_independent_reviewer",
 ]

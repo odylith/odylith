@@ -63,6 +63,7 @@ def commit_greenfield_create_transaction(
     transaction_file: Path,
     transaction_hash: str,
     confirm: bool,
+    completion_receipt: Path | str | None = None,
     started_at: float | None = None,
 ) -> dict[str, Any]:
     """Hash-check and atomically commit the user-confirmed precompiled package."""
@@ -87,6 +88,9 @@ def commit_greenfield_create_transaction(
     try:
         with greenfield_repository_lock.greenfield_repository_lock(root):
             restore_published_files.require_restoration_writer_admission(repo_root=root)
+            from odylith.runtime.domain_intelligence.greenfield_pending_transaction_store import require_pending_transaction_released
+            require_pending_transaction_released(path, repo_root=root, transaction_hash=expected_hash,
+                                                completion_receipt=completion_receipt)
             transaction = load_sealed_product_create_commit(path, repo_root=root)
             if transaction.transaction_hash != expected_hash:
                 raise ValueError("ProductCreateTransaction hash does not match the confirmed transaction hash")

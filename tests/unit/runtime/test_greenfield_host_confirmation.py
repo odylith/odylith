@@ -70,7 +70,7 @@ def test_supported_hosts_confirm_exact_sealed_transaction_without_semantic_work(
             "repo_root": tmp_path.resolve(),
             "transaction_file": transaction,
             "transaction_hash": transaction_hash,
-            "confirm": True,
+            "confirm": True, "completion_receipt": None,
         }
     ]
 

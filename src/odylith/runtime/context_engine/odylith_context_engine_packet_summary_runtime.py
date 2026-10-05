@@ -347,6 +347,7 @@ def _packet_summary_from_bootstrap_payload(payload: Mapping[str, Any]) -> dict[s
         ),
         "packet_kind": packet_kind,
         "selection_state": selection_state,
+        "selection_ambiguity_class": str(workstream_selection.get("ambiguity_class", "")).strip(),
         "packet_state": packet_state,
         "guidance_behavior_summary": guidance_behavior_summary,
         "discipline_summary": discipline_summary,

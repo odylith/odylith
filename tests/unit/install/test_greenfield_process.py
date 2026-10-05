@@ -27,7 +27,8 @@ def _load_module(path: Path, name: str):
 
 
 def _module():
-    return _load_module(SCRIPTS_ROOT / "greenfield_process.py", "greenfield_process")
+    from odylith.runtime.domain_intelligence import greenfield_process
+    return greenfield_process
 
 
 @pytest.mark.parametrize("phase", ["started", "communicate", "completed"])
@@ -272,7 +273,7 @@ def test_run_command_with_group_timeout_reaps_real_child_when_runner_receives_si
         "from pathlib import Path\n"
         "import sys\n"
         "sys.path.insert(0, " + repr(str(SCRIPTS_ROOT)) + ")\n"
-        "from greenfield_process import run_command_with_group_timeout\n"
+        "from odylith.runtime.domain_intelligence.greenfield_process import run_command_with_group_timeout\n"
         "def record(pid, _pgid):\n"
         "    Path(sys.argv[1]).write_text(str(pid), encoding='utf-8')\n"
         "run_command_with_group_timeout(\n"
@@ -327,7 +328,7 @@ def test_run_command_with_group_timeout_rejects_non_positive_or_non_finite_timeo
         module.run_command_with_group_timeout(cwd=tmp_path, env={}, command=["bash", "install.sh"], timeout=timeout)
 
 
-def test_run_command_with_group_timeout_returns_when_detached_descendant_holds_output_pipes(tmp_path: Path) -> None:
+def test_run_command_with_group_timeout_stops_detached_live_descendant_before_leader_exit(tmp_path: Path) -> None:
     module = _module()
     child_pid_path = tmp_path / "detached-child.pid"
     script = tmp_path / "spawn_detached_child.py"
@@ -356,10 +357,12 @@ def test_run_command_with_group_timeout_returns_when_detached_descendant_holds_o
         assert result.returncode == 124
         assert time.monotonic() - started < 8
         assert "process group was terminated" in result.stderr
-        assert "escaped descendant cleanup is unverified" in result.stderr
-        assert result.termination_observation == "output_pipes_still_open_after_sigkill"
+        assert "escaped descendant cleanup is unverified" not in result.stderr
+        assert result.termination_observation in {"output_pipes_closed_after_sigterm", "output_pipes_closed_after_sigkill"}
         assert child_pid_path.is_file()
-        os.kill(int(child_pid_path.read_text(encoding="utf-8")), 0)
+        child_pid = int(child_pid_path.read_text(encoding="utf-8"))
+        result_state = subprocess.run(["ps", "-p", str(child_pid), "-o", "stat="], capture_output=True, text=True)
+        assert not result_state.stdout.strip() or result_state.stdout.strip().startswith("Z")
     finally:
         if child_pid_path.is_file():
             with contextlib.suppress(ProcessLookupError, PermissionError):

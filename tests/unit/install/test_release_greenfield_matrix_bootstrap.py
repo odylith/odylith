@@ -29,7 +29,7 @@ def _run_greenfield_preconfirm_matrix(
         fake_python_body
         or (
             "#!/usr/bin/env bash\n"
-            "if [[ \"$*\" == *\"greenfield_matrix_host_candidate.py --print-argv-template\"* ]]; then\n"
+            "if [[ \"$*\" == *\"odylith.runtime.domain_intelligence.greenfield_host_transport --print-argv-template\"* ]]; then\n"
             "  exec \"$REAL_PYTHON\" \"$@\"\n"
             "fi\n"
             "printf '%s\\n' \"$*\" >> \"$FAKE_PYTHON_LOG\"\n"
@@ -261,7 +261,7 @@ def test_greenfield_preconfirm_matrix_target_runs_installed_release_gate() -> No
     assert '--final-holdout-run-ledger "$final_holdout_run_ledger"' in text
     assert '--implementation-revision "$implementation_revision"' in text
     assert '--distribution-provenance-file "$distribution_provenance_file"' in text
-    assert 'greenfield_matrix_host_candidate.py --print-argv-template' in text
+    assert 'odylith.runtime.domain_intelligence.greenfield_host_transport --print-argv-template' in text
     assert 'extra_args+=(--host-candidate-arg="$argument")' in text
     assert 'ensure_playwright_chromium' in text
     assert '"$odylith_python" -m playwright install chromium >/dev/null' in shared
@@ -506,7 +506,7 @@ def test_greenfield_preconfirm_matrix_preserves_its_outer_temp_root_after_nonzer
         overrides={"TEMP_PARENT": str(temp_parent)},
         fake_python_body=(
             '#!/usr/bin/env bash\n'
-            'if [[ "$*" == *"greenfield_matrix_host_candidate.py --print-argv-template"* ]]; then\n'
+            'if [[ "$*" == *"odylith.runtime.domain_intelligence.greenfield_host_transport --print-argv-template"* ]]; then\n'
             '  exec "$REAL_PYTHON" "$@"\n'
             'fi\n'
             'if [[ "$*" == *"greenfield_preconfirm_matrix.py"* ]]; then\n'
@@ -538,7 +538,7 @@ def test_greenfield_preconfirm_matrix_preserves_its_outer_temp_root_after_interr
         "import signal\n"
         "import sys\n"
         "\n"
-        "if any(arg.endswith('greenfield_matrix_host_candidate.py') for arg in sys.argv[1:]):\n"
+        "if any(arg == 'odylith.runtime.domain_intelligence.greenfield_host_transport' for arg in sys.argv[1:]):\n"
         "    os.execv(os.environ['REAL_PYTHON'], [os.environ['REAL_PYTHON'], *sys.argv[1:]])\n"
         "if any(arg.endswith('greenfield_preconfirm_matrix.py') for arg in sys.argv[1:]):\n"
         "    Path(os.environ['FAKE_CONTROLLER_READY_FILE']).write_text('ready', encoding='utf-8')\n"

@@ -30,7 +30,33 @@
   same workstream anchor. A missing B-110 anchor is treated as benchmark
   corpus drift because it can create false `requires_widening` advisory noise
   even when required-path recall and validation are green.
-Last updated: 2026-07-20
+Last updated: 2026-10-04
+
+## Greenfield source-predicate release qualification
+
+Benchmark consumes the Release-owned evaluator's disclosed-public source mode,
+`odylith.greenfield.public-source-predicate-evaluation.v1`. Its source-only
+preflight preserves the independently frozen 40 cases and 425 IDs. Observed
+coverage is separate: many-to-many source mappings, complete reverse support,
+the exact output/snapshot/transaction and a retained independent review act
+must all bind to pinned hashes. Missing, partial, contradicted or unaudited
+evidence fails. Checksums and reviewer eligibility metadata do not establish
+natural-language entailment or reviewer authorship by themselves.
+
+The [Release contract](../release/CURRENT_SPEC.md) owns case scoring, canonical
+custody and native/protected compatibility. Benchmark distinguishes structural
+inventory from independently adjudicated source fidelity; repeated generated
+representations never increase the fixed source denominator or confidence.
+
+CB-347/B-142 Wave R2's unchanged public source-only preflight passes, and the
+retained civic reverse inventory has 219 entries. Final independent rereview
+passes 11 controls and reports no actionable P0/P1/P2 after canonical custody,
+clarification and malformed-material corrections. Exact review:
+/private/tmp/odylith-greenfield-r2-independent-rereview-20261004.md,
+SHA-256 2ebc3a1d8218449e0c8f3b8a7c8a70cca32146abe5f5376e0a9299aeadbf8efe.
+These results prove evaluation contracts and inventory completeness. Full
+frozen regression and fresh installed, independently adjudicated semantic
+proof remain open.
 
 
 ## Purpose

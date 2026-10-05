@@ -21,6 +21,7 @@ from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import repo_path_resolver
+from odylith.runtime.governance import backlog_assessment
 from odylith.runtime.governance import agent_governance_intelligence as governance
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.common import log_compass_timeline_event as timeline_logger
@@ -191,6 +192,8 @@ def _render_idea_text(*, metadata: Mapping[str, str], sections: Mapping[str, str
         "idea_id",
         "title",
         "date",
+        "assessment_status",
+        "assessment_provenance",
         "priority",
         "commercial_value",
         "product_impact",
@@ -316,7 +319,7 @@ def _rewrite_execution_section(
     normalized_rows.sort(
         key=lambda row: (
             _EXECUTION_STATUS_ORDER.get(str(row.get("status", "")).strip().lower(), 99),
-            -int(str(row.get("ordering_score", "0")).strip() or "0"),
+            *backlog_assessment.score_sort_key(row.get("ordering_score")),
             str(row.get("idea_id", "")).strip(),
         )
     )
@@ -694,7 +697,7 @@ def _build_successor_metadata(
         "impacted_parts": str(source_metadata.get("impacted_parts", "")).strip(),
         "sizing": str(source_metadata.get("sizing", "M")).strip() or "M",
         "complexity": str(source_metadata.get("complexity", "Medium")).strip() or "Medium",
-        "ordering_score": str(source_metadata.get("ordering_score", "0")).strip() or "0",
+        "ordering_score": backlog_assessment.markdown_value(source_metadata.get("ordering_score")),
         "ordering_rationale": (
             "Successor continuation required for net-new implementation demand while preserving closed lineage context."
         ),
@@ -722,6 +725,9 @@ def _build_successor_metadata(
         "supersedes": "",
         "superseded_by": "",
     }
+    for field in ("assessment_status", "assessment_provenance"):
+        if field in source_metadata:
+            metadata[field] = source_metadata[field]
     return metadata
 
 

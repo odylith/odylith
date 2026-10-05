@@ -24,6 +24,11 @@ def _isolate_structural_scoring(
         "require_atomic_fact_ledger",
         lambda *_args, **_kwargs: None,
     )
+    monkeypatch.setattr(
+        support.relation_module,
+        "require_atomic_fact_ledger",
+        lambda *_args, **_kwargs: None,
+    )
 
 
 def test_point_acceptance_and_wilson_floor_are_gated_separately() -> None:

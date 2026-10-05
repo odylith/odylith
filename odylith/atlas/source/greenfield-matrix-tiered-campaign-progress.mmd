@@ -26,7 +26,7 @@ flowchart TB
       regression["60-case regression<br/>controlled discovery concurrency"]
       volume["120-case discovery<br/>bounded workers, seeded installs"]
       deep_volume["240-case discovery<br/>deeper variance, controlled workers"]
-      release_proof["Release proof<br/>full install, browser proof,<br/>rescue and natural rescue"]
+      release_proof["Release proof<br/>Full install, browser and recovery proof;<br/>Luna clarification and unavailable-provider controls"]
       dependency_injection["Shard runner dependencies<br/>explicit command, telemetry,<br/>cleanup functions; no global swaps"]
       shard_execution_owner["Shard execution owner<br/>process tailing, temp cleanup,<br/>matrix command custody"]
     end
@@ -58,7 +58,7 @@ flowchart TB
       cluster_gate["Live failure cluster gate<br/>telemetry-derived stop reason"]
       worker_profile["Default worker profile<br/>failed subset one worker,<br/>discovery tiers two workers"]
       in_flight_stop["In-flight shard interrupt<br/>siblings stop after tier signal"]
-      release_policy["Release-tier policy guard<br/>direct matrix and campaign require<br/>browser, rescue, natural rescue"]
+      release_policy["Release-tier policy guard<br/>Direct matrix and campaign require all<br/>browser, recovery and declared control gates"]
       release_stressors["Release-proof stressor guard<br/>requested variance coverage<br/>also applies to release tier"]
       child_stressors["Child matrix stressor contract<br/>required stressors propagate<br/>to shard commands and preflight"]
       release_preflight_status["Release preflight status<br/>preflight abort is not<br/>completed release proof"]
@@ -67,6 +67,7 @@ flowchart TB
       temp_default["Portable temp default<br/>host temp directory unless<br/>TEMP_PARENT overrides"]
       cleanup_proof["Temp cleanup proof<br/>directories, files, symlinks<br/>must all be gone"]
       readiness_boundary["Readiness boundary<br/>discovery is not release proof"]
+      public_audit["Detached public qualification<br/>Frozen source predicates, exact output hashes,<br/>independent coverage audit and measured bound decision"]
       stop_fix_replay["Stop-fix-replay loop<br/>capture learning, repair platform,<br/>rerun failed subset, resume discovery"]
     end
 
@@ -100,7 +101,7 @@ flowchart TB
     temp_default --> cleanup_proof
     release_proof --> release_policy
     release_policy --> release_stressors --> child_stressors --> release_preflight_status --> campaign_status --> readiness_boundary
-    release_proof --> readiness_boundary
+    release_proof --> public_audit --> readiness_boundary
     volume -. "discovery only" .-> readiness_boundary
     deep_volume -. "discovery only" .-> readiness_boundary
     failure_response --> readiness_boundary
@@ -114,7 +115,7 @@ flowchart TB
     class external_cases,case_text_canonicalization,source_generator,prior_results,content_identity,weak_identity,stressor_tags,taxonomy_owner,required_term_gate,leakage_term_gate,tier_size_gate,shard_builder,variance_report,stressor_outcomes primary;
     class campaign_orchestrator,case_file_preflight,failed_replay,regression,volume,deep_volume,release_proof,dependency_injection,shard_execution_owner execution;
     class matrix_preflight,shard_jsonl,exception_result,process_failure,source_shard_replay,synthetic_payload,incremental_result,progress_jsonl,console_progress,running_snapshot,progress_snapshot,live_failed_identity,failure_origin,shard_backfill,tooling_payload,final_payload,failure_response,replay_materializer governance;
-    class cluster_gate,worker_profile,in_flight_stop,release_policy,release_stressors,child_stressors,release_preflight_status,campaign_status,shard_temp_scope,temp_default,cleanup_proof,readiness_boundary,stop_fix_replay constraint;
+    class cluster_gate,worker_profile,in_flight_stop,release_policy,release_stressors,child_stressors,release_preflight_status,campaign_status,shard_temp_scope,temp_default,cleanup_proof,readiness_boundary,public_audit,stop_fix_replay constraint;
     style case_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#293D52
     style campaign_lane fill:#FBFDFF,stroke:#A7E9E3,stroke-width:1px,color:#293D52
     style telemetry_lane fill:#FBFDFF,stroke:#DDD6FE,stroke-width:1px,color:#293D52

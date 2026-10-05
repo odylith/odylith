@@ -419,6 +419,7 @@ def scaffold_diagram(
                 repo_root=repo_root,
                 surface="atlas",
                 operation_label="Atlas scaffold",
+                atlas_diagram_ids=(diagram_id,),
             )
         except RuntimeError as exc:
             logs.append(str(exc))

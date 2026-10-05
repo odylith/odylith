@@ -278,6 +278,8 @@ def test_unavailable_provider_proof_requires_success_without_runtime_provider_us
         "returncode": 0,
         "proposal_seconds": 1.0,
         "detail": "Greenfield model authoring is unavailable; no records were created.",
+        "before_record_count": 0,
+        "after_record_count": 1,
         "write_audit_active": True,
         "write_audit_error": "",
         "write_attempts": (),

@@ -76,15 +76,36 @@ def test_first_run_retains_required_support_without_promoting_support_events(
     assert "proposed_component4" not in source
     assert "support state" not in source
     assert "downstream archive" not in source
-    assert [line.strip() for line in source.splitlines() if "proposed next step" in line] == [
-        f'event{order} -. "proposed next step" .-> event{order + 1}'
+    assert [line.strip() for line in source.splitlines() if line.strip().startswith("event") and " -.-> event" in line] == [
+        f'event{order} -.-> event{order + 1}'
         for order in range(1, 7)
     ]
+    first_run_detail = "\n".join(box["description"] for box in boxes.values())
+    assert "A downstream archive receives completed records." not in first_run_detail
     if exchange_support:
-        assert 'proposed_component3 -->|"Proposed exchange: Provide eligibility' in source
-        assert 'proposed_component2 -->|"Proposed exchange: Provide the current' in source
+        for index, (origin, target, contract) in enumerate((
+            (3, "Occupancy Record", "Provide eligibility evidence."),
+            (2, "Vessel Intake", "Provide the current eligible state."),
+            (1, "Placement View", "Acknowledge the eligibility version used."),
+        ), 2):
+            assert f"Proposed exchange {index} to {target}: {contract}" in boxes[
+                f"proposed_component{origin}"
+            ]["description"]
+        exchanges = rows[2]["mermaid_source"]
+        assert 'component3 -->|"Proposed exchange: Provide eligibility' in exchanges
+        assert 'component2 -->|"Proposed exchange: Provide the current' in exchanges
+        assert 'component1 -->|"Proposed exchange: Acknowledge the' in exchanges
     if delivery_support:
-        assert 'proposed_component3 -. "proposed delivery prerequisite" .-> proposed_component2' in source
-        assert 'proposed_component2 -. "proposed delivery prerequisite" .-> proposed_component1' in source
+        assert "Proposed delivery prerequisite: Placement View through Deliver the placement view." in boxes[
+            "proposed_component2"
+        ]["description"]
+        assert "Proposed delivery prerequisite: Occupancy Record through Deliver occupancy recording." in boxes[
+            "proposed_component1"
+        ]["description"]
+        delivery = rows[3]["mermaid_source"]
+        assert 'workstream3 -->|"proposed prerequisite"| workstream2' in delivery
+        assert 'workstream2 -->|"proposed prerequisite"| workstream1' in delivery
+    assert "Proposed exchange:" not in source
+    assert "proposed delivery prerequisite" not in source
     assert "Declared exchange inputs and delivery prerequisites" in sequence["read_guide"]
     assert validate_authored_atlas_view(sequence, source_text=source)["diagram_boxes"] == sequence["diagram_boxes"]

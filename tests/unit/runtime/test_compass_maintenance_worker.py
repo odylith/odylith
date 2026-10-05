@@ -397,7 +397,7 @@ def test_macos_sysctl_failure_or_unbounded_size_is_unknown(monkeypatch, failure_
     (b"/runtime directory/python\0-m\0module\0--repo-root\0/repository --emit-output\0",
      ("/runtime directory/python", "-m", "module", "--repo-root", "/repository --emit-output")),
     (b"", None), (b"unterminated", None), (b"x" * (1024 * 1024 + 1), None),
-])
+], ids=["nul-separated-argv", "empty", "unterminated", "exceeds-byte-limit"])
 def test_linux_nul_argv_reader_mocked_on_current_host(monkeypatch, raw, expected):
     original_open = Path.open
     reads = []

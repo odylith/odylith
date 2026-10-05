@@ -1,5 +1,348 @@
 Status: In progress
 
+## Current transport proof frontier (2026-10-04)
+
+Independent final review is CLEAR on fixed hashes: 14 receipt-boundary controls
+and the exact bootstrap control pass. Failed cleanup cannot confer bounded
+confirmation authority. Preserve all original failed evidence. Proceed to
+owned governance settlement, complete frozen runtime/install/browser proof and
+the fresh installed/public gates; this review does not qualify visible latency,
+Linux execution or a changed-hash full EDIT journey. Review:
+/private/tmp/odylith-nonce-independent-final-review-20261004.md,
+SHA-256 ea0244a8b310430608f136ba63357971a93c6af968390bbad9bd652336c7e652.
+
+The bounded correction uses a delivered completion receipt. The guardian
+keeps a private nonce in memory and stores only its digest. It releases the
+nonce after completion-record I/O and strict final whole/proposal checks.
+Bounded confirmation must supply the matching product-owned receipt; persisted
+ready state and custodian death cannot grant permission alone. Failed or late
+preparation never issues that receipt, even when all rollback I/O fails.
+Successful certification is irreversible; a later delivery error is an explicit
+environment or uncertain outcome. Final receipt/preview delivery retains the
+already declared scope outside measured preparation; complete user-visible
+latency remains unqualified. Preserve old/equal receipts and EDIT ownership.
+This replaces the losing revocable-record mechanism without a new semantic
+phase, filesystem timing assumption or supervisor. Independent design:
+/private/tmp/odylith-delivered-completion-receipt-adjudication-20261004.md.
+Prediction: mixed failed-rollback controls refuse without a receipt, a genuine
+receipt permits model-free create, and altered or mismatched receipts refuse.
+Implementation is fixed for independent review. Expanded regression passes
+502 tests; one existing shell-bootstrap readiness poll misses its one-second
+window. The exact failed test and all boundary controls then pass 40 checks;
+both logs remain retained. Observation v17 records completion-attempt I/O and
+the final raw clock check, excluding receipt delivery, persistence, guardian
+retirement and presentation. Source hashes and proof:
+/private/tmp/odylith-bounded-greenfield-nonce-transport-handoff-20261004.json,
+SHA-256 95f024a9a80aa02d292c582345d627f6e98ff06eb62a5a65594d542c3bb6f77c.
+That bounded independent final proof is now clear; final release proof remains open.
+
+The latest correction passes 388 targeted tests, including 29 boundary
+controls. Positive completion denies the original failed-rollback case, but
+late completion-record publication still depends on removing that record.
+Resolve the actual acceptance boundary in the existing owners; another
+revocable flag is not a new mechanism. Ordinary cleanup errors must not confer
+authority, and complete measured work must stay inside the declared deadline.
+Final independent clearance remains required before freeze or build.
+
+The first corrective pass passes 386 adopter tests; independent rereview
+passes 27 boundary tests and closes the four original supported defects.
+One remaining P1 rejects that checkpoint: failed rollback unlink can leave
+tentative ready state and bytes, which custodian death incorrectly admits.
+The existing pending/process owners must require positive completed-protocol
+authority, including coherent error and mixed rollback-failure controls.
+Retain the exact failed review and real copied-create result. Final freeze,
+build and installed testing stay gated on independent clearance.
+
+The shared runtime transport and product command pass 376 targeted checks.
+Independent controls then falsify cancellation deny-state retention, final seal
+release timing, process identity across TERM/KILL grace and cleanup of ordinary
+same-group background children. The owning corrective pass preserves the red
+controls and fixes these existing boundaries before final regression, build or
+provider execution. No new semantic phase or acceptance relaxation is allowed.
+Deliberate external guardian termination is separately evaluated against the
+operator's explicit supported-environment limits; source proof must distinguish
+it from an actual internal failure route.
+
+The detached public qualification bridge's malformed unavailable-provider proof
+finding is independently resolved: 89 tests and 22 controls pass with no
+remaining actionable P0/P1/P2 in that scope. Original public expectations,
+floors and failed evidence remain unchanged. This is implementation proof;
+installed complete-flow and genuine independent semantic proof are still open.
+
+## Product-owned bounded host journey (2026-10-04)
+
+The independent custody audit confirms that release-only orchestration and
+separate manual CLI invocations cannot prove a complete consumer deadline.
+Move the existing host flow, monotonic budget and process supervision into
+the supported runtime; use one bounded `greenfield prepare` route for the
+read-only preview and the same owner in release callers. Preserve all four
+existing inference passes, shared gate/candidate budget, source-only verifier,
+receipt and transaction laws. No new interpretation, retry, fallback or
+confirmation authority. Manual commands prove local source custody only.
+
+Own the interval from contract acquisition through retention, cleanup and
+observer return. Cancel blocked work and descendants within an explicit
+finite grace; reject a late preview. Prove clarification stops, exhausted
+shared and whole budgets, EDIT preserving the original seal, and actual
+short-deadline cancellation. Reuse existing supervision where suitable.
+Keep the 660-second diagnostic cap unqualified until fixed public complete
+measurements and a retained decision support the release bound. Source:
+/private/tmp/odylith-whole-flow-custody-design-20261004.md. CB-347 owns the gap.
+
+Newly staged bounded-route seals stay quarantined until the live parent finishes
+within its deadline. Confirmation rejects an unreleased journey marker. Timeout
+cleanup owns only new pending state; old EDIT and preexisting equal-hash seals
+and nonterminal recovery journals remain intact. Transaction bytes and semantic
+receipt contracts stay unchanged.
+
+All eight frozen diagnostic failures now have bounded correction proof: 81
+affected-file checks and 114 actual R1 custody checks pass. Four test files add
+nine lines; acceptance floors and product source are unchanged. The exact
+1588-line hygiene exception is already authorized by B-133. Keep original
+failures and require the fresh final freeze after transport/finalizer settlement.
+Handoff: /private/tmp/odylith-freeze-test-boundary-corrections-20261004/handoff.json.
+
+## Remaining public qualification wiring (2026-10-04)
+
+R2's actual invocation audit identifies the remaining owned bridge: the public
+source-predicate API has no immutable onboarding-finalizer entry, and the
+complete model-profile owner deliberately leaves whole-flow qualification
+unqualified until fixed public complete measurements support a finite bound.
+Adopt exact public audit refs and measured-bound custody through those existing
+owners. Preserve base bytes, published floors, all other automated gates and
+independent lenses. No product replay, protected flags or synthetic review credit.
+Audit: /private/tmp/odylith-v20-public-qualification-invocation-20261004.md.
+Product-owned cross-invocation timing custody remains separately unproved.
+
+Fresh exact runtime/install/browser diagnostic completes all 8,301 tests;
+8,293 pass. Eight test-contract failures require current refusal text, the
+documented B-133 size exception and real relation-ledger fixture isolation.
+Retain original failures and require final corrected regression; no production
+semantic acceptance or confidence floor is relaxed.
+
+## Source-predicate public qualification, Wave R2 (2026-10-04)
+
+R1 closes structural custody drift. The remaining evaluator compares independent
+source predicates with generated bookkeeping rows as though their ontologies
+and counts were identical. Native annotation v4 also conflates source-witness
+and normalized-role hashes and requires final-holdout labels for public input.
+The verified disclosed audit makes a pure output-binding adapter insufficient.
+Bound one correction to the existing release evaluation owners under CB-347.
+
+Retain the original public predeclaration unchanged: 425 IDs across 40 cases,
+including 367 scored commit predicates, 18 clarification predicates and 40
+reference IDs. Source SHA-256 is
+31eefdfa1f6d49f4c49a04525c773ca63fd7dc16b3d4ce8f4a1e5957cfdd6481.
+Validate truthful public/source-only expectations separately from hash-bound,
+independently audited observed coverage and reverse-support evidence. Every
+predicate and compound obligation remains accountable; supporting events and
+non-atomic semantic facts cannot escape the reverse invention audit. Missing,
+partial, contradictory or unaudited evidence fails closed. Deterministic
+validation cannot establish natural-language entailment by itself.
+
+Use the existing evaluator, current canonical custody owners, reviewer custody
+and fixed floors. Preserve native annotation mode, the original protected
+holdout and once-only rules. Keep source census distinct from authenticated
+sealed representation size, and witness/normalized-role/destination hashes
+distinct. Do not rewrite expected truth from output, relabel public as protected,
+add a consumer model phase, infer semantics with parsers, weaken floors or
+fabricate a passing audit. Move a real scoring phase out of the oversized owner
+if needed; no second evaluator framework. Characterize forgery, missing IDs,
+incomplete reverse audit, safety/effect loss, current custody and round-trip
+behavior before independent review. Fresh installed semantic proof remains
+required after implementation.
+
+R2 source is settled for independent review: 375 bounded tests pass in 5.29
+seconds, including 52 new controls. The unchanged 40-case/425-ID public
+preflight passes. Authentic civic custody passes with source census five actors
+and sealed representation six; complete reverse inventory contains 219 entries.
+The parent scorer shrinks 1231 to 1020 lines and a real 557-line case phase owns
+the moved native scoring and explicit public audit path. The existing semantic
+test file remains unchanged at 1488 lines. No real semantic coverage verdict,
+fidelity score or qualification is claimed; unit audit fixtures are synthetic.
+Root-dispatched independent review and fresh installed evidence remain open.
+Handoff: /private/tmp/odylith-greenfield-r2-evaluation-owner-handoff-20261004.json,
+SHA-256 eaf05aca623e55f10387b053aaa96d66174e661438ddb2736dda8aacda6cf219.
+
+Initial independent R2 review reproduces two P1 evaluator escapes despite the
+passing existing tests: an accepted fact can be downshifted to an assumption
+through rehashed reverse/audit evidence, and clarification credit can coexist
+with a valid compiled snapshot. CB-347 retains both red controls and the failed
+review. Correction must use actual canonical custody, preserve true material
+and advisory assumptions, and refuse accidental compilation on clarification.
+Final correction uses canonical custody for accepted versus assumed rows and
+refuses compiled clarification evidence. A further independently exposed P2
+malformed-material crash is corrected through the actual loader: incomplete,
+unscored, zero samples and an explicit issue. Initial red artifacts remain
+retained. Final independent rereview passes 11 focused controls with no
+actionable P0/P1/P2; civic's 219-entry universe is unchanged. Review:
+/private/tmp/odylith-greenfield-r2-independent-rereview-20261004.md,
+SHA-256 2ebc3a1d8218449e0c8f3b8a7c8a70cca32146abe5f5376e0a9299aeadbf8efe.
+Full frozen regression and fresh installed semantic evidence remain open.
+
+## Authorized memory improvement and R1 review boundary (2026-10-04)
+
+The operator explicitly authorizes B-133's first memory-hygiene wave alongside
+Greenfield: governance-record history metadata, current-authority admission,
+weighted usefulness and decay, materially better retrieval and judgment/session
+memory. Use one shared policy and existing source/fingerprint/lineage contracts.
+Current valid source and active constraints precede historical context; missing
+legacy metadata remains unknown. Measure source-backed critical recall,
+precision, stale-authority errors, useful later decisions, packet size and
+latency on fixed controls. Note counts and age alone do not establish truth or
+improvement. Preserve all Greenfield model, receipt and transaction laws.
+
+R1's settled correction removes 97 lines across four runtime/release owners.
+One passive lifecycle projector and one shared design-binding validator serve
+admission and full release readback. Independent rereview passes the unchanged
+civic package, refuses all six original rehashed lifecycle/citation bypasses and
+coordinated owner corruption, independently passes 259 checks, and reports no
+actionable P0/P1/P2. Preserve the initial failed review under CB-347. Structural
+correction still does not qualify independent semantic coverage, annotation
+ontology or source-versus-representation counts. Rereview proof:
+/private/tmp/odylith-greenfield-r1-independent-rereview-20261004.md,
+SHA-256 628f1eeb1dcc89e26daa232ac50c9dcb965f7bdac884e57d44529785f33ae429.
+
+## Whole-product improvement and useful history (2026-10-04)
+
+Greenfield must improve the shared Odylith flow while preserving every existing
+capability. The operator explicitly requires clear, useful, efficient information
+that remains available for future coding, engineering, analysis, reasoning and
+domain intelligence. This is part of B-142's release contract. The product-owned
+capability inventory and Registry remain authoritative; the supplied inventory
+is supporting context, including historical descriptions superseded by the
+current sealed-transaction laws.
+
+Use the existing owners and release proof paths. Do not create another platform,
+knowledge ledger, model phase or engine-wide rewrite. Every capability family
+must have an explicit evidence scope and result; an untested family stays open.
+
+| Capability coverage | Required behavior in the shared flow |
+| --- | --- |
+| Analysis Engine; Domain Intelligence | Source meaning, scope and uncertainty remain faithful; advisory analysis cannot grant write authority. |
+| Reasoning Engine; Tribunal; Proof State | Decisions cite evidence, expose contradictions and degraded states, and preserve rejected mechanisms and claim limits. |
+| Execution Engine; Governed Harness / Turn Gate; Discipline Engine | Retrieved truth constrains allowed moves, waits and validation; hard-law hot paths remain deterministic. |
+| Governance Engine; Taxonomies and FSMs; Topology Integrity | Owned records, lifecycles and cross-object links validate without duplicate or contradictory truth. |
+| Context Engine; Memory Substrate | Bounded later retrieval carries accepted facts, citations, decisions, proof and relevant failure history with explicit freshness. |
+| Delivery Intelligence; Surface DAGs | All consumers use the same delivery posture and generation provenance; unchanged inputs reuse valid caches. |
+| Governance Intervention Engine; Operator Experience | Useful, accurate guidance is visible in the supported host; recorded hook output alone does not qualify visibility. |
+| Subagent Router; Subagent Orchestrator | Bounded ownership, admissibility and validation handoffs survive host transport without duplicated interpretation. |
+| Install / Upgrade / Migration Runtime; Security and Trust | Clean installed behavior, provenance, trust, recovery and preservation of consumer truth pass the existing release gates. |
+| Benchmark Harness | Existing non-Greenfield families remain covered; measured claims retain their declared baselines, accuracy and proof limits. |
+| Radar; Registry; Atlas; Casebook; Compass; Technical Plans | Each object holds its own useful facts, ownership and evidence, with working links and historical decisions available to later work. |
+| Codex Adapter; Claude Code Adapter; Dashboard Shell | Host laws agree; normal, empty/fallback and degraded/error UI states remain legible on desktop and mobile. |
+
+For the touched knowledge flow, prove source -> canonical meaning -> governed
+objects -> indexing and retrieval -> execution/reasoning -> delivery and visible
+surfaces. Accepted facts, proposed assumptions and unknown assessments must keep
+their distinct authority at every boundary. Later context must find the relevant
+decision, original evidence, failed mechanism and current proof status without
+promoting a historical failure or stale result into accepted current truth.
+Durable governance knowledge must remain useful independently of expiring
+runtime caches and snapshots. Preserve original failed evidence; extend owned
+records instead of duplicating summaries or repeating a disproved fix.
+
+Measure improvements against the same disclosed sources and shipped contracts:
+semantic coverage and reverse invention checks; actual human-readable artifacts;
+whole-flow and phase latency; provider calls; bounded source reads and valid cache
+reuse; duplicate ownership and net hand-maintained code. An efficiency gain
+cannot come from disabling engines, losing information, narrowing the authorized
+envelope, weakening a gate or adding interpretation after the sealed receipt.
+Report demonstrated improvement separately from regression coverage. Total test
+counts do not establish semantic quality or prove every engine improved.
+
+Q1 already moves one assessment policy through Radar writers, validation,
+indexing, Context Engine and UI, preserving unknown values and provenance while
+removing duplicate shaping. Its settled 8,119 tests precede the final two-file
+authority correction; that correction passes 93 focused custody/seal checks.
+Fresh installed public, browser, benchmark, host and release evidence remain
+required. Significant whole-product improvement stays an outcome to demonstrate,
+not a claim inferred from this plan or from additional stored prose.
+
+## V19 semantic mechanism passes; close three projection defects (2026-10-03)
+
+The settled lane passes all 8,119 tests with source/assets unchanged. Readable
+parameter IDs repair the existing canonical shard argv limit. A final authority
+correction deletes the advisory-default proposal field, uses the existing
+verified kind=scope boundary reader for known facts and passes 93 seal/custody
+checks with no net runtime growth. Civic's three exact choices and original
+two open assumptions retain their separate authority. Checkpoint this bounded
+projection wave and build a clean distribution for fresh public proof.
+
+Wave R1 owns verified release evaluator drift under CB-347: reuse current
+canonical relation, receipt and atomic custody validators for v18 source_duty,
+normalized action witnesses and role-local supporting coordinates. Preserve
+all source-only predicates and distinguish them from bookkeeping categories
+and representation-size counts. No new evaluator/model phase or weakened floor;
+independent semantic coverage and reverse invention checks remain required.
+
+The bounded normalization validator remains in the existing product-intent
+envelope owner and replaces its old private role check. Admission and the
+release scorer must both use it for accepted duty values, exact witnesses,
+actor identity, role coverage and binding hashes. It does not reconstruct
+omitted raw candidate authority or replace full admission. Delete the scorer's
+stale duplicate validators; preserve source expectations and semantic floors.
+
+The capability audit captures CB-354: live Domain Intelligence inventory still
+advertised retired repair, atomic commit and post-confirm surface refresh.
+Correcting only its owned descriptors preserves all 31 inventory identities,
+taxonomy, commands and anchors against HEAD; nine existing engine-integrity and
+host-contract tests pass. The inventory now describes the sealed read-only
+preview and journaled publication of precompiled bytes. This is metadata proof,
+not behavioral proof for the complete capability inventory. Full lifecycle,
+host/browser and benchmark comparisons remain release requirements.
+
+The first complete Q1 lane passes 8,109 checks and exposes eight old Atlas
+layout assertions plus one short-budget Stop scheduling expectation. Its
+3,288 source/assets stay byte-identical. Preserve this failed run; migrate
+only representation assertions with full visible/detail/source/topology proof,
+keep the actual timeout law, and rerun the lane in existing fresh-process shards.
+
+Q1's independent rereview closes all four assessment propagation and ordering
+repros with 117 passing focused unit/browser checks and no actionable P0/P1/P2.
+The source fallback stays bounded to cached index-linked specs; one shared
+assessment policy replaces duplication without adding a semantic phase.
+Settle generated assets, freeze source during complete runtime/install proof,
+and checkpoint a clean immutable build before fresh public qualification.
+
+The fresh unchanged civic source now passes independent source-first review of
+core meaning: performer ownership, ordered actions, fields, safety, withdrawal
+effects, supporting topology and proof. Complete quality still fails three P2s
+in accepted-default authority, Atlas readability and unsupported Radar decision
+metadata. Preserve this positive semantic evidence and its quality failures;
+do not repair retained output or claim release qualification.
+
+Bound the next wave to existing projection owners and the stale local-install
+contract smoke. Land meaningful characterization tests, keep source/candidate
+custody unchanged, inspect actual PNG/SVG, independently review the combined
+patch, settle governance, and build a new clean immutable distribution. Then
+run cross-domain positive output, actual prepublication EDIT/REJECT/CONFIRM,
+the predeclared complete-positive equivalent-source controls, and full public
+browser/recovery proof. The external equivalence input changes only list markers
+or one sentence break; no frozen corpus changes or receipt reuse are allowed.
+
+Wave Q1 also owns the existing Radar assessment seam. Current writer/validator/
+index/renderers require numeric estimates and derive a ranking score even when
+the source supplies no assessment. Move assessment-state, numeric-score policy
+and shared validation into one real governance owner; adopt it across authoring,
+validation, payload/details and Context Engine without duplicated coercers.
+Unassessed source records must carry explicit provenance and preserve unknown
+values rather than invented estimates. Existing assessed records keep their
+score formula and ordering. Dependency order remains separate from assessed
+value/effort rank. This is a correctness repair and an active decomposition wave
+for the oversized backlog authoring, validator and HTML renderer; do not add
+unrelated feature growth. Source/index/payload/context/visible UI and their
+failure boundaries must agree. Prove both states, malformed mixed metadata,
+unchanged existing assessed behavior, normal/empty/error browser states and
+installed contract parity before claiming this wave complete.
+
+The public annotation API currently requires final-holdout labeling and exact
+candidate projection bindings. Preserve independent public source expectations
+before output; do not relabel public cases as protected qualification or invent
+projection paths. Resolve a truthful supported public scoring path before the
+untouched holdout. Whole-flow timing, private slices, host parity and canonical
+shipping constraints remain explicit release gates.
+
 ## V47 correction proof and next decisive gate (2026-10-03)
 
 Actor ownership passes 307 bounded checks; the retained v17 receipt is refused

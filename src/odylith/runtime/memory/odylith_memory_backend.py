@@ -9,6 +9,8 @@ available.
 
 from __future__ import annotations
 
+from odylith.runtime.context_engine import memory_record_policy
+
 import contextlib
 import hashlib
 import json
@@ -304,11 +306,16 @@ def _rank_rows_with_query_match(
     query: str,
     limit: int,
     exact: bool,
+    expected_provenance: Mapping[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     ranked_rows: list[dict[str, Any]] = []
     for row in rows:
         if not isinstance(row, Mapping):
             continue
+        row = dict(row)
+        memory = _json_dict(row.get("provenance_json")).get("memory_record")
+        if isinstance(memory, Mapping):
+            row["memory_record"] = dict(memory)
         lexical = _lexical_match_features(row, query=query)
         base_score = 0.0 if exact else _safe_float(row.get("score"))
         final_score = (
@@ -329,7 +336,7 @@ def _rank_rows_with_query_match(
             str(row.get("entity_id", "")),
         )
     )
-    return _normalize_search_rows(rows=ranked_rows, limit=limit, exact=exact)
+    return _normalize_search_rows(rows=memory_record_policy.rank_records(ranked_rows, expected_provenance=expected_provenance), limit=limit, exact=exact)
 
 
 def _text_embedding(text: str, *, dims: int = EMBED_DIMENSIONS) -> list[float]:
@@ -450,260 +457,12 @@ def _json_dict(value: Any) -> dict[str, Any]:
 
 
 def _projection_documents_from_tables(*, connection: Any) -> list[dict[str, Any]]:
-    documents: list[dict[str, Any]] = []
-
-    if _table_exists(connection, "workstreams"):
-        for row in connection.execute(
-            "SELECT idea_id, title, source_path, search_body FROM workstreams ORDER BY idea_id"
-        ).fetchall():
-            idea_id = str(row["idea_id"]).strip()
-            documents.append(
-                _document_record(
-                    {
-                        "kind": "workstream",
-                        "entity_id": idea_id,
-                        "title": str(row["title"]).strip(),
-                        "content": "\n".join(
-                            token
-                            for token in (idea_id, str(row["search_body"]).strip())
-                            if token
-                        ),
-                        "path": str(row["source_path"]).strip(),
-                    }
-                )
-            )
-
-    if _table_exists(connection, "releases"):
-        for row in connection.execute(
-            """
-            SELECT release_id, display_label, version, tag, effective_name, aliases_json, active_workstreams_json, source_path, metadata_json
-            FROM releases
-            ORDER BY release_id
-            """
-        ).fetchall():
-            metadata = _json_dict(row["metadata_json"])
-            aliases = [str(item).strip() for item in _json_list(row["aliases_json"]) if str(item).strip()]
-            active_workstreams = [str(item).strip() for item in _json_list(row["active_workstreams_json"]) if str(item).strip()]
-            documents.append(
-                _document_record(
-                    {
-                        "kind": "release",
-                        "entity_id": str(row["release_id"]).strip(),
-                        "title": str(row["display_label"]).strip() or str(row["release_id"]).strip(),
-                        "content": "\n".join(
-                            token
-                            for token in (
-                                str(row["release_id"]).strip(),
-                                str(row["version"]).strip(),
-                                str(row["tag"]).strip(),
-                                str(row["effective_name"]).strip(),
-                                " ".join(aliases),
-                                " ".join(active_workstreams),
-                                str(metadata.get("notes", "")).strip(),
-                            )
-                            if token
-                        ),
-                        "path": str(row["source_path"]).strip(),
-                    }
-                )
-            )
-
-    if _table_exists(connection, "plans"):
-        for row in connection.execute(
-            "SELECT plan_path, source_path, search_body FROM plans ORDER BY plan_path"
-        ).fetchall():
-            plan_path = str(row["plan_path"]).strip()
-            documents.append(
-                _document_record(
-                    {
-                        "kind": "plan",
-                        "entity_id": plan_path,
-                        "title": Path(plan_path).name,
-                        "content": str(row["search_body"]).strip(),
-                        "path": str(row["source_path"]).strip(),
-                    }
-                )
-            )
-
-    if _table_exists(connection, "bugs"):
-        for row in connection.execute(
-            "SELECT bug_id, bug_key, title, link_target, source_path, search_body FROM bugs ORDER BY bug_key"
-        ).fetchall():
-            bug_id = str(row["bug_id"] or "").strip()
-            documents.append(
-                _document_record(
-                    {
-                        "kind": "bug",
-                        "entity_id": bug_id or str(row["bug_key"]).strip(),
-                        "title": " ".join(token for token in (bug_id, str(row["title"]).strip()) if token).strip(),
-                        "content": "\n".join(
-                            token for token in (bug_id, str(row["search_body"]).strip()) if token
-                        ),
-                        "path": str(row["link_target"]).strip() or str(row["source_path"]).strip(),
-                    }
-                )
-            )
-
-    if _table_exists(connection, "diagrams"):
-        for row in connection.execute(
-            "SELECT diagram_id, title, source_mmd, summary, metadata_json FROM diagrams ORDER BY diagram_id"
-        ).fetchall():
-            metadata = _json_dict(row["metadata_json"])
-            content = "\n".join(
-                token
-                for token in (
-                    str(row["summary"]).strip(),
-                    " ".join(str(item).strip() for item in _json_list(metadata.get("related_backlog")) if str(item).strip()),
-                    " ".join(str(item).strip() for item in _json_list(metadata.get("related_code")) if str(item).strip()),
-                )
-                if token
-            )
-            documents.append(
-                _document_record(
-                    {
-                        "kind": "diagram",
-                        "entity_id": str(row["diagram_id"]).strip(),
-                        "title": f"{str(row['diagram_id']).strip()} {str(row['title']).strip()}".strip(),
-                        "content": content,
-                        "path": str(row["source_mmd"]).strip(),
-                    }
-                )
-            )
-
-    if _table_exists(connection, "components"):
-        for row in connection.execute(
-            """
-            SELECT component_id, name, spec_ref, aliases_json, workstreams_json, diagrams_json, metadata_json
-            FROM components
-            ORDER BY component_id
-            """
-        ).fetchall():
-            metadata = _json_dict(row["metadata_json"])
-            aliases = [str(item).strip() for item in _json_list(row["aliases_json"]) if str(item).strip()]
-            workstreams = [str(item).strip() for item in _json_list(row["workstreams_json"]) if str(item).strip()]
-            diagrams = [str(item).strip() for item in _json_list(row["diagrams_json"]) if str(item).strip()]
-            content = "\n".join(
-                token
-                for token in (
-                    str(metadata.get("what_it_is", "")).strip(),
-                    str(metadata.get("why_tracked", "")).strip(),
-                    " ".join(aliases),
-                    " ".join(workstreams),
-                    " ".join(diagrams),
-                )
-                if token
-            )
-            documents.append(
-                _document_record(
-                    {
-                        "kind": "component",
-                        "entity_id": str(row["component_id"]).strip(),
-                        "title": f"{str(row['component_id']).strip()} {str(row['name']).strip()}".strip(),
-                        "content": content,
-                        "path": str(row["spec_ref"]).strip(),
-                    }
-                )
-            )
-
-    if _table_exists(connection, "codex_events"):
-        for row in connection.execute(
-            "SELECT event_id, summary, workstreams_json, artifacts_json FROM codex_events ORDER BY event_id"
-        ).fetchall():
-            workstreams = [str(item).strip() for item in _json_list(row["workstreams_json"]) if str(item).strip()]
-            artifacts = [str(item).strip() for item in _json_list(row["artifacts_json"]) if str(item).strip()]
-            documents.append(
-                _document_record(
-                    {
-                        "kind": "codex_event",
-                        "entity_id": str(row["event_id"]).strip(),
-                        "title": str(row["summary"]).strip(),
-                        "content": "\n".join(
-                            token
-                            for token in (
-                                str(row["summary"]).strip(),
-                                " ".join(workstreams),
-                                " ".join(artifacts),
-                            )
-                            if token
-                        ),
-                        "path": agent_runtime_contract.AGENT_STREAM_PATH,
-                    }
-                )
-            )
-
-    if _table_exists(connection, "engineering_notes"):
-        for row in connection.execute(
-            """
-            SELECT note_id, note_kind, title, source_path, summary, components_json, workstreams_json, path_refs_json
-            FROM engineering_notes
-            ORDER BY note_kind, note_id
-            """
-        ).fetchall():
-            components = [str(item).strip() for item in _json_list(row["components_json"]) if str(item).strip()]
-            workstreams = [str(item).strip() for item in _json_list(row["workstreams_json"]) if str(item).strip()]
-            path_refs = [str(item).strip() for item in _json_list(row["path_refs_json"]) if str(item).strip()]
-            documents.append(
-                _document_record(
-                    {
-                        "kind": str(row["note_kind"]).strip(),
-                        "entity_id": str(row["note_id"]).strip(),
-                        "title": str(row["title"]).strip(),
-                        "content": "\n".join(
-                            token
-                            for token in (
-                                str(row["summary"]).strip(),
-                                " ".join(components),
-                                " ".join(workstreams),
-                                " ".join(path_refs),
-                            )
-                            if token
-                        ),
-                        "path": str(row["source_path"]).strip(),
-                    }
-                )
-            )
-
-    if _table_exists(connection, "code_artifacts"):
-        for row in connection.execute(
-            "SELECT path, module_name, imports_json, contract_refs_json FROM code_artifacts ORDER BY path"
-        ).fetchall():
-            imports = [str(item).strip() for item in _json_list(row["imports_json"]) if str(item).strip()]
-            contract_refs = [str(item).strip() for item in _json_list(row["contract_refs_json"]) if str(item).strip()]
-            path = str(row["path"]).strip()
-            documents.append(
-                _document_record(
-                    {
-                        "kind": "code",
-                        "entity_id": path,
-                        "title": str(row["module_name"]).strip() or Path(path).name,
-                        "content": "\n".join([*imports, *contract_refs]),
-                        "path": path,
-                    }
-                )
-            )
-
-    if _table_exists(connection, "test_cases"):
-        for row in connection.execute(
-            "SELECT test_id, test_path, test_name, markers_json, target_paths_json, metadata_json FROM test_cases ORDER BY test_id"
-        ).fetchall():
-            metadata = _json_dict(row["metadata_json"])
-            history = _json_dict(metadata.get("history"))
-            history_sources = [str(item).strip() for item in _json_list(history.get("sources")) if str(item).strip()]
-            markers = [str(item).strip() for item in _json_list(row["markers_json"]) if str(item).strip()]
-            target_paths = [str(item).strip() for item in _json_list(row["target_paths_json"]) if str(item).strip()]
-            documents.append(
-                _document_record(
-                    {
-                        "kind": "test",
-                        "entity_id": str(row["test_id"]).strip(),
-                        "title": str(row["test_name"]).strip(),
-                        "content": "\n".join([*markers, *target_paths, *history_sources]),
-                        "path": str(row["test_path"]).strip(),
-                    }
-                )
-            )
-
-    return documents
+    names = (*memory_record_policy.PROJECTION_IDENTITIES, "component_specs", "codex_events")
+    tables = {
+        name: [dict(row) for row in connection.execute(f"SELECT * FROM {name}").fetchall()]
+        for name in names if _table_exists(connection, name)
+    }
+    return _projection_documents_from_projection_tables(tables=tables)
 
 
 def _projection_documents_from_projection_tables(
@@ -945,6 +704,7 @@ def _projection_documents_from_projection_tables(
             )
         )
 
+    memory_record_policy.attach_document_records(documents, tables=tables)
     return documents
 
 
@@ -1352,7 +1112,7 @@ def _create_tantivy_index(
     target_root = local_tantivy_root(repo_root=repo_root)
     try:
         builder = tantivy.SchemaBuilder()
-        for field_name in ("doc_key", "kind", "entity_id", "title", "path", "content"):
+        for field_name in ("doc_key", "kind", "entity_id", "title", "path", "content", "provenance_json"):
             builder.add_text_field(field_name, stored=True)
         schema = builder.build()
         index = tantivy.Index(schema, path=str(temp_root))
@@ -1366,6 +1126,7 @@ def _create_tantivy_index(
                     title=[str(row.get("title", "")).strip()],
                     path=[str(row.get("path", "")).strip()],
                     content=[str(row.get("content", "")).strip()],
+                    provenance_json=[str(row.get("provenance_json", "{}")).strip()],
                 )
             )
         writer.commit()
@@ -1581,6 +1342,7 @@ def exact_lookup(
         query=normalized,
         limit=limit,
         exact=True,
+        expected_provenance=derivation_provenance.extract_provenance(odylith_projection_bundle.load_bundle_manifest(repo_root=root)),
     )
 
 
@@ -1632,6 +1394,7 @@ def sparse_search(
                 "title": _coerce_first_string(doc_payload.get("title")),
                 "path": _coerce_first_string(doc_payload.get("path")),
                 "content": _coerce_first_string(doc_payload.get("content")),
+                "provenance_json": _coerce_first_string(doc_payload.get("provenance_json")),
                 "score": _safe_float(score),
             }
         )
@@ -1640,6 +1403,7 @@ def sparse_search(
         query=query,
         limit=limit,
         exact=False,
+        expected_provenance=derivation_provenance.extract_provenance(odylith_projection_bundle.load_bundle_manifest(repo_root=root)),
     )
 
 
@@ -1678,6 +1442,10 @@ def hybrid_rerank_search(
             "exact_anchor": lexical["exact_anchor"],
         }
     for rank, row in enumerate(vector_rows, start=1):
+        row = dict(row)
+        memory = _json_dict(row.get("provenance_json")).get("memory_record")
+        if isinstance(memory, Mapping):
+            row["memory_record"] = dict(memory)
         doc_key = str(row.get("doc_key", "")).strip()
         distance = _safe_float(row.get("_distance"))
         vector_score = 1.0 / (1.0 + max(0.0, distance))
@@ -1692,6 +1460,7 @@ def hybrid_rerank_search(
                 "title": str(row.get("title", "")).strip(),
                 "path": str(row.get("path", "")).strip(),
                 "content": str(row.get("content", "")).strip(),
+                **({"memory_record": dict(row["memory_record"])} if isinstance(row.get("memory_record"), Mapping) else {}),
                 "score": 0.0,
                 "sparse_rank": 0,
                 "sparse_rrf": 0.0,
@@ -1731,6 +1500,7 @@ def hybrid_rerank_search(
                 "title": str(row.get("title", "")).strip(),
                 "path": str(row.get("path", "")).strip(),
                 "score": final_score,
+                **({"memory_record": dict(row["memory_record"])} if isinstance(row.get("memory_record"), Mapping) else {}),
                 "score_components": {
                     "sparse": round(sparse_score, 6),
                     "vector": round(vector_score, 6),
@@ -1742,7 +1512,7 @@ def hybrid_rerank_search(
                 },
             }
         )
-    ranked.sort(key=lambda row: (-_safe_float(row.get("score")), str(row.get("path", "")), str(row.get("entity_id", ""))))
+    ranked = memory_record_policy.rank_records(ranked, expected_provenance=derivation_provenance.extract_provenance(odylith_projection_bundle.load_bundle_manifest(repo_root=root)))
     return ranked[: max(1, int(limit))]
 
 
@@ -1772,6 +1542,8 @@ def _normalize_search_rows(
                 "title": str(row.get("title", "")).strip(),
                 "path": path,
                 "score": 0.0 if exact else _safe_float(row.get("score")),
+                **({"memory_record": dict(row["memory_record"])} if isinstance(row.get("memory_record"), Mapping) else {}),
+                **({"memory_usefulness": dict(row["memory_usefulness"])} if isinstance(row.get("memory_usefulness"), Mapping) else {}),
             }
         )
         if len(normalized) >= max(1, int(limit)):

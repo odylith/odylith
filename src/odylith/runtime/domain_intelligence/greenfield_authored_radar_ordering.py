@@ -26,7 +26,7 @@ def build_authored_ordering_decision(
     expected_outcome: str,
     deferred_scope: Sequence[str],
     ranking_basis: str,
-    priority: str = "P1",
+    priority: str = "unassessed",
     tradeoff: str = "",
 ) -> dict[str, Any]:
     """Build one closed ordering decision without converting it to prose."""
@@ -86,10 +86,8 @@ def render_authored_ordering_rationale(value: Mapping[str, Any] | Any) -> list[s
         lines.append(f"- tradeoff: {decision['tradeoff']}")
     if decision["deferred_scope"]:
         lines.append(f"- deferred for now: {'; '.join(decision['deferred_scope'])}")
-    lines.append(
-        f"- ranking basis: {decision['priority']} first-release ordering for the accepted first path: "
-        f"{decision['ranking_basis']}"
-    )
+    prefix = "" if decision["priority"] == "unassessed" else f"{decision['priority']} "
+    lines.append(f"- ranking basis: {prefix}first-release ordering for the accepted first path: {decision['ranking_basis']}")
     return lines
 
 

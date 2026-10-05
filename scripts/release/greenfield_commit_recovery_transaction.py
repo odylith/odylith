@@ -21,13 +21,13 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 
 import greenfield_commit_recovery_evidence as recovery_evidence
 from greenfield_commit_recovery_evidence import as_mapping
-from greenfield_matrix_host_candidate import HostCandidateFlow
-from greenfield_matrix_host_candidate import post_receipt_runtime_env
-from greenfield_matrix_host_candidate import resolve_trusted_codex_executable
-from greenfield_matrix_host_candidate import run_host_candidate_flow
+from odylith.runtime.domain_intelligence.greenfield_host_flow import HostCandidateFlow
+from odylith.runtime.domain_intelligence.greenfield_host_transport import (post_receipt_runtime_env)
+from odylith.runtime.domain_intelligence.greenfield_host_transport import (resolve_trusted_codex_executable)
+from odylith.runtime.domain_intelligence.greenfield_host_flow import run_host_candidate_flow
 from greenfield_matrix_release_artifacts import is_sha256
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
-from greenfield_process import run_command_with_group_timeout as _run
+from odylith.runtime.domain_intelligence.greenfield_process import run_command_with_group_timeout as _run
 
 
 COMMAND_TIMEOUT_SECONDS = get_greenfield_model_profile(STANDARD_PROFILE_ID).operational_timeout_seconds
@@ -42,6 +42,7 @@ class RecoveryTransaction:
     product_facts_hash: str
     write_set_hash: str
     intent_authority: Mapping[str, Any]
+    completion_receipt: str = ""
 
 
 @dataclass(frozen=True)
@@ -236,6 +237,11 @@ def compile_transaction(
                 if primary_error is None:
                     raise
                 primary_error.add_note(f"Failed to retain final recovery observation: {exc}")
+    completion_receipt = ""
+    if getattr(proposed, "completion_receipt", None):
+        from odylith.runtime.domain_intelligence.greenfield_pending_transaction_store import write_completion_receipt_delivery
+        completion_receipt = str(write_completion_receipt_delivery(repo_root=repo_root, receipt=proposed.completion_receipt)
+                                 .relative_to(repo_root.resolve()))
     payload = require_success_payload(proposed, label="installed commit recovery propose")
     transaction = as_mapping(payload.get("product_create_transaction"))
     transaction_hash = str(transaction.get("transaction_hash") or "").strip()
@@ -271,7 +277,7 @@ def compile_transaction(
         transaction_hash=transaction_hash,
         product_facts_hash=product_facts_hash,
         write_set_hash=write_set_hash,
-        intent_authority=intent_authority,
+        intent_authority=intent_authority, completion_receipt=completion_receipt,
     )
 
 
@@ -342,7 +348,7 @@ def _transaction_for_phase(*, seed: RecoverySeed) -> RecoveryTransaction:
         transaction_hash=transaction.transaction_hash,
         product_facts_hash=transaction.product_facts_hash,
         write_set_hash=transaction.write_set_hash,
-        intent_authority=transaction.intent_authority,
+        intent_authority=transaction.intent_authority, completion_receipt=transaction.completion_receipt,
     )
 
 

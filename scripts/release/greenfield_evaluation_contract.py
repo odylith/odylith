@@ -43,6 +43,8 @@ from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 
 
 EVALUATION_SPLIT_VERSION = "odylith.greenfield.evaluation-splits.v7"
+PUBLIC_SOURCE_PREDICATE_MODE = "odylith.greenfield.public-source-predicate-evaluation.v1"
+PUBLIC_SOURCE_SPLIT = "disclosed-public-live-subset"
 FINAL_HOLDOUT_VERSION = "odylith.greenfield.final-holdout.v7"
 STRUCTURAL_FLOORS_VERSION = "odylith.greenfield.structural-floors.v4"
 ATOMIC_CATEGORIES = (
@@ -84,6 +86,15 @@ _FROZEN_ACCEPTANCE_THRESHOLDS = {
     "overall_case_success": 1.0,
     "worst_slice_success": 1.0,
 }
+
+
+def published_structural_floors() -> dict[str, Any]:
+    """Return the published acceptance contract without protected input access."""
+    return {"version": STRUCTURAL_FLOORS_VERSION, **_FROZEN_ACCEPTANCE_THRESHOLDS,
+        "release_slice_minimum_samples": release_slice_minimum_sample_contract(),
+        "statistical_confidence": release_statistical_confidence_contract()}
+
+
 _LINEAGE_KEYS = frozenset({"semantic_family", "template_family"})
 _RELATION_ROLES = frozenset(
     {
@@ -309,6 +320,138 @@ def evaluate_frozen_evaluation_contract(
             for dimension, values in required_release_slices.items()
         },
     }
+
+
+def validate_source_predicate_predeclaration(
+    *, cases: Sequence[Any], path: Path, expected_sha256: str,
+) -> tuple[dict[str, Mapping[str, Any]], tuple[str, ...]]:
+    """Read frozen public expectations without any generated destination evidence.
+
+    The caller supplies the independently frozen file digest.  This validates the
+    original source census, rather than deriving expected rows from an output.
+    """
+    issues: list[str] = []
+    try:
+        value = _json_object(Path(path), label="public source predeclaration")
+        _require_file_hash(Path(path), expected=expected_sha256, issues=issues,
+                           label="public source predeclaration")
+    except (OSError, RuntimeError) as exc:
+        return {}, (str(exc),)
+    if set(value) != {"artifact_kind", "public_split", "created_on", "sources", "case_count",
+                      "schema_boundary", "independence", "cases"}:
+        issues.append("public source predeclaration has unexpected fields")
+    if value.get("public_split") != PUBLIC_SOURCE_SPLIT or value.get("artifact_kind") != (
+        "public source-only semantic predeclaration; not an evaluator annotation schema"
+    ):
+        issues.append("source predeclaration must retain its truthful public source-only label")
+    if _mapping(value.get("schema_boundary")).get("compatible_api_annotations") is not False:
+        issues.append("source predeclaration must preserve its historical native schema boundary")
+    if not value.get("independence") or not isinstance(value.get("sources"), Mapping):
+        issues.append("source predeclaration lacks source-only provenance")
+    elif any(not is_sha256(digest) for digest in value["sources"].values()):
+        issues.append("source predeclaration has invalid source artifact hashes")
+    rows = value.get("cases")
+    if not _is_sequence(rows) or type(value.get("case_count")) is not int or value.get("case_count") != len(rows):
+        return {}, tuple((*issues, "source predeclaration case count is invalid"))
+    cases_by_id = {_case_id(case): case for case in cases}
+    annotations: dict[str, Mapping[str, Any]] = {}
+    fields = {"case_id", "public_split", "prompt_sha256", "confirmed_intent_sha256",
+              "operator_evidence_sha256", "source_family", "input_style", "evidence_format",
+              "expected_outcome", "expected_clarification", "source_texts", "atoms",
+              "first_path_relations", "context_relations", "component_responsibilities",
+              "obligations", "complexity_dimensions", "complexity_band", "complexity_counting_note"}
+    for raw in rows:
+        if not isinstance(raw, Mapping):
+            issues.append("source predeclaration case must be an object")
+            continue
+        case_id = str(raw.get("case_id") or "")
+        case = cases_by_id.get(case_id)
+        if not case or case_id in annotations:
+            issues.append(f"source predeclaration duplicate or unknown case `{case_id}`")
+            continue
+        annotations[case_id] = raw
+        if set(raw) != fields or raw.get("public_split") != PUBLIC_SOURCE_SPLIT:
+            issues.append(f"source predeclaration `{case_id}` has invalid fields or split")
+        texts = {"prompt": case.prompt, "confirmed_intent_markdown": case.confirmed_intent_markdown}
+        combined = combined_prompt_evidence_source(prompt=case.prompt, edit_evidence=case.confirmed_intent_markdown)
+        for key, text in (("prompt_sha256", case.prompt), ("operator_evidence_sha256", combined)):
+            if raw.get(key) != hashlib.sha256(text.encode("utf-8")).hexdigest():
+                issues.append(f"source predeclaration `{case_id}` has changed {key}")
+        confirmed_hash = hashlib.sha256(case.confirmed_intent_markdown.encode("utf-8")).hexdigest() if case.confirmed_intent_markdown else ""
+        if raw.get("source_texts") != texts or raw.get("confirmed_intent_sha256") != confirmed_hash:
+            issues.append(f"source predeclaration `{case_id}` source documents changed")
+        outcome = "clarify" if case.expectation == "clarification_required" else "commit"
+        if raw.get("expected_outcome") != outcome or raw.get("evidence_format") != expected_case_evidence_format(case):
+            issues.append(f"source predeclaration `{case_id}` outcome or format changed")
+        clarification = raw.get("expected_clarification")
+        _validate_expected_clarification(case_id=case_id, expected_outcome=outcome,
+            value={key: clarification.get(key) for key in ("field", "question")} if isinstance(clarification, Mapping) else clarification,
+            issues=issues)
+        _validate_complexity(case=case, case_id=case_id, value=raw.get("complexity_dimensions"), issues=issues)
+        if raw.get("complexity_band") != greenfield_complexity_band(_mapping(raw.get("complexity_dimensions"))) or not raw.get("complexity_counting_note"):
+            issues.append(f"source predeclaration `{case_id}` source census is invalid")
+        ids: set[str] = set()
+        atoms = raw.get("atoms")
+        if not _is_sequence(atoms) or not atoms:
+            issues.append(f"source predeclaration `{case_id}` lacks its source atom array")
+            atoms = ()
+        for atom in atoms:
+            if not isinstance(atom, Mapping) or set(atom) != {"id", "category", "predicate", "materiality", "evaluation_role", "expected_custody", "expected_polarity", "source"}:
+                issues.append(f"source predeclaration `{case_id}` atom is invalid")
+                continue
+            atom_id = atom.get("id")
+            if not isinstance(atom_id, str) or not atom_id or atom_id in ids:
+                issues.append(f"source predeclaration `{case_id}` duplicate or missing atom ID")
+            ids.add(str(atom_id))
+            for key, allowed in (("category", ATOMIC_CATEGORIES), ("materiality", MATERIALITY_VALUES),
+                                 ("evaluation_role", EVALUATION_ROLES), ("expected_custody", CUSTODY_VALUES), ("expected_polarity", POLARITY_VALUES)):
+                if atom.get(key) not in allowed:
+                    issues.append(f"source predeclaration `{case_id}` atom `{atom_id}` has invalid {key}")
+            if not isinstance(atom.get("predicate"), str) or not atom["predicate"].strip():
+                issues.append(f"source predeclaration `{case_id}` atom `{atom_id}` lacks its predicate")
+        relation_fields = {
+            "first_path_relations": {"order", "actor", "action", "target", "atom_id", "source", "actor_source", "action_source", "target_source", "binding_rule"},
+            "context_relations": {"atom_id", "kind", "scope", "source"},
+            "component_responsibilities": {"atom_id", "custody", "projection_binding", "responsibility", "source"},
+        }
+        for family, expected_fields in relation_fields.items():
+            relations = raw.get(family)
+            if not _is_sequence(relations) or any(not isinstance(row, Mapping) or set(row) != expected_fields or row.get("atom_id") not in ids or not isinstance(row.get("source"), Mapping) for row in relations):
+                issues.append(f"source predeclaration `{case_id}` has invalid {family} identities")
+            elif family == "first_path_relations" and any(type(row.get("order")) is not int or row["order"] != index or not all(isinstance(row.get(key), str) and row[key] for key in ("actor", "action", "target")) for index, row in enumerate(relations, 1)):
+                issues.append(f"source predeclaration `{case_id}` source relations have invalid role identity/order")
+        _source_predicate_spans(raw, texts=texts, combined=combined, issues=issues)
+        if not _string_sequence(raw.get("obligations")):
+            issues.append(f"source predeclaration `{case_id}` lacks full source obligations")
+    if set(annotations) != set(cases_by_id) or len(cases_by_id) != len(cases):
+        issues.append("source predeclaration does not cover each source case exactly once")
+    return annotations, tuple(issues)
+
+
+def _source_predicate_spans(value: Any, *, texts: Mapping[str, str], combined: str, issues: list[str]) -> None:
+    if isinstance(value, Mapping):
+        if "document" in value:
+            try:
+                if set(value) != {"document", "start_byte", "end_byte", "quote", "quote_sha256", "operator_evidence_start_byte", "operator_evidence_end_byte"}:
+                    raise ValueError("unexpected source span fields")
+                spans = ((texts[value["document"]], "start_byte", "end_byte"),
+                         (combined, "operator_evidence_start_byte", "operator_evidence_end_byte"))
+                for text, start_key, end_key in spans:
+                    start, end = value[start_key], value[end_key]
+                    if type(start) is not int or type(end) is not int or not 0 <= start < end <= len(text.encode("utf-8")):
+                        raise ValueError("invalid source offsets")
+                    if text.encode("utf-8")[start:end].decode("utf-8") != value["quote"]:
+                        raise ValueError("source quote differs from exact source bytes")
+                if hashlib.sha256(value["quote"].encode("utf-8")).hexdigest() != value["quote_sha256"]:
+                    raise ValueError("source quote hash changed")
+            except (KeyError, TypeError, ValueError, UnicodeDecodeError) as exc:
+                issues.append(f"public source span invalid: {exc}")
+        else:
+            for nested in value.values():
+                _source_predicate_spans(nested, texts=texts, combined=combined, issues=issues)
+    elif _is_sequence(value):
+        for nested in value:
+            _source_predicate_spans(nested, texts=texts, combined=combined, issues=issues)
 
 
 def assign_tracked_splits(
@@ -1027,5 +1170,6 @@ __all__ = [
     "cross_split_membership_issues",
     "evaluate_frozen_evaluation_contract",
     "profile_confidence_sample_issues",
+    "published_structural_floors",
     "validate_atomic_annotations",
 ]

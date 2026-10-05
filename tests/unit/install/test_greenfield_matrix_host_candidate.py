@@ -9,7 +9,8 @@ from pathlib import Path
 
 import pytest
 
-import greenfield_matrix_host_candidate as host_module
+from odylith.runtime.domain_intelligence import greenfield_host_flow as host_module
+from odylith.runtime.domain_intelligence import greenfield_host_transport as transport_module
 from scripts.release import greenfield_model_profiles as profile_module
 from scripts.release import greenfield_preconfirm_matrix as matrix_module
 from greenfield_matrix_release_artifacts import RetainedEvidenceCase
@@ -24,7 +25,7 @@ from odylith.runtime.domain_intelligence.greenfield_host_candidate import greenf
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     STANDARD_PROFILE_ID,
 )
-from greenfield_whole_journey_budget import (
+from odylith.runtime.domain_intelligence.greenfield_whole_journey_budget import (
     PROVISIONAL_WHOLE_JOURNEY_TIMEOUT_SECONDS,
     WHOLE_JOURNEY_ELAPSED_SCOPE,
     WholeJourneyDeadline,
@@ -792,22 +793,22 @@ def test_successful_observer_work_is_measured_before_authoritative_snapshot(
 
     def observe(snapshot):
         provisional.append(dict(snapshot))
-        clock[0] += 600.0
+        clock[0] += 150.0
 
-    flow = host_module.HostCandidateFlow(**{**flow.__dict__, "observe": observe})
+    flow = host_module.HostCandidateFlow(**{**flow.__dict__, "observe": observe, "timeout": 315.0})
     assert host_module.run_host_candidate_flow(flow).returncode == 0
     assert len(provisional) == 1
     assert provisional[0]["whole_journey_seconds"] == 0.0
     final = flow.observation_sink
-    assert final["whole_journey_seconds"] == 600.0
-    assert final["proposal_phase_elapsed_seconds"] == 600.0
-    assert final["elapsed_seconds"] == 600.0
+    assert final["whole_journey_seconds"] == 150.0
+    assert final["proposal_phase_elapsed_seconds"] == 150.0
+    assert final["elapsed_seconds"] == 150.0
     assert final["whole_journey_deadline_status"] == "within"
     assert final["whole_journey_elapsed_scope"] == WHOLE_JOURNEY_ELAPSED_SCOPE
     assert whole_journey_observation_issues(final) == []
 
 
-@pytest.mark.parametrize("observer_seconds", [600.0, 660.0])
+@pytest.mark.parametrize("observer_seconds", [150.0, 315.0, 660.0])
 def test_preconfirm_retains_final_observer_timing_and_matching_stage_snapshot(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, observer_seconds: float,
 ) -> None:
@@ -835,15 +836,16 @@ def test_preconfirm_retains_final_observer_timing_and_matching_stage_snapshot(
     def invoke():
         return matrix_module._run_host_candidate_propose(
             repo_root=repo, env=flow.env, prompt=flow.prompt,
-            edit_evidence=flow.edit_evidence, repair_tier="none", timeout=180.0,
+            edit_evidence=flow.edit_evidence, repair_tier="none", timeout=315.0,
             host_candidate_argv=flow.host_argv, retained_case=retained,
             observe_stage=observe, stage_observation=stage,
         )
 
-    if observer_seconds < 660.0:
+    if observer_seconds < 315.0:
         assert invoke().returncode == 0
     else:
-        with pytest.raises(matrix_module.HostCandidateFlowError, match="deadline expired"):
+        message = "operational timeout" if observer_seconds < 660.0 else "deadline expired"
+        with pytest.raises(matrix_module.HostCandidateFlowError, match=message):
             invoke()
     retained_snapshot = json.loads((
         retained_root / "semantic/host-authoring-observation.v1.json"
@@ -851,7 +853,7 @@ def test_preconfirm_retains_final_observer_timing_and_matching_stage_snapshot(
     assert retained_snapshot == stage
     assert retained_snapshot["whole_journey_seconds"] == observer_seconds
     assert retained_snapshot["elapsed_seconds"] == observer_seconds
-    assert retained_snapshot["status"] == ("passed" if observer_seconds < 660.0 else "failed")
+    assert retained_snapshot["status"] == ("passed" if observer_seconds < 315.0 else "failed")
     assert retained_snapshot["whole_journey_elapsed_scope"] == WHOLE_JOURNEY_ELAPSED_SCOPE
 
 
@@ -903,6 +905,8 @@ def test_retained_deadline_proof_rejects_false_success(changed) -> None:
     stage = {
         "whole_journey_diagnostic_cap_seconds": 660.0,
         "candidate_completion_reserve_seconds": 15.0,
+        "whole_journey_route": "odylith-greenfield-prepare.v1",
+        "whole_journey_supervision": {"version": "odylith.greenfield.journey-supervision.v1", "guardian_pid": 12345, "cancellation_grace_seconds": 2.0},
         "whole_journey_bound_status": "diagnostic_unqualified",
         "whole_journey_deadline_status": "within",
         "whole_journey_elapsed_scope": WHOLE_JOURNEY_ELAPSED_SCOPE,
@@ -952,7 +956,7 @@ def test_host_candidate_qualification_rejects_renamed_wrapper_and_secret_config(
     )
 
     with pytest.raises(ValueError, match="trusted Codex binary directly"):
-        host_module.qualify_host_candidate_argv(
+        transport_module.qualify_host_candidate_argv(
             (str(wrapper), *base[1:]),
             trusted_codex_executable=str(trusted),
             expected_model="gpt-6-astra",
@@ -960,7 +964,7 @@ def test_host_candidate_qualification_rejects_renamed_wrapper_and_secret_config(
             expected_output_schema="{candidate_schema}",
         )
     with pytest.raises(ValueError, match="configured Codex executable"):
-        host_module.resolve_trusted_codex_executable(
+        transport_module.resolve_trusted_codex_executable(
             environ={
                 "PATH": str(trusted.parent),
                 "ODYLITH_REASONING_CODEX_BIN": str(wrapper),
@@ -970,7 +974,7 @@ def test_host_candidate_qualification_rejects_renamed_wrapper_and_secret_config(
     secret = "sk-private-do-not-retain"
     contaminated = (*base[:-3], "--config", f"api_key={secret}", *base[-3:])
     with pytest.raises(ValueError) as raised:
-        host_module.qualify_host_candidate_argv(
+        transport_module.qualify_host_candidate_argv(
             contaminated,
             trusted_codex_executable=str(trusted),
             expected_model="gpt-6-astra",
@@ -1017,7 +1021,7 @@ def test_host_candidate_qualification_rejects_every_noncanonical_token(
     contaminated = (*canonical[:-1], *mutation, canonical[-1])
 
     with pytest.raises(ValueError, match="canonical release argv contract"):
-        host_module.qualify_host_candidate_argv(
+        transport_module.qualify_host_candidate_argv(
             contaminated,
             trusted_codex_executable=str(trusted),
             expected_model="gpt-6-astra",
@@ -1356,7 +1360,7 @@ def test_matrix_host_candidate_argv_is_explicit_and_repeatable(tmp_path: Path) -
 
 
 def test_canonical_host_candidate_argv_template_is_the_exact_release_grammar() -> None:
-    assert host_module.canonical_host_candidate_argv_template() == (
+    assert transport_module.canonical_host_candidate_argv_template() == (
         "codex",
         "exec",
         "--ephemeral",
@@ -1372,4 +1376,4 @@ def test_canonical_host_candidate_argv_template_is_the_exact_release_grammar() -
         "{candidate_schema}",
         "-",
     )
-    assert host_module.HOST_NATIVE_ARGV_ARGUMENT_COUNT == 14
+    assert transport_module.HOST_NATIVE_ARGV_ARGUMENT_COUNT == 14

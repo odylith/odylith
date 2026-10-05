@@ -226,9 +226,10 @@ def test_authored_backlog_rationale_reaches_rendering_without_placeholder_copy(
     assert rationale_lines[0] == f"- why now: {first['opportunity']}"
     assert rationale_lines[1] == f"- expected outcome: {first['recommended_first_slice']}"
     assert rationale_lines[2] == (
-        f"- ranking basis: {decision['priority']} first-release ordering for the accepted first path: "
+        "- ranking basis: first-release ordering for the accepted first path: "
         f"{expected_basis}"
     )
+    assert decision["priority"] == "unassessed"
     assert "TBD" not in "\n".join(rationale_lines)
     sections = first["radar_sections"]
     assert [row["workstream_role"] for row in proposal["backlog"]] == ["provisional_design"] * 4
@@ -299,6 +300,32 @@ def test_authored_backlog_rationale_omits_absent_optional_lines(tmp_path: Path) 
     assert len(rendered) == 3
     assert all("tradeoff:" not in line for line in rendered)
     assert all("deferred for now:" not in line for line in rendered)
+
+
+def test_compiled_radar_records_preserve_unassessed_metadata_and_dependency_basis(tmp_path: Path) -> None:
+    proposal = _authored_proposal(tmp_path, non_goals=[])
+    args = greenfield_proposals._backlog_apply_args(proposal, release_selector="0.0.1")
+    for index, row in enumerate(proposal["backlog"], start=1):
+        row_args = backlog_authoring._title_specific_args(title=row["title"], args=args)
+        metadata = backlog_authoring._build_metadata(
+            idea_id=f"B-{index:03d}", title=row["title"],
+            today=dt.date(2026, 10, 4), args=row_args,
+        )
+        sections = backlog_authoring._grounded_sections_for_title(
+            title=row["title"], args=row_args, source_custody=args.source_custody,
+        )
+        rendered = backlog_authoring._render_idea_text(metadata=metadata, sections=sections)
+        path = tmp_path / f"B-{index:03d}.md"
+        path.write_text(rendered, encoding="utf-8")
+        readback, _ = backlog_authoring._parse_metadata_and_sections(path)
+        assert readback["assessment_status"] == "unassessed"
+        assert readback["assessment_provenance"] == "greenfield_provisional_design"
+        for field in (
+            "priority", "sizing", "complexity", "confidence", "commercial_value",
+            "product_impact", "market_value", "ordering_score",
+        ):
+            assert readback[field] == "unassessed", field
+        assert readback["ordering_rationale"] == row["ordering_decision"]["ranking_basis"]
 
 
 @pytest.mark.parametrize("non_goals", [[], ["Do not automate harbor billing in the first release."]])

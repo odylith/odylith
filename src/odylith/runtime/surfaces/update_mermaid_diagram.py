@@ -404,6 +404,7 @@ def update_diagrams(
                 repo_root=repo_root,
                 surface="atlas",
                 operation_label="Atlas update",
+                atlas_diagram_ids=tuple(patch["diagram_id"] for patch in updates),
             )
         except (OSError, RuntimeError, ValueError) as exc:
             logs.append(str(exc))

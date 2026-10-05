@@ -613,6 +613,8 @@ def test_envelope_rejects_relation_rebound_to_a_duplicate_source_occurrence() ->
     )
     relations = [dict(row) for row in result.first_path_relations]
     duplicate_start = source.encode("utf-8").rfind(event.encode("utf-8"))
+    assert duplicate_start != relations[0]["source_start_byte"]
+    assert source.encode("utf-8")[duplicate_start:duplicate_start + len(event.encode("utf-8"))] == event.encode("utf-8")
     relations[0]["source_start_byte"] = duplicate_start
     relations[0]["source_end_byte"] = duplicate_start + len(event.encode("utf-8"))
     sealed_intent = {
@@ -626,7 +628,7 @@ def test_envelope_rejects_relation_rebound_to_a_duplicate_source_occurrence() ->
         ),
     }
 
-    with pytest.raises(ValueError, match="relation source custody does not match"):
+    with pytest.raises(ValueError, match="relation differs from its verified source action"):
         build_product_intent_envelope(
             sealed_intent,
             source_text=source,

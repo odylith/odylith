@@ -141,7 +141,7 @@ def test_matrix_command_separates_discovery_and_release_policy(tmp_path: Path) -
         value.removeprefix("--host-candidate-arg=")
         for value in discovery_command
         if value.startswith("--host-candidate-arg=")
-    ) == sys.modules["greenfield_matrix_host_candidate"].canonical_host_candidate_argv_template()
+    ) == sys.modules["odylith.runtime.domain_intelligence.greenfield_host_transport"].canonical_host_candidate_argv_template()
     assert "--lower-capability-control-file" not in discovery_command
     assert "--evidence-output-dir" not in discovery_command
     assert command_arg(release_command, "--proof-tier") == "release"
@@ -160,7 +160,7 @@ def test_matrix_command_separates_discovery_and_release_policy(tmp_path: Path) -
         value.removeprefix("--host-candidate-arg=")
         for value in release_command
         if value.startswith("--host-candidate-arg=")
-    ) == sys.modules["greenfield_matrix_host_candidate"].canonical_host_candidate_argv_template()
+    ) == sys.modules["odylith.runtime.domain_intelligence.greenfield_host_transport"].canonical_host_candidate_argv_template()
     assert command_arg(release_command, "--lower-capability-control-file") == str(
         tmp_path / "lower-capability-control.v1.json"
     )
@@ -200,7 +200,7 @@ def test_discovery_campaign_commands_carry_canonical_host_candidate_argv(
         value.removeprefix("--host-candidate-arg=")
         for value in command
         if value.startswith("--host-candidate-arg=")
-    ) == sys.modules["greenfield_matrix_host_candidate"].canonical_host_candidate_argv_template()
+    ) == sys.modules["odylith.runtime.domain_intelligence.greenfield_host_transport"].canonical_host_candidate_argv_template()
 
 
 def test_each_release_shard_requires_commit_recovery_proof(tmp_path: Path) -> None:

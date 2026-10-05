@@ -219,6 +219,24 @@ def test_ordering_rationale_explains_only_typed_delivery_dependencies(tmp_path: 
         assert row["deliverable"] not in decision["ranking_basis"]
 
 
+def test_provisional_metadata_carries_no_unsupplied_value_effort_or_urgency_judgments(tmp_path: Path) -> None:
+    proposal = _authored_proposal(tmp_path)
+    before = deepcopy(proposal["intent"])
+    args = greenfield_proposals._backlog_apply_args(proposal, release_selector="0.0.1")
+    for row in proposal["backlog"]:
+        assert row["assessment_status"] == "unassessed"
+        assert row["assessment_provenance"] == "greenfield_provisional_design"
+        assert row["ordering_decision"]["priority"] == "unassessed"
+        override = args.section_overrides_by_title[row["title"]]
+        for field in ("priority", "sizing", "complexity", "confidence"):
+            assert row[field] == override[field] == getattr(args, field) == "unassessed"
+        for field in ("commercial_value", "product_impact", "market_value", "ordering_score"):
+            assert row[field] is override[field] is getattr(args, field) is None
+        for field in ("assessment_status", "assessment_provenance"):
+            assert row[field] == override[field] == getattr(args, field)
+    assert proposal["intent"] == before
+
+
 def test_exchange_direction_does_not_invent_component_dependencies(tmp_path: Path) -> None:
     intent = deepcopy(_authored_proposal(tmp_path)["intent"])
     design = intent[AUTHORED_SEMANTICS_KEY]["provisional_design"]
