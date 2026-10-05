@@ -21,6 +21,18 @@ initial fixture failures and one-to-one carrier finding remain in Casebook.
 Review: `/private/tmp/odylith-edit-lifecycle-preservation-independent-final-review-20261005.json`,
 SHA-256 `b1d664d7e9615b790e2b98291d27384b59ef5ddb2daf9928d786267d28908bf5`.
 
+Clean checkpoint `9d8598c02` produces v23 and passes the canonical local
+install/upgrade smoke. Its broad freeze stops at 2,594 passes and six terminal
+EDIT fixture failures out of 8,478 collected checks; 5,878 are unexecuted.
+The shared fixture provides an initial v4/v7 receipt without the prior EDIT
+baseline. CB-347 records the failure and a test-only correction through real
+v5/v8 admission. The exact fixture correction now passes all 27 decision CLI
+checks in 5.61 seconds without changing production code or receipt laws.
+Preserve the original stopped freeze and clean v23 build. Checkpoint the
+corrected fixture and its evidence, then finish the frozen
+gate and run the fresh installed semantic controls with matching clean build
+bindings. No live v50 source-first control has executed at this boundary.
+
 All eight corrected proposal-refusal variants now pass with actual EDIT
 context and unchanged diagnostic/immutability assertions; retain their original
 110-pass/eight-fail flow evidence. Commit the governed checkpoint and freeze a

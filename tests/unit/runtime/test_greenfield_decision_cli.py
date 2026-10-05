@@ -26,10 +26,15 @@ from tests.unit.runtime.test_greenfield_host_confirmation import _stage_pending_
 from tests.unit.runtime.greenfield_proposal_fixtures import (
     compiled_greenfield_package_fixture,
 )
-from tests.unit.runtime.greenfield_model_authoring_fixtures import (
-    declared_source_action_fixture,
-    write_synthetic_source_duty_receipt,
+from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import (
+    EDIT_SOURCE_DUTY_DECISION_SET_VERSION,
+    source_duty_entailment_task,
 )
+from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
+    preflight_greenfield_source_duty_ledger,
+    validate_greenfield_source_duty_ledger,
+)
+from tests.unit.runtime.test_greenfield_source_duty_ledger import _yes_decisions
 from tests.unit.runtime.test_greenfield_transaction_provenance import (
     _executed_source_files,
 )
@@ -105,21 +110,34 @@ def _write_gate_stub(tmp_path: Path, prompt: str) -> Path:
     return path
 
 
-def _write_ledger_stub(tmp_path: Path, prompt: str, correction: str) -> Path:
-    evidence = prepare_model_authoring_evidence(
-        prompt=prompt, edit_evidence=correction,
-    ).evidence_source
-    return write_synthetic_source_duty_receipt(
-        tmp_path.parent / f"{tmp_path.name}-source-ledger.json",
-        {"result": {"status": "clarification_required"}},
-        evidence_text=evidence,
-        declared_actions=[declared_source_action_fixture(
-            duty_id="shopper-open", actor_quote="Shopper",
-            event_quote="Shopper opens Storefront and adds one product to the cart.",
-            statement="Shopper opens Storefront", action="opens", target="Storefront",
-            performer_role="human_actor", observable_result="Storefront opened",
-        )],
+def _write_edit_ledger_receipt(tmp_path: Path, previous, correction: str) -> Path:
+    prepared = prepare_model_authoring_evidence(
+        prompt=previous.proposal["intent"]["prompt"], edit_evidence=correction,
     )
+    context = greenfield_proposals_cli._edit_preservation(
+        previous, correction=prepared.edit_evidence, evidence_text=prepared.evidence_source,
+    )
+    ledger = previous.proposal["intent"]["authored_semantics"]["source_duty"]["ledger_receipt"]["ledger"]
+    preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=prepared.evidence_source)
+    task = source_duty_entailment_task(preflight, evidence_text=prepared.evidence_source, edit_preservation=context)
+    decisions = _yes_decisions(preflight, evidence_text=prepared.evidence_source)
+    decisions.update(
+        version=EDIT_SOURCE_DUTY_DECISION_SET_VERSION,
+        verifier_task_sha256=task["verifier_task_sha256"], edit_correction_refs=[],
+        edit_preservation={
+            f"{section}/{row['duty_id']}": {
+                "verdict": "preserved", "current_duty_id": row["duty_id"], "correction_ref_indexes": [],
+            }
+            for section in ("state_fields", "off_path_transitions", "conditional_guards", "boundaries", "proof_duties")
+            for row in context["prior_lifecycle"][section]
+        },
+    )
+    receipt = validate_greenfield_source_duty_ledger(
+        ledger, evidence_text=prepared.evidence_source, decision_set=decisions, edit_preservation=context,
+    )
+    path = tmp_path.parent / f"{tmp_path.name}-source-ledger.json"
+    path.write_text(json.dumps(receipt), encoding="utf-8")
+    return path
 
 
 def test_terminal_decision_prints_human_completion_without_json_wrapper(
@@ -255,6 +273,7 @@ def test_terminal_edit_rebuilds_once_from_verified_retained_source_and_correctio
         repo_root=tmp_path,
         transaction=previous,
     )
+    sealed_before = _tree_digest(pending_path.parent)
     correction = "Require the operator to record the recovery outcome."
     new_hash = "b" * 64
     new_path = pending_path.parent.parent / new_hash / pending_path.name
@@ -275,7 +294,7 @@ def test_terminal_edit_rebuilds_once_from_verified_retained_source_and_correctio
     candidate_path = _write_candidate_stub(tmp_path)
     retained_prompt = str(previous.proposal["intent"]["prompt"])
     gate_path = _write_gate_stub(tmp_path, retained_prompt)
-    ledger_path = _write_ledger_stub(tmp_path, retained_prompt, correction)
+    ledger_path = _write_edit_ledger_receipt(tmp_path, previous, correction)
 
     assert greenfield_cli.main([
         "decide", "EDIT", previous.transaction_hash,
@@ -296,6 +315,10 @@ def test_terminal_edit_rebuilds_once_from_verified_retained_source_and_correctio
     assert call["host_candidate"] == {}
     assert call["source_duty_receipt"]["ledger"]["status"] == "inventory"
     assert call["source_duty_receipt"]["decision_set_sha256"]
+    assert call["source_duty_receipt"]["version"] == "odylith.greenfield.source-duty-ledger-receipt.v8"
+    assert call["source_duty_receipt"]["decision_set"]["version"] == EDIT_SOURCE_DUTY_DECISION_SET_VERSION
+    assert call["source_duty_receipt"]["edit_preservation"]["transaction_hash"] == previous.transaction_hash
+    assert call["source_duty_receipt"]["edit_preservation"]["correction"] == correction
     assert isinstance(call["started_at"], float)
     assert len(review_calls) == 1
     assert review_calls[0]["candidate_intent"] == {"title": "Rebuilt"}
@@ -303,6 +326,7 @@ def test_terminal_edit_rebuilds_once_from_verified_retained_source_and_correctio
     assert review_calls[0]["transaction_path"] == new_path
     assert review_calls[0]["as_json"] is False
     assert pending_path.is_file()
+    assert _tree_digest(pending_path.parent) == sealed_before
     assert _tree_digest(tmp_path / "odylith") == governed_before
 
 
@@ -325,9 +349,10 @@ def test_terminal_edit_rejects_tampered_source_decision_before_candidate(
     pending_path = greenfield_pending_transaction_store.stage_pending_transaction(
         repo_root=tmp_path, transaction=previous,
     )
+    sealed_before = _tree_digest(pending_path.parent)
     correction = "Require the operator to record the recovery outcome."
     retained_prompt = str(previous.proposal["intent"]["prompt"])
-    ledger_path = _write_ledger_stub(tmp_path, retained_prompt, correction)
+    ledger_path = _write_edit_ledger_receipt(tmp_path, previous, correction)
     receipt = json.loads(ledger_path.read_text(encoding="utf-8"))
     receipt[tamper_field] = tamper_value
     ledger_path.write_text(json.dumps(receipt), encoding="utf-8")
@@ -346,6 +371,7 @@ def test_terminal_edit_rejects_tampered_source_decision_before_candidate(
     assert rc == 2
     assert expected_error in capsys.readouterr().out
     assert pending_path.is_file()
+    assert _tree_digest(pending_path.parent) == sealed_before
 
 
 def test_terminal_edit_without_retained_source_fails_closed_before_compilation(
@@ -411,12 +437,13 @@ def test_terminal_edit_non_success_preserves_the_original_reviewed_package(
         repo_root=tmp_path,
         transaction=previous,
     )
+    sealed_before = _tree_digest(pending_path.parent)
     governed_before = _tree_digest(tmp_path / "odylith")
     compile_calls: list[dict[str, object]] = []
     candidate_path = _write_candidate_stub(tmp_path)
     retained_prompt = str(previous.proposal["intent"]["prompt"])
     gate_path = _write_gate_stub(tmp_path, retained_prompt)
-    ledger_path = _write_ledger_stub(tmp_path, retained_prompt, "Clarify the owner.")
+    ledger_path = _write_edit_ledger_receipt(tmp_path, previous, "Clarify the owner.")
 
     def compile_once(**kwargs: object) -> tuple[dict[str, str], object, Path]:
         compile_calls.append(dict(kwargs))
@@ -448,6 +475,7 @@ def test_terminal_edit_non_success_preserves_the_original_reviewed_package(
     assert expected_text in capsys.readouterr().out
     assert len(compile_calls) == 1
     assert pending_path.is_file()
+    assert _tree_digest(pending_path.parent) == sealed_before
     assert _tree_digest(tmp_path / "odylith") == governed_before
 
 

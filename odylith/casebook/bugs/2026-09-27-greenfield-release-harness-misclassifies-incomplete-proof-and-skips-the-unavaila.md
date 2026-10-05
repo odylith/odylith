@@ -1,5 +1,34 @@
 - Bug ID: CB-347
 
+## Frozen v50 terminal EDIT fixture mismatch (2026-10-05)
+
+The clean `9d8598c02` freeze collects 8,478 checks and stops after 2,600:
+2,594 pass and six fail in `test_greenfield_decision_cli.py`; 5,878 remain
+unexecuted. Retain the failed receipt and shard 13 unchanged at
+`.odylith/release-evidence/v50-release-freeze-20261005/`. The genuine compiled
+prior is valid. Its shared receipt stub supplies initial v4/v7 custody for
+EDIT without the prior lifecycle baseline, so the runtime correctly refuses
+before the intended success, tamper and non-success branches. This does not
+justify weakening the v5/v8 EDIT admission law. Replace only that shared
+fixture through real preflight, verifier-task and receipt-validation owners,
+then prove the downstream assertions and original pending-package bytes.
+External test-only patch SHA-256:
+`8fd880db2eac6725b31690ebf4d215be04f1e0da15976cdde15480854cc838fa`.
+The exact one-file patch is now applied. All 27 decision CLI checks pass in
+5.61 seconds, including the six previously blocked branches. The helper uses
+real v5/v8 admission and verifies the original pending-package bytes; no
+production code or runtime law changed. Continuation evidence:
+`.odylith/release-evidence/v50-implementation-20261005/decision-cli-fixture-continuation.log`.
+The original frozen receipt remains failed; it does not gain passing credit.
+
+The separate clean v23 distribution binds `9d8598c02` and passes the canonical
+local release smoke with exit 0, including fresh installation and published
+predecessor upgrade checks. Its manifest is
+`bc9cd0d21cd53d5790dfae2a85b49517e861c07467aa105dc5e8184dd33eef0b`.
+This smoke does not execute positive Greenfield authoring or qualify the
+unexecuted frozen checks. Preserve that distribution and provenance; a new
+checkpoint requires its own clean release binding.
+
 ## New EDIT test-fixture failures (2026-10-05)
 
 The retained linked-migration help continuation fails before its first author
