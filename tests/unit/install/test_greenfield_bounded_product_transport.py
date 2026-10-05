@@ -684,3 +684,67 @@ def test_prepare_delivery_file_error_reports_accepted_environment_outcome(tmp_pa
     assert pending.pending_transaction_path(tmp_path,digest).is_file()
     with pytest.raises(ValueError,match='has not released'):
         pending.resolve_pending_transaction(repo_root=tmp_path,transaction_hash=digest)
+
+
+@pytest.mark.parametrize("output_format", ["json", "text"])
+@pytest.mark.parametrize("refusal", ["nonzero-stdout", "nonzero-stderr", "unadmitted", "malformed"])
+def test_proposal_refusal_preserves_bounded_detail_and_prior_seal(
+    tmp_path, monkeypatch, capsys, output_format, refusal,
+):
+    import hashlib
+    from odylith.runtime.domain_intelligence import greenfield_host_flow as host
+    from odylith.runtime.domain_intelligence import greenfield_prepare_cli as prepare
+    from tests.unit.install.test_greenfield_matrix_host_candidate import _flow
+
+    candidate = {"version": "candidate", "result": {"status": "authored"}}
+    flow, host_run, installed_calls, host_calls, _paths, repo = _flow(
+        tmp_path, contract={"version": "contract"}, candidate=candidate,
+    )
+    old_transaction = _transaction(repo_root=repo)
+    old_path = pending.stage_pending_transaction(repo_root=repo, transaction=old_transaction)
+    before = {p.relative_to(repo): p.read_bytes() for p in repo.rglob("*") if p.is_file()}
+    stdout = json.dumps({"mode": "error", "error": "Diagnostic only: CONFIRM cannot authorize create. " + "x" * 900})
+    stderr = "compiler diagnostic: " + "y" * 900 if refusal == "nonzero-stderr" else ""
+    if refusal == "malformed":
+        stdout = "not JSON: CONFIRM cannot authorize create. " + "z" * 900
+    returncode = 2 if refusal.startswith("nonzero") else 0
+    proposal_calls = []
+
+    def denied(path, gate_path, ledger_path, _timeout):
+        proposal_calls.append(path)
+        assert json.loads(path.read_text()) == candidate
+        assert gate_path.is_file() and ledger_path.is_file()
+        return subprocess.CompletedProcess(["odylith", "greenfield", "propose"], returncode, stdout, stderr)
+
+    flow = host.HostCandidateFlow(**{**flow.__dict__, "invoke_propose": denied,
+                                    "transaction_hash": old_transaction.transaction_hash})
+    monkeypatch.setattr(host, "_invoke_host", host_run)
+    monkeypatch.setattr(prepare, "prepare_request", lambda _args: host.run_host_candidate_flow(flow))
+    result = prepare.main(["--repo-root", str(repo), "--transaction-hash", old_transaction.transaction_hash,
+                           "--edit", flow.edit_evidence, "--format", output_format])
+    rendered = capsys.readouterr().out
+    observation = flow.observation_sink
+    assert result == 2 and observation["status"] == "failed" and observation["stage"] == "propose"
+    assert observation["detail"] == (stderr or stdout)[:800]
+    assert len(observation["detail"]) == 800
+    assert observation["proposal_returncode"] == returncode
+    assert observation["proposal_mode"] == ("invalid" if refusal == "malformed" else "error")
+    assert observation["proposal_stdout_sha256"] == hashlib.sha256(stdout.encode()).hexdigest()
+    assert observation["proposal_stderr_sha256"] == hashlib.sha256(stderr.encode()).hexdigest()
+    assert len(host_calls) == 4 and len(installed_calls) == 4 and len(proposal_calls) == 1
+    assert observation["candidate_host_invocations"] == observation["proposal_command_invocations"] == 1
+    assert observation["runtime_semantic_model_call_count"] == observation["post_receipt_provider_invocations"] == 0
+    assert flow.completion_receipt_sink == {}
+    assert all(observation[key] for key in ("candidate_temp_cleaned", "authority_gate_temp_cleaned",
+               "source_ledger_temp_cleaned", "source_duty_decision_temp_cleaned", "host_workspace_cleaned"))
+    assert not proposal_calls[0].exists()
+    assert {p.relative_to(repo): p.read_bytes() for p in repo.rglob("*") if p.is_file()} == before
+    assert pending.resolve_pending_transaction(repo_root=repo, transaction_hash=old_transaction.transaction_hash) == old_path
+    assert "Greenfield preparation stopped during propose before publication." in rendered
+    if output_format == "json":
+        payload = json.loads(rendered)
+        assert payload["mode"] == "error" and payload["bounded_journey"]["detail"] == observation["detail"]
+        assert not {"confirmation", "completion_receipt", "product_create_transaction"} & payload.keys()
+    else:
+        assert "Checker detail (not an admitted decision):" in rendered
+        assert observation["detail"] in rendered

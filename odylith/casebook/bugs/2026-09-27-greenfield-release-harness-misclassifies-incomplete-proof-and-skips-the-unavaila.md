@@ -1,6 +1,66 @@
 - Bug ID: CB-347
 
-## Bounded source-inventory experiment (2026-10-04)
+## Current actor-custody and EDIT frontier (2026-10-04)
+
+Frozen d75/v21 executes all 8,423 collected runtime/install/selected-browser
+checks with zero input drift: 8,422 pass and one actor-law assertion still pins
+contract v47 instead of v48. The original failed shard and unchanged
+continuation remain under
+`/private/tmp/odylith-greenfield-release-freeze-v21-20261004/`.
+Canonical local release smoke passes; this does not qualify populated migration,
+Linux, live semantic reliability, or a complete terminal journey.
+
+Two once-only v48 installed controls fail at distinct boundaries. Agriculture
+H0 is admitted in four calls and 337.870 diagnostic seconds. Independent strong
+source-first review finds all 26 original duties materially faithful, with two
+low, nonmaterial labeling findings. Its EDIT stops after two calls and 80.305
+seconds at preflight: `first_path_actions[4]: external actor citation must be
+a duty or role reference`. The rejected ledger bytes are unavailable, so the
+exact actor and selected occurrence remain unknown. Research H0 is admitted;
+its EDIT receives affirmative source verification with zero reported omissions,
+then fails at propose after four calls and 258.004 seconds. The inner compiler
+error and candidate bytes were discarded. Its actual rejection cause is unknown.
+Neither control reaches REJECT, CONFIRM, or idempotence. Preserve both original
+H0 seals, receipts, nonterminal consumers, and failed results; do not replay
+unchanged calls for a better draw.
+
+The reviewed v49 correction removes one redundant actor-enclosure predicate.
+Exact actor citation already owns the selected source occurrence and the
+compiler already inserts it first among role references. A duplicate actor
+alias satisfies the old predicate without changing derived role evidence.
+Nonempty typed role context, event and actor reference-only exclusion, atomic
+identity, exact citation custody, verifier refusal, and receipt binding remain.
+The mechanism removes 21 production lines. A separate two-line correction uses
+the existing bounded diagnostic helper for both propose refusals, restoring
+failure detail without admission authority or additional calls. It cannot
+recover the lost research error or prove that error fixed.
+
+Fresh affected regression passes 328 checks in 71.95 seconds:
+`/private/tmp/odylith-v49-actor-and-diagnostic-targeted-validation-20261004.log`.
+Independent actor review is CLEAR:
+`/private/tmp/odylith-v49-actor-custody-independent-review-20261004.json`,
+SHA-256 `bd1f5df32a303986e93cd5ed3951cffb027a41a2f24c6c5dfbb3da7cef5bacd9`.
+This is structural proof; live changed-contract reliability remains unqualified.
+The combined final review is independently CLEAR, with eight refusal controls
+passing, and the complete install unit scope passes 2,079 checks. Review:
+`/private/tmp/odylith-v49-actor-diagnostic-combined-final-review-20261004.json`,
+SHA-256 `3162bc6d50f0e1d3cd5c268c61210dec54addd879cd9e142aec04b57724d8036`.
+Install log: `/private/tmp/odylith-v49-unit-install-validation-20261004.log`.
+Fresh engine validation retains all 22 engines and 22 wired handshakes;
+topology validation passes 100/100 with no findings. These counts establish
+structural preservation, not significant improvement of every capability.
+
+The populated v21 installer succeeds and the installed Atlas check passes.
+Original strict byte-preservation results remain failed: the existing catalog
+fingerprint and separately documented UTC INDEX date differ from the predecessor.
+Corrected browser observation passes four desktop authored surfaces, then stops
+on an unlinked plan fixture. The predecessor idea already has an empty
+`promoted_to_plan`; its plan file is not proof of a served plan route. Positive
+linked-plan migration and the remaining browser matrix are unproved. No migration
+class, release, or timing qualification follows. The original protected payload,
+manifest directory, and run ledger remain absent; prior lifecycle is unknown.
+
+## Historical bounded source-inventory experiment (2026-10-04)
 
 The required original final-holdout payload and frozen manifest directory are
 absent at their recorded paths during the checkpoint guard. No new protected

@@ -187,17 +187,6 @@ def _citation_span(evidence: bytes, citation: Mapping[str, str]) -> tuple[int, i
     return start, start + len(quote.encode("utf-8"))
 
 
-def _within_cited_span(
-    evidence: bytes, start: int, end: int, citations: list[Mapping[str, str]]
-) -> bool:
-    return any(
-        ref_start <= start < end <= ref_end
-        for ref_start, ref_end in (
-            _citation_span(evidence, citation) for citation in citations
-        )
-    )
-
-
 def _canonical_sha256(value: Mapping[str, Any]) -> str:
     canonical = json.dumps(
         value, ensure_ascii=False, sort_keys=True, separators=(",", ":")
@@ -323,23 +312,13 @@ def preflight_greenfield_source_duty_ledger(
                         f"{path}: source event overlaps reference-only context"
                     )
                 actor_start, actor_end = _citation_span(evidence, row["actor_ref"])
-                if not event_start <= actor_start < actor_end <= event_end:
-                    if not _within_cited_span(
-                        evidence,
-                        actor_start,
-                        actor_end,
-                        row["source_refs"] + row["role_refs"],
-                    ):
-                        raise GreenfieldSourceDutyLedgerError(
-                            f"{path}: external actor citation must be a duty or role reference"
-                        )
-                    if any(
-                        actor_start < reference_end and reference_start < actor_end
-                        for reference_start, reference_end in reference_spans
-                    ):
-                        raise GreenfieldSourceDutyLedgerError(
-                            f"{path}: actor citation overlaps reference-only context"
-                        )
+                if any(
+                    actor_start < reference_end and reference_start < actor_end
+                    for reference_start, reference_end in reference_spans
+                ):
+                    raise GreenfieldSourceDutyLedgerError(
+                        f"{path}: actor citation overlaps reference-only context"
+                    )
                 _require_text(row["action"], f"{path}.action")
                 resolve_greenfield_action_actor_identity(row, path=path)
                 for field in ("action", "target"):

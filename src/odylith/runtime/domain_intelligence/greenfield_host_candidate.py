@@ -56,7 +56,7 @@ from odylith.runtime.domain_intelligence.greenfield_authority_gate import (
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v7"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v48"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v49"
 HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION = "odylith.greenfield.host-candidate-authoring-transport.v1"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
 
@@ -222,11 +222,11 @@ def greenfield_host_candidate_contract(evidence_text: str) -> dict[str, Any]:
                 "explicit role context. Reuse one canonical actor citation across that actor's "
                 "actions and supporting duties where possible. Literal containment proves "
                 "custody only; the existing source-only verifier judges identity atomicity "
-                "and performer entailment. role_refs supply exact source contexts "
-                "supporting its typed duty role. If the actor is outside event_ref, cite an "
-                "explicit source or role context containing that exact occurrence. source_refs "
-                "contains only extra support; the compiler derives the event support and "
-                "actor role reference. Do not repeat them as aliases. Distinct actions may "
+                "and performer entailment. role_refs supply nonempty exact source contexts "
+                "supporting its typed duty role. actor_ref already owns the exact source "
+                "identity occurrence; the compiler includes it first among role references. "
+                "source_refs contains only extra support; the compiler derives the event "
+                "support. Do not repeat event_ref or actor_ref as aliases. Distinct actions may "
                 "share an event, but do not duplicate an atom under another section or "
                 "redundant statement. Only first_path_actions carries performer_role and "
                 "observable_result. Declare each state field once per exact state_object and "

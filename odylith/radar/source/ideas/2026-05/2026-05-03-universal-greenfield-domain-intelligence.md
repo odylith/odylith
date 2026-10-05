@@ -62,6 +62,27 @@ superseded_by:
 
 ## Current convergence checkpoint (2026-10-04)
 
+- V48 once-only agriculture and research controls admit H0, then fail EDIT at
+  distinct boundaries. Independent strong review finds all 26 agriculture H0
+  duties materially faithful, with two minor labeling findings. No complete
+  terminal journey or broad reliability improvement is established.
+- V49 removes redundant actor-occurrence enclosure while retaining exact
+  custody, typed contexts, reference-only exclusion and semantic refusal.
+  Proposal refusals use the existing bounded diagnostic detail. Production
+  source shrinks by 19 lines; independent actor review is CLEAR and affected
+  regression passes 328 checks. Fresh changed-contract installed proof is next.
+- Frozen d75/v21 runs 8,423 checks: 8,422 pass and one stale version assertion
+  fails. Canonical local release smoke and populated installation pass. Strict
+  predecessor-byte failures remain preserved, and an already-unlinked plan
+  fixture prevents positive plan browser credit. Linux, remaining browser
+  states and all five migration classes remain unqualified.
+- Keep B-142 in implementation. Complete installed corrections and terminal
+  controls before the fixed public/private matrix. Original protected payload,
+  manifest directory and run ledger are missing, with prior lifecycle unknown;
+  custody must be settled before any protected evaluation.
+
+## Historical convergence checkpoint (2026-10-04)
+
 - R1 full lifecycle/custody readback independently passes 259 checks and rejects
   all original rehashed corruption controls; structural correction is complete.
 - R2 disclosed-public evaluation preserves all 40 cases/425 source IDs and all

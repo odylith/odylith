@@ -121,7 +121,7 @@ def _external_actor_ledger() -> dict:
     actor = _citation("Berth map")
     system.update(
         {
-            "source_refs": [system_event, actor],
+            "source_refs": [system_event],
             "statement": "Berth map records berth occupancy",
             "event_ref": system_event,
             "actor_ref": actor,
@@ -494,11 +494,63 @@ def test_external_actor_may_be_a_span_within_an_explicit_role_reference() -> Non
     first["role_refs"] = [_citation("The reviewer checks a submission")]
     preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=EVIDENCE)
     assert preflight["claims"][0]["actor_ref"]["quote"] == "The reviewer"
-    first["role_refs"] = [_citation("Human Actors:")]
-    with pytest.raises(
-        GreenfieldSourceDutyLedgerError, match="external actor citation"
+    first["role_refs"] = [_citation("First Complete Path:")]
+    separate_context = preflight_greenfield_source_duty_ledger(
+        ledger, evidence_text=EVIDENCE
+    )
+    assert separate_context["claims"][0]["role_refs"] == [
+        first["actor_ref"], first["role_refs"][0]
+    ]
+
+
+def test_canonical_actor_is_reused_across_distinct_action_occurrences() -> None:
+    evidence = (
+        "Human Actors: Reviewer Mara is the designated reviewer. "
+        "First Complete Path: Reviewer Mara approves the record. "
+        "Supporting Human Work: Reviewer Mara verifies the record."
+    )
+    ledger = _ledger()
+    ledger["evidence_controls"] = []
+    ledger["system_duties"] = []
+    actor = _citation("Reviewer Mara", "Reviewer Mara is the designated reviewer.")
+    for section, statement, action, context in (
+        (
+            "first_path_actions", "Reviewer Mara approves the record.", "approves",
+            "First Complete Path: Reviewer Mara approves the record.",
+        ),
+        (
+            "supporting_human_actions", "Reviewer Mara verifies the record.", "verifies",
+            "Supporting Human Work: Reviewer Mara verifies the record.",
+        ),
     ):
-        preflight_greenfield_source_duty_ledger(ledger, evidence_text=EVIDENCE)
+        row = ledger[section][0]
+        row.update(
+            source_refs=[], statement=statement, event_ref=_citation(statement),
+            actor_ref=deepcopy(actor), role_refs=[_citation(context)],
+            action=action, target="the record",
+        )
+    ledger["first_path_actions"][0]["observable_result"] = "record approved"
+    preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=evidence)
+    first, supporting = preflight["claims"]
+    assert first["event_ref"] != supporting["event_ref"]
+    assert first["actor_ref"] == supporting["actor_ref"] == actor
+    assert first["role_refs"][0] == supporting["role_refs"][0] == actor
+    aliased = deepcopy(ledger)
+    for section in ("first_path_actions", "supporting_human_actions"):
+        aliased[section][0]["role_refs"].insert(0, deepcopy(actor))
+    alias_preflight = preflight_greenfield_source_duty_ledger(
+        aliased, evidence_text=evidence
+    )
+    for original, with_alias in zip(preflight["claims"], alias_preflight["claims"]):
+        assert original["source_refs"] == with_alias["source_refs"]
+        assert original["role_refs"] == with_alias["role_refs"]
+    receipt = validate_greenfield_source_duty_ledger(
+        ledger, evidence_text=evidence,
+        decision_set=_yes_decisions(preflight, evidence_text=evidence),
+    )
+    assert verify_greenfield_source_duty_ledger_receipt(
+        receipt, evidence_text=evidence
+    ) == receipt
 
 
 def test_normalized_action_does_not_require_an_invented_verb_microcitation() -> None:
@@ -539,20 +591,12 @@ def test_external_actor_reference_requires_explicit_custody_and_semantic_yes() -
         evidence_text=EXTERNAL_ACTOR_EVIDENCE,
         decision_set=_yes_decisions(preflight, evidence_text=EXTERNAL_ACTOR_EVIDENCE),
     )
-    unlisted = deepcopy(ledger)
-    unlisted["system_duties"][0]["source_refs"] = [
-        unlisted["system_duties"][0]["event_ref"]
+    assert preflight["claims"][1]["role_refs"] == [
+        ledger["system_duties"][0]["actor_ref"], _citation("Product Systems:")
     ]
-    with pytest.raises(
-        GreenfieldSourceDutyLedgerError, match="external actor citation"
-    ):
-        preflight_greenfield_source_duty_ledger(
-            unlisted, evidence_text=EXTERNAL_ACTOR_EVIDENCE
-        )
     false_actor = deepcopy(ledger)
     system = false_actor["system_duties"][0]
     system["actor_ref"] = _citation("Dock attendant Ivo")
-    system["source_refs"].append(system["actor_ref"])
     system["statement"] = "Dock attendant Ivo records berth occupancy"
     false_preflight = preflight_greenfield_source_duty_ledger(
         false_actor, evidence_text=EXTERNAL_ACTOR_EVIDENCE
@@ -564,6 +608,25 @@ def test_external_actor_reference_requires_explicit_custody_and_semantic_yes() -
     with pytest.raises(GreenfieldSourceDutyLedgerError, match="not affirmative"):
         validate_greenfield_source_duty_ledger(
             false_actor, evidence_text=EXTERNAL_ACTOR_EVIDENCE, decision_set=decisions
+        )
+
+
+def test_human_performer_reassignment_requires_source_verifier_refusal() -> None:
+    ledger = _external_actor_ledger()
+    ledger["first_path_actions"][0]["performer_role"] = "internal_system"
+    preflight = preflight_greenfield_source_duty_ledger(
+        ledger, evidence_text=EXTERNAL_ACTOR_EVIDENCE
+    )
+    assert preflight["claims"][0]["performer_role"] == "internal_system"
+    task = source_duty_entailment_task(preflight, evidence_text=EXTERNAL_ACTOR_EVIDENCE)
+    assert task["source_duty_ledger"]["first_path_actions"][0]["performer_role"] == "internal_system"
+    decisions = _yes_decisions(preflight, evidence_text=EXTERNAL_ACTOR_EVIDENCE)
+    decisions["decisions"]["A1"].update(
+        {"verdict": "no", "support_ref_indexes": [], "role_ref_indexes": []}
+    )
+    with pytest.raises(GreenfieldSourceDutyLedgerError, match="not affirmative"):
+        validate_greenfield_source_duty_ledger(
+            ledger, evidence_text=EXTERNAL_ACTOR_EVIDENCE, decision_set=decisions
         )
 
 
@@ -618,7 +681,7 @@ def test_reference_only_source_cannot_be_promoted_to_action_event() -> None:
     ledger = _ledger()
     row = ledger["system_duties"][0]
     row["actor_ref"] = _citation("notes")
-    row["source_refs"].append(row["actor_ref"])
+    row["statement"] = "notes records the submission"
     with pytest.raises(GreenfieldSourceDutyLedgerError, match="reference-only"):
         preflight_greenfield_source_duty_ledger(ledger, evidence_text=EVIDENCE)
 

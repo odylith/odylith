@@ -2,6 +2,43 @@ Status: In progress
 
 ## Current release frontier (2026-10-04)
 
+Frozen d75/v21 runs all 8,423 checks with zero source drift: 8,422 pass and one
+actor-law test has an obsolete v47 contract pin. Canonical local release smoke
+passes. The actual populated installer succeeds and installed Atlas verification
+passes, while strict predecessor byte-preservation failures remain retained.
+Four populated desktop browser surfaces pass; the next positive plan check
+has an already-unlinked predecessor fixture. Remaining browser states, positive
+linked-plan migration, Linux and five migration-class approvals remain open.
+
+The once-only v48 agriculture and research EDIT controls both fail. Independent
+strong review confirms all 26 agriculture H0 duties materially faithful, with
+two minor labeling findings. Agriculture EDIT stops at redundant external actor
+enclosure after two calls and 80.305 diagnostic seconds. Research EDIT passes
+source verification, then fails proposal admission after four calls and 258.004
+seconds; lost inner error and candidate bytes prevent causal diagnosis.
+Neither reaches terminal controls. Keep these failures and nonterminal custody.
+
+V49 removes only the redundant enclosure predicate: the exact actor reference
+already owns the occurrence and compiler-derived role evidence includes it.
+All surviving custody, typed-role and source-only semantic checks remain.
+Two propose refusal branches now carry the existing bounded diagnostic excerpt.
+Production code shrinks by 19 lines across these changes. Independent actor
+review is CLEAR and fresh affected regression passes 328 checks. This is not
+live reliability qualification or evidence the unknown research failure is fixed.
+Combined independent review is CLEAR with eight refusal checks; the complete
+install unit scope passes 2,079 checks. All 22 engine/handshake inventory rows
+remain valid and topology passes 100/100 with no findings.
+
+Next: settle the governed checkpoint;
+freeze a new clean build, then run the same two source-first installed correction
+controls once against the changed mechanism. Stop on a material refusal and
+retain its reason. Full public/private semantics, terminal controls, browser,
+host and timing proof must pass before protected evaluation. The originally
+recorded protected payload, manifest directory and run ledger are missing;
+prior lifecycle remains unknown. Do not substitute or infer untouched custody.
+
+## Historical v48 release frontier (2026-10-04)
+
 D002 passes 8,410 frozen runtime/install/selected-browser tests and local release
 smoke. One civic package passes independent source-first review and 44 browser
 cells. These controls do not qualify the full public/private population.

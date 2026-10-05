@@ -21,7 +21,7 @@ ordered changes and observable checks retain distinct effects on one field.
 No string-prefix inference, additional semantic stage, or receipt repair is
 part of this correction. Fresh complete-package admission remains required.
 Verb and target microcitations and duplicated actor/action fields are removed.
-Host contract v48 authors compact v3; the installed CLI expands it to v5 for
+Host contract v49 authors compact v3; the installed CLI expands it to v5 for
 preflight, while the verifier receives compact material rows and citations
 once with the complete authority source. Duplicate and unknown bank entries
 reject. Every bank quote/context, including unused selections, must validate
@@ -40,10 +40,18 @@ selections fail closed. Source workflow order remains in the ledger.
 Any negative,
 uncertain, missing, or mismatched decision stops the path. Preparation preserves
 bounded checker refusal details; any reported omission excerpt is explicitly
-untrusted diagnostic evidence and cannot authorize admission. The accepted receipt
+untrusted diagnostic evidence and cannot authorize admission. Both nonzero and
+unadmitted proposal failures retain the existing bounded stream excerpt as
+diagnostic detail, without confirmation authority. The accepted receipt
 binds source, ledger, the full verifier task, claims, and decisions by hash through
 proposal and create. Action-only and rows-only receipts are rejected by the
 current contract.
+The exact actor citation owns its source occurrence and the compiler includes
+it first among role references. Additional role contexts remain required and
+the source-only verifier judges the actual performer and role. No repeated
+actor alias or role-context enclosure of that same byte occurrence is required.
+Exact citation, proper identity slice, reference-only exclusion, semantic
+refusal, and source/ledger/task/decision hash binding remain mandatory.
 Candidate transport v1 carries the full source, candidate requirements/schema,
 admitted authority, and lossless compact accepted inventory with custody
 hashes. The complete receipt remains compiler-owned outside the model for

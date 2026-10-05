@@ -234,7 +234,7 @@ material clarifications with no writes. Sol diagnostic evidence cannot qualify a
 release-success profile.
 
 Canonical authoring `odylith.greenfield.intent-authoring.v79` receives one
-host-owned candidate in host format v21 under candidate contract v48. The
+host-owned candidate in host format v21 under candidate contract v49. The
 source-duty host returns one compact citation bank and typed rows that refer
 to it; deterministic expansion restores the same complete cited ledger before
 preflight. This path remains unqualified. Earlier v44 public evidence failed
@@ -252,8 +252,15 @@ meaning. Contract v48 adds a complete-source sweep to the existing inventory
 authoring task: preserve every still-current original duty during EDIT, include
 added or changed duties, and retain distinct action, guard and proof meanings.
 It changes no schema, verifier, stage count or acceptance floor. This authoring
-experiment requires fixed agriculture and research correction controls with
-independent source mapping before claiming improved reliability.
+experiment did not qualify reliability: agriculture EDIT stopped at a citation
+predicate, and research EDIT passed source verification but failed proposal
+admission with lost diagnostic detail. Contract v49 removes the redundant
+enclosure requirement for an actor occurrence already owned by actor_ref and
+inserted by the compiler among role references. Nonempty typed role context,
+reference-only exclusion, exact custody and the source-only verifier remain
+required. Propose refusals now retain the existing bounded diagnostic excerpt;
+that excerpt cannot admit or authorize anything. Fixed installed correction
+controls and independent source mapping must pass before reliability is claimed.
 Fresh independent semantic proof remains required. Each host
 stage returns only its schema-matching JSON; the external controller owns file
 custody, CLI checks, and the separate verifier call. The host first returns one

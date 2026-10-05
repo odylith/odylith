@@ -371,9 +371,9 @@ def test_release_smoke_pins_the_real_current_candidate_contract() -> None:
     module = _module()
     contract = greenfield_host_candidate_contract(module._CANDIDATE_CONTRACT_SMOKE_PROMPT)
 
-    assert module._EXPECTED_CANDIDATE_CONTRACT_VERSION == "odylith.greenfield.host-candidate-contract.v48"
+    assert module._EXPECTED_CANDIDATE_CONTRACT_VERSION == "odylith.greenfield.host-candidate-contract.v49"
     assert module._EXPECTED_CANDIDATE_FORMAT_VERSION == "odylith.greenfield.host-candidate-format.v21"
-    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v48"
+    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v49"
     assert contract["candidate_version"] == "odylith.greenfield.host-candidate-format.v21"
     assert "source-only" in contract["task"]
     assert "without another semantic call" in contract["task"]

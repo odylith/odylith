@@ -525,6 +525,7 @@ def _run_host_candidate_flow(flow: HostCandidateFlow, *, started: float,
                     "host-native candidate proposal command returned nonzero",
                     observation=observation,
                     stage="propose",
+                    detail=_stream_excerpt(proposal),
                 )
             if proposal_outcome["proposal_mode"] not in {
                 "product_create_transaction",
@@ -534,6 +535,7 @@ def _run_host_candidate_flow(flow: HostCandidateFlow, *, started: float,
                     "host-native candidate proposal did not produce an admitted outcome",
                     observation=observation,
                     stage="propose",
+                    detail=_stream_excerpt(proposal),
                 )
         observation["candidate_temp_cleaned"] = not candidate_path.exists()
         observation["authority_gate_temp_cleaned"] = not gate_path.exists()
