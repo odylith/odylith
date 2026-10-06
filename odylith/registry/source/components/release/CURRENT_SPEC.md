@@ -1,6 +1,16 @@
 # Release
 Last updated: 2026-10-05
 
+## Candidate-contract installation check (2026-10-05)
+
+The existing installation smoke checker imports contract and format versions
+from their authoritative runtime owners. It requires the current authored
+project-summary schema: a required string of 1–600 characters. Source-duty
+custody, exact prompt evidence, read-only write audit, subprocess refusal and
+installed baseline/lifecycle checks remain required. CB-347 preserves the v33
+checker failure; 61 focused controls pass after correcting its stale version
+expectations. A fresh package and full installed smoke remain pending.
+
 ## Detached public qualification and shared preparation (2026-10-04)
 
 The immutable onboarding finalizer accepts exact saved public source evidence
@@ -1171,6 +1181,9 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-10-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `sha256:addb966f57829c8858b5d640b848f922c4323bf68adf071a6cbe4d7fccd463ee`, `sha256:228a52fe9195e3ad5e2d2f4b1612439a919fdb46cf18fa260e5b700de3829f79`, `tests/unit/install/test_local_release_smoke.py`
 - **2026-10-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
@@ -1183,11 +1196,11 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `tests/unit/install/test_greenfield_actual_driver_profile_evidence.py`
 - **2026-10-02 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py`
-- **2026-10-02 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
-  - Evidence: `odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-10-05: Bound the installed candidate-contract checker to authoritative version owners and required the concise project-summary field with five negative schema controls. All 61 module tests pass; the original v33 installed smoke failure remains retained and requires a fresh immutable build. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-347`)
 - 2026-09-02: Bound Greenfield release scoring to authenticated typed validation and visible browser text. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
   The authored route may replace legacy prose-lens receipts only when its
   manifest, validation status, zero issue count, single-model semantic owner,

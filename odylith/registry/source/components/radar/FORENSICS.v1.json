@@ -38,12 +38,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 844,
-    "mapped_workstream_evidence_count": 784,
+    "explicit_event_count": 845,
+    "mapped_workstream_evidence_count": 785,
     "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 844
+    "timeline_event_count": 845
   },
   "name": "Radar",
   "path_prefixes": [
@@ -212,6 +212,46 @@
         "B-109",
         "B-110",
         "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 4,
+      "artifacts": [
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "sha256:addb966f57829c8858b5d640b848f922c4323bf68adf071a6cbe4d7fccd463ee",
+        "sha256:228a52fe9195e3ad5e2d2f4b1612439a919fdb46cf18fa260e5b700de3829f79",
+        "tests/unit/install/test_local_release_smoke.py"
+      ],
+      "confidence": "high",
+      "event_index": 1575,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
+      "ts_iso": "2026-10-05T16:50:46-07:00",
+      "workstreams": [
         "B-142"
       ]
     },

@@ -1885,3 +1885,14 @@ and `prepare` EDIT. Readback passes without transaction or model invocation:
 `b0498cdafa2cfa6a85fa2e181616b50dd02ff01eca7acf1e1d24c4433a6c46c0`.
 This later source check does not alter the d002 path assessment or certify a
 new release candidate.
+
+## V33 installation-check contract drift (2026-10-05)
+
+The clean `761fd5d4` package build passed all 12 checksums, but canonical fresh-install smoke failed before consumer controls: the existing release checker still expected host contract v53 and candidate format v22, while the packaged owners exactly match current v54/v23 source. The three reported errors are contract version, candidate version and the schema walk’s stale format enum. Preserve `/private/tmp/odylith-compass-verified-restoration-20261005/v33-smoke.log` (SHA-256 `b2f52def59dd9442dfd1a1b68a7295afe20b00e5a0b3f98df659f111a685c1ba`) and immutable v33 assets; this is a failed installed check, with no release qualification.
+
+Use the authoritative version constants in this existing checker and require the new project-summary schema field, including its 600-character bound. Keep all source-duty custody, read-only write-audit, subprocess, baseline and installed lifecycle checks. Add absent/optional/malformed/unbounded-summary negative cases before a fresh checkpoint and package. Do not rewrite the failed v33 distribution or run semantic consumers against it.
+
+
+The existing installation checker now imports the authoritative contract and format constants and requires an authored project-summary schema of 1–600 characters. All 61 module tests pass in 2.61s, including five absent/optional/malformed/empty/unbounded-summary negative cases and the unchanged custody/write-audit controls. Source package semantics and the 22 UI owners are unchanged. Preserve the failed v33 build and smoke; a new immutable v34 distribution and full installed smoke are required. Test log: `/private/tmp/odylith-compass-verified-restoration-20261005/v34-smoke-checker-unit.log`, SHA-256 `2ad12e4c3dad108c62808a646ed450a9a095bf72bce7406cc3e56b24ff4a8e92`.
+
+The v34 checkpoint check also refused six stale Atlas fingerprints after the narrow five-input sync had initially rendered 47 fresh diagrams. Later Registry requirement synchronization changed two spec inputs; the staged check correctly evaluated that expanded source set. The published working tree remained valid and the read-only check changed no managed files. Preserve `v34-final-commit-ready.log` (SHA-256 `d972ef6060c0fe61609fc9062383d5bf583e34a9ee67fab4572fb4ffc76f0c91`) and refresh the actual affected Atlas source closure after requirements settle; retain the freshness gate. No code or topology change is required by this failure.

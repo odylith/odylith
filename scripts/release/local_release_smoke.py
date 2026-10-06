@@ -21,6 +21,12 @@ from odylith.install.release_assets import fetch_release
 from odylith.install.state import AUTHORITATIVE_RELEASE_REPO
 from greenfield_matrix_write_audit import begin_installed_write_audit
 from odylith.runtime.domain_intelligence.greenfield_process import run_command_with_group_timeout
+from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
+    HOST_CANDIDATE_CONTRACT_VERSION as _EXPECTED_CANDIDATE_CONTRACT_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import (
+    HOST_CANDIDATE_FORMAT_VERSION as _EXPECTED_CANDIDATE_FORMAT_VERSION,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 _TEMP_ROOT_CLEANUP_RETRY_COUNT = 5
@@ -32,8 +38,6 @@ _COMMAND_TIMEOUT_SECONDS = 300
 _CANDIDATE_CONTRACT_SMOKE_PROMPT = (
     "Create a project governance package for a first-time user."
 )
-_EXPECTED_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v53"
-_EXPECTED_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v22"
 
 
 def _has_current_host_candidate_schema(candidate_schema: object) -> bool:
@@ -66,6 +70,7 @@ def _has_current_host_candidate_schema(candidate_schema: object) -> bool:
             "operational_constraints"
         ]["items"]
         event = authored_properties["events"]["items"]
+        design = authored_properties["provisional_design"]
         binding = authored_properties["source_duty_binding"]
         binding_fields = {
             "version", "source_sha256", "ledger_sha256", "first_path_actions",
@@ -100,7 +105,11 @@ def _has_current_host_candidate_schema(candidate_schema: object) -> bool:
             and "components" not in authored.get("required", ())
             and {"provisional_design", "events", "source_duty_binding"}
             <= set(authored.get("required") or ())
-            and isinstance(authored_properties["provisional_design"]["properties"]["components"], dict)
+            and isinstance(design["properties"]["components"], dict)
+            and "project_summary" in design.get("required", ())
+            and design["properties"]["project_summary"].get("type") == "string"
+            and design["properties"]["project_summary"].get("minLength") == 1
+            and design["properties"]["project_summary"].get("maxLength") == 600
             and constraint.get("type") == "object"
             and constraint.get("additionalProperties") is False
             and set(constraint.get("required") or ()) == {"quote", "context"}
