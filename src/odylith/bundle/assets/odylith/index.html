@@ -2401,29 +2401,14 @@
 
 .upgrade-spotlight-title {
   margin: 0;
-  max-width: 15ch;
-  font-size: clamp(32px, 4.4vw, 50px);
-  line-height: 0.96;
-  letter-spacing: -0.05em;
+  font-size: clamp(22px, 3vw, 30px);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
   color: #ffffff;
 }
 
-.upgrade-spotlight-title-copy,
-.upgrade-spotlight-title-version {
-  display: block;
-}
-
-.upgrade-spotlight-title-version {
-  margin-top: 10px;
-  font-size: clamp(24px, 3vw, 34px);
-  line-height: 1;
-  letter-spacing: -0.03em;
-  color: rgba(229, 240, 255, 0.94);
-}
-
 .upgrade-spotlight-story-summary,
-.upgrade-spotlight-list,
-.upgrade-spotlight-meta {
+.upgrade-spotlight-list {
   margin: 0;
 }
 
@@ -2433,6 +2418,19 @@
   font-weight: 600;
   line-height: 1.6;
   color: rgba(248, 251, 255, 0.92);
+}
+
+.upgrade-spotlight-details > summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.upgrade-spotlight-details > :not(summary) {
+  margin-top: 12px;
+}
+
+.upgrade-spotlight-body {
+  white-space: pre-wrap;
 }
 
 .upgrade-spotlight-action-row {
@@ -2453,11 +2451,6 @@
 
 .upgrade-spotlight-list li::marker {
   color: #a5ccff;
-}
-
-.upgrade-spotlight-meta {
-  color: rgba(228, 239, 255, 0.68);
-  font-size: 11px;
 }
 
 .upgrade-spotlight-link {
@@ -2530,11 +2523,9 @@
 
 @keyframes upgrade-spotlight-rise {
   from {
-    opacity: 0;
     transform: translateY(12px) scale(0.985);
   }
   to {
-    opacity: 1;
     transform: translateY(0) scale(1);
   }
 }
@@ -2548,10 +2539,6 @@
   .upgrade-spotlight {
     grid-template-columns: minmax(0, 1fr);
     padding: 58px 20px 20px;
-  }
-
-  .upgrade-spotlight-title {
-    max-width: none;
   }
 
   .upgrade-spotlight-main {
@@ -4381,7 +4368,7 @@ html, body {
         </nav>
       </div>
     </header>
-    <details class="shell-snapshot-note"><summary>Snapshot details</summary><p>Status captured 2026-10-06T08:23:56Z. Reopen the published dashboard after a refresh to see newer status.</p></details>
+    <details class="shell-snapshot-note"><summary>Snapshot details</summary><p>Status captured 2026-10-06T10:13:15Z. Reopen the published dashboard after a refresh to see newer status.</p></details>
 
 
     <section class="viewport" aria-live="polite">
@@ -4485,7 +4472,7 @@ html, body {
     </section>
   </main>
 
-  <script id="toolingDashboardData" src="tooling-payload.v1.js?v=71d32eac7b22"></script>
-  <script src="tooling-app.v1.js?v=71d32eac7b22"></script>
+  <script id="toolingDashboardData" src="tooling-payload.v1.js?v=8a8bc3a5604c"></script>
+  <script src="tooling-app.v1.js?v=8a8bc3a5604c"></script>
 </body>
 </html>

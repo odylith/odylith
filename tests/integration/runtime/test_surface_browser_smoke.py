@@ -410,6 +410,12 @@ def test_compass_and_radar_target_release_cards_show_labeled_release_version(bro
         compass = page.frame_locator("#frame-compass")
         compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
         _assert_compass_live_state(compass, window_token="48h")
+        activity = compass.locator("details.brief-evidence", has=compass.locator("#kpi-grid"))
+        assert activity.get_attribute("open") is None
+        assert compass.locator("#kpi-grid .stat").first.is_visible() is False
+        activity.locator("summary").focus()
+        activity.locator("summary").press("Enter")
+        compass.locator("#kpi-grid .stat").first.wait_for(state="visible", timeout=15000)
         compass_release_label = compass.locator(".stat.stat-release-only .kpi-label").first.inner_text().strip()
         compass_release = compass.locator(".stat.stat-release-only .kpi-value").first.inner_text().strip()
         assert compass_release_label == "TARGET RELEASE"

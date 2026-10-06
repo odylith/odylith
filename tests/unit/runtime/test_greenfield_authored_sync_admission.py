@@ -69,7 +69,8 @@ def _run(root, tokens, operation):
 def _working_image(root):
     """Observe only this tiny fixture, without following a negative symlink."""
     result = {}
-    for path in sorted((root / "odylith").rglob("*")):
+    for path in sorted((*((root / "odylith").rglob("*")),
+                        *((root / "src/odylith/bundle/assets/odylith").rglob("*")))):
         token = path.relative_to(root).as_posix()
         if path.is_symlink():
             result[token] = ("symlink", str(path.readlink()))
@@ -320,9 +321,9 @@ DIAGRAM = "odylith/atlas/source/example.mmd"
 DIAGRAM_BEFORE = "flowchart LR\n  A[Original intent] --> B[Visible proof]\n"
 
 
-def _active_authored_source(root, token, source, *, mapping=True):
+def _active_authored_source(root, token, source, *, mapping=True, extra_files=None):
     _complete(root)
-    files = {token: source}
+    files = {token: source, **(extra_files or {})}
     if token == SPEC and mapping:
         files["odylith/registry/source/component_registry.v1.json"] = json.dumps({
             "components": [{"component_id": "example", "spec_ref": SPEC}],
@@ -679,3 +680,205 @@ def test_failed_radar_operation_preserves_selected_intent_and_old_publication(tm
     assert publication.read_active_publication(root) == old
     assert (root / RADAR).read_bytes() == edited.encode()
     assert (generations.pin_active_greenfield_generation(root).repository_root / RADAR).read_bytes() == before.encode()
+
+
+RELEASE_NOTE = "odylith/runtime/source/release-notes/v0.1.15.md"
+RELEASE_MIRROR = "src/odylith/bundle/assets/" + RELEASE_NOTE
+OLD_RELEASE_NOTE = RELEASE_NOTE.replace("0.1.15", "0.1.14")
+OLD_RELEASE_MIRROR = "src/odylith/bundle/assets/" + OLD_RELEASE_NOTE
+NOTE_BEFORE = (
+    "---\nversion: 0.1.15\ntitle: Earlier release\npublished_at:\n"
+    "summary: Earlier project views.\n---\n\n# Earlier release\n\nEarlier project views remain available.\n"
+)
+NOTE_AFTER = NOTE_BEFORE.replace("Earlier release", "Clearer project views").replace(
+    "Earlier project views.", "Project plans and diagrams are easier to read.",
+)
+
+
+@pytest.fixture
+def release_note_repo(tmp_path):
+    from odylith.install import bootstrap_assets, runtime
+
+    (tmp_path / "pyproject.toml").write_text('[project]\nname = "odylith"\nversion = "0.1.15"\n')
+    source_runtime = tmp_path / ".odylith/runtime/versions/source-local"
+    source_runtime.mkdir(parents=True)
+    (source_runtime.parent.parent / "current").symlink_to(source_runtime)
+    root = _active_authored_source(tmp_path, RELEASE_NOTE, NOTE_BEFORE, extra_files={
+        RELEASE_MIRROR: NOTE_BEFORE,
+        OLD_RELEASE_NOTE: NOTE_BEFORE.replace("0.1.15", "0.1.14"),
+        OLD_RELEASE_MIRROR: NOTE_BEFORE.replace("0.1.15", "0.1.14"),
+        "odylith/radar/source/INDEX.md": "# Radar\n",
+        AUTHORED: BEFORE,
+        OTHER_AUTHORED: BEFORE.replace("CB-001", "CB-002"),
+        PLAN: PLAN_BEFORE,
+        SPEC: SPEC_BEFORE,
+        DIAGRAM: DIAGRAM_BEFORE,
+        "odylith/registry/source/component_registry.v1.json": json.dumps({
+            "components": [{"component_id": "example", "spec_ref": SPEC}],
+        }) + "\n",
+        "odylith/atlas/source/catalog/diagrams.v1.json": json.dumps({
+            "diagrams": [{"diagram_id": "D-001", "source_mmd": DIAGRAM}],
+        }) + "\n",
+    })
+    assert bootstrap_assets.product_repo_role(repo_root=root) == bootstrap_assets.PRODUCT_REPO_ROLE
+    assert runtime.current_runtime_version(repo_root=root) == "source-local"
+    return root
+
+
+@pytest.mark.parametrize("mixed_records", [False, True])
+def test_current_maintainer_note_admits_only_its_exact_coupled_mirror(release_note_repo, mixed_records):
+    root = release_note_repo
+    previous = generations.pin_active_greenfield_generation(root)
+    for token in (RELEASE_NOTE, RELEASE_MIRROR):
+        (root / token).write_text(NOTE_AFTER, encoding="utf-8")
+    selected = (RELEASE_NOTE, AUTHORED, OTHER_AUTHORED, PLAN, SPEC, DIAGRAM) if mixed_records else (RELEASE_NOTE,)
+    if mixed_records:
+        for token in selected[1:]:
+            path = root / token
+            path.write_text(path.read_text().replace("original", "selected").replace("Original", "Selected"), encoding="utf-8")
+    called = []
+    assert _run(root, _tokens(*selected), lambda descriptor: called.append(descriptor) or 0) == 0
+    assert len(called) == 1 and isinstance(called[0], int)
+    current = generations.require_greenfield_working_generation(root)
+    assert current.write_set_hash != previous.write_set_hash
+    for token in (RELEASE_NOTE, RELEASE_MIRROR):
+        assert (current.repository_root / token).read_bytes() == NOTE_AFTER.encode()
+        assert stat.S_IMODE((current.repository_root / token).stat().st_mode) == 0o644
+        assert (previous.repository_root / token).read_bytes() == NOTE_BEFORE.encode()
+    assert (current.repository_root / OLD_RELEASE_NOTE).read_bytes() == (previous.repository_root / OLD_RELEASE_NOTE).read_bytes()
+    assert _run(root, _tokens(*selected), lambda _fd: 0) == 0
+    assert generations.require_greenfield_working_generation(root).write_set_hash == current.write_set_hash
+
+
+@pytest.mark.parametrize("lane", ["consumer", "pinned", "missing-runtime", "wrong-source-version"])
+def test_release_note_admission_requires_current_source_local_product_lane(release_note_repo, lane):
+    root = release_note_repo
+    for token in (RELEASE_NOTE, RELEASE_MIRROR):
+        (root / token).write_text(NOTE_AFTER, encoding="utf-8")
+    if lane in {"consumer", "wrong-source-version"}:
+        (root / "pyproject.toml").write_text('[project]\nname = "' + (
+            "consumer" if lane == "consumer" else "odylith") + '"\nversion = "' + (
+            "0.1.16" if lane == "wrong-source-version" else "0.1.15") + '"\n')
+    else:
+        current = root / ".odylith/runtime/current"
+        current.unlink()
+        if lane == "pinned":
+            target = root / ".odylith/runtime/versions/0.1.15"
+            target.mkdir()
+            current.symlink_to(target)
+    _assert_refused_without_dispatch(root, _tokens(RELEASE_NOTE))
+
+
+@pytest.mark.parametrize("token", [OLD_RELEASE_NOTE, RELEASE_MIRROR, OLD_RELEASE_MIRROR])
+def test_note_admission_never_authorizes_historical_or_direct_bundle_selection(release_note_repo, token):
+    (release_note_repo / token).write_text(NOTE_AFTER, encoding="utf-8")
+    _assert_refused_without_dispatch(release_note_repo, _tokens(token))
+
+
+@pytest.mark.parametrize("defect", ["version", "missing-version", "broken-header", "empty-body", "missing-summary", "non-utf8"])
+def test_release_note_uses_explicit_current_metadata_and_nonempty_content(release_note_repo, defect):
+    data = {
+        "version": NOTE_AFTER.replace("version: 0.1.15", "version: 0.1.14").encode(),
+        "missing-version": NOTE_AFTER.replace("version: 0.1.15\n", "").encode(),
+        "broken-header": NOTE_AFTER.replace("---\n\n#", "--\n\n#").encode(),
+        "empty-body": NOTE_AFTER.split("---\n\n", 1)[0].encode() + b"---\n\n",
+        "missing-summary": NOTE_AFTER.replace("summary: Project plans and diagrams are easier to read.\n", "").encode(),
+        "non-utf8": b"\xff",
+    }[defect]
+    for token in (RELEASE_NOTE, RELEASE_MIRROR):
+        (release_note_repo / token).write_bytes(data)
+    _assert_refused_without_dispatch(release_note_repo, _tokens(RELEASE_NOTE))
+
+
+@pytest.mark.parametrize("defect", ["different-bytes", "missing", "mode", "symlink"])
+def test_note_mirror_parity_mode_and_confinement_are_required(release_note_repo, defect):
+    root = release_note_repo
+    (root / RELEASE_NOTE).write_text(NOTE_AFTER, encoding="utf-8")
+    mirror = root / RELEASE_MIRROR
+    if defect != "different-bytes":
+        mirror.write_text(NOTE_AFTER, encoding="utf-8")
+    if defect in {"missing", "symlink"}:
+        mirror.unlink()
+    if defect == "mode":
+        mirror.chmod(0o755)
+    elif defect == "symlink":
+        mirror.symlink_to(root / RELEASE_NOTE)
+    _assert_refused_without_dispatch(root, _tokens(RELEASE_NOTE))
+
+
+@pytest.mark.parametrize("token", [RELEASE_NOTE, RELEASE_MIRROR])
+def test_note_pair_immutable_preimage_and_final_selected_bytes_cannot_drift(release_note_repo, token):
+    root = release_note_repo
+    previous = publication.read_active_publication(root)
+    for path in (RELEASE_NOTE, RELEASE_MIRROR):
+        (root / path).write_text(NOTE_AFTER, encoding="utf-8")
+    called = []
+    def mutate(_descriptor):
+        called.append(True)
+        (root / token).write_text(NOTE_AFTER + "\nUnapproved later change.\n", encoding="utf-8")
+        return 0
+    with pytest.raises(RuntimeError, match="selected authored bytes or mode changed"):
+        _run(root, _tokens(RELEASE_NOTE), mutate)
+    assert called == [True]
+    assert publication.read_active_publication(root) == previous
+
+
+def test_note_pair_does_not_admit_other_bundle_or_source_changes(release_note_repo):
+    root = release_note_repo
+    for token in (RELEASE_NOTE, RELEASE_MIRROR):
+        (root / token).write_text(NOTE_AFTER, encoding="utf-8")
+    (root / OLD_RELEASE_MIRROR).write_text("Unselected historical mirror change.\n", encoding="utf-8")
+    _assert_refused_without_dispatch(root, _tokens(RELEASE_NOTE))
+
+
+@pytest.mark.parametrize("token", [RELEASE_NOTE, RELEASE_MIRROR])
+def test_release_note_immutable_preimage_corruption_refuses_dispatch(release_note_repo, token):
+    root = release_note_repo
+    published = generations.pin_active_greenfield_generation(root)
+    (published.repository_root / token).write_text("Corrupted immutable note.\n", encoding="utf-8")
+    for selected in (RELEASE_NOTE, RELEASE_MIRROR):
+        (root / selected).write_text(NOTE_AFTER, encoding="utf-8")
+    _assert_refused_without_dispatch(root, _tokens(RELEASE_NOTE))
+
+
+@pytest.mark.parametrize("drift", ["version", "posture"])
+def test_release_note_successor_rechecks_maintainer_lane_and_version(release_note_repo, drift):
+    root = release_note_repo
+    old = publication.read_active_publication(root)
+    for token in (RELEASE_NOTE, RELEASE_MIRROR):
+        (root / token).write_text(NOTE_AFTER, encoding="utf-8")
+    def mutate(_fd):
+        if drift == "version":
+            (root / "pyproject.toml").write_text('[project]\nname = "odylith"\nversion = "0.1.16"\n')
+        else:
+            (root / ".odylith/runtime/current").unlink()
+        return 0
+    with pytest.raises(RuntimeError, match="current canonical|detached source-local"):
+        _run(root, _tokens(RELEASE_NOTE), mutate)
+    assert publication.read_active_publication(root) == old
+
+
+def test_release_note_selected_with_casebook_through_real_cli_admission(release_note_repo, monkeypatch):
+    """Real CLI parser, boundary and publisher; post-admission sync work is synthetic."""
+    from odylith.runtime.governance import sync_workstream_artifacts
+    from odylith.runtime.reasoning import odylith_reasoning
+
+    monkeypatch.setattr(odylith_reasoning, "provider_from_config", lambda **_: pytest.fail("model provider"))
+    root = release_note_repo
+    previous = generations.pin_active_greenfield_generation(root)
+    for token in (RELEASE_NOTE, RELEASE_MIRROR):
+        (root / token).write_text(NOTE_AFTER, encoding="utf-8")
+    (root / AUTHORED).write_text(EDITED, encoding="utf-8")
+    dispatched = []
+    monkeypatch.setattr(sync_workstream_artifacts, "main", lambda args: dispatched.append(args) or 0)
+    assert cli.main([
+        "sync", "--repo-root", str(root), "--impact-mode", "selective",
+        "--runtime-mode", "standalone", RELEASE_NOTE, AUTHORED,
+    ]) == 0
+    assert len(dispatched) == 1 and dispatched[0][-2:] == [RELEASE_NOTE, AUTHORED]
+    current = generations.require_greenfield_working_generation(root)
+    assert current.write_set_hash != previous.write_set_hash
+    for token in (RELEASE_NOTE, RELEASE_MIRROR):
+        assert (current.repository_root / token).read_bytes() == NOTE_AFTER.encode()
+        assert (previous.repository_root / token).read_bytes() == NOTE_BEFORE.encode()
+    assert (current.repository_root / AUTHORED).read_bytes() == EDITED.encode()

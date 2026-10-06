@@ -66,7 +66,7 @@ PASSIVE_HOST_CANDIDATE_CONTRACT_VERSIONS = (
 )
 PREVIOUS_HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v50"
 LEGACY_HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v49"
-HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION = "odylith.greenfield.host-candidate-authoring-transport.v1"
+HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION = "odylith.greenfield.host-candidate-authoring-transport.v2"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
 
 
@@ -82,8 +82,8 @@ def greenfield_host_candidate_contract(
         "task": (
             "After an admitted authority gate, source-duty preflight, one accepted "
             "source-only decision set, and accepted source-duty ledger receipt, reason over "
-            "the complete source and return exactly one JSON value matching "
-            "candidate_schema. The ledger owns source-duty roles and passive lifecycle "
+            "the complete source and return exactly one JSON value matching the supplied "
+            "candidate response JSON Schema. The ledger owns source-duty roles and passive lifecycle "
             "meaning; this candidate binds those duties to one proposed product design. "
             "It remains an untrusted hypothesis; Odylith will deterministically revalidate its exact "
             "citations, typed relations, invariants, and hashes without another semantic call. "
@@ -309,9 +309,11 @@ def greenfield_host_candidate_authoring_request(
         raise ValueError("Greenfield candidate authoring requires an admitted authority gate")
     retained_fields = (
         "version", "candidate_version", "canonical_version", "task", "requirements",
-        "request", "candidate_schema",
+        "request",
     )
-    if not set(retained_fields) <= set(contract):
+    if not set(retained_fields) <= set(contract) or not isinstance(
+        contract.get("candidate_schema"), Mapping
+    ):
         raise ValueError("Greenfield candidate authoring contract is incomplete")
     return {
         **{key: deepcopy(contract[key]) for key in retained_fields},

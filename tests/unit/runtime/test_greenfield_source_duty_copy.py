@@ -93,13 +93,22 @@ def test_atlas_lifecycle_fields_keep_full_statements_without_punctuation_join() 
     original = deepcopy(lifecycle)
     support = _authored_diagrams(source_lifecycle=lifecycle)[-1]
     boxes = {box["node_id"]: box for box in support["diagram_boxes"]}
-    assert boxes["off_path_transition1_effect1"]["label"] == (
-        "Change: Close future access.\nObservable check: Affected unpublished analysis is invalidated."
+    assert boxes["off_path_transition1_effect1"]["label"] == "Effect 1.1"
+    assert boxes["off_path_transition1"]["description"] == (
+        "“Withdrawal closes placement access and erases the cached placement”"
     )
-    assert "Trigger: An approval is withdrawn.\n" in boxes["off_path_transition1"]["description"]
+    assert boxes["off_path_transition1"]["details"] == [
+        {"label": "Trigger", "text": "An approval is withdrawn."},
+        {"label": "Governed object", "text": "berth occupancy"},
+    ]
     assert 'off_path_transition1_effect1["Effect 1.1<br/>Close future access."]' in support["mermaid_source"]
-    assert "Change: Close future access.\nObservable check: Affected unpublished analysis is invalidated." in boxes[
-        "off_path_transition1_effect1"
-    ]["description"]
+    assert boxes["off_path_transition1_effect1"]["description"] == (
+        "Trigger: An approval is withdrawn.\nField: access\nChange: Close future access.\n"
+        "Observable check: Affected unpublished analysis is invalidated."
+    )
+    assert boxes["off_path_transition1_effect2"]["description"] == (
+        "Trigger: An approval is withdrawn.\nField: cache\nChange: erased\n"
+        "Observable check: cache empty"
+    )
     assert "withdrawn.." not in str(boxes)
     assert lifecycle == original

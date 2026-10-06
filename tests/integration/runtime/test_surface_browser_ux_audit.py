@@ -38,20 +38,11 @@ def _frame_anchor_actions(frame, selector: str) -> list[dict[str, str]]:  # noqa
 
 
 def _click_frame_anchor_by_href(frame, container_selector: str, anchor_selector: str, href: str) -> None:  # noqa: ANN001
-    frame.locator(container_selector).evaluate(
-        """(node, payload) => {
-            const selector = String(payload.selector || "");
-            const href = String(payload.href || "").trim();
-            const link = Array.from(node.querySelectorAll(selector)).find(
-              (candidate) => String(candidate.getAttribute("href") || "").trim() === href
-            );
-            if (!link) {
-              throw new Error(`missing anchor for href ${href}`);
-            }
-            link.click();
-        }""",
-        {"selector": anchor_selector, "href": href},
-    )
+    for link in frame.locator(container_selector).locator(anchor_selector).all():
+        if str(link.get_attribute("href") or "").strip() == href:
+            link.click()
+            return
+    raise AssertionError(f"missing anchor for href {href}")
 
 
 def _assert_compass_target(page, href: str) -> None:  # noqa: ANN001
@@ -84,6 +75,7 @@ def _assert_shell_target_from_href(page, href: str) -> None:  # noqa: ANN001
     if tab == "radar":
         workstream = _extract_query_param(href, "workstream")
         if workstream:
+            _wait_for_shell_tab(page, "radar")
             _assert_radar_selection(page, workstream)
             _wait_for_shell_query_param(page, tab="radar", key="workstream", value=workstream)
             return
@@ -312,6 +304,12 @@ def test_registry_detail_action_chip_audit_round_trips_cleanly(browser_context) 
         component_id = _select_registry_component_with_actions(registry)
         _wait_for_shell_query_param(page, tab="registry", key="component", value=component_id)
         source_url = base_url + f"/odylith/index.html?tab=registry&component={quote(component_id, safe='')}"
+        topology = registry.locator("#detail details.context-section")
+        assert topology.get_attribute("open") is None
+        assert registry.locator("#detail a.detail-action-chip").first.is_visible() is False
+        topology.locator(":scope > summary").focus()
+        topology.locator(":scope > summary").press("Enter")
+        registry.locator("#detail a.detail-action-chip").first.wait_for(state="visible", timeout=15000)
         actions = _frame_anchor_actions(registry, "#detail a.detail-action-chip")
         assert actions, "expected Registry detail action chips"
         workstream_actions = [
@@ -328,6 +326,10 @@ def test_registry_detail_action_chip_audit_round_trips_cleanly(browser_context) 
             assert response is not None and response.ok
             registry.locator(f'button[data-component="{component_id}"].active').wait_for(timeout=15000)
             _wait_for_registry_detail_id(registry, component_id)
+            topology = registry.locator("#detail details.context-section")
+            assert topology.get_attribute("open") is None
+            topology.locator(":scope > summary").focus()
+            topology.locator(":scope > summary").press("Enter")
             assert href in {str(action["href"]) for action in _frame_anchor_actions(registry, "#detail a.detail-action-chip")}
             _click_frame_anchor_by_href(registry, "#detail", "a.detail-action-chip", href)
             _assert_shell_target_from_href(page, href)
@@ -347,6 +349,18 @@ def test_atlas_surface_links_and_context_pills_round_trip_cleanly(browser_contex
         atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
         _open_atlas_diagram(atlas, source_diagram_id)
 
+        linked_context = atlas.locator("details.linked-context-section")
+        assert linked_context.get_attribute("open") is None
+        assert atlas.locator("#surfaceLinks").is_visible() is False
+        linked_context.locator("summary").focus()
+        linked_context.locator("summary").press("Enter")
+        atlas.locator("#surfaceLinks").wait_for(state="visible", timeout=15000)
+        historical = atlas.locator("#historicalWorkstreamDisclosure")
+        if historical.is_visible():
+            assert historical.get_attribute("open") is None
+            historical.locator("summary").focus()
+            historical.locator("summary").press("Enter")
+
         actions = []
         actions.extend(_frame_anchor_actions(atlas, "#surfaceLinks a"))
         actions.extend(_frame_anchor_actions(atlas, "#registryLinks a"))
@@ -365,6 +379,15 @@ def test_atlas_surface_links_and_context_pills_round_trip_cleanly(browser_contex
             response = page.goto(source_url, wait_until="domcontentloaded")
             assert response is not None and response.ok
             atlas.locator("#diagramId", has_text=source_diagram_id).wait_for(timeout=15000)
+            linked_context = atlas.locator("details.linked-context-section")
+            assert linked_context.get_attribute("open") is None
+            linked_context.locator("summary").focus()
+            linked_context.locator("summary").press("Enter")
+            historical = atlas.locator("#historicalWorkstreamDisclosure")
+            if historical.is_visible():
+                assert historical.get_attribute("open") is None
+                historical.locator("summary").focus()
+                historical.locator("summary").press("Enter")
             selector = (
                 "#surfaceLinks a, #registryLinks a, #activeWorkstreamLinks a.workstream-pill-link, "
                 "#ownerWorkstreamLinks a.workstream-pill-link, #historicalWorkstreamLinks a.workstream-pill-link"

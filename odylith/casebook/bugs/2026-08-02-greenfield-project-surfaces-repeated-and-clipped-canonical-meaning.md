@@ -1,5 +1,60 @@
 - Bug ID: CB-303
 
+## Current upgrade-notice readability finding (2026-10-06)
+
+Independent root visual inspection of the genuine v36 target notice finds an
+oversized mobile heading, a repeated hero version, and always-expanded release
+highlights. Page text is visible through the notice in arrival captures. The
+CSS has an opaque final gradient, but its entrance animation changes opacity
+from zero to one; distinguish transient capture from persistent transparency.
+The native Close path works at desktop and mobile in the separate controlled
+browser-time proof. That mechanics PASS does not accept its visual readability.
+Evidence: `/private/tmp/odylith-v36-target-browser-arrival-proof-20261006/proof-result.json`
+(SHA-256 `d7a567fab9f9599f3e439c82957df75a44aa2932c5e201f6fb53cd2396cbabfe`).
+
+Keep the complete authored title and narrative, reduce heading dominance, remove
+duplicate metadata, and make longer highlights optional through native details.
+Keep normal dismissal and the warning/custody contract. A bounded source patch
+and desktop/mobile normal, empty/fallback, and degraded browser proof remain
+required before accepting this new finding. Do not shorten release facts or
+count the existing synthetic matrix as proof of this subsequent change.
+
+The bounded correction now passes 12 unique focused checks and nine synthetic
+normal, empty, fallback, and degraded browser cells across desktop/mobile, plus
+the narrow 320-pixel normal view. It removes the opacity fade, reduces title
+dominance, preserves one complete summary and distinct supplied details, and
+puts highlights and metadata in closed native What changed details. Close,
+Escape, backdrop, reopening, keyboard disclosure, and early/resting opacity
+checks pass. The two product owners shrink by 98 lines without new helpers.
+Header, control, shell renderer, and upstream three-highlight selection remain
+unchanged. Independent review is CLEAR. Handoff SHA-256
+`c020dc014f744ea1dbfa0c7e3ef8e88ae51b50caafd5fcdb92d5fa50cdae9b97`:
+`/private/tmp/odylith-release-spotlight-cognition-20261006/handoff.json`.
+
+The actual draft release title, summary, highlights, and link label now use
+direct human language. The summary drops from 41 to 31 words; the source note
+also corrects obsolete one-pass instructions and preserves the current gate,
+source-only verification, receipt, public read-only, and unreleased boundaries.
+Independent source-copy review is CLEAN (SHA-256
+`267e2083f55cbd4ef1c9d643e6a6f528abf9ca96c5ac7fcbe774096a6fa7f335`).
+One fresh normal-copy proof passes three widths with six captures and exact
+source-note hash; its source owners match the earlier empty/fallback/degraded
+proof. Root reads the final 430/320 captures. At 320 pixels, complete copy uses
+the existing inner scrollport; do not claim it all fits the first viewport.
+Result SHA-256 `4a33ed0758f703fa4f086bef22b9a566b1a8826a80540822552ae4e07cf3b15e`:
+`/private/tmp/odylith-release-spotlight-cognition-20261006/r3/final-note/browser-result.json`.
+These overlapping runs are nine unique conditions, not twelve unique cells.
+
+Retain the first browser stop: local (2,2) lies outside the unchanged rounded
+backdrop hit region. The corrected proof declares one interior point and checks
+elementFromPoint identity before the same normal click. Also preserve two stale
+detail-exclusion assertion failures and the wrongly unscoped closing-tag test;
+their corrections retain exact facts and native visibility. The first final-note
+setup correctly refuses a stale source hash before rendering; its missing-script
+wrapper stop is retained. No failed attempt becomes a product or browser PASS.
+This is current-source UI proof; publication, package, installed, semantic,
+migration, native-host, holdout, and release qualification remain separate.
+
 ## Current cognitive-load closure boundary (2026-10-06)
 
 The 16-image/15-owner audit identified eight presentation findings after the

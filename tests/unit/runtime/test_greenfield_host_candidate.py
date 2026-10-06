@@ -23,6 +23,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import (
     HOST_CANDIDATE_FORMAT_VERSION,
     canonical_greenfield_host_candidate,
+    greenfield_host_candidate_schema,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
@@ -112,6 +113,7 @@ def test_contract_requires_one_complete_host_candidate() -> None:
     contract = greenfield_host_candidate_contract(source)
     authored = contract["candidate_schema"]["properties"]["result"]["anyOf"][0]
 
+    assert contract["candidate_schema"] == greenfield_host_candidate_schema()
     assert contract["version"] == HOST_CANDIDATE_CONTRACT_VERSION
     assert contract["candidate_version"] == HOST_CANDIDATE_FORMAT_VERSION
     assert "components" not in authored["properties"]
@@ -132,6 +134,8 @@ def test_contract_requires_one_complete_host_candidate() -> None:
         in contract["source_ledger"]["task"]
     )
     assert "Return candidate JSON only; do not call a CLI" in contract["task"]
+    assert "matching the supplied candidate response JSON Schema" in contract["task"]
+    assert "candidate_schema" not in contract["task"]
     assert (
         "external controller has already inventoried source duties"
         in contract["requirements"][0]

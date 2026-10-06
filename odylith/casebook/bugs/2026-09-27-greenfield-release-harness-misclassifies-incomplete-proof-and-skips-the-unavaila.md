@@ -1,5 +1,177 @@
 - Bug ID: CB-347
 
+## Current single-carrier transport and v36 proof boundary (2026-10-06)
+
+The final authored-selective call mistakenly included the public release note.
+Admission refuses before publishing a successor because that path is not one
+of its five supported governance record kinds. Preserve
+`/private/tmp/odylith-notice-transport-final-authored-admission-20261006.log`.
+Select only the five changed Casebook/plan/Registry records for authored
+admission; public release copy remains a separately reviewed product-doc change.
+Do not expand or bypass the consumer authoring owner contract for this operation.
+
+Selecting only those five records also refuses before publishing: the installed
+release note differs from the sealed managed inventory. Preserve
+`/private/tmp/odylith-notice-transport-final-authored-admission-records-20261006.log`.
+Resolve the product-owned release-copy source and supported managed-asset
+transition before retrying publication. The UI proof is intact; neither refusal
+permits blessing a changed inventory or relaxing consumer byte preservation.
+
+The maintainer coding standards designate that same note as the canonical
+authored source and require its exact bundle mirror. The five-record consumer
+admission omits this legitimate product-maintenance owner. The current decision
+supersedes the initial five-record-only prescription above: add only the current
+release-note route under existing product-repo and detached-source-local
+authority. Bind source and mirror bytes and modes to both immutable preimages;
+retain exact parity, existing note metadata, every other inventory check, and
+compare-and-swap protection. Consumer and historical-note edits still refuse.
+CB-305 rules out a general directory or bundle exception. Characterization and
+independent review must precede publication. Publishing elsewhere does not fix
+the in-place ownership gap.
+
+The bounded owner is now implemented and independently CLEAR at source
+SHA-256 `e38b6d4ff087e1d588b77c290b2872cf99aa03736188bd7cf0f635d83a80670f`.
+Its existing module grows by 27 lines; 102 focused tests pass in 7.20 seconds.
+The genuine two-copy publication fixture proves the current note and its exact
+implicit mirror, alone and with five governance records. Consumer, pinned or
+missing runtime, wrong version, historical or direct mirror selection, malformed
+metadata, parity/mode/symlink drift, immutable preimage corruption, other inventory
+drift, and final source/mirror and role/version races refuse. The CLI parser and
+publisher test uses an explicitly synthetic post-admission sync callback and
+does not prove root full sync. Preserve the 93-pass/four-fail characterization
+and 101-pass/one-fail incomplete-backlog fixture. Final handoff and independent
+report live in `/private/tmp/odylith-maintainer-release-note-authored-admission-20261006/`.
+Canonical root publication and the next clean install remain required.
+
+Exact pushed19bf CI run 37436166428 finishes with 13 failed, 9,906 passed and
+10 skipped tests in 4,445.25 seconds. Identity and Claude asset smoke pass;
+asset smoke does not prove native Claude parity. Preserve the complete failed
+job log at `/private/tmp/odylith-ci-19bf-pytest-failed-20261006.log`. Ten failures
+are browser adopters; three are unit adopters. The Registry digest resolves as
+hidden within the new evidence disclosure, two Atlas tests read hidden content,
+and the Compass VM stub lacks Element.closest. Two unit assertions still expect
+the old lifecycle canvas copy and old owning-component heading. These are
+diagnostic leads, not permission to remove fact, style, route or warning oracles.
+Characterize each failure and verify native disclosure plus complete evidence
+before changing stale presentation assumptions. Report any true product loss.
+The 44-state source matrix and package smoke remain valid bounded proof, while
+full checkpoint CI is failed and release qualification stays open.
+
+The 13 exact failed signatures now pass focused current-source controls. The
+Compass VM fixture models the real nearest details parent and verifies closed
+to open on genuine unavailability; its complete module passes 11 tests. The two
+Atlas unit adopters assert exact complete lifecycle descriptions and native
+owning-component/linked-record disclosures. Ten browser adopters pass in 20.12
+seconds: closed defaults are asserted, normal keyboard Enter opens the summaries,
+and original evidence text, labels, styles, counts and route assertions remain.
+Normal anchor clicks replace direct JavaScript clicks. Their neighboring Registry
+Topology control initially exposes another hidden-default assumption; opening
+that actual native summary preserves the original route proof and passes.
+Root diff review finds no product edits, force clicks, observer weakening, or
+removed semantic oracles. The old full CI failure remains failed; the next
+immutable checkpoint still requires its own complete CI run.
+
+At pushed checkpoint `19bf8ffb617d8d4650caf8677ee0304855fad5cf`, the bounded
+44-state UX matrix, canonical publication, and eight commit-ready gates pass.
+The clean v36 package builds in 164.685 seconds; all 12 checksums match and
+canonical installed smoke passes in 363.160 seconds. This qualifies package
+and lifecycle mechanics only; full CI is still running at that exact checkpoint.
+
+The fresh published-v14 native upgrade passes in 27.580 seconds and preserves
+all 15 required file modes and bytes, apart from the sole declared Atlas hash
+leaf. The Radar INDEX is now exact. Target plan-binding/backlog validators pass.
+The witness stops at its first target-browser wrapper failure: upgrade/run.py
+names upgrade/browser.py, but the five-driver staging inventory placed the
+unchanged helper only under predecessor/. No target renderer ran. Preserve
+`/private/tmp/odylith-greenfield-v14-to-v36-migration-preflight-20261006/final-stopped-handoff.json`
+(SHA-256 `a2c921b082c61f42f13fe021ddb45a9988f8c57934a5ed658768ea4170ee19ab`).
+Dependency closure must check invoked support paths, not only five-driver hashes
+and literal AST differences. A separately predeclared read-only continuation
+may invoke the unchanged helper against the exact preserved installation; never
+reinstall, re-upgrade, reseed, rewrite the STOPPED result, or count the missing-file
+wrapper attempt as rendered browser proof. Full migration remains unqualified.
+
+The separately predeclared target-browser continuation calls the actual helper
+once and fails after 16.083 seconds: the visible shell upgrade spotlight backdrop
+intercepts the Radar row click. There are zero target readbacks or screenshots.
+All 18,348 consumer inventory entries and 13 installed owners remain exact;
+the original STOPPED witness remains unchanged. Composite proof:
+`/private/tmp/odylith-v36-target-browser-continuation-20261006/composite-phase-proof.json`
+(SHA-256 `d6e183e12bab09496282805d75680d1e5d0bb78c37831f38a5f407e8c1adb31e`).
+The normal visible dismissal path and helper timing must be diagnosed before any
+product fix or new qualification run; an intercepted click alone does not prove
+that the modal is undismissible. Keep the failed first renderer attempt intact.
+
+Read-only diagnosis locates a driver arrival race: it calls the normal shell
+obstruction helper on the entry redirect, whose DOM has no close control, before
+the final immutable shell arrives. The helper checks count/visibility once. The
+isolated diagnostic runs after spotlight expiry, so it does not prove active
+native dismissal. Report:
+`/private/tmp/odylith-v36-upgrade-spotlight-diagnosis-20261006/report.json`
+(SHA-256 `39a3a62986b91993625e2760be4abd201154ef0b68b17ae1d8c94e283de6660e`).
+Correct the external arrival order, retain the native spotlight and all click
+obstruction assertions, and explicitly control the active browser-clock state
+if qualifying that expired notice. Never pass by expiry, force-click or DOM removal.
+
+The new corrected-arrival proof passes one renderer call in 3.003 seconds. It
+waits for the final Radar frame, then uses the unchanged normal dismissal helper.
+Supported Playwright fixed browser Date recreates the exact failed-visit instant;
+the native active modal and Close are visible at both widths before dismissal,
+and the backdrop is hidden before the original row click. Two original positive
+plan/backlink readbacks pass with 12 screenshots. All 18,348 consumer entries,
+13 managed owners, and 15 preserved files remain exact; CLEAN19bf is clean.
+Proof SHA-256 `d7a567fab9f9599f3e439c82957df75a44aa2932c5e201f6fb53cd2396cbabfe`:
+`/private/tmp/odylith-v36-target-browser-arrival-proof-20261006/proof-result.json`.
+Composite SHA-256 `6acc7f41382d88aa5d8e3cbaabc9bdf0082d140564758d537ab0684fd66b6459`.
+This is a separate controlled-time browser result; the original STOPPED witness
+and first renderer FAIL remain unchanged. It does not qualify current-clock,
+normal/empty/degraded matrices, semantic reliability, or the release. Root visual
+inspection finds notice presentation pressure, now captured in CB-303; mechanics
+success must not suppress that human readability finding.
+
+V37 fixed semantic and migration declarations are HELD without consumer or host
+execution. The migration preparation initially omitted startup when interpreting
+the request to avoid an ambiguous probe. That is corrected in a separate held
+revision: published v14 supports start --no-working-tree, which routes install
+noise out of the packet while leaving startup active, before exact-path context.
+Only the documented gated-ambiguous narrowing may continue without startup PASS
+credit. All other failures stop. Preserve the first held declaration unchanged;
+revision SHA-256 `68fc03c2464fe7743217c0bdd7417f31f7840097109d0508f6e790abc24ef391`:
+`/private/tmp/odylith-greenfield-v14-to-v37-migration-start-routed-r1-20261006/revised-predispatch.json`.
+The new checkpoint, package/checksums, canonical smoke, and exact current helper
+and owner bindings remain prerequisites for either execution. Lower-capability
+refusal safety is separate from the held standard-profile fixed controls.
+
+The first new Registry history entry used a bare Plan ID, which source diagnostics
+correctly rejected and omitted from the rendered component list (29 versus the
+unchanged 30-entry manifest). The canonical rendered plan link is restored before
+publication. Require both source validation and expected component inclusion;
+an admission command's overall PASS alone does not erase its diagnostics.
+
+The candidate previously sent its complete schema both in stdin and the
+mandatory output-schema carrier. New transport v2 omits only that duplicate
+stdin field, retains object-schema refusal, and refers to the supplied response
+schema at the original task definition. Public contract v54, format v23,
+semantic/schema/seal/profile/flow/deadline/provider owners remain unchanged.
+The retained agriculture request projects from 59,003 to 29,833 bytes, saving
+29,170 bytes; this projection was not a candidate replay or latency experiment.
+One existing source owner adds two lines. Before-fix characterization has
+16 failures/44 passes; afterward 60 focused and 289 adopter checks pass.
+Independent review of the same four final hashes is CLEAR_WITH_LIMITS.
+
+Exact installed Codex encoding preserves all 61 descriptions and two titles;
+one native standard-profile canary returns a value present only in a schema
+annotation in 4.838 seconds. These establish transport and small-schema attention,
+not full candidate meaning or timing. Reports:
+`/private/tmp/odylith-installed-codex-schema-custody-20261006-r2/report.json`,
+`/private/tmp/odylith-native-codex-annotation-visibility-20261006/report.json`, and
+`/private/tmp/odylith-candidate-schema-transport-implementation-20261006/handoff.json`
+(SHA-256 `8cfd53da878b393f43527c32b6eabd946be92ae66a767210be93a27956896bc2`).
+Retain the rejected confinement preflight and all timed public failures. A fresh
+checkpoint/package plus predeclared semantic/timing evidence is required before
+any claimed gain. Five migration assessment markers, native Claude authentication,
+original protected holdout custody, Public40, and production release stay open.
+
 ## Current v35 migration preservation stop (2026-10-05)
 
 Native v14-to-v35 upgrade succeeds (`rc=0`, `30.843s`): 13 target source/wheel

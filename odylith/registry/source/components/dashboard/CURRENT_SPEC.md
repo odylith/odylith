@@ -69,6 +69,14 @@ that source-note correctness and mirror equality do not prove rendered fidelity.
 The shared release-text owner must normalize markup without shortening prose;
 desktop/mobile authored and fallback readback must prove the resulting contract.
 
+The first notice view presents one authored title and one complete summary at
+ordinary reading size. Longer release highlights and version/date metadata belong
+in closed native What changed details, with keyboard access and complete text.
+The release-notes action and normal Close control stay visible. Entrance motion
+must not make underlying page text compete with the notice narrative. This
+presentation obligation is separate from successful dismissal, and requires
+desktop/mobile normal, empty/fallback, and degraded evidence before acceptance.
+
 ### Cross-surface experience proof
 Every generated-surface change requires desktop/mobile browser checks of normal,
 empty or fallback, and degraded/error states, followed by independent screenshot
@@ -557,6 +565,8 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-10-06: Adopted compact default disclosures in the 13 exact preceding CI failures without changing production behavior. Browser tests verify closed evidence and counts, open actual summaries by keyboard, and retain text, style, count and route checks. The Compass VM models nearest details and verifies genuine failure opens it. All 13 signatures pass focused tests; the original CI failure and the requirement for fresh full CI remain. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-347`)
+- 2026-10-06: Upgrade notices use one readable title and summary, complete keyboard-accessible details, and opaque entrance motion. Two presentation owners remove 98 lines; 12 focused checks and nine source-UI conditions pass, with three fresh real-copy readbacks and independent review. Installed and release gates remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
 - 2026-10-06: Closed eight audited presentation findings and final mobile counter priority through existing owners. Atlas uses direct narratives; roles, owners, links, Registry evidence, and Compass counts are optional. Complete historical summaries, one empty-evidence explanation, populated timeline hours, fewer repeated fallback messages, and one exact Project risk rationale remain. Genuine runtime failure opens the counts disclosure automatically. Focused proof passes Atlas 130 plus 70 prefix checks, Registry 40, Compass 85 unique base checks plus 13 final counter checks, and Project 32; independent reviews are CLEAR. Final unchanged-oracle synthetic browser proof passes 44/44 states, zero issues, 111 screenshots, and 36 unchanged pins in 36.356 seconds. Manifest: `/private/tmp/odylith-cognitive-load-closure-20261006.json`. Exact facts, graph, warnings, history, roles, authority, navigation, and legacy seals remain. Retain all earlier stalls and setup failures. This is bounded current-source UI proof; populated Casebook, root publication, installed, semantic, native-host, holdout, migration, and release qualification remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-303`, `CB-347`)
 - 2026-10-05: Closed stale CI expectations through test-only corrections: exact authored summaries remain intact, source details open by keyboard, and readable labels retain IDs and routes. The 107 known e32 signatures map to 268 focused passes; the original full CI failure remains retained. No Dashboard runtime contract changed, and no installed, semantic, migration, native, holdout, or release qualification follows. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-347`)
 - 2026-10-05: The v34 Research H0 default-Radar duplicate Decision Basis/Opportunity P2 is cleared by existing ownership: exact authored Decision Basis is native-closed and Product View is one direct narrative. Browser proof passes `89` checks in `46.72s` across normal, empty, and runtime-fallback states with 18 screenshots; six affected unit modules pass `89` in `3.45s`. Generic provisional prefixes are removed while warnings, refs, authority, and typed custody remain unchanged; the earlier `88`-pass/one-fail Registry boilerplate assertion is retained. This clears only the default-view P2 and does not qualify semantic, installed, native, holdout, migration, or release evidence. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-347`)

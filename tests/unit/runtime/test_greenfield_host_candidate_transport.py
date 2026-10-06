@@ -18,28 +18,41 @@ from tests.unit.runtime.greenfield_model_authoring_fixtures import (
 from tests.unit.runtime.test_greenfield_source_duty_ledger import _material_duty_case
 
 
-def _accepted_request():
+def _accepted_request(*, edit=False):
     source, ledger = _material_duty_case()
     receipt = synthetic_source_duty_receipt_for_ledger(ledger, evidence_text=source)
-    contract = greenfield_host_candidate_contract(source)
+    context = None
+    if edit:
+        from tests.unit.runtime.test_greenfield_edit_lifecycle_preservation import _edit_case, _admit
+
+        case = _edit_case(correction="Show the approval status. Keep all earlier safeguards. ∆\r\nPreserve the record.")
+        source, ledger, context, _, _ = case
+        receipt = _admit(case)
+    contract = greenfield_host_candidate_contract(source, edit_preservation=context)
     contract["authority_gate"] = {"task": "Completed authority producer task"}
+    action = ledger["first_path_actions"][0]
     admission = {"mode": "authority_admitted", "gate": {
-        "decision": "admit", "required_fields": [], "owner_quote": "reviewer",
-        "task_quote": "defines scope and audience", "result_quote": "scope", "question": "",
+        "decision": "admit", "required_fields": [], "owner_quote": action["actor_ref"]["quote"],
+        "task_quote": action["action"], "result_quote": action["target"], "question": "",
     }}
     return source, contract, receipt, admission
 
 
-def test_candidate_phase_preserves_every_material_row_and_control_losslessly() -> None:
-    source, contract, receipt, admission = _accepted_request()
+@pytest.mark.parametrize("edit", [False, True])
+def test_candidate_phase_preserves_every_material_row_and_control_losslessly(edit) -> None:
+    source, contract, receipt, admission = _accepted_request(edit=edit)
     before = deepcopy((contract, receipt, admission))
     request = greenfield_host_candidate_authoring_request(
         contract, source_duty_receipt=receipt, authority_admission=admission,
     )
     assert request["transport_version"] == HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION
+    assert HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION == "odylith.greenfield.host-candidate-authoring-transport.v2"
     for key in ("version", "candidate_version", "canonical_version", "task",
-                "requirements", "request", "candidate_schema"):
+                "requirements", "request"):
         assert request[key] == contract[key]
+    assert "candidate_schema" not in request
+    assert contract["candidate_schema"]["properties"]["result"]["anyOf"][0]["required"]
+    assert "supplied candidate response JSON Schema" in request["task"]
     assert request["authority_admission"] == admission
     assert expand_compact_source_duty_ledger(
         request["accepted_source_duty_inventory"], evidence_text=source,
@@ -47,10 +60,12 @@ def test_candidate_phase_preserves_every_material_row_and_control_losslessly() -
     for section in ("first_path_actions", "supporting_human_actions", "system_duties",
                     "state_fields", "off_path_transitions", "conditional_guards",
                     "boundaries", "proof_duties", "evidence_controls"):
-        assert receipt["ledger"][section], f"fixture must exercise {section}"
+        if not edit:
+            assert receipt["ledger"][section], f"fixture must exercise {section}"
         assert len(request["accepted_source_duty_inventory"][section]) == len(receipt["ledger"][section])
     assert request["source_duty_custody"] == {
-        key: value for key, value in receipt.items() if key not in {"ledger", "decision_set"}
+        key: receipt[key] for key in ("version", "source_sha256", "ledger_sha256",
+                                     "verifier_task_sha256", "decision_set_sha256")
     }
     assert not {"authority_gate", "source_ledger", "accepted_source_duty_receipt", "decision_set"} & request.keys()
     assert "actor_ref q/c" in request["citation_resolution"]
@@ -64,7 +79,7 @@ def test_candidate_phase_preserves_every_material_row_and_control_losslessly() -
 @pytest.mark.parametrize("tamper", [
     "source", "ledger", "controls", "decision", "source_sha256", "ledger_sha256",
     "verifier_task_sha256", "decision_set_sha256", "version", "authority_source",
-    "authority_clarification", "authority_mode", "contract",
+    "authority_clarification", "authority_mode", "contract", "schema_shape",
 ])
 def test_candidate_transport_rejects_invalid_source_and_receipt_custody(tamper: str) -> None:
     _source, contract, receipt, admission = _accepted_request()
@@ -85,6 +100,8 @@ def test_candidate_transport_rejects_invalid_source_and_receipt_custody(tamper: 
         admission["mode"] = "clarification_required"
     elif tamper == "contract":
         contract.pop("candidate_schema")
+    elif tamper == "schema_shape":
+        contract["candidate_schema"] = None
     else:
         receipt[tamper] = "f" * 64
     with pytest.raises((ValueError, TypeError)):

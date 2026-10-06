@@ -348,6 +348,18 @@ def test_d038_atlas_visibility_broker_flow_renders_in_shell(browser_context) -> 
         _wait_for_shell_query_param(page, tab="atlas", key="diagram", value="D-038")
         _assert_atlas_viewer_image_loaded(page)
 
+        ownership = atlas.locator("details.ownership-section")
+        linked_context = atlas.locator("details.linked-context-section")
+        assert ownership.get_attribute("open") is None
+        assert linked_context.get_attribute("open") is None
+        assert atlas.locator("#componentList").is_visible() is False
+        assert atlas.locator("#registryLinks").is_visible() is False
+        for disclosure in (ownership, linked_context):
+            disclosure.locator("summary").focus()
+            disclosure.locator("summary").press("Enter")
+        atlas.locator("#componentList").wait_for(state="visible", timeout=15000)
+        atlas.locator("#registryLinks").wait_for(state="visible", timeout=15000)
+
         visible_summary = atlas.locator("#diagramSummary").inner_text()
         visible_components = atlas.locator("#componentList").inner_text().lower()
         registry_links = atlas.locator("#registryLinks").inner_text().lower()

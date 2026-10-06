@@ -1,12 +1,19 @@
 # Domain Intelligence
-Last updated: 2026-10-05
+Last updated: 2026-10-06
 
 
 ## Overview
 
-### Prerequisite closure and v30 consumer evidence (2026-10-05)
+The current public host contract is v54/format v23. Native authoring transport v2
+keeps the complete response schema in its mandatory schema carrier and removes
+duplicate stdin metadata. Current source duties, authority, receipts and seals
+remain required. The current-source tests support this transport change; a fresh
+package and fixed-case semantic/timing proof remain open. Earlier versioned
+checkpoints below are historical evidence and do not replace the current contract.
 
-Host contract v53/format v22 requires the first run to contain the ordered source
+### Historical prerequisite closure and v30 consumer evidence (2026-10-05)
+
+At host contract v53/format v22, the first run required the first run to contain the ordered source
 path and exactly its cited transitive prerequisites. Supporting human/system
 duties keep their roles; unrelated duties, missing predecessors, reversed order,
 cycles and invalid citations refuse. Source binding and canonical reload reuse
@@ -16,7 +23,7 @@ new semantic owner is added. Initial v4/v7 and EDIT v6/v9 custody, all four host
 passes, profile and bounds remain unchanged; passive v52/51/50/49 stays explicit.
 The 24 publication owners retain their exact source fingerprint.
 Passive full transaction readback explicitly accepts the known v52/v9 EDIT pair,
-in addition to v51/v9 and v50/v8. Fresh admission remains current-v53-only;
+in addition to v51/v9 and v50/v8. Fresh admission was current-v53-only at that checkpoint;
 unknown or mismatched pairs refuse. The two-line compatibility correction passes
 27 transaction/receipt checks and full unchanged v30 H0/H1 readback with no
 compiler attestation or write/process/network events. V31 build/smoke passes
@@ -2201,6 +2208,8 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-10-06: Explicit selective sync admits the current product release note and only its exact coupled bundle mirror in detached source-local maintainer mode. Existing version, metadata, immutable preimage, mode, inventory and successor guards remain. Consumer, historical and direct mirror edits refuse. One existing owner adds 27 lines; 102 focused tests and independent review pass. The CLI fixture declares synthetic post-admission upkeep; canonical root publication and installed release proof remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-347`)
+- 2026-10-06: Native authoring transport v2 carries the complete schema once while preserving public schema, exact source duties, authority, custody, and mandatory-schema refusal. The retained request projects 59,003 to 29,833 bytes. One source owner adds two lines; 349 focused/adopter checks and independent review pass. Installed encoding and one annotation-only canary support this bounded transport change; fresh candidate semantic/timing and release proof remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-347`)
 - 2026-10-05: Existing registered Radar narrative updates can settle through explicit selective sync. Metadata, index identity, file modes, unrelated managed files, and prior immutable publication remain guarded; required content is validated by the existing backlog owner. Root 75 tests pass in 5.13s and actual four-record sync passes in 25.3s without runtime fallback. This is governance completion proof, with installed release and semantic qualification still open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
 - 2026-09-07: Bound temporary prewrite refresh roots so Compass can render without queuing or launching detached narration. Exact-cache and explicit unavailable states remain unchanged, as does durable-repository warming. The settled source passes 4311 runtime tests, 1101 install tests and 34 synthetic staged-browser checks, plus native synthetic success/malformed/timeout controls. Real-model quality, timing and installed-release qualification remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
 
@@ -5800,13 +5809,20 @@ projection coherence, confirmation, and readback.
   180-second operational safety timeout. No elapsed-time promotion, fallback,
   retry, repair, parser, regex stack, or alternate model ladder is allowed.
 
-## Greenfield Host Citation Byte Custody (2026-09-26)
-
 ## Current Greenfield semantic and summary contract (2026-10-05)
 
 - Fixed Research and Agriculture H0/H1 source-first review at checkpoint `23881abd0e8bd15ddc64fb869b581060d50c3302` supports only the independently audited fixed-case semantics and model-free terminal mechanics. It does not expand release, aggregate, browser, protected-holdout, migration, or timing authority.
 - The next canonical candidate contract requires a `design.project_summary` in host format 23 / contract v54: concise purpose, intended users, and intended outcome derived from the candidate's source-cited meaning. Evidence excerpts, source links, and raw source text remain evidence and must never substitute for that summary. Earlier v53 sealed pairs remain passive exact history.
 - Risk and presentation projections may simplify visible copy, but must retain source-backed triggers, mitigation, verification, traceability, and links in accessible detail. No projection may invent meaning or alter candidate custody.
+
+## Current candidate schema transport (2026-10-06)
+
+- Native candidate authoring transport v2 keeps the complete response schema in the existing mandatory, qualified output-schema file and removes its duplicate stdin field. Missing or non-object schemas fail closed. The public contract still includes the full schema; v54/format23, semantic invariants, seals, authority, source duties, profiles, deadlines and four-phase ordering remain unchanged.
+- The task names the supplied candidate response JSON Schema directly. No text parser, replacement helper, retry, fallback, provider branch or extra consumer model call is added. The general native Claude provider remains unchanged.
+- Current-source proof passes 60 focused and 289 adopter checks; independent review pins the same four files. Exact installed encoding retains all 61 descriptions and two titles, and one native standard-profile annotation canary passes. The retained agriculture input projects 59,003 to 29,833 bytes, saving 29,170 bytes; this is not measured latency or candidate-quality evidence.
+- Handoff: `/private/tmp/odylith-candidate-schema-transport-implementation-20261006/handoff.json`. A new frozen package and fixed-case semantic/timing proof remain required before release qualification. Historical failures and source/candidate bytes remain intact.
+
+## Historical Greenfield Host Citation Byte Custody (2026-09-26)
 
 - Host candidate contract v20 requires every quote and locator context to be
   copied byte-for-byte from source without normalization or rewriting. This

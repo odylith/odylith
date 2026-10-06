@@ -604,7 +604,8 @@ def _open_radar_topology_relations_for_style_audit(radar) -> bool:  # noqa: ANN0
         return False
     panel.wait_for(timeout=15000)
     if panel.get_attribute("open") is None:
-        panel.evaluate("node => { node.open = true; }")
+        panel.locator(":scope > summary").focus()
+        panel.locator(":scope > summary").press("Enter")
     panel.locator(".topology-relations").wait_for(timeout=15000)
     return True
 
@@ -633,6 +634,10 @@ def _select_atlas_workstream_pill_for_style_audit(page):  # noqa: ANN001
     atlas = page.frame_locator("#frame-atlas")
     atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
     _select_atlas_layout_stress_diagram(page)
+    historical = atlas.locator("#historicalWorkstreamDisclosure")
+    if historical.is_visible() and historical.get_attribute("open") is None:
+        historical.locator("summary").focus()
+        historical.locator("summary").press("Enter")
     pill_locator = atlas.locator(
         "#activeWorkstreamLinks a.workstream-pill-link, "
         "#ownerWorkstreamLinks a.workstream-pill-link, "
@@ -804,7 +809,15 @@ def _select_registry_forensic_digest_stress_component(page):  # noqa: ANN001
     registry.locator("h1", has_text="Component Registry").wait_for(timeout=15000)
     registry.locator('button[data-component="odylith"]').click()
     registry.locator('button[data-component="odylith"].active').wait_for(timeout=15000)
-    registry.locator("#timeline .forensic-digest").wait_for(timeout=15000)
+    evidence = registry.locator("#chronology-anchor")
+    evidence.wait_for(state="visible", timeout=15000)
+    assert evidence.get_attribute("open") is None
+    digest = registry.locator("#timeline .forensic-digest")
+    digest.wait_for(state="attached", timeout=15000)
+    assert digest.is_visible() is False
+    evidence.locator(":scope > summary").focus()
+    evidence.locator(":scope > summary").press("Enter")
+    digest.wait_for(state="visible", timeout=15000)
     return registry
 
 
@@ -899,26 +912,21 @@ def _assert_registry_forensic_digest_keeps_default_view_compact(  # noqa: ANN001
         assert artifact_disclosure_style["paddingLeft"] == "12px"
         assert artifact_disclosure_style["borderRadius"] == "999px"
 
-        artifact_disclosures = registry.locator("#timeline .forensic-artifact-disclosure")
-        disclosure_index = artifact_disclosures.evaluate_all(
-            """(nodes) => {
-            const index = nodes.findIndex((node) => node.querySelector(
-                '.forensic-artifact-disclosure-panel .artifact'
-            ));
-            if (index < 0) return index;
-            for (let parent = nodes[index].parentElement; parent; parent = parent.parentElement) {
-                if (parent.tagName === 'DETAILS') parent.open = true;
-            }
-            return index;
-        }"""
+        artifact_disclosures = registry.locator("#timeline .forensic-artifact-disclosure").filter(
+            has=registry.locator(".forensic-artifact-disclosure-panel .artifact")
         )
-        assert disclosure_index >= 0
-        artifact_disclosure = artifact_disclosures.nth(disclosure_index)
+        assert artifact_disclosures.count() > 0
+        artifact_disclosure = artifact_disclosures.first
+        for group in artifact_disclosure.locator("xpath=ancestor::details[contains(@class, 'forensic-group-disclosure')]").all():
+            if group.get_attribute("open") is None:
+                group.locator(":scope > summary").focus()
+                group.locator(":scope > summary").press("Enter")
         artifact_disclosure.scroll_into_view_if_needed()
         hidden_artifacts = artifact_disclosure.locator(".forensic-artifact-disclosure-panel .artifact")
         assert hidden_artifacts.count() > 0
         assert hidden_artifacts.first.is_visible() is False
-        artifact_disclosure.locator("summary").click()
+        artifact_disclosure.locator("summary").focus()
+        artifact_disclosure.locator("summary").press("Enter")
         hidden_artifacts.first.wait_for(state="visible", timeout=15000)
         assert artifact_disclosure.evaluate("node => node.open") is True
         expanded_layout = _registry_forensic_digest_layout(registry)
@@ -974,12 +982,9 @@ def _assert_shared_workstream_buttons_keep_compact_style_contract(  # noqa: ANN0
         compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
         release_summary = compass.locator("#release-groups-host summary").first
         if release_summary.count():
-            release_summary.evaluate(
-                """(node) => {
-                const details = node.closest("details");
-                if (details && !details.open) node.click();
-            }"""
-            )
+            if release_summary.locator("xpath=parent::details").get_attribute("open") is None:
+                release_summary.focus()
+                release_summary.press("Enter")
         compass_current_selector = "a.ws-id-btn, a.ws-covered-id-btn"
         if compass.locator(compass_current_selector).count():
             compass_current_style = _workstream_button_style(compass, compass_current_selector)
@@ -1016,6 +1021,10 @@ def _assert_shared_workstream_buttons_keep_compact_style_contract(  # noqa: ANN0
         response = page.goto(base_url + "/odylith/index.html?tab=registry&component=odylith", wait_until="domcontentloaded")
         assert response is not None and response.ok
         registry = _select_registry_forensic_digest_stress_component(page)
+        group = registry.locator("#timeline details.forensic-group-disclosure").first
+        if group.count() and group.get_attribute("open") is None:
+            group.locator(":scope > summary").focus()
+            group.locator(":scope > summary").press("Enter")
         registry_style = _workstream_button_style(registry, "#timeline .forensic-workstream-chip")
 
         for style in (compass_current_style, compass_release_style, atlas_style, radar_style, registry_style):
@@ -1105,7 +1114,12 @@ def _assert_shared_governance_kpi_cards_keep_compact_style_contract(  # noqa: AN
         assert response is not None and response.ok
         compass = page.frame_locator("#frame-compass")
         compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
-        compass.locator("#kpi-grid .stat").first.wait_for(timeout=15000)
+        activity = compass.locator("details.brief-evidence", has=compass.locator("#kpi-grid"))
+        assert activity.get_attribute("open") is None
+        assert compass.locator("#kpi-grid .stat").first.is_visible() is False
+        activity.locator("summary").focus()
+        activity.locator("summary").press("Enter")
+        compass.locator("#kpi-grid .stat").first.wait_for(state="visible", timeout=15000)
         compass_style = _governance_kpi_style(compass, "#kpi-grid .stat", ".kpi-label", ".kpi-value")
 
         page.locator("#tab-radar").click()

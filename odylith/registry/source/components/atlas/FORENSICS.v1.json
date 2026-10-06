@@ -36,12 +36,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 791,
-    "mapped_workstream_evidence_count": 742,
+    "explicit_event_count": 792,
+    "mapped_workstream_evidence_count": 743,
     "recent_path_match_count": 0,
     "spec_history_event_count": 19,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 791
+    "timeline_event_count": 792
   },
   "name": "Atlas",
   "path_prefixes": [
@@ -51,6 +51,47 @@
   ],
   "spec_ref": "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 4,
+      "artifacts": [
+        "sha256:9ead8066b04bbc01a81607becac0f516cf89b84bb37cdd2a57d1908f594a47e0",
+        "sha256:65473a03009769a1933821bc69300ab679d7c64d3526c05316a045151962349b",
+        "sha256:d92e902ba0755bdee93b95c5ed7c5ad5cd6027d70549f9d6216784edced1c0d8",
+        "sha256:528eb76269f137cd1dc4e767f288092520d4b71bd930b9e44e6571ee02606daa"
+      ],
+      "confidence": "high",
+      "event_index": 1579,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
+      "ts_iso": "2026-10-06T03:11:23-07:00",
+      "workstreams": [
+        "B-142",
+        "B-145"
+      ]
+    },
     {
       "artifact_count": 4,
       "artifacts": [

@@ -1,5 +1,67 @@
 Status: In progress
 
+## Current single-carrier transport frontier (2026-10-06)
+
+Transport v2 sends the complete candidate schema once through the existing
+qualified output-schema carrier. It omits only the duplicate stdin field and
+retains object-schema refusal, every source duty, authority and custody field,
+and complete public contract/schema. Public v54/format v23, semantic/seal,
+profiles, deadlines and four-phase flow remain unchanged. One source owner
+adds two net lines. Exact retained agriculture input projects 59,003 to 29,833
+bytes; this is a byte projection, not a latency or semantic result.
+
+Before-fix characterization 16FAIL/44PASS is retained; 60 focused and 289 adopter
+checks pass afterward, and independent review of the four final hashes is CLEAR.
+Exact installed encoding retains 61 descriptions/two titles; one native schema
+annotation canary passes in 4.838 seconds. Evidence:
+`/private/tmp/odylith-candidate-schema-transport-implementation-20261006/handoff.json`.
+The next frozen candidate needs its own clean package/install and predeclared
+fixed-case semantic/timing proof. Do not replay frozen failures for luck or
+promote small-schema attention into full Greenfield behavior.
+
+Preceding pushed19bf/v36 builds and installed smoke pass. Actual v14-to-v36
+native migration preserves the 15 records and passes validators, then stops at
+a missing external browser helper before rendering. The separately predeclared
+first real target-browser phase then fails when the upgrade spotlight intercepts
+a Radar click; all18,348 consumer entries and13owners remain unchanged. CB-347
+preserves both stops. Diagnose the normal dismissal path and timing before fixes.
+Separate corrected-arrival proof now passes normal native dismissal and two
+positive plan readbacks at both widths in 3.003 seconds. Controlled browser Date
+recreates the active notice; all 18,348 entries, 13 installed owners and 15 records
+remain exact. Original STOPPED/FAIL results stay intact. CB-303 captures the new
+visual finding: excessive heading dominance, duplicate metadata and expanded
+details. Resolve its bounded presentation and browser proof before packaging
+the transport successor. No current-clock or complete migration claim follows.
+That source correction now passes 12 unique focused checks and nine synthetic
+notice conditions, followed by three normal-width readbacks of the final human
+source copy. The two presentation owners shrink by 98 lines. Native controls,
+complete facts and keyboard details remain; independent code/copy review is
+CLEAR/CLEAN. Root reads 430/320 final captures; narrow copy uses the existing
+scrollport. CB-303 retains the coordinate, stale assertion, selector and stale
+source-pin setup failures. No installed or release credit follows this UI proof.
+Final publication exposes a maintainer release-note ownership gap: the canonical
+author note is in the active managed inventory but outside the five consumer
+record kinds. CB-347 preserves both refusals. Resolve only the current note
+under existing maintainer role, execution posture and version authority, with
+exact coupled mirror custody. Consumer and historical-note edits, changed
+preimages, and other inventory drift must still refuse. No general document or
+bundle exception is permitted. Focused proof and independent review precede
+publication and the next package freeze.
+
+The exact preceding checkpoint's full CI now fails 13 tests with 9,906 passing
+and 10 skipped. CB-347 retains its log. Bounded test owners must characterize
+the disclosure adopters, VM DOM behavior, lifecycle narrative and association
+heading assertions while preserving all fact and navigation requirements.
+Neither the synthetic UI matrix nor package smoke supersedes this failed CI.
+All 13 exact signatures now pass focused controls after test-only adoption of
+native closed disclosures and a faithful VM DOM parent. Complete evidence,
+warnings, styles, counts and routes remain asserted. Root diff review accepts
+the bounded test change; new full checkpoint CI remains required.
+
+Five current migration assessment markers, full new CI, native Claude auth,
+original protected holdout custody, Public40 and final release remain required.
+Keep B-142 and B-145 open.
+
 ## Current cognitive-load and v35 preservation boundary (2026-10-06)
 
 The eight audited presentation findings and final mobile counter priority are

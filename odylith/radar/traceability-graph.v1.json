@@ -9,7 +9,7 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "06c4c8a9e85912f633bd71aa6e47f8988dcb052a5de0a630421e7d4de18fd74c",
+    "digest": "8b388e8cd7d1fafe55626788b80b24461ea13ebcc55dde876aadf2e222e482d7",
     "file_count": 318,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
@@ -8628,7 +8628,7 @@
         "version": "0.1.15",
         "tag": "v0.1.15",
         "name": "",
-        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "inherited_name": "Clearer project plans and safer upgrades",
         "effective_name": "0.1.15",
         "display_label": "0.1.15",
         "notes": "",
@@ -8744,7 +8744,7 @@
         "version": "0.1.15",
         "tag": "v0.1.15",
         "name": "",
-        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "inherited_name": "Clearer project plans and safer upgrades",
         "effective_name": "0.1.15",
         "display_label": "0.1.15",
         "notes": "",
@@ -9115,7 +9115,7 @@
       "version": "0.1.15",
       "tag": "v0.1.15",
       "name": "",
-      "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+      "inherited_name": "Clearer project plans and safer upgrades",
       "effective_name": "0.1.15",
       "display_label": "0.1.15",
       "notes": "",
@@ -9145,7 +9145,7 @@
       "version": "0.1.15",
       "tag": "v0.1.15",
       "name": "",
-      "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+      "inherited_name": "Clearer project plans and safer upgrades",
       "effective_name": "0.1.15",
       "display_label": "0.1.15",
       "notes": "",
@@ -9174,7 +9174,7 @@
     "version": "0.1.15",
     "tag": "v0.1.15",
     "name": "",
-    "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+    "inherited_name": "Clearer project plans and safer upgrades",
     "effective_name": "0.1.15",
     "display_label": "0.1.15",
     "notes": "",
@@ -26467,5 +26467,5 @@
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-10-06 08:23:47Z"
+  "generated_utc": "2026-10-06 10:13:05Z"
 }

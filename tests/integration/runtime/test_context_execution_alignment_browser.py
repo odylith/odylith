@@ -142,6 +142,17 @@ def test_atlas_context_execution_diagrams_render_assets_and_canonical_links(brow
         atlas.locator("#diagramTitle", has_text="Execution Engine Stack").wait_for(timeout=15000)
         atlas.locator("#diagramFreshness", has_text="Fresh").wait_for(timeout=15000)
         _assert_atlas_viewer_image_loaded(page)
+        linked_context = atlas.locator("details.linked-context-section")
+        assert linked_context.get_attribute("open") is None
+        assert atlas.locator("#registryLinks").is_visible() is False
+        linked_context.locator("summary").focus()
+        linked_context.locator("summary").press("Enter")
+        atlas.locator("#registryLinks").wait_for(state="visible", timeout=15000)
+        ownership = atlas.locator("details.ownership-section")
+        assert ownership.get_attribute("open") is None
+        ownership.locator("summary").focus()
+        ownership.locator("summary").press("Enter")
+        atlas.locator("#componentList").wait_for(state="visible", timeout=15000)
         registry_links_text = atlas.locator("#registryLinks").inner_text().lower()
         assert "execution-engine" in registry_links_text
         visible_contract_text = "\n".join(
@@ -164,6 +175,11 @@ def test_atlas_context_execution_diagrams_render_assets_and_canonical_links(brow
             timeout=15000
         )
         _assert_atlas_viewer_image_loaded(page)
+        linked_context = atlas.locator("details.linked-context-section")
+        assert linked_context.get_attribute("open") is None
+        linked_context.locator("summary").focus()
+        linked_context.locator("summary").press("Enter")
+        atlas.locator("#registryLinks").wait_for(state="visible", timeout=15000)
         d002_registry_text = atlas.locator("#registryLinks").inner_text().lower()
         assert "execution-engine" in d002_registry_text
         assert "odylith-context-engine" in d002_registry_text

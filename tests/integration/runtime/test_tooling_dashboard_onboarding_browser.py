@@ -1075,8 +1075,13 @@ def test_authored_v0_1_10_release_note_drives_upgrade_popup_copy(tmp_path: Path,
             page.locator("#shellUpgradeSpotlight").wait_for(timeout=15000)
             assert page.locator("#shellWelcomeState").count() == 0
             assert page.locator(".toolbar-version").inner_text().strip() == "v0.1.10"
-            assert page.locator(".upgrade-spotlight-title-copy").inner_text().strip() == "Boringly Trustworthy"
-            assert page.locator(".upgrade-spotlight-title-version").inner_text().strip() == "v0.1.10"
+            assert page.locator("#upgradeSpotlightTitle").inner_text().strip() == "Boringly Trustworthy"
+            details = page.locator("#shellUpgradeSpotlight .upgrade-spotlight-details")
+            assert details.get_attribute("open") is None
+            details.locator(":scope > summary").focus()
+            page.keyboard.press("Enter")
+            assert details.get_attribute("open") is not None
+            assert details.locator(".upgrade-spotlight-chip").first.inner_text().strip() == "v0.1.9 -> v0.1.10"
             assert "Compass refresh now sticks to one bounded runtime contract" in page.locator(
                 "#shellUpgradeSpotlight"
             ).inner_text()
@@ -1122,14 +1127,19 @@ def test_authored_v0_1_11_release_note_drives_upgrade_popup_copy(tmp_path: Path,
             assert response is not None and response.ok
 
             page.locator("#shellUpgradeSpotlight").wait_for(timeout=15000)
-            spotlight_text = page.locator("#shellUpgradeSpotlight").inner_text()
             assert page.locator("#shellWelcomeState").count() == 0
             assert page.locator(".toolbar-version").inner_text().strip() == "v0.1.11"
             assert (
-                page.locator(".upgrade-spotlight-title-copy").inner_text().strip()
+                page.locator("#upgradeSpotlightTitle").inner_text().strip()
                 == "Governed Execution Goes Multi-Host"
             )
-            assert page.locator(".upgrade-spotlight-title-version").inner_text().strip() == "v0.1.11"
+            details = page.locator("#shellUpgradeSpotlight .upgrade-spotlight-details")
+            assert details.get_attribute("open") is None
+            details.locator(":scope > summary").focus()
+            page.keyboard.press("Enter")
+            assert details.get_attribute("open") is not None
+            assert details.locator(".upgrade-spotlight-chip").first.inner_text().strip() == "v0.1.10 -> v0.1.11"
+            spotlight_text = page.locator("#shellUpgradeSpotlight").inner_text()
             assert "Claude Code is first-class" in spotlight_text
             assert "Execution is governed" in spotlight_text
             assert "Benchmarks got teeth" in spotlight_text

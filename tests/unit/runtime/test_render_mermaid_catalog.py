@@ -233,7 +233,9 @@ def test_render_mermaid_catalog_explains_diagram_and_moves_context_to_bottom_lis
     assert "font-size: 11px;" in html
     assert "white-space: normal;" in html
     assert "border-radius: 999px;\n      padding: 1px 7px;\n      color: #446179;" not in html
-    assert "Owning Components" in html
+    assert '<details class="ownership-section">' in html
+    assert '<summary class="artifact-label">Owning components</summary>' in html
+    assert '<div id="componentList" class="component-list"></div>' in html
     assert "const componentTitleLookup = sanitizeLookupObject(tooltipLookup.component_titles);" in html
     assert "function componentDisplayName(value)" in html
     assert all(name not in html for name in ("componentResponsibilityText", "componentNameWords", "stripLeadingComponentName", "escapeRegExp"))
@@ -243,7 +245,8 @@ def test_render_mermaid_catalog_explains_diagram_and_moves_context_to_bottom_lis
     assert "grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));" in html
     assert "diagram-guide-grid" in html
     assert ".diagram-box-section[hidden]" in html
-    assert '<article class="section linked-context-section">' in html
+    assert '<details class="section linked-context-section">' in html
+    assert '<summary class="artifact-label">Linked records</summary>' in html
     assert '<div class="engineering-context-list">' in html
     assert ".details-grid {" in html
     assert "grid-template-columns: minmax(0, 1fr);" in html
@@ -253,7 +256,7 @@ def test_render_mermaid_catalog_explains_diagram_and_moves_context_to_bottom_lis
     assert ".linked-context-section .artifact-list {\n      max-height: none;" in html
     assert "grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));" not in html
     assert html.index('<article class="section diagram-explanation-section">') < html.index(
-        '<article class="section linked-context-section">'
+        '<details class="section linked-context-section">'
     )
 
 

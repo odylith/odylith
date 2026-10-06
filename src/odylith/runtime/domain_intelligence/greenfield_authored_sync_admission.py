@@ -52,6 +52,9 @@ class AuthoredSyncAdmission:
         for token, expected in self.selected.items():
             if _regular_file(root, token) != expected:
                 raise _refuse(f"selected authored bytes or mode changed during sync: {token}")
+            if Path(token).parent == Path("odylith/runtime/source/release-notes"):
+                previous, _ = _regular_file(self.pinned.repository_root, token)
+                _require_authored_surface(root, self.pinned.repository_root, token, previous, expected[0])
 
     def require_compiled_intent(self, write_set: Mapping[str, Any]) -> None:
         if (write_set["before_fingerprints"] != self.pinned.manifest["after_fingerprints"]
@@ -213,7 +216,7 @@ def _requirements_region(text: str) -> str:
     return "".join(lines[start - 1:ends[0] + 1])
 
 
-def _require_authored_surface(root: Path, published: Path, token: str, before: bytes, after: bytes) -> None:
+def _require_authored_surface(root: Path, published: Path, token: str, before: bytes, after: bytes) -> str | None:
     try:
         old_text, new_text = before.decode("utf-8"), after.decode("utf-8")
     except UnicodeDecodeError as exc:
@@ -234,6 +237,24 @@ def _require_authored_surface(root: Path, published: Path, token: str, before: b
             raise _refuse(f"generated Registry requirements changed: {token}")
     elif token.startswith("odylith/atlas/source/") and path.suffix == ".mmd":
         _require_mapping(published, _ATLAS, "diagrams", "source_mmd", token)
+    elif path.parent == Path("odylith/runtime/source/release-notes"):
+        from odylith.install import bootstrap_assets, runtime
+        from odylith.runtime import release_notes
+
+        if (bootstrap_assets.product_repo_role(repo_root=root) != bootstrap_assets.PRODUCT_REPO_ROLE
+                or runtime.current_runtime_version(repo_root=root) != "source-local"):
+            raise _refuse("release-note authoring requires the detached source-local product maintainer lane")
+        version = bootstrap_assets.product_source_version(repo_root=root)
+        canonical = release_notes.release_notes_path(repo_root=root, version=version).relative_to(root).as_posix()
+        if not version or token != canonical:
+            raise _refuse(f"only the current canonical product release note is admitted: {token}")
+        metadata, _ = release_notes._parse_front_matter(new_text)
+        note = release_notes.load_release_notes_source(repo_root=root, version=version)
+        if (metadata.get("version") != version or note is None or not note.body.strip()
+                or any(not isinstance(metadata.get(key), str) or not metadata[key].strip()
+                       for key in ("title", "summary"))):
+            raise _refuse(f"selected release-note metadata or body is invalid: {token}")
+        return "src/odylith/bundle/assets/" + token
     else:
         raise _refuse(f"selected path has no authored admission owner: {token}")
 
@@ -253,8 +274,14 @@ def require_authored_sync_admission(*, repo_root: Path, command_tokens: Sequence
         current, current_mode = _regular_file(repo_root, token)
         if current_mode != previous_mode:
             raise _refuse(f"selected authored mode differs from publication: {token}")
-        _require_authored_surface(repo_root, pinned.repository_root, token, previous, current)
+        coupled = _require_authored_surface(repo_root, pinned.repository_root, token, previous, current)
         selected[token] = (current, current_mode)
+        if coupled is not None:
+            previous_mirror, previous_mirror_mode = _regular_file(pinned.repository_root, coupled)
+            mirror, mirror_mode = _regular_file(repo_root, coupled)
+            if previous_mirror != previous or mirror != current or mirror_mode != previous_mirror_mode:
+                raise _refuse(f"the exact release-note bundle mirror or its mode differs: {coupled}")
+            selected[coupled] = (mirror, mirror_mode)
     delta = write_sets.compile_greenfield_repository_write_set(
         source_root=pinned.repository_root, staged_root=repo_root, publication_precondition=active,
     )

@@ -25,6 +25,7 @@ process.stdin.on('end', async () => {
   const published = [];
   const intents = [];
   const nodes = new Map();
+  const activityDetails = {tagName: 'DETAILS', open: false, parentElement: null};
   let readSnapshot;
   const plain = value => JSON.parse(JSON.stringify(value));
   const window = {
@@ -48,6 +49,14 @@ process.stdin.on('end', async () => {
     getElementById(id) {
       if (!nodes.has(id)) nodes.set(id, {
         innerHTML: '', dataset: {},
+        parentElement: id === 'kpi-grid' ? activityDetails : null,
+        closest(selector) {
+          assert.equal(selector, 'details');
+          for (let node = this; node; node = node.parentElement) {
+            if (node.tagName === 'DETAILS') return node;
+          }
+          return null;
+        },
         classList: {add() {}, remove() {}, toggle() {}},
         setAttribute() {},
       });
@@ -259,12 +268,15 @@ def test_compass_publishes_only_after_actual_render_completion(warning: str) -> 
 def test_compass_unavailable_runtime_publishes_degraded_without_fabricated_selection() -> None:
     _run_compass_js(
         """
+        const activityDetails = document.getElementById('kpi-grid').closest('details');
+        assert.equal(activityDetails.open, false);
         await renderCompassRuntime(params(), {payload: null, source: 'none'});
         assert.equal(published.length, 1);
         assert.equal(published[0].outcome, 'degraded');
         assert.equal(published[0].rendered, null);
         assert.equal(published[0].requested.workstream, 'B-007');
         assert.match(document.getElementById('kpi-grid').innerHTML, /Runtime Unavailable/);
+        assert.equal(activityDetails.open, true);
         assert.equal(document.body.dataset.surfaceReady, 'ready');
         assert.equal(intents.length, 0);
         """,

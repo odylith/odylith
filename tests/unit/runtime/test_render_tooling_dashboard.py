@@ -943,7 +943,11 @@ def test_render_tooling_dashboard_shows_release_spotlight_for_recent_upgrade(tmp
     assert "v1.2.2 -&gt; v1.2.3" in html
     assert "upgrade-spotlight-list" in html
     assert "Upgrade complete. v1.2.3 is live in this repo, and the full release note is ready on the right." not in html
-    assert "The shell refreshes immediately after upgrade so you stay on the current contract." not in html
+    detail = "The shell refreshes immediately after upgrade so you stay on the current contract."
+    assert html.count(detail) == 1
+    details_start = html.index('<details class="upgrade-spotlight-details">')
+    assert details_start < html.index(detail) < html.index("</details>", details_start)
+    assert '<details class="upgrade-spotlight-details" open' not in html
     assert '<p class="toolbar-version">v1.2.3</p>' in html
     assert 'id="toolbarVersionStoryLink"' not in html
     assert "What changed since v1.2.2?" not in html
@@ -1072,10 +1076,13 @@ def test_render_tooling_dashboard_release_note_prefers_highlights_over_full_body
     assert rc == 0
     html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
     assert "Highlight one." in html
-    assert long_paragraph not in html
+    assert html.count(long_paragraph) == 1
+    details_start = html.index('<details class="upgrade-spotlight-details">')
+    assert details_start < html.index(long_paragraph) < html.index("</details>", details_start)
+    assert '<details class="upgrade-spotlight-details" open' not in html
 
 
-def test_render_tooling_dashboard_includes_version_in_authored_release_hero_title(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+def test_render_tooling_dashboard_preserves_version_in_authored_release_details(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _seed_inputs(tmp_path)
     _seed_existing_odylith_truth(tmp_path)
     _seed_consumer_upgrade_spotlight(tmp_path)
@@ -1105,8 +1112,10 @@ def test_render_tooling_dashboard_includes_version_in_authored_release_hero_titl
 
     assert rc == 0
     html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
-    assert '<span class="upgrade-spotlight-title-copy">Trusted In Public</span>' in html
-    assert '<span class="upgrade-spotlight-title-version">v1.2.3</span>' in html
+    assert '<h2 id="upgradeSpotlightTitle" class="upgrade-spotlight-title">Trusted In Public</h2>' in html
+    assert '<details class="upgrade-spotlight-details"><summary>What changed</summary>' in html
+    assert "v1.2.2 -&gt; v1.2.3" in html
+    assert "upgrade-spotlight-title-version" not in html
 
 
 def test_render_tooling_dashboard_prunes_stale_release_note_pages(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
