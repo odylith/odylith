@@ -214,10 +214,16 @@ def test_render_mermaid_catalog_explains_diagram_and_moves_context_to_bottom_lis
     assert '<details class="diagram-guide-panel read-guide">' in html
     assert 'id="diagramReadGuide"' in html
     assert "function diagramReadGuide(diagram)" in html
+    assert 'diagram.diagram_boxes.filter((box) => box && typeof box === "object" && String(box.description ?? "").trim())' in html
     assert "const catalogGuide = String(diagram && diagram.read_guide ? diagram.read_guide : \"\").trim();" in html
-    assert "if (catalogGuide) {" in html
-    assert "Read this as a first-path rehearsal" in html
-    assert "Read this as a boundary map" in html
+    assert "return catalogGuide;" in html
+    assert "Read this as a first-path rehearsal" not in html
+    assert "Read this as a boundary map" not in html
+    assert ".diagram-guide-panel:has(> .summary:empty)" in html
+    assert ".diagram-guide-panel:has(> .read-guide-body:empty)" in html
+    assert ".artifact-group:has(> #ownerWorkstreamLinks:empty)" in html
+    assert ".artifact-group:has(> #activeWorkstreamLinks:empty)" in html
+    assert ".section:has(> .artifact-group > #ownerWorkstreamLinks:empty):has(> .artifact-group > #activeWorkstreamLinks:empty):has(> #historicalWorkstreamGroup[hidden])" in html
     assert "component cards to decode" not in html
 
 
@@ -239,7 +245,8 @@ def test_render_mermaid_catalog_explains_diagram_and_moves_context_to_bottom_lis
     assert "const componentTitleLookup = sanitizeLookupObject(tooltipLookup.component_titles);" in html
     assert "function componentDisplayName(value)" in html
     assert all(name not in html for name in ("componentResponsibilityText", "componentNameWords", "stripLeadingComponentName", "escapeRegExp"))
-    assert 'body.textContent = description.trim() ? description : "Named responsibility in this diagram.";' in html
+    assert "Named responsibility in this diagram." not in html
+    assert "body.textContent = description;" in html
     assert "component-token" in html
     assert "component-description" in html
     assert "grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));" in html
@@ -580,7 +587,7 @@ def test_atlas_scaffold_default_read_guide_names_diagram_and_components() -> Non
     assert "component cards to decode" not in guide
 
 
-def test_load_catalog_derives_container_and_inner_box_explanations(tmp_path: Path) -> None:
+def test_load_catalog_omits_unauthored_box_explanations(tmp_path: Path) -> None:
     repo_root = tmp_path
     (repo_root / "AGENTS.md").write_text("# Repo Root\n", encoding="utf-8")
     mmd_path = repo_root / "odylith" / "atlas" / "source" / "diagrams" / "sample.mmd"
@@ -636,14 +643,10 @@ def test_load_catalog_derives_container_and_inner_box_explanations(tmp_path: Pat
     )
 
     assert errors == []
-    boxes = diagrams[0]["diagram_boxes"]
-    assert [box["label"] for box in boxes] == ["Source truth", "Catalog", "Renderer"]
-    assert boxes[0]["role"] == "Container"
-    assert boxes[1]["role"] == "Source truth"
-    assert "product boundary for Atlas Box Rules" in boxes[0]["description"]
-    assert "Catalog stores the source information" in boxes[1]["description"]
-    assert "hands off" not in boxes[1]["description"]
-    assert "This box represents" not in boxes[1]["description"]
+    assert [box["label"] for box in diagrams[0]["diagram_boxes"]] == ["Source truth", "Catalog", "Renderer"]
+    assert all(box["role"] == box["description"] == "" for box in diagrams[0]["diagram_boxes"])
+    assert diagrams[0]["summary"] == "Shows the Atlas box explanation rule."
+    assert diagrams[0]["read_guide"] == ""
 
 
 def test_load_catalog_strips_markdown_emphasis_from_visible_payload_fields(tmp_path: Path) -> None:
@@ -717,10 +720,8 @@ def test_load_catalog_strips_markdown_emphasis_from_visible_payload_fields(tmp_p
     assert "**" not in rendered
     assert "__" not in rendered
     assert diagrams[0]["title"] == "Evidence Flow"
-    assert "Primary actor" in diagrams[0]["summary"]
-    assert "Outcome evidence" in diagrams[0]["summary"]
-    assert "Primary actor" in diagrams[0]["read_guide"]
-    assert "connected decision, action, proof, or recovery point" in diagrams[0]["read_guide"]
+    assert diagrams[0]["summary"] == "Primary actor moves a reviewed record into evidence."
+    assert diagrams[0]["read_guide"] == "Read from Primary actor to Outcome evidence."
     assert diagrams[0]["components"] == [
         {
             "name": "Review record",
@@ -728,8 +729,12 @@ def test_load_catalog_strips_markdown_emphasis_from_visible_payload_fields(tmp_p
         }
     ]
     by_label = {box["label"]: box for box in diagrams[0]["diagram_boxes"]}
-    assert "Primary actor" in by_label
+    assert set(by_label) == {"Primary actor", "Review record", "Outcome evidence"}
     assert by_label["Primary actor"]["role"] == "Actor"
+    assert by_label["Primary actor"]["description"] == (
+        "Primary actor starts with a concrete request and needs a visible outcome."
+    )
+    assert all(by_label[label]["role"] == by_label[label]["description"] == "" for label in ("Review record", "Outcome evidence"))
 
 
 def test_load_catalog_sanitizes_legacy_greenfield_component_descriptions(tmp_path: Path) -> None:
@@ -821,77 +826,53 @@ def test_load_catalog_sanitizes_legacy_greenfield_component_descriptions(tmp_pat
             "description": "Performs frame-level pitch tracking.",
         },
     ]
-    by_label = {box["label"]: box["description"] for box in diagrams[0]["diagram_boxes"]}
-    assert "Audio Capture And Pre-processing Service owns microphone" in by_label["Audio Capture And Pre-processing Service"]
-    assert "Pitch And Onset Detection Engine performs frame-level pitch tracking" in by_label["Pitch And Onset Detection Engine"]
+    assert [box["label"] for box in diagrams[0]["diagram_boxes"]] == [
+        "Audio Capture And Pre-processing Service", "Pitch And Onset Detection Engine", "Proof boundary",
+    ]
+    assert all(box["role"] == box["description"] == "" for box in diagrams[0]["diagram_boxes"])
 
 
-def test_atlas_graph_descriptions_nominalize_action_labeled_conditions() -> None:
-    boxes = atlas_box_explanations.extract_diagram_boxes_from_mermaid(
-        '\n'.join(
-            [
-                'flowchart LR',
-                '  w1["B-119 W1"] -->|proves| w2["B-120 W2"]',
-                '  w1 --> runner["Benchmark runner"]',
-                '  w2 -->|closes| w3["B-121 W3"]',
-            ]
-        )
+def test_atlas_inventory_keeps_labeled_relationships_as_graph_facts() -> None:
+    source = '\n'.join(
+        [
+            'flowchart LR',
+            '  w1["B-119 W1"] -->|proves| w2["B-120 W2"]',
+            '  w1 --> runner["Benchmark runner"]',
+            '  w2 -->|closes| w3["B-121 W3"]',
+        ]
     )
-    by_label = {box.label: box.description for box in boxes}
-    rendered = "\n".join(by_label.values())
+    found = atlas_box_explanations.extract_diagram_boxes_from_mermaid(source)
+    graph = atlas_diagram_intelligence.parse_mermaid_graph(source)
 
-    assert "based on the proof result" in by_label["B-119 W1"]
-    assert "advances when the close condition is satisfied" in by_label["B-120 W2"]
-    assert "using proves" not in rendered
-    assert "when closes is true" not in rendered
+    assert [box.label for box in found] == ["B-119 W1", "B-120 W2", "Benchmark runner", "B-121 W3"]
+    assert all(box.role == box.description == "" for box in found)
+    assert [(edge.source_id, edge.target_id, edge.label) for edge in graph.edges] == [
+        ("w1", "w2", "proves"), ("w1", "runner", ""), ("w2", "w3", "closes"),
+    ]
 
 
-def test_atlas_diagram_intelligence_explains_state_model_transitions() -> None:
+def test_atlas_diagram_intelligence_preserves_authored_state_model_copy() -> None:
     source = "\n".join(
         [
             "stateDiagram-v2",
             "  [*] --> Unknown",
             "  Unknown --> Monitored: sensor calibrated",
             "  Monitored --> NeedsWater: moisture below target",
-            "  Monitored --> NutrientDue: interval elapsed",
-            "  NeedsWater --> Dosing: reservoir available",
-            "  NutrientDue --> Dosing: diluted dose allowed",
-            "  Dosing --> AbsorptionWait: capped pump complete",
-            "  AbsorptionWait --> Stable: recheck inside band",
-            "  AbsorptionWait --> Blocked: still dry after limit",
-            "  NeedsWater --> Blocked: sensor or reservoir fault",
-            "  NutrientDue --> Blocked: reservoir or schedule fault",
-            "  Stable --> Monitored: next sample interval",
-            "  Blocked --> Monitored: owner recovery verified",
+            "  NeedsWater --> Blocked: sensor fault",
         ]
     )
-
+    summary = "Defines the first plant status transitions."
+    read_guide = "Stable status requires evidence."
     narrative = atlas_diagram_intelligence.build_diagram_narrative(
         title="Plant Care State Model",
         kind="state",
-        summary="Defines the first plant status transitions.",
-        read_guide="Stable status requires evidence.",
+        summary=summary,
+        read_guide=read_guide,
         source_text=source,
     )
-    boxes = atlas_box_explanations.extract_diagram_boxes_from_mermaid(source)
-    by_label = {box.label: box.description for box in boxes}
 
-    assert narrative.generated is True
-    assert "Unknown" in narrative.summary
-    assert "Monitored" in narrative.summary
-    assert "Dosing" in narrative.summary
-    assert "Blocked" in narrative.summary
-    assert "moisture below target" in narrative.summary
-    assert "Read this as a guarded loop" in narrative.read_guide
-    assert "At Monitored" in narrative.read_guide
-    assert "moisture below target leads to Needs Water" in narrative.read_guide
-    assert "Blocked means the system should stop" in narrative.read_guide
-    assert "entry responsibility" in by_label["Unknown"]
-    assert "decides between" in by_label["Monitored"]
-    assert "performs the bounded action" in by_label["Dosing"]
-    assert "stops normal progress" in by_label["Blocked"]
-    assert all("hands off" not in description for description in by_label.values())
-    assert all("This box represents" not in description for description in by_label.values())
+    assert vars(narrative) == {"summary": summary, "read_guide": read_guide}
+    assert len(atlas_diagram_intelligence.parse_mermaid_graph(source).edges) == 4
 
 
 def test_atlas_diagram_intelligence_preserves_useful_authored_migration_copy() -> None:
@@ -941,196 +922,109 @@ def test_atlas_diagram_intelligence_preserves_useful_authored_migration_copy() -
         source_text=source,
     )
     boxes = atlas_box_explanations.extract_diagram_boxes_from_mermaid(source)
-    roles = {box.label: box.role for box in boxes}
-
-    assert narrative.generated is False
     assert narrative.summary == summary
     assert narrative.read_guide == read_guide
-    assert roles["Operator command"] == "Start"
-    assert roles["MigrationPlan"] == "Decision"
-    assert roles["Upgrade/apply execution"] == "Action"
-    assert roles["Durable migration ledger"] == "Evidence"
-    assert roles["Fail closed before runtime mutation"] == "Safety stop"
+    assert {box.label for box in boxes} >= {
+        "Operator command", "MigrationPlan", "Upgrade/apply execution",
+        "Durable migration ledger", "Fail closed before runtime mutation",
+    }
+    assert all(box.role == box.description == "" for box in boxes)
 
 
-def test_atlas_diagram_intelligence_generates_human_flow_copy_without_label_soup() -> None:
-    source = "\n".join(
-        [
-            "flowchart TB",
-            '  operator["Operator command<br/>install / upgrade / reinstall / doctor / release migration-gate"]',
-            '  resolver["Resolve target release<br/>version, manifest, schema, verification inputs"]',
-            '  classifier["Repo scenario classifier<br/>pin, launcher, state, runtime pointer, ledger, source-local, legacy roots"]',
-            '  registry["Migration registry<br/>MigrationDefinition contracts"]',
-            '  planner["MigrationPlan<br/>selected, skipped, blocked, satisfied-unrecorded, ledger-stale"]',
-            '  dryrun["Dry-run and JSON report<br/>scenario, write set, rollback scope, plan fingerprint"]',
-            '  apply["Upgrade/apply execution<br/>uses the same plan"]',
-            '  ledger["Durable migration ledger<br/>predicate evidence, planned/actual writes, verification"]',
-            '  doctor["Doctor observability<br/>pending, blocked, stale, repair-only cleanup"]',
-            '  gate["Release migration gate<br/>manifest coverage, fixtures, bypass scan"]',
-            '  block["Fail closed before runtime mutation"]',
-            "  operator --> resolver --> classifier --> registry --> planner",
-            "  planner --> dryrun",
-            "  planner --> apply",
-            "  planner --> doctor",
-            "  planner --> gate",
-            '  planner -->|"blocked or ledger_stale"| block',
-            '  apply -->|"selected automatic migration"| ledger',
-            '  gate -->|"missing definition, missing fixture, direct bypass"| block',
-        ]
-    )
-
-    narrative = atlas_diagram_intelligence.build_diagram_narrative(
-        title="Migration Runtime Upgrade Transaction Flow",
-        kind="flowchart",
-        summary="Shows a flow.",
-        read_guide="Read the arrows.",
-        source_text=source,
-    )
-
-    copy = f"{narrative.summary}\n{narrative.read_guide}"
-    assert narrative.generated is True
-    assert "This diagram follows" not in copy
-    assert "none named" not in copy
-    assert "This view shows" not in copy
-    assert "This diagram shows" not in copy
-    assert "shows how" not in copy.casefold()
-    assert "MigrationPlan as the owned boundary" in narrative.summary
-    assert "Resolve target release" in narrative.summary
-    assert "Fail closed before runtime mutation" in narrative.summary
-    assert "Durable migration ledger" in narrative.summary
-    assert "Use this view to separate inputs, owned responsibilities, and release evidence" in narrative.read_guide
-    assert "Check Durable migration ledger" in narrative.read_guide
-    assert "Check Resolve target release" not in narrative.read_guide
-    assert "selected, skipped, blocked, satisfied-unrecorded" not in narrative.summary
-
-
-def test_atlas_diagram_intelligence_uses_late_node_labels_in_context_copy() -> None:
+def test_atlas_diagram_intelligence_does_not_invent_flow_copy_from_graph() -> None:
     source = "\n".join(
         [
             "flowchart LR",
-            '  actor1["Request owner"] --> component1',
-            '  actor2["Reviewer"] --> component1',
-            '  component1["Input Normalization Adapter"]',
-            '  component2["Candidate Detection Service"]',
-            "  component1 --> component2",
-            '  component3["Review and Approval Flow"]',
-            "  component1 --> component3",
-            '  component4["Audit Record"]',
-            "  component1 --> component4",
-            '  external1["External source"] --> component1',
+            '  source["Source verification note: bytes and mode 0640"] --> copier',
+            '  copier["Archive Copier: write exact bytes"] --> target',
+            '  target["New target note: current mode 0644"] --> verify',
+            '  verify["Compare SHA-256 and permission mode"] --> pass',
+            '  verify --> fail["Mode preservation fails: planned fix"]',
         ]
     )
-
     narrative = atlas_diagram_intelligence.build_diagram_narrative(
-        title="System Context View",
+        title="Archive record copy and permission verification",
         kind="flowchart",
-        summary=(
-            "System Context View moves Request owner to Component1, where the path splits. Component1 sends normal "
-            "work toward Candidate Detection Service, Review and Approval Flow, and Audit Record."
-        ),
-        read_guide=(
-            "Read the main spine first: Request owner -> Component1. At Component1, the available next "
-            "responsibilities are Candidate Detection Service, Review and Approval Flow, and Audit Record. "
-            "Read Audit Record as the evidence boundary."
-        ),
+        summary="",
+        read_guide="",
         source_text=source,
     )
 
-    copy = f"{narrative.summary}\n{narrative.read_guide}"
-    assert narrative.generated is True
-    assert "Component1" not in copy
-    assert "main spine" not in copy
-    assert "where the path splits" not in copy
-    assert "Input Normalization Adapter as the owned boundary" in narrative.summary
-    assert "Request owner, Reviewer, and External source" in narrative.summary
-    assert "Candidate Detection Service" in narrative.summary
-    assert "Review and Approval Flow" in narrative.summary
-    assert "Audit Record" in narrative.summary
-    assert "Use this view to separate inputs, owned responsibilities, and release evidence" in narrative.read_guide
-    assert "Boxes pointing into Input Normalization Adapter" in narrative.read_guide
-    assert "Boxes leaving Input Normalization Adapter" in narrative.read_guide
-    assert "Check Audit Record before treating the path as release-ready" in narrative.read_guide
+    assert narrative == atlas_diagram_intelligence.DiagramNarrative("", "")
+    assert len(atlas_diagram_intelligence.parse_mermaid_graph(source).edges) == 5
 
 
-def test_atlas_diagram_intelligence_replaces_legacy_greenfield_sequence_dump() -> None:
+def test_atlas_diagram_intelligence_keeps_d001_source_summary_without_label_matching() -> None:
+    source = "\n".join(
+        [
+            "flowchart LR",
+            '  source["Source verification note: bytes and mode 0640"] --> copier',
+            '  copier["Archive Copier: write exact bytes"] --> target',
+            '  target["New target note: current mode 0644"] --> verify',
+            '  verify["Compare SHA-256 and permission mode"] --> pass',
+        ]
+    )
+    summary = (
+        "A local single-file copy moves exact note bytes to a target, then compares permissions "
+        "against the source. The observed current mode mismatch remains an explicit verification failure."
+    )
+    narrative = atlas_diagram_intelligence.build_diagram_narrative(
+        title="Archive record copy and permission verification",
+        kind="flowchart",
+        summary=summary,
+        read_guide="",
+        source_text=source,
+    )
+
+    assert narrative.summary == summary
+    assert narrative.read_guide == ""
+    assert "controlled decision at" not in narrative.summary
+
+
+def test_atlas_diagram_intelligence_preserves_legacy_greenfield_source_facts() -> None:
+    summary = (
+        "Walk the accepted first path in product terms: The first complete path the product must prove is the solo "
+        "monophonic instrument single take, offline analysis flow: 1. User opens LiveScore and taps Record. "
+        "2. User plays a roughly 30-second monophonic line. 3. User taps Stop."
+    )
+    read_guide = (
+        "Read First Path Sequence from top to bottom. Each lane is an actor or component; messages are calls, "
+        "handoffs, or proof events. Use the component cards to decode Audio Capture before following the links."
+    )
     narrative = atlas_diagram_intelligence.build_diagram_narrative(
         title="First Path Sequence",
         kind="sequenceDiagram",
-        summary=(
-            "Walk the accepted first path in product terms: The first complete path the product must prove is the solo "
-            "monophonic instrument single take, offline analysis flow: 1. User opens LiveScore and taps Record. "
-            "2. User plays a roughly 30-second monophonic line. 3. User taps Stop."
-        ),
-        read_guide=(
-            "Read First Path Sequence from top to bottom. Each lane is an actor or component; messages are calls, "
-            "handoffs, or proof events. Use the component cards to decode Audio Capture before following the links."
-        ),
+        summary=summary,
+        read_guide=read_guide,
         source_text="sequenceDiagram\n  participant A as User\n  participant B as Product\n  A->>B: start\n",
     )
 
-    copy = f"{narrative.summary}\n{narrative.read_guide}"
-    assert narrative.generated is True
-    assert "Walk the accepted first path" not in copy
-    assert "User opens LiveScore" not in copy
-    assert "component cards to decode" not in copy
-    assert "component handoff" not in copy
-    assert "messages are calls" not in copy
-    assert "First Path Sequence shows what the first release must prove" in narrative.summary
-    assert "solo monophonic instrument single take" in narrative.summary
-    assert narrative.read_guide.startswith("Start with the first product action.")
-    assert "named product responsibility" in narrative.read_guide
+    assert narrative.summary == summary
+    assert narrative.read_guide == read_guide
+    assert "User opens LiveScore and taps Record" in narrative.summary
+    assert "Start with the first product action" not in narrative.read_guide
 
 
-def test_atlas_diagram_intelligence_explains_surface_dag_control_and_proof_boundary() -> None:
+def test_atlas_diagram_intelligence_does_not_claim_control_or_proof_for_empty_source_copy() -> None:
     source = "\n".join(
         [
             "flowchart TB",
-            '  sync["Selective sync or owned-surface refresh"]',
-            '  order["Surface order"]',
-            '  fingerprint["Surface fingerprint DAG"]',
-            '  reusable{"Outputs reusable?"}',
-            '  reuse["Reuse current rendered bytes"]',
-            '  workers["Per-surface workers"]',
-            '  compass["Compass DAG"]',
-            '  radar["Radar DAG"]',
-            '  atlasChoice{"Atlas refresh mode?"}',
-            '  atlasSync["Atlas sync"]',
-            '  atlasRender["Atlas render"]',
-            '  registry["Registry DAG"]',
-            '  accountability["Public accountability"]',
-            '  browser["Surface browser matrix"]',
-            '  check["Selective sync + sync --check-only"]',
-            "  sync --> order --> fingerprint --> reusable",
-            '  reusable -- "yes" --> reuse',
-            '  reusable -- "no" --> workers',
-            "  workers --> compass",
-            "  workers --> radar",
-            "  workers --> atlasChoice",
-            "  workers --> registry",
-            '  atlasChoice -- "--atlas-sync" --> atlasSync --> accountability',
-            '  atlasChoice -- "render only" --> atlasRender --> browser',
-            "  registry --> check",
+            '  input["Selected source"] --> control',
+            '  control{"Control choice?"} -->|"ready"| proof',
+            '  control -->|"blocked"| stop',
+            '  proof["Proof receipt"] --> outcome',
         ]
     )
-
     narrative = atlas_diagram_intelligence.build_diagram_narrative(
-        title="Discipline Surface DAGs And Release Proof",
+        title="Release path",
         kind="flowchart",
-        summary="This view shows how Odylith Discipline state reaches workers.",
-        read_guide="Read from Odylith Discipline state through the arrows.",
+        summary="",
+        read_guide="",
         source_text=source,
     )
 
-    copy = f"{narrative.summary}\n{narrative.read_guide}"
-    assert narrative.generated is True
-    assert "This view shows" not in copy
-    assert "Outputs reusable?" in narrative.summary
-    assert "Per-surface workers is the fan-out point" in narrative.summary
-    assert "Public accountability" in narrative.summary
-    assert "Surface browser matrix" in narrative.summary
-    assert "--atlas-sync\" --> atlasSync" not in copy
-    assert "Use the labeled edges as gates" in narrative.read_guide
-    assert "before treating the path as release-ready" in narrative.read_guide
+    assert narrative.summary == ""
+    assert narrative.read_guide == ""
 
 
 def test_load_catalog_rejects_thin_diagram_box_copy(tmp_path: Path) -> None:

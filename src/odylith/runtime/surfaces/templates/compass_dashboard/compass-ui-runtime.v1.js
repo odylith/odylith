@@ -193,14 +193,14 @@
         copyButton.setAttribute("tabindex", "-1");
       }
       showBriefCopyStatus("");
-      document.getElementById("digest-list").innerHTML = '<div class="empty">Runtime data unavailable.</div>';
+      document.getElementById("digest-list").innerHTML = '<div class="empty">Current information is unavailable.</div>';
       const executionWavesHost = document.getElementById("execution-waves-host");
       if (executionWavesHost) executionWavesHost.innerHTML = "";
       const releaseGroupsHost = document.getElementById("release-groups-host");
       if (releaseGroupsHost) releaseGroupsHost.innerHTML = "";
       document.getElementById("current-workstreams").innerHTML = '<p class="empty">Run sync to regenerate Compass runtime snapshots.</p>';
-      document.getElementById("timeline").innerHTML = '<div class="empty">No timeline data available.</div>';
-      document.getElementById("risk-list").innerHTML = '<p class="empty">No risk payload available.</p>';
+      document.getElementById("timeline").innerHTML = '<div class="empty">Timeline information is unavailable.</div>';
+      document.getElementById("risk-list").innerHTML = '<p class="empty">Risk information is unavailable.</p>';
       markCompassSurfaceReady(true);
       publishCompassRender(null, "degraded");
     }
@@ -290,7 +290,7 @@
     async function renderCompassRuntime(rawState, runtime) {
       markCompassSurfaceReady(false);
       if (!runtime.payload) {
-        showFallback("Compass runtime files were not found. Run `odylith sync --repo-root . --force`.");
+        showFallback("Compass information could not be loaded. Refresh it with `odylith sync --repo-root . --force`.");
         return { brief: null, state: rawState };
       }
       const resolved = await resolveCompassRuntimeView(rawState, runtime);

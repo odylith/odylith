@@ -421,7 +421,7 @@ def test_render_compass_dashboard_emits_proof_resolution_ui_text(tmp_path: Path,
 
     assert rc == 0
     workstreams_js = (repo_root / "odylith" / "compass" / "compass-workstreams.v1.js").read_text(encoding="utf-8")
-    assert "No dominant proof lane is resolved for this workstream yet." in workstreams_js
+    assert "Verification status is not yet determined." in workstreams_js
     assert "Ambiguous across" in workstreams_js
 
 

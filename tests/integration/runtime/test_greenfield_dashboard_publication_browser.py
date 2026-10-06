@@ -26,6 +26,12 @@ from tests.integration.runtime.surface_browser_test_support import (
 
 
 SOURCE = Path(__file__).resolve().parents[3]
+SOURCE_PUBLICATION = state.read_active_publication(SOURCE)
+ASSET_SOURCE = (
+    store.pin_active_greenfield_generation(SOURCE).repository_root
+    if SOURCE_PUBLICATION is not None
+    else SOURCE
+)
 SURFACES = {
     "project": "odylith/index.html",
     "registry": "odylith/registry/registry.html",
@@ -80,7 +86,7 @@ def _surface_readiness(page, *, require_marker=False):
             frame.locator('body[data-surface-ready="ready"]').wait_for(timeout=15000)
             frame.locator("#risk-list .risk, #risk-list .empty").first.wait_for(timeout=15000)
             frame.locator("#digest-list > *").first.wait_for(timeout=15000)
-            assert "Runtime data unavailable." not in frame.locator("#digest-list").inner_text()
+            assert "Current information is unavailable." not in frame.locator("#digest-list").inner_text()
             assert "Runtime Unavailable" not in frame.locator("#kpi-grid").inner_text()
     return markers
 
@@ -94,9 +100,9 @@ def _local_request_path(url, *, protocol, base_url):
     else:
         if not url.startswith(base_url + "/"):
             return None
-        candidate = (SOURCE / unquote(parsed.path).lstrip("/")).resolve()
+        candidate = (ASSET_SOURCE / unquote(parsed.path).lstrip("/")).resolve()
     try:
-        candidate.relative_to(SOURCE)
+        candidate.relative_to(ASSET_SOURCE)
     except ValueError as exc:
         raise AssertionError(f"browser asset escaped the repository: {url}") from exc
     if candidate.is_symlink() or not candidate.is_file():
@@ -106,9 +112,9 @@ def _local_request_path(url, *, protocol, base_url):
 
 def _asset_closure(protocol):
     requested = []
-    server = _static_server(root=SOURCE) if protocol == "http" else nullcontext(None)
+    server = _static_server(root=ASSET_SOURCE) if protocol == "http" else nullcontext(None)
     with server as base_url:
-        entry_url = base_url + "/odylith/index.html" if base_url else (SOURCE / "odylith/index.html").as_uri()
+        entry_url = base_url + "/odylith/index.html" if base_url else (ASSET_SOURCE / "odylith/index.html").as_uri()
         for _pw, browser in _browser():
             context = browser.new_context(viewport={"width": 1440, "height": 1000})
             try:
@@ -124,7 +130,7 @@ def _asset_closure(protocol):
             for url in requested
             if (path := _local_request_path(url, protocol=protocol, base_url=base_url)) is not None
         }
-    assert SOURCE / "odylith/index.html" in assets
+    assert ASSET_SOURCE / "odylith/index.html" in assets
     closure_bytes = sum(path.stat().st_size for path in assets)
     assert closure_bytes <= MAX_ASSET_CLOSURE_BYTES, (
         f"browser asset closure is {closure_bytes} bytes, above {MAX_ASSET_CLOSURE_BYTES}"
@@ -382,7 +388,7 @@ def _protected_dashboard(tmp_path, protocol):
     assets, closure_bytes = _asset_closure(protocol)
     sources = {}
     for source in sorted(assets):
-        relative = source.relative_to(SOURCE)
+        relative = source.relative_to(ASSET_SOURCE)
         target = root / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, target)
@@ -526,4 +532,4 @@ def test_actual_dashboard_remains_one_generation_after_killed_writer_before_reco
                     "after_state": "aborted",
                 }
     assert len(all_rows) == 8
-    assert {relative: _hash(SOURCE / relative) for relative in source_hashes} == source_hashes
+    assert {relative: _hash(ASSET_SOURCE / relative) for relative in source_hashes} == source_hashes

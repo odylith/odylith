@@ -381,7 +381,7 @@ def _compass_degraded_state_issues(
         frame = page.frame_locator("#frame-compass")
         fallback = frame.locator("#kpi-grid", has_text="Runtime Unavailable")
         fallback.wait_for(timeout=timeout_ms)
-        frame.locator("#digest-list", has_text="Runtime data unavailable").wait_for(timeout=timeout_ms)
+        frame.locator("#digest-list", has_text="Current information is unavailable").wait_for(timeout=timeout_ms)
         issues.extend(_layout_issues(frame.locator("body"), label="compass degraded state"))
     except Exception as exc:
         issues.append(f"browser surface compass degraded state failed render: {type(exc).__name__}: {exc}")

@@ -84,7 +84,7 @@ def test_batch_provider_failure_keeps_local_facts_visible_without_history(tmp_pa
                         if reason == "provider_deferred":
                             assert card.get_by_text("Local runtime facts", exact=True).count() == 1
                             assert facts.locator(".brief-fallback-title").count() == 0
-                            assert failure["diagnostics"]["message"] == "A narrated brief is not available for this view."
+                            assert failure["diagnostics"]["message"] == "A summary is not available for this view."
                         else:
                             assert facts.locator(".brief-fallback-title").text_content() == "Local runtime facts"
                             assert facts.locator(".brief-fallback-title").inner_text() == "LOCAL RUNTIME FACTS"
@@ -135,9 +135,9 @@ def test_activity_counts_keep_brief_primary_and_runtime_failure_visible(tmp_path
                             assert len(missing_runtime_reads) == 2
                             assert disclosure.get_attribute("open") is not None
                             assert compass.get_by_text("Runtime Unavailable", exact=True).is_visible()
-                            assert compass.locator("#kpi-grid .muted").inner_text() == "Compass runtime files were not found. Run `odylith sync --repo-root . --force`."
-                            assert compass.get_by_text("Runtime data unavailable.", exact=True).is_visible()
-                            assert compass.get_by_text("No risk payload available.", exact=True).is_visible()
+                            assert compass.locator("#kpi-grid .muted").inner_text() == "Compass information could not be loaded. Refresh it with `odylith sync --repo-root . --force`."
+                            assert compass.get_by_text("Current information is unavailable.", exact=True).is_visible()
+                            assert compass.get_by_text("Risk information is unavailable.", exact=True).is_visible()
                         else:
                             assert disclosure.get_attribute("open") is None
                             assert not compass.locator("#kpi-grid").is_visible()

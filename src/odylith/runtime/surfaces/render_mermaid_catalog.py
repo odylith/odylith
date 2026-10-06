@@ -2387,7 +2387,7 @@ __ODYLITH_ATLAS_VIEWER_RUNTIME__
         const body = document.createElement("p");
         body.className = "component-description";
         const description = String(component.description || "");
-        body.textContent = description.trim() ? description : "Named responsibility in this diagram.";
+        body.textContent = description;
 
         headingGroup.appendChild(heading);
         if (rawName && displayName && rawName !== displayName) {
@@ -2397,7 +2397,7 @@ __ODYLITH_ATLAS_VIEWER_RUNTIME__
           headingGroup.appendChild(token);
         }
         card.appendChild(headingGroup);
-        card.appendChild(body);
+        if (description.trim()) card.appendChild(body);
         componentListEl.appendChild(card);
       });
     }

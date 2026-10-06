@@ -1,5 +1,71 @@
 Status: In progress
 
+## V41 Atlas empty-description correction (2026-10-06)
+
+Atlas removes the final generic component fallback “Named responsibility in this
+diagram.” and omits empty descriptions. Targeted render assertion passes; authored
+narrative, graph labels, raw metadata, overrides, validation, and engine behavior
+remain as recorded. This is source correction only; successor installed matrix,
+CI, and release gates remain open. Evidence:
+`/private/tmp/odylith-v41-atlas-empty-component-description-20261006.log`.
+
+## V41 guarded D-046 catalog recovery outcome (2026-10-06)
+
+Selective JSON catalog and force-full attempts correctly refused without an
+authorized owner. After catalog-only reviewed restoration, six exact authored
+records plus the Mermaid source published in 57.638s with 47 fresh/zero stale;
+the first-class Atlas update then passed in 21.218s, rebuilt D-046, restored its
+summary/read-guide and full watch/code lists, and cleared the obsolete fingerprint
+while all 46 other rows remained exact. The temporary validation-only
+`atlas_box_terms` file was deleted again. The manual catalog fix was never
+published as authored JSON and remains external history. This resolves the route,
+not release or completion status. Evidence:
+`/private/tmp/odylith-v41-final-source-freeze-20261006/authored-publication-after-catalog-restoration.json`
+and `canonical-d046-catalog-update.json` in the same directory.
+
+## V41 canonical Atlas reference failure (2026-10-06)
+
+Canonical full sync stops `RC=2` at Atlas because D-046 `related_code` and
+`change_watch_paths` still reference deleted `atlas_box_terms.py`, including its
+reviewed watch fingerprints. Remove only that obsolete link through the Atlas
+update path and align the `.mmd` and catalog timing. Preserve the failed sync and
+no-release boundary. Diagram timing remains obsolete 180 while accepted Standard
+is 315 (300 shared plus 15 completion); separate inventory/verifier and advisory
+profiles remain unchanged. Final reviewed source/test cleanup is net -2,311;
+the preceding Compass note’s -2,309 count is historical. Evidence:
+`/private/tmp/odylith-v41-final-source-freeze-20261006/canonical-full-sync.log`
+and reviewed patch SHA-256 `ad21e57bb7a0ff3e16d5388c694811d714f8732d1202c5a98eaefa934e06a4c9`.
+
+## V41 Atlas inventory-tail implementation boundary (2026-10-06)
+
+Atlas now keeps the complete source label inventory as machine payload with empty
+unknown roles or descriptions. Only authored summary, read-guide, and box copy
+are visible; graph validation, engines, raw labels, author overrides, and history
+remain. Legacy prose helpers, dead modules, and obsolete-term tests are removed
+across nine paths (net -2,325 lines); 67 impacted tests pass. Earlier source
+browser receipts apply to the prior patch, so a successor installed matrix is
+still required. Evidence: `/private/tmp/odylith-v41-atlas-inventory-tail-20261006/final-handoff.json`
+(SHA-256 `3f5c06dfb9ec30111f054ce10707e067aa624584493db45d5402df65a285c59d`).
+
+## V40 installed Atlas narrative defect (2026-10-06)
+
+The frozen v40 installed review passes upgrade and semantic checkpoints, but
+actual desktop Atlas prose remains mechanically generated: the summary repeats
+“Source verification note” and box descriptions restate graph labels with stock
+role language. Layout checks do not satisfy the required human narrative bar.
+Suppress ungrounded generated summary and box boilerplate while keeping authored
+explanations, diagram labels, and source metadata accessible. This is an open
+presentation correction, not installed-browser or release credit. Screenshot:
+`/private/tmp/odylith-greenfield-v14-to-v40-migration-20261006/upgrade/installed-browser-once/screenshots/desktop-atlas-normal.png`.
+
+Installed v40 degraded views also expose machine phrases such as “No risk payload
+available,” “Runtime data unavailable,” “Compass runtime files were not found,”
+and “No dominant proof lane is resolved.” Replace them with direct human wording:
+“Risk information is unavailable,” “Current information is unavailable,” and
+“Verification status is not yet determined,” while retaining actual unknown or
+unavailable state and the existing recovery command. This is copy-only; it does
+not change history, authority, schema, model, feature, or proof framework.
+
 ## V40 final human-content source proof (2026-10-06)
 
 Current source proof passes Project 54 focused units plus eight browser cells,

@@ -1734,7 +1734,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         return `Proof state is ambiguous across multiple blocker lanes${{laneIds.length ? `: ${{laneIds.join(", ")}}` : ""}}.`;
       }}
       if (state === "none") {{
-        return "No dominant proof lane is resolved for this bug yet.";
+        return "Verification status is not yet determined.";
       }}
       return "";
     }}

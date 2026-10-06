@@ -677,6 +677,17 @@
       min-width: 0;
     }
 
+    .diagram-guide-panel:has(> .summary:empty),
+    .diagram-guide-panel:has(> .read-guide-body:empty),
+    .diagram-guide-grid:not(:has(.summary:not(:empty), .read-guide-body:not(:empty))) {
+      display: none;
+    }
+
+    .diagram-guide-grid:has(.summary:empty),
+    .diagram-guide-grid:has(.read-guide-body:empty) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
     .diagram-guide-panel {
       display: grid;
       align-content: start;
@@ -905,6 +916,12 @@
 
     .artifact-group:last-child {
       margin-bottom: 0;
+    }
+
+    .artifact-group:has(> #ownerWorkstreamLinks:empty),
+    .artifact-group:has(> #activeWorkstreamLinks:empty),
+    .section:has(> .artifact-group > #ownerWorkstreamLinks:empty):has(> .artifact-group > #activeWorkstreamLinks:empty):has(> #historicalWorkstreamGroup[hidden]) {
+      display: none;
     }
 
     .artifact-label {
@@ -1539,7 +1556,7 @@
   }
 })();
 </script>
-  <script id="catalogData" src="mermaid-payload.v1.js?v=30514d3358b2"></script>
+  <script id="catalogData" src="mermaid-payload.v1.js?v=6feace59857f"></script>
   <script>
 (() => {
   'use strict';
@@ -1664,6 +1681,6 @@
   window.OdylithFrameBridge = {surface, frame};
 })();
 </script>
-  <script src="mermaid-app.v1.js?v=30514d3358b2"></script>
+  <script src="mermaid-app.v1.js?v=6feace59857f"></script>
 </body>
 </html>

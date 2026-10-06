@@ -16,6 +16,25 @@ architecture evidence that Context Engine consumes for topology-sensitive
 grounding.
 
 ## Scope And Non-Goals
+### Catalog reference integrity
+
+Atlas catalog related-code and change-watch paths must resolve to existing
+sources. A deleted owner requires an explicit diagram update and matching Mermaid
+catalog timing; review fingerprints must not retain the deleted path.
+
+### Empty component descriptions
+
+Atlas omits empty component descriptions and does not substitute generic
+responsibility prose. Authored narrative, graph labels, raw metadata, and author
+overrides remain available through their existing paths.
+
+### Inventory-tail display boundary
+
+Complete source label inventory remains machine payload. Unknown roles and
+descriptions render no visible prose; visible narrative is limited to authored
+summary, read-guide, and boxes. Raw labels, author overrides, graph validation,
+engines, and history remain accessible through their existing paths.
+
 ### Graph-fact fallback prose
 
 Atlas fallback description prose may state an existing graph fact. If no such

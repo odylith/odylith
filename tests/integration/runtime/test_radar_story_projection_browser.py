@@ -220,20 +220,27 @@ def test_resize_keeps_the_visible_workstream_anchored(browser_context, select_vi
         selected = page.locator(f'button[data-idea-id="{selected_id}"]')
         if select_visible:
             selected.click()
-        assert ("active" in selected.get_attribute("class").split()) == select_visible
-        offset = selected.evaluate("node => node.getBoundingClientRect().top - node.closest('#list').getBoundingClientRect().top")
+        measure = """(list, selectedId) => {
+            const rows=[...list.querySelectorAll('.row')];
+            const matches=rows.filter(row => row.dataset.ideaId === selectedId);
+            if (matches.length !== 1) return {count:matches.length};
+            const row=matches[0], box=row.getBoundingClientRect(), clip=list.getBoundingClientRect();
+            return {count:1, active:row.classList.contains('active'), offset:box.top-clip.top,
+                visible:box.top >= clip.top && box.bottom <= clip.bottom, rowCount:rows.length};
+        }"""
+        initial = page.locator("#list").evaluate(measure, selected_id)
+        assert initial["count"] == 1, initial
+        assert initial["active"] == select_visible, initial
+        offset = initial["offset"]
         for width in (430, 1440):
             page.set_viewport_size({"width": width, "height": 932})
             page.wait_for_timeout(100)
-            assert selected.count() == 1
-            actual = selected.evaluate("""node => {
-            const box=node.getBoundingClientRect(), clip=node.closest('#list').getBoundingClientRect();
-            return {offset:box.top-clip.top, visible:box.top >= clip.top && box.bottom <= clip.bottom};
-        }""")
+            actual = page.locator("#list").evaluate(measure, selected_id)
+            assert actual["count"] == 1, actual
             assert actual["visible"], actual
             assert abs(actual["offset"] - offset) <= 2, (offset, actual)
-            assert ("active" in selected.get_attribute("class").split()) == select_visible
-            assert page.locator("#list .row").count() < len(entries)
+            assert actual["active"] == select_visible, actual
+            assert actual["rowCount"] < len(entries), actual
         _assert_clean_page(page, observation)
 
 

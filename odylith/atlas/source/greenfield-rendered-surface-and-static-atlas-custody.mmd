@@ -25,7 +25,7 @@ flowchart LR
       direction TB
       product_parser["Product semantic owners<br/>Typed graph validator and<br/>Mermaid graph parser"]
       evaluator["Evaluator adapters<br/>Reuse product owners instead of<br/>duplicating phrase or arrow rules"]
-      strict_gate["Product qualification gates<br/>90 / 120 / 150-second proposal targets are advisory<br/>180-second operational safety bound<br/>Commit remains under 60 seconds"]
+      strict_gate["Product qualification gates<br/>90 / 120 / 150-second proposal targets are advisory<br/>Gate and candidate share 300 seconds plus 15 for completion<br/>Inventory 300 seconds; verifier 120 seconds separately<br/>Commit remains under 60 seconds"]
       confidence["Separate confidence report<br/>Intervals explain evidence strength<br/>without weakening hard gates"]
       retain["Retained case package<br/>Completed review: candidate outcome + receipt<br/>Unavailable or late review: attempt/failure custody only<br/>Logs, screenshots, DOM, and manifests before cleanup"]
       cleanup["Temporary project cleanup<br/>Only after retained evidence is sealed"]

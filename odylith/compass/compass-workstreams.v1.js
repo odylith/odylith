@@ -320,7 +320,7 @@
         pushRow("Proof state", `Ambiguous across ${resolutionLaneIds.join(", ") || "multiple lanes"}`);
       }
       if (!String(proofState.current_blocker || "").trim() && resolutionState === "none") {
-        pushRow("Proof state", "No dominant proof lane is resolved for this workstream yet.");
+        pushRow("Proof state", "Verification status is not yet determined.");
       }
       if (allowedNextWork.length) {
         pushRow("Allowed next work", allowedNextWork.join(", "));

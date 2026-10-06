@@ -519,7 +519,7 @@ def test_render_casebook_dashboard_emits_proof_control_panel_contract(tmp_path: 
     assert "Technical evidence" in app_js
     assert "Proof Control Panel" not in app_js
     assert "Pinned blocker, frontier, and proof tier for this bug lane." not in app_js
-    assert "No dominant proof lane is resolved for this bug yet." in app_js
+    assert "Verification status is not yet determined." in app_js
     assert "Proof state is ambiguous across multiple blocker lanes" in app_js
     assert "Local HEAD" in app_js
     assert '<details class="detail-disclosure"><summary class="disclosure-title">Technical evidence</summary>' in app_js

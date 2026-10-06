@@ -43,6 +43,17 @@ DETAIL_LAYOUT_CSS = r"""
       min-width: 0;
     }
 
+    .diagram-guide-panel:has(> .summary:empty),
+    .diagram-guide-panel:has(> .read-guide-body:empty),
+    .diagram-guide-grid:not(:has(.summary:not(:empty), .read-guide-body:not(:empty))) {
+      display: none;
+    }
+
+    .diagram-guide-grid:has(.summary:empty),
+    .diagram-guide-grid:has(.read-guide-body:empty) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
     .diagram-guide-panel {
       display: grid;
       align-content: start;
@@ -240,6 +251,12 @@ DETAIL_LAYOUT_CSS = r"""
 
     .artifact-group:last-child {
       margin-bottom: 0;
+    }
+
+    .artifact-group:has(> #ownerWorkstreamLinks:empty),
+    .artifact-group:has(> #activeWorkstreamLinks:empty),
+    .section:has(> .artifact-group > #ownerWorkstreamLinks:empty):has(> .artifact-group > #activeWorkstreamLinks:empty):has(> #historicalWorkstreamGroup[hidden]) {
+      display: none;
     }
 
     .artifact-label {
@@ -473,7 +490,7 @@ DETAIL_RUNTIME_HELPERS_JS = r"""
     function renderDiagramBoxes(diagram, sectionEl, listEl) {
       listEl.replaceChildren();
       const boxes = Array.isArray(diagram.diagram_boxes)
-        ? diagram.diagram_boxes.filter((box) => box && typeof box === "object")
+        ? diagram.diagram_boxes.filter((box) => box && typeof box === "object" && String(box.description ?? "").trim())
         : [];
       sectionEl.hidden = !boxes.length;
       boxes.forEach((box, index) => {
@@ -547,19 +564,6 @@ DETAIL_RUNTIME_HELPERS_JS = r"""
 
     function diagramReadGuide(diagram) {
       const catalogGuide = String(diagram && diagram.read_guide ? diagram.read_guide : "").trim();
-      if (catalogGuide) {
-        return catalogGuide;
-      }
-      const kind = String(diagram && diagram.kind ? diagram.kind : "").trim().toLowerCase();
-      if (kind.includes("sequence")) {
-        return "Read this as a first-path rehearsal. Start with the user or trigger, follow each handoff, and stop at proof, blocker, or recovery notes because those marks define what must be true before trust increases.";
-      }
-      if (kind.includes("state")) {
-        return "Read this as the allowed lifecycle. States describe what can be true; arrows describe permitted movement; blocked or rejected states mark conditions that need proof or owner action before advancement.";
-      }
-      if (kind.includes("timeline")) {
-        return "Read left to right as release or execution order. Each segment is a phase, wave, or proof checkpoint that should line up with the linked workstreams below.";
-      }
-      return "Read this as a boundary map. Start with the people, inputs, or trigger, then follow the path into product-owned responsibilities; outside boxes are dependencies, not first-release capabilities.";
+      return catalogGuide;
     }
 """

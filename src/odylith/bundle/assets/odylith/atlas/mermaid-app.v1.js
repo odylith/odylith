@@ -884,7 +884,7 @@ initSharedQuickTooltips();
         function renderDiagramBoxes(diagram, sectionEl, listEl) {
       listEl.replaceChildren();
       const boxes = Array.isArray(diagram.diagram_boxes)
-        ? diagram.diagram_boxes.filter((box) => box && typeof box === "object")
+        ? diagram.diagram_boxes.filter((box) => box && typeof box === "object" && String(box.description ?? "").trim())
         : [];
       sectionEl.hidden = !boxes.length;
       boxes.forEach((box, index) => {
@@ -958,20 +958,7 @@ initSharedQuickTooltips();
 
     function diagramReadGuide(diagram) {
       const catalogGuide = String(diagram && diagram.read_guide ? diagram.read_guide : "").trim();
-      if (catalogGuide) {
-        return catalogGuide;
-      }
-      const kind = String(diagram && diagram.kind ? diagram.kind : "").trim().toLowerCase();
-      if (kind.includes("sequence")) {
-        return "Read this as a first-path rehearsal. Start with the user or trigger, follow each handoff, and stop at proof, blocker, or recovery notes because those marks define what must be true before trust increases.";
-      }
-      if (kind.includes("state")) {
-        return "Read this as the allowed lifecycle. States describe what can be true; arrows describe permitted movement; blocked or rejected states mark conditions that need proof or owner action before advancement.";
-      }
-      if (kind.includes("timeline")) {
-        return "Read left to right as release or execution order. Each segment is a phase, wave, or proof checkpoint that should line up with the linked workstreams below.";
-      }
-      return "Read this as a boundary map. Start with the people, inputs, or trigger, then follow the path into product-owned responsibilities; outside boxes are dependencies, not first-release capabilities.";
+      return catalogGuide;
     }
 
     function normalizeWorkstreamId(value) {
@@ -1071,7 +1058,7 @@ initSharedQuickTooltips();
         const body = document.createElement("p");
         body.className = "component-description";
         const description = String(component.description || "");
-        body.textContent = description.trim() ? description : "Named responsibility in this diagram.";
+        body.textContent = description;
 
         headingGroup.appendChild(heading);
         if (rawName && displayName && rawName !== displayName) {
@@ -1081,7 +1068,7 @@ initSharedQuickTooltips();
           headingGroup.appendChild(token);
         }
         card.appendChild(headingGroup);
-        card.appendChild(body);
+        if (description.trim()) card.appendChild(body);
         componentListEl.appendChild(card);
       });
     }

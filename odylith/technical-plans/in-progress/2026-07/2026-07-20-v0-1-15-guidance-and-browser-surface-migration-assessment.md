@@ -382,6 +382,67 @@ the full committed change set. Reopened after CB-337 proved that dirty-only
 observation could erase release scope. Preserve the historical evidence below;
 do not treat it as approval of this larger candidate.
 
+## V41 Radar measurement-race correction (2026-10-06)
+
+Independent diagnosis classifies the sole CI failure as a measurement race, not
+Radar product behavior. The two affected resize cases now pass in 3.89s while
+product Radar remains unchanged. Preserve the failed CI and all other gates;
+this focused proof does not clear CI or release status. Evidence:
+`/private/tmp/odylith-v41-radar-atomic-measurement-20261006.log` (diagnosis
+SHA-256 `8a27d3ed85d78a0d31773dd7380908132cee56c4cfc2462ca5dee5727e7e9cc6`).
+
+## V41 active-owner fixture proof and current CI boundary (2026-10-06)
+
+The supported active-generation/source-owner fixture now passes two publication
+crash tests in 90.09s with atomicity and conservation oracles retained. Root copy
+checks remain 137 pass/two fixture fail as history. Current CI `37495747429` at
+`5303` is still failed (`10,051` pass, one fail, 10 skip): a visible-selection
+Radar resize case raises `Locator.evaluate` TypeError because `closest('#list')`
+returns null during rerender. Diagnosis is pending, so do not classify product
+versus test cause or mark CI clear. B-145, Public40, final holdout, native Claude,
+and native Project-degraded proof remain open. Evidence:
+`/private/tmp/odylith-v41-publication-fixture-active-owner-correction-20261006.log`
+and `/private/tmp/odylith-v40-current-ci-failure-20261006.log`.
+
+## V41 active-publication fixture correction boundary (2026-10-06)
+
+The immutable-bundle hypothesis remains failed: two tests fail in 31.93s before
+baseline/crash phases because dynamic tooling payload is missing. The fixture must
+use the supported published asset owner: `read_active_publication(SOURCE)`;
+without one it uses ordinary SOURCE, and with one it calls
+`pin_active_greenfield_generation(SOURCE).repository_root` once. Invalid active
+publication or pin fails closed; do not mix or fabricate payload fallback. The
+selected root supplies entry, server, URL containment, copies, and source hashes,
+while SOURCE/src remains the current compiler-import owner. Preserve all
+publication, crash, conservation, and atomicity oracles. Evidence: failed log
+`/private/tmp/odylith-v41-publication-fixture-correction-20261006.log` (SHA-256
+`f4451aa2…`) and review
+`/private/tmp/odylith-v41-final-patch-independent-review-20261006/review-v2.json`
+(SHA-256 `d4af0bd306571fdeaaac03c30e57d5b0e7212557bb7bb204b61e4f9cf593c610`).
+
+## V41 publication fixture asset-closure failure (2026-10-06)
+
+Copy verification records 137 pass and two fail before baseline compilation or
+crash injection. The test fixture’s `_asset_closure` reads the physical published
+root index wrapper and copies its generation-relative dependencies, then expects
+canonical `odylith/registry/registry.html`. Build closure and relative copies
+from immutable `src/odylith/bundle/assets` instead. Preserve source subprocess
+imports and all six-surface, publication, crash, source-conservation, and
+atomicity oracles. This is not a product regression or lazy-proxy-order issue;
+do not reset wrappers, repair consumer/source, weaken admission, or retry the
+fixture. Evidence: `/private/tmp/odylith-v41-publication-browser-local-failure-diagnosis-20261006/diagnosis.json`
+(SHA-256 `2e6815fb5f38746f381f32f7ab4cdf9208634b80ccbe331a5f9e0af4f6f72064`).
+
+## V40 installed-browser Registry adapter boundary (2026-10-06)
+
+The v40 installed matrix records 40 pass, two Registry failures, and two native
+Project-degraded holds. Registry raw source Markdown correctly retains backticks
+in closed Topology, while the external adapter's exact-text oracle omits them;
+the source guard correctly suppresses controlled registration scaffold. Correct
+the future adapter with verbatim raw-field comparison only. Do not call this a
+Registry product regression, relabel v40 failures, or replay the frozen matrix.
+Native Project-degraded holds receive no synthetic credit.
+
 ## V40 unpublished Compass-stream publication refusal (2026-10-06)
 
 Selective authored publication refused before a successor because the sole
