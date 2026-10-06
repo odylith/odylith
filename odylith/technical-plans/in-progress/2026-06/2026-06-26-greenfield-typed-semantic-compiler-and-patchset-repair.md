@@ -1,5 +1,17 @@
 Status: In progress
 
+## Current CI-signature closure boundary (2026-10-05)
+
+Fourteen frozen test patches, with zero production or helper changes, map the 107
+remaining known e32 CI signatures to 268 focused passes. They preserve authored
+summaries and keyboard access to closed source details, stable IDs and routes,
+closed historical version pairs for passive reading, strict active/future
+rejection, writer/drift refusal before writes, and Atlas simulator byte custody.
+Independent review is CLEAR; the aggregate is
+`/private/tmp/odylith-ci-known-signature-closure-20261005.json`. The retained
+full CI still has `85` failures, so no full-CI, installed, semantic, migration,
+native, holdout, or release gate moves.
+
 ## Current v34 fixed-case continuation boundary (2026-10-05)
 
 E32/v34 build and installed smoke pass in `489.773s` (exit `0`; proof SHA-256

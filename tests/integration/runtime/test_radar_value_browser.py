@@ -182,6 +182,9 @@ def test_radar_zero_counts_and_score_are_visible(
             assert number.inner_text() == value
         assert page.locator("#stats .stat").filter(has_text="Index Updated").locator(".value").inner_text() == "-"
         if entries:
+            assessment = page.locator("#detail .detail-header > details > summary")
+            assessment.focus()
+            assessment.press("Enter")
             score = page.locator("#detail .kpi").filter(has=page.locator(".k", has_text="Ordering Score")).locator(".v")
             score.scroll_into_view_if_needed()
             assert score.is_visible()

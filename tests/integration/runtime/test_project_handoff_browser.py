@@ -52,17 +52,34 @@ def test_project_handoff_disclosure_preserves_complete_selectable_prompts(
             ) as context:
                 with _new_page(context) as (page, observation):
                     page.goto(base_url + "/index.html", wait_until="domcontentloaded")
-                    open_items = page.locator(".project-open-card li")
+                    questions = page.locator("details.project-open-questions")
+                    open_items = questions.locator("li")
                     assert open_items.all_text_contents() == [
                         " ".join(item.split()) for item in payload["open"]
                     ]
-                    assert all(item.is_visible() for item in open_items.all())
+                    if payload["open"]:
+                        assert questions.count() == 1
+                        assert questions.get_attribute("open") is None
+                        assert not any(item.is_visible() for item in open_items.all())
+                        questions.locator(":scope > summary").focus()
+                        page.keyboard.press("Enter")
+                        assert questions.get_attribute("open") == ""
+                        assert all(item.is_visible() for item in open_items.all())
+                        page.keyboard.press("Space")
+                        assert questions.get_attribute("open") is None
+                        assert not any(item.is_visible() for item in open_items.all())
                     cards = page.locator(".project-host-prompt")
                     assert cards.count() == len(payload["host_handoff_prompts"]) == 5
                     capture = _failure_screenshot_path(f"project-handoff-{width}-js-{javascript_enabled}-expanded-{expanded_questions}-closed")
                     if capture is not None:
                         capture.parent.mkdir(parents=True, exist_ok=True)
                         page.screenshot(path=str(capture), full_page=True)
+                    handoff = page.locator("details.project-host-handoff")
+                    assert handoff.get_attribute("open") is None
+                    assert not cards.first.locator("h4").is_visible()
+                    handoff.locator(":scope > summary").focus()
+                    page.keyboard.press("Enter")
+                    assert handoff.get_attribute("open") == ""
                     closed_height = page.locator(".project-host-handoff").bounding_box()["height"]
                     for index, row in enumerate(payload["host_handoff_prompts"]):
                         card = cards.nth(index)
@@ -89,9 +106,9 @@ def test_project_handoff_disclosure_preserves_complete_selectable_prompts(
                         assert card.evaluate("element => element.scrollWidth <= element.clientWidth")
                         page.keyboard.press("Space")
                         assert not code.is_visible()
-                    page.locator(".project-host-prompt summary").evaluate_all(
-                        "elements => elements.forEach(element => element.click())"
-                    )
+                    for summary in page.locator(".project-host-prompt summary").all():
+                        summary.focus()
+                        page.keyboard.press("Enter")
                     open_height = page.locator(".project-host-handoff").bounding_box()["height"]
                     assert closed_height < open_height * 0.6
                     assert cards.locator("details[open]").count() == 5

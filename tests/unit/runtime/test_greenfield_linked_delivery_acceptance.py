@@ -92,8 +92,9 @@ def test_atlas_many_to_many_acceptance_has_one_node_per_workstream() -> None:
         node = f"workstream{index}_acceptance"
         assert source.count(f'{node}["') == 1
         assert boxes[node]["label"] == workstream["title"]
-        assert f"Proposed verification: {workstream['verification']}" in boxes[node]["description"]
-        assert f"Proposed deliverable: {workstream['deliverable']}" in boxes[node]["description"]
+        assert boxes[node]["description"] == workstream["deliverable"]
+        assert {"label": "Proposed verification", "text": workstream["verification"]} in boxes[node]["details"]
+        assert {"label": "Participating components", "text": ", ".join(workstream["component_keys"])} in boxes[node]["details"]
         for component_index, component in enumerate(design["components"], 1):
             edge = f'component{component_index} -. "participates in delivery" .-> {node}'
             assert (edge in source) == (component["key"] in workstream["component_keys"])

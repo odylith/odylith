@@ -80,7 +80,12 @@ def test_first_run_retains_required_support_without_promoting_support_events(
         f'event{order} -.-> event{order + 1}'
         for order in range(1, 7)
     ]
-    first_run_detail = "\n".join(box["description"] for box in boxes.values())
+    for index in (1, 2, 3):
+        assert boxes[f"proposed_component{index}"]["description"] == design["components"][index - 1]["responsibility"]
+    first_run_detail = "\n".join(
+        box["description"] + "\n" + "\n".join(row["text"] for row in box.get("details", []))
+        for box in boxes.values()
+    )
     assert "A downstream archive receives completed records." not in first_run_detail
     if exchange_support:
         for index, (origin, target, contract) in enumerate((
@@ -88,20 +93,20 @@ def test_first_run_retains_required_support_without_promoting_support_events(
             (2, "Vessel Intake", "Provide the current eligible state."),
             (1, "Placement View", "Acknowledge the eligibility version used."),
         ), 2):
-            assert f"Proposed exchange {index} to {target}: {contract}" in boxes[
+            assert {"label": f"Proposed exchange {index} to {target}", "text": contract} in boxes[
                 f"proposed_component{origin}"
-            ]["description"]
+            ]["details"]
         exchanges = rows[2]["mermaid_source"]
         assert 'component3 -->|"Proposed exchange: Provide eligibility' in exchanges
         assert 'component2 -->|"Proposed exchange: Provide the current' in exchanges
         assert 'component1 -->|"Proposed exchange: Acknowledge the' in exchanges
     if delivery_support:
-        assert "Proposed delivery prerequisite: Placement View through Deliver the placement view." in boxes[
+        assert {"label": "Proposed delivery prerequisite", "text": "Placement View through Deliver the placement view."} in boxes[
             "proposed_component2"
-        ]["description"]
-        assert "Proposed delivery prerequisite: Occupancy Record through Deliver occupancy recording." in boxes[
+        ]["details"]
+        assert {"label": "Proposed delivery prerequisite", "text": "Occupancy Record through Deliver occupancy recording."} in boxes[
             "proposed_component1"
-        ]["description"]
+        ]["details"]
         delivery = rows[3]["mermaid_source"]
         assert 'workstream3 -->|"proposed prerequisite"| workstream2' in delivery
         assert 'workstream2 -->|"proposed prerequisite"| workstream1' in delivery

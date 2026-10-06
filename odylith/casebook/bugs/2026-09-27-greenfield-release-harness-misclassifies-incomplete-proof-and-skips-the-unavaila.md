@@ -1,5 +1,34 @@
 - Bug ID: CB-347
 
+## Current stale CI-signature closure (2026-10-05)
+
+The retained e32 full CI failure `37391699845` remains `85` failed, `9,769`
+passed, `10` skipped, and `37` errors. Fifteen signatures were already corrected
+by ef0; the remaining 107 known test-only signatures now map to 268 focused
+passes through 14 frozen test patches, with zero production or helper changes.
+The superseded ef0 CI `37398192007` completed/cancelled after its known failures;
+this is not a full-CI pass. Aggregate evidence:
+`/private/tmp/odylith-ci-known-signature-closure-20261005.json` (SHA-256
+`69836339fd3c5004f153d2a5222254bd97dfa046035e3a7a378b1aa26a9e5f1f`).
+Independent review is CLEAR:
+`/private/tmp/odylith-e32-test-only-corrections-independent-review-20261005.json`
+(SHA-256 `b8d2d365a0c221c90ff9d0146ad85f2cdd0f009a55abd24ddd86686b2b1089db`).
+
+Correcting the source narrative after its selective publication caused Compass
+to refuse logging before any append. A forced full refresh also refused: authored
+changes require explicit paths in a non-forced selective sync. Preserve both
+refusals and admit the final source records before logging or full refresh.
+
+The tests preserve exact authored `project_summary` and reveal source details
+through native keyboard disclosures. Readable labels retain their IDs and routes.
+Known historical pairs remain available for passive reading; active historical
+and unknown future versions are refused, alongside changed writers and induced
+drift before writes. Simulator coverage keeps Atlas selected/pending without a
+ledger and preserves its bytes; positive target-owner completion has 16 passes.
+No topology or runtime contract changed. Fresh full CI, installed package,
+source-semantic H0/H1/terminal, migration, native Claude, and original blind
+holdout remain unqualified.
+
 ## Current v34 fixed-case and availability boundary (2026-10-05)
 
 The e32/v34 build and installed smoke pass (exit `0`, `489.773s`):

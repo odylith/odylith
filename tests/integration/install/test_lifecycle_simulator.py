@@ -231,6 +231,11 @@ def test_lifecycle_simulator_proves_historical_upgrades_to_0_1_14(tmp_path: Path
         sim.seed_historical_unactivated_install(from_version)
         legacy_bug_path = _write_legacy_casebook_metadata_bug(sim.repo_root)
         _write_legacy_atlas_surface(sim.repo_root)
+        atlas_root = sim.repo_root / "odylith" / "atlas"
+        legacy_atlas = {
+            str(path.relative_to(atlas_root)): path.read_bytes()
+            for path in atlas_root.rglob("*") if path.is_file()
+        }
         sim.write_pin(target_version)
 
         assert sim.upgrade() == 0
@@ -253,9 +258,14 @@ def test_lifecycle_simulator_proves_historical_upgrades_to_0_1_14(tmp_path: Path
 
         migration_results = {result["migration_id"]: result for result in upgrade_event["migration_results"]}
         assert migration_results[CASEBOOK_STATUS_FSM_MIGRATION_ID]["state"] == "applied"
-        assert migration_results[ATLAS_SURFACE_MIGRATION_ID]["state"] == "applied"
+        atlas_result = migration_results[ATLAS_SURFACE_MIGRATION_ID]
+        assert atlas_result["state"] == "selected"
+        assert atlas_result["verification_result"] == {
+            "status": "pending", "mode": "target_runtime_completion",
+        }
+        assert atlas_result["written_paths"] == atlas_result["removed_paths"] == []
         assert (sim.repo_root / ".odylith/state/migrations/v0.1.14-casebook-status-fsm.v1.json").is_file()
-        assert (sim.repo_root / ".odylith/state/migrations/v0.1.14-atlas-render-surface-polish.v1.json").is_file()
+        assert not (sim.repo_root / ".odylith/state/migrations/v0.1.14-atlas-render-surface-polish.v1.json").exists()
         legacy_text = legacy_bug_path.read_text(encoding="utf-8")
         assert "- Status: Mitigated" in legacy_text
         assert "- Fixed: Pending" in legacy_text
@@ -263,9 +273,10 @@ def test_lifecycle_simulator_proves_historical_upgrades_to_0_1_14(tmp_path: Path
         payload_text = (sim.repo_root / "odylith" / "casebook" / "casebook-payload.v1.js").read_text(encoding="utf-8")
         assert '"status": "Mitigated"' in payload_text
         assert '"status_token": "mitigated"' in payload_text
-        atlas_html = (sim.repo_root / "odylith" / "atlas" / "atlas.html").read_text(encoding="utf-8")
-        assert ".viewer-stage::before" not in atlas_html
-        assert "background: #ffffff;" in atlas_html
+        assert {
+            str(path.relative_to(atlas_root)): path.read_bytes()
+            for path in atlas_root.rglob("*") if path.is_file()
+        } == legacy_atlas
 
 
 def test_lifecycle_simulator_proves_historical_upgrades_to_0_1_15(tmp_path: Path, monkeypatch) -> None:

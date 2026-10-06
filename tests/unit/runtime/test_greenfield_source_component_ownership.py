@@ -69,6 +69,7 @@ def _scenario(kind: str, *, explicit_owner: str = ""):
         supporting_event_relations=supporting,
         component_responsibility_owners=[explicit_owner] if explicit_owner else None,
         )
+    response["result"]["provisional_design"]["project_summary"] = intent["product_story"] + "."
     if not explicit_owner:
         response["result"]["components"] = []
     return source, response, events

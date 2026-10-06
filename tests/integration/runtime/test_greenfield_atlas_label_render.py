@@ -92,14 +92,15 @@ def test_capability_support_groups_render_complete_local_relationships(tmp_path:
             f"Proposed: {component['name']} Source actions: {actions} "
             "Select for responsibility and check"
         ) == 1
-        detail = boxes[f"component{index}"]["description"]
-        assert f"Proposed responsibility: {component['responsibility']}" in detail
-        assert f"Proposed boundary verification: {component['verification']}" in detail
+        box = boxes[f"component{index}"]
+        assert box["description"] == component["responsibility"]
+        assert {"label": "Proposed boundary verification", "text": component["verification"]} in box["details"]
     for index, workstream in enumerate(design["workstreams"], 1):
         assert labels.count(f"Proposed delivery {workstream['title']} Select for acceptance") == 1
-        detail = boxes[f"workstream{index}_acceptance"]["description"]
-        assert f"Proposed deliverable: {workstream['deliverable']}" in detail
-        assert f"Proposed verification: {workstream['verification']}" in detail
+        box = boxes[f"workstream{index}_acceptance"]
+        assert box["description"] == workstream["deliverable"]
+        assert {"label": "Proposed verification", "text": workstream["verification"]} in box["details"]
+        assert {"label": "Participating components", "text": ", ".join(workstream["component_keys"])} in box["details"]
     assert labels.count("Source action reference Select for full actions and performers") == 1
     for order, event in enumerate((
         "Dock attendant Ivo enters a vessel tag",

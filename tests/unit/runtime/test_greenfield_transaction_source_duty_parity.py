@@ -17,17 +17,19 @@ from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
 @pytest.mark.parametrize(
     ("contract", "receipt", "passive", "expected_error"),
     (
-        (53, 9, False, "EDIT preservation context is malformed"),
-        (53, 9, True, "EDIT preservation context is malformed"),
+        (54, 9, False, "EDIT preservation context is malformed"),
+        (54, 9, True, "EDIT preservation context is malformed"),
+        (53, 9, True, None),
         (52, 9, True, None),
         (51, 9, True, None),
         (50, 8, True, None),
+        (53, 9, False, "source-duty hashes do not match"),
         (52, 9, False, "source-duty hashes do not match"),
         (50, 8, False, "source-duty hashes do not match"),
         (50, 9, True, "source-duty hashes do not match"),
         (52, 8, True, "source-duty hashes do not match"),
         (49, 9, True, "source-duty hashes do not match"),
-        (54, 9, True, "source-duty hashes do not match"),
+        (55, 9, True, "source-duty hashes do not match"),
     ),
 )
 def test_edit_custody_preserves_closed_pairs_and_current_context_validation(

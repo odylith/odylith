@@ -173,7 +173,7 @@ def test_source_only_task_requires_explicit_authorization_for_each_prior_meaning
     # These are verifier obligations. Mechanical custody does not prove a yes true.
 
 
-def test_real_legacy_v8_pct_keeps_sealed_writer_custody_and_refuses_fresh_compile(tmp_path, monkeypatch):
+def test_real_legacy_v8_pct_preserves_passive_custody_and_refuses_changed_writer(tmp_path):
     from odylith.runtime.domain_intelligence import greenfield_commit_transaction as commit
     from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
         build_product_create_transaction, load_compiled_product_create_transaction_file,
@@ -181,8 +181,10 @@ def test_real_legacy_v8_pct_keeps_sealed_writer_custody_and_refuses_fresh_compil
 
     path = FIXTURES / "legacy-v8-pct.json"
     _golden(path.name)
-    _golden(path.name + ".compiler-receipt.v1.json")
+    receipt = _golden(path.name + ".compiler-receipt.v1.json")
+    receipt_path = path.with_name(path.name + ".compiler-receipt.v1.json")
     before = path.read_bytes()
+    receipt_before = receipt_path.read_bytes()
     transaction = load_compiled_product_create_transaction_file(path)
     source_duty = transaction.proposal["intent"]["authored_semantics"]["source_duty"]
     assert source_duty["ledger_receipt"]["version"] == "odylith.greenfield.source-duty-ledger-receipt.v8"
@@ -194,14 +196,9 @@ def test_real_legacy_v8_pct_keeps_sealed_writer_custody_and_refuses_fresh_compil
             backlog_result=transaction.backlog_result, intent_authority=transaction.intent_authority,
             quality_manifest=transaction.quality_manifest, repo_root=tmp_path,
         )
-    # Pre-confirm protocol evolution does not change this sealed writer package.
-    # Eligibility still requires exact writer identity; no commit is executed.
-    assert commit.load_sealed_product_create_commit(path).transaction_hash == transaction.transaction_hash
-    identity = commit.build_product_create_transaction_compiler_identity()
-    monkeypatch.setattr(commit, "build_product_create_transaction_compiler_identity", lambda: {
-        **identity, "source_files_sha256": "0" * 64,
-    })
+    assert receipt["post_confirm_runtime_identity"] != commit.build_product_create_transaction_compiler_identity()
     with pytest.raises(ValueError, match="post-confirm runtime changed"):
         commit.load_sealed_product_create_commit(path)
     assert path.read_bytes() == before
+    assert receipt_path.read_bytes() == receipt_before
     assert list(tmp_path.iterdir()) == []

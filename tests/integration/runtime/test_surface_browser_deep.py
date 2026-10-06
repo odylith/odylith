@@ -1065,7 +1065,9 @@ def test_casebook_search_filters_and_empty_state(browser_context) -> None:  # no
         first_bug.click()
         _wait_for_shell_query_param(page, tab="casebook", key="bug", value=bug_route)
         casebook.locator("#detailPane .detail-title", has_text=bug_title).wait_for(timeout=15000)
-        casebook.locator("#detailPane .section-heading", has_text="Odylith Agent Learnings").wait_for(timeout=15000)
+        assert casebook.locator("#detailPane").get_by_text("Odylith Agent Learnings", exact=True).count() == 0
+        if casebook.locator("#detailPane .detail-section-agent").count():
+            casebook.locator("#detailPane .section-heading", has_text="Lessons and evidence").wait_for(timeout=15000)
         assert casebook.locator("#detailPane").get_by_text("Human Readout", exact=True).count() == 0
         assert casebook.locator("#detailPane").get_by_text("Nearby Change Guidance", exact=True).count() == 0
         assert casebook.locator("#detailPane").get_by_text("Inspect Next", exact=True).count() == 0
@@ -1095,6 +1097,7 @@ def test_casebook_search_filters_and_empty_state(browser_context) -> None:  # no
         assert casebook.locator("#detailPane").inner_text().strip() == (
             "Select a different filter or search term to inspect Casebook detail."
         )
+        assert casebook.locator("#detailPane .detail-section-agent").count() == 0
 
         _assert_clean_page(page, observation)
 
@@ -1153,6 +1156,7 @@ def test_casebook_proof_control_panel_stays_pinned_to_the_selected_bug_lane(tmp_
             "- Clearance Condition: Hosted SIM3 passes beyond manifests-deploy\n"
             "- Current Proof Status: diagnosed\n"
             "- Description: Browser proof should stay pinned to the selected blocker lane.\n"
+            "- Agent Guardrails: Keep this proof lane bound to the selected bug before accepting a fix.\n"
         ),
         encoding="utf-8",
     )
@@ -1242,15 +1246,30 @@ def test_casebook_proof_control_panel_stays_pinned_to_the_selected_bug_lane(tmp_
                     casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
                     _wait_for_shell_query_param(page, tab="casebook", key="bug", value="CB-999")
                     casebook.locator("#detailPane .detail-title", has_text="Proof control primary").wait_for(timeout=15000)
-                    casebook.locator("#detailPane .section-heading", has_text="Proof Control Panel").wait_for(timeout=15000)
+                    casebook.locator("#detailPane .section-heading", has_text="Proof status").wait_for(timeout=15000)
+                    casebook.locator("#detailPane .section-heading", has_text="Lessons and evidence").wait_for(timeout=15000)
+                    casebook.locator("#detailPane").get_by_text(
+                        "Keep this proof lane bound to the selected bug before accepting a fix.", exact=True,
+                    ).wait_for(timeout=15000)
                     casebook.locator("#detailPane").get_by_text("Current blocker", exact=True).first.wait_for(timeout=15000)
                     casebook.locator("#detailPane").get_by_text(
                         "Lambda permission lifecycle on ecs-drift-monitor invoke"
                     ).first.wait_for(timeout=15000)
-                    casebook.locator("#detailPane").get_by_text("Failure fingerprint", exact=True).first.wait_for(timeout=15000)
                     casebook.locator("#detailPane").get_by_text("Highest truthful claim", exact=True).first.wait_for(timeout=15000)
                     casebook.locator("#detailPane").get_by_text("fixed in code").first.wait_for(timeout=15000)
-                    casebook.locator("#detailPane").get_by_text("Deployed vs local truth", exact=True).first.wait_for(timeout=15000)
+                    evidence = casebook.locator("#detailPane details").filter(
+                        has=casebook.get_by_text("Technical evidence", exact=True),
+                    )
+                    assert evidence.get_attribute("open") is None
+                    evidence.locator("summary").focus()
+                    evidence.locator("summary").press("Enter")
+                    evidence.get_by_text("Failure fingerprint", exact=True).first.wait_for(timeout=15000)
+                    evidence.get_by_text("aws:lambda:Permission doesn't support update", exact=True).first.wait_for(timeout=15000)
+                    evidence.get_by_text("casebook-proof-browser-primary", exact=True).wait_for(timeout=15000)
+                    evidence.locator(".narrative-row").filter(
+                        has=casebook.get_by_text("Pushed HEAD", exact=True),
+                    ).get_by_text("abc123", exact=True).wait_for(timeout=15000)
+                    evidence.get_by_text("runner-v3", exact=True).wait_for(timeout=15000)
                     casebook.locator("#detailPane").get_by_text(
                         "Recent activity is skewing away from the primary blocker"
                     ).first.wait_for(timeout=15000)

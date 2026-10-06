@@ -150,6 +150,9 @@ def test_pointer_replacement(browser_context, record_property, mode):
     page, frame, row = prepare(browser_context, mode)
     try:
         support._click_visible_radar_row(row)
+        assessment = frame.locator("#detail .detail-header > details > summary")
+        assessment.focus()
+        assessment.press("Enter")
         assert frame.locator('#detail [data-kpi="workstream-id"] .v').inner_text() == "B-002"
     finally:
         evidence = receipt(frame, row, record_property)
@@ -158,7 +161,9 @@ def test_pointer_replacement(browser_context, record_property, mode):
     assert evidence["replacement"]["fresh_connected"] is True
     assert evidence["replacement"]["row_ids"] == ["B-001", "B-002"]
     assert evidence["replacements_before_click"] == 1
-    assert evidence["clicks"] == [{"trusted": True, "id": "B-002"}]
+    assert evidence["clicks"] == [
+        {"trusted": True, "id": "B-002"}, {"trusted": True, "id": None},
+    ]
     assert evidence["stale_box_calls"] == 0
     page.close()
 
@@ -177,7 +182,11 @@ def test_pointer_refuses_invalid_final_sample(browser_context, record_property, 
     assert evidence["clicks"] == []
     assert evidence["stale_box_calls"] == 0
     assert evidence["final_sample"]["reachable"] is False
+    assessment = frame.locator("#detail .detail-header > details > summary")
+    assessment.focus()
+    assessment.press("Enter")
     assert frame.locator('#detail [data-kpi="workstream-id"] .v').inner_text() == "B-001"
+    assert frame.evaluate("() => window.__pointerProof.clicks") == [{"trusted": True, "id": None}]
     page.close()
 
 

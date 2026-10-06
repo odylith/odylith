@@ -82,7 +82,8 @@ def test_registry_execution_engine_hard_cut_is_visible_and_alias_free(browser_co
         detail_text = registry.locator("#detail").inner_text().strip()
         assert "Constraint-aware execution runtime" in detail_text
         active_button_text = registry.locator('button[data-component="execution-engine"].active').inner_text().lower()
-        assert "execution-engine" in active_button_text
+        assert "execution engine" in active_button_text
+        assert registry.locator('button[data-component="execution-engine"].active').get_attribute("data-component") == "execution-engine"
         assert "execution-governance" not in detail_text.lower()
 
         diagnostics = registry.locator("#diagnostics")

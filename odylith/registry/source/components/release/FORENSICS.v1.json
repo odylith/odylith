@@ -14,12 +14,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 878,
-    "mapped_workstream_evidence_count": 731,
+    "explicit_event_count": 879,
+    "mapped_workstream_evidence_count": 732,
     "recent_path_match_count": 0,
     "spec_history_event_count": 67,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 878
+    "timeline_event_count": 879
   },
   "name": "Release",
   "path_prefixes": [
@@ -207,6 +207,45 @@
         "B-109",
         "B-110",
         "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md",
+        "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 1577,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-10-05T18:46:36-07:00",
+      "workstreams": [
         "B-142"
       ]
     },

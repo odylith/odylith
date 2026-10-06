@@ -472,6 +472,7 @@ def test_commit_rejects_runtime_drift_before_the_write_boundary(
     transaction = _transaction(tmp_path)
     transaction_path = tmp_path / "product-create-transaction.v1.json"
     greenfield_create_transaction.write_compiled_product_create_transaction_file(transaction_path, transaction)
+    assert load_sealed_product_create_commit(transaction_path).transaction_hash == transaction.transaction_hash
     runtime_identity = greenfield_commit_transaction.build_product_create_transaction_compiler_identity()
     monkeypatch.setattr(
         greenfield_commit_transaction,

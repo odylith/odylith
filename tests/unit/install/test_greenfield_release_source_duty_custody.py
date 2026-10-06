@@ -74,7 +74,10 @@ def _normalized_snapshot(tmp_path):
     result["events"] = [deepcopy(human_event) for _ in range(7)] + [product_event]
     result["terminal"]["event_order"] = 8
     result["terminal"]["result_fact"]["row"] = 8
-    result["provisional_design"] = structural_design_fixture(range(1, 9), first_run_event_orders=[1, 8])
+    result["provisional_design"] = {
+        **structural_design_fixture(range(1, 9), first_run_event_orders=[1, 8]),
+        "project_summary": result["provisional_design"]["project_summary"],
+    }
     binding = result["source_duty_binding"]
     binding["source_sha256"] = receipt["source_sha256"]
     binding["ledger_sha256"] = receipt["ledger_sha256"]
