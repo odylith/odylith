@@ -167,6 +167,68 @@ def test_browser_layout_assertions_reject_overflow_clipping_and_missing_copy() -
     assert "browser surface registry does not expose meaningful visible copy" in issues
 
 
+@pytest.mark.parametrize("has_rows", [True, False], ids=["populated", "empty"])
+def test_casebook_invalid_route_preserves_missing_selection_before_click_recovery(
+    monkeypatch: pytest.MonkeyPatch, has_rows: bool,
+) -> None:
+    module = _module()
+    calls: list[tuple[str, object]] = []
+
+    class Locator:
+        def __init__(self, selector: str) -> None:
+            self.selector = selector
+
+        def wait_for(self, **_kwargs) -> None:  # noqa: ANN003
+            calls.append(("wait", self.selector))
+
+        def count(self) -> int:
+            return int(has_rows) if self.selector == "button.bug-row" else 0
+
+        def inner_text(self, **_kwargs) -> str:  # noqa: ANN003
+            return "No Casebook cases have been recorded yet."
+
+    class Page:
+        def goto(self, *_args, **_kwargs):  # noqa: ANN002, ANN003, ANN201
+            return type("Response", (), {"ok": True})()
+
+        def frame_locator(self, selector: str):  # noqa: ANN201
+            assert selector == "#frame-casebook"
+            return self
+
+        def locator(self, selector: str, **_kwargs):  # noqa: ANN003, ANN201
+            return Locator(selector)
+
+        def close(self) -> None:
+            calls.append(("close", "page"))
+
+    page = Page()
+    monkeypatch.setattr(module, "_new_page", lambda *_args, **_kwargs: (page, lambda: ()))
+    monkeypatch.setattr(module, "_dismiss_shell_obstructions", lambda _page: None)
+    monkeypatch.setattr(module, "_layout_issues", lambda *_args, **_kwargs: ())
+    monkeypatch.setattr(
+        module, "prove_missing_selection",
+        lambda **kwargs: calls.append(("missing", kwargs)) or (),
+    )
+    monkeypatch.setattr(
+        module, "prove_clicked_selection",
+        lambda **kwargs: calls.append(("clicked", kwargs)) or (),
+    )
+
+    assert module._casebook_invalid_route_issues(
+        context=None, base_url="http://127.0.0.1", timeout_ms=100,
+    ) == ()
+
+    selection = {name: value for name, value in calls if name in {"missing", "clicked"}}
+    if has_rows:
+        assert selection["missing"]["invalid"] == "missing-bug-route"
+        assert selection["missing"]["empty_heading"] == "The requested bug is unavailable"
+        assert selection["clicked"]["active_attribute"] == "data-bug"
+        assert selection["clicked"]["detail_selector"].endswith(".summary-fact-value")
+    else:
+        assert selection == {}
+        assert ("wait", "#detailPane [role='status']") in calls
+
+
 def test_atlas_state_assertion_requires_generated_diagram_state() -> None:
     module = _module()
 

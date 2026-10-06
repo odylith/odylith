@@ -39,12 +39,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 293,
-    "mapped_workstream_evidence_count": 198,
+    "explicit_event_count": 294,
+    "mapped_workstream_evidence_count": 199,
     "recent_path_match_count": 0,
-    "spec_history_event_count": 35,
+    "spec_history_event_count": 36,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 293
+    "timeline_event_count": 294
   },
   "name": "Dashboard",
   "path_prefixes": [
@@ -60,6 +60,48 @@
   ],
   "spec_ref": "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/project_intelligence/builder.py",
+        "src/odylith/runtime/surfaces/registry_component_identity_ui.py"
+      ],
+      "confidence": "high",
+      "event_index": 1583,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-10-06T07:19:55-07:00",
+      "workstreams": [
+        "B-142",
+        "B-145"
+      ]
+    },
     {
       "artifact_count": 4,
       "artifacts": [

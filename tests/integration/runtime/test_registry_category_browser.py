@@ -287,6 +287,48 @@ def test_registry_category_labels_survive_filter_empty_and_runtime_fallback(
 
 
 @pytest.mark.parametrize("width", [1440, 430], ids=["desktop", "mobile"])
+@pytest.mark.parametrize("stored", [
+    "Logical component registered through odylith component register.",
+    (
+        "Logical component registered through odylith component register with "
+        "tools/copy_<record>&.py as its initial evidence anchor."
+    ),
+], ids=["registration", "initial-evidence"])
+def test_registration_metadata_stays_in_closed_registry_details(
+    browser_context, width: int, stored: str,
+) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    purpose = "Preserve archive record permissions during copies."
+    components = [
+        {"component_id": "archive", "name": "Archive copier", "what_it_is": stored,
+         "status": "active", "qualification": "baseline", "category": "application"},
+        {"component_id": "provided", "name": "Permission review", "what_it_is": purpose,
+         "status": "active", "qualification": "baseline", "category": "application"},
+    ]
+    with _new_page(context) as (page, observation):
+        page.set_viewport_size({"width": width, "height": 1100 if width == 1440 else 932})
+        page.route("**/registry-registration.html", lambda route: route.fulfill(
+            status=200, content_type="text/html", body=renderer._render_html(payload={"components": components}),
+        ))
+        response = page.goto(base_url + "/registry-registration.html", wait_until="networkidle")
+        assert response is not None and response.ok
+        page.locator('button[data-component="archive"]').click()
+        assert page.locator(".component-purpose").inner_text() == "Purpose not documented."
+        source = page.get_by_text(stored, exact=True)
+        assert source.count() == 1 and not source.is_visible()
+        disclosure = page.locator("details.context-section > summary")
+        disclosure.focus()
+        disclosure.press("Enter")
+        assert source.is_visible() and source.inner_text() == stored
+        disclosure.press("Enter")
+        assert not source.is_visible()
+        page.locator('button[data-component="provided"]').click()
+        assert page.locator(".component-purpose").inner_text() == purpose
+        assert page.locator(".summary-strip").evaluate("node => node.scrollWidth <= node.clientWidth + 1")
+        _assert_clean_page(page, observation)
+
+
+@pytest.mark.parametrize("width", [1440, 430], ids=["desktop", "mobile"])
 @pytest.mark.parametrize("state", ["normal", "empty-evidence", "degraded"])
 def test_registry_evidence_is_optional_and_retains_exact_history(
     browser_context, width: int, state: str,

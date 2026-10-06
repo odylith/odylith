@@ -382,6 +382,78 @@ the full committed change set. Reopened after CB-337 proved that dirty-only
 observation could erase release scope. Preserve the historical evidence below;
 do not treat it as approval of this larger candidate.
 
+## V39 Casebook index-refresh regression (2026-10-06)
+
+CI run `37464433347` at exact `11e3211` remains the historical 29-failure,
+9,996-pass, 10-skip result. On final source/test bytes, all 29 original
+signatures now reproduce as `29 PASS` in `6.90s`, with source pins unchanged.
+The first collection-only reproduction is retained: one renamed test node meant
+no tests ran and source remained unchanged.
+
+The Casebook fix preserves the reader contract: direct sole-surface refresh
+supports existing legacy-ID migration; selective, multi-surface, and upgrade
+refresh update `INDEX.md` first without changing authored bug bytes or modes;
+and malformed source stops later readers. Focused proof before unused-helper
+removal covers 21 checks. The integrated runtime is net -95 lines with no new
+modules. This is current-source regression proof only; fresh full CI, package,
+installed, Public40, Luna, holdout, Claude, and release qualification remain
+open. Evidence: final reproduction
+`/private/tmp/odylith-v39-final-ci-regression-reproduction-r2-20261006/report.json`
+(SHA-256 `579ba9a2ce21895b76b53781131af087dbb1f554959b165db53fe45e2373449a`);
+retained collection-only attempt
+`/private/tmp/odylith-v39-final-ci-regression-reproduction-20261006/report.json`
+(SHA-256 `58ac4d99b93b8b12fdf9fe98d9ef806b84788903c36724f0c86f503984fbd3b2`);
+and focused handoff
+`/private/tmp/odylith-v39-casebook-refresh-focused-handoff-20261006/report.json`
+(SHA-256 `2b423ec6549c026311f4dadb768fb2b383497af3798b972d4400ed658358ca63`).
+
+## V39 temporal Casebook adapter correction (2026-10-06)
+
+The existing Casebook helper and temporal adapter now match the actual invalid
+selection and expiry contract: 16 focused checks pass across 27 bindings, with
+no helper growth (the helper remains 1,199 LOC). R1, R2, and R3 failures remain
+historical and this static proof is not an external browser pass or native-parity
+proof. Evidence: `/private/tmp/odylith-greenfield-v14-to-v38-migration-20261006/upgrade/casebook-temporal-correction-static-proof.json`
+(SHA-256 `97495204f601469ffc16296eb6ff214bc1b3c315a7f57621ccd22ef86313e7c4`).
+
+## V38 installed witness and browser-audit boundary (2026-10-06)
+
+Frozen candidate `11e3211` now has a passing distribution result and a fresh
+native v0.1.14-to-v0.1.15 witness: six pages render, 15 source and three
+customer-owned files remain preserved, and 13 owners retain identity. Installed
+adoption passes 20 workstreams and 88 source units. This is stronger bounded
+migration evidence, but the five B-145 assessment classes and markers remain
+open.
+
+The external browser driver receives no credit. R1 stopped on a wrapper
+surface/state collision; R2 lacks required covered state. Both failures and the
+unchanged 18,337-entry consumer are retained while a deterministic binding audit
+runs. The separate two-pass installed synthetic Project UI supplement is not
+client-data proof. CI is still running, and Public40, real Luna, native Claude,
+and the protected original holdout remain unqualified or unavailable. Do not run
+another upgrade or browser replay from this record.
+
+Evidence: package `/private/tmp/odylith-greenfield-v38-dist-20261006/proof/result.json`
+(SHA-256 `aeb48292a56184ae8a02406cfe90bd7be9ef61da39a28dbe19b03140e56dd130`);
+migration `/private/tmp/odylith-greenfield-v14-to-v38-migration-20261006/upgrade/final-migration-browser-handoff.json`
+(SHA-256 `94f2e84992d36f77860f319131bf2fdf11cf98379c529bb530d86c43b882a801`);
+external browser handoff `final-browser-r2-handoff.json` (SHA-256
+`353268772e6eae4cbed6b6231e26396278e3fbceb4e20a697d9fe4e3020054b1`).
+
+
+External R3 completes `36 PASS`, `6 FAIL`, and `2 HELD`, with the whole
+18,337-entry consumer unchanged. Diagnosis attributes four notice cells to one
+expired-notice assertion: the payload expires at `13:06:15Z`, and R3's
+post-10-minute policy correctly hides it while the adapter asserts visibility.
+The two Casebook cells wait for automatic active-row selection, although the
+existing contract requires unknown query/status plus zero active rows before a
+user clicks a valid record. Product UI remains unregressed, but R3 remains a
+failed run. V49 owns the source Casebook-helper and external real-clock-adapter
+correction; do not run a fourth attempt. This leaves external browser
+qualification open without invalidating the bounded v38 package/adoption witness.
+Diagnosis: `/private/tmp/odylith-greenfield-v14-to-v38-migration-20261006/upgrade/r3-six-failure-read-only-diagnosis.json`
+(SHA-256 `97993fbd8448ffead5c4b433cac0977d9d4b89338c639cf7119d0f29f8b69064`).
+
 ## V37 published-v14 installed witness (2026-10-06)
 
 A fresh native v0.1.14-to-v0.1.15 upgrade against clean candidate
@@ -889,3 +961,8 @@ The active implementation wave is deliberately bounded:
 No parser, regex, vocabulary rule, retry, repair, fallback candidate, model
 ladder, or extra semantic call is admissible. The protected holdout remains
 untouched until the full public gate and independent strong review pass.
+
+
+### V39 final Atlas fingerprint settlement
+
+The first V39 staged commit check retained a freshness failure: 42 diagrams were fresh and five were stale after later Registry spec and forensic records settled during full sync. The canonical Atlas preview selects five review-only fingerprint updates and zero diagram renders. This is a final metadata settlement step; topology and diagram source are unchanged. The failed gate remains recorded at `/private/tmp/odylith-v39-commit-ready-20261006/report.json` (SHA-256 `4fb978ba086d8c9a6f809818e2dba85cf43ba4e2941b7ab8cd04c18b493e63cc`). Final refresh and a fresh staged check remain required; freshness, current full CI, installed proof, and release gates are retained.

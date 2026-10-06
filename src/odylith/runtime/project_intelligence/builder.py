@@ -356,47 +356,6 @@ def _evidence_state(*, components: Sequence[Mapping[str, Any]], backlog: Mapping
     return "Inferred"
 
 
-def _desired_state(
-    *,
-    project_title: str,
-    project_intro: str,
-    current_focus: str,
-    release_label: str,
-    next_action_text: str,
-    evidence_sources: Sequence[str],
-    consumer_lane: bool,
-) -> str:
-    if not consumer_lane:
-        return (
-            f"The Project page explains {project_title} from "
-            f"{', '.join(evidence_sources) or 'available repo evidence'} before users open expert records."
-        )
-    intro = _sentence(project_intro).rstrip(".")
-    focus = _sentence(current_focus).rstrip(".")
-    next_action = _sentence(next_action_text).rstrip(".")
-    release = _sentence(release_label, "the current release")
-    reality = (
-        f"People using {project_title} can understand the current operational state without reconstructing context "
-        "from scattered files, stale records, informal claims, and partial implementation notes."
-    )
-    if intro and project_title.casefold() not in intro.casefold():
-        reality = f"{reality} {intro}."
-    capability = (
-        f"For {release}, they can see what is being evaluated, what changed, who owns the next decision, "
-        "and which evidence makes the current claim trustworthy."
-    )
-    if focus:
-        capability += f" The active capability is {focus[0].lower() + focus[1:] if focus else focus}."
-    risk = "The system reduces the risk that product claims drift away from the state, owner, time, and proof that produced them."
-    proof = (
-        "The release is ready when a reviewer can follow the user-visible workflow, source evidence, changed state, "
-        "open risks, and validation result without relying on implementation-only context."
-    )
-    if next_action:
-        proof += f" The next action is {next_action[0].lower() + next_action[1:] if next_action else next_action}."
-    return " ".join((reality, capability, risk, proof))
-
-
 def _origin_label(self_host: Mapping[str, Any]) -> str:
     repo_role = str(self_host.get("repo_role", "")).strip()
     posture = str(self_host.get("posture", "")).strip()
@@ -660,6 +619,7 @@ def _has_material_posture(risk_classes: Sequence[Mapping[str, Any]], validation_
 def _visible_sections(
     *,
     origin: str,
+    has_release: bool,
     actors: Sequence[tuple[str, str, str]],
     jobs: Sequence[tuple[str, str, str] | tuple[str, str, str, str]],
     claim_evidence: Sequence[Mapping[str, Any]],
@@ -671,7 +631,9 @@ def _visible_sections(
     included: Sequence[str],
     excluded: Sequence[str],
 ) -> list[str]:
-    sections = ["product_story", "scenario"]
+    sections = ["product_story"]
+    if has_release:
+        sections.append("scenario")
     if actors:
         sections.append("participants")
     if jobs:
@@ -727,6 +689,10 @@ def build_project_intelligence_payload(
     open_bugs = [dict(row) for row in casebook.get("open", []) if isinstance(row, Mapping)]
     repo_role = _sentence(self_host.get("repo_role"), "repo")
     release_label = _release_label(release)
+    has_release = any(
+        str(release.get(key) or "").strip()
+        for key in ("display_label", "version", "effective_name", "inherited_name")
+    )
     accepted_greenfield_title = _accepted_greenfield_title(focus=focus, backlog=backlog)
     has_product_root_component = bool(_component(component_index, "odylith"))
     consumer_lane = not has_product_root_component
@@ -740,6 +706,7 @@ def build_project_intelligence_payload(
             root_component=root_component,
             components=components,
             repo_role=repo_role,
+            consumer_lane=consumer_lane,
         )
     current_focus = _project_focus_text(
         focus.get("headline"),
@@ -774,15 +741,6 @@ def build_project_intelligence_payload(
         )
     else:
         current_state += f"Working tree: {worktree_status}. Change counts are unavailable."
-    desired_state = _desired_state(
-        project_title=project_title,
-        project_intro=project_intro,
-        current_focus=current_focus,
-        release_label=release_label,
-        next_action_text=next_action_text,
-        evidence_sources=evidence_sources,
-        consumer_lane=consumer_lane,
-    )
     blockers = [
         (
             _sentence(bug.get("title") or bug.get("Title"), "Open bug"),
@@ -839,6 +797,8 @@ def build_project_intelligence_payload(
         action_count=len(actions),
         critical_count=int(casebook.get("critical_count", 0) or 0),
     )
+    if not has_release:
+        section_copy["scenario_note"] = ""
     claim_evidence = [dict(row) for row in _list(graph.get("claim_evidence")) if isinstance(row, Mapping)]
     contradictions = [str(item).strip() for item in _list(graph.get("contradictions")) if str(item or "").strip()]
     degraded_state = [str(item).strip() for item in _list(graph.get("degraded_state")) if str(item or "").strip()]
@@ -867,12 +827,6 @@ def build_project_intelligence_payload(
     )
     excluded = _boundary_unresolved(graph=graph, blockers=blockers)
     product_story = _build_source_product_story(
-        project_title=project_title,
-        project_intro=project_intro,
-        release_label=release_label,
-        current_focus=current_focus,
-        next_title=next_title,
-        next_action_text=next_action_text,
         active_workstreams=active_workstreams,
         backlog=backlog,
         components=components,
@@ -920,19 +874,19 @@ def build_project_intelligence_payload(
             evidence_sources=evidence_sources,
             active_workstream_count=len(active_workstreams),
             action_count=len(actions),
-        ),
+        ) if has_release else [],
         "scenario_details": _scenario_details(
             current_focus=current_focus,
             next_action_text=next_action_text,
             critical_count=int(casebook.get("critical_count", 0) or 0),
             evidence_sources=evidence_sources,
-        ),
+        ) if has_release else [],
         "actors": actors,
         "participants": actors,
         "participants_title": "Who participates?",
         "participants_note": "People who decide, change, and review the current work.",
         "jobs": jobs,
-        "jobs_title": f"What is active for {release_label}?",
+        "jobs_title": f"What is active for {release_label}?" if has_release else "What work is recorded?",
         "jobs_note": f"Generated from {len(active_workstreams)} release workstreams, {len(actions)} runtime actions, and {casebook.get('critical_count', 0)} critical blockers.",
         "boundary_title": f"What is inside the current {work_mode.lower()} boundary?",
         "boundary_note": "Boundary rows describe the active work slice, not the whole artifact inventory.",
@@ -941,8 +895,8 @@ def build_project_intelligence_payload(
         "included": included,
         "excluded": excluded,
         "current": current_state,
-        "desired": desired_state,
-        "question": f"What should happen next for {release_label}?",
+        "desired": "",
+        "question": f"What should happen next for {release_label}?" if has_release else "What should happen next?",
         "recommendation": next_action_text,
         "options": [
             ("A", _sentence(action.get("title"), f"Action {index + 1}"), _sentence(action.get("action"), "Advance this source-backed action."))
@@ -978,6 +932,7 @@ def build_project_intelligence_payload(
         "blockers": blockers,
         "sections": _visible_sections(
             origin=origin,
+            has_release=has_release,
             actors=actors,
             jobs=jobs,
             claim_evidence=claim_evidence,

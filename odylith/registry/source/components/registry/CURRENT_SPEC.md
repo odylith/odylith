@@ -24,6 +24,13 @@ timeline only accept the latest selection revision, including repeated selection
 of the same component. Populated detail and forensic rendering retain their
 existing owners. CB-330 browser proof covers both source states at both widths.
 
+### Registration narrative
+
+Primary Registry narrative uses the component’s supplied purpose. Controlled
+registration boilerplate is omitted from that primary reading path while the
+exact original remains available in closed detail; no inventory or evidence
+semantics change.
+
 ### Specification reading boundary
 `registry_spec_reading_ui.py` owns the Current Spec disclosure, prose and table
 layout. Shrinkable grid tracks and local token wrapping keep prose within the
@@ -316,6 +323,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-10-06: Registry omits controlled registration boilerplate from its primary narrative while preserving the exact original in closed detail. One owner adds three lines; four browser checks pass at 1440 and 430 widths. The preliminary 16-qualified result is not current-byte, installed, or release proof. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
 - 2026-09-08: Centralized live versus recorded evidence collection for Registry forensics and Delivery, preserving live Context coverage and stable source/spec commit readback. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-07-01: Captured source-change forensics regeneration posture. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
   During release-provenance closure, pinned-runtime Registry forensics sync

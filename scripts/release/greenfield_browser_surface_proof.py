@@ -740,17 +740,13 @@ def _casebook_invalid_route_issues(
     covered: set[tuple[str, str, str]] | None = None,
 ) -> tuple[str, ...]:
     page, runtime_issues = _new_page(
-        context,
-        issue_prefix="browser surface casebook invalid bug",
-        screenshot_output_dir=screenshot_output_dir,
-        coverage_cells=(coverage_cell,),
-        covered=covered,
+        context, issue_prefix="browser surface casebook invalid bug",
+        screenshot_output_dir=screenshot_output_dir, coverage_cells=(coverage_cell,), covered=covered,
     )
     issues: list[str] = []
     try:
         response = page.goto(
-            f"{base_url}/odylith/index.html?tab=casebook&bug=missing-bug-route",
-            wait_until="domcontentloaded",
+            f"{base_url}/odylith/index.html?tab=casebook&bug=missing-bug-route", wait_until="domcontentloaded",
         )
         if response is None or not response.ok:
             issues.append("browser surface casebook invalid bug did not load invalid route")
@@ -759,13 +755,17 @@ def _casebook_invalid_route_issues(
         casebook = page.frame_locator("#frame-casebook")
         casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=timeout_ms)
         if casebook.locator("button.bug-row").count() > 0:
-            casebook.locator("button.bug-row.active").wait_for(timeout=timeout_ms)
-            active = str(
-                casebook.locator("button.bug-row.active").first.get_attribute("data-bug") or ""
-            ).strip()
-            if not active or active == "missing-bug-route":
-                issues.append("browser surface casebook invalid bug did not recover to a valid selection")
-            casebook.locator("#detailPane .detail-title").wait_for(timeout=timeout_ms)
+            issues.extend(prove_missing_selection(
+                page=page, frame=casebook, query_key="bug", invalid="missing-bug-route",
+                active_selector="button.bug-row.active", empty_selector="#detailPane [role='status']",
+                empty_heading="The requested bug is unavailable", timeout_ms=timeout_ms,
+            ))
+            issues.extend(prove_clicked_selection(
+                page=page, frame=casebook, query_key="bug", active_selector="button.bug-row.active",
+                active_attribute="data-bug",
+                detail_selector="#detailPane [data-summary-field='Bug ID'] .summary-fact-value",
+                detail_attribute="", timeout_ms=timeout_ms,
+            ))
         else:
             empty_status = casebook.locator("#detailPane [role='status']")
             empty_status.wait_for(timeout=timeout_ms)

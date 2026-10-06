@@ -946,7 +946,7 @@ def test_dashboard_refresh_bootstraps_upgrade_residue_before_shell_render(
     assert not (repo_root / "odylith" / "atlas" / "atlas.html").exists()
 
 
-def test_dashboard_refresh_casebook_migrates_bug_ids_during_refresh(tmp_path: Path, monkeypatch) -> None:
+def test_dashboard_refresh_casebook_normalizes_index_before_render(tmp_path: Path, monkeypatch) -> None:
     executed: list[tuple[str, ...]] = []
     casebook_sync_calls: list[bool] = []
 
@@ -1493,8 +1493,12 @@ def test_build_sync_execution_plan_uses_owned_surface_selective_lane_for_governa
 
     assert plan.headline == "Sync only the governed truth for the explicit selective slice in `standalone` mode."
     assert "Normalize legacy Radar backlog sections for the touched selective slice before validation." in labels
-    assert "Normalize and validate Casebook bugs before rerendering the Casebook dashboard." in labels
-    assert "Render Casebook for the updated bug index." in labels
+    index_label = "Validate Casebook source and refresh its index before selected readers."
+    render_label = "Render Casebook from validated source."
+    assert index_label in labels
+    assert render_label in labels
+    assert labels.index(index_label) < labels.index(render_label)
+    assert plan.steps[labels.index(index_label)].paths == ("odylith/casebook/bugs/INDEX.md",)
     assert "Render Radar without widening into the full governance sync pipeline." in labels
     assert "Render Registry without re-running broader governance reconciliation." in labels
     assert "Mirror the touched source-truth docs into the shipped bundle asset tree." not in labels

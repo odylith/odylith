@@ -384,6 +384,9 @@ function compactPathLabel(path, fallback = "Artifact") {
 
 function compactRegistryNarrative(value, row) {
   const text = String(value || "").trim();
+  if (text === "Logical component registered through odylith component register."
+      || (text.startsWith("Logical component registered through odylith component register with ")
+          && text.endsWith(" as its initial evidence anchor."))) return "";
   const prefix = `${String(row && row.name || "")} is a proposed logical component. Proposed responsibility: `;
   const generated = row && row.status === "planned" && row.qualification === "candidate";
   return generated && text.startsWith(prefix) ? text.slice(prefix.length) : text;

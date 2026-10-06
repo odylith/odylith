@@ -740,7 +740,7 @@ def test_project_summary_and_structured_risks_are_readable_at_both_widths(tmp_pa
                         assert "Accepted evidence excerpt:" not in header.inner_text()
                         assert header.locator(".project-chips, .project-hero-rail").count() == 0
                         card = page.locator('[data-risk-key="retention-boundary"]')
-                        assert card.locator("h3").inner_text() == "Data retention risk"
+                        assert card.locator("h3").inner_text() == risk["statement"]
                         assert card.locator("[data-risk-statement]").inner_text() == risk["statement"]
                         assert card.locator("[data-risk-mitigation]").inner_text() == risk["mitigation"]
                         details = card.locator("details")
@@ -750,10 +750,11 @@ def test_project_summary_and_structured_risks_are_readable_at_both_widths(tmp_pa
                         page.keyboard.press("Enter")
                         assert details.locator("dl").is_visible()
                         values = details.locator("dd").all_inner_texts()
-                        assert values[0] == risk["trigger"]
-                        assert values[1] == risk["verification"]
-                        assert values[2] == payload["risk_items"][0]["scope"]
-                        assert values[3] == (f"Source event {event_order} · Component {component['key']} · "
+                        assert values[0] == "Data retention risk"
+                        assert values[1] == risk["trigger"]
+                        assert values[2] == risk["verification"]
+                        assert values[3] == payload["risk_items"][0]["scope"]
+                        assert values[4] == (f"Source event {event_order} · Component {component['key']} · "
                                              f"Workstream {workstream['key']}")
                         details.locator("summary").focus()
                         page.keyboard.press("Enter")

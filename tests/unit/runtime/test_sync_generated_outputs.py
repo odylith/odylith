@@ -81,13 +81,13 @@ def test_sync_orchestrator_does_not_keep_removed_output_owner_or_layout_alias() 
 
 
 @pytest.mark.parametrize("invalid", [False, True])
-def test_casebook_generated_refresh_preserves_authored_bytes_modes_and_links(tmp_path, monkeypatch, invalid):
+def test_casebook_refresh_preserves_authored_bug_bytes_and_normalizes_index(tmp_path, invalid):
     from odylith.runtime.surfaces import render_casebook_dashboard
     bugs = tmp_path / "odylith/casebook/bugs"
     bugs.mkdir(parents=True)
     bug = bugs / "2026-10-06-retained-observation.md"
-    bug.write_bytes(("- Status: Open\r\n- Created: 2026-10-06\r\n- Severity: P2\r\n"
-                     "- Reproducibility: High\r\n- Type: " + ("TBD" if invalid else "Product") +
+    bug.write_bytes(("- Bug ID: CB-001\r\n- Status: Open\r\n- Created: 2026-10-06\r\n- Severity: P2\r\n"
+                     "- Reproducibility: " + ("High; invalid value" if invalid else "High") + "\r\n- Type: Product" +
                      "\r\n- Description: Retain café observation.\r\n").encode())
     bug.chmod(0o640)
     index = bugs / "INDEX.md"
@@ -99,8 +99,6 @@ def test_casebook_generated_refresh_preserves_authored_bytes_modes_and_links(tmp
     generated = [tmp_path / name for name in SURFACE_OUTPUTS["casebook"]]
     for path in generated:
         path.write_bytes(b"old generated view\n")
-    monkeypatch.setattr(sync.sync_casebook_bug_index, "sync_casebook_bug_index",
-                        lambda **_: pytest.fail("generated refresh normalized source"))
     calls = []
 
     def render(**args):
@@ -108,14 +106,19 @@ def test_casebook_generated_refresh_preserves_authored_bytes_modes_and_links(tmp
         calls.append(True)
         return render_casebook_dashboard.main(["--repo-root", str(tmp_path), "--runtime-mode", "standalone"])
 
-    steps = sync._dashboard_surface_steps(repo_root=tmp_path, surface="casebook", runtime_mode="standalone", atlas_sync=False)
-    assert all("repo_owned_truth" not in step.mutation_classes for step in steps)
+    steps = sync._dashboard_surface_steps(repo_root=tmp_path, surface="casebook", runtime_mode="standalone",
+                                          atlas_sync=False, casebook_migrate_bug_ids=True)
+    assert steps[0].paths == ("odylith/casebook/bugs/",)
     result = sync._execute_dashboard_refresh_surface(repo_root=tmp_path, surface="casebook", steps=steps,
                                                     runtime_mode="standalone", run_impl=render)
     assert result["status"] == ("failed" if invalid else "passed")
     assert result["rc"] == (2 if invalid else 0)
     assert calls == ([] if invalid else [True])
-    assert {p.name: (p.read_bytes(), p.stat().st_mode & 0o777) for p in (bug, index)} == before
+    assert (bug.read_bytes(), bug.stat().st_mode & 0o777) == before[bug.name]
+    assert index.stat().st_mode & 0o777 == before[index.name][1]
+    assert (index.read_bytes() == before[index.name][0]) == invalid
+    if not invalid:
+        assert "CB-001" in index.read_text(encoding="utf-8")
     assert link.is_symlink() and link.readlink() == Path(bug.name)
     assert all(path.read_bytes() == b"old generated view\n" for path in generated) if invalid else all(
         path.read_bytes() != b"old generated view\n" for path in generated)

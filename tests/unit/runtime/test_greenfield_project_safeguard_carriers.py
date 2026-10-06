@@ -105,11 +105,11 @@ def test_project_carriers_preserve_advisory_safeguards_without_source_promotion(
     assert SAFEGUARD_ASSUMPTION not in json.dumps(proposal[PRODUCT_INTENT_AUTHORITY_KEY])
 
     first_workstream = proposal["backlog"][0]
-    assert WORKSTREAM_VERIFICATION in first_workstream["radar_sections"]["Validation"]
+    assert first_workstream["validation"] == [WORKSTREAM_VERIFICATION]
+    assert first_workstream["success_metrics"] == [WORKSTREAM_VERIFICATION]
+    assert "Validation" not in first_workstream["radar_sections"]
     assert COMPONENT_VERIFICATION in first_workstream["radar_sections"]["Test Strategy"]
-    assert first_workstream["radar_sections"]["Test Strategy"] != (
-        first_workstream["radar_sections"]["Validation"]
-    )
+    assert WORKSTREAM_VERIFICATION not in first_workstream["radar_sections"]["Test Strategy"]
     assert "Assumptions" not in first_workstream["radar_sections"]
     assert SAFEGUARD_ASSUMPTION not in json.dumps(first_workstream)
     assert RISK_STATEMENT in first_workstream["radar_sections"]["Risks"]
@@ -144,7 +144,8 @@ def test_project_carriers_preserve_advisory_safeguards_without_source_promotion(
         for row in proposal["components"][1:]
     )
     assert all(
-        RISK_STATEMENT not in row["radar_sections"]["Risks"]
+        "Risks" not in row["radar_sections"]
+        and RISK_STATEMENT not in row["radar_sections"].get("Risks", "")
         for row in proposal["backlog"][1:]
     )
     assert all(

@@ -712,13 +712,24 @@ def release_note_repo(tmp_path):
         AUTHORED: BEFORE,
         OTHER_AUTHORED: BEFORE.replace("CB-001", "CB-002"),
         PLAN: PLAN_BEFORE,
-        SPEC: SPEC_BEFORE,
+        SPEC: (
+            SPEC_BEFORE
+            + "\n## Feature History\n\n"
+            + "- 2026-09-10: Example component baseline. "
+            "(Plan: [B-101](odylith/radar/radar.html?view=plan&workstream=B-101))\n"
+        ),
         DIAGRAM: DIAGRAM_BEFORE,
-        "odylith/registry/source/component_registry.v1.json": json.dumps({
-            "components": [{"component_id": "example", "spec_ref": SPEC}],
-        }) + "\n",
         "odylith/atlas/source/catalog/diagrams.v1.json": json.dumps({
             "diagrams": [{"diagram_id": "D-001", "source_mmd": DIAGRAM}],
+        }) + "\n",
+        "odylith/registry/source/component_registry.v1.json": json.dumps({
+            "components": [{
+                "component_id": "example",
+                "name": "Example",
+                "what_it_is": "Example component for the selected authored specification.",
+                "why_tracked": "Keep the selected specification mapped during release-note sync.",
+                "spec_ref": SPEC,
+            }],
         }) + "\n",
     })
     assert bootstrap_assets.product_repo_role(repo_root=root) == bootstrap_assets.PRODUCT_REPO_ROLE

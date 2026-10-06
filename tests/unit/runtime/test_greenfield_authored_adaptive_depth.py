@@ -337,7 +337,9 @@ def _assert_structural_design_projection_preserves_source(proposal: dict[str, An
         assert projected["dependencies"] == [
             titles_by_key[key] for key in canonical["depends_on"]
         ]
-        assert "actor's ownership" in projected["radar_sections"]["Design Authority"]
+        assert projected["success_metrics"] == [canonical["verification"]]
+        assert projected["validation"] == projected["success_metrics"]
+        assert "Design Authority" not in projected["radar_sections"]
 
 
 def test_boundary_free_source_keeps_complete_structural_design_projection(
@@ -362,9 +364,8 @@ def test_boundary_free_source_keeps_complete_structural_design_projection(
     assert project["product_view"] == design["workstreams"][0]["deliverable"]
     assert "Berth requests are hard to review." not in project["problem"]
     assert "Harbor Desk records one berth request and shows its receipt." not in project["product_view"]
-    assert project["radar_sections"]["Source Success Metrics"] == (
-        "Project-level success metrics remain governed by the Product Intent."
-    )
+    assert project["success_metrics"] == [design["workstreams"][0]["verification"]]
+    assert "Source Success Metrics" not in project["radar_sections"]
     _assert_structural_design_projection_preserves_source(proposal)
     workstream_titles = [row["title"] for row in proposal["backlog"]]
     assert all(
@@ -456,9 +457,11 @@ def test_structured_source_projects_distinct_canonical_design_with_source_custod
                 *row["radar_sections"].values(),
             ])
             assert (intent[field] in rendered) is (field == "customer")
-        assert all(value not in row["radar_sections"]["Non-Goals"] for value in intent["non_goals"])
+        rendered_sections = "\n".join(row["radar_sections"].values())
+        assert "Non-Goals" not in row["radar_sections"]
+        assert all(value not in rendered_sections for value in intent["non_goals"])
         assert all(
-            value not in row["radar_sections"]["Operational Constraints"]
+            value not in rendered_sections
             for value in intent["operational_constraints"]
         )
     rendered_support = "\n".join(
@@ -466,8 +469,10 @@ def test_structured_source_projects_distinct_canonical_design_with_source_custod
     )
     assert all(event in rendered_support for event in source_events)
     assert all(
-        row["radar_sections"]["Rollout"].startswith("Proposed delivery sequence — ")
-        and row["recommended_first_slice"] not in row["radar_sections"]["Rollout"]
+        (
+            row["radar_sections"]["Rollout"].startswith("Proposed delivery sequence — ")
+            and row["recommended_first_slice"] not in row["radar_sections"]["Rollout"]
+        ) if row["dependencies"] else "Rollout" not in row["radar_sections"]
         for row in backlog
     )
     _assert_structural_design_projection_preserves_source(proposal)
@@ -597,9 +602,12 @@ def test_direct_evidence_graph_material_facts_survive_structural_design_projecti
                 f"/assumptions/{index}"
             )
         assert "Assumptions" not in row["radar_sections"]
-        assert "Do not override a safety hold." not in row["radar_sections"]["Non-Goals"]
-        assert "Preserve the release decision." not in row["radar_sections"]["Operational Constraints"]
-        assert "Keep inspection evidence reviewable." not in row["radar_sections"]["Operational Constraints"]
+        rendered_sections = "\n".join(row["radar_sections"].values())
+        assert "Non-Goals" not in row["radar_sections"]
+        assert "Operational Constraints" not in row["radar_sections"]
+        assert "Do not override a safety hold." not in rendered_sections
+        assert "Preserve the release decision." not in rendered_sections
+        assert "Keep inspection evidence reviewable." not in rendered_sections
     brief_sections = {
         section["section"]: section["must_capture"]
         for section in proposal["project_brief"]["blueprint_sections"]

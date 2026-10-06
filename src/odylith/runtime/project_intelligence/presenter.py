@@ -783,9 +783,16 @@ def _render_project_html_project(project: Mapping[str, Any]) -> str:
     )
     posture_html = ""
     boundary_html = ""
+    desired = str(project.get("desired") or "").strip()
+    state_body = (
+        f'<div class="project-state-grid"><article><h3>{_d(project.get("current_state_label"))}</h3>'
+        f'{_prose_lines(project.get("current"))}</article><strong>to</strong><article>'
+        f'<h3>{_d(project.get("desired_state_label"))}</h3>{_prose_lines(desired)}</article></div>'
+        if desired else _prose_lines(project.get("current"))
+    )
     state_html = (
         f"""      <p class="project-section-kicker">{_d(project.get("work_state_kicker"))}</p>
-      <section class="project-panel"><div class="project-panel-head"><h2>{_d(project.get("state_title"))}</h2><p>{_d(project.get("state_note"))}</p></div><div class="project-state-grid"><article><h3>{_d(project.get("current_state_label"))}</h3>{_prose_lines(project.get("current"))}</article><strong>to</strong><article><h3>{_d(project.get("desired_state_label"))}</h3>{_prose_lines(project.get("desired"))}</article></div></section>
+      <section class="project-panel"><div class="project-panel-head"><h2>{_d(project.get("state_title"))}</h2><p>{_d(project.get("state_note"))}</p></div>{state_body}</section>
 """
         if _enabled(project, "state")
         else ""

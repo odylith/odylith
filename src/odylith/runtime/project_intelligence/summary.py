@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from collections.abc import Mapping, Sequence
 
-from odylith.runtime.project_intelligence.utils import humanize, short, strings
+from odylith.runtime.project_intelligence.utils import humanize, sentence, short, strings
 
 
 _STATUS_TAIL_PREFIXES = (
@@ -82,9 +82,30 @@ def project_intro(
     root_component: Mapping[str, object],
     components: Sequence[Mapping[str, object]],
     repo_role: str,
+    consumer_lane: bool,
 ) -> str:
     """Return a clear project explanation derived from source-owned records."""
 
+    if consumer_lane:
+        for value in (root_component.get("what_it_is"), root_component.get("why_tracked")):
+            text = sentence(value)
+            if not text:
+                continue
+            if (
+                text == "Logical component registered through odylith component register."
+                or (
+                    text.startswith("Logical component registered through odylith component register with ")
+                    and text.endswith(" as its initial evidence anchor.")
+                )
+                or text == (
+                    f"Registered so agent sessions can see {sentence(root_component.get('name'))} "
+                    "as a named ownership boundary from the initial evidence anchor; path prefixes "
+                    "seed the intended boundary and can be tightened as the contract becomes clearer."
+                )
+            ):
+                continue
+            return concise_text(_clean_packaging_prose(text), limit=230)
+        return ""
     source = source_text(root_component=root_component, components=components)
     agent_intro = _agent_governance_intro(
         project_title=project_title,

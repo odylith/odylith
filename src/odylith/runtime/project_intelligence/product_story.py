@@ -98,12 +98,6 @@ def build_greenfield_product_story(
 
 def build_source_product_story(
     *,
-    project_title: str,
-    project_intro: str,
-    release_label: str,
-    current_focus: str,
-    next_title: str,
-    next_action_text: str,
     active_workstreams: Sequence[str],
     backlog: Mapping[str, Any],
     components: Sequence[Mapping[str, Any]],
@@ -114,18 +108,8 @@ def build_source_product_story(
     """Build source-backed story prose for existing projects and operations."""
 
     workflow = _source_workflow_paragraph(
-        release_label=release_label,
-        current_focus=current_focus,
         active_workstreams=active_workstreams,
         backlog=backlog,
-    )
-    proof = _source_proof_paragraph(release_label=release_label, blockers=blockers)
-    artifact = _source_artifact_paragraph(
-        active_workstreams=active_workstreams,
-        backlog=backlog,
-        components=components,
-        atlas=atlas,
-        evidence_sources=evidence_sources,
     )
     supporting_records = _source_supporting_records(
         active_workstreams=active_workstreams,
@@ -138,7 +122,7 @@ def build_source_product_story(
         "headline": "",
         "standfirst": "",
         "paragraphs": [workflow] if workflow else [],
-        "supporting_records": [row for row in (proof, artifact, *supporting_records) if row],
+        "supporting_records": [row for row in (_risk_sentence(blockers), *supporting_records) if row],
         "actors": [],
     }
 
@@ -185,65 +169,29 @@ def _display_title(value: object) -> str:
 
 def _source_workflow_paragraph(
     *,
-    release_label: str,
-    current_focus: str,
     active_workstreams: Sequence[str],
     backlog: Mapping[str, Any],
 ) -> str:
-    release = sentence(release_label, "current release")
     workflow = _source_workflow_phrase(active_workstreams=active_workstreams, backlog=backlog)
-    focus = concise_text(current_focus, limit=120)
-    if _is_acceptance_headline(focus):
-        focus = ""
-    if workflow:
-        body = f"The first usable workflow for {release} is {workflow}."
-    elif focus:
-        body = f"The first usable workflow for {release} is the current focus: {_lower_first(focus).rstrip('.')}."
-    else:
-        body = f"The first usable workflow for {release} still needs to be named in source records."
-    return body
-
-
-def _source_proof_paragraph(*, release_label: str, blockers: Sequence[tuple[str, str, str]]) -> str:
-    release = sentence(release_label, "current release")
-    body = (
-        f"Release {release} is coherent when the product workflow, owned boundaries, topology, "
-        "and validation evidence agree before implementation readiness is claimed."
-    )
-    risk = _risk_sentence(blockers)
-    if risk:
-        body += f" {risk}"
-    return body
+    return f"Current work: {workflow}." if workflow else ""
 
 
 def _source_workflow_phrase(*, active_workstreams: Sequence[str], backlog: Mapping[str, Any]) -> str:
     rows_by_id = backlog_rows_by_id(backlog)
-    titles: list[str] = []
     for workstream_id in active_workstreams:
         token = sentence(workstream_id)
         row = rows_by_id.get(token, {})
         title = sentence(row.get("title"))
         if not title or _is_meta_record_title(title):
             continue
-        titles.append(_lower_first(title).rstrip("."))
-        if len(titles) >= 2:
-            break
-    if not titles:
-        for row in list(backlog.get("execution", []))[:3] + list(backlog.get("queued", []))[:2]:
-            if not isinstance(row, Mapping):
-                continue
-            title = sentence(row.get("title") or row.get("idea_id"))
-            if not title or _is_meta_record_title(title):
-                continue
-            titles.append(_lower_first(title).rstrip("."))
-            if len(titles) >= 2:
-                break
-    return _join(titles)
-
-
-def _is_acceptance_headline(value: str) -> bool:
-    text = sentence(value).casefold()
-    return text.startswith(("greenfield proposal accepted for ", "accepted greenfield proposal for "))
+        return title.rstrip(".")
+    for row in list(backlog.get("execution", []))[:3] + list(backlog.get("queued", []))[:2]:
+        if not isinstance(row, Mapping):
+            continue
+        title = sentence(row.get("title"))
+        if title and not _is_meta_record_title(title):
+            return title.rstrip(".")
+    return ""
 
 
 def _is_component_inventory_line(value: str) -> bool:
@@ -256,41 +204,6 @@ def _is_component_inventory_line(value: str) -> bool:
         or (" with `" in text and " as its initial" in text)
         or ("responsible for own " in text)
     )
-
-
-def _source_artifact_paragraph(
-    *,
-    active_workstreams: Sequence[str],
-    backlog: Mapping[str, Any],
-    components: Sequence[Mapping[str, Any]],
-    atlas: Mapping[str, Any],
-    evidence_sources: Sequence[str],
-) -> str:
-    work = _workstream_names(active_workstreams=active_workstreams, backlog=backlog)
-    component_text = _component_names(components)
-    diagram_text = _diagram_names(atlas)
-    proof = evidence_boundary_phrase(evidence_sources)
-    clauses: list[str] = []
-    if work:
-        clauses.append(f"Workstream records carry {work}")
-    if component_text:
-        clauses.append(f"Component records name the owned boundaries as {component_text}")
-    if diagram_text:
-        clauses.append(f"Diagram records give reviewers {diagram_text}")
-    if proof:
-        clauses.append(f"the proof boundary is {proof}")
-    if not clauses:
-        return "The story is still thin: source records exist, but no connected workstream, component, diagram, or proof boundary is strong enough to narrate yet."
-    parts: list[str] = []
-    if work:
-        parts.append(f"After the product story is clear, Radar turns the active work into {work}.")
-    if component_text:
-        parts.append(f"Registry records anchor that work in {component_text}.")
-    if diagram_text:
-        parts.append(f"Atlas records give reviewers {diagram_text}.")
-    if proof:
-        parts.append(f"Evidence stays bounded to {proof}, so the story does not outrun the source records.")
-    return " ".join(parts)
 
 
 def _source_supporting_records(

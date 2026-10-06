@@ -37,6 +37,9 @@ def test_selective_sync_readers_observe_reopened_casebook_source(
     index_path = sync_casebook_bug_index.sync_casebook_bug_index(repo_root=tmp_path)
     reopened_source = closed_source.replace("- Status: Closed", "- Status: Open")
     bug_path.write_text(reopened_source, encoding="utf-8")
+    bug_path.chmod(0o640)
+    reopened_bytes = bug_path.read_bytes()
+    reopened_mode = bug_path.stat().st_mode & 0o777
     assert "| Closed |" in index_path.read_text(encoding="utf-8")
 
     provider_attempts: list[str] = []
@@ -106,11 +109,184 @@ def test_selective_sync_readers_observe_reopened_casebook_source(
             )
         assert result == 0
         assert provider_attempts == []
-        assert bug_path.read_text(encoding="utf-8") == reopened_source
+        assert bug_path.read_bytes() == reopened_bytes
+        assert bug_path.stat().st_mode & 0o777 == reopened_mode
         assert "| Open |" in index_path.read_text(encoding="utf-8")
         assert observations == {"compass": ["Open"], "casebook": ["Open"]}
     finally:
         store.clear_runtime_process_caches(repo_root=tmp_path)
+
+
+def test_selective_sync_rejects_invalid_casebook_source_before_any_reader(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    bug_path = tmp_path / "odylith/casebook/bugs/2026-09-07-invalid-reopen.md"
+    bug_path.parent.mkdir(parents=True)
+    valid_source = (
+        "# Reopened status\n\n"
+        "- Bug ID: CB-001\n- Status: Closed\n- Created: 2026-09-07\n"
+        "- Severity: P2\n- Reproducibility: High\n- Type: Product\n"
+        "- Description: The stale index must not reach selected readers.\n"
+    )
+    bug_path.write_text(valid_source, encoding="utf-8")
+    index_path = sync_casebook_bug_index.sync_casebook_bug_index(
+        repo_root=tmp_path, migrate_bug_ids=False,
+    )
+    bug_path.write_text(
+        valid_source.replace("- Status: Closed", "- Status: Open").replace(
+            "- Reproducibility: High", "- Reproducibility: High; invalid value"
+        ),
+        encoding="utf-8",
+    )
+    bug_path.chmod(0o640)
+    before_bug = (bug_path.read_bytes(), bug_path.stat().st_mode & 0o777)
+    before_index = (index_path.read_bytes(), index_path.stat().st_mode & 0o777)
+    plan = sync._build_truth_only_selective_sync_plan(
+        repo_root=tmp_path,
+        args=SimpleNamespace(),
+        changed_paths=(
+            str(bug_path.relative_to(tmp_path)),
+            agent_runtime_contract.candidate_stream_tokens()[0],
+        ),
+        sync_failure_command="odylith sync --repo-root .",
+        runtime_mode="standalone",
+    )
+    assert plan.steps[0].paths == ("odylith/casebook/bugs/INDEX.md",)
+    monkeypatch.setattr(
+        sync.compass_dashboard_refresh_inputs,
+        "run_compass_dashboard_refresh",
+        lambda **_: pytest.fail("Compass read invalid Casebook source"),
+    )
+
+    def forbid_render(**_):
+        pytest.fail("Casebook render followed failed source validation")
+
+    rc = sync._execute_plan(
+        repo_root=tmp_path,
+        plan_name="Casebook invalid-source regression",
+        plan=plan,
+        run_impl=forbid_render,
+        runtime_fallback_used=False,
+    )
+
+    assert rc == 2
+    assert (bug_path.read_bytes(), bug_path.stat().st_mode & 0o777) == before_bug
+    assert (index_path.read_bytes(), index_path.stat().st_mode & 0o777) == before_index
+    assert not (tmp_path / "odylith/casebook/casebook.html").exists()
+
+
+def test_direct_casebook_refresh_updates_index_without_changing_valid_bug_source(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    bug_path = tmp_path / "odylith/casebook/bugs/2026-09-07-direct-reopen.md"
+    bug_path.parent.mkdir(parents=True)
+    closed_source = (
+        "# Direct refresh\n\n- Bug ID: CB-001\n- Status: Closed\n"
+        "- Created: 2026-09-07\n- Severity: P2\n- Reproducibility: High\n"
+        "- Type: Product\n- Description: Direct refresh follows the source status.\n"
+    )
+    bug_path.write_text(closed_source, encoding="utf-8")
+    index_path = sync_casebook_bug_index.sync_casebook_bug_index(
+        repo_root=tmp_path, migrate_bug_ids=False,
+    )
+    bug_path.write_text(closed_source.replace("- Status: Closed", "- Status: Open"), encoding="utf-8")
+    bug_path.chmod(0o640)
+    before_bug = (bug_path.read_bytes(), bug_path.stat().st_mode & 0o777)
+    monkeypatch.setenv("ODYLITH_REASONING_MODE", "disabled")
+
+    def run_casebook(*, repo_root: Path, args, heartbeat_label: str, **kwargs):
+        assert args[:3] == (
+            "python", "-m", "odylith.runtime.surfaces.render_casebook_dashboard"
+        )
+        return casebook.main(list(args[3:]))
+
+    monkeypatch.setattr(sync.sync_command_execution, "run_command", run_casebook)
+    rc = sync.refresh_dashboard_surfaces(
+        repo_root=tmp_path, surfaces=("casebook",), runtime_mode="standalone", force=True,
+    )
+
+    assert rc == 0
+    assert (bug_path.read_bytes(), bug_path.stat().st_mode & 0o777) == before_bug
+    assert "| Open |" in index_path.read_text(encoding="utf-8")
+    assert "Open" in (tmp_path / "odylith/casebook/casebook-payload.v1.js").read_text(encoding="utf-8")
+
+
+def test_parallel_dashboard_refresh_stops_before_compass_on_invalid_casebook(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    bug_path = tmp_path / "odylith/casebook/bugs/2026-09-07-invalid-parallel.md"
+    bug_path.parent.mkdir(parents=True)
+    bug_path.write_text(
+        "# Invalid source\n\n- Bug ID: CB-001\n- Status: Open\n"
+        "- Created: 2026-09-07\n- Severity: P2\n"
+        "- Reproducibility: High; invalid value\n- Type: Product\n"
+        "- Description: Readers must stop before publication.\n",
+        encoding="utf-8",
+    )
+    before_bug = bug_path.read_bytes()
+    monkeypatch.setattr(
+        sync.compass_dashboard_refresh_inputs,
+        "run_compass_dashboard_refresh",
+        lambda **_: pytest.fail("Compass ran after invalid Casebook source"),
+    )
+    monkeypatch.setattr(
+        sync.sync_command_execution,
+        "run_command",
+        lambda **_: pytest.fail("A surface rendered after invalid Casebook source"),
+    )
+
+    rc = sync.refresh_dashboard_surfaces(
+        repo_root=tmp_path,
+        surfaces=("compass", "casebook"),
+        runtime_mode="standalone",
+        force=True,
+    )
+
+    assert rc == 2
+    assert bug_path.read_bytes() == before_bug
+    assert not (bug_path.parent / "INDEX.md").exists()
+    assert not (tmp_path / "odylith/compass/compass.html").exists()
+
+
+def test_multisurface_refresh_updates_index_without_migrating_legacy_bug_source(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    bug_path = tmp_path / "odylith/casebook/bugs/2026-09-07-legacy-source.md"
+    bug_path.parent.mkdir(parents=True)
+    bug_path.write_text(
+        "# Legacy source\n\n- Status: Open\n- Created: 2026-09-07\n"
+        "- Severity: P2\n- Reproducibility: High\n- Type: Product\n"
+        "- Description: Upgrade refresh must preserve this authored record.\n",
+        encoding="utf-8",
+    )
+    bug_path.chmod(0o640)
+    before_bug = (bug_path.read_bytes(), bug_path.stat().st_mode & 0o777)
+    observed: list[str] = []
+    monkeypatch.setenv("ODYLITH_REASONING_MODE", "disabled")
+
+    def run_casebook(*, repo_root: Path, args, heartbeat_label: str, **kwargs):
+        assert args[:3] == (
+            "python", "-m", "odylith.runtime.surfaces.render_casebook_dashboard"
+        )
+        return casebook.main(list(args[3:]))
+
+    def read_compass(*, repo_root: Path, normalized_runtime_mode: str):
+        index = repo_root / "odylith/casebook/bugs/INDEX.md"
+        assert "| Open |" in index.read_text(encoding="utf-8")
+        assert (bug_path.read_bytes(), bug_path.stat().st_mode & 0o777) == before_bug
+        observed.append("compass")
+        return {"rc": 0, "status": "passed"}
+
+    monkeypatch.setattr(sync.sync_command_execution, "run_command", run_casebook)
+    monkeypatch.setattr(sync.compass_dashboard_refresh_inputs, "run_compass_dashboard_refresh", read_compass)
+    rc = sync.refresh_dashboard_surfaces(
+        repo_root=tmp_path, surfaces=("compass", "casebook"),
+        runtime_mode="standalone", force=True,
+    )
+
+    assert rc == 0
+    assert observed == ["compass"]
+    assert (bug_path.read_bytes(), bug_path.stat().st_mode & 0o777) == before_bug
 
 
 @pytest.mark.parametrize("fingerprint_kind", ["path", "shallow_glob"])

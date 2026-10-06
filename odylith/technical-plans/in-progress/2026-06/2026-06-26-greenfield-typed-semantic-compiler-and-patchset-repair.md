@@ -1,5 +1,26 @@
 Status: In progress
 
+## V39 Project source-narrative correction (2026-10-06)
+
+The four-owner Project correction passes eight source UI and 54 focused checks,
+removing 104 lines. It renders the exact source work title, omits generic Desired
+state synthesis and the no-active-release pseudo-name, and retains human purpose,
+closed sources, warnings, and the accepted authored route. Earlier source/import
+and support-cap expectation failures remain in the handoff. Independent review is
+CLEAR with no P0/P1/P2 finding; this remains source proof only, with package,
+installed, semantic, and release gates open. CB-303 pins the review receipt.
+
+## V38 Project narrative correction pending (2026-10-06)
+
+The installed `11e3211` Project view exposes a machine Registry-registration
+introduction, a “first usable workflow” fallback for “No active release
+detected,” and a generic Desired state. The confirmed Project-builder and
+source-Story owners must render only actual source facts and omit unsupported
+desired outcomes. This is a presentation correction; it does not change
+lifecycle state, semantic qualification, or release readiness. Diagnosis:
+`/private/tmp/odylith-v38-existing-project-narrative-diagnosis-20261006.json`
+(SHA-256 `f89d5939020e58bc027a845608868900b9e99260943260801d78730d5d8a9f7d`).
+
 ## V37 disclosure fidelity correction (2026-10-06)
 
 Closed native What changed details now retain distinct authored facts through

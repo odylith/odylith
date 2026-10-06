@@ -1,5 +1,31 @@
 - Bug ID: CB-303
 
+## V39 Project source-narrative correction (2026-10-06)
+
+The four-owner Project correction passes eight source UI and 54 focused checks,
+removing 104 lines. It renders the exact source work title, omits generic Desired
+state synthesis and the no-active-release pseudo-name, and retains human purpose,
+closed sources, warnings, and the accepted authored route. Earlier source/import
+and support-cap expectation failures remain in the handoff. Independent review is
+CLEAR with no P0/P1/P2 finding; this is not package, installed, semantic, or
+release proof. Evidence: `/private/tmp/odylith-v39-existing-project-source-browser-r4-20261006/final-handoff.json`
+(SHA-256 `bac27b0631f03b4a1df7a9a8bdba295ebcfddfa4f638b3131cc70117084ffccb`);
+review `/private/tmp/odylith-v39-project-registry-cognitive-load-independent-review-20261006/review.json`
+(SHA-256 `91060af64c08a56ec6a8b6913bc1b6005c1da3c02ef3754549ce7a82064d2f90`).
+
+## V38 existing-Project narrative defect (2026-10-06)
+
+The installed `11e3211` Project view leads with a machine Registry-registration
+introduction, presents “first usable workflow” for “No active release detected,”
+and renders a generic seven-sentence Desired state. Product Project-builder and
+source-Story fallback owners are confirmed. Replace those fallbacks from actual
+source facts and omit unsupported desired outcomes; do not alter lifecycle state.
+Registry also displays the same registration sentence as its component purpose.
+Keep that metadata in the closed stored-description disclosure and retain any
+substantive supplied purpose in the primary view.
+Diagnosis: `/private/tmp/odylith-v38-existing-project-narrative-diagnosis-20261006.json`
+(SHA-256 `f89d5939020e58bc027a845608868900b9e99260943260801d78730d5d8a9f7d`).
+
 ## V37 disclosure fidelity correction (2026-10-06)
 
 The first blanket detail-suppression attempt failed the distinct-copy

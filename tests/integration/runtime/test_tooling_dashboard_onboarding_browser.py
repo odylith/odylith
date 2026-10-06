@@ -1434,7 +1434,9 @@ def test_cli_install_adopt_latest_renders_a_browser_valid_incremental_upgrade_no
     rc = cli.main(["install", "--repo-root", str(repo_root), "--adopt-latest", "--no-open"])
 
     assert rc == 0
-    assert refresh_capture["surfaces"] == ("tooling_shell", "radar", "compass")
+    assert refresh_capture["surfaces"] == (
+        "tooling_shell", "radar", "compass", "registry", "casebook", "atlas",
+    )
     assert refresh_capture["runtime_mode"] == "auto"
     with _repo_browser_context(repo_root) as (base_url, context):
         with _new_page(context) as (page, observation):
@@ -1530,7 +1532,9 @@ def test_cli_upgrade_renders_a_browser_valid_incremental_upgrade_note(tmp_path: 
     rc = cli.main(["upgrade", "--repo-root", str(repo_root), "--to", "1.2.3"])
 
     assert rc == 0
-    assert refresh_capture["surfaces"] == ("tooling_shell", "radar", "compass")
+    assert refresh_capture["surfaces"] == (
+        "tooling_shell", "radar", "compass", "registry", "casebook", "atlas",
+    )
     assert refresh_capture["runtime_mode"] == "auto"
     with _repo_browser_context(repo_root) as (base_url, context):
         with _new_page(context) as (page, observation):

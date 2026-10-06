@@ -57,6 +57,11 @@ def _allocated_plan(tmp_path: Path, proposal: dict[str, Any]) -> Any:
                 "workstream_depends_on": "B-999", "related_diagram_ids": "D-099",
             },
             sections={
+                "Problem": row["problem"],
+                "Customer": row["customer"],
+                "Opportunity": row["opportunity"],
+                "Product View": row["product_view"],
+                "Success Metrics": "\n".join(f"- {value}" for value in row["success_metrics"]),
                 "Dependencies": "\n".join(row["dependencies"]),
                 "Source evidence": proposal["intent"]["first_path"],
             },

@@ -5,7 +5,7 @@
   B-111 through B-117. The surface should show the umbrella, execution waves,
   release target `release-0-1-11`, and proof gates without turning Odylith Discipline
   into noisy task theater.
-Last updated: 2026-10-04
+Last updated: 2026-10-06
 
 
 ## Purpose
@@ -435,6 +435,9 @@ themselves.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-10-06 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142, B-145
+  - Evidence: `src/odylith/runtime/governance/sync_workstream_artifacts.py`, `src/odylith/runtime/project_intelligence/builder.py`, `src/odylith/runtime/surfaces/registry_component_identity_ui.py`
 - **2026-09-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py`, `src/odylith/runtime/governance/sync_workstream_artifacts.py`
@@ -449,9 +452,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md`, `src/odylith/runtime/domain_intelligence/archetypes.py`, `src/odylith/runtime/domain_intelligence/proposal_planning.py`
-- **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
-  - Scope: B-141
-  - Evidence: `odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md`, `odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md`, `src/odylith/install/runtime.py`, `src/odylith/runtime/intervention_engine/prompt_signal_runtime.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

@@ -518,8 +518,8 @@ def _build_truth_only_selective_sync_plan(
                 next_command_on_failure=sync_failure_command,
             )
         )
-    # Compass and other runtime readers also consume the derived Casebook index.
-    # Settle its owned refresh first, preserving the other surfaces' order.
+    # Compass and other runtime readers consume the derived Casebook index.
+    # Run its owned refresh first, preserving the other surfaces' order.
     for surface in sorted(refresh_surfaces, key=lambda surface: surface != "casebook"):
         steps.extend(
             _dashboard_surface_steps(
@@ -527,6 +527,7 @@ def _build_truth_only_selective_sync_plan(
                 surface=surface,
                 runtime_mode=runtime_mode,
                 atlas_sync=surface == "atlas",
+                casebook_migrate_bug_ids=False,
             )
         )
 
@@ -1062,12 +1063,14 @@ def _runtime_retry_command(command: Sequence[str]) -> tuple[str, ...]:
     return _replace_runtime_mode_args(command, runtime_mode="standalone")
 
 
-def _casebook_index_refresh_step(*, repo_root: Path, next_command_on_failure: str, label: str) -> ExecutionStep:
+def _casebook_index_refresh_step(
+    *, repo_root: Path, next_command_on_failure: str, label: str, migrate_bug_ids: bool = True,
+) -> ExecutionStep:
     def _refresh_index() -> int:
         try:
             sync_casebook_bug_index.sync_casebook_bug_index(
                 repo_root=repo_root,
-                migrate_bug_ids=True,
+                migrate_bug_ids=migrate_bug_ids,
             )
         except ValueError as exc:
             print(str(exc))
@@ -1078,7 +1081,7 @@ def _casebook_index_refresh_step(*, repo_root: Path, next_command_on_failure: st
         label,
         surface="casebook",
         mutation_classes=("repo_owned_truth",),
-        paths=("odylith/casebook/bugs/INDEX.md",),
+        paths=("odylith/casebook/bugs/",) if migrate_bug_ids else ("odylith/casebook/bugs/INDEX.md",),
         action=_refresh_index,
         next_command_on_failure=next_command_on_failure,
     )
@@ -1094,16 +1097,6 @@ def _casebook_source_validation_action(*, repo_root: Path) -> int:
         return 0
     casebook_source_validation.print_casebook_source_validation_report(result)
     return 2
-
-
-def _casebook_source_validation_step(*, repo_root: Path, label: str) -> ExecutionStep:
-    return _execution_step(
-        label,
-        surface="casebook",
-        paths=("odylith/casebook/bugs/",),
-        action=lambda: _casebook_source_validation_action(repo_root=repo_root),
-        next_command_on_failure=_casebook_source_validation_command(),
-    )
 
 
 def _casebook_render_step(
@@ -1226,6 +1219,7 @@ def _dashboard_surface_steps(
     runtime_mode: str,
     atlas_sync: bool,
     atlas_diagram_ids: Sequence[str] = (),
+    casebook_migrate_bug_ids: bool = False,
 ) -> list[ExecutionStep]:
     normalized_runtime_mode = str(runtime_mode).strip().lower() or "auto"
     refresh_command = _owned_surface_refresh_command(surface=surface, atlas_sync=atlas_sync, atlas_diagram_ids=atlas_diagram_ids)
@@ -1365,9 +1359,11 @@ def _dashboard_surface_steps(
         return steps
     if surface == "casebook":
         steps.append(
-            _casebook_source_validation_step(
+            _casebook_index_refresh_step(
                 repo_root=repo_root,
-                label="Validate Casebook source without changing authored bug records or the index.",
+                next_command_on_failure=refresh_command,
+                label="Validate Casebook source and refresh its index before selected readers.",
+                migrate_bug_ids=casebook_migrate_bug_ids,
             )
         )
         steps.append(
@@ -1412,6 +1408,7 @@ def _build_dashboard_refresh_steps(
     atlas_diagram_ids: Sequence[str] = (),
 ) -> list[ExecutionStep]:
     steps: list[ExecutionStep] = []
+    explicit_casebook_refresh = tuple(selected) == ("casebook",)
     for surface in selected:
         steps.extend(
             _dashboard_surface_steps(
@@ -1419,6 +1416,7 @@ def _build_dashboard_refresh_steps(
                 surface=surface,
                 runtime_mode=runtime_mode,
                 atlas_sync=atlas_sync,
+                casebook_migrate_bug_ids=explicit_casebook_refresh,
                 **({"atlas_diagram_ids": atlas_diagram_ids} if atlas_diagram_ids else {}),
             )
         )
@@ -1738,6 +1736,7 @@ def _run_surface_worker(
     runtime_mode: str,
     atlas_sync: bool,
     force: bool = False,
+    casebook_migrate_bug_ids: bool = False,
     run_impl: Callable[..., int],
     include_action_results: bool = False,
     atlas_diagram_ids: Sequence[str] = (),
@@ -1753,9 +1752,9 @@ def _run_surface_worker(
         if surface == "radar":
             _normalize_radar_source_before_surface_refresh(repo_root=repo_root)
         outputs = sync_generated_outputs.surface_render_outputs(surface, repo_root=repo_root)
-        if force:
+        if force or (surface == "casebook" and casebook_migrate_bug_ids):
             cache_hit = False
-            cache_details = {"force": True}
+            cache_details = {"force": bool(force), "casebook_index_normalization": bool(casebook_migrate_bug_ids)}
         else:
             cache_hit, cache_details = surface_refresh_fingerprint_dag.can_reuse_surface_refresh(
                 repo_root=repo_root,
@@ -1792,6 +1791,7 @@ def _run_surface_worker(
                 surface=surface,
                 runtime_mode=runtime_mode,
                 atlas_sync=atlas_sync,
+                casebook_migrate_bug_ids=casebook_migrate_bug_ids,
                 **({"atlas_diagram_ids": atlas_diagram_ids} if surface == "atlas" and atlas_diagram_ids else {}),
             )
             result = _execute_dashboard_refresh_surface(
@@ -1882,8 +1882,11 @@ def _dashboard_refresh_surface_groups(*, selected: Sequence[str], atlas_sync: bo
     if len(ordered) <= 1:
         return [ordered] if ordered else []
     tooling_group = ["tooling_shell"] if "tooling_shell" in ordered else []
-    non_tooling = [surface for surface in ordered if surface != "tooling_shell"]
+    casebook_group = ["casebook"] if "casebook" in ordered else []
+    non_tooling = [surface for surface in ordered if surface not in {"tooling_shell", "casebook"}]
     groups: list[list[str]] = []
+    if casebook_group:
+        groups.append(casebook_group)
     if atlas_sync and "atlas" in non_tooling:
         pre_atlas = [surface for surface in non_tooling if surface != "atlas"]
         if pre_atlas:
@@ -1971,6 +1974,7 @@ def refresh_dashboard_surfaces(
                         runtime_mode=normalized_runtime_mode,
                         atlas_sync=atlas_sync,
                         force=bool(force),
+                        casebook_migrate_bug_ids=selected == ["casebook"],
                         run_impl=run_impl,
                         **({"include_action_results": True} if on_results is not None else {}),
                         **({"atlas_diagram_ids": atlas_diagram_ids} if surface == "atlas" and atlas_diagram_ids else {}),
@@ -1980,6 +1984,8 @@ def refresh_dashboard_surfaces(
                         if not output.endswith("\n"):
                             sys.stdout.write("\n")
                     surface_results.append(result)
+                if surface_group == ["casebook"] and surface_results[-1].get("status") == "failed":
+                    break
     finally:
         if force:
             if previous_guard_skip is None:

@@ -42,6 +42,13 @@ fallback, and degraded/error Project rendering remain proof obligations.
 
 ## Scope And Non-Goals
 
+### Project source narrative
+
+Project presents the supplied work title and human purpose directly. It does not
+synthesize a Desired state or treat “No active release detected” as a workflow
+name. Source links and warnings stay available in closed details, and the
+accepted authored route remains unchanged.
+
 ### Project risk presentation
 
 Project shows the actual supplied risk in its default view. Its category stays
@@ -579,6 +586,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-10-06: Project now renders its exact source work title and human purpose without generic Desired-state synthesis or a no-active-release pseudo-name; warnings, closed sources, and the accepted authored route remain. Four source owners pass 8 source UI and 54 focused checks with a net 104-line reduction; independent review, package, installed, semantic, and release proof remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
 - 2026-10-06: The r6 upgrade refresh correction passes 240 source checks with no input drift and independent CLEAR review. It keeps authenticated unfinished upgrade preservation, durable report/receipt order, stale/forged drift refusal, and historical-generation validity. Upgrade covers six surfaces; ordinary refresh remains three. This is source-only, not installed qualification. (Plan: [B-145](odylith/radar/radar.html?view=plan&workstream=B-145); Bug: `CB-347`)
 - 2026-10-06: Project now shows the actual supplied risk by default and keeps its category in closed native detail. Independent review is CLEAR and 60 focused unit checks pass. Evidence: `/private/tmp/odylith-project-risk-presentation-independent-review-20261006.json` (SHA-256 `221a3ed5ec073f21038227871e7d6fe85a282a785b0052c4c75db546c5cc7a91`). This is source UI evidence only; installed and release proof remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
 - 2026-10-06: Adopted compact default disclosures in the 13 exact preceding CI failures without changing production behavior. Browser tests verify closed evidence and counts, open actual summaries by keyboard, and retain text, style, count and route checks. The Compass VM models nearest details and verifies genuine failure opens it. All 13 signatures pass focused tests; the original CI failure and the requirement for fresh full CI remain. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-347`)

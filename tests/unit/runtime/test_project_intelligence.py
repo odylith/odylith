@@ -126,6 +126,89 @@ def test_project_intelligence_blank_install_ignores_generic_orienting_next_actio
     assert "Define the project first" not in html
 
 
+def test_existing_project_uses_source_workstream_without_registration_or_release_claims(tmp_path: Path) -> None:
+    registry_path = tmp_path / "odylith" / "registry" / "source" / "component_registry.v1.json"
+    component = {
+        "component_id": "archive-copier",
+        "name": "Archive Copier",
+        "what_it_is": (
+            "Logical component registered through `odylith component register` with "
+            "`tools/copy_record.py` as its initial evidence anchor."
+        ),
+        "why_tracked": (
+            "Registered so agent sessions can see Archive Copier as a named ownership boundary "
+            "from the initial evidence anchor; path prefixes seed the intended boundary and can "
+            "be tightened as the contract becomes clearer."
+        ),
+    }
+    _write_json(registry_path, {"components": [component]})
+    radar_index = tmp_path / "odylith" / "radar" / "source" / "INDEX.md"
+    radar_index.parent.mkdir(parents=True)
+    radar_index.write_text(
+        "## Ranked Active Backlog\n"
+        "| rank | idea_id | title | priority | status |\n"
+        "| --- | --- | --- | --- | --- |\n"
+        "| 1 | B-001 | Preserve archive record permissions during copies | P1 | queued |\n",
+        encoding="utf-8",
+    )
+
+    payload = builder.build_project_intelligence_payload(
+        repo_root=tmp_path, shell_payload={"shell_repo_name": "archive-copier"},
+    )
+    html = presenter.render_project_html({"project_intelligence": payload})
+    assert payload["title"] == "Archive Copier"
+    assert payload["intro"] == ""
+    assert payload["desired"] == ""
+    assert "scenario" not in payload["sections"]
+    assert payload["scenario"] == []
+    assert payload["scenario_note"] == ""
+    assert payload["jobs_title"] == "What work is recorded?"
+    assert payload["product_story"]["paragraphs"] == [
+        "Current work: Preserve archive record permissions during copies."
+    ]
+    assert "No active release detected" in payload["current"]
+    assert "No active release detected" not in " ".join(payload["product_story"]["paragraphs"])
+    assert "Logical component registered" not in html
+    assert "first usable workflow" not in html
+    assert "is coherent when" not in html
+    assert "Desired state" not in html
+    assert "<strong>to</strong>" not in html
+    assert "No current source-backed item found" not in html
+    assert "Current release: No active release detected" in html
+
+    component["what_it_is"] = "Copies selected archive records while retaining their original access rules."
+    _write_json(registry_path, {"components": [component]})
+    authored_purpose = builder.build_project_intelligence_payload(repo_root=tmp_path)
+    assert authored_purpose["intro"] == component["what_it_is"]
+
+    component["what_it_is"] = "Logical component registered through `odylith component register`."
+    component["why_tracked"] = "Tracks ownership of archive record copies."
+    _write_json(registry_path, {"components": [component]})
+    fallback_purpose = builder.build_project_intelligence_payload(repo_root=tmp_path)
+    assert fallback_purpose["intro"] == component["why_tracked"]
+
+
+def test_source_story_never_promotes_a_workstream_id_to_product_narrative() -> None:
+    story = product_story.build_source_product_story(
+        active_workstreams=[],
+        backlog={"queued": [
+            {"idea_id": "B-001"},
+            {"idea_id": "B-002", "title": "Verify copied record permissions"},
+        ]},
+        components=[], atlas={}, evidence_sources=[], blockers=[],
+    )
+    assert story["paragraphs"] == ["Current work: Verify copied record permissions."]
+    assert any("B-001" in row and "Verify copied record permissions" in row
+               for row in story["supporting_records"])
+
+    untitled = product_story.build_source_product_story(
+        active_workstreams=[], backlog={"queued": [{"idea_id": "B-001"}]},
+        components=[], atlas={}, evidence_sources=[], blockers=[],
+    )
+    assert untitled["paragraphs"] == []
+    assert any("B-001" in row for row in untitled["supporting_records"])
+
+
 def test_project_answer_summary_renders_as_full_table_without_markdown_noise() -> None:
     long_body = (
         "The project owner needs the system to keep the full operational explanation visible, including the "
@@ -168,9 +251,7 @@ def test_operating_project_purpose_and_next_action_have_one_visible_owner() -> N
     role_body = "The maintainer preserves mRNA & QBER source evidence."
     risk = "The consent evidence remains unverified."
     story = product_story.build_source_product_story(
-        project_title="Cerulean", project_intro=purpose, release_label="0.8",
-        current_focus="Review the launch evidence", next_title="Publish evidence",
-        next_action_text=next_action, active_workstreams=[], backlog={}, components=[],
+        active_workstreams=[], backlog={}, components=[],
         atlas={}, evidence_sources=["Registry component records"],
         blockers=[("Consent review", risk, "Reviewer")],
     )
@@ -409,11 +490,12 @@ def test_project_intelligence_compiles_current_repo_state_from_sources(tmp_path:
     assert payload["product_story"]["headline"] == ""
     assert payload["product_story"]["standfirst"] == ""
     assert payload["intro"] not in payload["product_story"]["paragraphs"]
-    assert any("first usable workflow" in row for row in payload["product_story"]["paragraphs"])
+    assert payload["product_story"]["paragraphs"] == ["Current work: Dynamic Project intelligence."]
     assert all("The next move" not in row for row in payload["product_story"]["paragraphs"])
     source_records = payload["product_story"]["supporting_records"]
-    assert any("Release 0.2.0: Human Project Entry is coherent" in row for row in source_records)
-    assert any("Evidence stays bounded" in row for row in source_records)
+    assert any("Project tab can drift from evidence" in row for row in source_records)
+    assert all("is coherent when" not in row for row in source_records)
+    assert any("Evidence is bounded by" in row for row in source_records)
     assert any("Radar carries" in row and "B-201" in row for row in source_records)
     assert any("Registry names the owned boundaries" in row for row in source_records)
     assert any("Atlas gives reviewers" in row for row in source_records)
