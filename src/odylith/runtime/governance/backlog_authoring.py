@@ -72,13 +72,13 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--success-metrics", required=True, help="Grounded Success Metrics section text.")
     parser.add_argument(
         "--domain-risk",
-        required=True,
-        help="Domain, compliance, policy, and operational risk posture for this workstream.",
+        default="",
+        help="Optional domain, compliance, policy, and operational risk posture for this workstream.",
     )
     parser.add_argument(
         "--security-posture",
-        required=True,
-        help="Security posture and AI-agent-assisted engineering guardrails for this workstream.",
+        default="",
+        help="Optional security posture and AI-agent-assisted engineering guardrails for this workstream.",
     )
     parser.add_argument("--priority", default=_DEFAULT_PRIORITY)
     parser.add_argument("--commercial-value", type=int, default=3)
@@ -260,16 +260,21 @@ def _render_idea_text(*, metadata: Mapping[str, str], sections: Mapping[str, str
         lines.append(f"{key}: {str(metadata.get(key, '')).strip()}")
         lines.append("")
     for section in backlog_contract._REQUIRED_SECTIONS:
+        body = str(sections.get(section, "")).strip()
+        if not body:
+            raise ValueError(f"missing required Radar section: {section}")
         lines.append(f"## {section}")
-        lines.append(str(sections.get(section, "")).strip() or "TBD.")
+        lines.append(body)
         lines.append("")
     required = set(backlog_contract._REQUIRED_SECTIONS)
     for section, body in sections.items():
         section_title = str(section).strip()
         if not section_title or section_title in required:
             continue
+        if not str(body).strip():
+            continue
         lines.append(f"## {section_title}")
-        lines.append(str(body).strip() or "TBD.")
+        lines.append(str(body).strip())
         lines.append("")
     return "\n".join(lines).rstrip() + "\n"
 
@@ -322,17 +327,13 @@ def _update_backlog_last_updated(content: str, *, today: dt.date) -> str:
     )
 
 
-def _default_sections_for_title(title: str) -> dict[str, str]:
-    return backlog_contract.default_section_boilerplate(title)
-
-
 def _grounded_sections_for_title(
     *,
     title: str,
     args: argparse.Namespace,
     source_custody: Mapping[str, Any] | None = None,
 ) -> dict[str, str]:
-    sections = dict(_default_sections_for_title(title))
+    sections: dict[str, str] = {}
     sections["Problem"] = str(args.problem).strip()
     sections["Customer"] = str(args.customer).strip()
     sections["Opportunity"] = str(args.opportunity).strip()
@@ -355,14 +356,13 @@ def _grounded_sections_for_title(
             section_title = str(section).strip()
             if section_title and str(body).strip():
                 sections[section_title] = str(body).strip()
-    if not artifact_tribunal.source_custody_valid(source_custody):
-        validation_errors = backlog_contract.core_detail_section_errors(
-            title=title,
-            sections=sections,
-            path=Path("<generated>"),
-        )
-        if validation_errors:
-            raise ValueError("; ".join(validation_errors))
+    validation_errors = backlog_contract.core_detail_section_errors(
+        title=title,
+        sections=sections,
+        path=Path("<generated>"),
+    )
+    if validation_errors:
+        raise ValueError("; ".join(validation_errors))
     return sections
 
 

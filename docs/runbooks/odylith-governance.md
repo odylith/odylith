@@ -11,8 +11,11 @@ failure. Installation problems use the [install and upgrade runbook](../../odyli
 ## Radar titles and release-targeted intake
 
 Use `odylith backlog create --help` to inspect the current intake contract.
-Supply grounded Problem, Customer, Opportunity, Product View, Success Metrics,
-Domain Risk, and Security Posture fields; a title alone is not a valid workstream.
+Supply grounded Problem, Customer, Opportunity, Product View, and Success Metrics;
+a title alone is not a valid workstream. Add Domain Risk, Security Posture, and
+other sections only when the evidence supports them. Required risk and security
+facts still belong in the core narrative or a supplied section. Empty optional
+headings are omitted from new records; older records with more sections remain valid.
 In the Odylith product repository, name the actual slice without an `Odylith`
 title prefix. This naming rule is not a license to remove a consumer's product
 name or change the scope of existing work.

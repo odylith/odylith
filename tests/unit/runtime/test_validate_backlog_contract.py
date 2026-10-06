@@ -3,8 +3,11 @@ from __future__ import annotations
 import datetime as dt
 from pathlib import Path
 
+import pytest
+
 from odylith.runtime.governance import sync_session
 from odylith.runtime.governance import backlog_topology_contract
+from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import validate_backlog_contract as gate
 
 
@@ -306,6 +309,31 @@ def test_backlog_contract_passes_with_valid_seed(
     assert "- active release targets: 0" in out
 
 
+def test_backlog_contract_accepts_five_core_sections(
+    tmp_path: Path, capsys,
+) -> None:
+    implementation, queued = _seed_minimal_repo(tmp_path)
+    for path in (implementation, queued):
+        spec = gate._parse_idea_spec(path)  # noqa: SLF001
+        sections = {section: spec.section_bodies[section] for section in gate._REQUIRED_SECTIONS}
+        path.write_text(
+            backlog_authoring._render_idea_text(metadata=spec.metadata, sections=sections),
+            encoding="utf-8",
+        )
+    assert gate.main(["--repo-root", str(tmp_path)]) == 0
+    assert "backlog contract validation passed" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("body", ("TBD", "Seed Workstream"))
+def test_core_detail_authoring_rejects_placeholder_and_title_only(body: str) -> None:
+    sections = {**_CORE_SECTION_BODIES, "Problem": body}
+    errors = gate.core_detail_section_errors(
+        title="Seed Workstream", sections=sections, path=Path("<generated>"),
+    )
+    assert len(errors) == 1
+    assert "## Problem" in errors[0]
+
+
 def test_backlog_contract_rejects_product_repo_workstream_title_prefix(
     tmp_path: Path,
     capsys,  # noqa: ANN001 - pytest fixture
@@ -419,6 +447,25 @@ def test_backlog_contract_rejects_empty_required_section(
 
     assert rc == 2
     assert "required section `## Problem` must be non-empty" in out
+
+
+@pytest.mark.parametrize(
+    ("body", "diagnostic"),
+    (("TBD", "uses placeholder-like text"), ("Backlog Bootstrap", "repeats the workstream title")),
+)
+def test_backlog_contract_rejects_persisted_placeholder_or_title_only_core(
+    tmp_path: Path, capsys, body: str, diagnostic: str,
+) -> None:
+    _implementation_path, queued_path = _seed_minimal_repo(tmp_path)
+    text = queued_path.read_text(encoding="utf-8")
+    text = text.replace(
+        "## Problem\nSeed workstream problem detail is grounded enough for backlog validation.",
+        f"## Problem\n{body}",
+    )
+    queued_path.write_text(text, encoding="utf-8")
+
+    assert gate.main(["--repo-root", str(tmp_path)]) == 2
+    assert f"core detail section `## Problem` {diagnostic}" in capsys.readouterr().out
 
 
 def test_backlog_contract_does_not_reinterpret_persisted_core_detail_copy(

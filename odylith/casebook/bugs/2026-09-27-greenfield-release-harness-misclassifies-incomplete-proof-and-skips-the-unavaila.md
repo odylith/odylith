@@ -1,5 +1,78 @@
 - Bug ID: CB-347
 
+## Successor Registry publication check (2026-10-06)
+
+The guidance sync refused four new feature-history entries whose plan routes
+were separated from their bullet lines. Keep each entry and its canonical plan
+route in one paragraph so Registry validates the components. The failed sync
+remains in `/private/tmp/odylith-cognitive-successor-guidance-publication-20261006.log`;
+it provides no publication credit.
+
+## V37 all-six upgrade refresh correction (2026-10-06)
+
+The all-six upgrade refresh correction passes 240 source checks with no input
+drift and independent CLEAR review. Upgrade refresh regenerates all six surfaces;
+ordinary refresh remains the default three-surface path. Authenticated unfinished
+upgrades preserve customer Casebook/source/INDEX modes, durable report then retire
+its receipt, refuse stale or forged drift, and leave historical generations valid.
+This resolves the bounded refresh ownership gap only, not installed qualification.
+Preserve the earlier open-after-recovery report, published-before-report SIGKILL,
+accidentally widened ordinary-three attempt, and missing immutable-pin finding.
+Evidence: `/private/tmp/odylith-upgrade-all-surfaces-correction-20261006-nvascvna/independent-review-r6-final-20261006.json`
+(SHA-256 `4231ab985ecfd1b0a23db736f4daf7fe542e01f9c0b5acdfb94cebfa64a8a00c`).
+
+## V37 fixed-pair and release-gate boundary (2026-10-06)
+
+The Research and Agriculture fixed H0/H1 pairs now pass their terminal controls.
+The closure preserves the earlier failures and is limited to the declared
+fixed-pair semantics, refusal/confirmation, sealed readback, and idempotence; it
+does not qualify an installed semantic journey or release. Evidence:
+`/private/tmp/odylith-v37-fixed-pairs-closure-20261006.json` (SHA-256
+`740c03e44b44beb54f07a578047b93eceefdfdab27d8524cb942e52d41dc5724`).
+
+Current CI at `111fc` still fails six tests (`9,956` pass, `10` skip). Four
+closed-disclosure expectations, one duplicate-detail expectation, and one
+incomplete fixture remain under separate fixes; preserve
+`/private/tmp/odylith-ci-37448686338-diagnosis-20261006/failure-report.md`. The
+six-surface upgrade correction is also pending: revision two passes 70 focused
+checks, but a real ordinary post-success refresh still fails. Neither result
+advances the release gate.
+
+## Current v37 published-v14 migration witness (2026-10-06)
+
+The subsequent selected-path census finds a separate migration ownership gap:
+Casebook and Registry HTML/JS remain exact v0.1.14 after the upgrade even though
+the target bundle and wheel are new. The upgrade renderer selects only
+tooling-shell, Radar, and Compass. The bounded preservation/notice witness
+remains valid, but this prevents class assessment completion. The first assessor
+also used an invalid `--description` help assertion instead of `--what-it-is`
+and lost stdout, so it earns no help credit. One retained runtime `.pyc` is
+separate from the original 18,348-entry browser inventory and does not rewrite
+that witness. Census and stopped assessment: `b145-selected-path-census.json`
+(SHA-256 `b2a79e8616be3e021265279fc4a79e36af642bc91a9e81107a4dbf5219f853a5`) and
+`b145-assessment-stopped.json` (SHA-256
+`9197553152c7aa5fb4ee505d6e0691f707d590c67dbdf8289a96539e850609ce`) in the
+v37 migration namespace.
+
+A fresh native upgrade from published v0.1.14 to installed v0.1.15 returned
+`RC=0` in `27.502s`. It preserved 14 of 15 raw source files and all 15 modes;
+the only predeclared change is the existing Atlas
+`render_source_fingerprint` leaf. Radar `INDEX.md` is byte/mode exact, 13 target
+owners match across source, wheel, and installed readback, and the full consumer
+inventory is exact before and after browser readback. The active wall-clock
+release notice has a native Close control at desktop and mobile widths; two
+positive linked-plan readbacks and 12 screenshots reported no issues.
+
+This witness does not complete B-145. The earlier ambiguous start remains
+`RC=1` with zero success credit; the v35 INDEX failure, v36 wrapper failure, and
+clock-controlled follow-up remain historical limits. The five migration classes
+and their markers remain open for separate class assessment, and no release,
+semantic, host, holdout, or full-browser claim follows. Handoff:
+`/private/tmp/odylith-greenfield-v14-to-v37-migration-start-routed-r1-20261006/handoff.json`
+(SHA-256 `45d677ddbc988200a37c5e37e2c26521a1042a3afacfd0c890bd1cbd96f64af7`).
+Independent review: `independent-b145-assessment-review.json` in the same
+directory (SHA-256 `1a003527292ca609b5558c9e6020c0eed153b58c015debadc119ea5b5b04a085`).
+
 ## Current single-carrier transport and v36 proof boundary (2026-10-06)
 
 The final authored-selective call mistakenly included the public release note.

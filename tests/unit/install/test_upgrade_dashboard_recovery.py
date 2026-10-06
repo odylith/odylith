@@ -12,6 +12,7 @@ import pytest
 
 from odylith import cli
 from odylith.install import manager
+from odylith.install import upgrade_reporting
 from odylith.install import upgrade_dashboard_recovery as recovery
 from odylith.install.state import version_pin_path
 from odylith.runtime.domain_intelligence import greenfield_generation_store as generations
@@ -64,6 +65,33 @@ def _observed(sim):
     }
 
 
+def test_real_first_consumer_install_keeps_ordinary_default_three(tmp_path, monkeypatch):
+    from odylith.install import atlas_surface_migration as atlas
+
+    sim = _installed(tmp_path, monkeypatch)
+    root = sim.repo_root
+    event = sim.install_ledger()[-1]
+    assert event["operation"] == "install" and event["status"] == "ready"
+    assert event["migration_plan"]["scenario"]["state"]["repo_role"] == "consumer_repo"
+    assert not list((root / ".odylith/runtime/logs").glob("upgrade-*.json"))
+    target = root / ".odylith/runtime/versions/1.2.3"
+    for owner, relative in (
+        (recovery, "install/upgrade_dashboard_recovery.py"),
+        (atlas, "install/atlas_surface_migration.py"),
+        (atlas.diagram_freshness, "runtime/common/diagram_freshness.py"),
+    ):
+        monkeypatch.setattr(owner, "__file__", str(target / "lib/odylith" / relative))
+    monkeypatch.setattr(atlas, "inspect_atlas_surface_migration", lambda **_: pytest.fail("ordinary install refresh scanned Atlas"))
+    calls = []
+    before = _observed(sim)
+    monkeypatch.setattr(cli.sync_workstream_artifacts, "refresh_dashboard_surfaces", lambda **args: calls.append(args) or 0)
+    assert cli.main(["dashboard", "refresh", "--repo-root", str(root)]) == 0
+    assert len(calls) == 1 and calls[0]["surfaces"] == ["tooling_shell", "radar", "compass"]
+    assert _observed(sim) == before and sim.install_ledger()[-1] == event
+    assert not _receipt(root).exists()
+    assert not list((root / ".odylith/runtime/logs").glob("upgrade-*.json"))
+
+
 def _failed_upgrade(tmp_path, monkeypatch, capsys):
     sim = _installed(tmp_path, monkeypatch)
     root = sim.repo_root
@@ -94,6 +122,15 @@ def _failed_upgrade(tmp_path, monkeypatch, capsys):
     emitted = output.out.split("Retry with `", 1)[1].split("`", 1)[0]
     tokens = shlex.split(emitted)
     assert tokens == ["./.odylith/bin/odylith", "dashboard", "refresh", "--repo-root", ".", "--force"]
+    # The simulator dispatches in process; model the modules loaded by its activated target.
+    from odylith.install import atlas_surface_migration as atlas
+    target = root / ".odylith/runtime/versions/1.2.4"
+    for owner, relative in (
+        (recovery, "install/upgrade_dashboard_recovery.py"),
+        (atlas, "install/atlas_surface_migration.py"),
+        (atlas.diagram_freshness, "runtime/common/diagram_freshness.py"),
+    ):
+        monkeypatch.setattr(owner, "__file__", str(target / "lib/odylith" / relative))
     return sim, tokens[1:], after
 
 
@@ -104,6 +141,7 @@ def _successful_dashboard_renderer(sim, monkeypatch):
         assert Path(arguments["repo_root"]).resolve() == sim.repo_root
         assert arguments["force"] is True
         assert arguments["repository_lock_fd"] is not None
+        assert arguments["surfaces"] == ["tooling_shell", "radar", "compass", "registry", "casebook", "atlas"]
         calls.append("complete-retry")
         (sim.repo_root / RADAR).write_bytes(b"<!doctype html><title>Complete refreshed Radar</title>\n")
         completed = arguments.get("on_completed")
@@ -117,6 +155,9 @@ def test_failed_upgrade_advertised_retry_keeps_target_and_publishes_complete_suc
     tmp_path, monkeypatch, capsys,
 ):
     sim, retry, failed = _failed_upgrade(tmp_path, monkeypatch, capsys)
+    original_path, original_report = upgrade_reporting.latest_upgrade_report(repo_root=sim.repo_root)
+    original_path.chmod(0o640)
+    original_bytes, original_mode = original_path.read_bytes(), original_path.stat().st_mode & 0o777
     calls = _successful_dashboard_renderer(sim, monkeypatch)
     monkeypatch.chdir(sim.repo_root)
     result = cli.main(retry)
@@ -129,6 +170,170 @@ def test_failed_upgrade_advertised_retry_keeps_target_and_publishes_complete_suc
     assert after["files"] == failed["files"]
     pinned = generations.require_greenfield_working_generation(sim.repo_root)
     assert (pinned.repository_root / RADAR).read_bytes() == (sim.repo_root / RADAR).read_bytes()
+    completed_path, completed = upgrade_reporting.latest_upgrade_report(repo_root=sim.repo_root)
+    assert completed_path != original_path
+    assert completed_path.stat().st_mode & 0o777 == 0o600
+    assert completed["schema"] == "odylith.upgrade.report.v1" and completed["status"] == "succeeded"
+    assert completed["migration_plan"] == original_report["migration_plan"]
+    assert completed["final_state"] == {"active_version": "1.2.4", "previous_version": "1.2.3"}
+    assert completed["dashboard_refresh"] == {
+        "surfaces": ["tooling_shell", "radar", "compass", "registry", "casebook", "atlas"],
+        "returncode": 0, "success": True, "fresh": True, "mode": "auto",
+    }
+    assert len(completed["phases"]) == 1 and completed["phases"][0]["name"] == "dashboard_completion"
+    details = completed["phases"][0]["details"]
+    assert details["original_report"] == {
+        "path": str(original_path.relative_to(sim.repo_root)),
+        "sha256": hashlib.sha256(original_bytes).hexdigest(), "mode": original_mode,
+    }
+    assert details["published_generation"] == recovery._anchors(sim.repo_root)["publication"]
+    assert details["write_set_hash"] == pinned.write_set_hash
+    assert details["timing_scope"] == "completion readback only"
+    assert "generated_change_manifest" not in completed and "migration_results" not in completed
+    assert completed["started_at"] >= original_report["finished_at"]
+    assert (original_path.read_bytes(), original_path.stat().st_mode & 0o777) == (original_bytes, original_mode)
+    assert not _receipt(sim.repo_root).exists()
+    ordinary_calls = []
+    def ordinary_refresh(**arguments):
+        assert arguments["surfaces"] == ["tooling_shell", "radar", "compass"]
+        ordinary_calls.append(True)
+        return 0
+    monkeypatch.setattr(cli.sync_workstream_artifacts, "refresh_dashboard_surfaces", ordinary_refresh)
+    assert cli.main(["dashboard", "refresh", "--repo-root", str(sim.repo_root)]) == 0
+    assert ordinary_calls == [True]
+
+
+@pytest.mark.parametrize("changed_link", ["missing-report", "report-plan", "event-results", "receipt-activation"])
+def test_completion_readback_refuses_changed_or_missing_upgrade_link(tmp_path, monkeypatch, capsys, changed_link):
+    sim, retry, _ = _failed_upgrade(tmp_path, monkeypatch, capsys)
+    root = sim.repo_root
+    original_path, original = upgrade_reporting.latest_upgrade_report(repo_root=root)
+    paths_before = set(original_path.parent.glob("upgrade-*.json"))
+    complete = recovery.complete_retry
+    def changed_readback(**arguments):
+        if changed_link == "missing-report":
+            original_path.unlink()
+        elif changed_link == "report-plan":
+            original["migration_plan"]["target_version"] = "another-target"
+            original_path.write_text(json.dumps(original))
+        elif changed_link == "event-results":
+            ledger = root / ".odylith/install-ledger.v1.jsonl"
+            events = [json.loads(line) for line in ledger.read_text().splitlines()]
+            events[-1]["migration_results"] = [{"migration_id": "forged-result"}]
+            ledger.write_text("".join(json.dumps(event) + "\n" for event in events))
+        else:
+            receipt = json.loads(_receipt(root).read_text())
+            receipt["anchors"]["runtime_target"] = "another-runtime"
+            _receipt(root).write_text(json.dumps(receipt))
+        complete(**arguments)
+    monkeypatch.setattr(recovery, "complete_retry", changed_readback)
+    calls = _successful_dashboard_renderer(sim, monkeypatch)
+    monkeypatch.chdir(root)
+    assert cli.main(retry) == 1
+    assert "RECOVERY_REQUIRED" in capsys.readouterr().err
+    assert calls == ["complete-retry"]
+    assert _receipt(root).exists()
+    assert not set(original_path.parent.glob("upgrade-*.json")) - paths_before
+    generations.require_greenfield_working_generation(root)
+
+
+@pytest.mark.parametrize("failure", ["report-io", "original-bytes", "original-mode"])
+def test_completion_report_failure_retains_receipt_without_success_evidence(tmp_path, monkeypatch, capsys, failure):
+    sim, retry, _ = _failed_upgrade(tmp_path, monkeypatch, capsys)
+    root = sim.repo_root
+    original_path, _ = upgrade_reporting.latest_upgrade_report(repo_root=root)
+    original_bytes, original_mode = original_path.read_bytes(), original_path.stat().st_mode & 0o777
+    receipt = _receipt(root).read_bytes()
+    writer = upgrade_reporting.write_upgrade_report
+    def interrupted_report(**arguments):
+        assert arguments["exclusive"] is True
+        if failure == "report-io":
+            raise OSError("report cannot be published durably")
+        completed = writer(**arguments)
+        if failure == "original-bytes":
+            original_path.write_bytes(b"Interrupted original report bytes\n")
+        else:
+            original_path.chmod(original_mode ^ 0o040)
+        return completed
+    monkeypatch.setattr(upgrade_reporting, "write_upgrade_report", interrupted_report)
+    calls = _successful_dashboard_renderer(sim, monkeypatch)
+    monkeypatch.chdir(root)
+    assert cli.main(retry) == 1
+    assert "RECOVERY_REQUIRED" in capsys.readouterr().err
+    assert calls == ["complete-retry"]
+    assert _receipt(root).read_bytes() == receipt
+    assert list(original_path.parent.glob("upgrade-*.json")) == [original_path]
+    if failure == "report-io":
+        assert (original_path.read_bytes(), original_path.stat().st_mode & 0o777) == (original_bytes, original_mode)
+    elif failure == "original-bytes":
+        assert original_path.read_bytes() == b"Interrupted original report bytes\n"
+    else:
+        assert original_path.stat().st_mode & 0o777 == original_mode ^ 0o040
+    generations.require_greenfield_working_generation(root)
+
+
+@pytest.mark.parametrize("tamper", ["original-sha", "original-path", "missing-phase", "fingerprint", "plan", "target", "surfaces", "generation", "paired-missing-generation", "manifest-digest", "publication-digest"])
+def test_durable_completion_report_tamper_refuses_before_later_dashboard(tmp_path, monkeypatch, capsys, tamper):
+    sim, retry, _ = _failed_upgrade(tmp_path, monkeypatch, capsys)
+    _successful_dashboard_renderer(sim, monkeypatch)
+    monkeypatch.chdir(sim.repo_root)
+    assert cli.main(retry) == 0
+    path, completed = upgrade_reporting.latest_upgrade_report(repo_root=sim.repo_root)
+    details = completed["phases"][0]["details"]
+    if tamper == "original-sha":
+        details["original_report"]["sha256"] = "0" * 64
+    elif tamper == "original-path":
+        details["original_report"]["path"] = "../outside.json"
+    elif tamper == "missing-phase":
+        completed["phases"] = []
+    elif tamper == "fingerprint":
+        completed["plan_fingerprint"] = "another-plan"
+    elif tamper == "plan":
+        completed["migration_plan"]["target_version"] = "another-target"
+    elif tamper == "target":
+        completed["final_state"]["active_version"] = "another-target"
+    elif tamper == "surfaces":
+        completed["dashboard_refresh"]["surfaces"] = ["radar"]
+    elif tamper == "paired-missing-generation":
+        details["write_set_hash"] = details["published_generation"]["write_set_hash"] = "0" * 64
+    elif tamper == "manifest-digest":
+        details["published_generation"]["generation_manifest_sha256"] = "0" * 64
+    elif tamper == "publication-digest":
+        details["published_generation"]["publication_sha256"] = "0" * 64
+    else:
+        details["write_set_hash"] = "0" * 64
+    path.write_text(json.dumps(completed))
+    monkeypatch.setattr(cli.sync_workstream_artifacts, "refresh_dashboard_surfaces", lambda **_: pytest.fail("forged completion dispatched"))
+    capsys.readouterr()
+    before = _observed(sim)
+    assert cli.main(["dashboard", "refresh", "--repo-root", str(sim.repo_root)]) == 1
+    assert "RECOVERY_REQUIRED" in capsys.readouterr().err
+    assert _observed(sim) == before
+
+
+def test_durable_completion_remains_valid_after_normal_refresh_publishes_newer_generation(tmp_path, monkeypatch, capsys):
+    sim, retry, _ = _failed_upgrade(tmp_path, monkeypatch, capsys)
+    root = sim.repo_root
+    _successful_dashboard_renderer(sim, monkeypatch)
+    monkeypatch.chdir(root)
+    assert cli.main(retry) == 0
+    path, completed = upgrade_reporting.latest_upgrade_report(repo_root=root)
+    before = (path.read_bytes(), path.stat().st_mode)
+    historical = completed["phases"][0]["details"]["published_generation"]
+    assert recovery._anchors(root)["publication"] == historical
+    calls = []
+    def normal_refresh(**arguments):
+        assert arguments["surfaces"] == ["tooling_shell", "radar", "compass"]
+        calls.append(True)
+        (root / RADAR).write_bytes(b"<!doctype html><title>Newer ordinary Radar</title>\n")
+        return 0
+    monkeypatch.setattr(cli.sync_workstream_artifacts, "refresh_dashboard_surfaces", normal_refresh)
+    assert cli.main(["dashboard", "refresh", "--repo-root", str(root)]) == 0
+    assert recovery._anchors(root)["publication"] != historical
+    assert cli.main(["dashboard", "refresh", "--repo-root", str(root)]) == 0
+    assert calls == [True, True]
+    assert (path.read_bytes(), path.stat().st_mode) == before
+    assert generations.pin_greenfield_generation(repo_root=root, write_set_hash=historical["write_set_hash"]).manifest_sha256 == historical["generation_manifest_sha256"]
 
 
 @pytest.mark.parametrize("changed_path", (OPERATOR_PATHS[0], "odylith/runtime/source/product-version.v1.json", ".odylith/bin/odylith"))
@@ -405,6 +610,92 @@ def _authored_bytes_and_modes(root):
             for p in (root / "odylith/atlas/source/migration-fixture.mmd", root / "notes/operator.md")}
 
 
+def _unselected_upgrade(root, monkeypatch):
+    from odylith.install import migration_runtime, state
+    atlas, _, target, event = _selected_atlas_upgrade(root, monkeypatch)
+    atlas.migrate_atlas_surface_polish(repo_root=root, previous_version="0.1.14", target_version="0.1.15")
+    scenario = migration_runtime.RepoMigrationScenario(
+        scenario=migration_runtime.SCENARIO_HEALTHY_PINNED_CONSUMER, reasons=(),
+        state={"repo_role": "consumer_repo", "runtime_root": str(target)},
+    )
+    fields = {"previous_version": "0.1.14", "target_version": "0.1.15", "repo_schema_version": 1,
+              "scenario": scenario.as_dict(), "selected": [], "blocked": [], "skipped": []}
+    plan = migration_runtime.MigrationPlan(
+        repo_root=root, previous_version="0.1.14", target_version="0.1.15", repo_schema_version=1,
+        scenario=scenario, selected=(), skipped=(), blocked=(),
+        release_manifest_migration_required=False, no_op=True,
+        plan_fingerprint=migration_runtime._fingerprint_plan_payload({"repo_root": str(root), **fields}),
+    )
+    payload, results, _ = manager._apply_release_migration_plan(plan=plan, runtime_root=target)
+    assert "transaction_ledger" not in payload and results == []
+    event.update(migration_plan=payload, migration_results=results)
+    state.install_ledger_path(repo_root=root).write_text(json.dumps(event) + "\n")
+    return atlas, event
+
+
+@pytest.mark.parametrize("completed", [False, True])
+def test_unselected_upgrade_expands_only_unfinished_legacy_scope(tmp_path, monkeypatch, completed):
+    from odylith.install import runtime
+    from tests.unit.install.test_upgrade_dashboard_cli import _legacy_dashboard_args
+    atlas, event = _unselected_upgrade(tmp_path, monkeypatch)
+    if completed:
+        logs = tmp_path / ".odylith/runtime/logs"
+        logs.mkdir()
+        upgrade_reporting.write_upgrade_report(repo_root=tmp_path, started_at=datetime.now(UTC), report={
+            "schema": "odylith.upgrade.report.v1", "status": "succeeded", "repo_root": str(tmp_path),
+            "migration_plan": event["migration_plan"], "migration_results": event["migration_results"],
+            "final_state": {"active_version": event["active_version"], "verification": event["verification"]},
+            "plan_fingerprint": event["migration_plan"]["plan_fingerprint"],
+            "finished_at": datetime.now(UTC).isoformat(), "dashboard_refresh": {"success": True},
+        })
+    verification_calls = []
+    monkeypatch.setattr(runtime, "runtime_verification_evidence", lambda _: verification_calls.append(True) or event["verification"])
+    monkeypatch.setattr(atlas, "inspect_atlas_surface_migration", lambda **_: pytest.fail("unselected Atlas scan"))
+    monkeypatch.setattr(atlas, "migrate_atlas_surface_polish", lambda **_: pytest.fail("unselected Atlas mutation"))
+    calls = []
+    monkeypatch.setattr(cli.sync_workstream_artifacts, "refresh_dashboard_surfaces", lambda **args: calls.append(args) or 0)
+    before = _authored_bytes_and_modes(tmp_path)
+    with repository_lock.greenfield_repository_lock(tmp_path) as fd:
+        assert cli._cmd_dashboard_refresh(_legacy_dashboard_args(tmp_path, fd)) == 0
+    assert len(calls) == 1
+    assert calls[0]["surfaces"] == (["tooling_shell", "radar", "compass"] if completed else
+                                    ["tooling_shell", "radar", "compass", "registry", "casebook", "atlas"])
+    assert verification_calls == ([] if completed else [True])
+    assert _authored_bytes_and_modes(tmp_path) == before
+    assert json.loads((tmp_path / ".odylith/install-ledger.v1.jsonl").read_text()) == event
+
+
+@pytest.mark.parametrize("tamper", ["loaded-old", "verification", "fingerprint", "transaction", "results", "no-op", "activation-during-verification"])
+def test_unselected_upgrade_refuses_forged_completion_before_dashboard(tmp_path, monkeypatch, tamper):
+    from odylith.install import runtime, state
+    from tests.unit.install.test_upgrade_dashboard_cli import _legacy_dashboard_args
+    _, event = _unselected_upgrade(tmp_path, monkeypatch)
+    if tamper == "loaded-old":
+        monkeypatch.setattr(recovery, "__file__", str(tmp_path / ".odylith/runtime/versions/0.1.14/upgrade_dashboard_recovery.py"))
+    elif tamper == "verification":
+        event["verification"] = {"wheel_sha256": "another-wheel"}
+    elif tamper == "fingerprint":
+        event["migration_plan"]["plan_fingerprint"] = "another-plan"
+    elif tamper == "transaction":
+        event["migration_plan"]["transaction_ledger"] = "../outside.json"
+    elif tamper == "results":
+        event["migration_results"] = [{"migration_id": "invented"}]
+    elif tamper == "activation-during-verification":
+        def changed_activation(_):
+            state.write_install_state(repo_root=tmp_path, payload={"active_version": "0.1.14", "detached": False})
+            return event["verification"]
+        monkeypatch.setattr(runtime, "runtime_verification_evidence", changed_activation)
+    else:
+        event["migration_plan"]["no_op"] = False
+    state.install_ledger_path(repo_root=tmp_path).write_text(json.dumps(event) + "\n")
+    monkeypatch.setattr(cli.sync_workstream_artifacts, "refresh_dashboard_surfaces", lambda **_: pytest.fail("invalid completion dispatched"))
+    before = _authored_bytes_and_modes(tmp_path)
+    with repository_lock.greenfield_repository_lock(tmp_path) as fd:
+        with pytest.raises(recovery.UpgradeDashboardRecoveryError):
+            cli._cmd_dashboard_refresh(_legacy_dashboard_args(tmp_path, fd))
+    assert _authored_bytes_and_modes(tmp_path) == before
+
+
 @pytest.mark.parametrize("predecessor_applied", [True, False])
 def test_selected_atlas_completion_uses_target_theme_and_preserves_authored_sources(
     tmp_path, monkeypatch, predecessor_applied,
@@ -414,8 +705,17 @@ def test_selected_atlas_completion_uses_target_theme_and_preserves_authored_sour
     payload = json.loads(catalog.read_text())
     payload["diagrams"][0]["render_source_fingerprint"] = "retired-predecessor-theme"
     catalog.write_text(json.dumps(payload) + "\n")
+    from tests.unit.install.test_upgrade_dashboard_cli import _legacy_dashboard_args
+    calls = []
+    def refresh(**arguments):
+        assert arguments["surfaces"] == ["tooling_shell", "radar", "compass", "registry", "casebook", "atlas"]
+        assert atlas.inspect_atlas_surface_migration(repo_root=tmp_path, previous_version="0.1.14", target_version="0.1.15").verification_passed
+        calls.append(True)
+        return 0
+    monkeypatch.setattr(cli.sync_workstream_artifacts, "refresh_dashboard_surfaces", refresh)
     with repository_lock.greenfield_repository_lock(tmp_path) as fd:
-        recovery.complete_selected_render_migrations(repo_root=tmp_path, repository_lock_fd=fd)
+        assert cli._cmd_dashboard_refresh(_legacy_dashboard_args(tmp_path, fd)) == 0
+    assert calls == [True]
     after = json.loads(catalog.read_text())
     expected = atlas.diagram_freshness.ContentFingerprintCache().mermaid_render_fingerprint(
         tmp_path / after["diagrams"][0]["source_mmd"],
@@ -483,31 +783,31 @@ def test_target_completion_rechecks_current_fingerprint_after_passed_producer(tm
     assert _authored_bytes_and_modes(tmp_path) == before
 
 
-@pytest.mark.parametrize("scope", ["absent", "unselected", "unrelated-operation", "completed"])
+@pytest.mark.parametrize("scope", ["absent", "unrelated-operation", "completed"])
 def test_ordinary_dashboard_has_no_selected_atlas_scan_or_mutation(tmp_path, monkeypatch, scope):
     from odylith.install import state
     atlas, _, _, event = _selected_atlas_upgrade(tmp_path, monkeypatch)
     ledger = state.install_ledger_path(repo_root=tmp_path)
     if scope == "absent":
         ledger.unlink()
-    elif scope == "unselected":
-        event["migration_plan"]["selected"] = []
-        ledger.write_text(json.dumps(event) + "\n")
     elif scope == "unrelated-operation":
         event["operation"] = "feature-pack"
         ledger.write_text(json.dumps(event) + "\n")
     else:
         logs = tmp_path / ".odylith/runtime/logs"
         logs.mkdir()
-        (logs / "upgrade-20990101T000000Z.json").write_text(json.dumps({
+        upgrade_reporting.write_upgrade_report(repo_root=tmp_path, started_at=datetime.now(UTC), report={
+            "schema": "odylith.upgrade.report.v1", "status": "succeeded", "repo_root": str(tmp_path),
+            "migration_plan": event["migration_plan"], "migration_results": event["migration_results"],
+            "final_state": {"active_version": event["active_version"], "verification": event["verification"]},
             "plan_fingerprint": event["migration_plan"]["plan_fingerprint"],
             "finished_at": datetime.now(UTC).isoformat(), "dashboard_refresh": {"success": True},
-        }))
+        })
     monkeypatch.setattr(atlas, "inspect_atlas_surface_migration", lambda **_: pytest.fail("ordinary refresh inspected Atlas"))
     monkeypatch.setattr(atlas, "migrate_atlas_surface_polish", lambda **_: pytest.fail("ordinary refresh rendered Atlas"))
     before = _authored_bytes_and_modes(tmp_path)
     with repository_lock.greenfield_repository_lock(tmp_path) as fd:
-        recovery.complete_selected_render_migrations(repo_root=tmp_path, repository_lock_fd=fd)
+        assert recovery.complete_selected_render_migrations(repo_root=tmp_path, repository_lock_fd=fd) is False
     assert _authored_bytes_and_modes(tmp_path) == before
 
 

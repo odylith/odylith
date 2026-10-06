@@ -69,6 +69,12 @@ def test_explicit_highlight_and_summary_precede_optional_body_detail() -> None:
         "detail": COMPLETE_COPY,
     }
     rendered = render_release_spotlight_html({"release_spotlight": story})
-    assert "One authored highlight." in rendered
-    assert "The authored summary." in rendered
-    assert COMPLETE_COPY not in rendered
+    details_open = '<details class="upgrade-spotlight-details"><summary>What changed</summary>'
+    assert '<details class="upgrade-spotlight-details" open' not in rendered
+    assert rendered.count("The authored summary.") == 1
+    assert rendered.count("One authored highlight.") == 1
+    assert rendered.count(escape(COMPLETE_COPY)) == 1
+    assert rendered.index("The authored summary.") < rendered.index(details_open)
+    assert rendered.index(details_open) < rendered.index("One authored highlight.")
+    assert rendered.index("One authored highlight.") < rendered.index(escape(COMPLETE_COPY))
+    assert rendered.index(escape(COMPLETE_COPY)) < rendered.index("</details>")

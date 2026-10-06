@@ -9,6 +9,7 @@ Last updated: 2026-10-06
 
 
 ## Purpose
+
 Dashboard is the shell host for Odylith. It provides the top-level tabbed,
 deep-linkable parent surface that composes Project, Radar, Atlas, Compass,
 Registry, and Casebook into one navigable product entrypoint without flattening
@@ -40,6 +41,19 @@ change the presenter, handoff, or browser-route ownership. Normal, empty or
 fallback, and degraded/error Project rendering remain proof obligations.
 
 ## Scope And Non-Goals
+
+### Project risk presentation
+
+Project shows the actual supplied risk in its default view. Its category stays
+in closed native detail. This preserves source authority and the existing
+fallback/error posture; no displayed category or summary is inferred.
+
+### Upgrade refresh scope
+
+An upgrade refresh regenerates all six owned surfaces. Ordinary refresh remains
+the three-surface default. The narrow dashboard entry path continues to
+regenerate its owned views without requiring a full sync.
+
 ### Complete open-item text
 The Project open-items card preserves every supplied item and its complete text.
 Sentence budgeting must not drop questions or shorten their meaning. Browser
@@ -565,6 +579,8 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-10-06: The r6 upgrade refresh correction passes 240 source checks with no input drift and independent CLEAR review. It keeps authenticated unfinished upgrade preservation, durable report/receipt order, stale/forged drift refusal, and historical-generation validity. Upgrade covers six surfaces; ordinary refresh remains three. This is source-only, not installed qualification. (Plan: [B-145](odylith/radar/radar.html?view=plan&workstream=B-145); Bug: `CB-347`)
+- 2026-10-06: Project now shows the actual supplied risk by default and keeps its category in closed native detail. Independent review is CLEAR and 60 focused unit checks pass. Evidence: `/private/tmp/odylith-project-risk-presentation-independent-review-20261006.json` (SHA-256 `221a3ed5ec073f21038227871e7d6fe85a282a785b0052c4c75db546c5cc7a91`). This is source UI evidence only; installed and release proof remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
 - 2026-10-06: Adopted compact default disclosures in the 13 exact preceding CI failures without changing production behavior. Browser tests verify closed evidence and counts, open actual summaries by keyboard, and retain text, style, count and route checks. The Compass VM models nearest details and verifies genuine failure opens it. All 13 signatures pass focused tests; the original CI failure and the requirement for fresh full CI remain. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-347`)
 - 2026-10-06: Upgrade notices use one readable title and summary, complete keyboard-accessible details, and opaque entrance motion. Two presentation owners remove 98 lines; 12 focused checks and nine source-UI conditions pass, with three fresh real-copy readbacks and independent review. Installed and release gates remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
 - 2026-10-06: Closed eight audited presentation findings and final mobile counter priority through existing owners. Atlas uses direct narratives; roles, owners, links, Registry evidence, and Compass counts are optional. Complete historical summaries, one empty-evidence explanation, populated timeline hours, fewer repeated fallback messages, and one exact Project risk rationale remain. Genuine runtime failure opens the counts disclosure automatically. Focused proof passes Atlas 130 plus 70 prefix checks, Registry 40, Compass 85 unique base checks plus 13 final counter checks, and Project 32; independent reviews are CLEAR. Final unchanged-oracle synthetic browser proof passes 44/44 states, zero issues, 111 screenshots, and 36 unchanged pins in 36.356 seconds. Manifest: `/private/tmp/odylith-cognitive-load-closure-20261006.json`. Exact facts, graph, warnings, history, roles, authority, navigation, and legacy seals remain. Retain all earlier stalls and setup failures. This is bounded current-source UI proof; populated Casebook, root publication, installed, semantic, native-host, holdout, migration, and release qualification remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-303`, `CB-347`)

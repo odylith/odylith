@@ -47,7 +47,7 @@ _CONTEXT_ENGINE_SHORTCUTS = (
 _CONTEXT_ENGINE_SHORTCUT_TARGETS = {command: target for command, target, _help_text in _CONTEXT_ENGINE_SHORTCUTS}
 _EXPLICIT_CONTEXT_ENGINE_SHORTCUTS = frozenset({"bootstrap", "context", "query"})
 _FIRST_RUN_SURFACE_OUTPUTS = dashboard_refresh_contract.FIRST_RUN_SURFACE_OUTPUTS
-_DEFAULT_DASHBOARD_REFRESH_SURFACES = upgrade_dashboard.UPGRADE_DASHBOARD_SURFACES
+_DEFAULT_DASHBOARD_REFRESH_SURFACES = ("tooling_shell", "radar", "compass")
 _DEFAULT_DASHBOARD_REFRESH_SURFACES_CSV = ",".join(_DEFAULT_DASHBOARD_REFRESH_SURFACES)
 _START_NARROWING_REASON_LABELS = {
     "Need one code path.": "Name one code path, workstream, component, bug, or file before implementation.",
@@ -1120,7 +1120,7 @@ def _refresh_dashboard_after_upgrade(
     if details is not None:
         details.update(
             {
-                "surfaces": list(_DEFAULT_DASHBOARD_REFRESH_SURFACES),
+                "surfaces": list(upgrade_dashboard.UPGRADE_DASHBOARD_SURFACES),
                 "success": False,
             }
         )
@@ -1136,7 +1136,7 @@ def _refresh_dashboard_after_upgrade(
             )
         render_rc = _sync_workstream_artifacts().refresh_dashboard_surfaces(
             repo_root=repo_root,
-            surfaces=_DEFAULT_DASHBOARD_REFRESH_SURFACES,
+            surfaces=upgrade_dashboard.UPGRADE_DASHBOARD_SURFACES,
             runtime_mode="auto",
             atlas_sync=False,
             force=True,
@@ -2310,14 +2310,15 @@ def _cmd_dashboard_refresh(args: argparse.Namespace) -> int:
         print(str(exc), file=sys.stderr)
         return 2
     if (
-        tuple(surfaces) == _DEFAULT_DASHBOARD_REFRESH_SURFACES
+        tuple(surfaces) in {_DEFAULT_DASHBOARD_REFRESH_SURFACES, upgrade_dashboard.UPGRADE_DASHBOARD_SURFACES}
         and str(args.runtime_mode) == "auto" and not args.atlas_sync and not args.dry_run
     ):
-        upgrade_dashboard_recovery.complete_selected_render_migrations(
+        if upgrade_dashboard_recovery.complete_selected_render_migrations(
             repo_root=Path(args.repo_root).expanduser().resolve(),
             repository_lock_fd=getattr(args, "repository_lock_fd", None),
             force=bool(getattr(args, "force", False)),
-        )
+        ):
+            surfaces = list(upgrade_dashboard.UPGRADE_DASHBOARD_SURFACES)
     return _sync_workstream_artifacts().refresh_dashboard_surfaces(
         repo_root=Path(args.repo_root).expanduser().resolve(),
         surfaces=surfaces,

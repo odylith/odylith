@@ -59,10 +59,11 @@ def renderer(monkeypatch):
 
 
 def test_refresh_dashboard_after_upgrade_reenters_through_fresh_launcher(rendered_repo, renderer, capsys) -> None:
+    details = {}
     with greenfield_repository_lock(rendered_repo) as descriptor:
         calls = renderer(rendered_repo, descriptor)
         refreshed, message = cli._refresh_dashboard_after_upgrade(
-            repo_root=rendered_repo, repository_lock_fd=descriptor,
+            repo_root=rendered_repo, repository_lock_fd=descriptor, details=details,
         )
     output = capsys.readouterr()
     assert refreshed is True
@@ -70,6 +71,7 @@ def test_refresh_dashboard_after_upgrade_reenters_through_fresh_launcher(rendere
     assert message == "Dashboard refreshed. Open `odylith/index.html` to see what landed in this release."
     assert "Refreshing Odylith dashboard surfaces so the local shell reflects the new release." in output.out
     assert "dashboard refresh completed" in output.out
+    assert details["surfaces"] == ["tooling_shell", "radar", "compass", "registry", "casebook", "atlas"]
     store.require_greenfield_working_generation(rendered_repo)
 
 
@@ -108,10 +110,11 @@ def test_refresh_dashboard_after_upgrade_falls_back_to_in_process_refresh_when_l
     monkeypatch, rendered_repo, capsys,
 ) -> None:
     calls: list[object] = []
+    details = {}
     with greenfield_repository_lock(rendered_repo) as descriptor:
         def refresh(**kwargs):
             assert kwargs == {
-                "repo_root": rendered_repo, "surfaces": ("tooling_shell", "radar", "compass"),
+                "repo_root": rendered_repo, "surfaces": ("tooling_shell", "radar", "compass", "registry", "casebook", "atlas"),
                 "runtime_mode": "auto", "atlas_sync": False, "force": True,
                 "repository_lock_fd": descriptor, "on_completed": kwargs["on_completed"],
             }
@@ -125,11 +128,12 @@ def test_refresh_dashboard_after_upgrade_falls_back_to_in_process_refresh_when_l
         monkeypatch.setattr(cli.sync_workstream_artifacts, "refresh_dashboard_surfaces", refresh)
         monkeypatch.setattr(cli.upgrade_dashboard, "run_dashboard_renderer", lambda **kwargs: pytest.fail("should use in-process fallback"))
         refreshed, message = cli._refresh_dashboard_after_upgrade(
-            repo_root=rendered_repo, repository_lock_fd=descriptor,
+            repo_root=rendered_repo, repository_lock_fd=descriptor, details=details,
         )
     output = capsys.readouterr()
     assert refreshed is True
     assert len(calls) == 1
+    assert details["surfaces"] == ["tooling_shell", "radar", "compass", "registry", "casebook", "atlas"]
     assert message == "Dashboard refreshed. Open `odylith/index.html` to see what landed in this release."
     assert "Refreshing Odylith dashboard surfaces so the local shell reflects the new release." in output.out
     store.require_greenfield_working_generation(rendered_repo)
@@ -196,30 +200,48 @@ def _legacy_dashboard_args(root, descriptor, **changes):
     })
 
 
-def test_published_predecessor_public_refresh_completes_selected_target_before_fresh(monkeypatch, rendered_repo):
+@pytest.mark.parametrize("surfaces", ["tooling_shell,radar,compass", "", "tooling_shell,radar,compass,registry,casebook,atlas"])
+def test_published_predecessor_public_refresh_completes_selected_target_before_fresh(monkeypatch, rendered_repo, surfaces):
     order = []
     def complete(*, repo_root, repository_lock_fd, force):
         assert repo_root == rendered_repo and force is False
         assert os.path.samestat(os.fstat(repository_lock_fd), (repo_root / ".odylith/runtime/greenfield/create.lock").stat())
         order.append("target-migration-verified")
+        return True
     def refresh(**arguments):
         assert order == ["target-migration-verified"]
-        assert arguments["surfaces"] == ["tooling_shell", "radar", "compass"]
+        assert arguments["surfaces"] == ["tooling_shell", "radar", "compass", "registry", "casebook", "atlas"]
         order.append("dashboard-refresh")
         return 0
     monkeypatch.setattr(cli.upgrade_dashboard_recovery, "complete_selected_render_migrations", complete)
     monkeypatch.setattr(cli.sync_workstream_artifacts, "refresh_dashboard_surfaces", refresh)
     with greenfield_repository_lock(rendered_repo) as descriptor:
-        assert cli._cmd_dashboard_refresh(_legacy_dashboard_args(rendered_repo, descriptor)) == 0
+        assert cli._cmd_dashboard_refresh(_legacy_dashboard_args(rendered_repo, descriptor, surfaces=surfaces)) == 0
     assert order == ["target-migration-verified", "dashboard-refresh"]
+
+
+@pytest.mark.parametrize("surfaces", ["tooling_shell,radar,compass", "", None])
+def test_ordinary_legacy_scope_stays_narrow_after_completion(monkeypatch, rendered_repo, surfaces):
+    monkeypatch.setattr(cli.upgrade_dashboard_recovery, "complete_selected_render_migrations", lambda **_: False)
+    calls = []
+    monkeypatch.setattr(cli.sync_workstream_artifacts, "refresh_dashboard_surfaces", lambda **args: calls.append(args) or 0)
+    with greenfield_repository_lock(rendered_repo) as descriptor:
+        assert cli._cmd_dashboard_refresh(_legacy_dashboard_args(rendered_repo, descriptor, surfaces=surfaces)) == 0
+    assert len(calls) == 1
+    assert calls[0]["surfaces"] == ["tooling_shell", "radar", "compass"]
+    assert cli._DEFAULT_DASHBOARD_REFRESH_SURFACES_CSV == "tooling_shell,radar,compass"
 
 
 @pytest.mark.parametrize("options", [
     {"dry_run": True}, {"atlas_sync": True}, {"runtime_mode": "standalone"}, {"surfaces": "radar"},
+    {"surfaces": "", "dry_run": True}, {"surfaces": "", "runtime_mode": "standalone"},
 ])
 def test_other_dashboard_refresh_scope_does_not_dispatch_selected_migration(monkeypatch, rendered_repo, options):
     monkeypatch.setattr(cli.upgrade_dashboard_recovery, "complete_selected_render_migrations", lambda **_: pytest.fail("unrequested migration"))
-    monkeypatch.setattr(cli.sync_workstream_artifacts, "refresh_dashboard_surfaces", lambda **_: 0)
+    def refresh(**arguments):
+        assert arguments["surfaces"] == (["radar"] if options.get("surfaces") == "radar" else ["tooling_shell", "radar", "compass"])
+        return 0
+    monkeypatch.setattr(cli.sync_workstream_artifacts, "refresh_dashboard_surfaces", refresh)
     with greenfield_repository_lock(rendered_repo) as descriptor:
         assert cli._cmd_dashboard_refresh(_legacy_dashboard_args(rendered_repo, descriptor, **options)) == 0
 
@@ -247,6 +269,7 @@ def test_target_worker_completes_selected_migration_under_inherited_lease(monkey
     def refresh(**arguments):
         assert order == ["target-migration-verified"]
         assert arguments["repository_lock_fd"] is not None
+        assert arguments["surfaces"] == ("tooling_shell", "radar", "compass", "registry", "casebook", "atlas")
         order.append("dashboard-refresh")
         return 0
     monkeypatch.setattr(cli.upgrade_dashboard_recovery, "complete_selected_render_migrations", complete)

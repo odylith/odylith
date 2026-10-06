@@ -11,6 +11,8 @@ or asks to create one or more Radar backlog workstreams.
 2. Gather grounded core detail before authoring: Problem, Customer,
    Opportunity, Product View, and Success Metrics. Do not use title-derived
    boilerplate, `TBD`, `Details.`, or other placeholders.
+   Add other sections only when the evidence supplies useful local facts; do
+   not fill unused headings with generic text.
    The visible workstream title and body must be simple, easy to understand,
    legible, grammatically coherent, and clear about the problem being solved,
    who benefits, what changes, and what evidence would prove success.

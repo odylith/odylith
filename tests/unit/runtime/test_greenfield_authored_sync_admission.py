@@ -655,7 +655,7 @@ def test_radar_uses_existing_required_and_rich_content_checks(tmp_path, defect):
     root = _published_radar(tmp_path)
     _, edited = _edit_radar(root)
     if defect == "missing-section":
-        edited = edited.replace("## Validation\n", "## Additional notes\n")
+        edited = edited.replace("## Customer\n", "## Additional notes\n")
     else:
         replacement = {"empty": "", "placeholder": "TBD", "title-only": "Seed Workstream"}[defect]
         edited = edited.replace(RADAR_NEW_PROBLEM, replacement)
@@ -698,7 +698,9 @@ NOTE_AFTER = NOTE_BEFORE.replace("Earlier release", "Clearer project views").rep
 @pytest.fixture
 def release_note_repo(tmp_path):
     from odylith.install import bootstrap_assets, runtime
+    from tests.unit.runtime.test_validate_backlog_contract import _seed_minimal_repo
 
+    _seed_minimal_repo(tmp_path, product_repo=True)
     (tmp_path / "pyproject.toml").write_text('[project]\nname = "odylith"\nversion = "0.1.15"\n')
     source_runtime = tmp_path / ".odylith/runtime/versions/source-local"
     source_runtime.mkdir(parents=True)
@@ -707,7 +709,6 @@ def release_note_repo(tmp_path):
         RELEASE_MIRROR: NOTE_BEFORE,
         OLD_RELEASE_NOTE: NOTE_BEFORE.replace("0.1.15", "0.1.14"),
         OLD_RELEASE_MIRROR: NOTE_BEFORE.replace("0.1.15", "0.1.14"),
-        "odylith/radar/source/INDEX.md": "# Radar\n",
         AUTHORED: BEFORE,
         OTHER_AUTHORED: BEFORE.replace("CB-001", "CB-002"),
         PLAN: PLAN_BEFORE,

@@ -16,7 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_repository_lock import (
 
 
 RENDER_WORKER_COMMAND = "_upgrade-dashboard-render"
-UPGRADE_DASHBOARD_SURFACES = ("tooling_shell", "radar", "compass")
+UPGRADE_DASHBOARD_SURFACES = ("tooling_shell", "radar", "compass", "registry", "casebook", "atlas")
 
 
 def run_dashboard_renderer(*, repo_root: Path, repository_lock_fd: int) -> subprocess.CompletedProcess[str]:

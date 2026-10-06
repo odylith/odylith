@@ -2190,6 +2190,9 @@ semantic/design findings.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-10-06 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
+  - Scope: B-142, B-145
+  - Evidence: `odylith/atlas/source/odylith-managed-runtime-release-and-install-flow.mmd`, `src/odylith/install/upgrade_dashboard_recovery.py`, `src/odylith/runtime/domain_intelligence/greenfield_provisional_package.py`, `src/odylith/runtime/project_intelligence/authored_fact_presenter.py`
 - **2026-10-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_event_ordering.py`
@@ -2203,8 +2206,6 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: `odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_source_duty_ledger.py`, `tests/unit/install/test_greenfield_driver_field_inventory_stop.py`
 - **2026-10-02 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py`
-- **2026-10-02 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
-  - Evidence: `odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -5810,6 +5811,21 @@ projection coherence, confirmation, and readback.
   retry, repair, parser, regex stack, or alternate model ladder is allowed.
 
 ## Current Greenfield semantic and summary contract (2026-10-05)
+
+### V37 closed-detail presentation boundary (2026-10-06)
+
+Closed native What changed details preserve distinct authored facts by exact
+deduplication. The reverted blanket-suppression attempt remains history; 31
+focused source checks and independent review are CLEAR. This does not alter the
+host contract, sealed semantics, installed performance, or release readiness.
+
+### V37 fixed-pair terminal closure (2026-10-06)
+
+The fixed Research and Agriculture H0/H1 pairs pass their declared terminal
+controls. This proves only the sealed fixed-pair source and terminal boundary;
+it does not establish installed semantic performance, aggregate evaluation, or
+release readiness. Closure: `/private/tmp/odylith-v37-fixed-pairs-closure-20261006.json`
+(SHA-256 `740c03e44b44beb54f07a578047b93eceefdfdab27d8524cb942e52d41dc5724`).
 
 - Fixed Research and Agriculture H0/H1 source-first review at checkpoint `23881abd0e8bd15ddc64fb869b581060d50c3302` supports only the independently audited fixed-case semantics and model-free terminal mechanics. It does not expand release, aggregate, browser, protected-holdout, migration, or timing authority.
 - The next canonical candidate contract requires a `design.project_summary` in host format 23 / contract v54: concise purpose, intended users, and intended outcome derived from the candidate's source-cited meaning. Evidence excerpts, source links, and raw source text remain evidence and must never substitute for that summary. Earlier v53 sealed pairs remain passive exact history.

@@ -5,6 +5,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from odylith.install import upgrade_reporting
 
 
@@ -45,6 +47,72 @@ def test_write_upgrade_report_persists_json_and_updates_report_path(tmp_path: Pa
     assert report_path == tmp_path / ".odylith" / "runtime" / "logs" / "upgrade-20260427T120000Z.json"
     assert report["report_path"] == str(report_path)
     assert json.loads(report_path.read_text(encoding="utf-8"))["report_path"] == str(report_path)
+
+
+def test_exclusive_reports_do_not_overwrite_same_second_failed_report(tmp_path):
+    started = datetime(2026, 4, 27, 12, 0, tzinfo=UTC)
+    original = upgrade_reporting.write_upgrade_report(
+        repo_root=tmp_path, report={"status": "failed"}, started_at=started,
+    )
+    original.chmod(0o640)
+    before = (original.read_bytes(), original.stat().st_mode)
+    paths = [upgrade_reporting.write_upgrade_report(
+        repo_root=tmp_path, report={"status": "succeeded"}, started_at=started, exclusive=True,
+    ) for _ in range(2)]
+    assert len({original, *paths}) == 3
+    assert (original.read_bytes(), original.stat().st_mode) == before
+    assert all(path.stat().st_mode & 0o777 == 0o600 for path in paths)
+    assert not list(original.parent.glob("*.tmp"))
+
+
+def test_exclusive_report_collision_preserves_existing_bytes_and_mode(tmp_path, monkeypatch):
+    monkeypatch.setattr(upgrade_reporting.uuid, "uuid4", lambda: SimpleNamespace(hex="same-unique-token"))
+    started = datetime(2026, 4, 27, 12, 0, tzinfo=UTC)
+    path = upgrade_reporting.write_upgrade_report(
+        repo_root=tmp_path, report={"status": "succeeded"}, started_at=started, exclusive=True,
+    )
+    before = (path.read_bytes(), path.stat().st_mode)
+    rejected = {"status": "failed"}
+    with pytest.raises(FileExistsError):
+        upgrade_reporting.write_upgrade_report(repo_root=tmp_path, report=rejected, started_at=started, exclusive=True)
+    assert (path.read_bytes(), path.stat().st_mode) == before
+    assert "report_path" not in rejected
+    assert list(path.parent.iterdir()) == [path]
+
+
+@pytest.mark.parametrize("barrier", ["file-fsync", "directory-fsync"])
+def test_exclusive_report_durability_failure_leaves_no_success_record(tmp_path, monkeypatch, barrier):
+    started = datetime(2026, 4, 27, 12, 0, tzinfo=UTC)
+    original = upgrade_reporting.write_upgrade_report(repo_root=tmp_path, report={"status": "failed"}, started_at=started)
+    before = (original.read_bytes(), original.stat().st_mode)
+    def unavailable(*_):
+        raise OSError("diagnostic filesystem cannot durably settle the report")
+    if barrier == "file-fsync":
+        monkeypatch.setattr(upgrade_reporting.os, "fsync", unavailable)
+    else:
+        monkeypatch.setattr(upgrade_reporting, "fsync_directory", unavailable)
+    rejected = {"status": "succeeded"}
+    with pytest.raises(OSError, match="durably settle"):
+        upgrade_reporting.write_upgrade_report(repo_root=tmp_path, report=rejected, started_at=started, exclusive=True)
+    assert list(original.parent.iterdir()) == [original]
+    assert (original.read_bytes(), original.stat().st_mode) == before
+    assert "report_path" not in rejected
+
+
+def test_latest_report_and_doctor_use_finished_time_not_same_second_suffix(tmp_path):
+    started = datetime(2026, 4, 27, 12, 0, tzinfo=UTC)
+    earlier = upgrade_reporting.write_upgrade_report(
+        repo_root=tmp_path, report={"status": "succeeded", "finished_at": "2026-04-27T12:00:00.100000+00:00"},
+        started_at=started, exclusive=True,
+    )
+    later = upgrade_reporting.write_upgrade_report(
+        repo_root=tmp_path, report={"status": "failed", "finished_at": "2026-04-27T12:00:00.200000+00:00"},
+        started_at=started,
+    )
+    assert earlier.name > later.name
+    assert upgrade_reporting.latest_upgrade_report(repo_root=tmp_path)[0] == later
+    lines = upgrade_reporting.doctor_operational_observability_lines(repo_root=tmp_path, status=None)
+    assert any("Last upgrade: failed at 2026-04-27T12:00:00.200000+00:00" in line for line in lines)
 
 
 def test_doctor_observability_lines_report_upgrade_and_lock_compaction_prompt(tmp_path: Path) -> None:

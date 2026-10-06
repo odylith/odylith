@@ -144,3 +144,23 @@ def test_empty_selection_is_rejected_before_workers_or_completion(tmp_path: Path
             on_completed=lambda: events.append("completed") or 0,
         )
     assert events == []
+
+
+@pytest.mark.parametrize("failed", [None, "registry", "casebook", "atlas"])
+def test_upgrade_scope_completes_only_after_all_six_generated_surfaces(tmp_path, surface_workers, failed):
+    from odylith.install.upgrade_dashboard import UPGRADE_DASHBOARD_SURFACES
+    events, results = surface_workers
+    if failed:
+        results[failed] = {"surface": failed, "status": "failed", "rc": 2}
+    completions = []
+
+    def complete():
+        assert len(events) == 6 and set(events) == {"tooling_shell", "radar", "compass", "registry", "casebook", "atlas"}
+        assert events[-1] == "tooling_shell"
+        completions.append(True)
+        return 0
+
+    rc = sync.refresh_dashboard_surfaces(repo_root=tmp_path, surfaces=UPGRADE_DASHBOARD_SURFACES,
+                                         runtime_mode="standalone", atlas_sync=False, force=True, on_completed=complete)
+    assert completions == ([] if failed else [True])
+    assert (rc != 0) if failed else (rc == 0)

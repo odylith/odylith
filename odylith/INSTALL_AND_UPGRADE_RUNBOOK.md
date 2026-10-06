@@ -166,7 +166,7 @@ Other useful lifecycle commands:
 - Older launchers may finish a successful activation before their in-process
   post-upgrade dashboard refresh catches up. If an upgrade says the dashboard
   refresh failed after the version changed, rerun
-  `./.odylith/bin/odylith dashboard refresh --repo-root .`; the active launcher
+  `./.odylith/bin/odylith dashboard refresh --repo-root . --force`; the active launcher
   is the authoritative post-upgrade refresh path.
 - When the post-upgrade dashboard refresh changes generated Odylith surfaces,
   upgrade writes `odylith/upgrade-generated-changes.v1.json` as a compact

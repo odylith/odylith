@@ -385,6 +385,12 @@ def test_backlog_create_writes_queued_item_and_updates_index(tmp_path: Path) -> 
     created_text = created_paths[0].read_text(encoding="utf-8")
     assert "idea_id: B-102" in created_text
     assert "title: Portable guidance cleanup" in created_text
+    assert created_text.count("## ") == 6
+    assert all(f"## {section}\n" in created_text for section in backlog_authoring.backlog_contract._REQUIRED_SECTIONS)
+    assert "## Risks\n" in created_text
+    assert "## Non-Goals\n" not in created_text
+    assert "## Open Questions\n" not in created_text
+    assert "TBD." not in created_text
 
     index_text = backlog_index.read_text(encoding="utf-8")
     assert "| 2 | B-102 | Portable guidance cleanup | P1 | 99 | 3 | 3 | 3 | M | Medium | queued |" in index_text
@@ -392,6 +398,39 @@ def test_backlog_create_writes_queued_item_and_updates_index(tmp_path: Path) -> 
     assert "### B-102 (rank 2)" in index_text
     assert "Review checkpoint: 2026-04-15." in index_text
     assert "Last updated (UTC): " in index_text
+
+
+def test_backlog_create_accepts_five_core_fields_without_optional_risk_or_security(tmp_path: Path) -> None:
+    _seed_backlog_repo(tmp_path)
+    rc = backlog_authoring.main(
+        [
+            "--repo-root", str(tmp_path), "--title", "Five core authoring",
+            "--problem", "Mandatory posture flags block concise Radar intake for internal documentation work.",
+            "--customer", "Maintainers creating a workstream for an internal documentation improvement.",
+            "--opportunity", "Record the documentation change before any implementation begins.",
+            "--product-view", "The change is limited to local documentation; no credential access or privacy-sensitive data is introduced.",
+            "--success-metrics", "The workstream validates with five core fields and no optional headings; operational risk stays limited to review of the documentation text.",
+        ]
+    )
+    assert rc == 0
+    created_path = next((tmp_path / "odylith" / "radar" / "source" / "ideas").rglob("*five-core-authoring*.md"))
+    rendered = created_path.read_text(encoding="utf-8")
+    assert "## Risks\n" not in rendered
+    assert {line for line in rendered.splitlines() if line.startswith("## ")} == {
+        f"## {section}" for section in backlog_authoring.backlog_contract._REQUIRED_SECTIONS
+    }
+
+
+def test_backlog_renderer_omits_empty_optional_sections_and_refuses_missing_core() -> None:
+    sections = {**_CORE_SECTION_BODIES, "Non-Goals": "", "Open Questions": "  "}
+    rendered = backlog_authoring._render_idea_text(metadata={}, sections=sections)
+    assert {line for line in rendered.splitlines() if line.startswith("## ")} == {
+        f"## {section}" for section in backlog_authoring.backlog_contract._REQUIRED_SECTIONS
+    }
+    assert "TBD." not in rendered
+    del sections["Product View"]
+    with pytest.raises(ValueError, match="missing required Radar section: Product View"):
+        backlog_authoring._render_idea_text(metadata={}, sections=sections)
 
 
 def test_backlog_create_without_release_does_not_touch_release_assignments(tmp_path: Path, monkeypatch, capsys) -> None:

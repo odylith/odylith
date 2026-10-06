@@ -200,6 +200,35 @@ def test_successful_changed_writer_publishes_immutable_successor_only_after_retu
     )
 
 
+@pytest.mark.parametrize(("tokens", "result", "settles"), [
+    (("dashboard", "refresh", "--force"), 0, True),
+    (("dashboard", "refresh", "--force"), 2, False),
+    (("dashboard", "refresh"), 0, False),
+    (("dashboard", "refresh", "--force", "--surfaces", "radar"), 0, False),
+])
+def test_exact_forced_dashboard_completion_runs_only_after_successful_published_readback(
+    tmp_path, monkeypatch, tokens, result, settles,
+):
+    repo, before = _active_repository(tmp_path)
+    events = []
+    def operation():
+        events.append("render")
+        _write(repo / "odylith/radar/source/keep.md", "complete forced refresh\n")
+        return result
+    def complete(**arguments):
+        assert arguments == {"repo_root": repo.resolve(), "admitted_receipt": None}
+        current = greenfield_generation_store.require_greenfield_working_generation(repo)
+        assert current.write_set_hash != before.write_set_hash
+        assert (current.repository_root / "odylith/radar/source/keep.md").read_text() == "complete forced refresh\n"
+        with pytest.raises(greenfield_repository_lock.GreenfieldRepositoryBusyError):
+            with greenfield_repository_lock.greenfield_repository_lock(repo):
+                pytest.fail("completion lost its admitted writer lease")
+        events.append("complete")
+    monkeypatch.setattr(greenfield_managed_mutation_boundary.upgrade_dashboard_recovery, "complete_retry", complete)
+    assert _run(repo, operation, command_tokens=tokens) == result
+    assert events == (["render", "complete"] if settles else ["render"])
+
+
 @pytest.mark.parametrize(
     "command_tokens",
     (

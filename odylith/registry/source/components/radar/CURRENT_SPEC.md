@@ -15,6 +15,14 @@ execution evidence into the ranked workstream view used by operators and other
 Odylith surfaces.
 
 ## Scope And Non-Goals
+
+### Five-core narrative projection
+
+Radar projects recorded Problem, Customer, Opportunity, Product View, and
+Success Metrics directly. Optional headings appear only when their underlying
+facts exist; legacy exact defaults remain valid, and placeholder or title-only
+records refuse. Optional risk flags never waive Tribunal posture facts.
+
 ### Assessment custody
 
 `backlog_assessment.py` owns assessment state, provenance, score validation and
@@ -447,6 +455,8 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-10-06: Closed native What changed details retain distinct authored facts through exact deduplication. The blanket-suppression attempt was reverted after its discriminator failed; the settled source tests pass 31 focused checks with independent CLEAR review. This is source-only presentation proof. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
+- 2026-10-06: Final P1 narrative corrections retain the producer's current behavior and all ten frozen source projections; this is not a claim that the producer is unchanged from `111fc`. The final affected checks and canonical source contract pass 145 ideas, 28 execution-linked records, five releases, and 20 active targets. Receipt: `/private/tmp/odylith-five-core-repo-contract-readback-20261006.json` (SHA-256 `b1fa49a41933569adbcb658ea3484ad65d834de9fc0da39f21aeb4d3b584506a`). Source-only proof; installed and release qualification remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
 - 2026-05-09: Removed the dead right-column constraint from Radar execution-wave focus cards so the narrative uses the full available width while status chips remain visible and responsive. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141))
 - 2026-05-04: Added CLI-owned reciprocal workstream adoption through `backlog create --parent/--umbrella`, `program adopt`, and `wave assign --adopt`; wave assignment errors now translate missing `workstream_parent` into an actionable adoption command instead of a hard-scope denial. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-167`)
 - 2026-05-03: Created `release-0-1-14`, moved active B-141/B-142 targeting to it, and tagged completed B-140 migration-observer proof against the same release so Radar, Compass, and release-planning read models show the v0.1.14 work in one target. (Plans: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141), [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))

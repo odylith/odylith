@@ -80,6 +80,60 @@ def test_sync_orchestrator_does_not_keep_removed_output_owner_or_layout_alias() 
     assert not hasattr(sync, "greenfield_repository_layout")
 
 
+@pytest.mark.parametrize("invalid", [False, True])
+def test_casebook_generated_refresh_preserves_authored_bytes_modes_and_links(tmp_path, monkeypatch, invalid):
+    from odylith.runtime.surfaces import render_casebook_dashboard
+    bugs = tmp_path / "odylith/casebook/bugs"
+    bugs.mkdir(parents=True)
+    bug = bugs / "2026-10-06-retained-observation.md"
+    bug.write_bytes(("- Status: Open\r\n- Created: 2026-10-06\r\n- Severity: P2\r\n"
+                     "- Reproducibility: High\r\n- Type: " + ("TBD" if invalid else "Product") +
+                     "\r\n- Description: Retain café observation.\r\n").encode())
+    bug.chmod(0o640)
+    index = bugs / "INDEX.md"
+    index.write_bytes(b"# Authored index\r\n\r\nKeep this exact operator annotation.\r\n")
+    index.chmod(0o600)
+    link = bugs / "operator-copy.txt"
+    link.symlink_to(bug.name)
+    before = {p.name: (p.read_bytes(), p.stat().st_mode & 0o777) for p in (bug, index)}
+    generated = [tmp_path / name for name in SURFACE_OUTPUTS["casebook"]]
+    for path in generated:
+        path.write_bytes(b"old generated view\n")
+    monkeypatch.setattr(sync.sync_casebook_bug_index, "sync_casebook_bug_index",
+                        lambda **_: pytest.fail("generated refresh normalized source"))
+    calls = []
+
+    def render(**args):
+        assert args["args"][2] == "odylith.runtime.surfaces.render_casebook_dashboard"
+        calls.append(True)
+        return render_casebook_dashboard.main(["--repo-root", str(tmp_path), "--runtime-mode", "standalone"])
+
+    steps = sync._dashboard_surface_steps(repo_root=tmp_path, surface="casebook", runtime_mode="standalone", atlas_sync=False)
+    assert all("repo_owned_truth" not in step.mutation_classes for step in steps)
+    result = sync._execute_dashboard_refresh_surface(repo_root=tmp_path, surface="casebook", steps=steps,
+                                                    runtime_mode="standalone", run_impl=render)
+    assert result["status"] == ("failed" if invalid else "passed")
+    assert result["rc"] == (2 if invalid else 0)
+    assert calls == ([] if invalid else [True])
+    assert {p.name: (p.read_bytes(), p.stat().st_mode & 0o777) for p in (bug, index)} == before
+    assert link.is_symlink() and link.readlink() == Path(bug.name)
+    assert all(path.read_bytes() == b"old generated view\n" for path in generated) if invalid else all(
+        path.read_bytes() != b"old generated view\n" for path in generated)
+
+
+def test_explicit_casebook_index_normalization_keeps_its_source_owner(tmp_path):
+    bugs = tmp_path / "odylith/casebook/bugs"
+    bugs.mkdir(parents=True)
+    bug = bugs / "2026-10-06-normalize-explicitly.md"
+    bug.write_text("- Status: Open\n- Created: 2026-10-06\n- Severity: P2\n"
+                   "- Reproducibility: High\n- Type: Product\n- Description: Grounded observation.\n")
+    step = sync._casebook_index_refresh_step(repo_root=tmp_path, label="Explicit governed normalization",
+                                              next_command_on_failure="odylith casebook validate --repo-root .")
+    assert step.action() == 0
+    assert "- Bug ID: CB-001" in bug.read_text()
+    assert "CB-001" in (bugs / "INDEX.md").read_text()
+
+
 @pytest.fixture
 def logical_checkpoint_repo(tmp_path: Path, monkeypatch, request):
     from types import SimpleNamespace

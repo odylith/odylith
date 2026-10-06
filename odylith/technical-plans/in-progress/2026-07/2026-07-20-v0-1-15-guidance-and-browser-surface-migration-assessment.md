@@ -382,6 +382,59 @@ the full committed change set. Reopened after CB-337 proved that dirty-only
 observation could erase release scope. Preserve the historical evidence below;
 do not treat it as approval of this larger candidate.
 
+## V37 published-v14 installed witness (2026-10-06)
+
+A fresh native v0.1.14-to-v0.1.15 upgrade against clean candidate
+`111fc5241202ed42a174c5a0d265980f85f1bfb3` returned `RC=0` in `27.502s`. It
+preserves 14/15 raw source files and 15/15 modes, with only the predeclared
+Atlas `render_source_fingerprint` leaf changed; Radar `INDEX.md` remains exact.
+Thirteen target owners match across source, wheel, and installed readback. The
+whole consumer inventory remains exact before and after the browser readback.
+Desktop and mobile prove the active wall-clock notice, native Close control,
+and two positive linked-plan readbacks across 12 screenshots with no issues.
+
+This is one bounded installed witness, not five-class assessment completion.
+The canonical migration gate still returns `RC=1` with all five classes blocked:
+guidance-and-skills, operator-cli-contracts, public-docs-and-release-guidance,
+browser-surfaces, and install-managed-assets. Separate owners must map each
+current selected path, bytes, modes, and existing-consumer effect before any
+marker or lifecycle change; the two normal browser widths do not replace the
+required class browser scope. The prior ambiguous start remains `RC=1` with no
+credit, and v35/v36 failures remain retained. Evidence: handoff
+`/private/tmp/odylith-greenfield-v14-to-v37-migration-start-routed-r1-20261006/handoff.json`
+(SHA-256 `45d677ddbc988200a37c5e37e2c26521a1042a3afacfd0c890bd1cbd96f64af7`)
+and independent review `independent-b145-assessment-review.json` (SHA-256
+`1a003527292ca609b5558c9e6020c0eed153b58c015debadc119ea5b5b04a085`).
+
+## V37 assessment stop and generated-surface gap (2026-10-06)
+
+The r6 all-six upgrade correction passes 240 source checks with no input drift
+and independent CLEAR review. Upgrade refresh now regenerates all six surfaces;
+ordinary refresh remains the default three-surface path. The preserved customer
+Casebook/source/INDEX modes, durable-report-before-receipt-retirement, stale or
+forged-drift refusal, and historical-generation validity are covered by the
+existing owners. This is source-only correction, not installed qualification or
+five-class completion. Preserve the earlier open-after-recovery report,
+published-before-report SIGKILL, widened ordinary-three attempt, and missing
+immutable-pin finding. Evidence: `/private/tmp/odylith-upgrade-all-surfaces-correction-20261006-nvascvna/independent-review-r6-final-20261006.json`
+(SHA-256 `4231ab985ecfd1b0a23db736f4daf7fe542e01f9c0b5acdfb94cebfa64a8a00c`).
+D-023's source update remains pending canonical catalog/render work; no final
+render claim is supported.
+
+The selected-path census shows that Casebook and Registry HTML/JS stay at exact
+v0.1.14 bytes after upgrade while the target bundle and wheel are new; the
+upgrade renderer currently selects only tooling-shell, Radar, and Compass. This
+blocks the relevant class assessments without invalidating the bounded native
+preservation/notice witness above. The assessor stopped before credit because
+its help assertion expected `--description` rather than `--what-it-is` and lost
+stdout. A retained runtime `.pyc` is outside the original 18,348-entry browser
+inventory and does not change that frozen result. Preserve both files under the
+v37 migration namespace: `b145-selected-path-census.json` SHA-256
+`b2a79e8616be3e021265279fc4a79e36af642bc91a9e81107a4dbf5219f853a5` and
+`b145-assessment-stopped.json` SHA-256
+`9197553152c7aa5fb4ee505d6e0691f707d590c67dbdf8289a96539e850609ce`. No marker
+or lifecycle change is supported.
+
 ## V20 populated migration checkpoint (2026-10-05)
 
 The current assessed candidate is `d0021184faba41b8fac887ce107ee452d8dc2722`

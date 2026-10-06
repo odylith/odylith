@@ -199,28 +199,31 @@ def test_every_delivery_has_local_scope_and_keeps_canonical_decision_refs(tmp_pa
             *intent["success_metrics"], intent["proof_boundary"],
         ):
             assert project_fact not in local_rendering
-        assert row["radar_sections"]["Source Proof Boundary"] == (
-            "The project proof decision remains governed by the Product Intent."
-        )
+        assert not {
+            "Proposed Solution", "Scope", "Non-Goals", "Validation", "Why Now",
+            "Migration/Compatibility", "Open Questions", "Operational Constraints",
+            "Source Success Metrics", "Source Proof Boundary", "Design Authority",
+        }.intersection(row["radar_sections"])
         assert "`/" not in local_rendering
         dependencies = [workstreams[key]["title"] for key in authored["depends_on"]]
         if dependencies:
             expected_rollout = f"Proposed delivery sequence — Start after {', '.join(dependencies)}."
+            assert row["radar_sections"]["Dependencies"] == "\n".join(f"- {title}" for title in dependencies)
+            assert row["radar_sections"]["Rollout"] == expected_rollout
         else:
-            expected_rollout = "Proposed delivery sequence — Begin without a proposed prerequisite."
+            assert "Dependencies" not in row["radar_sections"]
+            assert "Rollout" not in row["radar_sections"]
         expected_checks = "\n".join(
             f"- Proposed component check — {components[key]['name']}: "
             f"{components[key]['verification']}"
             for key in authored["component_keys"]
+            if components[key]["verification"] != authored["verification"]
         )
-        assert row["radar_sections"]["Rollout"] == expected_rollout
-        assert row["radar_sections"]["Rollout"] != row["radar_sections"]["Proposed Solution"]
-        assert row["radar_sections"]["Test Strategy"] == expected_checks
-        assert row["radar_sections"]["Test Strategy"] != row["radar_sections"]["Validation"]
+        if expected_checks:
+            assert row["radar_sections"]["Test Strategy"] == expected_checks
+        else:
+            assert "Test Strategy" not in row["radar_sections"]
         assert row["provisional_workstream_contract"]["provisional_workstream"] == authored
-        assert row["radar_sections"]["Design Authority"].endswith(
-            "does not transfer the original actor's ownership."
-        )
     assert len({row["deliverable"] for row in rows}) == 4
     assert len({row["problem"] for row in rows}) == 4
     assert len({row["opportunity"] for row in rows}) == 4
@@ -382,15 +385,14 @@ def test_radar_compiler_keeps_source_decisions_and_proposed_sections_without_rep
         assert sections["Customer"] == row["customer"]
         assert sections["Opportunity"] == row["opportunity"]
         assert sections["Product View"] == row["product_view"]
-        assert sections["Proposed Solution"] == row["recommended_first_slice"]
-        assert sections["Design Authority"] == row["radar_sections"]["Design Authority"]
-        assert row["validation"][0] in sections["Validation"]
-        assert sections["Rollout"] == row["radar_sections"]["Rollout"]
-        assert sections["Test Strategy"] == row["radar_sections"]["Test Strategy"]
-        assert sections["Rollout"] != sections["Proposed Solution"]
-        assert sections["Test Strategy"] != sections["Validation"]
+        assert "Proposed Solution" not in sections
+        assert "Validation" not in sections
+        assert "Why Now" not in sections
+        assert sections["Source Event Support"] == row["radar_sections"]["Source Event Support"]
+        for optional in ("Rollout", "Test Strategy", "Source Lifecycle", "Source Proof Duties"):
+            assert sections.get(optional) == row["radar_sections"].get(optional)
         for section, boilerplate in default_section_boilerplate(row["title"]).items():
-            assert sections[section] != boilerplate, section
+            assert sections.get(section) != boilerplate, section
 
 
 def test_projectors_are_deep_copies_and_missing_design_has_no_source_only_fallback(tmp_path: Path) -> None:

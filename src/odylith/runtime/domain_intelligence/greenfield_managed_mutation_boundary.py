@@ -233,8 +233,8 @@ def run_with_greenfield_managed_mutation_boundary(
                     write_set=write_set,
                     publication_entry_text=publication,
                 )
-            if admitted_upgrade is not None:
-                upgrade_dashboard_recovery.complete_retry(repo_root=root)
+            if upgrade_dashboard_recovery.is_completion_retry(command_tokens):
+                upgrade_dashboard_recovery.complete_retry(repo_root=root, admitted_receipt=admitted_upgrade)
             if admitted_log is not None:
                 admitted_log.retire()
             return result

@@ -233,12 +233,10 @@ def test_authored_backlog_rationale_reaches_rendering_without_placeholder_copy(
     assert "TBD" not in "\n".join(rationale_lines)
     sections = first["radar_sections"]
     assert [row["workstream_role"] for row in proposal["backlog"]] == ["provisional_design"] * 4
-    assert sections["Non-Goals"] == (
-        "Project-level non-goals remain governed by the Product Intent."
-    )
-    assert non_goal not in sections["Non-Goals"]
-    assert non_goal not in sections["Risks"]
-    assert non_goal not in sections["Migration/Compatibility"]
+    assert proposal["intent"]["non_goals"] == [non_goal]
+    assert "Non-Goals" not in sections
+    assert "Migration/Compatibility" not in sections
+    assert non_goal not in "\n".join(sections.values())
 
     item = backlog_authoring.CreatedBacklogItem(
         idea_id="B-001",

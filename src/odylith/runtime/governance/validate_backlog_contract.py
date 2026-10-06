@@ -40,32 +40,10 @@ _REQUIRED_SECTIONS: tuple[str, ...] = (
     "Problem",
     "Customer",
     "Opportunity",
-    "Proposed Solution",
-    "Scope",
-    "Non-Goals",
-    "Risks",
-    "Dependencies",
-    "Success Metrics",
-    "Validation",
-    "Rollout",
-    "Why Now",
-    "Product View",
-    "Impacted Components",
-    "Interface Changes",
-    "Migration/Compatibility",
-    "Test Strategy",
-    "Open Questions",
-)
-_CORE_DETAIL_SECTION_TITLES: tuple[str, ...] = (
-    "Problem",
-    "Customer",
-    "Opportunity",
     "Product View",
     "Success Metrics",
 )
-_CORE_DETAIL_SECTION_MIN_WORDS: dict[str, int] = {
-    "Customer": 1,
-}
+_CORE_DETAIL_SECTION_TITLES = _REQUIRED_SECTIONS
 IDEA_SPEC_CACHE_VERSION = "v2-section-bodies"
 _PLACEHOLDER_LIKE_TOKENS: frozenset[str] = frozenset(
     {
@@ -81,7 +59,6 @@ _PLACEHOLDER_LIKE_TOKENS: frozenset[str] = frozenset(
         "-",
     }
 )
-_MIN_CORE_DETAIL_WORDS = 6
 
 _VALID_STATUS: set[str] = {
     "queued",
@@ -359,15 +336,12 @@ def _is_placeholder_like_section_body(value: str) -> bool:
     return token in _PLACEHOLDER_LIKE_TOKENS
 
 
-def _meaningful_word_count(value: str) -> int:
-    return len(re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", _normalize_section_body_text(value)))
-
-
 def core_detail_section_errors(
     *,
     title: str,
     sections: Mapping[str, str],
     path: Path,
+    allow_legacy_boilerplate: bool = False,
 ) -> list[str]:
     errors: list[str] = []
     defaults = default_section_boilerplate(title)
@@ -379,14 +353,10 @@ def core_detail_section_errors(
         if _is_placeholder_like_section_body(body):
             errors.append(f"{path}: core detail section `## {section}` uses placeholder-like text")
             continue
-        min_words = _CORE_DETAIL_SECTION_MIN_WORDS.get(section, _MIN_CORE_DETAIL_WORDS)
-        if _meaningful_word_count(body) < min_words:
-            errors.append(
-                f"{path}: core detail section `## {section}` must contain at least "
-                f"{min_words} meaningful words"
-            )
+        if body.casefold() == _normalize_section_body_text(title).casefold():
+            errors.append(f"{path}: core detail section `## {section}` repeats the workstream title")
             continue
-        if body == _normalize_section_body_text(defaults.get(section, "")):
+        if not allow_legacy_boilerplate and body == _normalize_section_body_text(defaults.get(section, "")):
             errors.append(f"{path}: core detail section `## {section}` still uses backlog-create boilerplate")
     return errors
 
@@ -1072,11 +1042,21 @@ def _validate_idea_specs_uncached(
                     f"{path}: legacy metadata `{key}` is no longer supported in Radar; rerun `odylith sync --repo-root .` to migrate"
                 )
 
+        missing_or_empty_core = False
         for section in _REQUIRED_SECTIONS:
             if section not in spec.sections:
                 errors.append(f"{path}: missing required section `## {section}`")
+                missing_or_empty_core = True
             elif not str(spec.section_bodies.get(section, "")).strip():
                 errors.append(f"{path}: required section `## {section}` must be non-empty")
+                missing_or_empty_core = True
+        if not missing_or_empty_core:
+            errors.extend(core_detail_section_errors(
+                title=str(spec.metadata.get("title", "")).strip(),
+                sections=spec.section_bodies,
+                path=path,
+                allow_legacy_boilerplate=True,
+            ))
 
         errors.extend(
             backlog_title_contract.validate_workstream_title(

@@ -12,5 +12,6 @@ contracts.
 3. Treat core-detail failures as real authoring defects: Problem, Customer,
    Opportunity, Product View, and Success Metrics must be grounded and cannot
    be placeholder or backlog-create boilerplate.
+   Other headings are optional; existing records with more sections remain valid.
 4. If the validator fails, keep the follow-up bounded to the contract error
    instead of broad governance cleanup.

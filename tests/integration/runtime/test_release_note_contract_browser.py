@@ -32,6 +32,9 @@ def test_v0_1_15_spotlight_preserves_sealed_confirmation_highlight(
     )
     origin = REPO_ROOT if source == "authored" else REPO_ROOT / "src/odylith/bundle/assets"
     relative = Path("odylith/runtime/source/release-notes/v0.1.15.md")
+    assert (REPO_ROOT / relative).read_bytes() == (
+        REPO_ROOT / "src/odylith/bundle/assets" / relative
+    ).read_bytes()
     (tmp_path / relative).parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(origin / relative, tmp_path / relative)
     note = release_notes.load_release_notes_source(repo_root=origin, version="0.1.15")
@@ -46,43 +49,65 @@ def test_v0_1_15_spotlight_preserves_sealed_confirmation_highlight(
                     assert response is not None and response.ok
                     spotlight = page.locator("#shellUpgradeSpotlight")
                     spotlight.wait_for(timeout=15000)
+                    disclosure = spotlight.locator("details.upgrade-spotlight-details")
+                    assert disclosure.count() == 1
+                    assert not disclosure.evaluate("element => element.open")
                     copy = spotlight.inner_text()
-                    assert note.highlights[0] in copy
+                    assert note.summary in copy
+                    assert "What changed" in copy
+                    assert note.highlights[0] not in copy
+                    disclosure_summary = disclosure.locator("summary")
+                    disclosure_summary.focus()
+                    page.keyboard.press("Enter")
+                    assert disclosure.evaluate("element => element.open")
+                    copy = spotlight.inner_text()
+                    assert all(item in copy for item in note.highlights)
                     assert "Greenfield apply" not in copy
-                    assert "CONFIRM publishes only the exact reviewed package" in copy
-                    highlight = spotlight.get_by_text(note.highlights[0], exact=True)
-                    assert highlight.count() == 1
-                    highlight.scroll_into_view_if_needed()
-                    assert highlight.is_visible()
-                    assert highlight.evaluate("""element => {
-                    const box = element.getBoundingClientRect();
-                    return element.scrollWidth <= element.clientWidth + 1
-                        && box.left >= 0 && box.right <= window.innerWidth + 1;
-                }""")
+                    assert (
+                        "Confirmation saves the exact reviewed package without creating programs "
+                        "or execution waves."
+                    ) in copy
+                    for item in note.highlights:
+                        highlight = disclosure.get_by_text(item, exact=True)
+                        assert highlight.count() == 1
+                        highlight.scroll_into_view_if_needed()
+                        assert highlight.is_visible()
+                        assert highlight.evaluate("""element => {
+                            const box = element.getBoundingClientRect();
+                            const viewport = element.closest('.upgrade-spotlight-main').getBoundingClientRect();
+                            return getComputedStyle(element).textOverflow !== 'ellipsis'
+                                && element.scrollWidth <= element.clientWidth + 1
+                                && box.left >= viewport.left - 1 && box.right <= viewport.right + 1
+                                && box.top >= viewport.top - 1 && box.bottom <= viewport.bottom + 1;
+                        }""")
+                    assert spotlight.locator(".upgrade-spotlight-main").evaluate(
+                        "element => element.scrollWidth <= element.clientWidth + 1"
+                    )
                     capture = _failure_screenshot_path(f"release-note-current-{source}-{width}")
                     if capture is not None:
                         capture.parent.mkdir(parents=True, exist_ok=True)
                         page.screenshot(path=str(capture), full_page=True)
-                    last_highlight = spotlight.get_by_text(note.highlights[-1], exact=True)
-                    last_highlight.scroll_into_view_if_needed()
-                    assert last_highlight.evaluate("""element => {
-                    const box = element.getBoundingClientRect();
-                    const viewport = element.closest('.upgrade-spotlight-main').getBoundingClientRect();
-                    return box.top >= viewport.top - 1 && box.bottom <= viewport.bottom + 1
-                        && box.left >= viewport.left - 1 && box.right <= viewport.right + 1;
-                }""")
                     notes_link = spotlight.get_by_role("link", name=note.note_link_label, exact=True)
                     notes_link.scroll_into_view_if_needed()
                     assert notes_link.is_visible()
                     if capture is not None:
                         page.screenshot(path=str(capture.with_stem(capture.stem + "-end")), full_page=True)
+                    disclosure_summary.focus()
+                    page.keyboard.press("Enter")
+                    assert not disclosure.evaluate("element => element.open")
+                    assert note.highlights[0] not in spotlight.inner_text()
                     page.locator("#upgradeSpotlightDismiss").click(timeout=5000)
                     page.locator("#upgradeReopen").click()
+                    assert not disclosure.evaluate("element => element.open")
+                    disclosure_summary.focus()
+                    page.keyboard.press("Enter")
                     assert note.highlights[0] in spotlight.inner_text()
+                    disclosure_summary.focus()
+                    page.keyboard.press("Enter")
                     page.keyboard.press("Escape")
                     assert not spotlight.is_visible()
                     page.locator("#upgradeReopen").click()
-                    assert note.highlights[-1] in spotlight.inner_text()
+                    assert not disclosure.evaluate("element => element.open")
                     _assert_clean_page(page, observation)
 
 

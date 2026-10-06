@@ -1,5 +1,40 @@
 - Bug ID: CB-303
 
+## V37 disclosure fidelity correction (2026-10-06)
+
+The first blanket detail-suppression attempt failed the distinct-copy
+discriminator and was reverted. The settled source correction keeps closed native
+What changed details while preserving distinct facts and exact deduplication. The
+stale-copy test, fixture, and four browser expectations now pass 31 focused
+checks with independent CLEAR review. This is source presentation proof only.
+Review: `/private/tmp/odylith-ci-37448686338-independent-review-v2-20261006.json`
+(SHA-256 `dd805c5c56501292fd4e585ea26e99c91463b3beb3f70b429e9867f5eee7fc9b`).
+
+## V37 Project risk and Radar narrative proof (2026-10-06)
+
+Project now presents the actual risk by default and keeps its category in a
+closed disclosure; independent review is CLEAR and 60 focused unit checks pass.
+Radar's five core fields remain grounded, optional headings appear only for
+supplied facts, and placeholder/title-only records still refuse. Optional risk
+flags do not waive Tribunal posture facts. Final affected source checks pass 58
+with independent CLI proof; the producer and ten frozen projections stay
+unchanged across the final P1 corrections, not relative to `111fc`. This is source-only presentation evidence, not installed, semantic,
+or release qualification. Project report: `/private/tmp/odylith-project-risk-presentation-independent-review-20261006.json`
+(SHA-256 `221a3ed5ec073f21038227871e7d6fe85a282a785b0052c4c75db546c5cc7a91`).
+Radar review: `/private/tmp/odylith-five-core-radar-narrative-independent-final-review-20261006.json`
+(SHA-256 `06d27e7a9b86a87de34c775fad406ce4fe02e6d91bb34a8da8c43771d93f6347`).
+
+## V37 Agriculture projection-density finding (2026-10-06)
+
+The default Project surface is clear, but the Agriculture Radar source/detail
+repeats the same responsibility, solution, and acceptance text and adds four
+generic project/provisional paragraphs. Registry supporting citations also
+repeat. This is a source-copy finding, not evidence that the browser collapses
+content. Preserve authored authority, acceptance criteria, citations, and
+warnings while the owning renderers remove redundant presentation. Evidence:
+`/private/tmp/odylith-v37-agriculture-projection-density-supplement-20261006.json`
+(SHA-256 `1da1a7ae23cc3f8d583191f203086fd317e51a8f417ad238461e567ae947986d`).
+
 ## Current upgrade-notice readability finding (2026-10-06)
 
 Independent root visual inspection of the genuine v36 target notice finds an

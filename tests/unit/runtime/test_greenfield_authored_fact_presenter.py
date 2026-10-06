@@ -339,11 +339,62 @@ def test_structured_risk_card_preserves_exact_fields_and_traceability() -> None:
     }
     before = deepcopy(row)
     rendered = authored_fact_presenter.render_authored_risk_cards([row], render_text=_render_text)
+    assert "<h3>Data retention risk</h3>" in rendered
     assert '<p class="project-risk-statement" data-risk-statement>' in rendered
     assert '<p data-risk-mitigation>' in rendered
     assert '<details class="project-risk-details"><summary>Risk details</summary>' in rendered
+    assert "Proposed category" not in rendered
     for key in ("statement", "mitigation", "trigger", "verification", "scope"):
         assert rendered.count(row[key]) == 1
     assert "Source event 2 · Component archive · Workstream cleanup" in rendered
     assert 'data-risk-key="retention-boundary"' in rendered
     assert row == before
+
+
+def test_category_backed_risk_uses_statement_as_heading_and_discloses_category() -> None:
+    row = {
+        "key": 'privacy-"boundary"',
+        "category": "privacy",
+        "risk": "Privacy & access risk",
+        "statement": "A reviewer <could> see records outside the approved account boundary.",
+        "mitigation": "Require account-scoped access & record every review.",
+        "trigger": "A reviewer opens a record from another account.",
+        "verification": "The cross-account request is denied and audited.",
+        "scope": "Components: review; workstreams: access; source events: 3.",
+        "scope_paths": [{"event_order": 3, "component_key": "review", "workstream_key": "access"}],
+    }
+    before = deepcopy(row)
+
+    rendered = authored_fact_presenter.render_authored_risk_cards([row], render_text=_render_text)
+
+    assert rendered.count("<h3") == 1
+    assert (
+        '<h3 class="project-risk-statement" data-risk-statement>'
+        "A reviewer &lt;could&gt; see records outside the approved account boundary.</h3>"
+    ) in rendered
+    assert "<h3>Privacy &amp; access risk</h3>" not in rendered
+    assert '<details class="project-risk-details"><summary>Risk details</summary>' in rendered
+    assert "<details open" not in rendered
+    assert "<dt>Proposed category</dt><dd>Privacy &amp; access risk</dd>" in rendered
+    assert "<p data-risk-mitigation>Require account-scoped access &amp; record every review.</p>" in rendered
+    assert "Source event 3 · Component review · Workstream access" in rendered
+    assert 'data-risk-key="privacy-&quot;boundary&quot;"' in rendered
+    assert row == before
+
+
+def test_no_material_risk_keeps_named_heading_and_explanatory_statement() -> None:
+    row = {
+        "key": "no-material-risk",
+        "risk": "No material risk identified",
+        "meaning": "No source-backed material risk was identified for this project.",
+    }
+
+    rendered = authored_fact_presenter.render_authored_risk_cards([row], render_text=_render_text)
+
+    assert "<h3>No material risk identified</h3>" in rendered
+    assert (
+        '<p class="project-risk-statement" data-risk-statement>'
+        "No source-backed material risk was identified for this project.</p>"
+    ) in rendered
+    assert "project-risk-details" not in rendered
+    assert "Proposed category" not in rendered

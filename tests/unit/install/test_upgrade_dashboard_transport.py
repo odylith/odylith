@@ -230,7 +230,7 @@ def test_real_target_launcher_renders_without_publication_and_preserves_parent_l
                 "marker": "target-renderer-executed", "pid": observation["pid"],
                 "argv": ["_upgrade-dashboard-render", "--repo-root", str(tmp_path), "--lock-fd", str(descriptor)],
                 "fd": descriptor, "repo_root": str(tmp_path),
-                "surfaces": ["tooling_shell", "radar", "compass"],
+                "surfaces": ["tooling_shell", "radar", "compass", "registry", "casebook", "atlas"],
                 "runtime_mode": "auto", "atlas_sync": False, "force": True,
                 "completion_result": 0, "lock_inode": os.fstat(descriptor).st_ino,
                 "unrelated_inherited": False,

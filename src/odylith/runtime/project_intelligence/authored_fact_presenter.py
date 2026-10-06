@@ -152,13 +152,18 @@ def render_authored_risk_cards(items: object, *, render_text: RenderText) -> str
         if not isinstance(row, Mapping):
             continue
         statement = row.get("statement") or row.get("meaning")
+        heading = "" if row.get("category") else f'<h3>{render_text(row.get("risk"))}</h3>'
+        statement_tag = "h3" if row.get("category") else "p"
         mitigation = row.get("mitigation")
         mitigation_html = (
             '<div class="project-risk-mitigation"><h4>Mitigation</h4>'
             f'<p data-risk-mitigation>{render_text(mitigation)}</p></div>'
             if mitigation else ""
         )
-        fields = "".join(
+        fields = (
+            f'<dt>Proposed category</dt><dd>{render_text(row.get("risk"))}</dd>'
+            if row.get("category") else ""
+        ) + "".join(
             f'<dt>{label}</dt><dd>{render_text(row[key])}</dd>'
             for key, label in (("trigger", "When this applies"), ("verification", "Verification"),
                                ("scope", "Scope"))
@@ -180,8 +185,8 @@ def render_authored_risk_cards(items: object, *, render_text: RenderText) -> str
         cards.append(
             '<article class="project-risk-card" data-authority-kind="provisional_design" '
             f'data-risk-key="{html.escape(str(row.get("key") or ""), quote=True)}">'
-            f'<h3>{render_text(row.get("risk"))}</h3>'
-            f'<p class="project-risk-statement" data-risk-statement>{render_text(statement)}</p>'
+            f'{heading}'
+            f'<{statement_tag} class="project-risk-statement" data-risk-statement>{render_text(statement)}</{statement_tag}>'
             f'{mitigation_html}{details}</article>'
         )
     return "".join(cards)

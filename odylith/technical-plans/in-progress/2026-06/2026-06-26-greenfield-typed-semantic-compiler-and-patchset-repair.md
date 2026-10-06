@@ -1,5 +1,34 @@
 Status: In progress
 
+## V37 disclosure fidelity correction (2026-10-06)
+
+Closed native What changed details now retain distinct authored facts through
+exact deduplication. The failed blanket-suppression attempt remains historical;
+the stale-copy test, fixture, and four browser expectations pass 31 focused
+checks with independent CLEAR review. This is source presentation evidence, not
+installed semantic or release qualification. Review:
+`/private/tmp/odylith-ci-37448686338-independent-review-v2-20261006.json`
+(SHA-256 `dd805c5c56501292fd4e585ea26e99c91463b3beb3f70b429e9867f5eee7fc9b`).
+
+## V37 fixed-pair terminal and Radar presentation boundary (2026-10-06)
+
+Research and Agriculture fixed H0/H1 pairs now pass their declared terminal
+controls. The closure is limited to fixed-pair source semantics and terminal
+mechanics; it does not qualify installed semantics, aggregate evaluation, or
+release. Evidence: `/private/tmp/odylith-v37-fixed-pairs-closure-20261006.json`
+(SHA-256 `740c03e44b44beb54f07a578047b93eceefdfdab27d8524cb942e52d41dc5724`).
+
+Radar's final five-core narrative review is CLEAR: the five grounded fields stay
+source-owned, optional headings require actual supplied facts, legacy exact
+defaults remain valid, and placeholder/title-only input refuses. Producer
+`33cc8…` and ten frozen source projections remain unchanged; 58 affected source
+checks and a canonical source contract covering 145 ideas, 28 execution-linked
+records, five releases, and 20 active targets are bounded source evidence only.
+Receipt: `/private/tmp/odylith-five-core-repo-contract-readback-20261006.json`
+(SHA-256 `b1fa49a41933569adbcb658ea3484ad65d834de9fc0da39f21aeb4d3b584506a`). Review:
+`/private/tmp/odylith-five-core-radar-narrative-independent-final-review-20261006.json`
+(SHA-256 `06d27e7a9b86a87de34c775fad406ce4fe02e6d91bb34a8da8c43771d93f6347`).
+
 ## Current single-carrier transport frontier (2026-10-06)
 
 Transport v2 sends the complete candidate schema once through the existing
@@ -61,6 +90,19 @@ the bounded test change; new full checkpoint CI remains required.
 Five current migration assessment markers, full new CI, native Claude auth,
 original protected holdout custody, Public40 and final release remain required.
 Keep B-142 and B-145 open.
+
+## V37 Agriculture semantic and projection boundary (2026-10-06)
+
+Independent Agriculture source review is CLEAR: H0 covers 26/26 obligations,
+H1 preserves those 26 and adds five correction obligations at fidelity 1.0, with
+no P0/P1 finding (SHA-256
+`d9f1b3142d9525662fe3176085d450dc66a08df01063c1dc357150de736dcd4d`). The
+terminal runs separately, so this is not terminal or release credit. A related
+UX supplement finds repeated Radar responsibility/solution/acceptance copy,
+four generic provisional paragraphs, and repeated Registry citations; it does
+not establish browser collapse. Preserve source authority while the owners make
+the presentation direct. Evidence: `/private/tmp/odylith-v37-agriculture-projection-density-supplement-20261006.json`
+(SHA-256 `1da1a7ae23cc3f8d583191f203086fd317e51a8f417ad238461e567ae947986d`).
 
 ## Current cognitive-load and v35 preservation boundary (2026-10-06)
 

@@ -1,4 +1,4 @@
-%% Reviewed 2026-09-09: failed completion retries only its recorded state under the existing writer lock.
+%% Reviewed 2026-10-06: unfinished upgrades finish six views and preserve durable recovery evidence.
 flowchart TD
     maintainer["Maintainer workspace"]
     devvalidate["dev-validate<br/>detached source-local current workspace"]
@@ -25,14 +25,19 @@ flowchart TD
     end
 
     subgraph upgrade_completion["Existing-install upgrade completion"]
-        upgrade_parent["Admitted upgrade parent<br/>holds repository writer lock"]
-        target_render["Target runtime<br/>fixed dashboard rendering"]
-        render_leaves["Rendering subprocesses<br/>inherit only the writer descriptor"]
-        complete_render{"All selected renders<br/>completed successfully?"}
-        publish_ready["Parent verifies and publishes complete view<br/>then clears completed retry receipt"]
+        upgrade_parent["Authenticated unfinished upgrade<br/>holds repository writer lease"]
+        target_render["Activated target runtime<br/>checks selected Atlas migration"]
+        render_leaves["Target subprocess refreshes six views<br/>shell, Radar, Compass,<br/>Registry, Casebook, Atlas"]
+        complete_render{"All six views<br/>completed successfully?"}
+        publish_ready["Parent verifies and publishes<br/>a complete immutable generation"]
+        readback["Read back published generation<br/>check manifest and publication identity"]
+        completion_report["Separate v1 completion report<br/>keeps failed report; pins generation,<br/>manifest and publication"]
+        receipt_retired["Retire retry receipt<br/>after report is durable"]
+        report_missing["Published view, missing completion report<br/>keep receipt for exact forced retry"]
         render_failure["Retain target runtime and exact failure receipt<br/>previous complete dashboard stays published"]
-        retry_check{"Recorded project and activation unchanged<br/>and no other pending transaction?"}
-        retry_refused["Refuse retry without writes<br/>preserve edits and recovery evidence"]
+        retry_check{"Recorded project, activation and plan unchanged<br/>no other pending transaction?"}
+        retry_refused["Refuse stale or forged retry without writes<br/>preserve edits and recovery evidence"]
+        ordinary_refresh["First install or completed upgrade<br/>ordinary shell, Radar, Compass refresh"]
     end
 
     maintainer --> canonical
@@ -51,13 +56,20 @@ flowchart TD
     verify --> stage
     stage --> launcher
     managed --> upgrade_parent
-    upgrade_parent -->|activate target runtime| target_render
+    managed --> ordinary_refresh
+    upgrade_parent -->|verify target runtime| target_render
     target_render --> render_leaves
     render_leaves --> complete_render
     complete_render -->|yes; parent resumes| publish_ready
     complete_render -->|no| render_failure
-    render_failure -->|operator runs reported dashboard retry under lock| retry_check
-    retry_check -->|yes; same fixed render operation| target_render
+    publish_ready --> readback
+    readback -->|verified| completion_report
+    readback -->|changed or forged| retry_refused
+    completion_report -->|durable| receipt_retired
+    completion_report -->|missing after publication| report_missing
+    render_failure -->|exact forced dashboard retry under lease| retry_check
+    report_missing -->|exact forced dashboard retry under lease| retry_check
+    retry_check -->|yes; same six-view completion| target_render
     retry_check -->|no| retry_refused
 
     shell --> odylith_cmd

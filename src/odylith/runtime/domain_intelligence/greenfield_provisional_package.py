@@ -277,14 +277,12 @@ def build_provisional_backlog(
             f"Enables {', '.join(dependents)}." if dependents
             else "No other proposed workstream depends on this delivery."
         )
-        if dependencies:
-            rollout = f"Proposed delivery sequence — Start after {', '.join(dependencies)}."
-        else:
-            rollout = "Proposed delivery sequence — Begin without a proposed prerequisite."
+        rollout = f"Proposed delivery sequence — Start after {', '.join(dependencies)}." if dependencies else ""
         component_checks = [
             f"Proposed component check — {components[key]['name']}: "
             f"{components[key]['verification']}"
             for key in component_keys
+            if components[key]["verification"] not in verification
         ]
         interfaces = [provisional_exchange_text(row) for row in exchanges]
         owned_lifecycle = _owned_lifecycle_transitions(
@@ -298,49 +296,26 @@ def build_provisional_backlog(
             for role in _DESIGN_DUTY_ROLES
         }
         design_ref = f"{PROVISIONAL_DESIGN_ROOT}/workstreams/{index}"
-        proof_section = (
-            "Source Proof Boundary"
-            if intent.get("proof_boundary")
-            else "Proposed Proof Checkpoint"
-        )
         sections = {
-            "Proposed Solution": deliverable,
-            "Scope": "Proposed logical responsibilities:\n\n" + _bullets([
-                components[key]["responsibility"] for key in component_keys
-            ]),
-            "Non-Goals": "Project-level non-goals remain governed by the Product Intent.",
-            "Risks": _bullets(
+            "Impacted Components": _bullets([components[key]["name"] for key in component_keys]),
+            "Source Event Support": _bullets(event_scope),
+        }
+        if allocated_risks:
+            sections["Risks"] = _bullets(
                 provisional_risk_posture_texts(
                     design=design,
                     risk_posture=design["risk_posture"],
                     allocated_risks=allocated_risks,
                     scope_kind="workstream",
-                ),
-            ),
-            "Dependencies": _bullets(dependencies, empty="No proposed delivery dependencies."),
-            "Validation": _bullets(verification),
-            "Rollout": rollout,
-            "Why Now": local_opportunity,
-            "Impacted Components": _bullets([components[key]["name"] for key in component_keys]),
-            "Interface Changes": _bullets(interfaces, empty="No proposed component exchanges."),
-            "Migration/Compatibility": "Provisional greenfield design; no existing implementation or migration is asserted.",
-            "Test Strategy": _bullets(component_checks),
-            "Open Questions": "Project-level questions remain governed by the Product Intent.",
-            "Operational Constraints": (
-                "Project-level operating constraints remain governed by the Product Intent."
-            ),
-            "Source Success Metrics": (
-                "Project-level success metrics remain governed by the Product Intent."
-            ),
-            proof_section: (
-                "The project proof decision remains governed by the Product Intent."
-            ),
-            "Source Event Support": _bullets(event_scope),
-            "Design Authority": (
-                "This workstream and its component ownership, exchanges, deliverable, and acceptance "
-                "are provisional design. Source-event support does not transfer the original actor's ownership."
-            ),
-        }
+                )
+            )
+        if dependencies:
+            sections["Dependencies"] = _bullets(dependencies)
+            sections["Rollout"] = rollout
+        if interfaces:
+            sections["Interface Changes"] = _bullets(interfaces)
+        if component_checks:
+            sections["Test Strategy"] = _bullets(component_checks)
         if owned_lifecycle:
             sections["Source Lifecycle"] = _bullets([
                 _source_lifecycle_text(transition) for transition in owned_lifecycle

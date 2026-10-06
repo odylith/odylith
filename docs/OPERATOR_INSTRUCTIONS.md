@@ -46,7 +46,7 @@ commits the reviewed bytes; `EDIT <hash> <corrections>` rebuilds them from new e
 
 | Say this | What happens |
 |---|---|
-| **"Create a workstream for shopping cart redesign"** | Creates a Radar record with schema, ordering score, and INDEX patching. `odylith backlog create --title "Shopping cart redesign"` |
+| **"Create a workstream for shopping cart redesign"** | Gathers grounded Problem, Customer, Opportunity, Product View, and Success Metrics, then creates a Radar record with an ordering score and INDEX entry. `odylith backlog create --help` shows the required arguments. |
 | **"Plan the implementation for B-073"** | Grounds the workstream, then builds a bounded technical plan under `odylith/technical-plans/`. |
 | **"Split B-073 into two workstreams"** | Creates child workstreams with proper parent-child traceability and split lineage. |
 | **"Reopen B-041"** | Reopens a finished or parked workstream with proper reopen lineage tracking. |

@@ -1365,10 +1365,9 @@ def _dashboard_surface_steps(
         return steps
     if surface == "casebook":
         steps.append(
-            _casebook_index_refresh_step(
+            _casebook_source_validation_step(
                 repo_root=repo_root,
-                next_command_on_failure=refresh_command,
-                label="Normalize and validate Casebook bugs before rerendering the Casebook dashboard.",
+                label="Validate Casebook source without changing authored bug records or the index.",
             )
         )
         steps.append(
@@ -1376,7 +1375,7 @@ def _dashboard_surface_steps(
                 repo_root=repo_root,
                 runtime_mode=normalized_runtime_mode,
                 next_command_on_failure=refresh_command,
-                label="Render Casebook for the updated bug index.",
+                label="Render Casebook from validated source.",
             )
         )
         return steps

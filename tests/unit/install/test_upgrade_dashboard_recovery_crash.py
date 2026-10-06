@@ -12,6 +12,7 @@ import traceback
 import pytest
 
 from odylith import cli
+from odylith.install import upgrade_reporting
 from odylith.runtime.domain_intelligence import greenfield_generation_store as generations
 from odylith.runtime.domain_intelligence import greenfield_repository_lock as repository_lock
 from tests.unit.install.test_upgrade_dashboard_recovery import (
@@ -75,7 +76,16 @@ def _kill_retry_at_barrier(sim, retry, monkeypatch, capsys, *, phase):
                         reached()
                     return original_unlink(path, *args, **kwargs)
 
-                monkeypatch.setattr(Path, "unlink", before_receipt_removal)
+                if phase == "published-before-report":
+                    def before_completion_report(**arguments):
+                        assert arguments["exclusive"] is True
+                        assert calls == ["complete-retry"]
+                        assert receipt.read_bytes() == old_receipt
+                        generations.require_greenfield_working_generation(root)
+                        reached()
+                    monkeypatch.setattr(upgrade_reporting, "write_upgrade_report", before_completion_report)
+                else:
+                    monkeypatch.setattr(Path, "unlink", before_receipt_removal)
             sender.send({"unexpected_return": cli.main(retry)})
         except BaseException:
             sender.send({"unexpected_error": traceback.format_exc()})
@@ -153,9 +163,49 @@ def test_killed_retry_before_receipt_renewal_refuses_changed_partial_output(
     assert (root / RADAR).read_bytes() == _INTERRUPTED_OUTPUT
 
 
+def test_killed_retry_before_durable_report_keeps_failed_evidence_and_refuses_normal_refresh(
+    tmp_path, monkeypatch, capsys, record_property,
+):
+    sim, retry, _ = _failed_upgrade(tmp_path, monkeypatch, capsys)
+    root = sim.repo_root
+    monkeypatch.chdir(root)
+    original_path, _ = upgrade_reporting.latest_upgrade_report(repo_root=root)
+    original = (original_path.read_bytes(), original_path.stat().st_mode)
+    receipt = _receipt(root).read_bytes()
+    terminal = _kill_retry_at_barrier(sim, retry, monkeypatch, capsys, phase="published-before-report")
+    record_property("owned_process", json.dumps(terminal, sort_keys=True))
+    generations.require_greenfield_working_generation(root)
+    assert _receipt(root).read_bytes() == receipt
+    assert (original_path.read_bytes(), original_path.stat().st_mode) == original
+    assert list(original_path.parent.glob("upgrade-*.json")) == [original_path]
+    before = _recovery_tree_state(root)
+    monkeypatch.setattr(cli.sync_workstream_artifacts, "refresh_dashboard_surfaces", lambda **_: pytest.fail("unrecorded completion dispatched"))
+    capsys.readouterr()
+    assert cli.main(["dashboard", "refresh", "--repo-root", str(root)]) == 1
+    assert "RECOVERY_REQUIRED" in capsys.readouterr().err
+    assert _recovery_tree_state(root) == before
+    calls = _successful_dashboard_renderer(sim, monkeypatch)
+    assert cli.main(retry) == 0
+    assert calls == ["complete-retry"]
+    assert not _receipt(root).exists()
+    completed_path, completed = upgrade_reporting.latest_upgrade_report(repo_root=root)
+    assert completed_path != original_path and completed["status"] == "succeeded"
+    assert completed["dashboard_refresh"]["surfaces"] == ["tooling_shell", "radar", "compass", "registry", "casebook", "atlas"]
+    assert (original_path.read_bytes(), original_path.stat().st_mode) == original
+    ordinary = []
+    def normal(**arguments):
+        assert arguments["surfaces"] == ["tooling_shell", "radar", "compass"]
+        ordinary.append(True)
+        return 0
+    monkeypatch.setattr(cli.sync_workstream_artifacts, "refresh_dashboard_surfaces", normal)
+    assert cli.main(["dashboard", "refresh", "--repo-root", str(root)]) == 0
+    assert ordinary == [True]
+
+
 @pytest.mark.parametrize("later_change", ("owned-tree", "old-publication"))
+@pytest.mark.parametrize("settle_receipt", [False, True])
 def test_killed_retry_after_publication_keeps_valid_successor_but_no_stale_authority(
-    tmp_path, monkeypatch, capsys, record_property, later_change,
+    tmp_path, monkeypatch, capsys, record_property, later_change, settle_receipt,
 ):
     sim, retry, failed = _failed_upgrade(tmp_path, monkeypatch, capsys)
     root = sim.repo_root
@@ -177,12 +227,33 @@ def test_killed_retry_after_publication_keeps_valid_successor_but_no_stale_autho
     assert sim.active_runtime_name() == sim.pin().odylith_version == "1.2.4"
     record_property("successor_write_set_hash", successor.write_set_hash)
 
+    _, completed = upgrade_reporting.latest_upgrade_report(repo_root=root)
+    assert completed["status"] == "succeeded" and completed["phases"][0]["name"] == "dashboard_completion"
+    ordinary_calls = []
+    def ordinary_refresh(**arguments):
+        assert arguments["surfaces"] == ["tooling_shell", "radar", "compass"]
+        ordinary_calls.append(True)
+        return 0
+    monkeypatch.setattr(cli.sync_workstream_artifacts, "refresh_dashboard_surfaces", ordinary_refresh)
+    assert cli.main(["dashboard", "refresh", "--repo-root", str(root)]) == 0
+    assert ordinary_calls == [True]
+    assert _receipt(root).read_bytes() == receipt_before
+    if settle_receipt:
+        report_path, _ = upgrade_reporting.latest_upgrade_report(repo_root=root)
+        report_state = (report_path.read_bytes(), report_path.stat().st_mode)
+        report_paths = set(report_path.parent.glob("upgrade-*.json"))
+        assert cli.main(retry) == 0
+        assert ordinary_calls == [True, True]
+        assert not _receipt(root).exists()
+        assert set(report_path.parent.glob("upgrade-*.json")) == report_paths
+        assert (report_path.read_bytes(), report_path.stat().st_mode) == report_state
+
     if later_change == "owned-tree":
         (root / RADAR).write_bytes(b"Later operator edit must not acquire stale upgrade authority.\n")
     else:
         (root / "odylith/index.html").write_bytes(publication_before)
     _assert_retry_refuses_without_writes(sim, retry, monkeypatch, capsys)
-    assert _receipt(root).read_bytes() == receipt_before
+    assert (_receipt(root).read_bytes() if _receipt(root).exists() else None) == (None if settle_receipt else receipt_before)
     assert (root / "odylith/index.html").read_bytes() == (
         successor_entry if later_change == "owned-tree" else publication_before
     )
