@@ -16,6 +16,13 @@ architecture evidence that Context Engine consumes for topology-sensitive
 grounding.
 
 ## Scope And Non-Goals
+### Graph-fact fallback prose
+
+Atlas fallback description prose may state an existing graph fact. If no such
+fact is available, it omits the prose rather than inventing a responsibility or
+advising users to name a domain object. Singular and plural node descriptions
+follow the same rule.
+
 ### Readable Greenfield source support
 
 The existing authored design-view owner renders first-path order and required
@@ -479,6 +486,8 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-10-06: Final Atlas source proof passes 66 focused checks and two browser cells; fallback remains graph-fact-only and topology/catalog contracts are unchanged. Installed and release proof remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
+- 2026-10-06: Installed v39 inspection found repeated generic responsibility/advisory fallback prose across Atlas nodes, including a plural-description leak. The pending renderer change must use an existing graph fact or omit fallback prose; no diagram, catalog, or topology contract changes. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
 
 - 2026-09-10: Preserve explicit node identity across Atlas inventory passes so multiline labels do not produce duplicate explanations. The 59 focused controls cover graph-only nodes, case sensitivity, containers, sequence actors and authored D-042 copy. Ten real-shell desktop/mobile checks pass; eighteen screenshots are reviewed. Frozen broad proof passes 5,058 runtime, 1,437 install, 180 CLI and 376 browser checks, with one documented fixture-state skip and all 3,204 inputs unchanged. This closes the bounded correction pending release, not general Atlas or Greenfield quality. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: CB-338)
 - 2026-09-08: Assigned literal box-field presentation to the existing Atlas detail owner, removing browser text reinterpretation and preserving authored action line boundaries. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)

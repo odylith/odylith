@@ -394,11 +394,17 @@ def _build_entry(
 
     story_source = ""
     story_text = ""
+    boilerplate = contract.default_section_boilerplate(payload["title"])
     for title in (
         "Proposed Solution", "Scope", "Problem", "Opportunity", "Product View",
         "Founder POV", "Success Metrics", "Success Metric", "Customer",
     ):
         body = "\n".join(section_lookup.get(title.lower(), [])).strip()
+        default = boilerplate.get(title, "")
+        if body == default or (title == "Proposed Solution" and body == default.replace(
+            "Create the workstream for ", "Create the workstream from ", 1,
+        )):
+            continue
         if body:
             story_source, story_text = title, body
             break

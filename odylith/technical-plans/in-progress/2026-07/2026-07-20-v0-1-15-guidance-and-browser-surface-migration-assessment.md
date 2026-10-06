@@ -382,6 +382,69 @@ the full committed change set. Reopened after CB-337 proved that dirty-only
 observation could erase release scope. Preserve the historical evidence below;
 do not treat it as approval of this larger candidate.
 
+## V40 unpublished Compass-stream publication refusal (2026-10-06)
+
+Selective authored publication refused before a successor because the sole
+unselected managed divergence is three unpublished `ambient_signal` hook records
+in `odylith/compass/runtime/agent-stream.v1.jsonl` at `2026-10-06T15:02:02Z`.
+Archive the exact raw stream and diff, then preview and apply restoration only
+for that stream before reviewed authored publication and one meaningful Compass
+implementation append referencing the archive. The hook candidates are immutable
+external history, not chat or source proof; do not replay models or disable an
+engine. Evidence: compiler delta
+`/private/tmp/odylith-v40-final-source-freeze-20261006/refused-unselected-delta.json`
+(SHA-256 `f47e6d3b2943a9e80ad72ad2e19c9da6e93dae0fc9685f842d52ba636ac0960a`)
+and failed publication log (SHA-256
+`2c10705ad0ac5cf4f29babd2b74fca4d640fdea185e402899b1ced70ddf68c48`).
+
+## V40 test-order and future-browser helper proof (2026-10-06)
+
+The CI proxy-order test correction passes 103 paired-order and adjacent checks
+without changing real admission, publication, refusal, custody, Registry mapping,
+or validation. The future installed-browser helper passes 94 tests with one added
+line at 1,200 LOC; its external adapter is HELD with zero execution. The failed
+current CI at `73d` (10,036 pass/one fail/10 skip) and v39 matrix (26/16/2)
+remain history, not superseded installed credit. Evidence:
+`/private/tmp/odylith-v39-authored-sync-ci-test-fix-20261006.json` and
+`/private/tmp/odylith-v40-installed-browser-future-predispatch-20261006/handoff.json`.
+
+## V39 Project spotlight timing diagnosis (2026-10-06)
+
+The matrix remains `26 PASS`, `16 FAIL`, and `2 HELD`. The first assertion reads
+bootstrap `version_story {}` at 7.945ms, before asynchronous generation redirect
+DOM at 34.773ms and payload at 50.047ms; its selected-three-highlights oracle is
+valid. Failure before Close leaves the modal open and cascades 16 failures.
+Actual Close works in the root’s 12 read-only review captures. The bounded remedy
+is for the shared obstruction helper to wait for settled document before checking
+visible Close, and for the external adapter to wait for generation payload before
+version/spotlight checks and finally Close after a failed assertion. No fake time,
+model, consumer repair, or oracle weakening. Evidence:
+`/private/tmp/odylith-v39-project-spotlight-diagnosis-20261006/diagnosis.json`
+(SHA-256 `ecd74ddf4bc716bb330f1e4d4012a955f1b7e2290e2a32dc471ac61e3965f687`).
+
+## V39 current CI proxy-patching failure (2026-10-06)
+
+Current CI `37480920778` at `73d1555` fails one test (`10,036` pass, `10` skip)
+after 49m13s. The cause is test order: an earlier install test patches the lazy
+CLI proxy `cli.sync_workstream_artifacts.main`, then teardown restores a concrete
+original on that proxy. The later admission test patches the underlying module,
+misses the proxy attribute, and real sync runs against a fixture missing
+Traceability. The paired order reproduction is one pass/one fail. Patch only
+the actual CLI proxy in the test; retain real admission, publication, model
+refusal, custody, Registry mapping, and validator behavior. This is not CI-pass
+credit. Evidence: `/private/tmp/odylith-v39-authored-sync-ci-paired-repro-20261006.log`;
+current failed log `/private/tmp/odylith-v39-current-ci-failure-20261006.log`.
+
+## V39 installed browser-matrix failure boundary (2026-10-06)
+
+The actual v39 installed matrix records `26 PASS`, `16 FAIL`, and `2 HELD`
+across 65 screenshots. Its first Project assertion ran before modal Close, and a
+later backdrop click was intercepted; the browser owner is still diagnosing the
+exact cause. Do not call Product non-regression, R3 PASS, or replay from this
+result. Preserve the failed matrix at
+`/private/tmp/odylith-greenfield-v14-to-v39-migration-20261006/upgrade-r3/final-installed-browser-matrix-handoff.json`
+(SHA-256 `c46ad8a8…`), and retain R1–R3 history.
+
 ## V39 Casebook index-refresh regression (2026-10-06)
 
 CI run `37464433347` at exact `11e3211` remains the historical 29-failure,

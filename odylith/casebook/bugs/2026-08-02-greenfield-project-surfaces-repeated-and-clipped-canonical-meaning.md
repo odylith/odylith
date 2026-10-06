@@ -1,5 +1,76 @@
 - Bug ID: CB-303
 
+## V40 final human-content source proof (2026-10-06)
+
+Current source proof passes Project 54 focused units plus eight browser cells,
+Atlas 66 plus two, Registry eight producer-shape browser checks, Radar 21
+controlled-default checks, and Compass 70 fallback-fact checks. The six-owner
+batch preserves factual roles, jobs, warnings, source custody, and authored
+selected-detail sections. This is source proof only: the v39 installed matrix
+remains 26 pass/16 fail/2 held, and no current installed or release credit
+follows. Evidence: `/private/tmp/odylith-v40-project-source-browser-20261006/final-handoff.json`,
+`/private/tmp/odylith-v40-atlas-source-browser-20261006/sealed-source-proof.json`,
+`/private/tmp/odylith-registry-final-producer-shape-browser-20261006.log`,
+`/private/tmp/odylith-radar-controlled-default-preview-proof-20261006.log`, and
+`/private/tmp/odylith-compass-fallback-facts-20261006/handoff.json`. After that
+prior Project evidence, a one-line f-string condition placement correction removed
+generated trailing whitespace without changing DOM, facts, or visibility; current
+`tests/unit/runtime/test_project_intelligence.py` passes 22 checks. Full CI,
+package, and installed-browser proof remain required. The Atlas catalog test file was 1,824 LOC at the `73d` baseline, above the
+1,500-LOC test ceiling. Eleven self-contained
+`test_atlas_box_explanations_*` functions now move unchanged into the existing
+node-identity test file: source and AST are identical, collection remains 61,
+and focused current proof passes 66 checks in 0.41s. Files reduce 1,824→1,412
+and 143→551 LOC; production source, fixtures, and oracles are unchanged.
+Evidence: `/private/tmp/odylith-v40-atlas-test-ownership-move-20261006/sealed-move-report.json`
+(SHA-256 `7efaedc642442f27a72f7e791f0e6e19ec58d7fb99f0a186219f1b76f892792d`).
+
+## V39 presentation source proof receipts (2026-10-06)
+
+Earlier source proof passes Project `54` focused checks plus `8` source-browser
+checks (receipt prefix `f6e99f62`), Atlas `66` focused plus `2` source-browser
+checks (prefix `c7e23772`), and Registry `8` producer-shape browser checks at
+`/private/tmp/odylith-registry-final-producer-shape-browser-20261006.log`.
+These are source-only receipts; independent review, current CI, package,
+installed, semantic, and release gates remain open.
+
+## V39 Compass and Radar normal-page fallback defects (2026-10-06)
+
+Installed desktop review finds Compass Current followed by fabricated generic Next
+and Watch text from global fallback defaults. Fallback brief copy must show an
+actual recorded action, risk, or checklist fact when one exists, otherwise omit
+Next/Watch; unknown narration, status warnings, factual Current, and timeline
+remain. Radar list cards also lead with a controlled producer-default Proposed
+Solution above the selected real Problem. Preserve differentiated authored
+Proposed Solution priority; skip only whole controlled producer defaults, then
+use the next supplied source field. Retain all raw and selected-detail sections. This
+is a rendering correction only; do not add schemas, models, engines, or a new
+narrative framework. Evidence: `/private/tmp/odylith-v39-human-content-review-r2-20261006/desktopCompass.png`.
+
+## V39 actual-producer registration comparison defect (2026-10-06)
+
+Read-only review of 12 installed desktop/mobile pages finds Registry primary
+registration boilerplate still visible because the actual producer wraps its
+command and path in inline backticks while the compact-narrative guard compares
+plain literals. Normalize inline-code punctuation only for that controlled
+registration comparison; preserve genuine purpose and raw metadata, and cover
+the actual producer raw shape in the source browser fixture. The first human
+review stopped on a wrong `#pane-registry` selector and is retained; corrected
+review used actual tab aria and produced 12 captures without qualification
+credit. Evidence: `/private/tmp/odylith-v39-human-content-review-r2-20261006/review-inputs.json`.
+
+## V39 installed presentation defects pending (2026-10-06)
+
+Installed v39 inspection finds two remaining cognitive-load defects. Atlas
+repeats a generic responsibility/advisory fallback across nodes; its final
+semantic-description branch and singular-only merge check leak plural advice.
+Project puts redundant generated-from, projected-state, and next-action machine
+notes plus a runtime changelog above the exact Current work title. Atlas must use
+an existing graph fact or omit fallback prose; Project must hide redundant
+machine annotations while preserving metadata, source links, warnings, and
+supporting records. This is a pending presentation fix, not a semantic, package,
+or release result. Evidence: `/private/tmp/odylith-greenfield-v14-to-v39-migration-20261006/upgrade-r3/installed-browser-maintainer-python-once/screenshots/`.
+
 ## V39 Project source-narrative correction (2026-10-06)
 
 The four-owner Project correction passes eight source UI and 54 focused checks,

@@ -15,6 +15,16 @@ execution evidence into the ranked workstream view used by operators and other
 Odylith surfaces.
 
 ## Scope And Non-Goals
+### List preview controlled-boilerplate exclusion
+
+Radar preserves differentiated authored Proposed Solution priority. It skips only
+the whole controlled producer boilerplate from the existing
+`contract.default_section_boilerplate(title)` contract, plus the observed v14
+“Create the workstream from …” variant; the next actual source field then
+supplies preview text. Full authored sections remain in selected detail and raw
+source. Repeated Project Problem must not globally outrank a differentiated
+Proposed Solution.
+
 
 ### Five-core narrative projection
 
@@ -455,6 +465,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-10-06: Controlled-default preview proof passes 21 checks while excluding only controlled boilerplate and retaining differentiated authored Proposed Solution in detail. Installed and release proof remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
 - 2026-10-06: Closed native What changed details retain distinct authored facts through exact deduplication. The blanket-suppression attempt was reverted after its discriminator failed; the settled source tests pass 31 focused checks with independent CLEAR review. This is source-only presentation proof. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
 - 2026-10-06: Final P1 narrative corrections retain the producer's current behavior and all ten frozen source projections; this is not a claim that the producer is unchanged from `111fc`. The final affected checks and canonical source contract pass 145 ideas, 28 execution-linked records, five releases, and 20 active targets. Receipt: `/private/tmp/odylith-five-core-repo-contract-readback-20261006.json` (SHA-256 `b1fa49a41933569adbcb658ea3484ad65d834de9fc0da39f21aeb4d3b584506a`). Source-only proof; installed and release qualification remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
 - 2026-05-09: Removed the dead right-column constraint from Radar execution-wave focus cards so the narrative uses the full available width while status chips remain visible and responsive. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141))

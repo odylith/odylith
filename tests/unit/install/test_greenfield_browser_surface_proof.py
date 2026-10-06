@@ -103,6 +103,39 @@ def test_browser_surface_proof_expected_abort_filter_stays_local_and_narrow() ->
     )
 
 
+def test_shell_obstruction_dismissal_waits_for_redirected_document() -> None:
+    module = _module()
+    calls: list[tuple[str, str]] = []
+
+    class Control:
+        first = None
+
+        def __init__(self, selector: str) -> None:
+            self.selector = selector
+            self.first = self
+
+        def count(self) -> int:
+            return 1
+
+        def is_visible(self) -> bool:
+            return self.selector == "#upgradeSpotlightDismiss"
+
+        def click(self) -> None:
+            calls.append(("click", self.selector))
+
+    class Page:
+        def wait_for_load_state(self, state: str) -> None:
+            calls.append(("wait", state))
+
+        def locator(self, selector: str) -> Control:
+            assert calls and calls[0] == ("wait", "networkidle")
+            return Control(selector)
+
+    module._dismiss_shell_obstructions(Page())
+
+    assert calls == [("wait", "networkidle"), ("click", "#upgradeSpotlightDismiss")]
+
+
 def test_browser_state_screenshot_is_captured_with_and_without_assertion_issues(tmp_path: Path) -> None:
     module = _module()
 

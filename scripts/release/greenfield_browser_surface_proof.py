@@ -1100,6 +1100,7 @@ def _content_frame(*, page: Any, frame_selector: str, timeout_ms: int) -> Any | 
 def _dismiss_shell_obstructions(page: Any) -> None:
     """Expose the selected surface before layout checks and retained screenshots."""
 
+    page.wait_for_load_state("networkidle")
     for selector in ("#upgradeSpotlightDismiss", "#welcomeDismiss", "#gridBriefClose", "#odylithClose"):
         control = page.locator(selector)
         if control.count() and control.first.is_visible():

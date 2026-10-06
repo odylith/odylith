@@ -293,7 +293,12 @@ def test_registry_category_labels_survive_filter_empty_and_runtime_fallback(
         "Logical component registered through odylith component register with "
         "tools/copy_<record>&.py as its initial evidence anchor."
     ),
-], ids=["registration", "initial-evidence"])
+    "Logical component registered through `odylith component register`.",
+    (
+        "Logical component registered through `odylith component register` with "
+        "`tools/copy_<record>&.py` as its initial evidence anchor."
+    ),
+], ids=["registration", "initial-evidence", "stored-registration", "stored-initial-evidence"])
 def test_registration_metadata_stays_in_closed_registry_details(
     browser_context, width: int, stored: str,
 ) -> None:  # noqa: ANN001

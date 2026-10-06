@@ -22,7 +22,8 @@ _PLACEHOLDER_RE = re.compile(r"\b(tbd|todo|n/a|none|placeholder|fixme)\b", re.IG
 _MECHANICAL_DESCRIPTION_RE = re.compile(
     r"\b("
     r"part of the path|incoming arrows|outgoing arrows|hands off|branch point|"
-    r"read the boxes inside|diagram mechanics|through the arrows"
+    r"read the boxes inside|diagram mechanics|through the arrows|"
+    r"named state or responsibility in this diagram"
     r")\b",
     re.IGNORECASE,
 )
@@ -306,7 +307,7 @@ def _generated_node_description(
     context: DiagramBoxContext,
 ) -> str:
     role_sentence = _node_action_sentence(label, context=context)
-    if container_stack:
+    if container_stack and role_sentence:
         container = container_stack[-1]
         return f"Within {container}, {role_sentence}"
     return role_sentence
@@ -317,8 +318,6 @@ def _node_action_sentence(label: str, *, context: DiagramBoxContext) -> str:
     lowered = clean.lower()
     subject = _sentence_subject(clean)
     subject_be = present_verb(subject, singular="is", plural="are")
-    subject_pronoun = present_verb(subject, singular="It", plural="They")
-    subject_object_pronoun = present_verb(subject, singular="it", plural="they")
 
     def subject_verb(singular: str, plural: str) -> str:
         return present_verb(subject, singular=singular, plural=plural)
@@ -485,10 +484,7 @@ def _node_action_sentence(label: str, *, context: DiagramBoxContext) -> str:
         return f"{subject} {subject_verb('moves', 'move')} data or requests across a system boundary and should preserve handoff evidence."
     if _looks_like_state_object(clean):
         return f"{subject} {subject_be} the object whose state changes as the flow moves from trigger to outcome."
-    return (
-        f"{subject} {subject_be} a named responsibility in {project}. {subject_pronoun} should name the domain object {subject_object_pronoun} owns, "
-        f"the evidence or decision {subject_object_pronoun} receives or produces, and the release condition {subject_object_pronoun} protects."
-    )
+    return ""
 
 
 def _project_name(*, title: str, summary: str, source_text: str) -> str:
@@ -560,7 +556,6 @@ def _component_grounded_sentence(
 ) -> str:
     project = context.project_name or "the product"
     tracked_object = context.tracked_object
-    tracked_objects = context.tracked_objects
     component_names = [str(row.get("name", "")).strip() for row in matched_components if str(row.get("name", "")).strip()]
     component_descriptions = [
         clean_component_description(
@@ -599,10 +594,7 @@ def _component_grounded_sentence(
             f"{subject} owns {responsibility}. "
             f"It matters because release proof must make this boundary traceable from accepted input to {_review_outcome_phrase(tracked_object)}."
         )
-    return (
-        f"{subject} owns a named responsibility for {tracked_objects}. "
-        "It matters because release proof must show what it receives, preserves, or produces."
-    )
+    return ""
 
 
 def _responsibility_phrase(value: str, *, subject: str) -> str:
@@ -948,17 +940,11 @@ def _resolved_box_label(*, label: str, context: DiagramBoxContext) -> str:
 def _merge_node_description(*, semantic_description: str, graph_description: str) -> str:
     semantic = _clean_label(semantic_description)
     graph = _clean_label(graph_description)
-    if not graph:
+    if semantic:
         return semantic
-    if _MECHANICAL_DESCRIPTION_RE.search(graph):
-        return semantic
-    if semantic and "is a named responsibility" not in semantic:
-        return semantic
-    if not semantic or "is a named responsibility" in semantic:
+    if graph and not _MECHANICAL_DESCRIPTION_RE.search(graph):
         return graph
-    if graph.casefold() == semantic.casefold() or graph.casefold() in semantic.casefold():
-        return semantic
-    return f"{semantic} {graph}"
+    return ""
 
 
 def _low_signal_generated_graph_label(*, label: str, node_id: str) -> bool:

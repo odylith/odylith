@@ -102,11 +102,12 @@ def _decapitalize_clause(text: str) -> str:
 def _risk_phrase(risk_posture: str) -> str:
     token = compass_base._normalize_sentence(risk_posture)
     if not token:
-        return "no critical blockers are currently surfaced"
+        return ""
     lowered = token.lower()
     if lowered.startswith("risk posture:"):
         token = token.split(":", 1)[1].strip()
-    return token.rstrip(" .")
+    token = token.rstrip(" .")
+    return "" if token.lower() == "no critical blockers are currently surfaced" else token
 
 
 def _sentence_without_period(text: str) -> str:
@@ -897,17 +898,19 @@ def _risk_facts(
         )
     if not facts:
         fallback = _periodize(compass_base._normalize_sentence(fallback_text)) if compass_base._normalize_sentence(fallback_text) else ""
-        facts.append(
-            _standup_fact(
-                section_key="risks_to_watch",
-                voice_hint="operator",
-                priority=72,
-                text=fallback or _periodize(_risk_phrase(risk_summary).capitalize()),
-                source="risk_summary",
-                kind="risk_posture",
-                workstreams=workstreams,
+        text = fallback or _periodize(_risk_phrase(risk_summary).capitalize())
+        if text:
+            facts.append(
+                _standup_fact(
+                    section_key="risks_to_watch",
+                    voice_hint="operator",
+                    priority=72,
+                    text=text,
+                    source="risk_summary",
+                    kind="risk_posture",
+                    workstreams=workstreams,
+                )
             )
-        )
     return facts[:3]
 
 
@@ -1064,23 +1067,7 @@ def _scoped_fallback_next_text(
     total_tasks: int,
     freshness_bucket: str,
 ) -> str:
-    purpose_clause = _decapitalize_clause(purpose)
-    remaining_tasks = max(0, int(total_tasks) - int(done_tasks))
-    if remaining_tasks > 0 and purpose_clause:
-        return (
-            f"Immediate forcing function is to turn the next open checklist item into a named checkpoint for {label} "
-            f"so {purpose_clause}."
-        )
-    if remaining_tasks > 0:
-        return f"Immediate forcing function is to turn the next open checklist item into a named checkpoint for {label}."
-    if freshness_bucket in {"aging", "stale"}:
-        return (
-            f"Immediate forcing function is to log the next concrete checkpoint for {label} "
-            "so Compass stops leaning on aging evidence."
-        )
-    if str(status or "").strip().lower() == "planning":
-        return f"Immediate forcing function is to define the first implementation checkpoint for {label}."
-    return f"Immediate forcing function is to capture the next verified checkpoint for {label}."
+    return ""
 
 
 def _global_fallback_next_text(
@@ -1090,17 +1077,7 @@ def _global_fallback_next_text(
     active_count: int,
     freshness_bucket: str,
 ) -> str:
-    purpose_clause = _decapitalize_clause(primary_purpose)
-    if primary_label and purpose_clause:
-        return f"Immediate forcing function is to name the next checkpoint on {primary_label} so {purpose_clause}."
-    if primary_label and freshness_bucket in {"aging", "stale"}:
-        return (
-            f"Immediate forcing function is to log the next checkpoint on {primary_label} "
-            "so portfolio steering stops leaning on aging proof."
-        )
-    if active_count > 0:
-        return "Immediate forcing function is to turn the active flagship lane into a named next checkpoint."
-    return "Create or open a workstream in Radar, then Compass will summarize its progress here."
+    return ""
 
 
 def _scoped_fallback_risk_text(
@@ -1115,18 +1092,8 @@ def _scoped_fallback_risk_text(
     freshness_bucket: str,
     freshness_text: str,
 ) -> str:
-    remaining_tasks = max(0, int(total_tasks) - int(done_tasks))
-    if remaining_tasks > 0 and wave_context:
-        return (
-            f"Primary watch item is sequencing discipline: {remaining_tasks} plan items remain open while "
-            f"{_wave_context_clause(wave_context)}."
-        )
-    if remaining_tasks > 0:
-        return f"Primary watch item is closure discipline: {remaining_tasks} plan items remain open for {label}."
     if freshness_bucket in {"aging", "stale"} and freshness_text:
         return freshness_text
-    if str(eta_source or "").strip().lower() == "heuristic":
-        return f"Primary watch item is timeline confidence: {label} is still projected heuristically at roughly {eta_days} days."
     return _periodize(_risk_phrase(risk_summary).capitalize())
 
 
@@ -1140,21 +1107,6 @@ def _global_fallback_risk_text(
     freshness_bucket: str,
     freshness_text: str,
 ) -> str:
-    active_labels = [
-        _ws_label(row)
-        for row in active_ws_rows
-        if isinstance(row, Mapping) and _ws_label(row)
-    ]
-    active_labels = list(dict.fromkeys(active_labels))
-    if len(active_labels) >= 2:
-        return (
-            f"Primary watch item is execution coherence across {active_labels[0]} and {active_labels[1]} "
-            "while shared dependencies remain open."
-        )
-    if active_labels:
-        return f"Primary watch item is keeping {active_labels[0]} tight so live execution does not diffuse into portfolio churn."
     if freshness_bucket in {"aging", "stale"} and freshness_text:
         return freshness_text
-    if str(eta_source or "").strip().lower() == "heuristic" and primary_label:
-        return f"Primary watch item is timeline confidence on {primary_label}: delivery is still projected heuristically at roughly {eta_days} days."
     return _periodize(_risk_phrase(risk_summary).capitalize())

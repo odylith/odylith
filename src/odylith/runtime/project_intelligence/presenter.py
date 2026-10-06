@@ -747,7 +747,7 @@ def _render_project_html_project(project: Mapping[str, Any]) -> str:
                     show_body=not operating_details)
     )
     participants_html = (
-        f"""      <section class="project-panel project-participants"><div class="project-panel-head"><h2>{_d(project.get("participants_title"))}</h2><p>{_d(project.get("participants_note"))}</p></div><div class="project-card-grid project-actor-grid">{actor_cards}</div></section>
+        f"""      <section class="project-panel project-participants"><div class="project-panel-head"><h2>{_d(project.get("participants_title"))}</h2>{'' if operating_details else f'<p>{_d(project.get("participants_note"))}</p>'}</div><div class="project-card-grid project-actor-grid">{actor_cards}</div></section>
 """
         if _enabled(project, "participants")
         else ""
@@ -763,7 +763,7 @@ def _render_project_html_project(project: Mapping[str, Any]) -> str:
         supporting_html = f'{role_details}{answers_html}{scenario_html}{_use_cases(next_jobs)}'
         answers_html = scenario_html = ""
     jobs_html = (
-        f"""      <section class="project-panel"><div class="project-panel-head"><h2>{_d(project.get("jobs_title"))}</h2><p>{_d(project.get("jobs_note"))}</p></div><div class="project-job-grid">{_use_cases(jobs, authored=authored)}</div></section>
+        f"""      <section class="project-panel"><div class="project-panel-head"><h2>{_d(project.get("jobs_title"))}</h2>{'' if operating_details else f'<p>{_d(project.get("jobs_note"))}</p>'}</div><div class="project-job-grid">{_use_cases(jobs, authored=authored)}</div></section>
 """
         if _enabled(project, "jobs")
         else ""
@@ -800,7 +800,7 @@ def _render_project_html_project(project: Mapping[str, Any]) -> str:
     host_handoff_html = _host_handoff(project)
     next_action_html = f'<p>{_d(project.get("recommendation"))}</p>' if operating and project.get("recommendation") else ""
     next_html = (
-        f"""      <section class="project-panel"><div class="project-panel-head"><h2>{_d(project.get("next_title"))}</h2><p>{_d(project.get("next_note"))}</p></div>{next_action_html}{host_handoff_html}</section>
+        f"""      <section class="project-panel"><div class="project-panel-head"><h2>{_d(project.get("next_title"))}</h2>{'' if operating_details else f'<p>{_d(project.get("next_note"))}</p>'}</div>{next_action_html}{host_handoff_html}</section>
 """
         if _enabled(project, "next")
         else ""
@@ -812,8 +812,8 @@ def _render_project_html_project(project: Mapping[str, Any]) -> str:
         else ""
     )
     if operating_details:
-        supporting_html += proof_html
-        proof_html = ""
+        supporting_html += state_html + proof_html
+        state_html = proof_html = ""
     product_story_html = (
         f"""      <section class="project-panel project-product-story">
         <div class="project-panel-head"><h2>{_d(project.get("product_story_title"))}</h2>{f'<p>{_d(project.get("product_story_note"))}</p>' if str(project.get("product_story_note") or "").strip() else ''}</div>
@@ -823,8 +823,7 @@ def _render_project_html_project(project: Mapping[str, Any]) -> str:
         if _enabled(project, "product_story")
         else ""
     )
-    hero_rail = "" if authored else f"""<aside class="project-hero-rail">
-        <section class="project-focus-card"><p>{_d(_hero_rail_label(project.get("focus_label"), title=project.get("title"), fallback="Current focus"))}</p><h2>{_d(project.get("focus"))}</h2></section>
+    hero_rail = "" if authored else f"""<aside class="project-hero-rail">{'' if operating_details else f'<section class="project-focus-card"><p>{_d(_hero_rail_label(project.get("focus_label"), title=project.get("title"), fallback="Current focus"))}</p><h2>{_d(project.get("focus"))}</h2></section>'}
         <section class="project-open-card"><p>{_d(_hero_rail_label(project.get("open_label"), title=project.get("title"), fallback="Open questions"))}</p>{_bullets(project.get("open"))}</section>
       </aside>"""
     eyebrow = "" if authored else f'<p class="project-eyebrow"><span></span>{_d(project.get("eyebrow"))}</p>'

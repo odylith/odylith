@@ -51,6 +51,16 @@ def test_story_uses_workstream_deliverable_before_repeated_project_fields(tmp_pa
     assert payload_runtime._build_backlog_detail_entry(entry)["problem"] == "Assumption — One reviewable project record."
 
 
+@pytest.mark.parametrize("preposition", ["for", "from"])
+def test_story_skips_controlled_registration_copy_and_preserves_source(tmp_path: Path, preposition: str) -> None:
+    problem = "The copy retains the record bytes but drops its permission mode."
+    default = f"Create the workstream {preposition} Cached Radar Render and refine the exact implementation plan during execution."
+    entry = story_entry(tmp_path, {"Proposed Solution": default, "Problem": problem})
+    assert entry["story_source"] == "Problem"
+    assert entry["story_text"] == problem
+    assert default in (tmp_path / str(entry["idea_file"])).read_text(encoding="utf-8")
+
+
 LONG_CONDITIONAL = (
     "Proposed deliverable — Keep the U.S. lab's 2.75-hour exposure record, its original custody references, "
     "and the complete failed-run observations visible to the reviewer alongside the associated sample, "

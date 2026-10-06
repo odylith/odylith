@@ -16,6 +16,13 @@ of what changed, what is active, what risks or cases dominate, and what the
 standup-level summary should be.
 
 ## Scope And Non-Goals
+### Brief fallback facts
+
+Compass fallback Next and Watch copy uses a recorded action, risk, or checklist
+fact when available. If none exists, it omits the field; it does not invent a
+checkpoint or watch risk. Current, unknown narration, status warnings, and
+timeline facts remain visible.
+
 ### Asynchronous result custody
 The maintenance worker owns detached process identity, request replacement and
 cleanup. It verifies native argument boundaries for the interpreter, module and
@@ -824,6 +831,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-10-06: Fallback-fact proof passes 70 checks: recorded action/risk/checklist facts remain visible, unsupported Next/Watch prose is omitted. Installed and release proof remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
 - 2026-09-08: Aligned batch provider-failure diagnostics with foreground local-fact fallback, preserving explicitly unavailable global/scoped states without another provider call. Recorded background-worker settlement as a distinct proof requirement. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
 - 2026-09-07: Added explicit temporary refresh-root lifetime ownership to narration enqueue and spawn. Nested scopes and parallel surface threads preserve the guard; durable roots retain normal warming. Three pre-fix controls fail; the settled source passes 4311 runtime tests, 1101 install tests, native synthetic success/malformed/timeout controls and 34 staged-browser checks. Cold narration is explicitly unavailable, not fabricated or handed to CONFIRM. This is source-local lifecycle proof, not real-model quality or SLA qualification. (Plan: [B-142](../../../odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
 - 2026-04-17: Locked Compass `Programs` to release-like inner cards so each visible execution-wave program is a proper card inside the outer tinted Programs container, with unit and browser proof guarding against borderless flattening. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))

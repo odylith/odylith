@@ -746,7 +746,7 @@ def test_build_scoped_standup_fact_packet_avoids_conditional_direction_fragment(
                 "last_activity_iso": "2026-04-11T07:30:00Z",
             },
         },
-        next_actions=[{"backlog": "B-025", "task": "land the next browser-backed freshness checkpoint"}],
+        next_actions=[{"idea_id": "B-025", "action": "land the next browser-backed freshness checkpoint"}],
         recent_completed=[],
         window_events=[],
         window_transactions=[],
@@ -765,7 +765,7 @@ def test_build_scoped_standup_fact_packet_avoids_conditional_direction_fragment(
     next_fact = next(iter(next_planned["facts"]))
     assert "land if " not in direction_fact["text"].lower()
     assert "this gives operators a clearer contract" not in direction_fact["text"]
-    assert "Cross-Surface Runtime Freshness and UX Browser Hardening" in next_fact["text"]
+    assert "land the next browser-backed freshness checkpoint" in next_fact["text"]
 
 
 def test_scoped_standup_fact_packet_trims_dangling_generated_fragments() -> None:

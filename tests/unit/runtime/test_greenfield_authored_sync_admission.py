@@ -872,7 +872,6 @@ def test_release_note_successor_rechecks_maintainer_lane_and_version(release_not
 
 def test_release_note_selected_with_casebook_through_real_cli_admission(release_note_repo, monkeypatch):
     """Real CLI parser, boundary and publisher; post-admission sync work is synthetic."""
-    from odylith.runtime.governance import sync_workstream_artifacts
     from odylith.runtime.reasoning import odylith_reasoning
 
     monkeypatch.setattr(odylith_reasoning, "provider_from_config", lambda **_: pytest.fail("model provider"))
@@ -882,7 +881,7 @@ def test_release_note_selected_with_casebook_through_real_cli_admission(release_
         (root / token).write_text(NOTE_AFTER, encoding="utf-8")
     (root / AUTHORED).write_text(EDITED, encoding="utf-8")
     dispatched = []
-    monkeypatch.setattr(sync_workstream_artifacts, "main", lambda args: dispatched.append(args) or 0)
+    monkeypatch.setattr(cli.sync_workstream_artifacts, "main", lambda args: dispatched.append(args) or 0)
     assert cli.main([
         "sync", "--repo-root", str(root), "--impact-mode", "selective",
         "--runtime-mode", "standalone", RELEASE_NOTE, AUTHORED,

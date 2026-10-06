@@ -24,6 +24,12 @@ timeline only accept the latest selection revision, including repeated selection
 of the same component. Populated detail and forensic rendering retain their
 existing owners. CB-330 browser proof covers both source states at both widths.
 
+### Controlled registration comparison
+
+The compact primary narrative compares controlled registration boilerplate after
+normalizing inline-code punctuation only. It preserves supplied purpose and raw
+metadata, and its browser fixture uses the actual producer Markdown shape.
+
 ### Registration narrative
 
 Primary Registry narrative uses the component’s supplied purpose. Controlled
@@ -323,6 +329,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-10-06: Final Registry producer-shape browser proof passes eight checks while preserving exact closed detail and source metadata. Installed and release proof remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
 - 2026-10-06: Registry omits controlled registration boilerplate from its primary narrative while preserving the exact original in closed detail. One owner adds three lines; four browser checks pass at 1440 and 430 widths. The preliminary 16-qualified result is not current-byte, installed, or release proof. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
 - 2026-09-08: Centralized live versus recorded evidence collection for Registry forensics and Delivery, preserving live Context coverage and stable source/spec commit readback. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-07-01: Captured source-change forensics regeneration posture. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)

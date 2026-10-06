@@ -574,7 +574,7 @@ def test_project_intelligence_compiles_current_repo_state_from_sources(tmp_path:
     assert any("missing subcomponent dashboard" in item for item in payload["excluded"])
 
     html = presenter.render_project_html({"project_intelligence": payload})
-    assert "project-focus-card" in html
+    assert "project-focus-card" not in html
     assert "project-open-card" in html
     assert "project-decision-card" not in html
     assert "project-decision-grid" not in html
@@ -584,6 +584,8 @@ def test_project_intelligence_compiles_current_repo_state_from_sources(tmp_path:
     assert html.split("</header>", 1)[0].count(payload["intro"]) == 1
     supporting = html.split('<summary>Supporting details</summary>', 1)[1].split("</details>", 1)[0]
     assert 'project-proof-grid' in supporting
+    assert "Project tab now compiles from source records" in supporting
+    assert "Where does this stand?" in supporting
     assert payload["intro"] in supporting
     assert "<h3>How Odylith helps" not in html
     assert '<details class="project-evidence-excerpt"><summary>Supporting details</summary>' in html

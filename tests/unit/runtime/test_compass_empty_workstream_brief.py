@@ -44,8 +44,8 @@ def test_empty_scope_has_no_invented_workstream_or_forecast() -> None:
     assert not {"direction", "timeline"}.intersection(fact["kind"] for fact in packet["facts"])
     for key in ("flagship_lane", "direction", "forcing_function"):
         assert packet["summary"]["storyline"][key] == ""
-    next_facts = [fact for fact in packet["facts"] if fact["section_key"] == "next_planned"]
-    assert any("Radar" in fact["text"] for fact in next_facts)
+    assert not [fact for fact in packet["facts"] if fact["section_key"] == "next_planned"]
+    assert not [fact for fact in packet["facts"] if fact["section_key"] == "risks_to_watch"]
 
 
 @pytest.mark.parametrize("overrides", [
@@ -118,6 +118,35 @@ def test_no_active_scope_preserves_completed_work_and_actual_risks() -> None:
     assert not any(fact["kind"] == "freshness" for fact in packet["facts"])
 
 
+def test_recorded_next_action_and_bug_remain_in_global_packet() -> None:
+    row = {"idea_id": "B-002", "title": "Reliable search", "status": "in-progress"}
+    packet = _packet(
+        ws_rows=[row], ws_index={"B-002": row}, active_ws_rows=[row],
+        next_actions=[{"idea_id": "B-002", "action": "Verify the index readback"}],
+        risk_rows={"bugs": [{"severity": "P1", "title": "Readback failed"}],
+                   "traceability": [], "stale_diagrams": []},
+        risk_summary="Risk posture: readback is blocked.",
+    )
+
+    next_facts = [fact for fact in packet["facts"] if fact["section_key"] == "next_planned"]
+    risks = [fact for fact in packet["facts"] if fact["section_key"] == "risks_to_watch"]
+    assert any("verify the index readback" in fact["text"].lower() for fact in next_facts)
+    assert any(fact["kind"] == "bug" and "Readback failed" in fact["text"] for fact in risks)
+
+
+def test_active_lane_without_recorded_next_or_risk_omits_both_points() -> None:
+    row = {"idea_id": "B-002", "title": "Reliable search", "status": "in-progress"}
+    packet = _packet(
+        ws_rows=[row], ws_index={"B-002": row}, active_ws_rows=[row],
+        window_events=[{"ts_iso": "2026-09-07T00:00:00Z", "workstreams": ["B-002"]}],
+    )
+
+    assert not [fact for fact in packet["facts"] if fact["section_key"] == "next_planned"]
+    assert not [fact for fact in packet["facts"] if fact["section_key"] == "risks_to_watch"]
+    assert any("Reliable search" in fact["text"] for fact in packet["facts"] if fact["section_key"] == "current_execution")
+    assert any(fact["kind"] == "timeline" for fact in packet["facts"] if fact["section_key"] == "current_execution")
+
+
 @pytest.mark.parametrize("active", [True, False])
 def test_real_workstream_keeps_source_backed_direction_and_estimate(active: bool) -> None:
     row = {
@@ -157,7 +186,7 @@ def test_deferred_narrator_does_not_claim_work_is_underway(tmp_path: Path) -> No
     assert "being prepared" not in diagnostics["message"]
     assert "not available" in diagnostics["message"]
     digest = " ".join(diagnostics["fallback_digest"])
-    assert "Radar" in digest
+    assert "Next:" not in digest and "Watch:" not in digest
     assert "current priority lane" not in digest
     assert "heuristically" not in digest
     assert "forcing function" not in digest

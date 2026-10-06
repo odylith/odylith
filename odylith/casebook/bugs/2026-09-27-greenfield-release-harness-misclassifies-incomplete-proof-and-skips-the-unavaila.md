@@ -1,5 +1,68 @@
 - Bug ID: CB-347
 
+## V40 unpublished Compass-stream publication refusal (2026-10-06)
+
+Selective authored publication refused before a successor because the sole
+unselected managed divergence is three unpublished `ambient_signal` hook records
+in `odylith/compass/runtime/agent-stream.v1.jsonl` at `2026-10-06T15:02:02Z`.
+Archive the exact raw stream and diff, then preview and apply restoration only
+for that stream before reviewed authored publication and one meaningful Compass
+implementation append referencing the archive. The hook candidates are immutable
+external history, not chat or source proof; do not replay models or disable an
+engine. Evidence: compiler delta
+`/private/tmp/odylith-v40-final-source-freeze-20261006/refused-unselected-delta.json`
+(SHA-256 `f47e6d3b2943a9e80ad72ad2e19c9da6e93dae0fc9685f842d52ba636ac0960a`)
+and failed publication log (SHA-256
+`2c10705ad0ac5cf4f29babd2b74fca4d640fdea185e402899b1ced70ddf68c48`).
+
+## V40 test-order and future-browser helper proof (2026-10-06)
+
+The CI proxy-order test correction passes 103 paired-order and adjacent checks
+without changing real admission, publication, refusal, custody, Registry mapping,
+or validation. The future installed-browser helper passes 94 tests with one added
+line at 1,200 LOC; its external adapter is HELD with zero execution. The failed
+current CI at `73d` (10,036 pass/one fail/10 skip) and v39 matrix (26/16/2)
+remain history, not superseded installed credit. Evidence:
+`/private/tmp/odylith-v39-authored-sync-ci-test-fix-20261006.json` and
+`/private/tmp/odylith-v40-installed-browser-future-predispatch-20261006/handoff.json`.
+
+## V39 Project spotlight timing diagnosis (2026-10-06)
+
+The matrix remains `26 PASS`, `16 FAIL`, and `2 HELD`. The first assertion reads
+bootstrap `version_story {}` at 7.945ms, before asynchronous generation redirect
+DOM at 34.773ms and payload at 50.047ms; its selected-three-highlights oracle is
+valid. Failure before Close leaves the modal open and cascades 16 failures.
+Actual Close works in the root’s 12 read-only review captures. The bounded remedy
+is for the shared obstruction helper to wait for settled document before checking
+visible Close, and for the external adapter to wait for generation payload before
+version/spotlight checks and finally Close after a failed assertion. No fake time,
+model, consumer repair, or oracle weakening. Evidence:
+`/private/tmp/odylith-v39-project-spotlight-diagnosis-20261006/diagnosis.json`
+(SHA-256 `ecd74ddf4bc716bb330f1e4d4012a955f1b7e2290e2a32dc471ac61e3965f687`).
+
+## V39 current CI proxy-patching failure (2026-10-06)
+
+Current CI `37480920778` at `73d1555` fails one test (`10,036` pass, `10` skip)
+after 49m13s. The cause is test order: an earlier install test patches the lazy
+CLI proxy `cli.sync_workstream_artifacts.main`, then teardown restores a concrete
+original on that proxy. The later admission test patches the underlying module,
+misses the proxy attribute, and real sync runs against a fixture missing
+Traceability. The paired order reproduction is one pass/one fail. Patch only
+the actual CLI proxy in the test; retain real admission, publication, model
+refusal, custody, Registry mapping, and validator behavior. This is not CI-pass
+credit. Evidence: `/private/tmp/odylith-v39-authored-sync-ci-paired-repro-20261006.log`;
+current failed log `/private/tmp/odylith-v39-current-ci-failure-20261006.log`.
+
+## V39 installed browser-matrix failure boundary (2026-10-06)
+
+The actual v39 installed matrix records `26 PASS`, `16 FAIL`, and `2 HELD`
+across 65 screenshots. Its first Project assertion ran before modal Close, and a
+later backdrop click was intercepted; the browser owner is still diagnosing the
+exact cause. Do not call Product non-regression, R3 PASS, or replay from this
+result. Preserve the failed matrix at
+`/private/tmp/odylith-greenfield-v14-to-v39-migration-20261006/upgrade-r3/final-installed-browser-matrix-handoff.json`
+(SHA-256 `c46ad8a8…`), and retain R1–R3 history.
+
 ## V39 Casebook index-refresh regression (2026-10-06)
 
 CI run `37464433347` at exact `11e3211` remains the historical 29-failure,
@@ -2333,3 +2396,16 @@ The v34 checkpoint check also refused six stale Atlas fingerprints after the nar
 ### V39 final Atlas fingerprint settlement
 
 The first V39 staged commit check retained a freshness failure: 42 diagrams were fresh and five were stale after later Registry spec and forensic records settled during full sync. The canonical Atlas preview selects five review-only fingerprint updates and zero diagram renders. This is a final metadata settlement step; topology and diagram source are unchanged. The failed gate remains recorded at `/private/tmp/odylith-v39-commit-ready-20261006/report.json` (SHA-256 `4fb978ba086d8c9a6f809818e2dba85cf43ba4e2941b7ab8cd04c18b493e63cc`). Final refresh and a fresh staged check remain required; freshness, current full CI, installed proof, and release gates are retained.
+
+
+### V39 predecessor preparation preflight
+
+Before creating a fresh predecessor, read-only preflight rediscovered the retained v38 `prepare.py` failure: the pinned driver (`39c039c717e81a017c52ba1894962583ba76759a83cda9da7f2073de0a871cda`) calls `a.inventory(...)` before its local `a=load(...)` assignment. The prior campaign retained this `UnboundLocalError` and used a separate inventory continuation. V39 stopped before a namespace, install, or consumer write; it will predeclare a single external load-order correction and retain the original script and failure. Product code, migration fixtures, preservation laws, model calls, and the frozen candidate `73d1555d5c9942f3e9647eb4706d62843428e5a1` are unchanged.
+
+The fresh v14 preparation then passed published install, authoring, reconciliation, validation, dashboard generation, and its positive linked-plan browser preflight. One extra optional help oracle incorrectly expected target-only `update-description` in v14; the actual help command returned zero and correctly listed `register`. The failed expectation is retained in the preparation report (`c8f5377ff95c8344284f8770f553657c6c3d5ad0ba904352cb35e94f446197d5`), with the 9,412-entry post-help consumer inventory exactly unchanged and no replay. Future preparation follows only the declared version-appropriate controls.
+
+The first external upgrade driver then stopped while importing `local_release_smoke`: it bound the frozen checkout's release scripts but omitted its `src` directory, so the helper's `odylith` import failed. Native upgrade and browser calls both remained zero, and the whole 9,412-entry v14 consumer inventory remained exact. The immutable handoff is `/private/tmp/odylith-greenfield-v14-to-v39-migration-20261006/upgrade/first-failure-handoff.json` (SHA-256 `d8699a09a11d3d7c6497d31760df4cb004aa40d9be3eac3fe3061d9b08bc651d`). Correct only the external driver's frozen-source import binding, preserve the failed attempt, and require actual helper imports plus all 27 call bindings before the first native upgrade. Product source, package, consumer and qualification rules are unchanged.
+
+The corrected external driver passed actual helper imports and all 27 call bindings, then stopped before any native call because its declaration changed the existing expected status literal. Preserve `/private/tmp/odylith-greenfield-v14-to-v39-migration-20261006/upgrade-r2/r2-first-failure-handoff.json` (SHA-256 `da894b6fdea8b83ea1e027b5322c0e6b41915c3c74b7af7557b5493d03d3d368`). Native and browser call counts remain zero across both attempts, with the exact predecessor inventory intact. Retain the driver's existing status contract and evaluate every precondition against the actual sealed inputs before dispatch. This is external harness learning; no product upgrade result or consumer retry is implied.
+
+The first actual native upgrade then passed once, preserving source and customer records and regenerating all six pages. Its browser process stopped before Chromium, cells or screenshots because it used the managed application interpreter, which does not include Playwright. Preserve `/private/tmp/odylith-greenfield-v14-to-v39-migration-20261006/upgrade-r3/browser-prelaunch-failure-handoff.json` (SHA-256 `e22b4b5d3d52c9ed5b242ac9eafa796eb3669c51292688387cda24544286b468`). The upgraded 18,355-entry consumer inventory stayed exact. Browser orchestration must use the verified maintainer Python with Playwright while the unchanged adapter binds and verifies the actual installed package; target renderer and semantic probes continue using managed Python with isolation. Do not repeat the native upgrade or install test dependencies into the consumer.
