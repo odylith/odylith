@@ -699,12 +699,14 @@ def test_render_backlog_ui_places_product_view_below_problem() -> None:
     html = render_backlog_ui._render_html(payload={"entries": []})
 
     problem_idx = html.index('summaryBlockHtml("Problem", selected.problem')
-    product_idx = html.index("<h3>Product View</h3>")
+    product_idx = html.index('summaryBlockHtml("Product View", selected.founder_pov')
     decision_idx = html.index("<h3>Decision Basis</h3>")
     customer_idx = html.index('summaryBlockHtml("Customer", selected.customer')
 
     assert problem_idx < product_idx < customer_idx
-    assert problem_idx < decision_idx < customer_idx
+    assessment_idx = html.index('<summary class="disclosure-title">Assessment and dates</summary>')
+    header_end_idx = html.index("</header>", assessment_idx)
+    assert assessment_idx < decision_idx < header_end_idx < problem_idx
 
 
 def test_render_backlog_ui_uses_authored_decision_basis_without_inferred_labels() -> None:

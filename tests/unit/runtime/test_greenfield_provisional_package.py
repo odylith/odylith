@@ -161,20 +161,20 @@ def test_every_delivery_has_local_scope_and_keeps_canonical_decision_refs(tmp_pa
         assert row["problem"] == authored["problem"]
         assert "Unimplemented assigned source-event support" not in row["problem"]
         assert all(f"Event {order}" not in row["problem"] for order in event_orders)
-        assert row["customer"] == f"Customer or beneficiary — {intent['customer']}"
+        assert row["customer"] == intent["customer"]
         assert all(
             event["actor_fact_quote"] not in row["customer"]
             for event in assigned_events
             if event["actor_kind"] != "human"
         )
-        assert row["opportunity"] == "Proposed component scope:\n\n" + "\n".join(
+        assert row["opportunity"] == "\n".join(
             f"- {components[key]['name']} — {components[key]['responsibility']}"
             for key in authored["component_keys"]
         )
-        assert row["product_view"] == f"Proposed workstream outcome — {authored['deliverable']}"
+        assert row["product_view"] == authored["deliverable"]
         assert row["deliverable"] == authored["deliverable"]
-        assert row["recommended_first_slice"] == f"Proposed deliverable — {authored['deliverable']}"
-        assert row["validation"] == [f"Proposed acceptance — {authored['verification']}"]
+        assert row["recommended_first_slice"] == authored["deliverable"]
+        assert row["validation"] == [authored["verification"]]
         assert row["success_metrics"] == row["validation"]
         contract = row["provisional_workstream_contract"]
         assert contract["support_event_refs"] == [
@@ -305,7 +305,7 @@ def test_decision_assumptions_remain_referenced_without_prose_fanout(tmp_path: P
         ])
         assert (statement in rendered) is (field == "customer")
         if field == "customer":
-            assert row["customer"] == f"Customer or beneficiary — Assumption — {statement}"
+            assert row["customer"] == f"Assumption — {statement}"
         assert "Assumptions" not in row["radar_sections"]
         assert row["provisional_workstream_contract"]["decision_refs"][field] == "/assumptions/0"
     intent["assumptions"] = []
@@ -345,7 +345,9 @@ def test_registry_compiler_renders_proposed_contract_and_exact_source_performer(
         assert "## Proposed verification" in spec
         assert "## Source-event support" in spec
         assert "Source-custodied responsibility" not in spec
-        assert "proposed logical component" in entry["what_it_is"]
+        assert entry["what_it_is"] == row["responsibility"]
+        assert entry["status"] == row["status"] == "planned"
+        assert row["component_contract"]["authority_kind"] == "provisional_design"
         assert row["component_contract"]["provisional_component"]["verification"] in spec
         for event in row["component_contract"]["supporting_events"]:
             assert event["event_quote"] in spec

@@ -359,7 +359,7 @@ def test_boundary_free_source_keeps_complete_structural_design_projection(
     design = proposal["intent"]["authored_semantics"]["provisional_design"]
     assert project["problem"] == design["workstreams"][0]["problem"]
     assert proposal["intent"]["product_story"] == "Dock attendants receive a reviewable berth receipt."
-    assert project["product_view"].startswith("Proposed workstream outcome — ")
+    assert project["product_view"] == design["workstreams"][0]["deliverable"]
     assert "Berth requests are hard to review." not in project["problem"]
     assert "Harbor Desk records one berth request and shows its receipt." not in project["product_view"]
     assert project["radar_sections"]["Source Success Metrics"] == (
@@ -442,9 +442,13 @@ def test_structured_source_projects_distinct_canonical_design_with_source_custod
     for row, workstream in zip(backlog, design["workstreams"], strict=True):
         assert row["problem"] == workstream["problem"]
         assert "Unimplemented assigned source-event support" not in row["problem"]
-        assert row["customer"] == f"Customer or beneficiary — {intent['customer']}"
-        assert row["opportunity"].startswith("Proposed component scope:\n\n")
-        assert row["product_view"] == f"Proposed workstream outcome — {workstream['deliverable']}"
+        assert row["customer"] == intent["customer"]
+        components = {component["key"]: component for component in design["components"]}
+        assert row["opportunity"] == "\n".join(
+            f"- {components[key]['name']} — {components[key]['responsibility']}"
+            for key in workstream["component_keys"]
+        )
+        assert row["product_view"] == workstream["deliverable"]
         for field in ("problem", "customer", "opportunity", "product_view"):
             assert row["provisional_workstream_contract"]["decision_refs"][field] == f"/{field}"
             rendered = "\n".join([

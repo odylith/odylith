@@ -165,7 +165,7 @@ def test_radar_required_decisions_point_to_assumptions_not_missing_facts() -> No
         semantics = row["provisional_workstream_contract"]
         assert semantics["decision_refs"]["customer"] == customer_ref
         assert row["customer"] == (
-            "Customer or beneficiary — Assumption — Marine operations leaders are the "
+            "Assumption — Marine operations leaders are the "
             "primary beneficiaries of the berth record."
         )
 

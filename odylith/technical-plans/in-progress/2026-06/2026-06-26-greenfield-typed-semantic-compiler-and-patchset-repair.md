@@ -1,5 +1,29 @@
 Status: In progress
 
+## Current v34 fixed-case continuation boundary (2026-10-05)
+
+E32/v34 build and installed smoke pass in `489.773s` (exit `0`; proof SHA-256
+`62bc5868f94e1a49ac1253118d2e220edf5a6d61dcf3eb8b3a45d9f7bc724e2f`). Research
+H0 seals once and independent Astra review passes `13/13` forward duties, `47`
+reverse checks, and `9/9` summaries with no P0/P1. The default-Radar duplicate
+Decision Basis/Opportunity P2 is cleared by the existing owner: authored Decision
+Basis is native-closed while Product View is one direct narrative. Browser proof
+passes `89` checks in `46.72s` across normal, empty, and runtime-fallback states
+with 18 screenshots; six affected unit modules pass `89` in `3.45s`. Five generic
+provisional prefixes are removed without changing authored facts, warnings,
+references, authority, or typed custody. Retain the initial `88`-pass/one-fail
+Registry boilerplate assertion as history. Project evidence/prompts remain closed;
+Success Metrics/Validation remain full-spec-only.
+
+Research cannot start EDIT after its external source volume vanishes. Farm reaches
+no candidate/proposal after a `124` timeout; volume outage, host wall pause, and
+plugin-network warnings co-occur without a proven sole cause. The separate v14
+migration startup refusal occurs before seed/upgrade and before the outage. Retain
+these stops and every older attempt. Native Claude authorization and protected
+holdout custody are unavailable. No Public40, native, holdout, migration, semantic,
+or release gate moves until the missing prerequisites and complete fresh journeys
+exist.
+
 ## Current v53 proof and presentation checkpoint (2026-10-05)
 
 At `23881abd0e8bd15ddc64fb869b581060d50c3302`, fixed Research H0/H1

@@ -262,12 +262,12 @@ def build_provisional_backlog(
             deepcopy(row) for row in design["exchanges"]
             if row["from_component"] in component_keys or row["to_component"] in component_keys
         ]
-        deliverable = f"Proposed deliverable — {workstream['deliverable']}"
+        deliverable = workstream["deliverable"]
         local_problem = workstream["problem"]
-        local_customer = f"Customer or beneficiary — {decision_copy(intent, 'customer')}"
-        local_opportunity = "Proposed component scope:\n\n" + _bullets(component_scope)
-        product_view = f"Proposed workstream outcome — {workstream['deliverable']}"
-        verification = [f"Proposed acceptance — {workstream['verification']}"]
+        local_customer = decision_copy(intent, "customer")
+        local_opportunity = _bullets(component_scope)
+        product_view = workstream["deliverable"]
+        verification = [workstream["verification"]]
         dependencies = [workstreams[key]["title"] for key in workstream["depends_on"]]
         dependents = [
             row["title"] for row in workstreams.values() if workstream["key"] in row["depends_on"]

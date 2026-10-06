@@ -46,6 +46,9 @@ def test_radar_assessment_states(tmp_path: Path, browser_context, width: int, st
             assert page.locator("#detail").get_attribute("hidden") == ""
         else:
             detail = page.locator("#detail")
+            assessment = detail.locator(".detail-header > details > summary")
+            assessment.focus()
+            assessment.press("Enter")
             score = detail.locator(".kpi").filter(has=page.locator(".k", has_text="Ordering Score")).locator(".v")
             assert score.inner_text() == "Not assessed"
             assert detail.locator(".chip-priority").inner_text() == "Not assessed"
@@ -68,14 +71,20 @@ def test_radar_assessment_states(tmp_path: Path, browser_context, width: int, st
                 ) == expected_order
             if state in {"mixed", "runtime-fallback"}:
                 page.locator('[data-idea-id="B-002"]').click()
+                assessment.focus()
+                assessment.press("Enter")
                 assert score.inner_text() == "0"
                 page.locator('[data-idea-id="B-001"]').click()
+                assessment.focus()
+                assessment.press("Enter")
                 assert score.inner_text() == "88"
             page.locator("#priority").select_option("unassessed")
             assert page.locator("#list button[data-idea-id]").evaluate_all(
                 "nodes => nodes.map(node => node.dataset.ideaId)"
             ) == ["B-999", "B-1000"]
             page.locator('[data-idea-id="B-999"]').click()
+            assessment.focus()
+            assessment.press("Enter")
             assert score.inner_text() == "Not assessed"
             assert detail.locator(".meter .bar").count() == 0
             if state == "runtime-fallback":

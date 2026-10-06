@@ -1,5 +1,45 @@
 - Bug ID: CB-347
 
+## Current v34 fixed-case and availability boundary (2026-10-05)
+
+The e32/v34 build and installed smoke pass (exit `0`, `489.773s`):
+`/private/tmp/odylith-compass-verified-restoration-20261005/v34-installed-smoke-proof.json`
+(SHA-256 `62bc5868f94e1a49ac1253118d2e220edf5a6d61dcf3eb8b3a45d9f7bc724e2f`).
+Research H0 seals once after four calls (`148.765s` proposal; `208.601s` whole),
+transaction hash `0f8964b25ae602021ec36fcb196388994065f52196013c69894203de341dd7eb`.
+Independent Astra review passes all `13/13` forward duties, `47` reverse checks,
+and `9/9` summaries in 303 characters with no P0/P1:
+`/private/tmp/odylith-v54-v34-research-independent-source-review-20261005.json`
+(SHA-256 `2067a7f9f25bd4b774f5ecb104d990c5885ae49b81c0faa545176c3def619f19`).
+It reports a P2 default-Radar duplicate Decision Basis/Opportunity presentation.
+The bounded owner correction is now proven: default view keeps exact authored
+Decision Basis in native-closed disclosure and renders Product View once as direct
+narrative. Browser proof passes `89` checks in `46.72s` across normal, empty, and
+runtime-fallback `1440/430` states with 18 screenshots; handoff SHA-256
+`a55bc8dade5312881c5cca4086b5f4439bc6b984e1eb9b2415fbc807460cb17f`.
+Five generic provisional Radar prefixes are removed without changing authored
+customer, deliverable, component responsibility, verification, Assumption marker,
+or typed provisional/source custody. Six affected unit modules pass `89` in
+`3.45s`; retain the first `88`-pass/one-fail run as a stale Registry boilerplate
+assertion corrected by exact responsibility, planned status, and provisional
+authority. Independent source review is CLEAR: warnings stay outside disclosure
+and refs, authority, and custody remain unchanged. This clears only default-view
+P2. Clarification preserves already-closed Project evidence/prompts and keeps
+Success Metrics/Validation only in the full specification.
+
+Research then stops at the pre-EDIT guard because the external source volume
+vanishes; no H1 or terminal exists. Farm initial candidate stops at `124` after
+`300.078s` shared phase and `393.667s` whole, with zero stdout, 61,247 stderr
+bytes, and no proposal. Volume outage, host wall pause, and plugin-network warnings
+co-occur; no sole cause is proved. Its result SHA-256 is
+`ff143ee875d77cc3ef1bcfda49b0b4e53ab32f0ab8f4cd1b362dcfde2b76d1e8`; frozen
+inventory is 9,693 entries (`667e6b…`). The genuine v14 migration independently
+passes install/version but startup refuses before seed/upgrade, before this outage
+(result SHA-256 `a2f062b37e0e4615e3e97c2014e7ab497f960d9183852a0be81b299334d4bafd`).
+Native Claude authorization is absent and original protected-holdout custody is
+missing. Preserve every prior attempt; no Public40, native, holdout, semantic,
+migration, or release qualification follows.
+
 ## Current v31 package and caller hold (2026-10-05)
 
 V31 build and canonical smoke pass from clean pushed `6d65bb271`; all 696

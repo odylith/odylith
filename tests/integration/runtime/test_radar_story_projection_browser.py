@@ -51,8 +51,14 @@ def test_markdown_story_is_formatted_and_faithful_in_preview_and_detail(
         detail = page.locator("#detail .block-problem")
         assert detail.locator("a").get_attribute("href") == "docs/review_(draft).md"
         assert detail.locator("code").all_text_contents() == ["__sample_id__", "1. first 2. second"]
+        assessment = page.locator("#detail .detail-header > details")
+        assert assessment.get_attribute("open") is None
+        assert not assessment.get_by_role("heading", name="Decision Basis", exact=True).is_visible()
+        assessment.locator(":scope > summary").focus()
+        assessment.locator(":scope > summary").press("Enter")
+        assert assessment.get_attribute("open") == ""
         for heading in ("Decision Basis", "Ordering Rationale", "Implemented Summary"):
-            block = page.locator("#detail .split-card" if heading == "Decision Basis" else "#detail .block").filter(
+            block = page.locator("#detail .block").filter(
                 has=page.get_by_role("heading", name=heading, exact=True),
             )
             assert block.locator("code").all_text_contents() == ["__sample_id__", "1. first 2. second"]
@@ -231,9 +237,11 @@ def test_resize_keeps_the_visible_workstream_anchored(browser_context, select_vi
         _assert_clean_page(page, observation)
 
 
-def test_detail_fallback_preserves_complete_source_blocks(browser_context) -> None:
+@pytest.mark.parametrize("width", [1440, 430], ids=["desktop", "mobile"])
+def test_detail_fallback_preserves_complete_source_blocks(browser_context, width: int) -> None:
     base_url, context = browser_context
     with _new_page(context) as (page, observation):
+        page.set_viewport_size({"width": width, "height": 932})
         entry = {
             "idea_id": "B-001", "title": "Full source detail", "section": "active", "status": "queued",
             "rank": "1", "story_source": "Proposed Solution", "story_text": AUTHORED_BLOCK,
@@ -245,10 +253,23 @@ def test_detail_fallback_preserves_complete_source_blocks(browser_context) -> No
         ))
         page.goto(base_url + "/radar-source-detail.html", wait_until="networkidle")
         detail = page.locator("#detail")
+        assessment = detail.locator(".detail-header > details")
+        decision = assessment.locator(".block").filter(
+            has=page.get_by_role("heading", name="Decision Basis", exact=True),
+        )
+        assert assessment.get_attribute("open") is None
+        assert not decision.is_visible()
+        product = detail.locator(".block").filter(
+            has=page.get_by_role("heading", name="Product View", exact=True),
+        )
+        assert product.is_visible() and product.locator("p.source-text").inner_text() == AUTHORED_BLOCK
+        assert product.evaluate("node => node.parentElement.id === 'detail'")
+        assert detail.locator(".split-grid, .split-card").count() == 0
+        assessment.locator(":scope > summary").focus()
+        assessment.locator(":scope > summary").press("Enter")
+        assert assessment.get_attribute("open") == "" and decision.is_visible()
         for heading in ("Problem", "Product View", "Success Metrics", "Decision Basis"):
             block = detail.locator(".block").filter(has=page.get_by_role("heading", name=heading, exact=True))
-            if heading in {"Product View", "Decision Basis"}:
-                block = detail.locator(".split-card").filter(has=page.get_by_role("heading", name=heading, exact=True))
             assert block.locator("p.source-text").inner_text() == AUTHORED_BLOCK
         _assert_clean_page(page, observation)
 
@@ -289,8 +310,13 @@ def test_visible_row_click_reaches_long_source_and_refuses_obstruction(
     }""")
         _click_visible_radar_row(button)
         radar.locator('button[data-idea-id="B-002"].active').wait_for()
+        assessment = radar.locator("#detail .detail-header > details > summary")
+        assessment.focus()
+        assessment.press("Enter")
         assert radar.locator('#detail [data-kpi="workstream-id"] .v').inner_text() == "B-002"
-        assert radar.locator("body").evaluate("() => window.__rowClicks") == [{"trusted": True, "id": "B-002"}]
+        assert radar.locator("body").evaluate("() => window.__rowClicks") == [
+            {"trusted": True, "id": "B-002"}, {"trusted": True, "id": None},
+        ]
         assert button.locator(".row-story-text").inner_text() == source
         covered_body = radar.locator("body") if cover == "surface" else page.locator("body")
         covered_body.evaluate("""node => {
@@ -301,13 +327,18 @@ def test_visible_row_click_reaches_long_source_and_refuses_obstruction(
     }""")
         with pytest.raises(AssertionError, match="clipped or obstructed"):
             _click_visible_radar_row(radar.locator('button[data-idea-id="B-001"]'))
-        assert radar.locator("body").evaluate("() => window.__rowClicks") == [{"trusted": True, "id": "B-002"}]
+        assert radar.locator("body").evaluate("() => window.__rowClicks") == [
+            {"trusted": True, "id": "B-002"}, {"trusted": True, "id": None},
+        ]
         assert radar.locator('#detail [data-kpi="workstream-id"] .v').inner_text() == "B-002"
         covered_body.locator("#pointer-obstruction").evaluate("node => node.remove()")
         _click_visible_radar_row(radar.locator('button[data-idea-id="B-001"]'))
         radar.locator('button[data-idea-id="B-001"].active').wait_for()
+        assessment.focus()
+        assessment.press("Enter")
         assert radar.locator('#detail [data-kpi="workstream-id"] .v').inner_text() == "B-001"
         assert radar.locator("body").evaluate("() => window.__rowClicks") == [
-            {"trusted": True, "id": "B-002"}, {"trusted": True, "id": "B-001"},
+            {"trusted": True, "id": "B-002"}, {"trusted": True, "id": None},
+            {"trusted": True, "id": "B-001"}, {"trusted": True, "id": None},
         ]
         _assert_clean_page(page, observation)

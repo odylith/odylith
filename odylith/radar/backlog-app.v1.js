@@ -3055,6 +3055,10 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
             ${assessment.meter}
             ${assessment.provenance ? `<p class="assessment-provenance">${escapeHtml(assessment.provenance)}</p>` : ""}
           </div>
+          <section class="block">
+            <h3>Decision Basis</h3>
+            ${toBulletHtml(selected)}
+          </section>
           </div></details>
         </header>
 
@@ -3086,15 +3090,7 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
 
         ${summaryBlockHtml("Problem", selected.problem, selected.problem_html, "block-problem")}
 
-        <section class="block">
-          <div class="split-grid">
-            ${summarySectionHtml(selected.founder_pov, "", selected.founder_pov_html) ? `<article class="split-card"><h3>Product View</h3>${summarySectionHtml(selected.founder_pov, "", selected.founder_pov_html)}</article>` : ""}
-            <article class="split-card">
-              <h3>Decision Basis</h3>
-              ${toBulletHtml(selected)}
-            </article>
-          </div>
-        </section>
+        ${summaryBlockHtml("Product View", selected.founder_pov, selected.founder_pov_html)}
 
         ${summaryBlockHtml("Customer", selected.customer, selected.customer_html)}
 
