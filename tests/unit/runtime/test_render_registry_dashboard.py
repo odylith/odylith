@@ -677,6 +677,9 @@ def test_render_registry_dashboard_forensic_evidence_uses_digest_first_contract(
     assert len(raw_event["artifacts"]) == 3
 
     html = _bundle_registry_text(tmp_path)
+    assert '<details id="chronology-anchor" class="forensic-evidence-disclosure">' in html
+    assert '<summary class="timeline-head forensic-evidence-head">' in html
+    assert '<span>Evidence</span>' in html
     assert '<section id="timeline" class="timeline" aria-live="polite"></section>' in html
     assert "const FORENSIC_DIGEST_WORKSTREAM_LIMIT = 4;" in html
     assert "const FORENSIC_DIGEST_ARTIFACT_LIMIT = 2;" in html
@@ -843,6 +846,11 @@ def test_render_registry_dashboard_forensic_evidence_uses_digest_first_contract(
     latest_body = latest_match.group("body")
     assert "No scope" not in latest_body
     assert "No artifacts" not in latest_body
+    assert 'if (!event) return "";' in latest_body
+    assert "No mapped forensic evidence is attached yet." not in latest_body
+    assert "function forensicDisplaySummary(event)" in html
+    assert 'return String(event && event.summary || "(no summary)");' in html
+    assert "maxLength = 260" not in html
 
     groups_match = re.search(
         r"function renderForensicGroups\(events\)(?P<body>.*?)function renderTimeline",

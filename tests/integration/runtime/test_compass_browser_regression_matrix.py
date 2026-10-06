@@ -223,10 +223,8 @@ def test_compass_browser_source_truth_snapshot_restores_active_release_and_wave_
             assert current_ids == []
             assert {"B-072", "B-073", "B-079"}.issubset(set(covered_ids))
             assert compass.locator("#current-workstreams .empty").count() == 0
-            compass.locator(
-                "#current-workstreams .represented-workstreams-note",
-                has_text="Program and release lanes already organize these active workstreams",
-            ).wait_for(timeout=15000)
+            assert compass.locator("#current-workstreams .represented-workstreams-note").count() == 0
+            assert "Direct Radar links live in" not in compass.locator("#current-workstreams").inner_text()
 
             _assert_clean_page(page, observation)
 
@@ -274,10 +272,8 @@ def test_compass_browser_older_source_truth_snapshot_never_overrides_fresher_run
             assert "B-067" in covered_ids
             assert "B-072" not in current_ids
             assert compass.locator("#current-workstreams .empty").count() == 0
-            compass.locator(
-                "#current-workstreams .represented-workstreams-note",
-                has_text="Program and release lanes already organize these active workstreams",
-            ).wait_for(timeout=15000)
+            assert compass.locator("#current-workstreams .represented-workstreams-note").count() == 0
+            assert "Direct Radar links live in" not in compass.locator("#current-workstreams").inner_text()
 
             release_ids = release_target_ids(compass)
             assert "B-067" in release_ids
@@ -332,10 +328,8 @@ def test_compass_browser_traceability_fallback_prioritizes_active_release_truth_
             assert current_ids == []
             assert {"B-072", "B-073", "B-079"}.issubset(set(covered_ids))
             assert compass.locator("#current-workstreams .empty").count() == 0
-            compass.locator(
-                "#current-workstreams .represented-workstreams-note",
-                has_text="Program and release lanes already organize these active workstreams",
-            ).wait_for(timeout=15000)
+            assert compass.locator("#current-workstreams .represented-workstreams-note").count() == 0
+            assert "Direct Radar links live in" not in compass.locator("#current-workstreams").inner_text()
 
             expected_resource = urlsplit(urljoin(page.url, "/odylith/compass/compass-source-truth.v1.json"))
             snapshot = observation.finish()
@@ -403,10 +397,8 @@ def test_compass_browser_source_truth_snapshot_keeps_release_and_current_workstr
             assert "B-067" not in scope_ids
             assert "B-067" not in current_ids
             assert selected_scope_value(compass) == ""
-            compass.locator(
-                "#current-workstreams .represented-workstreams-note",
-                has_text="Program and release lanes already organize these active workstreams",
-            ).wait_for(timeout=15000)
+            assert compass.locator("#current-workstreams .represented-workstreams-note").count() == 0
+            assert "Direct Radar links live in" not in compass.locator("#current-workstreams").inner_text()
 
             _assert_clean_page(page, observation)
 
@@ -462,10 +454,8 @@ def test_compass_browser_traceability_fallback_clears_stale_scoped_metadata_befo
             assert "B-067" not in scope_ids
             assert selected_scope_value(compass) == ""
             assert compass.locator("#current-workstreams .empty").count() == 0
-            compass.locator(
-                "#current-workstreams .represented-workstreams-note",
-                has_text="Program and release lanes already organize these active workstreams",
-            ).wait_for(timeout=15000)
+            assert compass.locator("#current-workstreams .represented-workstreams-note").count() == 0
+            assert "Direct Radar links live in" not in compass.locator("#current-workstreams").inner_text()
 
             expected_resource = urlsplit(urljoin(page.url, "/odylith/compass/compass-source-truth.v1.json"))
             snapshot = observation.finish()
@@ -527,10 +517,8 @@ def test_compass_browser_ignores_unusable_source_truth_snapshot_and_continues_to
             assert "B-999" not in release_ids
             assert "B-067" not in current_ids
             assert compass.locator("#current-workstreams .empty").count() == 0
-            compass.locator(
-                "#current-workstreams .represented-workstreams-note",
-                has_text="Program and release lanes already organize these active workstreams",
-            ).wait_for(timeout=15000)
+            assert compass.locator("#current-workstreams .represented-workstreams-note").count() == 0
+            assert "Direct Radar links live in" not in compass.locator("#current-workstreams").inner_text()
 
             _assert_clean_page(page, observation)
 

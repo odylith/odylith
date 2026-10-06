@@ -1,5 +1,37 @@
 Status: In progress
 
+## Current cognitive-load and v35 preservation boundary (2026-10-06)
+
+The eight audited presentation findings and final mobile counter priority are
+corrected through existing owners: direct Atlas narratives, optional detail and
+Registry evidence, complete historical summaries, fewer empty/repeated Compass
+messages, and one exact Project risk rationale. Counts are optional; genuine
+runtime failure opens their disclosure so warnings remain visible. Focused proof
+passes Atlas 130, prefix follow-up 70, Registry 40, Compass 85 unique base checks
+and 13 final counter checks, and Project 32. Independent review is CLEAR.
+Facts, roles, authority, graph, warnings, navigation, history, and legacy v3 seal
+remain intact. Including the preservation fix, 11 existing product owners change
++95/-90 lines with no new helper or module.
+
+Final synthetic browser proof passes 44/44 normal, empty/fallback, degraded/error
+states with zero issues, 111 screenshots, 36 stable pins, and 36.356 seconds.
+`/private/tmp/odylith-cognitive-load-closure-20261006.json` retains the exact
+source, reviews, focused checks, visual scope, and every earlier failed setup.
+CB-303 preserves the original unexplained signal10 stop, import collision, and
+Casebook placeholder failures. This is bounded current-source UI qualification;
+populated Casebook, installed, and semantic claims do not follow.
+
+V35 native upgrade preserves 13 target owners, 15 modes, and its permitted catalog
+leaf but fails forbidden Radar INDEX byte preservation before validators/browser.
+The source normalizer now stamps only substantively changed indexes: 10 checks
+plus five actual refresh/upgrade caller checks pass, with independent CLEAR.
+Preserve the failed consumer; qualify a fresh checkpoint and distribution before
+another predecessor migration. Five current assessment markers remain missing.
+Full CI and installed smoke pass at preceding checkpoint `5337dc9a`; this does
+not qualify these later edits. Root publication, new CI/package/install,
+migration, semantic, native-host, Public40, protected-holdout, and production
+release gates remain open.
+
 ## Current CI-signature closure boundary (2026-10-05)
 
 Fourteen frozen test patches, with zero production or helper changes, map the 107

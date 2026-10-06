@@ -1,5 +1,53 @@
 - Bug ID: CB-347
 
+## Current v35 migration preservation stop (2026-10-05)
+
+Native v14-to-v35 upgrade succeeds (`rc=0`, `30.843s`): 13 target source/wheel
+owners match, all 15 modes are exact, and the sole permitted catalog hash leaf is
+correct. The run stops before target validators or browser proof because forbidden
+Radar INDEX date bytes change from Oct 5 to Oct 6. The release migration gate then
+stops (`rc=1`) on five missing current assessment markers; no ungated lifecycle
+path ran. Evidence: `/private/tmp/odylith-greenfield-v14-to-v35-migration-20261005/final-failure-handoff.json`
+(SHA-256 `96f81f0074888300240a766fed451aa3cbebd9f15c5a488b51f2c09887c194db`)
+and `/private/tmp/odylith-v35-release-migration-gate-20261005.json` (SHA-256
+`5d16f41010682e164d0a70586bbc48bdd71ce242c80d791d805326b5b78022bd`).
+
+The owning normalizer stamped the index before deciding whether substantive
+content had changed. It now stamps and atomically writes only a changed index;
+idea-spec-only normalization still reports its change without rewriting the
+index. The UTC-day characterization failed before the correction. All 10
+normalization checks and five forced-Radar/upgrade caller checks pass afterward,
+including exact byte and mode preservation across the next UTC day. Independent
+review is CLEAR: `/private/tmp/odylith-radar-utc-preservation-independent-review-20261005.json`
+(SHA-256 `20ef667dbb42511d57d5671bd579b89e162144010dc8c602839dd3292548da05`).
+This is source/caller proof. The failed v35 consumer remains untouched; a fresh
+checkpoint, package, and predecessor migration are still required. The five
+assessment markers remain missing. No migration or release credit follows.
+
+Full CI `37401400790` passes all three jobs at exact source
+`5337dc9a5d408b8da7c747b366aa751ed313c8f3`; canonical v35 installed smoke also
+returns zero. CI evidence is `/private/tmp/odylith-5337-full-ci-success-20261005.json`
+(SHA-256 `6d0b066139dadf9a5965cf792af8b071da1b79ad02fc3a8cfecdfa347295e661`).
+These results do not certify the later cognition and UTC-preservation edits or
+move semantic, native-host, Public40, protected-holdout, or release gates.
+
+## Current synthetic browser setup custody (2026-10-06)
+
+Preserve three incomplete setup attempts: an unexplained signal10/rc138 after
+47 screenshots, an external driver named watchdog.py that shadowed a runtime
+package, and six Casebook timeouts from a transaction-only placeholder baseline.
+The bounded setup correction renders real empty Casebook before activation and
+candidate compile; the unchanged 44-cell oracle then passes. A final repetition
+after the mobile counter correction passes 44/44 cells, zero issues, 111 images,
+and 36 stable source/test pins in 36.356 seconds. Manifest:
+`/private/tmp/odylith-cognitive-load-closure-20261006.json` (SHA-256
+`a9ad31c0ded59e17debba1fb4b731e456758adcec33e0bdf118d285854848720`).
+Do not use minimal transaction fixtures as full browser baselines, shadow product
+imports with external driver names, or count partial screenshots as qualification.
+The external process guard bounds observation; no oracle or compiler changes
+were used. Synthetic current-source UI proof grants no installed, semantic,
+migration, native-host, protected-holdout, or release credit.
+
 ## Current stale CI-signature closure (2026-10-05)
 
 The retained e32 full CI failure `37391699845` remains `85` failed, `9,769`

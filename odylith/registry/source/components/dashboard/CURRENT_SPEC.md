@@ -5,7 +5,7 @@
   benchmark proof, and release-gate indicators may surface when useful, but
   passing checks should stay quiet and no dashboard claim should imply shipped
   behavior before pinned dogfood and benchmark proof exist.
-Last updated: 2026-10-05
+Last updated: 2026-10-06
 
 
 ## Purpose
@@ -537,6 +537,9 @@ artifacts to that header.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-10-06 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
+  - Scope: B-142, B-145
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/dashboard/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
 - **2026-10-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/dashboard/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
@@ -551,11 +554,10 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
 - **2026-10-02 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
   - Evidence: `odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
-- **2026-10-02 · Decision:** Decision evidence linked this component to governed work with 3 verifiable artifact references.
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `tests/unit/install/test_greenfield_actual_driver_profile_evidence.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-10-06: Closed eight audited presentation findings and final mobile counter priority through existing owners. Atlas uses direct narratives; roles, owners, links, Registry evidence, and Compass counts are optional. Complete historical summaries, one empty-evidence explanation, populated timeline hours, fewer repeated fallback messages, and one exact Project risk rationale remain. Genuine runtime failure opens the counts disclosure automatically. Focused proof passes Atlas 130 plus 70 prefix checks, Registry 40, Compass 85 unique base checks plus 13 final counter checks, and Project 32; independent reviews are CLEAR. Final unchanged-oracle synthetic browser proof passes 44/44 states, zero issues, 111 screenshots, and 36 unchanged pins in 36.356 seconds. Manifest: `/private/tmp/odylith-cognitive-load-closure-20261006.json`. Exact facts, graph, warnings, history, roles, authority, navigation, and legacy seals remain. Retain all earlier stalls and setup failures. This is bounded current-source UI proof; populated Casebook, root publication, installed, semantic, native-host, holdout, migration, and release qualification remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-303`, `CB-347`)
 - 2026-10-05: Closed stale CI expectations through test-only corrections: exact authored summaries remain intact, source details open by keyboard, and readable labels retain IDs and routes. The 107 known e32 signatures map to 268 focused passes; the original full CI failure remains retained. No Dashboard runtime contract changed, and no installed, semantic, migration, native, holdout, or release qualification follows. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-347`)
 - 2026-10-05: The v34 Research H0 default-Radar duplicate Decision Basis/Opportunity P2 is cleared by existing ownership: exact authored Decision Basis is native-closed and Product View is one direct narrative. Browser proof passes `89` checks in `46.72s` across normal, empty, and runtime-fallback states with 18 screenshots; six affected unit modules pass `89` in `3.45s`. Generic provisional prefixes are removed while warnings, refs, authority, and typed custody remain unchanged; the earlier `88`-pass/one-fail Registry boilerplate assertion is retained. This clears only the default-view P2 and does not qualify semantic, installed, native, holdout, migration, or release evidence. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-347`)
 - 2026-10-05: Source checkpoints preserve the active dashboard publication while staging its exact logical shell for a clean release checkout. The maintainer-only observer checks whole-publication custody, staged bytes, and Git file mode. Root 35 tests pass in 2.39s; consumer and pinned-runtime checks remain strict. Installed release qualification remains open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)

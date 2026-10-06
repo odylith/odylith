@@ -37,7 +37,7 @@ def unavailable_brief_message(
     if token == "skipped_not_worth_calling":
         return "Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
     if token == "provider_deferred":
-        return "Compass is showing local runtime facts; a narrated brief is not available for this view."
+        return "A narrated brief is not available for this view."
     if token == "rate_limited":
         return "Compass hit narration provider capacity while warming this brief. It will retry on backoff."
     if token == "credits_exhausted":

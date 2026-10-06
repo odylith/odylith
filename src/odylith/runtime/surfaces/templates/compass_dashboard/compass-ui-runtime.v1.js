@@ -177,6 +177,8 @@
     function showFallback(message) {
       const target = document.getElementById("kpi-grid");
       target.innerHTML = `<article class="stat"><p class="kpi-label">Runtime Unavailable</p><p class="muted">${message}</p></article>`;
+      const activityDetails = target.closest("details");
+      if (activityDetails) activityDetails.open = true;
       CURRENT_STANDUP_BRIEF = null;
       const briefCard = document.getElementById("standup-brief-card");
       if (briefCard) {

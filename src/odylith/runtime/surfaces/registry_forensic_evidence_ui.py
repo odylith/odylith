@@ -16,11 +16,13 @@ def markup() -> str:
     """Return the static forensic-evidence shell used by Registry."""
 
     return """
-        <div id="chronology-anchor" class="timeline-head forensic-evidence-head">
-          <span>Forensic Evidence</span>
-          <span id="timelineCount">0 events</span>
-        </div>
-        <section id="timeline" class="timeline" aria-live="polite"></section>
+        <details id="chronology-anchor" class="forensic-evidence-disclosure">
+          <summary class="timeline-head forensic-evidence-head">
+            <span>Evidence</span>
+            <span id="timelineCount">0 events</span>
+          </summary>
+          <section id="timeline" class="timeline" aria-live="polite"></section>
+        </details>
 """.strip()
 
 
@@ -73,6 +75,14 @@ def css() -> str:
       justify-content: space-between;
       align-items: center;
       gap: 8px;
+    }
+    .forensic-evidence-head {
+      display: list-item;
+      list-style-position: inside;
+      cursor: pointer;
+    }
+    .forensic-evidence-head > #timelineCount {
+      float: right;
     }
     .timeline {
       margin: 0;
@@ -522,18 +532,12 @@ def runtime_js() -> str:
       return html ? `<div class="forensic-token-row">${html}</div>` : "";
     }
 
-    function forensicDisplaySummary(event, maxLength = 260) {
-      const summary = String(event && event.summary || "(no summary)").replace(/\s+/g, " ").trim();
-      const limit = Number(maxLength || 0);
-      if (!limit || summary.length <= limit) return summary;
-      const clipped = summary.slice(0, Math.max(0, limit - 3)).replace(/\s+\S*$/, "").trim();
-      return `${clipped || summary.slice(0, Math.max(0, limit - 3)).trim()}...`;
+    function forensicDisplaySummary(event) {
+      return String(event && event.summary || "(no summary)");
     }
 
     function renderForensicLatestEvent(event, options = {}) {
-      if (!event) {
-        return '<article class="forensic-latest"><p class="empty">No mapped forensic evidence is attached yet.</p></article>';
-      }
+      if (!event) return "";
       const diagnosticOnly = Boolean(options.diagnosticOnly);
       const heading = diagnosticOnly ? "Latest diagnostic signal" : "Latest material signal";
       const className = diagnosticOnly ? "forensic-latest diagnostic" : "forensic-latest";

@@ -148,6 +148,11 @@ def test_atlas_component_descriptions_retain_complete_text(
             page.locator("#viewerAssetError").wait_for(state="visible")
             assert "Diagram preview unavailable." in page.locator("#viewerAssetError").inner_text()
         rendered = page.locator("#componentList .component-description")
+        ownership = page.locator('details.ownership-section')
+        assert ownership.get_attribute('open') is None
+        assert rendered.first.is_hidden()
+        ownership.locator('summary').focus()
+        ownership.locator('summary').press('Enter')
         assert rendered.all_text_contents() == [
             text if text.strip() else "Named responsibility in this diagram." for text in descriptions
         ]

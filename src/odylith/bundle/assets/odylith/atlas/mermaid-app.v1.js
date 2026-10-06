@@ -882,10 +882,6 @@ initSharedQuickTooltips();
     }
 
         function renderDiagramBoxes(diagram, sectionEl, listEl) {
-      const genericRoles = new Set([
-        "Container", "Proposed component", "Proposed component support",
-        "Proposed logical component", "Proposed workstream",
-      ]);
       listEl.replaceChildren();
       const boxes = Array.isArray(diagram.diagram_boxes)
         ? diagram.diagram_boxes.filter((box) => box && typeof box === "object")
@@ -905,12 +901,6 @@ initSharedQuickTooltips();
         heading.textContent = String(box.label ?? "");
         name.appendChild(heading);
         const roleText = String(box.role ?? "");
-        if (roleText.trim() && !genericRoles.has(roleText)) {
-          const role = document.createElement("span");
-          role.className = "diagram-box-role";
-          role.textContent = roleText;
-          name.appendChild(role);
-        }
 
         const description = document.createElement("p");
         description.className = "diagram-box-description";
@@ -919,13 +909,17 @@ initSharedQuickTooltips();
         const content = document.createElement("div");
         content.className = "diagram-box-content";
         content.appendChild(description);
-        if (Array.isArray(box.details) && box.details.length) {
+        const detailRows = [
+          ...(roleText.trim() ? [{label: "Role", text: roleText}] : []),
+          ...(Array.isArray(box.details) ? box.details : []),
+        ];
+        if (detailRows.length) {
           const disclosure = document.createElement("details");
           disclosure.className = "diagram-box-details";
           const summary = document.createElement("summary");
           summary.textContent = "Supporting details";
           const entries = document.createElement("dl");
-          box.details.forEach((detail) => {
+          detailRows.forEach((detail) => {
             const label = document.createElement("dt");
             label.textContent = String(detail.label ?? "");
             const text = document.createElement("dd");

@@ -208,8 +208,10 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert 'scopedRows.filter((row) => !representedIds.has(String(row && row.idea_id ? row.idea_id : "").trim()))' in workstreams_js
     assert "const rows = scopedRows;" not in workstreams_js
     assert "const representedPreviewLimit = 6;" in workstreams_js
-    assert "represented-workstreams-note" in workstreams_js
-    assert '"Program and release lanes" : "Release targets"' in workstreams_js
+    assert "represented-workstreams-note" not in workstreams_js
+    assert "already organize these active workstreams" not in workstreams_js
+    assert "Direct Radar links live in" not in workstreams_js
+    assert 'Showing ${renderRows.length} of ${scopedRows.length} covered active workstreams.' in workstreams_js
     assert '"Wave" : "Plan"' in workstreams_js
     assert "Covered workstreams below are a compact detail preview" not in workstreams_js
     assert "function numericProgressOrNull(value)" in workstreams_js
@@ -298,7 +300,7 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert "font-variant-numeric: tabular-nums;" in base_template
     assert "No active workstreams yet. Create or open one from Radar, then Compass will summarize it here." in workstreams_js
     assert "No additional current workstreams. Program and release lanes already cover the active work." not in workstreams_js
-    assert '"Program and release lanes" : "Release targets"' in workstreams_js
+    assert "const representedPreviewNote = rowsAreProgramCovered && scopedRows.length > renderRows.length" in workstreams_js
     assert "All current workstreams are already represented in Programs or Release Targets." not in workstreams_js
     assert "No active workstreams in this scope." in workstreams_js
     assert "`Open radar for ${token}`" in waves_js

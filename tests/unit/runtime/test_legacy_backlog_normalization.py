@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import stat
 from pathlib import Path
 
 import pytest
@@ -197,11 +198,12 @@ def test_normalize_legacy_backlog_index_adds_missing_reorder_rationale_section(t
 
     result = legacy_backlog_normalization.normalize_legacy_backlog_index(
         repo_root=repo_root,
-        today=dt.date(2026, 4, 6),
+        today=dt.date(2026, 4, 7),
     )
     text = backlog_index.read_text(encoding="utf-8")
 
     assert result.changed is True
+    assert "Last updated (UTC): 2026-04-07" in text
     assert result.added_sections == ("B-101",)
     assert "## Reorder Rationale Log" in text
     assert "### B-101 (rank 1)" in text
@@ -224,16 +226,48 @@ def test_normalize_legacy_backlog_index_is_idempotent_after_bridge(tmp_path: Pat
         today=dt.date(2026, 4, 6),
     )
     backlog_index = repo_root / "odylith" / "radar" / "source" / "INDEX.md"
-    normalized = backlog_index.read_text(encoding="utf-8")
+    normalized = backlog_index.read_bytes()
+    normalized_mode = stat.S_IMODE(backlog_index.stat().st_mode)
 
     second = legacy_backlog_normalization.normalize_legacy_backlog_index(
         repo_root=repo_root,
-        today=dt.date(2026, 4, 6),
+        today=dt.date(2026, 4, 7),
     )
 
     assert first.changed is True
     assert second.changed is False
-    assert backlog_index.read_text(encoding="utf-8") == normalized
+    assert backlog_index.read_bytes() == normalized
+    assert stat.S_IMODE(backlog_index.stat().st_mode) == normalized_mode
+
+
+def test_normalize_legacy_idea_spec_does_not_rewrite_normalized_index(tmp_path: Path) -> None:
+    repo_root = _seed_repo(
+        tmp_path,
+        founder_override="no",
+        rationale_lines=["- why now: keep the current explanation."],
+    )
+    legacy_backlog_normalization.normalize_legacy_backlog_index(
+        repo_root=repo_root, today=dt.date(2026, 4, 6),
+    )
+    backlog_index = repo_root / "odylith" / "radar" / "source" / "INDEX.md"
+    original_index = backlog_index.read_bytes()
+    original_mode = stat.S_IMODE(backlog_index.stat().st_mode)
+    idea_path = repo_root / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "2026-04-06-legacy-sync-fix.md"
+    idea_text = idea_path.read_text(encoding="utf-8")
+    idea_path.write_text(
+        idea_text.replace("date: 2026-04-06\n\n", "date: 2026-04-06\n\nimpacted_lanes: both\n\n"),
+        encoding="utf-8",
+    )
+
+    result = legacy_backlog_normalization.normalize_legacy_backlog_index(
+        repo_root=repo_root, today=dt.date(2026, 4, 7),
+    )
+
+    assert result.changed is True
+    assert result.normalized_idea_specs == ("2026-04-06-legacy-sync-fix",)
+    assert idea_path.read_text(encoding="utf-8") == idea_text
+    assert backlog_index.read_bytes() == original_index
+    assert stat.S_IMODE(backlog_index.stat().st_mode) == original_mode
 
 
 @pytest.mark.parametrize("decision_lines", [

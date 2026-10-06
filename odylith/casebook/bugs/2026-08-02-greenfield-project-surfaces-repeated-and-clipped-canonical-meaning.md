@@ -1,5 +1,47 @@
 - Bug ID: CB-303
 
+## Current cognitive-load closure boundary (2026-10-06)
+
+The 16-image/15-owner audit identified eight presentation findings after the
+previous five captured defects were addressed. Existing owners now present one
+primary Atlas narrative, optional roles/owners/links and Registry evidence,
+complete historical summaries, one empty-evidence explanation, populated Compass
+hours, fewer repeated fallback messages, and one exact Project risk rationale.
+The measured Atlas explanation region shrinks from 752 to 448 pixels without
+changing canvas geometry. A final visual review caught one context-component
+prefix and seven large mobile counters above the useful brief. The prefix is
+removed; counts now use closed native Activity and counts details. A genuine
+runtime failure opens those details automatically, keeping its warning visible.
+
+Focused source proof passes: Atlas 130, its prefix follow-up 70, Registry 40,
+Compass 85 unique checks across six modules, its final counter delta 13, and
+Project 32. These overlapping suites are not summed. Independent reviews are
+CLEAR for the base patch, prefix correction, and counter delta. Source facts,
+actor/role/authority custody, graph, routes, history, warnings, and the historical
+v3 fixture/seal remain intact. Including the Radar preservation correction,
+11 existing product owners change +95/-90 lines, with no new helpers or modules.
+
+The final unchanged-oracle synthetic browser matrix passes all 44 required
+normal, empty/fallback, and degraded/error desktop/mobile states, with zero
+issues, 111 screenshots, 36 unchanged source/test pins, and 36.356 seconds elapsed.
+Root visually reads Project, Atlas, Registry degraded, and mobile Compass outputs.
+Manifest: `/private/tmp/odylith-cognitive-load-closure-20261006.json` (SHA-256
+`a9ad31c0ded59e17debba1fb4b731e456758adcec33e0bdf118d285854848720`).
+Final report: `/private/tmp/odylith-cognitive-load-ui44-final-r4-20261006/report.json`.
+
+Retain every earlier attempt: the first stopped after 47 screenshots and ended
+with signal10/rc138 of undetermined cause; the next external driver shadowed the
+watchdog package; r2 failed six Casebook cells because the transaction-only
+baseline helper supplied a placeholder. R3 uses the real empty Casebook renderer
+before activation/candidate compile and passes 44 cells. R4 repeats the unchanged
+matrix after the final counter correction. No product parser, oracle relaxation,
+post-confirm generation, or semantic replay was used to resolve setup defects.
+
+This closes these bounded presentation findings only. Empty Casebook proof does
+not qualify populated Casebook UX. Root publication, fresh package/install,
+migration, semantic, native-host, Public40, protected holdout, and production
+release remain required. Keep CB-303 and B-142 open.
+
 ## Current v53 semantic and project-surface frontier (2026-10-05)
 
 At immutable source checkpoint `23881abd0e8bd15ddc64fb869b581060d50c3302`, independent source-first review cleared Research H0/H1 (`13/18` forward and `75/108` reverse units) and Agriculture H0/H1 (`26/31` forward units). The first actual terminal continuations also cleared their declared mechanical obligations: Research completed in `20.785s` and Agriculture in `22.855s`, each covering H0 rejection, copied-old refusal, H1 CONFIRM to `CLOSED`, sealed-byte/mode readback, and same-hash idempotence. Observed terminal model/provider/projection entries were zero; each confirmation and repeat recorded one attributed canonical opener. Research report: `/private/tmp/odylith-v53-research-actual-terminal-independent-adjudication-20261005/research-v53-terminal-independent-adjudication.json` (SHA-256 `eaad23f3172a0fbb9426415c1b2548955b5b9280fa288a05bbc9d7053d9bb5fe`). Agriculture report: `/private/tmp/odylith-v53-agriculture-actual-terminal-independent-adjudication-20261005.json` (SHA-256 `f34d38745c9ec1fd7cf512b77b3d27cc8b6f45234037b7c7723a369d20fca5c8`). This is fixed-case semantic and terminal evidence only; it grants no final release, current aggregate, browser, protected-holdout, or timing qualification.

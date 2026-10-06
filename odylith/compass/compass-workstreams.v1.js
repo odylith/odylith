@@ -772,12 +772,8 @@
       `;
       }).join("");
 
-      const representedPreviewNote = rowsAreProgramCovered
-        ? `
-          <p class="muted represented-workstreams-note">${hasProgramLanes ? "Program and release lanes" : "Release targets"} already organize these active workstreams; the table below keeps their status visible as a compact detail preview.</p>
-          <p class="muted">Direct Radar links live in the ${hasProgramLanes ? "Program and Release Target lanes" : "Release Targets"} above.</p>
-          ${scopedRows.length > renderRows.length ? `<p class="muted">Showing ${renderRows.length} of ${scopedRows.length} covered active workstreams.</p>` : ""}
-        `
+      const representedPreviewNote = rowsAreProgramCovered && scopedRows.length > renderRows.length
+        ? `<p class="muted">Showing ${renderRows.length} of ${scopedRows.length} covered active workstreams.</p>`
         : "";
 
       target.innerHTML = `
@@ -1056,15 +1052,7 @@
           const items = byHour[hour];
           const hourEventItems = eventByHour[hour];
           const hourLabel = `${String(hour).padStart(2, "0")}:00`;
-          if (!items.length && !hourEventItems.length) {
-            hourRows.push(`
-              <div class="hour-row">
-                <div class="hour-label">${escapeHtml(hourLabel)}</div>
-                <div class="hour-empty">No audit events.</div>
-              </div>
-            `);
-            continue;
-          }
+          if (!items.length && !hourEventItems.length) continue;
 
           const orderedStandaloneEvents = hourEventItems
             .filter((row) => !transactionEventIds.has(String(row.id || "")))
@@ -1171,6 +1159,7 @@
           `);
         }
 
+        if (!hourRows.length) continue;
         rows.push(`
           <section class="timeline-day">
             <div class="timeline-day-title">${escapeHtml(formatTimelineDayHeader(dayToken))}</div>
@@ -1180,7 +1169,9 @@
       }
 
       if (!rows.length) {
-        target.innerHTML = '<div class="empty">No audit events in this scope and window.</div>';
+        target.innerHTML = state.workstream
+          ? '<div class="empty">No audit events in this scope and window.</div>'
+          : '<div class="empty">No audit events in this window.</div>';
         return;
       }
       target.innerHTML = rows.join("");

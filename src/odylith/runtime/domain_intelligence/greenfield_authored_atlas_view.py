@@ -125,15 +125,15 @@ def build_authored_atlas_diagrams(
         "context": {
             "title": "System Context View",
             "summary": (
-                f"Who owns the source-stated work in {title}."
+                f"Who does the work in {title}."
             ),
             "read_guide": (
-                "People are source-stated participants, not necessarily product users. "
+                "People are named participants, not necessarily product users. "
                 "First-run performers connect to their selected source events. Other named "
                 "participants remain context only. Human and external-system action groups connect to the candidate "
                 "product through a non-owning first-path interaction boundary; dotted participant-context "
                 "links assign no action. The first-run view shows "
-                "one proposed walkthrough, not source-list chronology. Registry links identify proposed "
+                "one proposed walkthrough. Listing order does not establish execution order. Registry links identify proposed "
                 "support, not replacement of source ownership."
             ),
             "source": context_source,
@@ -419,7 +419,7 @@ def _context_view(
                 "people",
                 "People in product context",
                 "Container",
-                "Source-stated people, including participants without a first-path action.",
+                "People involved, including those without a first-path action.",
             )
         )
         for index, actor in enumerate(actors, start=1):
@@ -432,7 +432,7 @@ def _context_view(
                     actor_id,
                     actor,
                     "First-path actor" if events else "Participant",
-                    f"Performs source-stated first-path actions: {actor}"
+                    "Performs the linked first-path actions."
                     if events
                     else "Named in project evidence; no first-path action is assigned.",
                 )
@@ -486,9 +486,10 @@ def _context_view(
             )
         boxes.append(
             _box(
-                action_id, "\n".join(events), "Grouped first-path actions",
-                f"Exact source events performed by {identity[1]}. "
-                "Listing order does not establish execution order.",
+                action_id, "First-path actions", "Grouped first-path actions",
+                "\n\n".join(events),
+                details=[{"label": "Performer", "text": identity[1]},
+                         {"label": "Performer kind", "text": identity[0]}],
             )
         )
     for index, actor in enumerate(actors, start=1):
@@ -564,7 +565,7 @@ def _product_boundary_projection(
                 target,
                 label,
                 "Product-owned component",
-                f"Accepted responsibility: {responsibility}",
+                responsibility,
             )
         )
     if not sole_title_product:

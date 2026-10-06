@@ -12,7 +12,7 @@ from odylith.install.bootstrap_assets import ensure_customer_bootstrap
 from odylith.runtime.surfaces import render_registry_dashboard as renderer
 from odylith.runtime.surfaces import render_tooling_dashboard
 from tests.integration.runtime.surface_browser_test_support import (
-    _assert_clean_page, _browser, _failure_screenshot_path, _new_page, _static_server,
+    _assert_clean_page, _browser, _failure_screenshot_path, _new_page, _static_server, browser_context,
 )
 from tests.unit.runtime.test_component_registry_categories import _seed_application_registry
 
@@ -284,3 +284,103 @@ def test_registry_category_labels_survive_filter_empty_and_runtime_fallback(
                 context.close()
     assert manifest.read_bytes() == source_bytes
     assert spec.read_bytes() == spec_bytes
+
+
+@pytest.mark.parametrize("width", [1440, 430], ids=["desktop", "mobile"])
+@pytest.mark.parametrize("state", ["normal", "empty-evidence", "degraded"])
+def test_registry_evidence_is_optional_and_retains_exact_history(
+    browser_context, width: int, state: str,
+) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    purpose = "Keep the exact consent version and readiness disposition together before launch."
+    summary = (
+        "The reviewer retained the exact approved consent version, the reviewed dossier, and both launch checks. " * 4
+        + "The final condition requires the coordinator's confirmation and preserves <version> & evidence."
+    )
+    earlier_summary = "The first spec records the experiment-version binding without changing reviewer authority."
+    artifacts = [
+        {"path": f"evidence/launch-check-{index}.json", "href": f"../evidence/launch-check-{index}.json"}
+        for index in range(3)
+    ]
+    events = [
+        {"kind": "validation", "summary": summary, "confidence": "high", "ts_iso": "2026-10-05T13:14:15Z",
+         "workstreams": ["B-901"], "artifacts": artifacts},
+        {"kind": "spec_history", "summary": earlier_summary, "confidence": "medium", "ts_iso": "2026-10-04T12:13:14Z",
+         "workstreams": [], "artifacts": []},
+    ] if state == "normal" else []
+    component = {"component_id": "consent-registry", "name": "Consent material registry", "what_it_is": purpose,
+                 "status": "planned", "qualification": "candidate", "category": "application"}
+    detail = {**component, "timeline": events, "forensic_coverage": {
+        "mapped_workstream_evidence_count": 1 if events else 0,
+        "spec_history_event_count": 1 if events else 0, "recent_path_match_count": 0,
+    }}
+    with _new_page(context) as (page, observation):
+        page.set_viewport_size({"width": width, "height": 1100 if width == 1440 else 932})
+        requests = []
+
+        def runtime_response(route) -> None:  # noqa: ANN001
+            requests.append(route.request.url)
+            if "/detail?" in route.request.url:
+                route.fulfill(status=200, content_type="application/json",
+                              body="invalid JSON" if state == "degraded" else json.dumps(detail))
+            else:
+                route.fulfill(status=200, content_type="application/json", json={"components": [component]})
+
+        page.route("**/evidence-runtime/surfaces/**", runtime_response)
+        payload = {"components": [component], "data_source": {
+            "preferred_backend": "runtime", "runtime_base_url": base_url + "/evidence-runtime/",
+        }}
+        page.route("**/registry-evidence.html", lambda route: route.fulfill(
+            status=200, content_type="text/html", body=renderer._render_html(payload=payload),  # noqa: SLF001
+        ))
+        response = page.goto(base_url + "/registry-evidence.html", wait_until="networkidle")
+        assert response is not None and response.ok
+        assert page.locator(".component-purpose").inner_text() == purpose
+        assert page.locator(".component-purpose").is_visible()
+        assert page.locator(".component-identity").get_by_text("Planned", exact=True).is_visible()
+        warning = page.locator("#detail [role=status]")
+        if state == "degraded":
+            assert warning.inner_text() == "Component detail unavailable. The available summary is shown."
+            assert warning.is_visible()
+            assert warning.evaluate("node => node.closest('details') === null")
+        else:
+            assert warning.count() == 0
+        evidence = page.locator("#chronology-anchor")
+        assert evidence.evaluate("node => node.tagName") == "DETAILS"
+        assert evidence.get_attribute("open") is None
+        assert evidence.locator(":scope > summary > span").first.text_content() == "Evidence"
+        assert evidence.locator("#timelineCount").text_content() == f"{len(events)} events"
+        assert not page.locator("#timeline").is_visible()
+        assert not page.locator(".forensic-health-card").is_visible()
+        summary_control = evidence.locator(":scope > summary")
+        summary_control.focus()
+        summary_control.press("Enter")
+        assert evidence.get_attribute("open") == ""
+        assert page.locator("#timeline").is_visible()
+        expected_counts = ["2", "2", "1", "1", "0"] if events else ["0"] * 5
+        assert page.locator(".forensic-stat-value").all_inner_texts() == expected_counts
+        if events:
+            assert page.locator(".forensic-latest .forensic-summary").text_content() == summary
+            assert "confidence high" in page.locator(".forensic-meta-row").inner_text()
+            assert "2026-10-05T13:14:15Z" in page.locator(".forensic-meta-row").inner_text()
+            assert page.locator(".forensic-workstream-chip").first.inner_text() == "B-901"
+            assert "workstream=B-901" in page.locator(".forensic-workstream-chip").first.get_attribute("href")
+            artifact_control = page.locator(".forensic-latest .forensic-artifact-disclosure > summary")
+            artifact_control.focus()
+            artifact_control.press("Enter")
+            links = page.locator(".forensic-latest .artifact")
+            assert links.all_inner_texts() == [item["path"] for item in artifacts]
+            assert links.evaluate_all("nodes => nodes.map(node => node.getAttribute('href'))") == [item["href"] for item in artifacts]
+            group_control = page.locator(".forensic-group-disclosure > summary")
+            group_control.focus()
+            group_control.press("Enter")
+            assert page.locator(".forensic-group-row .forensic-summary").all_text_contents() == [summary, earlier_summary]
+        else:
+            assert page.locator("#timeline").inner_text().count("No mapped forensic evidence is attached yet.") == 1
+            assert page.locator(".forensic-latest").count() == 0
+        assert any("/surfaces/registry/detail?component=consent-registry" in url for url in requests)
+        screenshot = _failure_screenshot_path(f"registry-evidence-{width}-{state}")
+        if screenshot is not None:
+            screenshot.parent.mkdir(parents=True, exist_ok=True)
+            page.screenshot(path=str(screenshot), full_page=True)
+        _assert_clean_page(page, observation)

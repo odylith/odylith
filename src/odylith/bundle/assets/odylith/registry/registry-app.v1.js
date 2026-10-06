@@ -2120,18 +2120,12 @@ function renderComponentListButton(row, selectedId) {
       return html ? `<div class="forensic-token-row">${html}</div>` : "";
     }
 
-    function forensicDisplaySummary(event, maxLength = 260) {
-      const summary = String(event && event.summary || "(no summary)").replace(/\s+/g, " ").trim();
-      const limit = Number(maxLength || 0);
-      if (!limit || summary.length <= limit) return summary;
-      const clipped = summary.slice(0, Math.max(0, limit - 3)).replace(/\s+\S*$/, "").trim();
-      return `${clipped || summary.slice(0, Math.max(0, limit - 3)).trim()}...`;
+    function forensicDisplaySummary(event) {
+      return String(event && event.summary || "(no summary)");
     }
 
     function renderForensicLatestEvent(event, options = {}) {
-      if (!event) {
-        return '<article class="forensic-latest"><p class="empty">No mapped forensic evidence is attached yet.</p></article>';
-      }
+      if (!event) return "";
       const diagnosticOnly = Boolean(options.diagnosticOnly);
       const heading = diagnosticOnly ? "Latest diagnostic signal" : "Latest material signal";
       const className = diagnosticOnly ? "forensic-latest diagnostic" : "forensic-latest";

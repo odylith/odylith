@@ -101,14 +101,14 @@ def test_capability_support_groups_render_complete_local_relationships(tmp_path:
         assert box["description"] == workstream["deliverable"]
         assert {"label": "Proposed verification", "text": workstream["verification"]} in box["details"]
         assert {"label": "Participating components", "text": ", ".join(workstream["component_keys"])} in box["details"]
-    assert labels.count("Source action reference Select for full actions and performers") == 1
+    assert labels.count("Actions and performers Select for full actions and performers") == 1
     for order, event in enumerate((
         "Dock attendant Ivo enters a vessel tag",
         "the product records berth occupancy",
         "the berth map shows the placement",
     ), 1):
         assert boxes["source_actions"]["description"].count(f"Source event: {event}") == 1
-        assert f"Source action {order} · " in boxes["source_actions"]["description"]
+        assert f"Action {order}\n" in boxes["source_actions"]["description"]
     assert len(labels) == 10
     edges = [element for element in root.iter() if "flowchart-link" in element.attrib.get("class", "").split()]
     assert len(edges) == 4

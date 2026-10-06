@@ -304,8 +304,8 @@ def test_context_groups_five_exact_events_under_one_human_performer() -> None:
         in context["mermaid_source"]
     )
     assert context["mermaid_source"].count('actor1_actions["') == 1
-    assert boxes["actor1_actions"]["label"] == "\n".join(events)
-    assert [line for line in boxes["actor1_actions"]["label"].splitlines()] == list(events)
+    assert boxes["actor1_actions"]["label"] == "First-path actions"
+    assert boxes["actor1_actions"]["description"].split("\n\n") == list(events)
     assert (
         'actor1_actions["'
         + "<br/><br/>".join("• " + mermaid_label(event, width=42) for event in events)
@@ -328,11 +328,11 @@ def test_context_groups_each_human_performers_events_without_cross_assignment() 
     context = next(row for row in rows if row["slug"] == "harbor-desk-context")
     boxes = {row["node_id"]: row for row in context["diagram_boxes"]}
 
-    assert boxes["actor1_actions"]["label"].splitlines() == [
+    assert boxes["actor1_actions"]["description"].split("\n\n") == [
         "Mara records the intake",
         "Mara publishes the result",
     ]
-    assert boxes["actor2_actions"]["label"] == "Ivo reviews the intake"
+    assert boxes["actor2_actions"]["description"] == "Ivo reviews the intake"
     assert context["mermaid_source"].count('|"performs"|') == 2
 
 
@@ -359,10 +359,10 @@ def test_context_action_listing_does_not_claim_the_proposed_execution_order(
     assert context == source_list_walk[0]
     assert reverse_walk[1]["mermaid_source"] != source_list_walk[1]["mermaid_source"]
     action_box = next(box for box in context["diagram_boxes"] if box["node_id"].endswith("_actions"))
-    assert action_box["label"].splitlines() == [row["event_quote"] for row in relations]
-    assert action_box["description"] == (
-        f"Exact source events performed by {actor}. Listing order does not establish execution order."
-    )
+    assert action_box["description"].split("\n\n") == [row["event_quote"] for row in relations]
+    assert {"label": "Performer", "text": actor} in action_box["details"]
+    assert {"label": "Performer kind", "text": actor_kind} in action_box["details"]
+    assert context["read_guide"].count("Listing order does not establish execution order.") == 1
 
 
 def test_context_excludes_product_events_from_human_action_groups() -> None:
@@ -389,8 +389,8 @@ def test_context_excludes_product_events_from_human_action_groups() -> None:
         row for row in context["diagram_boxes"] if row["node_id"] == "actor1_actions"
     )
 
-    assert action_box["label"] == human_event
-    assert product_event not in action_box["label"]
+    assert action_box["description"] == human_event
+    assert product_event not in action_box["description"]
 
 
 @pytest.mark.parametrize("human_actors", [(), ("Field Ombud",)])
@@ -444,7 +444,7 @@ def test_product_only_context_retains_five_exact_events_without_empty_people() -
     boxes = {row["node_id"]: row for row in context["diagram_boxes"]}
 
     assert set(boxes) == {"product", "product_actions"}
-    assert boxes["product_actions"]["label"] == "\n".join(events)
+    assert boxes["product_actions"]["description"].split("\n\n") == list(events)
     assert 'product -->|"performs"| product_actions' in context["mermaid_source"]
     assert 'product_actions ---|"first-path interaction"| product' not in context["mermaid_source"]
     assert 'subgraph people[' not in context["mermaid_source"]
@@ -476,7 +476,7 @@ def test_context_preserves_a_single_exact_event_for_each_typed_performer(
     )[0]
     boxes = {row["node_id"]: row for row in context["diagram_boxes"]}
 
-    assert boxes[f"{node_id}_actions"]["label"] == event
+    assert boxes[f"{node_id}_actions"]["description"] == event
     assert f'{node_id} -->|"performs"| {node_id}_actions' in context["mermaid_source"]
     assert context["mermaid_source"].count('|"performs"|') == 1
     boundary_edge = f'{node_id}_actions ---|"first-path interaction"| product'
@@ -514,7 +514,7 @@ def test_context_groups_mixed_typed_performers_without_cross_assignment() -> Non
         "external1_actions": ["Harbor Ledger returns the receipt"],
     }
 
-    assert {key: row["label"].splitlines() for key, row in boxes.items() if key.endswith("_actions")} == expected
+    assert {key: row["description"].split("\n\n") for key, row in boxes.items() if key.endswith("_actions")} == expected
     assert boxes["actor2"]["role"] == "Participant"
     assert 'actor2 -->|"performs"|' not in context["mermaid_source"]
     assert 'external2 -->|"performs"|' not in context["mermaid_source"]
@@ -565,7 +565,7 @@ def test_context_retains_repeated_exact_event_text_and_seals_the_group() -> None
         row for row in context["diagram_boxes"] if row["node_id"] == "actor1_actions"
     )
 
-    assert action_box["label"].splitlines() == [repeated_event, repeated_event]
+    assert action_box["description"].split("\n\n") == [repeated_event, repeated_event]
     assert greenfield_authored_atlas_view.validate_authored_atlas_view(
         context,
         source_text=context["mermaid_source"],
@@ -575,7 +575,7 @@ def test_context_retains_repeated_exact_event_text_and_seals_the_group() -> None
     tampered_action = next(
         row for row in tampered["diagram_boxes"] if row["node_id"] == "actor1_actions"
     )
-    tampered_action["label"] = repeated_event
+    tampered_action["description"] = repeated_event
     with pytest.raises(ValueError, match="sealed hash"):
         greenfield_authored_atlas_view.validate_authored_atlas_view(
             tampered,
@@ -613,6 +613,12 @@ def test_distinct_multiple_components_keep_containment_and_typed_external_target
         },
     )
     rows = _authored_diagrams(components=components)
+    context = next(row for row in rows if row["slug"] == "harbor-desk-context")
+    boxes = {box["node_id"]: box for box in context["diagram_boxes"]}
+    for index, component in enumerate(components, 1):
+        assert boxes[f"component{index}"]["description"] == component["responsibility"]
+        assert boxes[f"component{index}"]["role"] == "Product-owned component"
+    assert context["authority_kind"] == "source_grounded"
 
     source = next(
         row["mermaid_source"] for row in rows if row["slug"] == "harbor-desk-context"
@@ -622,6 +628,7 @@ def test_distinct_multiple_components_keep_containment_and_typed_external_target
     assert 'component2["Receipt vault"]' in source
     assert "external1 -.-> component1" in source
     assert "external1 -.-> product" not in source
+    assert greenfield_authored_atlas_view.validate_authored_atlas_view(context, source_text=source)["diagram_boxes"] == context["diagram_boxes"]
 
 
 def _traceability_plan() -> SimpleNamespace:
@@ -763,7 +770,8 @@ def test_single_human_event_sequence_preserves_typed_performer_edge() -> None:
 
     assert boxes["performer1"]["label"] == "extension publishers"
     assert boxes["performer1"]["role"] == "Typed event performer"
-    assert boxes["event1"]["label"] == authored_event_display_text(
+    assert boxes["event1"]["label"] == "Action 1"
+    assert boxes["event1"]["description"] == authored_event_display_text(
         _relation(1, "extension publishers", event)
     )
     assert 'performer1 --> event1' in sequence["mermaid_source"]
@@ -839,7 +847,7 @@ def test_context_does_not_call_unselected_supporting_relation_a_first_path_actio
     assert "Harbor liaison inventories old berths" not in context["mermaid_source"]
     assert "event4" not in sequence["mermaid_source"]
     assert "proposed_component4" not in sequence["mermaid_source"]
-    assert "Source action 4" in next(box["description"] for box in support["diagram_boxes"] if box["node_id"] == "source_actions")
+    assert "Action 4" in next(box["description"] for box in support["diagram_boxes"] if box["node_id"] == "source_actions")
 
 
 def _source_lifecycle() -> dict[str, Any]:
@@ -884,8 +892,11 @@ def test_cited_off_path_lifecycle_keeps_two_effects_out_of_first_run() -> None:
         "off_path_transition1"
     ]["description"]
     assert boxes["off_path_transition1"]["role"] == "Source-stated off-path transition"
-    assert boxes["off_path_transition1_effect1"]["label"] == "Change: closed\nObservable check: access closed"
-    assert boxes["off_path_transition1_effect2"]["label"] == "Change: erased\nObservable check: cache empty"
+    assert boxes["off_path_transition1_effect1"]["label"] == "Effect 1.1"
+    assert boxes["off_path_transition1_effect2"]["label"] == "Effect 1.2"
+    assert "Change: closed\nObservable check: access closed" in boxes["off_path_transition1_effect1"]["description"]
+    assert "Change: erased\nObservable check: cache empty" in boxes["off_path_transition1_effect2"]["description"]
+    assert {"label": "Trigger", "text": _source_lifecycle()["off_path_transitions"][0]["trigger"]} in boxes["off_path_transition1"]["details"]
     assert "placement access" in boxes["state_field1"]["description"]
     assert "cached placement" in boxes["state_field2"]["description"]
     assert 'component2 -. "proposed lifecycle support" .-> off_path_transition1' in source
@@ -950,10 +961,13 @@ def test_capability_support_compact_map_preserves_complete_many_to_many_detail(
     action_detail = boxes["source_actions"]["description"]
     for event in sorted(relations, key=lambda row: row["order"]):
         complete = (
-            f"Source action {event['order']} · {event['actor_kind']}\n"
+            f"Action {event['order']}\n"
             f"{authored_event_display_text(event)}"
         )
         assert action_detail.count(complete) == 1
+        assert {"label": "Performer kinds", "text": "\n".join(
+            f"Action {row['order']}: {row['actor_kind']}" for row in relations
+        )} in boxes["source_actions"]["details"]
     for index, component in enumerate(design["components"], 1):
         box = boxes[f"component{index}"]
         actions = "Source actions: " + ", ".join(map(str, component["supported_event_orders"]))
@@ -976,10 +990,10 @@ def test_capability_support_compact_map_preserves_complete_many_to_many_detail(
         assert details["Proposed verification"] == workstream["verification"]
         assert box["description"] == workstream["deliverable"]
         assert details["Participating components"] == ", ".join(workstream["component_keys"])
-    assert "Source-stated state object: berth occupancy" in boxes["source_facts"]["description"]
-    assert "Source-stated visible result:" in boxes["source_facts"]["description"]
-    assert "Source-stated proof boundary:" in boxes["source_facts"]["description"]
-    assert "Source-stated non-goal 1: Do not manage vessel scheduling" in boxes["source_facts"]["description"]
+    assert "State object: berth occupancy" in boxes["source_facts"]["description"]
+    assert "Visible result:" in boxes["source_facts"]["description"]
+    assert "Proof boundary:" in boxes["source_facts"]["description"]
+    assert "Non-goal 1: Do not manage vessel scheduling" in boxes["source_facts"]["description"]
     assert "source_actions -->" not in source and "source_facts -->" not in source
     assert source.count(".->") == sum(len(row["component_keys"]) for row in design["workstreams"])
     assert "Select a diagram box in Read mode for complete statements" in support["read_guide"]
@@ -1040,8 +1054,9 @@ def test_compact_support_keeps_provisional_proof_out_of_source_facts() -> None:
     boxes = {box["node_id"]: box for box in support["boxes"]}
     assert "Proposed retention checkpoint" not in boxes["source_facts"]["description"]
     assert "visible result" not in boxes["source_facts"]["description"]
-    assert boxes["proof"]["label"] == "Proposed retention checkpoint"
+    assert boxes["proof"]["description"] == "Proposed retention checkpoint"
     assert boxes["proof"]["role"] == "Proposed proof checkpoint"
+    assert "no source-stated producer or terminal result is asserted" in boxes["proof"]["details"][0]["text"]
     assert "Assumption" in support["source"]
 
 
@@ -1334,7 +1349,7 @@ def test_authored_detail_schema_fails_before_custody_admission(details: Any) -> 
 
 def test_absent_detail_v3_projection_keeps_observed_prechange_digest() -> None:
     # Captured from the unchanged pre-disclosure compiler and fixture; no new builder supplies the expected digest.
-    row = _authored_diagrams()[0]
+    row = json.loads((Path(__file__).parents[2] / 'fixtures/atlas-authored-v3-pre-disclosure-context.json').read_text())
     assert all('details' not in box for box in row['diagram_boxes'])
     authority = row[greenfield_authored_atlas_view.AUTHORED_ATLAS_AUTHORITY_KEY]
     assert authority['version'] == 'odylith.greenfield.authored-atlas-view.v3'

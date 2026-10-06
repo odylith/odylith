@@ -637,6 +637,7 @@
 
         .details-grid {
       display: grid;
+      align-content: start;
       gap: 12px;
       grid-template-columns: minmax(0, 1fr);
       min-width: 0;
@@ -664,6 +665,7 @@
 
     .diagram-explanation-section {
       display: grid;
+      align-content: start;
       gap: 14px;
     }
 
@@ -1451,14 +1453,14 @@
             <p class="artifact-label">Boxes In This Diagram</p>
             <div id="diagramBoxList" class="diagram-box-list"></div>
           </div>
-          <div class="ownership-section">
-            <p class="artifact-label">Owning Components</p>
+          <details class="ownership-section">
+            <summary class="artifact-label">Owning components</summary>
             <div id="componentList" class="component-list"></div>
-          </div>
+          </details>
         </article>
 
-        <article class="section linked-context-section">
-          <h3>Linked Engineering Context</h3>
+        <details class="section linked-context-section">
+          <summary class="artifact-label">Linked records</summary>
           <div class="engineering-context-list">
             <p class="engineering-context-empty" role="status">No engineering context is linked to this diagram yet.</p>
             <div class="artifact-group">
@@ -1486,7 +1488,7 @@
               <ul id="surfaceLinks" class="artifact-list"></ul>
             </div>
           </div>
-        </article>
+        </details>
       </section>
     </main>
   </div>
@@ -1537,7 +1539,7 @@
   }
 })();
 </script>
-  <script id="catalogData" src="mermaid-payload.v1.js?v=4ab474b5bb88"></script>
+  <script id="catalogData" src="mermaid-payload.v1.js?v=757f0dc7ea64"></script>
   <script>
 (() => {
   'use strict';
@@ -1662,6 +1664,6 @@
   window.OdylithFrameBridge = {surface, frame};
 })();
 </script>
-  <script src="mermaid-app.v1.js?v=4ab474b5bb88"></script>
+  <script src="mermaid-app.v1.js?v=757f0dc7ea64"></script>
 </body>
 </html>

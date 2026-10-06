@@ -239,9 +239,9 @@ def build_provisional_first_run_atlas_view(
         boxes.append(
             atlas_box(
                 f"event{index}",
-                event_display,
+                f"Action {index}",
                 f"{actor_kind} event",
-                f"Source action {index}, performed by {performer}: {event_quote}",
+                event_display,
             )
         )
         identity = (actor_kind, performer)
@@ -254,8 +254,8 @@ def build_provisional_first_run_atlas_view(
                     performer_id,
                     performer,
                     "Typed event performer",
-                    f"Source-stated {actor_kind} performer for one or more first-path events: "
-                    f"{performer}",
+                    "Performs the linked first-path actions.",
+                    details=[{"label": "Performer kind", "text": actor_kind}],
                 )
             )
         lines.append(f'  {performers[identity]} --> event{index}')
@@ -271,7 +271,7 @@ def build_provisional_first_run_atlas_view(
                         owner_id,
                         owner,
                         "Typed event owner",
-                        f"Accepted owner system for one or more first-path events: {owner}",
+                        "Owns the linked event state.",
                     )
                 )
             lines.append(f'  {performers[owner_identity]} -->|"owns event state"| event{index}')
@@ -489,24 +489,27 @@ def _capability_support_view(
         for key in workstream["component_keys"]:
             lines.append(f'  {component_ids[key]} -. "participates in delivery" .-> {acceptance_id}')
     actions = "\n\n".join(
-        event_details[event["order"]] for event in sorted(relations, key=lambda row: row["order"])
+        f"Action {event['order']}\n{authored_event_display_text(event)}"
+        for event in sorted(relations, key=lambda row: row["order"])
     )
-    lines.append('  source_actions["Source action reference<br/>Select for full actions and performers"]')
+    lines.append('  source_actions["Actions and performers<br/>Select for full actions and performers"]')
     boxes.append(atlas_box(
-        "source_actions", "Source action reference", "Source-grounded context",
-        actions + "\n\nSource identities do not imply execution order.",
+        "source_actions", "Actions and performers", "Source-grounded context", actions,
+        details=[{"label": "Performer kinds", "text": "\n".join(
+            f"Action {event['order']}: {event['actor_kind']}" for event in relations
+        )}],
     ))
-    facts = [f"Source-stated state object: {state_object}"]
+    facts = [f"State object: {state_object}"]
     if not proof_is_provisional:
         facts.extend([
-            f"Source-stated visible result: {visible_result}",
-            f"Source-stated proof boundary: {proof_boundary}",
+            f"Visible result: {visible_result}",
+            f"Proof boundary: {proof_boundary}",
         ])
-    facts.extend(f"Source-stated non-goal {index}: {value}" for index, value in enumerate(non_goals, 1))
+    facts.extend(f"Non-goal {index}: {value}" for index, value in enumerate(non_goals, 1))
     facts_reference = "state and scope" if proof_is_provisional else "state, scope and proof"
-    lines.append(f'  source_facts["Source-stated facts<br/>Select for {facts_reference}"]')
+    lines.append(f'  source_facts["State and scope<br/>Select for {facts_reference}"]')
     boxes.append(atlas_box(
-        "source_facts", "Source-stated facts", "Source-grounded context", "\n\n".join(facts),
+        "source_facts", "State and scope", "Source-grounded context", "\n\n".join(facts),
     ))
     if source_lifecycle is not None:
         _append_source_lifecycle(
@@ -515,9 +518,9 @@ def _capability_support_view(
     if proof_is_provisional:
         lines.append('  proof["Proposed proof checkpoint<br/>Assumption — select for detail"]')
         boxes.append(atlas_box(
-            "proof", proof_boundary, "Proposed proof checkpoint",
-            "An explicit assumption; no source-stated producer or terminal result is asserted.\n"
-            f"Proposed checkpoint: {proof_boundary}",
+            "proof", "Proposed proof checkpoint", "Proposed proof checkpoint", proof_boundary,
+            details=[{"label": "Authority", "text":
+                      "An explicit assumption; no source-stated producer or terminal result is asserted."}],
         ))
     return styled_mermaid(lines), boxes
 
@@ -552,14 +555,14 @@ def _append_source_lifecycle(
         )
         boxes.append(atlas_box(
             node, label, "Source-stated off-path transition",
-            f"Source: {quote}\nTrigger: {transition['trigger']}\n"
-            f"Governed object: {transition['governed_object']}",
+            quote,
+            details=[{"label": "Trigger", "text": transition["trigger"]},
+                     {"label": "Governed object", "text": transition["governed_object"]}],
         ))
         component = component_ids[transition["component_key"]]
         lines.append(f'  {component} -. "proposed lifecycle support" .-> {node}')
         for effect_index, effect in enumerate(transition["effects"], 1):
             field = field_nodes[effect["state_field_id"]]
-            change = f"Change: {effect['change']}\nObservable check: {effect['observable_check']}"
             effect_node = f"{node}_effect{effect_index}"
             change_label = f"Effect {index}.{effect_index}<br/>{mermaid_label(effect['change'], width=32)}"
             lines.append(f'  {effect_node}["{change_label}"]')
@@ -569,7 +572,7 @@ def _append_source_lifecycle(
             lines.append(f'  {effect_node} -->|"changes {mermaid_label(effect["field"])}"| {field}')
             boxes.append(atlas_box(
                 effect_node,
-                change,
+                f"Effect {index}.{effect_index}",
                 "Source-stated state effect",
                 f"Trigger: {transition['trigger']}\nField: {effect['field']}\n"
                 f"Change: {effect['change']}\nObservable check: {effect['observable_check']}",

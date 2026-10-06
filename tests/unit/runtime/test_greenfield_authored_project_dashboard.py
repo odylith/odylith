@@ -1132,6 +1132,8 @@ def test_project_header_uses_only_the_sealed_project_summary(tmp_path: Path) -> 
     assert "No authored open question." not in str(payload)
     assert payload["open"] == []
     assert "project-open-questions" not in rendered
+    rationale = proposal["intent"]["authored_semantics"]["provisional_design"]["risk_posture"]["rationale"]
+    assert rendered.count(rationale) == 1
 
 
 @pytest.mark.parametrize("accepted", [True, False])

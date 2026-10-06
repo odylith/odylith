@@ -96,6 +96,9 @@ def test_late_detail_cannot_replace_filtered_state_or_newer_same_id_selection(
         _release_detail(page, frame, pending[2], "Newest selected detail")
         assert "Newest selected detail" in frame.locator("#detail").inner_text()
         if tab == "registry":
+            evidence = frame.locator("#chronology-anchor > summary")
+            evidence.focus()
+            evidence.press("Enter")
             assert "Newest selected detail event" in frame.locator("#timeline").inner_text()
         _release_detail(page, frame, pending[1], "Older same-id detail")
         assert "Newest selected detail" in frame.locator("#detail").inner_text()

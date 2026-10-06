@@ -171,7 +171,10 @@ def build_authored_greenfield_payload(
         ),
         "answers": [],
         "risk_title": "Risks",
-        "risk_note": _first_text(provisional_design["risk_posture"], "rationale"),
+        "risk_note": (
+            "" if _first_text(provisional_design["risk_posture"], "status") == "no_material_risks_identified"
+            else _first_text(provisional_design["risk_posture"], "rationale")
+        ),
         "risk_items": risk_items,
         "scenario": [
             "Proposed first run",

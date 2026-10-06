@@ -370,7 +370,7 @@
           <div class="brief-status-copy">${escapeHtml(message)}</div>
           ${fallbackDigest.length ? `
             <div class="brief-fallback-digest">
-              <div class="brief-fallback-title">${escapeHtml(fallbackTitle)}</div>
+              ${fallbackTitle !== title ? `<div class="brief-fallback-title">${escapeHtml(fallbackTitle)}</div>` : ""}
               <ul>
                 ${fallbackDigest.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}
               </ul>

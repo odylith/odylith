@@ -133,9 +133,9 @@ def normalize_legacy_backlog_index(*, repo_root: str | Path, today: dt.date | No
         elif normalized_lines != list(existing.get("lines", [])):
             changed_keys.append(idea_id)
 
-    content = backlog_index.read_text(encoding="utf-8")
+    original_content = backlog_index.read_text(encoding="utf-8")
     content, normalized_table_sections = _normalize_legacy_backlog_tables(
-        content=content,
+        content=original_content,
         snapshot=snapshot,
     )
     lines = content.splitlines()
@@ -146,16 +146,18 @@ def normalize_legacy_backlog_index(*, repo_root: str | Path, today: dt.date | No
         replacement.extend(rationale_lines)
         replacement.append("")
     lines[start:end] = replacement
-    updated = _update_last_updated("\n".join(lines), today=current_day)
-    if not updated.endswith("\n"):
-        updated += "\n"
+    normalized_content = "\n".join(lines)
+    if not normalized_content.endswith("\n"):
+        normalized_content += "\n"
+    index_changed = normalized_content != original_content
     all_normalized_idea_specs = tuple(dict.fromkeys(normalized_idea_specs))
     changed = (
-        updated != content
+        index_changed
         or bool(all_normalized_idea_specs)
         or bool(normalized_table_sections)
     )
-    if changed:
+    if index_changed:
+        updated = _update_last_updated(normalized_content, today=current_day)
         atomic_write_text(backlog_index, updated, encoding="utf-8")
     return LegacyBacklogNormalizationResult(
         backlog_index=backlog_index,

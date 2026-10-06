@@ -955,6 +955,14 @@
       align-items: center;
       gap: 8px;
     }
+    .forensic-evidence-head {
+      display: list-item;
+      list-style-position: inside;
+      cursor: pointer;
+    }
+    .forensic-evidence-head > #timelineCount {
+      float: right;
+    }
     .timeline {
       margin: 0;
       padding: 12px 14px 14px;
@@ -1704,11 +1712,13 @@
 
         <section class="detail-panel">
           <div id="detail" class="detail-shell"></div>
-        <div id="chronology-anchor" class="timeline-head forensic-evidence-head">
-          <span>Forensic Evidence</span>
-          <span id="timelineCount">0 events</span>
-        </div>
-        <section id="timeline" class="timeline" aria-live="polite"></section>
+        <details id="chronology-anchor" class="forensic-evidence-disclosure">
+          <summary class="timeline-head forensic-evidence-head">
+            <span>Evidence</span>
+            <span id="timelineCount">0 events</span>
+          </summary>
+          <section id="timeline" class="timeline" aria-live="polite"></section>
+        </details>
       </section>
     </section>
   </main>
@@ -1759,7 +1769,7 @@
   }
 })();
 </script>
-  <script id="registryData" src="registry-payload.v1.js?v=f9d9e4eeb642"></script>
+  <script id="registryData" src="registry-payload.v1.js?v=62b2724e700c"></script>
   <script>
 (() => {
   'use strict';
@@ -1884,6 +1894,6 @@
   window.OdylithFrameBridge = {surface, frame};
 })();
 </script>
-  <script src="registry-app.v1.js?v=f9d9e4eeb642"></script>
+  <script src="registry-app.v1.js?v=62b2724e700c"></script>
 </body>
 </html>

@@ -3,6 +3,7 @@
 DETAIL_LAYOUT_CSS = r"""
     .details-grid {
       display: grid;
+      align-content: start;
       gap: 12px;
       grid-template-columns: minmax(0, 1fr);
       min-width: 0;
@@ -30,6 +31,7 @@ DETAIL_LAYOUT_CSS = r"""
 
     .diagram-explanation-section {
       display: grid;
+      align-content: start;
       gap: 14px;
     }
 
@@ -428,14 +430,14 @@ DETAIL_LAYOUT_HTML = r"""
             <p class="artifact-label">Boxes In This Diagram</p>
             <div id="diagramBoxList" class="diagram-box-list"></div>
           </div>
-          <div class="ownership-section">
-            <p class="artifact-label">Owning Components</p>
+          <details class="ownership-section">
+            <summary class="artifact-label">Owning components</summary>
             <div id="componentList" class="component-list"></div>
-          </div>
+          </details>
         </article>
 
-        <article class="section linked-context-section">
-          <h3>Linked Engineering Context</h3>
+        <details class="section linked-context-section">
+          <summary class="artifact-label">Linked records</summary>
           <div class="engineering-context-list">
             <p class="engineering-context-empty" role="status">No engineering context is linked to this diagram yet.</p>
             <div class="artifact-group">
@@ -463,16 +465,12 @@ DETAIL_LAYOUT_HTML = r"""
               <ul id="surfaceLinks" class="artifact-list"></ul>
             </div>
           </div>
-        </article>
+        </details>
       </section>
 """
 
 DETAIL_RUNTIME_HELPERS_JS = r"""
     function renderDiagramBoxes(diagram, sectionEl, listEl) {
-      const genericRoles = new Set([
-        "Container", "Proposed component", "Proposed component support",
-        "Proposed logical component", "Proposed workstream",
-      ]);
       listEl.replaceChildren();
       const boxes = Array.isArray(diagram.diagram_boxes)
         ? diagram.diagram_boxes.filter((box) => box && typeof box === "object")
@@ -492,12 +490,6 @@ DETAIL_RUNTIME_HELPERS_JS = r"""
         heading.textContent = String(box.label ?? "");
         name.appendChild(heading);
         const roleText = String(box.role ?? "");
-        if (roleText.trim() && !genericRoles.has(roleText)) {
-          const role = document.createElement("span");
-          role.className = "diagram-box-role";
-          role.textContent = roleText;
-          name.appendChild(role);
-        }
 
         const description = document.createElement("p");
         description.className = "diagram-box-description";
@@ -506,13 +498,17 @@ DETAIL_RUNTIME_HELPERS_JS = r"""
         const content = document.createElement("div");
         content.className = "diagram-box-content";
         content.appendChild(description);
-        if (Array.isArray(box.details) && box.details.length) {
+        const detailRows = [
+          ...(roleText.trim() ? [{label: "Role", text: roleText}] : []),
+          ...(Array.isArray(box.details) ? box.details : []),
+        ];
+        if (detailRows.length) {
           const disclosure = document.createElement("details");
           disclosure.className = "diagram-box-details";
           const summary = document.createElement("summary");
           summary.textContent = "Supporting details";
           const entries = document.createElement("dl");
-          box.details.forEach((detail) => {
+          detailRows.forEach((detail) => {
             const label = document.createElement("dt");
             label.textContent = String(detail.label ?? "");
             const text = document.createElement("dd");
