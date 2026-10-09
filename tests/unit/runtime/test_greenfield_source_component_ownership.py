@@ -196,7 +196,11 @@ def test_human_path_retains_source_story_and_complete_proposed_package(tmp_path)
     assert f'product["{candidate["title"]}"]' in context_labels
     product_box = next(box for box in context["diagram_boxes"] if box["node_id"] == "product")
     assert product_box["role"] == "Accepted evidence excerpt"
-    assert product_box["description"] == evidence_excerpt
+    assert product_box["description"] == ""
+    assert product_box["details"] == [
+        {"label": "Accepted evidence excerpt", "text": candidate["product_story"]},
+    ]
+    assert proposal["intent"]["authored_semantics"]["provisional_design"]["project_summary"] == response["result"]["provisional_design"]["project_summary"]
     for event in events:
         assert event["event_quote"] in context_labels
     assert not any(box["role"] == "Product-owned component" for box in context["diagram_boxes"])

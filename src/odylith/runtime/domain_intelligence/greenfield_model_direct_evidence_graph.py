@@ -1,7 +1,7 @@
 """Compile one compact model-authored Greenfield evidence graph.
 
-The model selects source facts, typed path events, the terminal result, and
-component owners once. This module adds only deterministic custody: exact
+The compiler supplies verified source events; the model selects supplemental
+facts, the terminal result, and component owners. This module adds custody: exact
 coordinates, stable actor paths, and links that follow directly from source
 overlap. It never infers product meaning from words or repairs model output.
 """
@@ -75,6 +75,7 @@ def derive_model_relations(
     event_citations_are_event_owned: bool = False,
     allow_exact_dual_role_constraints: bool = False,
     first_path_event_orders: Sequence[int] | None = None,
+    source_owned_actor_facts: bool = False,
 ) -> DerivedModelRelations:
     """Compile the compact graph without adding a second semantic author."""
 
@@ -86,6 +87,7 @@ def derive_model_relations(
         evidence_text=evidence_text,
         event_citations_are_event_owned=event_citations_are_event_owned,
         first_path_event_orders=first_path_event_orders,
+        source_owned_actor_facts=source_owned_actor_facts,
     )
     return DerivedModelRelations(
         first_path_relations=path_relations,
@@ -172,6 +174,7 @@ def _derive_events(
     evidence_text: str,
     event_citations_are_event_owned: bool,
     first_path_event_orders: Sequence[int] | None,
+    source_owned_actor_facts: bool,
 ) -> tuple[tuple[dict[str, Any], ...], dict[str, Any] | None]:
     if (
         not isinstance(value, Sequence)
@@ -291,6 +294,7 @@ def _derive_events(
             actor_fact=raw.get("actor_fact"),
             selected_facts=selected_facts,
             product_owner_facts=owner_facts,
+            source_owned_actor_facts=source_owned_actor_facts,
         )
         if actor_kind == "product":
             owner_system_path = actor_fact_path
@@ -645,6 +649,7 @@ def _event_actor_fact(
     actor_fact: Any,
     selected_facts: Sequence[Mapping[str, Any]],
     product_owner_facts: Mapping[str, Mapping[str, Any]],
+    source_owned_actor_facts: bool = False,
 ) -> tuple[str, str, str]:
     if (
         not isinstance(actor_fact, Mapping)
@@ -670,6 +675,10 @@ def _event_actor_fact(
     selected_fact = matches[0]
     quote = _required_quote(selected_fact.get("quote"))
     product_fact = product_owner_facts.get(quote) if field in {"title", "internal_systems"} else None
+    if source_owned_actor_facts and product_fact is not None and any(
+        product_fact[key] != selected_fact[key] for key in ("source_start_byte", "source_end_byte")
+    ):
+        raise GreenfieldAuthoredSemanticsError("source-owned product alias selects a different actor occurrence")
     fact = product_fact or selected_fact
     path = str(fact.get("projection_path") or "")
     if not _canonical_actor_path(field=str(fact.get("field") or ""), path=path):

@@ -16569,3 +16569,137 @@ CB-359 records the next actual completion failure: Compass rendered the new even
 ## V34 installation-check correction (2026-10-05)
 
 The existing installation checker now imports the authoritative contract and format constants and requires an authored project-summary schema of 1–600 characters. All 61 module tests pass in 2.61s, including five absent/optional/malformed/empty/unbounded-summary negative cases and the unchanged custody/write-audit controls. Source package semantics and the 22 UI owners are unchanged. Preserve the failed v33 build and smoke; a new immutable v34 distribution and full installed smoke are required. Test log: `/private/tmp/odylith-compass-verified-restoration-20261005/v34-smoke-checker-unit.log`, SHA-256 `2ad12e4c3dad108c62808a646ed450a9a095bf72bce7406cc3e56b24ff4a8e92`.
+
+## Current receipt-bound EDIT release proof wave (2026-10-08)
+
+CB-347 records the newly verified release-harness coverage gap and the independent
+four-case source census. Add an optional explicit lifecycle correction in the
+existing case/loader owners and place the initial-seal → receipt-bound EDIT →
+edited-seal confirmation workflow in the existing small journey owner.
+The oversized matrix keeps only bounded dispatch and scoring integration;
+do not add the lifecycle machinery there or introduce another module.
+
+Defaults must preserve all 40 original Public40 frames and identities, including
+literal intake headings. Retain actual compiler artifacts and delivered receipts;
+never fabricate transaction or receipt JSON. Keep the initial pending seal and
+its evidence immutable, require exact prior-source binding and preservation of
+all prior duties, then reuse existing artifact/browser/quality scoring after
+confirming the edited seal. Negative custody cases and prepare-only successes
+cannot count toward the four committed EDIT sample minimum. The original primary
+run and missing annotation identity remain unchanged. Source-family aggregation,
+independent semantic audit, finite timing, host qualification and holdout remain
+separate acceptance gates.
+
+## Verified source actor and event ownership wave (2026-10-08)
+
+The current Public40 run refused Civic-tech057 because the candidate assigned
+publication to the facilitator instead of the editor and supplied 12 events for
+13 verified action duties. Preserve that failed run. The exact actor-reference
+audit confirms that repeated facilitator and editor duties already cite their
+respective canonical source occurrences; no name-based identity inference is
+needed for this case.
+
+Move actor addresses, event enumeration and action-duty bindings together into
+the existing source-duty binding owner before the single candidate call. The
+candidate should reference those fixed events while authoring the design and
+lifecycle allocations. Add explicit system performer types to the fresh source
+inventory and affirm them in the existing source-only verifier. Require one
+canonical actor reference per performer; distinct source occurrences cannot be
+merged by equal labels. Keep supplemental participants and dependencies.
+
+Adopt the same projection in host materialization, intent construction and full
+sealed-envelope validation. Preserve exact known historical passive versions;
+fresh admission requires the new closed contract. Keep existing call budgets,
+source completeness, lifecycle, precedence, custody and confirmation laws.
+Use existing owners, remove duplicate model bookkeeping, and keep touched source
+below 1,200 lines. Focused controls must prove all 13 duties and five human
+identities, unchanged EDIT preservation, alias boundaries and forged-seal
+refusals. Independent review and fresh native comparison are required before
+claiming this mechanism works; installation and dashboard passes do not qualify
+it.
+
+### Source ownership implementation and next proof (2026-10-09)
+
+Implementation is complete in 12 existing runtime files, with no new module;
+the 13-owner inventory grows by 221 lines and stays at or below 1,158 lines per
+file. Fresh ledger 6 / compact 4 / receipts 10 and 11 / host 55 / format 24 /
+transport 3 / host lifecycle binding 4 compile canonical authoring 79, source
+binding 3, lifecycle 2 and design 6. Exact historical passive pairs remain
+separate from fresh admission.
+
+Independent review repeated 525 compiler/consumer checks and 36 tuple/retained
+manifest controls. The discovered title-kind alias and recursive EDIT scoring
+omission are fixed. Root caller integration passes 197 release-helper checks;
+the previous ten CI copy/disclosure failures pass on the new source basis.
+These are unit/compiler results only.
+
+The next gate is the single fresh Civic057 native comparison with exact original
+authority-source hash `ba29e200be8c7e20b5e05fff4c882ab162f02b057b380e386c011630075a1d84`.
+Its 1,090 source/launcher pins and initial request are sealed in
+`/private/tmp/odylith-v43-civic-057-native-comparison-20261009/predeclaration.json`.
+Do not repair or replay the prior rejected candidate. If this comparison passes,
+continue to the frozen release campaign and four independently audited real
+EDIT journeys. Source-family aggregation, semantic audit, original annotation
+custody, timing, host qualification and untouched holdout still govern closure.
+
+### Native source ownership checkpoint (2026-10-09)
+
+The first attempt used an empty repository and correctly refused before admission
+because no active immutable generation existed. Preserve that setup failure.
+A separate installed consumer then passed the exact model-free generation
+precondition before a fresh native journey with unchanged source and compiler.
+
+The installed-baseline development comparison sealed in 218.771 seconds and
+confirmed/read back in 2.783 seconds. It retains all 13 actions and five human
+performers, with editor publication at event 7 and the final system duty at
+event 13. The compiler reader verifies the seal and active-generation identity;
+all pending bytes/modes remain unchanged and no post-receipt provider call occurs.
+The handoff is
+`/private/tmp/odylith-v43-civic-057-installed-comparison-20261009/handoff.json`
+(SHA-256 `c210475019e8e8d4b6d7d8af6c2829e17b0bcdc0b79b3378fff76058b6b97f89`).
+
+This advances past the specific native actor/event assembly failure. It does not
+close complete semantic/UX release qualification. Run the complete Greenfield
+consumer regression gate, settle source contracts and governance, then checkpoint
+and execute the frozen release campaign plus the four authentic EDIT journeys.
+Keep the original failed run, setup failure, missing original annotation identity
+and untouched holdout visible in the remaining release gates.
+
+### Full consumer regression must close before packaging (2026-10-09)
+
+The 172-module Greenfield runtime/install gate reports 3,751 passed, 48 failed
+and 15 errors (330.71 seconds). Its immutable log is retained under
+`/private/tmp/odylith-v43-greenfield-regression-20261009/pytest-r2.log`, SHA-256
+`83b5d8df235cf146b0ddb713471af80f081b5d05a567edd2b76c5bff95fdbda6`.
+An actual compiler reproduction confirms the production relation reader accepts
+the fresh canonical binding v3. The test helpers wrongly inject raw host binding
+v4; adopt the shared validator's canonical return and keep raw-host rejection.
+Separately adopt transport, ordering and historical preflight test consumers
+without weakening their behavior assertions or changing frozen goldens.
+Repeat this gate after the bounded corrections; checkpoint/package only after
+the full regression and independent adoption review pass. The same-source Civic
+confirmation remains development evidence on its original pinned source basis.
+
+The complete rerun now passes 3,818 tests across all 172 modules in 341.41
+seconds, with every declared source/test pin unchanged. Log SHA-256:
+`d39762882c38591f3a070d0474cd1a37fde338757e89465d38a3b12411283725`, under
+`/private/tmp/odylith-v44-greenfield-regression-20261009/pytest.log`.
+Independent adoption review is clear; root also restored meaningful nonidentity
+canonical-walk coverage before accepting the ordering changes. Source contracts
+now present v55/format24 and the authentic EDIT evidence rule at the visible top
+of their Registry specs. The native Civic consumer passes all 44 desktop/mobile
+browser states with unchanged consumer bytes. Freeze/checkpoint and run installed
+cross-domain plus four authentic EDIT journeys next. Keep the supplemental EDIT
+family separate from Public40's metrics and timing identity; implement detached
+coverage aggregation against actual retained outputs, without substituting the
+missing original annotation or granting preparation-only credit.
+
+The operator cannot restore the missing original Public40 source predeclaration.
+An explicit evidence-only amendment is pending: independently annotate and freeze
+the exact same 40 unchanged inputs before a fresh run, with every published floor
+and the final holdout preserved. Public annotations must be durable tracked
+artifacts with a verified independent backup. Do not execute that replacement
+contract or relabel any prior result before approval. Proposal SHA-256:
+`51e01ab156b1c4e1810bf641035da7c317ea3a68f23f8f4081892d6bc99ca88f`, at
+`/private/tmp/odylith-v44-public-evidence-replacement-proposal-20261009/proposal.json`.
+Continue the separately authorized source checkpoint, package and CI gates.

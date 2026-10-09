@@ -87,7 +87,6 @@ from greenfield_matrix_release_artifacts import finalize_retained_case_evidence 
 from greenfield_matrix_release_artifacts import prepare_retained_evidence_output_dir  # noqa: E402
 from greenfield_matrix_release_artifacts import record_retained_case_json  # noqa: E402
 from greenfield_matrix_release_artifacts import record_retained_case_bytes  # noqa: E402
-from greenfield_matrix_release_artifacts import record_retained_case_text  # noqa: E402
 from greenfield_matrix_release_artifacts import retained_evidence_result  # noqa: E402
 from greenfield_matrix_release_artifacts import retained_evidence_manifest_path  # noqa: E402
 from greenfield_matrix_release_artifacts import retained_evidence_manifest_issues  # noqa: E402
@@ -116,7 +115,7 @@ from odylith.runtime.domain_intelligence.greenfield_process import run_command_w
 from greenfield_matrix_types import GreenfieldArtifactCounts  # noqa: E402
 from greenfield_matrix_types import GreenfieldMatrixResult  # noqa: E402
 from greenfield_matrix_types import GreenfieldQualityVerdict  # noqa: E402
-from greenfield_matrix_journey import run_compiled_greenfield_journey  # noqa: E402
+from greenfield_matrix_journey import record_retained_execution, run_compiled_greenfield_journey  # noqa: E402
 from greenfield_matrix_transaction_evidence import confirmation_preview_issues  # noqa: E402
 from greenfield_matrix_transaction_evidence import dry_run_commit_issues  # noqa: E402
 from greenfield_matrix_transaction_evidence import terminal_handoff_issues  # noqa: E402
@@ -850,41 +849,6 @@ def _result_with_retained_evidence_issue(result: GreenfieldMatrixResult, detail:
     )
 
 
-def _record_retained_execution(
-    *,
-    retained_case: RetainedEvidenceCase,
-    proposal_payload: Mapping[str, Any],
-    dry_run_receipt: Mapping[str, Any],
-    create_payload: Mapping[str, Any],
-    raw_streams: Mapping[str, str],
-) -> None:
-    for name in (
-        "input.prompt",
-        "input.initial-request",
-        "input.confirmed-intent",
-        "input.edit-evidence",
-        "show.stdout",
-        "show.stderr",
-        "propose.stdout",
-        "propose.stderr",
-        "decide.stdout",
-        "decide.stderr",
-        "retry-decide.stdout",
-        "retry-decide.stderr",
-        "terminal-journal.v1.json",
-    ):
-        record_retained_case_text(
-            retained_case,
-            f"commands/{name}",
-            str(raw_streams.get(name) or ""),
-        )
-    record_retained_case_json(retained_case, "semantic/proposal-payload.v1.json", dict(proposal_payload))
-    if dry_run_receipt:
-        record_retained_case_json(retained_case, "semantic/dry-run-receipt.v2.json", dict(dry_run_receipt))
-    if create_payload:
-        record_retained_case_json(retained_case, "semantic/create-payload.v1.json", dict(create_payload))
-
-
 def _retained_case_id(case: GreenfieldMatrixCase) -> str:
     return str(case.case_id or case.slug).strip()
 
@@ -1261,6 +1225,7 @@ def _run_case(
             evidence=dict(result.evidence),
         )
     raw_streams = case.initial_input_streams
+    lifecycle_evidence: dict[str, Any] = {}
     observed_stage: dict[str, Any] = {}
     invoke_propose = lambda timeout: _run_host_candidate_propose(
         repo_root=repo_root,
@@ -1283,6 +1248,8 @@ def _run_case(
         ),
         invoke_propose=invoke_propose,
         read_proposal_stage_seconds=lambda: observed_stage.get("elapsed_seconds"),
+        initial_prompt=case.initial_prompt, lifecycle_correction=case.lifecycle_correction,
+        retained_case=retained_case, lifecycle_evidence=lifecycle_evidence,
     )
     create = execution.failure or execution.decision
     proposal_seconds = execution.proposal_seconds
@@ -1291,9 +1258,7 @@ def _run_case(
     manifest = _as_mapping(payload.get("commit_manifest"))
     package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
     stage_observation = _retained_model_stage_observation(retained_case)
-    expected_model_source = prepare_model_authoring_evidence(
-        prompt=case.initial_prompt, edit_evidence="",
-    ).evidence_source
+    expected_model_source = case.model_evidence.evidence_source
     raw_candidate = _retained_raw_host_candidate(retained_case)
     source_duty_receipt = _retained_source_duty_receipt(retained_case)
     profile_evidence = model_profile_evidence(
@@ -1419,8 +1384,10 @@ def _run_case(
         ],
     }
     evidence["model_profile"] = profile_evidence
+    if case.lifecycle_correction:
+        evidence["lifecycle_edit"] = lifecycle_evidence
     if retained_case is not None:
-        _record_retained_execution(
+        record_retained_execution(
             retained_case=retained_case,
             proposal_payload=execution.proposal_payload,
             dry_run_receipt=execution.dry_run_receipt,
@@ -1807,7 +1774,7 @@ def _run_expected_clarification_case(
     }
     evidence["model_profile"] = profile_evidence
     if retained_case is not None:
-        _record_retained_execution(
+        record_retained_execution(
             retained_case=retained_case,
             proposal_payload=payload,
             dry_run_receipt={},
@@ -3474,6 +3441,7 @@ def _execute_matrix_campaign(
         args=args,
         cases=profiled_cases,
         results=results,
+        retained_evidence_manifest=retained_manifest,
     )
     semantic_digests = _as_mapping(semantic_release.get("normalized_semantic_digests"))
     metamorphic_output = evaluate_metamorphic_outputs(
@@ -3487,6 +3455,7 @@ def _execute_matrix_campaign(
         config=campaign_config,
         stopped_reason=stop_reason(results, campaign_config),
         semantic_digests=semantic_digests,
+        retained_evidence_manifest=retained_manifest,
     )
     outcome_statistics = _as_mapping(campaign.get("outcome_statistics"))
     outcome_statistics_passed = _release_outcome_statistics_passed(
@@ -3605,6 +3574,7 @@ def _semantic_release_report(
     args: argparse.Namespace,
     cases: Sequence[GreenfieldMatrixCase],
     results: Sequence[GreenfieldMatrixResult],
+    retained_evidence_manifest: Path | None = None,
 ) -> dict[str, Any]:
     annotations_token = str(getattr(args, "semantic_annotations_file", "") or "").strip()
     manifest_token = str(getattr(args, "evaluation_split_manifest", "") or "").strip()
@@ -3677,6 +3647,7 @@ def _semantic_release_report(
         results=results,
         floors=_as_mapping(contract.get("frozen_floors")),
         release_required_slices=_as_mapping(contract.get("required_release_slices")),
+        retained_evidence_manifest=retained_evidence_manifest,
     )
     report["evaluation_contract"] = contract
     return report

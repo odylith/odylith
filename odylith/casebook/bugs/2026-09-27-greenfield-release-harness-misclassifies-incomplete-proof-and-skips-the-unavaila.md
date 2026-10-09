@@ -2531,3 +2531,330 @@ Final handoff: `/private/tmp/odylith-v42-release-harness-finish-20261008-r3/hand
 Release qualification is still held. The exact detached annotation file remains missing. The five two-document intake cases truthfully use one `operator_prompt` transport and provide no lifecycle EDIT credit. A distinct frozen family of receipt-bearing EDIT controls is required; retain the existing format, quality and sample floors. Current CI, installed proof, native Claude and the original protected holdout remain separate gates.
 
 The first V42 authored refresh was safely refused before publication because the operator supplied `--force` to selective authored admission. That mode requires explicit paths without force; the later full refresh may use force. Preserve `/private/tmp/odylith-v42-source-freeze-20261008/canonical-authored-sync.log`, SHA-256 `a6299299df51b9bb0cdcfa2cbc968218cc70b7b957db88dd8b785da332ddb6f9`. Correct the invocation only; no product change or bypass is needed.
+
+## V42 actual release run and obsolete Project browser assertion (2026-10-08)
+
+The fresh frozen `fe4a1eff` package now passes wheel/assets construction, all
+12 checksums and canonical clean-install smoke. Package result:
+`/private/tmp/odylith-greenfield-v42-dist-20261008/proof/result.json`, SHA-256
+`8cecc096cb06a72259e43e8fdc6cf336224b734259db0936f32f2005ad028e45`.
+One populated published v0.1.14 predecessor upgrades once and passes all 44
+desktop/mobile browser cells, with exact 1,020-file installed source readback.
+This establishes package and installed presentation mechanics, not the semantic,
+timing, host, EDIT or holdout release gates.
+
+The unchanged full Public40 campaign is running under predeclaration SHA-256
+`80fc3933a09e1385549a6c1eab48150bd38b310046b019b07768027a00241eac`.
+Its first seven completed cases have three passes and four failures, all four
+reporting the same Project first-path browser text assertion. Independent
+read-only inspection of the retained Accessibility005 and Accessibility007
+artifacts finds no loss of their exact event sentences or supporting facts.
+The frozen assertion expects `Actor: <actor> <event quote>` in a visible row;
+the current human-facing presenter intentionally displays the exact quote once
+and retains actor, actor kind and source event in closed Supporting details.
+
+Correct only the existing release browser owner and direct caller. Verify exact
+visible event quotes in declared order, exactly one initially closed native
+disclosure, exact ordered actor/kind/source evidence, and keyboard disclosure
+access. Retain every other authority and fidelity assertion. Missing, changed
+or reordered narrative/evidence must fail. Do not weaken floors, alter the
+presenter, mutate frozen inputs or rewrite the live campaign's failures.
+Original retained case-result hashes are
+`ae1c835704a0bf095d1b092fe1a520026ab7f1140de5fb8a8848374235ea8fda`
+and `c35b0a51c8583e933e247d01415da02273f102a774f622b879e0217cd433a2bc`.
+
+### Exact unpublished Compass-log recovery
+
+Startup and the new proof log initially refused because one unpublished prior
+assistant event remained appended to the canonical stream. The exact raw stream,
+published preimage, event and diff were archived under
+`/private/tmp/odylith-v42-ambient-stream-restoration-20261008`, manifest SHA-256
+`cdf234a097375864cb4b1f696a91fbfebfe7ae3e80b8ff01ad2551b14f1755a1`.
+The supported stream-only restoration passed with review hash
+`94776ecc10dda47544a652fe188cb37a5b0af877d4dd80ad1168c02dda59f4c2`.
+A subsequent log correctly refused because the exact original canonical append
+receipt still required settlement. Inspection bound that receipt to the same
+unpublished event; supported `compass log --abandon-restored` then archived and
+retired receipt SHA-256
+`1a6052a12266acd84949d199a3f412d792e8d7d1e9a9d4961ee318c22c1af517`.
+The published generation and accepted history remain unchanged. No append was
+replayed, no receipt was edited, and no engine or identity check was bypassed.
+
+## Genuine lifecycle EDIT coverage gap
+
+Read-only independent review confirms the existing release matrix executes only
+initial prepares. Literal intake edit headings are preserved source text and
+grant no receipt-bound lifecycle coverage. Four prepare-only EDIT successes
+would also be insufficient: each credited positive sample must commit the edited
+seal and pass the existing artifact, browser and quality checks.
+
+The separate successor-v2 control census is independently clear: four frozen
+initial sources plus an additive correction contain 118 facts, 90 relations,
+84 statements and 339 exact references. All prior duties must be preserved with
+authorization `not_required`; no changes or removals are permitted. Independent
+report SHA-256 `e13822ef49cef489c8cb965f6091a71fe17548d6af259943de425965528022d7`
+at `/private/tmp/odylith-v42-genuine-edit-census-independent-review-20261008/report.json`.
+No initial or EDIT case in this new family has executed, and this census does
+not replace the missing original Public40 annotation.
+
+Extend the existing case and journey owners with an explicit optional lifecycle
+correction. Defaults must preserve every original Public40 source frame and
+identity. The new journey retains one initial pending seal and its delivered
+receipt, executes one receipt-bound EDIT, verifies exact source and prior-artifact
+custody, then confirms only the edited seal through the existing terminal owner.
+Keep baseline evidence separate and score the edited result through the existing
+quality pipeline. Missing or foreign receipt/hash, source mismatch, prior-duty
+mutation and prepare-only positives must fail. Tags cannot grant EDIT credit.
+Preserve all quality and sample floors; authenticate separate source families
+and untouched result rows before any later aggregate qualification.
+
+## V42 fresh campaign terminal result and oracle correction
+
+The frozen native campaign stopped at case 12 after 1,816.06 seconds: five
+passed, six failed only the obsolete Project first-path text oracle, and
+`release-civic-tech-057-source` ended in a proposal-admission exception. The
+remaining 28 cases and downstream controls did not execute. The native host
+returned zero with 21,909 output bytes, but proposal admission returned two;
+the diagnostic contains no actual refusal reason, so its schema-hash field
+does not establish a schema root cause. Exact retained admission evidence is
+under investigation. Post-receipt provider calls and runtime semantic calls
+are zero. Preserve the complete failed run without retries or reclassification.
+Campaign result SHA-256:
+`636091a540562095a0bfc7fb37fee55fb7638d9647befe3ae3ccbb4456e623d1`;
+raw campaign log SHA-256:
+`51f38eb3145b5c65ee97bb3ce37457d5302ac915c5e9ddebd8ce12e748f65a2d`.
+
+The separate three-file browser correction is independently clear with 147
+passing checks, including 44 damaged desktop/mobile DOM rejection cells and
+two positive keyboard controls. It preserves exact narrative order, closed
+actor/kind/source details, all existing authority assertions and the unchanged
+product presenter. Independent report:
+`/private/tmp/odylith-v42-project-browser-oracle-independent-review-20261008/report.md`,
+SHA-256 `90832a00f730ea43ec00c58ac52c6491f487ec663eb2b762f3da3b4b25d5f32b`.
+This validates the harness correction; it does not turn the failed campaign
+into a passing run or establish semantic or release qualification.
+
+### Exact civic-tech admission diagnosis
+
+Independent read-only diagnosis identifies the actual refusal:
+`first_path_actions duty actor differs from its source actor`. Verified duty
+f7 requires the publication editor. Candidate event 7 chooses human-actor row 1
+(community facilitator) instead of the available correct editor row 5. The
+candidate also has 12 events for 13 admitted duties: supporting-human/system
+references shift and the last event is missing. This is candidate relation drift;
+source evidence and the correct editor fact are present. Admission correctly
+refuses before canonicalization and sealing. Fourteen retained artifacts remain
+hash exact. Final handoff:
+`/private/tmp/odylith-v42-civic-tech-057-admission-diagnosis-20261008/final-handoff.json`,
+SHA-256 `e937410c6547a46dfbf906a5c745e3f834d49cfb763a6132798c7ab236b1c313`.
+
+The verified inventory already owns actor/action meaning. Prior V47 identity
+and V52 action-copy corrections left separate candidate actor addresses and
+event mappings. Assess complete pre-candidate ownership of the typed actor/event
+catalog, including all admitted duties and missing/ambiguous identity refusal;
+do not repair the rejected candidate or fix only f7 while retaining the other
+mapping defects. A proposed mechanism has no implementation or reliability
+credit. The current original campaign remains failed.
+
+The terminal progress log initially refused the obsolete component alias
+`odylith-domain-intelligence` before appending. Retain
+`/private/tmp/odylith-v42-public40-terminal-compass-log-20261008.log` and use
+the already verified `release`/`dashboard` aliases for the new factual note.
+
+### Current proof corrections and source ownership work (2026-10-09)
+
+The receipt-bound EDIT journey and statistics enforcement are independently
+clear for source/unit scope: 593 checks passed, followed by the final guard's
+positive control and two failure/custody negatives. All 40 original input
+frames and frozen qualification thresholds are unchanged. The final report is
+`/private/tmp/odylith-v42-receipt-edit-journey-independent-review-20261008/report.json`
+(SHA-256 `c4e9fdd335808d46247b2394cc9172111b7b18097561bd139faaa8629ab832e3`).
+No native EDIT execution or release credit follows. Finalized-manifest caller
+propagation, the exact source-family declaration, aggregation and independent
+native semantic qualification remain required.
+
+CI run 37888598065 completed with 16 failures, 10,201 passes and 10 skips.
+Six failures match the separately corrected Project browser oracle. The other
+ten now pass locally after tests adopt the intended human copy and closed
+diagnostic/source disclosures while retaining exact facts, codes and retry
+times. The seven-file handoff is
+`/private/tmp/odylith-v42-ci-ux-contract-correction-20261008/handoff.json`
+(SHA-256 `943738553e43e80c58327b1f7b0ccabb6468c52cc0e1c8c35cb421f48d2eaa49`).
+Preserve the original failed CI and initial local failures; CI-green is unproved.
+
+The Civic actor audit resolves eight human duties to five canonical source
+occurrences. Facilitator f1/f2/h1 share one occurrence; editor f6/f7 share another.
+Normalize supporting-human duties to the human performer kind. Equal labels
+at different occurrences cannot establish identity. B-142 now owns complete
+compiler projection of actors, events and action bindings, with fresh system
+types affirmed by the same source-only verifier and exact historical passive
+contracts preserved. Implementation has begun; its mechanism remains unproved.
+
+### Compiler and caller review settled; native comparison started (2026-10-09)
+
+The source-owned actor/event catalog is implemented in existing owners. The
+single candidate references fixed events and cannot remap their performers or
+omit verified action duties. The final 525-check compiler run passed; independent
+review repeated all 525 checks. Review caught and closed a supplemental-title
+alias that could promote an existing human/external performer, with positive
+and negative controls. Exact passive initial and EDIT receipt/host pairs are
+covered; fresh use of old pairs refuses. No model stage, retry or event-cap
+change was added.
+
+Finalized EDIT evidence now reaches campaign statistics, semantic scoring,
+recursive model-profile scoring and saved public qualification. Review exposed
+the missing recursive forwarding before native execution. A real finalized
+manifest test accepts the retained case after consumer cleanup and rejects
+missing or tampered evidence in both scoring paths. Five release-helper modules
+passed 197 checks; parity and recursive controls passed 36 checks independently.
+The ten earlier CI copy/disclosure failures also pass on this source basis.
+These results do not change the failed CI or original campaign.
+
+Independent compiler/caller review is clear:
+`/private/tmp/odylith-v43-source-catalog-independent-review-20261009/review.md`,
+SHA-256 `96aecde5081ccf71664e94cfe50f875e2b957aa67928ed78534070369884d3ae`.
+The four EDIT inputs separately pass exact framing and source conservation:
+`/private/tmp/odylith-v43-genuine-edit-family-independent-audit-20261009/handoff.json`,
+SHA-256 `36be02e906cc14ea302786c88ef13e1ce96c6568f873dbb17a41d230e2462588`.
+Their native committed sample count remains zero.
+
+One fresh source-local Civic057 comparison was attempted against the unchanged
+authority source `ba29e200be8c7e20b5e05fff4c882ab162f02b057b380e386c011630075a1d84`.
+Its predeclaration pins 1,090 implementation/launcher files at
+`/private/tmp/odylith-v43-civic-057-native-comparison-20261009/predeclaration.json`
+(SHA-256 `c32780e3e0f991d135310844e59fcec57a6265c0ee849cbe0815d45277f35e5b`).
+It stopped before candidate admission because the test repository had no active
+immutable generation. This was root's empty-repository setup error. The four
+host stages returned, but the admission mechanism was never evaluated. The
+failed run retains 41 pinned artifacts, unchanged implementation files, zero
+post-receipt provider calls and no delivered completion receipt. Handoff:
+`/private/tmp/odylith-v43-civic-057-native-comparison-20261009/handoff.json`,
+SHA-256 `30ea52e41d85a821f84213a30f17ac84001c30739854ab9603259ce3f27a6480`.
+Do not reuse its candidate or grant semantic/release credit.
+
+A separate consumer is now installed from the hash-verified frozen fe4 bundle.
+Before another native invocation, the current compiler's exact model-free
+active-generation guard passed and recorded the baseline identity in
+`/private/tmp/odylith-v43-civic-057-installed-comparison-20261009/baseline-precondition.json`.
+The next fresh comparison keeps source, compiler, model and caps unchanged and
+uses this valid installed baseline. The original Civic failure and missing
+original public-source annotation remain unchanged; the holdout is untouched.
+
+### Same-source native confirmation advances past the Civic failure (2026-10-09)
+
+The separately installed-baseline comparison returned a sealed transaction in
+218.771 seconds and confirmed it in 2.783 seconds. Terminal status is CLOSED;
+the compiler reader verifies the transaction and its active generation matches
+the sealed write-set hash. All pending bytes and modes are unchanged after
+confirmation. The immutable source is identical to the failed fe4 case.
+
+The new package retains all 13 actions: seven first-path human actions, one
+supporting human action and five system duties. Its five human performers retain
+their exact identities. Event 7 is `publication editor` → `publishes`, bound to
+`/human_actors/4`; the facilitator no longer owns that action. The missing final
+system action is retained as event 13. Preparation used four host invocations
+and zero post-receipt provider calls; confirmation did not regenerate the package.
+This is a native development comparison on the current maintainer runtime,
+using the frozen fe4 installed baseline. It is not a new installed-runtime or
+independent complete semantic/UX release qualification.
+
+Handoff:
+`/private/tmp/odylith-v43-civic-057-installed-comparison-20261009/handoff.json`,
+SHA-256 `c210475019e8e8d4b6d7d8af6c2829e17b0bcdc0b79b3378fff76058b6b97f89`.
+The 57-artifact inventory retains the original native outputs, delivered receipt
+and compiler-owned pending bytes. Mechanism readback SHA-256:
+`360d643a2cba18e75c319c9f68780962deb4051ca55bf663af27d29f2a986c45`.
+The earlier failed Civic case and failed empty-baseline setup remain failed.
+The broader Greenfield unit/CLI/release-helper regression gate is now running
+before another source checkpoint. Cross-domain, real EDIT, timing, host, CI,
+annotation custody and final holdout gates remain open.
+
+### Complete Greenfield regression exposes incomplete consumer adoption (2026-10-09)
+
+The complete 172-module Greenfield runtime/install regression finished with
+3,751 passed, 48 failed and 15 fixture errors in 330.71 seconds. The retained
+log is `/private/tmp/odylith-v43-greenfield-regression-20261009/pytest-r2.log`
+(SHA-256 `83b5d8df235cf146b0ddb713471af80f081b5d05a567edd2b76c5bff95fdbda6`).
+Packaging remains gated on resolving these failures. The earlier focused passes
+and native Civic development result do not replace this integration proof.
+
+The first traceback suggested a missed runtime consumer, but a real compiler
+reproduction corrected that diagnosis: `_authored_relations_from_intent` accepts
+the freshly materialized canonical binding v3, which includes the action tables.
+The failing test helpers instead inject raw host binding v4 directly into the
+canonical intent. Its rejection is correct; keep the production reader unchanged
+and adopt the shared validator's canonical return in those test helpers. The
+reproduction is retained at
+`/private/tmp/odylith-v44-source-catalog-reader-integration-20261009/reader-reproduction.json`.
+Other failures include transport fixtures that
+overlay an invalid fake candidate contract before reaching their intended
+transport assertions, event-order tests that retain candidate-owned event IDs,
+and immutable historical receipt tests entering fresh-only preflight. Treat
+these as separate bounded corrections; preserve all timing, failure, custody,
+source-order, actor-kind and exact historical-byte assertions. Do not classify
+the complete failure set as stale tests or weaken admission to make it pass.
+
+The bounded adoption now passes 36 runtime envelope/identity/proof checks,
+40 ordering/passive compatibility checks and 228 install transport checks.
+No production reader or validation rule changed. The ordering review retained
+a genuine nonidentity canonical walk `[1, 3, 2]`: source first-path `[1, 2]`
+stays ordered while cited prerequisite 3 precedes event 2. The original failed
+gate and a separate real-process readiness failure remain retained. The latter
+now establishes output custody before the unchanged process timeout; it grants
+no latency qualification. An independent adoption review and the complete
+172-module rerun are in progress.
+
+The committed native Civic consumer also passes all 44 required desktop/mobile
+browser surface states, retaining 111 screenshots and unchanged consumer bytes.
+Root visually inspected seven normal-state screenshots across Project,
+Registry, Radar, Atlas and Compass. This is single-case development UX evidence.
+Handoff: `/private/tmp/odylith-v43-civic-057-browser-proof-20261009/handoff.json`,
+SHA-256 `298ce15a318e90c9dcf9c6c181415c546243163a8661fd9ce96a099714c36a96`.
+It does not supply cross-domain, authentic EDIT, installed-release, timing or
+independent complete source-semantic qualification.
+
+### Full integration gate is green (2026-10-09)
+
+The complete 172-module rerun passes all 3,818 tests in 341.41 seconds, with
+every declared runtime, harness and test pin unchanged during execution. There
+are zero failures or fixture errors. The retained log is
+`/private/tmp/odylith-v44-greenfield-regression-20261009/pytest.log`, SHA-256
+`d39762882c38591f3a070d0474cd1a37fde338757e89465d38a3b12411283725`.
+This supersedes the failed local regression as the current integration proof;
+it does not change the failed CI run or earlier failed native campaign.
+
+Independent review clears the 14-file envelope/transport adoption and its
+36 + 228 focused passes. Report:
+`/private/tmp/odylith-v44-test-consumer-independent-review-20261009/report.json`,
+SHA-256 `1a8d29218a13d489ec272b210efbff557e3af3160b0a55ddb2dbeb8c2bdcabc0`.
+Root separately reviewed the two ordering/passive modules, requested the valid
+nonidentity-walk control, and integrated their final 40-test proof.
+No production validation was loosened by this adoption wave. Freeze this source
+candidate and move to installed cross-domain and authentic EDIT execution.
+
+The four real EDIT journeys remain a separate, independently predeclared family.
+Their eventual coverage must authenticate that family's own retained manifest
+and independent source audit; do not append them to Public40 or alter its
+denominators, original annotations, timing rows or results. Actual qualifying
+EDIT count is still zero. Supplemental coverage cannot replace the missing
+original Public40 annotation identity.
+
+### Original annotation custody cannot be recovered from the operator (2026-10-09)
+
+The operator states they do not have the missing original predeclaration.
+The exact required SHA-256 remains unavailable; do not reconstruct it or grant
+the old campaign qualification. Required release evidence needs durable custody
+rather than a sole temporary-file copy.
+
+Root prepared an evidence-only amendment for explicit operator approval:
+`/private/tmp/odylith-v44-public-evidence-replacement-proposal-20261009/proposal.json`,
+SHA-256 `51e01ab156b1c4e1810bf641035da7c317ea3a68f23f8f4081892d6bc99ca88f`.
+It retains the exact 40-case source file hash
+`4606712fcee60cfd99e3e45ece28cadf60e899c8e71d7b8b573f6b3e13e383d2`,
+original order/text, 22 committed expectations, 18 clarification expectations,
+every published floor and the untouched final holdout. It proposes a new
+independent source-only annotation freeze before a new native campaign, with
+version-controlled public annotations and an independent verified backup.
+Old failed/unqualified evidence remains unchanged; the four real EDIT cases
+remain a separate supplemental family. This is pending approval, not an
+effective contract change. Source checkpoint, package and CI work continue.

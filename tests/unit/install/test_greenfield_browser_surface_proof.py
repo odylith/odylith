@@ -686,6 +686,21 @@ def test_story_row_parity_defers_structured_card_bodies_to_typed_node_proof() ->
     )
 
 
+def _with_event_evidence(rendered: dict, facts: dict) -> dict:
+    events = {row["order"]: row for row in facts["first_path_relations"]}
+    rendered["first_path_details"] = [{"native": True, "open": False, "summary": "Supporting details"}]
+    rendered["first_path_evidence"] = []
+    for row in rendered["first_path"]:
+        event = events[row["order"]]
+        row.update(text=event["event_quote"], quote=event["event_quote"], quote_count=1)
+        rendered["first_path_evidence"].append({
+            "order": event["order"], "labels": ["Actor", "Actor kind", "Source event"],
+            "values": [event["actor_fact_quote"], event["actor_kind"], event["event_quote"]],
+            "actor_count": 1, "actor": event["actor_fact_quote"], "in_disclosure": True, "visible": False,
+        })
+    return rendered
+
+
 def _source_design_structure() -> tuple[dict, dict]:
     design = structural_design_fixture((1, 2))
     facts = {
@@ -723,8 +738,8 @@ def _source_design_structure() -> tuple[dict, dict]:
         "provisional_design": design,
     }
     events = [
-        {"order": 1, "text": "Actor: Keeper Keeper signals amber ferry"},
-        {"order": 2, "text": "Actor: Relay Relay writes blue receipt"},
+        {"order": 1, "text": "Keeper signals amber ferry"},
+        {"order": 2, "text": "Relay writes blue receipt"},
     ]
     rendered = {
         "first_path": events,
@@ -746,7 +761,7 @@ def _source_design_structure() -> tuple[dict, dict]:
         ],
         "deliveries": [{"title": row["title"], "deliverable": row["deliverable"]} for row in design["workstreams"]],
     }
-    return rendered, facts
+    return _with_event_evidence(rendered, facts), facts
 
 
 def test_authored_structure_requires_direct_typed_node_parity() -> None:
@@ -808,15 +823,15 @@ def _result_first_structure() -> tuple[dict, dict]:
     ]
     facts["provisional_design"] = structural_design_fixture((1, 2, 3), first_run_event_orders=(2, 3, 1))
     events = [
-        {"order": 2, "text": "Actor: Relay Relay writes blue receipt"},
-        {"order": 3, "text": "Actor: Keeper Keeper reviews blue receipt"},
-        {"order": 1, "text": "Actor: Keeper Keeper publishes blue receipt"},
+        {"order": 2, "text": "Relay writes blue receipt"},
+        {"order": 3, "text": "Keeper reviews blue receipt"},
+        {"order": 1, "text": "Keeper publishes blue receipt"},
     ]
     rendered.update(
         first_path=events,
         actors=[{"actor": "Keeper", "source_name": "Keeper"}],
     )
-    return rendered, facts
+    return _with_event_evidence(rendered, facts), facts
 
 
 def test_authored_browser_oracle_accepts_result_first_source_and_proposed_walk() -> None:
@@ -909,11 +924,11 @@ def _post_result_structure() -> tuple[dict, dict]:
     facts["source_precedence"] = [{"before_event": 1, "after_event": 2, "constraint_index": 1}]
     facts["operational_constraints"] = ["The Keeper publishes before archiving receipt evidence."]
     events = [
-        {"order": order, "text": f"Actor: Keeper {quote}"}
+        {"order": order, "text": quote}
         for order, quote in enumerate(quotes, 1)
     ]
     rendered.update(first_path=events, actors=[{"actor": "Keeper", "source_name": "Keeper"}])
-    return rendered, facts
+    return _with_event_evidence(rendered, facts), facts
 
 
 def test_authored_browser_oracle_accepts_required_post_result_archiving() -> None:
@@ -1055,6 +1070,65 @@ def _authored_contract_html(facts: dict) -> str:
 
 
 @pytest.mark.parametrize("width,height", [(1440, 1100), (430, 932)], ids=["desktop", "mobile"])
+@pytest.mark.parametrize("damage", [
+    "none", "changed_event", "missing_event", "reordered_events", "missing_quote", "duplicate_quote",
+    "extra_row_text", "changed_actor", "changed_kind", "changed_source", "missing_actor", "missing_kind",
+    "missing_source", "missing_actor_marker", "missing_evidence", "reordered_evidence", "missing_details",
+    "duplicate_details", "open_details", "non_native_details", "hidden_summary", "hidden_evidence", "blocked_keyboard",
+])
+def test_authored_narrative_and_keyboard_evidence_reject_independent_dom_damage(
+    authored_contract_browser, tmp_path: Path, width: int, height: int, damage: str,
+) -> None:
+    module = _authored_contract_module()
+    _, facts = _result_first_structure()
+    page = authored_contract_browser.new_page(viewport={"width": width, "height": height})
+    try:
+        page.set_content(_authored_contract_html(facts))
+        root = page.locator("#authored")
+        root.evaluate("""(root, damage) => {
+          const list = root.querySelector('[data-authored-fact-list="first_path"]');
+          const row = list.querySelector('[data-authored-fact-item]');
+          const quote = row.querySelector('[data-authored-event-quote]');
+          const details = root.querySelector('[data-authored-event-details]');
+          const evidence = details.querySelector('[data-authored-event-evidence]');
+          const fields = evidence.querySelectorAll('dd');
+          const index = damage.endsWith('actor') ? 0 : damage.endsWith('kind') ? 1 : 2;
+          if (damage === 'changed_event') quote.textContent = 'Unsupported event';
+          else if (damage === 'missing_event') row.remove();
+          else if (damage === 'reordered_events') list.prepend(list.lastElementChild);
+          else if (damage === 'missing_quote') quote.remove();
+          else if (damage === 'duplicate_quote') row.append(quote.cloneNode(true));
+          else if (damage === 'extra_row_text') row.append(' Actor: Unsupported actor');
+          else if (['changed_actor', 'changed_kind', 'changed_source'].includes(damage)) fields[index].textContent = 'Unsupported evidence';
+          else if (['missing_actor', 'missing_kind', 'missing_source'].includes(damage)) fields[index].remove();
+          else if (damage === 'missing_actor_marker') fields[0].removeAttribute('data-authored-event-actor-value');
+          else if (damage === 'missing_evidence') evidence.remove();
+          else if (damage === 'reordered_evidence') evidence.parentElement.prepend(evidence.parentElement.lastElementChild);
+          else if (damage === 'missing_details') details.remove();
+          else if (damage === 'duplicate_details') details.after(details.cloneNode(true));
+          else if (damage === 'open_details') details.open = true;
+          else if (damage === 'non_native_details') {
+            const div = document.createElement('div'); div.dataset.authoredEventDetails = '';
+            div.innerHTML = details.innerHTML; details.replaceWith(div);
+          } else if (damage === 'hidden_summary') details.querySelector('summary').style.display = 'none';
+          else if (damage === 'hidden_evidence') fields[0].style.display = 'none';
+          else if (damage === 'blocked_keyboard') details.querySelector('summary').addEventListener('keydown', event => event.preventDefault());
+        }""", damage)
+        actual, interaction_issues = module.prove_authored_event_disclosure(root, timeout_ms=5000)
+        issues = (*module.authored_structure_issues(actual, facts), *interaction_issues)
+        assert bool(issues) == (damage != "none"), (damage, issues, actual)
+        if damage == "none":
+            assert page.locator('[data-authored-event-details]').get_attribute('open') is None
+            root.screenshot(path=str(tmp_path / f'narrative-closed-{width}.png'))
+            page.locator('[data-authored-event-details] > summary').press('Enter')
+            assert page.locator('[data-authored-event-evidence] dd').first.is_visible()
+            root.screenshot(path=str(tmp_path / f'evidence-open-{width}.png'))
+            page.locator('[data-authored-event-details] > summary').press('Space')
+    finally:
+        page.close()
+
+
+@pytest.mark.parametrize("width,height", [(1440, 1100), (430, 932)], ids=["desktop", "mobile"])
 def test_authored_dom_oracle_preserves_publication_and_post_result_archiving(
     authored_contract_browser, width: int, height: int,
 ) -> None:
@@ -1067,8 +1141,8 @@ def test_authored_dom_oracle_preserves_publication_and_post_result_archiving(
         assert module.authored_structure_issues(actual, facts) == ()
         for surface in ("first_path",):
             assert [row["text"] for row in actual[surface]] == [
-                "Actor: Keeper Keeper publishes blue receipt",
-                "Actor: Keeper Keeper archives receipt evidence",
+                "Keeper publishes blue receipt",
+                "Keeper archives receipt evidence",
             ]
     finally:
         page.close()
@@ -1259,7 +1333,7 @@ def test_project_state_assertion_preserves_exact_provisional_proof_body() -> Non
 
 def test_browser_dom_extraction_has_one_owner_below_the_runner_size_limit() -> None:
     source = (SCRIPTS_ROOT / "greenfield_browser_surface_proof.py").read_text(encoding="utf-8")
-    assert "evaluate(AUTHORED_STRUCTURE_EXPRESSION)" in source
+    assert "prove_authored_event_disclosure(page.locator" in source
     assert "const authoredStructure" not in source
     assert len(source.splitlines()) <= 1200
 

@@ -319,6 +319,8 @@ def validate_greenfield_authoring_response(
             event_citations_are_event_owned=event_citations_are_event_owned,
             allow_exact_dual_role_constraints=allow_exact_dual_role_constraints,
             first_path_event_orders=first_path_event_orders,
+            source_owned_actor_facts=(accepted_source_duties is not None
+                and accepted_source_duties["ledger"]["version"] == "odylith.greenfield.source-duty-ledger.v6"),
         )
         authored_component_relation_facts(
             title=str(intent.get("title") or ""),
@@ -495,20 +497,31 @@ def _accepted_source_actions(
     ledger = verified["ledger"]
     by_order: dict[int, dict[str, Any]] = {}
     path_orders: set[int] = set()
-    for section in ("first_path_actions", "supporting_human_actions", "system_duties"):
-        source_rows = ledger[section]
-        binding_rows = binding.get(section)
-        if not isinstance(binding_rows, list) or len(binding_rows) != len(source_rows):
-            raise GreenfieldModelAuthoringError("Greenfield source action binding is malformed")
-        for duty, bound in zip(source_rows, binding_rows, strict=True):
-            if not isinstance(bound, Mapping) or bound.get("duty_id") != duty["id"]:
+    if ledger["version"] == "odylith.greenfield.source-duty-ledger.v6":
+        from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
+            project_greenfield_source_event_catalog,
+        )
+        catalog = project_greenfield_source_event_catalog(verified, evidence_text=evidence_text)
+        if any(binding.get(section) != rows for section, rows in catalog["action_bindings"].items()):
+            raise GreenfieldModelAuthoringError("Greenfield source action binding differs from its frozen catalog")
+        by_order = catalog["actions"]
+        path_orders = {order for order, duty in by_order.items()
+                       if duty["binding_role"] == "first_path_actions"}
+    else:
+        for section in ("first_path_actions", "supporting_human_actions", "system_duties"):
+            source_rows = ledger[section]
+            binding_rows = binding.get(section)
+            if not isinstance(binding_rows, list) or len(binding_rows) != len(source_rows):
                 raise GreenfieldModelAuthoringError("Greenfield source action binding is malformed")
-            order = bound.get("event_order")
-            if type(order) is not int or order < 1 or order in by_order:
-                raise GreenfieldModelAuthoringError("Greenfield source action binding is malformed")
-            by_order[order] = dict(duty)
-            if section == "first_path_actions":
-                path_orders.add(order)
+            for duty, bound in zip(source_rows, binding_rows, strict=True):
+                if not isinstance(bound, Mapping) or bound.get("duty_id") != duty["id"]:
+                    raise GreenfieldModelAuthoringError("Greenfield source action binding is malformed")
+                order = bound.get("event_order")
+                if type(order) is not int or order < 1 or order in by_order:
+                    raise GreenfieldModelAuthoringError("Greenfield source action binding is malformed")
+                by_order[order] = dict(duty)
+                if section == "first_path_actions":
+                    path_orders.add(order)
     if not by_order or set(by_order) != set(range(1, len(by_order) + 1)):
         raise GreenfieldModelAuthoringError("Greenfield source action binding is incomplete")
     result: dict[tuple[str, int], dict[str, Any]] = {}
@@ -526,7 +539,8 @@ def _accepted_source_actions(
             "decision_set_sha256": verified["decision_set_sha256"],
             "event_order": order,
         }
-        actor_field = events[order - 1]["actor_fact"]["field"]
+        actor_field = (by_order[order]["actor_fact"]["field"] if "actor_fact" in by_order[order]
+                       else events[order - 1]["actor_fact"]["field"])
         if actor_field in {"title", "internal_systems"}:
             duty = result[key]
             resolve_greenfield_action_actor_identity(duty, path=key[0])

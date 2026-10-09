@@ -14,6 +14,7 @@ import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_host_flow as host
 from odylith.runtime.domain_intelligence import greenfield_prepare_cli as prepare
+from odylith.runtime.domain_intelligence.greenfield_authority_gate import greenfield_authority_gate_contract
 from odylith.runtime.domain_intelligence.greenfield_process import (
     CommandLifecycleObserverError, GroupTimeoutCompletedProcess,
 )
@@ -27,10 +28,9 @@ def _prepare_fixture(tmp_path, monkeypatch, *, diagnostic=True, failure=None, cl
     source = "First Complete Path: A reviewer creates a reviewable plan. Reference: Notes are background only.\r\n∆"
     flow, original_host, installed_calls, host_calls, proposals, repo = _flow(
         tmp_path, candidate={"result": {"status": "authored"}},
-        contract={"request": {"evidence": source}, "authority_gate": {
-            "version": "gate-contract", "task": "Decide first-path authority.",
-            "operator_request": raw, "operator_edit": "", "response_schema": {},
-        }},
+        contract={"request": {"evidence": source}, "authority_gate": greenfield_authority_gate_contract(
+            prompt=raw, edit_evidence="", evidence_source=source,
+        )},
     )
     destination = tmp_path / "private-diagnostic"
     args = Namespace(repo_root=str(repo), prompt=raw, edit=None, edit_evidence=None,

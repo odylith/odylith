@@ -52,7 +52,7 @@ def _driver_evidence(tmp_path, monkeypatch, *, outcome="authored"):
         gate.update(decision="clarify", required_fields=["first_path"], owner_quote="",
                     task_quote="", result_quote="", question="Who owns the first task?")
     flow, _host, _installed, _hosts, _proposals, _repo = _flow(
-        tmp_path, contract={"version": "fixture"}, candidate={},
+        tmp_path, contract={}, candidate={},
     )
     env = model_profile_environment(STANDARD_PROFILE_ID, flow.env)
     sealed = {}

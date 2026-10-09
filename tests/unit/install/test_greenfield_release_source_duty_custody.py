@@ -70,25 +70,15 @@ def _normalized_snapshot(tmp_path):
     prepared = prepare_model_authoring_evidence(prompt=source)
     receipt = synthetic_source_duty_receipt_for_ledger(ledger, evidence_text=prepared.evidence_source)
     result = candidate["result"]
-    human_event, _duplicate, product_event = result["events"]
-    result["events"] = [deepcopy(human_event) for _ in range(7)] + [product_event]
-    result["terminal"]["event_order"] = 8
-    result["terminal"]["result_fact"]["row"] = 8
+    result["terminal"]["event_order"] = 2
+    result["terminal"]["result_fact"]["row"] = 2
     result["provisional_design"] = {
-        **structural_design_fixture(range(1, 9), first_run_event_orders=[1, 8]),
+        **structural_design_fixture(range(1, 9), first_run_event_orders=[1, 2]),
         "project_summary": result["provisional_design"]["project_summary"],
     }
     binding = result["source_duty_binding"]
     binding["source_sha256"] = receipt["source_sha256"]
     binding["ledger_sha256"] = receipt["ledger_sha256"]
-    binding["first_path_actions"] = [
-        {"duty_id": human["id"], "event_order": 1},
-        {"duty_id": product["id"], "event_order": 8},
-    ]
-    binding["supporting_human_actions"] = [
-        {"duty_id": duty["id"], "event_order": index + 2}
-        for index, duty in enumerate(ledger["supporting_human_actions"])
-    ]
     owner = {
         "component_key": result["provisional_design"]["components"][0]["key"],
         "workstream_key": result["provisional_design"]["workstreams"][0]["key"],
@@ -132,10 +122,10 @@ def test_normalized_shared_witness_and_six_local_supporting_events_pass_current_
     assert evidence.issues == ()
     assert len(evidence.keys["first_path_events"]) == 8
     semantics = snapshot["authored_semantics"]
-    assert semantics["provisional_design"]["first_run"]["event_orders"] == [1, 8]
+    assert semantics["provisional_design"]["first_run"]["event_orders"] == [1, 2]
     assert len(snapshot["facts"]["supporting_events"]) == 6
-    assert all(row["event_start_byte"] == 0 for row in semantics["first_path_relations"][1:7])
-    shared = semantics["first_path_relations"][:7]
+    assert all(row["event_start_byte"] == 0 for row in semantics["first_path_relations"][2:])
+    shared = [semantics["first_path_relations"][0], *semantics["first_path_relations"][2:]]
     assert len({(row["source_start_byte"], row["source_end_byte"]) for row in shared}) == 1
     source_bytes = prepare_model_authoring_evidence(prompt=case.prompt).evidence_source.encode()
     witness = source_bytes[shared[0]["source_start_byte"]:shared[0]["source_end_byte"]]
@@ -156,7 +146,7 @@ def test_normalized_shared_witness_and_six_local_supporting_events_pass_current_
 def test_recomputed_relation_digest_does_not_hide_custody_damage(tmp_path, damage):
     case, snapshot = _normalized_snapshot(tmp_path)
     semantics = snapshot["authored_semantics"]
-    relation = semantics["first_path_relations"][1]
+    relation = semantics["first_path_relations"][2]
     source_duty = semantics["source_duty"]
     binding = source_duty["binding"]
     if damage == "action":
@@ -194,7 +184,7 @@ def test_recomputed_relation_digest_does_not_hide_custody_damage(tmp_path, damag
         relation["event_start_byte"] += 1
         relation["event_end_byte"] += 1
     elif damage == "first_run_pollution":
-        semantics["provisional_design"]["first_run"]["event_orders"].insert(1, 2)
+        semantics["provisional_design"]["first_run"]["event_orders"].insert(1, 3)
     elif damage == "extra_semantics":
         semantics["unexpected"] = []
     elif damage == "extra_source_duty":
@@ -255,7 +245,7 @@ def test_shared_admission_owner_rejects_changed_verified_roles(tmp_path, field, 
     case, snapshot = _normalized_snapshot(tmp_path)
     semantics = snapshot["authored_semantics"]
     relations = semantics["first_path_relations"]
-    relations[1][field] = value
+    relations[2][field] = value
     source_text = prepare_model_authoring_evidence(prompt=case.prompt).evidence_source
     with pytest.raises(ValueError, match="verified source action"):
         require_verified_source_action_relations(

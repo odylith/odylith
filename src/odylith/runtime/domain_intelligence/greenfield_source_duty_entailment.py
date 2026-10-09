@@ -156,7 +156,10 @@ def source_duty_claims(
                     {
                         "performer_role": (
                             row["performer_role"]
-                            if section == "first_path_actions"
+                            if section == "first_path_actions" else
+                            ("human_actor" if section == "supporting_human_actions"
+                             else row["performer_role"])
+                            if ledger["version"] == "odylith.greenfield.source-duty-ledger.v6"
                             else ""
                         ),
                         "statement": row["statement"],
@@ -407,6 +410,15 @@ def source_duty_entailment_task(
                 "contexts, reference indexes, hashes or addresses for correction evidence. This "
                 "is the same source-only pass; do not author a candidate or another review."
             )
+    if preflight["ledger"]["version"] == "odylith.greenfield.source-duty-ledger.v6":
+        task["task"] += (
+            " Every first-path and system action's performer_role must match its exact "
+            "source identity: human_actor, internal_system, external_system or product_title; "
+            "supporting_human_actions always owns human_actor. Reuse the SAME canonical "
+            "actor_ref source occurrence for the same performer across every action section. "
+            "A repeated label at a different occurrence does not declare identity equivalence. "
+            "Return no or uncertain when the canonical identity, kind or role is unresolved."
+        )
     task["verifier_task_sha256"] = _canonical_sha256(task)
     return task
 

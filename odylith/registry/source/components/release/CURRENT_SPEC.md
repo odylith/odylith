@@ -1,5 +1,18 @@
 # Release
-Last updated: 2026-10-05
+Last updated: 2026-10-09
+
+## Current Greenfield release evidence (2026-10-09)
+
+EDIT evidence counts only when an initial seal produces a delivered completion
+receipt, one documented correction produces a distinct edited seal, and the final
+readback preserves every prior lifecycle decision. The release scorer also
+requires the authenticated case manifest, compiler seals, receipts, and successful
+browser and quality proof. Any failure or custody issue earns zero EDIT credit.
+
+One same-source development confirmation completed the current 13-action,
+five-human-actor contract. It is development evidence, not release qualification.
+Four authentic EDIT journeys, a fresh installed package, timing evidence, and the
+remaining independent release gates are still required.
 
 ## Candidate-contract installation check (2026-10-05)
 
@@ -98,6 +111,18 @@ P0/P1/P2; initial failed reviews and red artifacts remain retained. Proof:
 SHA-256 2ebc3a1d8218449e0c8f3b8a7c8a70cca32146abe5f5376e0a9299aeadbf8efe.
 These are structural proof results. Full frozen regression and fresh installed
 semantic adjudication remain open; synthetic audits cannot qualify a release.
+
+Genuine EDIT samples require an initial pending seal, its delivered completion
+receipt, one correction journey and confirmation of the distinct edited seal.
+The existing journey owner retains both phases, exact source frames, private
+artifacts and final preservation readback. Scoring authenticates the finalized
+case manifest, compiler seals, receipts, all prior lifecycle dispositions and
+successful committed browser/quality proof. Any failure or custody issue grants
+zero EDIT credit. Literal intake headings and prepare-only controls grant none.
+Incremental reports remain unqualified; final callers supply the retained
+manifest. Original public inputs, denominators, sample minima and floors stay
+fixed. Native EDIT execution and independent source-family qualification remain
+required before release credit.
 
 ## Greenfield host process boundary (2026-10-02)
 
@@ -1181,6 +1206,9 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-10-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_source_duty_binding.py`
 - **2026-10-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `sha256:addb966f57829c8858b5d640b848f922c4323bf68adf071a6cbe4d7fccd463ee`, `sha256:228a52fe9195e3ad5e2d2f4b1612439a919fdb46cf18fa260e5b700de3829f79`, `tests/unit/install/test_local_release_smoke.py`
@@ -1194,8 +1222,6 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: `odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
 - **2026-10-02 · Decision:** Decision evidence linked this component to governed work with 3 verifiable artifact references.
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `tests/unit/install/test_greenfield_actual_driver_profile_evidence.py`
-- **2026-10-02 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

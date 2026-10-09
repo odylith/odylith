@@ -15,6 +15,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_SEMANTICS_KEY,
     authored_relation_set_sha256,
     authored_semantics_mapping,
+    first_path_relations_from_intent,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
@@ -42,14 +43,11 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
     CANONICAL_CANDIDATE_SHA256_KEY,
 )
-from odylith.runtime.domain_intelligence.greenfield_source_lifecycle import (
-    project_greenfield_source_lifecycle,
-)
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     admit_complete_host_candidate,
     authored_response,
     host_candidate_response,
-    synthetic_source_duty_receipt,
+    source_duty_fixture,
 )
 
 
@@ -137,18 +135,7 @@ def _authored_result(source: str) -> tuple[GreenfieldModelAuthoredIntent, dict[s
 def _authored_inputs() -> tuple[str, GreenfieldModelAuthoredIntent, dict[str, Any]]:
     source = _source()
     result, candidate = _authored_result(source)
-    ledger_receipt = synthetic_source_duty_receipt(candidate, evidence_text=source)
-    binding = candidate["result"]["source_duty_binding"]
-    source_duty = {
-        "ledger_receipt": ledger_receipt,
-        "binding": binding,
-        "lifecycle": project_greenfield_source_lifecycle(
-            ledger_receipt=ledger_receipt,
-            binding=binding,
-            candidate_result=candidate["result"],
-            evidence_text=source,
-        ),
-    }
+    source_duty = source_duty_fixture(candidate, evidence_text=source)
     intent = {
         **result.intent,
         AUTHORED_SEMANTICS_KEY: authored_semantics_mapping(
@@ -239,6 +226,28 @@ def test_authored_envelope_preserves_exact_facts_spans_relations_and_authority()
         for field in authority["material_fields"].values()
     )
     assert product_facts_from_envelope(envelope, source_text=source) == envelope["product_facts"]
+
+
+def test_relation_reader_accepts_materialized_catalog_binding_and_refuses_host_wire(tmp_path) -> None:
+    from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
+        HOST_SOURCE_DUTY_BINDING_VERSION, SOURCE_DUTY_BINDING_VERSION,
+        greenfield_source_duty_binding_schema,
+    )
+    from tests.unit.runtime.test_greenfield_create_transaction import _transaction
+    transaction = _transaction(repo_root=tmp_path)
+    intent = copy.deepcopy(transaction.proposal["intent"])
+    binding = intent[AUTHORED_SEMANTICS_KEY]["source_duty"]["binding"]
+    relations = first_path_relations_from_intent(intent)
+    assert binding["version"] == SOURCE_DUTY_BINDING_VERSION
+    assert len(relations) == sum(len(binding[section]) for section in (
+        "first_path_actions", "supporting_human_actions", "system_duties",
+    ))
+    raw_binding = {key: copy.deepcopy(binding[key])
+                   for key in greenfield_source_duty_binding_schema(host=True)["required"]}
+    raw_binding["version"] = HOST_SOURCE_DUTY_BINDING_VERSION
+    intent[AUTHORED_SEMANTICS_KEY]["source_duty"]["binding"] = raw_binding
+    with pytest.raises(ValueError, match="source-duty custody is malformed"):
+        first_path_relations_from_intent(intent)
 
 
 def test_envelope_construction_rejects_relation_free_input() -> None:

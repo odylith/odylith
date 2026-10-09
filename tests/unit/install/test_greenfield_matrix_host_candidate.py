@@ -27,6 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
 )
 from odylith.runtime.domain_intelligence.greenfield_source_duty_view import compact_source_duty_view
 from odylith.runtime.domain_intelligence.greenfield_host_candidate import greenfield_host_candidate_contract
+from odylith.runtime.domain_intelligence.greenfield_authority_gate import greenfield_authority_gate_contract
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     STANDARD_PROFILE_ID,
 )
@@ -74,17 +75,12 @@ def _flow(tmp_path: Path, *, candidate: object, contract: object, gate_decision:
     installed_calls: list[tuple[list[str], float]] = []
     host_calls: list[tuple[list[str], str, float, Path]] = []
     proposal_paths: list[Path] = []
-    contract_payload = dict(contract)
-    contract_payload.setdefault("candidate_schema", {})
-    contract_payload.setdefault("source_ledger", {
-        "task": "Inventory source duties.", "source_ledger_schema": {},
-    })
-    contract_payload.setdefault("request", {"evidence": "First Complete Path: A reviewer creates a reviewable plan. Reference: Notes are background only."})
-    contract_payload.setdefault("authority_gate", {
-        "version": "gate-contract", "task": "Decide first-path authority.",
-        "operator_request": "First Complete Path: A reviewer creates a reviewable plan. Reference: Notes are background only.",
-        "operator_edit": "Keep the source path.", "response_schema": {},
-    })
+    source = contract.get("request", {}).get("evidence", "First Complete Path: A reviewer creates a reviewable plan. Reference: Notes are background only.")
+    contract_payload = greenfield_host_candidate_contract(source)
+    contract_payload["authority_gate"] = greenfield_authority_gate_contract(
+        prompt=source, edit_evidence="Keep the source path.", evidence_source=source,
+    )
+    contract_payload.update(contract)
     gate = {
         "decision": gate_decision,
         "required_fields": ["first_path"] if gate_decision == "clarify" else [],
@@ -93,8 +89,6 @@ def _flow(tmp_path: Path, *, candidate: object, contract: object, gate_decision:
         "result_quote": "" if gate_decision == "clarify" else "a reviewable plan",
         "question": "What first path?" if gate_decision == "clarify" else "",
     }
-    source = contract_payload["request"]["evidence"]
-    contract_payload = {**greenfield_host_candidate_contract(source), **contract_payload}
     ledger = _fixture_host_ledger()
     expanded = expand_compact_source_duty_ledger(ledger, evidence_text=source)
     preflight = preflight_greenfield_source_duty_ledger(expanded, evidence_text=source)
@@ -213,14 +207,9 @@ def _flow(tmp_path: Path, *, candidate: object, contract: object, gate_decision:
 def test_host_candidate_happy_path_is_one_shot_and_cleans_candidate_file(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    contract_text = json.dumps({
-        "version": "contract",
-        "candidate_schema": {},
-        "request": {"evidence": "First Complete Path: A reviewer creates a reviewable plan. Reference: Notes are background only."},
-    })
     flow, host_run, installed_calls, host_calls, proposal_paths, repo = _flow(
         tmp_path,
-        contract=json.loads(contract_text),
+        contract={},
         candidate={"version": "candidate", "result": {"status": "authored"}},
     )
     observations: list[dict[str, object]] = []
@@ -317,7 +306,7 @@ def test_real_compiler_task_traverses_verifier_receipt_and_candidate(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     flow, host_run, _installed, host_calls, proposal_paths, _repo = _flow(
-        tmp_path, contract={"version": "contract"}, candidate={"result": {"status": "authored"}},
+        tmp_path, contract={}, candidate={"result": {"status": "authored"}},
     )
     retained_preflight: list[bytes] = []
     flow = host_module.HostCandidateFlow(**{
@@ -351,7 +340,7 @@ def test_compiler_task_tampering_cannot_dispatch_verifier(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, tamper: str,
 ) -> None:
     flow, host_run, _installed, host_calls, proposal_paths, repo = _flow(
-        tmp_path, contract={"version": "contract"}, candidate={"result": {"status": "authored"}},
+        tmp_path, contract={}, candidate={"result": {"status": "authored"}},
     )
     original_installed = flow.invoke_installed
 
@@ -404,7 +393,7 @@ def test_source_ledger_rejection_stops_before_candidate_or_proposal(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     flow, host_run, _installed, host_calls, proposal_paths, repo = _flow(
-        tmp_path, contract={"version": "contract"}, candidate={"result": {"status": "authored"}},
+        tmp_path, contract={}, candidate={"result": {"status": "authored"}},
     )
     original_installed = flow.invoke_installed
     observations: list[dict[str, object]] = []
@@ -440,7 +429,7 @@ def test_source_ledger_clarification_is_no_write_and_skips_candidate(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     flow, host_run, _installed, host_calls, proposal_paths, repo = _flow(
-        tmp_path, contract={"version": "contract"}, candidate={"result": {"status": "authored"}},
+        tmp_path, contract={}, candidate={"result": {"status": "authored"}},
     )
     original_installed = flow.invoke_installed
     observations: list[dict[str, object]] = []
@@ -476,7 +465,7 @@ def test_source_duty_verifier_denial_stops_before_candidate_or_proposal(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, verdict: str | None,
 ) -> None:
     flow, original_host_run, _installed, host_calls, proposal_paths, repo = _flow(
-        tmp_path, contract={"version": "contract"},
+        tmp_path, contract={},
         candidate={"result": {"status": "authored"}},
     )
     original_installed = flow.invoke_installed
@@ -521,7 +510,7 @@ def test_source_duty_receipt_must_bind_the_exact_verifier_task(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     flow, host_run, _installed, host_calls, proposal_paths, repo = _flow(
-        tmp_path, contract={"version": "contract"},
+        tmp_path, contract={},
         candidate={"result": {"status": "authored"}},
     )
     original_installed = flow.invoke_installed
@@ -560,7 +549,7 @@ def test_nonaffirmative_source_completeness_cannot_start_a_candidate(
     completeness: dict[str, object] | None,
 ) -> None:
     flow, original_host_run, _installed, host_calls, proposal_paths, repo = _flow(
-        tmp_path, contract={"version": "contract"},
+        tmp_path, contract={},
         candidate={"result": {"status": "authored"}},
     )
     original_installed = flow.invoke_installed
@@ -620,7 +609,7 @@ def test_source_ledger_has_separate_provisional_cap_and_journey_clock(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     flow, host_run, installed_calls, host_calls, _proposal_paths, _repo = _flow(
-        tmp_path, contract={"version": "contract"},
+        tmp_path, contract={},
         candidate={"version": "candidate", "result": {"status": "authored"}},
     )
     clock = [0.0]
@@ -675,7 +664,7 @@ def test_whole_journey_clamps_local_check_and_verifier_then_stops_before_next_ca
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     flow, host_run, installed_calls, host_calls, proposal_paths, repo = _flow(
-        tmp_path, contract={"version": "contract"},
+        tmp_path, contract={},
         candidate={"version": "candidate", "result": {"status": "authored"}},
     )
     clock = [0.0]
@@ -729,7 +718,7 @@ def test_late_callback_never_returns_an_admitted_result_and_cleans_workspace(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, callback: str,
 ) -> None:
     flow, host_run, _installed_calls, host_calls, proposal_paths, repo = _flow(
-        tmp_path, contract={"version": "contract"},
+        tmp_path, contract={},
         candidate={"version": "candidate", "result": {"status": "authored"}},
     )
     clock = [0.0]
@@ -788,7 +777,7 @@ def test_successful_observer_work_is_measured_before_authoritative_snapshot(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     flow, host_run, _installed, _hosts, _proposals, _repo = _flow(
-        tmp_path, contract={"version": "contract"},
+        tmp_path, contract={},
         candidate={"version": "candidate", "result": {"status": "authored"}},
     )
     clock = [0.0]
@@ -818,7 +807,7 @@ def test_preconfirm_retains_final_observer_timing_and_matching_stage_snapshot(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, observer_seconds: float,
 ) -> None:
     flow, host_run, _installed, _hosts, _proposals, repo = _flow(
-        tmp_path, contract={"version": "contract"},
+        tmp_path, contract={},
         candidate={"version": "candidate", "result": {"status": "authored"}},
     )
     retained_root = tmp_path / "retained"
@@ -866,7 +855,7 @@ def test_primary_failure_survives_late_failing_observer(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     flow, host_run, _installed, _hosts, _proposals, _repo = _flow(
-        tmp_path, contract={"version": "contract"},
+        tmp_path, contract={},
         candidate={"version": "candidate", "result": {"status": "authored"}},
     )
     clock = [0.0]
@@ -926,7 +915,7 @@ def test_source_ledger_preflight_keeps_local_budget_after_host_uses_its_cap(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     flow, host_run, installed_calls, _host_calls, _proposal_paths, _repo = _flow(
-        tmp_path, contract={"version": "contract"},
+        tmp_path, contract={},
         candidate={"version": "candidate", "result": {"status": "authored"}},
     )
     clock = [0.0]
@@ -1040,7 +1029,7 @@ def test_authority_gate_clarification_skips_candidate_and_propose(
 ) -> None:
     candidate = {"version": "candidate", "result": {"status": "authored"}}
     flow, host_run, _installed, host_calls, proposal_paths, _repo = _flow(
-        tmp_path, contract={"version": "contract"}, candidate=candidate,
+        tmp_path, contract={}, candidate=candidate,
         gate_decision="clarify",
     )
     observations: list[dict[str, object]] = []
@@ -1066,7 +1055,7 @@ def test_real_gate_only_observation_passes_closed_profile_evidence(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     flow, host_run, _installed, _host_calls, _proposal_paths, _repo = _flow(
-        tmp_path, contract={"version": "contract"}, candidate={},
+        tmp_path, contract={}, candidate={},
         gate_decision="clarify",
     )
     observations: list[dict[str, object]] = []
@@ -1090,7 +1079,7 @@ def test_host_candidate_retains_raw_candidate_and_deterministic_failure_before_c
 ) -> None:
     candidate = {"version": "candidate", "result": {"status": "authored"}}
     flow, host_run, _installed, _host_calls, proposal_paths, _repo = _flow(
-        tmp_path, contract={"version": "contract"}, candidate=candidate,
+        tmp_path, contract={}, candidate=candidate,
     )
     retained: dict[str, bytes] = {}
     observations: list[dict[str, object]] = []
@@ -1152,7 +1141,7 @@ def test_host_candidate_failures_are_fail_closed_and_do_not_propose(
     expected_fragment: str,
 ) -> None:
     flow, _host_run, _installed, host_calls, proposal_paths, _repo = _flow(
-        tmp_path, contract={"version": "contract"}, candidate={"version": "candidate"},
+        tmp_path, contract={}, candidate={"version": "candidate"},
     )
     proposal_calls: list[Path] = []
     flow = host_module.HostCandidateFlow(
@@ -1182,7 +1171,7 @@ def test_malformed_host_output_is_retained_before_parse_failure(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     flow, original_host_run, _installed, _host_calls, _proposal_paths, _repo = _flow(
-        tmp_path, contract={"version": "contract"}, candidate={"version": "candidate"},
+        tmp_path, contract={}, candidate={"version": "candidate"},
     )
     retained: list[bytes] = []
     malformed = b'{"first": true}\n{"second": true}\n'
@@ -1211,7 +1200,7 @@ def test_malformed_host_output_is_retained_before_parse_failure(
 
 def test_contract_command_failure_stops_before_host_invocation(tmp_path: Path) -> None:
     flow, _host_run, _installed, _host_calls, _proposal_paths, _repo = _flow(
-        tmp_path, contract={"version": "contract"}, candidate={"version": "candidate"},
+        tmp_path, contract={}, candidate={"version": "candidate"},
     )
     installed_calls: list[list[str]] = []
 
@@ -1228,7 +1217,7 @@ def test_contract_command_failure_stops_before_host_invocation(tmp_path: Path) -
 def test_host_timeout_budget_includes_contract_and_host_work(tmp_path: Path, monkeypatch) -> None:
     flow, host_run, installed_calls, host_calls, _proposal_paths, _repo = _flow(
         tmp_path,
-        contract={"version": "contract"},
+        contract={},
         candidate={"version": "candidate", "result": {"status": "authored"}},
     )
     monkeypatch.setattr(host_module, "_invoke_host", host_run)
@@ -1252,7 +1241,7 @@ def test_gate_and_candidate_share_pinned_model_window_with_operational_reserve(
 ) -> None:
     candidate = {"version": "candidate", "result": {"status": "authored"}}
     flow, host_run, _installed_calls, host_calls, _proposal_paths, _repo = _flow(
-        tmp_path, contract={"version": "contract"}, candidate=candidate,
+        tmp_path, contract={}, candidate=candidate,
     )
     clock = [0.0]
     proposal_timeouts: list[float] = []
@@ -1296,7 +1285,7 @@ def test_expired_shared_model_window_cannot_borrow_operational_reserve(
 ) -> None:
     candidate = {"version": "candidate", "result": {"status": "authored"}}
     flow, host_run, _installed, host_calls, proposal_paths, repo = _flow(
-        tmp_path, contract={"version": "contract"}, candidate=candidate,
+        tmp_path, contract={}, candidate=candidate,
     )
     clock = [0.0]
     observations: list[dict[str, object]] = []
@@ -1392,7 +1381,7 @@ def test_checker_refusal_retains_exact_reason_and_untrusted_omission_without_new
     from tests.unit.runtime.test_greenfield_create_transaction import _transaction
 
     flow, original_host, _installed, host_calls, proposals, repo = _flow(
-        tmp_path, contract={"version": "contract"}, candidate={},
+        tmp_path, contract={}, candidate={},
     )
     old = pending.stage_pending_transaction(repo_root=repo, transaction=_transaction(repo))
     before = {str(p.relative_to(repo)): hashlib.sha256(p.read_bytes()).hexdigest()

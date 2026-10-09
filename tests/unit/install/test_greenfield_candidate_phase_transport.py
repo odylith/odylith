@@ -11,6 +11,7 @@ from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
     HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION,
 )
 from odylith.runtime.domain_intelligence import greenfield_host_flow as host_module
+from odylith.runtime.domain_intelligence.greenfield_authority_gate import greenfield_authority_gate_contract
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     STANDARD_PROFILE_ID, RESCUE_PROFILE_ID, get_greenfield_model_profile,
 )
@@ -30,15 +31,14 @@ def test_four_phase_flow_keeps_complete_receipt_external_and_measures_request(
     tmp_path, monkeypatch, edit, profile_id, outcome,
 ):
     flow, host_run, _installed, host_calls, _proposals, _repo = _flow(
-        tmp_path, contract={"version": "contract"}, candidate={"result": {"status": "authored"}},
+        tmp_path, contract={}, candidate={"result": {"status": "authored"}},
     )
     source, contract, receipt, admission = _accepted_request(edit=edit)
     context = contract["source_ledger"].get("edit_preservation")
     correction = context["correction"] if edit else flow.edit_evidence
-    contract["authority_gate"] = {
-        "version": "gate-contract", "task": "Decide first-path authority.",
-        "operator_request": source, "operator_edit": correction, "response_schema": {},
-    }
+    contract["authority_gate"] = greenfield_authority_gate_contract(
+        prompt=source, edit_evidence=correction, evidence_source=source,
+    )
     contract_before = json.dumps(contract, sort_keys=True)
     preflight = preflight_greenfield_source_duty_ledger(receipt["ledger"], evidence_text=source)
     task = source_duty_entailment_task(preflight, evidence_text=source, edit_preservation=context)

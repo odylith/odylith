@@ -25,12 +25,16 @@ from odylith.runtime.domain_intelligence.greenfield_model_outcomes import (
 from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     MAX_AUTHORED_FIELD_VALUE_CHARS,
     MAX_EVIDENCE_BYTES,
+    MAX_AUTHORED_LIST_ITEMS,
 )
 
-SOURCE_DUTY_LEDGER_VERSION = "odylith.greenfield.source-duty-ledger.v5"
-SOURCE_DUTY_LEDGER_PREFLIGHT_VERSION = "odylith.greenfield.source-duty-preflight.v4"
-SOURCE_DUTY_LEDGER_RECEIPT_VERSION = "odylith.greenfield.source-duty-ledger-receipt.v7"
-EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION = "odylith.greenfield.source-duty-ledger-receipt.v9"
+SOURCE_DUTY_LEDGER_VERSION = "odylith.greenfield.source-duty-ledger.v6"
+SOURCE_DUTY_LEDGER_PREFLIGHT_VERSION = "odylith.greenfield.source-duty-preflight.v5"
+SOURCE_DUTY_LEDGER_RECEIPT_VERSION = "odylith.greenfield.source-duty-ledger-receipt.v10"
+EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION = "odylith.greenfield.source-duty-ledger-receipt.v11"
+PASSIVE_SOURCE_DUTY_LEDGER_VERSION = "odylith.greenfield.source-duty-ledger.v5"
+PASSIVE_SOURCE_DUTY_LEDGER_RECEIPT_VERSION = "odylith.greenfield.source-duty-ledger-receipt.v7"
+PASSIVE_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION = "odylith.greenfield.source-duty-ledger-receipt.v9"
 LEGACY_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION = "odylith.greenfield.source-duty-ledger-receipt.v8"
 MAX_SOURCE_DUTY_LEDGER_FILE_BYTES = 512 * 1024
 
@@ -81,7 +85,7 @@ def _array_schema(items: dict[str, Any], *, limit: int) -> dict[str, Any]:
     return {"type": "array", "maxItems": limit, "items": items}
 
 
-def greenfield_source_duty_ledger_schema() -> dict[str, Any]:
+def greenfield_source_duty_ledger_schema(*, _passive_source: bool = False) -> dict[str, Any]:
     """Return the bounded, closed host schema for one source duty inventory."""
 
     citation = _object_schema({"quote": _text_schema(), "context": _text_schema()})
@@ -93,7 +97,8 @@ def greenfield_source_duty_ledger_schema() -> dict[str, Any]:
         limit=8,
     )
     properties: dict[str, Any] = {
-        "version": _text_schema(choices=(SOURCE_DUTY_LEDGER_VERSION,)),
+        "version": _text_schema(choices=((PASSIVE_SOURCE_DUTY_LEDGER_VERSION
+                                         if _passive_source else SOURCE_DUTY_LEDGER_VERSION),)),
         "status": _text_schema(choices=("inventory", "clarification_required")),
         "question": _text_schema(),
         "evidence_controls": _array_schema(
@@ -130,6 +135,8 @@ def greenfield_source_duty_ledger_schema() -> dict[str, Any]:
             )
         if section == "first_path_actions":
             row["performer_role"] = _text_schema(choices=_FIRST_PATH_PERFORMER_ROLES)
+        elif section == "system_duties" and not _passive_source:
+            row["performer_role"] = _text_schema(choices=_FIRST_PATH_PERFORMER_ROLES[1:])
         if section == "boundaries":
             row["kind"] = _text_schema(choices=_BOUNDARY_KINDS)
         properties[section] = _array_schema(_object_schema(row), limit=limit)
@@ -238,7 +245,7 @@ def resolve_greenfield_transition_state_fields(
 
 
 def preflight_greenfield_source_duty_ledger(
-    ledger: Mapping[str, Any], *, evidence_text: str
+    ledger: Mapping[str, Any], *, evidence_text: str, _passive_source: bool = False,
 ) -> dict[str, Any]:
     """Bind exact citations without claiming semantic admission.
 
@@ -253,7 +260,11 @@ def preflight_greenfield_source_duty_ledger(
         raise GreenfieldSourceDutyLedgerError(
             "source evidence exceeds the declared bound"
         )
-    _validate_shape(ledger, greenfield_source_duty_ledger_schema(), "ledger")
+    _validate_shape(ledger, greenfield_source_duty_ledger_schema(_passive_source=_passive_source), "ledger")
+    if not _passive_source and sum(len(ledger[section]) for section in (
+        "first_path_actions", "supporting_human_actions", "system_duties",
+    )) > MAX_AUTHORED_LIST_ITEMS:
+        raise GreenfieldSourceDutyLedgerError("source action duties exceed the existing event bound")
 
     seen_ids: set[str] = set()
     seen_action_atoms: set[tuple[int, int, int, int, str, str]] = set()
@@ -366,7 +377,8 @@ def preflight_greenfield_source_duty_ledger(
     accepted = deepcopy(dict(ledger))
     source_sha256 = hashlib.sha256(evidence).hexdigest()
     return {
-        "version": SOURCE_DUTY_LEDGER_PREFLIGHT_VERSION,
+        "version": ("odylith.greenfield.source-duty-preflight.v4"
+                    if _passive_source else SOURCE_DUTY_LEDGER_PREFLIGHT_VERSION),
         "source_sha256": source_sha256,
         "ledger_sha256": _canonical_sha256(accepted),
         "claims": source_duty_claims(accepted, source_sha256=source_sha256),
@@ -378,11 +390,12 @@ def validate_greenfield_source_duty_ledger(
     ledger: Mapping[str, Any], *, evidence_text: str, decision_set: Mapping[str, Any],
     edit_preservation: Mapping[str, Any] | None = None,
     _passive_legacy_edit: bool = False,
+    _passive_source: bool = False,
 ) -> dict[str, Any]:
     """Admit only complete, source-bound affirmative action decisions."""
 
     preflight = preflight_greenfield_source_duty_ledger(
-        ledger, evidence_text=evidence_text
+        ledger, evidence_text=evidence_text, _passive_source=_passive_source,
     )
     if ledger["status"] != "inventory":
         raise GreenfieldSourceDutyLedgerError(
@@ -406,8 +419,10 @@ def validate_greenfield_source_duty_ledger(
         raise GreenfieldSourceDutyLedgerError(str(exc)) from exc
     return {
         "version": ((LEGACY_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION if _passive_legacy_edit
-                     else EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION) if edit_preservation is not None
-                    else SOURCE_DUTY_LEDGER_RECEIPT_VERSION),
+                     else (PASSIVE_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION if _passive_source
+                           else EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION)) if edit_preservation is not None
+                    else (PASSIVE_SOURCE_DUTY_LEDGER_RECEIPT_VERSION if _passive_source
+                          else SOURCE_DUTY_LEDGER_RECEIPT_VERSION)),
         "source_sha256": preflight["source_sha256"],
         "ledger_sha256": preflight["ledger_sha256"],
         "verifier_task_sha256": verifier_task_sha256,
@@ -446,9 +461,11 @@ def verify_greenfield_source_duty_ledger_receipt(
         raise GreenfieldSourceDutyLedgerError("source duty EDIT preservation baseline is invalid")
     # Only a retained receipt selects passive legacy custody. Fresh admission
     # always expects the current EDIT protocol; host decisions cannot select it.
-    allowed_versions = (((LEGACY_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,) if allow_legacy_edit else ())
-                        + (EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,) if retained_edit is not None
-                        else (SOURCE_DUTY_LEDGER_RECEIPT_VERSION,))
+    allowed_versions = ((EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+                         *((LEGACY_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+                            PASSIVE_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION) if allow_legacy_edit else ()))
+                        if retained_edit is not None else (SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+                         *((PASSIVE_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,) if allow_legacy_edit else ())))
     if receipt["version"] not in allowed_versions:
         raise GreenfieldSourceDutyLedgerError(
             "source duty ledger receipt version is invalid"
@@ -467,6 +484,11 @@ def verify_greenfield_source_duty_ledger_receipt(
         decision_set=receipt["decision_set"],
         edit_preservation=retained_edit,
         _passive_legacy_edit=receipt["version"] == LEGACY_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+        _passive_source=receipt["version"] in {
+            PASSIVE_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+            PASSIVE_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+            LEGACY_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+        },
     )
     if dict(receipt) != expected:
         raise GreenfieldSourceDutyLedgerError(

@@ -9,14 +9,13 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
 )
 from greenfield_browser_authored_contract import (
-    AUTHORED_STRUCTURE_EXPRESSION,
+    prove_authored_event_disclosure,
     atlas_degraded_state_assertion_issues as _atlas_degraded_state_assertion_issues,
     atlas_diagram_coverage_issues as _atlas_diagram_coverage_issues,
     atlas_error_state_assertion_issues as _atlas_error_state_assertion_issues,
     atlas_state_assertion_issues as _atlas_state_assertion_issues,
 )
 from greenfield_browser_authored_contract import (
-    authored_structure_issues,
     expected_proof_card,
     generated_tree_path_leak_issues as _generated_tree_path_leak_issues,
     project_state_assertion_issues as _project_state_assertion_issues,
@@ -525,7 +524,8 @@ def _project_generated_state_issues(
                 };
             }"""
         )
-        authored_structure = page.locator("#pane-project").evaluate(AUTHORED_STRUCTURE_EXPRESSION)
+        authored_structure, disclosure_issues = prove_authored_event_disclosure(page.locator("#pane-project"), timeout_ms=timeout_ms)
+        issues.extend(disclosure_issues)
         payload_state = page.evaluate(
             """() => {
                 const payload = window.__ODYLITH_TOOLING_DATA__ || {};

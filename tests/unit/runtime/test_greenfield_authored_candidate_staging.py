@@ -32,14 +32,11 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     build_product_intent_envelope,
     product_intent_authority_from_envelope,
 )
-from odylith.runtime.domain_intelligence.greenfield_source_lifecycle import (
-    project_greenfield_source_lifecycle,
-)
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     admit_complete_host_candidate,
     authored_response,
     host_candidate_response,
-    synthetic_source_duty_receipt,
+    source_duty_fixture,
 )
 
 
@@ -104,18 +101,7 @@ def _authored_stage_inputs(repo_root: Path) -> tuple[dict[str, object], dict[str
         host_candidate=candidate,
         model_profile_id=STANDARD_PROFILE_ID,
     )
-    ledger_receipt = synthetic_source_duty_receipt(candidate, evidence_text=evidence)
-    binding = candidate["result"]["source_duty_binding"]
-    source_duty = {
-        "ledger_receipt": ledger_receipt,
-        "binding": binding,
-        "lifecycle": project_greenfield_source_lifecycle(
-            ledger_receipt=ledger_receipt,
-            binding=binding,
-            candidate_result=candidate["result"],
-            evidence_text=evidence,
-        ),
-    }
+    source_duty = source_duty_fixture(candidate, evidence_text=evidence)
     authored_intent: dict[str, object] = {
         **result.intent,
         AUTHORED_SEMANTICS_KEY: authored_semantics_mapping(

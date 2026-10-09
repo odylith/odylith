@@ -2581,7 +2581,26 @@ def test_compass_unavailable_brief_hides_copy_button_and_stays_compact(
                     }
                     digest_text = compass.locator("#digest-list").inner_text()
                     assert "Brief unavailable right now" in digest_text
-                    assert "Will retry after" in digest_text
+                    assert payload["standup_brief"]["24h"]["diagnostics"]["message"] in digest_text
+                    details = compass.locator("#digest-list details.brief-diagnostics")
+                    assert details.count() == 1
+                    assert details.evaluate("node => node.open") is False
+                    assert "provider_error" not in digest_text
+                    assert "2026-04-10T02:30:00Z" not in digest_text
+                    summary = details.locator("summary")
+                    assert summary.inner_text() == "Summary details"
+                    summary.focus()
+                    summary.press("Enter")
+                    assert details.evaluate("node => node.open") is True
+                    assert details.locator(".brief-diagnostic-key").all_inner_texts() == [
+                        "REASON", "NEXT RETRY UTC",
+                    ]
+                    assert details.locator(".brief-diagnostic-value").all_inner_texts() == [
+                        "provider_error", "2026-04-10T02:30:00Z",
+                    ]
+                    summary.press("Space")
+                    assert details.evaluate("node => node.open") is False
+                    assert compass.locator("#digest-list").inner_text() == digest_text
 
                     _assert_clean_page(page, observation)
             finally:

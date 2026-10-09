@@ -3001,8 +3001,8 @@ def test_build_standup_brief_timeout_surfaces_local_facts_until_retry(tmp_path: 
     )
 
     _assert_unavailable(brief, reason="timeout")
-    assert brief["diagnostics"]["title"] == "Narration timed out"
-    assert "showing local runtime facts" in brief["diagnostics"]["message"]
+    assert brief["diagnostics"]["title"] == "Summary timed out"
+    assert brief["diagnostics"]["message"] == "The summary service took too long. Try again later."
     assert brief["diagnostics"]["fallback_digest"][0].startswith("Current:")
     assert provider.calls == 2
 

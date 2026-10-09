@@ -161,6 +161,7 @@ def campaign_summary(
     config: MatrixCampaignConfig,
     stopped_reason: str,
     semantic_digests: Mapping[str, str] | None = None,
+    retained_evidence_manifest: Path | None = None,
 ) -> Mapping[str, Any]:
     completed = len(results)
     failures = sum(1 for result in results if result.status != "passed" or not result.quality.passed)
@@ -185,6 +186,7 @@ def campaign_summary(
             cases=cases,
             results=results,
             release=config.proof_tier == "release",
+            retained_evidence_manifest=retained_evidence_manifest,
         ),
         "metamorphic_output": evaluate_metamorphic_outputs(
             cases=cases,

@@ -38,6 +38,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     PRODUCT_INTENT_AUTHORITY_KEY,
 )
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import STANDARD_PROFILE_ID
+from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import validate_greenfield_source_duty_binding
 from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
     preflight_greenfield_source_duty_ledger,
     validate_greenfield_source_duty_ledger,
@@ -120,9 +121,9 @@ def test_contract_requires_one_complete_host_candidate() -> None:
     assert {"source_precedence", "source_duty_binding"} <= set(
         authored["required"]
     )
-    event = authored["properties"]["events"]["items"]
-    assert event["required"] == ["actor_fact"]
-    assert set(event["properties"]) == {"actor_fact"}
+    assert "events" not in authored["properties"]
+    assert not {"first_path_actions", "supporting_human_actions", "system_duties"} & set(
+        authored["properties"]["source_duty_binding"]["properties"])
     assert "source_ledger_schema" in contract["source_ledger"]
     assert "Do not call a CLI, read or write files" in contract["source_ledger"]["task"]
     assert (
@@ -171,7 +172,8 @@ def test_admission_validates_once_and_seals_raw_and_canonical_hashes() -> None:
         "source_duty_verifier_task_sha256": duty_receipt["verifier_task_sha256"],
         "source_duty_decision_set_sha256": duty_receipt["decision_set_sha256"],
         "source_duty_binding_sha256": _sha256(
-            candidate["result"]["source_duty_binding"]
+            validate_greenfield_source_duty_binding(candidate["result"]["source_duty_binding"],
+                ledger_receipt=duty_receipt, candidate_result=candidate["result"], evidence_text=source)
         ),
     }
     assert authored.semantic_model_call_count == 0
@@ -198,7 +200,7 @@ def test_source_binding_separates_first_path_from_supporting_event_custody(
     ]
     assert [row["order"] for row in authored.first_path_relations] == [1, 2, 3]
     assert any(
-        row["field"] == "supporting_events" and row["relation_order"] == 2
+        row["field"] == "supporting_events" and row["relation_order"] == 3
         for row in authored.atomic_claims
     )
 
@@ -230,7 +232,7 @@ def test_passive_timing_does_not_invent_a_precedence_edge() -> None:
 
 def test_candidate_tampering_fails_closed() -> None:
     source, candidate = _candidate()
-    candidate["result"]["events"][0]["actor_fact"]["field"] = "not_a_source_actor"
+    candidate["result"]["events"] = [{"actor_fact": {"field": "not_a_source_actor", "row": 1}}]
 
     with pytest.raises((GreenfieldModelAuthoringError, ValueError)):
         _admit(source, candidate)
@@ -265,10 +267,10 @@ def test_ledger_owns_two_actions_with_one_complete_joined_citation() -> None:
         "Berth map: the product records berth occupancy",
     ]
     assert joined not in authored.intent["first_path"]
-    assert set(candidate["result"]["events"][0]) == {"actor_fact"}
+    assert "events" not in candidate["result"]
 
-    candidate["result"]["events"][0]["action_quote"] = "invented"
-    with pytest.raises(ValueError, match="bound event is malformed"):
+    candidate["result"]["events"] = [{"action_quote": "invented"}]
+    with pytest.raises(ValueError, match="must not author source events"):
         admit_greenfield_host_candidate(
             candidate, evidence_text=source, source_duty_receipt=receipt
         )
@@ -349,8 +351,8 @@ def test_cross_role_joined_clause_keeps_first_path_and_system_duty_separate(
     relations = materialized["authored_semantics"]["first_path_relations"]
     assert [row["action_verb_quote"] for row in relations] == [
         "enters",
-        "records",
         "shows",
+        "records",
     ]
 
 
@@ -567,7 +569,7 @@ def test_bound_system_prerequisite_survives_admission_and_canonical_reload(
             )
         assert receipt == original_receipt
         return
-    candidate["result"]["provisional_design"]["first_run"]["event_orders"] = [1, 2, 3]
+    candidate["result"]["provisional_design"]["first_run"]["event_orders"] = [1, 3, 2]
     materialized = materialize_host_authored_intent(
         prompt=source, repo_root=tmp_path, host_candidate=candidate,
         source_duty_receipt=receipt, prepared_evidence=prepared, edit_evidence=edit_evidence,
@@ -580,13 +582,13 @@ def test_bound_system_prerequisite_survives_admission_and_canonical_reload(
     ]
     source_duty = materialized["authored_semantics"]["source_duty"]
     assert source_duty["ledger_receipt"] == original_receipt
-    assert source_duty["ledger_receipt"]["version"].endswith(".v9" if edit_evidence else ".v7")
+    assert source_duty["ledger_receipt"]["version"].endswith(".v11" if edit_evidence else ".v10")
     assert source_duty["ledger_receipt"]["decision_set"]["version"].endswith(".v6" if edit_evidence else ".v4")
-    assert [row["event_order"] for row in source_duty["binding"]["first_path_actions"]] == [1, 3]
-    assert [row["event_order"] for row in source_duty["binding"]["system_duties"]] == [2]
+    assert [row["event_order"] for row in source_duty["binding"]["first_path_actions"]] == [1, 2]
+    assert [row["event_order"] for row in source_duty["binding"]["system_duties"]] == [3]
     reloaded = json.loads(json.dumps(materialized))
     assert [row["order"] for row in first_path_relations_from_intent(reloaded)] == [1, 2, 3]
-    assert [row["order"] for row in authored_first_run_relations(reloaded)] == [1, 2, 3]
+    assert [row["order"] for row in authored_first_run_relations(reloaded)] == [1, 3, 2]
     reloaded["authored_semantics"]["source_precedence"] = []
     with pytest.raises(ValueError, match="only their cited source prerequisites"):
         first_path_relations_from_intent(reloaded)
@@ -607,8 +609,8 @@ def test_fresh_candidate_requires_summary_in_schema_and_deterministic_admission(
     source, candidate = _candidate()
     contract = greenfield_host_candidate_contract(source)
     design_schema = contract["candidate_schema"]["properties"]["result"]["anyOf"][0]["properties"]["provisional_design"]
-    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v54"
-    assert contract["candidate_version"] == "odylith.greenfield.host-candidate-format.v23"
+    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v55"
+    assert contract["candidate_version"] == "odylith.greenfield.host-candidate-format.v24"
     assert "project_summary" in design_schema["required"]
     assert design_schema["properties"]["project_summary"]["maxLength"] == 600
     assert any("not an accepted source fact" in requirement for requirement in contract["requirements"])
@@ -663,3 +665,24 @@ def test_summary_changes_candidate_hash_without_source_duty_fact_or_atom_changes
     for field in ("source_sha256", "source_duty_ledger_sha256", "source_duty_verifier_task_sha256",
                   "source_duty_decision_set_sha256", "source_duty_binding_sha256"):
         assert changed_receipt[field] == receipt[field]
+
+
+@pytest.mark.parametrize("damage", ["canonical_binding", "action_table", "actor_event", "old_format"])
+def test_fresh_wire_refuses_all_retired_actor_and_action_mapping_ownership(damage):
+    source, candidate = _candidate()
+    receipt = synthetic_source_duty_receipt(candidate, evidence_text=source)
+    if damage == "canonical_binding":
+        candidate["result"]["source_duty_binding"] = validate_greenfield_source_duty_binding(
+            candidate["result"]["source_duty_binding"], ledger_receipt=receipt,
+            candidate_result=candidate["result"], evidence_text=source,
+        )
+    elif damage == "action_table":
+        candidate["result"]["source_duty_binding"]["system_duties"] = []
+    elif damage == "actor_event":
+        candidate["result"]["events"] = [{"actor_fact": {"field": "human_actors", "row": 2}}]
+    else:
+        candidate["version"] = "odylith.greenfield.host-candidate-format.v23"
+    with pytest.raises((ValueError, TypeError)):
+        admit_greenfield_host_candidate(candidate, evidence_text=source, source_duty_receipt=receipt)
+    with pytest.raises((ValueError, TypeError)):
+        canonical_greenfield_host_candidate(candidate, evidence_text=source, source_duty_receipt=receipt)

@@ -17,8 +17,8 @@ from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
 @pytest.mark.parametrize(
     ("contract", "receipt", "passive", "expected_error"),
     (
-        (54, 9, False, "EDIT preservation context is malformed"),
-        (54, 9, True, "EDIT preservation context is malformed"),
+        (54, 9, False, "source-duty hashes do not match"),
+        (54, 9, True, None),
         (53, 9, True, None),
         (52, 9, True, None),
         (51, 9, True, None),
@@ -50,6 +50,38 @@ def test_edit_custody_preserves_closed_pairs_and_current_context_validation(
         )
     else:
         with pytest.raises(ValueError, match=expected_error):
+            greenfield_create_transaction._require_host_candidate_authority_binding(
+                quality, transaction.intent_authority, proposal=proposal, passive=passive,
+            )
+
+
+@pytest.mark.parametrize(
+    ("contract", "receipt", "passive", "accepted"),
+    (
+        *((contract, 7, True, True) for contract in range(49, 55)),
+        *((contract, 7, False, False) for contract in range(49, 55)),
+        (48, 7, True, False), (55, 7, True, False),
+        (49, 8, True, False), (54, 8, True, False),
+    ),
+)
+def test_initial_custody_preserves_only_declared_passive_pairs(
+    tmp_path: Path, contract: int, receipt: int, passive: bool, accepted: bool,
+) -> None:
+    transaction = _transaction(tmp_path)
+    proposal = copy.deepcopy(transaction.proposal)
+    quality = copy.deepcopy(transaction.quality_manifest)
+    proposal["intent"]["authored_semantics"]["source_duty"]["ledger_receipt"]["version"] = (
+        f"odylith.greenfield.source-duty-ledger-receipt.v{receipt}"
+    )
+    quality["model_authoring"]["host_candidate"]["contract_version"] = (
+        f"odylith.greenfield.host-candidate-contract.v{contract}"
+    )
+    if accepted:
+        greenfield_create_transaction._require_host_candidate_authority_binding(
+            quality, transaction.intent_authority, proposal=proposal, passive=passive,
+        )
+    else:
+        with pytest.raises(ValueError, match="source-duty hashes do not match"):
             greenfield_create_transaction._require_host_candidate_authority_binding(
                 quality, transaction.intent_authority, proposal=proposal, passive=passive,
             )

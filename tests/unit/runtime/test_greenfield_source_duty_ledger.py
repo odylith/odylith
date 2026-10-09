@@ -52,6 +52,7 @@ def _ledger() -> dict:
     }
     system = {
         "id": "S1",
+        "performer_role": "internal_system",
         "source_refs": [_citation("A portal records the submission")],
         "statement": "portal records the submission",
         "event_ref": _citation("A portal records the submission"),
@@ -922,3 +923,56 @@ def test_receipt_revalidation_rejects_changed_effect_identity() -> None:
     receipt["ledger"]["off_path_transitions"][0]["effects"][0]["field"] = "missing access"
     with pytest.raises(GreenfieldSourceDutyLedgerError, match="no declared state-field identity"):
         verify_greenfield_source_duty_ledger_receipt(receipt, evidence_text=evidence)
+
+
+def test_fresh_system_kind_is_a_hash_bound_claim_in_the_same_source_only_task():
+    ledger = _ledger()
+    preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=EVIDENCE)
+    claims = {row["duty_id"]: row for row in preflight["claims"]}
+    assert claims["H1"]["performer_role"] == "human_actor"
+    assert claims["S1"]["performer_role"] == "internal_system"
+    task = source_duty_entailment_task(preflight, evidence_text=EVIDENCE)
+    assert "SAME canonical actor_ref source occurrence" in task["task"]
+    changed = deepcopy(ledger)
+    changed["system_duties"][0]["performer_role"] = "external_system"
+    other = preflight_greenfield_source_duty_ledger(changed, evidence_text=EVIDENCE)
+    assert other["claims"][2]["claim_sha256"] != claims["S1"]["claim_sha256"]
+    with pytest.raises(GreenfieldSourceDutyLedgerError, match="binding"):
+        validate_greenfield_source_duty_ledger(changed, evidence_text=EVIDENCE, decision_set=_yes_decisions(preflight))
+
+
+def test_aggregate_thirty_three_action_duties_refuse_before_candidate_authoring():
+    ledger = _ledger()
+    ledger["supporting_human_actions"] = []
+    original = deepcopy(ledger["system_duties"][0])
+    extras = [f"A portal retains item {index}" for index in range(1, 33)]
+    evidence = EVIDENCE + " " + ". ".join(extras) + "."
+    ledger["system_duties"] = [{
+        **deepcopy(original), "id": f"system-{index}",
+        "event_ref": _citation(event), "source_refs": [],
+        "actor_ref": _citation("portal", "A portal records the submission"),
+        "statement": f"portal retains item {index}", "action": "retains", "target": f"item {index}",
+    } for index, event in enumerate(extras, 1)]
+    with pytest.raises(GreenfieldSourceDutyLedgerError, match="existing event bound"):
+        preflight_greenfield_source_duty_ledger(ledger, evidence_text=evidence)
+
+
+def test_exact_v5_receipt_task_and_hashes_remain_passive_and_refuse_fresh_use():
+    ledger = _ledger()
+    ledger["version"] = "odylith.greenfield.source-duty-ledger.v5"
+    del ledger["system_duties"][0]["performer_role"]
+    preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=EVIDENCE, _passive_source=True)
+    task = source_duty_entailment_task(preflight, evidence_text=EVIDENCE)
+    # Frozen from the actual fe4a1eff runtime, not regenerated expected task text.
+    assert task["verifier_task_sha256"] == "be6bd40552eace271454ddfb4c81ae5d2fa7f192b5706ff46ee893439a56b73b"
+    assert preflight["ledger_sha256"] == "635cdbd8c5119476ae943e91ea4f38878a744e1f35c1b12cd621c754293d7693"
+    receipt = validate_greenfield_source_duty_ledger(
+        ledger, evidence_text=EVIDENCE, decision_set=_yes_decisions(preflight), _passive_source=True,
+    )
+    assert receipt["version"] == "odylith.greenfield.source-duty-ledger-receipt.v7"
+    assert receipt["decision_set_sha256"] == "44f40ad2d1905da9445d4e9a0e3f29ba61953e809bb8f16adb4d59001a0c05d6"
+    assert verify_greenfield_source_duty_ledger_receipt(receipt, evidence_text=EVIDENCE) == receipt
+    with pytest.raises(GreenfieldSourceDutyLedgerError, match="version"):
+        verify_greenfield_source_duty_ledger_receipt(receipt, evidence_text=EVIDENCE, allow_legacy_edit=False)
+    with pytest.raises(GreenfieldSourceDutyLedgerError, match="invalid"):
+        preflight_greenfield_source_duty_ledger(ledger, evidence_text=EVIDENCE)

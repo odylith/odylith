@@ -74,7 +74,6 @@ def _case(*, alias=False, guards=False):
         duty["event_ref"] = _citation(joined)
         duty["source_refs"] = [_citation(joined), duty["actor_ref"]]
     if alias:
-        candidate["result"]["events"][1]["actor_fact"] = {"field": "title", "row": 1}
         ledger["first_path_actions"][1]["performer_role"] = "product_title"
     if guards:
         ledger["conditional_guards"] = [
@@ -125,12 +124,12 @@ def test_shared_human_and_two_product_span_projects_each_verified_duty(tmp_path)
     assert [row["actor_kind"] for row in relations] == ["human", "product", "product"]
 
 
-def test_title_alias_keeps_validated_event_owner_address(tmp_path):
+def test_source_title_performer_keeps_validated_event_owner_address(tmp_path):
     intent, _, _, _, _ = _materialized(tmp_path, alias=True)
     rows = intent["authored_semantics"]["component_responsibility_relations"]
     events = first_path_relations_from_intent(intent)
-    assert rows[0]["owner_system_path"] == events[1]["actor_fact_path"] == "/internal_systems/0"
-    assert rows[1]["owner_system_path"] == events[2]["actor_fact_path"] == "/internal_systems/1"
+    assert rows[0]["owner_system_path"] == events[1]["actor_fact_path"] == "/title"
+    assert rows[1]["owner_system_path"] == events[2]["actor_fact_path"] == "/internal_systems/0"
 
 
 @pytest.mark.parametrize("damage", ("missing_duty", "wrong_duty", "missing_decision", "wrong_decision", "missing_event", "wrong_event", "missing_actor", "wrong_actor", "human_promotion", "external_promotion", "remove_all_metadata", "missing_source_snapshot", "wrong_source_snapshot"))

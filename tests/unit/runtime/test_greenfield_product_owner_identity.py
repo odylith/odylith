@@ -10,11 +10,15 @@ from odylith.runtime.domain_intelligence.greenfield_authored_proposal import (
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GreenfieldModelAuthoringError,
 )
+from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
+    GreenfieldSourceDutyBindingError,
+)
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     authored_response,
     admit_complete_host_candidate,
     host_candidate_response,
     materialize_complete_host_candidate,
+    synthetic_source_duty_receipt,
 )
 from tests.unit.runtime.test_greenfield_model_path_custody import (
     _LIST_FIELDS,
@@ -31,7 +35,8 @@ def _evidence(intent: dict[str, object]) -> str:
     )
 
 
-def test_title_alias_keeps_source_owner_through_structural_design_support(tmp_path) -> None:  # type: ignore[no-untyped-def]
+@pytest.mark.parametrize("actor_path", ["/title", "/internal_systems/0"])
+def test_source_product_owner_keeps_its_address_through_structural_design_support(tmp_path, actor_path) -> None:  # type: ignore[no-untyped-def]
     first_path = (
         "Dock attendant Ivo enters a vessel tag and Harbor Desk shows the placement"
     )
@@ -61,7 +66,7 @@ def test_title_alias_keeps_source_owner_through_structural_design_support(tmp_pa
             {
                 "actor_kind": "product",
                 "actor_fact_quote": "Harbor Desk",
-                "actor_fact_path": "/title",
+                "actor_fact_path": actor_path,
                 "owner_system_quote": "Harbor Desk",
                 "event_quote": "Harbor Desk shows the placement",
                 "action_verb_quote": "shows",
@@ -78,9 +83,9 @@ def test_title_alias_keeps_source_owner_through_structural_design_support(tmp_pa
     )
 
     semantics = candidate["authored_semantics"]
-    assert semantics["first_path_relations"][1]["actor_fact_path"] == "/internal_systems/0"
+    assert semantics["first_path_relations"][1]["actor_fact_path"] == actor_path
     component = semantics["component_responsibility_relations"][0]
-    assert component["owner_system_path"] == "/internal_systems/0"
+    assert component["owner_system_path"] == actor_path
     assert component["owner_system_quote"] == "Harbor Desk"
     proposal = build_authored_greenfield_proposal(
         observed_source={},
@@ -134,7 +139,8 @@ def test_two_indistinguishable_internal_system_paths_fail_closed() -> None:
         )
 
 
-def test_product_and_human_label_collision_requires_the_explicit_typed_actor() -> None:
+@pytest.mark.parametrize("distinct_source_occurrence", [False, True])
+def test_product_and_human_label_collision_preserves_exact_typed_source_identity(distinct_source_occurrence) -> None:
     intent = {
         **_TEXT_FIELDS,
         **_LIST_FIELDS,
@@ -146,10 +152,22 @@ def test_product_and_human_label_collision_requires_the_explicit_typed_actor() -
         evidence_text=source,
         component_responsibility_owners=["Berth map"],
     )
-
+    candidate = host_candidate_response(response, evidence_text=source)
+    if not distinct_source_occurrence:
+        with pytest.raises(GreenfieldSourceDutyBindingError, match="incompatible source performer kind"):
+            admit_complete_host_candidate(evidence_text=source, host_candidate=candidate)
+        return
+    source += ". Product brand: Dock attendant Ivo."
+    candidate["result"]["facts"]["title"] = {
+        "quote": "Dock attendant Ivo", "context": "Product brand: Dock attendant Ivo.",
+    }
+    receipt = synthetic_source_duty_receipt(candidate, evidence_text=source)
+    candidate["result"]["source_duty_binding"].update(
+        source_sha256=receipt["source_sha256"], ledger_sha256=receipt["ledger_sha256"],
+    )
     result = admit_complete_host_candidate(
         evidence_text=source,
-        host_candidate=host_candidate_response(response, evidence_text=source),
+        host_candidate=candidate,
     )
 
     assert result.first_path_relations[0]["actor_kind"] == "human"

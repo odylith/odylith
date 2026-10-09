@@ -101,6 +101,24 @@ def _result_first_response(*, include_precedence=True, archive_after_result=Fals
     return source, response, events
 
 
+def _compiler_event_orders(candidate, authored_events):
+    """Map candidate-local event positions to frozen compiler event IDs."""
+
+    order_by_quote = {
+        row["event_quote"]: row["order"]
+        for row in first_path_relations_from_intent(candidate)
+    }
+    return [order_by_quote[row["event_quote"]] for row in authored_events]
+
+
+def _compiler_ordered_events(candidate, authored_events):
+    by_quote = {row["event_quote"]: row for row in authored_events}
+    return [
+        by_quote[row["event_quote"]]
+        for row in first_path_relations_from_intent(candidate)
+    ]
+
+
 def test_post_result_action_survives_authoring_custody_and_all_projections(tmp_path):
     source, response, events = _result_first_response(archive_after_result=True)
     candidate = materialize_complete_host_candidate(
@@ -114,22 +132,31 @@ def test_post_result_action_survives_authoring_custody_and_all_projections(tmp_p
     ]
     product_constraint = candidate["operational_constraints"][1]
     assert product_constraint not in candidate["component_responsibilities"]
+    compiler_orders = _compiler_event_orders(candidate, events)
+    assert compiler_orders == [2, 1, 3]
     assert candidate["authored_semantics"]["source_precedence"][1] == {
-        "before_event": 1, "after_event": 3, "constraint_index": 2,
+        "before_event": compiler_orders[0],
+        "after_event": compiler_orders[2],
+        "constraint_index": 2,
     }
     assert candidate["operational_constraints"][0] not in candidate["component_responsibilities"]
     relations = require_relation_authority_parity(candidate, candidate[PRODUCT_INTENT_AUTHORITY_KEY])
-    assert relations[0]["visible_result_quote"] == "the review receipt"
-    assert not relations[2]["visible_result_quote"]
+    assert relations[compiler_orders[0] - 1]["visible_result_quote"] == "the review receipt"
+    assert not relations[compiler_orders[2] - 1]["visible_result_quote"]
     proposal = build_greenfield_proposal(repo_root=tmp_path, prompt=source,
         release_selector="0.0.1", confirmed_intent=candidate, require_completion_ready=False)
     validate_host_reasoned_proposal(proposal)
     assert semantic_diagram_alignment_issues(proposal, proposal["semantic_model"]) == []
     run = proposal["semantic_model"]["first_path_contract"]["events"]
-    assert [row["source_event_order"] for row in run] == [2, 1, 3]
+    assert [row["source_event_order"] for row in run] == [
+        compiler_orders[index - 1] for index in (2, 1, 3)
+    ]
     assert [row["visible_result"] for row in run] == [False, True, False]
     atlas = proposal["diagrams"][1]["mermaid_source"]
-    assert 'event1 -->|"source constraint 2"| event3' in atlas
+    assert (
+        f'event{compiler_orders[0]} -->|"source constraint 2"| '
+        f'event{compiler_orders[2]}'
+    ) in atlas
     assert 'event3 -.-> event1' not in atlas
     for owner, contract in (("components", "component_contract"), ("backlog", "provisional_workstream_contract")):
         supported = [event["event_quote"] for row in proposal[owner] for event in row[contract]["supporting_events"]]
@@ -152,29 +179,32 @@ def ordered_package(tmp_path):
         repo_root=tmp_path,
         host_candidate=host_candidate_response(response, evidence_text=source),
     )
+    compiler_orders = _compiler_event_orders(candidate, events)
+    assert compiler_orders == [3, 1, 2]
+    canonical_events = _compiler_ordered_events(candidate, events)
     assert candidate["component_responsibilities"] == [
-        events[0]["event_quote"],
-        events[2]["event_quote"],
+        canonical_events[1]["event_quote"],
+        canonical_events[2]["event_quote"],
     ]
     assert candidate["authored_semantics"]["component_responsibility_relations"] == [
         {
             "responsibility_path": "/component_responsibilities/0",
-            "responsibility_quote": events[0]["event_quote"],
+            "responsibility_quote": canonical_events[1]["event_quote"],
             "owner_system_path": "/title",
             "owner_system_quote": "Receipt Desk",
             "responsibility_source": "accepted_fact",
-            "first_path_event_order": 1,
-            "source_duty_id": "fixture-first-path-3",
+            "first_path_event_order": 2,
+            "source_duty_id": "fixture-first-path-2",
             "decision_set_sha256": candidate["authored_semantics"]["source_duty"]["ledger_receipt"]["decision_set_sha256"],
         },
         {
             "responsibility_path": "/component_responsibilities/1",
-            "responsibility_quote": events[2]["event_quote"],
+            "responsibility_quote": canonical_events[2]["event_quote"],
             "owner_system_path": "/title",
             "owner_system_quote": "Receipt Desk",
             "responsibility_source": "accepted_fact",
             "first_path_event_order": 3,
-            "source_duty_id": "fixture-first-path-2",
+            "source_duty_id": "fixture-first-path-3",
             "decision_set_sha256": candidate["authored_semantics"]["source_duty"]["ledger_receipt"]["decision_set_sha256"],
         },
     ]
@@ -183,22 +213,25 @@ def ordered_package(tmp_path):
         confirmed_intent=candidate, require_completion_ready=False,
     )
     validate_host_reasoned_proposal(proposal)
+    assert candidate["authored_semantics"]["provisional_design"]["first_run"]["event_orders"] == [
+        compiler_orders[index - 1] for index in (2, 3, 1)
+    ]
     assert candidate["prompt"].endswith(source + "\n")
-    return candidate["prompt"], candidate, proposal, events
+    return candidate["prompt"], candidate, proposal, canonical_events
 
 
-def test_citation_identity_survives_proposed_reordering_and_sealed_custody(ordered_package):
+def test_citation_identity_survives_compiler_id_remap_and_sealed_custody(ordered_package):
     source, candidate, _, events = ordered_package
     source_relations = first_path_relations_from_intent(candidate)
     proposed_relations = authored_first_run_relations(candidate)
     assert [row["order"] for row in source_relations] == [1, 2, 3]
-    assert [row["order"] for row in proposed_relations] == [2, 3, 1]
+    assert [row["order"] for row in proposed_relations] == [1, 2, 3]
     assert candidate["first_path"] == "\n".join(row["event_quote"] for row in events)
     assert candidate["authored_semantics"]["source_precedence"] == [
-        {"before_event": 2, "after_event": 3, "constraint_index": 1},
+        {"before_event": 1, "after_event": 2, "constraint_index": 1},
     ]
-    assert source_relations[0]["visible_result_quote"] == "the review receipt"
-    assert all(not row["visible_result_quote"] for row in source_relations[1:])
+    assert source_relations[2]["visible_result_quote"] == "the review receipt"
+    assert all(not row["visible_result_quote"] for row in source_relations[:2])
     for row in source_relations:
         assert source.encode()[row["source_start_byte"]:row["source_end_byte"]].decode() == row["event_quote"]
     assert require_relation_authority_parity(
@@ -213,6 +246,117 @@ def test_citation_identity_survives_proposed_reordering_and_sealed_custody(order
         require_relation_authority_parity(changed, candidate[PRODUCT_INTENT_AUTHORITY_KEY])
 
 
+def test_supporting_prerequisite_interleaves_first_path_across_all_projections(tmp_path):
+    """Keep first-path order while a cited system prerequisite runs between its steps."""
+
+    from odylith.runtime.domain_intelligence.greenfield_host_candidate_materialization import (
+        materialize_host_authored_intent,
+    )
+    from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
+        prepare_model_authoring_evidence,
+    )
+    from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+        synthetic_source_duty_receipt,
+    )
+    from tests.unit.runtime.test_greenfield_host_candidate import _response, _source
+
+    source = _source()
+    prepared = prepare_model_authoring_evidence(prompt=source)
+    response = _response(prepared.evidence_source)
+    response["result"]["facts"]["operational_constraints"].append({
+        "quote": "the product records berth occupancy before the berth map shows the placement",
+        "occurrence": 1,
+    })
+    response["result"]["source_precedence"] = [{
+        "before_event": 2, "after_event": 3, "constraint_index": 2,
+    }]
+    # Build the immutable source ledger before selecting the complete proposed walk.
+    response["result"]["provisional_design"]["first_run"]["event_orders"] = [1, 3]
+    host_candidate = host_candidate_response(response, evidence_text=prepared.evidence_source)
+    receipt = synthetic_source_duty_receipt(
+        host_candidate, evidence_text=prepared.evidence_source,
+    )
+    host_candidate["result"]["provisional_design"]["first_run"]["event_orders"] = [1, 3, 2]
+    candidate = materialize_host_authored_intent(
+        prompt=source,
+        repo_root=tmp_path,
+        host_candidate=host_candidate,
+        source_duty_receipt=receipt,
+        prepared_evidence=prepared,
+    )
+
+    source_relations = first_path_relations_from_intent(candidate)
+    proposed_relations = authored_first_run_relations(candidate)
+    assert [row["order"] for row in source_relations] == [1, 2, 3]
+    assert [row["order"] for row in proposed_relations] == [1, 3, 2]
+    source_bytes = candidate["prompt"].encode()
+    exact_source_events = [
+        "Dock attendant Ivo enters a vessel tag",
+        "the berth map shows the placement",
+        "the product records berth occupancy",
+    ]
+    for row, exact_source_event in zip(source_relations, exact_source_events, strict=True):
+        observed = source_bytes[row["source_start_byte"]:row["source_end_byte"]].decode()
+        assert observed == exact_source_event
+        assert row["event_quote"].endswith(exact_source_event)
+    assert require_relation_authority_parity(
+        candidate, candidate[PRODUCT_INTENT_AUTHORITY_KEY],
+    ) == source_relations
+
+    source_duty = candidate["authored_semantics"]["source_duty"]
+    assert [row["event_order"] for row in source_duty["binding"]["first_path_actions"]] == [1, 2]
+    assert [row["event_order"] for row in source_duty["binding"]["system_duties"]] == [3]
+    assert candidate["authored_semantics"]["source_precedence"] == [
+        {"before_event": 3, "after_event": 2, "constraint_index": 2},
+    ]
+    assert [row["order"] for row in proposed_relations if row["order"] in {1, 2}] == [1, 2]
+
+    proposal = build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=source,
+        release_selector="0.0.1",
+        confirmed_intent=candidate,
+        require_completion_ready=False,
+    )
+    validate_host_reasoned_proposal(proposal)
+    assert semantic_diagram_alignment_issues(proposal, proposal["semantic_model"]) == []
+    proposed = authored_first_run_text(candidate)
+    assert proposal["project_intelligence"]["scope"] == [proposed]
+    assert any(
+        row["must_capture"] == proposed
+        for row in proposal["project_brief"]["blueprint_sections"]
+    )
+    contract = proposal["semantic_model"]["first_path_contract"]
+    assert [row["source_event_order"] for row in contract["events"]] == [1, 3, 2]
+    assert [row["text"] for row in contract["events"]] == [
+        row["event_quote"] for row in proposed_relations
+    ]
+    sequence = next(
+        row for row in proposal["diagrams"] if row["slug"].endswith("first-path")
+    )
+    assert 'event3 -->|"source constraint 2"| event2' in sequence["mermaid_source"]
+    assert "event1 -.-> event3" in sequence["mermaid_source"]
+    assert proposed in render_product_intent_preview(candidate)
+    assert proposed in candidate_intent_stage_paths(tmp_path).markdown.read_text()
+
+    created = [
+        {
+            "idea_id": f"B-{index:03d}",
+            "title": row["title"],
+            "idea_path": str(tmp_path / f"support-workstream-{index}.md"),
+        }
+        for index, row in enumerate(proposal["backlog"], 1)
+    ]
+    handoff = build_next_steps(
+        proposal=proposal,
+        backlog_result={"created": created},
+        first_release_workstreams=tuple(row["idea_id"] for row in created),
+        release_selector="0.0.1",
+    )
+    assert proposed in handoff["implementation_prompt"]
+    assert handoff["coding_readiness_contract"]["source_facts"]["accepted_first_path"] == proposed
+
+
 def test_project_and_semantic_views_use_the_labeled_proposed_run(ordered_package):
     _, candidate, proposal, events = ordered_package
     proposed = "Proposed first run:\n" + "\n".join(
@@ -225,8 +369,8 @@ def test_project_and_semantic_views_use_the_labeled_proposed_run(ordered_package
     contract = proposal["semantic_model"]["first_path_contract"]
     assert contract["raw_path"] == proposed
     assert contract["capability"] == proposed
-    assert [row["text"] for row in contract["events"]] == [events[index - 1]["event_quote"] for index in (2, 3, 1)]
-    assert [row["source_event_order"] for row in contract["events"]] == [2, 3, 1]
+    assert [row["text"] for row in contract["events"]] == [row["event_quote"] for row in events]
+    assert [row["source_event_order"] for row in contract["events"]] == [1, 2, 3]
     assert [row["index"] for row in contract["events"]] == [1, 2, 3]
     assert contract["events"][-1]["visible_result"] is True
     assert len(proposal["components"]) == len(proposal["backlog"]) == 4
@@ -250,9 +394,9 @@ def test_atlas_proposes_order_but_registry_and_radar_keep_source_support_ids(ord
     sequence = next(row for row in proposal["diagrams"] if row["slug"] == "receipt-desk-first-path")
     assert sequence["authority_kind"] == "provisional_design"
     mermaid = sequence["mermaid_source"]
-    assert 'event2 -->|"source constraint 1"| event3' in mermaid
-    assert 'event3 -.-> event1' in mermaid
-    assert 'event2 -.-> event3' not in mermaid
+    assert 'event1 -->|"source constraint 1"| event2' in mermaid
+    assert 'event2 -.-> event3' in mermaid
+    assert 'event1 -.-> event2' not in mermaid
     assert "event3 --> event1" not in mermaid
     assert "event1 --> event2" not in mermaid
     assert "source order" not in sequence["summary"].casefold()
@@ -321,13 +465,13 @@ def test_synchronized_event_drift_cannot_pass_by_agreeing_with_itself(ordered_pa
     semantic = deepcopy(proposal["semantic_model"])
     changed = deepcopy(semantic["first_path_contract"]["events"])
     if damage == "order":
-        changed = sorted(changed, key=lambda row: row["source_event_order"])
+        changed = list(reversed(changed))
         for index, row in enumerate(changed, 1):
             row["index"] = index
     elif damage == "text":
         changed[0]["text"] = "A different, unsupported event"
     elif damage == "source_id":
-        changed[0]["source_event_order"] = 1
+        changed[0]["source_event_order"] = 3
     elif damage == "source_kind":
         changed[0]["source_kind"] = "accepted_first_path"
     else:

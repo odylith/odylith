@@ -10,6 +10,9 @@ from greenfield_matrix_corpus_provenance import case_provenance_summary
 
 from greenfield_matrix_corpus_provenance import GreenfieldCaseProvenance
 from greenfield_matrix_input_axes import DEFAULT_INPUT_STYLE
+from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
+    GreenfieldPreparedAuthoringEvidence, prepare_model_authoring_evidence,
+)
 
 
 DEFAULT_CASE_EXPECTATION = "transaction_committed"
@@ -41,6 +44,7 @@ class GreenfieldMatrixCase:
     metamorphic_transform: str = ""
     expected_clarification_field: str = ""
     expected_clarification_question: str = ""
+    lifecycle_correction: str = ""
 
     @property
     def slug(self) -> str:
@@ -62,6 +66,16 @@ class GreenfieldMatrixCase:
             "input.confirmed-intent": self.confirmed_intent_markdown,
             "input.edit-evidence": "",
         }
+
+    @property
+    def model_evidence(self) -> GreenfieldPreparedAuthoringEvidence:
+        initial = prepare_model_authoring_evidence(prompt=self.initial_prompt)
+        if not self.lifecycle_correction:
+            return initial
+        # Native EDIT reloads the compiler-retained initial frame as its prompt.
+        return prepare_model_authoring_evidence(
+            prompt=initial.evidence_source, edit_evidence=self.lifecycle_correction,
+        )
 
 
 def case_expectation(case: GreenfieldMatrixCase) -> str:
@@ -87,6 +101,10 @@ def case_evidence(case: GreenfieldMatrixCase) -> dict[str, object]:
     confirmed_intent = str(getattr(case, "confirmed_intent_markdown", "") or "").strip()
     if confirmed_intent:
         evidence["confirmed_intent_sha256"] = hashlib.sha256(confirmed_intent.encode("utf-8")).hexdigest()
+    if case.lifecycle_correction:
+        evidence["lifecycle_correction_sha256"] = hashlib.sha256(
+            case.lifecycle_correction.encode("utf-8")
+        ).hexdigest()
     expected_clarification_field = str(
         getattr(case, "expected_clarification_field", "") or ""
     ).strip()

@@ -223,7 +223,8 @@ def qualify_saved_public_evidence(
             raise ValueError("public floors differ from the published contract: " + "; ".join(floor_issues))
         cases = load_case_file(Path(source_evidence["source_cases"]["path"]))
         semantic = evaluate_semantic_release(cases=cases, annotations={}, results=primary,
-            floors=floors, release_required_slices=release_slice_contract(), source_predicate_evidence=source_evidence)
+            floors=floors, release_required_slices=release_slice_contract(), source_predicate_evidence=source_evidence,
+            retained_evidence_manifest=retained_manifest_path)
         profile = model_profile_release_proof(rows, require_complete=True,
             whole_journey_bound_evidence=bound_evidence, public_source_evidence=source_evidence)
         readiness = _saved_scorecard(base, rows, profile)

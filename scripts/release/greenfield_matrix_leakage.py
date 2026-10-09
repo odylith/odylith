@@ -208,7 +208,8 @@ def _without_labeled_citations(text: str, citations: set[tuple[str, int]]) -> st
 
 
 def _product_claim_text(*, case: GreenfieldMatrixCase, package: Any, citation_issues: list[str]) -> str:
-    evidence = case.initial_prompt.encode("utf-8")
+    source = case.model_evidence.evidence_source if case.lifecycle_correction else case.initial_prompt
+    evidence = source.encode("utf-8")
     proposal = getattr(package, "proposal", None)
     claims: dict[str, Any] = {
         "source_launch": getattr(package, "source_launch_readback", None),
@@ -248,7 +249,7 @@ def _product_claim_text(*, case: GreenfieldMatrixCase, package: Any, citation_is
         for artifact in collect_rendered_package_artifacts(package)
     ]
     for value in claims.values():
-        texts.extend(_typed_claim_texts(value, citations, case.initial_prompt))
+        texts.extend(_typed_claim_texts(value, citations, source))
     return "\n".join(texts)
 
 

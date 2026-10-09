@@ -304,6 +304,25 @@ def test_multiline_unicode_exact_context_and_citation_bytes_are_preserved() -> N
     assert package.__dict__ == before
 
 
+@pytest.mark.parametrize("damage", [None, "outside_correction", "wrong_occurrence", "wrong_context", "unlabeled"])
+def test_lifecycle_correction_citations_use_the_exact_compiler_reloaded_source(damage) -> None:
+    correction = "Keep the café reviewer’s résumé → decision citation."
+    case = replace(_case(), lifecycle_correction=correction)
+    package = _cited_package(case)
+    ref = {"quote": correction, "occurrence": 1, "context": correction}
+    package.project_dashboard_preview["source_refs"] = [ref]
+    if damage == "outside_correction":
+        ref["quote"] = "Permit automatic approval without review."
+    elif damage == "wrong_occurrence":
+        ref["occurrence"] = 2
+    elif damage == "wrong_context":
+        ref["context"] = "Approval transfers to the platform."
+    elif damage == "unlabeled":
+        package.project_dashboard_preview["description"] = case.provenance.source_excerpt
+    issues = leakage.source_evidence_custody_issues(case=case, package=package)
+    assert bool(issues) == bool(damage)
+
+
 @pytest.mark.parametrize("field", ("runtime_dependency", "certification", "responsibility"))
 def test_valid_source_reference_does_not_hide_additional_authority_fields(field: str) -> None:
     case = _case()

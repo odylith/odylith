@@ -36,7 +36,7 @@ def test_actual_driver_real_cli_preflight_stops_invalid_exact_field_identity(tmp
     gate = {"decision": "admit", "required_fields": [], "owner_quote": "reviewer",
             "task_quote": "defines scope", "result_quote": "scope", "question": ""}
     flow, _host_stub, _installed_stub, _host_stub_calls, proposals, repo = _flow(
-        tmp_path, contract={"version": "unused fixture"}, candidate={},
+        tmp_path, contract={}, candidate={},
     )
     installed, host_calls, retained = [], [], {}
     evidence_root = tmp_path / "private-evidence"

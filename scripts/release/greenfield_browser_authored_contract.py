@@ -19,15 +19,34 @@ from odylith.runtime.domain_intelligence.greenfield_provisional_design import va
 
 
 AUTHORED_STRUCTURE_EXPRESSION = """(node) => {
-  const visibleText = (item) => item?.checkVisibility({checkOpacity: true, checkVisibilityCSS: true})
+  const visible = (item) => Boolean(item?.checkVisibility({checkOpacity: true, checkVisibilityCSS: true}));
+  const text = (item) => String(item?.textContent || "").trim().replace(/\\s+/g, " ");
+  const visibleText = (item) => visible(item)
     ? String(item.innerText || "").trim().replace(/\\s+/g, " ") : "";
   const eventRows = (selector) => Array.from(node.querySelectorAll(selector)).map((item) => ({
-    order: Number(item.dataset.eventOrder || "0"), text: visibleText(item)
+    order: Number(item.dataset.eventOrder || "0"), text: visibleText(item),
+    quote_count: item.querySelectorAll(':scope > [data-authored-event-quote]').length,
+    quote: visibleText(item.querySelector(':scope > [data-authored-event-quote]'))
   }));
   const firstPath = node.querySelector('[data-authored-fact-list="first_path"]');
+  const firstPathCard = firstPath?.closest('[data-semantic-slot="first_path"]');
+  const disclosures = Array.from(firstPathCard?.querySelectorAll('[data-authored-event-details]') || []);
   const capabilities = node.querySelector('[data-authored-fact-list="owned_capabilities"]');
   return {
     first_path: eventRows('[data-authored-fact-list="first_path"] [data-authored-fact-item]'),
+    first_path_details: disclosures.map((item) => ({
+      native: item.tagName === 'DETAILS' && item.querySelectorAll(':scope > summary').length === 1,
+      open: Boolean(item.open), summary: visibleText(item.querySelector(':scope > summary'))
+    })),
+    first_path_evidence: Array.from(firstPathCard?.querySelectorAll('[data-authored-event-evidence]') || []).map((item) => ({
+      order: Number(item.dataset.eventOrder || "0"),
+      labels: Array.from(item.querySelectorAll('dt')).map(text),
+      values: Array.from(item.querySelectorAll('dd')).map(text),
+      actor_count: item.querySelectorAll('[data-authored-event-actor-value]').length,
+      actor: text(item.querySelector('[data-authored-event-actor-value]')),
+      in_disclosure: disclosures.length === 1 && disclosures[0].contains(item),
+      visible: Array.from(item.querySelectorAll('dt, dd')).every(visible)
+    })),
     first_path_authority: String(firstPath?.dataset.authorityKind || ""),
     first_path_label: visibleText(firstPath?.closest('[data-semantic-slot="first_path"]')
       ?.querySelector('[data-proposed-first-run-label]')),
@@ -53,6 +72,32 @@ AUTHORED_STRUCTURE_EXPRESSION = """(node) => {
     }))
   };
 }"""
+
+
+def prove_authored_event_disclosure(root: Any, *, timeout_ms: int) -> tuple[Any, tuple[str, ...]]:
+    """Read the closed contract, then prove native keyboard access to its evidence."""
+
+    initial = root.evaluate(AUTHORED_STRUCTURE_EXPRESSION)
+    if initial.get("first_path_details") != [
+        {"native": True, "open": False, "summary": "Supporting details"}
+    ]:
+        return initial, ()  # The typed contract rejects the invalid initial disclosure.
+    summary = root.locator('[data-authored-event-details] > summary')
+    summary.focus(timeout=timeout_ms)
+    summary.press("Enter", timeout=timeout_ms)
+    opened = root.evaluate(AUTHORED_STRUCTURE_EXPRESSION)
+    expected_details = [{"native": True, "open": True, "summary": "Supporting details"}]
+    expected_evidence = [{**row, "visible": True} for row in initial["first_path_evidence"]]
+    issues: list[str] = []
+    if (opened.get("first_path_details") != expected_details
+            or opened.get("first_path_evidence") != expected_evidence
+            or opened.get("first_path") != initial.get("first_path")):
+        issues.append("browser surface project supporting evidence is not visibly accessible by keyboard")
+    if opened.get("first_path_details") == expected_details:
+        summary.press("Space", timeout=timeout_ms)
+    if root.evaluate(AUTHORED_STRUCTURE_EXPRESSION) != initial:
+        issues.append("browser surface project supporting evidence did not close intact by keyboard")
+    return initial, tuple(issues)
 
 _GENERATED_TEXT_SUFFIXES = frozenset({".css", ".html", ".js", ".json", ".md", ".mmd", ".txt"})
 
@@ -307,11 +352,29 @@ def authored_structure_issues(rendered: Any, authored_facts: Any) -> tuple[str, 
     expected_events = [
         {
             "order": row["order"],
-            "text": _browser_visible_text(f"Actor: {row['actor_fact_quote']} {row['event_quote']}"),
+            "text": _browser_visible_text(row["event_quote"]),
+            "quote_count": 1,
+            "quote": _browser_visible_text(row["event_quote"]),
         }
         for row in event_rows
     ]
     issues: list[str] = []
+    if rendered.get("first_path_details") != [
+        {"native": True, "open": False, "summary": "Supporting details"}
+    ]:
+        issues.append("browser surface project first path requires one closed native supporting disclosure")
+    expected_evidence = [
+        {
+            "order": row["order"], "labels": ["Actor", "Actor kind", "Source event"],
+            "values": [_browser_visible_text(row["actor_fact_quote"]), row["actor_kind"],
+                       _browser_visible_text(row["event_quote"])],
+            "actor_count": 1, "actor": _browser_visible_text(row["actor_fact_quote"]),
+            "in_disclosure": True, "visible": False,
+        }
+        for row in event_rows
+    ]
+    if rendered.get("first_path_evidence") != expected_evidence:
+        issues.append("browser surface project supporting evidence does not preserve typed actor, kind, source and order")
     for surface in ("first_path",):
         actual = rendered.get(surface)
         if actual != expected_events:
@@ -521,6 +584,7 @@ __all__ = [
     "authored_structure_issues",
     "expected_proof_card",
     "generated_tree_path_leak_issues",
+    "prove_authored_event_disclosure",
     "project_state_assertion_issues",
     "project_story_binding_issues",
     "story_rows_match_payload",

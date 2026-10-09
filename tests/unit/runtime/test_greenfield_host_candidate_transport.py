@@ -46,7 +46,7 @@ def test_candidate_phase_preserves_every_material_row_and_control_losslessly(edi
         contract, source_duty_receipt=receipt, authority_admission=admission,
     )
     assert request["transport_version"] == HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION
-    assert HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION == "odylith.greenfield.host-candidate-authoring-transport.v2"
+    assert HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION == "odylith.greenfield.host-candidate-authoring-transport.v3"
     for key in ("version", "candidate_version", "canonical_version", "task",
                 "requirements", "request"):
         assert request[key] == contract[key]
@@ -68,7 +68,9 @@ def test_candidate_phase_preserves_every_material_row_and_control_losslessly(edi
                                      "verifier_task_sha256", "decision_set_sha256")
     }
     assert not {"authority_gate", "source_ledger", "accepted_source_duty_receipt", "decision_set"} & request.keys()
-    assert "actor_ref q/c" in request["citation_resolution"]
+    assert "source_event_catalog freezes every performer" in request["citation_resolution"]
+    assert len(request["source_event_catalog"]["events"]) == sum(len(receipt["ledger"][section])
+        for section in ("first_path_actions", "supporting_human_actions", "system_duties"))
     assert "Do not reverify source duties" in request["citation_resolution"]
     assert (contract, receipt, admission) == before
     request["request"]["evidence"] = "changed after transport"
@@ -187,7 +189,7 @@ def test_inventory_stdin_omits_only_schema_with_initial_and_edit_custody(
     expected = json.dumps(old, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
     actual = calls[0][1]["contract_text"].encode("utf-8")
     assert actual == expected == retained["source-ledger.stdin.json"]
-    assert len(old_bytes) - len(actual) == 5708
+    assert len(old_bytes) - len(actual) == 5838
     assert retained["source-ledger-schema.json"] == schema_bytes
     assert observation["source_ledger_schema_sha256"] == hashlib.sha256(schema_bytes).hexdigest()
     assert observation["source_ledger_request"]["output_schema_present"] is True

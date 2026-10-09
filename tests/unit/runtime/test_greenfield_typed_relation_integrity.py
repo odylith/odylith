@@ -17,9 +17,6 @@ from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring impor
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     build_product_intent_envelope,
 )
-from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
-    GreenfieldSourceDutyBindingError,
-)
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     admit_complete_host_candidate,
     authored_response,
@@ -162,12 +159,27 @@ def test_named_product_event_accepts_its_exact_selected_owner() -> None:
 
 
 def test_external_event_actor_must_reference_a_selected_external_fact() -> None:
+    from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import canonical_greenfield_host_candidate
+    from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import validate_greenfield_authoring_response
+    from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import STANDARD_PROFILE_ID
+    from tests.unit.runtime.greenfield_model_authoring_fixtures import source_duty_fixture
     evidence, _intent, response = _harbor_case()
-    relations = model_event_rows(response)
-    relations[1]["actor_fact"] = {"field": "external_systems", "row": 2}
-
-    with pytest.raises(GreenfieldSourceDutyBindingError, match="unknown actor fact"):
-        _author(evidence, response)
+    candidate = host_candidate_response(response, evidence_text=evidence)
+    source_duty = source_duty_fixture(candidate, evidence_text=evidence)
+    canonical = canonical_greenfield_host_candidate(
+        candidate, evidence_text=evidence, source_duty_receipt=source_duty["ledger_receipt"],
+    )
+    canonical["result"]["events"][1]["actor_fact"] = {"field": "external_systems", "row": 2}
+    with pytest.raises(GreenfieldModelAuthoringError, match="unbound first-path actor fact"):
+        validate_greenfield_authoring_response(
+            canonical, evidence_text=evidence, elapsed_seconds=1.0,
+            provider={"kind": "host_native", "host": "codex", "model": "fixture-model"},
+            profile_id=STANDARD_PROFILE_ID, effective_timeout_seconds=315.0,
+            semantic_model_call_count=1, event_citations_are_event_owned=True,
+            first_path_event_orders=[1, 2, 3, 4],
+            accepted_source_duties=source_duty["ledger_receipt"],
+            accepted_source_duty_binding=source_duty["binding"],
+        )
 
 
 def test_exact_external_actor_kind_is_derived_from_its_selected_fact() -> None:

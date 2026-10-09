@@ -42,12 +42,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 901,
-    "mapped_workstream_evidence_count": 814,
+    "explicit_event_count": 904,
+    "mapped_workstream_evidence_count": 817,
     "recent_path_match_count": 0,
     "spec_history_event_count": 37,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 901
+    "timeline_event_count": 904
   },
   "name": "Compass",
   "path_prefixes": [
@@ -57,6 +57,125 @@
   ],
   "spec_ref": "odylith/registry/source/components/compass/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_source_duty_binding.py"
+      ],
+      "confidence": "high",
+      "event_index": 1592,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-10-09T01:37:03-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "sha256:2301d4627e9a93f327e6bcbae249831ef6b0f19581ecf4b48a9525e72dec9ec3",
+        "sha256:8116d90b540b9bc86c9293935cf783ae4d912ebdaf082b788e50f756b261a65f",
+        "sha256:d3a3519ab4cce1641bb965db142bb2f97ee0e6042ee447e85d4de3b3e7ec1628"
+      ],
+      "confidence": "high",
+      "event_index": 1591,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-10-08T23:33:55-07:00",
+      "workstreams": [
+        "B-142",
+        "B-145"
+      ]
+    },
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "sha256:5f6f269e194cc23d5fa05f876c688ffdd55c85385508c77ceef22622e9e12873",
+        "sha256:df8fc4864f7b5252817bef1b9d874cd663721468ba3f76a4fe2e9cfe07a235eb",
+        "sha256:2d83a8f66dfe5c7aac852862df7cf61a7c382f4b57b61d9138d8ef016679b22e"
+      ],
+      "confidence": "high",
+      "event_index": 1590,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-10-08T23:08:05-07:00",
+      "workstreams": [
+        "B-142",
+        "B-145"
+      ]
+    },
     {
       "artifact_count": 1,
       "artifacts": [

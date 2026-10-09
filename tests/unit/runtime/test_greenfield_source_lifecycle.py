@@ -92,14 +92,6 @@ def _case(noun: str) -> tuple[str, dict, dict, dict]:
     )
     candidate = {
         "status": "authored",
-        "events": [
-            {
-                "actor_fact": {"field": "human_actors", "row": 1},
-            },
-            {
-                "actor_fact": {"field": "human_actors", "row": 2},
-            },
-        ],
         "facts": {"human_actors": [
             {"quote": "steward", "context": f"A steward opens the {noun}"},
             _citation("reviewer"),

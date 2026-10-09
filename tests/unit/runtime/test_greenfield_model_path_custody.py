@@ -6,6 +6,7 @@ import hashlib
 from typing import Any
 
 import pytest
+from odylith.runtime.domain_intelligence.greenfield_host_candidate import admit_greenfield_host_candidate
 
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     GreenfieldAuthoredSemanticsError,
@@ -25,6 +26,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 )
 from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
     GreenfieldSourceDutyBindingError,
+    validate_greenfield_source_duty_binding,
 )
 from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
     GreenfieldSourceDutyLedgerError,
@@ -132,7 +134,10 @@ def _complete_host_candidate_kwargs(
 def _source_duty_for_response(response: dict[str, Any], source: str) -> dict[str, Any]:
     candidate = host_candidate_response(response, evidence_text=source)
     receipt = synthetic_source_duty_receipt(candidate, evidence_text=source)
-    binding = candidate["result"]["source_duty_binding"]
+    binding = validate_greenfield_source_duty_binding(
+        candidate["result"]["source_duty_binding"], ledger_receipt=receipt,
+        candidate_result=candidate["result"], evidence_text=source,
+    )
     return {
         "ledger_receipt": receipt,
         "binding": binding,
@@ -483,14 +488,11 @@ def test_unselected_actor_fact_cannot_start_or_switch_an_actor_chain(
     relation_index: int,
 ) -> None:
     source, response, _intent = _carried_human_actor_response()
-    relation = model_event_rows(response)[relation_index]
-    relation["actor_fact"] = {"field": "human_actors", "row": 99}
-
-    with pytest.raises(GreenfieldSourceDutyBindingError, match="unknown actor fact"):
-        admit_complete_host_candidate(
-            evidence_text=source,
-            **_complete_host_candidate_kwargs(response, source),
-        )
+    candidate = host_candidate_response(response, evidence_text=source)
+    receipt = synthetic_source_duty_receipt(candidate, evidence_text=source)
+    candidate["result"]["events"] = [{"actor_fact": {"field": "human_actors", "row": 99}}]
+    with pytest.raises(GreenfieldSourceDutyBindingError, match="must not author source events"):
+        admit_greenfield_host_candidate(candidate, evidence_text=source, source_duty_receipt=receipt)
 
 
 @pytest.mark.parametrize("retired_field", ["actor_quote", "actor_is_carried"])

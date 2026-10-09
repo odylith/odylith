@@ -1,4 +1,4 @@
-"""Expand the closed compact host form of a v5 source-duty ledger."""
+"""Expand the fresh typed source-duty inventory without changing material rows."""
 
 from __future__ import annotations
 

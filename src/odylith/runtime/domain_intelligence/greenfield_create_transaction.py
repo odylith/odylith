@@ -70,10 +70,13 @@ from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
     EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
     LEGACY_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
     SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+    PASSIVE_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+    PASSIVE_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
 )
 from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
     HOST_CANDIDATE_CONTRACT_VERSION,
     PREVIOUS_HOST_CANDIDATE_CONTRACT_VERSION,
+    PASSIVE_HOST_CANDIDATE_CONTRACT_VERSIONS,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_FACTS_HASH_KEY
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_facts_hash
@@ -375,13 +378,13 @@ def _require_host_candidate_authority_binding(
     ledger_receipt = source_duty.get("ledger_receipt") if isinstance(source_duty, Mapping) else None
     lifecycle = source_duty.get("lifecycle") if isinstance(source_duty, Mapping) else None
     edit_versions = {(EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION, HOST_CANDIDATE_CONTRACT_VERSION)}
+    initial_versions = {(SOURCE_DUTY_LEDGER_RECEIPT_VERSION, HOST_CANDIDATE_CONTRACT_VERSION)}
     if passive:
-        edit_versions.add((EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
-                           "odylith.greenfield.host-candidate-contract.v53"))
-        edit_versions.add((EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
-                           "odylith.greenfield.host-candidate-contract.v52"))
-        edit_versions.add((EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
-                           "odylith.greenfield.host-candidate-contract.v51"))
+        initial_versions.update((PASSIVE_SOURCE_DUTY_LEDGER_RECEIPT_VERSION, version)
+                                for version in PASSIVE_HOST_CANDIDATE_CONTRACT_VERSIONS)
+        edit_versions.update((PASSIVE_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+                              f"odylith.greenfield.host-candidate-contract.v{version}")
+                             for version in (51, 52, 53, 54))
         edit_versions.add((LEGACY_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
                            PREVIOUS_HOST_CANDIDATE_CONTRACT_VERSION))
     if (
@@ -389,7 +392,7 @@ def _require_host_candidate_authority_binding(
         or (not passive and host.get("contract_version") != HOST_CANDIDATE_CONTRACT_VERSION)
         or not isinstance(lifecycle, Mapping)
         or ("edit_preservation" not in ledger_receipt
-            and ledger_receipt.get("version") != SOURCE_DUTY_LEDGER_RECEIPT_VERSION)
+            and (ledger_receipt.get("version"), host.get("contract_version")) not in initial_versions)
         or ("edit_preservation" in ledger_receipt and (
             ledger_receipt.get("version"), host.get("contract_version")) not in edit_versions)
         or ledger_receipt.get("source_sha256") != authority.get("markdown_source_sha256")
@@ -416,6 +419,21 @@ def _require_host_candidate_authority_binding(
             authored_semantics["component_responsibility_relations"], intent=intent,
             first_path_relations=first_path_relations_from_intent(intent), require_verified_duties=True,
         )
+        from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
+            project_greenfield_source_event_catalog,
+        )
+        catalog = project_greenfield_source_event_catalog(ledger_receipt, evidence_text=intent["prompt"])
+        for actor in catalog["performers"]:
+            if not any(
+                atom.get("normalized_value") == actor["quote"]
+                and any(link.get("path") == actor["path"] and link.get("relation_order") == 0
+                        for link in atom.get("projection_links", ()))
+                and any(ref.get("source_start_byte") == actor["source_start_byte"]
+                        and ref.get("source_end_byte") == actor["source_end_byte"]
+                        for ref in atom.get("source_span_refs", ()))
+                for atom in authority["atomic_facts"]
+            ):
+                raise ValueError("ProductCreateTransaction sealed source performer custody differs from its catalog")
 
 
 def require_product_create_transaction_verified(transaction: ProductCreateTransaction) -> None:

@@ -40,6 +40,8 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_invariants import (
     REFERENCE_PROVENANCE_ROLE_CONTRACT,
 )
 from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
+    HOST_SOURCE_DUTY_BINDING_VERSION,
+    project_greenfield_source_event_catalog,
     validate_greenfield_source_duty_binding,
 )
 from odylith.runtime.domain_intelligence.greenfield_source_duty_compact import (
@@ -56,8 +58,9 @@ from odylith.runtime.domain_intelligence.greenfield_authority_gate import (
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v7"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v54"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v55"
 PASSIVE_HOST_CANDIDATE_CONTRACT_VERSIONS = (
+    "odylith.greenfield.host-candidate-contract.v54",
     "odylith.greenfield.host-candidate-contract.v53",
     "odylith.greenfield.host-candidate-contract.v52",
     "odylith.greenfield.host-candidate-contract.v51",
@@ -66,7 +69,7 @@ PASSIVE_HOST_CANDIDATE_CONTRACT_VERSIONS = (
 )
 PREVIOUS_HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v50"
 LEGACY_HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v49"
-HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION = "odylith.greenfield.host-candidate-authoring-transport.v2"
+HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION = "odylith.greenfield.host-candidate-authoring-transport.v3"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
 
 
@@ -112,15 +115,14 @@ def greenfield_host_candidate_contract(
                 "authority; this candidate may only bind its IDs, never redefine their meaning."
             ),
             (
-                "Bind every accepted first-path action in ledger order to one actor fact address. "
+                "The frozen source_event_catalog owns every accepted action's event ID and actor address. "
                 "The proposed first_run must contain every bound first-path event and "
                 "exactly its transitive prerequisites from the cited source_precedence graph. "
                 "Keep the first-path events as an ordered subsequence in ledger order, and "
                 "place every prerequisite before its dependent event. Supporting human and "
                 "system prerequisites retain their source roles; exclude every unrelated "
-                "supporting or system duty. Bind every supporting human action "
-                "and system duty to its own actor fact address; every event must have one "
-                "source-duty role. Bind every passive off-path transition "
+                "supporting or system duty. Event IDs are storage identifiers, never temporal edges. "
+                "Do not emit events or action-duty remapping tables. Bind every passive off-path transition "
                 "and its effects to governed state fields and owned design components without "
                 "inventing an actor event."
             ),
@@ -145,11 +147,15 @@ def greenfield_host_candidate_contract(
                 "contributes no additional meaning."
             ),
             (
-                "The candidate must not author event citations, actions, or targets. Bind each "
-                "accepted ledger action atom to a distinct event order and select only its actor "
-                "fact. The bound actor fact must cite the ledger actor_ref exactly. Two actions "
+                "The candidate must not author event IDs, citations, actors, actions, targets or "
+                "action binding tables. Reference only frozen source_event_catalog IDs in design, "
+                "first_run, terminal and cited source_precedence. Two actions "
                 "in one joined clause remain two atoms and may share the same complete event_ref, "
                 "while the accepted ledger statement carries distinct role-local meaning. "
+                "The catalog inserts all performing source identities before supplemental facts. "
+                "Keep source-supported nonperforming beneficiaries and dependencies in the facts arrays. "
+                "When the catalog supplies a product_title performer, facts.title must be null or "
+                "the same exact source identity; it cannot replace that performer. "
                 "Never narrow a cited event to an inherited fragment. Odylith derives each "
                 "accepted product responsibility from its verified action duty and exact actor; "
                 "do not author independent component responsibility citations."
@@ -249,7 +255,8 @@ def greenfield_host_candidate_contract(
                 "quote must be a proper literal substring of statement. Retain the identity "
                 "quote when normalizing pronouns or inherited verbs; actor_ref may come from "
                 "explicit role context. Reuse one canonical actor citation across that actor's "
-                "actions and supporting duties where possible. Literal containment proves "
+                "actions and supporting duties. Repeated labels at distinct occurrences do not "
+                "declare equivalence. Missing or uncertain canonical identity requires clarification. Literal containment proves "
                 "custody only; the existing source-only verifier judges identity atomicity "
                 "and performer entailment. role_refs supply nonempty exact source contexts "
                 "supporting its typed duty role. actor_ref already owns the exact source "
@@ -257,8 +264,11 @@ def greenfield_host_candidate_contract(
                 "source_refs contains only extra support; the compiler derives the event "
                 "support. Do not repeat event_ref or actor_ref as aliases. Distinct actions may "
                 "share an event, but do not duplicate an atom under another section or "
-                "redundant statement. Only first_path_actions carries performer_role and "
-                "observable_result. Declare each state field once per exact state_object and "
+                "redundant statement. first_path_actions carries performer_role and observable_result. "
+                "system_duties also carries performer_role, restricted to internal_system, "
+                "external_system or product_title; supporting_human_actions always owns human_actor. "
+                "The same source-only verifier must affirm each exact performer kind. "
+                "Declare each state field once per exact state_object and "
                 "field label. Every off-path effect must reuse that canonical field label "
                 "exactly and its transition governed_object must equal the field's state_object. "
                 "Several ordered effects may reference one parent field; preserve their distinct "
@@ -315,10 +325,28 @@ def greenfield_host_candidate_authoring_request(
         contract.get("candidate_schema"), Mapping
     ):
         raise ValueError("Greenfield candidate authoring contract is incomplete")
+    if (contract["version"] != HOST_CANDIDATE_CONTRACT_VERSION
+            or contract["candidate_version"] != HOST_CANDIDATE_FORMAT_VERSION
+            or contract["canonical_version"] != GREENFIELD_INTENT_AUTHORING_VERSION
+            or contract["candidate_schema"] != greenfield_host_candidate_schema()):
+        raise ValueError("Greenfield candidate authoring contract version or schema is invalid")
+    catalog = project_greenfield_source_event_catalog(receipt, evidence_text=source)
+    inventory = compact_source_duty_view(receipt["ledger"])
+    duties = {row["id"]: row for section in (
+        "first_path_actions", "supporting_human_actions", "system_duties",
+    ) for row in inventory[section]}
     return {
         **{key: deepcopy(contract[key]) for key in retained_fields},
         "transport_version": HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION,
-        "accepted_source_duty_inventory": compact_source_duty_view(receipt["ledger"]),
+        "accepted_source_duty_inventory": inventory,
+        "source_event_catalog": {
+            "performers": [{"field": actor["field"], "row": actor["row"],
+                            "actor_ref": duties[actor["duty_id"]]["actor_ref"]}
+                           for actor in catalog["performers"]],
+            "events": [{key: event[key] for key in (
+                "event_order", "binding_role", "duty_id", "actor_fact",
+            )} for event in catalog["events"]],
+        },
         "source_duty_custody": {
             key: receipt[key] for key in (
                 "version", "source_sha256", "ledger_sha256", "verifier_task_sha256",
@@ -329,8 +357,9 @@ def greenfield_host_candidate_authoring_request(
         "citation_resolution": (
             "accepted_source_duty_inventory is the lossless accepted ledger with citations "
             "interned by ID. Resolve each citation ID through citations: q is its exact quote "
-            "and c its exact source context. Copy the resolved actor_ref q/c into its actor "
-            "fact without rewriting. Preserve all duty IDs, row order, roles, and evidence "
+            "and c its exact source context. source_event_catalog freezes every performer "
+            "and event before candidate authoring; performer actor_ref IDs address this same "
+            "citation bank. Do not redefine its identities or event IDs. Preserve all duty IDs, row order, roles, and evidence "
             "controls; bind source_duty_binding hashes from source_duty_custody. The external "
             "controller retains the complete verified receipt. Do not reverify source duties."
         ),
@@ -384,6 +413,8 @@ def admit_greenfield_host_candidate(
     raw_result = response.get("result")
     binding: dict[str, Any] | None = None
     if isinstance(raw_result, Mapping) and raw_result.get("status") == "authored":
+        if not isinstance(raw_result.get(HOST_SOURCE_DUTY_BINDING_FIELD), Mapping) or raw_result[HOST_SOURCE_DUTY_BINDING_FIELD].get("version") != HOST_SOURCE_DUTY_BINDING_VERSION:
+            raise ValueError("fresh Greenfield candidate requires lifecycle-only source duty binding")
         binding = validate_greenfield_source_duty_binding(
             raw_result.get(HOST_SOURCE_DUTY_BINDING_FIELD),
             ledger_receipt=verified_ledger,

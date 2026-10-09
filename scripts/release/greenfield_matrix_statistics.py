@@ -4,8 +4,11 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict
 from collections.abc import Mapping, Sequence
+from dataclasses import replace
 import hashlib
+import json
 from math import sqrt
+from pathlib import Path
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
@@ -23,8 +26,19 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 )
 
 from greenfield_matrix_types import GreenfieldMatrixResult
-from greenfield_model_profile_proof import model_profile_release_proof
+from greenfield_matrix_transaction_evidence import _TERMINAL_CONFIRMATION_FIELDS, _TERMINAL_CONFIRMATION_VERSION
+from greenfield_matrix_release_artifacts import (
+    repo_artifact_path, retained_evidence_manifest_issues, sha256_file,
+)
+from greenfield_model_profile_proof import authored_model_result_binding_issues, model_profile_release_proof
 from greenfield_preconfirm_matrix_cases import case_evidence
+from odylith.runtime.domain_intelligence.greenfield_create_transaction import load_compiled_product_create_transaction_file
+from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import prepare_model_authoring_evidence
+from odylith.runtime.domain_intelligence.greenfield_pending_transaction_store import require_pending_transaction_released
+from odylith.runtime.domain_intelligence.greenfield_prewrite_commit_result import require_greenfield_commit_result_preview
+from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import greenfield_edit_preservation_context
+from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import verify_greenfield_source_duty_ledger_receipt
+from odylith.runtime.domain_intelligence.greenfield_whole_journey_budget import whole_journey_observation_issues
 
 
 STATISTICS_VERSION = "odylith.greenfield.matrix.statistics.v4"
@@ -74,6 +88,7 @@ def outcome_statistics(
     results: Sequence[GreenfieldMatrixResult],
     release: bool = False,
     required_slices: Mapping[str, Sequence[str]] | None = None,
+    retained_evidence_manifest: Path | None = None,
 ) -> dict[str, Any]:
     """Report point estimates, intervals, and evidence-bound release slices.
 
@@ -98,7 +113,6 @@ def outcome_statistics(
             missing_case_ids.append(case_id)
             continue
         passed = result.status == "passed" and result.quality.passed
-        rows.append({"case_id": case_id, "passed": passed})
         slices = _case_slices(case)
         if release:
             safe_clarification = _safe_unsealed_clarification(case=case, result=result)
@@ -111,11 +125,14 @@ def outcome_statistics(
                     else None
                 ),
                 allow_unsealed_clarification=safe_clarification,
+                retained_evidence_manifest=retained_evidence_manifest,
             )
             evidence_issues.extend(
                 f"case `{case_id}` {issue}"
                 for issue in sealed_issues
             )
+            if getattr(case, "lifecycle_correction", "") and sealed_issues:
+                passed = False
             slices = (
                 *(
                     row
@@ -124,6 +141,7 @@ def outcome_statistics(
                 ),
                 *sealed_slices.items(),
             )
+        rows.append({"case_id": case_id, "passed": passed})
         for dimension, value in slices:
             slice_members[(dimension, value)].append(passed)
 
@@ -439,19 +457,16 @@ def release_statistical_confidence_sample_minimum(
 def expected_case_evidence_format(case: Any) -> str:
     """Return the public format actually sent through Greenfield authoring."""
 
-    return "operator_prompt"
+    return case.model_evidence.source_format
 
 
 def expected_case_source_complexity(case: Any) -> dict[str, int]:
     """Return source dimensions independently knowable from frozen case bytes."""
 
-    evidence_source = combined_prompt_evidence_source(
-        prompt=case.initial_prompt,
-        edit_evidence="",
-    )
+    prepared = case.model_evidence
     return {
-        "evidence_bytes": len(evidence_source.encode("utf-8")),
-        "documents": 1,
+        "evidence_bytes": len(prepared.evidence_source.encode("utf-8")),
+        "documents": prepared.source_document_count,
     }
 
 
@@ -462,6 +477,7 @@ def release_slice_evidence(
     annotated_complexity: Mapping[str, Any] | None = None,
     source_predicate_complexity: Mapping[str, Any] | None = None,
     allow_unsealed_clarification: bool = False,
+    retained_evidence_manifest: Path | None = None,
 ) -> tuple[dict[str, str], tuple[str, ...]]:
     """Return support slices from sealed evidence, never from mutable case tags."""
 
@@ -516,6 +532,14 @@ def release_slice_evidence(
 
     if evidence_format != expected_format:
         issues.append("sealed evidence format does not match the frozen case input")
+    if getattr(case, "lifecycle_correction", ""):
+        edit_issues = _receipt_bound_edit_issues(
+            case=case, result=result, manifest=retained_evidence_manifest,
+        )
+        issues.extend(edit_issues)
+        if edit_issues:
+            # An invalid lifecycle row remains a failed sample, never EDIT coverage.
+            evidence_format = ""
     if source_predicate_complexity is not None:
         if dict(source_predicate_complexity) != annotated:
             issues.append("source-predicate census does not match frozen source annotation")
@@ -549,6 +573,8 @@ def release_slice_evidence(
 
 
 def _safe_unsealed_clarification(*, case: Any, result: GreenfieldMatrixResult) -> bool:
+    if getattr(case, "lifecycle_correction", ""):
+        return False
     expected_case = case_evidence(case)
     observed_case = _mapping(_mapping(result.evidence).get("case"))
     if expected_case.get("expectation") != "clarification_required":
@@ -578,6 +604,207 @@ def _safe_unsealed_clarification(*, case: Any, result: GreenfieldMatrixResult) -
         and proof.get("version")
         and profile_evidence.get("semantic_authority") == "active_host_single_authority"
     )
+
+
+def _retained_edit_root(*, case: Any, result: GreenfieldMatrixResult, manifest: Path | None) -> Path:
+    if manifest is None:
+        raise ValueError("EDIT lacks a finalized retained evidence manifest")
+    problems = retained_evidence_manifest_issues(manifest)
+    if problems:
+        raise ValueError("EDIT retained evidence failed custody: " + "; ".join(problems))
+    root = Path(manifest).resolve().parent
+    package = json.loads(Path(manifest).read_text(encoding="utf-8"))
+    references = [row for row in package["case_manifests"] if row["case_id"] == _case_id(case)]
+    if len(references) != 1:
+        raise ValueError("EDIT retained evidence does not identify its exact case")
+    case_manifest = repo_artifact_path(root, references[0]["path"])
+    if case_manifest is None:
+        raise ValueError("EDIT retained case manifest is unsafe")
+    case_root = case_manifest.parent
+    retained_result = json.loads((case_root / "case-result.v1.json").read_text(encoding="utf-8"))
+    if retained_result != json.loads(json.dumps(result.to_dict())):
+        raise ValueError("EDIT result differs from its authenticated retained case result")
+    return case_root
+
+
+def _retained_edit_phase(*, root: Path, label: str, phase: Mapping[str, Any], source: str) -> Any:
+    digest = phase.get("transaction_hash")
+    source_digest = hashlib.sha256(source.encode("utf-8")).hexdigest()
+    if not _is_sha256(digest) or phase.get("source_sha256") != source_digest:
+        raise ValueError(f"EDIT {label} seal/source identity changed")
+    artifacts = _mapping(phase.get("artifacts"))
+    transaction_token = phase.get("transaction_file")
+    receipt_token = phase.get("completion_receipt_path")
+    if not artifacts or transaction_token not in artifacts or receipt_token not in artifacts:
+        raise ValueError(f"EDIT {label} lacks its original seal and delivered receipt references")
+    pending_tail = f"/.odylith/runtime/greenfield/pending/{digest}/product-create-transaction.v1.json"
+    if not isinstance(transaction_token, str) or not transaction_token.endswith(pending_tail):
+        raise ValueError(f"EDIT {label} original pending identity is not canonical")
+    consumer_identity = transaction_token[:-len(pending_tail)]
+    bound_paths = set()
+    completion_paths = []
+    for original, row in artifacts.items():
+        row = _mapping(row)
+        if not isinstance(original, str) or not Path(original).is_absolute():
+            raise ValueError(f"EDIT {label} original artifact identity is invalid")
+        kind = row.get("kind")
+        filename = "completion-receipt.json" if kind == "completion_receipt" else Path(original).name
+        relative = f"semantic/lifecycle-{label}/{filename}"
+        retained = repo_artifact_path(root, str(row.get("retained_path") or ""))
+        if (kind not in {"pending", "completion_receipt"} or row.get("retained_path") != relative
+                or retained is None or relative in bound_paths or not retained.is_file()
+                or not _is_sha256(row.get("sha256")) or sha256_file(retained) != row["sha256"]
+                or type(row.get("mode")) is not int or not 0 <= row["mode"] <= 0o777
+                or row.get("retained_mode") != 0o600 or retained.stat().st_mode & 0o777 != 0o600):
+            raise ValueError(f"EDIT {label} retained artifact bytes, mode or membership changed")
+        bound_paths.add(relative)
+        if kind == "completion_receipt":
+            completion_paths.append((original, retained))
+        elif Path(original).parent != Path(transaction_token).parent:
+            raise ValueError(f"EDIT {label} original pending artifacts belong to different consumers")
+    directory = root / f"semantic/lifecycle-{label}"
+    if ({path.relative_to(root).as_posix() for path in directory.iterdir()} != bound_paths
+            or len(completion_paths) != 1 or completion_paths[0][0] != receipt_token):
+        raise ValueError(f"EDIT {label} retained pending membership or delivered receipt changed")
+    transaction_path = repo_artifact_path(root, artifacts[transaction_token]["retained_path"])
+    if transaction_path is None or transaction_path.name != "product-create-transaction.v1.json":
+        raise ValueError(f"EDIT {label} retained transaction path is invalid")
+    if not (transaction_path.parent / ".bounded-journey.v1.json").is_file():
+        raise ValueError(f"EDIT {label} lacks bounded preparation custody")
+    require_pending_transaction_released(
+        transaction_path, repo_root=root, transaction_hash=digest,
+        completion_receipt=completion_paths[0][1],
+    )
+    delivered = json.loads(completion_paths[0][1].read_bytes())
+    canonical_receipt = f"{consumer_identity}/.odylith/runtime/greenfield/completion-receipts/{digest}/{delivered['journey_id']}.json"
+    if receipt_token != canonical_receipt:
+        raise ValueError(f"EDIT {label} original delivered receipt belongs to a foreign consumer")
+    transaction = load_compiled_product_create_transaction_file(transaction_path)
+    if transaction.transaction_hash != digest or transaction.proposal["intent"]["prompt"] != source:
+        raise ValueError(f"EDIT {label} compiler seal does not preserve its exact source")
+    observation = _mapping(phase.get("observation"))
+    if whole_journey_observation_issues(observation) or observation.get("source_sha256") != source_digest:
+        raise ValueError(f"EDIT {label} lacks its exact bounded model observation")
+    candidate_path = root / ("diagnostics-initial/candidate.stdout" if label == "initial" else "semantic/host-candidate.raw.v1.json")
+    ledger_path = root / ("diagnostics-initial/source-ledger-check.stdout" if label == "initial" else "semantic/host-source-ledger-check.raw.v1.json")
+    candidate = json.loads(candidate_path.read_text(encoding="utf-8"))
+    ledger = json.loads(ledger_path.read_text(encoding="utf-8"))["receipt"]
+    binding_issues = authored_model_result_binding_issues(
+        stage_observation=observation, raw_candidate=candidate, source_duty_receipt=ledger,
+        create_payload={"commit_manifest": transaction.quality_manifest}, expected_source=source,
+    )
+    if binding_issues:
+        raise ValueError(f"EDIT {label} model/source binding failed: " + "; ".join(binding_issues))
+    if label == "initial":
+        model = _mapping(phase.get("model_profile"))
+        if (phase.get("model_binding_issues") != [] or model.get("status") != "passed"
+                or model.get("issues") != [] or model.get("expected_source_sha256") != source_digest
+                or model.get("stage_observation") != observation):
+            raise ValueError("EDIT initial model proof does not match its bounded source")
+    elif phase.get("source_duty_receipt") != ledger:
+        raise ValueError("EDIT edited source-duty receipt differs from the actual retained checker receipt")
+    return transaction
+
+
+def _receipt_bound_edit_issues(*, case: Any, result: GreenfieldMatrixResult, manifest: Path | None) -> tuple[str, ...]:
+    try:
+        root = _retained_edit_root(case=case, result=result, manifest=manifest)
+        evidence = _mapping(result.evidence)
+        lifecycle = _mapping(evidence.get("lifecycle_edit"))
+        if "failure" in lifecycle or lifecycle.get("custody_issues"):
+            raise ValueError("EDIT retains lifecycle failure or custody issues and cannot earn credit")
+        if (lifecycle.get("version") != "odylith.greenfield.matrix.receipt-bound-edit.v1"
+                or lifecycle.get("status") != "edited_seal_confirmed"):
+            raise ValueError("EDIT lacks a confirmed receipt-bound lifecycle journey")
+        for field, source in (("initial_request_sha256", case.initial_prompt), ("correction_sha256", case.lifecycle_correction)):
+            if lifecycle.get(field) != hashlib.sha256(source.encode("utf-8")).hexdigest():
+                raise ValueError("EDIT request/correction does not match its frozen case")
+        if (evidence.get("case") != case_evidence(case) or result.status != "passed"
+                or not result.quality.passed or result.create_returncode != 0
+                or not result.browser_surface_proof_attempted or result.browser_surface_issues
+                or evidence.get("browser_surface_proof") != {"required": True, "attempted": True, "issues": []}):
+            raise ValueError("EDIT lacks exact case, committed quality and successful browser proof")
+        for path, source in (("lifecycle.initial-request", case.initial_prompt), ("lifecycle.correction", case.lifecycle_correction)):
+            if (root / "commands" / path).read_bytes() != source.encode("utf-8"):
+                raise ValueError("EDIT retained request/correction bytes changed")
+        initial = _mapping(lifecycle.get("initial"))
+        edited = _mapping(lifecycle.get("edited"))
+        initial_source = prepare_model_authoring_evidence(prompt=case.initial_prompt).evidence_source
+        prepared = case.model_evidence
+        previous = _retained_edit_phase(root=root, label="initial", phase=initial, source=initial_source)
+        current = _retained_edit_phase(root=root, label="edited", phase=edited, source=prepared.evidence_source)
+        if Path(initial["transaction_file"]).parents[5] != Path(edited["transaction_file"]).parents[5]:
+            raise ValueError("EDIT seals do not belong to the same original consumer")
+        if current.transaction_hash == previous.transaction_hash:
+            raise ValueError("equal or no-op seals cannot count as committed EDIT samples")
+        before = {token: {key: row[key] for key in ("sha256", "mode")} for token, row in initial["artifacts"].items()}
+        if lifecycle.get("initial_artifacts_after_confirm") != before:
+            raise ValueError("EDIT lacks exact final preservation readback of every initial artifact")
+        context = greenfield_edit_preservation_context(
+            transaction_hash=previous.transaction_hash,
+            prior_lifecycle=previous.proposal["semantic_model"]["source_lifecycle"],
+            correction=prepared.edit_evidence, evidence_text=prepared.evidence_source,
+        )
+        duty = current.proposal["intent"]["authored_semantics"]["source_duty"]["ledger_receipt"]
+        verified = verify_greenfield_source_duty_ledger_receipt(
+            duty, evidence_text=prepared.evidence_source, edit_preservation=context, allow_legacy_edit=False,
+        )
+        if (verified != edited.get("source_duty_receipt")
+                or any(row["verdict"] != "preserved" or row["correction_authorization"] != "not_required"
+                    for row in verified["decision_set"]["edit_preservation"].values())):
+            raise ValueError("EDIT did not preserve every prior duty without correction authorization")
+        dry_run = _mapping(evidence.get("preconfirm_dry_run"))
+        snapshot = _mapping(dry_run.get("semantic_snapshot"))
+        envelope = _mapping(snapshot.get("operating_envelope"))
+        observed = _mapping(_mapping(envelope.get("evidence_contract")).get("observed"))
+        if (dry_run.get("status") != "compiled" or dry_run.get("transaction_hash") != current.transaction_hash
+                or envelope != current.intent_authority["operating_envelope"]
+                or envelope.get("evidence_format") != prepared.source_format
+                or _mapping(_mapping(envelope.get("complexity")).get("dimensions")).get("documents") != 2
+                or _mapping(_mapping(envelope.get("complexity")).get("dimensions")).get("evidence_bytes") != len(prepared.evidence_source.encode("utf-8"))
+                or observed.get("documents") != 2):
+            raise ValueError("EDIT sealed envelope is not its exact two-document edited source")
+        model = _mapping(evidence.get("model_profile"))
+        if (model.get("expected_source_sha256") != edited.get("source_sha256")
+                or model.get("stage_observation") != edited.get("observation")
+                or model.get("profile_id") != _mapping(initial.get("model_profile")).get("profile_id")
+                or model_profile_release_proof((result,), require_complete=False).get("status") != "passed"):
+            raise ValueError("EDIT model proof does not describe its edited seal")
+        initial_model_row = replace(result, evidence={**evidence, "model_profile": initial["model_profile"]})
+        if model_profile_release_proof((initial_model_row,), require_complete=False).get("status") != "passed":
+            raise ValueError("EDIT initial preparation lacks full model-profile proof")
+        confirmation = _mapping(evidence.get("confirmation_contract"))
+        journal_bytes = (root / "commands/terminal-journal.v1.json").read_bytes()
+        journal = json.loads(journal_bytes)
+        journal_hash = hashlib.sha256(journal_bytes).hexdigest()
+        committed = require_greenfield_commit_result_preview(journal.get("commit_result"))
+        if (committed.get("validation_gate", {}).get("status") != "passed"
+                or any(committed.get(key) != value for key, value in current.prewrite_package.commit_result_preview.items())
+                or journal.get("repository_write_set_hash") != dry_run.get("repository_write_set_hash")):
+            raise ValueError("EDIT journal commit result differs from its sealed result preview")
+        if (confirmation.get("status") != "passed" or confirmation.get("scope") != "explicit_terminal_decision"
+                or confirmation.get("commit_payload_source") != "closed_journal"
+                or any(confirmation.get(key) != [] for key in ("decision_rail_issues", "terminal_handoff_issues", "terminal_proof_issues"))
+                or confirmation.get("terminal_journal") != journal or confirmation.get("terminal_journal_sha256") != journal_hash
+                or _mapping(confirmation.get("terminal_pre_retry_snapshot")).get("journal_sha256") != journal_hash
+                or journal.get("state") != "closed" or journal.get("lifecycle_state") != "CLOSED"
+                or journal.get("transaction_hash") != current.transaction_hash
+                or not journal.get("commit_result")
+                or json.loads((root / "semantic/create-payload.v1.json").read_text()) != journal["commit_result"]
+                or [(row.get("attempt"), row.get("returncode")) for row in confirmation.get("terminal_commands", ())]
+                   != [("confirm", 0), ("same_hash_retry", 0)]):
+            raise ValueError("EDIT lacks its committed CLOSED journal and unchanged same-hash retry")
+        for label in ("decide", "retry-decide"):
+            response = json.loads((root / f"commands/{label}.stdout").read_bytes())
+            if (set(response) != _TERMINAL_CONFIRMATION_FIELDS or response.get("version") != _TERMINAL_CONFIRMATION_VERSION
+                    or response.get("status") != "CLOSED" or response.get("command") != "CONFIRM"
+                    or response.get("transaction_hash") != current.transaction_hash
+                    or not str(response.get("visible_markdown") or "").strip()
+                    or not str(response.get("developer_context") or "").strip()):
+                raise ValueError("EDIT retained CONFIRM/retry response does not bind its CLOSED seal")
+        return ()
+    except (OSError, RuntimeError, ValueError, TypeError, KeyError, AttributeError) as exc:
+        return (str(exc),)
 
 
 def wilson_interval(successes: int, sample_count: int) -> tuple[float, float]:

@@ -52,6 +52,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_source_citations impor
 from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
     SOURCE_DUTY_BINDING_VERSION,
     greenfield_source_duty_binding_schema,
+    project_greenfield_source_event_catalog,
 )
 from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
     resolve_greenfield_action_actor_identity,
@@ -381,24 +382,32 @@ def _verified_normalized_action_duties(
     ledger = verified["ledger"]
     by_order: dict[int, Mapping[str, Any]] = {}
     path_orders: set[int] = set()
-    for section in ("first_path_actions", "supporting_human_actions", "system_duties"):
-        duties = ledger[section]
-        bound = binding.get(section)
-        if not isinstance(bound, list) or len(bound) != len(duties):
-            raise ValueError("model-authored Product Intent source-duty custody is malformed")
-        for duty, row in zip(duties, bound, strict=True):
-            if (
-                not isinstance(row, Mapping)
-                or set(row) != {"duty_id", "event_order"}
-                or row.get("duty_id") != duty["id"]
-            ):
+    if ledger["version"] == "odylith.greenfield.source-duty-ledger.v6":
+        catalog = project_greenfield_source_event_catalog(verified, evidence_text=source_text)
+        if any(binding[section] != rows for section, rows in catalog["action_bindings"].items()):
+            raise ValueError("model-authored Product Intent action binding differs from its frozen source catalog")
+        by_order = catalog["actions"]
+        path_orders = {event["event_order"] for event in catalog["events"]
+                       if event["binding_role"] == "first_path_actions"}
+    else:
+        for section in ("first_path_actions", "supporting_human_actions", "system_duties"):
+            duties = ledger[section]
+            bound = binding.get(section)
+            if not isinstance(bound, list) or len(bound) != len(duties):
                 raise ValueError("model-authored Product Intent source-duty custody is malformed")
-            order = row.get("event_order")
-            if type(order) is not int or order < 1 or order in by_order:
-                raise ValueError("model-authored Product Intent source-duty custody is malformed")
-            by_order[order] = {**duty, "binding_role": section, "event_order": order}
-            if section == "first_path_actions":
-                path_orders.add(order)
+            for duty, row in zip(duties, bound, strict=True):
+                if (
+                    not isinstance(row, Mapping)
+                    or set(row) != {"duty_id", "event_order"}
+                    or row.get("duty_id") != duty["id"]
+                ):
+                    raise ValueError("model-authored Product Intent source-duty custody is malformed")
+                order = row.get("event_order")
+                if type(order) is not int or order < 1 or order in by_order:
+                    raise ValueError("model-authored Product Intent source-duty custody is malformed")
+                by_order[order] = {**duty, "binding_role": section, "event_order": order}
+                if section == "first_path_actions":
+                    path_orders.add(order)
     if set(by_order) != set(range(1, len(by_order) + 1)):
         raise ValueError("model-authored Product Intent source-duty custody is malformed")
     keyed: dict[tuple[str, int], dict[str, Any]] = {}
@@ -554,6 +563,16 @@ def _authored_source_spans(
         source_span_ids_by_field.setdefault(field, []).append(span_id)
         if classification == "product_claim":
             product_claim_span_ids_by_field.setdefault(field, []).append(span_id)
+    for duty in normalized_duties.values():
+        if "actor_fact_path" in duty and not any(
+            span.get("classification") == "product_claim"
+            and span.get("projection_path") == duty["actor_fact_path"]
+            and span.get("source_start_byte") == duty["actor_start_byte"]
+            and span.get("source_end_byte") == duty["actor_end_byte"]
+            and span.get("text") == duty["actor_ref"]["quote"]
+            for span in spans
+        ):
+            raise ValueError("model-authored Product Intent source performer projection custody differs from its catalog")
     return spans, source_span_ids_by_field, product_claim_span_ids_by_field
 
 
@@ -693,7 +712,11 @@ def require_verified_source_action_relations(
         role = duty["binding_role"]
         path = relation.get("actor_fact_path", "")
         actor_field = path.split("/")[1] if isinstance(path, str) and path.startswith("/") else ""
-        if role == "first_path_actions":
+        if "actor_fact_path" in duty:
+            kind, fields = actor_roles[duty["performer_role"]]
+            if path != duty["actor_fact_path"]:
+                raise ValueError("model-authored Product Intent actor path differs from its frozen source catalog")
+        elif role == "first_path_actions":
             # Canonical product identity may use its equally named internal-system fact.
             kind, fields = actor_roles.get(duty.get("performer_role"), ("", set()))
         elif role == "supporting_human_actions":

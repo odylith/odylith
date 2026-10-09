@@ -16,7 +16,9 @@ from odylith.runtime.domain_intelligence.greenfield_host_candidate_materializati
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import (
     prepare_model_authoring_evidence,
 )
-from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import GreenfieldSourceDutyBindingError
+from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
+    GreenfieldSourceDutyBindingError, validate_greenfield_source_duty_binding,
+)
 from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
     GreenfieldSourceDutyLedgerError,
 )
@@ -177,6 +179,10 @@ def _author_verified_candidate(source, prepared, candidate, receipt):
     canonical = canonical_greenfield_host_candidate(
         candidate, evidence_text=prepared.evidence_source, source_duty_receipt=receipt,
     )
+    binding = validate_greenfield_source_duty_binding(
+        candidate["result"]["source_duty_binding"], ledger_receipt=receipt,
+        candidate_result=candidate["result"], evidence_text=prepared.evidence_source,
+    )
     return canonical, {
         "evidence_text": prepared.evidence_source,
         "elapsed_seconds": 1.0,
@@ -187,7 +193,7 @@ def _author_verified_candidate(source, prepared, candidate, receipt):
         "event_citations_are_event_owned": True,
         "first_path_event_orders": [1, 2, 3],
         "accepted_source_duties": receipt,
-        "accepted_source_duty_binding": candidate["result"]["source_duty_binding"],
+        "accepted_source_duty_binding": binding,
     }
 
 
@@ -236,43 +242,50 @@ def test_sealed_relation_rejects_verified_role_override(field, value) -> None:
     relations[1][field] = value
     with pytest.raises(ValueError, match="verified source action"):
         require_verified_source_action_relations(
-            relations, source_duty={"ledger_receipt": receipt, "binding": candidate["result"]["source_duty_binding"], "lifecycle": {}},
+            relations, source_duty={"ledger_receipt": receipt, "binding": kwargs["accepted_source_duty_binding"], "lifecycle": {}},
             source_text=prepared.evidence_source,
         )
 
 
 def test_candidate_cannot_replace_verified_human_actor_with_system(tmp_path) -> None:
     source, prepared, candidate, receipt = _shared_clause_candidate()
-    candidate["result"]["events"][1]["actor_fact"] = {"field": "internal_systems", "row": 1}
-    with pytest.raises(GreenfieldSourceDutyBindingError):
+    canonical, kwargs = _author_verified_candidate(source, prepared, candidate, receipt)
+    canonical["result"]["events"][1]["actor_fact"] = {"field": "internal_systems", "row": 1}
+    with pytest.raises(GreenfieldModelAuthoringError, match="unbound first-path actor fact"):
+        validate_greenfield_authoring_response(canonical, **kwargs)
+    candidate["result"]["events"] = [{"actor_fact": {"field": "internal_systems", "row": 1}}]
+    with pytest.raises(GreenfieldSourceDutyBindingError, match="source-owned|events|fields"):
         materialize_host_authored_intent(
             prompt=source, repo_root=tmp_path, host_candidate=candidate,
             source_duty_receipt=receipt, prepared_evidence=prepared,
         )
 
 
-def test_renumbered_citation_slots_preserve_proposed_workflow_and_envelope(tmp_path) -> None:
+def test_candidate_cannot_renumber_frozen_source_event_slots(tmp_path) -> None:
     source, prepared, candidate, receipt = _shared_clause_candidate()
     baseline = materialize_host_authored_intent(
         prompt=source, repo_root=tmp_path / "baseline", host_candidate=candidate,
         source_duty_receipt=receipt, prepared_evidence=prepared,
     )
+    retained_receipt = copy.deepcopy(receipt)
     result = candidate["result"]
-    result["events"][0], result["events"][1] = result["events"][1], result["events"][0]
-    bindings = result["source_duty_binding"]["first_path_actions"]
-    bindings[0]["event_order"], bindings[1]["event_order"] = 2, 1
-    result["provisional_design"]["first_run"]["event_orders"] = [2, 1, 3]
-    materialized = materialize_host_authored_intent(
-        prompt=source, repo_root=tmp_path / "renumbered", host_candidate=candidate,
-        source_duty_receipt=receipt, prepared_evidence=prepared,
-    )
-    from odylith.runtime.domain_intelligence.greenfield_authored_first_run import authored_first_run_relations
-    assert [row["event_quote"] for row in authored_first_run_relations(materialized)] == [
-        row["event_quote"] for row in authored_first_run_relations(baseline)
+    result["source_duty_binding"]["first_path_actions"] = [
+        {"duty_id": receipt["ledger"]["first_path_actions"][0]["id"], "event_order": 2},
+        {"duty_id": receipt["ledger"]["first_path_actions"][1]["id"], "event_order": 1},
+        {"duty_id": receipt["ledger"]["first_path_actions"][2]["id"], "event_order": 3},
     ]
-    relations = materialized["authored_semantics"]["first_path_relations"]
-    assert relations[0]["event_quote"] == "A reviewer defines audience"
-    assert relations[1]["event_quote"] == "A reviewer defines scope"
-    assert materialized["first_path"] == "\n".join(row["event_quote"] for row in relations)
+    result["provisional_design"]["first_run"]["event_orders"] = [2, 1, 3]
+    with pytest.raises(GreenfieldSourceDutyBindingError, match="unknown|invalid|fields"):
+        materialize_host_authored_intent(
+            prompt=source, repo_root=tmp_path / "renumbered", host_candidate=candidate,
+            source_duty_receipt=receipt, prepared_evidence=prepared,
+        )
+    from odylith.runtime.domain_intelligence.greenfield_authored_first_run import authored_first_run_relations
+    assert [row["event_quote"] for row in authored_first_run_relations(baseline)] == [
+        "A reviewer defines scope", "A reviewer defines audience", "The Review Desk shows both definitions",
+    ]
+    relations = baseline["authored_semantics"]["first_path_relations"]
+    assert baseline["first_path"] == "\n".join(row["event_quote"] for row in relations)
     assert relations[0]["event_start_byte"] == 0
-    assert relations[1]["event_start_byte"] == len(b"A reviewer defines audience\n")
+    assert relations[1]["event_start_byte"] == len(b"A reviewer defines scope\n")
+    assert receipt == retained_receipt

@@ -95,6 +95,11 @@ def _case_from_row(
     required_terms = _string_tuple(row.get("required_terms"))
     leakage_terms = _string_tuple(row.get("leakage_terms"))
     confirmed_intent = _canonical_block_text(_optional_block_text(row.get("confirmed_intent_markdown")))
+    correction = row.get("lifecycle_correction", "")
+    if not isinstance(correction, str) or (correction and not correction.strip()):
+        raise RuntimeError(f"{source} case {index} ({name}) has invalid lifecycle_correction")
+    if correction and _case_expectation(row.get("expectation"), index=index, name=name, source=source) != DEFAULT_CASE_EXPECTATION:
+        raise RuntimeError(f"{source} case {index} ({name}) cannot combine lifecycle EDIT with clarification expectation")
     try:
         provenance = case_provenance_from_mapping(row.get("provenance"))
     except ValueError as exc:
@@ -144,6 +149,7 @@ def _case_from_row(
         required_terms=required_terms,
         leakage_terms=leakage_terms,
         confirmed_intent_markdown=confirmed_intent,
+        lifecycle_correction=correction,
         case_id=_optional_text(row.get("case_id")) or _optional_text(row.get("id")),
         tags=_string_tuple(row.get("tags")),
         stressors=_string_tuple(row.get("stressors")),

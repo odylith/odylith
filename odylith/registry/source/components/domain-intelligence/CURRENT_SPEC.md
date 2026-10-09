@@ -1,15 +1,17 @@
 # Domain Intelligence
-Last updated: 2026-10-06
+Last updated: 2026-10-09
 
 
 ## Overview
 
-The current public host contract is v54/format v23. Native authoring transport v2
-keeps the complete response schema in its mandatory schema carrier and removes
-duplicate stdin metadata. Current source duties, authority, receipts and seals
-remain required. The current-source tests support this transport change; a fresh
-package and fixed-case semantic/timing proof remain open. Earlier versioned
-checkpoints below are historical evidence and do not replace the current contract.
+The current Greenfield host contract is v55/format v24. Before a candidate is
+authored, the existing verifier fixes every accepted action and its performer to
+an exact source occurrence. The candidate can design the project and allocate its
+lifecycle, but cannot change those actor or event mappings. Unknown, conflicting,
+or mismatched source identities refuse. A same-source development confirmation
+has exercised the current contract; authentic EDIT, installed, timing, and release
+qualification remain open. Earlier versioned checkpoints below are historical
+evidence and do not replace this contract.
 
 ### Historical prerequisite closure and v30 consumer evidence (2026-10-05)
 
@@ -2190,6 +2192,9 @@ semantic/design findings.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-10-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_source_duty_binding.py`
 - **2026-10-06 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142, B-145
   - Evidence: `odylith/atlas/source/odylith-managed-runtime-release-and-install-flow.mmd`, `src/odylith/install/upgrade_dashboard_recovery.py`, `src/odylith/runtime/domain_intelligence/greenfield_provisional_package.py`, `src/odylith/runtime/project_intelligence/authored_fact_presenter.py`
@@ -2204,8 +2209,6 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_semantics.py`
 - **2026-10-02 · Implementation:** Implementation evidence linked this component to governed work with 4 verifiable artifact references.
   - Evidence: `odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_source_duty_ledger.py`, `tests/unit/install/test_greenfield_driver_field_inventory_stop.py`
-- **2026-10-02 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_host_candidate.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -5810,7 +5813,7 @@ projection coherence, confirmation, and readback.
   180-second operational safety timeout. No elapsed-time promotion, fallback,
   retry, repair, parser, regex stack, or alternate model ladder is allowed.
 
-## Current Greenfield semantic and summary contract (2026-10-05)
+## Current Greenfield semantic and summary contract (2026-10-09)
 
 ### V37 closed-detail presentation boundary (2026-10-06)
 
@@ -5828,14 +5831,33 @@ release readiness. Closure: `/private/tmp/odylith-v37-fixed-pairs-closure-202610
 (SHA-256 `740c03e44b44beb54f07a578047b93eceefdfdab27d8524cb942e52d41dc5724`).
 
 - Fixed Research and Agriculture H0/H1 source-first review at checkpoint `23881abd0e8bd15ddc64fb869b581060d50c3302` supports only the independently audited fixed-case semantics and model-free terminal mechanics. It does not expand release, aggregate, browser, protected-holdout, migration, or timing authority.
-- The next canonical candidate contract requires a `design.project_summary` in host format 23 / contract v54: concise purpose, intended users, and intended outcome derived from the candidate's source-cited meaning. Evidence excerpts, source links, and raw source text remain evidence and must never substitute for that summary. Earlier v53 sealed pairs remain passive exact history.
+- The fresh candidate requires `design.project_summary` in host format 24 / contract v55: concise purpose, intended users, and intended outcome derived from the source-cited meaning. Evidence excerpts, source links, and raw source text must not substitute for that summary. Known earlier sealed pairs remain passive exact history.
 - Risk and presentation projections may simplify visible copy, but must retain source-backed triggers, mitigation, verification, traceability, and links in accessible detail. No projection may invent meaning or alter candidate custody.
 
-## Current candidate schema transport (2026-10-06)
+Verified source duties now own actor addresses and action-event IDs. The existing
+binding owner enumerates every accepted action before the candidate call and
+reuses each performer's exact typed source occurrence. Supporting-human duties
+use the human performer kind. System duties carry an explicit performer type
+affirmed by the same source-only verifier; matching labels at different source
+occurrences do not establish identity. Separate action atoms remain separate
+events, including atoms sharing a complete sentence. The existing 32-event cap
+applies to the complete inventory.
 
-- Native candidate authoring transport v2 keeps the complete response schema in the existing mandatory, qualified output-schema file and removes its duplicate stdin field. Missing or non-object schemas fail closed. The public contract still includes the full schema; v54/format23, semantic invariants, seals, authority, source duties, profiles, deadlines and four-phase ordering remain unchanged.
+The fresh candidate references fixed events while authoring the design and
+lifecycle allocations. It cannot redefine event actors or remap the three action
+tables. Supplemental participants and dependencies remain supported without
+changing the performer prefix. Materialization and sealed readback use the same
+catalog and require exact actor paths, types and source ranges. Fresh ledger v6,
+compact v4 and initial/EDIT receipts v10/v11 select this contract; known earlier
+ledger/task/receipt pairs retain their exact passive validation. Canonical v79,
+lifecycle v2 and design v6 keep their existing shapes. Native fidelity, timing
+and release qualification remain unproved for this change.
+
+## Current candidate schema transport (2026-10-09)
+
+- Native candidate authoring transport v3 keeps the complete response schema in the existing mandatory output-schema file without a duplicate stdin field. Missing or non-object schemas fail closed. Contract v55 / format 24 carries the source-owned actor/event catalog. Authority, source completeness, lifecycle allocation, profiles, deadlines and four-phase ordering remain strict.
 - The task names the supplied candidate response JSON Schema directly. No text parser, replacement helper, retry, fallback, provider branch or extra consumer model call is added. The general native Claude provider remains unchanged.
-- Current-source proof passes 60 focused and 289 adopter checks; independent review pins the same four files. Exact installed encoding retains all 61 descriptions and two titles, and one native standard-profile annotation canary passes. The retained agriculture input projects 59,003 to 29,833 bytes, saving 29,170 bytes; this is not measured latency or candidate-quality evidence.
+- Historical transport-v2 proof passed 60 focused and 289 adopter checks; its independent review pins those four files. Installed encoding retained all 61 descriptions and two titles, and one native standard-profile annotation canary passed. The retained agriculture input projected 59,003 to 29,833 bytes, saving 29,170 bytes. Those results do not qualify the new contract's latency or candidate quality.
 - Handoff: `/private/tmp/odylith-candidate-schema-transport-implementation-20261006/handoff.json`. A new frozen package and fixed-case semantic/timing proof remain required before release qualification. Historical failures and source/candidate bytes remain intact.
 
 ## Historical Greenfield Host Citation Byte Custody (2026-09-26)

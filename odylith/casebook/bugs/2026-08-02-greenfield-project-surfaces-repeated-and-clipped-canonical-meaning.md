@@ -1,5 +1,28 @@
 - Bug ID: CB-303
 
+## V42 installed presentation and release-oracle finding (2026-10-08)
+
+The current package passes clean-install smoke. One populated published v0.1.14
+consumer upgrades to the frozen `fe4a1eff` package with all 1,020 installed source
+files matching the wheel. Its desktop/mobile dashboard matrix and native Project
+error supplement pass all 44 cells without changing the upgraded consumer.
+The combined report is
+`/private/tmp/odylith-greenfield-v14-to-v42-migration-20261008/upgrade/combined-current-migration-browser-report.json`,
+SHA-256 `b334f37dd0cb337939f9ead97d1215ea1e4bf75834425f2648e7b2b049028ed6`.
+These are installed presentation checks, not whole-release qualification.
+
+The separate fresh Public40 creation run exposes an obsolete Project browser
+assertion. It expects a repeated `Actor:` prefix before each already complete
+event sentence. Read-only inspection of retained Accessibility005 and
+Accessibility007 pages confirms their exact narrative sentences, declared order,
+and matching actor, actor kind and source event in initially closed native
+Supporting details. The declared Accessibility005 order is `[1,2,3,4,6,5]` and
+must remain intact. The presenter is unchanged; correct the existing release
+browser contract to verify both the visible narrative and disclosed evidence,
+including normal keyboard access and missing/changed/reordered-field negatives.
+Preserve the original campaign failures. The live run continues against its
+original frozen owners; no favorable replay or release credit is implied.
+
 ## V41 Atlas empty-description correction (2026-10-06)
 
 Atlas removes the final generic component fallback “Named responsibility in this

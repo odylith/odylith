@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict
 from collections.abc import Mapping, Sequence
+from pathlib import Path
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
@@ -42,6 +43,7 @@ def evaluate_semantic_release(
     floors: Mapping[str, Any],
     release_required_slices: Mapping[str, Sequence[str]] | None = None,
     source_predicate_evidence: Mapping[str, Any] | None = None,
+    retained_evidence_manifest: Path | None = None,
     _include_model_profiles: bool = True,
     _allow_not_applicable_metrics: bool = False,
 ) -> dict[str, Any]:
@@ -121,6 +123,7 @@ def evaluate_semantic_release(
             result=result,
             metric_counts=metric_counts,
             source_binding=source_bindings.get(case_id),
+            retained_evidence_manifest=retained_evidence_manifest,
         )
         case_outcomes.append(outcome)
         p0_findings.extend(outcome["p0_findings"])
@@ -264,6 +267,7 @@ def evaluate_semantic_release(
             floors=floors,
             case_outcomes=case_outcomes,
             source_predicate_evidence=source_predicate_evidence,
+            retained_evidence_manifest=retained_evidence_manifest,
         )
         if _include_model_profiles
         else []
@@ -455,6 +459,7 @@ def _score_case(
     result: GreenfieldMatrixResult,
     metric_counts: Mapping[str, list[int]],
     source_binding: Mapping[str, Any] | None = None,
+    retained_evidence_manifest: Path | None = None,
 ) -> dict[str, Any]:
     expected = str(annotation.get("expected_outcome") or "")
     evidence = mapping_value(result.evidence)
@@ -530,6 +535,7 @@ def _score_case(
         annotated_complexity=mapping_value(annotation.get("complexity_dimensions" if source_binding is not None else "complexity")),
         source_predicate_complexity=mapping_value(annotation.get("complexity_dimensions")) if source_binding is not None else None,
         allow_unsealed_clarification=expected == "clarify" and observed == "clarify",
+        retained_evidence_manifest=retained_evidence_manifest,
     )
     if release_evidence_issues:
         failed_dimensions.append("release_evidence")
@@ -722,6 +728,7 @@ def _model_profile_reports(
     floors: Mapping[str, Any],
     case_outcomes: Sequence[Mapping[str, Any]],
     source_predicate_evidence: Mapping[str, Any] | None = None,
+    retained_evidence_manifest: Path | None = None,
 ) -> list[dict[str, Any]]:
     profile_by_case = {
         str(outcome.get("case_id") or ""): str(
@@ -745,6 +752,7 @@ def _model_profile_reports(
             floors=floors,
             release_required_slices=None,
             source_predicate_evidence=source_predicate_evidence,
+            retained_evidence_manifest=retained_evidence_manifest,
             _include_model_profiles=False,
             _allow_not_applicable_metrics=True,
         )

@@ -22,7 +22,7 @@ def _citation(quote: str, context: str | None = None) -> dict[str, str]:
 def _case(domain: str) -> tuple[str, dict, dict, dict]:
     evidence = f"A {domain} operator opens a record. A {domain} reviewer approves the record. A {domain} clerk prepares the record. A scheduler indexes the record. Withdrawal closes access and erases the cache."
     ledger = {
-        "version": SOURCE_DUTY_LEDGER_VERSION,
+        "version": "odylith.greenfield.source-duty-ledger.v5",
         "status": "inventory",
         "question": "",
         "evidence_controls": [],
@@ -692,53 +692,19 @@ def test_complete_host_admission_rejects_first_run_only_reordering() -> None:
     assert receipt == original_receipt
 
 
-def test_complete_host_admission_accepts_coordinated_citation_slot_renumbering() -> (
-    None
-):
-    from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
-        admit_greenfield_host_candidate,
-    )
+def test_fresh_host_admission_rejects_candidate_owned_slot_renumbering():
+    from odylith.runtime.domain_intelligence.greenfield_host_candidate import admit_greenfield_host_candidate
     from tests.unit.runtime.test_greenfield_host_candidate import _candidate
-    from tests.unit.runtime.greenfield_model_authoring_fixtures import (
-        synthetic_source_duty_receipt,
-    )
-
+    from tests.unit.runtime.greenfield_model_authoring_fixtures import synthetic_source_duty_receipt
     source, candidate = _candidate()
     receipt = synthetic_source_duty_receipt(candidate, evidence_text=source)
     original_receipt = deepcopy(receipt)
-    baseline, _ = admit_greenfield_host_candidate(
-        candidate, evidence_text=source, source_duty_receipt=receipt
-    )
-    result = candidate["result"]
-    bindings = result["source_duty_binding"]["first_path_actions"]
-    left, right = bindings[0]["event_order"], bindings[1]["event_order"]
-    result["events"][left - 1], result["events"][right - 1] = (
-        result["events"][right - 1],
-        result["events"][left - 1],
-    )
-    bindings[0]["event_order"], bindings[1]["event_order"] = right, left
-    first_run = result["provisional_design"]["first_run"]["event_orders"]
-    first_run[0], first_run[1] = first_run[1], first_run[0]
-    # Every slot reference follows the same identity renumbering; duty order stays fixed.
-    for relation in result["source_precedence"]:
-        for key in ("before_event", "after_event"):
-            if relation[key] in (left, right):
-                relation[key] = right if relation[key] == left else left
-    terminal = result["terminal"]
-    if terminal["event_order"] in (left, right):
-        terminal["event_order"] = right if terminal["event_order"] == left else left
-    authored, _ = admit_greenfield_host_candidate(
-        candidate, evidence_text=source, source_duty_receipt=receipt
-    )
-
-    def workflow(admitted):
-        relations = {row["order"]: row for row in admitted.first_path_relations}
-        return [
-            (relations[order]["actor_fact_quote"], relations[order]["event_quote"])
-            for order in admitted.provisional_design["first_run"]["event_orders"]
-        ]
-
-    assert workflow(authored) == workflow(baseline)
+    admit_greenfield_host_candidate(candidate, evidence_text=source, source_duty_receipt=receipt)
+    candidate["result"]["source_duty_binding"]["first_path_actions"] = [
+        {"duty_id": receipt["ledger"]["first_path_actions"][0]["id"], "event_order": 2},
+    ]
+    with pytest.raises(GreenfieldSourceDutyBindingError, match="invalid fields"):
+        admit_greenfield_host_candidate(candidate, evidence_text=source, source_duty_receipt=receipt)
     assert receipt == original_receipt
 
 

@@ -1130,3 +1130,19 @@ untouched until the full public gate and independent strong review pass.
 ### V39 final Atlas fingerprint settlement
 
 The first V39 staged commit check retained a freshness failure: 42 diagrams were fresh and five were stale after later Registry spec and forensic records settled during full sync. The canonical Atlas preview selects five review-only fingerprint updates and zero diagram renders. This is a final metadata settlement step; topology and diagram source are unchanged. The failed gate remains recorded at `/private/tmp/odylith-v39-commit-ready-20261006/report.json` (SHA-256 `4fb978ba086d8c9a6f809818e2dba85cf43ba4e2941b7ab8cd04c18b493e63cc`). Final refresh and a fresh staged check remain required; freshness, current full CI, installed proof, and release gates are retained.
+
+## Current V42 migration evidence and next gate (2026-10-08)
+
+The fresh predecessor-bound installed assessment is ready for root review.
+It records one native upgrade, exact 1,020-owner package readback, 44 passing
+browser cells and a complete 18,397-path reconciliation with no unresolved
+changes. B-145 records the five current class assessments and exact report
+hash. No historical exception count substitutes for actual path dispositions.
+
+Next, bind this current evidence through the canonical final migration gate;
+write completion markers only if that gate accepts the exact fingerprints.
+B-145 remains unfinished. Preserve the original browser report's two held
+Project cells and their separate genuine error supplement. Do not repeat the
+upgrade or browser runs, infer native host qualification from static guidance,
+or treat migration acceptance as whole-release acceptance. The ongoing Public40
+run and its obsolete Project text oracle are tracked in CB-347 and CB-303.

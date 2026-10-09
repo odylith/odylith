@@ -42,7 +42,7 @@ process.JOURNEY_CANCELLATION_GRACE_SECONDS = 0.2
 host.PROVISIONAL_WHOLE_JOURNEY_TIMEOUT_SECONDS = 0.15
 budget.PROVISIONAL_WHOLE_JOURNEY_TIMEOUT_SECONDS = 0.15
 phase = PHASE
-flow, host_run, installed, calls, proposals, repo = _flow(Path.cwd(), contract={"version":"contract"}, candidate={}, gate_decision="clarify" if phase=="observer" else "admit")
+flow, host_run, installed, calls, proposals, repo = _flow(Path.cwd(), contract={}, candidate={}, gate_decision="clarify" if phase=="observer" else "admit")
 def recorded_host(*args, **kwargs):
     Path("hosts").open("a").write("host\\n")
     return host_run(*args, **kwargs)
@@ -308,7 +308,7 @@ Path("preview").write_text("success")
 def test_final_budget_rejection_precedes_release_of_actual_pending_seal(tmp_path,monkeypatch,boundary):
     from odylith.runtime.domain_intelligence import greenfield_host_flow as host
     from tests.unit.install.test_greenfield_matrix_host_candidate import _flow,_completed
-    flow,host_run,*_rest=_flow(tmp_path,contract={'version':'contract'},candidate={'result':{'status':'authored'}})
+    flow,host_run,*_rest=_flow(tmp_path,contract={},candidate={'result':{'status':'authored'}})
     _compile_transaction_fixture(flow.repo_root)
     clock=[0.0]
     monkeypatch.setattr(host.time,'monotonic',lambda:clock[0])
@@ -769,7 +769,7 @@ def test_proposal_refusal_preserves_bounded_detail_and_prior_seal(
 
     candidate = {"version": "candidate", "result": {"status": "authored"}}
     flow, _host_run, installed_calls, host_calls, _paths, repo = _flow(
-        tmp_path, contract={"version": "contract"}, candidate=candidate,
+        tmp_path, contract={}, candidate=candidate,
     )
     old_transaction = _transaction(repo_root=repo)
     old_path = pending.stage_pending_transaction(repo_root=repo, transaction=old_transaction)
@@ -809,7 +809,7 @@ def test_proposal_refusal_preserves_bounded_detail_and_prior_seal(
         elif "source-ledger-check" in command:
             if "--decision-file" in command:
                 assert payload["receipt"]["edit_preservation"] == context
-                assert payload["receipt"]["version"] == "odylith.greenfield.source-duty-ledger-receipt.v9"
+                assert payload["receipt"]["version"] == "odylith.greenfield.source-duty-ledger-receipt.v11"
             else:
                 assert payload["decision_task"] == task
         return subprocess.CompletedProcess(command, status, captured.getvalue(), "")

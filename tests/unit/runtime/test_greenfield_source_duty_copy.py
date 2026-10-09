@@ -102,13 +102,17 @@ def test_atlas_lifecycle_fields_keep_full_statements_without_punctuation_join() 
         {"label": "Governed object", "text": "berth occupancy"},
     ]
     assert 'off_path_transition1_effect1["Effect 1.1<br/>Close future access."]' in support["mermaid_source"]
-    assert boxes["off_path_transition1_effect1"]["description"] == (
-        "Trigger: An approval is withdrawn.\nField: access\nChange: Close future access.\n"
-        "Observable check: Affected unpublished analysis is invalidated."
-    )
-    assert boxes["off_path_transition1_effect2"]["description"] == (
-        "Trigger: An approval is withdrawn.\nField: cache\nChange: erased\n"
-        "Observable check: cache empty"
-    )
+    assert boxes["off_path_transition1_effect1"]["description"] == "Close future access."
+    assert boxes["off_path_transition1_effect1"]["details"] == [
+        {"label": "Trigger", "text": "An approval is withdrawn."},
+        {"label": "Field", "text": "access"},
+        {"label": "Observable check", "text": "Affected unpublished analysis is invalidated."},
+    ]
+    assert boxes["off_path_transition1_effect2"]["description"] == "erased"
+    assert boxes["off_path_transition1_effect2"]["details"] == [
+        {"label": "Trigger", "text": "An approval is withdrawn."},
+        {"label": "Field", "text": "cache"},
+        {"label": "Observable check", "text": "cache empty"},
+    ]
     assert "withdrawn.." not in str(boxes)
     assert lifecycle == original

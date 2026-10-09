@@ -21,11 +21,14 @@ from odylith.runtime.domain_intelligence.greenfield_model_source_citations impor
 )
 from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
     GreenfieldSourceDutyLedgerError,
+    SOURCE_DUTY_LEDGER_VERSION,
     resolve_greenfield_transition_state_fields,
     verify_greenfield_source_duty_ledger_receipt,
 )
 
 SOURCE_DUTY_BINDING_VERSION = "odylith.greenfield.source-duty-binding.v3"
+HOST_SOURCE_DUTY_BINDING_VERSION = "odylith.greenfield.source-duty-binding.v4"
+_ACTION_SECTIONS = ("first_path_actions", "supporting_human_actions", "system_duties")
 _FIRST_PATH_PERFORMER_FIELDS = {
     "human_actor": "human_actors",
     "internal_system": "internal_systems",
@@ -47,7 +50,7 @@ def _object(properties: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
-def greenfield_source_duty_binding_schema() -> dict[str, Any]:
+def greenfield_source_duty_binding_schema(*, host: bool = False) -> dict[str, Any]:
     """Closed host shape for references into one validated ledger and candidate."""
 
     duty_id = {"type": "string", "minLength": 1, "maxLength": 4000}
@@ -55,7 +58,7 @@ def greenfield_source_duty_binding_schema() -> dict[str, Any]:
     event_order = {"type": "integer", "minimum": 1, "maximum": 32}
     effect_index = {"type": "integer", "minimum": 1, "maximum": 8}
     digest = {"type": "string", "minLength": 64, "maxLength": 64}
-    return _object(
+    schema = _object(
         {
             "version": {"type": "string", "const": SOURCE_DUTY_BINDING_VERSION},
             "source_sha256": digest,
@@ -114,6 +117,119 @@ def greenfield_source_duty_binding_schema() -> dict[str, Any]:
             },
         }
     )
+    if host:
+        schema["properties"]["version"]["const"] = HOST_SOURCE_DUTY_BINDING_VERSION
+        for section in _ACTION_SECTIONS:
+            schema["properties"].pop(section)
+            schema["required"].remove(section)
+    return schema
+
+
+def project_greenfield_source_event_catalog(
+    receipt: Mapping[str, Any], *, evidence_text: str,
+) -> dict[str, Any]:
+    """Freeze every verified action ID and exact performer before candidate authoring."""
+    verified = verify_greenfield_source_duty_ledger_receipt(
+        receipt, evidence_text=evidence_text, allow_legacy_edit=False,
+    )
+    evidence = evidence_text.encode("utf-8")
+    facts: dict[str, Any] = {"human_actors": [], "internal_systems": [], "external_systems": [], "title": None}
+    performers: list[dict[str, Any]] = []
+    identities: dict[tuple[str, int, int], dict[str, Any]] = {}
+    kinds_by_span: dict[tuple[int, int], set[str]] = {}
+    events: list[dict[str, Any]] = []
+    actions: dict[int, dict[str, Any]] = {}
+    bindings: dict[str, list[dict[str, Any]]] = {section: [] for section in _ACTION_SECTIONS}
+    for section in _ACTION_SECTIONS:
+        for duty in verified["ledger"][section]:
+            role = "human_actor" if section == "supporting_human_actions" else duty["performer_role"]
+            field = _FIRST_PATH_PERFORMER_FIELDS[role]
+            start, end = _source_span(evidence, duty["actor_ref"])
+            roles = kinds_by_span.setdefault((start, end), set())
+            if roles and role not in roles and roles | {role} != {"internal_system", "product_title"}:
+                raise GreenfieldSourceDutyBindingError("source performer has conflicting verified kinds")
+            roles.add(role)
+            identity = (role, start, end)
+            actor = identities.get(identity)
+            if actor is None:
+                if field == "title":
+                    if facts["title"] is not None:
+                        raise GreenfieldSourceDutyBindingError("source duties name distinct product-title performers")
+                    facts["title"] = deepcopy(duty["actor_ref"])
+                    row = 1
+                else:
+                    facts[field].append(deepcopy(duty["actor_ref"]))
+                    row = len(facts[field])
+                actor = {
+                    "field": field, "row": row,
+                    "path": "/title" if field == "title" else f"/{field}/{row - 1}",
+                    "performer_role": role, "duty_id": duty["id"],
+                    "quote": duty["actor_ref"]["quote"],
+                    "source_start_byte": start, "source_end_byte": end,
+                }
+                identities[identity] = actor
+                performers.append(actor)
+            order = len(events) + 1
+            if order > 32:
+                raise GreenfieldSourceDutyBindingError("source action duties exceed the existing event bound")
+            events.append({
+                "event_order": order, "binding_role": section, "duty_id": duty["id"],
+                "actor_fact": {"field": field, "row": actor["row"]},
+                "actor_fact_path": actor["path"], "performer_role": role,
+                "actor_start_byte": start, "actor_end_byte": end,
+            })
+            actions[order] = {**deepcopy(dict(duty)), **events[-1]}
+            bindings[section].append({"duty_id": duty["id"], "event_order": order})
+    # The declared title/internal-system alias is one exact source identity.
+    for event in events:
+        if event["performer_role"] == "product_title":
+            alias = identities.get(("internal_system", event["actor_start_byte"], event["actor_end_byte"]))
+            if alias is not None:
+                event["actor_fact_path"] = alias["path"]
+                actions[event["event_order"]]["actor_fact_path"] = alias["path"]
+    return {"facts": facts, "performers": performers, "events": events, "actions": actions,
+            "action_bindings": bindings}
+
+
+def source_owned_greenfield_actor_facts(
+    catalog: Mapping[str, Any], *, supplemental: Mapping[str, Any], evidence_text: str,
+) -> dict[str, Any]:
+    """Keep source performers first; supplemental facts cannot select an event actor."""
+    facts = deepcopy(dict(supplemental))
+    evidence = evidence_text.encode("utf-8")
+    for field, prefix in catalog["facts"].items():
+        raw = supplemental.get(field)
+        if field == "title":
+            if raw is not None:
+                span = _source_span(evidence, raw)
+                if any(
+                    actor["field"] not in {"title", "internal_systems"}
+                    and (actor["source_start_byte"], actor["source_end_byte"]) == span
+                    for actor in catalog["performers"]
+                ):
+                    raise GreenfieldSourceDutyBindingError("candidate title has an incompatible source performer kind")
+            if prefix is not None:
+                if raw is not None and _source_span(evidence, raw) != _source_span(evidence, prefix):
+                    raise GreenfieldSourceDutyBindingError("candidate title cannot replace the source performer")
+                facts[field] = deepcopy(prefix)
+            continue
+        rows = _rows(raw, minimum=0, maximum=32, path=f"supplemental {field}")
+        facts[field] = deepcopy(prefix)
+        seen = {_source_span(evidence, row) for row in prefix}
+        for citation in rows:
+            span = _source_span(evidence, citation)
+            existing = [actor for actor in catalog["performers"]
+                        if (actor["source_start_byte"], actor["source_end_byte"]) == span]
+            if existing and not any(actor["field"] == field for actor in existing):
+                if field == "internal_systems" and any(actor["field"] == "title" for actor in existing):
+                    continue  # Exact title alias cannot shift its frozen performer path.
+                raise GreenfieldSourceDutyBindingError("supplemental actor has an incompatible source performer kind")
+            if span not in seen:
+                facts[field].append(deepcopy(citation))
+                seen.add(span)
+        if len(facts[field]) > 32:
+            raise GreenfieldSourceDutyBindingError("source and supplemental actors exceed the existing bound")
+    return facts
 
 
 def _closed(value: Any, fields: set[str], path: str) -> Mapping[str, Any]:
@@ -366,23 +482,10 @@ def validate_greenfield_source_duty_binding(
         raise GreenfieldSourceDutyBindingError(
             "source duty receipt is invalid"
         ) from exc
-    binding = _closed(
-        binding,
-        {
-            "version",
-            "source_sha256",
-            "ledger_sha256",
-            "first_path_actions",
-            "supporting_human_actions",
-            "system_duties",
-            "off_path_transitions",
-            "conditional_guards",
-            "boundaries",
-            "proof_duties",
-        },
-        "source duty binding",
-    )
-    if binding["version"] != SOURCE_DUTY_BINDING_VERSION:
+    fresh = receipt["ledger"]["version"] == SOURCE_DUTY_LEDGER_VERSION
+    host = isinstance(binding, Mapping) and binding.get("version") == HOST_SOURCE_DUTY_BINDING_VERSION
+    binding = _closed(binding, set(greenfield_source_duty_binding_schema(host=host)["required"]), "source duty binding")
+    if binding["version"] != (HOST_SOURCE_DUTY_BINDING_VERSION if host else SOURCE_DUTY_BINDING_VERSION) or (host and not fresh):
         raise GreenfieldSourceDutyBindingError("source duty binding version is invalid")
     if (
         binding["source_sha256"] != receipt["source_sha256"]
@@ -399,9 +502,6 @@ def validate_greenfield_source_duty_binding(
         raise GreenfieldSourceDutyBindingError(
             "source duty binding requires an authored candidate"
         )
-    events = _rows(
-        candidate_result.get("events"), minimum=1, maximum=32, path="candidate events"
-    )
     facts = candidate_result.get("facts")
     if not isinstance(facts, Mapping):
         raise GreenfieldSourceDutyBindingError("candidate source facts are missing")
@@ -413,31 +513,33 @@ def validate_greenfield_source_duty_binding(
     first_run = design.get("first_run")
     if not isinstance(first_run, Mapping):
         raise GreenfieldSourceDutyBindingError("candidate first run is missing")
-    expected_run = _ordered_bindings(
-        binding["first_path_actions"],
-        duties=ledger["first_path_actions"],
-        events=events,
-        evidence=evidence_text.encode("utf-8"),
-        facts=facts,
-    )
-    supporting_orders = _role_event_orders(
-        binding["supporting_human_actions"],
-        duties=ledger["supporting_human_actions"],
-        events=events,
-        evidence=evidence_text.encode("utf-8"),
-        facts=facts,
-        role="supporting_human_actions",
-        actor_fields={"human_actors"},
-    )
-    system_orders = _role_event_orders(
-        binding["system_duties"],
-        duties=ledger["system_duties"],
-        events=events,
-        evidence=evidence_text.encode("utf-8"),
-        facts=facts,
-        role="system_duties",
-        actor_fields={"internal_systems", "external_systems", "title"},
-    )
+    if fresh:
+        if "events" in candidate_result:
+            raise GreenfieldSourceDutyBindingError("fresh candidate must not author source events or actors")
+        catalog = project_greenfield_source_event_catalog(receipt, evidence_text=evidence_text)
+        events = catalog["events"]
+        if not host and any(binding[section] != rows for section, rows in catalog["action_bindings"].items()):
+            raise GreenfieldSourceDutyBindingError("canonical action bindings differ from the source-owned event catalog")
+        binding = {**binding, "version": SOURCE_DUTY_BINDING_VERSION, **catalog["action_bindings"]}
+        expected_run, supporting_orders, system_orders = (
+            [row["event_order"] for row in binding[section]] for section in _ACTION_SECTIONS
+        )
+    else:
+        events = _rows(candidate_result.get("events"), minimum=1, maximum=32, path="candidate events")
+        expected_run = _ordered_bindings(
+            binding["first_path_actions"], duties=ledger["first_path_actions"], events=events,
+            evidence=evidence_text.encode("utf-8"), facts=facts,
+        )
+        supporting_orders = _role_event_orders(
+            binding["supporting_human_actions"], duties=ledger["supporting_human_actions"], events=events,
+            evidence=evidence_text.encode("utf-8"), facts=facts,
+            role="supporting_human_actions", actor_fields={"human_actors"},
+        )
+        system_orders = _role_event_orders(
+            binding["system_duties"], duties=ledger["system_duties"], events=events,
+            evidence=evidence_text.encode("utf-8"), facts=facts,
+            role="system_duties", actor_fields={"internal_systems", "external_systems", "title"},
+        )
     role_orders = (set(expected_run), set(supporting_orders), set(system_orders))
     if any(
         left & right
@@ -534,7 +636,10 @@ def validate_greenfield_source_duty_design_binding(
 __all__ = [
     "GreenfieldSourceDutyBindingError",
     "SOURCE_DUTY_BINDING_VERSION",
+    "HOST_SOURCE_DUTY_BINDING_VERSION",
     "greenfield_source_duty_binding_schema",
+    "project_greenfield_source_event_catalog",
+    "source_owned_greenfield_actor_facts",
     "validate_greenfield_source_duty_binding",
     "validate_greenfield_source_duty_design_binding",
 ]

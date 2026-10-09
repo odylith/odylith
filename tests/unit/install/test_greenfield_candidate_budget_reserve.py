@@ -33,7 +33,7 @@ def test_real_driver_reserves_completion_from_shared_whole_clock(
     tmp_path, monkeypatch, retention_seconds, proposal_seconds,
 ):
     flow, host_run, _installed, hosts, proposals, repo = _flow(
-        tmp_path, contract={"version": "contract"},
+        tmp_path, contract={},
         candidate={"version": "candidate", "result": {"status": "authored"}},
     )
     now = [0.0]

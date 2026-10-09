@@ -813,7 +813,7 @@ def test_run_pending_request_records_provider_failure_diagnostics_and_patches_ru
     assert "credits" in entry["diagnostics"]["provider_failure_detail"].lower()
     assert brief["diagnostics"]["reason"] == "credits_exhausted"
     assert brief["diagnostics"]["provider_failure_code"] == "credits_exhausted"
-    assert "provider budget" in brief["diagnostics"]["title"].lower()
+    assert brief["diagnostics"]["title"] == "Summary usage limit"
     assert brief["diagnostics"]["next_retry_utc"] == entry["next_retry_utc"]
 
 
@@ -883,8 +883,8 @@ def test_run_pending_request_records_global_provider_unavailable_and_patches_run
     assert entry["diagnostics"]["provider_failure_code"] == "provider_unavailable"
     assert brief["diagnostics"]["reason"] == "provider_unavailable"
     assert brief["diagnostics"]["provider_failure_code"] == "provider_unavailable"
-    assert brief["diagnostics"]["title"] == "Narrated brief not ready yet"
-    assert "Compass is live" in brief["diagnostics"]["message"]
+    assert brief["diagnostics"]["title"] == "Summary service unavailable"
+    assert brief["diagnostics"]["message"] == "The summary service could not be reached."
     assert brief["diagnostics"]["next_retry_utc"] == entry["next_retry_utc"]
 
 

@@ -48,7 +48,8 @@ def test_accepted_evidence_excerpt_labels_cover_all_product_story_views(
         title=intent["title"], product_story=excerpt, components=[],
     )
     assert boxes[0]["role"] == "Accepted evidence excerpt"
-    assert boxes[0]["description"] == f"Accepted evidence excerpt: “{excerpt}”"
+    assert boxes[0]["description"] == ""
+    assert boxes[0]["details"] == [{"label": "Accepted evidence excerpt", "text": excerpt}]
 
     payload = preview_project_dashboard_payload(
         root=tmp_path, proposal=proposal,

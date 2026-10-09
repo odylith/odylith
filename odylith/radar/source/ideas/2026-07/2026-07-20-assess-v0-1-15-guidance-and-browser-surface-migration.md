@@ -401,3 +401,22 @@ Completed bindings after the governed source and generated views settled:
 
 - `migration-observer:0.1.15:browser-surfaces:87d800962b1a`
 - `migration-observer:0.1.15:install-managed-assets:14febb0b2fab`
+
+## Current V42 installed assessment (2026-10-08)
+
+One authentic published v0.1.14 consumer upgrades once to the frozen `fe4a1eff`
+package. All 1,020 installed owners and 108 managed skills match the package;
+the current desktop/mobile matrix and Project error supplement pass 44 cells.
+The complete before/after inventory reconciles 18,397 paths with no unresolved
+changes, preserving the 15 authored/application and three customer rows under
+the sealed single Atlas fingerprint exception. All five migration classes have
+explicit current assessments, including owned derived replacements and removed
+retrieval-index segments. Historical 18-exception counts receive no current
+credit because their path membership was not retained.
+
+Assessment: `/private/tmp/odylith-greenfield-v14-to-v42-migration-20261008/assessment/installed-five-class-assessment.json`,
+SHA-256 `d4aff94dd5e801c09c8f8e7fe97973522b4fa89a15f3908fcb2ff71724f76e09`.
+B-145 remains unfinished with no new completion markers. Root must bind these
+assessments through the current final migration gate. This evidence covers
+installed migration mechanics; semantic quality, native host behavior, current
+CI and production release remain separate gates.

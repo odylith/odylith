@@ -35,6 +35,9 @@ from odylith.runtime.domain_intelligence.greenfield_source_lifecycle import (
 from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
     verify_greenfield_source_duty_ledger_receipt,
 )
+from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
+    validate_greenfield_source_duty_binding,
+)
 
 
 def materialize_host_authored_intent(
@@ -84,7 +87,10 @@ def materialize_host_authored_intent(
             authoring_receipt=receipt,
         )
     result = host_candidate["result"]
-    binding = result["source_duty_binding"]
+    binding = validate_greenfield_source_duty_binding(
+        result["source_duty_binding"], ledger_receipt=accepted_source_duties,
+        candidate_result=result, evidence_text=prepared.evidence_source,
+    )
     lifecycle = project_greenfield_source_lifecycle(
         ledger_receipt=accepted_source_duties,
         binding=binding,

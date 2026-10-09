@@ -12,12 +12,14 @@ import time
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_host_flow as host
-from odylith.runtime.domain_intelligence.greenfield_process import run_command_with_group_timeout
+from odylith.runtime.domain_intelligence.greenfield_process import command_lifecycle_observer, run_command_with_group_timeout
 from tests.unit.install.test_greenfield_matrix_host_candidate import _flow
 
 
 PROCESS_TREE = '''import json, os, signal, subprocess, sys, time
-sys.stdin.buffer.read()
+ready_path = os.environ.get("ODYLITH_TEST_PROCESS_READY")
+if not ready_path:
+    sys.stdin.buffer.read()
 child = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"])
 print(json.dumps({"parent": os.getpid(), "child": child.pid}), flush=True)
 print("private partial stdout", flush=True)
@@ -27,6 +29,10 @@ def stop(signum, frame):
     child.wait(timeout=3)
     sys.exit(0)
 signal.signal(signal.SIGTERM, stop)
+if ready_path:
+    with open(ready_path, "x") as marker:
+        marker.write("process tree and output ready")
+    sys.stdin.buffer.read()
 time.sleep(60)
 '''
 
@@ -75,17 +81,31 @@ def test_shared_group_timeout_terminates_parent_and_descendant_with_partial_stre
 
 def test_real_gate_timeout_retains_streams_and_failed_sink_before_any_later_stage(tmp_path):
     flow, _host_stub, installed, _hosts, proposals, repo = _flow(
-        tmp_path, contract={"version": "contract"}, candidate={},
+        tmp_path, contract={}, candidate={},
     )
     executable = Path(flow.trusted_codex_executable)
     executable.write_text(f"#!{sys.executable}\n" + PROCESS_TREE)
     stdout, stderr = [], []
+    ready_path = tmp_path / "gate-output-ready"
     flow = host.HostCandidateFlow(**{
         **flow.__dict__, "timeout": 0.5, "retain_authority_gate_bytes": stdout.append,
+        "env": {**flow.env, "ODYLITH_TEST_PROCESS_READY": str(ready_path)},
         "retain_host_stderr_bytes": lambda stage, value: stderr.append((stage, value)),
     })
+
+    def observe_start(event):
+        if event["state"] != "started":
+            return
+        # Establish partial-output custody before the unchanged communicate timeout.
+        # Startup remains measured; this cleanup test does not prove flow latency.
+        deadline = time.monotonic() + 5.0
+        while not ready_path.is_file():
+            if time.monotonic() >= deadline:
+                raise AssertionError("gate stub did not establish output custody")
+            time.sleep(0.005)
+
     try:
-        with pytest.raises(host.HostCandidateFlowError, match="gate command returned nonzero") as caught:
+        with command_lifecycle_observer(observe_start), pytest.raises(host.HostCandidateFlowError, match="gate command returned nonzero") as caught:
             host.run_host_candidate_flow(flow)
         _assert_tree_gone(stdout[0].decode())
         assert len(installed) == 1 and proposals == []
@@ -120,7 +140,7 @@ def test_real_gate_timeout_retains_streams_and_failed_sink_before_any_later_stag
 
 def test_oversized_stderr_fails_closed_with_full_hash_and_no_clipping(tmp_path, monkeypatch):
     flow, _host_stub, installed, _hosts, proposals, _repo = _flow(
-        tmp_path, contract={"version": "contract"}, candidate={},
+        tmp_path, contract={}, candidate={},
     )
     import subprocess
     raw_stderr = "x" * (256 * 1024 + 1)
@@ -149,7 +169,7 @@ def test_callers_retain_private_gate_streams_and_authoritative_failed_snapshot(t
     from greenfield_matrix_release_artifacts import begin_retained_case_evidence
     from odylith.runtime.domain_intelligence.greenfield_process import GroupTimeoutCompletedProcess
     flow, _host_stub, installed, _hosts, proposals, repo = _flow(
-        tmp_path, contract={"version": "contract"}, candidate={},
+        tmp_path, contract={}, candidate={},
     )
     root = tmp_path / "retained"
     root.mkdir(mode=0o700)
@@ -209,7 +229,7 @@ def test_real_terminal_lifecycle_failure_preserves_primary_result_and_stream_cus
     from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import preflight_greenfield_source_duty_ledger
     from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import source_duty_entailment_task, SOURCE_DUTY_DECISION_SET_VERSION
     flow, _host_stub, installed, _hosts, proposals, repo = _flow(
-        tmp_path, contract={"version": "contract"}, candidate={},
+        tmp_path, contract={}, candidate={},
     )
     compact = _fixture_host_ledger()
     expanded = expand_compact_source_duty_ledger(compact, evidence_text=flow.prompt)

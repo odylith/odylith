@@ -37,7 +37,8 @@ from odylith.runtime.domain_intelligence.greenfield_model_source_citations impor
     resolve_source_citation,
 )
 from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
-    SOURCE_DUTY_BINDING_VERSION,
+    HOST_SOURCE_DUTY_BINDING_VERSION,
+    validate_greenfield_source_duty_binding,
 )
 from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
     SOURCE_DUTY_LEDGER_VERSION,
@@ -149,71 +150,33 @@ def synthetic_source_duty_receipt(
             "clarification fixture requires a separately declared source duty receipt"
         )
     elif result.get("status") == "authored":
-        events = result["events"]
-        orders = result["provisional_design"]["first_run"]["event_orders"]
         atoms = getattr(host_candidate, "source_action_atoms", None)
         if atoms is None:
             atoms = _SERIALIZED_FIXTURE_ATOMS.get(_fixture_candidate_key(host_candidate))
         if atoms is None:
-            raise ValueError("test host candidate has no source action atoms")
-        citations = [(order, atoms[order - 1]) for order in orders]
-        supporting = []
-        systems = []
-        for order, event in enumerate(events, start=1):
-            if order in orders:
-                continue
-            target = (
-                supporting
-                if event["actor_fact"]["field"] == "human_actors"
-                else systems
-            )
-            target.append((order, atoms[order - 1]))
+            raise ValueError("test host candidate has no declared source action atoms")
     else:
         raise ValueError("synthetic source duties require a known fixture result")
     ledger = {
-        "version": SOURCE_DUTY_LEDGER_VERSION,
-        "status": "inventory",
-        "question": "",
-        "evidence_controls": [],
-        "first_path_actions": [
-            {
-                "id": f"fixture-first-path-{index}",
-                "source_refs": _fixture_action_refs(atom),
-                "performer_role": {
-                    "human_actors": "human_actor",
-                    "internal_systems": "internal_system",
-                    "external_systems": "external_system",
-                    "title": "product_title",
-                }.get(
-                    result["events"][order - 1]["actor_fact"]["field"], "human_actor"
-                ) if result.get("status") == "authored" else "human_actor",
-                "observable_result": "fixture-declared result",
-                **_fixture_action_atom(atom),
-            }
-            for index, (order, atom) in enumerate(citations, start=1)
-        ],
-        "supporting_human_actions": [
-            {
-                "id": f"fixture-supporting-{order}",
-                "source_refs": _fixture_action_refs(atom),
-                **_fixture_action_atom(atom),
-            }
-            for order, atom in supporting
-        ],
-        "system_duties": [
-            {
-                "id": f"fixture-system-{order}",
-                "source_refs": _fixture_action_refs(atom),
-                **_fixture_action_atom(atom),
-            }
-            for order, atom in systems
-        ],
-        "state_fields": [],
-        "off_path_transitions": [],
-        "conditional_guards": [],
-        "boundaries": [],
-        "proof_duties": [],
+        "version": SOURCE_DUTY_LEDGER_VERSION, "status": "inventory", "question": "",
+        "evidence_controls": [], "state_fields": [], "off_path_transitions": [],
+        "conditional_guards": [], "boundaries": [], "proof_duties": [],
     }
+    roles = {"human_actors": "human_actor", "internal_systems": "internal_system",
+             "external_systems": "external_system", "title": "product_title"}
+    for section in ("first_path_actions", "supporting_human_actions", "system_duties"):
+        rows = []
+        for atom in atoms:
+            if atom["source_role"] != section:
+                continue
+            row = {"id": atom["duty_id"], "source_refs": _fixture_action_refs(atom),
+                   **_fixture_action_atom(atom)}
+            if section != "supporting_human_actions":
+                row["performer_role"] = roles[atom["performer_field"]]
+            if section == "first_path_actions":
+                row["observable_result"] = "fixture-declared result"
+            rows.append(row)
+        ledger[section] = rows
     return synthetic_source_duty_receipt_for_ledger(ledger, evidence_text=evidence_text)
 
 
@@ -222,8 +185,9 @@ def synthetic_source_duty_receipt_for_ledger(
 ) -> dict[str, Any]:
     """Approve a fixture-only ledger; production must obtain an independent verdict."""
 
+    passive = ledger["version"] == "odylith.greenfield.source-duty-ledger.v5"
     preflight = preflight_greenfield_source_duty_ledger(
-        ledger, evidence_text=evidence_text
+        ledger, evidence_text=evidence_text, _passive_source=passive,
     )
     decision_task = source_duty_entailment_task(
         preflight, evidence_text=evidence_text
@@ -242,7 +206,7 @@ def synthetic_source_duty_receipt_for_ledger(
         },
     }
     return validate_greenfield_source_duty_ledger(
-        ledger, evidence_text=evidence_text, decision_set=decision_set
+        ledger, evidence_text=evidence_text, decision_set=decision_set, _passive_source=passive,
     )
 
 
@@ -252,28 +216,10 @@ def _fixture_source_duty_binding(
     receipt = synthetic_source_duty_receipt(
         host_candidate, evidence_text=evidence_text
     )
-    orders = host_candidate["result"]["provisional_design"]["first_run"]["event_orders"]
-    events = host_candidate["result"]["events"]
     return {
-        "version": SOURCE_DUTY_BINDING_VERSION,
-        "source_sha256": receipt["source_sha256"],
-        "ledger_sha256": receipt["ledger_sha256"],
-        "first_path_actions": [
-            {"duty_id": row["id"], "event_order": order}
-            for row, order in zip(receipt["ledger"]["first_path_actions"], orders, strict=True)
-        ],
-        "supporting_human_actions": [
-            {"duty_id": row["id"], "event_order": int(row["id"].rsplit("-", 1)[1])}
-            for row in receipt["ledger"]["supporting_human_actions"]
-        ],
-        "system_duties": [
-            {"duty_id": row["id"], "event_order": int(row["id"].rsplit("-", 1)[1])}
-            for row in receipt["ledger"]["system_duties"]
-        ],
-        "off_path_transitions": [],
-        "conditional_guards": [],
-        "boundaries": [],
-        "proof_duties": [],
+        "version": HOST_SOURCE_DUTY_BINDING_VERSION,
+        "source_sha256": receipt["source_sha256"], "ledger_sha256": receipt["ledger_sha256"],
+        "off_path_transitions": [], "conditional_guards": [], "boundaries": [], "proof_duties": [],
     }
 
 
@@ -286,7 +232,10 @@ def source_duty_fixture(
     )
 
     receipt = synthetic_source_duty_receipt(host_candidate, evidence_text=evidence_text)
-    binding = host_candidate["result"][HOST_SOURCE_DUTY_BINDING_FIELD]
+    binding = validate_greenfield_source_duty_binding(
+        host_candidate["result"][HOST_SOURCE_DUTY_BINDING_FIELD], ledger_receipt=receipt,
+        candidate_result=host_candidate["result"], evidence_text=evidence_text,
+    )
     return {
         "ledger_receipt": receipt, "binding": copy.deepcopy(binding),
         "lifecycle": project_greenfield_source_lifecycle(
@@ -391,22 +340,48 @@ def host_candidate_response(
                 value,
                 state_object=field == "state_object",
             )
-    atoms: list[dict[str, Any]] = []
-    for event, citation in zip(events, first_path, strict=True):
+    first_orders = result["provisional_design"]["first_run"]["event_orders"]
+    sections = {order: ("first_path_actions" if order in first_orders else
+                "supporting_human_actions" if event["actor_fact"]["field"] == "human_actors"
+                else "system_duties") for order, event in enumerate(events, 1)}
+    catalog_orders = [*first_orders, *[order for order in sections if sections[order] == "supporting_human_actions"],
+                      *[order for order in sections if sections[order] == "system_duties"]]
+    remap = {old: new for new, old in enumerate(catalog_orders, 1)}
+    atoms = []
+    for old in catalog_orders:
+        event, citation = events[old - 1], first_path[old - 1]
         event_ref = _unique_context_citation(evidence_text, citation)
+        section = sections[old]
+        duty_id = (f"fixture-first-path-{first_orders.index(old) + 1}" if section == "first_path_actions"
+                   else f"fixture-{'supporting' if section == 'supporting_human_actions' else 'system'}-{old}")
         atoms.append({
-            "event_ref": event_ref,
-            "projection_ref": copy.deepcopy(event_ref),
-            "actor_ref": _fixture_actor_ref(facts, event),
-            "action_quote": event["action_quote"],
-            "target_quote": event["target_quote"],
+            "event_ref": event_ref, "projection_ref": copy.deepcopy(event_ref),
+            "actor_ref": _fixture_actor_ref(facts, event), "action_quote": event["action_quote"],
+            "target_quote": event["target_quote"], "performer_field": event["actor_fact"]["field"],
+            "source_role": section, "duty_id": duty_id,
         })
-        event.clear()
-        event["actor_fact"] = copy.deepcopy(response["result"]["events"][len(atoms) - 1]["actor_fact"])
+    def remap_refs(value):
+        if isinstance(value, list):
+            for row in value:
+                remap_refs(row)
+        elif isinstance(value, dict):
+            for key, child in value.items():
+                if key in {"event_order", "before_event", "after_event"} and type(child) is int:
+                    value[key] = remap.get(child, child)
+                elif key in {"event_orders", "supported_event_orders", "verification_event_orders"}:
+                    value[key] = [remap.get(order, order) for order in child]
+                else:
+                    remap_refs(child)
+    remap_refs(design)
+    remap_refs(result["source_precedence"])
+    if result["terminal"] is not None:
+        remap_refs(result["terminal"])
+        if result["terminal"]["result_fact"]["field"] == "first_path":
+            old_row = result["terminal"]["result_fact"]["row"]
+            result["terminal"]["result_fact"]["row"] = remap.get(old_row, old_row)
+    result.pop("events")
     candidate.source_action_atoms = atoms
-    result[HOST_SOURCE_DUTY_BINDING_FIELD] = _fixture_source_duty_binding(
-        candidate, evidence_text=evidence_text
-    )
+    result[HOST_SOURCE_DUTY_BINDING_FIELD] = _fixture_source_duty_binding(candidate, evidence_text=evidence_text)
     _SERIALIZED_FIXTURE_ATOMS[_fixture_candidate_key(candidate)] = copy.deepcopy(atoms)
     return candidate
 

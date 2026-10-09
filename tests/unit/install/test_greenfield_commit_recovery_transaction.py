@@ -14,6 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_whole_journey_budget import 
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import STANDARD_PROFILE_ID
 from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import verify_greenfield_source_duty_ledger_receipt
 from odylith.runtime.domain_intelligence import greenfield_host_flow as host_module
+from odylith.runtime.domain_intelligence.greenfield_authority_gate import greenfield_authority_gate_contract
 from tests.unit.install.test_greenfield_matrix_host_candidate import _flow
 from tests.unit.install.test_greenfield_commit_recovery_proof import _module, HOST_CANDIDATE_ARGV
 
@@ -27,10 +28,9 @@ def test_recovery_caller_uses_real_driver_budget_fresh_ledger_and_final_proof(
     flow, host_run, installed_calls, host_calls, _proposals, repo = _flow(
         tmp_path,
         candidate={"version": "candidate", "result": {"status": "authored"}},
-        contract={"request": {"evidence": source}, "authority_gate": {
-            "version": "gate-contract", "task": "Decide first-path authority.",
-            "operator_request": prompt, "operator_edit": "", "response_schema": {},
-        }},
+        contract={"request": {"evidence": source}, "authority_gate": greenfield_authority_gate_contract(
+            prompt=prompt, edit_evidence="", evidence_source=source,
+        )},
     )
     (tmp_path / "retained").mkdir()
     evidence = begin_retained_case_evidence(evidence_root=tmp_path / "retained", case_id="proposal")

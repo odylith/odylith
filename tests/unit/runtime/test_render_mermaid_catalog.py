@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 from odylith.runtime.surfaces import atlas_box_explanations
+from odylith.runtime.surfaces import atlas_detail_layout
 from odylith.runtime.surfaces import atlas_diagram_intelligence
 from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import render_mermaid_catalog as renderer
@@ -214,7 +215,6 @@ def test_render_mermaid_catalog_explains_diagram_and_moves_context_to_bottom_lis
     assert '<details class="diagram-guide-panel read-guide">' in html
     assert 'id="diagramReadGuide"' in html
     assert "function diagramReadGuide(diagram)" in html
-    assert 'diagram.diagram_boxes.filter((box) => box && typeof box === "object" && String(box.description ?? "").trim())' in html
     assert "const catalogGuide = String(diagram && diagram.read_guide ? diagram.read_guide : \"\").trim();" in html
     assert "return catalogGuide;" in html
     assert "Read this as a first-path rehearsal" not in html
@@ -265,6 +265,64 @@ def test_render_mermaid_catalog_explains_diagram_and_moves_context_to_bottom_lis
     assert html.index('<article class="section diagram-explanation-section">') < html.index(
         '<details class="section linked-context-section">'
     )
+
+    from tests.integration.runtime.surface_browser_test_support import (
+        _assert_clean_page, _browser, _new_page,
+    )
+
+    narrative = "Keeps café review receipts intact.\nReturns the exact Ω result."
+    source = "for café evidence\nand exact APIv7 receipts"
+    boxes = [
+        {"node_id": "registry", "label": "Receipt registry", "role": "Proposed support",
+         "description": narrative, "details": [
+             {"label": "Source actions", "text": "1, 3"},
+             {"label": "Boundary verification", "text": "Retrieve both intact receipts."},
+         ]},
+        {"node_id": "product", "label": "Review workspace", "role": "Accepted evidence excerpt",
+         "description": "", "details": [{"label": "Accepted evidence excerpt", "text": source}]},
+        {"label": "Unexplained box", "description": ""},
+        {"node_id": "invalid", "label": "Invalid description", "description": 0},
+    ]
+    for _pw, browser in _browser():
+        context = browser.new_context()
+        try:
+            with _new_page(context) as (page, observation):
+                page.set_content('<section id="boxes"><div id="box-list"></div></section>')
+                page.add_script_tag(content=atlas_detail_layout.DETAIL_RUNTIME_HELPERS_JS)
+                page.evaluate("""boxes => renderDiagramBoxes({diagram_boxes: boxes},
+                    document.getElementById('boxes'), document.getElementById('box-list'))""", boxes)
+                rows = page.locator(".diagram-box-row")
+                assert rows.count() == 2
+                assert rows.locator(".diagram-box-name strong").all_text_contents() == [
+                    "Receipt registry", "Review workspace",
+                ]
+                assert rows.nth(0).locator(".diagram-box-description").text_content() == narrative
+                assert rows.nth(1).locator(".diagram-box-description").count() == 0
+                assert "Accepted evidence excerpt" not in rows.nth(1).inner_text()
+                assert "exact APIv7 receipts" not in rows.nth(1).inner_text()
+                for index, expected_labels, expected_texts in (
+                    (0, ["Role", "Source actions", "Boundary verification"],
+                     ["Proposed support", "1, 3", "Retrieve both intact receipts."]),
+                    (1, ["Role", "Accepted evidence excerpt"], ["Accepted evidence excerpt", source]),
+                ):
+                    details = rows.nth(index).locator("details")
+                    assert details.evaluate("node => node.open") is False
+                    summary = details.locator("summary")
+                    assert summary.inner_text() == "Supporting details"
+                    summary.focus()
+                    summary.press("Enter")
+                    assert details.evaluate("node => node.open") is True
+                    assert details.locator("dt").all_text_contents() == expected_labels
+                    assert details.locator("dd").all_text_contents() == expected_texts
+                    summary.press("Space")
+                    assert details.evaluate("node => node.open") is False
+                page.evaluate("""() => renderDiagramBoxes({diagram_boxes: []},
+                    document.getElementById('boxes'), document.getElementById('box-list'))""")
+                assert page.locator("#boxes").is_hidden()
+                assert page.locator(".diagram-box-row").count() == 0
+                _assert_clean_page(page, observation)
+        finally:
+            context.close()
 
 
 def test_load_catalog_requires_png_for_catalog_diagrams(tmp_path: Path) -> None:

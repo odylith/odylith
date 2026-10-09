@@ -94,7 +94,6 @@ def _provisional_inputs() -> tuple[str, dict[str, Any], list[dict[str, Any]], li
     binding["source_sha256"] = ledger_receipt["source_sha256"]
     binding["ledger_sha256"] = ledger_receipt["ledger_sha256"]
     _authored, candidate = _authored_result(original_source)
-    candidate["result"]["source_duty_binding"] = binding
     source_duty = {
         "ledger_receipt": ledger_receipt,
         "binding": binding,

@@ -17,14 +17,14 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     MAX_AUTHORED_FIELD_VALUE_CHARS,
 )
 from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
+    HOST_SOURCE_DUTY_BINDING_VERSION,
     greenfield_source_duty_binding_schema,
+    project_greenfield_source_event_catalog,
+    source_owned_greenfield_actor_facts,
     validate_greenfield_source_duty_binding,
 )
-from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
-    verify_greenfield_source_duty_ledger_receipt,
-)
 
-HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v23"
+HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v24"
 HOST_SOURCE_DUTY_BINDING_FIELD = "source_duty_binding"
 
 
@@ -57,7 +57,7 @@ def _context_citation_schema(*, description: str = "") -> dict[str, Any]:
 
 
 def greenfield_host_candidate_schema() -> dict[str, Any]:
-    """Return the complete host shape with contextual fact and event citations."""
+    """Return the closed host shape with supplemental facts and design references."""
 
     schema = greenfield_authoring_schema()
     schema["properties"]["version"]["enum"] = [HOST_CANDIDATE_FORMAT_VERSION]
@@ -67,7 +67,7 @@ def greenfield_host_candidate_schema() -> dict[str, Any]:
     authored["properties"].pop("components")
     authored["required"].append(HOST_SOURCE_DUTY_BINDING_FIELD)
     authored["properties"][HOST_SOURCE_DUTY_BINDING_FIELD] = (
-        greenfield_source_duty_binding_schema()
+        greenfield_source_duty_binding_schema(host=True)
     )
     facts = authored["properties"]["facts"]
     for field, fact_schema in tuple(facts["properties"].items()):
@@ -97,13 +97,14 @@ def greenfield_host_candidate_schema() -> dict[str, Any]:
     ]
     facts["properties"].pop("first_path")
     facts["properties"].pop("supporting_events")
-    event = authored["properties"]["events"]["items"]
-    event["required"] = ["actor_fact"]
-    event["properties"] = {"actor_fact": event["properties"]["actor_fact"]}
-    event["description"] = (
-        "Select only the actor fact. The accepted source ledger owns each event citation, "
-        "action quote, and target quote through source_duty_binding."
-    )
+    authored["required"].remove("events")
+    authored["properties"].pop("events")
+    facts["properties"]["title"] = {"anyOf": [_context_citation_schema(), {"type": "null"}]}
+    for field in ("human_actors", "internal_systems", "external_systems"):
+        facts["properties"][field]["description"] = (
+            "Supplemental source-supported nonperforming participants or dependencies. "
+            "The source event catalog supplies performing identities and their fixed addresses."
+        )
     return schema
 
 
@@ -133,21 +134,13 @@ def canonical_greenfield_host_candidate(
     if not isinstance(design, Mapping) or "project_summary" not in design:
         raise ValueError("Greenfield host candidate requires an authored project summary")
     facts = result.get("facts")
-    events = result.get("events")
     if not isinstance(facts, Mapping) or {"first_path", "supporting_events"} & set(facts):
         raise ValueError(
             "Greenfield host candidate must not duplicate first-path citation authority"
         )
-    if (
-        not isinstance(events, Sequence)
-        or isinstance(events, (str, bytes, bytearray))
-        or not events
-    ):
-        raise TypeError("Greenfield host candidate events must be a non-empty array")
     evidence = evidence_text.encode("utf-8")
-    ledger = verify_greenfield_source_duty_ledger_receipt(
-        source_duty_receipt, evidence_text=evidence_text
-    )["ledger"]
+    catalog = project_greenfield_source_event_catalog(source_duty_receipt, evidence_text=evidence_text)
+    facts = source_owned_greenfield_actor_facts(catalog, supplemental=facts, evidence_text=evidence_text)
     canonical_facts = {
         field: _canonical_fact_value(
             evidence,
@@ -174,6 +167,8 @@ def canonical_greenfield_host_candidate(
     canonical_events: list[dict[str, Any]] = []
     path_citations: list[Any] = []
     supporting_citations: list[Any] = []
+    if not isinstance(result[HOST_SOURCE_DUTY_BINDING_FIELD], Mapping) or result[HOST_SOURCE_DUTY_BINDING_FIELD].get("version") != HOST_SOURCE_DUTY_BINDING_VERSION:
+        raise ValueError("fresh Greenfield candidate requires lifecycle-only source duty binding")
     binding = validate_greenfield_source_duty_binding(
         result[HOST_SOURCE_DUTY_BINDING_FIELD], ledger_receipt=source_duty_receipt,
         candidate_result=result, evidence_text=evidence_text,
@@ -181,31 +176,15 @@ def canonical_greenfield_host_candidate(
     first_path_orders = {
         row["event_order"] for row in binding["first_path_actions"]
     }
-    duty_by_id = {
-        row["id"]: row
-        for section in ("first_path_actions", "supporting_human_actions", "system_duties")
-        for row in ledger[section]
-    }
-    duty_by_order = {
-        row["event_order"]: duty_by_id[row["duty_id"]]
-        for section in ("first_path_actions", "supporting_human_actions", "system_duties")
-        for row in binding[section]
-    }
-    if set(duty_by_order) != set(range(1, len(events) + 1)):
-        raise ValueError("Greenfield host events must bind one source action atom each")
-    event_fields = frozenset(
-        authored_schema["properties"]["events"]["items"]["required"]
-    )
-    for event_order, raw_event in enumerate(events, start=1):
-        if not isinstance(raw_event, Mapping) or set(raw_event) != event_fields:
-            raise ValueError("Greenfield host candidate event has invalid fields")
-        duty = duty_by_order[event_order]
+    for source_event in catalog["events"]:
+        event_order = source_event["event_order"]
+        duty = catalog["actions"][event_order]
         citation = canonical_citation_from_host_selection(
             evidence,
             duty["event_ref"],
         )
         event = {
-            "actor_fact": deepcopy(raw_event["actor_fact"]),
+            "actor_fact": deepcopy(source_event["actor_fact"]),
             "action_quote": duty["action"],
             "target_quote": duty["target"],
         }
