@@ -257,9 +257,9 @@ def test_context_distinguishes_performers_from_contextual_participants() -> None
 
     assert boxes["actor1"]["role"] == "First-path actor"
     assert boxes["actor2"]["role"] == "Participant"
-    assert boxes["actor2"]["description"] == (
-        "Named in project evidence; no first-path action is assigned."
-    )
+    assert boxes["actor1"]["description"] == boxes["actor2"]["description"] == ""
+    assert boxes["actor2"]["details"] == [{"label": "Action assignment", "text":
+        "Named in project evidence; no first-path action is assigned."}]
     assert "actor1 --> product" not in context["mermaid_source"]
     assert (
         'actor1_actions ---|"first-path interaction"| product'
@@ -771,9 +771,10 @@ def test_single_human_event_sequence_preserves_typed_performer_edge() -> None:
     assert boxes["performer1"]["label"] == "extension publishers"
     assert boxes["performer1"]["role"] == "Typed event performer"
     assert boxes["event1"]["label"] == "Action 1"
-    assert boxes["event1"]["description"] == authored_event_display_text(
-        _relation(1, "extension publishers", event)
-    )
+    assert boxes["event1"]["description"] == event
+    assert boxes["event1"]["details"] == [{"label": "Source event", "text":
+        authored_event_display_text(_relation(1, "extension publishers", event))}]
+    assert boxes["performer1"]["description"] == ""
     assert 'performer1 --> event1' in sequence["mermaid_source"]
     assert 'event1 -. "proposed support" .-> proposed_component1' in sequence["mermaid_source"]
     assert {"label": "Proposed exchange 1 to Occupancy Record", "text": "Proposed vessel-tag record"} in boxes["proposed_component1"]["details"]
@@ -843,11 +844,12 @@ def test_context_does_not_call_unselected_supporting_relation_a_first_path_actio
     context_boxes = {box["node_id"]: box for box in context["diagram_boxes"]}
 
     assert context_boxes["actor2"]["role"] == "Participant"
-    assert "no first-path action is assigned" in context_boxes["actor2"]["description"]
+    assert context_boxes["actor2"]["description"] == ""
+    assert "no first-path action is assigned" in context_boxes["actor2"]["details"][0]["text"]
     assert "Harbor liaison inventories old berths" not in context["mermaid_source"]
     assert "event4" not in sequence["mermaid_source"]
     assert "proposed_component4" not in sequence["mermaid_source"]
-    assert "Action 4" in next(box["description"] for box in support["diagram_boxes"] if box["node_id"] == "source_actions")
+    assert "Action 4" in next(box["details"][0]["text"] for box in support["diagram_boxes"] if box["node_id"] == "source_actions")
 
 
 def _source_lifecycle() -> dict[str, Any]:
@@ -894,11 +896,15 @@ def test_cited_off_path_lifecycle_keeps_two_effects_out_of_first_run() -> None:
     assert boxes["off_path_transition1"]["role"] == "Source-stated off-path transition"
     assert boxes["off_path_transition1_effect1"]["label"] == "Effect 1.1"
     assert boxes["off_path_transition1_effect2"]["label"] == "Effect 1.2"
-    assert "Change: closed\nObservable check: access closed" in boxes["off_path_transition1_effect1"]["description"]
-    assert "Change: erased\nObservable check: cache empty" in boxes["off_path_transition1_effect2"]["description"]
+    assert boxes["off_path_transition1_effect1"]["description"] == "closed"
+    assert boxes["off_path_transition1_effect2"]["description"] == "erased"
+    assert {"label": "Observable check", "text": "access closed"} in boxes["off_path_transition1_effect1"]["details"]
+    assert {"label": "Observable check", "text": "cache empty"} in boxes["off_path_transition1_effect2"]["details"]
     assert {"label": "Trigger", "text": _source_lifecycle()["off_path_transitions"][0]["trigger"]} in boxes["off_path_transition1"]["details"]
-    assert "placement access" in boxes["state_field1"]["description"]
-    assert "cached placement" in boxes["state_field2"]["description"]
+    assert boxes["state_field1"]["description"] == _source_lifecycle()["state_fields"][0]["meaning"]
+    assert boxes["state_field2"]["description"] == _source_lifecycle()["state_fields"][1]["meaning"]
+    assert {"label": "Source", "text": "“placement access”"} in boxes["state_field1"]["details"]
+    assert {"label": "Source", "text": "“cached placement”"} in boxes["state_field2"]["details"]
     assert 'component2 -. "proposed lifecycle support" .-> off_path_transition1' in source
     assert 'off_path_transition1_effect1 -->|"changes access"| state_field1' in source
     assert 'off_path_transition1_effect2 -->|"changes cache"| state_field2' in source
@@ -930,7 +936,8 @@ def test_lifecycle_effects_on_the_same_field_show_their_distinct_exact_changes()
     for index, effect in enumerate(lifecycle["off_path_transitions"][0]["effects"], 1):
         node = f"off_path_transition1_effect{index}"
         assert f'{node}["Effect 1.{index}<br/>{mermaid_label(effect["change"], width=32)}"]' in support["mermaid_source"]
-        assert effect["observable_check"] in boxes[node]["description"]
+        assert boxes[node]["description"] == effect["change"]
+        assert {"label": "Observable check", "text": effect["observable_check"]} in boxes[node]["details"]
         assert f'{node} -->|"changes cache"| state_field2' in support["mermaid_source"]
 
 
@@ -958,7 +965,8 @@ def test_capability_support_compact_map_preserves_complete_many_to_many_detail(
     )[-1]
     boxes = {box["node_id"]: box for box in support["diagram_boxes"]}
     source = support["mermaid_source"]
-    action_detail = boxes["source_actions"]["description"]
+    assert boxes["source_actions"]["description"] == ""
+    action_detail = boxes["source_actions"]["details"][0]["text"]
     for event in sorted(relations, key=lambda row: row["order"]):
         complete = (
             f"Action {event['order']}\n"
@@ -990,10 +998,13 @@ def test_capability_support_compact_map_preserves_complete_many_to_many_detail(
         assert details["Proposed verification"] == workstream["verification"]
         assert box["description"] == workstream["deliverable"]
         assert details["Participating components"] == ", ".join(workstream["component_keys"])
-    assert "State object: berth occupancy" in boxes["source_facts"]["description"]
-    assert "Visible result:" in boxes["source_facts"]["description"]
-    assert "Proof boundary:" in boxes["source_facts"]["description"]
-    assert "Non-goal 1: Do not manage vessel scheduling" in boxes["source_facts"]["description"]
+    assert boxes["source_facts"]["description"] == ""
+    assert boxes["source_facts"]["details"] == [
+        {"label": "State object", "text": "berth occupancy"},
+        {"label": "Visible result", "text": "the berth map shows the placement"},
+        {"label": "Proof boundary", "text": "Verify the placement and retention receipt"},
+        {"label": "Non-goal 1", "text": "Do not manage vessel scheduling"},
+    ]
     assert "source_actions -->" not in source and "source_facts -->" not in source
     assert source.count(".->") == sum(len(row["component_keys"]) for row in design["workstreams"])
     assert "Select a diagram box in Read mode for complete statements" in support["read_guide"]
@@ -1052,8 +1063,11 @@ def test_compact_support_keeps_provisional_proof_out_of_source_facts() -> None:
         source_precedence=(), proof_is_provisional=True,
     )["capability_support"]
     boxes = {box["node_id"]: box for box in support["boxes"]}
-    assert "Proposed retention checkpoint" not in boxes["source_facts"]["description"]
-    assert "visible result" not in boxes["source_facts"]["description"]
+    assert boxes["source_facts"]["description"] == ""
+    assert boxes["source_facts"]["details"] == [
+        {"label": "State object", "text": "berth occupancy"},
+        {"label": "Non-goal 1", "text": "No scheduling"},
+    ]
     assert boxes["proof"]["description"] == "Proposed retention checkpoint"
     assert boxes["proof"]["role"] == "Proposed proof checkpoint"
     assert "no source-stated producer or terminal result is asserted" in boxes["proof"]["details"][0]["text"]
@@ -1076,7 +1090,8 @@ def test_first_path_preserves_long_contracts_and_empty_action_support_in_detail(
     support_boxes = {box["node_id"]: box for box in support["diagram_boxes"]}
     assert support_boxes["component2"]["details"][0]["text"].startswith("Source action 2 · product\n")
     assert "Withdrawal closes placement access and erases the cached placement" in support_boxes["off_path_transition1"]["description"]
-    assert "Observable check: cache empty" in support_boxes["off_path_transition1_effect2"]["description"]
+    assert support_boxes["off_path_transition1_effect2"]["description"] == "erased"
+    assert {"label": "Observable check", "text": "cache empty"} in support_boxes["off_path_transition1_effect2"]["details"]
     assert design == before
 
 
@@ -1355,3 +1370,48 @@ def test_absent_detail_v3_projection_keeps_observed_prechange_digest() -> None:
     assert authority['version'] == 'odylith.greenfield.authored-atlas-view.v3'
     assert authority['surface_sha256'] == 'fa50c2a875f91fc6f34124a2b14bb94f3ad9baadb16041eb8a9175085ddb1798'
     assert greenfield_authored_atlas_view.validate_authored_atlas_view(row, source_text=row['mermaid_source'])['diagram_boxes'] == row['diagram_boxes']
+
+
+@pytest.mark.parametrize("description", [None, 0, {}, " ", "\n", " padded "])
+def test_omitted_copy_does_not_admit_malformed_description(description: Any) -> None:
+    row = deepcopy(_authored_diagrams()[0])
+    row["diagram_boxes"][0]["description"] = description
+    with pytest.raises(ValueError, match="description"):
+        greenfield_authored_atlas_view.validate_authored_atlas_view(row, source_text=row["mermaid_source"])
+
+
+def test_omitted_copy_still_requires_field_and_exact_sealed_support() -> None:
+    row = _authored_diagrams()[0]
+    assert row["diagram_boxes"][0]["description"] == ""
+    assert greenfield_authored_atlas_view.validate_authored_atlas_view(
+        row, source_text=row["mermaid_source"],
+    )["diagram_boxes"] == row["diagram_boxes"]
+    missing = deepcopy(row)
+    del missing["diagram_boxes"][0]["description"]
+    with pytest.raises(ValueError, match="invalid schema"):
+        greenfield_authored_atlas_view.validate_authored_atlas_view(missing, source_text=row["mermaid_source"])
+    forged = deepcopy(row)
+    forged["diagram_boxes"][0]["details"] = [{"label": "Actor", "text": "A different performer"}]
+    with pytest.raises(ValueError, match="sealed hash"):
+        greenfield_authored_atlas_view.validate_authored_atlas_view(forged, source_text=row["mermaid_source"])
+    action = next(box for box in forged["diagram_boxes"] if box["node_id"].endswith("_actions"))
+    forged = deepcopy(row)
+    next(box for box in forged["diagram_boxes"] if box["node_id"] == action["node_id"])["description"] = ""
+    with pytest.raises(ValueError, match="sealed hash"):
+        greenfield_authored_atlas_view.validate_authored_atlas_view(forged, source_text=row["mermaid_source"])
+
+
+def test_delivery_uses_short_title_and_each_exact_authored_fact_once() -> None:
+    design = _provisional_design()
+    design["workstreams"][0]["deliverable"] = 'Preserve café  IDs and <tag> & "proof".\nKeep the final clause.'
+    design["workstreams"][0]["verification"] = "Verify the complete 日本語 condition without claiming it passed."
+    frozen = deepcopy(design)
+    row = _authored_diagrams(provisional_design=design)[3]
+    boxes = {box["node_id"]: box for box in row["diagram_boxes"]}
+    for index, workstream in enumerate(design["workstreams"], 1):
+        assert boxes[f"workstream{index}"]["label"] == workstream["title"]
+        assert boxes[f"workstream{index}_acceptance"]["label"] == workstream["title"]
+        assert boxes[f"workstream{index}"]["description"] == workstream["deliverable"]
+        assert boxes[f"workstream{index}_acceptance"]["description"] == workstream["verification"]
+        assert f'workstream{index} -. "proposed acceptance" .-> workstream{index}_acceptance' in row["mermaid_source"]
+    assert design == frozen

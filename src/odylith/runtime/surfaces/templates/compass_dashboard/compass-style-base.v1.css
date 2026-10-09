@@ -749,6 +749,34 @@ h1 {
       padding-right: 10px;
       text-align: right;
     }
+    @media (max-width: 760px) {
+      .ws-table {
+        table-layout: auto;
+      }
+      .ws-table [class*="ws-col-"] {
+        width: auto;
+        min-width: 0;
+        white-space: normal;
+      }
+      .ws-table th[class*="ws-col-"], .ws-table td[class*="ws-col-"] {
+        padding-left: 1px;
+        padding-right: 1px;
+      }
+      .ws-table th[class*="ws-col-"] {
+        letter-spacing: 0;
+        text-transform: none;
+      }
+      .ws-table .chip, .ws-table .ws-id-btn {
+        max-width: 100%;
+        padding-left: 2px;
+        padding-right: 2px;
+        white-space: normal;
+        overflow-wrap: normal;
+      }
+      .ws-table .ws-id-btn {
+        white-space: nowrap;
+      }
+    }
     @media (min-width: 960px) {
       .ws-table .ws-col-id {
         width: 150px;

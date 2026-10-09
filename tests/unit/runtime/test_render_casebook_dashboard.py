@@ -127,7 +127,7 @@ def test_render_casebook_dashboard_splits_brief_from_agent_learnings(tmp_path: P
     assert ".summary-facts {" in html
     assert "grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));" in html
     assert "padding: 10px 12px;" in html
-    assert "-webkit-line-clamp: 2;" in html
+    assert ".bug-row-summary" not in html
     assert "-webkit-line-clamp: 4;" not in html
     assert "Lessons and evidence" in app_js
     assert "Odylith Agent Learnings" not in app_js
@@ -222,8 +222,9 @@ def test_render_casebook_dashboard_splits_brief_from_agent_learnings(tmp_path: P
     assert "Loading selected bug…" not in app_js
     assert "No structured detail sections were parsed from this entry." not in app_js
     assert "No bugs match the current filters and search text." not in app_js
-    assert 'data-tooltip="${escapeHtml(intelTooltip)}">Intel</span>' in app_js
-    assert 'Intel ${capturedCount}/${totalFields}' not in app_js
+    assert '>Intel</span>' not in app_js
+    assert '<summary class="disclosure-title">Capture Gaps</summary>' in app_js
+    assert '${capturedCount} of ${totalFields} recommended fields captured' in app_js
 
 
 def test_casebook_payload_dedupes_overlapping_proof_links_from_evidence_refs(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001

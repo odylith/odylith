@@ -516,6 +516,35 @@ no new features, parser, repair/retry, semantic owner or failed-consumer replay.
   independent retained-output semantic qualification may unlock exactly one
   fresh untouched blind holdout.
 
+## V41 human-narrative cognitive-load findings (2026-10-06)
+
+The next presentation pass must lead with purpose, current state, risks, and
+next step in plain human language; evidence, history, and machine detail belong
+in closed detail. Casebook removes sidebar clutter and deleted Intel content
+(23 prior and nine final focused passes; installed/generated proof pending).
+Greenfield repair targets repeated Actor First Path, default Atlas generic
+action/source/performer fields, and D-004 deliverable/repeated verification.
+Remove duplicate text rather than adding features. The established V41 combined
+44 native browser passes predate this new Casebook/UX source patch and do not
+qualify it.
+
+## V42 focused source presentation proof (2026-10-08)
+
+The bounded implementation is complete at source level. Project presents each
+accepted event sentence once and places actor/source metadata in closed native
+details. Atlas presents authored purpose, lifecycle meaning, and short delivery
+titles without generic component prose; exact labels, source metadata, node
+identity, and validation remain intact. Compass preserves complete current facts
+without an invented empty digest. Radar keeps active warnings visible, leads
+with its five core narrative fields, and places supporting links in native
+details. Casebook keeps the full selected summary and searchable summary while
+removing clipped sidebar prose and default Intel chips. This does not establish
+an installed semantic journey, generated-surface refresh, full CI, package,
+Public40, native Claude, blind holdout, or release result. Source evidence:
+`/private/tmp/odylith-v41-greenfield-human-presentation-ipbh2qb6/handoff-final.json`,
+`/private/tmp/odylith-compass-radar-presentation-20261008/handoff.json`, and
+`/private/tmp/odylith-v41-casebook-sidebar-fix-20261006/combined-report.json`.
+
 ## Problem
 Empty or thin consumer repos could dead-end on broad project intent such as building an ecommerce site because Odylith treated missing app source as a hard refusal point instead of producing a confirmation-gated governance proposal. That made the consumer lane accurate but unhelpful, and it left Radar, Registry, Atlas, release planning, and validation strategy uncaptured until the operator supplied fully-formed governance fields.
 

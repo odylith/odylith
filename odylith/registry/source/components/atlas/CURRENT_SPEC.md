@@ -35,6 +35,22 @@ descriptions render no visible prose; visible narrative is limited to authored
 summary, read-guide, and boxes. Raw labels, author overrides, graph validation,
 engines, and history remain accessible through their existing paths.
 
+### Default field suppression
+
+Atlas omits default generic action, source, and performer fields when they add no
+authored fact. Diagram labels, authored explanations, and source metadata remain
+accessible through existing detail paths.
+
+### Human-first authored detail
+
+For Greenfield diagrams, primary box copy uses the existing authored event,
+meaning, or lifecycle change. Actor, source, field, check, state, result, proof,
+and non-goal details remain available in closed native detail rather than
+repeating the same event in the primary reading flow. Delivery boxes use the
+existing short workstream title and show supplied deliverable and verification
+once each. This is presentation-only: sealed labels, node identity, source
+ordering, display hashes, and passive validation remain authoritative.
+
 ### Graph-fact fallback prose
 
 Atlas fallback description prose may state an existing graph fact. If no such

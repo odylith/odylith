@@ -122,11 +122,13 @@ def test_release_statistics_use_sealed_slices_instead_of_spoofable_tags() -> Non
 
     report = outcome_statistics(cases=cases, results=results, release=True)
 
-    assert report["status"] == "passed"
+    assert report["status"] == "failed"
     assert report["acceptance_passed"] is True
     assert report["confidence_passed"] is True
     assert report["release_evidence_issues"] == []
-    assert report["release_coverage_issues"] == []
+    assert report["release_coverage_issues"] == [
+        "release evidence lacks evidence_format coverage: operator_prompt_with_edit_evidence"
+    ]
     assert report["release_minimum_samples"] == release_slice_minimum_sample_contract()
     assert {
         (row["dimension"], row["value"])
@@ -137,11 +139,14 @@ def test_release_statistics_use_sealed_slices_instead_of_spoofable_tags() -> Non
         ("complexity_band", "moderate"),
         ("complexity_band", "high"),
         ("evidence_format", "operator_prompt"),
-        ("evidence_format", "operator_prompt_with_edit_evidence"),
         ("model_profile", STANDARD_PROFILE_ID),
     }
     assert not any(
         row["value"] in {"spoofed-band", "spoofed-profile"}
+        for row in report["slices"]
+    )
+    assert not any(
+        row["dimension"] == "evidence_format" and row["value"] == "operator_prompt_with_edit_evidence"
         for row in report["slices"]
     )
 
@@ -252,9 +257,10 @@ def test_each_published_release_axis_fails_independently_when_coverage_is_missin
     assert report["status"] == "failed"
     assert report["release_contract_issues"] == []
     assert report["release_evidence_issues"] == []
-    assert report["release_coverage_issues"] == [
-        f"release evidence lacks {dimension} coverage: {missing_value}"
-    ]
+    assert set(report["release_coverage_issues"]) == {
+        f"release evidence lacks {dimension} coverage: {missing_value}",
+        "release evidence lacks evidence_format coverage: operator_prompt_with_edit_evidence",
+    }
 
 
 def test_release_statistics_reject_an_observed_slice_below_the_frozen_sample_minimum() -> None:
@@ -275,9 +281,10 @@ def test_release_statistics_reject_an_observed_slice_below_the_frozen_sample_min
     )
 
     assert report["status"] == "failed"
-    assert report["release_coverage_issues"] == [
-        "release evidence has 3 sample(s) for complexity_band `high`; requires at least 4"
-    ]
+    assert set(report["release_coverage_issues"]) == {
+        "release evidence has 3 sample(s) for complexity_band `high`; requires at least 4",
+        "release evidence lacks evidence_format coverage: operator_prompt_with_edit_evidence",
+    }
 
 
 def test_release_slice_minimum_contract_rejects_narrowed_counts() -> None:
@@ -338,7 +345,7 @@ def test_release_statistics_reject_unknown_or_narrowed_slice_contracts() -> None
     ]
 
 
-def test_release_statistics_marks_a_failed_slice_even_when_coverage_is_complete() -> None:
+def test_release_statistics_marks_a_failed_slice_alongside_missing_edit_coverage() -> None:
     cases, results = _complete_release_matrix()
     failed = replace(
         results[4],
@@ -357,7 +364,9 @@ def test_release_statistics_marks_a_failed_slice_even_when_coverage_is_complete(
     report = outcome_statistics(cases=cases, results=results, release=True)
 
     assert report["status"] == "failed"
-    assert report["release_coverage_issues"] == []
+    assert report["release_coverage_issues"] == [
+        "release evidence lacks evidence_format coverage: operator_prompt_with_edit_evidence"
+    ]
     assert any(
         row["dimension"] == "complexity_band"
         and row["value"] == "moderate"
@@ -404,8 +413,8 @@ def _host_native_clarification_result(
     case: GreenfieldMatrixCase,
 ) -> GreenfieldMatrixResult:
     source = combined_prompt_evidence_source(
-        prompt=case.prompt,
-        edit_evidence=case.confirmed_intent_markdown,
+        prompt=case.initial_prompt,
+        edit_evidence="",
     )
     stage = production_stage_observation(
         STANDARD_PROFILE_ID, response_kind="clarification_required",
@@ -457,11 +466,7 @@ def _release_slice_value(
     dimension: str,
 ) -> str:
     if dimension == "evidence_format":
-        return (
-            "operator_prompt_with_edit_evidence"
-            if case.confirmed_intent_markdown
-            else "operator_prompt"
-        )
+        return "operator_prompt"
     if dimension == "model_profile":
         return str(result.evidence["model_profile"]["profile_id"])
     envelope = result.evidence["preconfirm_dry_run"]["semantic_snapshot"]["operating_envelope"]
@@ -492,18 +497,14 @@ def _release_result(
 ) -> GreenfieldMatrixResult:
     facts = _facts_for_band(case, band=band)
     evidence_source = combined_prompt_evidence_source(
-        prompt=case.prompt,
-        edit_evidence=case.confirmed_intent_markdown,
+        prompt=case.initial_prompt,
+        edit_evidence="",
     )
     envelope = greenfield_operating_envelope_receipt(
         facts=facts,
-        source_format=(
-            "operator_prompt_with_edit_evidence"
-            if case.confirmed_intent_markdown
-            else "operator_prompt"
-        ),
+        source_format="operator_prompt",
         source_size_bytes=len(evidence_source.encode("utf-8")),
-        source_document_count=2 if case.confirmed_intent_markdown else 1,
+        source_document_count=1,
         model_authoring=_model_authoring_observations(profile_id),
     )
     assert envelope["status"] == "supported"

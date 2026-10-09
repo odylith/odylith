@@ -153,7 +153,11 @@ def test_authored_fact_presenter_lists_people_once_and_preserves_first_path() ->
         render_text=_render_text,
     )
 
-    assert story.count("data-authored-event-actor-label") == 3
+    assert story.count("data-authored-event-actor-label") == 0
+    assert story.count("data-authored-event-actor-value") == 3
+    assert story.count("data-authored-event-details") == 1
+    assert story.count("data-authored-event-evidence") == 3
+    assert '<details data-authored-event-details open' not in story
     assert story.count("data-authored-event-quote") == 3
     assert story.index(EVENTS[0]) < story.index(EVENTS[1]) < story.index(EVENTS[2])
     assert actors is not None
@@ -183,6 +187,28 @@ def test_authored_fact_presenter_lists_people_once_and_preserves_first_path() ->
     assert story.index("Delta Relay") < story.index("North Archive")
     assert ".;" not in story
     assert ".." not in story
+
+
+def test_event_narrative_and_closed_evidence_preserve_literal_typed_values() -> None:
+    project = _project()
+    exact = 'Quartz Keeper keeps café  IDs and <tag> & "proof".\nPreserve the final 日本語 condition.'
+    project["authored_facts"]["first_path_relations"][0]["event_quote"] = exact
+    frozen = deepcopy(project)
+    story = authored_fact_presenter.render_product_story_contract(
+        [{"label": "First Path", "semantic_slot": "first_path", "body": "Stale fallback"}],
+        project=project, render_text=_render_text,
+    )
+    assert f'<span data-authored-event-quote>{html.escape(exact)}</span>' in story
+    assert f'<dt>Source event</dt><dd>{html.escape(exact)}</dd>' in story
+    assert '<dt>Actor</dt><dd data-authored-event-actor-value>Quartz Keeper</dd>' in story
+    assert '<dt>Actor kind</dt><dd>human</dd>' in story
+    assert 'data-authored-event-details><summary>Supporting details</summary>' in story
+    assert story.count("<details") == 1
+    assert story.count("<summary>Supporting details</summary>") == 1
+    assert story.count("data-authored-event-evidence") == 3
+    assert story.index('</ol><details data-authored-event-details>') > story.index(EVENTS[2])
+    assert "Actor:" not in story and "Stale fallback" not in story
+    assert project == frozen
 
 
 def test_greenfield_story_fallback_bodies_preserve_structured_boundaries() -> None:

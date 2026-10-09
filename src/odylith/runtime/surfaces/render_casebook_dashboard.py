@@ -860,7 +860,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       margin-top: 2px;
     }}
     .bug-row-title,
-    .bug-row-summary,
     .detail-title,
     .detail-summary,
     .detail-copy,
@@ -875,12 +874,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       line-height: 1.2;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-    }}
-    .bug-row-summary {{
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 2;
-      overflow: hidden;
     }}
     .detail-copy p {{
       margin: 0;
@@ -1836,10 +1829,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       }}
       if (detail.archive_bucket) {{
         chips.push(`<span class="meta-chip archive-chip">Archive: ${{escapeHtml(detail.archive_bucket)}}</span>`);
-      }}
-      if (totalFields) {{
-        const intelTooltip = `${{capturedCount}}/${{totalFields}} recommended fields captured`;
-        chips.push(`<span class="meta-chip ${{requiredMissingFields.length ? "warn-chip" : ""}}" data-tooltip="${{escapeHtml(intelTooltip)}}">Intel</span>`);
       }}
       const externalIssueActions = externalIssueLinks(detail);
       const sourceLink = detail.source_href ? actionChipHtml("Source markdown", detail.source_href) : `<span class="meta-chip muted">Source markdown missing</span>`;

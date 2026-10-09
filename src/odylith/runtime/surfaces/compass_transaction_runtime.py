@@ -274,7 +274,6 @@ def _select_transaction_headline_hint(tx_events: Sequence[Mapping[str, Any]]) ->
         hint = compass_base._narrative_excerpt(
             str(row.get("headline_hint", "")).strip(),
             max_sentences=1,
-            max_chars=compass_base._TX_HEADLINE_MAX_CHARS,
         ).strip().rstrip(".")
         if not hint:
             continue
@@ -350,7 +349,6 @@ def _build_transaction_headline(
     context = compass_base._narrative_excerpt(
         tx_context,
         max_sentences=1,
-        max_chars=compass_base._TX_HEADLINE_MAX_CHARS,
     ).strip().rstrip(".")
     if context:
         return context
@@ -381,24 +379,15 @@ def _build_transaction_headline(
 
     implementation_summary = _summary_for("implementation")
     if implementation_summary:
-        return compass_base._clip_sentence(
-            implementation_summary,
-            limit=compass_base._TX_HEADLINE_MAX_CHARS,
-        ).rstrip(".")
+        return implementation_summary
 
     decision_summary = _summary_for("decision")
     if decision_summary:
-        return compass_base._clip_sentence(
-            f"Decision: {decision_summary}",
-            limit=compass_base._TX_HEADLINE_MAX_CHARS,
-        ).rstrip(".")
+        return f"Decision: {decision_summary}"
 
     statement_summary = _summary_for("statement")
     if statement_summary:
-        return compass_base._clip_sentence(
-            statement_summary,
-            limit=compass_base._TX_HEADLINE_MAX_CHARS,
-        ).rstrip(".")
+        return statement_summary
 
     local_change_rows = by_kind.get("local_change", [])
     if local_change_rows:
@@ -408,20 +397,11 @@ def _build_transaction_headline(
         )
         if local_phrase:
             if scope:
-                return compass_base._clip_sentence(
-                    f"{local_phrase} {scope}",
-                    limit=compass_base._TX_HEADLINE_MAX_CHARS,
-                ).rstrip(".")
-            return compass_base._clip_sentence(
-                local_phrase,
-                limit=compass_base._TX_HEADLINE_MAX_CHARS,
-            ).rstrip(".")
+                return f"{local_phrase} {scope}".rstrip(".")
+            return local_phrase.rstrip(".")
         local_summary = _summary_for("local_change")
         if local_summary:
-            return compass_base._clip_sentence(
-                local_summary,
-                limit=compass_base._TX_HEADLINE_MAX_CHARS,
-            ).rstrip(".")
+            return local_summary
 
     if by_kind.get("plan_completion"):
         if scope:
@@ -434,10 +414,7 @@ def _build_transaction_headline(
 
     commit_summary = _summary_for("commit")
     if commit_summary:
-        return compass_base._clip_sentence(
-            commit_summary,
-            limit=compass_base._TX_HEADLINE_MAX_CHARS,
-        ).rstrip(".")
+        return commit_summary
 
     for bug_kind, bug_label in (
         ("bug_watch", "Critical bug watch"),
@@ -461,10 +438,7 @@ def _build_transaction_headline(
             summary=str(tx_events[0].get("summary", "")).strip(),
         ).strip()
         if fallback:
-            return compass_base._clip_sentence(
-                fallback,
-                limit=compass_base._TX_HEADLINE_MAX_CHARS,
-            ).rstrip(".")
+            return fallback.rstrip(".")
     return "Execution update"
 
 

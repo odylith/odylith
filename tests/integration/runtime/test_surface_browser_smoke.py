@@ -32,6 +32,7 @@ from tests.integration.runtime.surface_browser_test_support import (
     _click_visible,
     _collect_sample_tokens,
     _new_page,
+    _open_radar_topology_relations,
     _run_in_browser_thread,
     _select_radar_row_with_link,
     _static_server,
@@ -1236,7 +1237,7 @@ def test_shell_history_and_cross_surface_deeplinks_round_trip_cleanly(browser_co
             value=idea_id,
         )
 
-        radar.locator("#detail details.topology-relations-panel").first.evaluate("node => { node.open = true; }")
+        _open_radar_topology_relations(radar)
         _click_visible(radar.locator("#detail .topology-relations a.chip-registry-component:visible").first)
         page.wait_for_url(
             re.compile(rf".*/odylith/index\.html\?tab=registry(&.*)?component={re.escape(component_id.lower())}(&.*|$)"),
@@ -1268,8 +1269,8 @@ def test_shell_history_and_cross_surface_deeplinks_round_trip_cleanly(browser_co
             key="workstream",
             value=idea_id,
         )
-        radar.locator("#detail details.topology-relations-panel").first.evaluate("node => { node.open = true; }")
-        radar.locator(f'#detail a.chip-topology-diagram[href="{diagram_href}"]').first.evaluate("node => node.click()")
+        _open_radar_topology_relations(radar)
+        _click_visible(radar.locator(f'#detail a.chip-topology-diagram[href="{diagram_href}"]').first)
         page.wait_for_url(
             re.compile(rf".*/odylith/index\.html\?tab=atlas(&.*)?diagram={re.escape(diagram_id)}(&.*|$)"),
             timeout=15000,

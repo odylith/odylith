@@ -2,9 +2,28 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from odylith.runtime.governance import component_registry_intelligence as registry
 from odylith.runtime.governance import sync_session
 from odylith.runtime.surfaces import compass_dashboard_base as renderer
+
+
+@pytest.mark.parametrize("max_chars", [1, 96, 180, 220])
+def test_narrative_excerpt_preserves_complete_long_sentence(max_chars: int) -> None:
+    sentence = "Review the source record and the full customer impact; " * 6 + "do not publish without approval ✅."
+    assert renderer._narrative_excerpt(sentence + " A second fact follows.", max_chars=max_chars) == sentence
+
+
+def test_narrative_excerpt_keeps_sentence_volume_without_cutting_selected_facts() -> None:
+    assert renderer._narrative_excerpt("First fact. Second fact. Third fact.", max_sentences=2) == "First fact. Second fact."
+    assert renderer._narrative_excerpt(" First\n fact. Second fact.", max_sentences=2, max_chars=12) == "First fact."
+    assert renderer._narrative_excerpt(" \n ") == ""
+
+
+def test_humanized_execution_summary_retains_trailing_negation_and_unicode() -> None:
+    summary = "Reviewed every source-bound approval condition; " * 6 + "publication is not approved ✅."
+    assert renderer._humanize_execution_event_summary(kind="implementation", summary=summary) == summary.rstrip(".")
 
 
 def test_git_identity_uses_repo_local_config_not_global_fallback(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001

@@ -413,8 +413,8 @@ def _typed_semantic_snapshot(
     atomic_polarity: str,
 ) -> dict[str, object]:
     evidence = combined_prompt_evidence_source(
-        prompt=case.prompt,
-        edit_evidence=str(case.confirmed_intent_markdown or ""),
+        prompt=case.initial_prompt,
+        edit_evidence="",
     )
     source_bytes = evidence.encode("utf-8")
     first_path = str(facts["first_path"])

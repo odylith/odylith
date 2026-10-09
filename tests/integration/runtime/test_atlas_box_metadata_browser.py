@@ -233,7 +233,8 @@ def test_box_supporting_details_are_keyboard_accessible_exact_and_unclipped(brow
         assert all(not bounds['clipped'] and not bounds['hidden'] for bounds in geometry), geometry
         assert not atlas.locator('body').evaluate('() => Boolean(window.__atlas_box_injected__)')
         assert not atlas.locator('body').evaluate('body => body.scrollWidth > innerWidth+1')
-        assert atlas.locator('.diagram-box-row').nth(1).locator('details dd').text_content() == _ACTIONS['role']
+        assert atlas.locator('.diagram-box-row').nth(1).locator('details').count() == 0
+        assert atlas.locator('body').evaluate('() => allDiagrams[0].diagram_boxes[1].role') == _ACTIONS['role']
         ownership = atlas.locator('details.ownership-section')
         assert ownership.get_attribute('open') is None
         component = atlas.locator('.component-description')
@@ -329,21 +330,23 @@ def test_box_roles_are_folded_without_changing_supplied_values(
     proposed_title = "Proposed Capability Support and Source Facts"
     monkeypatch.setitem(_METADATA, "role", generated_role)
     monkeypatch.setitem(_ACTIONS, "role", custom_role)
+    monkeypatch.setitem(_ACTIONS, "details", [])
     with _open_metadata(browser_context, width, "normal", related={"title": proposed_title}) as (page, atlas, observation):
         rows = atlas.locator(".diagram-box-row")
         assert rows.count() == 2 and rows.first.locator(".diagram-box-role").count() == 0
         assert rows.locator('.diagram-box-role').count() == 0
-        for row, expected in zip(rows.all(), (generated_role, custom_role)):
-            disclosure = row.locator('details.diagram-box-details')
-            role = disclosure.locator('dd').first
-            assert disclosure.get_attribute('open') is None and role.is_hidden()
-            disclosure.locator('summary').focus()
-            disclosure.locator('summary').press('Enter')
-            role.scroll_into_view_if_needed()
-            assert role.is_visible() and role.text_content() == expected
-            assert role.locator('*').count() == 0
-            bounds = _text_bounds(role)
-            assert not bounds['clipped'] and not bounds['hidden'], bounds
+        disclosure = rows.first.locator('details.diagram-box-details')
+        role = disclosure.locator('dd').first
+        assert disclosure.get_attribute('open') is None and role.is_hidden()
+        disclosure.locator('summary').focus()
+        disclosure.locator('summary').press('Enter')
+        role.scroll_into_view_if_needed()
+        assert role.is_visible() and role.text_content() == generated_role
+        assert role.locator('*').count() == 0
+        bounds = _text_bounds(role)
+        assert not bounds['clipped'] and not bounds['hidden'], bounds
+        assert rows.nth(1).locator('details').count() == 0
+        assert custom_role not in rows.nth(1).inner_text()
         assert atlas.locator("#diagramTitle").text_content() == proposed_title
         supplied = json.loads(atlas.locator("#catalogData").text_content())["diagrams"][0]["diagram_boxes"]
         assert supplied == [_METADATA, _ACTIONS]
@@ -355,32 +358,55 @@ def test_box_roles_are_folded_without_changing_supplied_values(
 
 
 @pytest.mark.parametrize('width', [1440, 430], ids=['desktop', 'mobile'])
-@pytest.mark.parametrize('state', ['normal', 'error'])
+@pytest.mark.parametrize('state', ['normal', 'fallback', 'error'])
 def test_authored_views_preserve_every_narrative_and_detail(browser_context, width: int, state: str) -> None:  # noqa: ANN001
     from tests.unit.runtime.test_greenfield_authored_atlas_view import _authored_diagrams, _source_lifecycle
 
     for diagram in _authored_diagrams(source_lifecycle=_source_lifecycle()):
-        with _open_metadata(browser_context, width, state, related=diagram) as (page, atlas, observation):
+        display = {**diagram, 'diagram_boxes': [*diagram['diagram_boxes'],
+            {'label': 'Legacy empty inventory', 'role': 'Container', 'description': ''},
+            {'node_id': 'whitespace-inventory', 'label': 'Whitespace inventory', 'role': 'Container', 'description': ' \n'},
+        ]}
+        with _open_metadata(browser_context, width, state, related=display) as (page, atlas, observation):
             rows = atlas.locator('.diagram-box-row')
             assert rows.count() == len(diagram['diagram_boxes'])
+            supplied_boxes = atlas.locator('body').evaluate(
+                '(_body, slug) => allDiagrams.find(diagram => diagram.slug === slug).diagram_boxes', diagram['slug'],
+            )
+            assert supplied_boxes == display['diagram_boxes']
             assert atlas.locator('#diagramSummary').text_content() == diagram['summary']
             assert atlas.locator('#diagramReadGuide').text_content() == diagram['read_guide']
             assert atlas.locator('.read-guide').get_attribute('open') is None
+            assert not any('Legacy empty inventory' in text for text in rows.all_text_contents())
+            assert not any('Whitespace inventory' in text for text in rows.all_text_contents())
+            assert 'Actor:' not in atlas.locator('#diagramBoxList').inner_text()
+            assert 'Source event:' not in atlas.locator('#diagramBoxList').inner_text()
             if diagram['slug'] == 'harbor-desk-context':
                 responsibilities = {component['name']: component['description'] for component in diagram['components']}
                 assert all(box['description'] == responsibilities[box['label']] for box in diagram['diagram_boxes'] if box['role'] == 'Product-owned component')
             for index, box in enumerate(diagram['diagram_boxes']):
                 row = rows.nth(index)
-                for selector, expected in [('.diagram-box-name strong', box['label']), ('.diagram-box-description', box['description'])]:
+                fields = [('.diagram-box-name strong', box['label'])]
+                if box['description']:
+                    fields.append(('.diagram-box-description', box['description']))
+                else:
+                    assert row.locator('.diagram-box-description').count() == 0
+                for selector, expected in fields:
                     value = row.locator(selector)
                     value.scroll_into_view_if_needed()
                     assert value.is_visible() and value.text_content() == expected
                     bounds = _text_bounds(value)
                     assert not bounds['clipped'] and not bounds['hidden'], bounds
                 detail = row.locator('details.diagram-box-details')
+                if not box.get('details'):
+                    assert detail.count() == 0
+                    assert supplied_boxes[index]['role'] == box['role']
+                    continue
+                assert detail.count() == 1
                 assert detail.get_attribute('open') is None and detail.locator('dd').first.is_hidden()
                 detail.locator('summary').focus()
                 detail.locator('summary').press('Enter')
+                assert detail.get_attribute('open') is not None and detail.locator('dd').first.is_visible()
                 expected = [{'label': 'Role', 'text': box['role']}, *box.get('details', [])]
                 assert detail.locator('dt').all_text_contents() == [value['label'] for value in expected]
                 assert detail.locator('dd').all_text_contents() == [value['text'] for value in expected]
@@ -390,6 +416,7 @@ def test_authored_views_preserve_every_narrative_and_detail(browser_context, wid
                     assert not bounds['clipped'] and not bounds['hidden'], bounds
                 detail.locator('summary').focus()
                 detail.locator('summary').press('Enter')
+                assert detail.get_attribute('open') is None and detail.locator('dd').first.is_hidden()
             assert not atlas.locator('body').evaluate('body => body.scrollWidth > innerWidth+1')
             _capture(page, f"atlas-authored-{diagram['slug']}-{width}-{state}", {'boxes': diagram['diagram_boxes']})
             _assert_clean_page(page, observation)

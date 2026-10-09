@@ -15,7 +15,8 @@ from tests.integration.runtime.compass_browser_regression_support import (
     clone_odylith_fixture, render_compass_fixture,
 )
 from tests.integration.runtime.surface_browser_test_support import (
-    _assert_clean_page, _assert_compass_live_state, _browser, _new_page, _run_in_browser_thread, _static_server,
+    _assert_clean_page, _assert_compass_live_state, _browser, _failure_screenshot_path, _new_page,
+    _run_in_browser_thread, _static_server,
 )
 
 
@@ -27,7 +28,12 @@ def test_batch_provider_failure_keeps_local_facts_visible_without_history(tmp_pa
     payload["standup_brief"] = {}
     payload["standup_brief_scoped"] = {}
     payload["history"] = {"retention_days": 0, "dates": [], "restored_dates": []}
-    fact = "Project publication awaits source-grounded acceptance checks."
+    fact = (
+        "Project publication awaits source-grounded acceptance checks. The reviewer must inspect the full "
+        "recorded source, retain the failed condition, and verify the exact customer impact before publication. "
+        "Do not treat a pending review as approval. \u2705"
+    )
+    assert len(fact) > 190
     next_fact = "Review source-grounded acceptance checks before publication."
     watch_fact = "Source acceptance remains unverified."
     packet = {"facts": [
@@ -52,6 +58,11 @@ def test_batch_provider_failure_keeps_local_facts_visible_without_history(tmp_pa
         failure = batch._provider_failure_brief_for_packet(
             fact_packet=packet, generated_utc=payload["generated_utc"], provider=UnavailableProvider(),
         )
+        failure["diagnostics"].update({
+            "provider": "codex-cli", "provider_model": "test-model",
+            "next_retry_utc": "2026-10-06T12:00:00Z",
+            "provider_failure_detail": "UNBROKEN_SAFE_DETAIL_" * 40 + "<img src=x onerror=alert(1)>",
+        })
     payload, changed = runtime_patch.runtime_payload_with_brief_results(
         payload=payload, global_results={}, scoped_results={},
         global_failures={"24h": failure, "48h": failure},
@@ -81,20 +92,37 @@ def test_batch_provider_failure_keeps_local_facts_visible_without_history(tmp_pa
                         assert card.locator(".brief-status-copy").all_text_contents() == [failure["diagnostics"]["message"]]
                         assert card.get_attribute("role") == "status"
                         assert card.get_attribute("aria-live") == "polite"
-                        if reason == "provider_deferred":
-                            assert card.get_by_text("Local runtime facts", exact=True).count() == 1
-                            assert facts.locator(".brief-fallback-title").count() == 0
-                            assert failure["diagnostics"]["message"] == "A summary is not available for this view."
-                        else:
-                            assert facts.locator(".brief-fallback-title").text_content() == "Local runtime facts"
-                            assert facts.locator(".brief-fallback-title").inner_text() == "LOCAL RUNTIME FACTS"
+                        assert card.locator(":scope > div").first.get_attribute("class") == "brief-fallback-digest"
+                        assert card.locator(".brief-fallback-title").count() == 0
                         assert facts.locator("li").all_text_contents() == [
                             "Current: " + fact, "Next: " + next_fact, "Watch: " + watch_fact,
                         ]
+                        details = card.locator("details.brief-diagnostics")
+                        assert details.count() == 1 and details.get_attribute("open") is None
+                        assert not details.locator(".brief-diagnostic-grid").is_visible()
+                        details.locator(":scope > summary").focus()
+                        page.keyboard.press("Enter")
+                        assert details.get_attribute("open") is not None
+                        detail_text = details.inner_text()
+                        assert reason in detail_text
+                        assert "Local runtime facts" in detail_text
+                        if reason == "credits_exhausted":
+                            for evidence in ("codex-cli", "test-model", "2026-10-06T12:00:00Z"):
+                                assert evidence in detail_text
+                            assert "Check its account or budget." in card.inner_text()
+                            assert details.locator("img").count() == 0
+                            assert details.locator(".brief-diagnostic-grid").evaluate(
+                                "node => node.scrollWidth <= node.clientWidth + 1",
+                            )
+                        page.keyboard.press("Enter")
+                        assert details.get_attribute("open") is None
                         assert compass.locator("#digest-list .standup-brief-sections").count() == 0
                         assert facts.evaluate("node => node.scrollWidth <= node.clientWidth + 1")
                         facts.scroll_into_view_if_needed()
-                        page.screenshot(path=str(tmp_path / "fallback-visible.png"), full_page=True)
+                        screenshot = _failure_screenshot_path(f"compass-fallback-{reason}-{width}")
+                        if screenshot is not None:
+                            screenshot.parent.mkdir(parents=True, exist_ok=True)
+                            page.screenshot(path=str(screenshot), full_page=True)
                         _assert_clean_page(page, observation)
                 finally:
                     context.close()

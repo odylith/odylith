@@ -3188,31 +3188,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
           </div></details>
         </header>
 
-        <section class="block">
-          <h3>Traceability</h3>
-          <div class="links">
-            <a href="${escapeHtml(selected.idea_ui_href || selected.idea_href)}">Workstream Spec</a>
-            ${
-              selected.promoted_to_plan_ui_href
-                ? `<a href="${escapeHtml(selected.promoted_to_plan_ui_href)}" data-radar-view="plan" data-radar-workstream="${escapeHtml(selected.idea_id)}">Technical Implementation Plan</a>`
-                : ""
-            }
-            <a href="${escapeHtml(compassScopeHref(selected.idea_id))}" target="_top">Compass Scope</a>
-            <a href="${escapeHtml(registryHrefForRow(selected))}" target="_top">Registry</a>
-          </div>
-          ${activeReleaseLabel ? `<p class="trace-subhead">Release Target</p><p>${escapeHtml(activeReleaseLabel)}</p>` : ""}
-        </section>
-
-        <section class="block">
-          <h3>Topology</h3>
-          ${topologyBoardHtml}
-        </section>
-
-        ${executionWaveSectionHtml}
-
         ${warningsSectionHtml}
-
-        ${implementedSummaryHtml}
 
         ${summaryBlockHtml("Problem", selected.problem, selected.problem_html, "block-problem")}
 
@@ -3228,6 +3204,30 @@ def _render_html(*, payload: dict[str, object]) -> str:
           <h3>Success Metrics</h3>
           ${successMetricsHtml(selected)}
         </section>
+
+        ${executionWaveSectionHtml}
+
+        ${implementedSummaryHtml}
+        <details class="detail-disclosure"><summary class="disclosure-title">Links and topology</summary><div class="detail-disclosure-body">
+          <section class="block">
+            <h3>Traceability</h3>
+            <div class="links">
+              <a href="${escapeHtml(selected.idea_ui_href || selected.idea_href)}">Workstream Spec</a>
+              ${
+                selected.promoted_to_plan_ui_href
+                  ? `<a href="${escapeHtml(selected.promoted_to_plan_ui_href)}" data-radar-view="plan" data-radar-workstream="${escapeHtml(selected.idea_id)}">Technical Implementation Plan</a>`
+                  : ""
+              }
+              <a href="${escapeHtml(compassScopeHref(selected.idea_id))}" target="_top">Compass Scope</a>
+              <a href="${escapeHtml(registryHrefForRow(selected))}" target="_top">Registry</a>
+            </div>
+            ${activeReleaseLabel ? `<p class="trace-subhead">Release Target</p><p>${escapeHtml(activeReleaseLabel)}</p>` : ""}
+          </section>
+          <section class="block">
+            <h3>Topology</h3>
+            ${topologyBoardHtml}
+          </section>
+        </div></details>
 
         ${orderingRationaleBlockHtml(selected)}
 

@@ -851,10 +851,6 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
       if (detail.archive_bucket) {
         chips.push(`<span class="meta-chip archive-chip">Archive: ${escapeHtml(detail.archive_bucket)}</span>`);
       }
-      if (totalFields) {
-        const intelTooltip = `${capturedCount}/${totalFields} recommended fields captured`;
-        chips.push(`<span class="meta-chip ${requiredMissingFields.length ? "warn-chip" : ""}" data-tooltip="${escapeHtml(intelTooltip)}">Intel</span>`);
-      }
       const externalIssueActions = externalIssueLinks(detail);
       const sourceLink = detail.source_href ? actionChipHtml("Source markdown", detail.source_href) : `<span class="meta-chip muted">Source markdown missing</span>`;
       const summaryText = String(detail.summary || detailFieldValue("Description") || detailFieldValue("Impact") || "").trim();
@@ -1150,18 +1146,11 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
         };
       }
       const listHtml = rows.map((row) => {
-        const coverage = row.intelligence_coverage && typeof row.intelligence_coverage === "object" ? row.intelligence_coverage : {};
-        const capturedCount = Number(coverage.captured_count || 0);
-        const totalFields = Number(coverage.total_fields || 0);
-        const requiredMissingFields = Array.isArray(coverage.required_missing_fields)
-          ? coverage.required_missing_fields.map((item) => String(item || "").trim()).filter(Boolean)
-          : [];
         const active = row.bug_route === selectedRoute;
         const chips = [
           row.severity ? `<span class="list-chip ${/^p[01]$/i.test(String(row.severity || "")) ? "critical-chip" : ""}">${escapeHtml(row.severity)}</span>` : "",
           row.status ? `<span class="list-chip">${escapeHtml(displayTokenLabel(row.status))}</span>` : "",
           row.archive_bucket ? `<span class="list-chip archive-chip">${escapeHtml(row.archive_bucket)}</span>` : "",
-          totalFields ? `<span class="list-chip ${requiredMissingFields.length ? "warn-chip" : ""}" data-tooltip="${escapeHtml(`${capturedCount}/${totalFields} recommended fields captured`)}">Intel</span>` : "",
         ].filter(Boolean).join("");
         return `
           <button type="button" class="bug-row${active ? " active" : ""}" data-bug="${escapeHtml(row.bug_route || "")}">
@@ -1172,7 +1161,6 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
               </div>
               <span class="bug-row-date">${escapeHtml(row.date || "-")}</span>
             </div>
-            <p class="bug-row-summary">${escapeHtml(row.summary || row.components || "No summary available.")}</p>
             <div class="bug-row-meta">${chips}</div>
           </button>
         `;

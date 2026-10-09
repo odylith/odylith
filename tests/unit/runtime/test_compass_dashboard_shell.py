@@ -141,7 +141,8 @@ def test_shared_compass_asset_fails_closed_without_legacy_digest_fallback_logic(
     assert "function briefAllowsCopy(brief)" not in summary_js
     assert 'card.classList.toggle("standup-brief-card--compact", !hasNarrative);' in summary_js
     assert 'copyButton.classList.toggle("hidden", !hasNarrative);' in summary_js
-    assert 'const retryUtc = String(diagnostics.next_retry_utc || "").trim();' in summary_js
+    assert "Object.entries(diagnostics)" in summary_js
+    assert '.filter(([key, value]) => !["fallback_digest", "title", "message"].includes(key)' in summary_js
     assert 'const fallbackDigest = Array.isArray(diagnostics.fallback_digest)' in summary_js
     assert "brief-fallback-digest" in summary_js
     assert 'brief-status-card--compact' in summary_js
@@ -506,8 +507,10 @@ def test_summary_and_timeline_assets_preserve_risk_and_component_spec_context() 
     assert 'consumerTruthRoots().component_specs' in timeline_js
     assert 'consumerTruthRoots().runbooks' in timeline_js
     assert 'file.startsWith("odylith/registry/source/components/") && file.endsWith("/CURRENT_SPEC.md")' in timeline_js
-    assert 'return `Why now: ${toSentence(clipFocusText(whyText, 220))}`;' in timeline_js
-    assert 'return `Target outcome: ${toSentence(clipFocusText(proposedSolution, 230))}`;' in timeline_js
+    assert 'return `Why now: ${toSentence(whyText)}`;' in timeline_js
+    assert 'return `Target outcome: ${toSentence(proposedSolution)}`;' in timeline_js
+    assert "clipFocusText" not in timeline_js
+    assert "clipFocusText" not in compass_dashboard_frontend_contract.load_compass_shell_asset_text("compass-workstreams.v1.js")
     assert 'return "Target outcome: make the expanded Timeline Audit card explain intent, the change summary, and implementation evidence in a stable order.";' in timeline_js
     assert 'return "Reordered and relabeled the expanded audit card so it opens with Intent, then Summary of Change, then Implemented.";' in timeline_js
     assert 'return "Reordered and relabeled the expanded audit card so it now reads Intent, Summary of Change, Implemented, and then Files.";' in timeline_js

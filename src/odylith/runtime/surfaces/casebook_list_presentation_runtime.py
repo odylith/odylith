@@ -16,18 +16,11 @@ LIST_PRESENTATION_JS = r"""    function casebookListPresentation({ rows, totalCo
         };
       }
       const listHtml = rows.map((row) => {
-        const coverage = row.intelligence_coverage && typeof row.intelligence_coverage === "object" ? row.intelligence_coverage : {};
-        const capturedCount = Number(coverage.captured_count || 0);
-        const totalFields = Number(coverage.total_fields || 0);
-        const requiredMissingFields = Array.isArray(coverage.required_missing_fields)
-          ? coverage.required_missing_fields.map((item) => String(item || "").trim()).filter(Boolean)
-          : [];
         const active = row.bug_route === selectedRoute;
         const chips = [
           row.severity ? `<span class="list-chip ${/^p[01]$/i.test(String(row.severity || "")) ? "critical-chip" : ""}">${escapeHtml(row.severity)}</span>` : "",
           row.status ? `<span class="list-chip">${escapeHtml(displayTokenLabel(row.status))}</span>` : "",
           row.archive_bucket ? `<span class="list-chip archive-chip">${escapeHtml(row.archive_bucket)}</span>` : "",
-          totalFields ? `<span class="list-chip ${requiredMissingFields.length ? "warn-chip" : ""}" data-tooltip="${escapeHtml(`${capturedCount}/${totalFields} recommended fields captured`)}">Intel</span>` : "",
         ].filter(Boolean).join("");
         return `
           <button type="button" class="bug-row${active ? " active" : ""}" data-bug="${escapeHtml(row.bug_route || "")}">
@@ -38,7 +31,6 @@ LIST_PRESENTATION_JS = r"""    function casebookListPresentation({ rows, totalCo
               </div>
               <span class="bug-row-date">${escapeHtml(row.date || "-")}</span>
             </div>
-            <p class="bug-row-summary">${escapeHtml(row.summary || row.components || "No summary available.")}</p>
             <div class="bug-row-meta">${chips}</div>
           </button>
         `;

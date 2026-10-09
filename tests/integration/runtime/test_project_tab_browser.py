@@ -591,17 +591,38 @@ def test_project_tab_result_first_source_renders_labeled_proposed_order_at_both_
                             sequence = page.locator(f'[data-authored-fact-list="{key}"]')
                             assert sequence.get_attribute("data-authority-kind") == "provisional_design"
                             items = sequence.locator("[data-authored-fact-item]")
-                            assert items.locator(
-                                ":scope > [data-authored-event-actor] "
-                                "> [data-authored-event-actor-label]"
-                            ).all_text_contents() == ["Actor:"] * len(expected_events)
-                            assert items.locator(
-                                ":scope > [data-authored-event-actor] "
-                                "> [data-authored-event-actor-value]"
-                            ).all_text_contents() == expected_actors
+                            assert items.locator("[data-authored-event-actor-label]").count() == 0
                             assert items.locator(
                                 ":scope > [data-authored-event-quote]"
                             ).all_text_contents() == expected_events
+                            detail = page.locator('[data-semantic-slot="first_path"] details[data-authored-event-details]')
+                            assert detail.count() == 1
+                            assert items.locator("details").count() == 0
+                            assert detail.get_attribute("open") is None
+                            assert detail.locator("dd").first.is_hidden()
+                            for index, event in enumerate(expected_events):
+                                item = items.nth(index)
+                                assert item.inner_text().count(event) == 1
+                                assert "Actor:" not in item.inner_text() and "Source event" not in item.inner_text()
+                            detail.locator("summary").focus()
+                            detail.locator("summary").press("Enter")
+                            evidence = detail.locator("[data-authored-event-evidence]")
+                            assert evidence.count() == len(proposed_orders)
+                            assert evidence.evaluate_all("nodes => nodes.map(node => node.dataset.eventOrder)") == [str(order) for order in proposed_orders]
+                            for index, event in enumerate(expected_events):
+                                entry = evidence.nth(index)
+                                assert entry.locator("dt").all_text_contents() == ["Actor", "Actor kind", "Source event"]
+                                assert entry.locator("dd").all_text_contents() == [
+                                    expected_actors[index], relations[proposed_orders[index]]["actor_kind"], event,
+                                ]
+                                assert entry.locator("[data-authored-event-actor-value]").is_visible()
+                            _assert_project_sections_do_not_overflow(page, [".project-product-story"])
+                            supporting_screenshot = _failure_screenshot_path(f"proposed-first-run-evidence-{viewport['width']}") or tmp_path / f"proposed-first-run-evidence-{viewport['width']}.png"
+                            supporting_screenshot.parent.mkdir(parents=True, exist_ok=True)
+                            page.locator('[data-semantic-slot="first_path"]').screenshot(path=str(supporting_screenshot))
+                            detail.locator("summary").press("Space")
+                            assert detail.get_attribute("open") is None
+                            assert detail.locator("dd").first.is_hidden()
                             assert all(" — " not in text for text in items.all_text_contents())
                             assert items.evaluate_all("nodes => nodes.map(node => node.dataset.eventOrder)") == ["2", "1"]
                         assert page.locator("[data-proposed-first-run-label]").all_text_contents() == [
@@ -611,7 +632,7 @@ def test_project_tab_result_first_source_renders_labeled_proposed_order_at_both_
                         assert card.locator(":scope > *").count() == 2
                         assert card.locator(":scope > .project-story-contract-body").count() == 1
                         _assert_project_sections_do_not_overflow(page, [".project-product-story", ".project-host-handoff"])
-                        card.screenshot(path=str(tmp_path / f"proposed-first-run-{viewport['width']}.png"))
+                        card.screenshot(path=str(_failure_screenshot_path(f"proposed-first-run-{viewport['width']}") or tmp_path / f"proposed-first-run-{viewport['width']}.png"))
                         page.screenshot(path=str(tmp_path / f"project-{viewport['width']}.png"), full_page=True)
                         _assert_clean_page(page, observation)
                 finally:

@@ -632,7 +632,7 @@ def test_exact_prompt_identity_crossing_is_rejected_without_a_similarity_thresho
     )
 
 
-def test_frozen_contract_verifies_v7_acceptance_confidence_and_samples(tmp_path: Path) -> None:
+def test_frozen_contract_retains_v7_floors_and_refuses_initial_documents_as_edit_coverage(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     corpus_path = repo_root / "tests/fixtures/corpus.json"
     corpus_path.parent.mkdir(parents=True)
@@ -757,7 +757,9 @@ def test_frozen_contract_verifies_v7_acceptance_confidence_and_samples(tmp_path:
         final_holdout_path=holdout_path,
     )
 
-    assert report["passed"] is True
+    assert report["passed"] is False
+    assert "final holdout lacks evidence_format coverage: operator_prompt_with_edit_evidence" in report["issues"]
+    assert report["final_holdout"]["evidence_format_counts"] == {"operator_prompt": 36}
     assert report["tracked"]["case_count"] == 1
     assert report["final_holdout"]["annotation_count"] == 36
     assert report["final_holdout"]["annotation_review_count"] == 36

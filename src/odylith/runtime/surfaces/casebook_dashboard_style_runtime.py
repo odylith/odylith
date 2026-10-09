@@ -253,7 +253,7 @@ def casebook_dashboard_style_bundle() -> dict[str, str]:
     copy_css = "\n\n".join(
         (
             dashboard_ui_primitives.content_copy_css(
-                selectors=(".bug-row-summary", ".detail-summary", ".detail-copy", ".empty-state"),
+                selectors=(".detail-summary", ".detail-copy", ".empty-state"),
                 size_px=14,
                 line_height=1.5,
                 color="var(--ink-soft)",
@@ -267,7 +267,7 @@ def casebook_dashboard_style_bundle() -> dict[str, str]:
         )
     )
     code_typography_css = dashboard_ui_primitives.code_typography_css(
-        selector=".bug-row-summary code, .detail-copy code, .meta-value code",
+        selector=".detail-copy code, .meta-value code",
         color="inherit",
         size_px=12,
         line_height=1.2,

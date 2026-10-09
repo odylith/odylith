@@ -46,6 +46,23 @@ class GreenfieldMatrixCase:
     def slug(self) -> str:
         return "-".join(token for token in self.name.casefold().split() if token)
 
+    @property
+    def initial_prompt(self) -> str:
+        """Retain the original source frame; the literal heading grants no EDIT authority."""
+
+        if not self.confirmed_intent_markdown:
+            return self.prompt
+        return f"{self.prompt.strip()}\n\n# Operator edit evidence\n\n{self.confirmed_intent_markdown.strip()}"
+
+    @property
+    def initial_input_streams(self) -> dict[str, str]:
+        return {
+            "input.prompt": self.initial_prompt,
+            "input.initial-request": self.prompt,
+            "input.confirmed-intent": self.confirmed_intent_markdown,
+            "input.edit-evidence": "",
+        }
+
 
 def case_expectation(case: GreenfieldMatrixCase) -> str:
     return str(getattr(case, "expectation", "") or DEFAULT_CASE_EXPECTATION).strip().casefold()

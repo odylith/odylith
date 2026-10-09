@@ -13,6 +13,7 @@ if str(SCRIPTS_ROOT) not in sys.path:
 
 from greenfield_matrix_package_evidence import _atlas_findings
 from greenfield_matrix_package_evidence import _registry_findings
+from greenfield_matrix_package_evidence import _radar_findings
 from greenfield_matrix_package_evidence import project_brief_readback_findings
 from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import RenderedArtifact
 
@@ -375,3 +376,59 @@ def test_project_brief_requires_exact_nonempty_evidence_label_and_value(mutation
     assert project_brief_readback_findings(
         record_text=_proof_brief_record(brief), project_brief=brief, intent=intent
     )
+
+
+_RADAR_CORE = {
+    "Problem": "Reviewed evidence is scattered across independent records.",
+    "Customer": "Reviewers need to retrieve the evidence behind one accepted decision.",
+    "Opportunity": "Connect the retained decision to its cited evidence and review state.",
+    "Product View": "Keep one reviewable decision visible through publication.",
+    "Success Metrics": "A reviewer retrieves the accepted decision and every cited evidence record.",
+}
+
+
+def _radar_text(sections: dict[str, str]) -> str:
+    return "status: queued\n\nidea_id: B-001\n\ntitle: Decision evidence\n\n" + "\n\n".join(f"## {heading}\n{body}" for heading, body in sections.items())
+
+
+def _radar_messages(text: str, *, gate: str = "passed") -> list[str]:
+    return [finding.message for finding in _radar_findings(
+        package=SimpleNamespace(backlog_result={"validation_gate": {"status": gate}}),
+        artifacts=(RenderedArtifact("Radar workstream", "decision-evidence.md", text),),
+        proposal={"backlog": [{"title": "Decision evidence"}]},
+    )]
+
+
+def test_radar_uses_five_core_sections_without_a_duplicate_validation_heading() -> None:
+    assert _radar_messages(_radar_text(_RADAR_CORE)) == []
+    legacy = _radar_text({**_RADAR_CORE, "Validation": "Retrieve the exact accepted decision."})
+    assert _radar_messages(legacy) == []
+    assert legacy == _radar_text({**_RADAR_CORE, "Validation": "Retrieve the exact accepted decision."})
+
+
+def test_radar_title_heading_legacy_readback_still_enforces_title_repetition() -> None:
+    text = _radar_text({**_RADAR_CORE, "Problem": "Decision evidence"})
+    legacy = text.replace("status: queued\n\nidea_id: B-001\n\ntitle: Decision evidence", "# Decision evidence")
+    assert any("repeats the workstream title" in message for message in _radar_messages(legacy))
+
+
+def test_radar_metadata_title_retains_title_derived_boilerplate_refusal() -> None:
+    text = _radar_text({**_RADAR_CORE, "Problem": "Odylith needs an explicit workstream for Decision evidence instead of leaving the slice implicit."})
+    assert any("boilerplate" in message for message in _radar_messages(text))
+
+
+@pytest.mark.parametrize("heading", tuple(_RADAR_CORE))
+@pytest.mark.parametrize("damage", ("missing", "empty", "placeholder", "title_only"))
+def test_radar_retains_authoritative_missing_empty_placeholder_and_title_only_refusals(heading: str, damage: str) -> None:
+    sections = dict(_RADAR_CORE)
+    if damage == "missing":
+        del sections[heading]
+    else:
+        sections[heading] = {"empty": "", "placeholder": "TBD", "title_only": "Decision evidence"}[damage]
+    assert any(heading in message for message in _radar_messages(_radar_text(sections)))
+
+
+def test_radar_retains_failed_gate_and_empty_optional_verification_refusals() -> None:
+    assert any("validation gate" in message for message in _radar_messages(_radar_text(_RADAR_CORE), gate="failed"))
+    assert any("Test Strategy" in message for message in _radar_messages(_radar_text({**_RADAR_CORE, "Test Strategy": ""})))
+    assert _radar_messages(_radar_text({**_RADAR_CORE, "Test Strategy": "Retrieve the decision and compare every cited record."})) == []

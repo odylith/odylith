@@ -294,7 +294,7 @@ def validate_authored_atlas_view(
                 "node_id": node_id,
                 "label": required_atlas_string(raw_box.get("label"), f"diagram_boxes[{index}].label"),
                 "role": required_atlas_string(raw_box.get("role"), f"diagram_boxes[{index}].role"),
-                "description": required_atlas_string(
+                "description": "" if raw_box.get("description") == "" else required_atlas_string(
                     raw_box.get("description"),
                     f"diagram_boxes[{index}].description",
                 ),
@@ -419,7 +419,7 @@ def _context_view(
                 "people",
                 "People in product context",
                 "Container",
-                "People involved, including those without a first-path action.",
+                "",
             )
         )
         for index, actor in enumerate(actors, start=1):
@@ -432,9 +432,9 @@ def _context_view(
                     actor_id,
                     actor,
                     "First-path actor" if events else "Participant",
-                    "Performs the linked first-path actions."
-                    if events
-                    else "Named in project evidence; no first-path action is assigned.",
+                    "",
+                    details=[] if events else [{"label": "Action assignment", "text":
+                        "Named in project evidence; no first-path action is assigned."}],
                 )
             )
         lines.append("  end")
@@ -454,7 +454,7 @@ def _context_view(
                 "external_systems",
                 "Accepted external systems",
                 "Container",
-                "Groups accepted systems that remain outside product ownership.",
+                "",
             )
         )
         for index, external in enumerate(externals, start=1):
@@ -466,7 +466,7 @@ def _context_view(
                     external_id,
                     external,
                     "External system",
-                    f"Accepted external system outside product ownership: {external}",
+                    "",
                 )
             )
         lines.append("  end")
@@ -520,7 +520,8 @@ def _product_boundary_projection(
                     "product",
                     title,
                     "Accepted evidence excerpt",
-                    f"Accepted evidence excerpt: “{product_story}”",
+                    "",
+                    details=[{"label": "Accepted evidence excerpt", "text": product_story}],
                 )
             ],
             (),
@@ -546,11 +547,7 @@ def _product_boundary_projection(
             "product",
             title,
             "Product boundary",
-            (
-                f"Candidate product boundary and sole product-owned component for {title}."
-                if sole_title_product
-                else f"Contains the candidate product-owned components for {title}."
-            ),
+            rows[0][1] if sole_title_product else "",
         )
     ]
     component_targets: list[str] = []

@@ -90,7 +90,6 @@ _DEFAULT_RECENT_FOCUS_WINDOW_MINUTES = 90
 _TIMELINE_EVENT_LOOKBACK_HOURS = 72
 _TIMELINE_EVENT_MAX_ROWS = 1200
 _TIMELINE_GENERATED_NOISE_MAX_ROWS = 300
-_TX_HEADLINE_MAX_CHARS = 180
 _COMPASS_TIMEZONE = "America/Los_Angeles"
 _COMPASS_TZ = ZoneInfo(_COMPASS_TIMEZONE)
 
@@ -411,33 +410,9 @@ def _event_public_payload(event: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
-def _truncate_sentence(text: str, *, limit: int) -> str:
-    token = " ".join(str(text or "").split()).strip()
-    if not token:
-        return ""
-    if len(token) <= limit:
-        return token
-    if limit <= 4:
-        return token[:limit]
-    hard_limit = max(1, limit - 3)
-    boundary = token.rfind(" ", 0, hard_limit + 1)
-    if boundary < int(hard_limit * 0.6):
-        boundary = hard_limit
-    clipped = token[:boundary].rstrip(" ,;:-")
-    if not clipped:
-        clipped = token[:hard_limit].rstrip()
-    return f"{clipped}..."
-
-
-def _clip_sentence(text: str, *, limit: int = 160) -> str:
-    token = " ".join(str(text or "").split()).strip()
-    if not token:
-        return ""
-    return _truncate_sentence(token, limit=limit)
-
-
 def _narrative_excerpt(text: str, *, max_sentences: int = 1, max_chars: int = 220) -> str:
-    token = " ".join(str(text or "").split()).strip()
+    """Select whole sentences; the character budget only limits additional ones."""
+    token = _normalize_sentence(text)
     if not token:
         return ""
     sentences = re.split(r"(?<=[.!?])\s+", token)
@@ -450,15 +425,13 @@ def _narrative_excerpt(text: str, *, max_sentences: int = 1, max_chars: int = 22
         projected = current_len + (1 if chosen else 0) + len(part)
         if chosen and projected > max_chars:
             break
-        if not chosen and len(part) > max_chars:
-            return _truncate_sentence(part, limit=max_chars)
         chosen.append(part)
         current_len = projected
         if len(chosen) >= max_sentences:
             break
     if chosen:
         return " ".join(chosen)
-    return _truncate_sentence(token, limit=max_chars)
+    return token
 
 
 def _normalize_sentence(text: str) -> str:

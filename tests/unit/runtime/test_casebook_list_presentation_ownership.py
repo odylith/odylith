@@ -20,6 +20,10 @@ def test_casebook_list_presentation_is_adopted_without_a_second_empty_owner() ->
     assert "renderSelectedBug(null, presentation.detailHtml)" in html
     assert "const renderToken = ++detailRenderToken;" in html
     assert "detailRenderToken" not in source
+    assert "bug-row-summary" not in html
+    assert "row && row.summary" in html
+    assert '<p class="detail-summary">${escapeHtml(summaryText)}</p>' in html
+    assert '>Intel</span>' not in html
 
 
 def test_casebook_presentation_changes_invalidate_refresh_fingerprint(tmp_path, monkeypatch) -> None:  # noqa: ANN001

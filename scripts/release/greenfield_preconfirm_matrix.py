@@ -860,6 +860,8 @@ def _record_retained_execution(
 ) -> None:
     for name in (
         "input.prompt",
+        "input.initial-request",
+        "input.confirmed-intent",
         "input.edit-evidence",
         "show.stdout",
         "show.stderr",
@@ -1133,8 +1135,8 @@ def run_unavailable_provider_proof(
                 repo_root=repo_root,
                 env={**host_env, **audit_env},
                 proposal_env={**env, **audit_env},
-                prompt=case.prompt,
-                edit_evidence=str(case.confirmed_intent_markdown or ""),
+                prompt=case.initial_prompt,
+                edit_evidence="",
                 timeout=get_greenfield_model_profile(
                     STANDARD_PROFILE_ID
                 ).operational_timeout_seconds,
@@ -1258,15 +1260,13 @@ def _run_case(
             result,
             evidence=dict(result.evidence),
         )
-    raw_streams: dict[str, str] = {}
-    raw_streams["input.prompt"] = case.prompt
-    raw_streams["input.edit-evidence"] = str(case.confirmed_intent_markdown or "")
+    raw_streams = case.initial_input_streams
     observed_stage: dict[str, Any] = {}
     invoke_propose = lambda timeout: _run_host_candidate_propose(
         repo_root=repo_root,
         env=env,
-        prompt=case.prompt,
-        edit_evidence=str(case.confirmed_intent_markdown or ""),
+        prompt=case.initial_prompt,
+        edit_evidence="",
         repair_tier=profile_contract.repair_tier,
         timeout=timeout,
         host_candidate_argv=host_candidate_argv,
@@ -1292,7 +1292,7 @@ def _run_case(
     package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
     stage_observation = _retained_model_stage_observation(retained_case)
     expected_model_source = prepare_model_authoring_evidence(
-        prompt=case.prompt, edit_evidence=str(case.confirmed_intent_markdown or ""),
+        prompt=case.initial_prompt, edit_evidence="",
     ).evidence_source
     raw_candidate = _retained_raw_host_candidate(retained_case)
     source_duty_receipt = _retained_source_duty_receipt(retained_case)
@@ -1327,10 +1327,7 @@ def _run_case(
         else ()
     )
     source_custody_issues = (
-        (
-            *_source_evidence_custody_issues(case=case, generated_text=generated_text),
-            *_source_evidence_content_custody_issues(case=case, generated_text=generated_text),
-        )
+        _source_evidence_custody_issues(case=case, package=package)
         if include_lexical_custody_proof
         else ()
     )
@@ -1447,29 +1444,6 @@ def _run_case(
         commit_manifest_summary=commit_manifest_summary(manifest),
         evidence=evidence,
     )
-
-
-def _source_evidence_content_custody_issues(
-    *,
-    case: GreenfieldMatrixCase,
-    generated_text: str,
-) -> tuple[str, ...]:
-    """Reject a retained multi-word source excerpt copied into product artifacts."""
-
-    provenance = getattr(case, "provenance", None)
-    if str(getattr(provenance, "corpus_tier", "") or "").strip() != "source_provenanced":
-        return ()
-    tags = {
-        str(tag).strip()
-        for tag in tuple(getattr(case, "tags", ()) or ())
-        if str(tag).strip()
-    }
-    if "source-evidence-complete-product-path" in tags:
-        return ()
-    excerpt = " ".join(str(getattr(provenance, "source_excerpt", "") or "").split())
-    if len(excerpt.split()) < 3 or not _term_present(generated_text, excerpt):
-        return ()
-    return ("source evidence text leaked into product artifacts",)
 
 
 def _run_host_candidate_propose(
@@ -1722,9 +1696,7 @@ def _run_expected_clarification_case(
     host_candidate_argv: Sequence[str] = (),
 ) -> GreenfieldMatrixResult:
     audit = begin_installed_write_audit(repo_root=repo_root)
-    raw_streams: dict[str, str] = {}
-    raw_streams["input.prompt"] = case.prompt
-    raw_streams["input.edit-evidence"] = str(case.confirmed_intent_markdown or "")
+    raw_streams = case.initial_input_streams
 
     def invoke_proposal() -> Any:
         audit_env = {**env, **audit.environment()}
@@ -1735,8 +1707,8 @@ def _run_expected_clarification_case(
         proposed = _run_host_candidate_propose(
             repo_root=repo_root,
             env=audit_env,
-            prompt=case.prompt,
-            edit_evidence=str(case.confirmed_intent_markdown or ""),
+            prompt=case.initial_prompt,
+            edit_evidence="",
             repair_tier=repair_tier,
             timeout=timeout,
             host_candidate_argv=host_candidate_argv,
@@ -1766,8 +1738,8 @@ def _run_expected_clarification_case(
     payload = execution.payload
     stage_observation = _retained_model_stage_observation(retained_case)
     expected_source = prepare_model_authoring_evidence(
-        prompt=case.prompt,
-        edit_evidence=str(case.confirmed_intent_markdown or ""),
+        prompt=case.initial_prompt,
+        edit_evidence="",
     ).evidence_source
     profile_id = str(env.get("ODYLITH_GREENFIELD_MODEL_PROFILE") or "").strip()
     if not profile_id:

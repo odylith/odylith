@@ -5,7 +5,10 @@ import json
 from pathlib import Path
 from urllib.parse import urljoin, urlsplit
 
+import pytest
+
 from odylith.runtime.surfaces import compass_dashboard_runtime as compass_runtime
+from odylith.runtime.surfaces import compass_dashboard_base, compass_standup_brief_substrate, compass_transaction_runtime
 from tests.integration.runtime.compass_browser_regression_support import (
     clone_odylith_fixture,
     covered_workstream_ids,
@@ -23,7 +26,154 @@ from tests.integration.runtime.compass_browser_regression_support import (
 from tests.integration.runtime.surface_browser_test_support import (
     _assert_clean_page,
     _browser,
+    _failure_screenshot_path,
 )
+
+
+@pytest.mark.parametrize("width", [1440, 390], ids=["desktop", "mobile"])
+@pytest.mark.parametrize("state", ["ready", "fallback", "error", "empty"])
+def test_complete_compass_facts_wrap_without_losing_trailing_conditions(tmp_path: Path, width: int, state: str) -> None:
+    fixture_root = clone_odylith_fixture(tmp_path)
+    render_compass_fixture(fixture_root)
+    payload = load_runtime_payload(fixture_root)
+    timestamp = str(payload["now_local_iso"])
+    source = "Review the complete source record and every affected customer condition; " * 5 + "publication is not approved ✅."
+    fact = compass_dashboard_base._narrative_excerpt(source)
+    built = compass_standup_brief_substrate.build_narration_substrate(
+        fact_packet={"summary": {"storyline": {"direction": fact}}}, schema_version="v25",
+    )
+    fact = built["summary"]["storyline"]["direction"]
+    assert fact == source
+    event = {
+        "id": "long-source-fact", "kind": "implementation", "summary": source,
+        "ts_iso": timestamp, "files": ["customer/source.py"], "workstreams": [],
+    }
+    headline = compass_transaction_runtime._build_transaction_headline(
+        tx_events=[event], tx_context="", workstreams=[], files_count=1,
+    )
+    assert headline == source.rstrip(".")
+    transaction = {
+        "id": "long-source-transaction", "transaction_id": "long-source-transaction",
+        "headline": headline, "start_ts_iso": timestamp, "end_ts_iso": timestamp,
+        "events": [event], "event_count": 1, "files": ["customer/source.py"], "workstreams": [],
+    }
+    brief = {"status": "ready", "source": "provider", "generated_utc": payload["generated_utc"],
+             "sections": [{"key": "current_execution", "label": "Current execution",
+                           "bullets": [{"text": fact, "fact_ids": []}]}]}
+    if state != "ready":
+        brief = {
+            "status": "unavailable", "generated_utc": payload["generated_utc"],
+            "sections": [], "diagnostics": {
+                "reason": "provider_deferred" if state == "fallback" else "credits_exhausted",
+                "title": "Summary unavailable", "message": "Review the current information before continuing.",
+                "fallback_digest": [] if state == "empty" else ["Current: " + fact],
+            },
+        }
+        if state == "error":
+            brief["diagnostics"]["next_retry_utc"] = "2026-10-08T12:30:00Z"
+    payload["standup_brief"] = {"24h": brief, "48h": brief}
+    payload["standup_brief_scoped"] = {"24h": {}, "48h": {}}
+    payload["history"] = {"retention_days": 0, "dates": [], "restored_dates": []}
+    payload["timeline_events"] = [] if state == "empty" else [event]
+    payload["timeline_transactions"] = [] if state == "empty" else [transaction]
+    if state == "ready":
+        row = _workstream_row(payload, "B-991")
+        row.update({"title": "Source approval checks", "why": {"why_now": source},
+                    "plan": {"next_tasks": [source]}})
+        payload["current_workstreams"] = [row]
+        payload["workstream_catalog"] = [row]
+    write_runtime_payload(fixture_root, payload)
+    if state == "ready":
+        _write_source_truth_snapshot(fixture_root, active_ids=[], current_ids=["B-991"],
+                                     generated_utc=str(payload["generated_utc"]))
+
+    for _pw, browser in _browser():
+        with open_compass_page(fixture_root, browser) as (page, compass, observation):
+            page.set_viewport_size({"width": width, "height": 1100})
+            digest = compass.locator("#digest-list")
+            digest.wait_for(state="visible", timeout=15000)
+            if state == "ready":
+                paragraph = digest.locator(".brief-bullet-copy").first
+                paragraph.wait_for(state="visible", timeout=15000)
+                assert paragraph.inner_text() == source
+            elif state != "empty":
+                paragraph = digest.locator(".brief-fallback-digest li").first
+                paragraph.wait_for(state="visible", timeout=15000)
+                assert paragraph.inner_text() == "Current: " + source
+                assert digest.locator("details.brief-diagnostics").get_attribute("open") is None
+                if state == "error":
+                    details = digest.locator("details.brief-diagnostics")
+                    details.locator(":scope > summary").focus()
+                    page.keyboard.press("Enter")
+                    assert details.get_by_text("2026-10-08T12:30:00Z", exact=True).is_visible()
+                    page.keyboard.press("Enter")
+                    assert details.get_attribute("open") is None
+            else:
+                assert digest.locator(".brief-bullet-copy, .brief-fallback-digest").count() == 0
+                assert digest.locator(".brief-status-title").inner_text() == "Summary unavailable"
+            if state != "empty":
+                title = compass.locator("#timeline details.tx-card > summary .tx-headline").first
+                title.wait_for(state="visible", timeout=15000)
+                assert title.inner_text().rstrip(".") == headline
+                for node in (paragraph, title):
+                    assert node.evaluate("""node => {
+                        const style = getComputedStyle(node);
+                        const bounds = node.getBoundingClientRect();
+                        const container = node.closest('.card').getBoundingClientRect();
+                        return node.scrollWidth <= node.clientWidth + 1
+                            && node.scrollHeight <= node.clientHeight + 1
+                            && bounds.left >= container.left
+                            && bounds.right <= Math.min(container.right, window.innerWidth) + 1
+                            && !['hidden', 'clip'].includes(style.overflowY)
+                            && style.webkitLineClamp === 'none';
+                    }""")
+                if state == "ready":
+                    row = compass.locator('tr.ws-summary-row.ws-row-meta[data-ws-id="B-991"]').first
+                    for label in row.locator(".ws-id-btn, .chip").all():
+                        assert label.evaluate("""node => {
+                            const range = document.createRange();
+                            range.selectNodeContents(node);
+                            const bounds = range.getBoundingClientRect();
+                            const container = node.closest('.ws-table-wrap').getBoundingClientRect();
+                            return range.getClientRects().length === 1
+                                && bounds.left >= container.left
+                                && bounds.right <= Math.min(container.right, window.innerWidth) + 1;
+                        }""")
+                    for header in row.locator("xpath=ancestor::table//th").all():
+                        assert header.evaluate("""node => {
+                            const range = document.createRange();
+                            range.selectNodeContents(node);
+                            const bounds = range.getBoundingClientRect();
+                            const container = node.closest('.ws-table-wrap').getBoundingClientRect();
+                            return bounds.left >= container.left
+                                && bounds.right <= Math.min(container.right, window.innerWidth) + 1;
+                        }""")
+                    row.click()
+                    detail = compass.locator('tr.ws-detail-row[data-ws-detail="B-991"]')
+                    for label in ("Why now:", "Next checkpoint:"):
+                        text = detail.locator(".ws-detail-grid > div", has_text=label).first
+                        assert text.is_visible() and text.inner_text() == label + " " + source
+                        assert text.evaluate("""node => {
+                            const bounds = node.getBoundingClientRect();
+                            const container = node.closest('.ws-table-wrap').getBoundingClientRect();
+                            return node.scrollWidth <= node.clientWidth + 1
+                                && node.scrollHeight <= node.clientHeight + 1
+                                && bounds.left >= container.left
+                                && bounds.right <= Math.min(container.right, window.innerWidth) + 1;
+                        }""")
+                    assert detail.locator(".ws-inline-detail").first.evaluate("""node => {
+                        const bounds = node.getBoundingClientRect();
+                        const container = node.closest('.ws-table-wrap').getBoundingClientRect();
+                        return bounds.left >= container.left
+                            && bounds.right <= Math.min(container.right, window.innerWidth) + 1;
+                    }""")
+            assert compass.locator("html").evaluate("node => node.scrollWidth <= window.innerWidth + 1")
+            assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1")
+            screenshot = _failure_screenshot_path(f"compass-complete-prose-{state}-{width}")
+            if screenshot is not None:
+                screenshot.parent.mkdir(parents=True, exist_ok=True)
+                page.screenshot(path=str(screenshot), full_page=True)
+            _assert_clean_page(page, observation)
 
 
 def _workstream_row(payload: dict[str, object], idea_id: str) -> dict[str, object]:

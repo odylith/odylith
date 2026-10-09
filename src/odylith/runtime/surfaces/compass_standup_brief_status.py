@@ -5,29 +5,6 @@ from __future__ import annotations
 from typing import Any, Mapping
 
 
-def _provider_display_name(provider: str) -> str:
-    token = str(provider or "").strip().lower()
-    if token == "codex-cli":
-        return "Codex CLI"
-    if token == "claude-cli":
-        return "Claude Code"
-    if token == "openai-compatible":
-        return "OpenAI-compatible endpoint"
-    if token == "auto-local":
-        return "local provider"
-    return str(provider or "").strip()
-
-
-def _provider_attempt_label(*, diagnostics: Mapping[str, Any] | None = None) -> str:
-    if not isinstance(diagnostics, Mapping):
-        return ""
-    provider_label = _provider_display_name(str(diagnostics.get("provider", "")).strip())
-    model_label = str(diagnostics.get("provider_model", "") or diagnostics.get("model", "")).strip()
-    if provider_label and model_label:
-        return f"{provider_label} using {model_label}"
-    return provider_label or model_label
-
-
 def unavailable_brief_message(
     reason: str,
     *,
@@ -35,36 +12,30 @@ def unavailable_brief_message(
 ) -> str:
     token = str(reason or "").strip().lower()
     if token == "skipped_not_worth_calling":
-        return "Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        return "The recorded facts have not changed enough for a new summary."
     if token == "provider_deferred":
-        return "A summary is not available for this view."
+        return "No summary is available for this view."
     if token == "rate_limited":
-        return "Compass hit narration provider capacity while warming this brief. It will retry on backoff."
+        return "The summary service is busy. Try again later."
     if token == "credits_exhausted":
-        attempt_label = _provider_attempt_label(diagnostics=diagnostics)
-        if attempt_label:
-            return (
-                "Compass could not warm this brief because the last narration attempt through "
-                f"{attempt_label} may have hit a credit or budget limit. It will retry on backoff."
-            )
-        return "Compass could not warm this brief because the narration provider may have hit a credit or budget limit. It will retry on backoff."
+        return "The summary service may be out of credits. Check its account or budget."
     if token == "timeout":
-        return "The narration provider timed out. Compass is showing local runtime facts when available and will retry on backoff."
+        return "The summary service took too long. Try again later."
     if token == "provider_unavailable":
-        return "Compass is live. The optional narrated brief is not ready yet because the narration provider was not reachable and no exact replay exists for this packet."
+        return "The summary service could not be reached."
     if token == "transport_error":
-        return "Compass is live. The optional narrated brief could not reach the provider on the last attempt and will retry later."
+        return "The summary service could not be reached. Try again later."
     if token == "auth_error":
-        return "Compass could not warm this brief because the narration provider rejected the request. Check provider access before trusting another retry."
+        return "The summary service rejected the request. Check account access."
     if token == "provider_empty":
-        return "Compass did not receive a usable narration reply, and there was no exact current-packet brief to replay."
+        return "The summary service returned no usable summary."
     if token == "provider_error":
-        return "The narration provider failed on the last attempt. Compass will retry on backoff."
+        return "The summary service failed. Try again later."
     if token == "invalid_batch":
-        return "Compass received a narration reply for this brief, but the result was not usable yet. It will retry on backoff."
+        return "The summary could not be used. Try again later."
     if token == "validation_failed":
-        return "Compass received an invalid brief, and there was no exact current-packet brief to replay."
-    return "Compass could not build a current standup brief for this packet."
+        return "The summary did not pass validation."
+    return "A current summary is unavailable."
 
 
 def unavailable_brief_title(
@@ -74,32 +45,27 @@ def unavailable_brief_title(
 ) -> str:
     token = str(reason or "").strip().lower()
     if token == "skipped_not_worth_calling":
-        return "Brief reused last validated narration"
+        return "No new summary"
     if token == "provider_deferred":
-        return "Local runtime facts"
+        return "Summary unavailable"
     if token == "rate_limited":
-        return "Brief is waiting on provider capacity"
+        return "Summary service busy"
     if token == "credits_exhausted":
-        provider_label = ""
-        if isinstance(diagnostics, Mapping):
-            provider_label = _provider_display_name(str(diagnostics.get("provider", "")).strip())
-        if provider_label:
-            return f"Brief is waiting on {provider_label} budget"
-        return "Brief is waiting on provider budget"
+        return "Summary usage limit"
     if token == "timeout":
-        return "Narration timed out"
+        return "Summary timed out"
     if token == "provider_unavailable":
-        return "Narrated brief not ready yet"
+        return "Summary service unavailable"
     if token == "transport_error":
-        return "Narrated brief will retry"
+        return "Summary service unavailable"
     if token == "auth_error":
-        return "Brief provider access failed"
+        return "Summary access failed"
     if token == "provider_empty":
-        return "Brief provider returned nothing usable"
+        return "Summary unavailable"
     if token == "provider_error":
-        return "Brief unavailable right now"
+        return "Summary unavailable"
     if token == "invalid_batch":
-        return "Brief needs another provider pass"
+        return "Summary unavailable"
     if token == "validation_failed":
-        return "Brief failed validation"
-    return "Standup brief unavailable"
+        return "Summary validation failed"
+    return "Summary unavailable"

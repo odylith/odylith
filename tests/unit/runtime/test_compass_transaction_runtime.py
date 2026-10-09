@@ -2,7 +2,25 @@ from __future__ import annotations
 
 import datetime as dt
 
+import pytest
+
 from odylith.runtime.surfaces import compass_transaction_runtime
+
+
+@pytest.mark.parametrize("kind", ["implementation", "decision", "statement", "commit", "failure"])
+@pytest.mark.parametrize("source", ["summary", "headline_hint", "context"])
+def test_transaction_headline_preserves_complete_long_fact(kind: str, source: str) -> None:
+    sentence = "Reviewed the source record and every affected customer condition; " * 5 + "publication is not approved ✅."
+    event = _event(event_id="long-fact", ts_iso="2026-04-09T18:48:00-07:00", kind=kind, summary=sentence, workstreams=[])
+    event[source] = sentence
+    if kind == "failure":
+        event["files"] = []
+    context = sentence if source == "context" else ""
+    actual = compass_transaction_runtime._build_transaction_headline(
+        tx_events=[event], tx_context=context, workstreams=[], files_count=len(event["files"]),
+    )
+    prefix = "Decision: " if source == "summary" and kind == "decision" else ""
+    assert actual == prefix + sentence.rstrip(".")
 
 
 def _event(

@@ -355,28 +355,28 @@
       const title = String(diagnostics.title || "").trim() || "Standup brief unavailable";
       const message = String(diagnostics.message || "").trim() || "No standup brief is available for this view.";
       const reason = String(diagnostics.reason || "").trim().toLowerCase();
-      const retryUtc = String(diagnostics.next_retry_utc || "").trim();
-      const retryCopy = retryUtc ? `Will retry after ${compactTimestamp(retryUtc)}.` : "";
       const fallbackDigest = Array.isArray(diagnostics.fallback_digest)
         ? diagnostics.fallback_digest.map((line) => String(line || "").trim()).filter(Boolean).slice(0, 3)
         : [];
-      const fallbackTitle = String(diagnostics.fallback_title || "Local runtime facts").trim();
+      const diagnosticRows = Object.entries(diagnostics)
+        .filter(([key, value]) => !["fallback_digest", "title", "message"].includes(key) && value !== null && value !== "" && !(Array.isArray(value) && !value.length))
+        .map(([key, value]) => `<div class="brief-diagnostic-row"><span class="brief-diagnostic-key">${escapeHtml(key.replaceAll("_", " "))}</span><span class="brief-diagnostic-value">${escapeHtml(typeof value === "object" ? JSON.stringify(value) : String(value))}</span></div>`)
+        .join("");
       const toneClass = reason === "provider_unavailable" || reason === "transport_error" || reason === "provider_deferred"
         ? "brief-status-card--info"
         : "brief-status-card--warn";
       return `
         <div class="brief-status-card ${toneClass} brief-status-card--compact" role="status" aria-live="polite">
-          <div class="brief-status-title">${escapeHtml(title)}</div>
-          <div class="brief-status-copy">${escapeHtml(message)}</div>
           ${fallbackDigest.length ? `
             <div class="brief-fallback-digest">
-              ${fallbackTitle !== title ? `<div class="brief-fallback-title">${escapeHtml(fallbackTitle)}</div>` : ""}
               <ul>
                 ${fallbackDigest.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}
               </ul>
             </div>
           ` : ""}
-          ${retryCopy ? `<div class="brief-status-meta">${escapeHtml(retryCopy)}</div>` : ""}
+          <div class="brief-status-title">${escapeHtml(title)}</div>
+          <div class="brief-status-copy">${escapeHtml(message)}</div>
+          ${diagnosticRows ? `<details class="brief-diagnostics"><summary>Summary details</summary><div class="brief-diagnostic-grid">${diagnosticRows}</div></details>` : ""}
         </div>
       `;
     }

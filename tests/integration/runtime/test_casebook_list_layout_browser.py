@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import json
+
+from odylith.runtime.surfaces import render_casebook_dashboard as renderer
 from tests.integration.runtime.surface_browser_test_support import (
     _assert_clean_page,
     _new_page,
@@ -9,6 +12,10 @@ from tests.integration.runtime.surface_browser_test_support import (
 
 
 _CASEBOOK_URL = "/odylith/index.html?tab=casebook"
+_FULL_SUMMARY = (
+    "The complete source summary remains in the selected detail after the sidebar is simplified; "
+    "summaryonlycustodycue also keeps this record searchable without duplicating prose in the list."
+)
 
 
 def _stress_casebook_list_row(casebook) -> dict[str, object]:  # noqa: ANN001
@@ -17,26 +24,18 @@ def _stress_casebook_list_row(casebook) -> dict[str, object]:  # noqa: ANN001
     return row.evaluate(
         """(button) => {
             const title = button.querySelector(".bug-row-title");
-            const summary = button.querySelector(".bug-row-summary");
             const meta = button.querySelector(".bug-row-meta");
-            if (!title || !summary || !meta) {
-              throw new Error("Casebook row is missing title, summary, or metadata");
+            if (!title || !meta || button.querySelector(".bug-row-summary")) {
+              throw new Error("Casebook row lost its title or metadata, or repeated the detail summary");
             }
             title.textContent = [
               "Casebook selector keeps a consumer regression readable while long",
               "status evidence and source details try to escape the list column"
             ].join(" ");
-            summary.textContent = [
-              "The generated selector row must wrap prose from consumer Casebook records instead of inheriting",
-              "native button whitespace and clipping text at the panel edge.",
-              "The stress payload also includes one deliberately long unbroken token:",
-              "casebook_selector_wrapping_contract_should_not_clip_valid_bug_memory_evidence"
-            ].join(" ");
             meta.innerHTML = [
               '<span class="list-chip critical-chip">P1</span>',
               '<span class="list-chip warn-chip">Mitigated locally; pending platform release, consumer upgrade rerun, and browser proof</span>',
-              '<span class="list-chip archive-chip">Investigation bucket with a long visible label</span>',
-              '<span class="list-chip">Intel 23/23</span>'
+              '<span class="list-chip archive-chip">Investigation bucket with a long visible label</span>'
             ].join("");
 
             const rowBox = button.getBoundingClientRect();
@@ -63,18 +62,15 @@ def _stress_casebook_list_row(casebook) -> dict[str, object]:  # noqa: ANN001
             const targets = [
               describe("row", button),
               describe("title", title),
-              describe("summary", summary),
               describe("meta", meta),
               ...chips.map((chip, index) => describe(`chip-${index}`, chip)),
             ];
             return {
               row: targets[0],
               title: targets[1],
-              summary: targets[2],
-              meta: targets[3],
+              meta: targets[2],
               metaFlexWrap: window.getComputedStyle(meta).flexWrap,
               titleLines: lineCount(title),
-              summaryLines: lineCount(summary),
               chipLines: chips.map((chip) => lineCount(chip)),
               chipRows: new Set(chips.map((chip) => Math.round(chip.getBoundingClientRect().top))).size,
               overflowTargets: targets.filter((item) => item.overflowX > 4).map((item) => item.name),
@@ -86,19 +82,64 @@ def _stress_casebook_list_row(casebook) -> dict[str, object]:  # noqa: ANN001
 
 def _assert_casebook_list_layout_stress(base_url: str, context) -> None:  # noqa: ANN001
     with _new_page(context) as (page, observation):
+        payload = {
+            "bugs": [{
+                "bug_id": "CB-901", "bug_route": "CB-901", "bug_key": "CB-901",
+                "title": "Preserve Casebook source custody", "summary": _FULL_SUMMARY,
+                "search_text": "preserve Casebook source custody", "status": "Open", "status_token": "open",
+                "severity": "P1", "severity_token": "p1", "date": "2026-10-06",
+                "intelligence_coverage": {"captured_count": 22, "total_fields": 23,
+                                          "missing_fields": ["Verification"], "required_missing_fields": ["Verification"]},
+            }],
+            "counts": {"total_cases": 1},
+            "filters": {"severity_tokens": ["p1"], "status_tokens": ["open"]},
+            "detail_manifest": {"CB-901": "/casebook-sidebar-detail.v1.js"},
+        }
+        page.route("**/odylith/casebook/casebook.html*", lambda route: route.fulfill(
+            status=200, content_type="text/html", body=renderer._render_html(payload=payload),
+        ))
+        page.route("**/casebook-sidebar-detail.v1.js", lambda route: route.fulfill(
+            status=200, content_type="application/javascript",
+            body="window.__ODYLITH_CASEBOOK_DETAIL_SHARDS__ = " + json.dumps({
+                "CB-901": {"title": "Preserve Casebook source custody", "summary": _FULL_SUMMARY,
+                           "severity": "P1", "status": "Open",
+                           "intelligence_coverage": {"captured_count": 22, "total_fields": 23,
+                                                     "missing_fields": ["Verification"],
+                                                     "required_missing_fields": ["Verification"]}},
+            }) + ";",
+        ))
         response = page.goto(base_url + _CASEBOOK_URL, wait_until="domcontentloaded")
         assert response is not None and response.ok
 
         casebook = page.frame_locator("#frame-casebook")
         casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
+        row = casebook.locator('button.bug-row[data-bug="CB-901"]')
+        row.wait_for(timeout=15000)
+        assert row.locator(".bug-row-kicker").inner_text() == "CB-901"
+        assert row.locator(".bug-row-title").inner_text() == "Preserve Casebook source custody"
+        assert row.locator(".bug-row-date").inner_text() == "2026-10-06"
+        assert [chip.inner_text() for chip in row.locator(".list-chip").all()] == ["P1", "Open"]
+        assert row.locator(".bug-row-summary").count() == 0
+        assert _FULL_SUMMARY not in row.inner_text()
+        casebook.locator("#searchInput").fill("summaryonlycustodycue")
+        assert casebook.locator("#listMeta").inner_text() == "1 visible"
+        assert row.count() == 1
+        row.click()
+        detail = casebook.locator("#detailPane .detail-summary")
+        detail.wait_for(timeout=15000)
+        assert detail.inner_text() == _FULL_SUMMARY
+        assert detail.evaluate("node => window.getComputedStyle(node).webkitLineClamp") == "none"
+        assert "Intel" not in casebook.locator("#detailPane .detail-meta").inner_text()
+        gaps = casebook.locator("#detailPane details", has=casebook.get_by_text("Capture Gaps", exact=True))
+        assert gaps.count() == 1
+        assert gaps.get_attribute("open") is None
+        assert "22 of 23 recommended fields captured" in (gaps.text_content() or "")
         layout = _stress_casebook_list_row(casebook)
 
         assert layout["row"]["whiteSpace"] == "normal"
         assert layout["title"]["whiteSpace"] == "normal"
-        assert layout["summary"]["whiteSpace"] == "normal"
         assert layout["metaFlexWrap"] == "wrap"
         assert int(layout["titleLines"]) >= 2
-        assert int(layout["summaryLines"]) >= 2
         assert int(layout["chipRows"]) >= 2
         assert any(int(line_count) >= 2 for line_count in layout["chipLines"])
         assert layout["overflowTargets"] == []

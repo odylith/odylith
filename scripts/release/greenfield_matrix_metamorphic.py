@@ -220,7 +220,7 @@ def _clarification_invariant_issues(
     if not expected_fields:
         issues.append(f"metamorphic group {group} case {case_id} lacks frozen expected material fields")
     else:
-        for field_issue in material_question_field_issues(expected_fields, source_texts=(case.prompt,)):
+        for field_issue in material_question_field_issues(expected_fields, source_texts=(case.initial_prompt,)):
             issues.append(f"metamorphic group {group} case {case_id} {field_issue}")
         if not focused_material_question(clarification.get("question"), required_fields=expected_fields):
             issues.append(f"metamorphic group {group} case {case_id} did not ask its focused material question")

@@ -154,8 +154,9 @@ def test_atlas_component_descriptions_retain_complete_text(
         ownership.locator('summary').focus()
         ownership.locator('summary').press('Enter')
         assert rendered.all_text_contents() == [
-            text if text.strip() else "Named responsibility in this diagram." for text in descriptions
+            text for text in descriptions if text.strip()
         ]
+        assert rendered.count() == sum(bool(text.strip()) for text in descriptions)
         assert rendered.locator("*").count() == 0
         for description in rendered.all():
             description.scroll_into_view_if_needed()

@@ -137,16 +137,6 @@
       return `${shown.join(", ")}${suffix}`;
     }
 
-    function clipFocusText(value, maxChars = 160) {
-      const text = String(value || "").replace(/\s+/g, " ").trim();
-      if (!text) return "";
-      if (text.length <= maxChars) return text;
-      const hardLimit = Math.max(8, maxChars - 1);
-      const boundary = text.lastIndexOf(" ", hardLimit);
-      const cutAt = boundary >= Math.floor(maxChars * 0.6) ? boundary : hardLimit;
-      return `${text.slice(0, cutAt).trimEnd()}…`;
-    }
-
     function toSentence(text) {
       const token = String(text || "").trim();
       if (!token) return "";
@@ -446,10 +436,9 @@
         const costLabel = wsCostBadge(row, windowKey);
 
         const whyText = String(why.why_now || why.opportunity || why.founder_pov || "").trim();
-        const shortWhy = clipFocusText(whyText, 280);
         const nextTasks = Array.isArray(plan.next_tasks) ? plan.next_tasks.map((item) => String(item || "").trim()).filter(Boolean) : [];
         const nextCheckpoint = nextTasks.length
-          ? clipFocusText(nextTasks[0], 180)
+          ? nextTasks[0]
           : "No explicit next checkpoint captured in current plan checklist.";
 
         const strictScopedTransactions = txRows.filter((tx) => {
@@ -498,8 +487,7 @@
         const latestTxTs = latestTx ? (latestTx.end_ts_iso || latestTx.start_ts_iso || "") : "";
         const latestTxId = String((latestTx && latestTx.transaction_id) || "").trim();
         const latestTxLabel = compactTimestamp(latestTxTs || timeline.last_activity_iso);
-        const latestHeadlineRaw = latestTx ? String(latestTx.headline || "").trim() : "";
-        const latestHeadline = clipFocusText(latestHeadlineRaw, 140);
+        const latestHeadline = latestTx ? String(latestTx.headline || "").trim() : "";
 
         const liveFocus = focusByWorkstream && focusByWorkstream[ideaId] && typeof focusByWorkstream[ideaId] === "object"
           ? focusByWorkstream[ideaId]
@@ -528,7 +516,7 @@
           implementationFocusParts.push("execution is currently active");
         }
         const implementationFocus = hasStrictScopeLink && hasScopedImplementationSignal && implementationFocusParts.length
-          ? toSentence(clipFocusText(`Currently ${implementationFocusParts.join("; ")}`, 280))
+          ? toSentence(`Currently ${implementationFocusParts.join("; ")}`)
           : "";
 
         const commitCount = Number(activity.commit_count || 0);
@@ -552,24 +540,15 @@
         const lineageSummary = lineageSummaryParts.join("; ");
         const planHref = String(planLookup[ideaId] || "").trim();
         const tableTitle = String(row.title || "").trim();
-        const focusContext = clipFocusText(
-          String(liveFocus.context || liveFocus.headline || liveFocus.latest_event_summary || "").trim(),
-          140,
-        );
+        const focusContext = String(liveFocus.context || liveFocus.headline || liveFocus.latest_event_summary || "").trim();
         const eventContext = prioritizedContextEvent
-          ? clipFocusText(
-              String(
+          ? String(
                 prioritizedContextEvent.context
                 || prioritizedContextEvent.summary
                 || "",
-              ).trim(),
-              140,
-            )
+              ).trim()
           : "";
-        const digestContext = clipFocusText(
-          String(digestContextByWorkstream[ideaId] || "").trim(),
-          140,
-        );
+        const digestContext = String(digestContextByWorkstream[ideaId] || "").trim();
         const latestContext = (hasStrictScopeLink ? latestHeadline : "")
           || (hasStrictScopeLink ? focusContext : "")
           || digestContext
@@ -614,7 +593,7 @@
           liveLast,
           txSignalCount,
           nextCheckpoint,
-          whyText: shortWhy || "-",
+          whyText: whyText || "-",
           implementationFocus,
           latestContext: latestContext || "-",
           lineageSummary,

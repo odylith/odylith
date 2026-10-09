@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 from odylith.runtime.artifact_quality.greenfield_project_prompt_quality import (
@@ -31,6 +32,7 @@ from odylith.runtime.domain_intelligence.greenfield_handoff_contract import (
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.surfaces.atlas_diagram_intelligence import parse_mermaid_graph
+from odylith.runtime.governance.validate_backlog_contract import core_detail_section_errors
 from greenfield_matrix_governed_readback import governed_readback_findings
 
 
@@ -40,14 +42,6 @@ class PackageEvidenceFinding:
     message: str
 
 
-_RADAR_REQUIRED_SECTIONS = (
-    "## Problem",
-    "## Customer",
-    "## Opportunity",
-    "## Product View",
-    "## Success Metrics",
-    "## Validation",
-)
 _REGISTRY_REQUIRED_SECTIONS = (
     "Component Snapshot",
     "Proposed responsibility",
@@ -382,11 +376,22 @@ def _radar_findings(
             )
         )
     for artifact in workstreams:
-        missing = [section for section in _RADAR_REQUIRED_SECTIONS if section not in artifact.text]
-        if missing:
+        sections = _markdown_sections(artifact.text)
+        preamble = sections.get("", "").splitlines()
+        title = next(
+            (line.partition(":")[2].strip() for line in preamble if line.partition(":")[0].strip() == "title"),
+            next((line.removeprefix("# ").strip() for line in preamble if line.startswith("# ")), ""),
+        )
+        for error in core_detail_section_errors(
+            title=title,
+            sections={heading.title(): body for heading, body in sections.items()},
+            path=Path(artifact.name),
+        ):
             findings.append(
-                _finding("product_manager", f"{artifact.identity} is missing release-quality sections: {', '.join(missing)}")
+                _finding("product_manager", f"{artifact.identity} violates the Radar core contract: {error}")
             )
+        if "test strategy" in sections and not sections["test strategy"]:
+            findings.append(_finding("engineer", f"{artifact.identity} has an empty Test Strategy"))
     backlog_result = package_mapping(getattr(package, "backlog_result", None))
     if _gate_status(package_mapping(backlog_result.get("validation_gate"))) != "passed":
         findings.append(_finding("engineer", "independent Radar readback missing passed validation gate"))

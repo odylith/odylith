@@ -1,5 +1,49 @@
 - Bug ID: CB-347
 
+## V42 resumed CI freshness boundary (2026-10-08)
+
+CI `37507903773` fails five assertions after 10,036 passes and 10 skips in
+71m06s. Independent review classifies all five as stale tests: one retired
+`inferredWithinLane` lifecycle expectation and four empty-component browser
+cases expecting the removed “Named responsibility” fallback. A bounded two-test
+correction passes the lifecycle assertion once and the four Atlas assertions
+once. A successor hosted CI is still required; no current CI pass or release
+credit follows. Preserve V41’s 44 native browser passes as prior evidence only.
+Logs: `/private/tmp/odylith-resume-ci-37507903773-20261008.log`,
+`/private/tmp/odylith-ci37507903773-lifecycle-correction-20261008.log`, and
+`/private/tmp/odylith-ci37507903773-atlas-correction-20261008.log`.
+
+## V41 Public40 failure boundary (2026-10-06)
+
+Executed four of 40 Public40 cases: two clarification cases pass, two cases
+fail, and 36 remain unexecuted; no controls run. Independent review identifies three
+release-harness P1s: stale Validation heading, labeled-citation false positives,
+and initial confirmed intent routed to EDIT. Preserve each case outcome and do
+not call a product semantic pass. B-145 remains unfinished until current proof
+and its canonical gate close. Evidence:
+`/private/tmp/odylith-v41-public40-campaign-handoff-20261006/actual-campaign-outcome.v1.json`
+and `/private/tmp/odylith-v41-public40-case2-case4-independent-review-20261006/report.md`.
+
+## V41 migration-gate admission boundary (2026-10-06)
+
+The installed-v41 evidence chain is assessment-ready, including 44 native
+browser passes and consumer preservation, but the canonical predecessor-bound
+gate remains blocked until B-145’s migration-observer markers are admitted by
+its owning workflow. The attempted scoped Radar refresh refused on managed
+publication drift without writing. No Compass append, migration completion, or
+release credit follows. Gate receipt:
+`/private/tmp/odylith-v41-b145-final-migration-gate-20261006.json`
+(SHA-256 `d2c92ae44aa96ed07e77eb9a8a68cc3e0a69769b32252facd15321421ab23334`).
+
+## V41 installed package, adoption, and browser evidence (2026-10-06)
+
+Clean candidate `2f9` package mechanics pass. A native v0.1.14-to-v0.1.15
+upgrade passes, deterministic installed adoption covers 20 workstreams, and the
+browser chain reaches 44 native passes/zero failures with consumer preservation.
+Synthetic Project UI2 remains supplemental only. This evidence may support the
+B-145 migration gate, but current CI, Public40, native Claude, original holdout,
+and full release remain open.
+
 ## V41 Radar measurement-race correction (2026-10-06)
 
 Independent diagnosis classifies the sole CI failure as a measurement race, not
@@ -2470,3 +2514,20 @@ The first external upgrade driver then stopped while importing `local_release_sm
 The corrected external driver passed actual helper imports and all 27 call bindings, then stopped before any native call because its declaration changed the existing expected status literal. Preserve `/private/tmp/odylith-greenfield-v14-to-v39-migration-20261006/upgrade-r2/r2-first-failure-handoff.json` (SHA-256 `da894b6fdea8b83ea1e027b5322c0e6b41915c3c74b7af7557b5493d03d3d368`). Native and browser call counts remain zero across both attempts, with the exact predecessor inventory intact. Retain the driver's existing status contract and evaluate every precondition against the actual sealed inputs before dispatch. This is external harness learning; no product upgrade result or consumer retry is implied.
 
 The first actual native upgrade then passed once, preserving source and customer records and regenerating all six pages. Its browser process stopped before Chromium, cells or screenshots because it used the managed application interpreter, which does not include Playwright. Preserve `/private/tmp/odylith-greenfield-v14-to-v39-migration-20261006/upgrade-r3/browser-prelaunch-failure-handoff.json` (SHA-256 `e22b4b5d3d52c9ed5b242ac9eafa796eb3669c51292688387cda24544286b468`). The upgraded 18,355-entry consumer inventory stayed exact. Browser orchestration must use the verified maintainer Python with Playwright while the unchanged adapter binds and verifies the actual installed package; target renderer and semantic probes continue using managed Python with isolation. Do not repeat the native upgrade or install test dependencies into the consumer.
+
+
+## V42 independent harness review and missing public annotation input (2026-10-08)
+
+Independent review found that invalid typed source references could escape the lexical custody check when their text contained no configured source identifier. Out-of-range occurrences, boolean occurrences and forged context all reproduced the failure with neutral text. The existing checker is being corrected to reject invalid reference structure and anchors explicitly; the prior 272-test handoff is retained and does not settle this finding. Source inputs, semantic floors and the original failed public run remain unchanged.
+
+The original public source predeclaration is now absent at `/private/tmp/odylith-greenfield-public-v47-source-annotations-20261003/public-source-predeclaration.json`, expected SHA-256 `31eefdfa1f6d49f4c49a04525c773ca63fd7dc16b3d4ce8f4a1e5957cfdd6481`. The known V41 retained roots contain references to its hash, but no exact copy. Detached source-predicate qualification and any audited transport-metadata correction must wait for restoration of those exact bytes. Do not reconstruct annotations or use derived results as their replacement. The operator has been asked to restore the file; code, CI and package validation can continue. The protected holdout was not inspected.
+
+### V42 harness correction settled
+
+The final correction rejects invalid projected references independently of leakage vocabulary. The owner and independent reviewer each ran the same focused suite: 324 passed, zero failed. Fifty-two neutral reference and claim mutations refuse. All 40 frozen model source frames are byte exact, and all 258 retained case 2 files remain unchanged. Retained case 2 has five Radar, five Registry and five Atlas artifacts with zero package or custody findings. This offline check does not relabel the original public campaign, which remains two passes, two failures and 36 unexecuted cases.
+
+Final handoff: `/private/tmp/odylith-v42-release-harness-finish-20261008-r3/handoff.json`, SHA-256 `931628d0a45383eb6d2a16afa9d9ec4b05ce766ee41e201b63ef67f6135d8ee5`. Independent review: `/private/tmp/odylith-v42-release-harness-independent-review-20261008/report.json`, SHA-256 `a31058608dcb0dcb8a33db8895a69dab3b50882ee131e628c44fd9b1d675124a`. No open P0/P1 code finding remains in the six-file harness correction; a fresh primary campaign can run after the source and package checkpoint.
+
+Release qualification is still held. The exact detached annotation file remains missing. The five two-document intake cases truthfully use one `operator_prompt` transport and provide no lifecycle EDIT credit. A distinct frozen family of receipt-bearing EDIT controls is required; retain the existing format, quality and sample floors. Current CI, installed proof, native Claude and the original protected holdout remain separate gates.
+
+The first V42 authored refresh was safely refused before publication because the operator supplied `--force` to selective authored admission. That mode requires explicit paths without force; the later full refresh may use force. Preserve `/private/tmp/odylith-v42-source-freeze-20261008/canonical-authored-sync.log`, SHA-256 `a6299299df51b9bb0cdcfa2cbc968218cc70b7b957db88dd8b785da332ddb6f9`. Correct the invocation only; no product change or bypass is needed.

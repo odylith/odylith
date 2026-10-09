@@ -382,6 +382,46 @@ the full committed change set. Reopened after CB-337 proved that dirty-only
 observation could erase release scope. Preserve the historical evidence below;
 do not treat it as approval of this larger candidate.
 
+## V42 resumed CI freshness boundary (2026-10-08)
+
+CI `37507903773` fails five assertions after 10,036 passes and 10 skips in
+71m06s. Independent review classifies all five as stale tests: one retired
+`inferredWithinLane` lifecycle expectation and four empty-component browser
+cases expecting the removed “Named responsibility” fallback. The bounded local
+correction passes the lifecycle assertion once and the Atlas assertion group
+four times. A successor hosted CI is still required; no current CI pass or
+release credit follows. Preserve V41’s 44 native browser passes as prior
+evidence only. Logs: `/private/tmp/odylith-resume-ci-37507903773-20261008.log`,
+`/private/tmp/odylith-ci37507903773-lifecycle-correction-20261008.log`, and
+`/private/tmp/odylith-ci37507903773-atlas-correction-20261008.log`.
+
+## V41 Public40 failure boundary (2026-10-06)
+
+Executed four of 40 Public40 cases: two clarification cases pass, two cases
+fail, and 36 remain unexecuted; no controls run. Independent review identifies three
+release-harness P1s: stale Validation heading, labeled-citation false positives,
+and initial confirmed intent routed to EDIT. Preserve each case outcome and do
+not call a product semantic pass. B-145 remains unfinished until current proof
+and its canonical gate close. Evidence:
+`/private/tmp/odylith-v41-public40-campaign-handoff-20261006/actual-campaign-outcome.v1.json`
+and `/private/tmp/odylith-v41-public40-case2-case4-independent-review-20261006/report.md`.
+
+## V41 five-class installed assessment (2026-10-06)
+
+The read-only installed assessment marks all five B-145 classes assessment-ready:
+108 managed skills exact, 18 preserved rows plus 18 reconciled exceptions with
+zero unresolved, 1,020 installed owner hashes exact, native upgrade/package and
+20-workstream adoption pass, and browser evidence combines 42 corrected cells
+with two native Project-degraded cells for 44 pass/zero fail. Synthetic UI2 is
+supplemental only. The canonical predecessor-bound migration gate remains blocked because the
+migration-observer workflow has not admitted B-145’s five current class markers;
+do not write them by hand or complete this slice. Scoped Radar refresh also
+refused on managed-generation drift without writing. Do not extend this result
+to current CI, Public40, native Claude, original holdout, or release
+qualification. Evidence:
+`/private/tmp/odylith-v41-installed-five-class-assessment-20261006/installed-five-class-assessment.json`
+(SHA-256 `497249afe3bbc67c16a1529447a15ac15282c0ab1a845ff78226e9deed1e31de`).
+
 ## V41 Radar measurement-race correction (2026-10-06)
 
 Independent diagnosis classifies the sole CI failure as a measurement race, not

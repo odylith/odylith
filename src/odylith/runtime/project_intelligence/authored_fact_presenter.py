@@ -264,7 +264,7 @@ def _structured_story_body(
         return (
             '<div class="project-story-contract-body">'
             '<p data-proposed-first-run-label>Proposed first run:</p>'
-            f'{_event_list(view.events, list_key="first_path", render_text=render_text, include_actor=True)}</div>'
+            f'{_event_list(view.events, list_key="first_path", render_text=render_text)}</div>'
         )
     if semantic_slot == "owned_capabilities" and view.capabilities:
         rows = "".join(
@@ -299,46 +299,28 @@ def _event_list(
     *,
     list_key: str,
     render_text: RenderText,
-    include_actor: bool,
 ) -> str:
-    classes = ["project-story-records", "project-authored-fact-list"]
     rows = "".join(
-        _event_content(
-            event,
-            render_text=render_text,
-            include_actor=include_actor,
-            container="li",
-        )
+        f'<li data-authored-fact-item data-event-order="{event.order}">'
+        f'<span data-authored-event-quote>{render_text(event.event_quote)}</span></li>'
+        for event in events
+    )
+    evidence = "".join(
+        f'<li data-authored-event-evidence data-event-order="{event.order}"><dl>'
+        '<dt>Actor</dt>'
+        f'<dd data-authored-event-actor-value>{render_text(event.actor_label)}</dd>'
+        f'<dt>Actor kind</dt><dd>{render_text(event.actor_kind)}</dd>'
+        f'<dt>Source event</dt><dd>{render_text(event.event_quote)}</dd>'
+        '</dl></li>'
         for event in events
     )
     return (
-        f'<ol class="{" ".join(classes)}" data-authored-fact-list="{html.escape(list_key, quote=True)}" '
+        '<ol class="project-story-records project-authored-fact-list" '
+        f'data-authored-fact-list="{html.escape(list_key, quote=True)}" '
         'data-authority-kind="provisional_design">'
-        f"{rows}</ol>"
-    )
-
-
-def _event_content(
-    event: AuthoredEventPresentation,
-    *,
-    render_text: RenderText,
-    include_actor: bool,
-    container: str,
-) -> str:
-    actor_html = (
-        '<span data-authored-event-actor>'
-        '<span data-authored-event-actor-label>Actor:</span> '
-        f'<span data-authored-event-actor-value>{render_text(event.actor_label)}</span>'
-        '</span>'
-        if include_actor
-        else ""
-    )
-    separator_html = '<br aria-hidden="true">' if include_actor else ""
-    return (
-        f'<{container} data-authored-fact-item data-event-order="{event.order}">'
-        f'{actor_html}{separator_html}'
-        f'<span data-authored-event-quote>{render_text(event.event_quote)}</span>'
-        f'</{container}>'
+        f'{rows}</ol><details data-authored-event-details>'
+        '<summary>Supporting details</summary><ol class="project-story-records">'
+        f'{evidence}</ol></details>'
     )
 
 

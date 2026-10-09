@@ -884,7 +884,8 @@ initSharedQuickTooltips();
         function renderDiagramBoxes(diagram, sectionEl, listEl) {
       listEl.replaceChildren();
       const boxes = Array.isArray(diagram.diagram_boxes)
-        ? diagram.diagram_boxes.filter((box) => box && typeof box === "object" && String(box.description ?? "").trim())
+        ? diagram.diagram_boxes.filter((box) => box && typeof box === "object" && typeof box.description === "string"
+          && (box.description.trim() || (box.description === "" && typeof box.node_id === "string" && box.node_id)))
         : [];
       sectionEl.hidden = !boxes.length;
       boxes.forEach((box, index) => {
@@ -902,17 +903,18 @@ initSharedQuickTooltips();
         name.appendChild(heading);
         const roleText = String(box.role ?? "");
 
-        const description = document.createElement("p");
-        description.className = "diagram-box-description";
-        description.textContent = String(box.description ?? "");
-
         const content = document.createElement("div");
         content.className = "diagram-box-content";
-        content.appendChild(description);
-        const detailRows = [
+        if (box.description) {
+          const description = document.createElement("p");
+          description.className = "diagram-box-description";
+          description.textContent = String(box.description ?? "");
+          content.appendChild(description);
+        }
+        const detailRows = Array.isArray(box.details) && box.details.length ? [
           ...(roleText.trim() ? [{label: "Role", text: roleText}] : []),
-          ...(Array.isArray(box.details) ? box.details : []),
-        ];
+          ...box.details,
+        ] : [];
         if (detailRows.length) {
           const disclosure = document.createElement("details");
           disclosure.className = "diagram-box-details";

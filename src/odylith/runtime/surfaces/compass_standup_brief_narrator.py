@@ -23,7 +23,6 @@ from pathlib import Path
 import re
 from typing import Any, Mapping, Sequence
 
-from odylith.runtime.common.prose_grammar import DEFAULT_DANGLING_TAIL_WORDS, strip_dangling_word_tail
 from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.surfaces import compass_standup_brief_status
@@ -1037,16 +1036,6 @@ def _section_facts(
     return ranked
 
 
-def _compact_local_fact_text(value: Any, *, limit: int = 190) -> str:
-    text = " ".join(str(value or "").split()).strip()
-    if not text:
-        return ""
-    if len(text) <= limit:
-        return text
-    clipped = strip_dangling_word_tail(text[:limit].rsplit(" ", 1)[0].strip(), dangling_words=DEFAULT_DANGLING_TAIL_WORDS)
-    return f"{clipped.rstrip('.,;:')}." if clipped else ""
-
-
 def _local_runtime_fallback_digest(*, fact_packet: Mapping[str, Any]) -> list[str]:
     lines: list[str] = []
     section_order = (
@@ -1058,19 +1047,10 @@ def _local_runtime_fallback_digest(*, fact_packet: Mapping[str, Any]) -> list[st
         facts = _section_facts(fact_packet=fact_packet, section_key=section_key)
         if not facts:
             continue
-        text = _compact_local_fact_text(facts[0].get("text"))
+        text = str(facts[0].get("text") or "").strip()
         if text:
             lines.append(f"{label}: {text}")
-    if lines:
-        return lines[:3]
-
-    scope = fact_packet.get("scope")
-    scope_label = ""
-    if isinstance(scope, Mapping):
-        scope_label = str(scope.get("label", "")).strip()
-    if scope_label:
-        return [f"Local facts are available for {scope_label}, but a narrated summary is still pending."]
-    return ["Local runtime facts are available, but a narrated summary is still pending."]
+    return lines
 
 
 def _diagnostics_with_local_fallback(

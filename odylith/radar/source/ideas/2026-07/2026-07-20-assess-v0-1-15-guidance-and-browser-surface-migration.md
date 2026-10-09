@@ -60,6 +60,30 @@ supersedes:
 
 superseded_by:
 
+## V42 CI assertion correction (2026-10-08)
+
+Hosted CI `37507903773` remains failed after five stale assertions. The local
+correction passes the retired lifecycle assertion once and the four Atlas
+empty-description assertions once. A successor hosted CI is required before
+this evidence can change the migration assessment. It does not move the five
+class markers, this workstream status, Public40, native Claude, the original
+holdout, or release qualification.
+
+## V41 five-class assessment evidence (2026-10-06)
+
+Installed-v41 reconciliation is assessment-ready: 108 exact managed skills; 18
+preserved rows and 18 reconciled exceptions with zero unresolved; 1,020 exact
+installed owners; native upgrade/package/adoption; and 44 native browser passes
+with zero failures. The canonical predecessor-bound migration gate still blocks:
+the migration-observer workflow has not admitted B-145’s five current class
+markers (the recomputed browser fingerprint is gate-owned). Keep this workstream
+in implementation and do not write completion markers by hand. Public40, native
+Claude, original holdout, current CI, and release remain separate open gates.
+Assessment: `/private/tmp/odylith-v41-installed-five-class-assessment-20261006/installed-five-class-assessment.json`
+(SHA-256 `497249afe3bbc67c16a1529447a15ac15282c0ab1a845ff78226e9deed1e31de`).
+Gate: `/private/tmp/odylith-v41-b145-final-migration-gate-20261006.json`
+(SHA-256 `d2c92ae44aa96ed07e77eb9a8a68cc3e0a69769b32252facd15321421ab23334`).
+
 ## Current migration proof (2026-10-04)
 
 The next help-tail continuation stops at its author wrapper before seeding.

@@ -107,8 +107,10 @@ def test_capability_support_groups_render_complete_local_relationships(tmp_path:
         "the product records berth occupancy",
         "the berth map shows the placement",
     ), 1):
-        assert boxes["source_actions"]["description"].count(f"Source event: {event}") == 1
-        assert f"Action {order}\n" in boxes["source_actions"]["description"]
+        assert boxes["source_actions"]["description"] == ""
+        source_actions = boxes["source_actions"]["details"][0]["text"]
+        assert source_actions.count(f"Source event: {event}") == 1
+        assert f"Action {order}\n" in source_actions
     assert len(labels) == 10
     edges = [element for element in root.iter() if "flowchart-link" in element.attrib.get("class", "").split()]
     assert len(edges) == 4
@@ -170,7 +172,12 @@ def test_cited_passive_lifecycle_renders_trigger_and_both_field_effects(
         node = f"off_path_transition1_effect{index}"
         assert f"Effect 1.{index} {effect['change']}" in labels
         assert f"changes {effect['field']}" in labels
-        assert f"Change: {effect['change']}\nObservable check: {effect['observable_check']}" in boxes[node]["description"]
+        assert boxes[node]["description"] == effect["change"]
+        assert boxes[node]["details"] == [
+            {"label": "Trigger", "text": lifecycle["off_path_transitions"][0]["trigger"]},
+            {"label": "Field", "text": effect["field"]},
+            {"label": "Observable check", "text": effect["observable_check"]},
+        ]
         expected_edges.add(f"L_off_path_transition1_{node}")
         expected_edges.add(f"L_{node}_{field_nodes[effect['state_field_id']]}")
     edges = [element for element in root.iter() if "flowchart-link" in element.attrib.get("class", "").split()]

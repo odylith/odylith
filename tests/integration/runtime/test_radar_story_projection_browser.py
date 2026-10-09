@@ -30,7 +30,13 @@ def test_markdown_story_is_formatted_and_faithful_in_preview_and_detail(
     with _new_page(context) as (page, observation):
         page.set_viewport_size({"width": width, "height": 932})
         prose = "**Proposed result** — Keep `__sample_id__` and `1. first 2. second`, unless review finds an exception."
-        entry = story_entry(tmp_path, {"Proposed Solution": MARKDOWN_STORY, "Problem": MARKDOWN_STORY},
+        entry = story_entry(tmp_path, {
+            "Proposed Solution": MARKDOWN_STORY, "Problem": MARKDOWN_STORY,
+            "Product View": "Preserve the authored review path.",
+            "Customer": "Reviewers of the source record.",
+            "Opportunity": "Make the record easier to verify.",
+            "Success Metrics": "The source record remains complete and linked.",
+        },
                             prose_metadata={"implemented_summary": prose, "ordering_rationale": prose}, rationale=[prose])
         payload = {"entries": [entry]}
         if state == "runtime-fallback":
@@ -51,6 +57,29 @@ def test_markdown_story_is_formatted_and_faithful_in_preview_and_detail(
         detail = page.locator("#detail .block-problem")
         assert detail.locator("a").get_attribute("href") == "docs/review_(draft).md"
         assert detail.locator("code").all_text_contents() == ["__sample_id__", "1. first 2. second"]
+        headings = page.locator("#detail > section.block > h3").all_text_contents()
+        assert headings[:5] == ["Problem", "Product View", "Customer", "Opportunity", "Success Metrics"]
+        support = page.locator("#detail > details.detail-disclosure").filter(
+            has=page.get_by_text("Links and topology", exact=True),
+        )
+        assert support.count() == 1 and support.get_attribute("open") is None
+        assert not support.get_by_role("heading", name="Traceability", exact=True).is_visible()
+        support.locator(":scope > summary").focus()
+        support.locator(":scope > summary").press("Enter")
+        assert support.get_attribute("open") is not None
+        assert support.get_by_role("heading", name="Traceability", exact=True).is_visible()
+        assert support.get_by_role("heading", name="Topology", exact=True).is_visible()
+        assert support.get_by_role("link", name="Workstream Spec", exact=True).count() == 1
+        support.locator(":scope > summary").press("Enter")
+        assert support.get_attribute("open") is None
+        screenshot = _failure_screenshot_path(f"radar-markdown-{width}-{state}")
+        if screenshot is not None:
+            screenshot.parent.mkdir(parents=True, exist_ok=True)
+            page.evaluate("""() => {
+            const top = document.querySelector('.list-panel').getBoundingClientRect().top + window.scrollY;
+            window.scrollTo(0, top - document.querySelector('.controls').getBoundingClientRect().height - 36);
+        }""")
+            page.screenshot(path=str(screenshot))
         assessment = page.locator("#detail .detail-header > details")
         assert assessment.get_attribute("open") is None
         assert not assessment.get_by_role("heading", name="Decision Basis", exact=True).is_visible()
@@ -63,14 +92,6 @@ def test_markdown_story_is_formatted_and_faithful_in_preview_and_detail(
             )
             assert block.locator("code").all_text_contents() == ["__sample_id__", "1. first 2. second"]
             assert "unless review finds an exception." in block.inner_text()
-        screenshot = _failure_screenshot_path(f"radar-markdown-{width}-{state}")
-        if screenshot is not None:
-            screenshot.parent.mkdir(parents=True, exist_ok=True)
-            page.evaluate("""() => {
-            const top = document.querySelector('.list-panel').getBoundingClientRect().top + window.scrollY;
-            window.scrollTo(0, top - document.querySelector('.controls').getBoundingClientRect().height - 36);
-        }""")
-            page.screenshot(path=str(screenshot))
         standalone = backlog_detail_pages._render_idea_spec_html(
             repo_root=tmp_path, index_output_path=tmp_path / "radar.html", entry=entry,
         )

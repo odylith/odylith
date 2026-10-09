@@ -15,6 +15,16 @@ queryable bug knowledge base linked back to workstreams, components, diagrams,
 and source evidence.
 
 ## Scope And Non-Goals
+### Human failure narrative
+
+Casebook primary views lead with the failure purpose, current state, risk, and
+next step. Evidence, history, and machine detail stay available in closed detail;
+sidebar clutter and duplicate Intel prose do not displace the current record.
+The selected record keeps its complete Summary and list search retains the
+source summary; only the redundant sidebar excerpt is omitted. Default Intel
+chips are not primary metadata. Captured-detail and coverage data remain in
+their existing closed disclosures.
+
 ### Honest list presentation
 `casebook_list_presentation_runtime.py` owns list cards and empty-list copy from
 explicit source and visible row counts. An empty Casebook explains how to capture

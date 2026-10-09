@@ -439,24 +439,19 @@ def release_statistical_confidence_sample_minimum(
 def expected_case_evidence_format(case: Any) -> str:
     """Return the public format actually sent through Greenfield authoring."""
 
-    return (
-        "operator_prompt_with_edit_evidence"
-        if str(getattr(case, "confirmed_intent_markdown", "") or "").strip()
-        else "operator_prompt"
-    )
+    return "operator_prompt"
 
 
 def expected_case_source_complexity(case: Any) -> dict[str, int]:
     """Return source dimensions independently knowable from frozen case bytes."""
 
-    edit_evidence = str(getattr(case, "confirmed_intent_markdown", "") or "").strip()
     evidence_source = combined_prompt_evidence_source(
-        prompt=str(getattr(case, "prompt", "") or ""),
-        edit_evidence=edit_evidence,
+        prompt=case.initial_prompt,
+        edit_evidence="",
     )
     return {
         "evidence_bytes": len(evidence_source.encode("utf-8")),
-        "documents": 2 if edit_evidence else 1,
+        "documents": 1,
     }
 
 
@@ -570,8 +565,8 @@ def _safe_unsealed_clarification(*, case: Any, result: GreenfieldMatrixResult) -
         if observed_case.get(key) != expected_case.get(key):
             return False
     source = combined_prompt_evidence_source(
-        prompt=str(getattr(case, "prompt", "") or ""),
-        edit_evidence=str(getattr(case, "confirmed_intent_markdown", "") or "").strip(),
+        prompt=case.initial_prompt,
+        edit_evidence="",
     )
     expected_source_sha256 = hashlib.sha256(source.encode("utf-8")).hexdigest()
     profile_evidence = _mapping(_mapping(result.evidence).get("model_profile"))

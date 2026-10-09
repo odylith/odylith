@@ -78,18 +78,15 @@ def test_forcing_function_fallback_normalizes_default_queue_action() -> None:
     assert "so do this before" not in text
 
 
-def test_local_fact_compaction_does_not_leave_dangling_tail_words() -> None:
-    text = (
-        "Prove the first release path: triage referrals, flag missing documents, and review a "
-        "ready-or-blocked status; Prove One Complete Specialty Clinic Referral Path (B-001) "
-        "is queued for execution."
+def test_local_fallback_preserves_full_recorded_fact_and_omits_empty_claim() -> None:
+    text = "Record the source result and its original custody. " * 5 + "Do not treat the pending review as approval. \u2705"
+    digest = narrator._local_runtime_fallback_digest(  # noqa: SLF001
+        fact_packet={"facts": [{"section_key": "current_execution", "text": text}]},
     )
-
-    compacted = narrator._compact_local_fact_text(text, limit=150)  # noqa: SLF001
-
-    assert compacted.endswith(".")
-    assert not compacted.endswith(" queued for.")
-    assert not compacted.endswith(" for.")
+    assert digest == ["Current: " + text]
+    assert narrator._local_runtime_fallback_digest(  # noqa: SLF001
+        fact_packet={"scope": {"label": "B-001"}, "facts": []},
+    ) == []
 
 
 def _reasoning_config() -> odylith_reasoning.ReasoningConfig:
@@ -2943,7 +2940,7 @@ def test_build_standup_brief_fails_over_to_alternate_local_provider_on_budget_fa
     assert claude_provider.calls == 1
 
 
-def test_unavailable_brief_for_budget_failure_names_provider_and_model() -> None:
+def test_unavailable_brief_for_budget_failure_keeps_provider_and_model_in_diagnostics() -> None:
     class _BudgetFailingProvider:
         provider_name = "codex-cli"
         last_failure_code = "credits_exhausted"
@@ -2958,11 +2955,8 @@ def test_unavailable_brief_for_budget_failure_names_provider_and_model() -> None
     )
 
     diagnostics = brief["diagnostics"]
-    assert diagnostics["title"] == "Brief is waiting on Codex CLI budget"
-    assert (
-        diagnostics["message"]
-        == "Compass could not warm this brief because the last narration attempt through Codex CLI using gpt-5.3-codex-spark may have hit a credit or budget limit. It will retry on backoff."
-    )
+    assert diagnostics["title"] == "Summary usage limit"
+    assert diagnostics["message"] == "The summary service may be out of credits. Check its account or budget."
     assert diagnostics["provider"] == "codex-cli"
     assert diagnostics["provider_model"] == "gpt-5.3-codex-spark"
 

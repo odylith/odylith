@@ -1,5 +1,33 @@
 Status: In progress
 
+## V42 source presentation proof (2026-10-08)
+
+The bounded source implementation is complete: Project shows each accepted
+event once and keeps actor/source context closed; Atlas presents authored
+meaning and short delivery titles without generic field repetition; Compass
+preserves complete current facts without inventing an empty digest; Radar puts
+warnings and the five grounded narrative fields first; Casebook preserves full
+selected/search summaries while removing clipped sidebar prose and default Intel
+chips. The final Project/Atlas continuation passes 33 affected checks; the
+Compass/Radar and Casebook handoffs record their focused passing checks. Earlier
+failed test logs remain history. Generated dashboards, installed proof,
+successor CI, package, Public40, native Claude, blind holdout, and release are
+still required. Evidence: `/private/tmp/odylith-v41-greenfield-human-presentation-ipbh2qb6/handoff-final.json`,
+`/private/tmp/odylith-compass-radar-presentation-20261008/handoff.json`, and
+`/private/tmp/odylith-v41-casebook-sidebar-fix-20261006/combined-report.json`.
+
+## V41 human-narrative cognitive-load findings (2026-10-06)
+
+The next presentation pass must lead with purpose, current state, risks, and
+next step in plain human language; evidence, history, and machine detail belong
+in closed detail. Casebook removes sidebar clutter and deleted Intel content
+(23 prior and nine final focused passes; installed/generated proof pending).
+Greenfield repair targets repeated Actor First Path, default Atlas generic
+action/source/performer fields, and D-004 deliverable/repeated verification.
+Remove duplicate text rather than adding features. The established V41 combined
+44 native browser passes predate this new Casebook/UX source patch and do not
+qualify it.
+
 ## V41 Atlas empty-description correction (2026-10-06)
 
 Atlas removes the final generic component fallback “Named responsibility in this

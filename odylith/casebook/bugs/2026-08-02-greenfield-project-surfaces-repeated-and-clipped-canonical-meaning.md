@@ -9,6 +9,43 @@ remain as recorded. This is source correction only; successor installed matrix,
 CI, and release gates remain open. Evidence:
 `/private/tmp/odylith-v41-atlas-empty-component-description-20261006.log`.
 
+## V42 source presentation proof (2026-10-08)
+
+The focused source pass removes repeated First Path actor labels, generic Atlas
+action/source/performer copy, and duplicated D-004 delivery wording. Project
+keeps each event sentence once; Atlas leads with the authored meaning or change
+and keeps actor, source, state, and proof detail closed. The final affected
+continuation passes 33 checks after an earlier five-failure browser run retained
+its stale-copy history. Compass/Radar source proof also preserves complete
+current facts, avoids invented empty-state narration, keeps warnings visible,
+and moves supporting links into native details. Casebook preserves the full
+selected summary and search text while removing the clipped sidebar summary and
+default Intel chips. This is source evidence only: generated dashboards,
+installed browser proof, successor CI, package, Public40, and release remain
+open. Evidence: `/private/tmp/odylith-v41-greenfield-human-presentation-ipbh2qb6/handoff-final.json`,
+`/private/tmp/odylith-compass-radar-presentation-20261008/handoff.json`, and
+`/private/tmp/odylith-v41-casebook-sidebar-fix-20261006/combined-report.json`.
+
+## V41 human-narrative cognitive-load findings (2026-10-06)
+
+The next presentation pass must lead with purpose, current state, risks, and
+next step in plain human language; evidence, history, and machine detail belong
+in closed detail. Casebook removes sidebar clutter and deleted Intel content
+(23 prior and nine final focused passes; installed/generated proof pending).
+Greenfield repair targets repeated Actor First Path, default Atlas generic
+action/source/performer fields, and D-004 deliverable/repeated verification.
+Remove duplicate text rather than adding features. The established V41 combined
+44 native browser passes predate this new Casebook/UX source patch and do not
+qualify it.
+
+## V41 installed browser completion boundary (2026-10-06)
+
+The predecessor-bound installed browser chain now totals 44 native passes and
+zero failures: the corrected 42-cell matrix plus the two-cell native Project
+degraded supplement preserve the 18,351-entry consumer byte-for-byte. The first
+adapter error and held-carrier history remain retained. This is migration-slice
+evidence only, not aggregate Greenfield or release qualification.
+
 ## V41 guarded D-046 catalog recovery outcome (2026-10-06)
 
 Selective JSON catalog and force-full attempts correctly refused without an
@@ -3909,3 +3946,20 @@ not complete-package semantic qualification. CB-303 remains open.
 Saving this UX correction exposed two bounded completion defects: the commit-ready checker treated the active publication carrier as release source, and selective sync had no owner for an existing Radar narrative update. The fixes add 38 and 33 lines to their existing owners without new modules. Maintainer source checkpoints require a valid whole publication and an exact staged logical shell, including Git executable mode; consumer and pinned-runtime checks stay strict. Radar narrative admission requires unchanged metadata, one exact published index registration, and valid required content.
 
 Root checks pass 35 checkpoint tests in 2.39s and 75 authored-admission tests in 5.13s. Independent reviews are clear: `/private/tmp/odylith-maintainer-logical-shell-checkpoint-independent-review-20261005.json` (SHA-256 `009ede75f764c9fe5358c7107b6453a18f57b926a0c5c5e81edb92cbebae3020`) and `/private/tmp/odylith-radar-authored-sync-admission-independent-review-20261005.json` (SHA-256 `111a65f89f7b0c62503e6e1c6f7182da0fa9fceb924319dd3e6e1c4a1c89d27c`). Actual four-record selective sync then passes in 25.3s without runtime fallback. Five affected published navigation, warning, and source-alignment tests pass in 10.74s after retaining exact identity assertions for collapsed fields. Original refused operations and the earlier failed publication remain recorded in `/private/tmp/odylith-ux-publication-recovery-20261005`. These checks do not qualify the installed release or Greenfield semantics.
+
+
+## V42 complete prose and disclosure review (2026-10-08)
+
+The bounded review found character cuts in shared Compass headline and storyline helpers. Browser checks then proved a second cut in the frontend: six visible transaction titles lost a trailing safety condition and ended with a generated ellipsis. The correction removes the Python and JavaScript clipping owners and adopts complete text at their callers while preserving item limits, fact selection and freshness. The failed browser run remains evidence; final current-source browser proof is still pending.
+
+The same review found six repeated supporting disclosures in the Project first path and Role-only disclosures in Atlas. The bounded correction keeps direct event sentences once, collects their exact actor and source evidence in one closed section, and omits an Atlas disclosure that contains only a generic role. Original source facts and catalog metadata remain available. This is a presentation correction; installed and semantic release qualification remain open.
+
+Visual review then found that complete Compass workstream text could still extend beyond the visible mobile table. The earlier node-local overflow assertion passed while the screenshot failed. The stronger visible-container assertion reproduces this defect in `/private/tmp/odylith-compass-complete-prose-20261008/browser-visible-bounds-baseline.log`. A responsive correction is confined to the existing Compass base CSS owner. Final proof must show readable labels and complete selected narrative inside the 390px viewport; a passing DOM assertion alone is insufficient.
+
+### V42 complete prose and mobile proof settled
+
+The final Compass source removes four clipping helpers and two character limits, with no new module and a net reduction of 62 source lines. Complete displayed sentences preserve their trailing conditions, negation and Unicode. The mobile table uses natural column sizing, reduced horizontal padding and sentence-case headers at the existing font size. IDs, phase and live badges, Progress and the expanded narrative remain inside the visible viewport. Whole rendered-word ranges supplement container bounds so a clipped header or fragmented badge cannot pass as readable text.
+
+The frozen final source passes 52 focused unit tests and all eight browser cells: ready, retained fallback, error and empty at desktop and 390px. Root visually checked the final mobile screenshot and verified all 11 source/test hashes and 31 proof artifact hashes. Final handoff: `/private/tmp/odylith-compass-complete-prose-20261008/handoff-final-complete-labels.json`, SHA-256 `f299c0f16ea7883e3e29c06183e2e8c39a37c5cbcf4fe94baa98a9e14e3d9f90`; browser log SHA-256 `3ddaa7987ab32b890a170ce56ab215c9d1809f6c47595486d5274d5e545170c2`. The prior failed and superseded runs are retained. This qualifies the bounded source and rendered fixtures only; installed successor, hosted CI, semantic campaign and release qualification remain open.
+
+The disclosure correction also settled: 22 focused unit checks and the 55 affected browser cases are covered, with corrected test callback and selection failures retained. Handoff: `/private/tmp/odylith-final-disclosure-cleanup-20261008/handoff.json`, SHA-256 `a15cb373fafb20b1ac31cf086f7a6d6952af31bdf0ba892a5dd16b60f6b04088`. Exact source events remain in their original order; typed actors, source text and catalog metadata remain retrievable without six repeated primary disclosures or Role-only controls. Combined independent review is a separate checkpoint.

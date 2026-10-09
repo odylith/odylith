@@ -246,12 +246,11 @@
       return ideaId ? `${ideaId} ${shown}` : shown;
     }
 
-    function timelineSummaryPrimaryWorkstreamLabel(primary, maxChars = 88) {
+    function timelineSummaryPrimaryWorkstreamLabel(primary) {
       const row = primary && typeof primary === "object" ? primary : {};
       const ideaId = String(row.ideaId || "").trim();
       const title = timelineSummaryDisplayTitle(row.title || "");
-      const label = ideaId && title ? `${ideaId} ${title}` : (ideaId || title);
-      return clipFocusText(label, maxChars);
+      return ideaId && title ? `${ideaId} ${title}` : (ideaId || title);
     }
 
     function timelineSummaryCleanPriorityEventText(eventRow) {
@@ -338,7 +337,7 @@
       const title = String(primary.title || "").trim();
       const whyText = String(primary.whyNow || primary.opportunity || primary.founderPov || "").trim();
       if (whyText) {
-        return `Why now: ${toSentence(clipFocusText(whyText, 220))}`;
+        return `Why now: ${toSentence(whyText)}`;
       }
       const key = timelineSummaryTitlePatternKey(title);
       if (key === "compass_work_type_intent_clarity") {
@@ -361,7 +360,7 @@
       const primary = timelineSummaryDerivedTitleContext(transaction, workstreamLookup);
       const nextTasks = Array.isArray(primary.nextTasks) ? primary.nextTasks : [];
       if (!nextTasks.length) return "";
-      return `Next tracked step: ${toSentence(clipFocusText(nextTasks[0], 220))}`;
+      return `Next tracked step: ${toSentence(nextTasks[0])}`;
     }
 
     function timelineSummaryTransactionRoleNarrative(transaction) {
@@ -427,7 +426,7 @@
       const closedIds = timelineSummaryPlanCompletionIds(transaction);
       const runtimeImplementedSummary = String(primary.implementedSummary || "").trim();
       if (runtimeImplementedSummary && closedIds.includes(String(primary.ideaId || "").trim())) {
-        return toSentence(clipFocusText(runtimeImplementedSummary, 220));
+        return toSentence(runtimeImplementedSummary);
       }
       const title = String(primary.title || "").trim();
       const key = timelineSummaryTitlePatternKey(title);
@@ -469,7 +468,7 @@
       const primary = timelineSummaryDerivedTitleContext(transaction, workstreamLookup);
       const runtimeImplementedSummary = String(primary.implementedSummary || "").trim();
       if (runtimeImplementedSummary) {
-        return toSentence(clipFocusText(runtimeImplementedSummary, 180));
+        return toSentence(runtimeImplementedSummary);
       }
       if (priorityKind === "implementation") {
         const topic = timelineSummaryPrimaryWorkstreamTopic(primary, 4);
@@ -479,13 +478,13 @@
           .replace(/\s*,\s*creating.*$/i, "")
           .trim();
         if (topic && timelineSummaryEvidenceCaptureOnly(transaction) && problem) {
-          return `${topic} checkpoint: ${toSentence(clipFocusText(problem, 118))}`;
+          return `${topic} checkpoint: ${toSentence(problem)}`;
         }
         const cleaned = timelineSummaryCleanPriorityEventText(timelineSummaryPriorityEvent(transaction))
           .replace(/^completed\s+/i, "")
           .trim();
         if (topic && cleaned) {
-          return `${topic}: ${toSentence(clipFocusText(cleaned, 150))}`;
+          return `${topic}: ${toSentence(cleaned)}`;
         }
       }
       return timelineSummaryTitleDrivenImplementationNarrative(primary.title);
@@ -524,7 +523,7 @@
         return "Compass timeline-audit surface refinement with imported execution-checkpoint carry-through across the linked governance surfaces.";
       }
       const priorityKind = String((timelineSummaryPriorityEvent(transaction) || {}).kind || "").trim();
-      const workstreamLabel = timelineSummaryPrimaryWorkstreamLabel(primary, 92);
+      const workstreamLabel = timelineSummaryPrimaryWorkstreamLabel(primary);
       if (workstreamLabel && (String(primary.proposedSolution || "").trim() || String(primary.problem || "").trim())) {
         if (priorityKind === "implementation" && timelineSummaryEvidenceCaptureOnly(transaction)) {
           return `Current-state checkpoint for ${workstreamLabel}.`;
@@ -579,11 +578,11 @@
       }
       const proposedSolution = String(primary.proposedSolution || "").trim();
       if (proposedSolution) {
-        return `Target outcome: ${toSentence(clipFocusText(proposedSolution, 230))}`;
+        return `Target outcome: ${toSentence(proposedSolution)}`;
       }
       const problem = String(primary.problem || "").trim();
       if (timelineSummaryEvidenceCaptureOnly(transaction) && problem) {
-        return `Problem being solved: ${toSentence(clipFocusText(problem, 220))}`;
+        return `Problem being solved: ${toSentence(problem)}`;
       }
       const loweredTitle = title.toLowerCase();
       const key = timelineSummaryTitlePatternKey(title);
@@ -657,7 +656,7 @@
       const compass = timelineSummaryCompassNarrative(transaction, workstreamLookup);
       if (compass) return compass;
       const infra = timelineSummaryInfraNarrative(transaction);
-      if (infra) return toSentence(clipFocusText(infra, 220));
+      if (infra) return toSentence(infra);
       const generic = timelineSummaryGenericNarrative(transaction);
       if (generic) return generic;
       return "";
@@ -697,13 +696,13 @@
         return "Split the audit summary into clearer narrative sections so the transaction reads like a short recap instead of a raw ledger.";
       }
       const runtimeImplementedSummary = String(primary.implementedSummary || "").trim();
-      if (runtimeImplementedSummary) return toSentence(clipFocusText(runtimeImplementedSummary, 260));
+      if (runtimeImplementedSummary) return toSentence(runtimeImplementedSummary);
       const priorityEvent = timelineSummaryPriorityEvent(transaction);
       const priorityKind = String((priorityEvent || {}).kind || "").trim();
       if (priorityKind === "implementation") {
         const cleaned = timelineSummaryCleanPriorityEventText(priorityEvent);
         if (cleaned && timelineSummaryEvidenceCaptureOnly(transaction)) {
-          return `Recorded the current-state checkpoint: ${toSentence(clipFocusText(cleaned, 240))}`;
+          return `Recorded the current-state checkpoint: ${toSentence(cleaned)}`;
         }
       }
       const titleDrivenNarrative = timelineSummaryTitleDrivenImplementationNarrative(title);
@@ -743,15 +742,15 @@
       const sourceText = timelineSummaryCleanPriorityEventText(eventRow);
       if (!sourceText) return "";
       if (kind === "implementation") {
-        return `${refs ? `Captured ${refs} checkpoint: ` : ""}${toSentence(clipFocusText(sourceText, 220))}`;
+        return `${refs ? `Captured ${refs} checkpoint: ` : ""}${toSentence(sourceText)}`;
       }
       if (kind === "plan_update") {
-        return `${refs ? `Updated ${refs} plan state: ` : ""}${toSentence(clipFocusText(sourceText, 220))}`;
+        return `${refs ? `Updated ${refs} plan state: ` : ""}${toSentence(sourceText)}`;
       }
       if (kind === "plan_completion") {
-        return `${refs ? `Closed ${refs}: ` : ""}${toSentence(clipFocusText(sourceText, 220))}`;
+        return `${refs ? `Closed ${refs}: ` : ""}${toSentence(sourceText)}`;
       }
-      return `${refs ? `${refs}: ` : ""}${toSentence(clipFocusText(sourceText, 220))}`;
+      return `${refs ? `${refs}: ` : ""}${toSentence(sourceText)}`;
     }
 
     function timelineSummaryDocumentationNarrative(transaction) {
@@ -944,7 +943,7 @@
         return "Advanced shared infra wiring and synced the matching governance surfaces in the same audit.";
       }
       if (infra) {
-        return toSentence(clipFocusText(infraNarrative, 220));
+        return toSentence(infraNarrative);
       }
       if (governance) {
         return `Closed ${timelineSummaryTokenRefList(closedIds, 2) || "the active slice"} and synced the governance surfaces in the latest audit.`;

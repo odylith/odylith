@@ -241,7 +241,8 @@ def build_provisional_first_run_atlas_view(
                 f"event{index}",
                 f"Action {index}",
                 f"{actor_kind} event",
-                event_display,
+                event_quote,
+                details=[{"label": "Source event", "text": event_display}],
             )
         )
         identity = (actor_kind, performer)
@@ -254,7 +255,7 @@ def build_provisional_first_run_atlas_view(
                     performer_id,
                     performer,
                     "Typed event performer",
-                    "Performs the linked first-path actions.",
+                    "",
                     details=[{"label": "Performer kind", "text": actor_kind}],
                 )
             )
@@ -271,7 +272,7 @@ def build_provisional_first_run_atlas_view(
                         owner_id,
                         owner,
                         "Typed event owner",
-                        "Owns the linked event state.",
+                        "",
                     )
                 )
             lines.append(f'  {performers[owner_identity]} -->|"owns event state"| event{index}')
@@ -370,7 +371,7 @@ def _component_exchange_view(
     lines = ["flowchart TD", '  subgraph proposed["Proposed logical design — not deployments"]']
     boxes = [atlas_box(
         "proposed", "Proposed logical design — not deployments", "Container",
-        "Groups proposed logical components without claiming implementation or deployment.",
+        "",
     )]
     for index, component in enumerate(components, 1):
         node_id = f"component{index}"
@@ -411,11 +412,11 @@ def _delivery_view(
         boxes.extend([
             atlas_box(
                 node_id, workstream["title"], "Proposed workstream",
-                f"Proposed deliverable: {workstream['deliverable']}",
+                workstream["deliverable"],
             ),
             atlas_box(
-                acceptance_id, acceptance, "Proposed delivery acceptance",
-                f"Proposed verification: {workstream['verification']}",
+                acceptance_id, workstream["title"], "Proposed delivery acceptance",
+                workstream["verification"],
             ),
         ])
     for workstream in workstreams:
@@ -494,22 +495,23 @@ def _capability_support_view(
     )
     lines.append('  source_actions["Actions and performers<br/>Select for full actions and performers"]')
     boxes.append(atlas_box(
-        "source_actions", "Actions and performers", "Source-grounded context", actions,
-        details=[{"label": "Performer kinds", "text": "\n".join(
+        "source_actions", "Actions and performers", "Source-grounded context", "",
+        details=[{"label": "Source actions", "text": actions},
+                 {"label": "Performer kinds", "text": "\n".join(
             f"Action {event['order']}: {event['actor_kind']}" for event in relations
         )}],
     ))
-    facts = [f"State object: {state_object}"]
+    facts = [{"label": "State object", "text": state_object}]
     if not proof_is_provisional:
         facts.extend([
-            f"Visible result: {visible_result}",
-            f"Proof boundary: {proof_boundary}",
+            {"label": "Visible result", "text": visible_result},
+            {"label": "Proof boundary", "text": proof_boundary},
         ])
-    facts.extend(f"Non-goal {index}: {value}" for index, value in enumerate(non_goals, 1))
+    facts.extend({"label": f"Non-goal {index}", "text": value} for index, value in enumerate(non_goals, 1))
     facts_reference = "state and scope" if proof_is_provisional else "state, scope and proof"
     lines.append(f'  source_facts["State and scope<br/>Select for {facts_reference}"]')
     boxes.append(atlas_box(
-        "source_facts", "State and scope", "Source-grounded context", "\n\n".join(facts),
+        "source_facts", "State and scope", "Source-grounded context", "", details=facts,
     ))
     if source_lifecycle is not None:
         _append_source_lifecycle(
@@ -543,7 +545,10 @@ def _append_source_lifecycle(
         lines.append(f'  {node}["State field<br/>{mermaid_label(label, width=44)}"]')
         boxes.append(atlas_box(
             node, label, "Source-stated state field",
-            f"Source: {quote}\nMeaning: {field['meaning']}",
+            field["meaning"],
+            details=[{"label": "Source", "text": quote},
+                     {"label": "State object", "text": field["state_object"]},
+                     {"label": "Field", "text": field["field"]}],
         ))
     for index, transition in enumerate(lifecycle["off_path_transitions"], 1):
         node = f"off_path_transition{index}"
@@ -574,8 +579,10 @@ def _append_source_lifecycle(
                 effect_node,
                 f"Effect {index}.{effect_index}",
                 "Source-stated state effect",
-                f"Trigger: {transition['trigger']}\nField: {effect['field']}\n"
-                f"Change: {effect['change']}\nObservable check: {effect['observable_check']}",
+                effect["change"],
+                details=[{"label": "Trigger", "text": transition["trigger"]},
+                         {"label": "Field", "text": effect["field"]},
+                         {"label": "Observable check", "text": effect["observable_check"]}],
             ))
 
 

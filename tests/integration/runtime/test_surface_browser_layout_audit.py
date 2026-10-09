@@ -13,6 +13,7 @@ from tests.integration.runtime.surface_browser_test_support import (
     _select_radar_workstream_with_detail_selector,
     _select_registry_component_with_detail_selector,
     _new_page,
+    _open_radar_topology_relations,
     _static_server,
     _wait_for_registry_detail_id,
     _wait_for_radar_detail_id,
@@ -602,11 +603,7 @@ def _open_radar_topology_relations_for_style_audit(radar) -> bool:  # noqa: ANN0
     panel = radar.locator("#detail details.topology-relations-panel").first
     if not panel.count():
         return False
-    panel.wait_for(timeout=15000)
-    if panel.get_attribute("open") is None:
-        panel.locator(":scope > summary").focus()
-        panel.locator(":scope > summary").press("Enter")
-    panel.locator(".topology-relations").wait_for(timeout=15000)
+    _open_radar_topology_relations(radar)
     return True
 
 

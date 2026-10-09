@@ -405,11 +405,22 @@ def _wait_for_radar_frame_workstream(page, workstream: str) -> None:  # noqa: AN
 
 def _open_radar_topology_relations(radar) -> None:  # noqa: ANN001
     """Expand the Radar topology-relations panel if it is present but still closed."""
+    support = radar.locator("#detail > details.detail-disclosure").filter(
+        has=radar.get_by_text("Links and topology", exact=True),
+    )
+    if support.count():
+        if support.get_attribute("open") is None:
+            summary = support.locator(":scope > summary")
+            summary.focus()
+            summary.press("Enter")
+        assert support.get_attribute("open") is not None
     panel = radar.locator("#detail details.topology-relations-panel").first
     panel.wait_for(timeout=15000)
     if panel.get_attribute("open") is None:
-        panel.evaluate("node => { node.open = true; }")
-    panel.locator(".topology-relations").wait_for(timeout=15000)
+        summary = panel.locator(":scope > summary")
+        summary.focus()
+        summary.press("Enter")
+    panel.locator(".topology-relations").wait_for(state="visible", timeout=15000)
 
 
 def _select_radar_workstream(radar, idea_id: str) -> None:  # noqa: ANN001
