@@ -2381,3 +2381,136 @@
 - tests/unit/runtime/test_greenfield_confirmed_surfaces.py
 - tests/unit/runtime/test_greenfield_project_brief_rendering.py
 - tests/integration/runtime/test_greenfield_hiit_preconfirm_quality.py
+
+### First installed genuine EDIT fails before sealing (2026-10-09)
+
+The independently audited four-case EDIT family ran against frozen installed
+checkpoint 8dfb9e7fe5ceed9b5c5c8e18417d078dfdd1ba0e after clean package proof
+passed. The first accessibility case seals its initial proposal in 187.809
+seconds. Its real initial source/model binding checks pass. The receipt-bound
+EDIT completes the authority gate, source inventory and source-only verifier
+(complete, zero omissions), then returns one authored candidate. Deterministic
+proposal admission refuses it before producing an edited seal. The underlying
+invariant is not yet diagnosed; do not classify this as a stale checker or
+weaken admission. The outward preparation error is generic and does not explain
+the technical cause.
+
+No CONFIRM, publication or browser check occurs. The five prior pending
+artifacts retain their exact bytes/modes with no custody issues. Initial and
+EDIT each use the four permitted host invocations, with zero post-receipt
+provider/runtime semantic calls. EDIT whole-journey time is 211.514 seconds;
+this remains diagnostic timing, not public latency qualification. The campaign
+stops at the first failure after 477.774 seconds; the other three cases are
+unexecuted. Qualifying genuine EDIT count remains zero of four. Retained
+manifest coverage is incomplete and supplies no release credit.
+
+Exact raw source, gate, inventory, verifier, candidate, observations and failure
+are retained under `/private/tmp/odylith-greenfield-v45-genuine-edit-run-20261009/evidence/genuine-lifecycle-edit-v3-01/`.
+Execution result SHA-256: `d98bf9fd8d8e9f647e0914aecefab9e74490b8530328943f0cd30da759dc0f40`.
+Read-only deterministic diagnosis is assigned to the existing source-catalog
+owner. Recover the actual inner refusal through the existing pure reader using
+unaltered retained bytes. No native retry, source/candidate rewrite, repair,
+model fallback, schema relaxation or holdout access is permitted.
+
+Completed package proof and immutable EDIT inputs/audits also have a verified
+private archive outside temporary storage:
+`/Users/freedom/.codex/odylith-release-evidence/2026-10-09/v45/completed-package-and-edit-inputs.tar.gz`,
+SHA-256 `5840a4cdc506afbf2f0f4b7d149927fa5a3435a4836310f506f8260fd3fcad54`.
+This preserves new custody; it does not recover the missing original Public40
+annotations or authorize their pending replacement.
+
+### Product identity coupled to action performers: diagnosis and prediction (2026-10-09)
+
+Pure admission of the unchanged retained first EDIT reproduces the missing
+product/first-path refusal in `greenfield_model_intent_authoring` at line 719.
+The first path is present. Both raw candidates leave `facts.title` null. The
+initial catalog derives the title "product" from the safety duty's
+`product_title` performer; EDIT retains that duty and its cited evidence but
+classifies its performer as `internal_system`, quoting "the product". The
+correction requests no product-identity change. No action duty disappeared.
+Admission correctly refuses the absent title; the pre-candidate ownership and
+nullable candidate contract permit the loss. The initial generic title is not
+independent semantic-quality proof.
+
+The bounded correction gives product identity one independently source-cited
+claim in the existing source inventory and source-only verification pass.
+Canonical title projects that verified identity. Actual product actions belong
+in the system performer namespace; title must not remain an event-actor address.
+The candidate cannot replace or independently supply identity. Retire the
+product-title performer coupling and adopt the new contract across its real
+readers, schemas, fixtures and install checks. No extra model stage, lexical
+fill, synthetic event, prior-title copying, retry, repair or weakened refusal.
+Broad descriptions without formal names may supply a source-cited descriptive
+identity; a source heading or formal product name is not an intake requirement.
+
+Prediction before implementation: a human-only workflow retains the same
+verified product identity through a receipt-bound correction when product
+performer classification changes. Product actions still resolve to the exact
+verified system actor, without adding workflow events. An expressly authorized
+identity edit uses its new current evidence; a missing, unsupported,
+reference-only or contradictory identity refuses admission. Citation validity
+alone never supplies semantic identity support. Tests must cover these controls,
+raw-candidate ownership, absence of /title event addresses, hash/receipt/version
+custody, unchanged source action membership and valid initial/EDIT projections.
+The old failed run and its candidate/receipts cannot be repaired or salvaged.
+A fresh installed comparison is required after focused proof and package build.
+
+The failed run has a verified durable private archive outside temporary storage:
+`/Users/freedom/.codex/odylith-release-evidence/2026-10-09/v45/failed-native-edit-run-v45-20261009-5bd1a8f60a30.tar.gz`,
+SHA-256 `c65918e8e26b5abf7234f96b13ff99367d6a4fbfaf27e1e2316e1be888ebdcaf`.
+All 91 files verify; exit 1 and failed matrix status remain recorded. This is a
+local preservation copy, not an independent backup or release qualification.
+
+### Broader identity regression exposes a canonical actor guard gap (2026-10-09)
+
+The frozen identity correction passes 354 focused checks and a bounded independent
+review of five ownership/version gates. Exact earlier host55 seal/receipts read
+unchanged. Broader 173-module proof on 364 unchanged pins nevertheless fails:
+226 failed, 3620 passed, 69 setup errors in 342.23 seconds. It grants no package or
+native qualification. Retained log SHA-256:
+`90e828f238d7ef205b3bf304d395c4673bcf4c93963f22e6399d2ade8932d90b`.
+
+A real canonical-validator gap is now isolated: a substituted internal-system
+actor address can be valid while disagreeing with the verified source action.
+The existing early canonical action reader compares action bindings but misses
+`events[].actor_fact`. It accepts a human-to-system swap; the later envelope
+still refuses before sealing. Wider actor namespaces exposed a check previously
+masked by an invalid-address failure. Compare actual fresh canonical actor
+addresses with the existing frozen source catalog at that owner. Prediction:
+wrong-but-valid actors refuse there, while legitimate human/product-system
+initial and EDIT mappings still pass. No new semantic owner or model stage.
+
+The envelope also subscripts absent source custody in a synthetic legacy test
+snapshot. That fixture manufactures current canonicalv79 without a verified
+source receipt or historical seal. Do not restore permissive construction or
+expand historical acceptance. Add an explicit fail-closed custody error; adopt
+current receipt-bound fixtures for unrelated qualification controls, keeping
+intentional missing-custody negatives negative. Exact known historical sealed
+readback must remain unchanged. The independent review was bounded and did not
+prove these broader consumers. Preserve its original scope and failed full gate.
+
+### Actor admission and fixture ownership repaired (2026-10-09)
+
+The existing canonical reader now rejects both human-to-system and
+system-to-human substitutions against the frozen source catalog. The envelope
+explicitly refuses absent source custody. Old proposals without independently
+verified identity retain exact readback; EDIT gives a clear instruction to start
+a new initial proposal with the original description and changes.
+
+The shared test fixture briefly introduced a global cache that recovered source
+identity and actions from serialized candidate JSON. This is invalid ownership:
+identical candidate bytes can accompany different source identities. The cache,
+key helper, registration and lookup are removed. Callers retain explicit typed
+metadata or supply declared identity and actions. Isolation controls prove two
+different identities with identical candidate bytes, and refusal when identity
+metadata is absent. This learning applies to fixture design as well as runtime
+design; passing a cache-dependent test would not prove source custody.
+
+The final seven-module focused run passes 256 tests. Runtime repairs add ten
+lines across three existing owners, with no new functions or stages; the shared
+fixture shrinks by nine lines. Exact retained host55 transaction and compiler
+receipt bytes still read unchanged. Evidence:
+`/private/tmp/odylith-v48-core-regression-diagnosis-20261009/handoff.md`,
+SHA-256 `d71b9046d2f4efab899a583422e2aeca4ef9a214fba75543d19f4d729a29da8a`.
+The full regression gate, new distribution and fresh installed EDIT remain
+required. Genuine qualifying EDIT is still 0/4.

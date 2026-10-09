@@ -1068,6 +1068,8 @@ def test_authored_dashboard_projects_proposed_capabilities_without_changing_sour
     assert cards["product_boundary"] == "\n".join([
         "Proposed logical components (not deployment commitments):",
         *(row["name"] for row in design["components"]),
+        "Source-stated systems:",
+        *authored["internal_systems"],
     ])
     assert all(cards.values())
     assert proposal["intent"]["human_actors"] == ["Dock attendant Ivo", "Port observer"]

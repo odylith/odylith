@@ -82,7 +82,7 @@ def test_containment_is_custody_and_semantic_actor_refusal_is_still_required():
 
 
 def test_role_context_resolves_pronoun_and_inherited_verb_without_microspans():
-    evidence = "Human Actors: Dana is the reviewer. First Complete Path: She defines scope and audience."
+    evidence = "Review workspace. Human Actors: Dana is the reviewer. First Complete Path: She defines scope and audience."
     ledger = _ledger()
     ledger["evidence_controls"] = []
     ledger["system_duties"] = []
@@ -267,7 +267,7 @@ def test_atomic_actor_custody_preserves_six_fields_nine_safety_duties_and_both_w
 def test_contract_exposes_identity_custody_and_stable_source_actor_reuse():
     source, _, _ = five_actor_candidate()
     contract = greenfield_host_candidate_contract(source)
-    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v55"
+    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v56"
     task = contract["source_ledger"]["task"]
     assert "only ONE source-owned performer identity" in task
     assert "proper literal substring of statement" in task
@@ -277,6 +277,7 @@ def test_contract_exposes_identity_custody_and_stable_source_actor_reuse():
 def _thirteen_duty_catalog_case():
     source, candidate, _ = five_actor_candidate()
     ledger = synthetic_source_duty_receipt(candidate, evidence_text=source)["ledger"]
+    ledger["product_identity"]["source_ref"]["context"] = "Participation workspace. The team needs traceable participation insights"
     facilitator = deepcopy(ledger["first_path_actions"][0]["actor_ref"])
     supporting = "The community facilitator checks the contribution evidence"
     system_names = ["Inbox processor", "Redaction service", "Insights renderer", "External archive", "Participation workspace"]
@@ -292,7 +293,7 @@ def _thirteen_duty_catalog_case():
         "id": f"d{index}", "source_refs": [], "statement": event,
         "event_ref": _citation(event), "actor_ref": _citation(name, role_context),
         "role_refs": [_citation(role_context)], "action": "retains", "target": f"evidence item {index}",
-        "performer_role": "internal_system" if index < 4 else "external_system" if index == 4 else "product_title",
+        "performer_role": "external_system" if index == 4 else "internal_system",
     } for index, (name, event) in enumerate(zip(system_names, system_events), 1)]
     return source, synthetic_source_duty_receipt_for_ledger(ledger, evidence_text=source), candidate
 
@@ -310,7 +311,7 @@ def test_source_catalog_owns_all_thirteen_events_and_five_human_identities():
     editor = catalog["events"][6]["actor_fact"]
     assert catalog["facts"][editor["field"]][editor["row"] - 1]["quote"] == "publication editor"
     assert [event["performer_role"] for event in catalog["events"][8:]] == [
-        "internal_system", "internal_system", "internal_system", "external_system", "product_title",
+        "internal_system", "internal_system", "internal_system", "external_system", "internal_system",
     ]
 
 
@@ -376,12 +377,12 @@ def test_supplemental_title_cannot_promote_a_verified_nonproduct_performer(field
     catalog = project_greenfield_source_event_catalog(receipt, evidence_text=source)
     supplemental = deepcopy(candidate["result"]["facts"])
     supplemental["title"] = deepcopy(catalog["facts"][field][0])
-    with pytest.raises(GreenfieldSourceDutyBindingError, match="incompatible source performer kind"):
+    with pytest.raises(GreenfieldSourceDutyBindingError, match="must not author the source-owned product identity"):
         source_owned_greenfield_actor_facts(catalog, supplemental=supplemental, evidence_text=source)
 
 
 @pytest.mark.parametrize("internal_alias", [False, True])
-def test_supplemental_title_allows_a_nonperformer_or_exact_internal_alias(internal_alias):
+def test_fresh_candidate_cannot_supply_even_a_nonperformer_or_exact_internal_title(internal_alias):
     from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
         project_greenfield_source_event_catalog, source_owned_greenfield_actor_facts,
     )
@@ -393,8 +394,8 @@ def test_supplemental_title_allows_a_nonperformer_or_exact_internal_alias(intern
     events = deepcopy(catalog["events"])
     supplemental = deepcopy(candidate["result"]["facts"])
     supplemental["title"] = deepcopy(catalog["facts"]["internal_systems"][0] if internal_alias else nonperforming_title)
-    merged = source_owned_greenfield_actor_facts(catalog, supplemental=supplemental, evidence_text=source)
-    assert merged["title"] == supplemental["title"]
+    with pytest.raises(GreenfieldSourceDutyBindingError, match="must not author the source-owned product identity"):
+        source_owned_greenfield_actor_facts(catalog, supplemental=supplemental, evidence_text=source)
     assert catalog["events"] == events
 
 
@@ -460,55 +461,103 @@ def test_full_transaction_catalog_guard_rejects_actor_path_and_source_custody_fo
         )
 
 
-def test_source_supported_title_internal_alias_uses_the_same_exact_identity():
+def test_independent_identity_and_internal_performer_keep_separate_addresses():
     from tests.unit.runtime.test_greenfield_host_candidate import _candidate
     source, candidate = _candidate()
-    ledger = synthetic_source_duty_receipt(candidate, evidence_text=source)["ledger"]
-    ledger["first_path_actions"][1]["performer_role"] = "product_title"
-    receipt = synthetic_source_duty_receipt_for_ledger(ledger, evidence_text=source)
-    candidate["result"]["facts"]["title"] = None
-    candidate["result"]["source_duty_binding"]["ledger_sha256"] = receipt["ledger_sha256"]
+    receipt = synthetic_source_duty_receipt(candidate, evidence_text=source)
     authored, _ = admit_greenfield_host_candidate(candidate, evidence_text=source, source_duty_receipt=receipt)
-    assert authored.intent["title"] == "Berth map"
+    assert authored.intent["title"] == "Harbor Desk"
     assert authored.first_path_relations[1]["actor_fact_path"] == authored.first_path_relations[2]["actor_fact_path"] == "/internal_systems/0"
     assert authored.first_path_relations[1]["actor_kind"] == "product"
 
 
-def test_supplemental_title_label_cannot_alias_a_different_source_occurrence():
+def test_candidate_title_cannot_redirect_a_performer_to_another_occurrence():
     from tests.unit.runtime.test_greenfield_host_candidate import _candidate
     source, candidate = _candidate()
+    context = "Harbor Ledger. Berth map. Do not manage vessel scheduling."
     for atom in candidate.source_action_atoms:
         if atom["actor_ref"]["quote"] == "Berth map":
-            atom["actor_ref"]["context"] = source[source.index("Berth map") - 20:source.index("Berth map") + 10]
-    candidate["result"]["facts"]["internal_systems"][0]["context"] = source[source.index("Berth map") - 20:source.index("Berth map") + 10]
+            atom["actor_ref"]["context"] = context
+    candidate["result"]["facts"]["internal_systems"][0]["context"] = context
     source += " Additional product label: Berth map."
     candidate["result"]["facts"]["title"] = _citation("Berth map", "Additional product label: Berth map.")
     receipt = synthetic_source_duty_receipt(candidate, evidence_text=source)
-    candidate["result"]["source_duty_binding"].update(
-        source_sha256=receipt["source_sha256"], ledger_sha256=receipt["ledger_sha256"],
-    )
-    # The label alone cannot redirect an accepted internal-system performer.
-    authored, _ = admit_greenfield_host_candidate(candidate, evidence_text=source, source_duty_receipt=receipt)
-    assert authored.first_path_relations[1]["actor_fact_path"] == "/internal_systems/0"
-    assert authored.first_path_relations[2]["actor_fact_path"] == "/internal_systems/0"
+    candidate["result"]["source_duty_binding"].update(source_sha256=receipt["source_sha256"], ledger_sha256=receipt["ledger_sha256"])
+    with pytest.raises(ValueError, match="source-owned identity"):
+        admit_greenfield_host_candidate(candidate, evidence_text=source, source_duty_receipt=receipt)
 
 
-def test_product_title_performer_rejects_a_distinct_internal_owner_with_the_same_label():
+def test_retired_product_title_performer_role_refuses_before_candidate():
     from tests.unit.runtime.test_greenfield_host_candidate import _candidate
     source, candidate = _candidate()
-    for atom in candidate.source_action_atoms:
-        if atom["actor_ref"]["quote"] == "Berth map":
-            atom["actor_ref"]["context"] = source[source.index("Berth map") - 20:source.index("Berth map") + 10]
-    candidate["result"]["facts"]["internal_systems"][0]["context"] = source[source.index("Berth map") - 20:source.index("Berth map") + 10]
-    source += " Separate dependency label: Berth map."
     ledger = synthetic_source_duty_receipt(candidate, evidence_text=source)["ledger"]
-    for duty in ledger["first_path_actions"][1:]:
-        duty["performer_role"] = "product_title"
-    receipt = synthetic_source_duty_receipt_for_ledger(ledger, evidence_text=source)
-    candidate["result"]["facts"]["title"] = None
-    candidate["result"]["facts"]["internal_systems"] = [_citation("Berth map", "Separate dependency label: Berth map.")]
+    ledger["first_path_actions"][1]["performer_role"] = "product_title"
+    with pytest.raises(GreenfieldSourceDutyLedgerError, match="performer_role"):
+        synthetic_source_duty_receipt_for_ledger(ledger, evidence_text=source)
+
+
+@pytest.mark.parametrize("basis, phrase", [
+    ("explicit_name", "Harbor Review"),
+    ("product_description", "harbor berth-assignment workspace"),
+])
+def test_source_identity_is_independent_of_product_performing_an_event(basis, phrase):
+    from tests.unit.runtime.test_greenfield_host_candidate import _candidate
+    from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import project_greenfield_source_event_catalog
+    source, candidate = _candidate()
+    source = f"Build a {phrase}. " + source
+    candidate.product_identity = {"basis": basis, "source_ref": _citation(phrase)}
+    receipt = synthetic_source_duty_receipt(candidate, evidence_text=source)
     candidate["result"]["source_duty_binding"].update(
-        source_sha256=receipt["source_sha256"], ledger_sha256=receipt["ledger_sha256"],
-    )
-    with pytest.raises(GreenfieldModelAuthoringError, match="alias selects a different actor occurrence"):
-        admit_greenfield_host_candidate(candidate, evidence_text=source, source_duty_receipt=receipt)
+        source_sha256=receipt["source_sha256"], ledger_sha256=receipt["ledger_sha256"])
+    catalog = project_greenfield_source_event_catalog(receipt, evidence_text=source)
+    authored, _ = admit_greenfield_host_candidate(candidate, evidence_text=source, source_duty_receipt=receipt)
+    assert authored.intent["title"] == phrase
+    assert len(catalog["events"]) == len(candidate.source_action_atoms)
+    assert all(event["actor_fact_path"] != "/title" for event in catalog["events"])
+    assert not any(actor["quote"] == phrase for actor in catalog["performers"])
+    assert "title" not in candidate["result"]["facts"]
+    assert set(receipt["decision_set"]["decisions"]) == {row["id"] for row in receipt["ledger"]["first_path_actions"]}
+
+
+@pytest.mark.parametrize("verdict", ["no", "uncertain"])
+def test_source_verifier_can_refuse_generic_or_background_identity_without_candidate_work(verdict):
+    ledger = _ledger()
+    source = EVIDENCE + " Background repository: product."
+    ledger["product_identity"] = {"basis": "explicit_name", "source_ref": _citation("product")}
+    preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=source)
+    task = source_duty_entailment_task(preflight, evidence_text=source)
+    assert "background repository" in task["task"] and "generic 'product'" in task["task"]
+    decisions = _yes_decisions(preflight, evidence_text=source)
+    decisions["product_identity"]["verdict"] = verdict
+    with pytest.raises(GreenfieldSourceDutyLedgerError, match="identity decision is not affirmative"):
+        validate_greenfield_source_duty_ledger(ledger, evidence_text=source, decision_set=decisions)
+
+
+def test_source_identity_claim_cannot_collide_with_a_duty_id_or_escape_its_hash():
+    ledger = _ledger()
+    ledger["first_path_actions"][0]["id"] = "product_identity"
+    preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=EVIDENCE)
+    receipt = validate_greenfield_source_duty_ledger(ledger, evidence_text=EVIDENCE, decision_set=_yes_decisions(preflight))
+    assert receipt["decision_set"]["product_identity"] == {"verdict": "yes"}
+    assert "product_identity" in receipt["decision_set"]["decisions"]
+    changed = deepcopy(ledger)
+    changed["product_identity"]["basis"] = "product_description"
+    with pytest.raises(GreenfieldSourceDutyLedgerError, match="binding"):
+        validate_greenfield_source_duty_ledger(changed, evidence_text=EVIDENCE, decision_set=receipt["decision_set"])
+
+
+def test_sealed_readback_rejects_forged_independent_identity_span(tmp_path):
+    from tests.unit.runtime.test_greenfield_create_transaction import _transaction
+    from odylith.runtime.domain_intelligence.greenfield_create_transaction import _require_host_candidate_authority_binding
+    transaction = _transaction(repo_root=tmp_path)
+    authority = deepcopy(transaction.intent_authority)
+    identity = [atom for atom in authority["atomic_facts"] if any(
+        link["path"] == "/title" and link["relation_order"] == 0
+        for link in atom["projection_links"])]
+    assert len(identity) == 1
+    for ref in identity[0]["source_span_refs"]:
+        ref["source_start_byte"] += 1
+        ref["source_end_byte"] += 1
+    with pytest.raises(ValueError, match="source performer custody"):
+        _require_host_candidate_authority_binding(transaction.quality_manifest, authority,
+                                                  proposal=transaction.proposal, passive=True)

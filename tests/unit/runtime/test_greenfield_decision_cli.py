@@ -124,6 +124,7 @@ def _write_edit_ledger_receipt(tmp_path: Path, previous, correction: str) -> Pat
     decisions.update(
         version=EDIT_SOURCE_DUTY_DECISION_SET_VERSION,
         verifier_task_sha256=task["verifier_task_sha256"],
+        identity_preservation={"verdict": "preserved", "correction_authorization": "not_required"},
         edit_preservation={
             f"{section}/{row['duty_id']}": {
                 "verdict": "preserved", "current_duty_id": row["duty_id"], "correction_authorization": "not_required",
@@ -315,10 +316,16 @@ def test_terminal_edit_rebuilds_once_from_verified_retained_source_and_correctio
     assert call["host_candidate"] == {}
     assert call["source_duty_receipt"]["ledger"]["status"] == "inventory"
     assert call["source_duty_receipt"]["decision_set_sha256"]
-    assert call["source_duty_receipt"]["version"] == "odylith.greenfield.source-duty-ledger-receipt.v11"
+    assert call["source_duty_receipt"]["version"] == "odylith.greenfield.source-duty-ledger-receipt.v13"
     assert call["source_duty_receipt"]["decision_set"]["version"] == EDIT_SOURCE_DUTY_DECISION_SET_VERSION
     assert call["source_duty_receipt"]["edit_preservation"]["transaction_hash"] == previous.transaction_hash
     assert call["source_duty_receipt"]["edit_preservation"]["correction"] == correction
+    assert call["source_duty_receipt"]["edit_preservation"]["prior_identity"] == (
+        previous.proposal["intent"]["authored_semantics"]["source_duty"]["ledger_receipt"]["ledger"]["product_identity"]
+    )
+    assert call["source_duty_receipt"]["decision_set"]["identity_preservation"] == {
+        "verdict": "preserved", "correction_authorization": "not_required",
+    }
     assert isinstance(call["started_at"], float)
     assert len(review_calls) == 1
     assert review_calls[0]["candidate_intent"] == {"title": "Rebuilt"}

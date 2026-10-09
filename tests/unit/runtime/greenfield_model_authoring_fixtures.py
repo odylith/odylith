@@ -55,13 +55,7 @@ class _FixtureHostCandidate(dict):
     """Keep test source atoms beside, never inside, the public candidate JSON."""
 
     source_action_atoms: list[dict[str, Any]]
-
-
-_SERIALIZED_FIXTURE_ATOMS: dict[str, list[dict[str, Any]]] = {}
-
-
-def _fixture_candidate_key(candidate: Mapping[str, Any]) -> str:
-    return json.dumps(candidate, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    product_identity: dict[str, Any]
 
 
 def _fixture_actor_ref(facts: Mapping[str, Any], event: Mapping[str, Any]) -> dict[str, str]:
@@ -126,6 +120,7 @@ def declared_source_action_fixture(
 def synthetic_source_duty_receipt(
     host_candidate: Mapping[str, Any], *, evidence_text: str,
     declared_actions: Sequence[Mapping[str, Any]] | None = None,
+    declared_identity: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Make a test-only exact-cited ledger; this does not prove semantic roles.
 
@@ -134,10 +129,14 @@ def synthetic_source_duty_receipt(
     Public semantic qualification must use a separately authored source ledger.
     """
 
+    identity = declared_identity if declared_identity is not None else getattr(host_candidate, "product_identity", None)
+    if identity is None:
+        raise ValueError("test host candidate has no declared product identity")
     if declared_actions is not None:
         ledger = {
             "version": SOURCE_DUTY_LEDGER_VERSION, "status": "inventory", "question": "",
-            "evidence_controls": [], "first_path_actions": copy.deepcopy(list(declared_actions)),
+            "evidence_controls": [], "product_identity": copy.deepcopy(identity),
+            "first_path_actions": copy.deepcopy(list(declared_actions)),
             "supporting_human_actions": [], "system_duties": [], "state_fields": [],
             "off_path_transitions": [], "conditional_guards": [], "boundaries": [], "proof_duties": [],
         }
@@ -152,18 +151,17 @@ def synthetic_source_duty_receipt(
     elif result.get("status") == "authored":
         atoms = getattr(host_candidate, "source_action_atoms", None)
         if atoms is None:
-            atoms = _SERIALIZED_FIXTURE_ATOMS.get(_fixture_candidate_key(host_candidate))
-        if atoms is None:
             raise ValueError("test host candidate has no declared source action atoms")
     else:
         raise ValueError("synthetic source duties require a known fixture result")
     ledger = {
         "version": SOURCE_DUTY_LEDGER_VERSION, "status": "inventory", "question": "",
-        "evidence_controls": [], "state_fields": [], "off_path_transitions": [],
+        "evidence_controls": [], "product_identity": copy.deepcopy(identity),
+        "state_fields": [], "off_path_transitions": [],
         "conditional_guards": [], "boundaries": [], "proof_duties": [],
     }
     roles = {"human_actors": "human_actor", "internal_systems": "internal_system",
-             "external_systems": "external_system", "title": "product_title"}
+             "external_systems": "external_system", "title": "internal_system"}
     for section in ("first_path_actions", "supporting_human_actions", "system_duties"):
         rows = []
         for atom in atoms:
@@ -185,15 +183,17 @@ def synthetic_source_duty_receipt_for_ledger(
 ) -> dict[str, Any]:
     """Approve a fixture-only ledger; production must obtain an independent verdict."""
 
-    passive = ledger["version"] == "odylith.greenfield.source-duty-ledger.v5"
+    passive_version = ledger["version"] if ledger["version"] in {
+        "odylith.greenfield.source-duty-ledger.v5", "odylith.greenfield.source-duty-ledger.v6"} else None
     preflight = preflight_greenfield_source_duty_ledger(
-        ledger, evidence_text=evidence_text, _passive_source=passive,
+        ledger, evidence_text=evidence_text, _passive_source_version=passive_version,
     )
     decision_task = source_duty_entailment_task(
         preflight, evidence_text=evidence_text
     )
     decision_set = {
-        "version": SOURCE_DUTY_DECISION_SET_VERSION,
+        "version": decision_task["decision_set_schema"]["properties"]["version"]["enum"][0],
+        **({"product_identity": {"verdict": "yes"}} if passive_version is None else {}),
         "verifier_task_sha256": decision_task["verifier_task_sha256"],
         "source_completeness": {"verdict": "yes", "omissions": []},
         "decisions": {
@@ -206,7 +206,7 @@ def synthetic_source_duty_receipt_for_ledger(
         },
     }
     return validate_greenfield_source_duty_ledger(
-        ledger, evidence_text=evidence_text, decision_set=decision_set, _passive_source=passive,
+        ledger, evidence_text=evidence_text, decision_set=decision_set, _passive_source_version=passive_version,
     )
 
 
@@ -380,9 +380,9 @@ def host_candidate_response(
             old_row = result["terminal"]["result_fact"]["row"]
             result["terminal"]["result_fact"]["row"] = remap.get(old_row, old_row)
     result.pop("events")
+    candidate.product_identity = {"basis": "explicit_name", "source_ref": facts.pop("title")}
     candidate.source_action_atoms = atoms
     result[HOST_SOURCE_DUTY_BINDING_FIELD] = _fixture_source_duty_binding(candidate, evidence_text=evidence_text)
-    _SERIALIZED_FIXTURE_ATOMS[_fixture_candidate_key(candidate)] = copy.deepcopy(atoms)
     return candidate
 
 
@@ -409,6 +409,7 @@ def write_synthetic_source_duty_receipt(
     *,
     evidence_text: str,
     declared_actions: Sequence[Mapping[str, Any]] | None = None,
+    declared_identity: Mapping[str, Any] | None = None,
 ) -> Path:
     """Write test-only source custody for public CLI fixture calls."""
 
@@ -417,6 +418,7 @@ def write_synthetic_source_duty_receipt(
             synthetic_source_duty_receipt(
                 host_candidate, evidence_text=evidence_text,
                 declared_actions=declared_actions,
+                declared_identity=declared_identity,
             )
         ),
         encoding="utf-8",

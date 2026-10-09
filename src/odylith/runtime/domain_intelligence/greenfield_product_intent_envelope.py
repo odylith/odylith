@@ -248,6 +248,8 @@ def build_product_intent_envelope(
         raise ValueError(
             "Product Intent envelope requires exact canonical-candidate custody"
         )
+    if isinstance(intent[AUTHORED_SEMANTICS_KEY], Mapping) and intent[AUTHORED_SEMANTICS_KEY].get("source_duty") is None:
+        raise ValueError("model-authored Product Intent requires verified source-duty custody")
     # Canonical validation uses this exact supplied source, never a reframed prompt.
     intent = {**intent, "prompt": source_text}
     authored_relations = first_path_relations_from_intent(intent)
@@ -280,6 +282,18 @@ def build_product_intent_envelope(
     normalized_duties = require_verified_source_action_relations(
         authored_relations, source_duty=source_duty, source_text=str(source_text or "")
     )
+    receipt = source_duty["ledger_receipt"]
+    if receipt["ledger"]["version"] == "odylith.greenfield.source-duty-ledger.v7":
+        identity = receipt["ledger"]["product_identity"]["source_ref"]
+        canonical = canonical_citation_from_host_selection(source_bytes, identity)
+        quote, start = resolve_source_citation(source_bytes, canonical)
+        if facts["title"] != quote or not any(
+            span.get("section_key") == "title" and span.get("text") == quote
+            and span.get("source_start_byte") == start
+            and span.get("source_end_byte") == start + len(quote.encode("utf-8"))
+            for span in authored_source_spans
+        ):
+            raise ValueError("model-authored Product Intent identity differs from its verified source identity")
     by_id = {duty["id"]: duty for duty in normalized_duties.values()}
     for row_index, relation in enumerate(component_responsibility_relations, start=1):
         if "source_duty_id" in relation:
@@ -382,8 +396,9 @@ def _verified_normalized_action_duties(
     ledger = verified["ledger"]
     by_order: dict[int, Mapping[str, Any]] = {}
     path_orders: set[int] = set()
-    if ledger["version"] == "odylith.greenfield.source-duty-ledger.v6":
-        catalog = project_greenfield_source_event_catalog(verified, evidence_text=source_text)
+    if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v6", "odylith.greenfield.source-duty-ledger.v7"}:
+        catalog = project_greenfield_source_event_catalog(verified, evidence_text=source_text,
+                    _passive=ledger["version"] == "odylith.greenfield.source-duty-ledger.v6")
         if any(binding[section] != rows for section, rows in catalog["action_bindings"].items()):
             raise ValueError("model-authored Product Intent action binding differs from its frozen source catalog")
         by_order = catalog["actions"]

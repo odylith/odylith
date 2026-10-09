@@ -71,6 +71,8 @@ from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
     LEGACY_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
     SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
     PASSIVE_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+    CATALOG_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+    CATALOG_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
     PASSIVE_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
 )
 from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
@@ -381,12 +383,17 @@ def _require_host_candidate_authority_binding(
     initial_versions = {(SOURCE_DUTY_LEDGER_RECEIPT_VERSION, HOST_CANDIDATE_CONTRACT_VERSION)}
     if passive:
         initial_versions.update((PASSIVE_SOURCE_DUTY_LEDGER_RECEIPT_VERSION, version)
-                                for version in PASSIVE_HOST_CANDIDATE_CONTRACT_VERSIONS)
+                                for version in PASSIVE_HOST_CANDIDATE_CONTRACT_VERSIONS
+                                if version != "odylith.greenfield.host-candidate-contract.v55")
         edit_versions.update((PASSIVE_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
                               f"odylith.greenfield.host-candidate-contract.v{version}")
                              for version in (51, 52, 53, 54))
         edit_versions.add((LEGACY_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
                            PREVIOUS_HOST_CANDIDATE_CONTRACT_VERSION))
+        initial_versions.add((CATALOG_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+                              "odylith.greenfield.host-candidate-contract.v55"))
+        edit_versions.add((CATALOG_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+                           "odylith.greenfield.host-candidate-contract.v55"))
     if (
         not isinstance(ledger_receipt, Mapping)
         or (not passive and host.get("contract_version") != HOST_CANDIDATE_CONTRACT_VERSION)
@@ -411,7 +418,7 @@ def _require_host_candidate_authority_binding(
             "ProductCreateTransaction host candidate source-duty hashes do not match its reviewed proposal"
         )
 
-    if host.get("contract_version") == HOST_CANDIDATE_CONTRACT_VERSION:
+    if host.get("contract_version") in {HOST_CANDIDATE_CONTRACT_VERSION, "odylith.greenfield.host-candidate-contract.v55"}:
         from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
             validate_component_responsibility_relations, first_path_relations_from_intent,
         )
@@ -422,8 +429,16 @@ def _require_host_candidate_authority_binding(
         from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
             project_greenfield_source_event_catalog,
         )
-        catalog = project_greenfield_source_event_catalog(ledger_receipt, evidence_text=intent["prompt"])
-        for actor in catalog["performers"]:
+        catalog = project_greenfield_source_event_catalog(ledger_receipt, evidence_text=intent["prompt"],
+                    _passive=host["contract_version"] == "odylith.greenfield.host-candidate-contract.v55")
+        owned = list(catalog["performers"])
+        if catalog["independent_product_identity"]:
+            from odylith.runtime.domain_intelligence.greenfield_model_source_citations import canonical_citation_from_host_selection, resolve_source_citation
+            source = intent["prompt"].encode("utf-8")
+            quote, start = resolve_source_citation(source, canonical_citation_from_host_selection(source, catalog["facts"]["title"]))
+            owned.append({"path": "/title", "quote": quote, "source_start_byte": start,
+                          "source_end_byte": start + len(quote.encode("utf-8"))})
+        for actor in owned:
             if not any(
                 atom.get("normalized_value") == actor["quote"]
                 and any(link.get("path") == actor["path"] and link.get("relation_order") == 0

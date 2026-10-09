@@ -19,8 +19,8 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     authored_response,
+    host_candidate_response,
     write_synthetic_source_duty_receipt,
-    write_host_candidate_fixture,
 )
 from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
 
@@ -116,14 +116,12 @@ def _public_propose(
         first_path_relations=_first_path_relations(),
         component_responsibility_owners=["Berth map"],
     )
-    candidate_path = write_host_candidate_fixture(
-        tmp_path.parent / f"{tmp_path.name}-host-candidate.json",
-        canonical,
-        evidence_text=staged_evidence,
-    )
+    host_candidate = host_candidate_response(canonical, evidence_text=staged_evidence)
+    candidate_path = tmp_path.parent / f"{tmp_path.name}-host-candidate.json"
+    candidate_path.write_text(json.dumps(host_candidate), encoding="utf-8")
     ledger_path = write_synthetic_source_duty_receipt(
         tmp_path.parent / f"{tmp_path.name}-source-ledger.json",
-        json.loads(candidate_path.read_text(encoding="utf-8")),
+        host_candidate,
         evidence_text=staged_evidence,
     )
     assert staged_evidence

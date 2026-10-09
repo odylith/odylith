@@ -35,14 +35,15 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
 )
+from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import SOURCE_DUTY_LEDGER_VERSION
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     declared_source_action_fixture,
-    synthetic_source_duty_receipt,
+    synthetic_source_duty_receipt_for_ledger,
 )
 
 
 # Explicit synthetic transport evidence; it does not qualify public semantics.
-SOURCE = "Build a useful product. A test operator records a test outcome. The record variant remains unspecified."
+SOURCE = "Test outcome journal. A test operator records a test outcome. The record variant remains unspecified."
 MISSING = object()
 
 
@@ -61,7 +62,7 @@ def _raw_and_receipt() -> tuple[dict[str, object], dict[str, object]]:
     _authored, receipt = admit_greenfield_host_candidate(
         raw,
         evidence_text=SOURCE,
-        source_duty_receipt=_source_receipt(raw),
+        source_duty_receipt=_source_receipt(),
         clock=lambda: 1.0,
     )
     return raw, receipt
@@ -75,15 +76,22 @@ def _observed(receipt: dict[str, object]) -> dict[str, object]:
     }
 
 
-def _source_receipt(raw: dict[str, object]) -> dict[str, object]:
-    return synthetic_source_duty_receipt(raw, evidence_text=SOURCE, declared_actions=[
-        declared_source_action_fixture(
+def _source_receipt() -> dict[str, object]:
+    # Candidate clarification follows an admitted inventory; its record variant remains ambiguous.
+    ledger = {
+        "version": SOURCE_DUTY_LEDGER_VERSION, "status": "inventory", "question": "",
+        "product_identity": {"basis": "product_description", "source_ref": {
+            "quote": "Test outcome journal", "context": "Test outcome journal."}},
+        "evidence_controls": [], "first_path_actions": [declared_source_action_fixture(
             duty_id="operator-record", actor_quote="A test operator",
             event_quote="A test operator records a test outcome.",
             statement="A test operator records a test outcome", action="records", target="a test outcome",
             performer_role="human_actor", observable_result="test outcome recorded",
-        )
-    ])
+        )],
+        "supporting_human_actions": [], "system_duties": [], "state_fields": [],
+        "off_path_transitions": [], "conditional_guards": [], "boundaries": [], "proof_duties": [],
+    }
+    return synthetic_source_duty_receipt_for_ledger(ledger, evidence_text=SOURCE)
 
 
 def _stage(receipt: dict[str, object]) -> dict[str, object]:
@@ -263,7 +271,7 @@ def _profile_evidence() -> dict[str, object]:
         observed=_observed(receipt),
         stage_observation=_stage(receipt),
         raw_candidate=raw,
-        source_duty_receipt=_source_receipt(raw),
+        source_duty_receipt=_source_receipt(),
         expected_source=SOURCE,
     )
 
@@ -322,7 +330,7 @@ def test_retained_candidate_binds_raw_and_canonical_hashes() -> None:
         raw_candidate=raw,
         receipt=receipt,
         evidence_text=SOURCE,
-        source_duty_receipt=_source_receipt(raw),
+        source_duty_receipt=_source_receipt(),
     ) == ()
 
     tampered = deepcopy(raw)
@@ -331,7 +339,7 @@ def test_retained_candidate_binds_raw_and_canonical_hashes() -> None:
         raw_candidate=tampered,
         receipt=receipt,
         evidence_text=SOURCE,
-        source_duty_receipt=_source_receipt(raw),
+        source_duty_receipt=_source_receipt(),
     )
     assert "sealed raw candidate hash does not match retained host output" in issues
     assert (
@@ -377,7 +385,7 @@ def test_profile_evidence_rejects_unproved_whole_journey_deadline(
         observed={} if clarification else _observed(receipt),
         stage_observation=stage,
         raw_candidate={} if clarification else raw,
-        source_duty_receipt=_source_receipt(raw),
+        source_duty_receipt=_source_receipt(),
         expected_source=SOURCE,
     )
     assert evidence["status"] == "failed"
@@ -521,7 +529,7 @@ def test_committed_result_binding_uses_canonical_authority_only() -> None:
     assert authored_model_result_binding_issues(
         stage_observation=_stage(receipt),
         raw_candidate=raw,
-        source_duty_receipt=_source_receipt(raw),
+        source_duty_receipt=_source_receipt(),
         create_payload=create_payload,
         expected_source=SOURCE,
     ) == ()
@@ -533,7 +541,7 @@ def test_committed_result_binding_uses_canonical_authority_only() -> None:
         authored_model_result_binding_issues(
             stage_observation=_stage(receipt),
             raw_candidate=raw,
-            source_duty_receipt=_source_receipt(raw),
+            source_duty_receipt=_source_receipt(),
             create_payload=create_payload,
             expected_source=SOURCE,
         )
@@ -563,7 +571,7 @@ def test_committed_result_binding_rejects_non_integer_call_counts(
     issues = authored_model_result_binding_issues(
         stage_observation=_stage(receipt),
         raw_candidate=raw,
-        source_duty_receipt=_source_receipt(raw),
+        source_duty_receipt=_source_receipt(),
         create_payload=create_payload,
         expected_source=SOURCE,
     )
@@ -590,7 +598,7 @@ def test_committed_result_binding_rejects_non_integer_stage_call_counts(
     issues = authored_model_result_binding_issues(
         stage_observation=stage,
         raw_candidate=raw,
-        source_duty_receipt=_source_receipt(raw),
+        source_duty_receipt=_source_receipt(),
         create_payload=_create_payload(receipt),
         expected_source=SOURCE,
     )

@@ -83,9 +83,9 @@ def test_source_product_owner_keeps_its_address_through_structural_design_suppor
     )
 
     semantics = candidate["authored_semantics"]
-    assert semantics["first_path_relations"][1]["actor_fact_path"] == actor_path
+    assert semantics["first_path_relations"][1]["actor_fact_path"] == "/internal_systems/0"
     component = semantics["component_responsibility_relations"][0]
-    assert component["owner_system_path"] == actor_path
+    assert component["owner_system_path"] == "/internal_systems/0"
     assert component["owner_system_quote"] == "Harbor Desk"
     proposal = build_authored_greenfield_proposal(
         observed_source={},
@@ -157,10 +157,11 @@ def test_product_and_human_label_collision_preserves_exact_typed_source_identity
         with pytest.raises(GreenfieldSourceDutyBindingError, match="incompatible source performer kind"):
             admit_complete_host_candidate(evidence_text=source, host_candidate=candidate)
         return
-    source += ". Product brand: Dock attendant Ivo."
-    candidate["result"]["facts"]["title"] = {
-        "quote": "Dock attendant Ivo", "context": "Product brand: Dock attendant Ivo.",
-    }
+    if distinct_source_occurrence:
+        source += ". Product brand: Dock attendant Ivo."
+        candidate.product_identity["source_ref"] = {
+            "quote": "Dock attendant Ivo", "context": "Product brand: Dock attendant Ivo.",
+        }
     receipt = synthetic_source_duty_receipt(candidate, evidence_text=source)
     candidate["result"]["source_duty_binding"].update(
         source_sha256=receipt["source_sha256"], ledger_sha256=receipt["ledger_sha256"],

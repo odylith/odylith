@@ -113,7 +113,7 @@ def test_no_source_capability_does_not_promote_terminal_ownership(kind):
         intent=result.intent,
         first_path_relations=result.first_path_relations,
     ) == result.component_responsibility_relations
-    contracts = authored_component_relation_facts(title="Draft Desk", internal_systems=(),
+    contracts = authored_component_relation_facts(title=result.intent["title"], internal_systems=result.intent["internal_systems"],
         relations=result.first_path_relations,
         component_responsibility_relations=result.component_responsibility_relations)
     product_events = [

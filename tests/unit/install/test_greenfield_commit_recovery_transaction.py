@@ -15,7 +15,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
 from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import verify_greenfield_source_duty_ledger_receipt
 from odylith.runtime.domain_intelligence import greenfield_host_flow as host_module
 from odylith.runtime.domain_intelligence.greenfield_authority_gate import greenfield_authority_gate_contract
-from tests.unit.install.test_greenfield_matrix_host_candidate import _flow
+from tests.unit.install.test_greenfield_matrix_host_candidate import _FIXTURE_HOST_SOURCE, _flow
 from tests.unit.install.test_greenfield_commit_recovery_proof import _module, HOST_CANDIDATE_ARGV
 
 
@@ -23,7 +23,7 @@ from tests.unit.install.test_greenfield_commit_recovery_proof import _module, HO
 def test_recovery_caller_uses_real_driver_budget_fresh_ledger_and_final_proof(
     tmp_path, monkeypatch, tampered_receipt,
 ):
-    prompt = "First Complete Path: A reviewer creates a reviewable plan. Reference: Notes are background only."
+    prompt = _FIXTURE_HOST_SOURCE
     source = recovery.combined_prompt_evidence_source(prompt=prompt, edit_evidence="")
     flow, host_run, installed_calls, host_calls, _proposals, repo = _flow(
         tmp_path,

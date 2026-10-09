@@ -18,7 +18,7 @@ from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
     verify_greenfield_source_duty_ledger_receipt,
 )
 
-EVIDENCE = "First Complete Path: A reviewer defines scope and audience. Human Actors: The reviewer checks a submission. Product Systems: A portal records the submission. Reference notes govern the template."
+EVIDENCE = "Review workspace. First Complete Path: A reviewer defines scope and audience. Human Actors: The reviewer checks a submission. Product Systems: A portal records the submission. Reference notes govern the template."
 EXTERNAL_ACTOR_EVIDENCE = "Product Systems: Berth map is the product. First Complete Path: Dock attendant Ivo enters a vessel tag and the product records berth occupancy."
 
 
@@ -63,6 +63,7 @@ def _ledger() -> dict:
     }
     return {
         "version": SOURCE_DUTY_LEDGER_VERSION,
+        "product_identity": {"basis": "explicit_name", "source_ref": _citation("Review workspace")},
         "status": "inventory",
         "question": "",
         "evidence_controls": [
@@ -84,7 +85,8 @@ def _ledger() -> dict:
 
 def _yes_decisions(preflight: dict, *, evidence_text: str = EVIDENCE) -> dict:
     return {
-        "version": SOURCE_DUTY_DECISION_SET_VERSION,
+        "version": source_duty_entailment_task(preflight, evidence_text=evidence_text)["decision_set_schema"]["properties"]["version"]["enum"][0],
+        **({"product_identity": {"verdict": "yes"}} if "product_identity" in preflight["ledger"] else {}),
         "verifier_task_sha256": source_duty_entailment_task(
             preflight, evidence_text=evidence_text
         )["verifier_task_sha256"],
@@ -102,6 +104,7 @@ def _yes_decisions(preflight: dict, *, evidence_text: str = EVIDENCE) -> dict:
 
 def _external_actor_ledger() -> dict:
     ledger = _ledger()
+    ledger["product_identity"]["source_ref"] = _citation("Berth map")
     ledger["evidence_controls"] = []
     ledger["supporting_human_actions"] = []
     first = ledger["first_path_actions"][0]
@@ -506,7 +509,7 @@ def test_external_actor_may_be_a_span_within_an_explicit_role_reference() -> Non
 
 def test_canonical_actor_is_reused_across_distinct_action_occurrences() -> None:
     evidence = (
-        "Human Actors: Reviewer Mara is the designated reviewer. "
+        "Review workspace. Human Actors: Reviewer Mara is the designated reviewer. "
         "First Complete Path: Reviewer Mara approves the record. "
         "Supporting Human Work: Reviewer Mara verifies the record."
     )
@@ -555,7 +558,7 @@ def test_canonical_actor_is_reused_across_distinct_action_occurrences() -> None:
 
 
 def test_normalized_action_does_not_require_an_invented_verb_microcitation() -> None:
-    evidence = "First Complete Path: A reviewer defines scope and audience."
+    evidence = "Review workspace. First Complete Path: A reviewer defines scope and audience."
     ledger = _ledger()
     ledger["evidence_controls"] = []
     ledger["supporting_human_actions"] = []
@@ -690,6 +693,7 @@ def test_reference_only_source_cannot_be_promoted_to_action_event() -> None:
 def test_clarification_preflight_has_no_claims_and_cannot_admit() -> None:
     ledger = _ledger()
     ledger["status"] = "clarification_required"
+    ledger["product_identity"] = None
     ledger["question"] = "Who approves scope?"
     for field, value in ledger.items():
         if isinstance(value, list):
@@ -932,7 +936,7 @@ def test_fresh_system_kind_is_a_hash_bound_claim_in_the_same_source_only_task():
     assert claims["H1"]["performer_role"] == "human_actor"
     assert claims["S1"]["performer_role"] == "internal_system"
     task = source_duty_entailment_task(preflight, evidence_text=EVIDENCE)
-    assert "SAME canonical actor_ref source occurrence" in task["task"]
+    assert "same exact canonical actor_ref source occurrence" in task["task"]
     changed = deepcopy(ledger)
     changed["system_duties"][0]["performer_role"] = "external_system"
     other = preflight_greenfield_source_duty_ledger(changed, evidence_text=EVIDENCE)
@@ -960,19 +964,21 @@ def test_aggregate_thirty_three_action_duties_refuse_before_candidate_authoring(
 def test_exact_v5_receipt_task_and_hashes_remain_passive_and_refuse_fresh_use():
     ledger = _ledger()
     ledger["version"] = "odylith.greenfield.source-duty-ledger.v5"
+    ledger.pop("product_identity")
+    evidence = EVIDENCE.removeprefix("Review workspace. ")
     del ledger["system_duties"][0]["performer_role"]
-    preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=EVIDENCE, _passive_source=True)
-    task = source_duty_entailment_task(preflight, evidence_text=EVIDENCE)
+    preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=evidence, _passive_source_version="odylith.greenfield.source-duty-ledger.v5")
+    task = source_duty_entailment_task(preflight, evidence_text=evidence)
     # Frozen from the actual fe4a1eff runtime, not regenerated expected task text.
     assert task["verifier_task_sha256"] == "be6bd40552eace271454ddfb4c81ae5d2fa7f192b5706ff46ee893439a56b73b"
     assert preflight["ledger_sha256"] == "635cdbd8c5119476ae943e91ea4f38878a744e1f35c1b12cd621c754293d7693"
     receipt = validate_greenfield_source_duty_ledger(
-        ledger, evidence_text=EVIDENCE, decision_set=_yes_decisions(preflight), _passive_source=True,
+        ledger, evidence_text=evidence, decision_set=_yes_decisions(preflight, evidence_text=evidence), _passive_source_version="odylith.greenfield.source-duty-ledger.v5",
     )
     assert receipt["version"] == "odylith.greenfield.source-duty-ledger-receipt.v7"
     assert receipt["decision_set_sha256"] == "44f40ad2d1905da9445d4e9a0e3f29ba61953e809bb8f16adb4d59001a0c05d6"
-    assert verify_greenfield_source_duty_ledger_receipt(receipt, evidence_text=EVIDENCE) == receipt
+    assert verify_greenfield_source_duty_ledger_receipt(receipt, evidence_text=evidence) == receipt
     with pytest.raises(GreenfieldSourceDutyLedgerError, match="version"):
-        verify_greenfield_source_duty_ledger_receipt(receipt, evidence_text=EVIDENCE, allow_legacy_edit=False)
+        verify_greenfield_source_duty_ledger_receipt(receipt, evidence_text=evidence, allow_legacy_edit=False)
     with pytest.raises(GreenfieldSourceDutyLedgerError, match="invalid"):
-        preflight_greenfield_source_duty_ledger(ledger, evidence_text=EVIDENCE)
+        preflight_greenfield_source_duty_ledger(ledger, evidence_text=evidence)

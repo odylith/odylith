@@ -14,6 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
 def _compact() -> dict:
     return {
         "version": SOURCE_DUTY_COMPACT_VERSION,
+        "product_identity": {"basis": "product_description", "source_ref": "state"},
         "status": "inventory",
         "question": "",
         "citations": [

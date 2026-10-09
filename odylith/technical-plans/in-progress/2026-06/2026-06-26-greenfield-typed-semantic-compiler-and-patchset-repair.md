@@ -16738,3 +16738,135 @@ all 124 Greenfield runtime pins unchanged. Test log SHA-256:
 `/private/tmp/odylith-v45-install-smoke-adoption-20261009/pytest.log`.
 This is local helper proof; clean-install/package readiness awaits the next
 frozen run. The prior failed build result remains immutable.
+
+### New frozen distribution passes clean-install proof (2026-10-09)
+
+Checkpoint 8dfb9e7fe5ceed9b5c5c8e18417d078dfdd1ba0e is pushed on the existing release branch.
+The frozen archive builds the wheel, all release assets and complete clean-local
+installation smoke successfully in 547.72 seconds. Smoke itself passes in
+377.00 seconds. The archive remains unchanged and the Git worktree inventory
+is unchanged. Result: `/private/tmp/odylith-greenfield-v45-dist-20261009/proof/build-result.json`,
+SHA-256 `e0b805c4634213203b0efe76bd663445c7b49169c830a22d48b330e3ac130848`. This closes the outdated install-check refusal on the
+new candidate; the original ac8 failure remains retained.
+
+The distribution has 25 artifacts, 12 valid checksums and 11 matching manifest
+assets. All 1,020 shipped source/asset owners match the exact Git archive and
+wheel; there are no missing or unexpected owners. An initial private inventory
+mistakenly included 184 execution-created ignored Python cache files. It remains
+retained as failed; corrected inventory uses exact regular archive members,
+not a live directory scan. The package itself had no mismatch.
+
+Independent review clears the prepared four-case native EDIT recipe conditional
+on this package pass and separate activation pins. Input framing/conservation
+is independently clear; all four loader frames match the immutable audited
+inputs. Bind the exact package, runtime, driver, native profile and audit pins;
+run one initial preparation and one receipt-bound EDIT per case, followed by
+edited CONFIRM and the identical deterministic CONFIRM retry. Stop on the first
+failure. Execution/qualifying EDIT count remains zero until actual retained
+results pass separate independent semantic, artifact and browser adjudication.
+Original Public40 evidence replacement remains pending operator approval; final
+holdout, timing, host qualification and current CI remain open.
+
+### First installed genuine EDIT fails before sealing (2026-10-09)
+
+The independently audited four-case EDIT family ran against frozen installed
+checkpoint 8dfb9e7fe5ceed9b5c5c8e18417d078dfdd1ba0e after clean package proof
+passed. The first accessibility case seals its initial proposal in 187.809
+seconds. Its real initial source/model binding checks pass. The receipt-bound
+EDIT completes the authority gate, source inventory and source-only verifier
+(complete, zero omissions), then returns one authored candidate. Deterministic
+proposal admission refuses it before producing an edited seal. The underlying
+invariant is not yet diagnosed; do not classify this as a stale checker or
+weaken admission. The outward preparation error is generic and does not explain
+the technical cause.
+
+No CONFIRM, publication or browser check occurs. The five prior pending
+artifacts retain their exact bytes/modes with no custody issues. Initial and
+EDIT each use the four permitted host invocations, with zero post-receipt
+provider/runtime semantic calls. EDIT whole-journey time is 211.514 seconds;
+this remains diagnostic timing, not public latency qualification. The campaign
+stops at the first failure after 477.774 seconds; the other three cases are
+unexecuted. Qualifying genuine EDIT count remains zero of four. Retained
+manifest coverage is incomplete and supplies no release credit.
+
+Exact raw source, gate, inventory, verifier, candidate, observations and failure
+are retained under `/private/tmp/odylith-greenfield-v45-genuine-edit-run-20261009/evidence/genuine-lifecycle-edit-v3-01/`.
+Execution result SHA-256: `d98bf9fd8d8e9f647e0914aecefab9e74490b8530328943f0cd30da759dc0f40`.
+Read-only deterministic diagnosis is assigned to the existing source-catalog
+owner. Recover the actual inner refusal through the existing pure reader using
+unaltered retained bytes. No native retry, source/candidate rewrite, repair,
+model fallback, schema relaxation or holdout access is permitted.
+
+Completed package proof and immutable EDIT inputs/audits also have a verified
+private archive outside temporary storage:
+`/Users/freedom/.codex/odylith-release-evidence/2026-10-09/v45/completed-package-and-edit-inputs.tar.gz`,
+SHA-256 `5840a4cdc506afbf2f0f4b7d149927fa5a3435a4836310f506f8260fd3fcad54`.
+This preserves new custody; it does not recover the missing original Public40
+annotations or authorize their pending replacement.
+
+### Next owning correction: independent product identity (2026-10-09)
+
+CB-209 now records the exact retained EDIT diagnosis and falsifiable prediction.
+The first-path and safety action survive; product identity disappears because
+/title doubles as an event performer and candidate title is unconditionally
+nullable. Move identity into the existing inventory/verifier, remove candidate
+title authority and resolve product actions through system actors. Adopt the
+versioned contract across real owners without extra stages or compatibility
+fallbacks. Validate human-only, product-acting, supported identity EDIT and
+unsupported/conflicting identity controls, then build and compare a fresh
+installed package. Preserve the old failed run; qualifying EDIT remains 0/4.
+Original Public40 annotation replacement still requires the pending operator
+amendment; no changed floor, holdout access or release credit is authorized.
+
+### Close broad proof before the next installed comparison (2026-10-09)
+
+Identity ownership has 354 focused passes and a bounded independent CLEAR review,
+but the 173-module gate is red (226 failed / 3620 passed / 69 errors, 364 pins unchanged).
+CB-209 records two bounded owning repairs: reject missing receipt custody
+explicitly, and compare wrong-but-valid canonical event actors with the frozen
+source catalog. Keep exact historical readback; no permissive legacy fallback.
+Parallel test-only adoption addresses current identity/EDIT/verdict fixtures;
+intentional historical negatives retain their refusal obligations. Preserve all
+failed results. Re-run unchanged-source broad proof, settle Registry/Atlas/Compass,
+build a clean frozen distribution, then execute the same audited native EDIT
+inputs. No new release credit, Public40 amendment or holdout access is implied.
+
+### Complete contract adoption and freeze the next checkpoint (2026-10-09)
+
+The existing canonical actor guard and missing-custody refusal are repaired;
+256 focused tests pass after removing the fixture's serialized-candidate metadata
+cache. Source identity must remain explicit even in controlled fixtures. Two
+serialized fixture callers are adopting typed metadata. Two release EDIT readers
+are carrying prior identity from the authenticated initial ledger receipt;
+missing identity remains a refusal. No new runtime stage or semantic owner is
+needed.
+
+Finish the bounded fixture and release-reader runs, obtain an independent review
+of these repairs, and settle the authored Casebook, plan, Registry and Atlas
+records. Synchronize generated Registry requirements and forensic sidecars:
+their stale release dossier is the sole failure in the previous pushed CI run
+(10,428 passes, ten skips). Freeze code, tests and governed inputs before the
+fresh full regression gate. Only a passing checkpoint proceeds to commit/push,
+clean distribution proof and the same four audited installed EDIT inputs.
+Preserve all earlier failures. Public40 evidence replacement still needs the
+pending operator amendment; final holdout remains untouched.
+
+The first complete post-adoption run has 3,934 passes and five residual fixture
+failures, with all 372 pins unchanged. The release dossier convergence check now
+passes. Both residual modules now pass focused checks after retaining explicit
+source custody and adopting the earlier exact actor refusal. Product code is
+unchanged. Preserve this failed run and admit the checkpoint only after the fresh
+complete gate. The v49 package and four-case native plans are prepared, with
+conditional independent clearance; neither is activated.
+
+### Full current Greenfield gate passes (2026-10-09)
+
+The unchanged-source v49 gate passes all 3,939 tests across 174 modules in
+345.02 seconds; all 372 pins remain unchanged. Log SHA-256:
+`24bb1b6c2354433b1ec0de27184164e002e9d34c26a71c71dd4e5dbb0810105b`.
+This includes the previously failing release dossier convergence check. Earlier
+failed gates remain retained. Commit this checkpoint, build and smoke-test its
+exact Git archive, then run the same four independently audited native EDIT
+inputs. Qualifying EDIT remains 0/4 until those actual outcomes pass. Original
+Public40 annotations are unavailable; their replacement still awaits the separate
+operator amendment. The final holdout remains untouched.

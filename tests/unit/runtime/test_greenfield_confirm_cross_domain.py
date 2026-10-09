@@ -15,7 +15,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     authored_response,
-    write_host_candidate_fixture,
+    host_candidate_response,
     write_synthetic_source_duty_receipt,
 )
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
@@ -342,6 +342,7 @@ def _run_confirmed_transaction_create(
     repo_root: Path,
     prompt: str,
     candidate_path: Path,
+    host_candidate: dict[str, Any],
     capsys: Any,
 ) -> tuple[int, str]:
     from tests.unit.runtime.greenfield_authority_gate_fixtures import (
@@ -353,7 +354,7 @@ def _run_confirmed_transaction_create(
     )
     ledger_path = write_synthetic_source_duty_receipt(
         candidate_path.with_name("source-ledger.json"),
-        json.loads(candidate_path.read_text(encoding="utf-8")),
+        host_candidate,
         evidence_text=combined_prompt_evidence_source(prompt=prompt, edit_evidence=""),
     )
     compile_rc = greenfield_proposals_cli.main(
@@ -431,11 +432,9 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
         ],
         component_responsibility_owners=intent["internal_systems"],
     )
-    candidate_path = write_host_candidate_fixture(
-        tmp_path.parent / f"{tmp_path.name}-host-candidate.json",
-        response,
-        evidence_text=staged_evidence,
-    )
+    host_candidate = host_candidate_response(response, evidence_text=staged_evidence)
+    candidate_path = tmp_path.parent / f"{tmp_path.name}-host-candidate.json"
+    candidate_path.write_text(json.dumps(host_candidate), encoding="utf-8")
     def render_preconfirm_surfaces(*, repo_root: Path) -> dict[str, Any]:
         for relative_path in greenfield_surface_refresh_proof.GREENFIELD_REQUIRED_SURFACE_ARTIFACTS:
             path = Path(repo_root) / relative_path
@@ -468,6 +467,7 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
         repo_root=tmp_path,
         prompt=source,
         candidate_path=candidate_path,
+        host_candidate=host_candidate,
         capsys=capsys,
     )
 

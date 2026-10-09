@@ -35,7 +35,7 @@ from tests.unit.install.test_greenfield_matrix_clarification_profile_proof impor
 from tests.unit.install.test_greenfield_onboarding_review import (
     CASE_ID, TRANSACTION_HASH, _base_result, _published_case, _review_package,
 )
-from tests.unit.install.test_greenfield_release_source_duty_custody import _legacy_snapshot
+from tests.unit.install.test_greenfield_release_source_duty_custody import _current_snapshot
 from tests.unit.install.test_greenfield_source_predicate_evaluation import _save, _declare, _bind, _audit
 from tests.unit.install.test_greenfield_semantic_release_score import _case
 
@@ -62,7 +62,7 @@ def _scorecard(base, results, profile):
 
 @pytest.fixture
 def saved_public(tmp_path, monkeypatch):
-    original, snapshot = _legacy_snapshot()
+    original, snapshot = _current_snapshot(tmp_path)
     case_rows = [{'id': CASE_ID, 'name': 'public commit', 'prompt': original.prompt,
         'required_terms': ['Harbor'], 'leakage_terms': ['Harbor'], 'expectation': 'transaction_committed'},
         {'id': 'public-clarify', 'name': 'public clarify', 'prompt': 'A complete task is materially ambiguous.',

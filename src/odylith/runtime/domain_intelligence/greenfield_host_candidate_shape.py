@@ -24,7 +24,7 @@ from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
     validate_greenfield_source_duty_binding,
 )
 
-HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v24"
+HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v25"
 HOST_SOURCE_DUTY_BINDING_FIELD = "source_duty_binding"
 
 
@@ -93,13 +93,13 @@ def greenfield_host_candidate_schema() -> dict[str, Any]:
         "and proof independently of the compiler-derived action responsibilities."
     )
     facts["required"] = [
-        field for field in facts["required"] if field not in {"first_path", "supporting_events"}
+        field for field in facts["required"] if field not in {"first_path", "supporting_events", "title"}
     ]
     facts["properties"].pop("first_path")
     facts["properties"].pop("supporting_events")
     authored["required"].remove("events")
     authored["properties"].pop("events")
-    facts["properties"]["title"] = {"anyOf": [_context_citation_schema(), {"type": "null"}]}
+    facts["properties"].pop("title")
     for field in ("human_actors", "internal_systems", "external_systems"):
         facts["properties"][field]["description"] = (
             "Supplemental source-supported nonperforming participants or dependencies. "
@@ -134,9 +134,9 @@ def canonical_greenfield_host_candidate(
     if not isinstance(design, Mapping) or "project_summary" not in design:
         raise ValueError("Greenfield host candidate requires an authored project summary")
     facts = result.get("facts")
-    if not isinstance(facts, Mapping) or {"first_path", "supporting_events"} & set(facts):
+    if not isinstance(facts, Mapping) or {"first_path", "supporting_events", "title"} & set(facts):
         raise ValueError(
-            "Greenfield host candidate must not duplicate first-path citation authority"
+            "Greenfield host candidate must not duplicate source-owned identity or first-path citation authority"
         )
     evidence = evidence_text.encode("utf-8")
     catalog = project_greenfield_source_event_catalog(source_duty_receipt, evidence_text=evidence_text)

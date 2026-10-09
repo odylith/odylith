@@ -242,6 +242,7 @@ def test_real_terminal_lifecycle_failure_preserves_primary_result_and_stream_cus
         "source-ledger-schema.json": compact,
         "source-duty-decision-schema.json": {"version": SOURCE_DUTY_DECISION_SET_VERSION,
             "verifier_task_sha256": task["verifier_task_sha256"],
+            "product_identity": {"verdict": "yes"},
             "decisions": {"d1": {"verdict": "yes", "support_ref_indexes": [0], "role_ref_indexes": [0, 1]}},
             "source_completeness": {"verdict": "yes", "omissions": []}},
         "candidate-schema.json": {"version": "candidate", "result": {"status": "authored"}},

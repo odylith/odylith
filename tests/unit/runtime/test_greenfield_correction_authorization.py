@@ -49,7 +49,7 @@ def test_frozen_compiler_task_and_receipt_rebuild_exactly(name):
     context = golden.get("context")
     task = source_duty_entailment_task(
         preflight_greenfield_source_duty_ledger(
-            receipt["ledger"], evidence_text=source, _passive_source=True,
+            receipt["ledger"], evidence_text=source, _passive_source_version="odylith.greenfield.source-duty-ledger.v5",
         ),
         evidence_text=source, edit_preservation=context,
         _passive_legacy_edit=context is not None,
@@ -65,7 +65,7 @@ def test_frozen_compiler_task_and_receipt_rebuild_exactly(name):
 
 def test_fresh_admission_cannot_select_legacy_profile_from_model_version():
     golden = _golden("edit-v5-v8.json")
-    with pytest.raises(GreenfieldSourceDutyLedgerError, match="version"):
+    with pytest.raises(GreenfieldSourceDutyLedgerError, match="object fields|version"):
         validate_greenfield_source_duty_ledger(
             golden["receipt"]["ledger"], evidence_text=golden["source"],
             decision_set=golden["receipt"]["decision_set"], edit_preservation=golden["context"],

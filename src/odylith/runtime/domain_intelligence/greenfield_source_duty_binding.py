@@ -126,14 +126,18 @@ def greenfield_source_duty_binding_schema(*, host: bool = False) -> dict[str, An
 
 
 def project_greenfield_source_event_catalog(
-    receipt: Mapping[str, Any], *, evidence_text: str,
+    receipt: Mapping[str, Any], *, evidence_text: str, _passive: bool = False,
 ) -> dict[str, Any]:
     """Freeze every verified action ID and exact performer before candidate authoring."""
     verified = verify_greenfield_source_duty_ledger_receipt(
-        receipt, evidence_text=evidence_text, allow_legacy_edit=False,
+        receipt, evidence_text=evidence_text, allow_legacy_edit=_passive,
     )
     evidence = evidence_text.encode("utf-8")
     facts: dict[str, Any] = {"human_actors": [], "internal_systems": [], "external_systems": [], "title": None}
+    independent_identity = verified["ledger"]["version"] == SOURCE_DUTY_LEDGER_VERSION
+    if independent_identity:
+        facts["title"] = deepcopy(verified["ledger"]["product_identity"]["source_ref"])
+    identity_span = _source_span(evidence, facts["title"]) if independent_identity else None
     performers: list[dict[str, Any]] = []
     identities: dict[tuple[str, int, int], dict[str, Any]] = {}
     kinds_by_span: dict[tuple[int, int], set[str]] = {}
@@ -143,10 +147,14 @@ def project_greenfield_source_event_catalog(
     for section in _ACTION_SECTIONS:
         for duty in verified["ledger"][section]:
             role = "human_actor" if section == "supporting_human_actions" else duty["performer_role"]
+            if independent_identity and role == "product_title":
+                raise GreenfieldSourceDutyBindingError("product identity cannot own an action performer")
             field = _FIRST_PATH_PERFORMER_FIELDS[role]
             start, end = _source_span(evidence, duty["actor_ref"])
+            if independent_identity and role != "internal_system" and (start, end) == identity_span:
+                raise GreenfieldSourceDutyBindingError("product identity has an incompatible source performer kind")
             roles = kinds_by_span.setdefault((start, end), set())
-            if roles and role not in roles and roles | {role} != {"internal_system", "product_title"}:
+            if roles and role not in roles and (independent_identity or roles | {role} != {"internal_system", "product_title"}):
                 raise GreenfieldSourceDutyBindingError("source performer has conflicting verified kinds")
             roles.add(role)
             identity = (role, start, end)
@@ -182,12 +190,12 @@ def project_greenfield_source_event_catalog(
             bindings[section].append({"duty_id": duty["id"], "event_order": order})
     # The declared title/internal-system alias is one exact source identity.
     for event in events:
-        if event["performer_role"] == "product_title":
+        if not independent_identity and event["performer_role"] == "product_title":
             alias = identities.get(("internal_system", event["actor_start_byte"], event["actor_end_byte"]))
             if alias is not None:
                 event["actor_fact_path"] = alias["path"]
                 actions[event["event_order"]]["actor_fact_path"] = alias["path"]
-    return {"facts": facts, "performers": performers, "events": events, "actions": actions,
+    return {"facts": facts, "independent_product_identity": independent_identity, "performers": performers, "events": events, "actions": actions,
             "action_bindings": bindings}
 
 
@@ -200,18 +208,9 @@ def source_owned_greenfield_actor_facts(
     for field, prefix in catalog["facts"].items():
         raw = supplemental.get(field)
         if field == "title":
-            if raw is not None:
-                span = _source_span(evidence, raw)
-                if any(
-                    actor["field"] not in {"title", "internal_systems"}
-                    and (actor["source_start_byte"], actor["source_end_byte"]) == span
-                    for actor in catalog["performers"]
-                ):
-                    raise GreenfieldSourceDutyBindingError("candidate title has an incompatible source performer kind")
-            if prefix is not None:
-                if raw is not None and _source_span(evidence, raw) != _source_span(evidence, prefix):
-                    raise GreenfieldSourceDutyBindingError("candidate title cannot replace the source performer")
-                facts[field] = deepcopy(prefix)
+            if field in supplemental:
+                raise GreenfieldSourceDutyBindingError("candidate must not author the source-owned product identity")
+            facts[field] = deepcopy(prefix)
             continue
         rows = _rows(raw, minimum=0, maximum=32, path=f"supplemental {field}")
         facts[field] = deepcopy(prefix)
@@ -221,8 +220,6 @@ def source_owned_greenfield_actor_facts(
             existing = [actor for actor in catalog["performers"]
                         if (actor["source_start_byte"], actor["source_end_byte"]) == span]
             if existing and not any(actor["field"] == field for actor in existing):
-                if field == "internal_systems" and any(actor["field"] == "title" for actor in existing):
-                    continue  # Exact title alias cannot shift its frozen performer path.
                 raise GreenfieldSourceDutyBindingError("supplemental actor has an incompatible source performer kind")
             if span not in seen:
                 facts[field].append(deepcopy(citation))

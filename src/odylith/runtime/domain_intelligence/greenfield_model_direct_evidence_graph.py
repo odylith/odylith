@@ -674,11 +674,10 @@ def _event_actor_fact(
         )
     selected_fact = matches[0]
     quote = _required_quote(selected_fact.get("quote"))
-    product_fact = product_owner_facts.get(quote) if field in {"title", "internal_systems"} else None
-    if source_owned_actor_facts and product_fact is not None and any(
-        product_fact[key] != selected_fact[key] for key in ("source_start_byte", "source_end_byte")
-    ):
-        raise GreenfieldAuthoredSemanticsError("source-owned product alias selects a different actor occurrence")
+    if source_owned_actor_facts and field == "title":
+        raise GreenfieldAuthoredSemanticsError("source-owned product identity cannot select an event actor")
+    product_fact = (product_owner_facts.get(quote)
+                    if not source_owned_actor_facts and field in {"title", "internal_systems"} else None)
     fact = product_fact or selected_fact
     path = str(fact.get("projection_path") or "")
     if not _canonical_actor_path(field=str(fact.get("field") or ""), path=path):

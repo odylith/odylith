@@ -266,6 +266,8 @@ def test_run_reports_timeout_with_command_and_cwd(monkeypatch, tmp_path: Path) -
         "reauthored_system_binding",
         "reauthored_event",
         "non_object_event",
+        "reauthored_title",
+        "optional_title",
         "reauthored_first_path",
         "reauthored_supporting_events",
         "attempt",
@@ -408,6 +410,10 @@ def test_greenfield_install_smoke_requires_read_only_candidate_contract(
             authored["required"].append("events")
         elif defect == "non_object_event":
             authored["properties"]["events"] = []
+        elif defect in {"reauthored_title", "optional_title"}:
+            facts["properties"]["title"] = {"anyOf": [constraint_schema, {"type": "null"}]}
+            if defect == "reauthored_title":
+                facts["required"].append("title")
         elif defect in {"reauthored_first_path", "reauthored_supporting_events"}:
             field = "first_path" if defect == "reauthored_first_path" else "supporting_events"
             facts["properties"][field] = {"type": "array", "items": constraint_schema}
@@ -453,6 +459,8 @@ def test_release_smoke_pins_the_real_current_candidate_contract() -> None:
     assert contract["candidate_version"] == HOST_CANDIDATE_FORMAT_VERSION
     assert "source-only" in contract["task"]
     assert "without another semantic call" in contract["task"]
+    facts = contract["candidate_schema"]["properties"]["result"]["anyOf"][0]["properties"]["facts"]
+    assert "title" not in facts["properties"] and "title" not in facts["required"]
     assert module._has_current_host_candidate_schema(contract["candidate_schema"])
 
 

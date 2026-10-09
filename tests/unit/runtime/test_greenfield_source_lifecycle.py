@@ -30,11 +30,12 @@ def _citation(quote: str, context: str | None = None) -> dict[str, str]:
 
 def _case(noun: str) -> tuple[str, dict, dict, dict]:
     evidence = (
-        f"A steward opens the {noun}. A reviewer approves the {noun}. "
+        f"{noun} workspace. A steward opens the {noun}. A reviewer approves the {noun}. "
         f"Withdrawal closes {noun} access and erases the cached copy."
     )
     ledger = {
         "version": SOURCE_DUTY_LEDGER_VERSION,
+        "product_identity": {"basis": "product_description", "source_ref": _citation(f"{noun} workspace")},
         "status": "inventory",
         "question": "",
         "evidence_controls": [],

@@ -33,10 +33,10 @@ from odylith.runtime.domain_intelligence.greenfield_source_duty_view import (
 )
 
 
-SOURCE_DUTY_DECISION_SET_VERSION = "odylith.greenfield.source-duty-decisions.v4"
-EDIT_SOURCE_DUTY_DECISION_SET_VERSION = "odylith.greenfield.source-duty-decisions.v6"
+SOURCE_DUTY_DECISION_SET_VERSION = "odylith.greenfield.source-duty-decisions.v7"
+EDIT_SOURCE_DUTY_DECISION_SET_VERSION = "odylith.greenfield.source-duty-decisions.v8"
 LEGACY_EDIT_SOURCE_DUTY_DECISION_SET_VERSION = "odylith.greenfield.source-duty-decisions.v5"
-EDIT_PRESERVATION_VERSION = "odylith.greenfield.edit-lifecycle-preservation.v1"
+EDIT_PRESERVATION_VERSION = "odylith.greenfield.edit-lifecycle-preservation.v2"
 _LIFECYCLE_SECTIONS = tuple(
     section for section, _ in _CLAIM_SECTIONS if section not in _ACTION_SECTIONS
 )
@@ -55,7 +55,8 @@ def _canonical_sha256(value: Mapping[str, Any]) -> str:
 
 def greenfield_edit_preservation_context(
     *, transaction_hash: str, prior_lifecycle: Mapping[str, Any],
-    correction: str, evidence_text: str,
+    correction: str, evidence_text: str, prior_identity: Mapping[str, Any] | None = None,
+    _passive: bool = False,
 ) -> dict[str, Any]:
     """Bind the prior verified seal as a checklist, never as current authority.
 
@@ -77,6 +78,18 @@ def greenfield_edit_preservation_context(
                 if key != "lifecycle_sha256"
             })):
         raise GreenfieldSourceDutyEntailmentError("EDIT prior lifecycle is invalid")
+    if not _passive and (
+        not isinstance(prior_identity, Mapping) or set(prior_identity) != {"basis", "source_ref"}
+        or prior_identity["basis"] not in {"explicit_name", "product_description"}
+        or not isinstance(prior_identity["source_ref"], Mapping)
+        or set(prior_identity["source_ref"]) != {"quote", "context"}
+        or any(not isinstance(value, str) or not value.strip() or len(value) > MAX_AUTHORED_FIELD_VALUE_CHARS
+               for value in prior_identity["source_ref"].values())
+    ):
+        raise GreenfieldSourceDutyEntailmentError(
+            "EDIT requires the prior verified product identity. For an older proposal, "
+            "start a new initial proposal with the original description and your changes."
+        )
     identities: set[str] = set()
     for section in _LIFECYCLE_SECTIONS:
         rows = prior_lifecycle[section]
@@ -89,7 +102,8 @@ def greenfield_edit_preservation_context(
                 raise GreenfieldSourceDutyEntailmentError("EDIT prior duty identity is invalid")
             identities.add(duty_id)
     return {
-        "version": EDIT_PRESERVATION_VERSION,
+        "version": "odylith.greenfield.edit-lifecycle-preservation.v1" if _passive else EDIT_PRESERVATION_VERSION,
+        **({"prior_identity": deepcopy(dict(prior_identity))} if not _passive else {}),
         "transaction_hash": transaction_hash,
         "prior_lifecycle": deepcopy(dict(prior_lifecycle)),
         "correction": correction,
@@ -98,15 +112,17 @@ def greenfield_edit_preservation_context(
     }
 
 
-def _validate_edit_context(context: Mapping[str, Any], *, evidence_text: str) -> None:
+def _validate_edit_context(context: Mapping[str, Any], *, evidence_text: str, _passive: bool = False) -> None:
     if not isinstance(context, Mapping) or set(context) != {
         "version", "transaction_hash", "prior_lifecycle", "correction",
         "correction_sha256", "source_sha256",
+        *(() if _passive else ("prior_identity",)),
     }:
         raise GreenfieldSourceDutyEntailmentError("EDIT preservation context is malformed")
     expected = greenfield_edit_preservation_context(
         transaction_hash=context["transaction_hash"], prior_lifecycle=context["prior_lifecycle"],
         correction=context["correction"], evidence_text=evidence_text,
+        prior_identity=context.get("prior_identity"), _passive=_passive,
     )
     if dict(context) != expected:
         raise GreenfieldSourceDutyEntailmentError("EDIT preservation context hash is invalid")
@@ -123,6 +139,7 @@ def greenfield_edit_preservation_view(context: Mapping[str, Any]) -> dict[str, A
     lifecycle = context["prior_lifecycle"]
     return {
         "version": context["version"], "transaction_hash": context["transaction_hash"],
+        **({"prior_identity": deepcopy(context["prior_identity"])} if "prior_identity" in context else {}),
         "correction": context["correction"], "correction_sha256": context["correction_sha256"],
         "prior_lifecycle": {
             "version": lifecycle["version"], "lifecycle_sha256": lifecycle["lifecycle_sha256"],
@@ -159,7 +176,7 @@ def source_duty_claims(
                             if section == "first_path_actions" else
                             ("human_actor" if section == "supporting_human_actions"
                              else row["performer_role"])
-                            if ledger["version"] == "odylith.greenfield.source-duty-ledger.v6"
+                            if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v6", "odylith.greenfield.source-duty-ledger.v7"}
                             else ""
                         ),
                         "statement": row["statement"],
@@ -178,6 +195,7 @@ def greenfield_source_duty_decision_set_schema(
     claims: list[Mapping[str, Any]] | None = None,
     *, edit_preservation: Mapping[str, Any] | None = None,
     _passive_legacy_edit: bool = False,
+    _passive_source_version: str | None = None,
 ) -> dict[str, Any]:
     """Return a closed table keyed by exactly the compiler-owned duty identities."""
 
@@ -240,7 +258,9 @@ def greenfield_source_duty_decision_set_schema(
         "properties": {
             "version": {"type": "string", "enum": [
                 (LEGACY_EDIT_SOURCE_DUTY_DECISION_SET_VERSION if _passive_legacy_edit
+                 else "odylith.greenfield.source-duty-decisions.v6" if _passive_source_version
                  else EDIT_SOURCE_DUTY_DECISION_SET_VERSION) if edit_preservation is not None
+                else "odylith.greenfield.source-duty-decisions.v4" if _passive_source_version
                 else SOURCE_DUTY_DECISION_SET_VERSION]},
             "verifier_task_sha256": digest,
             "decisions": {
@@ -254,6 +274,22 @@ def greenfield_source_duty_decision_set_schema(
             "source_completeness": completeness,
         },
     }
+    if _passive_source_version is None:
+        schema["required"].append("product_identity")
+        schema["properties"]["product_identity"] = {
+            "type": "object", "additionalProperties": False, "required": ["verdict"],
+            "properties": {"verdict": {"type": "string", "enum": ["yes", "no", "uncertain"]}},
+        }
+        if edit_preservation is not None:
+            schema["required"].append("identity_preservation")
+            schema["properties"]["identity_preservation"] = {
+                "type": "object", "additionalProperties": False,
+                "required": ["verdict", "correction_authorization"],
+                "properties": {
+                    "verdict": {"type": "string", "enum": ["preserved", "changed", "missing", "uncertain"]},
+                    "correction_authorization": {"type": "string", "enum": ["yes", "no", "uncertain", "not_required"]},
+                },
+            }
     if edit_preservation is not None:
         preservation = {}
         correction_field = "correction_ref_indexes" if _passive_legacy_edit else "correction_authorization"
@@ -308,7 +344,8 @@ def source_duty_entailment_task(
         )
 
     if edit_preservation is not None:
-        _validate_edit_context(edit_preservation, evidence_text=evidence_text)
+        _validate_edit_context(edit_preservation, evidence_text=evidence_text,
+                               _passive=preflight["ledger"]["version"] != "odylith.greenfield.source-duty-ledger.v7")
     view = compact_source_duty_view(preflight["ledger"])
     if len(view["citations"]) > MAX_COMPACT_CITATIONS:
         raise GreenfieldSourceDutyEntailmentError(
@@ -368,6 +405,8 @@ def source_duty_entailment_task(
         "decision_set_schema": greenfield_source_duty_decision_set_schema(
             preflight["claims"], edit_preservation=edit_preservation,
             _passive_legacy_edit=_passive_legacy_edit,
+            _passive_source_version=(preflight["ledger"]["version"]
+                if preflight["ledger"]["version"] != "odylith.greenfield.source-duty-ledger.v7" else None),
         ),
     }
     if edit_preservation is not None:
@@ -419,6 +458,33 @@ def source_duty_entailment_task(
             "A repeated label at a different occurrence does not declare identity equivalence. "
             "Return no or uncertain when the canonical identity, kind or role is unresolved."
         )
+    if preflight["ledger"]["version"] == "odylith.greenfield.source-duty-ledger.v7":
+        task["task"] += (
+            " Independently judge product_identity.source_ref as the requested product's explicit "
+            "name or useful descriptive identity. The citation must identify what the operator "
+            "wants to build, not a background repository, library, authority, incidental heading, "
+            "generic 'product', pronoun or action performer. Free-form descriptions without a "
+            "formal name are supported through product_description. Return the separate "
+            "product_identity.verdict; identity is not a duty, event or performer. Every action "
+            "performer must be human_actor, internal_system or external_system; supporting human "
+            "actions are human_actor. Reuse the same exact canonical actor_ref source occurrence "
+            "for the same performer throughout all action sections; repeated labels at different "
+            "occurrences never establish equivalence. A product acting in an event is an "
+            "internal_system and must be independently supported as that performer. Identity and "
+            "performer claims remain separate even if both cite the same exact occurrence. "
+            "Return no or uncertain when product identity, canonical performer or kind is unresolved."
+        )
+        if edit_preservation is not None:
+            task["edit_preservation_task"] += (
+                " Also return identity_preservation for the prior independently verified identity. "
+                "Extract and verify the current identity from the complete current authority source, "
+                "including the exact correction; do not copy the prior citation or title. Preserved "
+                "requires the same requested product identity and correction_authorization=not_required. "
+                "Changed requires product_identity.verdict=yes and correction_authorization=yes "
+                "affirming the complete exact correction explicitly authorizes this identity change. "
+                "Historical titles, a shifted performer role, or general preservation language cannot "
+                "authorize a rename. Missing, uncertain, removed or unsupported replacement refuses."
+            )
     task["verifier_task_sha256"] = _canonical_sha256(task)
     return task
 
@@ -507,7 +573,8 @@ def _validate_edit_preservation(
     claims: list[Mapping[str, Any]], evidence_text: str,
     _passive_legacy_edit: bool = False,
 ) -> None:
-    _validate_edit_context(context, evidence_text=evidence_text)
+    _validate_edit_context(context, evidence_text=evidence_text,
+                           _passive=context.get("version") == "odylith.greenfield.edit-lifecycle-preservation.v1")
     table = decision_set["edit_preservation"]
     refs = decision_set["edit_correction_refs"] if _passive_legacy_edit else []
     prior = list(_prior_duties(context))
@@ -572,6 +639,7 @@ def validate_source_duty_decision_set(
     evidence_text: str,
     edit_preservation: Mapping[str, Any] | None = None,
     _passive_legacy_edit: bool = False,
+    _passive_source_version: str | None = None,
 ) -> dict[str, Any]:
     """Require a complete affirmative decision for every fixed material duty."""
 
@@ -581,6 +649,10 @@ def validate_source_duty_decision_set(
         "decisions",
         "source_completeness",
     }
+    if _passive_source_version is None:
+        fields.add("product_identity")
+        if edit_preservation is not None:
+            fields.add("identity_preservation")
     if edit_preservation is not None:
         fields.add("edit_preservation")
         if _passive_legacy_edit:
@@ -592,14 +664,28 @@ def validate_source_duty_decision_set(
     if (
         decision_set["version"] != (
             (LEGACY_EDIT_SOURCE_DUTY_DECISION_SET_VERSION if _passive_legacy_edit
+             else "odylith.greenfield.source-duty-decisions.v6" if _passive_source_version
              else EDIT_SOURCE_DUTY_DECISION_SET_VERSION)
-            if edit_preservation is not None else SOURCE_DUTY_DECISION_SET_VERSION)
+            if edit_preservation is not None else "odylith.greenfield.source-duty-decisions.v4"
+            if _passive_source_version else SOURCE_DUTY_DECISION_SET_VERSION)
         or decision_set["verifier_task_sha256"] != verifier_task_sha256
         or any(claim["source_sha256"] != source_sha256 for claim in claims)
     ):
         raise GreenfieldSourceDutyEntailmentError(
             "source duty decision binding is invalid"
         )
+    if _passive_source_version is None:
+        identity = decision_set["product_identity"]
+        if not isinstance(identity, Mapping) or set(identity) != {"verdict"} or identity["verdict"] != "yes":
+            raise GreenfieldSourceDutyEntailmentError("product identity decision is not affirmative")
+        if edit_preservation is not None:
+            identity_edit = decision_set["identity_preservation"]
+            if (not isinstance(identity_edit, Mapping)
+                    or set(identity_edit) != {"verdict", "correction_authorization"}
+                    or identity_edit["verdict"] not in {"preserved", "changed"}
+                    or identity_edit["correction_authorization"] != (
+                        "not_required" if identity_edit["verdict"] == "preserved" else "yes")):
+                raise GreenfieldSourceDutyEntailmentError("EDIT product identity preservation is not affirmative")
     decisions = decision_set["decisions"]
     expected_ids = [claim["duty_id"] for claim in claims]
     if (

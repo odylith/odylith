@@ -86,6 +86,10 @@ def test_public_preview_offers_three_hash_bound_terminal_decisions(
         tmp_path.parent / f"{tmp_path.name}-source-ledger.json",
         {"result": {"status": "clarification_required"}},
         evidence_text=combined_prompt_evidence_source(prompt=prompt, edit_evidence=""),
+        declared_identity={
+            "basis": "explicit_name",
+            "source_ref": {"quote": "Example", "context": "Example."},
+        },
         declared_actions=[declared_source_action_fixture(
             duty_id="reviewer-create", actor_quote="A reviewer",
             event_quote="A reviewer creates a reviewable plan.",

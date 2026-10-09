@@ -66,7 +66,7 @@ def _edit_case(correction=ADDITIVE, *, include_guard=True, include_second_guard=
     )
     source = prepare_model_authoring_evidence(prompt=prompt, edit_evidence=correction).evidence_source
     context = greenfield_edit_preservation_context(
-        transaction_hash="a" * 64, prior_lifecycle=lifecycle,
+        transaction_hash="a" * 64, prior_lifecycle=lifecycle, prior_identity=receipt["ledger"]["product_identity"],
         correction=correction, evidence_text=source,
     )
     if not include_guard:
@@ -76,6 +76,7 @@ def _edit_case(correction=ADDITIVE, *, include_guard=True, include_second_guard=
     decisions = _yes_decisions(preflight, evidence_text=source)
     decisions["version"] = EDIT_SOURCE_DUTY_DECISION_SET_VERSION
     decisions["verifier_task_sha256"] = task["verifier_task_sha256"]
+    decisions["identity_preservation"] = {"verdict": "preserved", "correction_authorization": "not_required"}
     decisions["edit_preservation"] = {
         f"{section}/{row['duty_id']}": {
             "verdict": "preserved", "current_duty_id": row["duty_id"], "correction_authorization": "not_required",
@@ -100,8 +101,8 @@ def test_initial_request_keeps_the_existing_non_edit_decision_and_receipt_shape(
     task = source_duty_entailment_task(preflight, evidence_text=source)
     assert "edit_preservation" not in task
     assert "edit_preservation" not in task["decision_set_schema"]["properties"]
-    assert receipt["version"] == "odylith.greenfield.source-duty-ledger-receipt.v10"
-    assert task["decision_set_schema"]["properties"]["version"]["enum"] == ["odylith.greenfield.source-duty-decisions.v4"]
+    assert receipt["version"] == "odylith.greenfield.source-duty-ledger-receipt.v12"
+    assert task["decision_set_schema"]["properties"]["version"]["enum"] == ["odylith.greenfield.source-duty-decisions.v7"]
     assert validate_greenfield_source_duty_ledger(
         ledger, evidence_text=source, decision_set=_yes_decisions(preflight, evidence_text=source),
     ) == receipt
@@ -112,7 +113,7 @@ def test_host_receipt_passive_approval_is_an_explicit_closed_version_pair(tmp_pa
     from tests.unit.runtime.test_greenfield_create_transaction import _transaction
 
     transaction = _transaction(repo_root=tmp_path)
-    for version, approved in ((49, True), (50, True), (51, True), (52, True), (53, True), (54, True), (55, True), (48, False), (56, False)):
+    for version, approved in ((49, True), (50, True), (51, True), (52, True), (53, True), (54, True), (55, True), (56, True), (48, False), (57, False)):
         model = deepcopy(transaction.quality_manifest["model_authoring"])
         model["host_candidate"]["contract_version"] = f"odylith.greenfield.host-candidate-contract.v{version}"
         assert greenfield_model_authoring_receipt_approved(
@@ -126,21 +127,21 @@ def test_initial_and_edit_protocol_pairs_cannot_be_interchanged(damage):
     case = _edit_case()
     source, _, context, _, decisions = case
     receipt = _admit(case)
-    assert receipt["version"] == "odylith.greenfield.source-duty-ledger-receipt.v11"
-    assert decisions["version"] == "odylith.greenfield.source-duty-decisions.v6"
+    assert receipt["version"] == "odylith.greenfield.source-duty-ledger-receipt.v13"
+    assert decisions["version"] == "odylith.greenfield.source-duty-decisions.v8"
     if damage == "legacy_decisions":
-        decisions["version"] = "odylith.greenfield.source-duty-decisions.v4"
+        decisions["version"] = "odylith.greenfield.source-duty-decisions.v7"
         with pytest.raises(GreenfieldSourceDutyLedgerError, match="binding"):
             _admit(case)
         return
     if damage == "legacy_receipt":
-        receipt["version"] = "odylith.greenfield.source-duty-ledger-receipt.v10"
+        receipt["version"] = "odylith.greenfield.source-duty-ledger-receipt.v12"
     elif damage == "missing_context":
         del receipt["edit_preservation"]
     else:
         source, receipt, _, _ = _case("dossier")
         context = None
-        receipt["version"] = "odylith.greenfield.source-duty-ledger-receipt.v11"
+        receipt["version"] = "odylith.greenfield.source-duty-ledger-receipt.v13"
     with pytest.raises(GreenfieldSourceDutyLedgerError, match="version|baseline"):
         verify_greenfield_source_duty_ledger_receipt(receipt, evidence_text=source, edit_preservation=context)
 
@@ -496,14 +497,14 @@ def test_fresh_v9_compiler_seal_can_be_read_and_used_for_a_second_edit(tmp_path,
 
     initial = _transaction(repo_root=tmp_path)
     initial_source_duty = initial.proposal["intent"]["authored_semantics"]["source_duty"]
-    assert initial_source_duty["ledger_receipt"]["version"] == "odylith.greenfield.source-duty-ledger-receipt.v10"
-    assert initial_source_duty["ledger_receipt"]["decision_set"]["version"] == "odylith.greenfield.source-duty-decisions.v4"
+    assert initial_source_duty["ledger_receipt"]["version"] == "odylith.greenfield.source-duty-ledger-receipt.v12"
+    assert initial_source_duty["ledger_receipt"]["decision_set"]["version"] == "odylith.greenfield.source-duty-decisions.v7"
     _, args = stage(initial)
     guard = "Before a decision, supplier evidence must remain visible."
     for edit_index, correction in enumerate((guard, "Keep every earlier safeguard and its evidence.")):
         previous = cli._edit_transaction_from_args(args, repo_root=tmp_path, correction=correction)
         prior_source_duty = previous.proposal["intent"]["authored_semantics"]["source_duty"]
-        prior_version = "odylith.greenfield.source-duty-ledger-receipt.v10" if edit_index == 0 else "odylith.greenfield.source-duty-ledger-receipt.v11"
+        prior_version = "odylith.greenfield.source-duty-ledger-receipt.v12" if edit_index == 0 else "odylith.greenfield.source-duty-ledger-receipt.v13"
         assert prior_source_duty["ledger_receipt"]["version"] == prior_version
         prompt = previous.proposal["intent"]["prompt"]
         prepared = prepare_model_authoring_evidence(prompt=prompt, edit_evidence=correction)
@@ -535,6 +536,7 @@ def test_fresh_v9_compiler_seal_can_be_read_and_used_for_a_second_edit(tmp_path,
         decisions.update(
             version=EDIT_SOURCE_DUTY_DECISION_SET_VERSION,
             verifier_task_sha256=task["verifier_task_sha256"],
+            identity_preservation={"verdict": "preserved", "correction_authorization": "not_required"},
             edit_preservation={
                 f"{section}/{row['duty_id']}": {
                     "verdict": "preserved", "current_duty_id": row["duty_id"], "correction_authorization": "not_required",
@@ -546,7 +548,7 @@ def test_fresh_v9_compiler_seal_can_be_read_and_used_for_a_second_edit(tmp_path,
         receipt = validate_greenfield_source_duty_ledger(
             ledger, evidence_text=source, decision_set=decisions, edit_preservation=context,
         )
-        assert receipt["version"] == "odylith.greenfield.source-duty-ledger-receipt.v11"
+        assert receipt["version"] == "odylith.greenfield.source-duty-ledger-receipt.v13"
         assert receipt["decision_set"]["version"] == EDIT_SOURCE_DUTY_DECISION_SET_VERSION
         result = host_candidate["result"]
         result["source_duty_binding"].update(
@@ -630,3 +632,59 @@ def test_passive_edit_source_receipt_pairs_remain_exact_at_transaction_guard(
     else:
         with pytest.raises(ValueError, match="source-duty hashes"):
             _require_host_candidate_authority_binding(quality, authority, proposal=proposal, passive=passive)
+
+
+def test_history_only_edit_reverifies_identity_at_current_shifted_source_span():
+    from odylith.runtime.domain_intelligence.greenfield_model_source_citations import canonical_citation_from_host_selection, resolve_source_citation
+    source, ledger, context, task, _ = case = _edit_case()
+    receipt = _admit(case)
+    assert context["prior_identity"] == ledger["product_identity"]
+    assert receipt["decision_set"]["product_identity"] == {"verdict": "yes"}
+    assert receipt["decision_set"]["identity_preservation"] == {"verdict": "preserved", "correction_authorization": "not_required"}
+    assert "do not copy the prior citation or title" in task["edit_preservation_task"]
+    prior_source = _case("dossier")[0] + " " + GUARD
+    current_ref = canonical_citation_from_host_selection(source.encode(), ledger["product_identity"]["source_ref"])
+    prior_ref = canonical_citation_from_host_selection(prior_source.encode(), context["prior_identity"]["source_ref"])
+    assert resolve_source_citation(source.encode(), current_ref)[1] > resolve_source_citation(prior_source.encode(), prior_ref)[1]
+
+
+@pytest.mark.parametrize("authorization", ["yes", "no", "uncertain", "not_required"])
+def test_identity_rename_requires_fresh_current_citation_and_specific_correction_authorization(authorization):
+    correction = "Rename the requested workspace to Harbor Review. Keep every earlier safeguard."
+    source, ledger, context, _, decisions = _edit_case(correction)
+    ledger["product_identity"] = {"basis": "explicit_name", "source_ref": {"quote": "Harbor Review", "context": "Harbor Review"}}
+    preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=source)
+    task = source_duty_entailment_task(preflight, evidence_text=source, edit_preservation=context)
+    decisions["verifier_task_sha256"] = task["verifier_task_sha256"]
+    decisions["identity_preservation"] = {"verdict": "changed", "correction_authorization": authorization}
+    if authorization != "yes":
+        with pytest.raises(GreenfieldSourceDutyLedgerError, match="identity preservation is not affirmative"):
+            validate_greenfield_source_duty_ledger(ledger, evidence_text=source, decision_set=decisions, edit_preservation=context)
+        return
+    receipt = validate_greenfield_source_duty_ledger(ledger, evidence_text=source, decision_set=decisions, edit_preservation=context)
+    assert receipt["ledger"]["product_identity"]["source_ref"]["quote"] == "Harbor Review"
+    assert receipt["edit_preservation"]["prior_identity"]["source_ref"]["quote"] == "dossier workspace"
+    assert verify_greenfield_source_duty_ledger_receipt(receipt, evidence_text=source) == receipt
+
+
+@pytest.mark.parametrize("damage", ["removed", "missing", "uncertain", "stale_context", "stale_decision"])
+def test_edit_cannot_drop_identity_or_copy_stale_identity_custody(damage):
+    source, ledger, context, _, decisions = _edit_case()
+    if damage in {"removed", "missing", "uncertain"}:
+        decisions["identity_preservation"]["verdict"] = damage
+    elif damage == "stale_context":
+        context["prior_identity"]["source_ref"]["quote"] = "copied prior title"
+    else:
+        decisions["verifier_task_sha256"] = "0" * 64
+    with pytest.raises((GreenfieldSourceDutyLedgerError, GreenfieldSourceDutyEntailmentError), match="identity|binding|context"):
+        validate_greenfield_source_duty_ledger(ledger, evidence_text=source, decision_set=decisions, edit_preservation=context)
+
+
+def test_edit_context_refuses_historical_seal_without_independently_verified_identity():
+    _, _, context, _, _ = _edit_case()
+    with pytest.raises(GreenfieldSourceDutyEntailmentError, match="prior verified product identity") as refused:
+        greenfield_edit_preservation_context(transaction_hash=context["transaction_hash"],
+            prior_lifecycle=context["prior_lifecycle"], correction=context["correction"],
+            evidence_text=prepare_model_authoring_evidence(prompt=_case("dossier")[0] + " " + GUARD,
+                edit_evidence=context["correction"]).evidence_source)
+    assert "start a new initial proposal with the original description and your changes" in str(refused.value)

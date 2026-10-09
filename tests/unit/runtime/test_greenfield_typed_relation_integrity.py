@@ -22,8 +22,8 @@ from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     authored_response,
     host_candidate_response,
     model_event_rows,
+    source_duty_fixture,
 )
-from tests.unit.runtime.test_greenfield_model_path_custody import _source_duty_for_response
 
 
 def _harbor_case() -> tuple[str, dict[str, object], dict[str, object]]:
@@ -130,11 +130,18 @@ def _author(
     evidence: str,
     response: dict[str, object],
 ) -> GreenfieldModelAuthoredIntent:
+    candidate = host_candidate_response(response, evidence_text=evidence)
     result = admit_complete_host_candidate(
         evidence_text=evidence,
-        host_candidate=host_candidate_response(response, evidence_text=evidence),
+        host_candidate=candidate,
     )
     assert isinstance(result, GreenfieldModelAuthoredIntent)
+    result.intent["authored_semantics"] = authored_semantics_mapping(
+        result.first_path_relations, result.component_responsibility_relations,
+        first_path_context_relations=result.first_path_context_relations,
+        provisional_design=result.provisional_design,
+        source_duty=source_duty_fixture(candidate, evidence_text=evidence),
+    )
     return result
 
 
@@ -162,7 +169,6 @@ def test_external_event_actor_must_reference_a_selected_external_fact() -> None:
     from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import canonical_greenfield_host_candidate
     from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import validate_greenfield_authoring_response
     from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import STANDARD_PROFILE_ID
-    from tests.unit.runtime.greenfield_model_authoring_fixtures import source_duty_fixture
     evidence, _intent, response = _harbor_case()
     candidate = host_candidate_response(response, evidence_text=evidence)
     source_duty = source_duty_fixture(candidate, evidence_text=evidence)
@@ -170,7 +176,7 @@ def test_external_event_actor_must_reference_a_selected_external_fact() -> None:
         candidate, evidence_text=evidence, source_duty_receipt=source_duty["ledger_receipt"],
     )
     canonical["result"]["events"][1]["actor_fact"] = {"field": "external_systems", "row": 2}
-    with pytest.raises(GreenfieldModelAuthoringError, match="unbound first-path actor fact"):
+    with pytest.raises(GreenfieldModelAuthoringError, match="canonical event actor differs from its verified source action"):
         validate_greenfield_authoring_response(
             canonical, evidence_text=evidence, elapsed_seconds=1.0,
             provider={"kind": "host_native", "host": "codex", "model": "fixture-model"},
@@ -373,6 +379,7 @@ def test_sealed_separate_source_context_rejects_an_unknown_event_order() -> None
             result.component_responsibility_relations,
             first_path_context_relations=context_relations,
             provisional_design=result.provisional_design,
+            source_duty=result.intent["authored_semantics"]["source_duty"],
         ),
     }
 
@@ -488,7 +495,7 @@ def test_repeated_event_text_at_distinct_source_and_projection_coordinates_seals
             result.component_responsibility_relations,
             first_path_context_relations=result.first_path_context_relations,
             provisional_design=result.provisional_design,
-            source_duty=_source_duty_for_response(response, evidence),
+            source_duty=result.intent["authored_semantics"]["source_duty"],
         ),
     }
     envelope = build_product_intent_envelope(
@@ -532,6 +539,7 @@ def test_true_duplicate_event_coordinates_fail_sealed_validation() -> None:
             result.component_responsibility_relations,
             first_path_context_relations=result.first_path_context_relations,
             provisional_design=result.provisional_design,
+            source_duty=result.intent["authored_semantics"]["source_duty"],
         ),
     }
 
@@ -561,6 +569,7 @@ def test_partially_overlapping_source_event_coordinates_fail_sealed_validation()
             result.component_responsibility_relations,
             first_path_context_relations=result.first_path_context_relations,
             provisional_design=result.provisional_design,
+            source_duty=result.intent["authored_semantics"]["source_duty"],
         ),
     }
 

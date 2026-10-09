@@ -320,7 +320,7 @@ def validate_greenfield_authoring_response(
             allow_exact_dual_role_constraints=allow_exact_dual_role_constraints,
             first_path_event_orders=first_path_event_orders,
             source_owned_actor_facts=(accepted_source_duties is not None
-                and accepted_source_duties["ledger"]["version"] == "odylith.greenfield.source-duty-ledger.v6"),
+                and accepted_source_duties["ledger"]["version"] == "odylith.greenfield.source-duty-ledger.v7"),
         )
         authored_component_relation_facts(
             title=str(intent.get("title") or ""),
@@ -497,13 +497,19 @@ def _accepted_source_actions(
     ledger = verified["ledger"]
     by_order: dict[int, dict[str, Any]] = {}
     path_orders: set[int] = set()
-    if ledger["version"] == "odylith.greenfield.source-duty-ledger.v6":
+    if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v6", "odylith.greenfield.source-duty-ledger.v7"}:
         from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
             project_greenfield_source_event_catalog,
         )
-        catalog = project_greenfield_source_event_catalog(verified, evidence_text=evidence_text)
+        catalog = project_greenfield_source_event_catalog(verified, evidence_text=evidence_text,
+                    _passive=ledger["version"] == "odylith.greenfield.source-duty-ledger.v6")
         if any(binding.get(section) != rows for section, rows in catalog["action_bindings"].items()):
             raise GreenfieldModelAuthoringError("Greenfield source action binding differs from its frozen catalog")
+        if ledger["version"] == "odylith.greenfield.source-duty-ledger.v7" and (
+            [event.get("actor_fact") for event in events]
+            != [event["actor_fact"] for event in catalog["events"]]
+        ):
+            raise GreenfieldModelAuthoringError("Greenfield canonical event actor differs from its verified source action")
         by_order = catalog["actions"]
         path_orders = {order for order, duty in by_order.items()
                        if duty["binding_role"] == "first_path_actions"}

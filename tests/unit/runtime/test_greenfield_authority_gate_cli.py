@@ -73,6 +73,13 @@ def _declared_coordinator_actions():
     ), 1)]
 
 
+def _declared_workspace_identity():
+    return {
+        "basis": "product_description",
+        "source_ref": {"quote": "service workspace", "context": "Build a service workspace."},
+    }
+
+
 def _yes_decisions(decision_task: dict[str, object]) -> dict[str, object]:
     ledger = expand_compact_source_duty_ledger(decision_task["source_duty_ledger"])
     decisions = {}
@@ -88,6 +95,7 @@ def _yes_decisions(decision_task: dict[str, object]) -> dict[str, object]:
         "version": SOURCE_DUTY_DECISION_SET_VERSION,
         "verifier_task_sha256": decision_task["verifier_task_sha256"],
         "source_completeness": {"verdict": "yes", "omissions": []},
+        "product_identity": {"verdict": "yes"},
         "decisions": decisions,
     }
 
@@ -232,6 +240,7 @@ def test_admitted_gate_does_not_replace_the_host_candidate(
         {"result": {"status": "clarification_required"}},
         evidence_text=combined_prompt_evidence_source(prompt=prompt, edit_evidence=""),
         declared_actions=_declared_coordinator_actions(),
+        declared_identity=_declared_workspace_identity(),
     )
 
     rc = greenfield_proposals_cli.main(
@@ -291,12 +300,13 @@ def test_forged_gate_witness_fails_before_candidate_load(
 def test_source_ledger_check_requires_source_only_decisions_before_receipt(
     tmp_path: Path, capsys
 ) -> None:
-    prompt = "A coordinator opens an intake request and verifies a decision receipt."
+    prompt = "Build a service workspace. A coordinator opens an intake request and verifies a decision receipt."
     ledger = write_synthetic_source_duty_receipt(
         tmp_path.parent / f"{tmp_path.name}-source-ledger.json",
         {"result": {"status": "clarification_required"}},
         evidence_text=combined_prompt_evidence_source(prompt=prompt, edit_evidence=""),
         declared_actions=_declared_coordinator_actions(),
+        declared_identity=_declared_workspace_identity(),
     )
     raw_ledger = json.loads(ledger.read_text(encoding="utf-8"))["ledger"]
     ledger.write_text(json.dumps(_compact_ledger(raw_ledger)), encoding="utf-8")
@@ -488,12 +498,13 @@ def test_source_ledger_check_rejects_citation_bank_change_after_preflight(
 def test_source_ledger_check_rejects_negative_decision_before_candidate(
     tmp_path: Path, capsys
 ) -> None:
-    prompt = "A coordinator opens an intake request and verifies a decision receipt."
+    prompt = "Build a service workspace. A coordinator opens an intake request and verifies a decision receipt."
     ledger = write_synthetic_source_duty_receipt(
         tmp_path.parent / f"{tmp_path.name}-source-ledger.json",
         {"result": {"status": "clarification_required"}},
         evidence_text=combined_prompt_evidence_source(prompt=prompt, edit_evidence=""),
         declared_actions=_declared_coordinator_actions(),
+        declared_identity=_declared_workspace_identity(),
     )
     raw_ledger = json.loads(ledger.read_text(encoding="utf-8"))["ledger"]
     ledger.write_text(json.dumps(_compact_ledger(raw_ledger)), encoding="utf-8")
@@ -553,6 +564,7 @@ def test_propose_rejects_tampered_source_only_decision_receipt_before_candidate(
         {"result": {"status": "clarification_required"}},
         evidence_text=combined_prompt_evidence_source(prompt=prompt, edit_evidence=""),
         declared_actions=_declared_coordinator_actions(),
+        declared_identity=_declared_workspace_identity(),
     )
     receipt = json.loads(ledger_path.read_text(encoding="utf-8"))
     receipt[tamper_field] = tamper_value
@@ -590,6 +602,7 @@ def test_source_ledger_check_surfaces_one_material_question(
         "status": "clarification_required",
         "question": "Who uses this product and what result should they see?",
         "evidence_controls": [],
+        "product_identity": None,
         "first_path_actions": [],
         "supporting_human_actions": [],
         "system_duties": [],

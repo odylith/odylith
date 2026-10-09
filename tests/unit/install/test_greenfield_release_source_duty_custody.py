@@ -13,7 +13,9 @@ if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
 from greenfield_relation_fidelity import snapshot_relation_evidence
-from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import atomic_fact_ledger_hash, _authored_atom_id
+from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
+    append_atomic_source_spans, build_atomic_fact_ledger, atomic_fact_ledger_hash, _authored_atom_id,
+)
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import authored_relation_set_sha256
 from odylith.runtime.domain_intelligence.greenfield_host_candidate_materialization import materialize_host_authored_intent
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import prepare_model_authoring_evidence
@@ -24,14 +26,14 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     product_facts_hash,
     product_facts_payload,
     require_verified_source_action_relations,
-    build_product_intent_envelope,
-    product_intent_authority_from_envelope,
 )
 from odylith.runtime.domain_intelligence.greenfield_source_lifecycle import _sha256
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     structural_design_fixture,
     synthetic_source_duty_receipt_for_ledger,
     authored_response,
+    host_candidate_response,
+    synthetic_source_duty_receipt,
 )
 from tests.unit.runtime.test_greenfield_normalized_action_custody import _shared_clause_candidate
 from tests.unit.runtime.test_greenfield_product_intent_envelope import _INTENT, _RELATIONS, _source
@@ -253,7 +255,31 @@ def test_shared_admission_owner_rejects_changed_verified_roles(tmp_path, field, 
         )
 
 
-def _legacy_snapshot():
+def _current_snapshot(tmp_path):
+    """Current compiler custody for general release-reader controls, never live qualification."""
+    source = _source()
+    prepared = prepare_model_authoring_evidence(prompt=source)
+    candidate = host_candidate_response(
+        authored_response(_INTENT, evidence_text=prepared.evidence_source,
+                          first_path_relations=_RELATIONS, component_responsibility_owners=["Berth map"]),
+        evidence_text=prepared.evidence_source,
+    )
+    intent = materialize_host_authored_intent(
+        prompt=source, repo_root=tmp_path, host_candidate=candidate, prepared_evidence=prepared,
+        source_duty_receipt=synthetic_source_duty_receipt(candidate, evidence_text=prepared.evidence_source),
+    )
+    authority = intent["product_intent_authority"]
+    snapshot = {
+        "facts": product_facts_payload(intent), "authored_semantics": intent["authored_semantics"],
+        **{key: deepcopy(authority[key]) for key in (
+            "atomic_facts", "atomic_custody_sha256", "product_facts_sha256", "authored_relation_set_sha256",
+        )},
+    }
+    return SimpleNamespace(prompt=source, confirmed_intent_markdown=""), snapshot
+
+
+def _exact_source_evaluator_snapshot():
+    """Exercise exact-source evaluator data without admitting it through the current compiler."""
     source = _source()
     prepared = prepare_model_authoring_evidence(prompt=source)
     result = validate_greenfield_authoring_response(
@@ -268,23 +294,27 @@ def _legacy_snapshot():
         first_path_context_relations=result.first_path_context_relations,
         provisional_design=result.provisional_design, source_duty=None,
     )
-    envelope = build_product_intent_envelope(
-        {**result.intent, "authored_semantics": semantics}, source_text=prepared.evidence_source,
-        canonical_candidate_sha256="a" * 64, authored_source_spans=result.source_spans,
-        authored_atomic_claims=result.atomic_claims, authored_source_sha256=result.source_sha256,
-    )
-    authority = product_intent_authority_from_envelope(envelope)
+    facts = product_facts_payload(result.intent)
+    spans = []
+    append_atomic_source_spans(spans, authored_atomic_claims=result.atomic_claims)
+    atoms = build_atomic_fact_ledger(facts=facts, spans=spans, authored_atomic_claims=result.atomic_claims)
     snapshot = {
-        "facts": envelope["product_facts"], "authored_semantics": semantics,
-        **{key: authority[key] for key in (
-            "atomic_facts", "atomic_custody_sha256", "product_facts_sha256", "authored_relation_set_sha256",
-        )},
+        "facts": facts, "authored_semantics": semantics,
+        "atomic_facts": atoms, "atomic_custody_sha256": atomic_fact_ledger_hash(atoms),
+        "product_facts_sha256": product_facts_hash(facts),
+        "authored_relation_set_sha256": authored_relation_set_sha256(
+            result.first_path_relations, result.component_responsibility_relations,
+            first_path_context_relations=result.first_path_context_relations,
+            source_precedence=semantics["source_precedence"], source_duty=None,
+            provisional_design=result.provisional_design,
+        ),
     }
     return SimpleNamespace(prompt=source, confirmed_intent_markdown=""), snapshot
 
 
 def test_exact_source_relations_without_normalized_duties_remain_valid():
-    case, snapshot = _legacy_snapshot()
+    case, snapshot = _exact_source_evaluator_snapshot()
+    assert snapshot["authored_semantics"]["source_duty"] is None
     evidence = snapshot_relation_evidence(case=case, snapshot=snapshot)
     assert evidence.issues == ()
     assert len(evidence.keys["first_path_events"]) == 3

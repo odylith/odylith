@@ -177,6 +177,7 @@ def test_loader_refuses_unusable_lifecycle_correction(tmp_path: Path, correction
 def _preservation_fixture():
     from tests.unit.runtime.test_greenfield_edit_lifecycle_preservation import _edit_case, _admit
     from tests.unit.runtime.test_greenfield_source_duty_ledger import _yes_decisions
+    from tests.unit.runtime.greenfield_model_authoring_fixtures import synthetic_source_duty_receipt_for_ledger
     from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import preflight_greenfield_source_duty_ledger
     from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import greenfield_edit_preservation_context, source_duty_entailment_task
     case = list(_edit_case())
@@ -184,22 +185,26 @@ def _preservation_fixture():
     initial = source.split("\n\n# Operator edit evidence\n\n")[0] + "\n"
     source = prepare_model_authoring_evidence(prompt=initial, edit_evidence=context["correction"]).evidence_source
     context = greenfield_edit_preservation_context(transaction_hash=context["transaction_hash"],
-        prior_lifecycle=context["prior_lifecycle"], correction=context["correction"], evidence_text=source)
+        prior_lifecycle=context["prior_lifecycle"], prior_identity=context["prior_identity"],
+        correction=context["correction"], evidence_text=source)
     preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=source)
     task = source_duty_entailment_task(preflight, evidence_text=source, edit_preservation=context)
     decisions = _yes_decisions(preflight, evidence_text=source)
     decisions.update(version=old_decisions["version"], verifier_task_sha256=task["verifier_task_sha256"],
+        identity_preservation=deepcopy(old_decisions["identity_preservation"]),
         edit_preservation=deepcopy(old_decisions["edit_preservation"]))
     case = (source, ledger, context, task, decisions)
+    prior_receipt = synthetic_source_duty_receipt_for_ledger(ledger, evidence_text=initial)
     previous = SimpleNamespace(transaction_hash=context["transaction_hash"],
-        proposal={"intent": {"prompt": initial}, "semantic_model": {"source_lifecycle": context["prior_lifecycle"]}},
+        proposal={"intent": {"prompt": initial, "authored_semantics": {"source_duty": {"ledger_receipt": prior_receipt}}},
+            "semantic_model": {"source_lifecycle": context["prior_lifecycle"]}},
         quality_manifest={})
     edited = SimpleNamespace(transaction_hash="b" * 64,
         proposal={"intent": {"prompt": source, "authored_semantics": {"source_duty": {"ledger_receipt": _admit(case)}}}})
     return initial, context["correction"], previous, edited, case
 
 
-@pytest.mark.parametrize("damage", [None, "missing", "uncertain", "authorized_change", "prior_guard", "source"])
+@pytest.mark.parametrize("damage", [None, "missing", "uncertain", "authorized_change", "prior_guard", "prior_identity", "source"])
 def test_additive_release_family_requires_verified_preservation_of_every_prior_duty(damage) -> None:
     from tests.unit.runtime.test_greenfield_edit_lifecycle_preservation import _admit
     initial, correction, previous, edited, case = _preservation_fixture()
@@ -217,6 +222,8 @@ def test_additive_release_family_requires_verified_preservation_of_every_prior_d
             edited.proposal["intent"]["authored_semantics"]["source_duty"]["ledger_receipt"]["decision_set"] = case[-1]
     elif damage == "prior_guard":
         previous.proposal["semantic_model"]["source_lifecycle"]["conditional_guards"][0]["rule"] = "Permit publication without review."
+    elif damage == "prior_identity":
+        previous.proposal["intent"]["authored_semantics"]["source_duty"]["ledger_receipt"]["ledger"].pop("product_identity")
     elif damage == "source":
         initial += "A new decision maker owns approval."
     if damage:

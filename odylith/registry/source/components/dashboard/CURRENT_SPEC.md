@@ -582,6 +582,9 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:start -->
 - **2026-10-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `tests/unit/install/test_local_release_smoke.py`
+- **2026-10-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_source_duty_binding.py`
 - **2026-10-06 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142, B-145
@@ -595,9 +598,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-10-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
-- **2026-10-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142, B-145
-  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
 <!-- registry-requirements:end -->
 
 ## Feature History

@@ -40,7 +40,7 @@ def _driver_evidence(tmp_path, monkeypatch, *, outcome="authored"):
         for key, value in ledger.items():
             if isinstance(value, list):
                 ledger[key] = []
-        ledger.update(status="clarification_required", question="Who owns the first task?")
+        ledger.update(status="clarification_required", product_identity=None, question="Who owns the first task?")
     compact = compact_source_duty_view(ledger)
     contract = greenfield_host_candidate_contract(source)
     contract["authority_gate"] = greenfield_authority_gate_contract(

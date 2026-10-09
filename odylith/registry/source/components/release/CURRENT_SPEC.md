@@ -9,10 +9,16 @@ readback preserves every prior lifecycle decision. The release scorer also
 requires the authenticated case manifest, compiler seals, receipts, and successful
 browser and quality proof. Any failure or custody issue earns zero EDIT credit.
 
-One same-source development confirmation completed the current 13-action,
-five-human-actor contract. It is development evidence, not release qualification.
-Four authentic EDIT journeys, a fresh installed package, timing evidence, and the
-remaining independent release gates are still required.
+CB-209 records the current product-identity correction; CB-347 and B-142 retain
+its proof obligations. Focused custody and release-reader checks pass, with a
+clear bounded independent review. The full v49 gate passes all 3,939 tests
+across 174 modules in 345.02 seconds, with all 372 pins unchanged. Earlier
+failed gates remain retained. A package at
+`8dfb9e7fe5ceed9b5c5c8e18417d078dfdd1ba0e`
+predates this source change and provides no qualification credit. The retained
+first native EDIT failed before an edited seal, so genuine qualifying EDIT remains
+0/4. A Public40 amendment is pending and the final holdout remains untouched.
+Fresh package, authentic EDIT, timing, and independent release proof are required.
 
 ## Candidate-contract installation check (2026-10-05)
 
@@ -1208,6 +1214,9 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:start -->
 - **2026-10-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `tests/unit/install/test_local_release_smoke.py`
+- **2026-10-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_source_duty_binding.py`
 - **2026-10-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
@@ -1220,8 +1229,6 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
 - **2026-10-02 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
   - Evidence: `odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
-- **2026-10-02 · Decision:** Decision evidence linked this component to governed work with 3 verifiable artifact references.
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `tests/unit/install/test_greenfield_actual_driver_profile_evidence.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

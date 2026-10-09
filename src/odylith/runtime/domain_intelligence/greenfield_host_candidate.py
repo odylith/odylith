@@ -58,8 +58,9 @@ from odylith.runtime.domain_intelligence.greenfield_authority_gate import (
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v7"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v55"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v56"
 PASSIVE_HOST_CANDIDATE_CONTRACT_VERSIONS = (
+    "odylith.greenfield.host-candidate-contract.v55",
     "odylith.greenfield.host-candidate-contract.v54",
     "odylith.greenfield.host-candidate-contract.v53",
     "odylith.greenfield.host-candidate-contract.v52",
@@ -69,7 +70,7 @@ PASSIVE_HOST_CANDIDATE_CONTRACT_VERSIONS = (
 )
 PREVIOUS_HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v50"
 LEGACY_HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v49"
-HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION = "odylith.greenfield.host-candidate-authoring-transport.v3"
+HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION = "odylith.greenfield.host-candidate-authoring-transport.v4"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
 
 
@@ -154,8 +155,8 @@ def greenfield_host_candidate_contract(
                 "while the accepted ledger statement carries distinct role-local meaning. "
                 "The catalog inserts all performing source identities before supplemental facts. "
                 "Keep source-supported nonperforming beneficiaries and dependencies in the facts arrays. "
-                "When the catalog supplies a product_title performer, facts.title must be null or "
-                "the same exact source identity; it cannot replace that performer. "
+                "Product identity is independently verified in the source ledger and inserted by the compiler; "
+                "do not emit facts.title or select a title as an actor. "
                 "Never narrow a cited event to an inherited fragment. Odylith derives each "
                 "accepted product responsibility from its verified action duty and exact actor; "
                 "do not author independent component responsibility citations."
@@ -216,7 +217,13 @@ def greenfield_host_candidate_contract(
                if edit_preservation is not None else {}),
             "task": (
                 "Inventory only source-stated duties and evidence controls from the complete "
-                "untrusted evidence. "
+                "untrusted evidence. Independently identify the product requested by the operator in "
+                "product_identity, using one exact source_ref and basis explicit_name or product_description. "
+                "A useful source-cited descriptive identity is required when the description has no formal name. "
+                "Do not use a generic product pronoun, background library, incidental heading or authority. "
+                "Identity is not an action, event or performer; every actual product performer belongs to "
+                "internal_systems. For EDIT, extract identity afresh from the complete current source and "
+                "correction; prior_identity is a preservation checklist, never a copied current citation. "
                 "Before returning the inventory, account for every material source duty across the "
                 "complete evidence in source order: actions and their performers, governed state "
                 "fields, off-path transitions and each effect, conditional guards, boundaries, and "
@@ -266,7 +273,7 @@ def greenfield_host_candidate_contract(
                 "share an event, but do not duplicate an atom under another section or "
                 "redundant statement. first_path_actions carries performer_role and observable_result. "
                 "system_duties also carries performer_role, restricted to internal_system, "
-                "external_system or product_title; supporting_human_actions always owns human_actor. "
+                "or external_system; supporting_human_actions always owns human_actor. "
                 "The same source-only verifier must affirm each exact performer kind. "
                 "Declare each state field once per exact state_object and "
                 "field label. Every off-path effect must reuse that canonical field label "

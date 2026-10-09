@@ -190,7 +190,7 @@ def ordered_package(tmp_path):
         {
             "responsibility_path": "/component_responsibilities/0",
             "responsibility_quote": canonical_events[1]["event_quote"],
-            "owner_system_path": "/title",
+            "owner_system_path": "/internal_systems/0",
             "owner_system_quote": "Receipt Desk",
             "responsibility_source": "accepted_fact",
             "first_path_event_order": 2,
@@ -200,7 +200,7 @@ def ordered_package(tmp_path):
         {
             "responsibility_path": "/component_responsibilities/1",
             "responsibility_quote": canonical_events[2]["event_quote"],
-            "owner_system_path": "/title",
+            "owner_system_path": "/internal_systems/0",
             "owner_system_quote": "Receipt Desk",
             "responsibility_source": "accepted_fact",
             "first_path_event_order": 3,

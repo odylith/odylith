@@ -21,7 +21,7 @@ DUTY_SECTIONS = (
 )
 MAX_DERIVED_REFS = 5
 MAX_COMPACT_CITATIONS = 256
-SOURCE_DUTY_COMPACT_VERSION = "odylith.greenfield.source-duty-compact.v4"
+SOURCE_DUTY_COMPACT_VERSION = "odylith.greenfield.source-duty-compact.v5"
 
 
 def duty_references(section: str, row: Mapping[str, Any]) -> tuple[list, list]:
@@ -61,6 +61,8 @@ def compact_source_duty_view(ledger: Mapping[str, Any]) -> dict[str, Any]:
         {"ref": intern(control), "handling": control["handling"]}
         for control in ledger["evidence_controls"]
     ]
+    if ledger["version"] == "odylith.greenfield.source-duty-ledger.v7" and ledger["product_identity"] is not None:
+        view["product_identity"]["source_ref"] = intern(ledger["product_identity"]["source_ref"])
     for section, _ in DUTY_SECTIONS:
         for row in view[section]:
             row["source_refs"] = [intern(ref) for ref in row["source_refs"]]
@@ -70,5 +72,7 @@ def compact_source_duty_view(ledger: Mapping[str, Any]) -> dict[str, Any]:
                 row["role_refs"] = [intern(ref) for ref in row["role_refs"]]
     view["version"] = ("odylith.greenfield.source-duty-compact.v3"
                        if ledger["version"] == "odylith.greenfield.source-duty-ledger.v5"
+                       else "odylith.greenfield.source-duty-compact.v4"
+                       if ledger["version"] == "odylith.greenfield.source-duty-ledger.v6"
                        else SOURCE_DUTY_COMPACT_VERSION)
     return {"citations": bank, **view}

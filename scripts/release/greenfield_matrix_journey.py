@@ -258,6 +258,8 @@ def _require_preserved_duties(
     context = greenfield_edit_preservation_context(
         transaction_hash=previous.transaction_hash,
         prior_lifecycle=previous.proposal["semantic_model"]["source_lifecycle"],
+        prior_identity=previous.proposal["intent"]["authored_semantics"]["source_duty"][
+            "ledger_receipt"]["ledger"].get("product_identity"),
         correction=prepared.edit_evidence, evidence_text=prepared.evidence_source,
     )
     receipt = edited.proposal["intent"]["authored_semantics"]["source_duty"]["ledger_receipt"]

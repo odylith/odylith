@@ -260,6 +260,19 @@ def test_envelope_construction_rejects_relation_free_input() -> None:
         )
 
 
+def test_envelope_construction_refuses_missing_source_custody_explicitly() -> None:
+    source, result, intent = _authored_inputs()
+    intent[AUTHORED_SEMANTICS_KEY] = authored_semantics_mapping(
+        result.first_path_relations,
+        result.component_responsibility_relations,
+        first_path_context_relations=result.first_path_context_relations,
+        provisional_design=result.provisional_design,
+        source_duty=None,
+    )
+    with pytest.raises(ValueError, match="requires verified source-duty custody"):
+        _build_envelope(source=source, result=result, intent=intent)
+
+
 def test_envelope_rejects_source_digest_or_span_rebinding() -> None:
     source, result, intent = _authored_inputs()
     with pytest.raises(ValueError, match="source duty ledger receipt hash is invalid"):
@@ -275,7 +288,7 @@ def test_envelope_rejects_source_digest_or_span_rebinding() -> None:
 
     rebound_spans = copy.deepcopy(list(result.source_spans))
     rebound_spans[0]["source_start_byte"] += 1
-    with pytest.raises(ValueError, match="source custody is malformed"):
+    with pytest.raises(ValueError, match="source custody is malformed|identity differs"):
         build_product_intent_envelope(
             intent,
             source_text=source,
@@ -288,7 +301,7 @@ def test_envelope_rejects_source_digest_or_span_rebinding() -> None:
 
     rebound_projection = copy.deepcopy(list(result.source_spans))
     rebound_projection[0]["projection_path"] = "/product_story"
-    with pytest.raises(ValueError, match="source custody is malformed"):
+    with pytest.raises(ValueError, match="source custody is malformed|identity differs"):
         build_product_intent_envelope(
             intent,
             source_text=source,

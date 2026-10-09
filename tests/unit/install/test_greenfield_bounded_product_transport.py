@@ -763,6 +763,7 @@ def test_proposal_refusal_preserves_bounded_detail_and_prior_seal(
     from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import prepare_model_authoring_evidence
     from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import EDIT_SOURCE_DUTY_DECISION_SET_VERSION, source_duty_entailment_task
     from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import preflight_greenfield_source_duty_ledger
+    from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION
     from odylith.runtime.domain_intelligence.greenfield_source_duty_view import compact_source_duty_view
     from tests.unit.install.test_greenfield_matrix_host_candidate import _flow
     from tests.unit.runtime.test_greenfield_source_duty_ledger import _yes_decisions
@@ -788,6 +789,7 @@ def test_proposal_refusal_preserves_bounded_detail_and_prior_seal(
     decisions = _yes_decisions(preflight, evidence_text=source)
     decisions.update(version=EDIT_SOURCE_DUTY_DECISION_SET_VERSION,
                      verifier_task_sha256=task["verifier_task_sha256"],
+                     identity_preservation={"verdict": "preserved", "correction_authorization": "not_required"},
                      edit_preservation={})
     gate = {"decision": "admit", "required_fields": [], "question": "",
             "owner_quote": old_transaction.proposal["intent"]["human_actors"][0],
@@ -809,7 +811,7 @@ def test_proposal_refusal_preserves_bounded_detail_and_prior_seal(
         elif "source-ledger-check" in command:
             if "--decision-file" in command:
                 assert payload["receipt"]["edit_preservation"] == context
-                assert payload["receipt"]["version"] == "odylith.greenfield.source-duty-ledger-receipt.v11"
+                assert payload["receipt"]["version"] == EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION
             else:
                 assert payload["decision_task"] == task
         return subprocess.CompletedProcess(command, status, captured.getvalue(), "")

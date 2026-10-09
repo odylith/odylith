@@ -20,12 +20,12 @@ from odylith.runtime.domain_intelligence.greenfield_process import (
 )
 from odylith.runtime.domain_intelligence.greenfield_source_duty_compact import expand_compact_source_duty_ledger
 from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import preflight_greenfield_source_duty_ledger
-from tests.unit.install.test_greenfield_matrix_host_candidate import _flow
+from tests.unit.install.test_greenfield_matrix_host_candidate import _FIXTURE_HOST_SOURCE, _flow
 
 
 def _prepare_fixture(tmp_path, monkeypatch, *, diagnostic=True, failure=None, clock=None):
     raw = "Original request ∆\r\n"
-    source = "First Complete Path: A reviewer creates a reviewable plan. Reference: Notes are background only.\r\n∆"
+    source = _FIXTURE_HOST_SOURCE + "\r\n∆"
     flow, original_host, installed_calls, host_calls, proposals, repo = _flow(
         tmp_path, candidate={"result": {"status": "authored"}},
         contract={"request": {"evidence": source}, "authority_gate": greenfield_authority_gate_contract(

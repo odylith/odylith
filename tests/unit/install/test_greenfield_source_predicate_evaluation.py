@@ -32,7 +32,7 @@ from greenfield_semantic_case_score import (
 from greenfield_semantic_release_score import evaluate_semantic_release, _score_case
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import combined_prompt_evidence_source
 from odylith.runtime.domain_intelligence.greenfield_operating_envelope import greenfield_complexity_band
-from tests.unit.install.test_greenfield_release_source_duty_custody import _legacy_snapshot, _normalized_snapshot, _reseal
+from tests.unit.install.test_greenfield_release_source_duty_custody import _current_snapshot, _normalized_snapshot, _reseal
 from tests.unit.install.test_greenfield_semantic_release_score import (
     _case, _clarification_result, _clarification_annotation, _commit_result, EXACT_RELEASE_FLOORS,
 )
@@ -530,7 +530,7 @@ def test_clarification_stops_before_any_nonempty_compile_receipt(public_mode, re
 
 
 def test_actual_evidence_loader_refuses_malformed_material_custody(tmp_path):
-    original_case, original_snapshot = _legacy_snapshot()
+    original_case, original_snapshot = _current_snapshot(tmp_path)
     source_case = _case('malformed-material', expectation='clarification_required', prompt=original_case.prompt)
     case, result, config = _audited_clarification(tmp_path, source_case=source_case, snapshot=original_snapshot,
         material_custody={'state_object': 'malformed'})

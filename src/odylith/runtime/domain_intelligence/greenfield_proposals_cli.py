@@ -544,6 +544,8 @@ def _edit_preservation(previous, *, correction: str, evidence_text: str):
     lifecycle = semantic.get("source_lifecycle") if isinstance(semantic, Mapping) else None
     return greenfield_edit_preservation_context(
         transaction_hash=previous.transaction_hash, prior_lifecycle=lifecycle,
+        prior_identity=(previous.proposal.get("intent", {}).get("authored_semantics", {}).get("source_duty", {}).get("ledger_receipt", {}).get("ledger", {}).get("product_identity")
+                        if isinstance(semantic, Mapping) else None),
         correction=correction, evidence_text=evidence_text,
     )
 

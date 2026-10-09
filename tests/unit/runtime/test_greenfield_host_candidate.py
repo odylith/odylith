@@ -83,6 +83,7 @@ def _accepted_ledger(ledger: dict, *, evidence_text: str) -> dict:
         "version": SOURCE_DUTY_DECISION_SET_VERSION,
         "verifier_task_sha256": task["verifier_task_sha256"],
         "source_completeness": {"verdict": "yes", "omissions": []},
+        "product_identity": {"verdict": "yes"},
         "decisions": {
             claim["duty_id"]: {
                 "verdict": "yes",
@@ -544,6 +545,7 @@ def test_bound_system_prerequisite_survives_admission_and_canonical_reload(
         )
         context = greenfield_edit_preservation_context(
             transaction_hash="a" * 64, prior_lifecycle=prior_lifecycle,
+            prior_identity=prior_receipt["ledger"]["product_identity"],
             correction=edit_evidence, evidence_text=prepared.evidence_source,
         )
         preflight = preflight_greenfield_source_duty_ledger(
@@ -556,6 +558,7 @@ def test_bound_system_prerequisite_survives_admission_and_canonical_reload(
         decisions.update(
             version=EDIT_SOURCE_DUTY_DECISION_SET_VERSION,
             verifier_task_sha256=task["verifier_task_sha256"], edit_preservation={},
+            identity_preservation={"verdict": "preserved", "correction_authorization": "not_required"},
         )
         receipt = validate_greenfield_source_duty_ledger(
             receipt["ledger"], evidence_text=prepared.evidence_source,
@@ -582,8 +585,8 @@ def test_bound_system_prerequisite_survives_admission_and_canonical_reload(
     ]
     source_duty = materialized["authored_semantics"]["source_duty"]
     assert source_duty["ledger_receipt"] == original_receipt
-    assert source_duty["ledger_receipt"]["version"].endswith(".v11" if edit_evidence else ".v10")
-    assert source_duty["ledger_receipt"]["decision_set"]["version"].endswith(".v6" if edit_evidence else ".v4")
+    assert source_duty["ledger_receipt"]["version"].endswith(".v13" if edit_evidence else ".v12")
+    assert source_duty["ledger_receipt"]["decision_set"]["version"].endswith(".v8" if edit_evidence else ".v7")
     assert [row["event_order"] for row in source_duty["binding"]["first_path_actions"]] == [1, 2]
     assert [row["event_order"] for row in source_duty["binding"]["system_duties"]] == [3]
     reloaded = json.loads(json.dumps(materialized))
@@ -609,8 +612,8 @@ def test_fresh_candidate_requires_summary_in_schema_and_deterministic_admission(
     source, candidate = _candidate()
     contract = greenfield_host_candidate_contract(source)
     design_schema = contract["candidate_schema"]["properties"]["result"]["anyOf"][0]["properties"]["provisional_design"]
-    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v55"
-    assert contract["candidate_version"] == "odylith.greenfield.host-candidate-format.v24"
+    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v56"
+    assert contract["candidate_version"] == "odylith.greenfield.host-candidate-format.v25"
     assert "project_summary" in design_schema["required"]
     assert design_schema["properties"]["project_summary"]["maxLength"] == 600
     assert any("not an accepted source fact" in requirement for requirement in contract["requirements"])
@@ -667,7 +670,7 @@ def test_summary_changes_candidate_hash_without_source_duty_fact_or_atom_changes
         assert changed_receipt[field] == receipt[field]
 
 
-@pytest.mark.parametrize("damage", ["canonical_binding", "action_table", "actor_event", "old_format"])
+@pytest.mark.parametrize("damage", ["canonical_binding", "action_table", "actor_event", "old_format", "null_title", "cited_title"])
 def test_fresh_wire_refuses_all_retired_actor_and_action_mapping_ownership(damage):
     source, candidate = _candidate()
     receipt = synthetic_source_duty_receipt(candidate, evidence_text=source)
@@ -680,8 +683,10 @@ def test_fresh_wire_refuses_all_retired_actor_and_action_mapping_ownership(damag
         candidate["result"]["source_duty_binding"]["system_duties"] = []
     elif damage == "actor_event":
         candidate["result"]["events"] = [{"actor_fact": {"field": "human_actors", "row": 2}}]
+    elif damage in {"null_title", "cited_title"}:
+        candidate["result"]["facts"]["title"] = (None if damage == "null_title" else candidate.product_identity["source_ref"])
     else:
-        candidate["version"] = "odylith.greenfield.host-candidate-format.v23"
+        candidate["version"] = "odylith.greenfield.host-candidate-format.v24"
     with pytest.raises((ValueError, TypeError)):
         admit_greenfield_host_candidate(candidate, evidence_text=source, source_duty_receipt=receipt)
     with pytest.raises((ValueError, TypeError)):

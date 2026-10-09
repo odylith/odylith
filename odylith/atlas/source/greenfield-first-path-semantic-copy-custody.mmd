@@ -11,17 +11,17 @@ flowchart TB
       direction TB
       gate["Independent authority gate<br/>Does the requested product name an owner,<br/>usable task and observable result?"]
       gate_check{"Source-bound witness<br/>or material gap?"}
-      host["Source-duty inventory<br/>Records performers, actions, targets and lifecycle duties"]
+      host["Source-duty inventory<br/>Records product identity, performers, actions, targets and lifecycle duties"]
       candidate["Compact source evidence<br/>Keeps every accepted duty and its exact source reference"]
-      identity_check["Source field and performer custody preflight<br/>Resolve declared object and field identities;<br/>retain exact performer quotes in normalized statements"]
-      source_control["Source-only verifier<br/>Affirms complete duties, canonical performer references<br/>and system performer types"]
-      catalog["Compiler-owned actors and events<br/>One event per verified action; exact source identities<br/>and fixed event IDs before candidate authoring"]
-      candidate_author["One candidate authoring pass<br/>Authors design and lifecycle allocations using fixed events;<br/>cannot replace performers or remove verified actions"]
+      identity_check["Source identity and performer custody preflight<br/>Resolve the product identity separately from actors;<br/>retain exact performer quotes in normalized statements"]
+      source_control["Source-only verifier<br/>Affirms product identity and complete duties;<br/>verifies canonical performer references and system types"]
+      catalog["Compiler-owned product identity, actors and events<br/>Product identity is distinct from actors.<br/>One event per verified action has an exact source identity and fixed ID"]
+      candidate_author["One candidate authoring pass<br/>Authors design and lifecycle allocations using fixed events;<br/>cannot replace product identity, performers or verified actions"]
     end
 
     subgraph admission_lane["Deterministic admission"]
       direction TB
-      validator["Deterministic validator and custody compiler<br/>Reuses the fixed actor/event catalog and state identities;<br/>checks exact source spans, lifecycle, relations and hashes"]
+      validator["Deterministic validator and custody compiler<br/>Rebuilds source product identity and the fixed actor/event catalog;<br/>checks exact source spans, lifecycle, relations and hashes"]
       complete{"Complete and<br/>source-grounded?"}
       clarify["One focused clarification<br/>No package, transaction or governed write"]
       invalid_candidate["Invalid or tampered candidate<br/>Fail closed with no second model,<br/>repair, retry, fallback or governed write"]
@@ -46,7 +46,7 @@ flowchart TB
       cancelled["Expired journey<br/>No confirmable new seal or successful preview"]
       decision{"Operator decision"}
       confirm["CONFIRM with delivered receipt<br/>Commit-only publication"]
-      revise["EDIT<br/>New candidate contract from old seal + correction"]
+      revise["EDIT<br/>Reverify current source identity; prior identity is custody context;<br/>the correction authorizes changes"]
       reject["REJECT<br/>No governed writes"]
       readback["Readback equals sealed bytes"]
     end

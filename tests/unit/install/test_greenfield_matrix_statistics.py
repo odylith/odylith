@@ -689,6 +689,7 @@ def _statistics_edit_fixture(tmp_path: Path, monkeypatch):
     """Unit enforcement fixture: compiler/profile bindings are isolated, never release evidence."""
     from tests.unit.runtime.test_greenfield_edit_lifecycle_preservation import _edit_case
     from tests.unit.runtime.test_greenfield_source_duty_ledger import _yes_decisions
+    from tests.unit.runtime.greenfield_model_authoring_fixtures import synthetic_source_duty_receipt_for_ledger
     from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import (
         greenfield_edit_preservation_context, source_duty_entailment_task,
     )
@@ -702,13 +703,16 @@ def _statistics_edit_fixture(tmp_path: Path, monkeypatch):
     source = case.model_evidence.evidence_source
     initial_source = statistics.prepare_model_authoring_evidence(prompt=case.initial_prompt).evidence_source
     context = greenfield_edit_preservation_context(transaction_hash="a" * 64,
-        prior_lifecycle=old_context["prior_lifecycle"], correction=case.model_evidence.edit_evidence, evidence_text=source)
+        prior_lifecycle=old_context["prior_lifecycle"], prior_identity=old_context["prior_identity"],
+        correction=case.model_evidence.edit_evidence, evidence_text=source)
     preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=source)
     task = source_duty_entailment_task(preflight, evidence_text=source, edit_preservation=context)
     decisions = _yes_decisions(preflight, evidence_text=source)
     decisions.update(version=old_decisions["version"], verifier_task_sha256=task["verifier_task_sha256"],
+        identity_preservation=deepcopy(old_decisions["identity_preservation"]),
         edit_preservation=deepcopy(old_decisions["edit_preservation"]))
     duty = validate_greenfield_source_duty_ledger(ledger, evidence_text=source, decision_set=decisions, edit_preservation=context)
+    initial_duty = synthetic_source_duty_receipt_for_ledger(ledger, evidence_text=initial_source)
     root = tmp_path / "retained-case"
     root.mkdir()
     transactions = {}
@@ -755,7 +759,8 @@ def _statistics_edit_fixture(tmp_path: Path, monkeypatch):
             phase["source_duty_receipt"] = duty
         phases[label] = phase
         transactions[label] = SimpleNamespace(transaction_hash=digest, quality_manifest={},
-            proposal={"intent": {"prompt": framed, "authored_semantics": {"source_duty": {"ledger_receipt": duty}}},
+            proposal={"intent": {"prompt": framed, "authored_semantics": {"source_duty": {
+                "ledger_receipt": initial_duty if label == "initial" else duty}}},
                 "semantic_model": {"source_lifecycle": context["prior_lifecycle"]}})
         write("diagnostics-initial/candidate.stdout" if label == "initial" else "semantic/host-candidate.raw.v1.json", {})
         write("diagnostics-initial/source-ledger-check.stdout" if label == "initial" else "semantic/host-source-ledger-check.raw.v1.json", {"receipt": {} if label == "initial" else duty})
@@ -803,7 +808,7 @@ def _statistics_edit_fixture(tmp_path: Path, monkeypatch):
     "missing_receipt", "foreign_receipt", "foreign_rebound_receipt", "foreign_edit_consumer",
     "stale_receipt", "receipt_bytes", "seal_bytes", "private_mode", "retained_path", "membership",
     "initial_source", "edited_source", "flat_source", "correction", "request",
-    "prior_readback_missing", "prior_readback_changed", "prior_duty", "missing_duty", "changed_duty",
+    "prior_readback_missing", "prior_readback_changed", "prior_duty", "prior_identity", "missing_duty", "changed_duty",
     "checker_receipt", "documents", "envelope", "uncommitted", "failed_quality", "failed_create",
     "skipped_browser", "failed_browser", "browser_record", "wrong_case", "model_source",
     "model_observation", "initial_model", "journal", "journal_hash", "retry", "retry_response", "commit_result",
@@ -821,6 +826,8 @@ def test_edit_slice_requires_receipts_preservation_commit_and_browser_custody(tm
         lifecycle["custody_issues"] = ["Initial pending artifact changed after confirmation."]
     elif damage == "prior_hash": initial["transaction_hash"] = "9" * 64
     elif damage == "same_hash": transactions["edited"].transaction_hash = initial["transaction_hash"]
+    elif damage == "prior_identity":
+        transactions["initial"].proposal["intent"]["authored_semantics"]["source_duty"]["ledger_receipt"]["ledger"].pop("product_identity")
     elif damage == "missing_receipt": initial["artifacts"].pop(initial["completion_receipt_path"])
     elif damage == "foreign_receipt": initial["completion_receipt_path"] = "/foreign/receipt"
     elif damage == "foreign_rebound_receipt":

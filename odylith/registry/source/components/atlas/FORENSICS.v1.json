@@ -36,12 +36,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 804,
-    "mapped_workstream_evidence_count": 755,
+    "explicit_event_count": 810,
+    "mapped_workstream_evidence_count": 760,
     "recent_path_match_count": 0,
     "spec_history_event_count": 21,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 804
+    "timeline_event_count": 810
   },
   "name": "Atlas",
   "path_prefixes": [
@@ -51,6 +51,222 @@
   ],
   "spec_ref": "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 11,
+      "artifacts": [
+        "sha256:5249f4fcc629efa0e6d6b2bf746b6c5de61611ce719ad61ac820fbe5c8cece66",
+        "sha256:e4a6bf1d62cbe0b698d37a8599344e97d5f793d8684eb4e25e75e1bc1c261903",
+        "sha256:0d429f45d0be559f1d8c44c3be64c20d60b99da0d6ce67ac0870c1796102245f",
+        "sha256:cc187ba09c031ee28aa5100b8e8ef79f8d44ad5af0a420518496398d412eaca8",
+        "sha256:012f236143671be287d8d63a3f006b061d61567ee6b892368d286d8410a2891a",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "sha256:5a5000a3f3ff868603876ea774d1d272912a4949e738597a944cfc6050b8d097",
+        "sha256:5f53b0a2be22e28dc4b056f663910c046a33f9b2d779eaf997ea771fe1881a13",
+        "src/odylith/runtime/project_intelligence/authored_fact_presenter.py",
+        "src/odylith/runtime/surfaces/atlas_detail_layout.py",
+        "src/odylith/runtime/surfaces/registry_component_identity_ui.py"
+      ],
+      "confidence": "high",
+      "event_index": 1598,
+      "explicit_components": [],
+      "kind": "ambient_signal",
+      "mapped_components": [
+        "atlas",
+        "dashboard",
+        "odylith",
+        "release"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work. 11 verifiable artifact references.",
+      "ts_iso": "2026-10-09T11:05:20Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md"
+      ],
+      "confidence": "high",
+      "event_index": 1597,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
+      "ts_iso": "2026-10-09T04:03:55-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md"
+      ],
+      "confidence": "high",
+      "event_index": 1596,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
+      "ts_iso": "2026-10-09T03:37:55-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 1595,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
+      "ts_iso": "2026-10-09T02:48:05-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "tests/unit/install/test_local_release_smoke.py"
+      ],
+      "confidence": "high",
+      "event_index": 1594,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-10-09T02:23:13-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "tests/unit/install/test_local_release_smoke.py"
+      ],
+      "confidence": "high",
+      "event_index": 1593,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-10-09T02:08:40-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 3,
       "artifacts": [

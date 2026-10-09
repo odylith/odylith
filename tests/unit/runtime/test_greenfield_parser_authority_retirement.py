@@ -157,7 +157,7 @@ from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_proposals_cli
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import combined_prompt_evidence_source
 from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_baseline_fixture
-from tests.unit.runtime.greenfield_model_authoring_fixtures import write_host_candidate_fixture, write_synthetic_source_duty_receipt
+from tests.unit.runtime.greenfield_model_authoring_fixtures import host_candidate_response, write_synthetic_source_duty_receipt
 from tests.unit.runtime.greenfield_authority_gate_fixtures import write_admitted_authority_gate
 from tests.unit.runtime.test_greenfield_model_path_custody import _response, _source
 
@@ -166,14 +166,12 @@ evidence = combined_prompt_evidence_source(prompt=source, edit_evidence="")
 with tempfile.TemporaryDirectory(prefix="greenfield-parser-retirement-") as repo_root:
     activate_greenfield_baseline_fixture(Path(repo_root))
     response = _response(evidence)
-    candidate_path = write_host_candidate_fixture(
-        Path(repo_root) / "host-candidate.json",
-        response,
-        evidence_text=evidence,
-    )
+    candidate = host_candidate_response(response, evidence_text=evidence)
+    candidate_path = Path(repo_root) / "host-candidate.json"
+    candidate_path.write_text(json.dumps(candidate), encoding="utf-8")
     ledger_path = write_synthetic_source_duty_receipt(
         Path(repo_root).parent / f"{{Path(repo_root).name}}-source-ledger.json",
-        json.loads(candidate_path.read_text(encoding="utf-8")),
+        candidate,
         evidence_text=evidence,
     )
     gate_path = write_admitted_authority_gate(

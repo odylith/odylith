@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from copy import deepcopy
-import hashlib
 from typing import Any
 
 import pytest
@@ -17,7 +16,6 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     first_path_relations_from_intent,
     require_relation_authority_parity,
 )
-from odylith.runtime.domain_intelligence.greenfield_model_atomic_projection import derive_model_atomic_claims
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     build_product_intent_envelope,
     product_facts_payload,
@@ -30,6 +28,10 @@ from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
     derive_risk_scope,
     provisional_design_from_intent,
     validate_provisional_design,
+)
+from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    admit_complete_host_candidate, authored_response, host_candidate_response,
+    source_duty_fixture,
 )
 
 
@@ -523,64 +525,33 @@ def _enveloped_intent() -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]
         "title": "Desk", "product_story": "A person needs a visible result",
         "state_object": "result", "first_path": "Desk shows result",
         "proof_boundary": "Verify the visible result",
+        "problem": "A person cannot see the result", "customer": "A person",
+        "opportunity": "A visible result avoids guesswork", "product_view": "Desk shows a visible result",
     }
     source = "\n".join(intent.values())
-    spans, facts = [], []
-    cursor = 0
-    for index, (field, quote) in enumerate(intent.items(), start=1):
-        size = len(quote.encode("utf-8"))
-        fact = {
-            "fact_index": index, "field": field, "quote": quote,
-            "source_start_byte": cursor, "source_end_byte": cursor + size,
-            "projection_path": f"/{field}",
-            "projection_start_byte": 0, "projection_end_byte": size,
-        }
-        facts.append(fact)
-        spans.append({
-            "span_id": f"source:{field}", "section_key": field, "row_index": 1,
-            "classification": "product_claim", "text": quote,
-            "quote_sha256": hashlib.sha256(quote.encode()).hexdigest(),
-            **{key: fact[key] for key in (
-                "source_start_byte", "source_end_byte", "projection_path",
-                "projection_start_byte", "projection_end_byte",
-            )},
-        })
-        cursor += size + 1
-    path_fact = next(row for row in facts if row["field"] == "first_path")
-    state_fact = next(row for row in facts if row["field"] == "state_object")
-    relation = {
-        "order": 1, "source_start_byte": path_fact["source_start_byte"],
-        "source_end_byte": path_fact["source_end_byte"],
-        "event_start_byte": 0, "event_end_byte": len(intent["first_path"]),
-        "actor_kind": "product", "actor_fact_path": "/title", "actor_fact_quote": "Desk",
-        "owner_system_path": "/title", "owner_system_quote": "Desk",
-        "event_quote": intent["first_path"], "action_verb_quote": "shows",
-        "target_quote": "result", "visible_result_quote": "result",
-    }
-    context = {
-        "context_kind": "state_object", "fact_path": "/state_object", "fact_quote": "result",
-        "source_start_byte": state_fact["source_start_byte"],
-        "source_end_byte": state_fact["source_end_byte"], "first_path_event_order": 0,
-    }
-    intent[AUTHORED_SEMANTICS_KEY] = authored_semantics_mapping(
-        [relation], first_path_context_relations=[context],
+    intent["internal_systems"] = ["Desk"]
+    candidate = host_candidate_response(authored_response(
+        intent, evidence_text=source,
+        first_path_relations=[{
+            "actor_kind": "product", "actor_fact_quote": "Desk", "owner_system_quote": "Desk",
+            "event_quote": "Desk shows result", "action_verb_quote": "shows",
+            "target_quote": "result", "visible_result_quote": "result",
+        }],
         provisional_design=_design(event_orders=(1,)),
-        source_precedence=[],
-    )
-    terminal_fact = {
-        **path_fact, "terminal_result_quote": "result",
-        "terminal_result_source_start_byte": path_fact["source_start_byte"] + 11,
-        "terminal_result_projection_start_byte": 11,
-    }
-    claims = derive_model_atomic_claims(
-        intent=intent, selected_facts=facts, first_path_relations=[relation],
-        terminal_result_fact=terminal_fact,
+    ), evidence_text=source)
+    result = admit_complete_host_candidate(evidence_text=source, host_candidate=candidate)
+    intent = result.intent
+    intent[AUTHORED_SEMANTICS_KEY] = authored_semantics_mapping(
+        result.first_path_relations, result.component_responsibility_relations,
+        first_path_context_relations=result.first_path_context_relations,
+        provisional_design=result.provisional_design,
+        source_duty=source_duty_fixture(candidate, evidence_text=source),
     )
     envelope = build_product_intent_envelope(
         intent, source_text=source, source_path="evidence.md", source_format="typed_envelope_json",
         canonical_candidate_sha256="a" * 64,
-        authored_source_spans=spans, authored_atomic_claims=claims,
-        authored_source_sha256=hashlib.sha256(source.encode()).hexdigest(),
+        authored_source_spans=result.source_spans, authored_atomic_claims=result.atomic_claims,
+        authored_source_sha256=result.source_sha256,
     )
     authority = product_intent_authority_from_envelope(
         envelope, structured_intent_path="candidate-intent.json", markdown_source_path="evidence.md",
@@ -597,6 +568,7 @@ def test_design_uses_existing_semantic_hash_without_entering_source_facts_or_ato
         first_path_context_relations=semantics["first_path_context_relations"],
         provisional_design=design,
         source_precedence=semantics["source_precedence"],
+        source_duty=semantics["source_duty"],
     )
     assert authority[AUTHORED_RELATION_SET_SHA256_KEY] == expected
     assert envelope["custody_ledger"][AUTHORED_RELATION_SET_SHA256_KEY] == expected
@@ -650,7 +622,7 @@ def test_first_run_rationale_is_sealed_without_becoming_a_source_fact() -> None:
 def test_valid_design_never_replaces_source_actor_validation() -> None:
     intent, _, _ = _enveloped_intent()
     original_design = provisional_design_from_intent(intent)
-    intent["title"] = "A different source actor"
+    intent["internal_systems"][0] = "A different source actor"
     assert validate_provisional_design(original_design, event_orders=(1,)) == original_design
     with pytest.raises(GreenfieldAuthoredSemanticsError, match="unbound first-path actor"):
         provisional_design_from_intent(intent)

@@ -63,6 +63,7 @@ def greenfield_compact_source_duty_ledger_schema() -> dict[str, Any]:
             }
         ),
     }
+    properties["product_identity"]["anyOf"][0]["properties"]["source_ref"] = _citation_id_schema()
     control = properties["evidence_controls"]["items"]
     control["properties"].pop("quote")
     control["properties"].pop("context")
@@ -142,6 +143,9 @@ def expand_compact_source_duty_ledger(
     expanded = deepcopy(dict(value))
     expanded.pop("citations")
     expanded["version"] = SOURCE_DUTY_LEDGER_VERSION
+    if value["product_identity"] is not None:
+        expanded["product_identity"]["source_ref"] = resolve(
+            value["product_identity"]["source_ref"], "product_identity.source_ref")
     expanded["evidence_controls"] = []
     for index, control in enumerate(value["evidence_controls"]):
         citation = resolve(control["ref"], f"evidence_controls[{index}].ref")

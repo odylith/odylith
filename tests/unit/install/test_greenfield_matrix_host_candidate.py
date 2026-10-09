@@ -38,6 +38,11 @@ from odylith.runtime.domain_intelligence.greenfield_whole_journey_budget import 
     whole_journey_observation_issues,
 )
 
+_FIXTURE_HOST_SOURCE = (
+    "Review-planning workspace. First Complete Path: A reviewer creates a reviewable plan. "
+    "Reference: Notes are background only."
+)
+
 
 def _completed(argv: list[str], *, stdout: str = "", stderr: str = "", returncode: int = 0):
     return subprocess.CompletedProcess(argv, returncode, stdout=stdout, stderr=stderr)
@@ -48,6 +53,8 @@ def _fixture_host_ledger() -> dict:
              "context": "A reviewer creates a reviewable plan."}
     return compact_source_duty_view({
         "version": SOURCE_DUTY_LEDGER_VERSION, "status": "inventory", "question": "",
+        "product_identity": {"basis": "product_description", "source_ref": {
+            "quote": "Review-planning workspace.", "context": "Review-planning workspace."}},
         "evidence_controls": [{"quote": "Notes are background only.",
                                "context": "Notes are background only.",
                                "handling": "reference_context"}],
@@ -75,7 +82,7 @@ def _flow(tmp_path: Path, *, candidate: object, contract: object, gate_decision:
     installed_calls: list[tuple[list[str], float]] = []
     host_calls: list[tuple[list[str], str, float, Path]] = []
     proposal_paths: list[Path] = []
-    source = contract.get("request", {}).get("evidence", "First Complete Path: A reviewer creates a reviewable plan. Reference: Notes are background only.")
+    source = contract.get("request", {}).get("evidence", _FIXTURE_HOST_SOURCE)
     contract_payload = greenfield_host_candidate_contract(source)
     contract_payload["authority_gate"] = greenfield_authority_gate_contract(
         prompt=source, edit_evidence="Keep the source path.", evidence_source=source,
@@ -99,6 +106,7 @@ def _flow(tmp_path: Path, *, candidate: object, contract: object, gate_decision:
         "decisions": {"d1": {"verdict": "yes",
                        "support_ref_indexes": [0], "role_ref_indexes": [0, 1]}},
         "source_completeness": {"verdict": "yes", "omissions": []},
+        "product_identity": {"verdict": "yes"},
     }
     ledger_receipt = validate_greenfield_source_duty_ledger(
         expanded, evidence_text=source, decision_set=decision_set,
@@ -183,7 +191,7 @@ def _flow(tmp_path: Path, *, candidate: object, contract: object, gate_decision:
                 "{candidate_schema}",
                 "-",
             ),
-            prompt="First Complete Path: A reviewer creates a reviewable plan. Reference: Notes are background only.",
+            prompt=_FIXTURE_HOST_SOURCE,
             edit_evidence="Keep the source path.",
             timeout=5.0,
             env={
@@ -227,7 +235,7 @@ def test_host_candidate_happy_path_is_one_shot_and_cleans_candidate_file(
         "--repo-root",
         ".",
         "--prompt",
-        "First Complete Path: A reviewer creates a reviewable plan. Reference: Notes are background only.",
+        _FIXTURE_HOST_SOURCE,
         "--edit",
         "Keep the source path.",
     ]
@@ -263,7 +271,7 @@ def test_host_candidate_happy_path_is_one_shot_and_cleans_candidate_file(
     assert flow.observation_sink["whole_journey_seconds"] >= flow.observation_sink["elapsed_seconds"]
     assert flow.observation_sink["model_profile_id"] == STANDARD_PROFILE_ID
     assert flow.observation_sink["source_sha256"] == hashlib.sha256(
-        b"First Complete Path: A reviewer creates a reviewable plan. Reference: Notes are background only."
+        _FIXTURE_HOST_SOURCE.encode("utf-8")
     ).hexdigest()
     assert flow.observation_sink["response_kind"] == "authored"
     request = flow.observation_sink["host_request"]
@@ -573,7 +581,7 @@ def test_nonaffirmative_source_completeness_cannot_start_a_candidate(
             decision_set = json.loads(decision_file.read_text(encoding="utf-8"))
             receipt = {
                 "version": "odylith.greenfield.source-duty-ledger-receipt.v6",
-                "source_sha256": hashlib.sha256(b"First Complete Path: A reviewer creates a reviewable plan. Reference: Notes are background only.").hexdigest(),
+                "source_sha256": hashlib.sha256(_FIXTURE_HOST_SOURCE.encode("utf-8")).hexdigest(),
                 "ledger_sha256": "a" * 64,
                 "verifier_task_sha256": "d" * 64,
                 "decision_set_sha256": "b" * 64,
@@ -1069,7 +1077,7 @@ def test_real_gate_only_observation_passes_closed_profile_evidence(
         STANDARD_PROFILE_ID,
         profile_module.model_profile_environment(STANDARD_PROFILE_ID, flow.env),
         observed={}, stage_observation=flow.observation_sink, raw_candidate={},
-        expected_source="First Complete Path: A reviewer creates a reviewable plan. Reference: Notes are background only.",
+        expected_source=_FIXTURE_HOST_SOURCE,
     )
     assert evidence["status"] == "passed", evidence["issues"]
 

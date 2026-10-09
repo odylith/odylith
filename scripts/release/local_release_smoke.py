@@ -105,7 +105,7 @@ def _has_current_host_candidate_schema(candidate_schema: object) -> bool:
             isinstance(constraint, dict)
             and facts.get("type") == "object"
             and facts.get("additionalProperties") is False
-            and not {"first_path", "supporting_events"} & (
+            and not {"title", "first_path", "supporting_events"} & (
                 set(facts.get("properties") or {}) | set(facts.get("required") or ())
             )
             and isinstance(design["properties"]["components"], dict)

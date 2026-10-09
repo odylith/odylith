@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import json
 
 import pytest
 
@@ -24,6 +25,7 @@ from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     authored_response,
+    declared_source_action_fixture,
     host_candidate_response,
     structural_design_fixture,
     synthetic_source_duty_receipt,
@@ -247,11 +249,17 @@ def test_sealed_relation_rejects_verified_role_override(field, value) -> None:
         )
 
 
-def test_candidate_cannot_replace_verified_human_actor_with_system(tmp_path) -> None:
+@pytest.mark.parametrize("event_index,actor", [
+    (1, {"field": "internal_systems", "row": 1}),
+    (2, {"field": "human_actors", "row": 1}),
+])
+def test_candidate_cannot_replace_verified_actor_with_another_valid_actor(tmp_path, event_index, actor) -> None:
     source, prepared, candidate, receipt = _shared_clause_candidate()
     canonical, kwargs = _author_verified_candidate(source, prepared, candidate, receipt)
-    canonical["result"]["events"][1]["actor_fact"] = {"field": "internal_systems", "row": 1}
-    with pytest.raises(GreenfieldModelAuthoringError, match="unbound first-path actor fact"):
+    assert actor != canonical["result"]["events"][event_index]["actor_fact"]
+    assert canonical["result"]["facts"][actor["field"]][actor["row"] - 1]
+    canonical["result"]["events"][event_index]["actor_fact"] = actor
+    with pytest.raises(GreenfieldModelAuthoringError, match="canonical event actor differs from its verified source action"):
         validate_greenfield_authoring_response(canonical, **kwargs)
     candidate["result"]["events"] = [{"actor_fact": {"field": "internal_systems", "row": 1}}]
     with pytest.raises(GreenfieldSourceDutyBindingError, match="source-owned|events|fields"):
@@ -259,6 +267,39 @@ def test_candidate_cannot_replace_verified_human_actor_with_system(tmp_path) -> 
             prompt=source, repo_root=tmp_path, host_candidate=candidate,
             source_duty_receipt=receipt, prepared_evidence=prepared,
         )
+
+
+def test_canonical_admission_preserves_verified_human_and_internal_actor_addresses() -> None:
+    source, prepared, candidate, receipt = _shared_clause_candidate()
+    canonical, kwargs = _author_verified_candidate(source, prepared, candidate, receipt)
+    result = validate_greenfield_authoring_response(canonical, **kwargs)
+    assert [row["actor_fact_path"] for row in result.first_path_relations] == [
+        "/human_actors/0", "/human_actors/0", "/internal_systems/0",
+    ]
+    assert result.first_path_relations[-1]["owner_system_path"] == "/internal_systems/0"
+
+
+def test_explicit_fixture_identity_is_isolated_from_equal_raw_candidate_json() -> None:
+    source = "First workspace. Second workspace. A reviewer creates a draft."
+    raw = {"result": {"status": "clarification_required"}}
+    actions = [declared_source_action_fixture(
+        duty_id="draft", actor_quote="A reviewer", event_quote="A reviewer creates a draft",
+        statement="A reviewer creates a draft", action="creates", target="a draft",
+        performer_role="human_actor", observable_result="a draft",
+    )]
+    identities = [{"basis": "product_description", "source_ref": {"quote": quote, "context": quote}}
+                  for quote in ("First workspace", "Second workspace")]
+    receipts = [synthetic_source_duty_receipt(raw, evidence_text=source,
+                declared_actions=actions, declared_identity=identity) for identity in identities]
+    assert [receipt["ledger"]["product_identity"] for receipt in receipts] == identities
+    assert receipts[0]["ledger_sha256"] != receipts[1]["ledger_sha256"]
+    assert synthetic_source_duty_receipt(raw, evidence_text=source,
+        declared_actions=actions, declared_identity=identities[0]) == receipts[0]
+    with pytest.raises(ValueError, match="no declared product identity"):
+        synthetic_source_duty_receipt(raw, evidence_text=source, declared_actions=actions)
+    _, prepared, candidate, _ = _shared_clause_candidate()
+    with pytest.raises(ValueError, match="no declared product identity"):
+        synthetic_source_duty_receipt(json.loads(json.dumps(candidate)), evidence_text=prepared.evidence_source)
 
 
 def test_candidate_cannot_renumber_frozen_source_event_slots(tmp_path) -> None:

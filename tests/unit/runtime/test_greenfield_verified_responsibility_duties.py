@@ -74,7 +74,7 @@ def _case(*, alias=False, guards=False):
         duty["event_ref"] = _citation(joined)
         duty["source_refs"] = [_citation(joined), duty["actor_ref"]]
     if alias:
-        ledger["first_path_actions"][1]["performer_role"] = "product_title"
+        ledger["first_path_actions"][1]["actor_ref"] = deepcopy(ledger["product_identity"]["source_ref"])
     if guards:
         ledger["conditional_guards"] = [
             {"id": "launch-access", "protected_action": "Make the study launch console available.",
@@ -124,12 +124,14 @@ def test_shared_human_and_two_product_span_projects_each_verified_duty(tmp_path)
     assert [row["actor_kind"] for row in relations] == ["human", "product", "product"]
 
 
-def test_source_title_performer_keeps_validated_event_owner_address(tmp_path):
-    intent, _, _, _, _ = _materialized(tmp_path, alias=True)
+def test_identity_citation_and_internal_performer_keep_separate_owner_addresses(tmp_path):
+    intent, _, receipt, _, _ = _materialized(tmp_path, alias=True)
     rows = intent["authored_semantics"]["component_responsibility_relations"]
     events = first_path_relations_from_intent(intent)
-    assert rows[0]["owner_system_path"] == events[1]["actor_fact_path"] == "/title"
-    assert rows[1]["owner_system_path"] == events[2]["actor_fact_path"] == "/internal_systems/0"
+    assert receipt["ledger"]["product_identity"]["source_ref"] == receipt["ledger"]["first_path_actions"][1]["actor_ref"]
+    assert intent["title"] == intent["internal_systems"][0] == "Berth map"
+    assert rows[0]["owner_system_path"] == events[1]["actor_fact_path"] == "/internal_systems/0"
+    assert rows[1]["owner_system_path"] == events[2]["actor_fact_path"] == "/internal_systems/1"
 
 
 @pytest.mark.parametrize("damage", ("missing_duty", "wrong_duty", "missing_decision", "wrong_decision", "missing_event", "wrong_event", "missing_actor", "wrong_actor", "human_promotion", "external_promotion", "remove_all_metadata", "missing_source_snapshot", "wrong_source_snapshot"))

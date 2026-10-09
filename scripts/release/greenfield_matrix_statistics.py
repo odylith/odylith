@@ -743,6 +743,8 @@ def _receipt_bound_edit_issues(*, case: Any, result: GreenfieldMatrixResult, man
         context = greenfield_edit_preservation_context(
             transaction_hash=previous.transaction_hash,
             prior_lifecycle=previous.proposal["semantic_model"]["source_lifecycle"],
+            prior_identity=previous.proposal["intent"]["authored_semantics"]["source_duty"][
+                "ledger_receipt"]["ledger"].get("product_identity"),
             correction=prepared.edit_evidence, evidence_text=prepared.evidence_source,
         )
         duty = current.proposal["intent"]["authored_semantics"]["source_duty"]["ledger_receipt"]
