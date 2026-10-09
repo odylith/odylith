@@ -22,7 +22,6 @@ from tests.integration.runtime.surface_browser_test_support import (
     _assert_radar_selection,
     _assert_registry_selection,
     _atlas_related_workstreams,
-    _atlas_selected_diagram,
     _atlas_total,
     _atlas_workstream_filter_value,
     _atlas_workstream_options,
@@ -431,6 +430,12 @@ def test_compass_and_radar_target_release_cards_show_labeled_release_version(bro
         page.locator("#tab-radar").click()
         radar = page.frame_locator("#frame-radar")
         radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
+        queue = radar.locator("#queue-summary")
+        assert queue.get_attribute("open") is None
+        assert radar.locator(".stats .stat.stat-release-only").first.is_visible() is False
+        queue.locator(":scope > summary").focus()
+        queue.locator(":scope > summary").press("Enter")
+        assert queue.get_attribute("open") is not None
         radar_release_label = radar.locator(".stats .stat.stat-release-only .label").first.inner_text().strip()
         radar_release = radar.locator(".stats .stat.stat-release-only .value").first.inner_text().strip()
         assert radar_release_label == "TARGET RELEASE"
@@ -1278,7 +1283,10 @@ def test_shell_history_and_cross_surface_deeplinks_round_trip_cleanly(browser_co
         assert page.locator("#tab-atlas").get_attribute("aria-selected") == "true"
         atlas = page.frame_locator("#frame-atlas")
         atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
-        atlas.locator("#diagramId", has_text=diagram_id).wait_for(timeout=15000)
+        _assert_atlas_selection(
+            page, workstream=str(parse_qs(urlparse(diagram_href).query).get("workstream", [""])[0]),
+            diagram_id=diagram_id,
+        )
 
         page.go_back(wait_until="domcontentloaded")
         _wait_for_shell_query_param(
@@ -1903,7 +1911,9 @@ def test_atlas_bad_cross_surface_route_self_heals_to_full_catalog(browser_contex
 
         baseline_total = _atlas_total(atlas)
         assert baseline_total > 1
-        selected_diagram = _atlas_selected_diagram(atlas)
+        selected_diagram = atlas.locator("#diagramId").text_content().strip()
+        assert selected_diagram
+        _assert_atlas_selection(page, workstream="", diagram_id=selected_diagram)
         related_workstreams = set(_atlas_related_workstreams(atlas))
         candidate_workstreams = [token for token in _atlas_workstream_options(atlas) if token not in {"all", *related_workstreams}]
         if not candidate_workstreams:
@@ -1918,7 +1928,7 @@ def test_atlas_bad_cross_surface_route_self_heals_to_full_catalog(browser_contex
             wait_until="domcontentloaded",
         )
         assert response is not None and response.ok
-        atlas.locator("#diagramId", has_text=selected_diagram).wait_for(timeout=15000)
+        _assert_atlas_selection(page, workstream="", diagram_id=selected_diagram)
         page.wait_for_function(
             """({ diagram }) => {
             try {
@@ -1951,7 +1961,9 @@ def test_atlas_tab_switch_restores_atlas_state_instead_of_leaking_radar_scope(br
 
         baseline_total = _atlas_total(atlas)
         assert baseline_total > 1
-        selected_diagram = _atlas_selected_diagram(atlas)
+        selected_diagram = atlas.locator("#diagramId").text_content().strip()
+        assert selected_diagram
+        _assert_atlas_selection(page, workstream="", diagram_id=selected_diagram)
         related_workstreams = set(_atlas_related_workstreams(atlas))
         candidate_workstreams = [token for token in _atlas_workstream_options(atlas) if token not in {"all", *related_workstreams}]
         if not candidate_workstreams:
@@ -1971,7 +1983,7 @@ def test_atlas_tab_switch_restores_atlas_state_instead_of_leaking_radar_scope(br
         _wait_for_shell_query_param(page, tab="radar", key="workstream", value=mismatched_workstream)
 
         page.locator("#tab-atlas").click()
-        atlas.locator("#diagramId", has_text=selected_diagram).wait_for(timeout=15000)
+        _assert_atlas_selection(page, workstream="", diagram_id=selected_diagram)
         page.wait_for_function(
             """({ diagram }) => {
             try {

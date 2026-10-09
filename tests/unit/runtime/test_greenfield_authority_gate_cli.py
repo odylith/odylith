@@ -122,7 +122,7 @@ def test_candidate_contract_exposes_one_pre_author_gate(tmp_path: Path, capsys) 
     assert contract["candidate_schema"]
     ledger_task = contract["source_ledger"]["task"]
     assert (
-        "Return exactly one compact JSON value matching source_ledger_schema"
+        "Return exactly one compact JSON value with version and a closed result matching source_ledger_schema"
         in ledger_task
     )
     assert "Do not call a CLI, read or write files" in ledger_task
@@ -391,7 +391,7 @@ def test_source_ledger_check_decides_every_material_duty_section(
     task = json.loads(capsys.readouterr().out)["decision_task"]
     assert len(task["decision_set_schema"]["properties"]["decisions"]["required"]) == 10
     assert {
-        section for section, _ in DUTY_SECTIONS if task["source_duty_ledger"][section]
+        section for section, _ in DUTY_SECTIONS if task["source_duty_ledger"]["result"][section]
     } == {
         "first_path_actions",
         "supporting_human_actions",
@@ -479,7 +479,7 @@ def test_source_ledger_check_rejects_citation_bank_change_after_preflight(
     decision_path = tmp_path.parent / f"{tmp_path.name}-citation-bank-decisions.json"
     decision_path.write_text(json.dumps(_yes_decisions(task)), encoding="utf-8")
 
-    citation = compact["citations"][0]
+    citation = compact["result"]["citations"][0]
     assert citation["q"] in prompt
     assert citation["c"] != prompt
     citation["c"] = prompt
@@ -687,7 +687,7 @@ def test_source_ledger_cli_normalizes_only_source_valid_unused_citations(
     ]
     assert greenfield_proposals_cli.main(command) == 0
     baseline = json.loads(capsys.readouterr().out)
-    compact["citations"].append(
+    compact["result"]["citations"].append(
         {
             "id": "unused-outcome",
             "q": "receipt ready",
@@ -718,7 +718,7 @@ def test_source_ledger_cli_normalizes_only_source_valid_unused_citations(
         ("receipt ready", "Opening outcome: receipt ready. Invented suffix"),
         ("receipt ready", "A reviewer defines scope and audience"),
     ]:
-        compact["citations"][-1].update({"q": quote, "c": context})
+        compact["result"]["citations"][-1].update({"q": quote, "c": context})
         path.write_text(json.dumps(compact))
         assert (
             greenfield_proposals_cli.main(

@@ -2604,3 +2604,41 @@ without skips, failures or errors. Its log is
 This supersedes the failed source gate for current proof; it does not regrade
 the failed native run. Remaining root modules, regenerated browser pages, CI,
 package and fresh native qualification remain open.
+
+### V50 installed EDIT refuses a whole-product safeguard (2026-10-09)
+
+The first unchanged genuine EDIT case failed on the frozen bae34ac859 package.
+H0 sealed in 160.052 seconds; the additive history safeguard stopped during source
+ledger preflight after 33.903 seconds. The harness exited 1 in 267.509 seconds.
+No H1 seal, confirmation, publication or browser proof exists. Cases 02–04 remain
+unexecuted; genuine qualifying EDIT remains 0/4.
+
+The exact inventory task permits product_wide and later restricts system duties
+to internal or external performers. The actual schema permits all three. H0 already
+uses the whole-product role for evidence preservation. H1 asks which system owns
+a universal pre-mutation safeguard. Independent source-first review judges that
+physical allocation a design choice, not a missing product fact. Contradictory
+instructions are a plausible contributor, not proven sole causality.
+
+The clarification is schema-valid but retains product_identity. Preflight correctly
+refuses its no-inventory branch. An in-memory probe shows nulling identity alone
+passes; unused valid citation storage is not the rejection cause. Align existing
+performer instructions and close the provider clarification branch structurally.
+Keep strict admission. Do not strip malformed output, invent a component, add a
+semantic stage, retry the failed run or change source wording to obtain a pass.
+
+Run: /private/tmp/odylith-greenfield-v50-genuine-edit-run-20261009.
+H0 transaction SHA-256: 210066a6260d3e98b50de94fc4ffee03873e81364db129f6d48fe0106b0e29af.
+H1 ledger SHA-256: 6ce2a1359c47256b947d7e9d6d552d840ce40431e364b1f5eb6dfbec4d63975a.
+Independent source-first report: /private/tmp/odylith-v50-native-source-first-adjudication-20261009/case-01/final-adjudication-report.md
+(SHA-256 e44e38a450deb226622d6028fed6d80c61a1c47fef2438837f1d01301c46f99f).
+Read-only owner diagnosis: /private/tmp/odylith-v50-native-failure-owner-diagnosis-20261009/report.md
+(SHA-256 b73f6a1d6c1fde1160edf818633f2e13b69f70ee30a65035c1cbcb7ba571a373).
+Original failure stays immutable. CB-303 records separate human projection defects.
+
+
+### 2026-10-09 — bounded source correction ready for package proof
+
+The existing inventory and source-only verifier now share the complete-source performer rule. Compact v7 closes inventory and one-question outcomes; strict preflight remains unchanged in purpose, and malformed mixed output is not repaired. Fresh host v58/ledger v9/receipts v16-v17 keep graph v19/canonical v80/candidate v25 and all existing model stages and budgets. The source owner passes 519 checks; independent source review is clear: `/private/tmp/odylith-v51-independent-source-review-20261009/report.md` (SHA-256 `2cc3e61bd3d31dd65bdfa338b6e40a4a090f76f0d91ef0e9fa880996763be9b8`). Three retained transactions reload with their original seals and parity, and all 64 v50 native files remain unchanged.
+
+The complete local gate is `/private/tmp/odylith-v51-greenfield-composed-regression-20261009/result.json` (SHA-256 `a8f73b75b9536027d524d8afb1cf6442e8a9432111de48a48ab0f6b3615f749d`). It composes 176 unchanged modules plus seven generated browser nodes with the complete current-byte 164-pass rerun of five test-only contract adoptions. The original 12-failure/4,019-pass log stays failed and retained; no product, shared fixture, case, negative guard or release floor was changed for that adoption. Independent coverage review is `/private/tmp/odylith-v51-complete-gate-adoption-review-20261009/report.md` (SHA-256 `ef183ffcda34b06226816128838ee1d4c12fafacff0829146a176f3073b8cc53`). Fresh installed native EDIT remains the next behavior gate; qualifying genuine EDIT remains 0/4. Public40 replacement requires the pending evidence amendment, and the final holdout remains untouched.

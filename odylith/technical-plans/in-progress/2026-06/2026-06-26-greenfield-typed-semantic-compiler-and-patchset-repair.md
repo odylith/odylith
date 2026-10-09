@@ -16970,3 +16970,39 @@ actual new source, receipts, canonical package and browser outputs to the frozen
 annotations before cases 02–04 can run. Existing full CI, migration assessments,
 Public40 evidence amendment/matrix, host parity, confidence/timing and untouched
 final holdout remain release gates. Genuine qualifying EDIT remains 0/4.
+
+### V50 failure and bounded successor scope (2026-10-09)
+
+The clean package and dispatch custody passed; installed case 01 failed. H0 seals;
+H1 asks an unnecessary whole-product allocation question with a non-null identity
+that preflight rejects. Remaining cases are unexecuted. CB-209 records contradictory
+performer guidance and clarification branch mismatch. CB-303 records correct
+canonical path membership being mislabelled in human views and repeated evidence
+instead of the already available project narrative. CB-347 records failed-run
+custody and the corrected private activation guard.
+
+Correct only existing owners: align performer instructions and close the provider
+clarification branch; retain strict admission; project the five declared actions
+separately from the valid proposed prerequisite closure; use the candidate's
+existing narrative and keep machine provenance in accessible details. Add no
+semantic stage, parser, repair, retry, fallback or product feature. Preserve prior
+sealed bytes and ownership. Prediction: the unchanged source-complete additive EDIT
+can seal, with a human package that separates source path from implementation
+walkthrough. Unit/schema proof alone cannot establish this native outcome.
+
+Require focused branch/projection behavior, fresh structural inventory and an
+independent review before freezing one successor checkpoint/package. Run case 01
+once; only independent semantic and human-package acceptance permits cases 02–04.
+Public40 amendment, current full CI, installed browser/migration, host parity,
+timing/confidence and untouched holdout remain open. Qualifying EDIT remains 0/4.
+
+
+### 2026-10-09 — v51 bounded correction and complete local gate
+
+The closed inventory-or-question response, consistent complete-source performer instructions, declared/proposed path separation and direct human brief are implemented in 20 existing owners (+150 net lines). The independent release brief oracle adds 93 lines in its existing owner. No new semantic stage, model ladder, parser, repair, retry or source graph is introduced. Independent source review is `/private/tmp/odylith-v51-independent-source-review-20261009/report.md` (SHA-256 `2cc3e61bd3d31dd65bdfa338b6e40a4a090f76f0d91ef0e9fa880996763be9b8`).
+
+The complete local gate is `/private/tmp/odylith-v51-greenfield-composed-regression-20261009/result.json` (SHA-256 `a8f73b75b9536027d524d8afb1cf6442e8a9432111de48a48ab0f6b3615f749d`). A retained full run reports 12 failures and 4,019 passes; those twelve failures are stale callers in five test modules. The complete current-byte rerun passes 164 checks and independent review accepts replacing all earlier evidence for those five modules while retaining 176 unchanged modules and seven generated browser nodes. Source, native failure history, passive transaction seals, release floors and protected inputs remain unchanged.
+
+Broader CI compatibility adoption is also independently clear: six complete browser modules cover 115 checks and the Tribunal module passes 28. No product or observer changes were needed. The release-local composite combines these with the Greenfield gate for 4,174 selected checks under 965 current hashes: `/private/tmp/odylith-v51-release-local-regression-20261009/result.json` (SHA-256 `913ca316bb33825cd1bb50e364a9d52d582608ffb5604bc1f173b69490458b7a`). Original full CI and intermediate failures stay failed; this is not a fresh repository-wide pass.
+
+Next: settle and freeze the successor, start its full CI, build its package and verify install custody, then run exactly the unchanged native case01 for independent actual-output review. Only actual PASS releases cases02–04. Public40 evidence replacement is pending explicit amendment; migration, host parity, timing, confidence and final holdout remain release gates.

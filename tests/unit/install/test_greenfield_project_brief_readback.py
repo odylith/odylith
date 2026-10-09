@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import sys
 from types import SimpleNamespace
 
@@ -245,3 +246,119 @@ def test_canonical_intent_custody_rejects_missing_fields_and_duplicate_rows(tmp_
         duplicate_text = _record(duplicate)
         assert project_brief_readback_findings(record_text=duplicate_text, project_brief=duplicate, intent=intent)
         assert _count(tmp_path, duplicate, duplicate_text, intent) == 0
+
+
+def _narrative_fixture(*, governance: bool = False) -> tuple[dict, dict, str]:
+    brief, intent = _brief(governance=governance), _intent()
+    summary = "Queue Review helps reviewers record decisions with evidence and verify the published result."
+    events = [
+        {"order": 1, "event_quote": "The reviewer records a queue decision."},
+        {"order": 2, "event_quote": "The publisher publishes the reviewed decision."},
+        {"order": 3, "event_quote": "The reviewer verifies the published decision."},
+    ]
+    path = events[0]["event_quote"] + "\n" + events[2]["event_quote"]
+    rationale = "Publication supplies the result required for verification."
+    walkthrough = " ".join(row["event_quote"] for row in events) + "\n\n" + rationale
+    intent.update({
+        "summary": summary, "first_path": path, "product_story": brief["operating_principle"],
+        "authored_semantics": {
+            "version": "odylith.greenfield.authored-semantics.v19",
+            "source_event_relations": events,
+            "source_duty": {
+                "ledger_receipt": {"ledger": {"version": "odylith.greenfield.source-duty-ledger.v9"}},
+                "binding": {"first_path_actions": [{"event_order": 1}, {"event_order": 3}]},
+            },
+            "provisional_design": {
+                "project_summary": summary,
+                "first_run": {"event_orders": [1, 2, 3], "rationale": rationale},
+            },
+        },
+    })
+    brief["summary"] = summary
+    next(row for row in brief["blueprint_sections"] if row["section"] == "First path")["must_capture"] = path
+    brief["blueprint_sections"].insert(3, {"section": "Proposed walkthrough", "must_capture": walkthrough})
+    lines = [
+        "# Queue Review Project Brief", "", "## Brief", summary, "",
+        "### First path", "", path, "", "### Proposed walkthrough", "", walkthrough, "",
+        "<details>", "<summary>Evidence and assumptions</summary>", "", "## Project Design Board", "",
+    ]
+    for row in brief["blueprint_sections"]:
+        if row["section"] not in {"First path", "Proposed walkthrough"}:
+            lines.extend(["### " + row["section"], "", row["must_capture"], ""])
+    if governance:
+        lines.extend(["## Governance Package", ""])
+        lines.extend("- " + gate for gate in brief["coding_readiness_gates"])
+        lines.extend("- " + " | ".join(row.values()) for row in brief["host_independent_paths"])
+    lines.extend([
+        "", "</details>", "", "<details>", "<summary>Record metadata</summary>", "",
+        "- schema: odylith.greenfield.project_brief.v1", "- origin: greenfield", "", "</details>",
+    ])
+    return brief, intent, "\n".join(lines)
+
+
+def test_fresh_narrative_readback_preserves_declared_path_and_proposed_closure(tmp_path) -> None:  # noqa: ANN001
+    for governance in (False, True):
+        brief, intent, text = _narrative_fixture(governance=governance)
+        assert project_brief_readback_findings(record_text=text, project_brief=brief, intent=intent) == ()
+        assert _count(tmp_path, brief, text, intent) == 1
+        assert text.count(brief["summary"]) == 1
+        visible = text.split("<details>", 1)[0]
+        assert "Accepted evidence excerpt" not in visible and "Why:" not in visible
+        assert "The publisher publishes" not in visible.split("### Proposed walkthrough")[0]
+        assert "The publisher publishes" in visible.split("### Proposed walkthrough")[1]
+
+
+def test_fresh_narrative_rejects_rendered_tampering_and_open_metadata(tmp_path) -> None:  # noqa: ANN001
+    brief, intent, text = _narrative_fixture(governance=True)
+    for changed in (
+        text.replace(brief["summary"], "An invented product."),
+        text.replace("### First path", "### First run"),
+        text.replace("The publisher publishes the reviewed decision.", ""),
+        text.replace("<details>", "<details open>", 1),
+        text.replace("<summary>Record metadata</summary>", "<summary>Metadata</summary>"),
+        text.replace("- origin: greenfield", "- origin: other"),
+        text.replace("### Proof\n\nVerify the retained queue decision.", "### Proof\n\nApproved without evidence."),
+        text.replace("- Confirm the review boundary.", "- Skip review."),
+        text.replace("## Brief\n", "- schema: exposed\n\n## Brief\n"),
+    ):
+        assert project_brief_readback_findings(record_text=changed, project_brief=brief, intent=intent)
+        assert _count(tmp_path, brief, changed, intent) == 0
+
+
+def test_fresh_narrative_rejects_joint_brief_and_text_reinterpretation() -> None:
+    brief, intent, text = _narrative_fixture()
+    for label, replacement in (
+        ("First path", "The publisher publishes the reviewed decision."),
+        ("Proposed walkthrough", "The reviewer verifies immediately."),
+        ("Accepted evidence excerpt", "An invented authority approves everything."),
+    ):
+        changed = copy.deepcopy(brief)
+        row = next(row for row in changed["blueprint_sections"] if row["section"] == label)
+        original = row["must_capture"]
+        row["must_capture"] = replacement
+        assert project_brief_readback_findings(
+            record_text=text.replace(original, replacement), project_brief=changed, intent=intent,
+        )
+    changed = copy.deepcopy(brief)
+    changed["summary"] = "An invented product."
+    assert project_brief_readback_findings(
+        record_text=text.replace(brief["summary"], changed["summary"]), project_brief=changed, intent=intent,
+    )
+
+
+def test_fresh_narrative_cannot_bypass_retained_brief_authority() -> None:
+    brief, intent, text = _narrative_fixture()
+    intent["authored_semantics"]["source_duty"]["ledger_receipt"]["ledger"]["version"] = "odylith.greenfield.source-duty-ledger.v8"
+    assert project_brief_readback_findings(record_text=text, project_brief=brief, intent=intent)
+
+
+def test_fresh_narrative_malformed_event_identity_refuses_without_crashing() -> None:
+    brief, intent, text = _narrative_fixture()
+    for path in ("source_event_relations", "binding"):
+        changed = copy.deepcopy(intent)
+        semantics = changed["authored_semantics"]
+        if path == "binding":
+            semantics["source_duty"]["binding"]["first_path_actions"][0]["event_order"] = []
+        else:
+            semantics[path][0]["order"] = []
+        assert project_brief_readback_findings(record_text=text, project_brief=brief, intent=changed)

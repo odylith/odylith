@@ -9,6 +9,8 @@ from typing import Any
 def render_authored_project_brief_lines(project_brief: Mapping[str, Any]) -> list[str]:
     """Render the authored brief structurally without parsing or repairing its prose."""
 
+    if "summary" in project_brief:
+        return _narrative_brief_lines(project_brief)
     lines: list[str] = []
     outcome = _text(project_brief.get("project_outcome"))
     principle = _text(project_brief.get("operating_principle"))
@@ -49,6 +51,35 @@ def render_authored_project_brief_lines(project_brief: Mapping[str, Any]) -> lis
             parts = [value for value in (path, command, works_in, use_when) if value]
             if parts:
                 lines.append("  - " + " | ".join(parts))
+    return lines
+
+
+def _narrative_brief_lines(project_brief: Mapping[str, Any]) -> list[str]:
+    lines = [_text(project_brief["summary"])]
+    sections = _mapping_rows(project_brief.get("blueprint_sections"))
+    for row in sections:
+        if row.get("section") in {"First path", "Proposed walkthrough"}:
+            _append_section(lines, f"### {row['section']}")
+            lines.extend(["", _text(row["must_capture"])])
+    _append_section(lines, "<details>")
+    lines.extend(["<summary>Evidence and assumptions</summary>", "", "## Project Design Board", ""])
+    for row in sections:
+        section = _text(row.get("section"))
+        fact = _text(row.get("must_capture"))
+        if section and fact and section not in {"First path", "Proposed walkthrough"}:
+            lines.extend([f"### {section}", "", fact, ""])
+    gates = _strings(project_brief.get("coding_readiness_gates"))
+    paths = _mapping_rows(project_brief.get("host_independent_paths"))
+    if gates or paths:
+        _append_section(lines, "## Governance Package")
+        lines.append("")
+    if gates:
+        lines.extend(f"- {gate}" for gate in gates)
+    for row in paths:
+        parts = [_text(row.get(key)) for key in ("path", "command", "works_in", "use_when")]
+        if any(parts):
+            lines.append("- " + " | ".join(part for part in parts if part))
+    lines.extend(["", "</details>"])
     return lines
 
 

@@ -4,7 +4,11 @@ Last updated: 2026-10-09
 
 ## Overview
 
-The current source contract is host v57/format v25, canonical authoring v80 and
+Domain Intelligence turns project evidence into a reviewable governance package
+or one focused question when a material requirement is unresolved. It keeps source
+facts, proposed design and evidence custody distinct throughout preparation.
+
+The current correction uses host v58/format v25, canonical authoring v80 and
 authored semantics v19. The inventory and existing source-only verifier establish
 product identity, exact performers, declared workflow membership and whether a
 system duty is a discrete action or recurring safeguard. One complete source-event
@@ -18,26 +22,54 @@ obligations without becoming one-time workflow steps. Preserved EDIT duties reta
 their exact component/workstream allocation unless the correction authorizes a
 change. The candidate cannot redefine these source facts.
 
-Independent review clears the successor source design and focused controls.
-The complete local inventory passes 4,006 tests across 180 modules, plus seven
-generated Atlas nodes. CI, package and fresh installed release gates remain open.
-The preceding v49 installed EDIT run
-failed independent semantic review and qualifies zero of four genuine EDIT cases.
-Its 3,939-pass bounded gate and failed full CI remain evidence for their original
-scopes. Fresh installed fidelity, timing and release qualification remain open.
-Earlier versioned checkpoints below are historical evidence.
+The bounded correction is implemented and independently reviewed. Its complete
+local gate covers 181 modules and seven generated browser nodes through retained
+unchanged proof and a complete rerun of five test modules that needed the fresh
+contract. The original run remains failed; no native or release credit is inferred.
+
+The prior v50 package passes clean installation, but its first native EDIT case
+fails independent review. H1 stops when a schema-admitted clarification carries
+product identity that strict preflight rejects. The authoring task also contains
+contradictory performer instructions; that is a plausible contributor, not a
+proven sole cause of the provider's question. Human projections mislabel the valid
+proposed walkthrough and repeat evidence instead of the existing project summary.
+CB-209/CB-303 retain those defects. Cases 02–04 remain unexecuted; qualifying
+genuine EDIT remains 0/4. Current CI, fresh installed fidelity, timing and release
+gates stay open. Earlier checkpoints retain only their historical scope.
+
+Current local proof is recorded in
+`/private/tmp/odylith-v51-greenfield-composed-regression-20261009/result.json`.
+The source correction passes 519 focused checks and independent real-output
+readback. The complete run records 4,019 passes and 12 stale test-reader failures;
+all five affected modules then pass 164 checks on their current bytes. Independent
+review accepts replacing those five modules' earlier evidence while retaining
+proof for 176 unchanged modules and seven generated nodes. All 951 other code/test
+pins are unchanged. This is a composite gate, not a clean monolithic rerun.
 
 ### Current source and historical readback boundary (2026-10-09)
 
-Fresh source custody uses ledger v8, compact v6, preflight v7, initial/EDIT receipts
-v14/v15, decisions v9/v10 and EDIT preservation context v3. Candidate format v25,
+Fresh source custody uses ledger v9, compact v7, preflight v8, initial/EDIT receipts
+v16/v17, decisions v11/v12 and EDIT preservation context v3. Candidate format v25,
 transport v4, binding v3/host v4 and lifecycle v2 keep their existing shapes. The
 four host passes and runtime budgets are unchanged; no post-receipt semantic call,
 repair, retry, fallback or new engine is introduced. Project summaries directly
-describe the product and intended outcome without authoring instructions.
+describe the product and intended outcome without authoring instructions. The
+compact response has mutually exclusive inventory and question branches. A
+question cannot carry product identity or material inventory; malformed mixed
+output is rejected, never stripped into an accepted question. Generic wording
+can denote the whole product only when complete source context and the independent
+verifier affirm that exact referent; competing or unresolved referents still ask
+one material question.
 
-Known v18/v79/v56 source and transaction records retain their exact passive
-readback. Historical context v2 and compact v5 retain their original serialized
+Fresh human projections use the exact declared path separately from the proposed
+prerequisite closure. The brief leads with the existing authored project summary,
+shows both paths with clear labels, and keeps evidence, assumptions and record
+metadata in closed details. Source quotes, authority and machine custody remain
+unchanged. Supporting publication stays in the legitimate proposed walkthrough.
+
+Known v19/v80/v57 and v18/v79/v56 source and transaction records retain their exact
+passive readback. Ledger v8/compact v6 and earlier retained context v2/compact v5
+keep their original serialized
 bytes; missing fresh role fields are not filled with defaults. Passive readback
 cannot authorize fresh work or requalify a failed run.
 
@@ -48,7 +80,9 @@ events and 25 declared workflow steps refuse. Historical schemas retain their
 original 24-event bound. The literal recurring-history control retains its guard,
 component, Registry, Atlas and top-level proof custody without becoming a step.
 
-The 31-file successor freeze is
+### Historical v50 source checkpoint (2026-10-09)
+
+The preceding 31-file successor freeze is
 `/private/tmp/odylith-v50-role-graph-owner-plan-20261009/production-source-freeze-03.json`
 (SHA-256 `91cd1aa9a9dc6f488fa8837910938f483e6d87608bc756c61d695c0c9d417539`).
 Independent review is
@@ -2242,6 +2276,9 @@ semantic/design findings.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-10-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 6 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/registry/source/components/dashboard/CURRENT_SPEC.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, plus 2 more
 - **2026-10-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md`, `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, plus 1 more
@@ -2257,9 +2294,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-10-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_host_source_phase.py`
-- **2026-10-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_semantics.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

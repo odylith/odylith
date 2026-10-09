@@ -316,7 +316,7 @@ def test_terminal_edit_rebuilds_once_from_verified_retained_source_and_correctio
     assert call["host_candidate"] == {}
     assert call["source_duty_receipt"]["ledger"]["status"] == "inventory"
     assert call["source_duty_receipt"]["decision_set_sha256"]
-    assert call["source_duty_receipt"]["version"] == "odylith.greenfield.source-duty-ledger-receipt.v15"
+    assert call["source_duty_receipt"]["version"] == "odylith.greenfield.source-duty-ledger-receipt.v17"
     assert call["source_duty_receipt"]["decision_set"]["version"] == EDIT_SOURCE_DUTY_DECISION_SET_VERSION
     assert call["source_duty_receipt"]["edit_preservation"]["transaction_hash"] == previous.transaction_hash
     assert call["source_duty_receipt"]["edit_preservation"]["correction"] == correction

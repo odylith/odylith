@@ -13,6 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
     GreenfieldSourceDutyLedgerError,
     SOURCE_DUTY_LEDGER_VERSION,
+    PRODUCT_WIDE_SOURCE_DUTY_LEDGER_VERSION,
     _validate_shape,
     _check_citation,
     greenfield_source_duty_ledger_schema,
@@ -42,15 +43,16 @@ def _closed_object(properties: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def greenfield_compact_source_duty_ledger_schema() -> dict[str, Any]:
+def greenfield_compact_source_duty_ledger_schema(*, _passive: bool = False) -> dict[str, Any]:
     """Return the closed compact schema whose citations are interned by ID."""
 
-    schema = deepcopy(greenfield_source_duty_ledger_schema())
+    schema = deepcopy(greenfield_source_duty_ledger_schema(
+        _passive_source_version=PRODUCT_WIDE_SOURCE_DUTY_LEDGER_VERSION if _passive else None))
     properties = schema["properties"]
     properties["version"] = {
         "type": "string",
         "maxLength": MAX_AUTHORED_FIELD_VALUE_CHARS,
-        "enum": [SOURCE_DUTY_COMPACT_VERSION],
+        "enum": ["odylith.greenfield.source-duty-compact.v6" if _passive else SOURCE_DUTY_COMPACT_VERSION],
     }
     properties["citations"] = {
         "type": "array",
@@ -88,17 +90,41 @@ def greenfield_compact_source_duty_ledger_schema() -> dict[str, Any]:
                 row["properties"][field] = _citation_id_schema()
             row["properties"]["role_refs"]["items"] = _citation_id_schema()
     schema["required"] = ["citations", *schema["required"]]
-    return schema
+    if _passive:
+        return schema
+    version = properties.pop("version")
+    properties["status"]["enum"] = ["inventory"]
+    properties["question"]["enum"] = [""]
+    properties["product_identity"] = properties["product_identity"]["anyOf"][0]
+    inventory = _closed_object(properties)
+    clarification = _closed_object({
+        "status": {"type": "string", "maxLength": 32, "enum": ["clarification_required"]},
+        "question": {"type": "string", "minLength": 1, "maxLength": MAX_AUTHORED_FIELD_VALUE_CHARS},
+    })
+    return _closed_object({"version": version, "result": {"anyOf": [inventory, clarification]}})
 
 
 def expand_compact_source_duty_ledger(
     value: Mapping[str, Any],
     *,
     evidence_text: str | None = None,
+    _passive: bool = False,
 ) -> dict[str, Any]:
     """Expand material rows; discard unused bank storage only after exact source checks."""
 
-    _validate_shape(value, greenfield_compact_source_duty_ledger_schema(), "ledger")
+    _validate_shape(value, greenfield_compact_source_duty_ledger_schema(_passive=_passive), "ledger")
+    if not _passive:
+        value = value["result"]
+        if value["status"] == "clarification_required":
+            return {
+                "version": SOURCE_DUTY_LEDGER_VERSION,
+                "status": "clarification_required", "question": value["question"],
+                "product_identity": None, "evidence_controls": [],
+                **{section: [] for section in (
+                    "first_path_actions", "supporting_human_actions", "system_duties",
+                    "state_fields", "off_path_transitions", "conditional_guards", "boundaries", "proof_duties",
+                )},
+            }
     evidence: bytes | None = None
     if evidence_text is not None:
         if not isinstance(evidence_text, str) or not evidence_text.strip():
@@ -142,7 +168,7 @@ def expand_compact_source_duty_ledger(
 
     expanded = deepcopy(dict(value))
     expanded.pop("citations")
-    expanded["version"] = SOURCE_DUTY_LEDGER_VERSION
+    expanded["version"] = PRODUCT_WIDE_SOURCE_DUTY_LEDGER_VERSION if _passive else SOURCE_DUTY_LEDGER_VERSION
     if value["product_identity"] is not None:
         expanded["product_identity"]["source_ref"] = resolve(
             value["product_identity"]["source_ref"], "product_identity.source_ref")

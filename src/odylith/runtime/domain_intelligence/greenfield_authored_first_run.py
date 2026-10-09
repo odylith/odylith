@@ -75,12 +75,25 @@ def authored_event_display_text(relation: Mapping[str, Any]) -> str:
     return authored_event_presentation(relation).plain_text
 
 
+def authored_first_path_text(intent: Mapping[str, Any]) -> str:
+    """Keep the declared source path separate from the proposed execution closure."""
+
+    source_duty = intent[AUTHORED_SEMANTICS_KEY]["source_duty"]
+    if source_duty and source_duty["ledger_receipt"]["ledger"]["version"] == "odylith.greenfield.source-duty-ledger.v9":
+        return str(intent["first_path"])
+    return authored_first_run_text(intent)
+
+
 def authored_first_run_text(intent: Mapping[str, Any]) -> str:
     """Retain complete event quotations and visibly distinguish proposed order."""
 
+    relations = authored_first_run_relations(intent)
+    source_duty = intent[AUTHORED_SEMANTICS_KEY]["source_duty"]
+    if source_duty and source_duty["ledger_receipt"]["ledger"]["version"] == "odylith.greenfield.source-duty-ledger.v9":
+        return " ".join(row["event_quote"] for row in relations)
     return "Proposed first run:\n" + "\n".join(
         f"Event {row['order']}\n{authored_event_display_text(row)}"
-        for row in authored_first_run_relations(intent)
+        for row in relations
     )
 
 

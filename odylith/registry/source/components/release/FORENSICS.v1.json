@@ -14,12 +14,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 904,
-    "mapped_workstream_evidence_count": 754,
+    "explicit_event_count": 905,
+    "mapped_workstream_evidence_count": 755,
     "recent_path_match_count": 0,
     "spec_history_event_count": 67,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 904
+    "timeline_event_count": 905
   },
   "name": "Release",
   "path_prefixes": [
@@ -136,6 +136,48 @@
       "summary": "Component evidence linked this component to governed work. 11 verifiable artifact references.",
       "ts_iso": "2026-10-09T11:05:20Z",
       "workstreams": []
+    },
+    {
+      "artifact_count": 6,
+      "artifacts": [
+        "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_authored_proposal.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_source_duty_compact.py"
+      ],
+      "confidence": "high",
+      "event_index": 1603,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 6 verifiable artifact references.",
+      "ts_iso": "2026-10-09T08:15:54-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifact_count": 5,

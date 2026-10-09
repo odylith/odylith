@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_experience
-from odylith.runtime.domain_intelligence.greenfield_authored_first_run import authored_first_run_text
+from odylith.runtime.domain_intelligence.greenfield_authored_first_run import authored_first_path_text, authored_first_run_text
 from odylith.runtime.domain_intelligence.greenfield_authored_memory import render_authored_project_brief_lines
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import GreenfieldAuthoredSemanticsError
 from odylith.runtime.domain_intelligence.greenfield_handoff_contract import render_coding_readiness_gates
@@ -40,7 +40,7 @@ def test_authored_handoff_preserves_verified_fields_without_legacy_reconstructio
     assert selected["deliverable"] in handoff["implementation_prompt"]
     assert selected["verification"] in handoff["implementation_prompt"]
     readiness = handoff["coding_readiness_contract"]
-    assert readiness["source_facts"]["accepted_first_path"] == proposed_run
+    assert readiness["source_facts"]["accepted_first_path"] == authored_first_path_text(intent)
     assert readiness["source_facts"]["proof_boundary"] == intent["proof_boundary"]
     assert readiness["source_facts"]["evidence_requirements"] == tuple(intent["evidence_requirements"])
     assert handoff["coding_readiness_gates"] == render_coding_readiness_gates(readiness)

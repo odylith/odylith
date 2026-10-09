@@ -8,6 +8,7 @@ from tests.integration.runtime.surface_browser_test_support import (
     _copy_logical_working_fixture,
     _assert_clean_page,
     _browser,
+    _click_visible_radar_row,
     _select_casebook_bug_with_detail_selector,
     _select_radar_row_with_link,
     _select_radar_workstream_with_detail_selector,
@@ -178,13 +179,14 @@ def _atlas_header_layout(atlas) -> dict[str, object]:  # noqa: ANN001
     return atlas.locator(".hero-copy").evaluate(
         """(node) => {
             const hero = node.closest(".hero");
-            const factsNode = node.querySelector(".diagram-facts");
+            const metadata = node.ownerDocument.querySelector("details.diagram-metadata");
+            const factsNode = metadata && metadata.querySelector(".diagram-facts");
             const titleNode = node.querySelector("#diagramTitle");
-            const controlsNode = hero ? hero.querySelector(".source-links-wrap") : null;
+            const controlsNode = metadata && metadata.querySelector("#sourceLinks");
             const titleBox = titleNode ? titleNode.getBoundingClientRect() : null;
             const factsBox = factsNode ? factsNode.getBoundingClientRect() : null;
             const controlsBox = controlsNode ? controlsNode.getBoundingClientRect() : null;
-            const facts = Array.from(node.querySelectorAll(".diagram-fact")).map((fact) => {
+            const facts = Array.from(factsNode ? factsNode.querySelectorAll(".diagram-fact") : []).map((fact) => {
               const label = fact.querySelector(".diagram-fact-label");
               const value = fact.querySelector(".diagram-fact-value");
               const labelBox = label ? label.getBoundingClientRect() : null;
@@ -231,7 +233,16 @@ def _select_atlas_layout_stress_diagram(page):  # noqa: ANN001
         atlas.locator(f'button[data-diagram="{row["diagram"]}"]').click()
         _wait_for_shell_query_param(page, tab="atlas", key="diagram", value=str(row["diagram"]))
         atlas.locator("#diagramTitle", has_text=str(row["title"])).wait_for(timeout=15000)
+        metadata = atlas.locator("details.diagram-metadata")
+        assert metadata.get_attribute("open") is None
+        assert atlas.locator("#diagramId").is_visible() is False
+        metadata.locator(":scope > summary").focus()
+        metadata.locator(":scope > summary").press("Enter")
+        assert metadata.get_attribute("open") is not None
+        atlas.locator("#diagramId").wait_for(state="visible", timeout=15000)
+        assert atlas.locator("#diagramId").inner_text().strip() == str(row["diagram"])
         layout = _atlas_header_layout(atlas)
+        assert int(layout["factsClientWidth"]) > 0
         if int(layout["factCount"]) >= 6:
             return atlas, row, layout
 
@@ -395,7 +406,7 @@ def _select_radar_layout_stress_row(page):  # noqa: ANN001
     assert candidates, "expected Radar rows for layout audit"
 
     for row in candidates[:12]:
-        radar.locator(f'button[data-idea-id="{row["idea"]}"]').click()
+        _click_visible_radar_row(radar.locator(f'button[data-idea-id="{row["idea"]}"]'))
         _wait_for_shell_query_param(page, tab="radar", key="workstream", value=str(row["idea"]))
         radar.locator("#detail .detail-title", has_text=str(row["title"])).wait_for(timeout=15000)
         assessment = radar.locator("#detail .detail-header details.detail-disclosure")
@@ -1122,6 +1133,12 @@ def _assert_shared_governance_kpi_cards_keep_compact_style_contract(  # noqa: AN
         page.locator("#tab-radar").click()
         radar = page.frame_locator("#frame-radar")
         radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
+        queue = radar.locator("#queue-summary")
+        assert queue.get_attribute("open") is None
+        assert radar.locator(".stats .stat").first.is_visible() is False
+        queue.locator(":scope > summary").focus()
+        queue.locator(":scope > summary").press("Enter")
+        assert queue.get_attribute("open") is not None
         radar.locator(".stats .stat").first.wait_for(timeout=15000)
         radar_style = _governance_kpi_style(radar, ".stats .stat", ".label", ".value")
         radar_release_style = _governance_kpi_style(radar, ".stats .stat.stat-release-only", ".label", ".value")

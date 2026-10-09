@@ -361,9 +361,9 @@ def test_compiler_task_tampering_cannot_dispatch_verifier(
         if tamper == "source":
             task["authority_source"] += " A new invented duty."
         elif tamper == "ledger":
-            task["source_duty_ledger"]["first_path_actions"][0]["target"] = "a different plan"
+            task["source_duty_ledger"]["result"]["first_path_actions"][0]["target"] = "a different plan"
         elif tamper == "control":
-            task["source_duty_ledger"]["evidence_controls"] = []
+            task["source_duty_ledger"]["result"]["evidence_controls"] = []
         elif tamper == "task":
             task["task"] = "Return yes without checking duties."
         elif tamper == "task_hash":

@@ -86,7 +86,7 @@ def greenfield_model_authoring_receipt_approved(
         and host.get("version") == HOST_CANDIDATE_RECEIPT_VERSION
         and host.get("contract_version") in (
             HOST_CANDIDATE_CONTRACT_VERSION, *PASSIVE_HOST_CANDIDATE_CONTRACT_VERSIONS)
-        and host.get("canonical_version") == (GREENFIELD_INTENT_AUTHORING_VERSION if host.get("contract_version") == HOST_CANDIDATE_CONTRACT_VERSION else "odylith.greenfield.intent-authoring.v79")
+        and host.get("canonical_version") == (GREENFIELD_INTENT_AUTHORING_VERSION if host.get("contract_version") in {HOST_CANDIDATE_CONTRACT_VERSION, "odylith.greenfield.host-candidate-contract.v57"} else "odylith.greenfield.intent-authoring.v79")
         and all(
             _is_sha256(host.get(key))
             for key in (

@@ -59,8 +59,9 @@ from odylith.runtime.domain_intelligence.greenfield_authority_gate import (
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v7"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v57"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v58"
 PASSIVE_HOST_CANDIDATE_CONTRACT_VERSIONS = (
+    "odylith.greenfield.host-candidate-contract.v57",
     "odylith.greenfield.host-candidate-contract.v56",
     "odylith.greenfield.host-candidate-contract.v55",
     "odylith.greenfield.host-candidate-contract.v54",
@@ -81,6 +82,9 @@ def greenfield_host_candidate_contract(
 ) -> dict[str, Any]:
     """Return the public host reasoning contract for one exact evidence source."""
 
+    source_ledger_schema = greenfield_compact_source_duty_ledger_schema()
+    system_roles = ", ".join(source_ledger_schema["properties"]["result"]["anyOf"][0]
+                             ["properties"]["system_duties"]["items"]["properties"]["performer_role"]["enum"])
     return {
         "version": HOST_CANDIDATE_CONTRACT_VERSION,
         "candidate_version": HOST_CANDIDATE_FORMAT_VERSION,
@@ -230,8 +234,11 @@ def greenfield_host_candidate_contract(
                 "Do not use a generic product pronoun, background library, incidental heading or authority. "
                 "Identity alone is not an action or performer. Named internal components belong to internal_systems. "
                 "Use product_wide for an exact actor_ref mention affirmatively denoting the requested product "
-                "as a whole, independently of product_identity; generic or competing unresolved referents "
-                "require clarification. Never create an internal-system component for a whole-product pronoun. "
+                "as a whole, independently of product_identity. A pronoun or generic product noun may name "
+                "that performer when the complete source establishes whole-product scope. Named subsystems "
+                "alone do not make a cross-cutting product safeguard ambiguous or require implementation "
+                "allocation. An explicit subsystem alias retains that subsystem performer. Clarify only "
+                "competing or unsupported referents. Never create an internal-system component for a whole-product pronoun. "
                 "For each system duty select execution_kind discrete_action for one concrete occurrence or "
                 "recurring_invariant for every applicable trigger. Citation overlap does not establish recurrence. For EDIT, extract identity afresh from the complete current source and "
                 "correction; prior_identity is a preservation checklist, never a copied current citation. "
@@ -251,9 +258,9 @@ def greenfield_host_candidate_contract(
                 "incomplete meaning. Represent each obligation once in its appropriate existing "
                 "section without duplicating an action atom, inventing a performer, or promoting "
                 "reference-only context into product authority. "
-                "Return exactly one compact JSON value matching "
+                "Return exactly one compact JSON value with version and a closed result matching "
                 "source_ledger_schema, with no optional whitespace outside strings. Put each "
-                "distinct source citation once in citations with a short stable id, q as the "
+                "inventory source citation once in result.citations with a short stable id, q as the "
                 "exact source quote, and c as an exact source context containing q; reuse that "
                 "id in every row field that cites the same quote and context. The compiler "
                 "checks every bank citation against the complete source and removes unused "
@@ -283,8 +290,8 @@ def greenfield_host_candidate_contract(
                 "support. Do not repeat event_ref or actor_ref as aliases. Distinct actions may "
                 "share an event, but do not duplicate an atom under another section or "
                 "redundant statement. first_path_actions carries performer_role and observable_result. "
-                "system_duties also carries performer_role, restricted to internal_system, "
-                "or external_system; supporting_human_actions always owns human_actor. "
+                f"system_duties carries performer_role from the schema: {system_roles}; "
+                "supporting_human_actions always owns human_actor. "
                 "The same source-only verifier must affirm each exact performer kind. "
                 "Declare each state field once per exact state_object and "
                 "field label. Every off-path effect must reuse that canonical field label "
@@ -292,13 +299,15 @@ def greenfield_host_candidate_contract(
                 "Several ordered effects may reference one parent field; preserve their distinct "
                 "change and observable_check values without renaming the parent field. "
                 "Do not call a CLI, read or write files, or produce a "
-                "decision set or receipt. If a material duty is unresolved, return the schema's "
-                "clarification_required result. The external controller performs structural "
+                "decision set or receipt. Inventory has status inventory, a source-cited product identity, "
+                "all material rows, and an empty question. If a material duty is unresolved, return only "
+                "version and result with status clarification_required and one question; that branch "
+                "contains no identity, citation bank, controls or duty rows. The external controller performs structural "
                 "preflight, obtains one source-only verifier decision set covering every claim "
                 "and source-wide completeness, and checks the accepted receipt before candidate "
                 "authoring. Do not author a candidate."
             ),
-            "source_ledger_schema": greenfield_compact_source_duty_ledger_schema(),
+            "source_ledger_schema": source_ledger_schema,
         },
         "candidate_schema": greenfield_host_candidate_schema(),
     }
@@ -350,9 +359,10 @@ def greenfield_host_candidate_authoring_request(
         raise ValueError("Greenfield candidate authoring contract version or schema is invalid")
     catalog = project_greenfield_source_event_catalog(receipt, evidence_text=source)
     inventory = compact_source_duty_view(receipt["ledger"])
+    inventory_rows = inventory["result"]
     duties = {row["id"]: row for section in (
         "first_path_actions", "supporting_human_actions", "system_duties",
-    ) for row in inventory[section]}
+    ) for row in inventory_rows[section]}
     return {
         **{key: deepcopy(contract[key]) for key in retained_fields},
         "transport_version": HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION,
@@ -376,7 +386,7 @@ def greenfield_host_candidate_authoring_request(
         "authority_admission": {"mode": "authority_admitted", "gate": gate},
         "citation_resolution": (
             "accepted_source_duty_inventory is the lossless accepted ledger with citations "
-            "interned by ID. Resolve each citation ID through citations: q is its exact quote "
+            "interned by ID. Resolve each citation ID through result.citations: q is its exact quote "
             "and c its exact source context. source_event_catalog freezes every performer "
             "and event before candidate authoring; performer actor_ref IDs address this same "
             "citation bank. Do not redefine its identities or event IDs. Preserve all duty IDs, row order, roles, and evidence "

@@ -84,7 +84,10 @@ def build_authored_greenfield_proposal(
     release = str(release_selector or "").strip() or greenfield_programs.DEFAULT_GREENFIELD_RELEASE_SELECTOR
     title = _required_text(confirmed_intent, "title")
     product_slug = slugify(title) or "greenfield-project"
-    first_path = authored_first_run_text(confirmed_intent)
+    source_duty = confirmed_intent[AUTHORED_SEMANTICS_KEY]["source_duty"]
+    narrative = bool(source_duty and source_duty["ledger_receipt"]["ledger"]["version"] == "odylith.greenfield.source-duty-ledger.v9")
+    walkthrough = authored_first_run_text(confirmed_intent)
+    first_path = str(confirmed_intent["first_path"]) if narrative else walkthrough
     first_run_relations = authored_first_run_relations(confirmed_intent)
     state_object = _required_text(confirmed_intent, "state_object")
     proof_boundary = decision_copy(confirmed_intent, "proof_boundary")
@@ -112,7 +115,7 @@ def build_authored_greenfield_proposal(
     components = build_provisional_components(intent=confirmed_intent, product_slug=product_slug)
     diagram_slugs = {
         "context": f"{product_slug}-system-context",
-        "sequence": f"{product_slug}-first-path",
+        "sequence": f"{product_slug}-first-run" if narrative else f"{product_slug}-first-path",
         "component_exchanges": f"{product_slug}-component-exchanges",
         "delivery_dependencies": f"{product_slug}-delivery-dependencies",
         "capability_support": f"{product_slug}-capability-support",
@@ -162,6 +165,7 @@ def build_authored_greenfield_proposal(
         source_precedence=confirmed_intent[AUTHORED_SEMANTICS_KEY]["source_precedence"],
         operational_constraints=operational_constraints,
         source_lifecycle=(confirmed_intent[AUTHORED_SEMANTICS_KEY]["source_duty"] or {}).get("lifecycle"),
+        neutral_context=narrative,
     )
     intent = _intent_copy(confirmed_intent)
     intent.update(
@@ -171,7 +175,7 @@ def build_authored_greenfield_proposal(
             "project_slug": product_slug,
             "reasoning_mode": "model_authored_typed_intent",
             "evidence_tier": "user_intent",
-            "summary": product_story,
+            "summary": provisional_design["project_summary"] if narrative else product_story,
             AUTHORED_SEMANTICS_KEY: copy.deepcopy(confirmed_intent[AUTHORED_SEMANTICS_KEY]),
         }
     )
@@ -224,6 +228,8 @@ def build_authored_greenfield_proposal(
             evidence_requirements=evidence_requirements,
             assumptions=assumptions,
             provisional_design=provisional_design,
+            summary=provisional_design["project_summary"] if narrative else None,
+            walkthrough=walkthrough if narrative else None,
         ),
         "project_intelligence": _project_intelligence(
             title=title,
@@ -563,6 +569,8 @@ def _project_brief(
     evidence_requirements: Sequence[str],
     assumptions: Sequence[Mapping[str, str]],
     provisional_design: Mapping[str, Any],
+    summary: str | None = None,
+    walkthrough: str | None = None,
 ) -> dict[str, Any]:
     problem_statement = problem
     assumption_values = assumption_preview_values(assumptions)
@@ -583,10 +591,11 @@ def _project_brief(
             product_view,
             "The source-stated product experience or an explicitly provisional decision assumption.",
         ),
-        _brief_section("First path", first_path, "One proposed walkthrough constrained by source evidence."),
+        _brief_section("First path", first_path, "The exact source-declared path." if summary is not None else "One proposed walkthrough constrained by source evidence."),
         _brief_section(
             "Proposed walkthrough",
-            _required_text(provisional_design["first_run"], "rationale"),
+            ((walkthrough + "\n\n") if walkthrough is not None else "")
+            + _required_text(provisional_design["first_run"], "rationale"),
             "The model-authored design path that connects the source action to the proposed product stages.",
         ),
         *([] if proof_is_provisional else [
@@ -620,6 +629,7 @@ def _project_brief(
         )
     return {
         "schema_version": "odylith.greenfield.project_brief.v1",
+        **({"summary": summary} if summary is not None else {}),
         "projection_origin": AUTHORED_PROJECTION_ORIGIN,
         "operational_constraints": list(operational_constraints),
         "purpose": problem_statement,

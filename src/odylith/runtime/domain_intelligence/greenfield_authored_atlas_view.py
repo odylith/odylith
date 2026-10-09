@@ -65,6 +65,7 @@ def build_authored_atlas_diagrams(
     operational_constraints: Sequence[str] = (),
     proof_is_provisional: bool = False,
     source_lifecycle: Mapping[str, Any] | None = None,
+    neutral_context: bool = False,
 ) -> list[dict[str, Any]]:
     """Project source facts and one separately authoritative provisional design."""
 
@@ -100,6 +101,7 @@ def build_authored_atlas_diagrams(
         externals=external_systems,
         components=components,
         relations=first_run_relations,
+        neutral_labels=neutral_context,
     )
     design_specs = build_provisional_design_atlas_specs(
         provisional_design=provisional_design,
@@ -131,8 +133,10 @@ def build_authored_atlas_diagrams(
                 "People are named participants, not necessarily product users. "
                 "First-run performers connect to their selected source events. Other named "
                 "participants remain context only. Human and external-system action groups connect to the candidate "
-                "product through a non-owning first-path interaction boundary; dotted participant-context "
-                "links assign no action. The first-run view shows "
+                + ("product through a non-owning product interaction boundary; dotted participant-context "
+                   if neutral_context else
+                   "product through a non-owning first-path interaction boundary; dotted participant-context ")
+                + "links assign no action. The first-run view shows "
                 "one proposed walkthrough. Listing order does not establish execution order. Registry links identify proposed "
                 "support, not replacement of source ownership."
             ),
@@ -400,6 +404,7 @@ def _context_view(
     externals: Sequence[str],
     components: Sequence[Mapping[str, Any]],
     relations: Sequence[Mapping[str, Any]],
+    neutral_labels: bool = False,
 ) -> tuple[str, list[dict[str, str]]]:
     performer_events: dict[tuple[str, str], list[str]] = {}
     for relation in relations:
@@ -431,10 +436,11 @@ def _context_view(
                 _box(
                     actor_id,
                     actor,
-                    "First-path actor" if events else "Participant",
+                    ("Source performer" if neutral_labels else "First-path actor") if events else "Participant",
                     "",
                     details=[] if events else [{"label": "Action assignment", "text":
-                        "Named in project evidence; no first-path action is assigned."}],
+                        ("Named in project evidence; no selected action is assigned." if neutral_labels else
+                         "Named in project evidence; no first-path action is assigned.")}],
                 )
             )
         lines.append("  end")
@@ -481,12 +487,14 @@ def _context_view(
         lines.append(f'  {action_id}["{event_label}"]')
         lines.append(f'  {owner_id} -->|"performs"| {action_id}')
         if identity[0] != "product":
+            interaction = "product interaction" if neutral_labels else "first-path interaction"
             lines.append(
-                f'  {action_id} ---|"first-path interaction"| product'
+                f'  {action_id} ---|"{interaction}"| product'
             )
         boxes.append(
             _box(
-                action_id, "First-path actions", "Grouped first-path actions",
+                action_id, "Selected source actions" if neutral_labels else "First-path actions",
+                "Grouped source actions" if neutral_labels else "Grouped first-path actions",
                 "\n\n".join(events),
                 details=[{"label": "Performer", "text": identity[1]},
                          {"label": "Performer kind", "text": identity[0]}],

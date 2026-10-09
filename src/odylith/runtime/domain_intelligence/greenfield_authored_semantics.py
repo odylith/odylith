@@ -577,7 +577,7 @@ def _authored_relations_from_intent(
             raise GreenfieldAuthoredSemanticsError("Greenfield source-duty custody is malformed")
         receipt = source_duty.get("ledger_receipt")
         ledger = receipt.get("ledger") if isinstance(receipt, Mapping) else None
-        supported_ledgers = ({"odylith.greenfield.source-duty-ledger.v8"}
+        supported_ledgers = ({"odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9"}
                              if semantics["version"] == AUTHORED_SEMANTICS_VERSION else
                              {"odylith.greenfield.source-duty-ledger.v5", "odylith.greenfield.source-duty-ledger.v6", "odylith.greenfield.source-duty-ledger.v7"})
         if not isinstance(ledger, Mapping) or ledger.get("version") not in supported_ledgers:

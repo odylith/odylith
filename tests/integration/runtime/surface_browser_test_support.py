@@ -687,7 +687,25 @@ def _assert_atlas_selection(page, *, workstream: str, diagram_id: str) -> None: 
     assert page.locator("#tab-atlas").get_attribute("aria-selected") == "true"
     atlas = page.frame_locator("#frame-atlas")
     atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
-    atlas.locator("#diagramId", has_text=diagram_id).wait_for(timeout=15000)
+    identity = atlas.locator("#diagramId")
+    identity.wait_for(state="attached", timeout=15000)
+    playwright_sync.expect(identity).to_have_text(diagram_id, timeout=15000)
+    selected = atlas.locator(f'.diagram-item.active button[data-diagram="{diagram_id}"]')
+    selected.wait_for(state="visible", timeout=15000)
+    title = selected.locator(".diagram-name").inner_text().strip()
+    assert title
+    playwright_sync.expect(atlas.locator("#diagramTitle")).to_be_visible(timeout=15000)
+    playwright_sync.expect(atlas.locator("#diagramTitle")).to_have_text(title, timeout=15000)
+    atlas.locator("#viewerImage").wait_for(state="visible", timeout=15000)
+    page.wait_for_function(
+        """() => {
+            const image = document.querySelector("#frame-atlas")?.contentDocument?.querySelector("#viewerImage");
+            const rect = image?.getBoundingClientRect();
+            return image?.complete && image.naturalWidth > 0 && image.naturalHeight > 0
+              && rect.width > 0 && rect.height > 0;
+        }""",
+        timeout=15000,
+    )
     if workstream:
         _wait_for_shell_query_param(page, tab="atlas", key="workstream", value=workstream)
     else:

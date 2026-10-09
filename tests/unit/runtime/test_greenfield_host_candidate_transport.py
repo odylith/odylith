@@ -62,7 +62,7 @@ def test_candidate_phase_preserves_every_material_row_and_control_losslessly(edi
                     "boundaries", "proof_duties", "evidence_controls"):
         if not edit:
             assert receipt["ledger"][section], f"fixture must exercise {section}"
-        assert len(request["accepted_source_duty_inventory"][section]) == len(receipt["ledger"][section])
+        assert len(request["accepted_source_duty_inventory"]["result"][section]) == len(receipt["ledger"][section])
     assert request["source_duty_custody"] == {
         key: receipt[key] for key in ("version", "source_sha256", "ledger_sha256",
                                      "verifier_task_sha256", "decision_set_sha256")
@@ -74,7 +74,7 @@ def test_candidate_phase_preserves_every_material_row_and_control_losslessly(edi
     assert "Do not reverify source duties" in request["citation_resolution"]
     assert (contract, receipt, admission) == before
     request["request"]["evidence"] = "changed after transport"
-    request["accepted_source_duty_inventory"]["first_path_actions"][0]["statement"] = "changed"
+    request["accepted_source_duty_inventory"]["result"]["first_path_actions"][0]["statement"] = "changed"
     assert (contract, receipt, admission) == before
 
 
@@ -189,7 +189,7 @@ def test_inventory_stdin_omits_only_schema_with_initial_and_edit_custody(
     expected = json.dumps(old, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
     actual = calls[0][1]["contract_text"].encode("utf-8")
     assert actual == expected == retained["source-ledger.stdin.json"]
-    assert len(old_bytes) - len(actual) == 6252
+    assert len(old_bytes) - len(actual) == len(schema_bytes.rstrip(b"\n")) + len(b'"source_ledger_schema":,')
     assert retained["source-ledger-schema.json"] == schema_bytes
     assert observation["source_ledger_schema_sha256"] == hashlib.sha256(schema_bytes).hexdigest()
     assert observation["source_ledger_request"]["output_schema_present"] is True

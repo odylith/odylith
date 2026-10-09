@@ -624,7 +624,7 @@ def test_human_performer_reassignment_requires_source_verifier_refusal() -> None
     )
     assert preflight["claims"][0]["performer_role"] == "internal_system"
     task = source_duty_entailment_task(preflight, evidence_text=EXTERNAL_ACTOR_EVIDENCE)
-    assert task["source_duty_ledger"]["first_path_actions"][0]["performer_role"] == "internal_system"
+    assert task["source_duty_ledger"]["result"]["first_path_actions"][0]["performer_role"] == "internal_system"
     decisions = _yes_decisions(preflight, evidence_text=EXTERNAL_ACTOR_EVIDENCE)
     decisions["decisions"]["A1"].update(
         {"verdict": "no", "support_ref_indexes": [], "role_ref_indexes": []}
@@ -703,7 +703,7 @@ def test_clarification_preflight_has_no_claims_and_cannot_admit() -> None:
     assert preflight["claims"] == []
     with pytest.raises(GreenfieldSourceDutyLedgerError, match="clarification cannot"):
         validate_greenfield_source_duty_ledger(
-            ledger, evidence_text=EVIDENCE, decision_set=_yes_decisions(preflight)
+            ledger, evidence_text=EVIDENCE, decision_set={}
         )
 
 

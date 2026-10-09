@@ -585,8 +585,8 @@ def test_bound_system_prerequisite_survives_admission_and_canonical_reload(
     ]
     source_duty = materialized["authored_semantics"]["source_duty"]
     assert source_duty["ledger_receipt"] == original_receipt
-    assert source_duty["ledger_receipt"]["version"].endswith(".v15" if edit_evidence else ".v14")
-    assert source_duty["ledger_receipt"]["decision_set"]["version"].endswith(".v10" if edit_evidence else ".v9")
+    assert source_duty["ledger_receipt"]["version"].endswith(".v17" if edit_evidence else ".v16")
+    assert source_duty["ledger_receipt"]["decision_set"]["version"].endswith(".v12" if edit_evidence else ".v11")
     assert [row["event_order"] for row in source_duty["binding"]["first_path_actions"]] == [1, 2]
     assert [row["event_order"] for row in source_duty["binding"]["system_duties"]] == [3]
     reloaded = json.loads(json.dumps(materialized))
@@ -612,7 +612,7 @@ def test_fresh_candidate_requires_summary_in_schema_and_deterministic_admission(
     source, candidate = _candidate()
     contract = greenfield_host_candidate_contract(source)
     design_schema = contract["candidate_schema"]["properties"]["result"]["anyOf"][0]["properties"]["provisional_design"]
-    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v57"
+    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v58"
     assert contract["candidate_version"] == "odylith.greenfield.host-candidate-format.v25"
     assert "project_summary" in design_schema["required"]
     assert design_schema["properties"]["project_summary"]["maxLength"] == 600
@@ -649,7 +649,8 @@ def test_same_candidate_summary_is_preserved_to_proposal_without_rewriting_accep
     )
     assert intent["authored_semantics"]["provisional_design"]["project_summary"] == summary
     assert proposal["semantic_model"]["provisional_design"]["project_summary"] == summary
-    assert proposal["intent"]["summary"] == proposal["intent"]["product_story"] != summary
+    assert proposal["intent"]["summary"] == proposal["project_brief"]["summary"] == summary
+    assert proposal["intent"]["product_story"] != summary
     assert proposal["intent"]["product_story"] == intent["product_story"]
     assert "project_summary" not in intent
     assert proposal["provider_calls"] == 0

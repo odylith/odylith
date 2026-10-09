@@ -8,14 +8,16 @@ flowchart TB
       contract["Public candidate contract<br/>Sealed source context and typed schema"]
       prior_lifecycle["EDIT comparison from the prior seal<br/>Every prior duty needs a disposition;<br/>preserved duties keep their component and workstream owners"]
       model_pass["Normalized source-duty ledger<br/>Product identity, performers, actions and targets;<br/>declared workflow and recurring duties stay distinct"]
-      typed_graph["Compact source evidence<br/>Host resolves every ID; compiler verifies each exact<br/>quote and context against the full source"]
+      typed_graph["Closed source result<br/>Typed inventory or one material question;<br/>inventory retains every exact source reference"]
       identity_check["Source identity and performer custody preflight<br/>Resolve the product identity separately from actors;<br/>retain exact performer quotes in normalized statements"]
       source_custody["Source-only verifier and canonical ledger<br/>Prove product identity, performers, workflow roles and every prior EDIT duty;<br/>typed carriers and correction authorization retain custody"]
       private_diagnostics["Optional private diagnostic retention<br/>Exact inputs and returned streams before refusal or cleanup;<br/>same deadline and stable private parent;<br/>no admission authority"]
       candidate_author["One candidate authoring pass<br/>Propose architecture and lifecycle allocations;<br/>the source ledger owns product identity, performers and event IDs"]
       ambiguity{"Material meaning complete?"}
       clarify["One focused clarification<br/>No transaction or governed write"]
-      request --> prepare --> contract --> model_pass --> typed_graph --> identity_check --> source_custody
+      request --> prepare --> contract --> model_pass --> typed_graph --> identity_check
+      identity_check -- "valid inventory" --> source_custody
+      identity_check -- "valid question" --> clarify
       source_custody -- "affirmative and bound" --> candidate_author --> ambiguity
       source_custody -- "no, uncertain or invalid" --> invalid_candidate
       prepare -. "whole journey supervision" .-> guardian

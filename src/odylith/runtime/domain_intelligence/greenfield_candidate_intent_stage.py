@@ -13,7 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import 
     assumption_preview_values,
     decision_copy,
 )
-from odylith.runtime.domain_intelligence.greenfield_authored_first_run import authored_first_run_text
+from odylith.runtime.domain_intelligence.greenfield_authored_first_run import authored_first_path_text
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_SEMANTICS_KEY,
 )
@@ -145,7 +145,7 @@ def render_candidate_intent_markdown(intent: Mapping[str, Any]) -> str:
         _text_fact(intent, "state_object"),
         "",
         "## First complete path",
-        authored_first_run_text(intent) if AUTHORED_SEMANTICS_KEY in intent else _text_fact(intent, "first_path"),
+        authored_first_path_text(intent) if AUTHORED_SEMANTICS_KEY in intent else _text_fact(intent, "first_path"),
         "",
         *(
             [

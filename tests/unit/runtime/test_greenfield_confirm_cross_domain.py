@@ -513,7 +513,7 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
     diagram_names = [path.name for path in (tmp_path / "odylith/atlas/source").glob("*.mmd")]
     assert len(diagram_names) == 5
     for role in (
-        "system-context", "first-path", "component-exchanges", "delivery-dependencies", "capability-support",
+        "system-context", "first-run", "component-exchanges", "delivery-dependencies", "capability-support",
     ):
         assert any(name.endswith(f"-{role}.mmd") for name in diagram_names)
     assert release_events

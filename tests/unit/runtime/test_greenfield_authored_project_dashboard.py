@@ -640,6 +640,7 @@ def test_receipt_bound_scope_is_known_without_promoting_advisory_strings(tmp_pat
     }]
     receipt = synthetic_source_duty_receipt_for_ledger(ledger, evidence_text=evidence)
     design = intent["authored_semantics"]["provisional_design"]
+    design["project_summary"] = "The review workspace keeps review records and source-governed interface requirements together."
     owner = {"component_key": design["components"][0]["key"], "workstream_key": design["workstreams"][0]["key"]}
     candidate["provisional_design"]["components"][0]["key"] = owner["component_key"]
     candidate["provisional_design"]["workstreams"][0].update(
@@ -775,20 +776,18 @@ def test_authored_dashboard_preserves_archive_after_the_published_result(tmp_pat
         root=tmp_path, proposal=proposal, accepted_project_preview=_accepted_preview(proposal=proposal, root=tmp_path),
         source_launch_context=_source_launch_context(proposal=proposal, root=tmp_path),
     )
-    proposed_run = "Proposed first run:\n" + "\n".join(
-        f"Event {index}\nActor: Coordinator\nSource event: {event}"
-        for index, event in enumerate(events, 1)
-    )
-    assert payload["focus"] == proposed_run
+    proposed_run = " ".join(events)
+    assert payload["focus"] == authored["first_path"]
+    assert payload["scenario_details"][0] == ("Proposed first run", proposed_run)
     assert payload["desired"] == "report"
     assert payload["authored_facts"]["visible_result"] == "report"
     assert payload["authored_facts"]["source_precedence"] == precedence
     assert [row["visible_result_quote"] for row in payload["authored_facts"]["first_path_relations"]] == ["report", ""]
     assert payload["actors"][0][2] == "\n".join(events)
     cards = {row["semantic_slot"]: row["body"] for row in payload["product_story"]["release_contract"]}
-    assert cards["first_path"] == proposed_run
+    assert cards["first_path"] == authored["first_path"]
     for handoff in payload["host_handoff_prompts"]:
-        assert handoff["contract"]["fact_bindings"]["accepted_first_path"] == proposed_run
+        assert handoff["contract"]["fact_bindings"]["accepted_first_path"] == authored["first_path"]
     package = _completion_package(proposal=proposal, dashboard=payload, root=tmp_path)
     assert project_dashboard_preview_issues(package, payload, model_authored=True) == []
 

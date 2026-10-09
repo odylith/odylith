@@ -167,8 +167,8 @@ def test_post_result_action_survives_authoring_custody_and_all_projections(tmp_p
         first_release_workstreams=tuple(row["idea_id"] for row in created), release_selector="0.0.1")
     proposed = authored_first_run_text(candidate)
     assert proposed.endswith(events[2]["event_quote"])
-    assert handoff["coding_readiness_contract"]["source_facts"]["accepted_first_path"] == proposed
-    assert proposed in render_product_intent_preview(candidate)
+    assert handoff["coding_readiness_contract"]["source_facts"]["accepted_first_path"] == candidate["first_path"]
+    assert candidate["first_path"] in render_product_intent_preview(candidate)
 
 
 @pytest.fixture
@@ -321,9 +321,9 @@ def test_supporting_prerequisite_interleaves_first_path_across_all_projections(t
     validate_host_reasoned_proposal(proposal)
     assert semantic_diagram_alignment_issues(proposal, proposal["semantic_model"]) == []
     proposed = authored_first_run_text(candidate)
-    assert proposal["project_intelligence"]["scope"] == [proposed]
+    assert proposal["project_intelligence"]["scope"] == [candidate["first_path"]]
     assert any(
-        row["must_capture"] == proposed
+        row["section"] == "Proposed walkthrough" and row["must_capture"].startswith(proposed)
         for row in proposal["project_brief"]["blueprint_sections"]
     )
     contract = proposal["semantic_model"]["first_path_contract"]
@@ -332,12 +332,12 @@ def test_supporting_prerequisite_interleaves_first_path_across_all_projections(t
         row["event_quote"] for row in first_path_relations_from_intent(candidate)
     ]
     sequence = next(
-        row for row in proposal["diagrams"] if row["slug"].endswith("first-path")
+        row for row in proposal["diagrams"] if row["slug"].endswith("first-run")
     )
     assert 'event3 -->|"source constraint 2"| event2' in sequence["mermaid_source"]
     assert "event1 -.-> event3" in sequence["mermaid_source"]
-    assert proposed in render_product_intent_preview(candidate)
-    assert proposed in candidate_intent_stage_paths(tmp_path).markdown.read_text()
+    assert candidate["first_path"] in render_product_intent_preview(candidate)
+    assert candidate["first_path"] in candidate_intent_stage_paths(tmp_path).markdown.read_text()
 
     created = [
         {
@@ -354,18 +354,16 @@ def test_supporting_prerequisite_interleaves_first_path_across_all_projections(t
         release_selector="0.0.1",
     )
     assert proposed in handoff["implementation_prompt"]
-    assert handoff["coding_readiness_contract"]["source_facts"]["accepted_first_path"] == proposed
+    assert handoff["coding_readiness_contract"]["source_facts"]["accepted_first_path"] == candidate["first_path"]
 
 
 def test_project_and_semantic_views_use_the_labeled_proposed_run(ordered_package):
     _, candidate, proposal, events = ordered_package
-    proposed = "Proposed first run:\n" + "\n".join(
-        f"Event {relation['order']}\n{authored_event_display_text(relation)}"
-        for relation in authored_first_run_relations(candidate)
-    )
+    proposed = " ".join(relation["event_quote"] for relation in authored_first_run_relations(candidate))
     assert authored_first_run_text(candidate) == proposed
-    assert proposal["project_intelligence"]["scope"] == [proposed]
-    assert any(row["must_capture"] == proposed for row in proposal["project_brief"]["blueprint_sections"])
+    assert proposal["project_intelligence"]["scope"] == [candidate["first_path"]]
+    assert any(row["section"] == "Proposed walkthrough" and row["must_capture"].startswith(proposed) for row in proposal["project_brief"]["blueprint_sections"])
+    assert any(row["section"] == "First path" and row["must_capture"] == candidate["first_path"] for row in proposal["project_brief"]["blueprint_sections"])
     contract = proposal["semantic_model"]["first_path_contract"]
     assert contract["raw_path"] == candidate["first_path"]
     assert contract["capability"] == candidate["first_path"]
@@ -384,14 +382,13 @@ def test_cli_and_staged_markdown_show_the_proposed_run_without_rewriting_source_
     proposed = authored_first_run_text(candidate)
     stage = candidate_intent_stage_paths(tmp_path)
     for view in (render_product_intent_preview(candidate), stage.markdown.read_text()):
-        assert "## First complete path\nProposed first run:\n" in view
-        assert proposed in view
-        assert "## First complete path\n" + candidate["first_path"] not in view
+        assert "## First complete path\n" + candidate["first_path"] in view
+        assert "## First complete path\nProposed first run:\n" not in view
 
 
 def test_atlas_proposes_order_but_registry_and_radar_keep_source_support_ids(ordered_package):
     _, _, proposal, events = ordered_package
-    sequence = next(row for row in proposal["diagrams"] if row["slug"] == "receipt-desk-first-path")
+    sequence = next(row for row in proposal["diagrams"] if row["slug"] == "receipt-desk-first-run")
     assert sequence["authority_kind"] == "provisional_design"
     mermaid = sequence["mermaid_source"]
     assert 'event1 -->|"source constraint 1"| event2' in mermaid
@@ -423,7 +420,7 @@ def test_implementation_handoffs_follow_the_same_proposed_walk(ordered_package, 
         first_release_workstreams=workstreams, release_selector="0.0.1",
     )
     assert proposed in handoff["implementation_prompt"]
-    assert handoff["coding_readiness_contract"]["source_facts"]["accepted_first_path"] == proposed
+    assert handoff["coding_readiness_contract"]["source_facts"]["accepted_first_path"] == candidate["first_path"]
 
 
 def test_shared_fixture_never_derives_source_precedence_from_delivery_dependencies():

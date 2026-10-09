@@ -15,8 +15,8 @@ deep-linkable parent surface that composes Project, Radar, Atlas, Compass,
 Registry, and Casebook into one navigable product entrypoint without flattening
 each child surface into the shell renderer.
 
-For the source-local v49 Greenfield candidate, Project receives exact canonical
-provisional design alongside source facts. Both scalar and structured presenters
+Project receives exact canonical provisional design alongside source facts.
+Both scalar and structured presenters
 show proposed capabilities and proposed logical boundaries; source-stated systems,
 external dependencies and exclusions remain separate. Job cards copy each proposed
 workstream's distinct deliverable. The presenter must not reconstruct capabilities
@@ -25,6 +25,19 @@ Browser proof checks these visible values and source actors on desktop/mobile;
 unit or DOM-count success does not establish complete-package human quality.
 
 ### Current information order (2026-10-09)
+
+Greenfield's source-declared path and its proposed implementation walkthrough have
+separate labels. The proposed walkthrough may include cited supporting prerequisites;
+it cannot redefine accepted first-path membership. Fresh briefs lead with the
+candidate's direct project summary and keep evidence, assumptions and record
+metadata in closed details. Source authority and exact quotes remain available.
+The correction is implemented and independently reviewed. Current local coverage
+combines 4,031 Greenfield checks, 115 browser checks across six complete modules,
+and 28 Tribunal checks. Browser checks exercise keyboard disclosures, visible
+selection, loaded diagrams, navigation and compact layouts. The evidence is an
+explicit composition of complete affected-module runs and unchanged passing
+modules. No fresh installed or release qualification is claimed. CB-303 retains
+the failed runs and independent reviews.
 
 Atlas leads with the selected explanation and diagram. Exact identifiers,
 freshness details, exports and linked work belong in closed, keyboard-accessible
@@ -595,6 +608,9 @@ artifacts to that header.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-10-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 6 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/registry/source/components/dashboard/CURRENT_SPEC.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, plus 2 more
 - **2026-10-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `tests/unit/install/test_local_release_smoke.py`
@@ -610,9 +626,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-10-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `sha256:addb966f57829c8858b5d640b848f922c4323bf68adf071a6cbe4d7fccd463ee`, `sha256:228a52fe9195e3ad5e2d2f4b1612439a919fdb46cf18fa260e5b700de3829f79`, `tests/unit/install/test_local_release_smoke.py`
-- **2026-10-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
 <!-- registry-requirements:end -->
 
 ## Feature History

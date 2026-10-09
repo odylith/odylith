@@ -19,6 +19,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
 from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
     authored_checkpoint_text,
     authored_first_run_relations,
+    authored_first_path_text,
     authored_first_run_text,
 )
 from odylith.runtime.domain_intelligence.greenfield_handoff_contract import (
@@ -63,7 +64,8 @@ def build_authored_greenfield_payload(
     provisional_design = provisional_design_from_intent(intent)
     product_story = _required_text(intent, "product_story")
     accepted_evidence_excerpt = f"Accepted evidence excerpt: “{product_story}”"
-    first_path = authored_first_run_text(intent)
+    first_path = authored_first_path_text(intent)
+    first_run = authored_first_run_text(intent)
     source_proof_boundary = str(intent.get("proof_boundary") or "")
     proof_boundary = decision_copy(intent, "proof_boundary")
     proof_is_provisional = not bool(source_proof_boundary)
@@ -179,12 +181,12 @@ def build_authored_greenfield_payload(
         "scenario": [
             "Proposed first run",
             title,
-            first_path,
+            first_run,
             "This proposed walkthrough preserves source actions and their stated prerequisites.",
             "\n".join(event_quotes),
         ],
         "scenario_details": [
-            ("Proposed first run", first_path),
+            ("Proposed first run", first_run),
             *(
                 [("Proposed proof checkpoint", proof_boundary)]
                 if proof_is_provisional
@@ -254,7 +256,7 @@ def build_authored_greenfield_payload(
         "claim_evidence": _claim_evidence(
             title=title,
             product_story=product_story,
-            first_path=first_path,
+            first_path=first_run,
             visible_result=visible_result,
             proof_boundary=proof_boundary,
             proof_is_provisional=proof_is_provisional,

@@ -341,7 +341,8 @@ def test_d038_atlas_visibility_broker_flow_renders_in_shell(browser_context) -> 
 
         atlas = page.frame_locator("#frame-atlas")
         atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
-        atlas.locator("#diagramId", has_text="D-038").wait_for(timeout=15000)
+        atlas.locator("#diagramId", has_text="D-038").wait_for(state="attached", timeout=15000)
+        assert atlas.locator("#diagramId").text_content().strip() == "D-038"
         atlas.locator("#diagramTitle", has_text="Conversation Observation And Governed Proposal Flow").wait_for(
             timeout=15000
         )

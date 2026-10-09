@@ -175,10 +175,10 @@ def test_authored_typed_projection_passes_structural_tribunal() -> None:
         "provisional_design"
     ]["components"][0]
     assert component["component_contract"]["support_event_refs"] == [
-        "/authored_semantics/first_path_relations/0"
+        "/authored_semantics/source_event_relations/0"
     ]
     assert component["component_contract"]["supporting_events"] == semantics[
-        "first_path_relations"
+        "source_event_relations"
     ]
     assert component["component_contract"]["delivery_workstreams"] == [
         {

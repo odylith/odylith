@@ -96,8 +96,6 @@ def _assert_shell_target_from_href(page, href: str) -> None:  # noqa: ANN001
         _wait_for_shell_tab(page, "atlas")
         atlas = page.frame_locator("#frame-atlas")
         atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
-        if diagram_id:
-            atlas.locator("#diagramId", has_text=diagram_id).wait_for(timeout=15000)
         if workstream:
             page.wait_for_function(
                 """(workstream) => {
@@ -112,6 +110,10 @@ def _assert_shell_target_from_href(page, href: str) -> None:  # noqa: ANN001
                 }""",
                 arg=workstream,
                 timeout=15000,
+            )
+        if diagram_id:
+            _assert_atlas_selection(
+                page, workstream=_extract_query_param(page.url, "workstream"), diagram_id=diagram_id,
             )
         return
     if tab == "compass":
@@ -160,11 +162,16 @@ def _select_registry_component_with_actions(registry) -> str:  # noqa: ANN001
     raise AssertionError("expected a Registry component with detail action chips")
 
 
-def _open_atlas_diagram(atlas, diagram_id: str) -> None:  # noqa: ANN001
-    button = atlas.locator(f'button[data-diagram="{diagram_id}"]').first
-    if button.count():
-        button.evaluate("node => node.click()")
-    atlas.locator("#diagramId", has_text=diagram_id).wait_for(timeout=15000)
+def _open_atlas_diagram(page, atlas, diagram_id: str) -> None:  # noqa: ANN001
+    _assert_atlas_selection(page, workstream="", diagram_id=diagram_id)
+    metadata = atlas.locator("details.diagram-metadata")
+    assert metadata.get_attribute("open") is None
+    assert atlas.locator("#diagramId").is_visible() is False
+    metadata.locator(":scope > summary").focus()
+    metadata.locator(":scope > summary").press("Enter")
+    assert metadata.get_attribute("open") is not None
+    atlas.locator("#diagramId").wait_for(state="visible", timeout=15000)
+    assert atlas.locator("#diagramId").inner_text().strip() == diagram_id
 
 
 def _collect_compass_component_actions(compass, *, limit: int = 3) -> list[dict[str, str]]:  # noqa: ANN001
@@ -347,7 +354,7 @@ def test_atlas_surface_links_and_context_pills_round_trip_cleanly(browser_contex
 
         atlas = page.frame_locator("#frame-atlas")
         atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
-        _open_atlas_diagram(atlas, source_diagram_id)
+        _open_atlas_diagram(page, atlas, source_diagram_id)
 
         linked_context = atlas.locator("details.linked-context-section")
         assert linked_context.get_attribute("open") is None
@@ -378,7 +385,7 @@ def test_atlas_surface_links_and_context_pills_round_trip_cleanly(browser_contex
         for href in unique_hrefs:
             response = page.goto(source_url, wait_until="domcontentloaded")
             assert response is not None and response.ok
-            atlas.locator("#diagramId", has_text=source_diagram_id).wait_for(timeout=15000)
+            _open_atlas_diagram(page, atlas, source_diagram_id)
             linked_context = atlas.locator("details.linked-context-section")
             assert linked_context.get_attribute("open") is None
             linked_context.locator("summary").focus()

@@ -1105,15 +1105,20 @@ def test_greenfield_apply_publishes_project_over_prepared_baseline_after_package
     assert result["memory"]["project_brief"] == str(project_brief_path)
     project_brief_text = project_brief_path.read_text(encoding="utf-8")
     assert "## Brief" in project_brief_text
-    assert "outcome:" in project_brief_text
+    summary = proposal["intent"]["authored_semantics"]["provisional_design"]["project_summary"]
+    assert f"\n## Brief\n{summary}\n" in project_brief_text
+    assert project_brief_text.count(summary) == 1
+    assert "outcome:" not in project_brief_text.split("<details>", 1)[0]
     assert "\n## Brief\n" in project_brief_text
     assert "\n## Project Design Board\n" in project_brief_text
     assert "\n## Governance Package\n" not in project_brief_text
     assert "coding readiness gates:" not in project_brief_text
     assert "host-independent customization paths:" not in project_brief_text
-    assert f"- Proof: {proposal['intent']['proof_boundary']}" in project_brief_text
+    assert "<summary>Evidence and assumptions</summary>" in project_brief_text
+    assert "<summary>Record metadata</summary>" in project_brief_text
+    assert f"### Proof\n\n{proposal['intent']['proof_boundary']}\n" in project_brief_text
     assert (
-        "- Required evidence: " + "\n".join(proposal["intent"]["evidence_requirements"])
+        "### Required evidence\n\n" + "\n".join(proposal["intent"]["evidence_requirements"])
     ) in project_brief_text
     assert len(project_brief_text.splitlines()) >= 20
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))

@@ -14,7 +14,7 @@ from odylith.runtime.common.value_coercion import normalize_string as clean_text
 from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
     authored_checkpoint_text,
     authored_first_run_relations,
-    authored_first_run_text,
+    authored_first_path_text,
 )
 from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
     decision_copy,
@@ -153,7 +153,7 @@ def _authored_project_dashboard_contract_issues(
         for row in mapping_rows(story.get("release_contract"))
     }
     expected_cards = {
-        "first_path": authored_first_run_text(intent),
+        "first_path": authored_first_path_text(intent),
         "proof": decision_copy(intent, "proof_boundary"),
         "product_boundary": authored_product_boundary(
             components=components,
@@ -222,7 +222,7 @@ def _authored_project_dashboard_contract_issues(
             issues.append(f"model-authored Project handoff step {index} drifted from canonical implementation target")
         if not isinstance(prompt.get("prompt"), str) or prompt["prompt"].count(render_selected_workstream_scope(expected_target)) != 1:
             issues.append(f"model-authored Project handoff step {index} lost its exact selected implementation scope copy")
-        if bindings.get("accepted_first_path") != authored_first_run_text(intent):
+        if bindings.get("accepted_first_path") != authored_first_path_text(intent):
             issues.append(f"model-authored Project handoff step {index} drifted from the proposed first run")
         if bindings.get("proof_boundary") != decision_copy(intent, "proof_boundary"):
             issues.append(

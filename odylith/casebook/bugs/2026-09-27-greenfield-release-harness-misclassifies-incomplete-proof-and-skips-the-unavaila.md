@@ -3135,3 +3135,55 @@ a source-first pass permits the unchanged remaining three cases. Exact original
 row union, all failures, runtime budgets and cleanup remain conserved. This is
 private discovery proof, not Public40 replacement or release-grade aggregate credit.
 Public40 amendment remains pending; the final holdout is untouched.
+
+### V50 package clears; first native case fails (2026-10-09)
+
+Checkpoint bae34ac859eda4ea36fe5184432635dc6b9ade2d built and passed clean local
+installation. Custody verifies 25 artifacts, 11 manifest assets and 1,021 wheel-owned
+files with no mismatch. Independent orchestration review and final dispatch
+attestation passed before case 01. These prove package/custody, not semantics.
+
+Prelaunch review caught a private activation script that read independent review
+without requiring CLEAR status. It now explicitly requires
+CLEAR_PACKAGE_AND_ORCHESTRATION. BLOCKED/PENDING probes refuse; CLEAR accepts.
+The preliminary failed review remains retained. No runtime framework was added.
+
+Actual case 01 exits 1 in 267.509 seconds: H0 seals; H1 fails ledger preflight;
+no H1 or publication exists; cleanup passes. Remaining cases are stopped. The
+source-first report is FAIL with no observed P0, four P1 findings and a P2 narrative
+finding. CB-209/CB-303 record the owners and proposed-sequence qualification.
+The failed run cannot be repaired, replayed or regraded. Qualifying EDIT is 0/4.
+
+Verified read-only local archive (not an independent backup):
+/Users/freedom/.codex/odylith-release-evidence/2026-10-09/v50/native-case01-failure-and-adjudication.tar.gz
+(SHA-256 7f2202bfe688e61e64d5848d793bf1840be47d4c8ab87616d19251bb32bf66c8).
+Its 144 members cover the run, actual adjudication, final dispatch and migration
+preparation. The live diagnosis was omitted and remains separately pinned.
+The operator confirms the original Public40 annotation file is unavailable.
+The separate replacement amendment is pending; unavailability does not authorize
+replacement annotation or a public matrix run. Holdout remains untouched.
+
+
+### 2026-10-09 — complete v51 regression exposed unadopted test readers
+
+The frozen 181-module Greenfield selection plus seven generated-page browser nodes completed with **12 failures and 4,019 passes** in 554.87 seconds. All 956 code/test input hashes stayed unchanged during the run. The original output remains at `/private/tmp/odylith-v51-greenfield-regression-20261009/pytest.log`, SHA-256 `17d1911eee37e786deee5169356ec71c125f622beaeb433e80360094cfd57fc2`.
+
+The failures identify five test modules whose callers did not adopt the fresh closed compact result or human projection contract: verifier-ledger and raw actor tampering address the obsolete outer fields and fail before exercising refusal; four authority CLI checks read old prompt wording or outer inventory/citations; five cross-domain cases expect the old first-path filename for the explicitly proposed execution diagram; one transaction check requires the removed `outcome:` boilerplate. Production publication and the other 4,019 checks passed in this run, but these twelve checks confer no credit until corrected and exercised. This does not prove provider/native behavior.
+
+The bounded follow-through owns only those five test modules: target the actual fresh nested inventory, retain every tamper/refusal/citation/control invariant, verify the first-run diagram route, and compare the human summary with the authored narrative. Keep passive readback and existing failed evidence unchanged. A fresh complete run of all five affected modules and independent review of the test changes are required before composing the complete local gate; no release floor, failure history, source fixture, provider behavior, or production code is to be changed for this adoption.
+
+
+### 2026-10-09 — test adoption independently reviewed and local coverage composed
+
+The five authorized test modules pass all 164 checks in 40.80 seconds. Only their five hashes differ from the original 956-pin complete run; the other 951 remain exact. Review confirms reachable nested-result tampering, citation/refusal guards, five-domain source/ownership checks, and direct summary/proof text are preserved or strengthened: `/private/tmp/odylith-v51-complete-gate-adoption-review-20261009/report.md` (SHA-256 `ef183ffcda34b06226816128838ee1d4c12fafacff0829146a176f3073b8cc53`).
+
+The composed result is `/private/tmp/odylith-v51-greenfield-composed-regression-20261009/result.json` (SHA-256 `a8f73b75b9536027d524d8afb1cf6442e8a9432111de48a48ab0f6b3615f749d`). It replaces all original evidence for those five modules, including earlier passes, and retains successful proof only for 176 unchanged modules and seven generated browser nodes. The original complete run remains failed, not regraded. No clean monolithic rerun, native qualification or release claim is made.
+
+
+### 2026-10-09 — current repository-wide CI remains failed
+
+Run `37939289189` for `bae34ac859eda4ea36fe5184432635dc6b9ade2d` completed with 30 failed, 10,521 passed and 10 skipped. The retained log SHA-256 is `4cfff7b7755c4894941abbcef1bf85d077015b28817238d35f692d71d6dffbd9` at `/private/tmp/odylith-v50-ci-20261009/failed-job.log`. Twenty-nine browser failures span six modules whose disclosure/layout assumptions require inspection; the remaining Tribunal test expects `/authored_semantics/first_path_relations/0` while the source-owned graph correctly publishes `/authored_semantics/source_event_relations/0`. The Tribunal decision itself passes before that obsolete expected path assertion.
+
+The 181-module Greenfield local composite gate is a bounded proof and does not supersede these repository-wide failures. Fix only grounded test readers, preserve all semantic and browser quality assertions, rerun every affected module, and obtain current-head CI. Do not rerun the old CI as a substitute, discard the failure or claim the release is qualified.
+
+All affected compatibility readers now have complete current-module proof: six browser modules cover 115 checks and the Tribunal module passes 28. Independent review accepts the exact disclosure, selection and source-event reference changes; production and the request observer are unchanged. The intermediate 13-failure browser run remains retained, with both test defects explained and corrected. The local release regression is explicitly composed at `/private/tmp/odylith-v51-release-local-regression-20261009/result.json` (SHA-256 `913ca316bb33825cd1bb50e364a9d52d582608ffb5604bc1f173b69490458b7a`): 4,174 selected checks, 188 complete modules, seven additional generated-page nodes and 965 current code/test hashes. This replaces evidence only for affected modules; it does not turn the failed repository-wide CI into a pass. A frozen successor must obtain its own full CI, package and native proof.

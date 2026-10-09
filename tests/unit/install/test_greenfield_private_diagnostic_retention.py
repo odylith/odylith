@@ -78,7 +78,7 @@ def _prepare_fixture(tmp_path, monkeypatch, *, diagnostic=True, failure=None, cl
                      Path(command[command.index("--output-schema") + 1]).name, "candidate")
         if stage == "source-ledger" and failure == "atomic":
             ledger = json.loads(result.stdout)
-            ledger["first_path_actions"][0]["actor_ref"] = ledger["first_path_actions"][0]["event_ref"]
+            ledger["result"]["first_path_actions"][0]["actor_ref"] = ledger["result"]["first_path_actions"][0]["event_ref"]
             result.stdout = json.dumps(ledger, ensure_ascii=False) + "\n"
         emitted[stage] = result
         return result

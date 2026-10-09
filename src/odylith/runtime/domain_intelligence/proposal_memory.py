@@ -240,9 +240,7 @@ def build_project_brief_source_markdown(
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield acceptance memory is missing its authored project brief"
         )
-    lines = [
-        f"# {title} Project Brief",
-        "",
+    metadata = [
         "- schema: odylith.greenfield.project_brief.v1",
         "- origin: greenfield",
         f"- accepted_at: {_structural_token(accepted_at) or 'prewrite'}",
@@ -250,11 +248,18 @@ def build_project_brief_source_markdown(
         f"- workstreams: {len(backlog_items)}",
         f"- components: {len(component_items)}",
         f"- diagrams: {len(diagram_ids)}",
+    ]
+    lines = [
+        f"# {title} Project Brief",
+        "",
+        *([] if "summary" in brief else metadata),
         "",
         "## Brief",
         *body_lines,
         "",
     ]
+    if "summary" in brief:
+        lines.extend(["<details>", "<summary>Record metadata</summary>", "", *metadata, "", "</details>", ""])
     text = "\n".join(lines)
     return text.rstrip() + "\n"
 

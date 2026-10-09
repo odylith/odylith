@@ -135,7 +135,7 @@ def project_greenfield_source_event_catalog(
     )
     evidence = evidence_text.encode("utf-8")
     facts: dict[str, Any] = {"human_actors": [], "internal_systems": [], "external_systems": [], "title": None}
-    independent_identity = verified["ledger"]["version"] in {SOURCE_DUTY_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v7"}
+    independent_identity = verified["ledger"]["version"] in {SOURCE_DUTY_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8"}
     if independent_identity:
         facts["title"] = deepcopy(verified["ledger"]["product_identity"]["source_ref"])
     identity_span = _source_span(evidence, facts["title"]) if independent_identity else None

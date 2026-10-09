@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any, Mapping, Sequence
 
-from odylith.runtime.domain_intelligence.greenfield_authored_first_run import authored_first_run_text
+from odylith.runtime.domain_intelligence.greenfield_authored_first_run import authored_first_path_text, authored_first_run_text
 from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import decision_copy
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     GreenfieldAuthoredSemanticsError,
@@ -127,7 +127,7 @@ def build_next_steps(
     intent = proposal["intent"]
     brief = proposal.get("project_brief")
     project_brief = brief if isinstance(brief, Mapping) else {}
-    first_path = authored_first_run_text(intent)
+    first_path = authored_first_path_text(intent)
     proof_boundary = decision_copy(intent, "proof_boundary")
     target = {
         "workstream_id": selected.idea_id,
@@ -165,6 +165,7 @@ def build_next_steps(
         "implementation_prompt": _implementation_prompt(
             target=target,
             first_path=first_path, release_requirements=proof_boundary,
+            proposed_walkthrough=authored_first_run_text(intent) if "summary" in project_brief else "",
         ),
         "customization_options": list(row_text_tuple(project_brief, "customization_options")),
         "coding_readiness_gates": render_coding_readiness_gates(readiness_contract),
@@ -201,12 +202,15 @@ def verification_commands(start_workstream_id: str) -> list[str]:
 def _implementation_prompt(
     *, target: Mapping[str, Any],
     first_path: str, release_requirements: str,
+    proposed_walkthrough: str = "",
 ) -> str:
     return (
         "After project readiness decisions are recorded, plan and implement only the selected workstream.\n"
         f"{render_selected_workstream_scope(target)}\n\n"
         "Release context — preserve this direction without treating the whole release as this slice:\n"
-        f"{first_path}\n\nRelease proof boundary:\n{release_requirements}\n\n"
+        f"{first_path}\n\n"
+        + (f"Proposed walkthrough:\n{proposed_walkthrough}\n\n" if proposed_walkthrough else "")
+        + f"Release proof boundary:\n{release_requirements}\n\n"
         "Stop after the selected deliverable is proved. Record remaining release work explicitly; "
         "do not claim the complete first run or release is implemented."
     )

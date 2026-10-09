@@ -6,6 +6,7 @@ import pytest
 
 from tests.integration.runtime.surface_browser_test_support import (
     _assert_clean_page,
+    _assert_atlas_selection,
     _atlas_total,
     _first_non_default_option,
     _new_page,
@@ -130,7 +131,7 @@ def test_atlas_filter_audit_accepts_compact_diagram_ids_and_normalized_titles(br
 
         atlas = page.frame_locator("#frame-atlas")
         atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
-        atlas.locator("#diagramId", has_text="D-025").wait_for(timeout=15000)
+        _assert_atlas_selection(page, workstream="", diagram_id="D-025")
         baseline_total = _atlas_total(atlas)
         assert baseline_total > 1
 
@@ -152,8 +153,9 @@ def test_atlas_filter_audit_accepts_compact_diagram_ids_and_normalized_titles(br
             timeout=15000,
         )
 
+        _assert_atlas_selection(page, workstream="", diagram_id="D-025")
         atlas.locator("#search").fill(normalized_title)
-        atlas.locator("#diagramId", has_text="D-025").wait_for(timeout=15000)
+        _assert_atlas_selection(page, workstream="", diagram_id="D-025")
         filtered_total = _atlas_total(atlas)
         assert 1 <= filtered_total <= baseline_total
 

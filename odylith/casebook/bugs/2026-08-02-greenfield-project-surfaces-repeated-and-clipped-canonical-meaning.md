@@ -4064,3 +4064,51 @@ generated Atlas nodes, with current source pins verified. This remains local
 regression/browser evidence; new package, CI and native output qualification are
 open. The verified local Radar archive has SHA-256
 `74b3b2b5746828c34dedd1bf1821290bdca478b838f13764f01e5ebeabe96b05`.
+
+### V50 sealed brief confuses source path and proposed walkthrough (2026-10-09)
+
+The first installed H0 has the correct five-action canonical first path, separate
+supporting publication and recurring evidence preservation. Its valid proposed
+execution closure includes publication before status verification. The brief
+mislabels that six-action closure First path; system-context prose calls supporting
+publication a first-path interaction. The sequence is already titled Proposed
+First Run and distinguishes proposed edges. Including the prerequisite there is
+valid; remove the misleading first-path route/labels, not the supporting duty.
+
+The sealed brief repeats the full source first-path excerpt, Event/Actor/Source
+blocks and generic Why explanations. intent.summary selects source evidence
+despite an available concise provisional_design.project_summary. Use the existing
+proposed narrative once for the human overview, project the exact declared path
+separately, and retain provenance in accessible details. Do not reinterpret source
+truth or add semantic work after candidate receipt.
+
+Findings are from retained H0 bytes, not browser layout. H1/publication/browser
+proof is absent because EDIT failed before candidate authoring. H0 transaction
+SHA-256: 210066a6260d3e98b50de94fc4ffee03873e81364db129f6d48fe0106b0e29af.
+Independent source-first report SHA-256:
+e44e38a450deb226622d6028fed6d80c61a1c47fef2438837f1d01301c46f99f.
+The owner diagnosis at /private/tmp/odylith-v50-native-failure-owner-diagnosis-20261009/report.md
+qualifies the sequence finding and identifies the existing projection owners.
+
+The independent adjudicator confirms this narrowed scope in the immutable
+`F4-scope-addendum.v1.md` beside the original report (SHA-256
+`d326babc153cf65e1ee6d8a274410ab6d614ab5586f49d67e3502e021cb1b029`).
+The original FAIL report and its custody JSON remain unchanged.
+
+
+### 2026-10-09 — declared path, proposed walkthrough and direct summary corrected
+
+Fresh human briefs use the candidate's existing project summary once, show the exact declared first path separately from the proposed execution walkthrough, and close evidence, assumptions and machine metadata by default. Legitimate supporting publication and its prerequisite relation remain in the proposed walkthrough. Candidate preview, accepted-path handoff, dashboard path facts and Atlas route/labels adopt the same distinction; the neutral implementation artifact graph is unchanged.
+
+Independent production-generated brief/readback and joint summary/path tamper checks pass in `/private/tmp/odylith-v51-independent-source-review-20261009/report.md` (SHA-256 `2cc3e61bd3d31dd65bdfa338b6e40a4a090f76f0d91ef0e9fa880996763be9b8`). The complete local gate is `/private/tmp/odylith-v51-greenfield-composed-regression-20261009/result.json` (SHA-256 `a8f73b75b9536027d524d8afb1cf6442e8a9432111de48a48ab0f6b3615f749d`); five stale test readers pass their complete 164-check rerun after independent review. Original sealed v50 output and F4 scope addendum remain immutable. This clears the bounded source correction for fresh package/native proof; it does not claim installed human quality or change v50's failure.
+
+
+### 2026-10-09 — full CI exposes remaining old browser disclosure assumptions
+
+Repository-wide CI run `37939289189` on `bae34ac859eda4ea36fe5184432635dc6b9ade2d` reports 30 failures, 10,521 passes and 10 skips in 5,076.34 seconds. Its retained failed-job log is `/private/tmp/odylith-v50-ci-20261009/failed-job.log`, SHA-256 `4cfff7b7755c4894941abbcef1bf85d077015b28817238d35f692d71d6dffbd9`. Twenty-nine failures are in six browser modules. Representative traces wait for Atlas `#diagramId` to be visible although it is correctly retained in closed metadata, or require Radar counts to remain visible before the optional disclosure is opened. Other layout/route assumptions need bounded inspection rather than blanket assertion removal.
+
+The corrective scope is test-only adoption of the existing disclosure UX, preserving real visible narrative, nonzero rendered diagrams, exact route/selection/filter state, keyboard access, normal/empty/fallback/error checks, request observation and screenshots. If inspection shows a product defect, stop test-only adoption and report it. No CSS, renderer, shared observer or consumer source change is authorized by this follow-through. The original full CI remains failed; fresh affected-module proof and current-head CI are required.
+
+The bounded adoption now covers all 115 checks in those six complete browser modules: 65 passing checks from three unchanged modules and a fresh 50-pass run of the three modules that use the corrected Atlas selection helper. That helper verifies the active visible row, matching title and loaded diagram while reading exact IDs from closed metadata. All 601 original Python assertions remain; keyboard access, request observation and screenshots are preserved. Independent review clears the final changes in `/private/tmp/odylith-v51-full-ci-adoption-review-r2-20261009/report.md` (SHA-256 `52e2d2f2f8192af6f330a7d56e216264ba4d721722ef066539ac9cb9c79c06e4`).
+
+The intermediate browser run remains failed with 13 failures: eleven came from a newly introduced test selector that placed the active class on the button instead of its row; two read an empty ID through visible text inside closed metadata. These are corrected without changing the product or weakening exact selection checks. The final 50-pass log is `/private/tmp/odylith-v51-full-ci-browser-test-adoption-20261009/pytest-r2.log`, SHA-256 `27f34d9a89d7886b49d46b78d221d7aeb8d41139433180a2654a82b187ea8a2d`. This is source-level browser compatibility proof; fresh package/native and current-head CI remain open.

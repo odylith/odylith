@@ -12,7 +12,7 @@ flowchart TB
       gate["Independent authority gate<br/>Does the requested product name an owner,<br/>usable task and observable result?"]
       gate_check{"Source-bound witness<br/>or material gap?"}
       host["Source-duty inventory<br/>Records product identity, performers, actions and targets;<br/>marks declared workflow membership and recurring safeguards"]
-      candidate["Compact source evidence<br/>Keeps every accepted duty and its exact source reference"]
+      candidate["Closed source result<br/>Typed inventory or one material question;<br/>inventory keeps every duty and exact source reference"]
       identity_check["Source identity and performer custody preflight<br/>Resolve the product identity separately from actors;<br/>retain exact performer quotes in normalized statements"]
       source_control["Source-only verifier<br/>Affirms identity, complete duties, workflow roles and recurrence;<br/>preserved EDIT duties keep their component and workstream owners"]
       catalog["One complete source-event graph<br/>Fixed performers and event IDs come from verified actions;<br/>a whole-product performer does not create another subsystem"]
@@ -32,7 +32,7 @@ flowchart TB
       direction TB
       source_views["Derived workflow and proposed first run<br/>Workflow membership comes from verified source roles;<br/>first run may add cited discrete prerequisites"]
       safeguards["Recurring safeguards<br/>Keep conditional guards, lifecycle custody and proof;<br/>remain outside the one-time run"]
-      project["Project story and one coherent first run<br/>Other source duties remain available in supporting records"]
+      project["Project summary and declared first path<br/>Proposed implementation walkthrough stays separate;<br/>evidence and record metadata remain in supporting details"]
       radar["Proportional grounded Radar workstreams"]
       registry["Genuinely owned Registry components"]
       atlas["Distinct detailed Atlas diagrams<br/>Typed performer-to-event relations preserved"]
@@ -66,7 +66,9 @@ flowchart TB
     edit --> prepare
     contract --> gate --> gate_check
     gate_check -- "first path missing" --> clarify
-      gate_check -- "operator-owned witnesses" --> host --> candidate --> identity_check --> source_control --> catalog --> candidate_author --> validator --> complete
+      gate_check -- "operator-owned witnesses" --> host --> candidate --> identity_check
+    identity_check -- "valid inventory" --> source_control --> catalog --> candidate_author --> validator --> complete
+    identity_check -- "valid question" --> clarify
     validator -- "invalid or tampered" --> invalid_candidate
     complete -- "no" --> clarify
     complete -- "yes" --> canonical

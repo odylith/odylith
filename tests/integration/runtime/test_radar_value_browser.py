@@ -173,6 +173,13 @@ def test_radar_zero_counts_and_score_are_visible(
         ))
         response = page.goto(base_url + "/radar-values.html", wait_until="networkidle")
         assert response is not None and response.ok
+        page.locator("h1", has_text="Backlog Workstream Radar").wait_for(state="visible", timeout=15000)
+        summary = page.locator("#queue-summary")
+        assert summary.get_attribute("open") is None
+        assert page.locator("#stats .stat .value").first.is_visible() is False
+        summary.locator(":scope > summary").focus()
+        summary.locator(":scope > summary").press("Enter")
+        assert summary.get_attribute("open") is not None
         expected = {"Queued": str(len(entries)), "Execution": "0", "Parked": "0", "Finished": "0", "Active Waves": "0"}
         for label, value in expected.items():
             card = page.locator("#stats .stat").filter(has=page.locator(".label", has_text=label))

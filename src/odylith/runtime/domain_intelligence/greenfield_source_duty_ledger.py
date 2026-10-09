@@ -28,13 +28,16 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     MAX_AUTHORED_LIST_ITEMS,
 )
 
-SOURCE_DUTY_LEDGER_VERSION = "odylith.greenfield.source-duty-ledger.v8"
+SOURCE_DUTY_LEDGER_VERSION = "odylith.greenfield.source-duty-ledger.v9"
+PRODUCT_WIDE_SOURCE_DUTY_LEDGER_VERSION = "odylith.greenfield.source-duty-ledger.v8"
+PRODUCT_WIDE_SOURCE_DUTY_LEDGER_RECEIPT_VERSION = "odylith.greenfield.source-duty-ledger-receipt.v14"
+PRODUCT_WIDE_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION = "odylith.greenfield.source-duty-ledger-receipt.v15"
 IDENTITY_SOURCE_DUTY_LEDGER_VERSION = "odylith.greenfield.source-duty-ledger.v7"
 IDENTITY_SOURCE_DUTY_LEDGER_RECEIPT_VERSION = "odylith.greenfield.source-duty-ledger-receipt.v12"
 IDENTITY_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION = "odylith.greenfield.source-duty-ledger-receipt.v13"
-SOURCE_DUTY_LEDGER_PREFLIGHT_VERSION = "odylith.greenfield.source-duty-preflight.v7"
-SOURCE_DUTY_LEDGER_RECEIPT_VERSION = "odylith.greenfield.source-duty-ledger-receipt.v14"
-EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION = "odylith.greenfield.source-duty-ledger-receipt.v15"
+SOURCE_DUTY_LEDGER_PREFLIGHT_VERSION = "odylith.greenfield.source-duty-preflight.v8"
+SOURCE_DUTY_LEDGER_RECEIPT_VERSION = "odylith.greenfield.source-duty-ledger-receipt.v16"
+EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION = "odylith.greenfield.source-duty-ledger-receipt.v17"
 CATALOG_SOURCE_DUTY_LEDGER_VERSION = "odylith.greenfield.source-duty-ledger.v6"
 CATALOG_SOURCE_DUTY_LEDGER_RECEIPT_VERSION = "odylith.greenfield.source-duty-ledger-receipt.v10"
 CATALOG_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION = "odylith.greenfield.source-duty-ledger-receipt.v11"
@@ -93,10 +96,10 @@ def _array_schema(items: dict[str, Any], *, limit: int) -> dict[str, Any]:
 def greenfield_source_duty_ledger_schema(*, _passive_source_version: str | None = None) -> dict[str, Any]:
     """Return the bounded, closed host schema for one source duty inventory."""
 
-    if _passive_source_version not in (None, PASSIVE_SOURCE_DUTY_LEDGER_VERSION, CATALOG_SOURCE_DUTY_LEDGER_VERSION, IDENTITY_SOURCE_DUTY_LEDGER_VERSION):
+    if _passive_source_version not in (None, PASSIVE_SOURCE_DUTY_LEDGER_VERSION, CATALOG_SOURCE_DUTY_LEDGER_VERSION, IDENTITY_SOURCE_DUTY_LEDGER_VERSION, PRODUCT_WIDE_SOURCE_DUTY_LEDGER_VERSION):
         raise GreenfieldSourceDutyLedgerError("passive source ledger version is invalid")
     legacy = _passive_source_version == PASSIVE_SOURCE_DUTY_LEDGER_VERSION
-    roles = _FIRST_PATH_PERFORMER_ROLES + (("product_wide",) if _passive_source_version is None else
+    roles = _FIRST_PATH_PERFORMER_ROLES + (("product_wide",) if _passive_source_version in (None, PRODUCT_WIDE_SOURCE_DUTY_LEDGER_VERSION) else
             ("product_title",) if _passive_source_version != IDENTITY_SOURCE_DUTY_LEDGER_VERSION else ())
     citation = _object_schema({"quote": _text_schema(), "context": _text_schema()})
     source_refs = _array_schema(citation, limit=4)
@@ -120,7 +123,7 @@ def greenfield_source_duty_ledger_schema(*, _passive_source_version: str | None 
             limit=16,
         ),
     }
-    if _passive_source_version in (None, IDENTITY_SOURCE_DUTY_LEDGER_VERSION):
+    if _passive_source_version in (None, IDENTITY_SOURCE_DUTY_LEDGER_VERSION, PRODUCT_WIDE_SOURCE_DUTY_LEDGER_VERSION):
         properties["product_identity"] = {"anyOf": [_object_schema({
             "basis": _text_schema(choices=("explicit_name", "product_description")),
             "source_ref": citation,
@@ -151,7 +154,7 @@ def greenfield_source_duty_ledger_schema(*, _passive_source_version: str | None 
             row["performer_role"] = _text_schema(choices=roles)
         elif section == "system_duties" and not legacy:
             row["performer_role"] = _text_schema(choices=roles[1:])
-            if _passive_source_version is None:
+            if _passive_source_version in (None, PRODUCT_WIDE_SOURCE_DUTY_LEDGER_VERSION):
                 row["execution_kind"] = _text_schema(choices=("discrete_action", "recurring_invariant"))
         if section == "boundaries":
             row["kind"] = _text_schema(choices=_BOUNDARY_KINDS)
@@ -161,12 +164,18 @@ def greenfield_source_duty_ledger_schema(*, _passive_source_version: str | None 
 
 def _validate_shape(value: Any, schema: Mapping[str, Any], path: str) -> None:
     if "anyOf" in schema:
-        if value is None:
-            return
-        _validate_shape(value, schema["anyOf"][0], path)
-        return
+        for branch in schema["anyOf"]:
+            try:
+                _validate_shape(value, branch, path)
+                return
+            except GreenfieldSourceDutyLedgerError:
+                pass
+        raise GreenfieldSourceDutyLedgerError(f"{path}: no closed result branch matches")
     kind = schema["type"]
-    if kind == "object":
+    if kind == "null":
+        if value is not None:
+            raise GreenfieldSourceDutyLedgerError(f"{path}: expected null")
+    elif kind == "object":
         properties = schema["properties"]
         if not isinstance(value, dict) or set(value) != set(properties):
             raise GreenfieldSourceDutyLedgerError(f"{path}: object fields are invalid")
@@ -182,6 +191,7 @@ def _validate_shape(value: Any, schema: Mapping[str, Any], path: str) -> None:
     elif (
         not isinstance(value, str)
         or len(value) > schema["maxLength"]
+        or len(value) < schema.get("minLength", 0)
         or ("enum" in schema and value not in schema["enum"])
     ):
         raise GreenfieldSourceDutyLedgerError(f"{path}: text is invalid")
@@ -293,7 +303,7 @@ def preflight_greenfield_source_duty_ledger(
                     evidence, {"quote": control["quote"], "context": control["context"]}
                 )
             )
-    if _passive_source_version in (None, IDENTITY_SOURCE_DUTY_LEDGER_VERSION) and ledger["status"] == "inventory":
+    if _passive_source_version in (None, IDENTITY_SOURCE_DUTY_LEDGER_VERSION, PRODUCT_WIDE_SOURCE_DUTY_LEDGER_VERSION) and ledger["status"] == "inventory":
         identity = ledger["product_identity"]
         if identity is None:
             raise GreenfieldSourceDutyLedgerError("inventory requires a source-cited product identity")
@@ -388,7 +398,7 @@ def preflight_greenfield_source_duty_ledger(
 
     if ledger["status"] == "clarification_required":
         _require_text(ledger["question"], "ledger.question")
-        if seen_ids or ledger["evidence_controls"] or (_passive_source_version in (None, IDENTITY_SOURCE_DUTY_LEDGER_VERSION) and ledger["product_identity"] is not None):
+        if seen_ids or ledger["evidence_controls"] or (_passive_source_version in (None, IDENTITY_SOURCE_DUTY_LEDGER_VERSION, PRODUCT_WIDE_SOURCE_DUTY_LEDGER_VERSION) and ledger["product_identity"] is not None):
             raise GreenfieldSourceDutyLedgerError(
                 "clarification must carry no inventory"
             )
@@ -405,6 +415,7 @@ def preflight_greenfield_source_duty_ledger(
                     if _passive_source_version == PASSIVE_SOURCE_DUTY_LEDGER_VERSION else
                     "odylith.greenfield.source-duty-preflight.v5" if _passive_source_version == CATALOG_SOURCE_DUTY_LEDGER_VERSION
                     else "odylith.greenfield.source-duty-preflight.v6" if _passive_source_version == IDENTITY_SOURCE_DUTY_LEDGER_VERSION
+                    else "odylith.greenfield.source-duty-preflight.v7" if _passive_source_version == PRODUCT_WIDE_SOURCE_DUTY_LEDGER_VERSION
                     else SOURCE_DUTY_LEDGER_PREFLIGHT_VERSION),
         "source_sha256": source_sha256,
         "ledger_sha256": _canonical_sha256(accepted),
@@ -454,6 +465,8 @@ def validate_greenfield_source_duty_ledger(
              if _passive_source_version == CATALOG_SOURCE_DUTY_LEDGER_VERSION
              else IDENTITY_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION
              if _passive_source_version == IDENTITY_SOURCE_DUTY_LEDGER_VERSION
+             else PRODUCT_WIDE_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION
+             if _passive_source_version == PRODUCT_WIDE_SOURCE_DUTY_LEDGER_VERSION
              else EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION) if edit_preservation is not None
             else (PASSIVE_SOURCE_DUTY_LEDGER_RECEIPT_VERSION
                   if _passive_source_version == PASSIVE_SOURCE_DUTY_LEDGER_VERSION
@@ -461,6 +474,8 @@ def validate_greenfield_source_duty_ledger(
                   if _passive_source_version == CATALOG_SOURCE_DUTY_LEDGER_VERSION
                   else IDENTITY_SOURCE_DUTY_LEDGER_RECEIPT_VERSION
                   if _passive_source_version == IDENTITY_SOURCE_DUTY_LEDGER_VERSION
+                  else PRODUCT_WIDE_SOURCE_DUTY_LEDGER_RECEIPT_VERSION
+                  if _passive_source_version == PRODUCT_WIDE_SOURCE_DUTY_LEDGER_VERSION
                   else SOURCE_DUTY_LEDGER_RECEIPT_VERSION)),
         "source_sha256": preflight["source_sha256"],
         "ledger_sha256": preflight["ledger_sha256"],
@@ -504,9 +519,10 @@ def verify_greenfield_source_duty_ledger_receipt(
                          *((LEGACY_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
                             PASSIVE_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
                             CATALOG_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
-                            IDENTITY_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION) if allow_legacy_edit else ()))
+                            IDENTITY_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+                            PRODUCT_WIDE_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION) if allow_legacy_edit else ()))
                         if retained_edit is not None else (SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
-                         *((PASSIVE_SOURCE_DUTY_LEDGER_RECEIPT_VERSION, CATALOG_SOURCE_DUTY_LEDGER_RECEIPT_VERSION, IDENTITY_SOURCE_DUTY_LEDGER_RECEIPT_VERSION) if allow_legacy_edit else ())))
+                         *((PASSIVE_SOURCE_DUTY_LEDGER_RECEIPT_VERSION, CATALOG_SOURCE_DUTY_LEDGER_RECEIPT_VERSION, IDENTITY_SOURCE_DUTY_LEDGER_RECEIPT_VERSION, PRODUCT_WIDE_SOURCE_DUTY_LEDGER_RECEIPT_VERSION) if allow_legacy_edit else ())))
     if receipt["version"] not in allowed_versions:
         raise GreenfieldSourceDutyLedgerError(
             "source duty ledger receipt version is invalid"
@@ -533,6 +549,8 @@ def verify_greenfield_source_duty_ledger_receipt(
                 CATALOG_SOURCE_DUTY_LEDGER_RECEIPT_VERSION, CATALOG_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
             } else IDENTITY_SOURCE_DUTY_LEDGER_VERSION if receipt["version"] in {
                 IDENTITY_SOURCE_DUTY_LEDGER_RECEIPT_VERSION, IDENTITY_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+            } else PRODUCT_WIDE_SOURCE_DUTY_LEDGER_VERSION if receipt["version"] in {
+                PRODUCT_WIDE_SOURCE_DUTY_LEDGER_RECEIPT_VERSION, PRODUCT_WIDE_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
             } else None),
     )
     if dict(receipt) != expected:

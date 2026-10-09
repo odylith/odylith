@@ -23,6 +23,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import 
     require_provisional_proof_decision,
 )
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_SEMANTICS_KEY,
     AUTHORED_PROJECTION_ORIGIN,
 )
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
@@ -111,8 +112,100 @@ def project_brief_readback_findings(
     ):
         if marker not in text:
             findings.append(_finding("product_manager", f"persisted project brief readback is missing `{marker}`"))
-    findings.extend(_persisted_project_brief_structure_findings(text, brief, canonical_intent))
+    semantics = package_mapping(canonical_intent.get(AUTHORED_SEMANTICS_KEY))
+    duty = package_mapping(semantics.get("source_duty"))
+    ledger = package_mapping(package_mapping(duty.get("ledger_receipt")).get("ledger"))
+    if ledger.get("version") == "odylith.greenfield.source-duty-ledger.v9":
+        findings.extend(_narrative_project_brief_findings(text, brief, canonical_intent))
+    else:
+        if "summary" in brief:
+            findings.append(_finding("product_manager", "historical project brief cannot claim fresh narrative authority"))
+        findings.extend(_persisted_project_brief_structure_findings(text, brief, canonical_intent))
     return _unique_findings(findings)
+
+
+def _narrative_project_brief_findings(
+    record_text: str,
+    brief: Mapping[str, Any],
+    intent: Mapping[str, Any],
+) -> list[PackageEvidenceFinding]:
+    """Check fresh human copy against typed source roles and proposed design."""
+
+    findings = _intent_brief_custody_findings(brief, intent)
+    semantics = package_mapping(intent.get(AUTHORED_SEMANTICS_KEY))
+    design = package_mapping(semantics.get("provisional_design"))
+    source_duty = package_mapping(semantics.get("source_duty"))
+    binding = package_mapping(source_duty.get("binding"))
+    events = tuple(mapping_rows(semantics.get("source_event_relations")))
+    path_bindings = tuple(mapping_rows(binding.get("first_path_actions")))
+    if any(type(row.get("order")) is not int for row in events) or any(
+        type(row.get("event_order")) is not int for row in path_bindings
+    ):
+        return [*findings, _finding("product_manager", "narrative brief has invalid source event identities")]
+    by_order = {row.get("order"): row for row in events}
+    declared_orders = tuple(dict.fromkeys(row.get("event_order") for row in path_bindings))
+    first_run = package_mapping(design.get("first_run"))
+    run_orders = first_run.get("event_orders")
+    if (
+        not events or len(by_order) != len(events) or not declared_orders
+        or not isinstance(run_orders, (list, tuple)) or not run_orders
+        or any(type(order) is not int or order not in by_order for order in (*declared_orders, *run_orders))
+        or any(not _brief_text(row.get("event_quote")) for row in events)
+    ):
+        return [*findings, _finding("product_manager", "narrative brief has invalid source path or proposed walkthrough custody")]
+
+    summary = _brief_text(design.get("project_summary"))
+    path = "\n".join(_brief_text(by_order[order]["event_quote"]) for order in declared_orders)
+    walkthrough = " ".join(_brief_text(by_order[order]["event_quote"]) for order in run_orders)
+    walkthrough += "\n\n" + _brief_text(first_run.get("rationale"))
+    if not summary or brief.get("summary") != summary or intent.get("summary") != summary:
+        findings.append(_finding("product_manager", "narrative project summary does not match its typed proposed design"))
+    if intent.get("first_path") != path:
+        findings.append(_finding("product_manager", "narrative source path does not match its declared event membership"))
+    rows = tuple(mapping_rows(brief.get("blueprint_sections")))
+    for label, value in (
+        ("First path", path), ("Proposed walkthrough", walkthrough),
+        ("Accepted evidence excerpt", _brief_text(intent.get("product_story"))),
+    ):
+        matches = [row for row in rows if row.get("section") == label]
+        if len(matches) != 1 or matches[0].get("must_capture") != value:
+            findings.append(_finding("product_manager", f"narrative brief lost canonical `{label}`"))
+    if brief.get("operating_principle") != intent.get("product_story"):
+        findings.append(_finding("product_manager", "narrative brief lost its original evidence custody"))
+
+    expected = [summary]
+    for label, value in (("First path", path), ("Proposed walkthrough", walkthrough)):
+        expected.extend(("", f"### {label}", "", value))
+    expected.extend(("", "<details>", "<summary>Evidence and assumptions</summary>", "", "## Project Design Board", ""))
+    for row in rows:
+        label, value = _brief_text(row.get("section")), _brief_text(row.get("must_capture"))
+        if label and value and label not in {"First path", "Proposed walkthrough"}:
+            expected.extend((f"### {label}", "", value, ""))
+    gate_values = brief.get("coding_readiness_gates", ())
+    gates = tuple(_brief_text(value) for value in gate_values if _brief_text(value)) if isinstance(gate_values, (list, tuple)) else ()
+    paths = tuple(mapping_rows(brief.get("host_independent_paths")))
+    if gates or paths:
+        if expected[-1] != "":
+            expected.append("")
+        expected.extend(("## Governance Package", ""))
+    expected.extend(f"- {gate}" for gate in gates)
+    for row in paths:
+        values = [_brief_text(row.get(key)) for key in ("path", "command", "works_in", "use_when")]
+        if any(values):
+            expected.append("- " + " | ".join(value for value in values if value))
+    expected.extend(("", "</details>"))
+    before, separator, body = record_text.partition("\n## Brief\n")
+    narrative, metadata_separator, metadata = body.partition("\n<details>\n<summary>Record metadata</summary>\n")
+    if not separator or narrative.strip() != "\n".join(expected).strip():
+        findings.append(_finding("product_manager", "persisted narrative brief does not exactly match its typed human and evidence views"))
+    if (
+        not metadata_separator or not metadata.rstrip().endswith("</details>")
+        or "- schema:" in before or "- origin:" in before
+        or "- schema: odylith.greenfield.project_brief.v1" not in metadata
+        or "- origin: greenfield" not in metadata
+    ):
+        findings.append(_finding("product_manager", "narrative brief publication metadata requires a closed supporting disclosure"))
+    return findings
 
 
 def _authored_project_brief_findings(
