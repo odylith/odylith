@@ -7,6 +7,8 @@ delivery, exchanges, and verification remain explicitly proposed design.
 
 from __future__ import annotations
 
+from odylith.runtime.domain_intelligence.greenfield_source_event_graph import source_event_reference
+
 from collections.abc import Mapping, Sequence
 from copy import deepcopy
 from typing import Any
@@ -26,7 +28,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
 )
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
-    first_path_relations_from_intent,
+    source_event_relations_from_intent,
 )
 from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
     derive_risk_scope, provisional_design_from_intent,
@@ -141,7 +143,7 @@ def build_provisional_components(
     """Keep proposed component contracts separate from exact support events."""
 
     design = provisional_design_from_intent(intent)
-    events = {row["order"]: row for row in first_path_relations_from_intent(intent)}
+    events = {row["order"]: row for row in source_event_relations_from_intent(intent)}
     lifecycle_transitions = _source_lifecycle_transitions(intent, design)
     source_design_duties = _source_design_duties(intent, design)
     risk_allocations = build_provisional_risk_allocations(design)
@@ -169,7 +171,7 @@ def build_provisional_components(
             "design_ref": f"{PROVISIONAL_DESIGN_ROOT}/components/{index}",
             "provisional_component": deepcopy(component),
             "support_event_refs": [
-                f"/authored_semantics/first_path_relations/{order - 1}"
+                source_event_reference(intent["authored_semantics"]["version"], order)
                 for order in component["supported_event_orders"]
             ],
             "supporting_events": [
@@ -234,7 +236,7 @@ def build_provisional_backlog(
     }
     components = {row["key"]: row for row in design["components"]}
     workstreams = {row["key"]: row for row in design["workstreams"]}
-    events = {row["order"]: row for row in first_path_relations_from_intent(intent)}
+    events = {row["order"]: row for row in source_event_relations_from_intent(intent)}
     lifecycle_transitions = _source_lifecycle_transitions(intent, design)
     source_design_duties = _source_design_duties(intent, design)
     risk_allocations = build_provisional_risk_allocations(design)
@@ -362,7 +364,7 @@ def build_provisional_backlog(
                 "provisional_workstream": deepcopy(workstream),
                 "decision_refs": dict(decision_refs),
                 "support_event_refs": [
-                    f"/authored_semantics/first_path_relations/{order - 1}" for order in event_orders
+                    source_event_reference(intent["authored_semantics"]["version"], order) for order in event_orders
                 ],
                 "supporting_events": supporting_events,
                 "exchanges": exchanges,

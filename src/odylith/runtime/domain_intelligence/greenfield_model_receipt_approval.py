@@ -54,8 +54,8 @@ def greenfield_model_authoring_receipt_approved(
     return bool(
         set(model_authoring) == expected_fields
         and model_authoring.get("authoring_origin") == "host_native"
-        and model_authoring.get("authoring_version")
-        == GREENFIELD_INTENT_AUTHORING_VERSION
+        and isinstance(host, Mapping)
+        and model_authoring.get("authoring_version") == host.get("canonical_version")
         and type(model_authoring.get("runtime_semantic_model_call_count")) is int
         and model_authoring.get("runtime_semantic_model_call_count") == 0
         and model_authoring.get("tier") == profile.repair_tier
@@ -86,7 +86,7 @@ def greenfield_model_authoring_receipt_approved(
         and host.get("version") == HOST_CANDIDATE_RECEIPT_VERSION
         and host.get("contract_version") in (
             HOST_CANDIDATE_CONTRACT_VERSION, *PASSIVE_HOST_CANDIDATE_CONTRACT_VERSIONS)
-        and host.get("canonical_version") == GREENFIELD_INTENT_AUTHORING_VERSION
+        and host.get("canonical_version") == (GREENFIELD_INTENT_AUTHORING_VERSION if host.get("contract_version") == HOST_CANDIDATE_CONTRACT_VERSION else "odylith.greenfield.intent-authoring.v79")
         and all(
             _is_sha256(host.get(key))
             for key in (

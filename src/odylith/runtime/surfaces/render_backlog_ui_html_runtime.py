@@ -107,17 +107,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
       border-bottom-color: #dbeafe;
     }
 
-    .analytics-toggle-copy {
-      display: grid;
-      gap: 2px;
-    }
-
-    .analytics-toggle-title {
-    }
     __ODYLITH_RADAR_ANALYTICS_TITLE__
-
-    .analytics-toggle-sub {
-    }
 
     .analytics-toggle-hint {
       border: 1px solid #bfdbfe;
@@ -649,6 +639,9 @@ def _render_html(*, payload: dict[str, object]) -> str:
       margin: 14px;
     }
 
+    .filter-fields { display: contents; }
+    #queue-summary > summary { cursor: pointer; margin-top: 8px; }
+
     .controls input,
     .controls select {
       min-width: 0;
@@ -664,14 +657,21 @@ def _render_html(*, payload: dict[str, object]) -> str:
         grid-template-columns: 1fr;
       }
       .list {
-        max-height: 340px;
+        max-height: 280px;
       }
+      .controls {
+        position: static;
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .filter-fields {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+      }
+      .filter-fields select { width: auto; flex: 0 0 auto; }
     }
 
     @media (max-width: 920px) {
-      .controls {
-        grid-template-columns: 1fr 1fr;
-      }
       .topology-rel-row {
         grid-template-columns: 1fr;
         align-items: start;
@@ -690,18 +690,79 @@ def _render_html(*, payload: dict[str, object]) -> str:
 <body>
   <main class="shell">
     <section class="hero">
-      <div class="kicker">Priority Queue and Workstream Status</div>
       <h1>Backlog Workstream Radar</h1>
-      <p class="subtitle">See what is queued, active, parked, and finished, backed by repo workstream specs and delivery evidence.</p>
-      <div class="stats" id="stats"></div>
+      <details id="queue-summary"><summary>Queue summary</summary>
+        <div class="stats" id="stats"></div>
+      </details>
     </section>
 
+    <section class="controls">
+      <input id="query" aria-label="Search workstreams" placeholder="Search title, ID, rationale, impacted parts..." />
+      <div class="filter-fields" role="group" aria-label="Workstream filters">
+        <select id="lane" aria-label="Workstream section">
+          <option value="all">All Sections</option>
+          <option value="execution">Delivery Pipeline</option>
+          <option value="parked">Parked</option>
+          <option value="active">Idea Stage (Ranked Active)</option>
+          <option value="finished">Finished</option>
+        </select>
+        <select id="section" aria-hidden="true" tabindex="-1" style="position:absolute;inline-size:1px;block-size:1px;opacity:0.01;padding:0;border:0">
+          <option value="all">All Sections</option>
+          <option value="execution">Delivery Pipeline</option>
+          <option value="parked">Parked</option>
+          <option value="active">Idea Stage (Ranked Active)</option>
+          <option value="finished">Finished</option>
+        </select>
+        <select id="type" aria-label="Workstream type">
+          <option value="all">All Types</option>
+          <option value="umbrella">Umbrella</option>
+          <option value="child">Child</option>
+        </select>
+        <select id="phase" aria-label="Phase">
+          <option value="all">All Phases</option>
+          <option value="planning">Planning</option>
+          <option value="implementation">Implementation</option>
+        </select>
+        <select id="activity" aria-label="Activity">
+          <option value="all">All Activity</option>
+          <option value="active">Signal: Active</option>
+          <option value="quiet">Signal: Quiet</option>
+        </select>
+        <select id="priority" aria-label="Priority">
+          <option value="all">All Priorities</option>
+        </select>
+        <select id="release" aria-label="Release">
+          <option value="all">All Releases</option>
+        </select>
+        <select id="sort" aria-label="Sort workstreams">
+          <option value="rank">Sort: Rank</option>
+          <option value="score">Sort: Score</option>
+          <option value="date" selected>Sort: Date</option>
+        </select>
+      </div>
+    </section>
+
+    <div class="meta" id="meta"></div>
+    <section class="workspace">
+      <aside class="list-panel" aria-label="Workstreams">
+        <div class="panel-head">
+          <span class="panel-head-title">Workstreams</span>
+        </div>
+        <div class="list" id="list"></div>
+      </aside>
+
+      <section class="detail-panel" aria-label="Selected workstream">
+        <div class="panel-head">
+          <span class="panel-head-title">Selected workstream</span>
+        </div>
+        <div class="drawer-empty" id="detail-empty" hidden></div>
+        <article class="detail" id="detail" tabindex="-1" hidden></article>
+      </section>
+    </section>
+    <div class="empty" id="empty" hidden></div>
     <details class="analytics-panel" id="analytics-panel">
       <summary class="analytics-toggle">
-        <span class="analytics-toggle-copy">
-          <span class="analytics-toggle-title">Delivery Analytics</span>
-          <span class="analytics-toggle-sub">Optional trend charts for velocity, cycle time, and mix.</span>
-        </span>
+        <span class="analytics-toggle-title">Delivery Analytics</span>
         <span class="analytics-toggle-hint" id="analytics-toggle-hint">Show</span>
       </summary>
       <section class="analytics" id="analytics">
@@ -727,73 +788,11 @@ def _render_html(*, payload: dict[str, object]) -> str:
       </section>
     </details>
 
-    <section class="controls">
-      <input id="query" placeholder="Search title, ID, rationale, impacted parts..." />
-      <select id="lane">
-        <option value="all">All Sections</option>
-        <option value="execution">Delivery Pipeline</option>
-        <option value="parked">Parked</option>
-        <option value="active">Idea Stage (Ranked Active)</option>
-        <option value="finished">Finished</option>
-      </select>
-      <select id="section" aria-hidden="true" tabindex="-1" style="position:absolute;inline-size:1px;block-size:1px;opacity:0.01;padding:0;border:0">
-        <option value="all">All Sections</option>
-        <option value="execution">Delivery Pipeline</option>
-        <option value="parked">Parked</option>
-        <option value="active">Idea Stage (Ranked Active)</option>
-        <option value="finished">Finished</option>
-      </select>
-      <select id="type">
-        <option value="all">All Types</option>
-        <option value="umbrella">Umbrella</option>
-        <option value="child">Child</option>
-      </select>
-      <select id="phase">
-        <option value="all">All Phases</option>
-        <option value="planning">Planning</option>
-        <option value="implementation">Implementation</option>
-      </select>
-      <select id="activity">
-        <option value="all">All Activity</option>
-        <option value="active">Signal: Active</option>
-        <option value="quiet">Signal: Quiet</option>
-      </select>
-      <select id="priority">
-        <option value="all">All Priorities</option>
-      </select>
-      <select id="release">
-        <option value="all">All Releases</option>
-      </select>
-      <select id="sort">
-        <option value="rank">Sort: Rank</option>
-        <option value="score">Sort: Score</option>
-        <option value="date" selected>Sort: Date</option>
-      </select>
-    </section>
-
     <details class="execution-legend">
       <summary>How Phase and Activity work</summary>
       <p><strong>Phase</strong> is <strong>Planning</strong> or <strong>Implementation</strong>. <strong>Activity</strong> is <strong>Plan: Active/Quiet</strong> during planning and <strong>Live: Active/Quiet</strong> during implementation.</p>
     </details>
 
-    <div class="meta" id="meta"></div>
-    <section class="workspace">
-      <aside class="list-panel" aria-label="Workstreams">
-        <div class="panel-head">
-          <span class="panel-head-title">Workstreams</span>
-        </div>
-        <div class="list" id="list"></div>
-      </aside>
-
-      <section class="detail-panel" aria-label="Selected workstream">
-        <div class="panel-head">
-          <span class="panel-head-title">Selected workstream</span>
-        </div>
-        <div class="drawer-empty" id="detail-empty" hidden></div>
-        <article class="detail" id="detail" hidden></article>
-      </section>
-    </section>
-    <div class="empty" id="empty" hidden></div>
   </main>
 
   <script id="backlogData" type="application/json">__DATA__</script>
@@ -2313,7 +2312,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
         button.addEventListener("click", () => {
           const preserveListScroll = elementFullyVisibleWithinContainer(el.list, button);
           selectIdea(button.dataset.ideaId || "", { userIntent: true });
-          render({ preserveListScroll });
+          render({ preserveListScroll, revealDetail: true });
         });
         const ideaId = String(button.dataset.ideaId || "").trim();
         if (ideaId) {
@@ -3259,7 +3258,14 @@ def _render_html(*, payload: dict[str, object]) -> str:
       el.meta.textContent = `Showing ${filtered.length} of ${all.length} workstreams`;
       void renderAnalytics(filtered);
       renderList(filtered, { preserveListScroll: Boolean(options.preserveListScroll) });
-      void renderSelectedWorkstream(state.selectedIdeaId, filtered);
+      const selectedId = state.selectedIdeaId;
+      void renderSelectedWorkstream(selectedId, filtered).then(() => {
+        if (options.revealDetail && state.selectedIdeaId === selectedId && !el.detail.hidden
+            && !document.activeElement?.closest(".controls") && window.matchMedia("(max-width: 1100px)").matches) {
+          el.detail.focus({ preventScroll: true });
+          el.detail.scrollIntoView({ block: "start" });
+        }
+      });
       el.empty.hidden = true;
     }
 
@@ -3339,13 +3345,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
         focus_selector=".controls input:focus, .controls select:focus",
         top_px=10,
     )
-    stat_card_surface_css = "\n\n".join(
-        (
-            dashboard_ui_primitives.kpi_card_surface_css(
-                card_selector=".stat",
-            ),
-        )
-    )
+    stat_card_surface_css = dashboard_ui_primitives.kpi_card_surface_css(card_selector=".stat")
     kpi_grid_layout_css = dashboard_ui_primitives.kpi_grid_layout_css(
         container_selector=".stats",
     )
@@ -3413,7 +3413,6 @@ def _render_html(*, payload: dict[str, object]) -> str:
                     ".detail-copy ul",
                     ".detail-copy li",
                     ".detail-copy .check-text",
-                    ".analytics-toggle-sub",
                     ".graph-sub",
                     ".graph-empty",
                 ),

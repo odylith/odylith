@@ -10,7 +10,7 @@ from tests.integration.runtime.surface_browser_test_support import (
 from tests.integration.runtime.test_atlas_viewport_keyboard_browser import _open_viewer
 
 
-@pytest.mark.parametrize("width", [1440, 430], ids=["desktop", "mobile"])
+@pytest.mark.parametrize("width", [1440, 430, 390], ids=["desktop", "mobile", "narrow-mobile"])
 def test_empty_catalog_offers_project_next_step_without_a_broken_selection(browser_context, width: int) -> None:  # noqa: ANN001
     with _open_viewer(browser_context, width, "empty") as (page, atlas, observation):
         empty = atlas.locator("#atlasEmptyState")
@@ -39,28 +39,28 @@ def test_empty_catalog_offers_project_next_step_without_a_broken_selection(brows
         _assert_clean_page(page, observation)
 
 
-@pytest.mark.parametrize("width", [1440, 430], ids=["desktop", "mobile"])
+@pytest.mark.parametrize("width", [1440, 430, 390], ids=["desktop", "mobile", "narrow-mobile"])
 def test_filtered_zero_explains_retained_selection_without_claiming_empty_catalog(browser_context, width: int) -> None:  # noqa: ANN001
     with _open_viewer(browser_context, width, "normal") as (page, atlas, observation):
-        selected = atlas.locator("#diagramId").inner_text()
+        selected = atlas.locator("#diagramId").text_content()
         search = atlas.locator("#search")
         search.fill("no-matching-diagram-in-catalog")
         status = atlas.locator("#diagramListStatus")
         assert status.is_visible()
         assert status.inner_text() == "No diagrams match these filters. The selected diagram is still shown."
         assert atlas.locator("#atlasEmptyState").is_hidden()
-        assert atlas.locator("#diagramId").inner_text() == selected
+        assert atlas.locator("#diagramId").text_content() == selected
         assert atlas.locator("#viewerImage").is_visible()
         assert atlas.locator("button[data-diagram]").count() == 1
         assert search.evaluate("node => document.activeElement === node")
         search.fill("")
         assert status.is_hidden()
         assert atlas.locator("button[data-diagram]").count() == 5
-        assert atlas.locator("#diagramId").inner_text() == selected
+        assert atlas.locator("#diagramId").text_content() == selected
         _assert_clean_page(page, observation)
 
 
-@pytest.mark.parametrize("width", [1440, 430], ids=["desktop", "mobile"])
+@pytest.mark.parametrize("width", [1440, 430, 390], ids=["desktop", "mobile", "narrow-mobile"])
 def test_filtered_empty_without_selection_recovers_existing_catalog(browser_context, width: int) -> None:  # noqa: ANN001
     with _open_viewer(browser_context, width, "normal") as (page, atlas, observation):
         page.goto(page.url.split("?")[0] + "?tab=atlas&workstream=B-999", wait_until="networkidle")

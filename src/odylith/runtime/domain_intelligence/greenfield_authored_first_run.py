@@ -9,7 +9,7 @@ from typing import Any
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_SEMANTICS_KEY,
     authored_visible_result,
-    first_path_relations_from_intent,
+    first_path_relations_from_intent, source_event_relations_from_intent,
 )
 from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import (
     decision_copy,
@@ -35,7 +35,7 @@ class AuthoredEventPresentation:
 def authored_first_run_relations(intent: Mapping[str, Any]) -> tuple[dict[str, Any], ...]:
     """Keep source event identities while following only the validated design."""
 
-    relations = first_path_relations_from_intent(intent)
+    relations = source_event_relations_from_intent(intent)
     if not relations:
         raise ValueError("Greenfield proposed first run requires source-event custody")
     by_order = {row["order"]: row for row in relations}

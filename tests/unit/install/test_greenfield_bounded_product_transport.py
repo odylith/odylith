@@ -793,8 +793,8 @@ def test_proposal_refusal_preserves_bounded_detail_and_prior_seal(
                      edit_preservation={})
     gate = {"decision": "admit", "required_fields": [], "question": "",
             "owner_quote": old_transaction.proposal["intent"]["human_actors"][0],
-            "task_quote": semantics["first_path_relations"][0]["event_quote"],
-            "result_quote": semantics["first_path_relations"][-1]["visible_result_quote"]}
+            "task_quote": semantics["source_event_relations"][0]["event_quote"],
+            "result_quote": semantics["source_event_relations"][-1]["visible_result_quote"]}
 
     def installed(command, timeout):
         installed_calls.append((list(command), timeout))

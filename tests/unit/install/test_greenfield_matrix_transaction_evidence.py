@@ -12,6 +12,7 @@ import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_create_lifecycle
 from odylith.runtime.domain_intelligence.greenfield_commit_transaction import _payload_hash
+from odylith.runtime.domain_intelligence.greenfield_cli import terminal_decision_offer
 from odylith.runtime.domain_intelligence import greenfield_generation_state
 from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
@@ -385,7 +386,7 @@ def test_preconfirm_snapshot_carries_sealed_authored_semantics_without_reconstru
 ) -> None:
     sealed = {
         "version": "odylith.greenfield.authored-semantics.synthetic",
-        "first_path_relations": [
+        "source_event_relations": [
             {
                 "order": 1,
                 "actor": {"kind": "human", "selected_fact_path": "/human_actors/0"},
@@ -423,8 +424,8 @@ def test_preconfirm_snapshot_carries_sealed_authored_semantics_without_reconstru
         ensure_ascii=True,
         separators=(",", ":"),
     ) == json.dumps(sealed_mapping, ensure_ascii=True, separators=(",", ":"))
-    direct_snapshot["authored_semantics"]["first_path_relations"][0]["order"] = 2
-    assert sealed_mapping["first_path_relations"][0]["order"] == 1
+    direct_snapshot["authored_semantics"]["source_event_relations"][0]["order"] = 2
+    assert sealed_mapping["source_event_relations"][0]["order"] == 1
 
 
 def test_preconfirm_snapshot_preserves_absent_authored_semantics_as_absent(
@@ -978,6 +979,73 @@ def test_confirmation_preview_accepts_complete_terminal_execution_without_native
     ) == ()
 
 
+@pytest.mark.parametrize("damage", [None, "relative_receipt", "missing_receipt", "missing_file", "wrong_hash", "wrong_nonce",
+    "extra_metadata", "foreign_receipt", "missing_flag", "wrong_flag", "duplicate_flag", "edit_route", "edit_hash"])
+def test_confirmation_preview_requires_exact_delivered_receipt_and_bounded_edit_route(tmp_path, monkeypatch, damage) -> None:
+    from odylith.runtime.domain_intelligence import greenfield_pending_transaction_store as pending, greenfield_process as process
+    from tests.unit.runtime.test_greenfield_create_transaction import _transaction
+
+    consumer = tmp_path / "consumer with spaces"
+    consumer.mkdir()
+    transaction = _transaction(consumer)
+    journey, nonce = "c" * 64, "d" * 64
+    marker = {"version": "odylith.greenfield.journey-supervision.v1", "journey_id": journey,
+        "completion_digest": hashlib.sha256(nonce.encode("ascii")).hexdigest()}
+    monkeypatch.setattr(process, "register_bounded_pending_transaction", lambda _path: marker)
+    path = pending.stage_pending_transaction(repo_root=consumer, transaction=transaction)
+    process._write_journey_completion(path.parent, journey_id=journey, finished=1.0, deadline=2.0)
+    receipt = pending.write_completion_receipt_delivery(repo_root=consumer, receipt={
+        "version": "odylith.greenfield.completion-receipt.v1", "journey_id": journey,
+        "transaction_hash": transaction.transaction_hash, "nonce": nonce})
+    delivered = receipt.relative_to(consumer) if damage == "relative_receipt" else receipt
+    payload = _proposal_payload(transaction.transaction_hash, repo_root=consumer, completion_receipt=delivered)
+    payload["transaction_file"] = str(path.relative_to(consumer))
+    for choice in payload["confirmation"]["choices"]:
+        label = choice["label"]
+        expected = (["odylith", "greenfield", "prepare", "--repo-root", str(consumer),
+            "--transaction-hash", transaction.transaction_hash] if label == "EDIT" else
+            ["odylith", "greenfield", "decide", "--repo-root", str(consumer), label, transaction.transaction_hash])
+        assert shlex.split(choice["command"]) == [*expected, "--completion-receipt", str(delivered),
+            *(["--edit", "<corrections>"] if label == "EDIT" else [])]
+    receipt_issue = "pre-confirm payload is missing a valid delivered completion receipt"
+    command_issue = "pre-confirm terminal decision choice is not the exact repo/hash-bound command"
+    if damage == "missing_receipt":
+        del payload["completion_receipt"]
+    elif damage == "missing_file":
+        receipt.unlink()
+    elif damage in ("wrong_hash", "wrong_nonce", "extra_metadata"):
+        metadata = json.loads(receipt.read_text())
+        metadata[{"wrong_hash": "transaction_hash", "wrong_nonce": "nonce", "extra_metadata": "extra"}[damage]] = "e" * 64
+        receipt.write_text(json.dumps(metadata))
+    elif damage == "foreign_receipt":
+        foreign = tmp_path / "foreign-receipt.json"
+        foreign.write_bytes(receipt.read_bytes())
+        payload["completion_receipt"] = str(foreign)
+        payload["confirmation"] = terminal_decision_offer(repo_root=consumer,
+            transaction_hash=transaction.transaction_hash, completion_receipt=foreign)
+    elif damage and damage != "relative_receipt":
+        choice = payload["confirmation"]["choices"][1 if damage.startswith("edit_") else 0]
+        command = shlex.split(choice["command"])
+        if damage == "missing_flag":
+            del command[-2:]
+        elif damage == "wrong_flag":
+            command[-1] = str(tmp_path / "wrong.json")
+        elif damage == "duplicate_flag":
+            command.extend(("--completion-receipt", str(receipt)))
+        elif damage == "edit_route":
+            command = ["odylith", "greenfield", "decide", "--repo-root", str(consumer), "EDIT",
+                transaction.transaction_hash, "--completion-receipt", str(receipt), "--edit", "<corrections>"]
+        else:
+            command[command.index("--transaction-hash") + 1] = "e" * 64
+        choice["command"] = shlex.join(command)
+    issues = confirmation_preview_issues(proposal_payload=payload, repo_root=consumer)
+    if damage in (None, "relative_receipt"):
+        assert issues == ("terminal decision offer remains unqualified: terminal execution proof is absent",)
+    else:
+        assert (receipt_issue if damage in ("missing_receipt", "missing_file", "wrong_hash", "wrong_nonce",
+            "extra_metadata", "foreign_receipt") else command_issue) in issues
+
+
 @pytest.mark.parametrize(
     ("mutate", "expected_issue"),
     (
@@ -1138,29 +1206,14 @@ def _proposal(transaction_hash: str, *, transaction_file: str = TRANSACTION_FILE
     )
 
 
-def _proposal_payload(transaction_hash: str, *, repo_root: Path) -> dict[str, object]:
+def _proposal_payload(transaction_hash: str, *, repo_root: Path, completion_receipt: Path | None = None) -> dict[str, object]:
     return {
         "mode": "product_create_transaction",
         "transaction_file": TRANSACTION_FILE,
         "product_create_transaction": {"transaction_hash": transaction_hash},
-        "confirmation": {
-            "status": "terminal_only",
-            "interface": "terminal",
-            "reason": (
-                "Nothing has been published. Run one command in a terminal; ordinary chat approval "
-                "does not authorize publication. For EDIT, replace <corrections> with your changes."
-            ),
-            "choices": [
-                {
-                    "label": label,
-                    "command": shlex.join([
-                        "odylith", "greenfield", "decide", "--repo-root", str(repo_root), label,
-                        transaction_hash, *( ["--edit", "<corrections>"] if label == "EDIT" else []),
-                    ]),
-                }
-                for label in ("CONFIRM", "EDIT", "REJECT")
-            ],
-        },
+        **({"completion_receipt": str(completion_receipt)} if completion_receipt else {}),
+        "confirmation": terminal_decision_offer(repo_root=repo_root, transaction_hash=transaction_hash,
+            completion_receipt=completion_receipt),
     }
 
 

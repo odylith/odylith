@@ -212,9 +212,9 @@ def test_authoring_accepts_only_byte_verified_source_citations() -> None:
     )
 
     assert result.intent["first_path"] == _AUTHORED_FIRST_PATH
-    assert result.first_path_relations[0]["actor_fact_quote"] == "Dock attendant Ivo"
-    assert result.first_path_relations[1]["owner_system_path"] == "/internal_systems/0"
-    assert result.first_path_relations[-1]["visible_result_quote"] == "the berth map shows the placement"
+    assert result.source_event_relations[0]["actor_fact_quote"] == "Dock attendant Ivo"
+    assert result.source_event_relations[1]["owner_system_path"] == "/internal_systems/0"
+    assert result.source_event_relations[-1]["visible_result_quote"] == "the berth map shows the placement"
     assert [
         (
             row["responsibility_quote"],
@@ -270,8 +270,8 @@ def test_product_led_path_keeps_review_recipient_without_inventing_human_event()
         **_complete_host_candidate_kwargs(response, source),
     )
 
-    assert [row["actor_kind"] for row in result.first_path_relations] == ["product"]
-    assert [row["event_quote"] for row in result.first_path_relations] == [f"Berth map: {event}"]
+    assert [row["actor_kind"] for row in result.source_event_relations] == ["product"]
+    assert [row["event_quote"] for row in result.source_event_relations] == [f"Berth map: {event}"]
     assert result.intent["human_actors"] == ["Engineering reviewer Mara"]
     assert result.intent["proof_boundary"] == proof
     assert result.intent["assumptions"] == []
@@ -296,7 +296,7 @@ def test_state_anchor_changes_only_selected_custody_not_canonical_meaning() -> N
     assert span["text"] == "berth occupancy"
     assert span["source_start_byte"] == expected_start
     assert span["source_end_byte"] == expected_start + len(b"berth occupancy")
-    assert result.first_path_relations[1]["target_quote"] == "berth occupancy"
+    assert result.source_event_relations[1]["target_quote"] == "berth occupancy"
     assert result.intent["first_path"] == _AUTHORED_FIRST_PATH
     assert span["source_start_byte"] == expected_start
 
@@ -398,23 +398,23 @@ def test_coordinated_events_derive_actor_presence_from_one_typed_fact_edge() -> 
         **_complete_host_candidate_kwargs(response, source),
     )
 
-    assert [row["actor_fact_quote"] for row in result.first_path_relations] == [
+    assert [row["actor_fact_quote"] for row in result.source_event_relations] == [
         "dock attendant Ivo",
         "dock attendant Ivo",
         "dock attendant Ivo",
     ]
     assert all(
         "actor_quote" not in row and "actor_is_carried" not in row
-        for row in result.first_path_relations
+        for row in result.source_event_relations
     )
     assert validate_first_path_relations(
-        result.first_path_relations,
+        result.source_event_relations,
         first_path=str(result.intent["first_path"]),
         human_actors=intent["human_actors"],
         external_systems=intent["external_systems"],
         internal_systems=intent["internal_systems"],
         product_title=str(intent["title"]),
-    ) == result.first_path_relations
+    ) == result.source_event_relations
 
 
 def test_two_human_actor_changes_use_selected_facts_across_sentences() -> None:
@@ -472,12 +472,12 @@ def test_two_human_actor_changes_use_selected_facts_across_sentences() -> None:
         **_complete_host_candidate_kwargs(response, source),
     )
 
-    assert [row["actor_fact_quote"] for row in result.first_path_relations] == [
+    assert [row["actor_fact_quote"] for row in result.source_event_relations] == [
         "Analyst Aya",
         "Reviewer Béla",
     ]
-    assert [row["event_quote"] for row in result.first_path_relations] == list(events)
-    assert [row["action_verb_quote"] for row in result.first_path_relations] == [
+    assert [row["event_quote"] for row in result.source_event_relations] == list(events)
+    assert [row["action_verb_quote"] for row in result.source_event_relations] == [
         "submits",
         "approves",
     ]
@@ -504,7 +504,7 @@ def test_canonical_relation_rejects_retired_surface_actor_fields(
         evidence_text=source,
         **_complete_host_candidate_kwargs(response, source),
     )
-    tampered = [dict(row) for row in result.first_path_relations]
+    tampered = [dict(row) for row in result.source_event_relations]
     tampered[0][retired_field] = (
         "dock attendant Ivo" if retired_field == "actor_quote" else False
     )
@@ -531,7 +531,7 @@ def test_materialization_preserves_exact_event_fact_bytes(tmp_path) -> None:  # 
     )
 
     assert candidate["first_path"] == _AUTHORED_FIRST_PATH
-    for relation in candidate["authored_semantics"]["first_path_relations"]:
+    for relation in candidate["authored_semantics"]["source_event_relations"]:
         start = relation["event_start_byte"]
         end = relation["event_end_byte"]
         assert _AUTHORED_FIRST_PATH.encode("utf-8")[start:end] == relation["event_quote"].encode("utf-8")
@@ -547,7 +547,7 @@ def test_verified_authoring_spans_become_the_product_intent_custody_source() -> 
     sealed_intent = {
         **result.intent,
         "authored_semantics": authored_semantics_mapping(
-            result.first_path_relations,
+            result.source_event_relations,
             result.component_responsibility_relations,
             first_path_context_relations=result.first_path_context_relations,
             provisional_design=result.provisional_design,
@@ -614,7 +614,7 @@ def test_envelope_rejects_relation_rebound_to_a_duplicate_source_occurrence() ->
         evidence_text=source,
         **_complete_host_candidate_kwargs(response, source),
     )
-    relations = [dict(row) for row in result.first_path_relations]
+    relations = [dict(row) for row in result.source_event_relations]
     duplicate_start = source.encode("utf-8").rfind(event.encode("utf-8"))
     assert duplicate_start != relations[0]["source_start_byte"]
     assert source.encode("utf-8")[duplicate_start:duplicate_start + len(event.encode("utf-8"))] == event.encode("utf-8")
@@ -675,7 +675,7 @@ def test_authored_custody_preserves_exact_unicode_markdown_and_deferred_actor_by
     sealed_intent = {
         **result.intent,
         "authored_semantics": authored_semantics_mapping(
-            result.first_path_relations,
+            result.source_event_relations,
             result.component_responsibility_relations,
             first_path_context_relations=result.first_path_context_relations,
             provisional_design=result.provisional_design,

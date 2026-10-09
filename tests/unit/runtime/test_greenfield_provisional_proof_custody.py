@@ -110,7 +110,7 @@ def _provisional_inputs() -> tuple[str, dict[str, Any], list[dict[str, Any]], li
     provisional["assumptions"] = [copy.deepcopy(_PROVISIONAL_PROOF)]
     relations = [
         {**row, "visible_result_quote": ""}
-        for row in authored.first_path_relations
+        for row in authored.source_event_relations
     ]
     responsibilities = [
         {**row, "decision_set_sha256": ledger_receipt["decision_set_sha256"]}

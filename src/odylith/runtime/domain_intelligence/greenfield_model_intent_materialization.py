@@ -147,7 +147,7 @@ def stage_validated_authored_intent(
         raise ValueError("Greenfield source duties do not match the admitted host candidate")
     intent = deepcopy(dict(authored.intent))
     intent[AUTHORED_SEMANTICS_KEY] = authored_semantics_mapping(
-        authored.first_path_relations,
+        authored.source_event_relations,
         authored.component_responsibility_relations,
         first_path_context_relations=authored.first_path_context_relations,
         source_precedence=authored.source_precedence,
@@ -184,7 +184,7 @@ def stage_validated_authored_intent(
     )
     require_product_intent_authority(authority)
     canonical_relation_hash = authored_relation_set_sha256(
-        authored.first_path_relations,
+        authored.source_event_relations,
         authored.component_responsibility_relations,
         first_path_context_relations=authored.first_path_context_relations,
         source_precedence=authored.source_precedence,

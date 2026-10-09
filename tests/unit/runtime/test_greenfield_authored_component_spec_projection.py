@@ -224,7 +224,7 @@ def test_authored_component_projection_rejects_mutated_relation_authority(tmp_pa
     mutated = copy.deepcopy(proposal)
     intent = mutated["intent"]
     assert isinstance(intent, dict)
-    relations = intent["authored_semantics"]["first_path_relations"]
+    relations = intent["authored_semantics"]["source_event_relations"]
     relations[1]["unsupported_classification"] = "recovery"
 
     with pytest.raises(ValueError, match="invalid first-path relations"):

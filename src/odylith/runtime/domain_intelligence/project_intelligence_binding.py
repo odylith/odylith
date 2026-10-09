@@ -142,11 +142,11 @@ def _projection_authority(
         if not first_path_relations_from_intent(intent):
             raise ValueError("model-authored artifact projection requires verified authored semantics")
         semantics = mapping_copy(intent.get(AUTHORED_SEMANTICS_KEY))
-        if semantics.get("version") != AUTHORED_SEMANTICS_VERSION:
+        if semantics.get("version") not in {AUTHORED_SEMANTICS_VERSION, "odylith.greenfield.authored-semantics.v18"}:
             raise ValueError("model-authored artifact projection requires a supported authored-semantics version")
         return (
             AUTHORED_SEMANTICS_ROOT,
-            AUTHORED_SEMANTICS_VERSION,
+            semantics["version"],
             "source_grounding_and_provisional_design",
             (
                 "Greenfield artifacts project canonical source facts and separately labeled provisional design. "

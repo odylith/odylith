@@ -21,7 +21,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     expected_first_path_context_event_order,
     component_responsibility_relations_from_intent,
     first_path_context_relations_from_intent,
-    first_path_relations_from_intent,
+    first_path_relations_from_intent, source_event_relations_from_intent,
 )
 from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
     atomic_fact_ledger_hash,
@@ -32,6 +32,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     require_verified_source_action_relations,
 )
 from odylith.runtime.domain_intelligence.greenfield_source_lifecycle import require_verified_greenfield_source_lifecycle
+from odylith.runtime.domain_intelligence.greenfield_source_event_graph import source_event_relation_key
 
 
 RELATION_FIDELITY_ANNOTATION_VERSION = "odylith.greenfield.relation-fidelity-annotation.v4"
@@ -201,7 +202,7 @@ def snapshot_relation_evidence(
     source_bytes = source_text.encode("utf-8")
     intent = {**facts, "authored_semantics": semantics, "prompt": source_text}
     try:
-        events = first_path_relations_from_intent(intent)
+        events = source_event_relations_from_intent(intent)
         contexts = first_path_context_relations_from_intent(intent)
         components = component_responsibility_relations_from_intent(intent)
         digest = authored_relation_set_sha256(
@@ -209,6 +210,7 @@ def snapshot_relation_evidence(
             source_precedence=semantics["source_precedence"],
             source_duty=semantics["source_duty"],
             provisional_design=semantics["provisional_design"],
+            semantics_version=semantics["version"],
         )
         if snapshot.get("authored_relation_set_sha256") != digest:
             raise ValueError("sealed authored_semantics does not match its authority digest")
@@ -320,7 +322,7 @@ def observed_semantic_universe(*, case: Any, snapshot: Mapping[str, Any]) -> dic
     for index, row in enumerate(snapshot["atomic_facts"]):
         add(f"/atomic_facts/{index}", row, "atomic_fact", row=row)
     for family in RELATION_FAMILIES:
-        field = "first_path_relations" if family == "first_path_events" else "first_path_context_relations" if family == "context_relations" else family
+        field = source_event_relation_key(semantics["version"]) if family == "first_path_events" else "first_path_context_relations" if family == "context_relations" else family
         for index, row in enumerate(semantics[field]):
             kind = family
             if family == "first_path_events":

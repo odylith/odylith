@@ -24,6 +24,7 @@ from odylith.runtime.domain_intelligence.greenfield_intent_fact_values import (
     TERMINAL_RESULT_FACT_FIELDS,
     event_target_is_source_bound,
 )
+from odylith.runtime.domain_intelligence.greenfield_authored_relation_validation import MAX_SOURCE_EVENT_RELATIONS
 from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     MAX_AUTHORED_FIELD_VALUE_CHARS,
 )
@@ -58,7 +59,7 @@ class GreenfieldComponentOwnershipError(GreenfieldAuthoredSemanticsError):
 class DerivedModelRelations:
     """Verified sealed relations plus the exact terminal-result source fact."""
 
-    first_path_relations: tuple[dict[str, Any], ...]
+    source_event_relations: tuple[dict[str, Any], ...]
     first_path_context_relations: tuple[dict[str, Any], ...]
     component_responsibility_relations: tuple[dict[str, Any], ...]
     terminal_result_fact: dict[str, Any] | None
@@ -76,6 +77,7 @@ def derive_model_relations(
     allow_exact_dual_role_constraints: bool = False,
     first_path_event_orders: Sequence[int] | None = None,
     source_owned_actor_facts: bool = False,
+    source_event_graph: bool = False,
 ) -> DerivedModelRelations:
     """Compile the compact graph without adding a second semantic author."""
 
@@ -88,9 +90,10 @@ def derive_model_relations(
         event_citations_are_event_owned=event_citations_are_event_owned,
         first_path_event_orders=first_path_event_orders,
         source_owned_actor_facts=source_owned_actor_facts,
+        source_event_graph=source_event_graph,
     )
     return DerivedModelRelations(
-        first_path_relations=path_relations,
+        source_event_relations=path_relations,
         first_path_context_relations=_derive_context_relations(
             selected_facts=selected_facts,
             first_path_relations=path_relations,
@@ -175,12 +178,13 @@ def _derive_events(
     event_citations_are_event_owned: bool,
     first_path_event_orders: Sequence[int] | None,
     source_owned_actor_facts: bool,
+    source_event_graph: bool,
 ) -> tuple[tuple[dict[str, Any], ...], dict[str, Any] | None]:
     if (
         not isinstance(value, Sequence)
         or isinstance(value, (str, bytes, bytearray))
         or not value
-        or len(value) > MAX_FIRST_PATH_RELATIONS
+        or len(value) > (MAX_SOURCE_EVENT_RELATIONS if source_event_graph else MAX_FIRST_PATH_RELATIONS)
     ):
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authoring returned invalid first-path events"
@@ -209,6 +213,7 @@ def _derive_events(
         )
         if (
             not selected_orders
+            or len(selected_orders) > MAX_FIRST_PATH_RELATIONS
             or (first_path_event_orders is not None
                 and len(first_path_event_orders) != len(selected_orders))
             or any(type(order) is not int or not 1 <= order <= len(event_rows)
@@ -290,12 +295,15 @@ def _derive_events(
                 "Greenfield authoring returned overlapping first-path events"
             )
 
-        actor_kind, actor_fact_path, actor_fact_quote = _event_actor_fact(
-            actor_fact=raw.get("actor_fact"),
-            selected_facts=selected_facts,
-            product_owner_facts=owner_facts,
-            source_owned_actor_facts=source_owned_actor_facts,
-        )
+        if verified_action and selected_fact.get("performer_role") == "product_wide":
+            if not source_owned_actor_facts or raw.get("actor_fact") != {"field": "product_identity", "row": 1}:
+                raise GreenfieldAuthoredSemanticsError("product-wide performer differs from its verified source role")
+            actor_kind, actor_fact_path, actor_fact_quote = "product_wide", "/product_identity", selected_fact["verified_actor"]
+        else:
+            actor_kind, actor_fact_path, actor_fact_quote = _event_actor_fact(
+                actor_fact=raw.get("actor_fact"), selected_facts=selected_facts,
+                product_owner_facts=owner_facts, source_owned_actor_facts=source_owned_actor_facts,
+            )
         if actor_kind == "product":
             owner_system_path = actor_fact_path
             owner_system_quote = actor_fact_quote

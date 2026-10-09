@@ -137,7 +137,7 @@ def _author(
     )
     assert isinstance(result, GreenfieldModelAuthoredIntent)
     result.intent["authored_semantics"] = authored_semantics_mapping(
-        result.first_path_relations, result.component_responsibility_relations,
+        result.source_event_relations, result.component_responsibility_relations,
         first_path_context_relations=result.first_path_context_relations,
         provisional_design=result.provisional_design,
         source_duty=source_duty_fixture(candidate, evidence_text=evidence),
@@ -152,8 +152,8 @@ def test_typed_product_owner_edge_is_authoritative_without_name_reparsing() -> N
 
     result = _author(evidence, response)
 
-    assert result.first_path_relations[2]["actor_fact_quote"] == "berth map"
-    assert result.first_path_relations[2]["owner_system_quote"] == "berth map"
+    assert result.source_event_relations[2]["actor_fact_quote"] == "berth map"
+    assert result.source_event_relations[2]["owner_system_quote"] == "berth map"
 
 
 def test_named_product_event_accepts_its_exact_selected_owner() -> None:
@@ -161,8 +161,8 @@ def test_named_product_event_accepts_its_exact_selected_owner() -> None:
 
     result = _author(evidence, response)
 
-    assert result.first_path_relations[2]["owner_system_path"] == "/internal_systems/0"
-    assert result.first_path_relations[2]["owner_system_quote"] == "Harbor Registry"
+    assert result.source_event_relations[2]["owner_system_path"] == "/internal_systems/0"
+    assert result.source_event_relations[2]["owner_system_quote"] == "Harbor Registry"
 
 
 def test_external_event_actor_must_reference_a_selected_external_fact() -> None:
@@ -193,7 +193,7 @@ def test_exact_external_actor_kind_is_derived_from_its_selected_fact() -> None:
 
     result = _author(evidence, response)
 
-    assert result.first_path_relations[1]["actor_kind"] == "external_system"
+    assert result.source_event_relations[1]["actor_kind"] == "external_system"
 
 
 def test_product_pronoun_uses_an_explicit_selected_actor_fact() -> None:
@@ -266,8 +266,8 @@ def test_product_pronoun_uses_an_explicit_selected_actor_fact() -> None:
 
     result = _author(prompt, response)
 
-    assert result.first_path_relations[2]["actor_fact_path"] == "/internal_systems/0"
-    assert result.first_path_relations[2]["actor_fact_quote"] == "Review Engine"
+    assert result.source_event_relations[2]["actor_fact_path"] == "/internal_systems/0"
+    assert result.source_event_relations[2]["actor_fact_quote"] == "Review Engine"
 
 
 def test_coordinated_clauses_preserve_actor_facts_and_every_action() -> None:
@@ -343,13 +343,13 @@ def test_coordinated_clauses_preserve_actor_facts_and_every_action() -> None:
 
     result = _author(evidence, response)
 
-    assert [row["actor_fact_quote"] for row in result.first_path_relations] == [
+    assert [row["actor_fact_quote"] for row in result.source_event_relations] == [
         "Contractor Lina",
         "Contractor Lina",
         "Permit Relay",
         "Permit Relay",
     ]
-    assert [row["action_verb_quote"] for row in result.first_path_relations] == [
+    assert [row["action_verb_quote"] for row in result.source_event_relations] == [
         "uploads",
         "reviews",
         "stores",
@@ -375,7 +375,7 @@ def test_sealed_separate_source_context_rejects_an_unknown_event_order() -> None
     sealed_intent = {
         **result.intent,
         "authored_semantics": authored_semantics_mapping(
-            result.first_path_relations,
+            result.source_event_relations,
             result.component_responsibility_relations,
             first_path_context_relations=context_relations,
             provisional_design=result.provisional_design,
@@ -491,7 +491,7 @@ def test_repeated_event_text_at_distinct_source_and_projection_coordinates_seals
     sealed_intent = {
         **result.intent,
         "authored_semantics": authored_semantics_mapping(
-            result.first_path_relations,
+            result.source_event_relations,
             result.component_responsibility_relations,
             first_path_context_relations=result.first_path_context_relations,
             provisional_design=result.provisional_design,
@@ -508,7 +508,7 @@ def test_repeated_event_text_at_distinct_source_and_projection_coordinates_seals
         authored_source_sha256=result.source_sha256,
     )
 
-    first, retry = result.first_path_relations[:2]
+    first, retry = result.source_event_relations[:2]
     assert first["event_quote"] == retry["event_quote"]
     assert (first["source_start_byte"], first["source_end_byte"]) != (
         retry["source_start_byte"],
@@ -524,7 +524,7 @@ def test_repeated_event_text_at_distinct_source_and_projection_coordinates_seals
 def test_true_duplicate_event_coordinates_fail_sealed_validation() -> None:
     evidence, response = _repeated_event_case()
     result = _author(evidence, response)
-    relations = [copy.deepcopy(row) for row in result.first_path_relations]
+    relations = [copy.deepcopy(row) for row in result.source_event_relations]
     for key in (
         "source_start_byte",
         "source_end_byte",
@@ -558,7 +558,7 @@ def test_true_duplicate_event_coordinates_fail_sealed_validation() -> None:
 def test_partially_overlapping_source_event_coordinates_fail_sealed_validation() -> None:
     evidence, response = _repeated_event_case()
     result = _author(evidence, response)
-    relations = [copy.deepcopy(row) for row in result.first_path_relations]
+    relations = [copy.deepcopy(row) for row in result.source_event_relations]
     event_length = relations[1]["source_end_byte"] - relations[1]["source_start_byte"]
     relations[1]["source_start_byte"] = relations[0]["source_end_byte"] - 1
     relations[1]["source_end_byte"] = relations[1]["source_start_byte"] + event_length
@@ -671,12 +671,12 @@ def test_utf8_multiactor_path_preserves_meaning_when_source_order_differs() -> N
     result = _author(evidence, response)
 
     assert result.intent["human_actors"] == ["Analyst Zoë", "Reviewer Béla"]
-    assert result.first_path_relations[1]["actor_fact_quote"] == "Æther API"
-    assert result.first_path_relations[2]["source_start_byte"] < result.first_path_relations[1][
+    assert result.source_event_relations[1]["actor_fact_quote"] == "Æther API"
+    assert result.source_event_relations[2]["source_start_byte"] < result.source_event_relations[1][
         "source_start_byte"
     ]
     source_bytes = evidence.encode("utf-8")
-    for relation in result.first_path_relations:
+    for relation in result.source_event_relations:
         assert source_bytes[
             relation["source_start_byte"] : relation["source_end_byte"]
         ] == relation["event_quote"].encode("utf-8")

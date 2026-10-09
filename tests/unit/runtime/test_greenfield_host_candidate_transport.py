@@ -189,7 +189,7 @@ def test_inventory_stdin_omits_only_schema_with_initial_and_edit_custody(
     expected = json.dumps(old, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
     actual = calls[0][1]["contract_text"].encode("utf-8")
     assert actual == expected == retained["source-ledger.stdin.json"]
-    assert len(old_bytes) - len(actual) == 6104
+    assert len(old_bytes) - len(actual) == 6252
     assert retained["source-ledger-schema.json"] == schema_bytes
     assert observation["source_ledger_schema_sha256"] == hashlib.sha256(schema_bytes).hexdigest()
     assert observation["source_ledger_request"]["output_schema_present"] is True

@@ -2514,3 +2514,93 @@ receipt bytes still read unchanged. Evidence:
 SHA-256 `d71b9046d2f4efab899a583422e2aeca4ef9a214fba75543d19f4d729a29da8a`.
 The full regression gate, new distribution and fresh installed EDIT remain
 required. Genuine qualifying EDIT is still 0/4.
+
+### Installed v49 EDIT publishes but fails independent source semantics (2026-10-09)
+
+Frozen checkpoint `6c2a157d8753badcf9d8a4c7b10578cd7535ce3b` passes the
+3,939-test Greenfield gate, clean distribution build, asset checks and installed
+smoke proof. The same unchanged four-case EDIT family stops on its first case.
+Initial preparation seals in 177.228 seconds; EDIT seals a distinct package in
+175.768 seconds. Each uses four permitted host calls and zero post-receipt
+provider/runtime semantic calls. CONFIRM and repeated CONFIRM return success;
+publication readback and the standard browser checks report no issues. This
+advances past the prior missing-identity refusal, but it does not qualify the
+package. The campaign exits 1 after 493.245 seconds. Other three cases remain
+unexecuted, and genuine qualifying EDIT remains 0/4.
+
+Independent source-first review finds three P1 defects. H0's source inventory
+correctly classifies five first-path actions and one supporting publication
+action, but canonical first-path relations promote publication into the path.
+H1 additionally promotes the recurring retention safeguard into a single first
+path event before record creation, changing its head from component author /
+opens to system / retain. H1 also invents a sixth product system named `system`
+beside the five explicitly named systems. Finally, H1 marks prior boundaries
+preserved although boundary b2 changes component ownership from evidence to
+review; b1, b3 and b4 retain component ownership but rewrite workstream identities.
+The safeguard is also missing from the canonical top-level proof summary (P2).
+
+The specific identity-loss prediction succeeds, while semantic preservation
+fails. Do not add another model pass, parser, retry, repair or candidate ladder.
+Diagnose the existing source-role, prerequisite-closure and lifecycle ownership
+seams before selecting a bounded correction. A cited prerequisite may be real
+without becoming a source-declared workflow step; a recurring guard must remain
+a guard. A preserved verdict must be checked against the emitted ownership.
+The failed proposals, receipts, input frames and observations remain immutable.
+
+H0 seal: `65c974d1f5f531295cec05a84d7ef5fce66453e3d8d283d87f529a0825d6817e`.
+H1 seal: `c54d021ba68d1f216c044132291c36cd41db7312d3acd0959e1417f1ad6f7a9b`.
+Source-first report: `/private/tmp/odylith-v49-native-source-first-adjudication-20261009/case-01/adjudication-report.md`,
+SHA-256 `d1de42e8e85dce4002e5f3c9266bf9e45d5af6438ad76016c7f548f8d578ef8a`.
+Actual case evidence: `/private/tmp/odylith-greenfield-v49-genuine-edit-run-20261009/evidence/genuine-lifecycle-edit-v3-01/`.
+Verified 350-file local custody archive:
+`/Users/freedom/.codex/odylith-release-evidence/2026-10-09/v49/failed-native-run-and-source-first-review.tar.gz`,
+SHA-256 `ffae49f1a2fa5e95a5ab24d2014095d712f0b23392b8fe04c549aca28b11b410`.
+This is a local copy, not an independent backup or release qualification.
+
+### V50 complete-graph capacity differs from the admitted source envelope (2026-10-09)
+
+Independent review of the first 29-file source freeze found a real P1: the source
+ledger and catalog admit 32 total action duties, but the later complete graph
+still applies the 24-member declared-path limit. Controlled 25- and 32-duty
+inventories reproduce deterministic refusal after successful source custody.
+Separate the complete graph's existing 32-event envelope from the 24-member
+declared path, preserving historical direct-schema/readback limits. Fresh v25
+schema, canonicalization, materialization, storage and projection controls are
+required at both boundaries; 33 total duties and 25 declared-path members refuse.
+No native qualification is claimed for the correction under review.
+
+The initial provider-schema impossibility concern was retracted after tracing
+the actual v25 route: raw provider output has no events; canonicalization injects
+the authenticated source catalog. Broadening the legacy actor enum would have
+changed an unrelated surface. Initial review: `/private/tmp/odylith-v50-source-role-independent-review-20261009/report-initial-freeze.md`
+(SHA-256 `3241c90548a9d7c592414b3ff4ee02be61b1432f2d96c3617b4d44ad00658d19`).
+
+### V50 successor review and complete-gate discovery (2026-10-09)
+
+Independent review clears the 31-file successor design and ten focused controls,
+including the 32-event complete graph / 24-member declared workflow split, actual
+provider-to-canonical schema reachability, recurring history across projections,
+exact preserved owner bindings and unchanged historical H0/H1 bytes. Review:
+`/private/tmp/odylith-v50-source-role-independent-review-20261009/successor-freeze-review.md`
+(SHA-256 `a2484235bde322e781f3d0138e7a7a88a3006227c0ecd24c69390f171ea009a5`).
+The proposed extra top-level parity gate is unnecessary: no reachable mutation
+escape was demonstrated through the existing deterministic constructor and seal.
+
+The subsequent complete owned gate is still failed: 3,537 passed, 15 failed and
+10 errors before its failure limit. Most outcomes require current fixture/context
+adoption, but the public release reader has a real defect: `observed_semantic_universe`
+still selects the historical `first_path_relations` key and crashes on fresh v19.
+Adopt the existing version-owned graph reader and retain exact historical v18
+behavior. This is not a semantic qualification pass or permission to regrade v49.
+The successor correction, final full gate and fresh installed comparison remain
+required; all failed logs remain retained.
+
+The corrected release-reader gate passes all 194 tests, including fresh v19 and
+passive v18 controls. Independent freeze03 review is clear (SHA-256
+`ddfd6be49ea9a698df75817fdb34910737ab22b74450eb43328af1a374fd8fd0`).
+The complete frozen 174-module owned gate then passes 3,869 tests in 437.14 seconds,
+without skips, failures or errors. Its log is
+`/private/tmp/odylith-v50-role-graph-owner-plan-20261009/greenfield-unit-04.log`.
+This supersedes the failed source gate for current proof; it does not regrade
+the failed native run. Remaining root modules, regenerated browser pages, CI,
+package and fresh native qualification remain open.

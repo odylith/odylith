@@ -57,7 +57,8 @@ def authored_fact_view(project: Mapping[str, Any]) -> AuthoredFactView | None:
     if not isinstance(raw_facts, Mapping):
         raise GreenfieldAuthoredSemanticsError("Project authored facts are malformed")
 
-    raw_events = raw_facts.get("first_path_relations")
+    fresh = raw_facts.get("authored_semantics_version") == "odylith.greenfield.authored-semantics.v19"
+    raw_events = raw_facts.get("source_event_relations" if fresh else "first_path_relations")
     if not isinstance(raw_events, Sequence) or isinstance(raw_events, (str, bytes, bytearray)):
         raise GreenfieldAuthoredSemanticsError("Project authored event inventory is malformed")
     events: list[AuthoredEventPresentation] = []

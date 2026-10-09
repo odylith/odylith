@@ -949,7 +949,7 @@ def _commit_result(
                     "operating_envelope": operating_envelope,
                     "authored_semantics": semantics,
                     "authored_relation_set_sha256": authored_relation_set_sha256(
-                        semantics["first_path_relations"],
+                        semantics["source_event_relations"],
                         semantics["component_responsibility_relations"],
                         first_path_context_relations=semantics[
                             "first_path_context_relations"
@@ -1002,7 +1002,7 @@ def _authored_semantics(
     provisional_design = structural_design_fixture((1,))
     return {
         "version": AUTHORED_SEMANTICS_VERSION,
-        "first_path_relations": relations,
+        "source_event_relations": relations,
         "first_path_context_relations": [],
         "component_responsibility_relations": [],
         "source_precedence": [],
@@ -1286,7 +1286,7 @@ def _rich_relation_bundle(
     )
     semantics = {
         "version": AUTHORED_SEMANTICS_VERSION,
-        "first_path_relations": semantic_events,
+        "source_event_relations": semantic_events,
         "first_path_context_relations": semantic_contexts,
         "component_responsibility_relations": [
             {
@@ -1335,7 +1335,7 @@ def _refresh_relation_hash(result: GreenfieldMatrixResult) -> None:
     semantics = snapshot["authored_semantics"]
     snapshot["product_facts_sha256"] = product_facts_hash(snapshot["facts"])
     snapshot["authored_relation_set_sha256"] = authored_relation_set_sha256(
-        semantics["first_path_relations"],
+        semantics["source_event_relations"],
         semantics["component_responsibility_relations"],
         first_path_context_relations=semantics["first_path_context_relations"],
         source_precedence=semantics["source_precedence"],
@@ -1400,7 +1400,7 @@ def _repeated_relation_evidence() -> tuple[GreenfieldMatrixCase, dict[str, objec
     provisional_design = structural_design_fixture((1, 2))
     semantics = {
         "version": AUTHORED_SEMANTICS_VERSION,
-        "first_path_relations": semantic_events,
+        "source_event_relations": semantic_events,
         "first_path_context_relations": [],
         "component_responsibility_relations": [],
         "source_precedence": [],

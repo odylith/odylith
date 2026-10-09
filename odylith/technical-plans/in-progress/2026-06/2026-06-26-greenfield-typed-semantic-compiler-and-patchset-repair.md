@@ -16870,3 +16870,103 @@ exact Git archive, then run the same four independently audited native EDIT
 inputs. Qualifying EDIT remains 0/4 until those actual outcomes pass. Original
 Public40 annotations are unavailable; their replacement still awaits the separate
 operator amendment. The final holdout remains untouched.
+
+### v49 advances through EDIT and publication; source semantics still fail (2026-10-09)
+
+The exact 6c2a157 checkpoint passes package build, managed-asset validation and
+installed smoke proof after its 3,939-test gate. Case 01 produces distinct H0/H1
+seals, confirms the edited package and repeats confirmation successfully; its
+standard browser checks report no issues. The campaign still fails and stops
+before the other three cases. Independent source-first review finds workflow
+contamination by supporting publication and a recurring retention guard, an
+invented sixth product system, and changed prior boundary ownership incorrectly
+reported as preserved. CB-209 retains exact citations, seals and report hashes.
+CB-347 separately records the stale receipt-free confirmation-command oracle.
+Qualifying genuine EDIT remains 0/4; this run cannot be regraded or salvaged.
+
+Before another native comparison, resolve the existing ownership seam: preserve
+source first-path membership separately from cited prerequisites and recurring
+guards; represent a product-wide system referent without adding an invented
+component; and compare preserved lifecycle bindings with actual emitted ownership.
+Choose the smallest correction after read-only source-owner diagnosis and a
+falsifiable prediction. No new semantic stage, parser, retry, repair or model
+ladder is authorized. Retained published bytes support supplemental UX diagnosis,
+with pristine Project views and mobile states, without regenerating the package.
+
+The failed run and independent report have verified local durable custody:
+`/Users/freedom/.codex/odylith-release-evidence/2026-10-09/v49/failed-native-run-and-source-first-review.tar.gz`,
+SHA-256 `ffae49f1a2fa5e95a5ab24d2014095d712f0b23392b8fe04c549aca28b11b410`.
+Original Public40 annotations are unavailable; replacement still needs the
+pending operator amendment. Preserve the unchanged forty inputs, release floors,
+all failed runs and untouched final holdout. Continue code, proof and UX work
+that does not depend on that amendment.
+
+## V50 source-role ownership correction selected (2026-10-09)
+
+The failed v49 installed case is the falsifier: H0 promotes supporting publication
+into the declared five-step workflow; H1 additionally promotes recurring history
+retention, invents a sixth subsystem, and changes preserved duty allocation.
+Keep that failed run and the independent source-first findings unchanged.
+
+The next implementation stores the complete source-event graph once and derives
+the declared workflow only from independently verified first-path membership.
+Execution prerequisites retain their existing separate closure. A source-owned
+execution kind distinguishes discrete actions from recurring invariants through
+the existing source-only verifier; recurring safeguards retain catalog, lifecycle,
+component custody and proof obligations without becoming one-time workflow steps.
+A product-wide performer requires both an exact verified action mention and
+verified product identity; it cannot become an invented named subsystem. Preserved
+EDIT duties retain their prior component/workstream allocation unless exact
+correction evidence authorizes a change. Historical contracts remain exact passive
+readback; fresh versions do not reinterpret earlier failed evidence.
+
+The bounded adoption cone includes source ledger/compact/verifier/binding/lifecycle,
+host/receipt/actor custody, graph/materialization/projection, all graph consumers
+and controlled fixtures. No extra semantic stage, retries, parser repair or model
+ladder is authorized. Focused falsifiers, historical readback, the complete affected
+regression gate, reviewed source, fresh frozen package and installed EDIT evidence
+are required before qualification. Plan: `/private/tmp/odylith-v50-role-graph-owner-plan-20261009/plan.md`
+(SHA-256 `9f2872802c1df5bbc5b0e0f55f9c1e13d1b00f0f92e8ffc4e81a89eb395001a2`).
+
+### V50 review progress and remaining release-reader adoption (2026-10-09)
+
+Independent review clears the successor source-role design and focused boundary
+controls. Complete regression subsequently finds a public evaluator crash on the
+removed current graph key; CB-209 records it separately from fixture adoption.
+Finish the version-owned release reader and exact historical controls before the
+final complete gate. Reuse the final pinned 174-module owned gate and run the four
+remaining root modules and the two existing release-smoke/Registry modules, plus
+regenerated Atlas browser checks, rather than repeat already sufficient proof.
+The combined affected inventory is 180 modules.
+
+The final owned 174-module gate passes 3,869 tests in 437.14 seconds, with no skips,
+failures or errors. Root's first three remaining modules pass 26 tests with no
+source-pin drift. Independent freeze03 reader review is clear; exact historical
+H0/H1 readback remains unchanged. Finish the remaining three modules and generated
+browser checks after canonical publication, then freeze the next package and
+stop after native case 01 for source-first adjudication before running cases 02–04.
+
+Atlas passes 170 source checks and Radar passes 98, with bounded parent screenshot
+acceptance across normal, empty and degraded states. Generated root pages, package
+and fresh native output still require proof. Radar's 274-file verified local
+evidence archive has SHA-256
+`74b3b2b5746828c34dedd1bf1821290bdca478b838f13764f01e5ebeabe96b05`.
+Keep all source writers stable during final governed publication and Compass
+logging; do not repeat the archived interrupted append. No release or installed
+semantic qualification has been earned by these source checks.
+
+### V50 local verification complete; package and source-first native gate next (2026-10-09)
+
+The final composed local inventory covers 4,006 passing tests in 180 modules plus
+seven generated Atlas nodes. Root's two publication cases pass after adopting
+attached/nonempty hidden-ID readiness without weakening visible image or atomic
+publication checks. Source, managed bytes and publication remain unchanged.
+CB-303/CB-347 retain the failed batch and exact fresh rerun; no old native output
+is regraded. The bounded integration review is clear.
+
+Freeze and push this reviewed checkpoint, build and verify its clean-install
+package, and run case 01 alone. Independent source-first review must bind its
+actual new source, receipts, canonical package and browser outputs to the frozen
+annotations before cases 02–04 can run. Existing full CI, migration assessments,
+Public40 evidence amendment/matrix, host parity, confidence/timing and untouched
+final holdout remain release gates. Genuine qualifying EDIT remains 0/4.

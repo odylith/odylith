@@ -14,6 +14,7 @@ from greenfield_relation_fidelity import _annotation_context_keys
 from greenfield_relation_fidelity import snapshot_relation_evidence
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     GreenfieldAuthoredSemanticsError,
+    authored_relation_set_sha256,
     combined_prompt_evidence_source,
     validate_first_path_context_relations,
 )
@@ -47,6 +48,28 @@ _RELATION_FAILURE_CASES = tuple(
 def _isolate_structural_scoring(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(score_module, "require_atomic_fact_ledger", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(relation_module, "require_atomic_fact_ledger", lambda *_args, **_kwargs: None)
+
+
+@pytest.mark.parametrize("version,graph_key", [(19, "source_event_relations"), (18, "first_path_relations")])
+def test_observed_semantic_universe_uses_only_the_exact_version_owned_source_graph(version, graph_key):
+    case = _case("observed-source-graph", expectation="transaction_committed")
+    snapshot = _commit_result(case).evidence["preconfirm_dry_run"]["semantic_snapshot"]
+    semantics = snapshot["authored_semantics"]
+    graph = semantics.pop("source_event_relations")
+    semantics["version"] = f"odylith.greenfield.authored-semantics.v{version}"
+    semantics[graph_key] = graph
+    snapshot["authored_relation_set_sha256"] = authored_relation_set_sha256(
+        graph, semantics["component_responsibility_relations"],
+        first_path_context_relations=semantics["first_path_context_relations"],
+        source_precedence=semantics["source_precedence"], source_duty=semantics["source_duty"],
+        provisional_design=semantics["provisional_design"], semantics_version=semantics["version"],
+    )
+    universe = relation_module.observed_semantic_universe(case=case, snapshot=snapshot)
+    event_path = f"/authored_semantics/{graph_key}/0"
+    assert universe[event_path]["kind"] == "main_event"
+    assert universe[event_path]["destination_sha256"] == relation_module.canonical_evidence_sha256(graph[0])
+    other_key = "first_path_relations" if version == 19 else "source_event_relations"
+    assert not any(path.startswith(f"/authored_semantics/{other_key}/") for path in universe)
 
 
 def test_relation_fidelity_reports_exact_family_and_worst_slice_evidence() -> None:
@@ -171,7 +194,7 @@ def test_snapshot_rejects_target_only_adjacent_in_selected_fact() -> None:
     case, _annotation, result = _rich_relation_bundle("relations-bound-target")
     snapshot = result.evidence["preconfirm_dry_run"]["semantic_snapshot"]
     facts = snapshot["facts"]
-    relations = snapshot["authored_semantics"]["first_path_relations"]
+    relations = snapshot["authored_semantics"]["source_event_relations"]
     event = relations[0]["event_quote"]
     target = "review queue"
     facts["customer"] = target
@@ -190,7 +213,7 @@ def test_snapshot_accepts_selected_actor_and_terminal_result_from_source_fact() 
     case, _annotation, result = _rich_relation_bundle("relations-selected-actor")
     snapshot = result.evidence["preconfirm_dry_run"]["semantic_snapshot"]
     facts = snapshot["facts"]
-    relations = snapshot["authored_semantics"]["first_path_relations"]
+    relations = snapshot["authored_semantics"]["source_event_relations"]
     relations[1].update(
         {
             "actor_kind": "human",
@@ -209,7 +232,7 @@ def test_snapshot_accepts_selected_actor_and_terminal_result_from_source_fact() 
 def test_snapshot_rejects_retired_actor_surface_fields() -> None:
     case, _annotation, result = _rich_relation_bundle("relations-retired-actor-surface")
     snapshot = result.evidence["preconfirm_dry_run"]["semantic_snapshot"]
-    relations = snapshot["authored_semantics"]["first_path_relations"]
+    relations = snapshot["authored_semantics"]["source_event_relations"]
     relations[0]["actor_quote"] = "Reviewer"
 
     issues = snapshot_relation_evidence(case=case, snapshot=snapshot).issues
@@ -280,7 +303,7 @@ def test_event_actor_atom_uses_only_its_selected_actor_fact() -> None:
 def test_snapshot_rejects_removed_recovery_classification() -> None:
     case, _annotation, result = _rich_relation_bundle("relations-removed-recovery")
     snapshot = result.evidence["preconfirm_dry_run"]["semantic_snapshot"]
-    relations = snapshot["authored_semantics"]["first_path_relations"]
+    relations = snapshot["authored_semantics"]["source_event_relations"]
     relations[0]["recovery_path"] = True
 
     issues = snapshot_relation_evidence(case=case, snapshot=snapshot).issues
@@ -300,7 +323,7 @@ def test_relation_fidelity_rejects_structurally_valid_wrong_relations(
     snapshot = result.evidence["preconfirm_dry_run"]["semantic_snapshot"]
     semantics = snapshot["authored_semantics"]
     if damage == "wrong_product_owner":
-        event = semantics["first_path_relations"][2]
+        event = semantics["source_event_relations"][2]
         event.update(
             {
                 "actor_fact_path": "/internal_systems/1",
@@ -316,14 +339,14 @@ def test_relation_fidelity_rejects_structurally_valid_wrong_relations(
             }
         )
     elif damage == "wrong_external_actor":
-        semantics["first_path_relations"][1].update(
+        semantics["source_event_relations"][1].update(
             {
                 "actor_fact_path": "/external_systems/1",
                 "actor_fact_quote": "Archive API",
             }
         )
     elif damage == "wrong_actor_fact":
-        semantics["first_path_relations"][1].update(
+        semantics["source_event_relations"][1].update(
             {
                 "actor_fact_path": "/external_systems/1",
                 "actor_fact_quote": "Archive API",
@@ -334,9 +357,9 @@ def test_relation_fidelity_rejects_structurally_valid_wrong_relations(
     elif damage == "false_independence":
         semantics["first_path_context_relations"][1]["first_path_event_order"] = 0
     elif damage == "wrong_action":
-        semantics["first_path_relations"][2]["action_verb_quote"] = "show"
+        semantics["source_event_relations"][2]["action_verb_quote"] = "show"
     elif damage == "wrong_target":
-        semantics["first_path_relations"][2]["target_quote"] = "accepted receipt"
+        semantics["source_event_relations"][2]["target_quote"] = "accepted receipt"
     elif damage == "mutual_context_omission":
         semantics["first_path_context_relations"] = []
         annotation["relation_fidelity"]["context_relations"] = []
@@ -405,7 +428,7 @@ def test_relation_fidelity_rejects_missing_or_digest_mismatched_sealed_authority
     elif damage == "digest":
         snapshot["authored_relation_set_sha256"] = "f" * 64
     else:
-        snapshot["authored_semantics"]["first_path_relations"][0]["order"] = "one"
+        snapshot["authored_semantics"]["source_event_relations"][0]["order"] = "one"
         with pytest.raises(ValueError):
             _refresh_relation_hash(result)
 

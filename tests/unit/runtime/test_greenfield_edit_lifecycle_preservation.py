@@ -101,8 +101,8 @@ def test_initial_request_keeps_the_existing_non_edit_decision_and_receipt_shape(
     task = source_duty_entailment_task(preflight, evidence_text=source)
     assert "edit_preservation" not in task
     assert "edit_preservation" not in task["decision_set_schema"]["properties"]
-    assert receipt["version"] == "odylith.greenfield.source-duty-ledger-receipt.v12"
-    assert task["decision_set_schema"]["properties"]["version"]["enum"] == ["odylith.greenfield.source-duty-decisions.v7"]
+    assert receipt["version"] == "odylith.greenfield.source-duty-ledger-receipt.v14"
+    assert task["decision_set_schema"]["properties"]["version"]["enum"] == ["odylith.greenfield.source-duty-decisions.v9"]
     assert validate_greenfield_source_duty_ledger(
         ledger, evidence_text=source, decision_set=_yes_decisions(preflight, evidence_text=source),
     ) == receipt
@@ -113,13 +113,22 @@ def test_host_receipt_passive_approval_is_an_explicit_closed_version_pair(tmp_pa
     from tests.unit.runtime.test_greenfield_create_transaction import _transaction
 
     transaction = _transaction(repo_root=tmp_path)
-    for version, approved in ((49, True), (50, True), (51, True), (52, True), (53, True), (54, True), (55, True), (56, True), (48, False), (57, False)):
+    for version, approved in ((49, True), (50, True), (51, True), (52, True), (53, True), (54, True), (55, True), (56, True), (57, True), (48, False), (58, False)):
         model = deepcopy(transaction.quality_manifest["model_authoring"])
         model["host_candidate"]["contract_version"] = f"odylith.greenfield.host-candidate-contract.v{version}"
+        canonical_version = f"odylith.greenfield.intent-authoring.v{80 if version == 57 else 79}"
+        model["host_candidate"]["canonical_version"] = canonical_version
+        model["authoring_version"] = canonical_version
         assert greenfield_model_authoring_receipt_approved(
             model_authoring=model, semantic_compiler=transaction.quality_manifest["semantic_compiler"],
             requested_repair_tier=transaction.quality_manifest["requested_repair_tier"],
         ) is approved
+        model["host_candidate"]["canonical_version"] = f"odylith.greenfield.intent-authoring.v{79 if version == 57 else 80}"
+        model["authoring_version"] = model["host_candidate"]["canonical_version"]
+        assert not greenfield_model_authoring_receipt_approved(
+            model_authoring=model, semantic_compiler=transaction.quality_manifest["semantic_compiler"],
+            requested_repair_tier=transaction.quality_manifest["requested_repair_tier"],
+        )
 
 
 @pytest.mark.parametrize("damage", ["legacy_decisions", "legacy_receipt", "missing_context", "initial_as_edit"])
@@ -127,8 +136,8 @@ def test_initial_and_edit_protocol_pairs_cannot_be_interchanged(damage):
     case = _edit_case()
     source, _, context, _, decisions = case
     receipt = _admit(case)
-    assert receipt["version"] == "odylith.greenfield.source-duty-ledger-receipt.v13"
-    assert decisions["version"] == "odylith.greenfield.source-duty-decisions.v8"
+    assert receipt["version"] == "odylith.greenfield.source-duty-ledger-receipt.v15"
+    assert decisions["version"] == "odylith.greenfield.source-duty-decisions.v10"
     if damage == "legacy_decisions":
         decisions["version"] = "odylith.greenfield.source-duty-decisions.v7"
         with pytest.raises(GreenfieldSourceDutyLedgerError, match="binding"):
@@ -141,7 +150,7 @@ def test_initial_and_edit_protocol_pairs_cannot_be_interchanged(damage):
     else:
         source, receipt, _, _ = _case("dossier")
         context = None
-        receipt["version"] = "odylith.greenfield.source-duty-ledger-receipt.v13"
+        receipt["version"] = "odylith.greenfield.source-duty-ledger-receipt.v15"
     with pytest.raises(GreenfieldSourceDutyLedgerError, match="version|baseline"):
         verify_greenfield_source_duty_ledger_receipt(receipt, evidence_text=source, edit_preservation=context)
 
@@ -497,14 +506,14 @@ def test_fresh_v9_compiler_seal_can_be_read_and_used_for_a_second_edit(tmp_path,
 
     initial = _transaction(repo_root=tmp_path)
     initial_source_duty = initial.proposal["intent"]["authored_semantics"]["source_duty"]
-    assert initial_source_duty["ledger_receipt"]["version"] == "odylith.greenfield.source-duty-ledger-receipt.v12"
-    assert initial_source_duty["ledger_receipt"]["decision_set"]["version"] == "odylith.greenfield.source-duty-decisions.v7"
+    assert initial_source_duty["ledger_receipt"]["version"] == "odylith.greenfield.source-duty-ledger-receipt.v14"
+    assert initial_source_duty["ledger_receipt"]["decision_set"]["version"] == "odylith.greenfield.source-duty-decisions.v9"
     _, args = stage(initial)
     guard = "Before a decision, supplier evidence must remain visible."
     for edit_index, correction in enumerate((guard, "Keep every earlier safeguard and its evidence.")):
         previous = cli._edit_transaction_from_args(args, repo_root=tmp_path, correction=correction)
         prior_source_duty = previous.proposal["intent"]["authored_semantics"]["source_duty"]
-        prior_version = "odylith.greenfield.source-duty-ledger-receipt.v12" if edit_index == 0 else "odylith.greenfield.source-duty-ledger-receipt.v13"
+        prior_version = "odylith.greenfield.source-duty-ledger-receipt.v14" if edit_index == 0 else "odylith.greenfield.source-duty-ledger-receipt.v15"
         assert prior_source_duty["ledger_receipt"]["version"] == prior_version
         prompt = previous.proposal["intent"]["prompt"]
         prepared = prepare_model_authoring_evidence(prompt=prompt, edit_evidence=correction)
@@ -518,7 +527,7 @@ def test_fresh_v9_compiler_seal_can_be_read_and_used_for_a_second_edit(tmp_path,
         ) if field in prior}
         host_candidate = host_candidate_response(authored_response(
             facts, evidence_text=source,
-            first_path_relations=semantics["first_path_relations"],
+            first_path_relations=semantics["source_event_relations"],
             component_responsibility_owners=[
                 row["owner_system_quote"] for row in semantics["component_responsibility_relations"]
             ],
@@ -548,7 +557,7 @@ def test_fresh_v9_compiler_seal_can_be_read_and_used_for_a_second_edit(tmp_path,
         receipt = validate_greenfield_source_duty_ledger(
             ledger, evidence_text=source, decision_set=decisions, edit_preservation=context,
         )
-        assert receipt["version"] == "odylith.greenfield.source-duty-ledger-receipt.v13"
+        assert receipt["version"] == "odylith.greenfield.source-duty-ledger-receipt.v15"
         assert receipt["decision_set"]["version"] == EDIT_SOURCE_DUTY_DECISION_SET_VERSION
         result = host_candidate["result"]
         result["source_duty_binding"].update(
@@ -641,7 +650,8 @@ def test_history_only_edit_reverifies_identity_at_current_shifted_source_span():
     assert context["prior_identity"] == ledger["product_identity"]
     assert receipt["decision_set"]["product_identity"] == {"verdict": "yes"}
     assert receipt["decision_set"]["identity_preservation"] == {"verdict": "preserved", "correction_authorization": "not_required"}
-    assert "do not copy the prior citation or title" in task["edit_preservation_task"]
+    assert "Do not copy prior duty meaning as current source authority" in task["edit_preservation_task"]
+    assert "same independently verified product identity" in task["edit_preservation_task"]
     prior_source = _case("dossier")[0] + " " + GUARD
     current_ref = canonical_citation_from_host_selection(source.encode(), ledger["product_identity"]["source_ref"])
     prior_ref = canonical_citation_from_host_selection(prior_source.encode(), context["prior_identity"]["source_ref"])

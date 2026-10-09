@@ -14,7 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     authored_visible_result,
     component_responsibility_relations_from_intent,
     first_path_context_relations_from_intent,
-    first_path_relations_from_intent,
+    first_path_relations_from_intent, source_event_relations_from_intent,
 )
 from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
     authored_checkpoint_text,
@@ -50,7 +50,7 @@ def build_authored_greenfield_payload(
             "Greenfield dashboard requires the model-authored projection origin"
         )
     intent = _required_mapping(proposal, "intent")
-    relations = first_path_relations_from_intent(intent)
+    relations = source_event_relations_from_intent(intent)
     first_run_relations = authored_first_run_relations(intent)
     context_relations = first_path_context_relations_from_intent(intent)
     component_relations = component_responsibility_relations_from_intent(intent)
@@ -309,7 +309,11 @@ def build_authored_greenfield_payload(
             "operational_constraints": list(operational_constraints),
             "evidence_requirements": list(evidence_requirements),
             "success_metrics": list(success_metrics),
-            "first_path_relations": [dict(row) for row in relations],
+            **({"authored_semantics_version": intent[AUTHORED_SEMANTICS_KEY]["version"],
+                "source_event_relations": [dict(row) for row in relations],
+                "first_path_relations": [dict(row) for row in first_path_relations_from_intent(intent)]}
+               if intent[AUTHORED_SEMANTICS_KEY]["version"].endswith(".v19") else
+               {"first_path_relations": [dict(row) for row in relations]}),
             "source_precedence": [dict(row) for row in intent[AUTHORED_SEMANTICS_KEY]["source_precedence"]],
             "source_lifecycle": deepcopy(
                 intent[AUTHORED_SEMANTICS_KEY]["source_duty"]["lifecycle"]

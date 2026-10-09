@@ -337,7 +337,7 @@ def test_actor_fact_is_selected_without_interpreting_event_text() -> None:
         selected_facts=facts,
     )
 
-    relation = result.first_path_relations[0]
+    relation = result.source_event_relations[0]
     assert relation["actor_kind"] == "human"
     assert relation["actor_fact_path"] == "/human_actors/0"
     assert relation["actor_fact_quote"] == "Analyst Ana"

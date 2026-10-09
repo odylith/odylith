@@ -139,7 +139,7 @@ def _authored_inputs() -> tuple[str, GreenfieldModelAuthoredIntent, dict[str, An
     intent = {
         **result.intent,
         AUTHORED_SEMANTICS_KEY: authored_semantics_mapping(
-            result.first_path_relations,
+            result.source_event_relations,
             result.component_responsibility_relations,
             first_path_context_relations=result.first_path_context_relations,
             provisional_design=result.provisional_design,
@@ -189,7 +189,7 @@ def test_authored_envelope_preserves_exact_facts_spans_relations_and_authority()
     source, result, intent = _authored_inputs()
     envelope = _build_envelope(source=source, result=result, intent=intent)
     expected_relation_hash = authored_relation_set_sha256(
-        result.first_path_relations,
+        result.source_event_relations,
         result.component_responsibility_relations,
         first_path_context_relations=result.first_path_context_relations,
         source_duty=intent[AUTHORED_SEMANTICS_KEY]["source_duty"],
@@ -263,7 +263,7 @@ def test_envelope_construction_rejects_relation_free_input() -> None:
 def test_envelope_construction_refuses_missing_source_custody_explicitly() -> None:
     source, result, intent = _authored_inputs()
     intent[AUTHORED_SEMANTICS_KEY] = authored_semantics_mapping(
-        result.first_path_relations,
+        result.source_event_relations,
         result.component_responsibility_relations,
         first_path_context_relations=result.first_path_context_relations,
         provisional_design=result.provisional_design,
@@ -335,7 +335,7 @@ def test_optional_human_fact_still_requires_exact_atomic_source_custody() -> Non
 def test_envelope_rejects_relation_coordinates_rebound_after_authoring() -> None:
     source, result, intent = _authored_inputs()
     rebound = copy.deepcopy(intent)
-    rebound[AUTHORED_SEMANTICS_KEY]["first_path_relations"][0]["event_start_byte"] += 1
+    rebound[AUTHORED_SEMANTICS_KEY]["source_event_relations"][0]["event_start_byte"] += 1
 
     with pytest.raises(ValueError, match="ungrounded first-path relations"):
         _build_envelope(source=source, result=result, intent=rebound)

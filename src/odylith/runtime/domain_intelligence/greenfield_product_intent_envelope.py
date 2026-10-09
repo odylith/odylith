@@ -29,7 +29,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     authored_relation_set_sha256,
     component_responsibility_relations_from_intent,
     first_path_context_relations_from_intent,
-    first_path_relations_from_intent,
+    source_event_relations_from_intent,
     require_authored_relation_source_custody,
 )
 from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
@@ -252,7 +252,7 @@ def build_product_intent_envelope(
         raise ValueError("model-authored Product Intent requires verified source-duty custody")
     # Canonical validation uses this exact supplied source, never a reframed prompt.
     intent = {**intent, "prompt": source_text}
-    authored_relations = first_path_relations_from_intent(intent)
+    authored_relations = source_event_relations_from_intent(intent)
     first_path_context_relations = first_path_context_relations_from_intent(intent)
     component_responsibility_relations = component_responsibility_relations_from_intent(
         intent
@@ -268,6 +268,7 @@ def build_product_intent_envelope(
         source_precedence=intent[AUTHORED_SEMANTICS_KEY]["source_precedence"],
         source_duty=intent[AUTHORED_SEMANTICS_KEY]["source_duty"],
         provisional_design=provisional_design_from_intent(intent),
+        semantics_version=intent[AUTHORED_SEMANTICS_KEY]["version"],
     )
     facts = product_facts_payload(intent)
     source_bytes = str(source_text or "").encode("utf-8")
@@ -283,7 +284,7 @@ def build_product_intent_envelope(
         authored_relations, source_duty=source_duty, source_text=str(source_text or "")
     )
     receipt = source_duty["ledger_receipt"]
-    if receipt["ledger"]["version"] == "odylith.greenfield.source-duty-ledger.v7":
+    if receipt["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8"}:
         identity = receipt["ledger"]["product_identity"]["source_ref"]
         canonical = canonical_citation_from_host_selection(source_bytes, identity)
         quote, start = resolve_source_citation(source_bytes, canonical)
@@ -307,7 +308,7 @@ def build_product_intent_envelope(
     _verify_authored_atomic_claim_source(
         authored_atomic_claims,
         source_bytes=source_bytes,
-        source_spans=spans,
+        source_spans=spans, normalized_duties=normalized_duties,
     )
     require_authored_relation_source_custody(
         authored_relations,
@@ -396,9 +397,9 @@ def _verified_normalized_action_duties(
     ledger = verified["ledger"]
     by_order: dict[int, Mapping[str, Any]] = {}
     path_orders: set[int] = set()
-    if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v6", "odylith.greenfield.source-duty-ledger.v7"}:
+    if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v6", "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8"}:
         catalog = project_greenfield_source_event_catalog(verified, evidence_text=source_text,
-                    _passive=ledger["version"] == "odylith.greenfield.source-duty-ledger.v6")
+                    _passive=ledger["version"] != "odylith.greenfield.source-duty-ledger.v8")
         if any(binding[section] != rows for section, rows in catalog["action_bindings"].items()):
             raise ValueError("model-authored Product Intent action binding differs from its frozen source catalog")
         by_order = catalog["actions"]
@@ -579,7 +580,7 @@ def _authored_source_spans(
         if classification == "product_claim":
             product_claim_span_ids_by_field.setdefault(field, []).append(span_id)
     for duty in normalized_duties.values():
-        if "actor_fact_path" in duty and not any(
+        if "actor_fact_path" in duty and duty.get("performer_role") != "product_wide" and not any(
             span.get("classification") == "product_claim"
             and span.get("projection_path") == duty["actor_fact_path"]
             and span.get("source_start_byte") == duty["actor_start_byte"]
@@ -618,6 +619,7 @@ def _verify_authored_atomic_claim_source(
     *,
     source_bytes: bytes,
     source_spans: Sequence[Mapping[str, Any]],
+    normalized_duties: Mapping[tuple[str, int], Mapping[str, Any]],
 ) -> None:
     """Reject atomic coordinates that were derived from different evidence bytes."""
 
@@ -668,7 +670,7 @@ def _verify_authored_atomic_claim_source(
                 and span.get("source_start_byte") == start
                 and span.get("source_end_byte") == end
                 and span.get("text") == quote
-                and _normalized_claim_matches_projection(claim, span)
+                and _normalized_claim_matches_projection(claim, span, normalized_duties)
             ),
             None,
         ) if normalized_claim else None
@@ -681,7 +683,7 @@ def _verify_authored_atomic_claim_source(
             or (normalized_claim and (
                 field not in {"first_path", "supporting_events", "component_responsibilities"}
                 or normalized_parent is None
-                or not _normalized_claim_matches_projection(claim, normalized_parent)
+                or not _normalized_claim_matches_projection(claim, normalized_parent, normalized_duties)
             ))
             or not any(
                 parent_start <= start and end <= parent_end
@@ -717,6 +719,7 @@ def require_verified_source_action_relations(
         "internal_system": ("product", {"internal_systems", "title"}),
         "external_system": ("external_system", {"external_systems"}),
         "product_title": ("product", {"internal_systems", "title"}),
+        "product_wide": ("product_wide", {"product_identity"}),
     }
     for relation in relations:
         duty = by_order[relation["order"]]
@@ -754,7 +757,8 @@ def require_verified_source_action_relations(
 
 
 def _normalized_claim_matches_projection(
-    claim: Mapping[str, Any], parent: Mapping[str, Any]
+    claim: Mapping[str, Any], parent: Mapping[str, Any],
+    normalized_duties: Mapping[tuple[str, int], Mapping[str, Any]],
 ) -> bool:
     """Bind normalized roles to verified values and exact display slices."""
     if claim.get("projection_path") != parent.get("projection_path"):
@@ -765,6 +769,16 @@ def _normalized_claim_matches_projection(
             return False
         expected = parent.get("projection_text")
         expected_start = parent.get("projection_start_byte")
+    elif role == "actor_fact_quote":
+        duty = normalized_duties.get((str(parent["section_key"]), parent["row_index"]))
+        if (duty is None or duty.get("performer_role") != "product_wide"
+                or duty.get("event_order") != claim.get("relation_order")):
+            return False
+        expected = duty["actor_ref"]["quote"]
+        local_start = str(parent["projection_text"]).encode("utf-8").find(expected.encode("utf-8"))
+        if local_start < 0:
+            return False
+        expected_start = int(parent["projection_start_byte"]) + local_start
     elif role in {"action_verb_quote", "target_quote"}:
         field = "verified_action" if role == "action_verb_quote" else "verified_target"
         expected = parent.get(field)

@@ -96,18 +96,18 @@ def test_failure_tracking_and_restoration_remain_exact_actions_without_recovery_
 
     assert [
         (row["event_quote"], row["action_verb_quote"], row["target_quote"])
-        for row in derived.first_path_relations
+        for row in derived.source_event_relations
     ] == [
         (failure_event, "records", "failed runs"),
         (restoration_event, "restores", "service"),
     ]
-    assert all(set(row) == FIRST_PATH_RELATION_FIELDS for row in derived.first_path_relations)
-    assert [row["visible_result_quote"] for row in derived.first_path_relations] == ["", "service"]
+    assert all(set(row) == FIRST_PATH_RELATION_FIELDS for row in derived.source_event_relations)
+    assert [row["visible_result_quote"] for row in derived.source_event_relations] == ["", "service"]
 
     components = authored_component_relation_facts(
         title=title,
         internal_systems=(),
-        relations=derived.first_path_relations,
+        relations=derived.source_event_relations,
         component_responsibility_relations=derived.component_responsibility_relations,
     )
 

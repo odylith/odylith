@@ -70,7 +70,7 @@ def test_relation_mismatch_emits_no_digest_and_fails_closed() -> None:
     cases, annotations, results = _equivalent_pair()
     damaged = deepcopy(results[1])
     snapshot = damaged.evidence["preconfirm_dry_run"]["semantic_snapshot"]
-    snapshot["authored_semantics"]["first_path_relations"][0]["action_verb_quote"] = "reviews"
+    snapshot["authored_semantics"]["source_event_relations"][0]["action_verb_quote"] = "reviews"
     support._refresh_relation_hash(damaged)
 
     report = _score(cases=cases, annotations=annotations, results=(results[0], damaged))

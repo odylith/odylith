@@ -366,7 +366,7 @@ def _normalize_action_task(text: str) -> str:
     if not token:
         return ""
     if token.casefold().strip(" .") == "prepare promotion plan and implementation breakdown":
-        return "name the first implementation checkpoint and promotion evidence"
+        return "define the first implementation step and how to verify it"
     match = _PASSIVE_ACTION_RE.match(token)
     if match is None:
         return token

@@ -4,17 +4,64 @@ Last updated: 2026-10-09
 
 ## Overview
 
-The current Greenfield host contract is v56/format v25. Before a candidate is
-authored, the existing inventory and verifier establish a directly source-cited
-product identity separately from every action and performer. They also fix each
-accepted action and performer to an exact source occurrence. The raw candidate
-has no title and cannot change those mappings; product actions resolve through
-`internal_systems`, never `/title`. Unknown, conflicting, or mismatched source
-identity and action claims refuse. The complete v49 Greenfield gate passes
-3,939 tests across 174 modules, with all 372 pins unchanged; bounded independent
-review is clear. Authentic EDIT, installed, timing, and release qualification
-remain open. Earlier versioned
-checkpoints below are historical evidence and do not replace this contract.
+The current source contract is host v57/format v25, canonical authoring v80 and
+authored semantics v19. The inventory and existing source-only verifier establish
+product identity, exact performers, declared workflow membership and whether a
+system duty is a discrete action or recurring safeguard. One complete source-event
+graph is stored; the declared workflow is derived from its verified source roles.
+Supporting execution prerequisites remain a separate view.
+
+A whole-product performer requires an exact verified action mention and separately
+verified product identity. It cannot become another named subsystem or act through
+`/title`. Recurring safeguards retain their lifecycle, component custody and proof
+obligations without becoming one-time workflow steps. Preserved EDIT duties retain
+their exact component/workstream allocation unless the correction authorizes a
+change. The candidate cannot redefine these source facts.
+
+Independent review clears the successor source design and focused controls.
+The complete local inventory passes 4,006 tests across 180 modules, plus seven
+generated Atlas nodes. CI, package and fresh installed release gates remain open.
+The preceding v49 installed EDIT run
+failed independent semantic review and qualifies zero of four genuine EDIT cases.
+Its 3,939-pass bounded gate and failed full CI remain evidence for their original
+scopes. Fresh installed fidelity, timing and release qualification remain open.
+Earlier versioned checkpoints below are historical evidence.
+
+### Current source and historical readback boundary (2026-10-09)
+
+Fresh source custody uses ledger v8, compact v6, preflight v7, initial/EDIT receipts
+v14/v15, decisions v9/v10 and EDIT preservation context v3. Candidate format v25,
+transport v4, binding v3/host v4 and lifecycle v2 keep their existing shapes. The
+four host passes and runtime budgets are unchanged; no post-receipt semantic call,
+repair, retry, fallback or new engine is introduced. Project summaries directly
+describe the product and intended outcome without authoring instructions.
+
+Known v18/v79/v56 source and transaction records retain their exact passive
+readback. Historical context v2 and compact v5 retain their original serialized
+bytes; missing fresh role fields are not filled with defaults. Passive readback
+cannot authorize fresh work or requalify a failed run.
+
+The current complete graph admits 32 verified source events while its declared
+workflow remains capped at 24. The actual provider schema, compiler-injected
+canonical schema and projections pass focused 25/32-event controls; 33 total
+events and 25 declared workflow steps refuse. Historical schemas retain their
+original 24-event bound. The literal recurring-history control retains its guard,
+component, Registry, Atlas and top-level proof custody without becoming a step.
+
+The 31-file successor freeze is
+`/private/tmp/odylith-v50-role-graph-owner-plan-20261009/production-source-freeze-03.json`
+(SHA-256 `91cd1aa9a9dc6f488fa8837910938f483e6d87608bc756c61d695c0c9d417539`).
+Independent review is
+`/private/tmp/odylith-v50-source-role-independent-review-20261009/successor-freeze-review.md`
+(SHA-256 `a2484235bde322e781f3d0138e7a7a88a3006227c0ecd24c69390f171ea009a5`).
+The original freeze remains failed review history. Ten focused controls and exact
+H0/H1 historical readback pass. The release evaluator also selects the complete
+graph through the shared version owner: fresh v19 and passive v18 retain their
+own field names. Its five-module gate passes 194 tests; the correction has a
+separate clear independent review at
+`/private/tmp/odylith-v50-source-role-independent-review-20261009/freeze03-release-reader-review.md`
+(SHA-256 `ddfd6be49ea9a698df75817fdb34910737ab22b74450eb43328af1a374fd8fd0`).
+These focused checks do not qualify the complete release.
 
 ### Historical prerequisite closure and v30 consumer evidence (2026-10-05)
 
@@ -2195,6 +2242,9 @@ semantic/design findings.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-10-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md`, `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, plus 1 more
 - **2026-10-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_source_duty_binding.py`
@@ -2210,8 +2260,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-10-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_authored_semantics.py`
-- **2026-10-02 · Implementation:** Implementation evidence linked this component to governed work with 4 verifiable artifact references.
-  - Evidence: `odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_source_duty_ledger.py`, `tests/unit/install/test_greenfield_driver_field_inventory_stop.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -5816,7 +5864,7 @@ projection coherence, confirmation, and readback.
   180-second operational safety timeout. No elapsed-time promotion, fallback,
   retry, repair, parser, regex stack, or alternate model ladder is allowed.
 
-## Current Greenfield semantic, identity, and summary contract (2026-10-09)
+## Historical v56 semantic, identity, and summary contract (2026-10-09)
 
 ### V37 closed-detail presentation boundary (2026-10-06)
 
@@ -5865,7 +5913,7 @@ lifecycle v2 and design v6 keep their existing shapes. Focused custody checks an
 bounded independent review pass. Native fidelity, timing, and release qualification
 remain unproved for this change.
 
-## Current candidate schema transport (2026-10-09)
+## Historical v56 candidate schema transport (2026-10-09)
 
 - Native candidate authoring transport v4 keeps the complete response schema in the existing mandatory output-schema file without a duplicate stdin field. Missing or non-object schemas fail closed. Contract v56 / format 25 carries the source-owned product identity and actor/event catalog. Authority, source completeness, lifecycle allocation, profiles, deadlines and four-phase ordering remain strict.
 - The task names the supplied candidate response JSON Schema directly. No text parser, replacement helper, retry, fallback, provider branch or extra consumer model call is added. The general native Claude provider remains unchanged.

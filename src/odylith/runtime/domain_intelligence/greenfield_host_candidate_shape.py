@@ -59,7 +59,7 @@ def _context_citation_schema(*, description: str = "") -> dict[str, Any]:
 def greenfield_host_candidate_schema() -> dict[str, Any]:
     """Return the closed host shape with supplemental facts and design references."""
 
-    schema = greenfield_authoring_schema()
+    schema = greenfield_authoring_schema(source_event_graph=True)
     schema["properties"]["version"]["enum"] = [HOST_CANDIDATE_FORMAT_VERSION]
     authored = schema["properties"]["result"]["anyOf"][0]
     authored["properties"]["provisional_design"]["required"].append("project_summary")

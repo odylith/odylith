@@ -315,8 +315,8 @@ def test_result_documented_first_stays_bound_to_its_explicit_event():
         events=result["events"], terminal=result["terminal"], components=[],
         selected_facts=selected, first_path=intent["first_path"], evidence_text=source,
     )
-    assert [row["visible_result_quote"] for row in derived.first_path_relations] == ["liste prête", "", ""]
-    assert [row["order"] for row in derived.first_path_relations] == [1, 2, 3]
+    assert [row["visible_result_quote"] for row in derived.source_event_relations] == ["liste prête", "", ""]
+    assert [row["order"] for row in derived.source_event_relations] == [1, 2, 3]
 
 
 @pytest.mark.parametrize("event_order", [0, True, 4, None])
@@ -347,7 +347,7 @@ def test_authoring_boundary_retains_precedence_and_proposed_first_run():
     )
     assert authored.source_precedence == tuple(response["result"]["source_precedence"])
     assert authored.provisional_design["first_run"] == _walk()
-    assert authored.first_path_relations[0]["visible_result_quote"] == "liste prête"
+    assert authored.source_event_relations[0]["visible_result_quote"] == "liste prête"
 
 
 @pytest.mark.parametrize("missing", ["source_precedence", "terminal_event", "first_run"])

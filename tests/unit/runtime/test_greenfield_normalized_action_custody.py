@@ -9,7 +9,7 @@ import pytest
 
 from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import canonical_greenfield_host_candidate
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import validate_greenfield_authoring_response, GreenfieldModelAuthoringError
-from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import _verify_authored_atomic_claim_source, require_verified_source_action_relations
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import _verify_authored_atomic_claim_source, _verified_normalized_action_duties, require_verified_source_action_relations
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import STANDARD_PROFILE_ID
 from odylith.runtime.domain_intelligence.greenfield_host_candidate_materialization import (
     materialize_host_authored_intent,
@@ -119,7 +119,7 @@ def test_shared_clause_stages_distinct_normalized_actions_with_exact_custody(tmp
         "A reviewer defines scope",
         "A reviewer defines audience",
     ]
-    relations = materialized["authored_semantics"]["first_path_relations"]
+    relations = materialized["authored_semantics"]["source_event_relations"]
     assert [(row["action_verb_quote"], row["target_quote"]) for row in relations[:2]] == [
         ("defines", "scope"),
         ("defines", "audience"),
@@ -159,7 +159,7 @@ def test_inherited_verb_projects_verified_action_with_full_fragment_support(tmp_
         prepared_evidence=prepared,
     )
     assert materialized["first_path"].splitlines()[1] == "A reviewer defines audience"
-    relation = materialized["authored_semantics"]["first_path_relations"][1]
+    relation = materialized["authored_semantics"]["source_event_relations"][1]
     assert relation["action_verb_quote"] == "defines"
     assert evidence.encode()[relation["source_start_byte"]:relation["source_end_byte"]] == b"and audience"
     assert "defines" not in "and audience"
@@ -232,6 +232,10 @@ def test_normalized_atomic_claim_keeps_exact_full_source_and_verified_slice(tamp
     with pytest.raises(ValueError, match="atomic source custody"):
         _verify_authored_atomic_claim_source(
             claims, source_bytes=prepared.evidence_source.encode(), source_spans=result.source_spans,
+            normalized_duties=_verified_normalized_action_duties(
+                {"ledger_receipt": receipt, "binding": kwargs["accepted_source_duty_binding"], "lifecycle": {}},
+                source_text=prepared.evidence_source,
+            ),
         )
 
 
@@ -240,7 +244,7 @@ def test_sealed_relation_rejects_verified_role_override(field, value) -> None:
     source, prepared, candidate, receipt = _shared_clause_candidate()
     canonical, kwargs = _author_verified_candidate(source, prepared, candidate, receipt)
     result = validate_greenfield_authoring_response(canonical, **kwargs)
-    relations = copy.deepcopy(result.first_path_relations)
+    relations = copy.deepcopy(result.source_event_relations)
     relations[1][field] = value
     with pytest.raises(ValueError, match="verified source action"):
         require_verified_source_action_relations(
@@ -273,10 +277,10 @@ def test_canonical_admission_preserves_verified_human_and_internal_actor_address
     source, prepared, candidate, receipt = _shared_clause_candidate()
     canonical, kwargs = _author_verified_candidate(source, prepared, candidate, receipt)
     result = validate_greenfield_authoring_response(canonical, **kwargs)
-    assert [row["actor_fact_path"] for row in result.first_path_relations] == [
+    assert [row["actor_fact_path"] for row in result.source_event_relations] == [
         "/human_actors/0", "/human_actors/0", "/internal_systems/0",
     ]
-    assert result.first_path_relations[-1]["owner_system_path"] == "/internal_systems/0"
+    assert result.source_event_relations[-1]["owner_system_path"] == "/internal_systems/0"
 
 
 def test_explicit_fixture_identity_is_isolated_from_equal_raw_candidate_json() -> None:
@@ -325,7 +329,7 @@ def test_candidate_cannot_renumber_frozen_source_event_slots(tmp_path) -> None:
     assert [row["event_quote"] for row in authored_first_run_relations(baseline)] == [
         "A reviewer defines scope", "A reviewer defines audience", "The Review Desk shows both definitions",
     ]
-    relations = baseline["authored_semantics"]["first_path_relations"]
+    relations = baseline["authored_semantics"]["source_event_relations"]
     assert baseline["first_path"] == "\n".join(row["event_quote"] for row in relations)
     assert relations[0]["event_start_byte"] == 0
     assert relations[1]["event_start_byte"] == len(b"A reviewer defines scope\n")

@@ -57,7 +57,7 @@ def test_decision_assumptions_keep_their_type_and_custody() -> None:
     source, response, authored = _authored()
     intent = dict(authored.intent)
     intent["authored_semantics"] = authored_semantics_mapping(
-        authored.first_path_relations,
+        authored.source_event_relations,
         authored.component_responsibility_relations,
         first_path_context_relations=authored.first_path_context_relations,
         provisional_design=authored.provisional_design,
@@ -133,7 +133,7 @@ def test_radar_required_decisions_point_to_assumptions_not_missing_facts() -> No
     source, response, authored = _authored()
     intent = dict(authored.intent)
     intent["authored_semantics"] = authored_semantics_mapping(
-        authored.first_path_relations,
+        authored.source_event_relations,
         authored.component_responsibility_relations,
         first_path_context_relations=authored.first_path_context_relations,
         provisional_design=authored.provisional_design,

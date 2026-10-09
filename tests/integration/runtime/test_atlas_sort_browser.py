@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from functools import cmp_to_key
+from pathlib import Path
 import re
 
 import pytest
@@ -11,6 +12,28 @@ from tests.integration.runtime.surface_browser_test_support import (
     _new_page,
     browser_context,
 )
+
+
+@pytest.fixture(autouse=True)
+def _current_source_catalog(browser_context):  # noqa: ANN001
+    """Keep browser proof on the current renderer without refreshing generated files."""
+    _base_url, context = browser_context
+    repo_root = Path(__file__).resolve().parents[3]
+    diagrams, errors, stats = renderer._load_catalog(
+        repo_root=repo_root, catalog_path=repo_root / "odylith/atlas/source/catalog/diagrams.v1.json",
+        output_path=repo_root / "odylith/atlas/atlas.html", max_review_age_days=21,
+        component_index=renderer._load_component_index(repo_root=repo_root),
+    )
+    assert not errors, errors
+    assert diagrams
+    html = renderer._render_html(
+        diagrams=diagrams, stats=stats, max_review_age_days=21, tooltip_lookup={},
+        generated_utc="2026-10-09T00:00:00Z", brand_head_html="", tooling_base_href="../index.html",
+    )
+    pattern = "**/odylith/atlas/atlas.html*"
+    context.route(pattern, lambda route: route.fulfill(status=200, content_type="text/html", body=html))
+    yield
+    context.unroute(pattern)
 
 
 def _visible_atlas_rows(atlas) -> list[dict[str, str]]:  # noqa: ANN001
@@ -91,13 +114,14 @@ def test_atlas_sort_filter_orders_rows_and_preserves_selection(browser_context) 
         assert len(rows) > 1
         _assert_sorted(rows, "newest")
         assert rows[0]["diagram_id"] == max(rows, key=_diagram_number)["diagram_id"]
-        selected_diagram = atlas.locator("#diagramId").inner_text().strip()
+        selected_diagram = atlas.locator("#diagramId").text_content().strip()
 
         for sort_token in ("oldest", "reviewed", "title", "freshness", "newest"):
             atlas.locator("#sortFilter").select_option(sort_token)
             assert atlas.locator("#sortFilter").input_value() == sort_token
             _assert_sorted(_visible_atlas_rows(atlas), sort_token)
-            atlas.locator("#diagramId", has_text=selected_diagram).wait_for(timeout=15000)
+            atlas.locator("#diagramId", has_text=selected_diagram).wait_for(state="attached", timeout=15000)
+            assert atlas.locator("#diagramId").text_content().strip() == selected_diagram
 
         _assert_clean_page(page, observation)
 
@@ -178,7 +202,8 @@ def test_atlas_search_matches_partial_diagram_number(browser_context) -> None:  
         rows = _visible_atlas_rows(atlas)
         assert rows
         assert any(row["diagram_id"] == "D-003" for row in rows)
-        atlas.locator("#diagramId", has_text="D-003").wait_for(timeout=15000)
+        atlas.locator("#diagramId", has_text="D-003").wait_for(state="attached", timeout=15000)
+        assert atlas.locator("#diagramId").text_content() == "D-003"
 
         _assert_clean_page(page, observation)
 
@@ -218,39 +243,40 @@ def test_atlas_sort_and_workstream_filters_share_sidebar_row(browser_context) ->
         _assert_clean_page(page, observation)
 
 
-def test_atlas_header_action_buttons_are_right_aligned(browser_context) -> None:  # noqa: ANN001
+def test_atlas_source_exports_are_keyboard_accessible_without_crowding_the_header(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
     with _new_page(context) as (page, observation):
         response = page.goto(base_url + "/odylith/index.html?tab=atlas", wait_until="domcontentloaded")
         assert response is not None and response.ok
-
         atlas = page.frame_locator("#frame-atlas")
         atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
-        atlas.locator("#sourceLinks .source-link").first.wait_for(timeout=15000)
-
-        layout = atlas.locator(".source-links-wrap").evaluate(
-            """(node) => {
-          const controls = Array.from(node.children).filter((child) => {
-            const box = child.getBoundingClientRect();
-            return box.width > 0 && box.height > 0;
-          });
-          const wrapper = node.getBoundingClientRect();
-          const first = controls[0].getBoundingClientRect();
-          const last = controls[controls.length - 1].getBoundingClientRect();
-          return {
-            controlCount: controls.length,
-            wrapperLeft: Math.round(wrapper.left),
-            wrapperRight: Math.round(wrapper.right),
-            firstLeft: Math.round(first.left),
-            lastRight: Math.round(last.right),
-            scrollDelta: node.scrollWidth - node.clientWidth,
-          };
-        }"""
-        )
-
-        assert layout["controlCount"] >= 2
-        assert layout["scrollDelta"] <= 4
-        assert layout["firstLeft"] - layout["wrapperLeft"] >= 16
-        assert abs(layout["wrapperRight"] - layout["lastRight"]) <= 2
-
+        selected = atlas.locator("#diagramId").text_content()
+        title = atlas.locator("#diagramTitle").inner_text()
+        summary_text = atlas.locator("#diagramSummary").text_content()
+        disclosure = atlas.locator("details.diagram-metadata")
+        assert disclosure.get_attribute("open") is None
+        assert atlas.locator("#sourceLinks .source-link").first.is_hidden()
+        assert atlas.locator("#sidebarToggle").is_visible()
+        expected = atlas.locator("#catalogData").evaluate("""(node, selected) => {
+            const diagram=JSON.parse(node.textContent).diagrams.find(d => d.diagram_id === selected);
+            return [['Mermaid Source', diagram.source_mmd_href], ['SVG', diagram.source_svg_href],
+                ...(diagram.source_png_href ? [['PNG', diagram.source_png_href]] : [])];
+        }""", selected)
+        toggle = disclosure.locator(":scope > summary")
+        toggle.focus()
+        toggle.press("Enter")
+        assert disclosure.get_attribute("open") is not None
+        links = atlas.locator("#sourceLinks .source-link")
+        assert links.count() == len(expected)
+        for link, (label, href) in zip(links.all(), expected, strict=True):
+            assert link.is_visible()
+            assert link.inner_text() == label
+            assert link.get_attribute("href") == href
+            assert link.get_attribute("target") == "_blank"
+            assert link.get_attribute("rel") == "noreferrer"
+        toggle.press("Enter")
+        assert disclosure.get_attribute("open") is None
+        assert atlas.locator("#diagramId").text_content() == selected
+        assert atlas.locator("#diagramTitle").inner_text() == title
+        assert atlas.locator("#diagramSummary").text_content() == summary_text
         _assert_clean_page(page, observation)

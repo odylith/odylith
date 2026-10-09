@@ -178,8 +178,8 @@ def test_five_performers_bind_seven_actions_and_repeated_citations_alias_only_th
         candidate, evidence_text=source, source_duty_receipt=receipt,
     )
     assert len(authored.intent["human_actors"]) == 5
-    assert [row["actor_fact_quote"] for row in authored.first_path_relations] == expected
-    paths = [row["actor_fact_path"] for row in authored.first_path_relations]
+    assert [row["actor_fact_quote"] for row in authored.source_event_relations] == expected
+    paths = [row["actor_fact_path"] for row in authored.source_event_relations]
     assert paths[0] == paths[1] and paths[5] == paths[6]
     assert len(set(paths)) == 5
     actor_claims = [row for row in authored.atomic_claims if row["field"] == "human_actors"]
@@ -267,7 +267,7 @@ def test_atomic_actor_custody_preserves_six_fields_nine_safety_duties_and_both_w
 def test_contract_exposes_identity_custody_and_stable_source_actor_reuse():
     source, _, _ = five_actor_candidate()
     contract = greenfield_host_candidate_contract(source)
-    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v56"
+    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v57"
     task = contract["source_ledger"]["task"]
     assert "only ONE source-owned performer identity" in task
     assert "proper literal substring of statement" in task
@@ -290,6 +290,7 @@ def _thirteen_duty_catalog_case():
         "role_refs": [_citation(supporting)], "action": "checks", "target": "the contribution evidence",
     }]
     ledger["system_duties"] = [{
+        "execution_kind": "discrete_action",
         "id": f"d{index}", "source_refs": [], "statement": event,
         "event_ref": _citation(event), "actor_ref": _citation(name, role_context),
         "role_refs": [_citation(role_context)], "action": "retains", "target": f"evidence item {index}",
@@ -361,8 +362,8 @@ def test_supplemental_beneficiary_survives_without_renumbering_source_performers
     authored, _ = admit_greenfield_host_candidate(candidate, evidence_text=source, source_duty_receipt=receipt)
     assert authored.intent["human_actors"][-1] == "research observer"
     assert len(authored.intent["human_actors"]) == 6
-    assert [row["actor_fact_quote"] for row in authored.first_path_relations] == expected
-    assert all(row["actor_fact_path"] != "/human_actors/5" for row in authored.first_path_relations)
+    assert [row["actor_fact_quote"] for row in authored.source_event_relations] == expected
+    assert all(row["actor_fact_path"] != "/human_actors/5" for row in authored.source_event_relations)
 
 
 @pytest.mark.parametrize("field", ["human_actors", "external_systems"])
@@ -426,7 +427,7 @@ def test_same_quote_at_another_actor_path_cannot_rebind_a_sealed_source_action()
     )
     authored, _ = admit_greenfield_host_candidate(candidate, evidence_text=source, source_duty_receipt=receipt)
     custody = source_duty_fixture(candidate, evidence_text=source)
-    relations = deepcopy(authored.first_path_relations)
+    relations = deepcopy(authored.source_event_relations)
     assert authored.intent["human_actors"][5] == relations[0]["actor_fact_quote"]
     relations[0]["actor_fact_path"] = "/human_actors/5"
     with pytest.raises(ValueError, match="actor path differs from its frozen source catalog"):
@@ -441,7 +442,7 @@ def test_full_transaction_catalog_guard_rejects_actor_path_and_source_custody_fo
     authority = deepcopy(transaction.intent_authority)
     proposal = deepcopy(transaction.proposal)
     if damage == "actor_path":
-        relation = proposal["intent"]["authored_semantics"]["first_path_relations"][0]
+        relation = proposal["intent"]["authored_semantics"]["source_event_relations"][0]
         relation["actor_fact_path"] = "/human_actors/99"
     else:
         actor_atoms = [atom for atom in authority["atomic_facts"] if any(
@@ -467,8 +468,8 @@ def test_independent_identity_and_internal_performer_keep_separate_addresses():
     receipt = synthetic_source_duty_receipt(candidate, evidence_text=source)
     authored, _ = admit_greenfield_host_candidate(candidate, evidence_text=source, source_duty_receipt=receipt)
     assert authored.intent["title"] == "Harbor Desk"
-    assert authored.first_path_relations[1]["actor_fact_path"] == authored.first_path_relations[2]["actor_fact_path"] == "/internal_systems/0"
-    assert authored.first_path_relations[1]["actor_kind"] == "product"
+    assert authored.source_event_relations[1]["actor_fact_path"] == authored.source_event_relations[2]["actor_fact_path"] == "/internal_systems/0"
+    assert authored.source_event_relations[1]["actor_kind"] == "product"
 
 
 def test_candidate_title_cannot_redirect_a_performer_to_another_occurrence():

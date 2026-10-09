@@ -77,14 +77,14 @@ def _assert_overview(atlas):  # noqa: ANN001
         assert geometry["image"][high] <= geometry["stage"][high] + 1
 
 
-@pytest.mark.parametrize("width", [1440, 430], ids=["desktop", "mobile"])
+@pytest.mark.parametrize("width", [1440, 430, 390], ids=["desktop", "mobile", "narrow-mobile"])
 @pytest.mark.parametrize("state", ["normal", "fallback"])
 def test_keyboard_reading_reaches_all_corners_and_restores_overview(
     browser_context, width: int, state: str,
 ) -> None:  # noqa: ANN001
     with _open_viewer(browser_context, width, state) as (page, atlas, observation):
         _assert_overview(atlas)
-        selected = atlas.locator("#diagramId").inner_text()
+        selected = atlas.locator("#diagramId").text_content()
         read = atlas.locator("#reset")
         assert read.inner_text() == "Read at 100%"
         read.scroll_into_view_if_needed()
@@ -125,7 +125,7 @@ def test_keyboard_reading_reaches_all_corners_and_restores_overview(
                     stage.press(key)
                 else:
                     pytest.fail(f"Keyboard navigation cannot reach the {side} of the diagram")
-            assert atlas.locator("#diagramId").inner_text() == selected
+            assert atlas.locator("#diagramId").text_content() == selected
             assert _geometry(atlas)["scale"] == 1
         screenshot = _failure_screenshot_path(f"atlas-read-{width}-{state}")
         if screenshot:
@@ -133,18 +133,18 @@ def test_keyboard_reading_reaches_all_corners_and_restores_overview(
             page.screenshot(path=str(screenshot))
         stage.press("f")
         _assert_overview(atlas)
-        assert atlas.locator("#diagramId").inner_text() == selected
+        assert atlas.locator("#diagramId").text_content() == selected
         assert page.locator("header.toolbar").bounding_box() == header
         assert page.locator("nav.tabs").bounding_box() == tabs
         _assert_clean_page(page, observation)
 
 
-@pytest.mark.parametrize("width", [1440, 430], ids=["desktop", "mobile"])
+@pytest.mark.parametrize("width", [1440, 430, 390], ids=["desktop", "mobile", "narrow-mobile"])
 def test_typing_and_selecting_filters_never_operates_the_viewer(browser_context, width: int) -> None:  # noqa: ANN001
     with _open_viewer(browser_context, width, "normal") as (page, atlas, observation):
         atlas.locator("#reset").click()
         initial = _geometry(atlas)
-        selected = atlas.locator("#diagramId").inner_text()
+        selected = atlas.locator("#diagramId").text_content()
         search = atlas.locator("#search")
         search.focus()
         search.press("f")
@@ -156,11 +156,11 @@ def test_typing_and_selecting_filters_never_operates_the_viewer(browser_context,
         assert {key: _geometry(atlas)[key] for key in ("scale", "x", "y")} == {
             key: initial[key] for key in ("scale", "x", "y")
         }
-        assert atlas.locator("#diagramId").inner_text() == selected
+        assert atlas.locator("#diagramId").text_content() == selected
         _assert_clean_page(page, observation)
 
 
-@pytest.mark.parametrize("width", [1440, 430], ids=["desktop", "mobile"])
+@pytest.mark.parametrize("width", [1440, 430, 390], ids=["desktop", "mobile", "narrow-mobile"])
 @pytest.mark.parametrize("state", ["error", "empty"])
 def test_unavailable_diagram_does_not_offer_unusable_reading_controls(browser_context, width: int, state: str) -> None:  # noqa: ANN001
     with _open_viewer(browser_context, width, state) as (page, atlas, observation):

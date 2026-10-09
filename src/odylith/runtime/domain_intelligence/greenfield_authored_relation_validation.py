@@ -30,8 +30,9 @@ FIRST_PATH_RELATION_FIELDS = frozenset(
         "visible_result_quote",
     }
 )
-FIRST_PATH_ACTOR_KINDS = ("human", "product", "external_system")
+FIRST_PATH_ACTOR_KINDS = ("human", "product", "external_system", "product_wide")
 MAX_FIRST_PATH_RELATIONS = 24
+MAX_SOURCE_EVENT_RELATIONS = 32
 
 
 class GreenfieldAuthoredSemanticsError(ValueError):
@@ -50,6 +51,7 @@ def validate_first_path_relations(
     require_visible_result: bool = True,
     intent: Mapping[str, Any] | None = None,
     first_path_event_orders: Sequence[int] | None = None,
+    source_event_graph: bool = False,
 ) -> tuple[dict[str, Any], ...]:
     """Return stable source-event identities, not an inferred execution order."""
 
@@ -57,7 +59,8 @@ def validate_first_path_relations(
         not isinstance(value, Sequence)
         or isinstance(value, (str, bytes, bytearray))
         or not value
-        or len(value) > MAX_FIRST_PATH_RELATIONS
+        or len(value) > (MAX_SOURCE_EVENT_RELATIONS if source_event_graph else MAX_FIRST_PATH_RELATIONS)
+        or (source_event_graph and first_path_event_orders is None and len(value) > MAX_FIRST_PATH_RELATIONS)
     ):
         raise GreenfieldAuthoredSemanticsError(
             "Greenfield authoring returned invalid first-path relations"
@@ -82,6 +85,7 @@ def validate_first_path_relations(
     )
     if selected_orders is not None and (
         not selected_orders
+        or len(selected_orders) > MAX_FIRST_PATH_RELATIONS
         or len(first_path_event_orders) != len(selected_orders)
         or any(type(order) is not int or not 1 <= order <= len(value)
                for order in selected_orders)
@@ -166,15 +170,21 @@ def validate_first_path_relations(
             raise GreenfieldAuthoredSemanticsError(
                 "Greenfield authoring returned invalid first-path relations"
             )
-        require_first_path_actor_binding(
-            actor_kind=actor_kind,
-            actor_fact_path=actor_fact_path,
-            actor_fact_quote=actor_fact_quote,
-            owner_system_path=owner_system_path,
-            owner_system_quote=owner_system_quote,
-            actor_values=actor_values,
-            owner_values=owner_values,
-        )
+        if actor_kind == "product_wide":
+            # Full source-role/citation parity is verified against the authenticated
+            # ledger by the shared authored reader, never inferred from a title.
+            if intent is None or actor_fact_path != "/product_identity" or not actor_fact_quote or owner_system_path or owner_system_quote:
+                raise GreenfieldAuthoredSemanticsError("invalid product-wide source performer binding")
+        else:
+            require_first_path_actor_binding(
+                actor_kind=actor_kind,
+                actor_fact_path=actor_fact_path,
+                actor_fact_quote=actor_fact_quote,
+                owner_system_path=owner_system_path,
+                owner_system_quote=owner_system_quote,
+                actor_values=actor_values,
+                owner_values=owner_values,
+            )
         if (
             event_path_bytes[event_start:event_end] != event_quote.encode("utf-8")
             or action_verb_quote not in event_quote
@@ -337,6 +347,7 @@ __all__ = [
     "FIRST_PATH_RELATION_FIELDS",
     "GreenfieldAuthoredSemanticsError",
     "MAX_FIRST_PATH_RELATIONS",
+    "MAX_SOURCE_EVENT_RELATIONS",
     "canonical_product_owner_projection_values",
     "require_first_path_actor_binding",
     "validate_first_path_relations",

@@ -496,7 +496,7 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
         )
     ]
     semantics = accepted_intent["authored_semantics"]
-    assert semantics["first_path_relations"][0]["actor_kind"] == "human"
+    assert semantics["source_event_relations"][0]["actor_kind"] == "human"
     assert [row["owner_system_quote"] for row in semantics["component_responsibility_relations"]] == intent["internal_systems"]
     assert [row["source_duty_id"] for row in semantics["component_responsibility_relations"]] == [
         "fixture-system-2", "fixture-system-3", "fixture-system-4",

@@ -70,7 +70,9 @@ def _surface_readiness(page, *, require_marker=False):
             marker.wait_for(state="visible", timeout=15000)
             markers[surface] = marker
         if surface == "atlas":
-            frame.locator("#diagramId").wait_for()
+            diagram_id = frame.locator("#diagramId")
+            diagram_id.wait_for(state="attached")
+            assert diagram_id.text_content().strip()
             viewer = frame.locator("#viewerImage")
             playwright_sync.expect(viewer).to_have_js_property("complete", True, timeout=15000)
             playwright_sync.expect(viewer).not_to_have_js_property("naturalWidth", 0, timeout=15000)

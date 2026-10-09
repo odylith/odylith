@@ -13,8 +13,8 @@ from tests.unit.runtime.greenfield_baseline_fixtures import activate_greenfield_
 from tests.unit.runtime.greenfield_authority_gate_fixtures import write_admitted_authority_gate
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     authored_response,
+    host_candidate_response,
     write_synthetic_source_duty_receipt,
-    write_host_candidate_fixture,
 )
 from tests.unit.runtime.greenfield_proposal_fixtures import HIIT_CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
@@ -39,18 +39,16 @@ def test_hiit_structured_fixture_preserves_path_and_sealed_package_under_sixty_s
         prompt=prompt,
         edit_evidence="",
     )
-    candidate_path = write_host_candidate_fixture(
-        tmp_path.parent / f"{tmp_path.name}-host-candidate.json",
-        response,
-        evidence_text=evidence,
-    )
+    host_candidate = host_candidate_response(response, evidence_text=evidence)
+    candidate_path = tmp_path.parent / f"{tmp_path.name}-host-candidate.json"
+    candidate_path.write_text(json.dumps(host_candidate), encoding="utf-8")
     gate_path = write_admitted_authority_gate(
         tmp_path.parent / f"{tmp_path.name}-authority-gate.json",
         source_quote=prompt,
     )
     ledger_path = write_synthetic_source_duty_receipt(
         tmp_path.parent / f"{tmp_path.name}-source-duty-receipt.json",
-        json.loads(candidate_path.read_text(encoding="utf-8")),
+        host_candidate,
         evidence_text=evidence,
     )
 

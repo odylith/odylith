@@ -83,7 +83,7 @@ def test_source_product_owner_keeps_its_address_through_structural_design_suppor
     )
 
     semantics = candidate["authored_semantics"]
-    assert semantics["first_path_relations"][1]["actor_fact_path"] == "/internal_systems/0"
+    assert semantics["source_event_relations"][1]["actor_fact_path"] == "/internal_systems/0"
     component = semantics["component_responsibility_relations"][0]
     assert component["owner_system_path"] == "/internal_systems/0"
     assert component["owner_system_quote"] == "Harbor Desk"
@@ -105,7 +105,7 @@ def test_source_product_owner_keeps_its_address_through_structural_design_suppor
         for row in proposal["components"]
         for event in row["component_contract"]["supporting_events"]
     ]
-    assert semantics["first_path_relations"][1] in supported_events
+    assert semantics["source_event_relations"][1] in supported_events
     assert all(
         event["actor_fact_quote"] not in {row["name"] for row in design["components"]}
         for event in supported_events
@@ -171,5 +171,5 @@ def test_product_and_human_label_collision_preserves_exact_typed_source_identity
         host_candidate=candidate,
     )
 
-    assert result.first_path_relations[0]["actor_kind"] == "human"
-    assert result.first_path_relations[0]["actor_fact_path"] == "/human_actors/0"
+    assert result.source_event_relations[0]["actor_kind"] == "human"
+    assert result.source_event_relations[0]["actor_fact_path"] == "/human_actors/0"

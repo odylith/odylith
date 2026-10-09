@@ -6,9 +6,6 @@ from pathlib import Path
 from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
-from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
-    authored_first_run_text,
-)
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     STANDARD_PROFILE_ID,
 )
@@ -262,7 +259,7 @@ def _assert_structural_design_projection_preserves_source(proposal: dict[str, An
 
     intent = proposal["intent"]
     semantics = intent["authored_semantics"]
-    relations = semantics["first_path_relations"]
+    relations = semantics["source_event_relations"]
     design = semantics["provisional_design"]
     visible_package = str({
         field: proposal[field]
@@ -432,7 +429,7 @@ def test_structured_source_projects_distinct_canonical_design_with_source_custod
     ]
     source_events = [
         row["event_quote"]
-        for row in intent["authored_semantics"]["first_path_relations"]
+        for row in intent["authored_semantics"]["source_event_relations"]
     ]
     assert source_events == [
         "Dock attendant submits a cargo request",
@@ -616,7 +613,7 @@ def test_direct_evidence_graph_material_facts_survive_structural_design_projecti
     assert proposal["project_brief"]["external_systems"] == ["Safety Registry"]
     assert [
         row["actor_fact_quote"]
-        for row in proposal["intent"]["authored_semantics"]["first_path_relations"]
+        for row in proposal["intent"]["authored_semantics"]["source_event_relations"]
     ] == ["Donor", "Volunteer", "Supervisor"]
     rendered_support = "\n".join(
         row["radar_sections"]["Source Event Support"] for row in backlog
@@ -707,7 +704,7 @@ def test_authored_service_readiness_keeps_nonapproval_as_a_safety_boundary(
         "Automatic operational approval is outside the first release."
     ]
     first_path_contract = proposal["semantic_model"]["first_path_contract"]
-    assert first_path_contract["raw_path"] == authored_first_run_text(proposal["intent"])
+    assert first_path_contract["raw_path"] == proposal["intent"]["first_path"]
     assert first_path_contract["visible_result"] == "reviewable readiness report"
     assert "automatic operational approval" not in str(first_path_contract).casefold()
 
@@ -783,7 +780,7 @@ def test_authored_solar_path_keeps_user_outcome_distinct_from_meta_proof(
     )
 
     first_path_contract = proposal["semantic_model"]["first_path_contract"]
-    assert first_path_contract["raw_path"] == authored_first_run_text(proposal["intent"])
+    assert first_path_contract["raw_path"] == proposal["intent"]["first_path"]
     assert first_path_contract["visible_result"] == visible_result
     assert proof_boundary == proposal["intent"]["proof_boundary"]
     assert "Release proof succeeds" not in first_path_contract["raw_path"]
@@ -1105,7 +1102,7 @@ def test_authored_service_goal_components_cannot_acquire_cross_domain_templates(
     _assert_structural_design_projection_preserves_source(proposal)
     assert [
         (row["actor_kind"], row["actor_fact_quote"])
-        for row in proposal["intent"]["authored_semantics"]["first_path_relations"]
+        for row in proposal["intent"]["authored_semantics"]["source_event_relations"]
     ] == [
         ("human", "Coordinator"),
         ("product", "Goal Planner"),

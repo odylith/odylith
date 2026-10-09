@@ -1703,7 +1703,7 @@ initSharedQuickTooltips();
         button.addEventListener("click", () => {
           const preserveListScroll = elementFullyVisibleWithinContainer(el.list, button);
           selectIdea(button.dataset.ideaId || "", { userIntent: true });
-          render({ preserveListScroll });
+          render({ preserveListScroll, revealDetail: true });
         });
         const ideaId = String(button.dataset.ideaId || "").trim();
         if (ideaId) {
@@ -3158,7 +3158,14 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
       el.meta.textContent = `Showing ${filtered.length} of ${all.length} workstreams`;
       void renderAnalytics(filtered);
       renderList(filtered, { preserveListScroll: Boolean(options.preserveListScroll) });
-      void renderSelectedWorkstream(state.selectedIdeaId, filtered);
+      const selectedId = state.selectedIdeaId;
+      void renderSelectedWorkstream(selectedId, filtered).then(() => {
+        if (options.revealDetail && state.selectedIdeaId === selectedId && !el.detail.hidden
+            && !document.activeElement?.closest(".controls") && window.matchMedia("(max-width: 1100px)").matches) {
+          el.detail.focus({ preventScroll: true });
+          el.detail.scrollIntoView({ block: "start" });
+        }
+      });
       el.empty.hidden = true;
     }
 

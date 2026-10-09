@@ -51,6 +51,7 @@ def _ledger() -> dict:
         "target": "audience",
     }
     system = {
+        "execution_kind": "discrete_action",
         "id": "S1",
         "performer_role": "internal_system",
         "source_refs": [_citation("A portal records the submission")],
@@ -967,6 +968,7 @@ def test_exact_v5_receipt_task_and_hashes_remain_passive_and_refuse_fresh_use():
     ledger.pop("product_identity")
     evidence = EVIDENCE.removeprefix("Review workspace. ")
     del ledger["system_duties"][0]["performer_role"]
+    del ledger["system_duties"][0]["execution_kind"]
     preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=evidence, _passive_source_version="odylith.greenfield.source-duty-ledger.v5")
     task = source_duty_entailment_task(preflight, evidence_text=evidence)
     # Frozen from the actual fe4a1eff runtime, not regenerated expected task text.

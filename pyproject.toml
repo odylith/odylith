@@ -71,6 +71,7 @@ path = ".venv"
 features = ["context-engine-memory", "watchers"]
 dependencies = [
   "hatch>=1.14,<2.0",
+  "jsonschema==4.26.0",
   "numpy==2.4.3",
   "playwright>=1.53,<2.0",
   "Pygments==2.19.2",

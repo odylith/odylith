@@ -1548,209 +1548,6 @@ def _render_html(
       min-height: calc(100vh - 40px);
     }
 
-    .hero {
-      display: grid;
-      gap: 10px;
-      min-width: 0;
-    }
-
-    __ODYLITH_ATLAS_DISPLAY_TITLE__
-
-    .hero-copy {
-      display: grid;
-      gap: 10px;
-      min-width: 0;
-      width: 100%;
-    }
-
-    .diagram-facts {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 10px;
-      min-width: 0;
-    }
-
-    .diagram-fact {
-      display: grid;
-      gap: 4px;
-      align-content: start;
-      min-width: 0;
-      padding: 10px 12px;
-      border: 1px solid rgba(148, 163, 184, 0.22);
-      border-radius: 12px;
-      background: linear-gradient(180deg, #ffffff, #f8fbff);
-      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
-    }
-
-    .diagram-fact.ok {
-      border-color: rgba(2, 122, 72, 0.22);
-      background: linear-gradient(180deg, #ffffff, #f3fbf6);
-    }
-
-    .diagram-fact.warn {
-      border-color: rgba(181, 71, 8, 0.24);
-      background: linear-gradient(180deg, #ffffff, #fff7ed);
-    }
-
-    .diagram-fact-label,
-    .diagram-fact-value {
-      min-width: 0;
-    }
-
-    .diagram-fact-value {
-      overflow-wrap: anywhere;
-    }
-
-    __ODYLITH_ATLAS_FACT_TYPOGRAPHY__
-
-    .meta-pill {
-      --label-bg: rgba(255, 255, 255, 0.9);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border: 0;
-      border-radius: 0;
-      background: var(--label-bg);
-      padding: 4px 8px;
-      white-space: nowrap;
-      color: #334155;
-    }
-    __ODYLITH_ATLAS_LABEL_TYPOGRAPHY__
-
-    .meta-pill.ok {
-      --label-bg: #027a48;
-      color: white;
-    }
-
-    .meta-pill.warn {
-      --label-bg: #b54708;
-      color: white;
-    }
-
-    .source-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-      justify-content: flex-end;
-    }
-
-    .source-links-wrap {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-      justify-content: flex-end;
-      width: 100%;
-      min-width: 0;
-    }
-
-    .source-link {
-      text-decoration: none;
-      --chip-link-border: rgba(3, 105, 161, 0.25);
-      --chip-link-bg: rgba(255, 255, 255, 0.9);
-      --chip-link-text: #0d4366;
-      --chip-link-border-hover: rgba(14, 165, 163, 0.6);
-      --chip-link-bg-hover: rgba(240, 253, 250, 0.98);
-      --chip-link-text-hover: #0b645f;
-    }
-
-    .alert {
-      border-radius: 12px;
-      border: 1px solid rgba(181, 71, 8, 0.36);
-      background: rgba(255, 244, 234, 0.95);
-      padding: 10px 12px;
-      display: none;
-    }
-
-    .alert.visible {
-      display: block;
-    }
-
-    .viewer-shell {
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      background: #ffffff;
-      overflow: hidden;
-      display: grid;
-      grid-template-rows: auto auto minmax(560px, 1fr);
-      min-height: 660px;
-    }
-
-    .viewer-toolbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      padding: 9px 10px;
-      border-bottom: 1px solid var(--border);
-      background: rgba(255, 255, 255, 0.92);
-    }
-
-    .viewer-toolbar-left {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .viewer-toolbar-right {
-      display: inline-flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .tool-btn {
-      --chip-link-border: rgba(3, 105, 161, 0.24);
-      --chip-link-bg: white;
-      --chip-link-text: #144261;
-      --chip-link-border-hover: rgba(14, 165, 163, 0.65);
-      --chip-link-bg-hover: rgba(240, 253, 250, 0.98);
-      --chip-link-text-hover: #0b645f;
-    }
-
-    .viewer-shell .tool-btn:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
-
-    .viewer-stage {
-      position: relative;
-      overflow: hidden;
-      min-height: 560px;
-      touch-action: none;
-      cursor: grab;
-      background: #ffffff;
-    }
-
-    .viewer-stage.dragging {
-      cursor: grabbing;
-    }
-
-    .viewer-stage:focus {
-      outline: 3px solid #0369a1;
-      outline-offset: -3px;
-    }
-
-    .viewer-instructions {
-      margin: 0;
-      padding: 8px 10px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .viewer-image {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) scale(1);
-      transform-origin: 50% 50%;
-      max-width: none;
-      max-height: none;
-      pointer-events: none;
-      user-select: none;
-    }
-
     __ODYLITH_ATLAS_DETAIL_LAYOUT_CSS__
     __ODYLITH_ATLAS_EMPTY_VIEW_CSS__
 
@@ -1799,9 +1596,6 @@ def _render_html(
         grid-template-columns: 1fr;
       }
 
-      .diagram-facts {
-        grid-template-columns: 1fr;
-      }
     }
   </style>
 </head>
@@ -1865,86 +1659,6 @@ def _render_html(
 
     <main class="panel main">
       __ODYLITH_ATLAS_EMPTY_VIEW_HTML__
-      <section class="hero">
-        <div class="hero-copy">
-          <h2 id="diagramTitle" class="hero-title"></h2>
-          <div class="diagram-facts" role="list">
-            <div class="diagram-fact" data-fact="diagram-id" role="listitem">
-              <p class="diagram-fact-label">Diagram ID</p>
-              <p id="diagramId" class="diagram-fact-value"></p>
-            </div>
-            <div class="diagram-fact" data-fact="kind" role="listitem">
-              <p class="diagram-fact-label">Kind</p>
-              <p id="diagramKind" class="diagram-fact-value"></p>
-            </div>
-            <div class="diagram-fact" data-fact="status" role="listitem">
-              <p class="diagram-fact-label">Status</p>
-              <p id="diagramStatus" class="diagram-fact-value"></p>
-            </div>
-            <div class="diagram-fact" data-fact="owner" role="listitem">
-              <p class="diagram-fact-label">Owner</p>
-              <p id="diagramOwner" class="diagram-fact-value"></p>
-            </div>
-            <div class="diagram-fact" data-fact="reviewed" role="listitem">
-              <p class="diagram-fact-label">Reviewed</p>
-              <p id="diagramReviewed" class="diagram-fact-value"></p>
-            </div>
-            <div id="diagramFreshnessCard" class="diagram-fact" data-fact="freshness" role="listitem">
-              <p class="diagram-fact-label">Freshness</p>
-              <p id="diagramFreshness" class="diagram-fact-value"></p>
-            </div>
-          </div>
-        </div>
-        <div class="source-links-wrap">
-          <button id="sidebarToggle" class="tool-btn" type="button" aria-controls="sidebarPanel" aria-expanded="true">Hide Panel</button>
-          <div id="sourceLinks" class="source-links"></div>
-        </div>
-      </section>
-
-      <section id="staleAlert" class="alert"></section>
-
-      <article class="section">
-        <h3>Connected Workstream Context</h3>
-        <div class="artifact-group">
-          <p class="artifact-label">Owners</p>
-          <ul id="ownerWorkstreamLinks" class="artifact-list workstream-context-list"></ul>
-        </div>
-        <div class="artifact-group">
-          <p class="artifact-label">Active Touches</p>
-          <ul id="activeWorkstreamLinks" class="artifact-list workstream-context-list"></ul>
-        </div>
-        <div id="historicalWorkstreamGroup" class="artifact-group" hidden>
-          <p class="artifact-label">Historical References</p>
-          <details id="historicalWorkstreamDisclosure" class="atlas-context-disclosure">
-            <summary id="historicalWorkstreamSummary"></summary>
-            <ul id="historicalWorkstreamLinks" class="artifact-list workstream-context-list"></ul>
-          </details>
-        </div>
-      </article>
-
-      <section class="viewer-shell">
-        <div class="viewer-toolbar">
-          <div class="viewer-toolbar-left">
-            <span id="zoomReadout" class="meta-pill">Zoom 100%</span>
-            <span class="meta-pill">Pinch: zoom</span>
-            <span class="meta-pill">Drag: pan</span>
-            <span class="meta-pill">Shortcuts: + - 0 f</span>
-          </div>
-          <div class="viewer-toolbar-right">
-            <button id="prevDiagram" class="tool-btn" type="button">Prev</button>
-            <button id="nextDiagram" class="tool-btn" type="button">Next</button>
-            <button id="zoomIn" class="tool-btn" type="button">Zoom +</button>
-            <button id="zoomOut" class="tool-btn" type="button">Zoom -</button>
-            <button id="fit" class="tool-btn" type="button">Fit</button>
-            <button id="reset" class="tool-btn" type="button">Read at 100%</button>
-          </div>
-        </div>
-        <p id="viewerInstructions" class="viewer-instructions">Tab to diagram: arrows pan; Shift pans farther. +/− zoom; 0 reads at 100%; F fits. Outside diagram, ↑/↓ select.</p>
-        <div id="viewerStage" class="viewer-stage" tabindex="0" role="region" aria-labelledby="diagramTitle" aria-describedby="viewerInstructions">
-          <img id="viewerImage" class="viewer-image" alt="diagram visualization" draggable="false" hidden />
-        </div>
-      </section>
-
       __ODYLITH_ATLAS_DETAIL_LAYOUT_HTML__
     </main>
   </div>
@@ -2747,6 +2461,8 @@ __ODYLITH_ATLAS_VIEWER_RUNTIME__
 
     return (
         template.replace("__ODYLITH_BRAND_HEAD__", brand_head_html.strip())
+        .replace("__ODYLITH_ATLAS_DETAIL_LAYOUT_CSS__", atlas_detail_layout.DETAIL_LAYOUT_CSS.strip("\n"))
+        .replace("__ODYLITH_ATLAS_DETAIL_LAYOUT_HTML__", atlas_detail_layout.DETAIL_LAYOUT_HTML.strip("\n"))
         .replace("__ODYLITH_FRAME_BRIDGE_RUNTIME__", governance_frame_bridge.runtime_js())
         .replace("__ODYLITH_ATLAS_PAGE_BODY__", page_body_css)
         .replace("__ODYLITH_ATLAS_HEADER_TYPOGRAPHY__", atlas_header_css)
@@ -2755,8 +2471,6 @@ __ODYLITH_ATLAS_VIEWER_RUNTIME__
         .replace("__ODYLITH_ATLAS_LABEL_TYPOGRAPHY__", atlas_label_css)
         .replace("__ODYLITH_ATLAS_FACT_TYPOGRAPHY__", atlas_fact_typography_css)
         .replace("__ODYLITH_ATLAS_STAT_TYPOGRAPHY__", atlas_stat_typography_css)
-        .replace("__ODYLITH_ATLAS_DETAIL_LAYOUT_CSS__", atlas_detail_layout.DETAIL_LAYOUT_CSS.strip("\n"))
-        .replace("__ODYLITH_ATLAS_DETAIL_LAYOUT_HTML__", atlas_detail_layout.DETAIL_LAYOUT_HTML.strip("\n"))
         .replace(
             "__ODYLITH_ATLAS_DETAIL_RUNTIME_HELPERS__",
             atlas_detail_layout.DETAIL_RUNTIME_HELPERS_JS.strip("\n"),

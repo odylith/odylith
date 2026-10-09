@@ -111,7 +111,6 @@ def test_render_mermaid_catalog_defaults_to_newest_diagram_sort_filter() -> None
     assert "grid-template-columns: minmax(150px, 0.78fr) minmax(190px, 1fr);" in html
     assert ".main {\n        order: 1;" in html
     assert ".sidebar {\n        order: 2;" in html
-    assert "justify-content: flex-end;" in html
     assert '<option value="newest">Newest Diagram</option>' in html
     assert 'let sortFilter = "newest";' in html
     assert 'const SORT_TOKENS = new Set(["newest", "oldest", "reviewed", "title", "freshness"]);' in html
@@ -173,7 +172,7 @@ def test_render_mermaid_catalog_uses_specific_surface_header_copy() -> None:
     assert "Living Diagram System" not in html
 
 
-def test_render_mermaid_catalog_uses_casebook_style_detail_fact_cards() -> None:
+def test_render_mermaid_catalog_prioritizes_narrative_and_discloses_exact_diagram_facts() -> None:
     html = renderer._render_html(  # noqa: SLF001
         diagrams=[],
         stats={"total": 0, "fresh": 0, "stale": 0},
@@ -193,10 +192,23 @@ def test_render_mermaid_catalog_uses_casebook_style_detail_fact_cards() -> None:
     assert 'button.setAttribute("data-diagram", diagram.diagram_id);' in html
     assert ".hero {" in html
     assert "display: grid;" in html
-    assert "justify-content: flex-end;" in html
     assert "width: 100%;" in html
     assert html.index('data-fact="diagram-id"') < html.index('data-fact="kind"')
     assert html.index('data-fact="diagram-id"') < html.index('data-fact="status"')
+    assert html.count('id="diagramSummary"') == 1
+    assert html.index('id="diagramTitle"') < html.index('id="staleAlert"') < html.index('id="diagramSummary"')
+    assert html.index('id="diagramSummary"') < html.index('<section class="viewer-shell">') < html.index('id="diagramBoxList"')
+    assert html.index('id="diagramBoxList"') < html.index('<details class="section diagram-metadata">')
+    metadata = html.split('<details class="section diagram-metadata">', 1)[1].split(
+        '<details class="section linked-context-section">', 1,
+    )[0]
+    assert '<summary class="artifact-label">Diagram details</summary>' in metadata
+    for field in ('diagramId', 'diagramKind', 'diagramStatus', 'diagramOwner', 'diagramReviewed',
+                  'diagramFreshness', 'sourceLinks', 'ownerWorkstreamLinks', 'activeWorkstreamLinks',
+                  'historicalWorkstreamDisclosure', 'historicalWorkstreamLinks'):
+        assert html.count(f'id="{field}"') == 1
+        assert f'id="{field}"' in metadata
+    assert html.index('id="sidebarToggle"') < html.index('<details class="section diagram-metadata">')
 
 
 def test_render_mermaid_catalog_explains_diagram_and_moves_context_to_bottom_list() -> None:
@@ -210,7 +222,7 @@ def test_render_mermaid_catalog_explains_diagram_and_moves_context_to_bottom_lis
         tooling_base_href="../index.html",
     )
 
-    assert "What This Diagram Shows" in html
+    assert "What This Diagram Shows" not in html
     assert '<summary class="artifact-label">How to read this diagram</summary>' in html
     assert '<details class="diagram-guide-panel read-guide">' in html
     assert 'id="diagramReadGuide"' in html
@@ -219,11 +231,10 @@ def test_render_mermaid_catalog_explains_diagram_and_moves_context_to_bottom_lis
     assert "return catalogGuide;" in html
     assert "Read this as a first-path rehearsal" not in html
     assert "Read this as a boundary map" not in html
-    assert ".diagram-guide-panel:has(> .summary:empty)" in html
     assert ".diagram-guide-panel:has(> .read-guide-body:empty)" in html
     assert ".artifact-group:has(> #ownerWorkstreamLinks:empty)" in html
     assert ".artifact-group:has(> #activeWorkstreamLinks:empty)" in html
-    assert ".section:has(> .artifact-group > #ownerWorkstreamLinks:empty):has(> .artifact-group > #activeWorkstreamLinks:empty):has(> #historicalWorkstreamGroup[hidden])" in html
+    assert ".workstream-context:has(> .artifact-group > #ownerWorkstreamLinks:empty):has(> .artifact-group > #activeWorkstreamLinks:empty):has(> #historicalWorkstreamGroup[hidden])" in html
     assert "component cards to decode" not in html
 
 
@@ -250,7 +261,7 @@ def test_render_mermaid_catalog_explains_diagram_and_moves_context_to_bottom_lis
     assert "component-token" in html
     assert "component-description" in html
     assert "grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));" in html
-    assert "diagram-guide-grid" in html
+    assert "diagram-guide-grid" not in html
     assert ".diagram-box-section[hidden]" in html
     assert '<details class="section linked-context-section">' in html
     assert '<summary class="artifact-label">Linked records</summary>' in html

@@ -11,7 +11,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
     authored_first_run_relations,
 )
 from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import provisional_proof_assumption
-from odylith.runtime.domain_intelligence.greenfield_authored_semantics import AUTHORED_SEMANTICS_KEY
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import AUTHORED_SEMANTICS_KEY, first_path_relations_from_intent
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_scalar_values import nested_text_values
 from odylith.runtime.domain_intelligence.greenfield_provisional_package import build_provisional_components
@@ -35,7 +35,7 @@ def semantic_model_shape_issues(
         for key in required
         if not isinstance(semantic.get(key), (Mapping, list))
     ]
-    if normalize_string(semantic.get("schema_version")) != "odylith.greenfield.semantic_model.v4":
+    if normalize_string(semantic.get("schema_version")) != ("odylith.greenfield.semantic_model.v5" if intent and intent[AUTHORED_SEMANTICS_KEY]["version"].endswith(".v19") else "odylith.greenfield.semantic_model.v4"):
         issues.append("GreenfieldSemanticModel schema_version is missing or unsupported")
     first_path = semantic.get("first_path_contract") if isinstance(semantic.get("first_path_contract"), Mapping) else {}
     events = first_path.get("events") if isinstance(first_path, Mapping) else None
@@ -47,11 +47,12 @@ def semantic_model_shape_issues(
                 raise ValueError("FirstPathContract must identify at least one visible result event")
             checkpoint = authored_checkpoint_text(intent)
             if (
-                first_path.get("authority_kind") != "provisional_design"
+                first_path.get("authority_kind") != ("source_grounded" if semantic.get("schema_version") == "odylith.greenfield.semantic_model.v5" else "provisional_design")
                 or first_path.get("visible_result") != checkpoint
                 or any(
                     row.get("authority_kind") != "assumption" or row.get("required_evidence") != checkpoint
                     for row in mapping_rows(semantic.get("proof_obligations"))
+                    if row.get("key") in {"first_path_contract", "release_boundary"}
                 )
             ):
                 raise ValueError("FirstPathContract must retain its canonical proposed proof checkpoint")
@@ -200,7 +201,7 @@ def semantic_diagram_alignment_issues(proposal: Mapping[str, Any], semantic: Map
     except (TypeError, ValueError) as exc:
         return [*issues, str(exc)]
     authored = intent[AUTHORED_SEMANTICS_KEY]
-    if first_path.get("authority_kind") != "provisional_design":
+    if first_path.get("authority_kind") != ("source_grounded" if semantic.get("schema_version") == "odylith.greenfield.semantic_model.v5" else "provisional_design"):
         issues.append("FirstPathContract lost its provisional first-run authority")
     if semantic.get("source_precedence") != authored["source_precedence"]:
         issues.append("GreenfieldSemanticModel source precedence drifted from canonical intent")
@@ -218,6 +219,12 @@ def semantic_diagram_alignment_issues(proposal: Mapping[str, Any], semantic: Map
         for index, row in enumerate(relations, 1)
     )
     for label, projection in (("FirstPathContract", first_path), ("DiagramEventGraph", graph)):
+        expected_projection_events = expected_events
+        if label == "FirstPathContract" and authored["version"].endswith(".v19"):
+            expected_projection_events = tuple((index, row["order"], row["event_quote"], "source_grounded")
+                                               for index, row in enumerate(first_path_relations_from_intent(intent), 1))
+            if first_path.get("actor") != first_path_relations_from_intent(intent)[0]["actor_fact_quote"] or first_path.get("raw_path") != intent["first_path"]:
+                issues.append("FirstPathContract drifted from the source-declared opening and path")
         raw_events = projection.get("events")
         rows = mapping_rows(raw_events)
         actual_events = tuple(
@@ -227,7 +234,7 @@ def semantic_diagram_alignment_issues(proposal: Mapping[str, Any], semantic: Map
         if (
             not isinstance(raw_events, list) or len(raw_events) != len(rows)
             or any(type(row.get(key)) is not int for row in rows for key in ("index", "source_event_order"))
-            or actual_events != expected_events
+            or actual_events != expected_projection_events
         ):
             issues.append(f"{label} events drifted from the canonical proposed first run")
     diagram_rows = mapping_rows(proposal.get("diagrams"))

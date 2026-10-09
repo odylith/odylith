@@ -171,6 +171,8 @@ def synthetic_source_duty_receipt(
                    **_fixture_action_atom(atom)}
             if section != "supporting_human_actions":
                 row["performer_role"] = roles[atom["performer_field"]]
+            if section == "system_duties":
+                row["execution_kind"] = "discrete_action"
             if section == "first_path_actions":
                 row["observable_result"] = "fixture-declared result"
             rows.append(row)
@@ -184,7 +186,7 @@ def synthetic_source_duty_receipt_for_ledger(
     """Approve a fixture-only ledger; production must obtain an independent verdict."""
 
     passive_version = ledger["version"] if ledger["version"] in {
-        "odylith.greenfield.source-duty-ledger.v5", "odylith.greenfield.source-duty-ledger.v6"} else None
+        "odylith.greenfield.source-duty-ledger.v5", "odylith.greenfield.source-duty-ledger.v6", "odylith.greenfield.source-duty-ledger.v7"} else None
     preflight = preflight_greenfield_source_duty_ledger(
         ledger, evidence_text=evidence_text, _passive_source_version=passive_version,
     )
@@ -193,7 +195,7 @@ def synthetic_source_duty_receipt_for_ledger(
     )
     decision_set = {
         "version": decision_task["decision_set_schema"]["properties"]["version"]["enum"][0],
-        **({"product_identity": {"verdict": "yes"}} if passive_version is None else {}),
+        **({"product_identity": {"verdict": "yes"}} if passive_version in (None, "odylith.greenfield.source-duty-ledger.v7") else {}),
         "verifier_task_sha256": decision_task["verifier_task_sha256"],
         "source_completeness": {"verdict": "yes", "omissions": []},
         "decisions": {

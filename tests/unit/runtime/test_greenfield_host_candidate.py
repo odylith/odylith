@@ -178,7 +178,7 @@ def test_admission_validates_once_and_seals_raw_and_canonical_hashes() -> None:
         ),
     }
     assert authored.semantic_model_call_count == 0
-    assert [row["order"] for row in authored.first_path_relations] == [1, 2, 3]
+    assert [row["order"] for row in authored.source_event_relations] == [1, 2, 3]
     assert authored.source_precedence == ()
     assert authored.component_responsibility_relations
 
@@ -199,7 +199,7 @@ def test_source_binding_separates_first_path_from_supporting_event_custody(
     assert authored.intent["supporting_events"] == [
         "Berth map: the product records berth occupancy"
     ]
-    assert [row["order"] for row in authored.first_path_relations] == [1, 2, 3]
+    assert [row["order"] for row in authored.source_event_relations] == [1, 2, 3]
     assert any(
         row["field"] == "supporting_events" and row["relation_order"] == 3
         for row in authored.atomic_claims
@@ -259,11 +259,11 @@ def test_ledger_owns_two_actions_with_one_complete_joined_citation() -> None:
     authored, _ = admit_greenfield_host_candidate(
         candidate, evidence_text=source, source_duty_receipt=receipt
     )
-    assert [row["action_verb_quote"] for row in authored.first_path_relations[:2]] == [
+    assert [row["action_verb_quote"] for row in authored.source_event_relations[:2]] == [
         "enters",
         "records",
     ]
-    assert [row["event_quote"] for row in authored.first_path_relations[:2]] == [
+    assert [row["event_quote"] for row in authored.source_event_relations[:2]] == [
         "Dock attendant Ivo enters a vessel tag",
         "Berth map: the product records berth occupancy",
     ]
@@ -304,7 +304,7 @@ def test_joined_source_clause_stages_once_with_both_action_relations(tmp_path) -
         source_duty_receipt=receipt,
         prepared_evidence=prepared,
     )
-    relations = materialized["authored_semantics"]["first_path_relations"]
+    relations = materialized["authored_semantics"]["source_event_relations"]
     assert joined not in materialized["first_path"]
     assert "Dock attendant Ivo enters a vessel tag" in materialized["first_path"]
     assert "the product records berth occupancy" in materialized["first_path"]
@@ -349,7 +349,7 @@ def test_cross_role_joined_clause_keeps_first_path_and_system_duty_separate(
         "Dock attendant Ivo enters a vessel tag\n" "Berth map: the berth map shows the placement"
     )
     assert materialized["supporting_events"] == ["Berth map: the product records berth occupancy"]
-    relations = materialized["authored_semantics"]["first_path_relations"]
+    relations = materialized["authored_semantics"]["source_event_relations"]
     assert [row["action_verb_quote"] for row in relations] == [
         "enters",
         "shows",
@@ -585,12 +585,12 @@ def test_bound_system_prerequisite_survives_admission_and_canonical_reload(
     ]
     source_duty = materialized["authored_semantics"]["source_duty"]
     assert source_duty["ledger_receipt"] == original_receipt
-    assert source_duty["ledger_receipt"]["version"].endswith(".v13" if edit_evidence else ".v12")
-    assert source_duty["ledger_receipt"]["decision_set"]["version"].endswith(".v8" if edit_evidence else ".v7")
+    assert source_duty["ledger_receipt"]["version"].endswith(".v15" if edit_evidence else ".v14")
+    assert source_duty["ledger_receipt"]["decision_set"]["version"].endswith(".v10" if edit_evidence else ".v9")
     assert [row["event_order"] for row in source_duty["binding"]["first_path_actions"]] == [1, 2]
     assert [row["event_order"] for row in source_duty["binding"]["system_duties"]] == [3]
     reloaded = json.loads(json.dumps(materialized))
-    assert [row["order"] for row in first_path_relations_from_intent(reloaded)] == [1, 2, 3]
+    assert [row["order"] for row in first_path_relations_from_intent(reloaded)] == [1, 2]
     assert [row["order"] for row in authored_first_run_relations(reloaded)] == [1, 3, 2]
     reloaded["authored_semantics"]["source_precedence"] = []
     with pytest.raises(ValueError, match="only their cited source prerequisites"):
@@ -612,7 +612,7 @@ def test_fresh_candidate_requires_summary_in_schema_and_deterministic_admission(
     source, candidate = _candidate()
     contract = greenfield_host_candidate_contract(source)
     design_schema = contract["candidate_schema"]["properties"]["result"]["anyOf"][0]["properties"]["provisional_design"]
-    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v56"
+    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v57"
     assert contract["candidate_version"] == "odylith.greenfield.host-candidate-format.v25"
     assert "project_summary" in design_schema["required"]
     assert design_schema["properties"]["project_summary"]["maxLength"] == 600

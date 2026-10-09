@@ -14,7 +14,7 @@ from tests.unit.runtime.test_component_registry_categories import _seed_applicat
 from tests.unit.runtime.test_render_backlog_ui import _seed_backlog_render_repo
 
 
-@pytest.mark.parametrize("width", [1440, 430])
+@pytest.mark.parametrize("width", [1440, 430, 390])
 @pytest.mark.parametrize("tab,query,row,empty", [
     ("radar", "#query", "button[data-idea-id]", "#detail-empty"),
     ("registry", "#search", "button[data-component]", "#detail [role=status]"),
@@ -42,11 +42,35 @@ def test_empty_governance_distinguishes_absent_source_from_filtered_results(
                     frame.locator(query).wait_for(timeout=15000)
                     if has_records:
                         frame.locator(row).first.wait_for(timeout=15000)
+                        screenshot = _failure_screenshot_path(f"{tab}-current-shell-{width}-normal")
+                        if screenshot is not None:
+                            screenshot.parent.mkdir(parents=True, exist_ok=True)
+                            page.screenshot(path=str(screenshot))
                         count = frame.locator(row).count()
+                        if tab == "radar":
+                            frame.locator(row).first.focus()
+                            frame.locator(row).first.press("Enter")
+                            problem = frame.locator("#detail .block-problem p")
+                            problem.wait_for()
+                            assert problem.inner_text() == "Keep no-op Radar rerenders fast."
+                            if width < 1100:
+                                assert frame.locator("#detail").evaluate("node => document.activeElement === node")
+                                assert problem.evaluate("""node => {
+                                    const box=node.getBoundingClientRect();
+                                    const hit=document.elementFromPoint(box.left+8, box.top+8);
+                                    return box.top>=0 && box.bottom<=innerHeight && (hit===node || node.contains(hit));
+                                }""")
+                            screenshot = _failure_screenshot_path(f"radar-current-shell-{width}-selected-reading")
+                            if screenshot is not None:
+                                page.screenshot(path=str(screenshot))
                         frame.locator(query).fill("zz-no-record-matches-zz")
                     frame.locator(empty).wait_for(timeout=2000)
                     assert frame.locator(row).count() == 0
                     message = frame.locator(empty).inner_text()
+                    screenshot = _failure_screenshot_path(f"{tab}-current-shell-{width}-{'filtered' if has_records else 'empty'}")
+                    if screenshot is not None:
+                        screenshot.parent.mkdir(parents=True, exist_ok=True)
+                        page.screenshot(path=str(screenshot))
                     if has_records:
                         assert "filters" in message.lower()
                         assert "yet" not in message.lower()

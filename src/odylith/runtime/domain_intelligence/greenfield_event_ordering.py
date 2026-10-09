@@ -114,6 +114,7 @@ def validate_first_run(
     value: Any, *, event_orders: Sequence[int],
     source_precedence: Sequence[Mapping[str, int]], result_event_order: int | None,
     first_path_event_orders: Sequence[int] | None = None,
+    recurring_event_orders: Sequence[int] = (),
 ) -> dict[str, Any]:
     """Validate one selected proposed branch, never infer a runtime ordering."""
 
@@ -123,6 +124,10 @@ def validate_first_run(
     selected = _event_identities(value["event_orders"])
     if not selected <= accepted:
         raise ValueError("Greenfield first run references an unknown source event")
+    if any(type(order) is not int or order not in accepted for order in recurring_event_orders):
+        raise ValueError("Greenfield recurring duty references an unknown source event")
+    if selected.intersection(recurring_event_orders):
+        raise ValueError("Greenfield recurring invariant cannot be discharged as a one-time first-run action")
     rationale = value["rationale"]
     if (
         not isinstance(rationale, str) or not rationale.strip()

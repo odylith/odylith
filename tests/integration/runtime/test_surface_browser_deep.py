@@ -9,7 +9,7 @@ from urllib.parse import urlsplit
 from zoneinfo import ZoneInfo
 
 import pytest
-from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError, expect
 from odylith.runtime.context_engine import odylith_control_state
 from odylith.runtime.governance import sync_casebook_bug_index
 from odylith.runtime.reasoning import odylith_reasoning
@@ -1018,7 +1018,7 @@ def test_radar_b058_memory_diagram_chip_routes_to_d025(browser_context) -> None:
         _wait_for_shell_query_param(page, tab="atlas", key="diagram", value="D-025")
         atlas = page.frame_locator("#frame-atlas")
         atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
-        atlas.locator("#diagramId", has_text="D-025").wait_for(timeout=15000)
+        expect(atlas.locator("#diagramId")).to_have_text("D-025", timeout=15000)
 
         _assert_clean_page(page, observation)
 
@@ -1296,19 +1296,19 @@ def test_atlas_navigation_filters_and_context_links(browser_context) -> None:  #
         baseline_total = _atlas_total(atlas)
         assert baseline_total > 1
 
-        initial_diagram = atlas.locator("#diagramId").inner_text().strip()
+        initial_diagram = atlas.locator("#diagramId").text_content().strip()
         initial_title = atlas.locator("#diagramTitle").inner_text().strip()
         assert initial_diagram
         assert initial_title
 
         atlas.locator("#nextDiagram").click()
-        atlas.locator("#diagramId").wait_for(timeout=15000)
-        next_diagram = atlas.locator("#diagramId").inner_text().strip()
+        expect(atlas.locator("#diagramId")).not_to_have_text(initial_diagram, timeout=15000)
+        next_diagram = atlas.locator("#diagramId").text_content().strip()
         assert next_diagram
         assert next_diagram != initial_diagram
 
         atlas.locator("#prevDiagram").click()
-        atlas.locator("#diagramId", has_text=initial_diagram).wait_for(timeout=15000)
+        expect(atlas.locator("#diagramId")).to_have_text(initial_diagram, timeout=15000)
         atlas.locator("#search").fill(initial_title)
         page.wait_for_function(
             """(frameSelector) => {
@@ -1320,7 +1320,7 @@ def test_atlas_navigation_filters_and_context_links(browser_context) -> None:  #
             arg="#frame-atlas",
             timeout=15000,
         )
-        atlas.locator("#diagramId", has_text=initial_diagram).wait_for(timeout=15000)
+        expect(atlas.locator("#diagramId")).to_have_text(initial_diagram, timeout=15000)
 
         title_tokens = [token for token in re.findall(r"[A-Za-z0-9]+", initial_title) if len(token) >= 4]
         short_title = (max(title_tokens, key=len)[:6] if title_tokens else initial_title[:6]).strip()
@@ -1337,7 +1337,7 @@ def test_atlas_navigation_filters_and_context_links(browser_context) -> None:  #
             arg={"frameSelector": "#frame-atlas", "baselineTotal": baseline_total},
             timeout=15000,
         )
-        atlas.locator("#diagramId", has_text=initial_diagram).wait_for(timeout=15000)
+        expect(atlas.locator("#diagramId")).to_have_text(initial_diagram, timeout=15000)
 
         diagram_ids = atlas.locator("button[data-diagram]").evaluate_all(
             """nodes => nodes
@@ -1363,7 +1363,7 @@ def test_atlas_navigation_filters_and_context_links(browser_context) -> None:  #
 
         if searchable_diagram != initial_diagram:
             atlas.locator(f'button[data-diagram="{searchable_diagram}"]').click()
-            atlas.locator("#diagramId", has_text=searchable_diagram).wait_for(timeout=15000)
+            expect(atlas.locator("#diagramId")).to_have_text(searchable_diagram, timeout=15000)
 
         diagram_suffix = searchable_diagram.split("-", 1)[-1].strip()
         id_queries: list[str] = []
@@ -1390,7 +1390,7 @@ def test_atlas_navigation_filters_and_context_links(browser_context) -> None:  #
                     arg={"frameSelector": "#frame-atlas", "baselineTotal": baseline_total},
                     timeout=3000,
                 )
-                atlas.locator("#diagramId", has_text=searchable_diagram).wait_for(timeout=3000)
+                expect(atlas.locator("#diagramId")).to_have_text(searchable_diagram, timeout=3000)
                 narrowed_by_id_query = True
                 break
             except PlaywrightTimeoutError:
@@ -1426,7 +1426,7 @@ def test_atlas_d025_memory_substrate_route_exposes_governed_registry_links(brows
 
         atlas = page.frame_locator("#frame-atlas")
         atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
-        atlas.locator("#diagramId", has_text="D-025").wait_for(timeout=15000)
+        expect(atlas.locator("#diagramId")).to_have_text("D-025", timeout=15000)
         _wait_for_shell_query_param(page, tab="atlas", key="diagram", value="D-025")
 
         registry_hrefs = [
@@ -2334,7 +2334,7 @@ def test_atlas_scope_signal_ladder_diagrams_keep_owner_context_without_leaking_a
 
         atlas = page.frame_locator("#frame-atlas")
         atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
-        atlas.locator("#diagramId", has_text="D-029").wait_for(timeout=15000)
+        expect(atlas.locator("#diagramId")).to_have_text("D-029", timeout=15000)
         _wait_for_shell_query_param(page, tab="atlas", key="diagram", value="D-029")
 
         owner_tokens = atlas.locator("#ownerWorkstreamLinks a.workstream-pill-link").evaluate_all(

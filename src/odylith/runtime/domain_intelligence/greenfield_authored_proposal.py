@@ -28,7 +28,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     authored_component_relation_facts,
     component_responsibility_relations_from_intent,
     first_path_context_relations_from_intent,
-    first_path_relations_from_intent,
+    first_path_relations_from_intent, source_event_relations_from_intent,
 )
 from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
     provisional_design_from_intent,
@@ -74,7 +74,7 @@ def build_authored_greenfield_proposal(
 ) -> dict[str, Any]:
     """Return the complete proposal view of one verified authored intent."""
 
-    relations = first_path_relations_from_intent(confirmed_intent)
+    relations = source_event_relations_from_intent(confirmed_intent)
     if not relations:
         raise ValueError("model-authored Greenfield projection requires verified first-path relations")
     component_responsibility_relations = component_responsibility_relations_from_intent(
@@ -136,6 +136,9 @@ def build_authored_greenfield_proposal(
         components=components,
         backlog=backlog,
         relations=first_run_relations,
+        declared_path=(first_path_relations_from_intent(confirmed_intent)
+                       if confirmed_intent[AUTHORED_SEMANTICS_KEY]["version"].endswith(".v19") else None),
+        declared_path_text=str(confirmed_intent["first_path"]),
         provisional_design=provisional_design,
         source_precedence=confirmed_intent[AUTHORED_SEMANTICS_KEY]["source_precedence"],
         source_duty=confirmed_intent[AUTHORED_SEMANTICS_KEY]["source_duty"],
@@ -444,6 +447,7 @@ def _semantic_model(
     provisional_design: Mapping[str, Any],
     source_precedence: Sequence[Mapping[str, Any]],
     source_duty: Mapping[str, Any] | None,
+    declared_path: Sequence[Mapping[str, Any]] | None, declared_path_text: str,
 ) -> dict[str, Any]:
     lifecycle = source_duty.get("lifecycle") if isinstance(source_duty, Mapping) else None
     events = [
@@ -461,7 +465,14 @@ def _semantic_model(
         }
         for index, row in enumerate(relations, start=1)
     ]
-    first_event = relations[0]
+    path_events = ([{**events[0], "index": index, "source_event_order": row["order"],
+                    "actor": row["actor_fact_quote"], "owner_system": row["owner_system_quote"],
+                    "action": row["action_verb_quote"], "target_entity": row["target_quote"],
+                    "mutation": row["event_quote"], "visible_result": bool(row["visible_result_quote"]),
+                    "text": row["event_quote"], "source_kind": "source_grounded"}
+                   for index, row in enumerate(declared_path, 1)] if declared_path is not None else events)
+    first_event = declared_path[0] if declared_path is not None else relations[0]
+    contract_path = declared_path_text if declared_path is not None else first_path
     component_refs = []
     for component in components:
         contract = component.get("component_contract") if isinstance(component.get("component_contract"), Mapping) else {}
@@ -486,9 +497,9 @@ def _semantic_model(
         for row in backlog
     ]
     return {
-        "schema_version": "odylith.greenfield.semantic_model.v4",
+        "schema_version": "odylith.greenfield.semantic_model.v5" if declared_path is not None else "odylith.greenfield.semantic_model.v4",
         "first_path_contract": {
-            "authority_kind": "provisional_design",
+            "authority_kind": "source_grounded" if declared_path is not None else "provisional_design",
             "actor": _text(first_event.get("actor_fact_quote")),
             "action": _text(first_event.get("action_verb_quote")),
             "entity": state_object,
@@ -497,9 +508,9 @@ def _semantic_model(
             "persistence": "",
             "visible_result": visible_result,
             "deferred_scope": [],
-            "capability": first_path,
-            "raw_path": first_path,
-            "events": events,
+            "capability": contract_path,
+            "raw_path": contract_path,
+            "events": path_events,
         },
         "domain_ontology": {
             "product_title": title,
@@ -526,8 +537,11 @@ def _semantic_model(
         "proof_obligations": [
             {"key": key, "claim": claim, "required_evidence": proof_boundary,
              "authority_kind": "assumption" if proof_is_provisional else "source_grounded"}
-            for key, claim in (("first_path_contract", first_path), ("release_boundary", proof_boundary))
-        ],
+            for key, claim in (("first_path_contract", contract_path), ("release_boundary", proof_boundary))
+        ] + ([{"key": f"source_proof/{row['duty_id']}", "claim": row["must_show"],
+               "required_evidence": row["must_show"], "authority_kind": "source_grounded",
+               "source_refs": copy.deepcopy(row["source_refs"])}
+              for row in lifecycle["proof_duties"]] if declared_path is not None and isinstance(lifecycle, Mapping) else []),
         "evaluation_semantics": None,
     }
 

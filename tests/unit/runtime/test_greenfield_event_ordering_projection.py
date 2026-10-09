@@ -11,7 +11,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
 )
 from odylith.runtime.domain_intelligence.artifact_graph import canonical_graph_from_workstream
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
-    first_path_relations_from_intent,
+    first_path_relations_from_intent, source_event_relations_from_intent,
     require_relation_authority_parity,
 )
 from odylith.runtime.domain_intelligence.greenfield_candidate_intent_stage import (
@@ -285,7 +285,7 @@ def test_supporting_prerequisite_interleaves_first_path_across_all_projections(t
         prepared_evidence=prepared,
     )
 
-    source_relations = first_path_relations_from_intent(candidate)
+    source_relations = source_event_relations_from_intent(candidate)
     proposed_relations = authored_first_run_relations(candidate)
     assert [row["order"] for row in source_relations] == [1, 2, 3]
     assert [row["order"] for row in proposed_relations] == [1, 3, 2]
@@ -327,9 +327,9 @@ def test_supporting_prerequisite_interleaves_first_path_across_all_projections(t
         for row in proposal["project_brief"]["blueprint_sections"]
     )
     contract = proposal["semantic_model"]["first_path_contract"]
-    assert [row["source_event_order"] for row in contract["events"]] == [1, 3, 2]
+    assert [row["source_event_order"] for row in contract["events"]] == [1, 2]
     assert [row["text"] for row in contract["events"]] == [
-        row["event_quote"] for row in proposed_relations
+        row["event_quote"] for row in first_path_relations_from_intent(candidate)
     ]
     sequence = next(
         row for row in proposal["diagrams"] if row["slug"].endswith("first-path")
@@ -367,8 +367,8 @@ def test_project_and_semantic_views_use_the_labeled_proposed_run(ordered_package
     assert proposal["project_intelligence"]["scope"] == [proposed]
     assert any(row["must_capture"] == proposed for row in proposal["project_brief"]["blueprint_sections"])
     contract = proposal["semantic_model"]["first_path_contract"]
-    assert contract["raw_path"] == proposed
-    assert contract["capability"] == proposed
+    assert contract["raw_path"] == candidate["first_path"]
+    assert contract["capability"] == candidate["first_path"]
     assert [row["text"] for row in contract["events"]] == [row["event_quote"] for row in events]
     assert [row["source_event_order"] for row in contract["events"]] == [1, 2, 3]
     assert [row["index"] for row in contract["events"]] == [1, 2, 3]
@@ -408,7 +408,7 @@ def test_atlas_proposes_order_but_registry_and_radar_keep_source_support_ids(ord
         for row in proposal[owner]:
             contract = row[contract_key]
             for ref, support in zip(contract["support_event_refs"], contract["supporting_events"], strict=True):
-                assert ref == f"/authored_semantics/first_path_relations/{support['order'] - 1}"
+                assert ref == f"/authored_semantics/source_event_relations/{support['order'] - 1}"
                 assert support["event_quote"] == events[support["order"] - 1]["event_quote"]
 
 
@@ -490,7 +490,7 @@ def test_preconfirm_rejects_reinterpreted_order_authority(ordered_package, damag
     _, _, proposal, _ = ordered_package
     semantic = deepcopy(proposal["semantic_model"])
     if damage == "authority":
-        semantic["first_path_contract"]["authority_kind"] = "source_grounded"
+        semantic["first_path_contract"]["authority_kind"] = "provisional_design"
     elif damage == "precedence":
         semantic["source_precedence"] = []
     else:

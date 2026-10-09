@@ -41,6 +41,7 @@ _FACT_ATOM_POLICY = {
     "non_goals": ("non_goals", "prohibited"),
 }
 _RELATION_ATOM_CATEGORY = {
+    "actor_fact_quote": "actors",
     "action_verb_quote": "actions",
     "target_quote": "states",
     "visible_result_quote": "outputs",
@@ -82,7 +83,7 @@ def derive_model_atomic_claims(
             quote = str(relation.get(role) or "")
             if not quote:
                 continue
-            if role == "actor_fact_quote":
+            if role == "actor_fact_quote" and relation.get("actor_kind") != "product_wide":
                 rows.append(
                     _event_actor_claim(
                         intent=intent,
@@ -200,7 +201,7 @@ def _path_relation_claim(
         )
     normalized_action = event_fact.get("entailment_relationship") == "verified_source_action"
     if normalized_action:
-        verified_field = "verified_action" if role == "action_verb_quote" else "verified_target"
+        verified_field = {"action_verb_quote": "verified_action", "target_quote": "verified_target", "actor_fact_quote": "verified_actor"}[role]
         if event_fact.get(verified_field) != quote:
             raise GreenfieldAuthoredSemanticsError(
                 "Greenfield atomic relation differs from its verified source action"

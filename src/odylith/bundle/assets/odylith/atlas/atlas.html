@@ -381,7 +381,7 @@
       min-height: calc(100vh - 40px);
     }
 
-    .hero {
+        .hero {
       display: grid;
       gap: 10px;
       min-width: 0;
@@ -516,17 +516,7 @@
       flex-wrap: wrap;
       gap: 8px;
       align-items: center;
-      justify-content: flex-end;
-    }
-
-    .source-links-wrap {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-      justify-content: flex-end;
-      width: 100%;
-      min-width: 0;
+      justify-content: flex-start;
     }
 
     .source-link {
@@ -635,7 +625,21 @@
       user-select: none;
     }
 
-        .details-grid {
+    .diagram-heading {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .diagram-heading .hero-title { flex: 1 1 220px; }
+    .hero .summary:empty { display: none; }
+    .diagram-metadata > summary { cursor: pointer; }
+    .diagram-metadata[open] > summary { margin-bottom: 12px; }
+    .diagram-metadata .source-links { margin: 12px 0; }
+
+    .details-grid {
       display: grid;
       align-content: start;
       gap: 12px;
@@ -669,24 +673,7 @@
       gap: 14px;
     }
 
-    .diagram-guide-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1.05fr) minmax(280px, 0.95fr);
-      gap: 12px;
-      align-items: stretch;
-      min-width: 0;
-    }
-
-    .diagram-guide-panel:has(> .summary:empty),
-    .diagram-guide-panel:has(> .read-guide-body:empty),
-    .diagram-guide-grid:not(:has(.summary:not(:empty), .read-guide-body:not(:empty))) {
-      display: none;
-    }
-
-    .diagram-guide-grid:has(.summary:empty),
-    .diagram-guide-grid:has(.read-guide-body:empty) {
-      grid-template-columns: minmax(0, 1fr);
-    }
+    .diagram-guide-panel:has(> .read-guide-body:empty) { display: none; }
 
     .diagram-guide-panel {
       display: grid;
@@ -920,7 +907,7 @@
 
     .artifact-group:has(> #ownerWorkstreamLinks:empty),
     .artifact-group:has(> #activeWorkstreamLinks:empty),
-    .section:has(> .artifact-group > #ownerWorkstreamLinks:empty):has(> .artifact-group > #activeWorkstreamLinks:empty):has(> #historicalWorkstreamGroup[hidden]) {
+    .workstream-context:has(> .artifact-group > #ownerWorkstreamLinks:empty):has(> .artifact-group > #activeWorkstreamLinks:empty):has(> #historicalWorkstreamGroup[hidden]) {
       display: none;
     }
 
@@ -1137,7 +1124,8 @@
     }
 
     @media (max-width: 760px) {
-      .diagram-guide-grid,
+      .diagram-facts { grid-template-columns: 1fr; }
+
       .diagram-box-row,
       .component-card,
       .linked-context-section .artifact-group {
@@ -1303,9 +1291,6 @@
         grid-template-columns: 1fr;
       }
 
-      .diagram-facts {
-        grid-template-columns: 1fr;
-      }
     }
   </style>
 </head>
@@ -1373,9 +1358,58 @@
         <p id="atlasEmptyMessage"></p>
         <a id="atlasProjectLink" class="tool-btn" target="_top">Open Project</a>
       </section>
-      <section class="hero">
+            <section class="hero">
         <div class="hero-copy">
-          <h2 id="diagramTitle" class="hero-title"></h2>
+          <div class="diagram-heading">
+            <h2 id="diagramTitle" class="hero-title"></h2>
+            <button id="sidebarToggle" class="tool-btn" type="button" aria-controls="sidebarPanel" aria-expanded="true">Hide Panel</button>
+          </div>
+          <section id="staleAlert" class="alert" role="status"></section>
+          <p id="diagramSummary" class="summary"></p>
+        </div>
+      </section>
+
+      <section class="viewer-shell">
+        <div class="viewer-toolbar">
+          <div class="viewer-toolbar-left">
+            <span id="zoomReadout" class="meta-pill">Zoom 100%</span>
+            <span class="meta-pill">Pinch: zoom</span>
+            <span class="meta-pill">Drag: pan</span>
+            <span class="meta-pill">Shortcuts: + - 0 f</span>
+          </div>
+          <div class="viewer-toolbar-right">
+            <button id="prevDiagram" class="tool-btn" type="button">Prev</button>
+            <button id="nextDiagram" class="tool-btn" type="button">Next</button>
+            <button id="zoomIn" class="tool-btn" type="button">Zoom +</button>
+            <button id="zoomOut" class="tool-btn" type="button">Zoom -</button>
+            <button id="fit" class="tool-btn" type="button">Fit</button>
+            <button id="reset" class="tool-btn" type="button">Read at 100%</button>
+          </div>
+        </div>
+        <p id="viewerInstructions" class="viewer-instructions">Tab to diagram: arrows pan; Shift pans farther. +/− zoom; 0 reads at 100%; F fits. Outside diagram, ↑/↓ select.</p>
+        <div id="viewerStage" class="viewer-stage" tabindex="0" role="region" aria-labelledby="diagramTitle" aria-describedby="viewerInstructions">
+          <img id="viewerImage" class="viewer-image" alt="diagram visualization" draggable="false" hidden />
+        </div>
+      </section>
+
+      <section class="details-grid">
+        <article class="section diagram-explanation-section">
+          <details class="diagram-guide-panel read-guide">
+              <summary class="artifact-label">How to read this diagram</summary>
+              <p id="diagramReadGuide" class="read-guide-body"></p>
+            </details>
+          <div id="diagramBoxesSection" class="diagram-box-section" hidden>
+            <p class="artifact-label">Boxes In This Diagram</p>
+            <div id="diagramBoxList" class="diagram-box-list"></div>
+          </div>
+          <details class="ownership-section">
+            <summary class="artifact-label">Owning components</summary>
+            <div id="componentList" class="component-list"></div>
+          </details>
+        </article>
+
+        <details class="section diagram-metadata">
+          <summary class="artifact-label">Diagram details</summary>
           <div class="diagram-facts" role="list">
             <div class="diagram-fact" data-fact="diagram-id" role="listitem">
               <p class="diagram-fact-label">Diagram ID</p>
@@ -1402,79 +1436,26 @@
               <p id="diagramFreshness" class="diagram-fact-value"></p>
             </div>
           </div>
-        </div>
-        <div class="source-links-wrap">
-          <button id="sidebarToggle" class="tool-btn" type="button" aria-controls="sidebarPanel" aria-expanded="true">Hide Panel</button>
           <div id="sourceLinks" class="source-links"></div>
-        </div>
-      </section>
-
-      <section id="staleAlert" class="alert"></section>
-
-      <article class="section">
-        <h3>Connected Workstream Context</h3>
-        <div class="artifact-group">
-          <p class="artifact-label">Owners</p>
-          <ul id="ownerWorkstreamLinks" class="artifact-list workstream-context-list"></ul>
-        </div>
-        <div class="artifact-group">
-          <p class="artifact-label">Active Touches</p>
-          <ul id="activeWorkstreamLinks" class="artifact-list workstream-context-list"></ul>
-        </div>
-        <div id="historicalWorkstreamGroup" class="artifact-group" hidden>
-          <p class="artifact-label">Historical References</p>
-          <details id="historicalWorkstreamDisclosure" class="atlas-context-disclosure">
-            <summary id="historicalWorkstreamSummary"></summary>
-            <ul id="historicalWorkstreamLinks" class="artifact-list workstream-context-list"></ul>
-          </details>
-        </div>
-      </article>
-
-      <section class="viewer-shell">
-        <div class="viewer-toolbar">
-          <div class="viewer-toolbar-left">
-            <span id="zoomReadout" class="meta-pill">Zoom 100%</span>
-            <span class="meta-pill">Pinch: zoom</span>
-            <span class="meta-pill">Drag: pan</span>
-            <span class="meta-pill">Shortcuts: + - 0 f</span>
-          </div>
-          <div class="viewer-toolbar-right">
-            <button id="prevDiagram" class="tool-btn" type="button">Prev</button>
-            <button id="nextDiagram" class="tool-btn" type="button">Next</button>
-            <button id="zoomIn" class="tool-btn" type="button">Zoom +</button>
-            <button id="zoomOut" class="tool-btn" type="button">Zoom -</button>
-            <button id="fit" class="tool-btn" type="button">Fit</button>
-            <button id="reset" class="tool-btn" type="button">Read at 100%</button>
-          </div>
-        </div>
-        <p id="viewerInstructions" class="viewer-instructions">Tab to diagram: arrows pan; Shift pans farther. +/− zoom; 0 reads at 100%; F fits. Outside diagram, ↑/↓ select.</p>
-        <div id="viewerStage" class="viewer-stage" tabindex="0" role="region" aria-labelledby="diagramTitle" aria-describedby="viewerInstructions">
-          <img id="viewerImage" class="viewer-image" alt="diagram visualization" draggable="false" hidden />
-        </div>
-      </section>
-
-            <section class="details-grid">
-        <article class="section diagram-explanation-section">
-          <h3>What This Diagram Shows</h3>
-          <div class="diagram-guide-grid">
-            <div class="diagram-guide-panel">
-              <p class="artifact-label">Summary</p>
-              <p id="diagramSummary" class="summary"></p>
+          <section class="workstream-context">
+            <h3>Connected Workstream Context</h3>
+            <div class="artifact-group">
+              <p class="artifact-label">Owners</p>
+              <ul id="ownerWorkstreamLinks" class="artifact-list workstream-context-list"></ul>
             </div>
-            <details class="diagram-guide-panel read-guide">
-              <summary class="artifact-label">How to read this diagram</summary>
-              <p id="diagramReadGuide" class="read-guide-body"></p>
-            </details>
-          </div>
-          <div id="diagramBoxesSection" class="diagram-box-section" hidden>
-            <p class="artifact-label">Boxes In This Diagram</p>
-            <div id="diagramBoxList" class="diagram-box-list"></div>
-          </div>
-          <details class="ownership-section">
-            <summary class="artifact-label">Owning components</summary>
-            <div id="componentList" class="component-list"></div>
-          </details>
-        </article>
+            <div class="artifact-group">
+              <p class="artifact-label">Active Touches</p>
+              <ul id="activeWorkstreamLinks" class="artifact-list workstream-context-list"></ul>
+            </div>
+            <div id="historicalWorkstreamGroup" class="artifact-group" hidden>
+              <p class="artifact-label">Historical References</p>
+              <details id="historicalWorkstreamDisclosure" class="atlas-context-disclosure">
+                <summary id="historicalWorkstreamSummary"></summary>
+                <ul id="historicalWorkstreamLinks" class="artifact-list workstream-context-list"></ul>
+              </details>
+            </div>
+          </section>
+        </details>
 
         <details class="section linked-context-section">
           <summary class="artifact-label">Linked records</summary>
@@ -1556,7 +1537,7 @@
   }
 })();
 </script>
-  <script id="catalogData" src="mermaid-payload.v1.js?v=6aa9392781f7"></script>
+  <script id="catalogData" src="mermaid-payload.v1.js?v=710bbe728667"></script>
   <script>
 (() => {
   'use strict';
@@ -1681,6 +1662,6 @@
   window.OdylithFrameBridge = {surface, frame};
 })();
 </script>
-  <script src="mermaid-app.v1.js?v=6aa9392781f7"></script>
+  <script src="mermaid-app.v1.js?v=710bbe728667"></script>
 </body>
 </html>

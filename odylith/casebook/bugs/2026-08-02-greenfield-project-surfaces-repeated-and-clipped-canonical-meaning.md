@@ -3986,3 +3986,81 @@ The final Compass source removes four clipping helpers and two character limits,
 The frozen final source passes 52 focused unit tests and all eight browser cells: ready, retained fallback, error and empty at desktop and 390px. Root visually checked the final mobile screenshot and verified all 11 source/test hashes and 31 proof artifact hashes. Final handoff: `/private/tmp/odylith-compass-complete-prose-20261008/handoff-final-complete-labels.json`, SHA-256 `f299c0f16ea7883e3e29c06183e2e8c39a37c5cbcf4fe94baa98a9e14e3d9f90`; browser log SHA-256 `3ddaa7987ab32b890a170ce56ab215c9d1809f6c47595486d5274d5e545170c2`. The prior failed and superseded runs are retained. This qualifies the bounded source and rendered fixtures only; installed successor, hosted CI, semantic campaign and release qualification remain open.
 
 The disclosure correction also settled: 22 focused unit checks and the 55 affected browser cases are covered, with corrected test callback and selection failures retained. Handoff: `/private/tmp/odylith-final-disclosure-cleanup-20261008/handoff.json`, SHA-256 `a15cb373fafb20b1ac31cf086f7a6d6952af31bdf0ba892a5dd16b60f6b04088`. Exact source events remain in their original order; typed actors, source text and catalog metadata remain retrievable without six repeated primary disclosures or Role-only controls. Combined independent review is a separate checkpoint.
+
+### v49 actual published after-image: remaining cognitive load (2026-10-09)
+
+The failed installed case did publish before its release oracle and independent
+semantic review failed. Its temporary consumer was cleaned. Supplemental browser
+capture uses the retained published after-image only: all 116 served files match
+the retained manifest, with no missing/extra files or symlinks. Source export and
+after-image remain byte-identical. Capture completes with zero runner issues,
+17/17 selected 390px states, pristine Project views at 1440/430/390 and disclosures
+for all 15 actual Radar/Registry/Atlas records. This is presentation diagnosis,
+not qualification of the failed semantic package or a surviving live repository.
+
+Root visual review confirms the original repeated Accepted Focus rail is absent,
+the Project summary is separate from source evidence, and risks show readable
+statements and mitigations with technical fields closed. Registry and Atlas
+purposes use direct, specific narratives. Two P2 cognitive-load defects remain:
+Atlas stacks six metadata cards and owner IDs before the diagram or explanation
+on mobile; Radar begins with large count cards and controls before useful work
+content. Atlas should lead with diagram/purpose and retain technical metadata in
+accessible supporting details, while keeping stale/error warnings visible. Move
+markup ownership out of the oversized renderer instead of adding hiding rules.
+Radar counts and filters need compact presentation that does not obstruct the
+selected workstream. Lower-priority prose findings are the candidate summary's
+imperative opening “Propose an…” and Compass fallback jargon “promotion evidence.”
+Do not add a prefix stripper or hand-polish sealed output; correct the actual
+producer contract. These findings remain open pending source and browser proof.
+
+Capture manifest: `/private/tmp/odylith-v49-actual-published-ux-capture-20261009/manifest.json`,
+SHA-256 `8243594d132146ecb7d03773e75d9ad1d9f54da1200fd00f1e1aafc93f6a5ee9`.
+Bounded visual report: `/private/tmp/odylith-v49-actual-published-ux-capture-20261009/FINDINGS.md`,
+SHA-256 `a103296fa521dede4c342e76748c33aad2a239269023f9884c1c502b3d4c3885`.
+The 407-artifact capture includes 272 PNGs; those counts do not imply exhaustive
+visual approval. The original failed campaign, its P1 semantics and 0/4 genuine
+EDIT qualification remain unchanged. The final holdout is untouched.
+
+### Atlas and Radar information-order corrections pass bounded source proof (2026-10-09)
+
+Atlas moves selected explanation and diagram ahead of exact supporting metadata,
+which remains in keyboard-accessible details. Its seven-module current-source
+gate passes 170 tests; production is net minus 19 lines. Handoff SHA-256
+`39aa8c000be9e11341fed7822df92f9e0f33523822ed32c773d747d98a9475de`:
+`/private/tmp/odylith-v49-atlas-human-first-layout-correction-20261009/handoff.json`.
+Root visually reviewed four normal/empty/stale-error/desktop fixture screenshots.
+
+Radar puts exact counts in a closed native disclosure, removes obstructive mobile
+filter stickiness, and reveals selected authored prose after detail loading while
+preserving late search focus. Its final owned gate passes 98 tests; production is
+net minus one line, plus 539 bytes. Handoff SHA-256
+`915c3c3b482c35e7d9b4335bc5b531cdb317a8692e1f3bb2703e72d8dd8ce160`:
+`/private/tmp/odylith-v50-radar-mobile-information-order-20261009/handoff.json`.
+Root visually reviewed actual-shell mobile selection and standalone normal, empty
+and degraded fixture views. Failed drafts remain preserved. These are bounded
+current-source controls; generated-page, installed native and release proof remain
+open. The immutable failed v49 after-image was not modified or requalified.
+
+### V50 generated-page verification and hidden metadata readiness (2026-10-09)
+
+The final generated-page batch passes 116 checks but its two complete-dashboard
+publication cases retain an obsolete visible-diagram-ID expectation. Atlas now
+keeps that machine identifier in closed details; the actual diagram remains
+visible. Adopt attached plus nonempty ID readiness while retaining the complete,
+nonzero image checks and every publication marker assertion. The complete file
+then passes both file and HTTP cases in 79.68 seconds, with source, managed bytes
+and active publication unchanged. Failed log SHA-256:
+`4eb980cab6ae792e088035b0c81140ef676e266acfb95131242086b518e97ff5`;
+fresh two-case log SHA-256:
+`d6abae235d20ba2a796bf2b49255641612f0a2fe5cd9c4e6366dc6142fea8b7b`.
+The original batch remains failed; its two failures are not regraded.
+
+All seven selected generated Atlas navigation/alignment checks pass. Bounded
+independent integration review is clear (SHA-256
+`0aac4df0ca6a863ac83031c9dcd0ec8323f655e4de0649940468e36444b5598b`).
+Its pending rerun caveat is satisfied by the fresh two-case result above. The
+complete local inventory covers 4,006 passing tests across 180 modules, plus seven
+generated Atlas nodes, with current source pins verified. This remains local
+regression/browser evidence; new package, CI and native output qualification are
+open. The verified local Radar archive has SHA-256
+`74b3b2b5746828c34dedd1bf1821290bdca478b838f13764f01e5ebeabe96b05`.

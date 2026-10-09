@@ -152,7 +152,7 @@ def test_canonical_and_current_sealed_profile_refuse_forged_provenance(tmp_path,
     elif damage == "wrong_actor": row["owner_system_path"], row["owner_system_quote"] = "/internal_systems/1", "Readback panel"
     elif damage == "human_promotion": row["first_path_event_order"] = 1
     elif damage == "external_promotion":
-        damaged["authored_semantics"]["first_path_relations"][1]["actor_kind"] = "external_system"
+        damaged["authored_semantics"]["source_event_relations"][1]["actor_kind"] = "external_system"
     elif damage == "remove_all_metadata":
         for relation in rows:
             relation.pop("source_duty_id"); relation.pop("decision_set_sha256")
@@ -164,7 +164,7 @@ def test_canonical_and_current_sealed_profile_refuse_forged_provenance(tmp_path,
     with pytest.raises(ValueError):
         validate_component_responsibility_relations(
             rows, intent=damaged,
-            first_path_relations=damaged["authored_semantics"]["first_path_relations"], require_verified_duties=True,
+            first_path_relations=damaged["authored_semantics"]["source_event_relations"], require_verified_duties=True,
         )
 
 
@@ -183,7 +183,7 @@ def test_human_only_source_keeps_proposed_components_without_accepted_roles():
     assert authored.intent["component_responsibilities"] == []
     assert authored.component_responsibility_relations == ()
     assert authored.provisional_design["components"]
-    assert authored_component_relation_facts(title=authored.intent["title"], internal_systems=(), relations=authored.first_path_relations, component_responsibility_relations=()) == ()
+    assert authored_component_relation_facts(title=authored.intent["title"], internal_systems=(), relations=authored.source_event_relations, component_responsibility_relations=()) == ()
 
 
 def test_candidate_cannot_reintroduce_independent_component_authority():

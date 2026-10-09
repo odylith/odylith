@@ -68,7 +68,7 @@ def _attach_lifecycle_duties(intent: dict, *, evidence: str, receipt: dict, bind
     ]
     intent["prompt"] = source
     intent[AUTHORED_SEMANTICS_KEY] = authored_semantics_mapping(
-        semantics["first_path_relations"], responsibilities,
+        semantics["source_event_relations"], responsibilities,
         first_path_context_relations=semantics["first_path_context_relations"],
         source_precedence=semantics["source_precedence"],
         provisional_design=semantics["provisional_design"],
@@ -115,7 +115,7 @@ def test_fresh_proposal_uses_one_design_without_promoting_support_to_ownership(t
     intent = proposal["intent"]
     semantics = intent[AUTHORED_SEMANTICS_KEY]
     design = semantics["provisional_design"]
-    events = {event["order"]: event for event in semantics["first_path_relations"]}
+    events = {event["order"]: event for event in semantics["source_event_relations"]}
     assert len(proposal["components"]) == len(design["components"]) == 4
     assert len(proposal["backlog"]) == len(design["workstreams"]) == 4
     assert len(proposal["diagrams"]) == 5
@@ -146,7 +146,7 @@ def test_every_delivery_has_local_scope_and_keeps_canonical_decision_refs(tmp_pa
     workstreams = {row["key"]: row for row in design["workstreams"]}
     events = {
         row["order"]: row
-        for row in intent[AUTHORED_SEMANTICS_KEY]["first_path_relations"]
+        for row in intent[AUTHORED_SEMANTICS_KEY]["source_event_relations"]
     }
     for row, authored in zip(rows, design["workstreams"], strict=True):
         for field in ("problem", "customer", "opportunity"):
@@ -178,7 +178,7 @@ def test_every_delivery_has_local_scope_and_keeps_canonical_decision_refs(tmp_pa
         assert row["success_metrics"] == row["validation"]
         contract = row["provisional_workstream_contract"]
         assert contract["support_event_refs"] == [
-            f"/authored_semantics/first_path_relations/{order - 1}"
+            f"/authored_semantics/source_event_relations/{order - 1}"
             for order in event_orders
         ]
         assert contract["supporting_events"] == assigned_events
@@ -290,7 +290,7 @@ def test_exchange_direction_does_not_invent_component_dependencies(tmp_path: Pat
     for row in rows[:2]:
         assert row["component_contract"]["exchanges"] == design["exchanges"]
         assert len(row["interfaces"]) == 2
-        assert registry._provisional_component_contract(row) == row["component_contract"]
+        assert registry._provisional_component_contract(row, semantics_version=intent[AUTHORED_SEMANTICS_KEY]["version"]) == row["component_contract"]
     assert design["workstreams"][1]["depends_on"]
 
 
@@ -524,7 +524,9 @@ def test_guard_boundary_and_proof_duty_survive_canonical_package_projection(tmp_
         assert owner["component_contract"][f"source_{role}"] == lifecycle[role]
         assert delivery["provisional_workstream_contract"][f"source_{role}"] == lifecycle[role]
         assert lifecycle[role][0]["source_refs"][0]["quote"] in delivery["radar_sections"][section]
-    assert registry._provisional_component_contract(owner) == owner["component_contract"]
+    assert registry._provisional_component_contract(
+        owner, semantics_version=intent[AUTHORED_SEMANTICS_KEY]["version"],
+    ) == owner["component_contract"]
     inputs = registry.build_authored_component_authoring_inputs(
         root=tmp_path, proposal=proposal, release_selector="0.0.1",
         backlog_result=_allocated(proposal),

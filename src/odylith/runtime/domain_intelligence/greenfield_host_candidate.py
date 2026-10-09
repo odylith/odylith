@@ -50,6 +50,7 @@ from odylith.runtime.domain_intelligence.greenfield_source_duty_compact import (
 from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
     verify_greenfield_source_duty_ledger_receipt,
 )
+from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import greenfield_edit_preservation_view
 from odylith.runtime.domain_intelligence.greenfield_source_duty_view import (
     compact_source_duty_view,
 )
@@ -58,8 +59,9 @@ from odylith.runtime.domain_intelligence.greenfield_authority_gate import (
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v7"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v56"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v57"
 PASSIVE_HOST_CANDIDATE_CONTRACT_VERSIONS = (
+    "odylith.greenfield.host-candidate-contract.v56",
     "odylith.greenfield.host-candidate-contract.v55",
     "odylith.greenfield.host-candidate-contract.v54",
     "odylith.greenfield.host-candidate-contract.v53",
@@ -122,7 +124,11 @@ def greenfield_host_candidate_contract(
                 "Keep the first-path events as an ordered subsequence in ledger order, and "
                 "place every prerequisite before its dependent event. Supporting human and "
                 "system prerequisites retain their source roles; exclude every unrelated "
-                "supporting or system duty. Event IDs are storage identifiers, never temporal edges. "
+                "supporting or system duty. Recurring_invariant duties remain supported lifecycle safeguards and "
+                "cannot be selected as one-time first_run actions, even via a candidate precedence edge. "
+                "Every unchanged lifecycle duty must retain its prior exact component_key/workstream_key pair; "
+                "only changed duties with affirmative exact correction authorization may move. "
+                "Event IDs are storage identifiers, never temporal edges. "
                 "Do not emit events or action-duty remapping tables. Bind every passive off-path transition "
                 "and its effects to governed state fields and owned design components without "
                 "inventing an actor event."
@@ -171,7 +177,8 @@ def greenfield_host_candidate_contract(
             "Keep accepted source facts separate from assumptions and provisional design decisions.",
             (
                 "Author provisional_design.project_summary in this same candidate: one or two concise "
-                "sentences, at most 600 characters, explaining what the proposed project is, who it "
+                "sentences, at most 600 characters, directly describing the product and outcome. "
+                "Do not begin with an imperative such as Propose an or recite actor inventory. Explain who it "
                 "serves, and its source-supported value or visible outcome. Use only supplied source "
                 "support and clearly proposed scope. Do not substitute a first-path workflow recital, "
                 "invent implementation, actors, benefits or commitments, promote assumptions to "
@@ -221,8 +228,12 @@ def greenfield_host_candidate_contract(
                 "product_identity, using one exact source_ref and basis explicit_name or product_description. "
                 "A useful source-cited descriptive identity is required when the description has no formal name. "
                 "Do not use a generic product pronoun, background library, incidental heading or authority. "
-                "Identity is not an action, event or performer; every actual product performer belongs to "
-                "internal_systems. For EDIT, extract identity afresh from the complete current source and "
+                "Identity alone is not an action or performer. Named internal components belong to internal_systems. "
+                "Use product_wide for an exact actor_ref mention affirmatively denoting the requested product "
+                "as a whole, independently of product_identity; generic or competing unresolved referents "
+                "require clarification. Never create an internal-system component for a whole-product pronoun. "
+                "For each system duty select execution_kind discrete_action for one concrete occurrence or "
+                "recurring_invariant for every applicable trigger. Citation overlap does not establish recurrence. For EDIT, extract identity afresh from the complete current source and "
                 "correction; prior_identity is a preservation checklist, never a copied current citation. "
                 "Before returning the inventory, account for every material source duty across the "
                 "complete evidence in source order: actions and their performers, governed state "
@@ -346,6 +357,8 @@ def greenfield_host_candidate_authoring_request(
         **{key: deepcopy(contract[key]) for key in retained_fields},
         "transport_version": HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION,
         "accepted_source_duty_inventory": inventory,
+        **({"edit_preservation": greenfield_edit_preservation_view(receipt["edit_preservation"])}
+           if "edit_preservation" in receipt else {}),
         "source_event_catalog": {
             "performers": [{"field": actor["field"], "row": actor["row"],
                             "actor_ref": duties[actor["duty_id"]]["actor_ref"]}

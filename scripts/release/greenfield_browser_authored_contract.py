@@ -319,7 +319,7 @@ def authored_structure_issues(rendered: Any, authored_facts: Any) -> tuple[str, 
     if not isinstance(rendered, dict) or not isinstance(authored_facts, dict):
         return ("browser surface project authored fact structure is unavailable",)
 
-    raw_events = authored_facts.get("first_path_relations")
+    raw_events = authored_facts.get("source_event_relations" if authored_facts.get("authored_semantics_version") == "odylith.greenfield.authored-semantics.v19" else "first_path_relations")
     if not isinstance(raw_events, (list, tuple)):
         return ("browser surface project payload has no typed first-path relations",)
     if not raw_events or any(

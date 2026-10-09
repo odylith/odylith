@@ -79,7 +79,7 @@ def _author(source, response):
     candidate = host_candidate_response(response, evidence_text=source)
     result = admit_complete_host_candidate(evidence_text=source, host_candidate=candidate)
     result.intent["authored_semantics"] = authored_semantics_mapping(
-        result.first_path_relations, result.component_responsibility_relations,
+        result.source_event_relations, result.component_responsibility_relations,
         first_path_context_relations=result.first_path_context_relations,
         provisional_design=result.provisional_design,
         source_duty=source_duty_fixture(candidate, evidence_text=source),
@@ -104,17 +104,17 @@ def test_no_source_capability_does_not_promote_terminal_ownership(kind):
     assert all(row["responsibility_quote"] != "the review receipt"
                for row in result.component_responsibility_relations)
     assert [(row["actor_kind"], row["actor_fact_quote"], row["event_quote"])
-            for row in result.first_path_relations] == [
+            for row in result.source_event_relations] == [
         (row["actor_kind"], row["actor_fact_quote"], row["event_quote"]) for row in events
     ]
     assert result.provisional_design == response["result"]["provisional_design"]
     assert validate_component_responsibility_relations(
         result.component_responsibility_relations,
         intent=result.intent,
-        first_path_relations=result.first_path_relations,
+        first_path_relations=result.source_event_relations,
     ) == result.component_responsibility_relations
     contracts = authored_component_relation_facts(title=result.intent["title"], internal_systems=result.intent["internal_systems"],
-        relations=result.first_path_relations,
+        relations=result.source_event_relations,
         component_responsibility_relations=result.component_responsibility_relations)
     product_events = [
         row["event_quote"] for row in events if row["actor_kind"] == "product"
@@ -152,7 +152,7 @@ def test_terminal_result_relation_is_rejected_at_the_typed_boundary():
 
     with pytest.raises(GreenfieldAuthoredSemanticsError):
         validate_component_responsibility_relations([invented], intent=intent,
-            first_path_relations=result.first_path_relations)
+            first_path_relations=result.source_event_relations)
 
 
 def test_optional_inventory_does_not_waive_explicit_citation_bindings():
@@ -166,7 +166,7 @@ def test_optional_inventory_does_not_waive_explicit_citation_bindings():
         validate_component_responsibility_relations(
             [bad_relation],
             intent=result.intent,
-            first_path_relations=result.first_path_relations,
+            first_path_relations=result.source_event_relations,
         )
 
 

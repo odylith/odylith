@@ -262,7 +262,7 @@ def require_verified_greenfield_source_lifecycle(
         ):
             raise GreenfieldSourceLifecycleError("source duty projection custody is stale")
         validate_greenfield_source_duty_design_binding(
-            binding, ledger=receipt["ledger"], provisional_design=provisional_design,
+            binding, ledger=receipt["ledger"], provisional_design=provisional_design, ledger_receipt=receipt,
         )
         expected = _project_verified_source_lifecycle(
             receipt=receipt, binding=binding, evidence_text=evidence_text,

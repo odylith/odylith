@@ -3053,3 +3053,85 @@ synchronization (persisted event 1597; current event 1600). The full Greenfield
 runtime/test proof remains unchanged. Finish the audit, synchronize the final
 stream and check convergence before staging; retain the failed check. Keep
 observers active and avoid a runtime or assertion change for this ordering issue.
+
+### Installed v49 retains an actual semantic failure and a stale command oracle (2026-10-09)
+
+The v49 four-case diagnostic campaign exits 1 on case 01 after 493.245 seconds;
+the remaining three cases do not execute. Its sole automated quality issue is
+`pre-confirm terminal decision choice is not the exact repo/hash-bound command`.
+Actual displayed choices carry the edited transaction hash, repository root and
+delivered completion receipt. CONFIRM and REJECT use receipt-bound decide;
+EDIT uses the supported receipt-bound prepare route. The release oracle still
+expects receipt-free decide for all three labels. Diagnose and adopt the actual
+supported command contract without weakening exact root, hash or receipt checks.
+Successful CONFIRM and repeated CONFIRM do not remove this failed observation.
+
+Independent source-first adjudication separately finds real P1 first-path,
+system-inventory and preserved-boundary ownership defects, recorded in CB-209.
+Even a corrected command oracle cannot qualify this old run. The frozen
+expected-streams file provides hashes and transport predicates but no semantic
+annotations for those obligations. Keep that limitation explicit; do not invent
+post-run ground truth or rewrite the original matrix. Future qualification must
+combine independent source obligations with deterministic ownership predicates,
+transaction readback and actual browser review. Qualifying EDIT remains 0/4.
+
+The failed matrix, raw evidence and source-first report are retained in the
+350-file local archive with SHA-256
+`ffae49f1a2fa5e95a5ab24d2014095d712f0b23392b8fe04c549aca28b11b410`.
+The campaign's partial manifest remains failed due to incomplete four-case
+coverage. Temporary consumer repositories were cleaned; supplemental UX review
+must use the exact hash-verified retained published after-image and identify it
+as diagnostic evidence. Original Public40 annotations remain unavailable; the
+operator reports having no copy. Their proposed replacement still awaits the
+separate amendment. The final holdout remains untouched.
+
+### Full 6c CI exposes two remaining consumer contracts (2026-10-09)
+
+Run `37922431429` at `6c2a157d8753badcf9d8a4c7b10578cd7535ce3b` is failed:
+10,454 passed, two failed, ten skipped. Identity and Claude assets smoke passed.
+D-043 browser proof still requires removed compiler-version boilerplate. The HIIT
+integration test serializes a candidate and loses its explicitly declared product
+identity before synthetic source-duty receipt construction. Adopt the current
+authored diagram contract and preserve fixture-declared identity; never infer it
+from display titles or weaken runtime source custody. Log:
+`/private/tmp/odylith-v49-native-failure-learning-20261009/ci-37922431429-failed.log`.
+The 3,939-pass bounded gate at this commit did not include these integration
+consumers. It remains valid for its recorded scope and is not full CI qualification.
+
+### Same-four source expectations frozen before v50 output (2026-10-09)
+
+Independent source-only annotation now records workflow membership, supporting and
+recurring duties, authority, typed carriers, proof and exact H0-to-H1 preserved
+allocation predicates for the unchanged four genuine EDIT inputs. Case 01's
+previous v49 exposure is explicit; it supports no blind-generalization claim.
+Cases 02–04 had no executed v49 output. Original expected-stream files remain
+transport evidence only. Manifest SHA-256
+`9f5d6aebd439c2c89c363be28dcaef06f8c27159560d0b40dfa2cce1582d3603`:
+`/private/tmp/odylith-v50-genuine-edit-source-annotations-20261009/manifest.v1.json`.
+Verified local archive of all 48 input/annotation files:
+`/Users/freedom/.codex/odylith-release-evidence/2026-10-09/v50/genuine-edit-source-annotations-and-inputs.tar.gz`
+(SHA-256 `1e4eee9ff66e6b9ce70f5003ac0bbe3f5168cd375bc561d57d1396ce23b60172`).
+This does not restore or replace Public40's unavailable original annotations.
+No v50 run or qualification is claimed.
+
+### V50 current local proof and next decisive comparison (2026-10-09)
+
+The complete current local inventory passes 4,006 tests across 180 modules, plus
+seven generated Atlas nodes. It preserves the prior full scope and adds current
+source-role, HIIT, publication, label and root-CLI coverage. The first generated
+batch remains failed at 116 passed / 2 failed; only its two obsolete visible-ID
+readiness cases receive fresh test-only adoption and rerun. CB-303 records exact
+logs and unchanged publication custody. Aggregate proof:
+`/private/tmp/odylith-v50-greenfield-regression-20261009/result.json`;
+request SHA-256 `164271694a09d8a16a46b6140f70d8f2782fe59c562b30c7ef856f2f997b4d3c`.
+
+Source-role implementation, prior failures and independent reviews have verified
+local durable custody at
+`/Users/freedom/.codex/odylith-release-evidence/2026-10-09/v50/semantic-wave-and-independent-review.tar.gz`
+(SHA-256 `a37fb76ef51da843d9fa996f633b424958e7f82a7d97974d67ce274ab9251572`).
+The next frozen package runs unchanged case 01 alone, then stops for independent
+source-first adjudication against the already frozen four-case annotations. Only
+a source-first pass permits the unchanged remaining three cases. Exact original
+row union, all failures, runtime budgets and cleanup remain conserved. This is
+private discovery proof, not Public40 replacement or release-grade aggregate credit.
+Public40 amendment remains pending; the final holdout is untouched.

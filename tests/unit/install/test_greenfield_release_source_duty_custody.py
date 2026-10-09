@@ -108,7 +108,7 @@ def _reseal(snapshot):
     """Recompute outer digests so controls exercise custody, rather than stale hashes."""
     semantics = snapshot["authored_semantics"]
     snapshot["authored_relation_set_sha256"] = authored_relation_set_sha256(
-        semantics["first_path_relations"], semantics["component_responsibility_relations"],
+        semantics["source_event_relations"], semantics["component_responsibility_relations"],
         first_path_context_relations=semantics["first_path_context_relations"],
         source_precedence=semantics["source_precedence"], source_duty=semantics["source_duty"],
         provisional_design=semantics["provisional_design"],
@@ -126,8 +126,8 @@ def test_normalized_shared_witness_and_six_local_supporting_events_pass_current_
     semantics = snapshot["authored_semantics"]
     assert semantics["provisional_design"]["first_run"]["event_orders"] == [1, 2]
     assert len(snapshot["facts"]["supporting_events"]) == 6
-    assert all(row["event_start_byte"] == 0 for row in semantics["first_path_relations"][2:])
-    shared = [semantics["first_path_relations"][0], *semantics["first_path_relations"][2:]]
+    assert all(row["event_start_byte"] == 0 for row in semantics["source_event_relations"][2:])
+    shared = [semantics["source_event_relations"][0], *semantics["source_event_relations"][2:]]
     assert len({(row["source_start_byte"], row["source_end_byte"]) for row in shared}) == 1
     source_bytes = prepare_model_authoring_evidence(prompt=case.prompt).evidence_source.encode()
     witness = source_bytes[shared[0]["source_start_byte"]:shared[0]["source_end_byte"]]
@@ -148,7 +148,7 @@ def test_normalized_shared_witness_and_six_local_supporting_events_pass_current_
 def test_recomputed_relation_digest_does_not_hide_custody_damage(tmp_path, damage):
     case, snapshot = _normalized_snapshot(tmp_path)
     semantics = snapshot["authored_semantics"]
-    relation = semantics["first_path_relations"][2]
+    relation = semantics["source_event_relations"][2]
     source_duty = semantics["source_duty"]
     binding = source_duty["binding"]
     if damage == "action":
@@ -246,7 +246,7 @@ def test_recomputed_relation_digest_does_not_hide_custody_damage(tmp_path, damag
 def test_shared_admission_owner_rejects_changed_verified_roles(tmp_path, field, value):
     case, snapshot = _normalized_snapshot(tmp_path)
     semantics = snapshot["authored_semantics"]
-    relations = semantics["first_path_relations"]
+    relations = semantics["source_event_relations"]
     relations[2][field] = value
     source_text = prepare_model_authoring_evidence(prompt=case.prompt).evidence_source
     with pytest.raises(ValueError, match="verified source action"):
@@ -290,7 +290,7 @@ def _exact_source_evaluator_snapshot():
         effective_timeout_seconds=315, semantic_model_call_count=1,
     )
     semantics = authored_semantics_mapping(
-        result.first_path_relations, result.component_responsibility_relations,
+        result.source_event_relations, result.component_responsibility_relations,
         first_path_context_relations=result.first_path_context_relations,
         provisional_design=result.provisional_design, source_duty=None,
     )
@@ -303,7 +303,7 @@ def _exact_source_evaluator_snapshot():
         "atomic_facts": atoms, "atomic_custody_sha256": atomic_fact_ledger_hash(atoms),
         "product_facts_sha256": product_facts_hash(facts),
         "authored_relation_set_sha256": authored_relation_set_sha256(
-            result.first_path_relations, result.component_responsibility_relations,
+            result.source_event_relations, result.component_responsibility_relations,
             first_path_context_relations=result.first_path_context_relations,
             source_precedence=semantics["source_precedence"], source_duty=None,
             provisional_design=result.provisional_design,

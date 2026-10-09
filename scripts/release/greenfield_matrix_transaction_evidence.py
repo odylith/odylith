@@ -20,6 +20,10 @@ from odylith.runtime.domain_intelligence import greenfield_prewrite_commit_resul
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
 from odylith.runtime.domain_intelligence.greenfield_commit_transaction import _payload_hash
+from odylith.runtime.domain_intelligence.greenfield_cli import terminal_decision_offer
+from odylith.runtime.domain_intelligence.greenfield_pending_transaction_store import (
+    GREENFIELD_RUNTIME_ROOT, pending_transaction_path, require_pending_transaction_released,
+)
 from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import require_provisional_proof_decision
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     product_facts_payload,
@@ -31,10 +35,6 @@ _HOST_REPAIR_OUTPUT_TOKENS = (
     '"reasoning_contract"', '"host_instruction"', "active-proposal.v1.json",
     "must be non-empty", "greenfield proposal validation failed",
     "greenfield proposal Tribunal failed", "host-side schema repair",
-)
-_TERMINAL_DECISION_REASON = (
-    "Nothing has been published. Run one command in a terminal; ordinary chat approval "
-    "does not authorize publication. For EDIT, replace <corrections> with your changes."
 )
 _TERMINAL_CONFIRMATION_VERSION = "odylith.greenfield.host-confirmation-callback.v1"
 _TERMINAL_CONFIRMATION_FIELDS = frozenset(("version", "status", "command", "transaction_hash", "visible_markdown", "developer_context"))
@@ -326,6 +326,26 @@ def confirmation_preview_issues(
     confirmation = _mapping(proposal_payload.get("confirmation"))
     choices = confirmation.get("choices")
     issues: list[str] = []
+    root = repo_root.expanduser().resolve()
+    receipt = proposal_payload.get("completion_receipt")
+    bounded = _is_sha256(transaction_hash) and (
+        root / GREENFIELD_RUNTIME_ROOT / "pending" / transaction_hash / ".bounded-journey.v1.json"
+    ).exists()
+    if receipt is not None or bounded:
+        try:
+            if not isinstance(receipt, str) or not receipt.strip() or not bounded:
+                raise ValueError("missing delivered bounded receipt")
+            receipt_path = Path(receipt).expanduser()
+            if not receipt_path.is_absolute():
+                receipt_path = root / receipt_path
+            if not receipt_path.resolve().is_relative_to(root):
+                raise ValueError("foreign delivered receipt path")
+            require_pending_transaction_released(pending_transaction_path(root, transaction_hash),
+                repo_root=root, transaction_hash=transaction_hash, completion_receipt=receipt_path)
+        except (OSError, RuntimeError, ValueError, TypeError):
+            issues.append("pre-confirm payload is missing a valid delivered completion receipt")
+    expected_offer = terminal_decision_offer(repo_root=root, transaction_hash=transaction_hash,
+        completion_receipt=receipt if isinstance(receipt, str) and receipt else None)
     if str(proposal_payload.get("mode") or "").strip() != "product_create_transaction":
         issues.append("pre-confirm payload did not expose a ProductCreateTransaction")
     if not _is_sha256(transaction_hash):
@@ -338,13 +358,12 @@ def confirmation_preview_issues(
         issues.append("pre-confirm terminal decision offer does not declare the terminal interface")
     if not str(confirmation.get("reason") or "").strip():
         issues.append("pre-confirm terminal decision offer is missing its reason")
-    elif str(confirmation["reason"]).strip() != _TERMINAL_DECISION_REASON:
+    elif str(confirmation["reason"]).strip() != expected_offer["reason"]:
         issues.append("pre-confirm terminal decision offer has an invalid terminal warning")
     allowed_fields = {"status", "interface", "reason", "choices"}
     unexpected_fields = sorted(set(confirmation) - allowed_fields)
     if unexpected_fields:
         issues.append("pre-confirm terminal decision offer exposes unsupported authority fields")
-    expected_root = str(repo_root.expanduser().resolve())
     expected_labels = ("CONFIRM", "EDIT", "REJECT")
     if not isinstance(choices, list):
         issues.append("pre-confirm terminal decision offer is missing its choices list")
@@ -363,12 +382,8 @@ def confirmation_preview_issues(
             except ValueError:
                 issues.append("pre-confirm terminal decision choice is not shell-parseable")
                 continue
-            expected_command = [
-                "odylith", "greenfield", "decide", "--repo-root", expected_root,
-                label, transaction_hash,
-            ]
-            if label == "EDIT":
-                expected_command.extend(("--edit", "<corrections>"))
+            expected_command = next((shlex.split(row["command"]) for row in expected_offer["choices"]
+                if row["label"] == label), [])
             if command != expected_command:
                 issues.append("pre-confirm terminal decision choice is not the exact repo/hash-bound command")
         if tuple(labels) != expected_labels:

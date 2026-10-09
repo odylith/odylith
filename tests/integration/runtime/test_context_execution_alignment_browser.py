@@ -7,6 +7,7 @@ from urllib.parse import quote
 from xml.etree import ElementTree
 
 import pytest
+from playwright.sync_api import expect
 
 from tests.integration.runtime.surface_browser_test_support import (
     _assert_clean_page,
@@ -138,9 +139,9 @@ def test_atlas_context_execution_diagrams_render_assets_and_canonical_links(brow
 
         atlas = page.frame_locator("#frame-atlas")
         atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
-        atlas.locator("#diagramId", has_text="D-030").wait_for(timeout=15000)
+        expect(atlas.locator("#diagramId")).to_have_text("D-030", timeout=15000)
         atlas.locator("#diagramTitle", has_text="Execution Engine Stack").wait_for(timeout=15000)
-        atlas.locator("#diagramFreshness", has_text="Fresh").wait_for(timeout=15000)
+        expect(atlas.locator("#diagramFreshness")).to_have_text("Fresh", timeout=15000)
         _assert_atlas_viewer_image_loaded(page)
         linked_context = atlas.locator("details.linked-context-section")
         assert linked_context.get_attribute("open") is None
@@ -170,7 +171,7 @@ def test_atlas_context_execution_diagrams_render_assets_and_canonical_links(brow
             wait_until="domcontentloaded",
         )
         assert response is not None and response.ok
-        atlas.locator("#diagramId", has_text="D-002").wait_for(timeout=15000)
+        expect(atlas.locator("#diagramId")).to_have_text("D-002", timeout=15000)
         atlas.locator("#diagramTitle", has_text=re.compile(r"Context And Agent Execution Stack", re.I)).wait_for(
             timeout=15000
         )
@@ -216,7 +217,7 @@ def test_atlas_context_execution_diagrams_render_assets_and_canonical_links(brow
         ),
         (
             "D-043",
-            ("compiler-bound correction", "correction authorization bind v6/v9", "no admission authority"),
+            ("source identity and performer custody preflight", "typed carriers and correction authorization retain custody", "no admission authority"),
         ),
         (
             "D-024",
@@ -263,8 +264,8 @@ def test_atlas_cross_stack_topology_diagrams_render_and_expose_alignment_languag
 
         atlas = page.frame_locator("#frame-atlas")
         atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
-        atlas.locator("#diagramId", has_text=diagram_id).wait_for(timeout=15000)
-        atlas.locator("#diagramFreshness", has_text="Fresh").wait_for(timeout=15000)
+        expect(atlas.locator("#diagramId")).to_have_text(diagram_id, timeout=15000)
+        expect(atlas.locator("#diagramFreshness")).to_have_text("Fresh", timeout=15000)
         _assert_atlas_viewer_image_loaded(page)
 
         catalog_path = Path(__file__).resolve().parents[3] / "odylith/atlas/source/catalog/diagrams.v1.json"
@@ -275,6 +276,13 @@ def test_atlas_cross_stack_topology_diagrams_render_and_expose_alignment_languag
         svg_response = context.request.get(base_url + "/" + source_row["source_svg"])
         assert svg_response.ok
         svg_text = " ".join(ElementTree.fromstring(svg_response.text()).itertext())
+
+        for selector in ("details.ownership-section", "details.linked-context-section"):
+            disclosure = atlas.locator(selector)
+            assert disclosure.get_attribute("open") is None
+            disclosure.locator("summary").focus()
+            disclosure.locator("summary").press("Enter")
+        assert atlas.locator("#componentList").is_visible() and atlas.locator("#registryLinks").is_visible()
 
         visible_text = "\n".join(
             [

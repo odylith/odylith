@@ -1,6 +1,7 @@
 """Authored Radar previews stay complete, differentiated, and inert in the browser."""
 
 from pathlib import Path
+import json
 
 import pytest
 
@@ -183,7 +184,7 @@ def test_long_authored_block_remains_reachable_in_windowed_list(browser_context,
         assert first.locator(".row-story-text").inner_text() == source
         first_height = first.evaluate("node => node.getBoundingClientRect().height")
         assert first_height > 640
-        page.locator("#list").evaluate("(node, y) => {node.scrollTop = y;}", first_height - 300)
+        page.locator("#list").evaluate("(node, y) => {node.scrollTop = y - node.clientHeight + 40;}", first_height)
         page.wait_for_timeout(100)
         assert first.count() == 1
         last_text = first.locator(".row-story-text").evaluate("""node => {
@@ -369,4 +370,107 @@ def test_visible_row_click_reaches_long_source_and_refuses_obstruction(
             {"trusted": True, "id": "B-002"}, {"trusted": True, "id": None},
             {"trusted": True, "id": "B-001"}, {"trusted": True, "id": None},
         ]
+        _assert_clean_page(page, observation)
+
+
+@pytest.mark.parametrize("width", [390, 430, 1024, 1440])
+@pytest.mark.parametrize("state", ["normal", "empty", "degraded"])
+def test_mobile_information_order_preserves_navigation_and_reading(browser_context, width: int, state: str) -> None:
+    base_url, context = browser_context
+    with _new_page(context) as (page, observation):
+        page.set_viewport_size({"width": width, "height": 932})
+        entries = [{
+            "idea_id": f"B-{index:03}", "title": f"Review evidence {index}", "section": "active", "status": "queued",
+            "rank": str(index), "priority": "P1", "story_source": "Proposed Solution",
+            "story_text": f"Preserve the source record {index} and its outstanding exception.",
+            "problem": f"Record {index} has an unresolved custody exception.",
+            "founder_pov": f"Show the evidence needed to resolve exception {index}.",
+            "customer": "Reviewers of the original evidence.", "opportunity": "Keep the exception visible.",
+            "success_metrics": "The complete original record remains available.",
+        } for index in range(1, 6)] if state != "empty" else []
+        payload = {"entries": entries, "index_updated_display": "09 Oct 2026",
+                   "detail_manifest": {row["idea_id"]: "radar-layout-detail.js" for row in entries}}
+        pending_detail = []
+        if state == "normal" and width == 390:
+            payload["detail_manifest"]["B-003"] = "radar-late-detail.js"
+            page.route("**/radar-late-detail.js", lambda route: pending_detail.append(route))
+        page.route("**/radar-layout-detail.js", lambda route: route.fulfill(
+            status=200, content_type="text/javascript", body="window.__ODYLITH_BACKLOG_DETAIL_SHARDS__=" + json.dumps(
+                {row["idea_id"]: row for row in entries if row["idea_id"] != "B-003" or width != 390} if state == "normal" else {},
+            ) + ";",
+        ))
+        page.route("**/radar-mobile-order.html*", lambda route: route.fulfill(
+            status=200, content_type="text/html", body=html_runtime._render_html(payload=payload),
+        ))
+        page.goto(base_url + "/radar-mobile-order.html?workstream=B-001", wait_until="networkidle")
+        summary = page.locator("#queue-summary")
+        assert summary.get_attribute("open") is None and not page.locator("#stats").is_visible()
+        query = page.locator("#query")
+        assert query.is_visible()
+        screenshot = _failure_screenshot_path(f"radar-information-order-{width}-{state}-initial")
+        if screenshot is not None:
+            screenshot.parent.mkdir(parents=True, exist_ok=True)
+            page.screenshot(path=str(screenshot))
+        summary.locator("summary").focus()
+        summary.locator("summary").press("Enter")
+        assert summary.get_attribute("open") == ""
+        assert page.locator("#stats .stat").count() == 5
+        assert page.locator("#stats .value").all_text_contents() == ["09 Oct 2026", str(len(entries)), "0", "0", "0"]
+        summary.locator("summary").press("Enter")
+        if state == "empty":
+            assert "No workstreams yet" in page.locator("#detail-empty").inner_text()
+        else:
+            problem = page.locator("#detail .block-problem")
+            assert problem.get_by_role("heading", name="Problem", exact=True).text_content() == "Problem"
+            assert problem.locator("p").inner_text() == "Record 1 has an unresolved custody exception."
+            assert problem.bounding_box()["y"] < 932
+            if state == "degraded":
+                assert page.get_by_role("status").inner_text() == "Workstream detail unavailable. The available summary is shown."
+            row = page.locator('button[data-idea-id="B-002"]')
+            row.focus()
+            row.press("Enter")
+            page.locator("#detail .detail-title").filter(has_text="Review evidence 2").wait_for()
+            assert page.locator('button[data-idea-id="B-002"].active').count() == 1
+            if width < 1100:
+                assert page.locator("#detail").evaluate("node => document.activeElement === node")
+                assert page.locator("#detail .detail-title").evaluate("""node => {
+                    const box=node.getBoundingClientRect(), hit=document.elementFromPoint(box.left+8, box.top+8);
+                    return box.top>=0 && box.bottom<=innerHeight && (hit===node || node.contains(hit));
+                }""")
+            problem = page.locator("#detail .block-problem")
+            problem.scroll_into_view_if_needed()
+            assert problem.evaluate("""node => {
+                const box=node.getBoundingClientRect(), bar=document.querySelector('.controls').getBoundingClientRect();
+                const hit=document.elementFromPoint(box.left+8, box.top+8);
+                return (hit===node || node.contains(hit)) && (bar.bottom<=box.top || bar.top>=box.bottom);
+            }""")
+            screenshot = _failure_screenshot_path(f"radar-information-order-{width}-{state}-selected-reading")
+            if screenshot is not None:
+                page.screenshot(path=str(screenshot))
+            if width < 1100:
+                assert problem.evaluate("node => node.getBoundingClientRect().bottom <= innerHeight")
+                page.get_by_role("combobox", name="Workstream section", exact=True).focus()
+                page.get_by_role("combobox", name="Workstream section", exact=True).press("Tab")
+                assert page.get_by_role("combobox", name="Workstream type", exact=True).evaluate("node => document.activeElement === node")
+                assert page.get_by_role("combobox", name="Workstream type", exact=True).evaluate("""node => {
+                    const box=node.getBoundingClientRect(), clip=node.parentElement.getBoundingClientRect();
+                    return box.left>=clip.left && box.right<=clip.right;
+                }""")
+            query.fill("no-matching-evidence")
+            assert "No matching workstreams" in page.locator("#detail-empty").inner_text()
+            query.fill("")
+            page.locator('button[data-idea-id="B-002"].active').wait_for()
+            page.locator("#priority").focus()
+            page.locator("#priority").select_option("P1")
+            assert page.locator("#list button[data-idea-id]").count() == 5
+            if state == "normal" and width == 390:
+                page.locator('button[data-idea-id="B-003"]').focus()
+                page.locator('button[data-idea-id="B-003"]').press("Enter")
+                query.fill("Review evidence")
+                assert len(pending_detail) == 1
+                pending_detail[0].fulfill(status=200, content_type="text/javascript", body=
+                    "window.__ODYLITH_BACKLOG_DETAIL_SHARDS__['B-003']=" + json.dumps(entries[2]) + ";")
+                page.locator("#detail .detail-title").filter(has_text="Review evidence 3").wait_for()
+                assert query.evaluate("node => document.activeElement === node")
+        assert page.locator("body").evaluate("node => node.scrollWidth <= node.clientWidth + 1")
         _assert_clean_page(page, observation)

@@ -120,7 +120,7 @@ def test_schema_and_validator_keep_provisional_proof_out_of_source_truth() -> No
     schema = greenfield_authoring_schema()
     authored_schema = schema["properties"]["result"]["anyOf"][0]
     facts_schema = authored_schema["properties"]["facts"]["properties"]
-    assert GREENFIELD_INTENT_AUTHORING_VERSION.endswith(".v79")
+    assert GREENFIELD_INTENT_AUTHORING_VERSION.endswith(".v80")
     assert {row["type"] for row in facts_schema["proof_boundary"]["anyOf"]} == {
         "object",
         "null",
@@ -135,14 +135,14 @@ def test_schema_and_validator_keep_provisional_proof_out_of_source_truth() -> No
     assert _PROOF_ASSUMPTION["statement"] not in source_text
     assert authored.intent["proof_boundary"] == ""
     assert _PROOF_ASSUMPTION in authored.intent["assumptions"]
-    assert all(not row["visible_result_quote"] for row in authored.first_path_relations)
+    assert all(not row["visible_result_quote"] for row in authored.source_event_relations)
     assert all(row["field"] != "proof_boundary" for row in authored.atomic_claims)
     assert all(row["relation_role"] != "visible_result_quote" for row in authored.atomic_claims)
 
     sealed = {
         **authored.intent,
         "authored_semantics": authored_semantics_mapping(
-            authored.first_path_relations,
+            authored.source_event_relations,
             authored.component_responsibility_relations,
             first_path_context_relations=authored.first_path_context_relations,
             source_precedence=authored.source_precedence,

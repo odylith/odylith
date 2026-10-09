@@ -64,3 +64,21 @@
 
 - Code References: - src/odylith/runtime/common/compass_log_continuation.py
 - tests/unit/runtime/test_compass_log_continuation.py
+
+## Repeated coordination failure; exact recovery succeeds (2026-10-09)
+
+A root Compass wording edit changed the runtime during guarded log rendering.
+The event appended once, then completion refused runtime identity drift. An
+in-memory fingerprint comparison identified the exact admission preimage: both
+Atlas intermediate source files and the old Compass phrase. Temporarily restoring
+that phrase proved identity equality, but completion correctly refused interrupted
+rendering with no terminal custody. No append was replayed or receipt rewritten.
+
+The existing reviewed restoration owner restored ten derived files, then the
+exact stream append. Canonical abandonment succeeded and retained original receipt
+SHA-256 `16f10f0eee94632e78d3e538326dc2154cf08913f6c4eabad271525edf7b2e87`.
+Final readback proves the entire managed tree equals the unchanged published
+generation and the continuation is retired. Source edits were preserved. The
+failed event is archived history, not a completed Compass decision. Evidence:
+`/private/tmp/odylith-v49-native-failure-learning-20261009/compass-recovery/final-readback.json`.
+Keep all runtime source stable during future guarded log/refresh completion.

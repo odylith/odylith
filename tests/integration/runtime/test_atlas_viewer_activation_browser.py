@@ -45,7 +45,7 @@ def _assert_in_frame(page, locator) -> None:  # noqa: ANN001
     assert box["x"] + box["width"] <= frame["x"] + frame["width"] + 1
 
 
-@pytest.mark.parametrize("width,height", [(1440, 1100), (430, 932)], ids=["desktop", "mobile"])
+@pytest.mark.parametrize("width,height", [(1440, 1100), (430, 932), (390, 932)], ids=["desktop", "mobile", "narrow-mobile"])
 @pytest.mark.parametrize("state", ["normal", "fallback", "error"])
 def test_explicit_selection_reveals_viewer_without_load_or_filter_focus_theft(
     browser_context, width: int, height: int, state: str,
@@ -92,7 +92,8 @@ def test_explicit_selection_reveals_viewer_without_load_or_filter_focus_theft(
             else:
                 button.focus()
                 button.press("Enter")
-            atlas.locator("#diagramId", has_text=diagram_id).wait_for()
+            atlas.locator("#diagramId", has_text=diagram_id).wait_for(state="attached")
+            assert atlas.locator("#diagramId").text_content() == diagram_id
             image = atlas.locator("#viewerImage")
             error = atlas.locator("#viewerAssetError")
             if state == "error":
@@ -118,7 +119,7 @@ def test_explicit_selection_reveals_viewer_without_load_or_filter_focus_theft(
                 assert "source links below" not in error.inner_text()
             else:
                 _assert_in_frame(page, image)
-            if width == 430:
+            if width <= 430:
                 assert atlas.locator(".viewer-shell").evaluate("node => document.activeElement === node")
                 assert atlas.locator(".viewer-shell").get_attribute("aria-labelledby") == "diagramTitle"
                 page.keyboard.press("Tab")

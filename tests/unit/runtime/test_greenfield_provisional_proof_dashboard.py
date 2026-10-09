@@ -44,7 +44,7 @@ def _provisional_proof_proposal() -> dict[str, object]:
     intent["assumptions"] = [
         {"applies_to": "proof_boundary", "statement": PROPOSED_CHECKPOINT}
     ]
-    for relation in intent["authored_semantics"]["first_path_relations"]:
+    for relation in intent["authored_semantics"]["source_event_relations"]:
         relation["visible_result_quote"] = ""
     return build_authored_greenfield_proposal(
         observed_source={"source_posture": "operator prompt evidence"},
@@ -214,13 +214,13 @@ def test_tampered_result_relation_and_handoff_binding_fail_closed(
     payload = _dashboard(proposal, root=tmp_path)
     package = _completion_package(proposal=proposal, dashboard=payload, root=tmp_path)
 
-    payload["authored_facts"]["first_path_relations"][0][
+    payload["authored_facts"]["source_event_relations"][0][
         "visible_result_quote"
     ] = PROPOSED_CHECKPOINT
     with pytest.raises(GreenfieldAuthoredSemanticsError):
         authored_fact_view(payload)
     issues = project_dashboard_preview_issues(package, payload, model_authored=True)
-    assert "model-authored Project dashboard drifted from typed first-path relations" in issues
+    assert "model-authored Project dashboard drifted from the complete source-event graph" in issues
 
     payload = _dashboard(proposal, root=tmp_path)
     package = _completion_package(proposal=proposal, dashboard=payload, root=tmp_path)

@@ -398,10 +398,10 @@ def provisional_design_from_intent(intent: Mapping[str, Any]) -> dict[str, Any]:
 
     from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
         AUTHORED_SEMANTICS_KEY,
-        first_path_relations_from_intent,
+        source_event_relations_from_intent,
     )
 
-    relations = first_path_relations_from_intent(intent)
+    relations = source_event_relations_from_intent(intent)
     semantics = intent.get(AUTHORED_SEMANTICS_KEY) if isinstance(intent, Mapping) else None
     return validate_provisional_design(
         semantics.get("provisional_design") if isinstance(semantics, Mapping) else None,

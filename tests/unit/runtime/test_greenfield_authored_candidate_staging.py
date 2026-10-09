@@ -105,7 +105,7 @@ def _authored_stage_inputs(repo_root: Path) -> tuple[dict[str, object], dict[str
     authored_intent: dict[str, object] = {
         **result.intent,
         AUTHORED_SEMANTICS_KEY: authored_semantics_mapping(
-            result.first_path_relations,
+            result.source_event_relations,
             result.component_responsibility_relations,
             first_path_context_relations=result.first_path_context_relations,
             provisional_design=result.provisional_design,

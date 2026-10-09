@@ -6,6 +6,8 @@ support events retain source actors; they are not owner-bound component facts.
 
 from __future__ import annotations
 
+from odylith.runtime.domain_intelligence.greenfield_source_event_graph import source_event_reference
+
 from collections.abc import Mapping, Sequence
 from copy import deepcopy
 import datetime as dt
@@ -291,7 +293,14 @@ def build_authored_component_spec(row: Mapping[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def _provisional_component_contract(row: Mapping[str, Any]) -> Mapping[str, Any]:
+def _provisional_component_contract(
+    row: Mapping[str, Any], *, semantics_version: str | None = None,
+) -> Mapping[str, Any]:
+    if semantics_version is None:
+        custody = row.get("source_custody")
+        if not isinstance(custody, Mapping):
+            raise ValueError("Registry component requires its source semantics version")
+        semantics_version = custody["semantic_version"]
     contract = row.get("component_contract")
     fields = {
         "authority_kind", "design_ref", "provisional_component", "support_event_refs",
@@ -407,7 +416,7 @@ def _provisional_component_contract(row: Mapping[str, Any]) -> Mapping[str, Any]
     if [event.get("order") for event in events] != orders:
         raise ValueError("Registry component drifted from its source-event support")
     if contract.get("support_event_refs") != [
-        f"/authored_semantics/first_path_relations/{order - 1}" for order in orders
+        source_event_reference(semantics_version, order) for order in orders
     ]:
         raise ValueError("Registry component drifted from exact source-event references")
     transitions = contract.get("source_lifecycle_transitions")

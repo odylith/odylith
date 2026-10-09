@@ -126,7 +126,7 @@ def _text_bounds(target):  # noqa: ANN001
     }""")
 
 
-@pytest.mark.parametrize("width", [1440, 430], ids=["desktop", "mobile"])
+@pytest.mark.parametrize("width", [1440, 430, 390], ids=["desktop", "mobile", "narrow-mobile"])
 @pytest.mark.parametrize("state", ["normal", "fallback", "error"])
 def test_box_metadata_keeps_exact_supplied_text_inert(browser_context, width: int, state: str) -> None:  # noqa: ANN001
     with _open_metadata(browser_context, width, state) as (page, atlas, observation):
@@ -156,7 +156,7 @@ def test_box_metadata_keeps_exact_supplied_text_inert(browser_context, width: in
         _assert_clean_page(page, observation)
 
 
-@pytest.mark.parametrize("width", [1440, 430], ids=["desktop", "mobile"])
+@pytest.mark.parametrize("width", [1440, 430, 390], ids=["desktop", "mobile", "narrow-mobile"])
 @pytest.mark.parametrize("state", ["normal", "fallback", "error"])
 def test_source_action_lines_are_visually_separate_in_order(browser_context, width: int, state: str) -> None:  # noqa: ANN001
     with _open_metadata(browser_context, width, state) as (page, atlas, observation):
@@ -187,7 +187,7 @@ def test_source_action_lines_are_visually_separate_in_order(browser_context, wid
         _assert_clean_page(page, observation)
 
 
-@pytest.mark.parametrize("width", [1440, 430], ids=["desktop", "mobile"])
+@pytest.mark.parametrize("width", [1440, 430, 390], ids=["desktop", "mobile", "narrow-mobile"])
 def test_empty_atlas_has_no_box_metadata_or_injected_action_rows(browser_context, width: int) -> None:  # noqa: ANN001
     with _open_metadata(browser_context, width, "empty") as (page, atlas, observation):
         empty = atlas.locator("#atlasEmptyState")
@@ -203,7 +203,7 @@ def test_empty_atlas_has_no_box_metadata_or_injected_action_rows(browser_context
         _assert_clean_page(page, observation)
 
 
-@pytest.mark.parametrize('width', [1440, 430], ids=['desktop', 'mobile'])
+@pytest.mark.parametrize('width', [1440, 430, 390], ids=['desktop', 'mobile', 'narrow-mobile'])
 @pytest.mark.parametrize('state', ['normal', 'fallback', 'error'])
 def test_box_supporting_details_are_keyboard_accessible_exact_and_unclipped(browser_context, width: int, state: str) -> None:  # noqa: ANN001
     with _open_metadata(browser_context, width, state) as (page, atlas, observation):
@@ -259,7 +259,7 @@ def test_box_supporting_details_are_keyboard_accessible_exact_and_unclipped(brow
         _assert_clean_page(page, observation)
 
 
-@pytest.mark.parametrize("width", [1440, 430], ids=["desktop", "mobile"])
+@pytest.mark.parametrize("width", [1440, 430, 390], ids=["desktop", "mobile", "narrow-mobile"])
 @pytest.mark.parametrize("state", ["normal", "error"])
 @pytest.mark.parametrize("context_kind", ["absent", "partial", "complete"])
 def test_engineering_context_omits_empty_categories_and_preserves_links(
@@ -318,7 +318,7 @@ def test_engineering_context_omits_empty_categories_and_preserves_links(
         _assert_clean_page(page, observation)
 
 
-@pytest.mark.parametrize("width", [1440, 430], ids=["desktop", "mobile"])
+@pytest.mark.parametrize("width", [1440, 430, 390], ids=["desktop", "mobile", "narrow-mobile"])
 @pytest.mark.parametrize("generated_role", [
     "Container", "Proposed component", "Proposed component support",
     "Proposed logical component", "Proposed workstream",
@@ -357,7 +357,7 @@ def test_box_roles_are_folded_without_changing_supplied_values(
         _assert_clean_page(page, observation)
 
 
-@pytest.mark.parametrize('width', [1440, 430], ids=['desktop', 'mobile'])
+@pytest.mark.parametrize('width', [1440, 430, 390], ids=['desktop', 'mobile', 'narrow-mobile'])
 @pytest.mark.parametrize('state', ['normal', 'fallback', 'error'])
 def test_authored_views_preserve_every_narrative_and_detail(browser_context, width: int, state: str) -> None:  # noqa: ANN001
     from tests.unit.runtime.test_greenfield_authored_atlas_view import _authored_diagrams, _source_lifecycle
@@ -420,3 +420,108 @@ def test_authored_views_preserve_every_narrative_and_detail(browser_context, wid
             assert not atlas.locator('body').evaluate('body => body.scrollWidth > innerWidth+1')
             _capture(page, f"atlas-authored-{diagram['slug']}-{width}-{state}", {'boxes': diagram['diagram_boxes']})
             _assert_clean_page(page, observation)
+
+
+@pytest.mark.parametrize("width", [1440, 430, 390], ids=["desktop", "mobile", "narrow-mobile"])
+@pytest.mark.parametrize("state", ["normal", "fallback", "error"])
+@pytest.mark.parametrize("stale", [False, True], ids=["fresh", "stale"])
+def test_default_diagram_prioritizes_complete_narrative_and_keeps_exact_metadata_accessible(
+    browser_context, width: int, state: str, stale: bool,
+) -> None:  # noqa: ANN001
+    narrative = "A steward reviews café records before publication and retains the rejected evidence."
+    reason = "The record schema changed after review; confirm the rejection evidence before publication."
+    related = {"summary": narrative, "source_mmd_href": "/metadata-preview.mmd",
+               "related_workstreams": ["B-001"], "active_workstreams": ["B-002"],
+               "historical_workstreams": ["B-003"], "freshness": "stale" if stale else "fresh",
+               "stale_reasons": [reason] if stale else []}
+    with _open_metadata(browser_context, width, state, related=related) as (page, atlas, observation):
+        disclosure = atlas.locator("details.diagram-metadata")
+        summary = atlas.locator("#diagramSummary")
+        assert disclosure.get_attribute("open") is None
+        assert atlas.locator("#diagramId").is_hidden()
+        assert atlas.locator("#sourceLinks .source-link").first.is_hidden()
+        assert atlas.locator("#ownerWorkstreamLinks").is_hidden()
+        assert atlas.locator("#diagramTitle").inner_text() == "Source metadata custody"
+        assert summary.text_content() == narrative
+        assert atlas.locator("#diagramSummary").count() == 1
+        assert atlas.locator("#sidebarToggle").is_visible()
+        alert = atlas.locator("#staleAlert")
+        assert alert.is_visible() == stale
+        assert alert.text_content() == ("Update Required: " + reason if stale else "")
+        geometry = atlas.locator("main").evaluate("""main => {
+            const box = selector => {
+                const r=main.querySelector(selector).getBoundingClientRect();
+                return {left:r.left,top:r.top,right:r.right,bottom:r.bottom};
+            };
+            const order=['#diagramTitle','#staleAlert','#diagramSummary','.viewer-shell','#diagramBoxList','details.diagram-metadata'];
+            return {order:order.every((s,i)=>!i || Boolean(main.querySelector(order[i-1])
+                .compareDocumentPosition(main.querySelector(s)) & Node.DOCUMENT_POSITION_FOLLOWING)),
+                title:box('#diagramTitle'),summary:box('#diagramSummary'),viewer:box('.viewer-shell'),
+                toolbar:box('.viewer-toolbar'),stage:box('#viewerStage'),nav:box('#sidebarToggle'),error:box('#viewerAssetError'),
+                alert:box('#staleAlert'),viewport:{width:innerWidth,height:innerHeight},
+                horizontalOverflow:document.documentElement.scrollWidth>innerWidth+1,scrollY};
+        }""")
+        frame = page.locator("#frame-atlas").bounding_box()
+        assert frame is not None
+        geometry["outer_frame"] = frame
+        geometry["outer_viewport"] = page.viewport_size
+        assert geometry["order"] and geometry["scrollY"] == 0
+        assert not geometry["horizontalOverflow"]
+        assert geometry["summary"]["bottom"] <= geometry["viewer"]["top"]
+        assert geometry["title"]["bottom"] <= geometry["summary"]["top"]
+        for name in ("title", "nav", "summary", "toolbar"):
+            box = geometry[name]
+            assert 0 <= box["left"] < box["right"] <= geometry["viewport"]["width"] + 1, geometry
+            assert frame["x"] + box["right"] <= page.viewport_size["width"] + 1, geometry
+            assert 0 <= box["top"] < box["bottom"] <= geometry["viewport"]["height"] + 1, geometry
+            assert frame["y"] + box["bottom"] <= page.viewport_size["height"] + 1, geometry
+        visible_bottom = min(geometry["viewport"]["height"], page.viewport_size["height"] - frame["y"])
+        assert visible_bottom - geometry["stage"]["top"] >= 120, geometry
+        if state == "error":
+            error = atlas.locator("#viewerAssetError")
+            assert error.inner_text() == ("Diagram preview unavailable. Use Prev or Next to open another diagram, "
+                                          "or review the diagram summary and source links on this page.")
+            assert frame["y"] + geometry["error"]["bottom"] <= page.viewport_size["height"] + 1, geometry
+            assert not _text_bounds(error)["clipped"]
+        assert frame["y"] + geometry["title"]["bottom"] <= page.viewport_size["height"] + 1, geometry
+        if stale:
+            assert geometry["title"]["bottom"] <= geometry["alert"]["top"]
+            assert geometry["alert"]["bottom"] <= geometry["summary"]["top"]
+            assert frame["y"] + geometry["alert"]["bottom"] <= page.viewport_size["height"] + 1, geometry
+        assert not _text_bounds(summary)["clipped"]
+        _capture(page, f"atlas-human-first-{width}-{state}-{'stale' if stale else 'fresh'}-default", geometry)
+        toggle = disclosure.locator(":scope > summary")
+        toggle.focus()
+        toggle.press("Enter")
+        assert disclosure.get_attribute("open") is not None
+        expected = {"diagramId":"D-001", "diagramKind":"architecture", "diagramStatus":"draft",
+                    "diagramOwner":"record-service", "diagramReviewed":"2026-09-08",
+                    "diagramFreshness":"Needs Update" if stale else "Fresh"}
+        for field, value in expected.items():
+            target = atlas.locator(f"#{field}")
+            assert target.is_visible() and target.text_content() == value
+            target.scroll_into_view_if_needed()
+            assert not _text_bounds(target)["clipped"]
+        for label, href in [("Mermaid Source","/metadata-preview.mmd"), ("SVG","/metadata-preview.svg"),
+                            ("PNG","/metadata-preview.png")]:
+            link = disclosure.get_by_role("link", name=label, exact=True)
+            assert link.is_visible() and link.get_attribute("href") == href
+            assert link.get_attribute("target") == "_blank" and link.get_attribute("rel") == "noreferrer"
+        for selector, workstream in [("#ownerWorkstreamLinks", "B-001"), ("#activeWorkstreamLinks", "B-002")]:
+            link = atlas.locator(selector).get_by_role("link", name=workstream, exact=True)
+            assert link.is_visible()
+            assert link.get_attribute("href") == f"/odylith/index.html?tab=radar&workstream={workstream}"
+        history = atlas.locator("#historicalWorkstreamDisclosure")
+        assert history.get_attribute("open") is None
+        history.locator("summary").focus()
+        history.locator("summary").press("Enter")
+        link = history.get_by_role("link", name="B-003", exact=True)
+        assert link.is_visible()
+        assert link.get_attribute("href") == "/odylith/index.html?tab=radar&workstream=B-003"
+        _capture(page, f"atlas-human-first-{width}-{state}-{'stale' if stale else 'fresh'}-details",
+                 {"exact_metadata": expected, "history": history.inner_text()})
+        toggle.focus()
+        toggle.press("Enter")
+        assert disclosure.get_attribute("open") is None and atlas.locator("#diagramId").is_hidden()
+        assert atlas.locator("#diagramSummary").text_content() == narrative
+        _assert_clean_page(page, observation)

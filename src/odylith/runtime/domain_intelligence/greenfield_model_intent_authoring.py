@@ -27,6 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     GreenfieldAuthoredSemanticsError,
     authored_component_relation_facts,
 )
+from odylith.runtime.domain_intelligence.greenfield_authored_relation_validation import MAX_SOURCE_EVENT_RELATIONS
 from odylith.runtime.domain_intelligence.greenfield_semantic_invariants import (
     HUMAN_ACTOR_ROLE_DEFINITION,
     INTERNAL_SYSTEM_ROLE_DEFINITION,
@@ -79,7 +80,7 @@ from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
     resolve_greenfield_action_actor_identity,
 )
 
-GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v79"
+GREENFIELD_INTENT_AUTHORING_VERSION = "odylith.greenfield.intent-authoring.v80"
 MATERIALITY_DECISION_CONTRACT = (
     "Ask only when a missing or conflicting choice materially changes the target "
     "user, usable path, visible outcome, product/dependency boundary, source constraint, "
@@ -171,7 +172,7 @@ class GreenfieldModelAuthoredIntent:
     """Verified pre-confirm facts and the source spans that justify them."""
 
     intent: dict[str, Any]
-    first_path_relations: tuple[dict[str, Any], ...]
+    source_event_relations: tuple[dict[str, Any], ...]
     first_path_context_relations: tuple[dict[str, Any], ...]
     component_responsibility_relations: tuple[dict[str, Any], ...]
     atomic_claims: tuple[dict[str, Any], ...]
@@ -187,6 +188,15 @@ class GreenfieldModelAuthoredIntent:
     consistency_status: str
     effective_model_window_seconds: float = 0.0
     semantic_model_call_count: int = 0
+
+    first_path_event_orders: tuple[int, ...] = ()
+
+    @property
+    def first_path_relations(self) -> tuple[dict[str, Any], ...]:
+        if not self.first_path_event_orders:
+            return self.source_event_relations
+        by_order = {row["order"]: row for row in self.source_event_relations}
+        return tuple(by_order[order] for order in self.first_path_event_orders)
 
 
 def authoring_tier(profile_id: str) -> str:
@@ -320,12 +330,14 @@ def validate_greenfield_authoring_response(
             allow_exact_dual_role_constraints=allow_exact_dual_role_constraints,
             first_path_event_orders=first_path_event_orders,
             source_owned_actor_facts=(accepted_source_duties is not None
-                and accepted_source_duties["ledger"]["version"] == "odylith.greenfield.source-duty-ledger.v7"),
+                and accepted_source_duties["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8"}),
+            source_event_graph=(accepted_source_duties is not None
+                and accepted_source_duties["ledger"]["version"] == "odylith.greenfield.source-duty-ledger.v8"),
         )
         authored_component_relation_facts(
             title=str(intent.get("title") or ""),
             internal_systems=tuple(str(row) for row in intent.get("internal_systems", ())),
-            relations=derived_relations.first_path_relations,
+            relations=derived_relations.source_event_relations,
             component_responsibility_relations=(
                 derived_relations.component_responsibility_relations
             ),
@@ -336,14 +348,14 @@ def validate_greenfield_authoring_response(
         atomic_claims = derive_model_atomic_claims(
             intent=intent,
             selected_facts=selected_facts,
-            first_path_relations=derived_relations.first_path_relations,
+            first_path_relations=derived_relations.source_event_relations,
             terminal_result_fact=derived_relations.terminal_result_fact,
         )
     except GreenfieldAuthoredSemanticsError as exc:
         raise GreenfieldModelAuthoringError(f"{exc}; no records were created.") from exc
     tier = authoring_tier(profile_id)
     try:
-        event_orders = [row["order"] for row in derived_relations.first_path_relations]
+        event_orders = [row["order"] for row in derived_relations.source_event_relations]
         source_precedence = validate_source_precedence(
             result.get("source_precedence"), event_orders=event_orders,
             operational_constraints=intent["operational_constraints"],
@@ -354,7 +366,7 @@ def validate_greenfield_authoring_response(
             result_event_order=next(
                 (
                     row["order"]
-                    for row in derived_relations.first_path_relations
+                    for row in derived_relations.source_event_relations
                     if row["visible_result_quote"]
                 ),
                 None,
@@ -364,7 +376,8 @@ def validate_greenfield_authoring_response(
         raise GreenfieldModelAuthoringError(f"{exc}; no records were created.") from exc
     return GreenfieldModelAuthoredIntent(
         intent=intent,
-        first_path_relations=derived_relations.first_path_relations,
+        source_event_relations=derived_relations.source_event_relations,
+        first_path_event_orders=tuple(first_path_event_orders or ()),
         first_path_context_relations=(
             derived_relations.first_path_context_relations
         ),
@@ -497,15 +510,15 @@ def _accepted_source_actions(
     ledger = verified["ledger"]
     by_order: dict[int, dict[str, Any]] = {}
     path_orders: set[int] = set()
-    if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v6", "odylith.greenfield.source-duty-ledger.v7"}:
+    if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v6", "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8"}:
         from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
             project_greenfield_source_event_catalog,
         )
         catalog = project_greenfield_source_event_catalog(verified, evidence_text=evidence_text,
-                    _passive=ledger["version"] == "odylith.greenfield.source-duty-ledger.v6")
+                    _passive=ledger["version"] != "odylith.greenfield.source-duty-ledger.v8")
         if any(binding.get(section) != rows for section, rows in catalog["action_bindings"].items()):
             raise GreenfieldModelAuthoringError("Greenfield source action binding differs from its frozen catalog")
-        if ledger["version"] == "odylith.greenfield.source-duty-ledger.v7" and (
+        if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8"} and (
             [event.get("actor_fact") for event in events]
             != [event["actor_fact"] for event in catalog["events"]]
         ):
@@ -695,6 +708,8 @@ def _intent_from_typed_source_spans(
                     "verified_action": action["action"],
                     "verified_target": action["target"],
                     "source_event_order": action["event_order"],
+                    "verified_actor": action["actor_ref"]["quote"],
+                    "performer_role": action.get("performer_role"),
                 } if action is not None else {}),
             }
         )
@@ -999,10 +1014,17 @@ _AUTHORING_SCHEMA: dict[str, Any] = {
 }
 
 
-def greenfield_authoring_schema() -> dict[str, Any]:
+def greenfield_authoring_schema(*, source_event_graph: bool = False) -> dict[str, Any]:
     """Return an isolated copy of the complete canonical response schema."""
 
-    return deepcopy(_AUTHORING_SCHEMA)
+    schema = deepcopy(_AUTHORING_SCHEMA)
+    if source_event_graph:
+        events = schema["properties"]["result"]["anyOf"][0]["properties"]["events"]
+        events["maxItems"] = MAX_SOURCE_EVENT_RELATIONS
+        events["items"]["properties"]["actor_fact"]["properties"]["field"]["enum"] = [
+            "human_actors", "internal_systems", "external_systems", "product_identity",
+        ]
+    return schema
 
 
 __all__ = [

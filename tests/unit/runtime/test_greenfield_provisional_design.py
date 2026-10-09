@@ -542,7 +542,7 @@ def _enveloped_intent() -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]
     result = admit_complete_host_candidate(evidence_text=source, host_candidate=candidate)
     intent = result.intent
     intent[AUTHORED_SEMANTICS_KEY] = authored_semantics_mapping(
-        result.first_path_relations, result.component_responsibility_relations,
+        result.source_event_relations, result.component_responsibility_relations,
         first_path_context_relations=result.first_path_context_relations,
         provisional_design=result.provisional_design,
         source_duty=source_duty_fixture(candidate, evidence_text=source),
@@ -564,7 +564,7 @@ def test_design_uses_existing_semantic_hash_without_entering_source_facts_or_ato
     design = provisional_design_from_intent(intent)
     semantics = intent[AUTHORED_SEMANTICS_KEY]
     expected = authored_relation_set_sha256(
-        semantics["first_path_relations"], semantics["component_responsibility_relations"],
+        semantics["source_event_relations"], semantics["component_responsibility_relations"],
         first_path_context_relations=semantics["first_path_context_relations"],
         provisional_design=design,
         source_precedence=semantics["source_precedence"],
@@ -645,7 +645,7 @@ def test_authored_carrier_requires_current_complete_design(damage: str) -> None:
 def test_hash_requires_design_for_every_authored_contract_but_keeps_empty_case() -> None:
     assert len(authored_relation_set_sha256(())) == 64
     intent, _, _ = _enveloped_intent()
-    relations = intent[AUTHORED_SEMANTICS_KEY]["first_path_relations"]
+    relations = intent[AUTHORED_SEMANTICS_KEY]["source_event_relations"]
     with pytest.raises(ValueError, match="provisional design"):
         authored_relation_set_sha256(relations)
     with pytest.raises(GreenfieldAuthoredSemanticsError, match="requires source relations"):
@@ -692,7 +692,7 @@ def test_summary_enters_existing_design_hash_and_never_source_fact_or_atom_autho
     assert all("project_summary" not in row for row in envelope["custody_ledger"]["atomic_facts"])
     semantics = changed[AUTHORED_SEMANTICS_KEY]
     changed_hash = authored_relation_set_sha256(
-        semantics["first_path_relations"], semantics["component_responsibility_relations"],
+        semantics["source_event_relations"], semantics["component_responsibility_relations"],
         first_path_context_relations=semantics["first_path_context_relations"],
         source_precedence=semantics["source_precedence"], provisional_design=design,
     )

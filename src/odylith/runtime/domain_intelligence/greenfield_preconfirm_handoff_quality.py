@@ -25,7 +25,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     authored_projection_relations,
     authored_visible_result,
     component_responsibility_relations_from_intent,
-    first_path_context_relations_from_intent,
+    first_path_context_relations_from_intent, source_event_relations_from_intent,
 )
 from odylith.runtime.domain_intelligence.greenfield_completion_types import (
     GreenfieldCompletionPackage,
@@ -121,9 +121,11 @@ def _authored_project_dashboard_contract_issues(
         if _exact_rows(facts.get(key)) != _exact_rows(intent.get(key)):
             issues.append(f"model-authored Project dashboard drifted from intent.{key}")
     if [dict(row) for row in mapping_rows(facts.get("first_path_relations"))] != [
-        dict(row) for row in relations
+        dict(row) for row in (relations if intent[AUTHORED_SEMANTICS_KEY]["version"].endswith(".v19") else source_event_relations_from_intent(intent))
     ]:
         issues.append("model-authored Project dashboard drifted from typed first-path relations")
+    if intent[AUTHORED_SEMANTICS_KEY]["version"].endswith(".v19") and facts.get("source_event_relations") != list(source_event_relations_from_intent(intent)):
+        issues.append("model-authored Project dashboard drifted from the complete source-event graph")
     if facts.get("source_precedence") != intent[AUTHORED_SEMANTICS_KEY]["source_precedence"]:
         issues.append("model-authored Project dashboard drifted from source prerequisites")
     source_duty = intent[AUTHORED_SEMANTICS_KEY].get("source_duty")

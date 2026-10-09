@@ -601,11 +601,14 @@ def test_render_backlog_ui_id_chips_use_only_custom_tooltip_not_browser_title() 
     assert 'title="${escapeHtml(row.idea_id)}"' not in html
 
 
-def test_render_backlog_ui_uses_meaningful_hero_kicker() -> None:
+def test_render_backlog_ui_prioritizes_work_and_discloses_supporting_counts() -> None:
     html = render_backlog_ui._render_html(payload={"entries": []})
 
-    assert "Priority Queue and Workstream Status" in html
-    assert "See what is queued, active, parked, and finished, backed by repo workstream specs and delivery evidence." in html
+    assert '<h1>Backlog Workstream Radar</h1>' in html
+    assert '<details id="queue-summary"><summary>Queue summary</summary>' in html
+    assert html.index('<section class="workspace">') < html.index('<details class="analytics-panel"')
+    assert html.index('<section class="workspace">') < html.index('<details class="execution-legend">')
+    assert 'position: static;' in html and 'overflow-x: auto;' in html
     assert "Governed Workstream Queue" not in html
     assert "Local Generated View" not in html
 
@@ -728,7 +731,7 @@ def test_render_backlog_ui_includes_release_filters_summary_cards_and_release_ch
     html = render_backlog_ui._render_html(payload={"entries": []})
 
     assert 'function escapeHtml(value) {\n      return String(value ?? "")' in html
-    assert '<select id="type">' in html
+    assert '<select id="type" aria-label="Workstream type">' in html
     assert '<option value="umbrella">Umbrella</option>' in html
     assert '<option value="child">Child</option>' in html
     assert 'type: "all",' in html

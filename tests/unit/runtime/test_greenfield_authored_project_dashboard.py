@@ -38,6 +38,7 @@ from odylith.runtime.project_intelligence import greenfield, presenter
 from odylith.runtime.project_intelligence.greenfield_authored_dashboard import build_authored_greenfield_payload
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     authored_response,
+    declared_source_action_fixture,
     host_candidate_response,
     materialize_complete_host_candidate,
     structural_design_fixture,
@@ -232,7 +233,7 @@ def _result_first_proposal(*, include_actor_review: bool = False) -> dict[str, o
     proposal = _proposal()
     intent = proposal["intent"]
     semantics = intent["authored_semantics"]
-    relations = list(reversed(semantics["first_path_relations"]))
+    relations = list(reversed(semantics["source_event_relations"]))
     if include_actor_review:
         review = {
             **relations[1],
@@ -252,7 +253,7 @@ def _result_first_proposal(*, include_actor_review: bool = False) -> dict[str, o
         )
         cursor = end + 1
     intent["first_path"] = " ".join(row["event_quote"] for row in relations)
-    semantics["first_path_relations"] = relations
+    semantics["source_event_relations"] = relations
     if include_actor_review:
         semantics["provisional_design"] = structural_design_fixture((1, 2, 3))
     semantics["provisional_design"]["first_run"] = {
@@ -289,7 +290,7 @@ def _pronoun_proposal() -> dict[str, object]:
     second_end = second_start + len(second_event.encode("utf-8"))
     state_start = second_start + len("Meridian Engine vitrifies the ".encode("utf-8"))
     independent_start = len(first_path.encode("utf-8")) + 1
-    relations = deepcopy(intent["authored_semantics"]["first_path_relations"])
+    relations = deepcopy(intent["authored_semantics"]["source_event_relations"])
     relations[0].update(
         {
             "source_start_byte": 0,
@@ -617,8 +618,22 @@ def test_receipt_bound_scope_is_known_without_promoting_advisory_strings(tmp_pat
     ]
     intent.update(ambiguities=[advisory], assumptions=decisions, opportunity="", product_view="")
     evidence, receipt, candidate, binding = _source_duty_case("record")
-    evidence += " " + scope
+    evidence = FIRST_PATH + " APIv7 Archive Preserve APIv7 casing " + evidence + " " + scope + " " + intent["title"]
+    intent["prompt"] = evidence
     ledger = deepcopy(receipt["ledger"])
+    ledger["product_identity"] = {
+        "basis": "explicit_name", "source_ref": {"quote": intent["title"], "context": intent["title"]},
+    }
+    ledger["first_path_actions"] = [
+        declared_source_action_fixture(
+            duty_id=f"A{row['order']}", actor_quote=row["actor_fact_quote"],
+            event_quote=row["event_quote"], statement=row["event_quote"],
+            action=row["action_verb_quote"], target=row["target_quote"],
+            performer_role="human_actor" if row["actor_kind"] == "human" else "internal_system",
+            observable_result=row["visible_result_quote"] or row["target_quote"],
+        )
+        for row in intent["authored_semantics"]["source_event_relations"]
+    ]
     ledger["boundaries"] = [{
         "id": "B1", "kind": "scope", "rule": scope,
         "source_refs": [{"quote": scope, "context": scope}],
@@ -693,7 +708,7 @@ def test_authored_dashboard_separates_proposed_walkthrough_from_result_first_sou
     assert payload["scenario_details"][0] == ("Proposed first run", proposed_run)
     assert payload["desired"] == "Ω-Receipt"
     assert payload["authored_facts"]["first_path"] == source_intent["first_path"]
-    assert payload["authored_facts"]["first_path_relations"] == source_intent["authored_semantics"]["first_path_relations"]
+    assert payload["authored_facts"]["first_path_relations"] == source_intent["authored_semantics"]["source_event_relations"]
     assert payload["authored_facts"]["source_precedence"] == source_intent["authored_semantics"]["source_precedence"]
     assert [row["order"] for row in payload["authored_facts"]["first_path_relations"]] == [1, 2]
     cards = {row["semantic_slot"]: row["body"] for row in payload["product_story"]["release_contract"]}

@@ -81,7 +81,7 @@ def _author_terminal_intent(
     candidate = host_candidate_response(response, evidence_text=source)
     result = admit_complete_host_candidate(evidence_text=source, host_candidate=candidate)
     result.intent["authored_semantics"] = authored_semantics_mapping(
-        result.first_path_relations, result.component_responsibility_relations,
+        result.source_event_relations, result.component_responsibility_relations,
         first_path_context_relations=result.first_path_context_relations,
         provisional_design=result.provisional_design,
         source_duty=source_duty_fixture(candidate, evidence_text=source),
@@ -97,7 +97,7 @@ def test_terminal_result_keeps_exact_proof_fact_custody_outside_final_event() ->
         result_quote=result_quote,
     )
 
-    terminal_event = result.first_path_relations[-1]
+    terminal_event = result.source_event_relations[-1]
     assert result_quote not in terminal_event["event_quote"]
     assert terminal_event["visible_result_quote"] == result_quote
     responsibility, = result.component_responsibility_relations
@@ -133,7 +133,7 @@ def test_terminal_result_keeps_selected_product_story_custody_across_sealed_vali
     sealed_intent = {
         **result.intent,
         "authored_semantics": authored_semantics_mapping(
-            result.first_path_relations,
+            result.source_event_relations,
             result.component_responsibility_relations,
             first_path_context_relations=result.first_path_context_relations,
             provisional_design=result.provisional_design,

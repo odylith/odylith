@@ -316,7 +316,7 @@ def test_terminal_edit_rebuilds_once_from_verified_retained_source_and_correctio
     assert call["host_candidate"] == {}
     assert call["source_duty_receipt"]["ledger"]["status"] == "inventory"
     assert call["source_duty_receipt"]["decision_set_sha256"]
-    assert call["source_duty_receipt"]["version"] == "odylith.greenfield.source-duty-ledger-receipt.v13"
+    assert call["source_duty_receipt"]["version"] == "odylith.greenfield.source-duty-ledger-receipt.v15"
     assert call["source_duty_receipt"]["decision_set"]["version"] == EDIT_SOURCE_DUTY_DECISION_SET_VERSION
     assert call["source_duty_receipt"]["edit_preservation"]["transaction_hash"] == previous.transaction_hash
     assert call["source_duty_receipt"]["edit_preservation"]["correction"] == correction
@@ -399,7 +399,7 @@ def test_terminal_edit_without_retained_source_fails_closed_before_compilation(
     )
     # Current verified responsibilities bind the retained source at canonical
     # reload, so source stripping is refused before a pending seal can exist.
-    with pytest.raises(ValueError, match="derived responsibilities lack exact source evidence"):
+    with pytest.raises(ValueError, match="source duty ledger receipt hash is invalid"):
         compiled_greenfield_package_fixture(proposal, repo_root=tmp_path)
     assert _tree_digest(tmp_path / "odylith") == governed_before
     assert not list((tmp_path / ".odylith/runtime/greenfield/pending").glob("**/*"))

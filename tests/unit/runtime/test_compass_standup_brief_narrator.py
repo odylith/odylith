@@ -71,7 +71,7 @@ def test_forcing_function_fallback_normalizes_default_queue_action() -> None:
     )
 
     assert text == (
-        "Immediate forcing function is to name the first implementation checkpoint and promotion evidence "
+        "Immediate forcing function is to define the first implementation step and how to verify it "
         "before implementation expands so the workstream has a tested first slice."
     )
     assert "land Prepare" not in text

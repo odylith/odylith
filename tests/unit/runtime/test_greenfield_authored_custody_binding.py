@@ -106,7 +106,7 @@ def _materialized_authored_intent(tmp_path: Path) -> dict[str, Any]:
 def _mutated_relations(candidate: Mapping[str, Any]) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     mutated = copy.deepcopy(dict(candidate))
     semantics = mutated["authored_semantics"]
-    relations = semantics["first_path_relations"]
+    relations = semantics["source_event_relations"]
     return mutated, relations
 
 
@@ -119,7 +119,7 @@ def _relation_free_intent(tmp_path: Path) -> dict[str, Any]:
 def test_product_intent_authority_binds_complete_ordered_authored_relation_set(tmp_path: Path) -> None:
     candidate = _materialized_authored_intent(tmp_path)
     authority = candidate[PRODUCT_INTENT_AUTHORITY_KEY]
-    relations = candidate["authored_semantics"]["first_path_relations"]
+    relations = candidate["authored_semantics"]["source_event_relations"]
     component_relations = candidate["authored_semantics"][
         "component_responsibility_relations"
     ]
@@ -324,7 +324,7 @@ def test_verified_relation_authority_issues_structural_tribunal_context(tmp_path
     contracts = authored_component_relation_facts(
         title=candidate["title"],
         internal_systems=candidate["internal_systems"],
-        relations=candidate[AUTHORED_SEMANTICS_KEY]["first_path_relations"],
+        relations=candidate[AUTHORED_SEMANTICS_KEY]["source_event_relations"],
         component_responsibility_relations=candidate[AUTHORED_SEMANTICS_KEY][
             "component_responsibility_relations"
         ],

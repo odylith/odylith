@@ -49,10 +49,11 @@ def test_drag_and_trackpad_pinch_preserve_the_reading_view(browser_context) -> N
         _assert_clean_page(page, observation)
 
 
-def test_two_finger_pinch_then_keyboard_pan_keeps_the_same_diagram(browser_context) -> None:  # noqa: ANN001
-    with _open_viewer(browser_context, 430, "normal") as (page, atlas, observation):
+@pytest.mark.parametrize("width", [430, 390], ids=["mobile", "narrow-mobile"])
+def test_two_finger_pinch_then_keyboard_pan_keeps_the_same_diagram(browser_context, width: int) -> None:  # noqa: ANN001
+    with _open_viewer(browser_context, width, "normal") as (page, atlas, observation):
         atlas.locator("#reset").click()
-        selected = atlas.locator("#diagramId").inner_text()
+        selected = atlas.locator("#diagramId").text_content()
         x, y = _stage_center(page, atlas)
         session = page.context.new_cdp_session(page)
         session.send("Input.dispatchTouchEvent", {"type": "touchStart", "touchPoints": [
@@ -69,5 +70,5 @@ def test_two_finger_pinch_then_keyboard_pan_keeps_the_same_diagram(browser_conte
         atlas.locator("#viewerStage").press("ArrowRight")
         assert _geometry(atlas)["x"] < initial["x"]
         assert _geometry(atlas)["scale"] == 1
-        assert atlas.locator("#diagramId").inner_text() == selected
+        assert atlas.locator("#diagramId").text_content() == selected
         _assert_clean_page(page, observation)

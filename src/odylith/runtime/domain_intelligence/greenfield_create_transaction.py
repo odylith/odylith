@@ -384,7 +384,7 @@ def _require_host_candidate_authority_binding(
     if passive:
         initial_versions.update((PASSIVE_SOURCE_DUTY_LEDGER_RECEIPT_VERSION, version)
                                 for version in PASSIVE_HOST_CANDIDATE_CONTRACT_VERSIONS
-                                if version != "odylith.greenfield.host-candidate-contract.v55")
+                                if version not in {"odylith.greenfield.host-candidate-contract.v55", "odylith.greenfield.host-candidate-contract.v56"})
         edit_versions.update((PASSIVE_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
                               f"odylith.greenfield.host-candidate-contract.v{version}")
                              for version in (51, 52, 53, 54))
@@ -394,6 +394,8 @@ def _require_host_candidate_authority_binding(
                               "odylith.greenfield.host-candidate-contract.v55"))
         edit_versions.add((CATALOG_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
                            "odylith.greenfield.host-candidate-contract.v55"))
+        initial_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v12", "odylith.greenfield.host-candidate-contract.v56"))
+        edit_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v13", "odylith.greenfield.host-candidate-contract.v56"))
     if (
         not isinstance(ledger_receipt, Mapping)
         or (not passive and host.get("contract_version") != HOST_CANDIDATE_CONTRACT_VERSION)
@@ -418,19 +420,19 @@ def _require_host_candidate_authority_binding(
             "ProductCreateTransaction host candidate source-duty hashes do not match its reviewed proposal"
         )
 
-    if host.get("contract_version") in {HOST_CANDIDATE_CONTRACT_VERSION, "odylith.greenfield.host-candidate-contract.v55"}:
+    if host.get("contract_version") in {HOST_CANDIDATE_CONTRACT_VERSION, "odylith.greenfield.host-candidate-contract.v55", "odylith.greenfield.host-candidate-contract.v56"}:
         from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
-            validate_component_responsibility_relations, first_path_relations_from_intent,
+            validate_component_responsibility_relations, source_event_relations_from_intent,
         )
         validate_component_responsibility_relations(
             authored_semantics["component_responsibility_relations"], intent=intent,
-            first_path_relations=first_path_relations_from_intent(intent), require_verified_duties=True,
+            first_path_relations=source_event_relations_from_intent(intent), require_verified_duties=True,
         )
         from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
             project_greenfield_source_event_catalog,
         )
         catalog = project_greenfield_source_event_catalog(ledger_receipt, evidence_text=intent["prompt"],
-                    _passive=host["contract_version"] == "odylith.greenfield.host-candidate-contract.v55")
+                    _passive=host["contract_version"] != HOST_CANDIDATE_CONTRACT_VERSION)
         owned = list(catalog["performers"])
         if catalog["independent_product_identity"]:
             from odylith.runtime.domain_intelligence.greenfield_model_source_citations import canonical_citation_from_host_selection, resolve_source_citation
@@ -439,6 +441,15 @@ def _require_host_candidate_authority_binding(
             owned.append({"path": "/title", "quote": quote, "source_start_byte": start,
                           "source_end_byte": start + len(quote.encode("utf-8"))})
         for actor in owned:
+            if actor.get("performer_role") == "product_wide":
+                orders = {row["event_order"] for row in catalog["events"]
+                          if row["performer_role"] == "product_wide" and row["actor_fact_path"] == actor["path"]
+                          and row["actor_start_byte"] == actor["source_start_byte"]}
+                if any(not any(link.get("relation_order") == order and link.get("relation_role") == "actor_fact_quote"
+                               for atom in authority["atomic_facts"] for link in atom.get("projection_links", ()))
+                       for order in orders):
+                    raise ValueError("ProductCreateTransaction product-wide action custody is missing")
+                continue
             if not any(
                 atom.get("normalized_value") == actor["quote"]
                 and any(link.get("path") == actor["path"] and link.get("relation_order") == 0

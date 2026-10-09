@@ -33,7 +33,7 @@ def test_components_retain_all_and_only_linked_acceptance_in_canonical_order(tmp
             if row["component_id"] in workstream["component_keys"]
         ]
         assert row["component_contract"]["delivery_workstreams"] == expected
-        registry._provisional_component_contract(row)
+        registry._provisional_component_contract(row, semantics_version=intent["authored_semantics"]["version"])
         assert row["validation"][0] == row["component_contract"]["provisional_component"]["verification"]
         assert len(row["validation"]) == len(expected) + 1
     assert len(rows[0]["component_contract"]["delivery_workstreams"]) == 2

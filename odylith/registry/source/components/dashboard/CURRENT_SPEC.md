@@ -24,6 +24,21 @@ from source responsibility relations or hide the proposed-authority label.
 Browser proof checks these visible values and source actors on desktop/mobile;
 unit or DOM-count success does not establish complete-package human quality.
 
+### Current information order (2026-10-09)
+
+Atlas leads with the selected explanation and diagram. Exact identifiers,
+freshness details, exports and linked work belong in closed, keyboard-accessible
+details; material stale warnings remain visible. Radar keeps search available,
+places optional analysis below the workspace and brings the selected narrative
+into view on mobile. Loading detail must not steal focus from a later search.
+Compass describes the next implementation step and how to verify it directly.
+
+The source-local Atlas change passes 170 checks and the Radar change passes 98,
+including normal, empty and degraded browser states. Parent visual review accepts
+the bounded layouts. These are source-level proofs; regenerated product pages,
+the next package and fresh native Greenfield output still require qualification.
+CB-303 retains the original failed output and the independent layout evidence.
+
 ### V38 Greenfield Project trust projection
 
 Dashboard's Project view renders the authored Greenfield trust section whenever

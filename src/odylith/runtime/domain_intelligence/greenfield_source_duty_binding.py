@@ -34,6 +34,7 @@ _FIRST_PATH_PERFORMER_FIELDS = {
     "internal_system": "internal_systems",
     "external_system": "external_systems",
     "product_title": "title",
+    "product_wide": "product_identity",
 }
 
 
@@ -134,7 +135,7 @@ def project_greenfield_source_event_catalog(
     )
     evidence = evidence_text.encode("utf-8")
     facts: dict[str, Any] = {"human_actors": [], "internal_systems": [], "external_systems": [], "title": None}
-    independent_identity = verified["ledger"]["version"] == SOURCE_DUTY_LEDGER_VERSION
+    independent_identity = verified["ledger"]["version"] in {SOURCE_DUTY_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v7"}
     if independent_identity:
         facts["title"] = deepcopy(verified["ledger"]["product_identity"]["source_ref"])
     identity_span = _source_span(evidence, facts["title"]) if independent_identity else None
@@ -151,7 +152,7 @@ def project_greenfield_source_event_catalog(
                 raise GreenfieldSourceDutyBindingError("product identity cannot own an action performer")
             field = _FIRST_PATH_PERFORMER_FIELDS[role]
             start, end = _source_span(evidence, duty["actor_ref"])
-            if independent_identity and role != "internal_system" and (start, end) == identity_span:
+            if independent_identity and role not in {"internal_system", "product_wide"} and (start, end) == identity_span:
                 raise GreenfieldSourceDutyBindingError("product identity has an incompatible source performer kind")
             roles = kinds_by_span.setdefault((start, end), set())
             if roles and role not in roles and (independent_identity or roles | {role} != {"internal_system", "product_title"}):
@@ -160,7 +161,9 @@ def project_greenfield_source_event_catalog(
             identity = (role, start, end)
             actor = identities.get(identity)
             if actor is None:
-                if field == "title":
+                if field == "product_identity":
+                    row = 1
+                elif field == "title":
                     if facts["title"] is not None:
                         raise GreenfieldSourceDutyBindingError("source duties name distinct product-title performers")
                     facts["title"] = deepcopy(duty["actor_ref"])
@@ -170,7 +173,7 @@ def project_greenfield_source_event_catalog(
                     row = len(facts[field])
                 actor = {
                     "field": field, "row": row,
-                    "path": "/title" if field == "title" else f"/{field}/{row - 1}",
+                    "path": f"/{field}" if field in {"title", "product_identity"} else f"/{field}/{row - 1}",
                     "performer_role": role, "duty_id": duty["id"],
                     "quote": duty["actor_ref"]["quote"],
                     "source_start_byte": start, "source_end_byte": end,
@@ -553,6 +556,7 @@ def validate_greenfield_source_duty_binding(
             source_precedence=candidate_result.get("source_precedence", ()),
             result_event_order=None,
             first_path_event_orders=expected_run,
+            recurring_event_orders=recurring_source_event_orders(ledger, binding),
         )
     except ValueError as exc:
         raise GreenfieldSourceDutyBindingError(
@@ -571,14 +575,14 @@ def validate_greenfield_source_duty_binding(
                 "candidate terminal is outside the first run"
             )
     validate_greenfield_source_duty_design_binding(
-        binding, ledger=ledger, provisional_design=design,
+        binding, ledger=ledger, provisional_design=design, ledger_receipt=receipt,
     )
     return deepcopy(dict(binding))
 
 
 def validate_greenfield_source_duty_design_binding(
     binding: Mapping[str, Any], *, ledger: Mapping[str, Any],
-    provisional_design: Mapping[str, Any],
+    provisional_design: Mapping[str, Any], ledger_receipt: Mapping[str, Any] | None = None,
 ) -> None:
     """Validate passive duty identities and ownership against an accepted ledger.
 
@@ -612,6 +616,8 @@ def validate_greenfield_source_duty_design_binding(
         raise GreenfieldSourceDutyBindingError(
             "candidate design owner keys are duplicated"
         )
+    if ledger_receipt is not None:
+        require_preserved_source_duty_owners(binding, ledger_receipt)
     _off_path_bindings(
         binding["off_path_transitions"],
         duties=ledger["off_path_transitions"],
@@ -628,6 +634,32 @@ def validate_greenfield_source_duty_design_binding(
             workstreams=workstream_by_key,
             role=role,
         )
+
+
+def recurring_source_event_orders(ledger: Mapping[str, Any], binding: Mapping[str, Any]) -> tuple[int, ...]:
+    """Map source-owned recurrence to stable event identities, never infer it from text."""
+    if ledger["version"] != SOURCE_DUTY_LEDGER_VERSION:
+        return ()
+    recurring = {row["id"] for row in ledger["system_duties"]
+                 if row["execution_kind"] == "recurring_invariant"}
+    return tuple(row["event_order"] for row in binding["system_duties"] if row["duty_id"] in recurring)
+
+
+def require_preserved_source_duty_owners(binding: Mapping[str, Any], receipt: Mapping[str, Any]) -> None:
+    """Preserved EDIT duties retain their authenticated allocation keys exactly."""
+    context = receipt.get("edit_preservation")
+    if not isinstance(context, Mapping) or context.get("version") != "odylith.greenfield.edit-lifecycle-preservation.v3":
+        return
+    decisions = receipt["decision_set"]["edit_preservation"]
+    for role in ("off_path_transitions", "conditional_guards", "boundaries", "proof_duties"):
+        for prior in context["prior_lifecycle"][role]:
+            decision = decisions[f"{role}/{prior['duty_id']}"]
+            if decision["verdict"] != "preserved":
+                continue
+            current = next((row for row in binding[role]
+                            if row["duty_id"] == decision["current_duty_id"]), None)
+            if current is None or any(current[key] != prior[key] for key in ("component_key", "workstream_key")):
+                raise GreenfieldSourceDutyBindingError("preserved source duty must retain its prior component and workstream allocation")
 
 
 __all__ = [
