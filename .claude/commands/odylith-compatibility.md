@@ -1,6 +1,6 @@
 ---
 description: Inspect the local Claude Code host compatibility posture for Odylith.
-argument-hint: [--json] [--skip-version-probe]
+argument-hint: "[--json] [--skip-version-probe]"
 ---
 
 Inspect the local Claude Code host compatibility posture for Odylith.
