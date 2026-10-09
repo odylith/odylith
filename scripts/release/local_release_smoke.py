@@ -41,7 +41,7 @@ _CANDIDATE_CONTRACT_SMOKE_PROMPT = (
 
 
 def _has_current_host_candidate_schema(candidate_schema: object) -> bool:
-    """Require ledger-owned action meaning and one candidate with no later semantic owner."""
+    """Keep source events catalog-owned and candidate lifecycle allocations closed."""
 
     try:
         serialized = json.dumps(candidate_schema, sort_keys=True)
@@ -57,36 +57,38 @@ def _has_current_host_candidate_schema(candidate_schema: object) -> bool:
             return False
         schema = candidate_schema  # keep the structural walk explicit for release diagnosis
         assert isinstance(schema, dict)
-        if schema.get("type") != "object" or not {
-            "version", "result",
-        }.issubset(set(schema.get("required") or ())):
+        if (schema.get("type") != "object" or schema.get("additionalProperties") is not False
+                or set(schema.get("required") or ()) != {"version", "result"}
+                or set(schema.get("properties") or {}) != {"version", "result"}):
             return False
         properties = schema["properties"]
         if properties["version"].get("enum") != [_EXPECTED_CANDIDATE_FORMAT_VERSION]:
             return False
         authored = properties["result"]["anyOf"][0]
         authored_properties = authored["properties"]
-        constraint = authored["properties"]["facts"]["properties"][
-            "operational_constraints"
-        ]["items"]
-        event = authored_properties["events"]["items"]
+        authored_fields = {
+            "status", "facts", "terminal", "assumptions", "ambiguities", "consistency",
+            "provisional_design", "source_precedence", "source_duty_binding",
+        }
+        if (authored.get("type") != "object" or authored.get("additionalProperties") is not False
+                or set(authored.get("required") or ()) != authored_fields
+                or set(authored_properties) != authored_fields):
+            return False
+        facts = authored_properties["facts"]
+        constraint = facts["properties"]["operational_constraints"]["items"]
         design = authored_properties["provisional_design"]
         binding = authored_properties["source_duty_binding"]
         binding_fields = {
-            "version", "source_sha256", "ledger_sha256", "first_path_actions",
-            "supporting_human_actions", "system_duties", "off_path_transitions",
+            "version", "source_sha256", "ledger_sha256", "off_path_transitions",
             "conditional_guards", "boundaries", "proof_duties",
         }
         if (binding.get("type") != "object" or binding.get("additionalProperties") is not False
                 or set(binding.get("required") or ()) != binding_fields
                 or set(binding.get("properties") or {}) != binding_fields
                 or binding["properties"]["version"].get("const")
-                != "odylith.greenfield.source-duty-binding.v3"):
+                != "odylith.greenfield.source-duty-binding.v4"):
             return False
         for role, fields in (
-            ("first_path_actions", {"duty_id", "event_order"}),
-            ("supporting_human_actions", {"duty_id", "event_order"}),
-            ("system_duties", {"duty_id", "event_order"}),
             ("off_path_transitions", {"duty_id", "component_key", "workstream_key", "effects"}),
             ("conditional_guards", {"duty_id", "component_key", "workstream_key"}),
             ("boundaries", {"duty_id", "component_key", "workstream_key"}),
@@ -101,10 +103,11 @@ def _has_current_host_candidate_schema(candidate_schema: object) -> bool:
                 return False
         return bool(
             isinstance(constraint, dict)
-            and "components" not in authored_properties
-            and "components" not in authored.get("required", ())
-            and {"provisional_design", "events", "source_duty_binding"}
-            <= set(authored.get("required") or ())
+            and facts.get("type") == "object"
+            and facts.get("additionalProperties") is False
+            and not {"first_path", "supporting_events"} & (
+                set(facts.get("properties") or {}) | set(facts.get("required") or ())
+            )
             and isinstance(design["properties"]["components"], dict)
             and "project_summary" in design.get("required", ())
             and design["properties"]["project_summary"].get("type") == "string"
@@ -119,10 +122,6 @@ def _has_current_host_candidate_schema(candidate_schema: object) -> bool:
                 constraint["properties"][field].get("type") == "string"
                 for field in ("quote", "context")
             )
-            and event.get("type") == "object"
-            and event.get("additionalProperties") is False
-            and set(event.get("required") or ()) == {"actor_fact"}
-            and set(event.get("properties") or {}) == {"actor_fact"}
             and all(
                 binding["properties"][field] == {"type": "string", "minLength": 64, "maxLength": 64}
                 for field in ("source_sha256", "ledger_sha256")

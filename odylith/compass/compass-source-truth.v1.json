@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "generated_utc": "2026-10-09T08:39:41Z",
+  "generated_utc": "2026-10-09T09:09:00Z",
   "release_summary": {
     "catalog": [
       {
@@ -322,19 +322,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 28,
-            "file_touch_count": 140
+            "commit_count": 2,
+            "local_change_count": 2,
+            "file_touch_count": 183
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 28,
-            "file_touch_count": 630
+            "commit_count": 2,
+            "local_change_count": 2,
+            "file_touch_count": 665
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-10-09T01:39:31-07:00",
+          "last_activity_iso": "2026-10-09T02:08:40-07:00",
           "age_days": 105,
           "eta_days": 17,
           "eta_confidence": "high"
@@ -350,12 +350,12 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 75,
-            "band": "High"
+            "index": 65,
+            "band": "Medium"
           },
           "48h": {
-            "index": 75,
-            "band": "High"
+            "index": 65,
+            "band": "Medium"
           }
         },
         "proof_state": {},
@@ -738,6 +738,163 @@
         "proof_summary_lines": []
       },
       {
+        "idea_id": "B-145",
+        "title": "Assess v0.1.15 guidance and browser surface migration",
+        "status": "implementation",
+        "priority": "P1",
+        "sizing": "S",
+        "complexity": "Medium",
+        "ordering_score": "100",
+        "implemented_summary": "",
+        "why": {
+          "problem": "The assessed clean candidate at `d0021184faba41b8fac887ce107ee452d8dc2722` changes 877 consumer-sensitive paths relative to published v0.1.14 at `fae446995e13e12409e50f944a336dbc846db90a`. CB-337 established that earlier dirty-only checks could forget committed changes. This assessment is reopened: its historical bindings do not qualify the current release-wide comparison. Historical bindings from earlier snapshots, retained for traceability only: The v0.1.15 release changes managed guidance, browser-rendered governance surfaces, and install-managed assets. Existing consumer installs need an explicit assessment before promotion. Evidence markers: `migration-observer:0.1.15:guidance-and-skills:1dbd05321562`; `migration-observer:0.1.15:guidance-and-skills:5cf1c66e46da`; `migration-observer:0.1.15:browser-surfaces:e400b39b824e`; `migration-observer:0.1.15:browser-surfaces:835aaa4f49de`; `migration-observer:0.1.15:browser-surfaces:9a4db93486ab`; `migration-observer:0.1.15:browser-surfaces:e64341855d69`; `migration-observer:0.1.15:browser-surfaces:28bfbc30ae65`; `migration-observer:0.1.15:browser-surfaces:068dac56194b`; `migration-observer:0.1.15:browser-surfaces:341c9fc14c4e`; `migration-observer:0.1.15:public-docs-and-release-guidance:b91b6c7e0995`; `migration-observer:0.1.15:install-managed-assets:352b7f58e4df`; `migration-observer:0.1.15:install-managed-assets:fae6b20b969f`; `migration-observer:0.1.15:install-managed-assets:46796f8138f3`; `migration-observer:0.1.15:install-managed-assets:87c9b491c829`.",
+          "customer": "Odylith operators upgrading managed guidance, skill, Atlas, and Casebook browser surfaces.",
+          "proposed_solution": "Compare the published predecessor and complete candidate trees, map each classified path to its compatibility decision and proof, and exercise the actual published runtime with populated governance. Bind final fingerprints only after the assessment is complete; do not infer source preservation from an empty repo.",
+          "opportunity": "Make upgrade impact explicit, reversible, and traceable rather than relying on implicit regenerated assets.",
+          "why_now": "The release gate observed these consumer-visible changes in the current diff; the assessment must bind the exact final fingerprints before promotion.",
+          "founder_pov": "Assess the changed guidance and browser surfaces, record compatibility and rollback posture, and either complete the assessment or route concrete migration work before release."
+        },
+        "links": {
+          "idea_file": "odylith/radar/source/ideas/2026-07/2026-07-20-assess-v0-1-15-guidance-and-browser-surface-migration.md",
+          "plan_file": "odylith/technical-plans/in-progress/2026-07/2026-07-20-v0-1-15-guidance-and-browser-surface-migration-assessment.md"
+        },
+        "registry_components": [
+          {
+            "component_id": "odylith",
+            "name": "Odylith"
+          }
+        ],
+        "execution_wave_programs": [],
+        "release": {},
+        "release_history_summary": "Removed from 0.1.15",
+        "plan": {
+          "created": "2026-07-20",
+          "updated": "2026-10-05",
+          "all_total_tasks": 4,
+          "all_done_tasks": 0,
+          "total_tasks": 0,
+          "done_tasks": 0,
+          "progress_ratio": 0.0,
+          "progress_basis": "execution_checklist",
+          "display_progress_ratio": null,
+          "display_progress_label": "Progress not yet captured",
+          "display_progress_state": "unknown",
+          "progress_classification": "active_untracked",
+          "checklist_label": "",
+          "next_tasks": []
+        },
+        "activity": {
+          "24h": {
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 182
+          },
+          "48h": {
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 214
+          }
+        },
+        "timeline": {
+          "start_date": "2026-07-20",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
+          "age_days": 81,
+          "eta_days": null,
+          "eta_confidence": "low"
+        },
+        "lineage": {
+          "reopens": [],
+          "reopened_by": [],
+          "split_from": [],
+          "split_into": [],
+          "merged_into": [],
+          "merged_from": []
+        },
+        "cost": {
+          "base_index": 18,
+          "24h": {
+            "index": 25,
+            "band": "Low"
+          },
+          "48h": {
+            "index": 25,
+            "band": "Low"
+          }
+        },
+        "proof_state": {},
+        "claim_guard": {},
+        "proof_state_resolution": {
+          "lane_ids": [
+            "greenfield-refusal-feedback",
+            "greenfield-release",
+            "greenfield-release-current-v42",
+            "installed-v14-to-v37-bounded-migration",
+            "v42-source-checkpoint"
+          ],
+          "state": "ambiguous"
+        },
+        "scope_signal": {
+          "budget_class": "fast_simple",
+          "caps": [],
+          "feature_vector": {
+            "blast_radius_class": "cross-surface",
+            "broad_fanout": false,
+            "cross_surface_conflict": false,
+            "decision_count": 103,
+            "decision_evidence": true,
+            "explicit_count": 850,
+            "frontier_phase": "",
+            "generated_only_churn": false,
+            "governance_only_local_change": false,
+            "has_any_signal": true,
+            "implementation_count": 564,
+            "implementation_evidence": true,
+            "linked_child_count": 0,
+            "linked_surface_count": 5,
+            "meaningful_change_count": 697,
+            "meaningful_scope_activity": true,
+            "narrow_verified_signal": true,
+            "open_warning": false,
+            "proof_blocker": false,
+            "proof_status": "",
+            "stale_authority": false,
+            "synthetic_count": 0,
+            "unsafe_closeout": false,
+            "verified_completion": false
+          },
+          "label": "Active scope",
+          "promoted_default": true,
+          "rank": 3,
+          "reasons": [
+            "A narrow verified scoped signal was recorded.",
+            "Explicit decision evidence is present.",
+            "Explicit implementation evidence is present.",
+            "Meaningful scope-local implementation evidence is present."
+          ],
+          "rung": "R3",
+          "token": "active_scope"
+        },
+        "proof_refs": [
+          {
+            "anchor": "timeline-audit",
+            "fact_tag": "frontier",
+            "kind": "workstream",
+            "label": "Proof frontier",
+            "surface": "compass",
+            "value": "B-145"
+          },
+          {
+            "anchor": "current-workstreams",
+            "fact_tag": "deployment_truth",
+            "kind": "workstream",
+            "label": "Deployment truth",
+            "surface": "compass",
+            "value": "B-145"
+          }
+        ],
+        "proof_summary_lines": []
+      },
+      {
         "idea_id": "B-005",
         "title": "Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof",
         "status": "finished",
@@ -805,19 +962,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 15,
-            "file_touch_count": 121
+            "commit_count": 2,
+            "local_change_count": 2,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 15,
-            "file_touch_count": 174
+            "commit_count": 2,
+            "local_change_count": 2,
+            "file_touch_count": 224
           }
         },
         "timeline": {
           "start_date": "2026-03-28",
-          "last_activity_iso": "2026-10-09T01:39:31-07:00",
+          "last_activity_iso": "2026-10-09T02:05:37-07:00",
           "age_days": 195,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -833,12 +990,12 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 75,
-            "band": "High"
+            "index": 65,
+            "band": "Medium"
           },
           "48h": {
-            "index": 75,
-            "band": "High"
+            "index": 65,
+            "band": "Medium"
           }
         },
         "proof_state": {},
@@ -1005,19 +1162,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 12,
-            "file_touch_count": 120
+            "commit_count": 2,
+            "local_change_count": 1,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 12,
-            "file_touch_count": 175
+            "commit_count": 2,
+            "local_change_count": 1,
+            "file_touch_count": 228
           }
         },
         "timeline": {
           "start_date": "2026-04-10",
-          "last_activity_iso": "2026-10-09T01:39:31-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 182,
           "eta_days": null,
           "eta_confidence": "low"
@@ -1033,11 +1190,11 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 55,
+            "index": 43,
             "band": "Medium"
           },
           "48h": {
-            "index": 55,
+            "index": 43,
             "band": "Medium"
           }
         },
@@ -1176,19 +1333,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 12,
-            "file_touch_count": 120
+            "commit_count": 2,
+            "local_change_count": 1,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 12,
-            "file_touch_count": 161
+            "commit_count": 2,
+            "local_change_count": 1,
+            "file_touch_count": 214
           }
         },
         "timeline": {
           "start_date": "2026-04-08",
-          "last_activity_iso": "2026-10-09T01:39:31-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 184,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -1206,12 +1363,12 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 75,
-            "band": "High"
+            "index": 63,
+            "band": "Medium"
           },
           "48h": {
-            "index": 75,
-            "band": "High"
+            "index": 63,
+            "band": "Medium"
           }
         },
         "proof_state": {},
@@ -1350,19 +1507,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 12,
-            "file_touch_count": 120
+            "commit_count": 2,
+            "local_change_count": 1,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 12,
-            "file_touch_count": 175
+            "commit_count": 2,
+            "local_change_count": 1,
+            "file_touch_count": 228
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-10-09T01:39:31-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 183,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -1380,11 +1537,11 @@
         "cost": {
           "base_index": 71,
           "24h": {
-            "index": 91,
+            "index": 79,
             "band": "High"
           },
           "48h": {
-            "index": 91,
+            "index": 79,
             "band": "High"
           }
         },
@@ -1452,163 +1609,6 @@
             "label": "Deployment truth",
             "surface": "compass",
             "value": "B-069"
-          }
-        ],
-        "proof_summary_lines": []
-      },
-      {
-        "idea_id": "B-145",
-        "title": "Assess v0.1.15 guidance and browser surface migration",
-        "status": "implementation",
-        "priority": "P1",
-        "sizing": "S",
-        "complexity": "Medium",
-        "ordering_score": "100",
-        "implemented_summary": "",
-        "why": {
-          "problem": "The assessed clean candidate at `d0021184faba41b8fac887ce107ee452d8dc2722` changes 877 consumer-sensitive paths relative to published v0.1.14 at `fae446995e13e12409e50f944a336dbc846db90a`. CB-337 established that earlier dirty-only checks could forget committed changes. This assessment is reopened: its historical bindings do not qualify the current release-wide comparison. Historical bindings from earlier snapshots, retained for traceability only: The v0.1.15 release changes managed guidance, browser-rendered governance surfaces, and install-managed assets. Existing consumer installs need an explicit assessment before promotion. Evidence markers: `migration-observer:0.1.15:guidance-and-skills:1dbd05321562`; `migration-observer:0.1.15:guidance-and-skills:5cf1c66e46da`; `migration-observer:0.1.15:browser-surfaces:e400b39b824e`; `migration-observer:0.1.15:browser-surfaces:835aaa4f49de`; `migration-observer:0.1.15:browser-surfaces:9a4db93486ab`; `migration-observer:0.1.15:browser-surfaces:e64341855d69`; `migration-observer:0.1.15:browser-surfaces:28bfbc30ae65`; `migration-observer:0.1.15:browser-surfaces:068dac56194b`; `migration-observer:0.1.15:browser-surfaces:341c9fc14c4e`; `migration-observer:0.1.15:public-docs-and-release-guidance:b91b6c7e0995`; `migration-observer:0.1.15:install-managed-assets:352b7f58e4df`; `migration-observer:0.1.15:install-managed-assets:fae6b20b969f`; `migration-observer:0.1.15:install-managed-assets:46796f8138f3`; `migration-observer:0.1.15:install-managed-assets:87c9b491c829`.",
-          "customer": "Odylith operators upgrading managed guidance, skill, Atlas, and Casebook browser surfaces.",
-          "proposed_solution": "Compare the published predecessor and complete candidate trees, map each classified path to its compatibility decision and proof, and exercise the actual published runtime with populated governance. Bind final fingerprints only after the assessment is complete; do not infer source preservation from an empty repo.",
-          "opportunity": "Make upgrade impact explicit, reversible, and traceable rather than relying on implicit regenerated assets.",
-          "why_now": "The release gate observed these consumer-visible changes in the current diff; the assessment must bind the exact final fingerprints before promotion.",
-          "founder_pov": "Assess the changed guidance and browser surfaces, record compatibility and rollback posture, and either complete the assessment or route concrete migration work before release."
-        },
-        "links": {
-          "idea_file": "odylith/radar/source/ideas/2026-07/2026-07-20-assess-v0-1-15-guidance-and-browser-surface-migration.md",
-          "plan_file": "odylith/technical-plans/in-progress/2026-07/2026-07-20-v0-1-15-guidance-and-browser-surface-migration-assessment.md"
-        },
-        "registry_components": [
-          {
-            "component_id": "odylith",
-            "name": "Odylith"
-          }
-        ],
-        "execution_wave_programs": [],
-        "release": {},
-        "release_history_summary": "Removed from 0.1.15",
-        "plan": {
-          "created": "2026-07-20",
-          "updated": "2026-10-05",
-          "all_total_tasks": 4,
-          "all_done_tasks": 0,
-          "total_tasks": 0,
-          "done_tasks": 0,
-          "progress_ratio": 0.0,
-          "progress_basis": "execution_checklist",
-          "display_progress_ratio": null,
-          "display_progress_label": "Progress not yet captured",
-          "display_progress_state": "unknown",
-          "progress_classification": "active_untracked",
-          "checklist_label": "",
-          "next_tasks": []
-        },
-        "activity": {
-          "24h": {
-            "commit_count": 1,
-            "local_change_count": 2,
-            "file_touch_count": 126
-          },
-          "48h": {
-            "commit_count": 1,
-            "local_change_count": 2,
-            "file_touch_count": 159
-          }
-        },
-        "timeline": {
-          "start_date": "2026-07-20",
-          "last_activity_iso": "2026-10-08T23:33:55-07:00",
-          "age_days": 81,
-          "eta_days": null,
-          "eta_confidence": "low"
-        },
-        "lineage": {
-          "reopens": [],
-          "reopened_by": [],
-          "split_from": [],
-          "split_into": [],
-          "merged_into": [],
-          "merged_from": []
-        },
-        "cost": {
-          "base_index": 18,
-          "24h": {
-            "index": 25,
-            "band": "Low"
-          },
-          "48h": {
-            "index": 25,
-            "band": "Low"
-          }
-        },
-        "proof_state": {},
-        "claim_guard": {},
-        "proof_state_resolution": {
-          "lane_ids": [
-            "greenfield-refusal-feedback",
-            "greenfield-release",
-            "greenfield-release-current-v42",
-            "installed-v14-to-v37-bounded-migration",
-            "v42-source-checkpoint"
-          ],
-          "state": "ambiguous"
-        },
-        "scope_signal": {
-          "budget_class": "fast_simple",
-          "caps": [],
-          "feature_vector": {
-            "blast_radius_class": "cross-surface",
-            "broad_fanout": false,
-            "cross_surface_conflict": false,
-            "decision_count": 103,
-            "decision_evidence": true,
-            "explicit_count": 850,
-            "frontier_phase": "",
-            "generated_only_churn": false,
-            "governance_only_local_change": false,
-            "has_any_signal": true,
-            "implementation_count": 564,
-            "implementation_evidence": true,
-            "linked_child_count": 0,
-            "linked_surface_count": 5,
-            "meaningful_change_count": 697,
-            "meaningful_scope_activity": true,
-            "narrow_verified_signal": true,
-            "open_warning": false,
-            "proof_blocker": false,
-            "proof_status": "",
-            "stale_authority": false,
-            "synthetic_count": 0,
-            "unsafe_closeout": false,
-            "verified_completion": false
-          },
-          "label": "Active scope",
-          "promoted_default": true,
-          "rank": 3,
-          "reasons": [
-            "A narrow verified scoped signal was recorded.",
-            "Explicit decision evidence is present.",
-            "Explicit implementation evidence is present.",
-            "Meaningful scope-local implementation evidence is present."
-          ],
-          "rung": "R3",
-          "token": "active_scope"
-        },
-        "proof_refs": [
-          {
-            "anchor": "timeline-audit",
-            "fact_tag": "frontier",
-            "kind": "workstream",
-            "label": "Proof frontier",
-            "surface": "compass",
-            "value": "B-145"
-          },
-          {
-            "anchor": "current-workstreams",
-            "fact_tag": "deployment_truth",
-            "kind": "workstream",
-            "label": "Deployment truth",
-            "surface": "compass",
-            "value": "B-145"
           }
         ],
         "proof_summary_lines": []
@@ -2414,19 +2414,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 120
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 148
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 203
           }
         },
         "timeline": {
           "start_date": "2026-04-14",
-          "last_activity_iso": "2026-10-08T23:14:04-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 178,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -2442,11 +2442,11 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 60,
+            "index": 62,
             "band": "Medium"
           },
           "48h": {
-            "index": 60,
+            "index": 62,
             "band": "Medium"
           }
         },
@@ -2661,19 +2661,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 120
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 126
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 181
           }
         },
         "timeline": {
           "start_date": "2026-04-14",
-          "last_activity_iso": "2026-10-08T23:14:04-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 178,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -2689,11 +2689,11 @@
         "cost": {
           "base_index": 27,
           "24h": {
-            "index": 32,
+            "index": 34,
             "band": "Low"
           },
           "48h": {
-            "index": 32,
+            "index": 34,
             "band": "Low"
           }
         },
@@ -2861,19 +2861,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 120
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 126
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 181
           }
         },
         "timeline": {
           "start_date": "2026-04-14",
-          "last_activity_iso": "2026-10-08T23:14:04-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 178,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -2889,11 +2889,11 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 60,
+            "index": 62,
             "band": "Medium"
           },
           "48h": {
-            "index": 60,
+            "index": 62,
             "band": "Medium"
           }
         },
@@ -3053,19 +3053,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 120
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 126
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 181
           }
         },
         "timeline": {
           "start_date": "2026-04-14",
-          "last_activity_iso": "2026-10-08T23:14:04-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 178,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -3081,11 +3081,11 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 60,
+            "index": 62,
             "band": "Medium"
           },
           "48h": {
-            "index": 60,
+            "index": 62,
             "band": "Medium"
           }
         },
@@ -3245,19 +3245,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 120
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 126
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 181
           }
         },
         "timeline": {
           "start_date": "2026-04-14",
-          "last_activity_iso": "2026-10-08T23:14:04-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 178,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -3273,11 +3273,11 @@
         "cost": {
           "base_index": 27,
           "24h": {
-            "index": 32,
+            "index": 34,
             "band": "Low"
           },
           "48h": {
-            "index": 32,
+            "index": 34,
             "band": "Low"
           }
         },
@@ -3469,19 +3469,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 120
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 126
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 181
           }
         },
         "timeline": {
           "start_date": "2026-04-14",
-          "last_activity_iso": "2026-10-08T23:14:04-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 178,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -3497,11 +3497,11 @@
         "cost": {
           "base_index": 27,
           "24h": {
-            "index": 32,
+            "index": 34,
             "band": "Low"
           },
           "48h": {
-            "index": 32,
+            "index": 34,
             "band": "Low"
           }
         },
@@ -3640,19 +3640,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 121
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 136
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 191
           }
         },
         "timeline": {
           "start_date": "2026-03-29",
-          "last_activity_iso": "2026-10-09T01:39:31-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 194,
           "eta_days": 27,
           "eta_confidence": "high"
@@ -3668,11 +3668,11 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 40,
+            "index": 42,
             "band": "Medium"
           },
           "48h": {
-            "index": 40,
+            "index": 42,
             "band": "Medium"
           }
         },
@@ -3819,19 +3819,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 121
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 141
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 196
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-10-09T01:39:31-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 183,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -3847,11 +3847,11 @@
         "cost": {
           "base_index": 71,
           "24h": {
-            "index": 76,
+            "index": 78,
             "band": "High"
           },
           "48h": {
-            "index": 76,
+            "index": 78,
             "band": "High"
           }
         },
@@ -4058,19 +4058,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 121
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 150
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 205
           }
         },
         "timeline": {
           "start_date": "2026-03-26",
-          "last_activity_iso": "2026-10-09T01:39:31-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 197,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -4086,11 +4086,11 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 60,
+            "index": 62,
             "band": "Medium"
           },
           "48h": {
-            "index": 60,
+            "index": 62,
             "band": "Medium"
           }
         },
@@ -4221,19 +4221,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 121
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 148
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 203
           }
         },
         "timeline": {
           "start_date": "2026-03-30",
-          "last_activity_iso": "2026-10-09T01:39:31-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 193,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -4249,11 +4249,11 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 40,
+            "index": 42,
             "band": "Medium"
           },
           "48h": {
-            "index": 40,
+            "index": 42,
             "band": "Medium"
           }
         },
@@ -5406,19 +5406,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 121
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 155
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 210
           }
         },
         "timeline": {
           "start_date": "2026-04-17",
-          "last_activity_iso": "2026-10-09T01:39:31-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 175,
           "eta_days": null,
           "eta_confidence": "low"
@@ -5434,11 +5434,11 @@
         "cost": {
           "base_index": 84,
           "24h": {
-            "index": 89,
+            "index": 91,
             "band": "High"
           },
           "48h": {
-            "index": 89,
+            "index": 91,
             "band": "High"
           }
         },
@@ -5593,19 +5593,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 121
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 159
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 213
           }
         },
         "timeline": {
           "start_date": "2026-04-17",
-          "last_activity_iso": "2026-10-09T01:39:31-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 175,
           "eta_days": null,
           "eta_confidence": "low"
@@ -5621,11 +5621,11 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 40,
+            "index": 42,
             "band": "Medium"
           },
           "48h": {
-            "index": 40,
+            "index": 42,
             "band": "Medium"
           }
         },
@@ -5780,19 +5780,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 1
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 116
           },
           "48h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 9
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 124
           }
         },
         "timeline": {
           "start_date": "2026-04-08",
-          "last_activity_iso": "2026-10-09T01:39:31-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 184,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -5808,11 +5808,11 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 57,
+            "index": 58,
             "band": "Medium"
           },
           "48h": {
-            "index": 57,
+            "index": 58,
             "band": "Medium"
           }
         },
@@ -6204,19 +6204,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 1
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 116
           },
           "48h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 17
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 130
           }
         },
         "timeline": {
           "start_date": "2026-03-27",
-          "last_activity_iso": "2026-10-09T01:39:31-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 196,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -6232,11 +6232,11 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 37,
+            "index": 38,
             "band": "Low"
           },
           "48h": {
-            "index": 37,
+            "index": 38,
             "band": "Low"
           }
         },
@@ -30316,19 +30316,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 28,
-            "file_touch_count": 140
+            "commit_count": 2,
+            "local_change_count": 2,
+            "file_touch_count": 183
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 28,
-            "file_touch_count": 630
+            "commit_count": 2,
+            "local_change_count": 2,
+            "file_touch_count": 665
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-10-09T01:39:31-07:00",
+          "last_activity_iso": "2026-10-09T02:08:40-07:00",
           "age_days": 105,
           "eta_days": 17,
           "eta_confidence": "high"
@@ -30344,12 +30344,12 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 75,
-            "band": "High"
+            "index": 65,
+            "band": "Medium"
           },
           "48h": {
-            "index": 75,
-            "band": "High"
+            "index": 65,
+            "band": "Medium"
           }
         },
         "proof_state": {},
@@ -30732,6 +30732,163 @@
         "proof_summary_lines": []
       },
       {
+        "idea_id": "B-145",
+        "title": "Assess v0.1.15 guidance and browser surface migration",
+        "status": "implementation",
+        "priority": "P1",
+        "sizing": "S",
+        "complexity": "Medium",
+        "ordering_score": "100",
+        "implemented_summary": "",
+        "why": {
+          "problem": "The assessed clean candidate at `d0021184faba41b8fac887ce107ee452d8dc2722` changes 877 consumer-sensitive paths relative to published v0.1.14 at `fae446995e13e12409e50f944a336dbc846db90a`. CB-337 established that earlier dirty-only checks could forget committed changes. This assessment is reopened: its historical bindings do not qualify the current release-wide comparison. Historical bindings from earlier snapshots, retained for traceability only: The v0.1.15 release changes managed guidance, browser-rendered governance surfaces, and install-managed assets. Existing consumer installs need an explicit assessment before promotion. Evidence markers: `migration-observer:0.1.15:guidance-and-skills:1dbd05321562`; `migration-observer:0.1.15:guidance-and-skills:5cf1c66e46da`; `migration-observer:0.1.15:browser-surfaces:e400b39b824e`; `migration-observer:0.1.15:browser-surfaces:835aaa4f49de`; `migration-observer:0.1.15:browser-surfaces:9a4db93486ab`; `migration-observer:0.1.15:browser-surfaces:e64341855d69`; `migration-observer:0.1.15:browser-surfaces:28bfbc30ae65`; `migration-observer:0.1.15:browser-surfaces:068dac56194b`; `migration-observer:0.1.15:browser-surfaces:341c9fc14c4e`; `migration-observer:0.1.15:public-docs-and-release-guidance:b91b6c7e0995`; `migration-observer:0.1.15:install-managed-assets:352b7f58e4df`; `migration-observer:0.1.15:install-managed-assets:fae6b20b969f`; `migration-observer:0.1.15:install-managed-assets:46796f8138f3`; `migration-observer:0.1.15:install-managed-assets:87c9b491c829`.",
+          "customer": "Odylith operators upgrading managed guidance, skill, Atlas, and Casebook browser surfaces.",
+          "proposed_solution": "Compare the published predecessor and complete candidate trees, map each classified path to its compatibility decision and proof, and exercise the actual published runtime with populated governance. Bind final fingerprints only after the assessment is complete; do not infer source preservation from an empty repo.",
+          "opportunity": "Make upgrade impact explicit, reversible, and traceable rather than relying on implicit regenerated assets.",
+          "why_now": "The release gate observed these consumer-visible changes in the current diff; the assessment must bind the exact final fingerprints before promotion.",
+          "founder_pov": "Assess the changed guidance and browser surfaces, record compatibility and rollback posture, and either complete the assessment or route concrete migration work before release."
+        },
+        "links": {
+          "idea_file": "odylith/radar/source/ideas/2026-07/2026-07-20-assess-v0-1-15-guidance-and-browser-surface-migration.md",
+          "plan_file": "odylith/technical-plans/in-progress/2026-07/2026-07-20-v0-1-15-guidance-and-browser-surface-migration-assessment.md"
+        },
+        "registry_components": [
+          {
+            "component_id": "odylith",
+            "name": "Odylith"
+          }
+        ],
+        "execution_wave_programs": [],
+        "release": {},
+        "release_history_summary": "Removed from 0.1.15",
+        "plan": {
+          "created": "2026-07-20",
+          "updated": "2026-10-05",
+          "all_total_tasks": 4,
+          "all_done_tasks": 0,
+          "total_tasks": 0,
+          "done_tasks": 0,
+          "progress_ratio": 0.0,
+          "progress_basis": "execution_checklist",
+          "display_progress_ratio": null,
+          "display_progress_label": "Progress not yet captured",
+          "display_progress_state": "unknown",
+          "progress_classification": "active_untracked",
+          "checklist_label": "",
+          "next_tasks": []
+        },
+        "activity": {
+          "24h": {
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 182
+          },
+          "48h": {
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 214
+          }
+        },
+        "timeline": {
+          "start_date": "2026-07-20",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
+          "age_days": 81,
+          "eta_days": null,
+          "eta_confidence": "low"
+        },
+        "lineage": {
+          "reopens": [],
+          "reopened_by": [],
+          "split_from": [],
+          "split_into": [],
+          "merged_into": [],
+          "merged_from": []
+        },
+        "cost": {
+          "base_index": 18,
+          "24h": {
+            "index": 25,
+            "band": "Low"
+          },
+          "48h": {
+            "index": 25,
+            "band": "Low"
+          }
+        },
+        "proof_state": {},
+        "claim_guard": {},
+        "proof_state_resolution": {
+          "lane_ids": [
+            "greenfield-refusal-feedback",
+            "greenfield-release",
+            "greenfield-release-current-v42",
+            "installed-v14-to-v37-bounded-migration",
+            "v42-source-checkpoint"
+          ],
+          "state": "ambiguous"
+        },
+        "scope_signal": {
+          "budget_class": "fast_simple",
+          "caps": [],
+          "feature_vector": {
+            "blast_radius_class": "cross-surface",
+            "broad_fanout": false,
+            "cross_surface_conflict": false,
+            "decision_count": 103,
+            "decision_evidence": true,
+            "explicit_count": 850,
+            "frontier_phase": "",
+            "generated_only_churn": false,
+            "governance_only_local_change": false,
+            "has_any_signal": true,
+            "implementation_count": 564,
+            "implementation_evidence": true,
+            "linked_child_count": 0,
+            "linked_surface_count": 5,
+            "meaningful_change_count": 697,
+            "meaningful_scope_activity": true,
+            "narrow_verified_signal": true,
+            "open_warning": false,
+            "proof_blocker": false,
+            "proof_status": "",
+            "stale_authority": false,
+            "synthetic_count": 0,
+            "unsafe_closeout": false,
+            "verified_completion": false
+          },
+          "label": "Active scope",
+          "promoted_default": true,
+          "rank": 3,
+          "reasons": [
+            "A narrow verified scoped signal was recorded.",
+            "Explicit decision evidence is present.",
+            "Explicit implementation evidence is present.",
+            "Meaningful scope-local implementation evidence is present."
+          ],
+          "rung": "R3",
+          "token": "active_scope"
+        },
+        "proof_refs": [
+          {
+            "anchor": "timeline-audit",
+            "fact_tag": "frontier",
+            "kind": "workstream",
+            "label": "Proof frontier",
+            "surface": "compass",
+            "value": "B-145"
+          },
+          {
+            "anchor": "current-workstreams",
+            "fact_tag": "deployment_truth",
+            "kind": "workstream",
+            "label": "Deployment truth",
+            "surface": "compass",
+            "value": "B-145"
+          }
+        ],
+        "proof_summary_lines": []
+      },
+      {
         "idea_id": "B-005",
         "title": "Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof",
         "status": "finished",
@@ -30799,19 +30956,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 15,
-            "file_touch_count": 121
+            "commit_count": 2,
+            "local_change_count": 2,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 15,
-            "file_touch_count": 174
+            "commit_count": 2,
+            "local_change_count": 2,
+            "file_touch_count": 224
           }
         },
         "timeline": {
           "start_date": "2026-03-28",
-          "last_activity_iso": "2026-10-09T01:39:31-07:00",
+          "last_activity_iso": "2026-10-09T02:05:37-07:00",
           "age_days": 195,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -30827,12 +30984,12 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 75,
-            "band": "High"
+            "index": 65,
+            "band": "Medium"
           },
           "48h": {
-            "index": 75,
-            "band": "High"
+            "index": 65,
+            "band": "Medium"
           }
         },
         "proof_state": {},
@@ -30999,19 +31156,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 12,
-            "file_touch_count": 120
+            "commit_count": 2,
+            "local_change_count": 1,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 12,
-            "file_touch_count": 175
+            "commit_count": 2,
+            "local_change_count": 1,
+            "file_touch_count": 228
           }
         },
         "timeline": {
           "start_date": "2026-04-10",
-          "last_activity_iso": "2026-10-09T01:39:31-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 182,
           "eta_days": null,
           "eta_confidence": "low"
@@ -31027,11 +31184,11 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 55,
+            "index": 43,
             "band": "Medium"
           },
           "48h": {
-            "index": 55,
+            "index": 43,
             "band": "Medium"
           }
         },
@@ -31170,19 +31327,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 12,
-            "file_touch_count": 120
+            "commit_count": 2,
+            "local_change_count": 1,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 12,
-            "file_touch_count": 161
+            "commit_count": 2,
+            "local_change_count": 1,
+            "file_touch_count": 214
           }
         },
         "timeline": {
           "start_date": "2026-04-08",
-          "last_activity_iso": "2026-10-09T01:39:31-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 184,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -31200,12 +31357,12 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 75,
-            "band": "High"
+            "index": 63,
+            "band": "Medium"
           },
           "48h": {
-            "index": 75,
-            "band": "High"
+            "index": 63,
+            "band": "Medium"
           }
         },
         "proof_state": {},
@@ -31344,19 +31501,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 12,
-            "file_touch_count": 120
+            "commit_count": 2,
+            "local_change_count": 1,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 12,
-            "file_touch_count": 175
+            "commit_count": 2,
+            "local_change_count": 1,
+            "file_touch_count": 228
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-10-09T01:39:31-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 183,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -31374,11 +31531,11 @@
         "cost": {
           "base_index": 71,
           "24h": {
-            "index": 91,
+            "index": 79,
             "band": "High"
           },
           "48h": {
-            "index": 91,
+            "index": 79,
             "band": "High"
           }
         },
@@ -31446,163 +31603,6 @@
             "label": "Deployment truth",
             "surface": "compass",
             "value": "B-069"
-          }
-        ],
-        "proof_summary_lines": []
-      },
-      {
-        "idea_id": "B-145",
-        "title": "Assess v0.1.15 guidance and browser surface migration",
-        "status": "implementation",
-        "priority": "P1",
-        "sizing": "S",
-        "complexity": "Medium",
-        "ordering_score": "100",
-        "implemented_summary": "",
-        "why": {
-          "problem": "The assessed clean candidate at `d0021184faba41b8fac887ce107ee452d8dc2722` changes 877 consumer-sensitive paths relative to published v0.1.14 at `fae446995e13e12409e50f944a336dbc846db90a`. CB-337 established that earlier dirty-only checks could forget committed changes. This assessment is reopened: its historical bindings do not qualify the current release-wide comparison. Historical bindings from earlier snapshots, retained for traceability only: The v0.1.15 release changes managed guidance, browser-rendered governance surfaces, and install-managed assets. Existing consumer installs need an explicit assessment before promotion. Evidence markers: `migration-observer:0.1.15:guidance-and-skills:1dbd05321562`; `migration-observer:0.1.15:guidance-and-skills:5cf1c66e46da`; `migration-observer:0.1.15:browser-surfaces:e400b39b824e`; `migration-observer:0.1.15:browser-surfaces:835aaa4f49de`; `migration-observer:0.1.15:browser-surfaces:9a4db93486ab`; `migration-observer:0.1.15:browser-surfaces:e64341855d69`; `migration-observer:0.1.15:browser-surfaces:28bfbc30ae65`; `migration-observer:0.1.15:browser-surfaces:068dac56194b`; `migration-observer:0.1.15:browser-surfaces:341c9fc14c4e`; `migration-observer:0.1.15:public-docs-and-release-guidance:b91b6c7e0995`; `migration-observer:0.1.15:install-managed-assets:352b7f58e4df`; `migration-observer:0.1.15:install-managed-assets:fae6b20b969f`; `migration-observer:0.1.15:install-managed-assets:46796f8138f3`; `migration-observer:0.1.15:install-managed-assets:87c9b491c829`.",
-          "customer": "Odylith operators upgrading managed guidance, skill, Atlas, and Casebook browser surfaces.",
-          "proposed_solution": "Compare the published predecessor and complete candidate trees, map each classified path to its compatibility decision and proof, and exercise the actual published runtime with populated governance. Bind final fingerprints only after the assessment is complete; do not infer source preservation from an empty repo.",
-          "opportunity": "Make upgrade impact explicit, reversible, and traceable rather than relying on implicit regenerated assets.",
-          "why_now": "The release gate observed these consumer-visible changes in the current diff; the assessment must bind the exact final fingerprints before promotion.",
-          "founder_pov": "Assess the changed guidance and browser surfaces, record compatibility and rollback posture, and either complete the assessment or route concrete migration work before release."
-        },
-        "links": {
-          "idea_file": "odylith/radar/source/ideas/2026-07/2026-07-20-assess-v0-1-15-guidance-and-browser-surface-migration.md",
-          "plan_file": "odylith/technical-plans/in-progress/2026-07/2026-07-20-v0-1-15-guidance-and-browser-surface-migration-assessment.md"
-        },
-        "registry_components": [
-          {
-            "component_id": "odylith",
-            "name": "Odylith"
-          }
-        ],
-        "execution_wave_programs": [],
-        "release": {},
-        "release_history_summary": "Removed from 0.1.15",
-        "plan": {
-          "created": "2026-07-20",
-          "updated": "2026-10-05",
-          "all_total_tasks": 4,
-          "all_done_tasks": 0,
-          "total_tasks": 0,
-          "done_tasks": 0,
-          "progress_ratio": 0.0,
-          "progress_basis": "execution_checklist",
-          "display_progress_ratio": null,
-          "display_progress_label": "Progress not yet captured",
-          "display_progress_state": "unknown",
-          "progress_classification": "active_untracked",
-          "checklist_label": "",
-          "next_tasks": []
-        },
-        "activity": {
-          "24h": {
-            "commit_count": 1,
-            "local_change_count": 2,
-            "file_touch_count": 126
-          },
-          "48h": {
-            "commit_count": 1,
-            "local_change_count": 2,
-            "file_touch_count": 159
-          }
-        },
-        "timeline": {
-          "start_date": "2026-07-20",
-          "last_activity_iso": "2026-10-08T23:33:55-07:00",
-          "age_days": 81,
-          "eta_days": null,
-          "eta_confidence": "low"
-        },
-        "lineage": {
-          "reopens": [],
-          "reopened_by": [],
-          "split_from": [],
-          "split_into": [],
-          "merged_into": [],
-          "merged_from": []
-        },
-        "cost": {
-          "base_index": 18,
-          "24h": {
-            "index": 25,
-            "band": "Low"
-          },
-          "48h": {
-            "index": 25,
-            "band": "Low"
-          }
-        },
-        "proof_state": {},
-        "claim_guard": {},
-        "proof_state_resolution": {
-          "lane_ids": [
-            "greenfield-refusal-feedback",
-            "greenfield-release",
-            "greenfield-release-current-v42",
-            "installed-v14-to-v37-bounded-migration",
-            "v42-source-checkpoint"
-          ],
-          "state": "ambiguous"
-        },
-        "scope_signal": {
-          "budget_class": "fast_simple",
-          "caps": [],
-          "feature_vector": {
-            "blast_radius_class": "cross-surface",
-            "broad_fanout": false,
-            "cross_surface_conflict": false,
-            "decision_count": 103,
-            "decision_evidence": true,
-            "explicit_count": 850,
-            "frontier_phase": "",
-            "generated_only_churn": false,
-            "governance_only_local_change": false,
-            "has_any_signal": true,
-            "implementation_count": 564,
-            "implementation_evidence": true,
-            "linked_child_count": 0,
-            "linked_surface_count": 5,
-            "meaningful_change_count": 697,
-            "meaningful_scope_activity": true,
-            "narrow_verified_signal": true,
-            "open_warning": false,
-            "proof_blocker": false,
-            "proof_status": "",
-            "stale_authority": false,
-            "synthetic_count": 0,
-            "unsafe_closeout": false,
-            "verified_completion": false
-          },
-          "label": "Active scope",
-          "promoted_default": true,
-          "rank": 3,
-          "reasons": [
-            "A narrow verified scoped signal was recorded.",
-            "Explicit decision evidence is present.",
-            "Explicit implementation evidence is present.",
-            "Meaningful scope-local implementation evidence is present."
-          ],
-          "rung": "R3",
-          "token": "active_scope"
-        },
-        "proof_refs": [
-          {
-            "anchor": "timeline-audit",
-            "fact_tag": "frontier",
-            "kind": "workstream",
-            "label": "Proof frontier",
-            "surface": "compass",
-            "value": "B-145"
-          },
-          {
-            "anchor": "current-workstreams",
-            "fact_tag": "deployment_truth",
-            "kind": "workstream",
-            "label": "Deployment truth",
-            "surface": "compass",
-            "value": "B-145"
           }
         ],
         "proof_summary_lines": []
@@ -32408,19 +32408,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 120
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 148
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 203
           }
         },
         "timeline": {
           "start_date": "2026-04-14",
-          "last_activity_iso": "2026-10-08T23:14:04-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 178,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -32436,11 +32436,11 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 60,
+            "index": 62,
             "band": "Medium"
           },
           "48h": {
-            "index": 60,
+            "index": 62,
             "band": "Medium"
           }
         },
@@ -32655,19 +32655,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 120
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 126
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 181
           }
         },
         "timeline": {
           "start_date": "2026-04-14",
-          "last_activity_iso": "2026-10-08T23:14:04-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 178,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -32683,11 +32683,11 @@
         "cost": {
           "base_index": 27,
           "24h": {
-            "index": 32,
+            "index": 34,
             "band": "Low"
           },
           "48h": {
-            "index": 32,
+            "index": 34,
             "band": "Low"
           }
         },
@@ -32855,19 +32855,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 120
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 126
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 181
           }
         },
         "timeline": {
           "start_date": "2026-04-14",
-          "last_activity_iso": "2026-10-08T23:14:04-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 178,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -32883,11 +32883,11 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 60,
+            "index": 62,
             "band": "Medium"
           },
           "48h": {
-            "index": 60,
+            "index": 62,
             "band": "Medium"
           }
         },
@@ -33047,19 +33047,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 120
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 126
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 181
           }
         },
         "timeline": {
           "start_date": "2026-04-14",
-          "last_activity_iso": "2026-10-08T23:14:04-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 178,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -33075,11 +33075,11 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 60,
+            "index": 62,
             "band": "Medium"
           },
           "48h": {
-            "index": 60,
+            "index": 62,
             "band": "Medium"
           }
         },
@@ -33239,19 +33239,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 120
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 126
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 181
           }
         },
         "timeline": {
           "start_date": "2026-04-14",
-          "last_activity_iso": "2026-10-08T23:14:04-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 178,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -33267,11 +33267,11 @@
         "cost": {
           "base_index": 27,
           "24h": {
-            "index": 32,
+            "index": 34,
             "band": "Low"
           },
           "48h": {
-            "index": 32,
+            "index": 34,
             "band": "Low"
           }
         },
@@ -33463,19 +33463,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 120
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 126
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 181
           }
         },
         "timeline": {
           "start_date": "2026-04-14",
-          "last_activity_iso": "2026-10-08T23:14:04-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 178,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -33491,11 +33491,11 @@
         "cost": {
           "base_index": 27,
           "24h": {
-            "index": 32,
+            "index": 34,
             "band": "Low"
           },
           "48h": {
-            "index": 32,
+            "index": 34,
             "band": "Low"
           }
         },
@@ -33634,19 +33634,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 121
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 136
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 191
           }
         },
         "timeline": {
           "start_date": "2026-03-29",
-          "last_activity_iso": "2026-10-09T01:39:31-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 194,
           "eta_days": 27,
           "eta_confidence": "high"
@@ -33662,11 +33662,11 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 40,
+            "index": 42,
             "band": "Medium"
           },
           "48h": {
-            "index": 40,
+            "index": 42,
             "band": "Medium"
           }
         },
@@ -33813,19 +33813,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 121
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 141
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 196
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-10-09T01:39:31-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 183,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -33841,11 +33841,11 @@
         "cost": {
           "base_index": 71,
           "24h": {
-            "index": 76,
+            "index": 78,
             "band": "High"
           },
           "48h": {
-            "index": 76,
+            "index": 78,
             "band": "High"
           }
         },
@@ -34052,19 +34052,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 121
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 150
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 205
           }
         },
         "timeline": {
           "start_date": "2026-03-26",
-          "last_activity_iso": "2026-10-09T01:39:31-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 197,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -34080,11 +34080,11 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 60,
+            "index": 62,
             "band": "Medium"
           },
           "48h": {
-            "index": 60,
+            "index": 62,
             "band": "Medium"
           }
         },
@@ -34215,19 +34215,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 121
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 148
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 203
           }
         },
         "timeline": {
           "start_date": "2026-03-30",
-          "last_activity_iso": "2026-10-09T01:39:31-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 193,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -34243,11 +34243,11 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 40,
+            "index": 42,
             "band": "Medium"
           },
           "48h": {
-            "index": 40,
+            "index": 42,
             "band": "Medium"
           }
         },
@@ -35400,19 +35400,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 121
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 155
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 210
           }
         },
         "timeline": {
           "start_date": "2026-04-17",
-          "last_activity_iso": "2026-10-09T01:39:31-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 175,
           "eta_days": null,
           "eta_confidence": "low"
@@ -35428,11 +35428,11 @@
         "cost": {
           "base_index": 84,
           "24h": {
-            "index": 89,
+            "index": 91,
             "band": "High"
           },
           "48h": {
-            "index": 89,
+            "index": 91,
             "band": "High"
           }
         },
@@ -35587,19 +35587,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 121
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 176
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 159
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 213
           }
         },
         "timeline": {
           "start_date": "2026-04-17",
-          "last_activity_iso": "2026-10-09T01:39:31-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 175,
           "eta_days": null,
           "eta_confidence": "low"
@@ -35615,11 +35615,11 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 40,
+            "index": 42,
             "band": "Medium"
           },
           "48h": {
-            "index": 40,
+            "index": 42,
             "band": "Medium"
           }
         },
@@ -35774,19 +35774,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 1
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 116
           },
           "48h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 9
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 124
           }
         },
         "timeline": {
           "start_date": "2026-04-08",
-          "last_activity_iso": "2026-10-09T01:39:31-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 184,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -35802,11 +35802,11 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 57,
+            "index": 58,
             "band": "Medium"
           },
           "48h": {
-            "index": 57,
+            "index": 58,
             "band": "Medium"
           }
         },
@@ -36198,19 +36198,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 1
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 116
           },
           "48h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 17
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 130
           }
         },
         "timeline": {
           "start_date": "2026-03-27",
-          "last_activity_iso": "2026-10-09T01:39:31-07:00",
+          "last_activity_iso": "2026-10-09T01:46:16-07:00",
           "age_days": 196,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -36226,11 +36226,11 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 37,
+            "index": 38,
             "band": "Low"
           },
           "48h": {
-            "index": 37,
+            "index": 38,
             "band": "Low"
           }
         },
@@ -60311,19 +60311,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 28,
-          "file_touch_count": 140
+          "commit_count": 2,
+          "local_change_count": 2,
+          "file_touch_count": 183
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 28,
-          "file_touch_count": 630
+          "commit_count": 2,
+          "local_change_count": 2,
+          "file_touch_count": 665
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-10-09T01:39:31-07:00",
+        "last_activity_iso": "2026-10-09T02:08:40-07:00",
         "age_days": 105,
         "eta_days": 17,
         "eta_confidence": "high"
@@ -60339,12 +60339,12 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 75,
-          "band": "High"
+          "index": 65,
+          "band": "Medium"
         },
         "48h": {
-          "index": 75,
-          "band": "High"
+          "index": 65,
+          "band": "Medium"
         }
       },
       "proof_state": {},
@@ -60727,6 +60727,163 @@
       "proof_summary_lines": []
     },
     {
+      "idea_id": "B-145",
+      "title": "Assess v0.1.15 guidance and browser surface migration",
+      "status": "implementation",
+      "priority": "P1",
+      "sizing": "S",
+      "complexity": "Medium",
+      "ordering_score": "100",
+      "implemented_summary": "",
+      "why": {
+        "problem": "The assessed clean candidate at `d0021184faba41b8fac887ce107ee452d8dc2722` changes 877 consumer-sensitive paths relative to published v0.1.14 at `fae446995e13e12409e50f944a336dbc846db90a`. CB-337 established that earlier dirty-only checks could forget committed changes. This assessment is reopened: its historical bindings do not qualify the current release-wide comparison. Historical bindings from earlier snapshots, retained for traceability only: The v0.1.15 release changes managed guidance, browser-rendered governance surfaces, and install-managed assets. Existing consumer installs need an explicit assessment before promotion. Evidence markers: `migration-observer:0.1.15:guidance-and-skills:1dbd05321562`; `migration-observer:0.1.15:guidance-and-skills:5cf1c66e46da`; `migration-observer:0.1.15:browser-surfaces:e400b39b824e`; `migration-observer:0.1.15:browser-surfaces:835aaa4f49de`; `migration-observer:0.1.15:browser-surfaces:9a4db93486ab`; `migration-observer:0.1.15:browser-surfaces:e64341855d69`; `migration-observer:0.1.15:browser-surfaces:28bfbc30ae65`; `migration-observer:0.1.15:browser-surfaces:068dac56194b`; `migration-observer:0.1.15:browser-surfaces:341c9fc14c4e`; `migration-observer:0.1.15:public-docs-and-release-guidance:b91b6c7e0995`; `migration-observer:0.1.15:install-managed-assets:352b7f58e4df`; `migration-observer:0.1.15:install-managed-assets:fae6b20b969f`; `migration-observer:0.1.15:install-managed-assets:46796f8138f3`; `migration-observer:0.1.15:install-managed-assets:87c9b491c829`.",
+        "customer": "Odylith operators upgrading managed guidance, skill, Atlas, and Casebook browser surfaces.",
+        "proposed_solution": "Compare the published predecessor and complete candidate trees, map each classified path to its compatibility decision and proof, and exercise the actual published runtime with populated governance. Bind final fingerprints only after the assessment is complete; do not infer source preservation from an empty repo.",
+        "opportunity": "Make upgrade impact explicit, reversible, and traceable rather than relying on implicit regenerated assets.",
+        "why_now": "The release gate observed these consumer-visible changes in the current diff; the assessment must bind the exact final fingerprints before promotion.",
+        "founder_pov": "Assess the changed guidance and browser surfaces, record compatibility and rollback posture, and either complete the assessment or route concrete migration work before release."
+      },
+      "links": {
+        "idea_file": "odylith/radar/source/ideas/2026-07/2026-07-20-assess-v0-1-15-guidance-and-browser-surface-migration.md",
+        "plan_file": "odylith/technical-plans/in-progress/2026-07/2026-07-20-v0-1-15-guidance-and-browser-surface-migration-assessment.md"
+      },
+      "registry_components": [
+        {
+          "component_id": "odylith",
+          "name": "Odylith"
+        }
+      ],
+      "execution_wave_programs": [],
+      "release": {},
+      "release_history_summary": "Removed from 0.1.15",
+      "plan": {
+        "created": "2026-07-20",
+        "updated": "2026-10-05",
+        "all_total_tasks": 4,
+        "all_done_tasks": 0,
+        "total_tasks": 0,
+        "done_tasks": 0,
+        "progress_ratio": 0.0,
+        "progress_basis": "execution_checklist",
+        "display_progress_ratio": null,
+        "display_progress_label": "Progress not yet captured",
+        "display_progress_state": "unknown",
+        "progress_classification": "active_untracked",
+        "checklist_label": "",
+        "next_tasks": []
+      },
+      "activity": {
+        "24h": {
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 182
+        },
+        "48h": {
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 214
+        }
+      },
+      "timeline": {
+        "start_date": "2026-07-20",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
+        "age_days": 81,
+        "eta_days": null,
+        "eta_confidence": "low"
+      },
+      "lineage": {
+        "reopens": [],
+        "reopened_by": [],
+        "split_from": [],
+        "split_into": [],
+        "merged_into": [],
+        "merged_from": []
+      },
+      "cost": {
+        "base_index": 18,
+        "24h": {
+          "index": 25,
+          "band": "Low"
+        },
+        "48h": {
+          "index": 25,
+          "band": "Low"
+        }
+      },
+      "proof_state": {},
+      "claim_guard": {},
+      "proof_state_resolution": {
+        "lane_ids": [
+          "greenfield-refusal-feedback",
+          "greenfield-release",
+          "greenfield-release-current-v42",
+          "installed-v14-to-v37-bounded-migration",
+          "v42-source-checkpoint"
+        ],
+        "state": "ambiguous"
+      },
+      "scope_signal": {
+        "budget_class": "fast_simple",
+        "caps": [],
+        "feature_vector": {
+          "blast_radius_class": "cross-surface",
+          "broad_fanout": false,
+          "cross_surface_conflict": false,
+          "decision_count": 103,
+          "decision_evidence": true,
+          "explicit_count": 850,
+          "frontier_phase": "",
+          "generated_only_churn": false,
+          "governance_only_local_change": false,
+          "has_any_signal": true,
+          "implementation_count": 564,
+          "implementation_evidence": true,
+          "linked_child_count": 0,
+          "linked_surface_count": 5,
+          "meaningful_change_count": 697,
+          "meaningful_scope_activity": true,
+          "narrow_verified_signal": true,
+          "open_warning": false,
+          "proof_blocker": false,
+          "proof_status": "",
+          "stale_authority": false,
+          "synthetic_count": 0,
+          "unsafe_closeout": false,
+          "verified_completion": false
+        },
+        "label": "Active scope",
+        "promoted_default": true,
+        "rank": 3,
+        "reasons": [
+          "A narrow verified scoped signal was recorded.",
+          "Explicit decision evidence is present.",
+          "Explicit implementation evidence is present.",
+          "Meaningful scope-local implementation evidence is present."
+        ],
+        "rung": "R3",
+        "token": "active_scope"
+      },
+      "proof_refs": [
+        {
+          "anchor": "timeline-audit",
+          "fact_tag": "frontier",
+          "kind": "workstream",
+          "label": "Proof frontier",
+          "surface": "compass",
+          "value": "B-145"
+        },
+        {
+          "anchor": "current-workstreams",
+          "fact_tag": "deployment_truth",
+          "kind": "workstream",
+          "label": "Deployment truth",
+          "surface": "compass",
+          "value": "B-145"
+        }
+      ],
+      "proof_summary_lines": []
+    },
+    {
       "idea_id": "B-005",
       "title": "Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof",
       "status": "finished",
@@ -60794,19 +60951,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 15,
-          "file_touch_count": 121
+          "commit_count": 2,
+          "local_change_count": 2,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 15,
-          "file_touch_count": 174
+          "commit_count": 2,
+          "local_change_count": 2,
+          "file_touch_count": 224
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-10-09T01:39:31-07:00",
+        "last_activity_iso": "2026-10-09T02:05:37-07:00",
         "age_days": 195,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -60822,12 +60979,12 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 75,
-          "band": "High"
+          "index": 65,
+          "band": "Medium"
         },
         "48h": {
-          "index": 75,
-          "band": "High"
+          "index": 65,
+          "band": "Medium"
         }
       },
       "proof_state": {},
@@ -60994,19 +61151,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 12,
-          "file_touch_count": 120
+          "commit_count": 2,
+          "local_change_count": 1,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 12,
-          "file_touch_count": 175
+          "commit_count": 2,
+          "local_change_count": 1,
+          "file_touch_count": 228
         }
       },
       "timeline": {
         "start_date": "2026-04-10",
-        "last_activity_iso": "2026-10-09T01:39:31-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 182,
         "eta_days": null,
         "eta_confidence": "low"
@@ -61022,11 +61179,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 55,
+          "index": 43,
           "band": "Medium"
         },
         "48h": {
-          "index": 55,
+          "index": 43,
           "band": "Medium"
         }
       },
@@ -61165,19 +61322,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 12,
-          "file_touch_count": 120
+          "commit_count": 2,
+          "local_change_count": 1,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 12,
-          "file_touch_count": 161
+          "commit_count": 2,
+          "local_change_count": 1,
+          "file_touch_count": 214
         }
       },
       "timeline": {
         "start_date": "2026-04-08",
-        "last_activity_iso": "2026-10-09T01:39:31-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 184,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -61195,12 +61352,12 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 75,
-          "band": "High"
+          "index": 63,
+          "band": "Medium"
         },
         "48h": {
-          "index": 75,
-          "band": "High"
+          "index": 63,
+          "band": "Medium"
         }
       },
       "proof_state": {},
@@ -61339,19 +61496,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 12,
-          "file_touch_count": 120
+          "commit_count": 2,
+          "local_change_count": 1,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 12,
-          "file_touch_count": 175
+          "commit_count": 2,
+          "local_change_count": 1,
+          "file_touch_count": 228
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-10-09T01:39:31-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 183,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -61369,11 +61526,11 @@
       "cost": {
         "base_index": 71,
         "24h": {
-          "index": 91,
+          "index": 79,
           "band": "High"
         },
         "48h": {
-          "index": 91,
+          "index": 79,
           "band": "High"
         }
       },
@@ -61441,163 +61598,6 @@
           "label": "Deployment truth",
           "surface": "compass",
           "value": "B-069"
-        }
-      ],
-      "proof_summary_lines": []
-    },
-    {
-      "idea_id": "B-145",
-      "title": "Assess v0.1.15 guidance and browser surface migration",
-      "status": "implementation",
-      "priority": "P1",
-      "sizing": "S",
-      "complexity": "Medium",
-      "ordering_score": "100",
-      "implemented_summary": "",
-      "why": {
-        "problem": "The assessed clean candidate at `d0021184faba41b8fac887ce107ee452d8dc2722` changes 877 consumer-sensitive paths relative to published v0.1.14 at `fae446995e13e12409e50f944a336dbc846db90a`. CB-337 established that earlier dirty-only checks could forget committed changes. This assessment is reopened: its historical bindings do not qualify the current release-wide comparison. Historical bindings from earlier snapshots, retained for traceability only: The v0.1.15 release changes managed guidance, browser-rendered governance surfaces, and install-managed assets. Existing consumer installs need an explicit assessment before promotion. Evidence markers: `migration-observer:0.1.15:guidance-and-skills:1dbd05321562`; `migration-observer:0.1.15:guidance-and-skills:5cf1c66e46da`; `migration-observer:0.1.15:browser-surfaces:e400b39b824e`; `migration-observer:0.1.15:browser-surfaces:835aaa4f49de`; `migration-observer:0.1.15:browser-surfaces:9a4db93486ab`; `migration-observer:0.1.15:browser-surfaces:e64341855d69`; `migration-observer:0.1.15:browser-surfaces:28bfbc30ae65`; `migration-observer:0.1.15:browser-surfaces:068dac56194b`; `migration-observer:0.1.15:browser-surfaces:341c9fc14c4e`; `migration-observer:0.1.15:public-docs-and-release-guidance:b91b6c7e0995`; `migration-observer:0.1.15:install-managed-assets:352b7f58e4df`; `migration-observer:0.1.15:install-managed-assets:fae6b20b969f`; `migration-observer:0.1.15:install-managed-assets:46796f8138f3`; `migration-observer:0.1.15:install-managed-assets:87c9b491c829`.",
-        "customer": "Odylith operators upgrading managed guidance, skill, Atlas, and Casebook browser surfaces.",
-        "proposed_solution": "Compare the published predecessor and complete candidate trees, map each classified path to its compatibility decision and proof, and exercise the actual published runtime with populated governance. Bind final fingerprints only after the assessment is complete; do not infer source preservation from an empty repo.",
-        "opportunity": "Make upgrade impact explicit, reversible, and traceable rather than relying on implicit regenerated assets.",
-        "why_now": "The release gate observed these consumer-visible changes in the current diff; the assessment must bind the exact final fingerprints before promotion.",
-        "founder_pov": "Assess the changed guidance and browser surfaces, record compatibility and rollback posture, and either complete the assessment or route concrete migration work before release."
-      },
-      "links": {
-        "idea_file": "odylith/radar/source/ideas/2026-07/2026-07-20-assess-v0-1-15-guidance-and-browser-surface-migration.md",
-        "plan_file": "odylith/technical-plans/in-progress/2026-07/2026-07-20-v0-1-15-guidance-and-browser-surface-migration-assessment.md"
-      },
-      "registry_components": [
-        {
-          "component_id": "odylith",
-          "name": "Odylith"
-        }
-      ],
-      "execution_wave_programs": [],
-      "release": {},
-      "release_history_summary": "Removed from 0.1.15",
-      "plan": {
-        "created": "2026-07-20",
-        "updated": "2026-10-05",
-        "all_total_tasks": 4,
-        "all_done_tasks": 0,
-        "total_tasks": 0,
-        "done_tasks": 0,
-        "progress_ratio": 0.0,
-        "progress_basis": "execution_checklist",
-        "display_progress_ratio": null,
-        "display_progress_label": "Progress not yet captured",
-        "display_progress_state": "unknown",
-        "progress_classification": "active_untracked",
-        "checklist_label": "",
-        "next_tasks": []
-      },
-      "activity": {
-        "24h": {
-          "commit_count": 1,
-          "local_change_count": 2,
-          "file_touch_count": 126
-        },
-        "48h": {
-          "commit_count": 1,
-          "local_change_count": 2,
-          "file_touch_count": 159
-        }
-      },
-      "timeline": {
-        "start_date": "2026-07-20",
-        "last_activity_iso": "2026-10-08T23:33:55-07:00",
-        "age_days": 81,
-        "eta_days": null,
-        "eta_confidence": "low"
-      },
-      "lineage": {
-        "reopens": [],
-        "reopened_by": [],
-        "split_from": [],
-        "split_into": [],
-        "merged_into": [],
-        "merged_from": []
-      },
-      "cost": {
-        "base_index": 18,
-        "24h": {
-          "index": 25,
-          "band": "Low"
-        },
-        "48h": {
-          "index": 25,
-          "band": "Low"
-        }
-      },
-      "proof_state": {},
-      "claim_guard": {},
-      "proof_state_resolution": {
-        "lane_ids": [
-          "greenfield-refusal-feedback",
-          "greenfield-release",
-          "greenfield-release-current-v42",
-          "installed-v14-to-v37-bounded-migration",
-          "v42-source-checkpoint"
-        ],
-        "state": "ambiguous"
-      },
-      "scope_signal": {
-        "budget_class": "fast_simple",
-        "caps": [],
-        "feature_vector": {
-          "blast_radius_class": "cross-surface",
-          "broad_fanout": false,
-          "cross_surface_conflict": false,
-          "decision_count": 103,
-          "decision_evidence": true,
-          "explicit_count": 850,
-          "frontier_phase": "",
-          "generated_only_churn": false,
-          "governance_only_local_change": false,
-          "has_any_signal": true,
-          "implementation_count": 564,
-          "implementation_evidence": true,
-          "linked_child_count": 0,
-          "linked_surface_count": 5,
-          "meaningful_change_count": 697,
-          "meaningful_scope_activity": true,
-          "narrow_verified_signal": true,
-          "open_warning": false,
-          "proof_blocker": false,
-          "proof_status": "",
-          "stale_authority": false,
-          "synthetic_count": 0,
-          "unsafe_closeout": false,
-          "verified_completion": false
-        },
-        "label": "Active scope",
-        "promoted_default": true,
-        "rank": 3,
-        "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Explicit decision evidence is present.",
-          "Explicit implementation evidence is present.",
-          "Meaningful scope-local implementation evidence is present."
-        ],
-        "rung": "R3",
-        "token": "active_scope"
-      },
-      "proof_refs": [
-        {
-          "anchor": "timeline-audit",
-          "fact_tag": "frontier",
-          "kind": "workstream",
-          "label": "Proof frontier",
-          "surface": "compass",
-          "value": "B-145"
-        },
-        {
-          "anchor": "current-workstreams",
-          "fact_tag": "deployment_truth",
-          "kind": "workstream",
-          "label": "Deployment truth",
-          "surface": "compass",
-          "value": "B-145"
         }
       ],
       "proof_summary_lines": []
@@ -62403,19 +62403,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 120
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 148
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 203
         }
       },
       "timeline": {
         "start_date": "2026-04-14",
-        "last_activity_iso": "2026-10-08T23:14:04-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 178,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -62431,11 +62431,11 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 60,
+          "index": 62,
           "band": "Medium"
         },
         "48h": {
-          "index": 60,
+          "index": 62,
           "band": "Medium"
         }
       },
@@ -62650,19 +62650,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 120
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 126
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 181
         }
       },
       "timeline": {
         "start_date": "2026-04-14",
-        "last_activity_iso": "2026-10-08T23:14:04-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 178,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -62678,11 +62678,11 @@
       "cost": {
         "base_index": 27,
         "24h": {
-          "index": 32,
+          "index": 34,
           "band": "Low"
         },
         "48h": {
-          "index": 32,
+          "index": 34,
           "band": "Low"
         }
       },
@@ -62850,19 +62850,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 120
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 126
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 181
         }
       },
       "timeline": {
         "start_date": "2026-04-14",
-        "last_activity_iso": "2026-10-08T23:14:04-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 178,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -62878,11 +62878,11 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 60,
+          "index": 62,
           "band": "Medium"
         },
         "48h": {
-          "index": 60,
+          "index": 62,
           "band": "Medium"
         }
       },
@@ -63042,19 +63042,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 120
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 126
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 181
         }
       },
       "timeline": {
         "start_date": "2026-04-14",
-        "last_activity_iso": "2026-10-08T23:14:04-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 178,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -63070,11 +63070,11 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 60,
+          "index": 62,
           "band": "Medium"
         },
         "48h": {
-          "index": 60,
+          "index": 62,
           "band": "Medium"
         }
       },
@@ -63234,19 +63234,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 120
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 126
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 181
         }
       },
       "timeline": {
         "start_date": "2026-04-14",
-        "last_activity_iso": "2026-10-08T23:14:04-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 178,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -63262,11 +63262,11 @@
       "cost": {
         "base_index": 27,
         "24h": {
-          "index": 32,
+          "index": 34,
           "band": "Low"
         },
         "48h": {
-          "index": 32,
+          "index": 34,
           "band": "Low"
         }
       },
@@ -63458,19 +63458,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 120
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 126
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 181
         }
       },
       "timeline": {
         "start_date": "2026-04-14",
-        "last_activity_iso": "2026-10-08T23:14:04-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 178,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -63486,11 +63486,11 @@
       "cost": {
         "base_index": 27,
         "24h": {
-          "index": 32,
+          "index": 34,
           "band": "Low"
         },
         "48h": {
-          "index": 32,
+          "index": 34,
           "band": "Low"
         }
       },
@@ -63629,19 +63629,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 121
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 136
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 191
         }
       },
       "timeline": {
         "start_date": "2026-03-29",
-        "last_activity_iso": "2026-10-09T01:39:31-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 194,
         "eta_days": 27,
         "eta_confidence": "high"
@@ -63657,11 +63657,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 40,
+          "index": 42,
           "band": "Medium"
         },
         "48h": {
-          "index": 40,
+          "index": 42,
           "band": "Medium"
         }
       },
@@ -63808,19 +63808,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 121
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 141
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 196
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-10-09T01:39:31-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 183,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -63836,11 +63836,11 @@
       "cost": {
         "base_index": 71,
         "24h": {
-          "index": 76,
+          "index": 78,
           "band": "High"
         },
         "48h": {
-          "index": 76,
+          "index": 78,
           "band": "High"
         }
       },
@@ -64047,19 +64047,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 121
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 150
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 205
         }
       },
       "timeline": {
         "start_date": "2026-03-26",
-        "last_activity_iso": "2026-10-09T01:39:31-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 197,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -64075,11 +64075,11 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 60,
+          "index": 62,
           "band": "Medium"
         },
         "48h": {
-          "index": 60,
+          "index": 62,
           "band": "Medium"
         }
       },
@@ -64210,19 +64210,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 121
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 148
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 203
         }
       },
       "timeline": {
         "start_date": "2026-03-30",
-        "last_activity_iso": "2026-10-09T01:39:31-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 193,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -64238,11 +64238,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 40,
+          "index": 42,
           "band": "Medium"
         },
         "48h": {
-          "index": 40,
+          "index": 42,
           "band": "Medium"
         }
       },
@@ -65395,19 +65395,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 121
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 155
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 210
         }
       },
       "timeline": {
         "start_date": "2026-04-17",
-        "last_activity_iso": "2026-10-09T01:39:31-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 175,
         "eta_days": null,
         "eta_confidence": "low"
@@ -65423,11 +65423,11 @@
       "cost": {
         "base_index": 84,
         "24h": {
-          "index": 89,
+          "index": 91,
           "band": "High"
         },
         "48h": {
-          "index": 89,
+          "index": 91,
           "band": "High"
         }
       },
@@ -65582,19 +65582,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 121
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 159
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 213
         }
       },
       "timeline": {
         "start_date": "2026-04-17",
-        "last_activity_iso": "2026-10-09T01:39:31-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 175,
         "eta_days": null,
         "eta_confidence": "low"
@@ -65610,11 +65610,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 40,
+          "index": 42,
           "band": "Medium"
         },
         "48h": {
-          "index": 40,
+          "index": 42,
           "band": "Medium"
         }
       },
@@ -65769,19 +65769,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 1
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 116
         },
         "48h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 9
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 124
         }
       },
       "timeline": {
         "start_date": "2026-04-08",
-        "last_activity_iso": "2026-10-09T01:39:31-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 184,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -65797,11 +65797,11 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 57,
+          "index": 58,
           "band": "Medium"
         },
         "48h": {
-          "index": 57,
+          "index": 58,
           "band": "Medium"
         }
       },
@@ -66193,19 +66193,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 1
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 116
         },
         "48h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 17
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 130
         }
       },
       "timeline": {
         "start_date": "2026-03-27",
-        "last_activity_iso": "2026-10-09T01:39:31-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 196,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -66221,11 +66221,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 37,
+          "index": 38,
           "band": "Low"
         },
         "48h": {
-          "index": 37,
+          "index": 38,
           "band": "Low"
         }
       },
@@ -90677,19 +90677,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 121
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 136
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 191
         }
       },
       "timeline": {
         "start_date": "2026-03-29",
-        "last_activity_iso": "2026-10-09T01:39:31-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 194,
         "eta_days": 27,
         "eta_confidence": "high"
@@ -90705,11 +90705,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 40,
+          "index": 42,
           "band": "Medium"
         },
         "48h": {
-          "index": 40,
+          "index": 42,
           "band": "Medium"
         }
       },
@@ -92107,19 +92107,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 121
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 141
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 196
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-10-09T01:39:31-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 183,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -92135,11 +92135,11 @@
       "cost": {
         "base_index": 71,
         "24h": {
-          "index": 76,
+          "index": 78,
           "band": "High"
         },
         "48h": {
-          "index": 76,
+          "index": 78,
           "band": "High"
         }
       },
@@ -92306,19 +92306,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 12,
-          "file_touch_count": 120
+          "commit_count": 2,
+          "local_change_count": 1,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 12,
-          "file_touch_count": 175
+          "commit_count": 2,
+          "local_change_count": 1,
+          "file_touch_count": 228
         }
       },
       "timeline": {
         "start_date": "2026-04-10",
-        "last_activity_iso": "2026-10-09T01:39:31-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 182,
         "eta_days": null,
         "eta_confidence": "low"
@@ -92334,11 +92334,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 55,
+          "index": 43,
           "band": "Medium"
         },
         "48h": {
-          "index": 55,
+          "index": 43,
           "band": "Medium"
         }
       },
@@ -95251,19 +95251,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 28,
-          "file_touch_count": 140
+          "commit_count": 2,
+          "local_change_count": 2,
+          "file_touch_count": 183
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 28,
-          "file_touch_count": 630
+          "commit_count": 2,
+          "local_change_count": 2,
+          "file_touch_count": 665
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-10-09T01:39:31-07:00",
+        "last_activity_iso": "2026-10-09T02:08:40-07:00",
         "age_days": 105,
         "eta_days": 17,
         "eta_confidence": "high"
@@ -95279,12 +95279,12 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 75,
-          "band": "High"
+          "index": 65,
+          "band": "Medium"
         },
         "48h": {
-          "index": 75,
-          "band": "High"
+          "index": 65,
+          "band": "Medium"
         }
       },
       "proof_state": {},
@@ -95480,19 +95480,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 2,
-          "file_touch_count": 126
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 182
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 2,
-          "file_touch_count": 159
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 214
         }
       },
       "timeline": {
         "start_date": "2026-07-20",
-        "last_activity_iso": "2026-10-08T23:33:55-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 81,
         "eta_days": null,
         "eta_confidence": "low"
@@ -95725,19 +95725,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 121
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 150
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 205
         }
       },
       "timeline": {
         "start_date": "2026-03-26",
-        "last_activity_iso": "2026-10-09T01:39:31-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 197,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -95753,11 +95753,11 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 60,
+          "index": 62,
           "band": "Medium"
         },
         "48h": {
-          "index": 60,
+          "index": 62,
           "band": "Medium"
         }
       },
@@ -96231,19 +96231,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 1
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 116
         },
         "48h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 17
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 130
         }
       },
       "timeline": {
         "start_date": "2026-03-27",
-        "last_activity_iso": "2026-10-09T01:39:31-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 196,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -96259,11 +96259,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 37,
+          "index": 38,
           "band": "Low"
         },
         "48h": {
-          "index": 37,
+          "index": 38,
           "band": "Low"
         }
       },
@@ -96403,19 +96403,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 15,
-          "file_touch_count": 121
+          "commit_count": 2,
+          "local_change_count": 2,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 15,
-          "file_touch_count": 174
+          "commit_count": 2,
+          "local_change_count": 2,
+          "file_touch_count": 224
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-10-09T01:39:31-07:00",
+        "last_activity_iso": "2026-10-09T02:05:37-07:00",
         "age_days": 195,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -96431,12 +96431,12 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 75,
-          "band": "High"
+          "index": 65,
+          "band": "Medium"
         },
         "48h": {
-          "index": 75,
-          "band": "High"
+          "index": 65,
+          "band": "Medium"
         }
       },
       "proof_state": {},
@@ -99544,19 +99544,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 121
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 148
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 203
         }
       },
       "timeline": {
         "start_date": "2026-03-30",
-        "last_activity_iso": "2026-10-09T01:39:31-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 193,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -99572,11 +99572,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 40,
+          "index": 42,
           "band": "Medium"
         },
         "48h": {
-          "index": 40,
+          "index": 42,
           "band": "Medium"
         }
       },
@@ -104408,19 +104408,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 1
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 116
         },
         "48h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 9
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 124
         }
       },
       "timeline": {
         "start_date": "2026-04-08",
-        "last_activity_iso": "2026-10-09T01:39:31-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 184,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -104436,11 +104436,11 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 57,
+          "index": 58,
           "band": "Medium"
         },
         "48h": {
-          "index": 57,
+          "index": 58,
           "band": "Medium"
         }
       },
@@ -104649,19 +104649,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 12,
-          "file_touch_count": 120
+          "commit_count": 2,
+          "local_change_count": 1,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 12,
-          "file_touch_count": 161
+          "commit_count": 2,
+          "local_change_count": 1,
+          "file_touch_count": 214
         }
       },
       "timeline": {
         "start_date": "2026-04-08",
-        "last_activity_iso": "2026-10-09T01:39:31-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 184,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -104679,12 +104679,12 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 75,
-          "band": "High"
+          "index": 63,
+          "band": "Medium"
         },
         "48h": {
-          "index": 75,
-          "band": "High"
+          "index": 63,
+          "band": "Medium"
         }
       },
       "proof_state": {},
@@ -105457,19 +105457,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 12,
-          "file_touch_count": 120
+          "commit_count": 2,
+          "local_change_count": 1,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 12,
-          "file_touch_count": 175
+          "commit_count": 2,
+          "local_change_count": 1,
+          "file_touch_count": 228
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-10-09T01:39:31-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 183,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -105487,11 +105487,11 @@
       "cost": {
         "base_index": 71,
         "24h": {
-          "index": 91,
+          "index": 79,
           "band": "High"
         },
         "48h": {
-          "index": 91,
+          "index": 79,
           "band": "High"
         }
       },
@@ -109838,19 +109838,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 120
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 148
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 203
         }
       },
       "timeline": {
         "start_date": "2026-04-14",
-        "last_activity_iso": "2026-10-08T23:14:04-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 178,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -109866,11 +109866,11 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 60,
+          "index": 62,
           "band": "Medium"
         },
         "48h": {
-          "index": 60,
+          "index": 62,
           "band": "Medium"
         }
       },
@@ -112106,19 +112106,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 120
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 126
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 181
         }
       },
       "timeline": {
         "start_date": "2026-04-14",
-        "last_activity_iso": "2026-10-08T23:14:04-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 178,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -112134,11 +112134,11 @@
       "cost": {
         "base_index": 27,
         "24h": {
-          "index": 32,
+          "index": 34,
           "band": "Low"
         },
         "48h": {
-          "index": 32,
+          "index": 34,
           "band": "Low"
         }
       },
@@ -112306,19 +112306,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 120
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 126
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 181
         }
       },
       "timeline": {
         "start_date": "2026-04-14",
-        "last_activity_iso": "2026-10-08T23:14:04-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 178,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -112334,11 +112334,11 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 60,
+          "index": 62,
           "band": "Medium"
         },
         "48h": {
-          "index": 60,
+          "index": 62,
           "band": "Medium"
         }
       },
@@ -112498,19 +112498,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 120
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 126
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 181
         }
       },
       "timeline": {
         "start_date": "2026-04-14",
-        "last_activity_iso": "2026-10-08T23:14:04-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 178,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -112526,11 +112526,11 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 60,
+          "index": 62,
           "band": "Medium"
         },
         "48h": {
-          "index": 60,
+          "index": 62,
           "band": "Medium"
         }
       },
@@ -112690,19 +112690,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 120
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 126
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 181
         }
       },
       "timeline": {
         "start_date": "2026-04-14",
-        "last_activity_iso": "2026-10-08T23:14:04-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 178,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -112718,11 +112718,11 @@
       "cost": {
         "base_index": 27,
         "24h": {
-          "index": 32,
+          "index": 34,
           "band": "Low"
         },
         "48h": {
-          "index": 32,
+          "index": 34,
           "band": "Low"
         }
       },
@@ -112914,19 +112914,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 120
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 126
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 181
         }
       },
       "timeline": {
         "start_date": "2026-04-14",
-        "last_activity_iso": "2026-10-08T23:14:04-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 178,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -112942,11 +112942,11 @@
       "cost": {
         "base_index": 27,
         "24h": {
-          "index": 32,
+          "index": 34,
           "band": "Low"
         },
         "48h": {
-          "index": 32,
+          "index": 34,
           "band": "Low"
         }
       },
@@ -114099,19 +114099,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 121
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 155
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 210
         }
       },
       "timeline": {
         "start_date": "2026-04-17",
-        "last_activity_iso": "2026-10-09T01:39:31-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 175,
         "eta_days": null,
         "eta_confidence": "low"
@@ -114127,11 +114127,11 @@
       "cost": {
         "base_index": 84,
         "24h": {
-          "index": 89,
+          "index": 91,
           "band": "High"
         },
         "48h": {
-          "index": 89,
+          "index": 91,
           "band": "High"
         }
       },
@@ -115598,19 +115598,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 121
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 176
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 159
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 213
         }
       },
       "timeline": {
         "start_date": "2026-04-17",
-        "last_activity_iso": "2026-10-09T01:39:31-07:00",
+        "last_activity_iso": "2026-10-09T01:46:16-07:00",
         "age_days": 175,
         "eta_days": null,
         "eta_confidence": "low"
@@ -115626,11 +115626,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 40,
+          "index": 42,
           "band": "Medium"
         },
         "48h": {
-          "index": 40,
+          "index": 42,
           "band": "Medium"
         }
       },
@@ -120190,20 +120190,24 @@
   ],
   "verified_scoped_workstreams": {
     "24h": [
+      "B-005",
       "B-142",
       "B-145"
     ],
     "48h": [
+      "B-005",
       "B-142",
       "B-145"
     ]
   },
   "promoted_scoped_workstreams": {
     "24h": [
+      "B-005",
       "B-142",
       "B-145"
     ],
     "48h": [
+      "B-005",
       "B-142",
       "B-145"
     ]
@@ -120871,21 +120875,29 @@
         }
       },
       "B-005": {
-        "rank": 1,
-        "rung": "R1",
-        "token": "background_trace",
-        "label": "Background trace",
+        "rank": 3,
+        "rung": "R3",
+        "token": "active_scope",
+        "label": "Active scope",
         "reasons": [
-          "Recent signal exists, but it is not strong enough to promote by default."
+          "A narrow verified scoped signal was recorded.",
+          "Meaningful scope-local implementation evidence is present."
         ],
         "caps": [],
-        "promoted_default": false,
-        "budget_class": "cache_only",
+        "promoted_default": true,
+        "budget_class": "fast_simple",
         "feature_vector": {
           "has_any_signal": true,
-          "window_inactive": false,
-          "governance_only_local_change": false,
-          "broad_fanout": false
+          "verified_completion": false,
+          "narrow_verified_signal": true,
+          "meaningful_scope_activity": true,
+          "decision_evidence": false,
+          "implementation_evidence": false,
+          "open_warning": false,
+          "cross_surface_conflict": false,
+          "stale_authority": false,
+          "unsafe_closeout": false,
+          "proof_blocker": false
         }
       },
       "B-006": {
@@ -123807,21 +123819,29 @@
         }
       },
       "B-005": {
-        "rank": 1,
-        "rung": "R1",
-        "token": "background_trace",
-        "label": "Background trace",
+        "rank": 3,
+        "rung": "R3",
+        "token": "active_scope",
+        "label": "Active scope",
         "reasons": [
-          "Recent signal exists, but it is not strong enough to promote by default."
+          "A narrow verified scoped signal was recorded.",
+          "Meaningful scope-local implementation evidence is present."
         ],
         "caps": [],
-        "promoted_default": false,
-        "budget_class": "cache_only",
+        "promoted_default": true,
+        "budget_class": "fast_simple",
         "feature_vector": {
           "has_any_signal": true,
-          "window_inactive": false,
-          "governance_only_local_change": false,
-          "broad_fanout": false
+          "verified_completion": false,
+          "narrow_verified_signal": true,
+          "meaningful_scope_activity": true,
+          "decision_evidence": false,
+          "implementation_evidence": false,
+          "open_warning": false,
+          "cross_surface_conflict": false,
+          "stale_authority": false,
+          "unsafe_closeout": false,
+          "proof_blocker": false
         }
       },
       "B-006": {

@@ -233,6 +233,11 @@ def test_run_reports_timeout_with_command_and_cwd(monkeypatch, tmp_path: Path) -
         "wrong_candidate_version",
         "missing_evidence",
         "bad_schema",
+        "open_schema",
+        "unknown_candidate_field",
+        "open_authored_result",
+        "unknown_authored_field",
+        "open_facts",
         "custody_leak",
         "duplicate_component_authority",
         "missing_proposed_components",
@@ -248,15 +253,25 @@ def test_run_reports_timeout_with_command_and_cwd(monkeypatch, tmp_path: Path) -
         "non_object_binding",
         "optional_binding",
         "bad_binding_version",
+        "legacy_binding_version",
+        "open_binding",
+        "unknown_binding_field",
         "bad_source_digest",
+        "bad_ledger_digest",
         "missing_boundary_bindings",
-        "reauthored_action_binding",
+        "open_boundary_row",
+        "unknown_boundary_field",
+        "reauthored_first_path_binding",
+        "reauthored_supporting_binding",
+        "reauthored_system_binding",
         "reauthored_event",
         "non_object_event",
-        "optional_actor",
+        "reauthored_first_path",
+        "reauthored_supporting_events",
         "attempt",
         "subprocess",
         "missing_audit",
+        "failed_audit",
     ],
 )
 def test_greenfield_install_smoke_requires_read_only_candidate_contract(
@@ -277,7 +292,7 @@ def test_greenfield_install_smoke_requires_read_only_candidate_contract(
         pass_fds=(42,),
         command=lambda **kwargs: [str(kwargs["runtime_python"]), "-I", "-c", "audit", *kwargs["arguments"]],
         finish=lambda: finished.append(True) or SimpleNamespace(
-            active=defect != "missing_audit", error="",
+            active=defect != "missing_audit", error="audit failed" if defect == "failed_audit" else "",
             write_attempts=("open:odylith/radar/source/transient.json",) if defect == "attempt" else (),
             subprocess_attempts=("subprocess.Popen",) if defect == "subprocess" else (),
         ),
@@ -299,10 +314,10 @@ def test_greenfield_install_smoke_requires_read_only_candidate_contract(
         assert kwargs["env"]["audit"] == "enabled" and kwargs["pass_fds"] == (42,)
         time.sleep(0.002)
         payload = greenfield_host_candidate_contract(module._CANDIDATE_CONTRACT_SMOKE_PROMPT)
-        authored = payload["candidate_schema"]["properties"]["result"]["anyOf"][0]
-        constraint_schema = authored["properties"]["facts"]["properties"][
-            "operational_constraints"
-        ]["items"]
+        schema = payload["candidate_schema"]
+        authored = schema["properties"]["result"]["anyOf"][0]
+        facts = authored["properties"]["facts"]
+        constraint_schema = facts["properties"]["operational_constraints"]["items"]
         binding = authored["properties"]["source_duty_binding"]
         if defect == "wrong_version":
             payload["version"] = "odylith.greenfield.host-candidate-contract.v33"
@@ -312,6 +327,16 @@ def test_greenfield_install_smoke_requires_read_only_candidate_contract(
             payload["request"]["evidence"] = "different evidence"
         elif defect == "bad_schema":
             payload["candidate_schema"] = {"type": "object", "required": ["version"]}
+        elif defect == "open_schema":
+            schema["additionalProperties"] = True
+        elif defect == "unknown_candidate_field":
+            schema["properties"]["unexpected"] = {"type": "string"}
+        elif defect == "open_authored_result":
+            authored["additionalProperties"] = True
+        elif defect == "unknown_authored_field":
+            authored["properties"]["unexpected"] = {"type": "string"}
+        elif defect == "open_facts":
+            facts["additionalProperties"] = True
         elif defect == "custody_leak":
             constraint_schema["properties"]["constraint_custody"] = {"type": "object"}
         elif defect == "duplicate_component_authority":
@@ -343,21 +368,50 @@ def test_greenfield_install_smoke_requires_read_only_candidate_contract(
             authored["required"].remove("source_duty_binding")
         elif defect == "bad_binding_version":
             binding["properties"]["version"]["const"] = "odylith.greenfield.source-duty-binding.v2"
+        elif defect == "legacy_binding_version":
+            binding["properties"]["version"]["const"] = "odylith.greenfield.source-duty-binding.v3"
+        elif defect == "open_binding":
+            binding["additionalProperties"] = True
+        elif defect == "unknown_binding_field":
+            binding["properties"]["unexpected"] = {"type": "string"}
         elif defect == "bad_source_digest":
             binding["properties"]["source_sha256"]["minLength"] = 1
+        elif defect == "bad_ledger_digest":
+            binding["properties"]["ledger_sha256"]["maxLength"] = 128
         elif defect == "missing_boundary_bindings":
             binding["properties"].pop("boundaries")
             binding["required"].remove("boundaries")
-        elif defect == "reauthored_action_binding":
-            binding["properties"]["first_path_actions"]["items"]["properties"]["action"] = {
-                "type": "string",
-            }
+        elif defect == "open_boundary_row":
+            binding["properties"]["boundaries"]["items"]["additionalProperties"] = True
+        elif defect == "unknown_boundary_field":
+            binding["properties"]["boundaries"]["items"]["properties"]["unexpected"] = {"type": "string"}
+        elif defect in {
+            "reauthored_first_path_binding", "reauthored_supporting_binding", "reauthored_system_binding",
+        }:
+            from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
+                greenfield_source_duty_binding_schema,
+            )
+            role = {
+                "reauthored_first_path_binding": "first_path_actions",
+                "reauthored_supporting_binding": "supporting_human_actions",
+                "reauthored_system_binding": "system_duties",
+            }[defect]
+            binding["properties"][role] = greenfield_source_duty_binding_schema()["properties"][role]
+            binding["required"].append(role)
         elif defect == "reauthored_event":
-            authored["properties"]["events"]["items"]["properties"]["event_ref"] = constraint_schema
+            authored["properties"]["events"] = {
+                "type": "array", "items": {
+                    "type": "object", "additionalProperties": False,
+                    "required": ["actor_fact"], "properties": {"actor_fact": {"type": "object"}},
+                },
+            }
+            authored["required"].append("events")
         elif defect == "non_object_event":
-            authored["properties"]["events"]["items"] = []
-        elif defect == "optional_actor":
-            authored["properties"]["events"]["items"]["required"] = []
+            authored["properties"]["events"] = []
+        elif defect in {"reauthored_first_path", "reauthored_supporting_events"}:
+            field = "first_path" if defect == "reauthored_first_path" else "supporting_events"
+            facts["properties"][field] = {"type": "array", "items": constraint_schema}
+            facts["required"].append(field)
         stdout = "not-json" if defect == "invalid_json" else json.dumps(payload)
         return SimpleNamespace(
             returncode=2 if defect == "nonzero" else 0,

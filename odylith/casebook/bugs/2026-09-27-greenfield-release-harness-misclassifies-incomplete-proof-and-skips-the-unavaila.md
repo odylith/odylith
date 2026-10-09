@@ -2858,3 +2858,38 @@ version-controlled public annotations and an independent verified backup.
 Old failed/unqualified evidence remains unchanged; the four real EDIT cases
 remain a separate supplemental family. This is pending approval, not an
 effective contract change. Source checkpoint, package and CI work continue.
+
+### Frozen package reveals an unadopted smoke consumer (2026-10-09)
+
+Candidate ac8a680bc2df4003f1fa6be957a33951d08c6879 builds the wheel and all
+release assets successfully. All 25 files and 12 declared checksums are retained;
+provenance binds the clean existing-branch archive. No Git worktree was created
+and the exported source stayed unchanged. The clean-install smoke then fails
+at candidate-contract validation after 39.33 seconds. Keep this run failed:
+`/private/tmp/odylith-greenfield-v44-dist-20261009/proof/build-result.json`;
+smoke log SHA-256 `b1a7bcb8ddc68f0c3c57aeb260a098b17863a32c9924542f311552cf9703ee06`.
+
+The actual v55/format24 host contract is source-catalog-owned and exposes only
+lifecycle binding v4. The smoke helper still expects candidate-authored events
+and action-remapping binding v3. Canonical sealed binding v3 remains legitimate;
+it is a different boundary. The 172-module Greenfield-named gate omitted
+`test_local_release_smoke.py`, so its 3,818 passes did not prove this consumer.
+Adopt the real raw contract in the existing smoke helper and test it against
+current positive plus explicit legacy event, first-path and action-table
+reintroduction negatives. Preserve strict versions, source digests, closed
+lifecycle rows, installed write/subprocess audit and baseline checks. Do not
+change the compiler or relax admission to satisfy the outdated smoke assertion.
+Rerun only the affected tests, then freeze a new checkpoint for distribution
+proof. Authentic native EDIT and cross-domain qualification remain outstanding.
+
+The bounded two-file smoke-consumer adoption passes all 76 focused tests in
+2.44 seconds, including the actual current contract and rejection of legacy
+candidate events, first-path facts and all three action-remapping tables.
+Strict receipt versions, digest shape, lifecycle allocation closure, citation
+context, summary and installed write/subprocess audits remain required. Product
+runtime source did not change. Root reviewed the diff; the focused run retained
+all 124 Greenfield runtime pins unchanged. Test log SHA-256:
+`d08f65dcb04f4c20b048a325d36fe512eba0d0ea8ab7f7e83b36c15579e78af0`, under
+`/private/tmp/odylith-v45-install-smoke-adoption-20261009/pytest.log`.
+This is local helper proof; clean-install/package readiness awaits the next
+frozen run. The prior failed build result remains immutable.
