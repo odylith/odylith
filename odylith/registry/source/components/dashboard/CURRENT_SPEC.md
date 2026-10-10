@@ -5,7 +5,7 @@
   benchmark proof, and release-gate indicators may surface when useful, but
   passing checks should stay quiet and no dashboard claim should imply shipped
   behavior before pinned dogfood and benchmark proof exist.
-Last updated: 2026-10-09
+Last updated: 2026-10-10
 
 
 ## Purpose
@@ -26,18 +26,19 @@ unit or DOM-count success does not establish complete-package human quality.
 
 ### Current information order (2026-10-09)
 
-Greenfield's source-declared path and its proposed implementation walkthrough have
-separate labels. The proposed walkthrough may include cited supporting prerequisites;
+Greenfield's source-declared path and its proposed implementation walkthrough must
+remain distinct. The proposed walkthrough may include cited supporting prerequisites;
 it cannot redefine accepted first-path membership. Fresh briefs lead with the
 candidate's direct project summary and keep evidence, assumptions and record
 metadata in closed details. Source authority and exact quotes remain available.
-The correction is implemented and independently reviewed. Current local coverage
-combines 4,031 Greenfield checks, 115 browser checks across six complete modules,
-and 28 Tribunal checks. Browser checks exercise keyboard disclosures, visible
-selection, loaded diagrams, navigation and compact layouts. The evidence is an
-explicit composition of complete affected-module runs and unchanged passing
-modules. No fresh installed or release qualification is claimed. CB-303 retains
-the failed runs and independent reviews.
+The frozen v51 Project page still substitutes six proposed actions under First
+Path. Current source corrects that final renderer: 76 affected checks and eight
+model-free desktop/mobile normal, degraded, empty and unavailable views pass.
+The independent reader also rejects the contaminated proposed path and preserves
+historical behavior. Earlier v51 local coverage totals 4,174 selected checks;
+it predates this final renderer correction and retains its original scope.
+Fresh installed fidelity remains required. Lifecycle captions still need a
+coherent version change. CB-303 retains the failures and proof limits.
 
 Atlas leads with the selected explanation and diagram. Exact identifiers,
 freshness details, exports and linked work belong in closed, keyboard-accessible
@@ -608,6 +609,9 @@ artifacts to that header.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-10-10 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/project_intelligence/authored_fact_presenter.py`, `tests/fixtures/greenfield-release-corpus/source-annotations/public40-20261010/evidence-amendment.v1.json`
 - **2026-10-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 6 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/dashboard/CURRENT_SPEC.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, plus 2 more
@@ -623,9 +627,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-10-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/dashboard/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
-- **2026-10-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `sha256:addb966f57829c8858b5d640b848f922c4323bf68adf071a6cbe4d7fccd463ee`, `sha256:228a52fe9195e3ad5e2d2f4b1612439a919fdb46cf18fa260e5b700de3829f79`, `tests/unit/install/test_local_release_smoke.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

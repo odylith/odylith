@@ -424,3 +424,90 @@ def test_no_material_risk_keeps_named_heading_and_explanatory_statement() -> Non
     ) in rendered
     assert "project-risk-details" not in rendered
     assert "Proposed category" not in rendered
+
+
+def _declared_path_project() -> dict:
+    quotes = (
+        "Author opens a conformance record.",
+        "Maintainer links the component contract.",
+        "QA records keyboard results.",
+        "Reviewer records the disposition.",
+        "Manager verifies the published status.",
+        "Manager publishes the status.",
+    )
+    rows = [
+        {"order": order, "event_quote": quote, "actor_kind": "human",
+         "actor_fact_quote": quote.split()[0],
+         "visible_result_quote": "published status" if order == 5 else ""}
+        for order, quote in enumerate(quotes, 1)
+    ]
+    design = structural_design_fixture(tuple(range(1, 7)))
+    design["first_run"] = {
+        "event_orders": [1, 2, 3, 4, 6, 5],
+        "rationale": "Publish the status before its verification.",
+    }
+    return {"authored_facts": {
+        "authored_semantics_version": "odylith.greenfield.authored-semantics.v19",
+        "source_event_relations": rows,
+        "first_path_relations": deepcopy(rows[:5]),
+        "provisional_design": design,
+        "source_precedence": [{"before_event": 6, "after_event": 5, "constraint_index": 1}],
+        "operational_constraints": ["Publish the status before verifying it."],
+    }}
+
+
+@pytest.mark.parametrize("proposed_orders", [[1, 2, 3, 4, 6, 5], [3, 1, 2, 4, 6, 5]])
+def test_current_first_path_html_uses_declared_five_without_changing_proposed_six(proposed_orders) -> None:
+    project = _declared_path_project()
+    project["authored_facts"]["provisional_design"]["first_run"]["event_orders"] = proposed_orders
+    before = deepcopy(project)
+    view = authored_fact_presenter.authored_fact_view(project)
+    assert [event.order for event in view.events] == proposed_orders
+    assert [event.order for event in view.declared_events] == [1, 2, 3, 4, 5]
+    rendered = authored_fact_presenter.render_product_story_contract(
+        [{"label": "First Path", "semantic_slot": "first_path", "body": "Stale fallback"}],
+        project=project, render_text=_render_text,
+    )
+    assert rendered.count("data-authored-event-quote") == 5
+    assert 'data-event-order="6"' not in rendered
+    assert "Proposed first run:" not in rendered
+    assert 'data-authority-kind="source_grounded"' in rendered
+    for row in project["authored_facts"]["first_path_relations"]:
+        assert rendered.count(_render_text(row["event_quote"])) == 2
+        assert f'data-authored-event-actor-value>{row["actor_fact_quote"]}</dd>' in rendered
+    assert "Stale fallback" not in rendered
+    assert '<details data-authored-event-details open' not in rendered
+    assert project == before
+
+
+@pytest.mark.parametrize("damage", [
+    "missing", "empty", "scalar", "missing_order", "duplicate", "unknown_order",
+    "boolean_order", "changed_quote", "changed_actor",
+])
+def test_current_declared_path_malformed_or_missing_never_uses_proposed_fallback(damage) -> None:
+    project = _declared_path_project()
+    facts = project["authored_facts"]
+    rows = facts["first_path_relations"]
+    if damage == "missing":
+        facts.pop("first_path_relations")
+    elif damage == "empty":
+        rows.clear()
+    elif damage == "scalar":
+        facts["first_path_relations"] = "Author opens a conformance record."
+    elif damage == "missing_order":
+        rows[0].pop("order")
+    elif damage == "duplicate":
+        rows.append(deepcopy(rows[0]))
+    elif damage == "unknown_order":
+        rows[0]["order"] = 99
+    elif damage == "boolean_order":
+        rows[0]["order"] = True
+    elif damage == "changed_quote":
+        rows[0]["event_quote"] = "Author approves the record."
+    elif damage == "changed_actor":
+        rows[0]["actor_fact_quote"] = "Manager"
+    with pytest.raises(GreenfieldAuthoredSemanticsError, match="declared path"):
+        authored_fact_presenter.render_product_story_contract(
+            [{"label": "First Path", "semantic_slot": "first_path", "body": "Plausible fallback"}],
+            project=project, render_text=_render_text,
+        )

@@ -319,7 +319,8 @@ def authored_structure_issues(rendered: Any, authored_facts: Any) -> tuple[str, 
     if not isinstance(rendered, dict) or not isinstance(authored_facts, dict):
         return ("browser surface project authored fact structure is unavailable",)
 
-    raw_events = authored_facts.get("source_event_relations" if authored_facts.get("authored_semantics_version") == "odylith.greenfield.authored-semantics.v19" else "first_path_relations")
+    fresh = authored_facts.get("authored_semantics_version") == "odylith.greenfield.authored-semantics.v19"
+    raw_events = authored_facts.get("source_event_relations" if fresh else "first_path_relations")
     if not isinstance(raw_events, (list, tuple)):
         return ("browser surface project payload has no typed first-path relations",)
     if not raw_events or any(
@@ -349,6 +350,18 @@ def authored_structure_issues(rendered: Any, authored_facts: Any) -> tuple[str, 
         return (f"browser surface project has invalid canonical provisional design: {exc}",)
     events_by_order = {row["order"]: row for row in raw_events}
     event_rows = [events_by_order[order] for order in design["first_run"]["event_orders"]]
+    if fresh:
+        declared = authored_facts.get("first_path_relations")
+        if not isinstance(declared, (list, tuple)) or not declared:
+            return ("browser surface project has invalid declared first-path relations",)
+        orders: list[int] = []
+        for row in declared:
+            order = row.get("order") if isinstance(row, dict) else None
+            if (type(order) is not int or order in orders
+                    or row != events_by_order.get(order)):
+                return ("browser surface project has invalid declared first-path relations",)
+            orders.append(order)
+        event_rows = list(declared)
     expected_events = [
         {
             "order": row["order"],
@@ -381,11 +394,14 @@ def authored_structure_issues(rendered: Any, authored_facts: Any) -> tuple[str, 
             issues.append(
                 f"browser surface project {surface.replace('_', ' ')} does not preserve typed event nodes"
             )
-        if (
-            rendered.get(f"{surface}_authority") != "provisional_design"
-            or rendered.get(f"{surface}_label") != "Proposed first run:"
-        ):
+        authority, label = ("source_grounded", "") if fresh else (
+            "provisional_design", "Proposed first run:"
+        )
+        if (rendered.get(f"{surface}_authority") != authority
+                or rendered.get(f"{surface}_label") != label):
             issues.append(
+                "browser surface project first path lost its declared-source authority"
+                if fresh else
                 f"browser surface project {surface.replace('_', ' ')} lost its explicit proposed-first-run marker"
             )
 

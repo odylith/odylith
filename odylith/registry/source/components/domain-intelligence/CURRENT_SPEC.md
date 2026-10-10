@@ -18,24 +18,24 @@ Supporting execution prerequisites remain a separate view.
 A whole-product performer requires an exact verified action mention and separately
 verified product identity. It cannot become another named subsystem or act through
 `/title`. Recurring safeguards retain their lifecycle, component custody and proof
-obligations without becoming one-time workflow steps. Preserved EDIT duties retain
-their exact component/workstream allocation unless the correction authorizes a
-change. The candidate cannot redefine these source facts.
+obligations without becoming one-time workflow steps. Preserved EDIT duties must
+retain their component/workstream allocation unless the correction authorizes a
+change. Current checks cover lifecycle bindings, but omit prior action allocations
+from the candidate input and admission boundary. The installed v51 run exposes
+that gap and an independently missing source-system roster.
 
 The bounded correction is implemented and independently reviewed. Its complete
 local gate covers 181 modules and seven generated browser nodes through retained
 unchanged proof and a complete rerun of five test modules that needed the fresh
 contract. The original run remains failed; no native or release credit is inferred.
 
-The prior v50 package passes clean installation, but its first native EDIT case
-fails independent review. H1 stops when a schema-admitted clarification carries
-product identity that strict preflight rejects. The authoring task also contains
-contradictory performer instructions; that is a plausible contributor, not a
-proven sole cause of the provider's question. Human projections mislabel the valid
-proposed walkthrough and repeat evidence instead of the existing project summary.
-CB-209/CB-303 retain those defects. Cases 02–04 remain unexecuted; qualifying
-genuine EDIT remains 0/4. Current CI, fresh installed fidelity, timing and release
-gates stay open. Earlier checkpoints retain only their historical scope.
+The v51 package builds and installs. Its first native EDIT seals and publishes,
+but independent review rejects three P1 defects: an unauthorized action allocation
+change, an empty source-system roster, and a Project page that labels the proposed
+walkthrough First Path. Lifecycle captions also confuse declared and proposed
+membership. CB-209/CB-303 preserve the actual failure. Cases 02–04 remain stopped;
+qualifying genuine EDIT remains 0/4. Full CI, installed fidelity, timing and release
+gates stay open. Earlier checkpoints retain their historical scope.
 
 Current local proof is recorded in
 `/private/tmp/odylith-v51-greenfield-composed-regression-20261009/result.json`.

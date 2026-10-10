@@ -1,5 +1,27 @@
 - Bug ID: CB-209
 
+## Current installed EDIT failure (2026-10-09, v51)
+
+The unchanged case01 now seals both packages and publishes the edited package,
+but independent review still rejects it. EDIT moves the existing record-opening
+duty from evidence/evidence-work to catalog/catalog-work without correction
+authority. It also emits an empty source-declared system roster while retaining
+five provisional components. Preserving component keys and lifecycle boundary
+owners did not preserve every existing action allocation or the source roster.
+
+The run exits 1 after 478.993 seconds. Both CONFIRM operations and readback succeed;
+the 16 inspected published semantic files exactly match the defective sealed H1.
+No P0 was observed. Three P1 findings and one P2 remain, including the presentation
+findings in CB-303; separate Atlas browser proof failures are recorded in CB-347.
+Cases02–04 remain unexecuted and qualifying genuine EDIT remains 0/4.
+
+Trace the existing prior-package input, allocation-preservation checks and source
+roster owner before selecting any correction. Do not add a semantic stage, retry,
+repair, parser or model ladder. The failed frozen package and actual output remain
+immutable. Independent report:
+`/private/tmp/odylith-v51-native-source-first-adjudication-20261009/case-01/final-adjudication-report.md`
+(SHA-256 `2acd43c18dfcdec0c48c866be6a8f57126dc69dbcac4609e41dda2d1c8aedd3b`).
+
 - Compact-output comparison (2026-09-30): A presentation-only sentence in the
   single host candidate task reduced Astra/medium authoring on the exact
   `release-agriculture-037-source` from `~177s` to `143.254s`; deterministic

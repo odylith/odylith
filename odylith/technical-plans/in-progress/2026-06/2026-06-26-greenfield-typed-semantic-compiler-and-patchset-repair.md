@@ -1,5 +1,81 @@
 Status: In progress
 
+## Public evidence amendment and bounded correction (2026-10-10)
+
+The operator delegated selection of the optimal path after reviewing the evidence
+replacement tradeoffs. Adopt the prospective replacement: independently annotate
+the same unchanged Public40 before fresh output exists, adjudicate disagreements,
+and freeze the declaration in Git plus a hash-verified independent backup. Keep
+all published floors, original failures, genuine EDIT denominators and the final
+holdout unchanged. The missing original cannot be reconstructed or relabelled.
+The tracked authority record is
+`tests/fixtures/greenfield-release-corpus/source-annotations/public40-20261010/evidence-amendment.v1.json`.
+This resolves the pending annotation decision; it grants no old campaign credit
+and does not authorize a fresh native campaign before the existing gates pass.
+
+Hosted CI 37954346463 now passes on e4f0d1a7. The grounded Project presenter and
+release readers are independently clear: the complete source/browser packs pass
+76 and 158 checks; retained actual H1 passes all eight desktop/mobile Project
+states with declared five actions and a separate six-action proposed walkthrough.
+The hidden Atlas metadata read is corrected without relaxing navigation guards.
+These are source/render proofs; the original native run remains failed at 0/4.
+The two sealed lifecycle captions remain open and require a coherent fresh
+version branch with exact passive historical reconstruction.
+
+Choose authenticated prior-meaning conservation as the smallest demonstrated
+EDIT correction, within the existing inventory/verifier/candidate flow. Carry
+prior verified action support and verification relationships, and the prior typed
+system roster with atomic custody; preserved dispositions require exact retention,
+and changes require exact correction authority. No extra stage, retry, parser,
+repair, fallback or model ladder. New-project nonperforming-system completeness
+is a separate known gap; this correction cannot claim to solve it or waive its
+release gate. First establish meaningful rejection/preservation tests on retained
+actual bytes and cross-domain controls, then independent contract review. The
+bounded-comparison stop remains: no third exploratory native run, and no broad
+mechanism accumulation. A successor qualification run requires a frozen, reviewed
+contract and an explicit source-backed prediction; another failure must stop the
+comparison rather than trigger fixture tuning.
+
+## Current stopping point: installed EDIT remains unqualified (2026-10-09, v51)
+
+The frozen e4f0d1a7 package builds, installs and seals both H0/H1; model-free
+confirmation and exact readback succeed. The unchanged case01 nevertheless fails:
+an existing action changes component/workstream allocation without correction
+authority, the source system roster disappears, and Project still labels a six-step
+proposed walkthrough First Path. Lifecycle captions also confuse declared and
+proposed membership. CB-209/CB-303 retain the independent three-P1/one-P2 report;
+CB-347 retains four separate Atlas checker failures. Qualifying EDIT stays 0/4.
+
+Stop further native cases. First diagnose the existing preservation inputs and
+admission checks, and the Project renderer that overrides correct sealed data.
+Fix the grounded hidden-ID checker read with meaningful browser controls without
+weakening its assertions. Do not add another semantic stage, parser, repair,
+retry, fallback, model ladder or fixture-specific rule. Preserve v50/v51 failures.
+Assess the goal's bounded-comparison stop rule against actual consumer progress
+before proposing another semantic mechanism; no successor native dispatch is
+authorized by this note. The latest correction advanced sealing and the brief,
+but it has not passed the public semantic gate.
+
+Full CI 37954346463 is still running at this checkpoint. Public40 replacement is
+pending an explicit evidence amendment; migration, host parity, timing/confidence
+and the untouched final holdout remain open. Actual independent report:
+`/private/tmp/odylith-v51-native-source-first-adjudication-20261009/case-01/final-adjudication-report.md`
+(SHA-256 `2acd43c18dfcdec0c48c866be6a8f57126dc69dbcac4609e41dda2d1c8aedd3b`).
+
+Read-only diagnosis confirms that prior action allocations and the typed system
+roster never reach EDIT preservation. The verifier checks the ten lifecycle rows
+it receives correctly; it has no disposition for the omitted baselines. The
+current source catalog contains performers, not a complete nonperforming-system
+roster. Carrying authenticated prior meaning through existing preservation is
+the bounded proposed correction. Complete current-source roster extraction is a
+larger, separate contract change and is not implicitly authorized by this note.
+Diagnosis: `/private/tmp/odylith-v51-preservation-gap-diagnosis-20261009/report.md`
+(SHA-256 `e77b164924e6823bb01da64865a261c6a75ac8f893bf826a95669d2c004f984c`).
+Both comparisons stay failed; no third exploratory native run follows. The next
+code follow-through is limited to the grounded checker and existing human
+presenter/caption defects. The checker now has 147 passing local checks after
+its one-line read correction; independent review and stable checkpoint follow.
+
 ## V42 source presentation proof (2026-10-08)
 
 The bounded source implementation is complete: Project shows each accepted

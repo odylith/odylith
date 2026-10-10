@@ -852,7 +852,7 @@ def _atlas_generated_state_issues(
             )
             active_button = frame.locator(".diagram-item.active button[data-diagram]").first
             wait_for_selection_route(page, "diagram", expected, timeout_ms)
-            displayed = str(frame.locator("#diagramId").inner_text(timeout=timeout_ms)).strip()
+            displayed = str(frame.locator("#diagramId").text_content(timeout=timeout_ms)).strip()
             visited_diagrams.append(displayed)
             if fail_png:
                 error = frame.locator("#viewerAssetError").first

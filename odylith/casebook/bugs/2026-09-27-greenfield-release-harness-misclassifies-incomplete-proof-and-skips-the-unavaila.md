@@ -1,5 +1,50 @@
 - Bug ID: CB-347
 
+## Current native failure and Atlas checker mismatch (2026-10-09, v51)
+
+Frozen checkpoint e4f0d1a7c07619bc48dd04ed9de05938c7ae6cc5 builds and installs,
+but native case01 exits 1 after 478.993 seconds. Its four recorded browser issues
+are missing selected diagram identity and incomplete ordered traversal, each on
+desktop and mobile. The release checker waits on diagramId.textContent but then
+collects inner_text from that ID inside closed metadata. This can read empty text
+while the visible selected row, title and image are present. Correct only that
+reader after a failing collapsed-metadata regression; retain exact identity,
+ordered traversal, visible content, image, fallback/error and request checks.
+
+Independent review separately finds three semantic/UX P1s and one P2. A checker
+fix cannot clear them, regrade this run or release cases02–04. The manifest SHA-256
+is `9b3c89904ab9f92962f8ee918d2165b184b9faa170fc4fcabe98333a6f980480` at
+`/private/tmp/odylith-greenfield-v51-genuine-edit-run-20261009/case-01/evidence/retained-evidence-manifest.v1.json`.
+Cleanup succeeds with no remaining consumer paths; qualifying EDIT remains 0/4.
+The original Public40 annotation is unavailable; replacement still requires the
+pending explicit evidence amendment. The final holdout remains untouched.
+
+The isolated real-browser regression reproduces the hidden-ID failure on both
+viewports. Changing only the read to text_content then passes all 147 affected
+checks, including missing/mismatched IDs and missing/duplicate/reordered visits.
+The source stays 1,200 lines; the assertion and readability owners are unchanged.
+The intermediate screenshot-count test error remains recorded separately. Final
+handoff: `/private/tmp/odylith-v51-atlas-checker-hidden-metadata-fix-20261009/handoff.json`
+(SHA-256 `7b0f5609a2dd5d3db76379aa807e1d05ef11b283649b5d559e7eb70b8d881287`).
+This is a local checker correction, not a replacement native result.
+
+The Project release reader has the same missed declared/proposed split as the
+presenter: two new controls show it rejects the correct declared view and accepts
+the contaminated proposed walkthrough. Adopt the already supplied typed declared
+rows for fresh semantic19 packages, with exact complete-row membership, unique
+integer IDs, source authority and closed evidence. Historical reader behavior,
+complete design validation and proposed execution remain unchanged. Baseline:
+`/private/tmp/odylith-v51-declared-path-release-reader-20261009/baseline.log`+(two failed, nine passed). This is an independent oracle correction for CB-303,
+not permission to change path meaning or regrade v51.
+
+The corrected complete release-reader selection passes 158 checks in 9.64 seconds,
+covering the original browser module and both new regression modules. Missing,
+changed, duplicate, unknown and boolean event IDs refuse; the contaminated proposed
+walkthrough refuses; historical proposed-path behavior stays unchanged. Handoff:
+`/private/tmp/odylith-v51-declared-path-release-reader-20261009/handoff.json`
+(SHA-256 `6737cf71acd2bcd7c875848515a7f1fb1bbe25a8c221442e689634c8cfad3447`).
+The native failure, system-roster and allocation gaps remain release blockers.
+
 ## V42 resumed CI freshness boundary (2026-10-08)
 
 CI `37507903773` fails five assertions after 10,036 passes and 10 skips in

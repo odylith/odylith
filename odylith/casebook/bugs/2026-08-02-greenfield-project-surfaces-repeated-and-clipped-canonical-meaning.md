@@ -1,5 +1,36 @@
 - Bug ID: CB-303
 
+## Current installed Project path mismatch (2026-10-09, v51)
+
+The published Project page still shows six proposed actions under First Path on
+desktop and mobile, although its sealed data and Markdown brief correctly retain
+the five declared actions separately. Supporting publication legitimately belongs
+in the proposed walkthrough; removing it would lose a real prerequisite. Correct
+the existing renderer's selection and labels rather than changing the source path.
+This is a P1 user-facing mismatch independent of the Atlas checker failures.
+
+The release component's lifecycle caption and Atlas capability guide also say
+publication is outside the proposed first run, contradicting its actual inclusion.
+Those P2 captions must distinguish the declared path from the proposed walkthrough.
+The direct brief narrative and corrected Atlas route improve the package but do
+not close this installed failure. All v51 output stays immutable; no replay credit.
+Independent source-first report:
+`/private/tmp/odylith-v51-native-source-first-adjudication-20261009/case-01/final-adjudication-report.md`
+(SHA-256 `2acd43c18dfcdec0c48c866be6a8f57126dc69dbcac4609e41dda2d1c8aedd3b`).
+
+The bounded final-presenter correction now uses the existing typed declared rows
+for First Path, with source authority and no proposed-run caption. Proposed
+execution remains separate and may use a different valid order. All 76 affected
+unit/browser checks pass. A model-free eight-state desktop/mobile matrix of the
+retained H1 data passes normal, degraded, empty and unavailable views against the
+independent release reader. Five historical transactions remain unchanged and
+legacy HTML is byte-identical. Handoff:
+`/private/tmp/odylith-v51-human-projection-followthrough-20261009/terminal-handoff.json`
+(SHA-256 `cf5b892f8512b873f515fbc5cce920cb1af98b2a65d895391d8101092ae9ea58`).
+This is source/render proof, not fresh installed qualification or a v51 regrade.
+The two lifecycle captions remain open: changing their sealed derived bytes needs
+one coherent fresh authority discriminator with exact passive readback.
+
 ## V42 installed presentation and release-oracle finding (2026-10-08)
 
 The current package passes clean-install smoke. One populated published v0.1.14

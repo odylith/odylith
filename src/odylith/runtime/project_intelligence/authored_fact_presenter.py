@@ -46,6 +46,7 @@ class AuthoredFactView:
     events: tuple[AuthoredEventPresentation, ...]
     capabilities: tuple[AuthoredCapability, ...]
     boundary_groups: tuple[AuthoredBoundaryGroup, ...]
+    declared_events: tuple[AuthoredEventPresentation, ...] | None = None
 
 
 def authored_fact_view(project: Mapping[str, Any]) -> AuthoredFactView | None:
@@ -117,6 +118,21 @@ def authored_fact_view(project: Mapping[str, Any]) -> AuthoredFactView | None:
     except ValueError as exc:
         raise GreenfieldAuthoredSemanticsError(str(exc)) from exc
     events_by_order = {event.order: event for event in events}
+    declared_events = None
+    if fresh:
+        declared = raw_facts.get("first_path_relations")
+        raw_by_order = {row["order"]: row for row in raw_events}
+        if (not isinstance(declared, Sequence) or isinstance(declared, (str, bytes, bytearray))
+                or not declared):
+            raise GreenfieldAuthoredSemanticsError("Project authored declared path is malformed")
+        orders: list[int] = []
+        for row in declared:
+            order = row.get("order") if isinstance(row, Mapping) else None
+            if (type(order) is not int or order in orders
+                    or row != raw_by_order.get(order)):
+                raise GreenfieldAuthoredSemanticsError("Project authored declared path is malformed")
+            orders.append(order)
+        declared_events = tuple(events_by_order[order] for order in orders)
     capabilities = tuple(
         AuthoredCapability(owner=row["name"], responsibility=row["responsibility"])
         for row in design["components"]
@@ -144,6 +160,7 @@ def authored_fact_view(project: Mapping[str, Any]) -> AuthoredFactView | None:
         events=tuple(events_by_order[order] for order in design["first_run"]["event_orders"]),
         capabilities=capabilities,
         boundary_groups=boundary_groups,
+        declared_events=declared_events,
     )
 
 
@@ -262,10 +279,13 @@ def _structured_story_body(
     if view is None:
         return ""
     if semantic_slot == "first_path":
+        declared = view.declared_events is not None
         return (
             '<div class="project-story-contract-body">'
-            '<p data-proposed-first-run-label>Proposed first run:</p>'
-            f'{_event_list(view.events, list_key="first_path", render_text=render_text)}</div>'
+            + ("" if declared else '<p data-proposed-first-run-label>Proposed first run:</p>')
+            + _event_list(view.declared_events if declared else view.events, list_key="first_path",
+                          render_text=render_text, authority_kind="source_grounded" if declared else "provisional_design")
+            + '</div>'
         )
     if semantic_slot == "owned_capabilities" and view.capabilities:
         rows = "".join(
@@ -300,6 +320,7 @@ def _event_list(
     *,
     list_key: str,
     render_text: RenderText,
+    authority_kind: str = "provisional_design",
 ) -> str:
     rows = "".join(
         f'<li data-authored-fact-item data-event-order="{event.order}">'
@@ -318,7 +339,7 @@ def _event_list(
     return (
         '<ol class="project-story-records project-authored-fact-list" '
         f'data-authored-fact-list="{html.escape(list_key, quote=True)}" '
-        'data-authority-kind="provisional_design">'
+        f'data-authority-kind="{html.escape(authority_kind, quote=True)}">'
         f'{rows}</ol><details data-authored-event-details>'
         '<summary>Supporting details</summary><ol class="project-story-records">'
         f'{evidence}</ol></details>'

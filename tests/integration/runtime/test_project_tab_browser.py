@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
@@ -565,7 +567,7 @@ def test_project_handoff_scope_is_visible_and_copyable_at_both_widths(tmp_path: 
                         context.close()
 
 
-def test_project_tab_result_first_source_renders_labeled_proposed_order_at_both_widths(tmp_path: Path) -> None:
+def test_project_tab_result_first_source_renders_declared_order_at_both_widths(tmp_path: Path) -> None:
     proposal = _result_first_proposal()
     payload = preview_project_dashboard_payload(
         root=tmp_path, proposal=proposal, accepted_project_preview=_accepted_preview(proposal=proposal, root=tmp_path),
@@ -577,8 +579,11 @@ def test_project_tab_result_first_source_renders_labeled_proposed_order_at_both_
         row["order"]: row for row in facts["first_path_relations"]
     }
     proposed_orders = facts["provisional_design"]["first_run"]["event_orders"]
-    expected_actors = [relations[order]["actor_fact_quote"] for order in proposed_orders]
-    expected_events = [relations[order]["event_quote"] for order in proposed_orders]
+    declared_orders = list(relations)
+    assert proposed_orders == [2, 1]
+    assert declared_orders == [1, 2]
+    expected_actors = [relations[order]["actor_fact_quote"] for order in declared_orders]
+    expected_events = [relations[order]["event_quote"] for order in declared_orders]
     with _static_server(root=tmp_path) as base_url:
         for _pw, browser in _browser():
             for viewport in ({"width": 1440, "height": 1100}, {"width": 430, "height": 932}):
@@ -589,7 +594,7 @@ def test_project_tab_result_first_source_renders_labeled_proposed_order_at_both_
                         assert response is not None and response.ok
                         for key in ("first_path",):
                             sequence = page.locator(f'[data-authored-fact-list="{key}"]')
-                            assert sequence.get_attribute("data-authority-kind") == "provisional_design"
+                            assert sequence.get_attribute("data-authority-kind") == "source_grounded"
                             items = sequence.locator("[data-authored-fact-item]")
                             assert items.locator("[data-authored-event-actor-label]").count() == 0
                             assert items.locator(
@@ -607,13 +612,13 @@ def test_project_tab_result_first_source_renders_labeled_proposed_order_at_both_
                             detail.locator("summary").focus()
                             detail.locator("summary").press("Enter")
                             evidence = detail.locator("[data-authored-event-evidence]")
-                            assert evidence.count() == len(proposed_orders)
-                            assert evidence.evaluate_all("nodes => nodes.map(node => node.dataset.eventOrder)") == [str(order) for order in proposed_orders]
+                            assert evidence.count() == len(declared_orders)
+                            assert evidence.evaluate_all("nodes => nodes.map(node => node.dataset.eventOrder)") == [str(order) for order in declared_orders]
                             for index, event in enumerate(expected_events):
                                 entry = evidence.nth(index)
                                 assert entry.locator("dt").all_text_contents() == ["Actor", "Actor kind", "Source event"]
                                 assert entry.locator("dd").all_text_contents() == [
-                                    expected_actors[index], relations[proposed_orders[index]]["actor_kind"], event,
+                                    expected_actors[index], relations[declared_orders[index]]["actor_kind"], event,
                                 ]
                                 assert entry.locator("[data-authored-event-actor-value]").is_visible()
                             _assert_project_sections_do_not_overflow(page, [".project-product-story"])
@@ -624,10 +629,9 @@ def test_project_tab_result_first_source_renders_labeled_proposed_order_at_both_
                             assert detail.get_attribute("open") is None
                             assert detail.locator("dd").first.is_hidden()
                             assert all(" — " not in text for text in items.all_text_contents())
-                            assert items.evaluate_all("nodes => nodes.map(node => node.dataset.eventOrder)") == ["2", "1"]
-                        assert page.locator("[data-proposed-first-run-label]").all_text_contents() == [
-                            "Proposed first run:",
-                        ]
+                            assert items.evaluate_all("nodes => nodes.map(node => node.dataset.eventOrder)") == ["1", "2"]
+                        assert facts["provisional_design"]["first_run"]["event_orders"] == proposed_orders
+                        assert page.locator("[data-proposed-first-run-label]").count() == 0
                         card = page.locator('[data-semantic-slot="first_path"]')
                         assert card.locator(":scope > *").count() == 2
                         assert card.locator(":scope > .project-story-contract-body").count() == 1
@@ -787,3 +791,57 @@ def test_project_summary_and_structured_risks_are_readable_at_both_widths(tmp_pa
                         _assert_clean_page(page, observation)
                 finally:
                     context.close()
+
+
+@pytest.mark.parametrize("width", [1440, 430], ids=["desktop", "mobile"])
+@pytest.mark.parametrize("degraded", [False, True], ids=["normal", "degraded"])
+def test_current_declared_path_preserves_exact_five_and_closed_evidence(
+    tmp_path: Path, width: int, degraded: bool,
+) -> None:
+    from tests.unit.runtime.test_greenfield_authored_fact_presenter import _declared_path_project
+
+    payload = _degraded_project_payload()
+    payload.update(_declared_path_project())
+    payload["sections"] = ["product_story", "trust"]
+    payload["product_story"] = {"release_contract": [
+        {"label": "First Path", "semantic_slot": "first_path", "body": "Stale fallback"},
+    ]}
+    if not degraded:
+        payload["degraded_state"] = []
+    before = json.dumps(payload, sort_keys=True)
+    rows = payload["authored_facts"]["first_path_relations"]
+    _write_project_page(tmp_path / "index.html", payload)
+    assert json.dumps(payload, sort_keys=True) == before
+    assert payload["authored_facts"]["provisional_design"]["first_run"]["event_orders"] == [1, 2, 3, 4, 6, 5]
+    with _static_server(root=tmp_path) as base_url:
+        for _pw, browser in _browser():
+            with browser.new_context(viewport={"width": width, "height": 1100 if width == 1440 else 932}) as context:
+                with _new_page(context) as (page, observation):
+                    response = page.goto(base_url + "/index.html", wait_until="domcontentloaded")
+                    assert response is not None and response.ok
+                    card = page.locator('[data-semantic-slot="first_path"]')
+                    assert card.locator("h3").inner_text() == "First Path"
+                    sequence = card.locator('[data-authored-fact-list="first_path"]')
+                    assert sequence.get_attribute("data-authority-kind") == "source_grounded"
+                    items = sequence.locator("[data-authored-fact-item]")
+                    assert items.evaluate_all("nodes => nodes.map(node => Number(node.dataset.eventOrder))") == [1, 2, 3, 4, 5]
+                    assert items.locator("[data-authored-event-quote]").all_text_contents() == [row["event_quote"] for row in rows]
+                    assert card.locator('[data-event-order="6"]').count() == 0
+                    assert card.locator("[data-proposed-first-run-label]").count() == 0
+                    details = card.locator("details[data-authored-event-details]")
+                    assert details.get_attribute("open") is None
+                    assert details.locator("dd").first.is_hidden()
+                    details.locator("summary").focus()
+                    page.keyboard.press("Enter")
+                    assert details.locator("[data-authored-event-evidence]").count() == 5
+                    assert details.locator("[data-authored-event-actor-value]").all_text_contents() == [row["actor_fact_quote"] for row in rows]
+                    assert details.locator("dd").first.is_visible()
+                    page.keyboard.press("Space")
+                    assert details.get_attribute("open") is None
+                    if degraded:
+                        assert "The latest permit source could not be loaded." in page.locator(".project-surface").inner_text()
+                    _assert_project_sections_do_not_overflow(page, [".project-product-story"])
+                    assert not _clipped_project_text(page)
+                    screenshot = _failure_screenshot_path(f"declared-first-path-{width}-{'degraded' if degraded else 'normal'}")
+                    page.screenshot(path=str(screenshot or tmp_path / f"declared-{width}-{degraded}.png"), full_page=True)
+                    _assert_clean_page(page, observation)
