@@ -1,0 +1,219 @@
+{
+  "status": "pass",
+  "case_count": 4,
+  "atom_count": 454,
+  "validated_span_occurrences": 1460,
+  "input_pins": {
+    "sourcecases-draft.json": "5da8ec8a344d3097ad5a65a14e4f0af0756943a03d6a22e4ff8557e67694e485",
+    "canonical-source-frames.json": "3020f24efae67a669b72574a24ed4f4146b235449180e91854faae32633a7c4a"
+  },
+  "checks": [
+    "two exact pinned source artifacts",
+    "complete membership and exact v2 schemas",
+    "truthful synthetic split",
+    "all prompt/H0/raw-correction/H1 hashes",
+    "UTF8 document and full-H1 quote spans and quote digests",
+    "global atom and section requirement identities",
+    "source-addressed relation/section references",
+    "path actor/action/target containment",
+    "all original broad-duty sources and stages retained",
+    "exact positive-action32 sum, declared24 and separate section32 arithmetic",
+    "independent H0/H1 formula and uninflated operational inventories"
+  ],
+  "limitation": "Structural custody/arithmetic validation; independent semantic adjudication remains a separate owner. Security consumes32slots under conservative gate-variant enumeration.",
+  "cases": [
+    {
+      "case_id": "prospective-edit-climate-heat-response-window-20261010",
+      "status": "pass",
+      "atom_count": 112,
+      "H0_capacity": {
+        "section_counts": {
+          "first_path_actions": 9,
+          "supporting_human_actions": 1,
+          "system_duties": 7,
+          "state_fields": 9,
+          "off_path_transitions": 0,
+          "conditional_guards": 6,
+          "boundaries": 11,
+          "proof_duties": 11
+        },
+        "performed_event_total": 17,
+        "declared": 9,
+        "declared_cap": 24,
+        "performed_event_cap": 32,
+        "declared_cap_pass": true,
+        "performed_event_cap_pass": true,
+        "separate_array_cap": 32,
+        "separate_arrays_pass": true
+      },
+      "H1_capacity": {
+        "section_counts": {
+          "first_path_actions": 11,
+          "supporting_human_actions": 1,
+          "system_duties": 9,
+          "state_fields": 9,
+          "off_path_transitions": 0,
+          "conditional_guards": 6,
+          "boundaries": 11,
+          "proof_duties": 13
+        },
+        "performed_event_total": 21,
+        "declared": 11,
+        "declared_cap": 24,
+        "performed_event_cap": 32,
+        "declared_cap_pass": true,
+        "performed_event_cap_pass": true,
+        "separate_array_cap": 32,
+        "separate_arrays_pass": true
+      },
+      "H0_band": "moderate",
+      "H1_band": "high",
+      "qualification": "ACCEPT"
+    },
+    {
+      "case_id": "prospective-edit-healthcare-trial-site-activation-20261010",
+      "status": "pass",
+      "atom_count": 107,
+      "H0_capacity": {
+        "section_counts": {
+          "first_path_actions": 17,
+          "supporting_human_actions": 1,
+          "system_duties": 8,
+          "state_fields": 5,
+          "off_path_transitions": 0,
+          "conditional_guards": 4,
+          "boundaries": 17,
+          "proof_duties": 8
+        },
+        "performed_event_total": 26,
+        "declared": 17,
+        "declared_cap": 24,
+        "performed_event_cap": 32,
+        "declared_cap_pass": true,
+        "performed_event_cap_pass": true,
+        "separate_array_cap": 32,
+        "separate_arrays_pass": true
+      },
+      "H1_capacity": {
+        "section_counts": {
+          "first_path_actions": 18,
+          "supporting_human_actions": 1,
+          "system_duties": 10,
+          "state_fields": 5,
+          "off_path_transitions": 0,
+          "conditional_guards": 4,
+          "boundaries": 17,
+          "proof_duties": 12
+        },
+        "performed_event_total": 29,
+        "declared": 18,
+        "declared_cap": 24,
+        "performed_event_cap": 32,
+        "declared_cap_pass": true,
+        "performed_event_cap_pass": true,
+        "separate_array_cap": 32,
+        "separate_arrays_pass": true
+      },
+      "H0_band": "moderate",
+      "H1_band": "high",
+      "qualification": "ACCEPT"
+    },
+    {
+      "case_id": "prospective-edit-open-data-river-federation-transfer-20261010",
+      "status": "pass",
+      "atom_count": 117,
+      "H0_capacity": {
+        "section_counts": {
+          "first_path_actions": 9,
+          "supporting_human_actions": 1,
+          "system_duties": 4,
+          "state_fields": 14,
+          "off_path_transitions": 0,
+          "conditional_guards": 1,
+          "boundaries": 13,
+          "proof_duties": 14
+        },
+        "performed_event_total": 14,
+        "declared": 9,
+        "declared_cap": 24,
+        "performed_event_cap": 32,
+        "declared_cap_pass": true,
+        "performed_event_cap_pass": true,
+        "separate_array_cap": 32,
+        "separate_arrays_pass": true
+      },
+      "H1_capacity": {
+        "section_counts": {
+          "first_path_actions": 11,
+          "supporting_human_actions": 1,
+          "system_duties": 7,
+          "state_fields": 14,
+          "off_path_transitions": 0,
+          "conditional_guards": 2,
+          "boundaries": 13,
+          "proof_duties": 16
+        },
+        "performed_event_total": 19,
+        "declared": 11,
+        "declared_cap": 24,
+        "performed_event_cap": 32,
+        "declared_cap_pass": true,
+        "performed_event_cap_pass": true,
+        "separate_array_cap": 32,
+        "separate_arrays_pass": true
+      },
+      "H0_band": "moderate",
+      "H1_band": "high",
+      "qualification": "ACCEPT"
+    },
+    {
+      "case_id": "prospective-edit-security-isolated-recovery-rehearsal-20261010",
+      "status": "pass",
+      "atom_count": 118,
+      "H0_capacity": {
+        "section_counts": {
+          "first_path_actions": 17,
+          "supporting_human_actions": 2,
+          "system_duties": 10,
+          "state_fields": 10,
+          "off_path_transitions": 0,
+          "conditional_guards": 2,
+          "boundaries": 18,
+          "proof_duties": 10
+        },
+        "performed_event_total": 29,
+        "declared": 17,
+        "declared_cap": 24,
+        "performed_event_cap": 32,
+        "declared_cap_pass": true,
+        "performed_event_cap_pass": true,
+        "separate_array_cap": 32,
+        "separate_arrays_pass": true
+      },
+      "H1_capacity": {
+        "section_counts": {
+          "first_path_actions": 18,
+          "supporting_human_actions": 2,
+          "system_duties": 12,
+          "state_fields": 10,
+          "off_path_transitions": 0,
+          "conditional_guards": 2,
+          "boundaries": 19,
+          "proof_duties": 13
+        },
+        "performed_event_total": 32,
+        "declared": 18,
+        "declared_cap": 24,
+        "performed_event_cap": 32,
+        "declared_cap_pass": true,
+        "performed_event_cap_pass": true,
+        "separate_array_cap": 32,
+        "separate_arrays_pass": true
+      },
+      "H0_band": "moderate",
+      "H1_band": "high",
+      "qualification": "ACCEPT"
+    }
+  ],
+  "errors": []
+}

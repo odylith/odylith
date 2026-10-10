@@ -95,12 +95,16 @@ def test_preserved_owner_pairs_cannot_move_but_exact_authorized_change_can():
     prior = receipt["edit_preservation"]["prior_lifecycle"]
     binding = {role: [{key: row[key] for key in ("duty_id", "component_key", "workstream_key")}
                       for row in prior[role]] for role in ("off_path_transitions", "conditional_guards", "boundaries", "proof_duties")}
-    require_preserved_source_duty_owners(binding, receipt)
+    binding.update(first_path_actions=[{"duty_id": "A1", "event_order": 1}, {"duty_id": "A2", "event_order": 2}],
+                   supporting_human_actions=[], system_duties=[])
+    design = {"components": [{"key": "record-state", "supported_event_orders": [1, 2], "verification_event_orders": [1, 2]}],
+              "workstreams": [{"key": "record-delivery", "component_keys": ["record-state"], "verification_event_orders": [1, 2]}]}
+    require_preserved_source_duty_owners(binding, receipt, provisional_design=design)
     binding["conditional_guards"][0]["component_key"] = "different-owner"
     with pytest.raises(ValueError, match="prior component"):
-        require_preserved_source_duty_owners(binding, receipt)
+        require_preserved_source_duty_owners(binding, receipt, provisional_design=design)
     receipt["decision_set"]["edit_preservation"]["conditional_guards/G1"].update(verdict="changed", correction_authorization="yes")
-    require_preserved_source_duty_owners(binding, receipt)
+    require_preserved_source_duty_owners(binding, receipt, provisional_design=design)
 
 
 def _mixed_source_graph(count):

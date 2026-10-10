@@ -2,6 +2,26 @@ Status: In progress
 
 ## Public evidence amendment and bounded correction (2026-10-10)
 
+Source preparation also reproduced a release-loader defect: generated-prose
+deduplication deleted meaningful words from source prompts and reviewed intent.
+Correct that one loader line and add controls in the existing initial-source test;
+leave generated-text cleanup and the frozen runtime owners unchanged. All 48
+authorized existing and prospective source identities and frames are compatible.
+CB-209 retains the diagnosis and red/green isolated comparison. Include the
+complete source module and this correction in the final regression gate.
+The complete successor run now reports 4,143 passes and two failures, with all
+1,164 pins unchanged. CB-209 records the same loader's remaining generated-prose
+cleanup of supplied lexical controls, including a false admission risk. Correct
+that existing tuple owner and retain exact supplied source/control words with
+both refusal controls. Refresh the stale release Registry forensic record through
+its canonical owner. Settle the final governance bytes before the next complete
+gate; retain this failed run without claiming a pass or starting native execution.
+The bounded loader correction is frozen with 142 passing checks and three actual
+red controls. It preserves all 48 real source identities/frames and removes five
+production lines. Canonical synchronization refreshes eight forensic records and
+zero component specs. Independent review, final source settlement and one complete
+current-byte gate precede the package; the 4,143-pass/two-failure run stays failed.
+
 The operator delegated selection of the optimal path after reviewing the evidence
 replacement tradeoffs. Adopt the prospective replacement: independently annotate
 the same unchanged Public40 before fresh output exists, adjudicate disagreements,
@@ -23,14 +43,107 @@ complexity is 32 bounded, eight moderate and zero high; this set cannot meet the
 unchanged high-complexity minimum of four. Preserve that coverage gap and every
 quality floor. This is prospective evidence custody, not product qualification.
 
-Hosted CI 37954346463 now passes on e4f0d1a7. The grounded Project presenter and
+Independent review rejected the first conservation design: marginal component
+and workstream sets could miss swapped allocation edges, a changed/yes verdict
+could release an unseen target, and complete request bounds were unspecified.
+Revision 02 is clear for bounded implementation. It carries exact allocation
+tuples, requires equality for every surviving prior action, preserves the
+authenticated typed roster, and refuses unsupported roster mutation. The complete
+prior context is capped at 131,072 canonical UTF-8 bytes; complete verifier and
+candidate requests are capped at 262,144 bytes before their respective calls.
+The implementation is frozen across 15 existing runtime owners and two release
+readers. Focused controls reject the actual unauthorized allocation move, preserve
+all five accepted systems with an empty candidate roster, and keep five historical
+transactions' exact hashes and projections. Complete byte-boundary and source
+locator controls pass. Two release readers exposed obsolete context reconstruction;
+they now use the existing authenticated prior-transaction bridge. Independent
+patch review clears successor03 with no remaining finding in the 17 production
+and nine test/fixture files; its final focused gate passes 156 checks. The frozen
+182-module regression reports 4,062 passes and nine failures in two obsolete test
+contracts, with every source pin unchanged. Adopt the complete prior-action
+decisions in the refusal fixture and the precise fresh-baseline refusal in the
+legacy negative. Both complete modules now pass all 75 checks; independent review
+finds no weakened refusal, seal, custody or compatibility guard. The original
+failed full run remains retained. Complete the final full gate after the bounded
+release-harness implementation freezes. Adoption review:
+`/private/tmp/odylith-v52-regression-test-contract-independent-review-20261010/report.md`
+(SHA-256 `316080961d17f3c3038078cb245c4770f56f4f819522cf248d68f9cf0abf52eb`).
+All 118 desktop/mobile browser checks pass against unchanged successor03 source,
+including normal, empty, fallback and error states. Frozen installed qualification
+remains required. Source proof
+grants no native or release credit. Review:
+`/private/tmp/odylith-v52-allocation-roster-preservation-independent-review-20261010/report.md`
+(SHA-256 `1f9d3d149ec3e0aa0e45f20ce73a29a5c37a0fe387f50af611deb4f8001c8121`).
+Design: `/private/tmp/odylith-v52-prior-meaning-conservation-design-20261010/revision-02/contract.md`
+(SHA-256 `cf164f9cfc2afb71e6c83ad81be61f855e2050951f8c07223f306a1de1e93dba`).
+Clearance: `/private/tmp/odylith-v52-prior-meaning-conservation-design-review-20261010/revision-02/report.md`
+(SHA-256 `45bfc8b38ae8f9a800063aec5d4cd2bb2cfe93baa0e967415bc017cacec80661`).
+Both designs, review findings and the coverage diagnosis have a verified local
+archive; originals remain available for implementation proof.
+
+The high-complexity diagnosis confirms that genuine EDIT4 cannot supply four high
+samples: only its unexecuted case04 is prospectively high. The smallest honest
+coverage route is four distinct high cases in a separate prospective family,
+with an explicit release composition contract and unchanged primary denominators.
+Four synthetic source drafts are now frozen before any product output. Both
+source reviewers find all four H1 inputs high, with moderate custody-only H0;
+independent source-only adjudication now accepts all four. The final declaration
+has 405 atoms and 58 declared relations. Required performed totals are 26/31/25/26;
+even conservative permission-inclusive counts fit the existing 32-action limit.
+All original source bytes, both reviews and their disagreements are preserved.
+The exact copied family and final declaration pass canonical v2 validation under
+`tests/fixtures/greenfield-release-corpus/source-annotations/high4-20261010/`.
+Final declaration SHA-256 is
+`c0c4800ab6094bc5f694e93d529dc507b78d14175b13d864642546fd2e817c3a`.
+These are synthetic source preparations and earn no product execution credit.
+The initial broad capacity
+rejection incorrectly counted prohibitions as performed actions. The existing
+32-action aggregate applies only to first-path, supporting-human and system-action
+arrays; guards, boundaries and proof have separate limits. All requirements remain
+source-addressed under the correct categories. Preserve that superseded review and
+the unfrozen, unadopted simplification draft. No source has been replaced and no
+family has been executed or credited. Composition revision02 is
+independently clear for four existing release owners: move the existing source
+validator to its canonical scoring owner, authenticate Public40 plus four new high
+EDIT journeys, and retain genuine EDIT4 as a separate gate with zero scored credit.
+Only the four declared Public40/genuine baseline overlaps are permitted; High4
+remains disjoint. All families must use one actual package with observed execution
+custody. No floors, confidence rules, native stages or holdout change. Complete
+this bounded harness adoption before building the final package so native proof
+binds the final source checkpoint. Review:
+`/private/tmp/odylith-high-coverage-composition-independent-review-20261010/revision02/report.md`
+(SHA-256 `9688a5a7cbc019122696f92fb0612786d8ec0f49b9af218768ce44918ecee12a`).
+The first four-owner implementation passes 362 focused checks. Independent review
+finds one reachable release-accounting defect: v2 domain and input-style claims
+are not bound to the actual source cases, and four distinct existing domains are
+not enforced. Correct those exact checks and retain the original freeze. The
+first final regression was stopped after 54.732 seconds with five passes, no test
+failures and unchanged source pins; it earns no full-gate credit. The private
+execution recorder separately passes all 30 controls, including exact receipt
+delivery and ordered genuine 1+3 association. Native qualification remains open.
+Successor02 closes the domain/style defect with seven production lines and seven
+controls that fail against the retained original owners. Its complete eight-module
+gate passes 369 checks with 18 unchanged pins. Independent review clears the four
+release owners, the actual-execution recorder and the source-loader correction;
+the reviewer reruns all 30 recorder controls against the final consumer bytes.
+Review: `/private/tmp/odylith-v52-collector-contract-independent-review-20261010/report.md`
+(SHA-256 `a570bb790fe18271e1e3a632db94156cc35eef4841f3af601210da963c05e0d8`).
+Run the complete regression against this successor before freezing the one package.
+The current public gate still fails its high minimum. Diagnosis:
+`/private/tmp/odylith-public-high-coverage-diagnosis-20261010/report.md`
+(SHA-256 `ca33c34c28102ad0e17b9f5e85f012737a3097599000f9fc2a44fb71faa16fc4`).
+
+Hosted CI 38085594373 passes on 89982ba338, covering the committed UX and durable
+annotation amendment. The grounded Project presenter and
 release readers are independently clear: the complete source/browser packs pass
 76 and 158 checks; retained actual H1 passes all eight desktop/mobile Project
 states with declared five actions and a separate six-action proposed walkthrough.
 The hidden Atlas metadata read is corrected without relaxing navigation guards.
 These are source/render proofs; the original native run remains failed at 0/4.
-The two sealed lifecycle captions remain open and require a coherent fresh
-version branch with exact passive historical reconstruction.
+The two lifecycle captions now distinguish source lifecycle from declared
+first-path membership on fresh receipts; historical reconstruction remains exact.
+Their fresh compiler/browser proof and complete regression gate remain separate
+from the original native failure.
 
 Choose authenticated prior-meaning conservation as the smallest demonstrated
 EDIT correction, within the existing inventory/verifier/candidate flow. Carry

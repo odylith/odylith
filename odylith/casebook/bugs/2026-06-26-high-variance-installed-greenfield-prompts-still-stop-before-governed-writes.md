@@ -1,5 +1,117 @@
 - Bug ID: CB-209
 
+## Release control phrases must retain supplied words (2026-10-10)
+
+The complete successor regression reports 4,143 passes and two failures in
+611.681 seconds, with all 1,164 source/generated pins unchanged. One failure
+exposes a second use of generated-prose cleanup in the same source loader:
+`_string_tuple` deletes repeated words from required/leakage control phrases.
+With the prompt correctly preserved, `mission evidence evidence review` becomes
+the absent `mission evidence review` and strict grounding refuses it. The same
+deletion can incorrectly admit an absent repeated-word control. Normalize these
+supplied phrases' whitespace only, remove the unused prose-cleanup bridge, and
+adopt the old source-deletion expectation to exact source/control preservation.
+Add explicit absent repeated required/leakage refusal controls. Preserve all
+48 real source identities and frames, shared generated-text cleanup, runtime
+contracts and release floors. The other failure is the release component's
+stale generated forensic record; refresh it with the canonical governance owner.
+Retain the complete failed run before the final current-byte gate:
+`/private/tmp/odylith-v52-final-greenfield-regression-r2-20261010/result.json`.
+The existing loader now preserves words in tuple entries and retires its unused
+generated-prose bridge, reducing production code by five lines. All three
+regression controls fail before this correction; the complete loader, corpus and
+proof-scope modules pass 142 checks afterward. All 48 actual case identities and
+frames are unchanged; that compatibility census uses the source-mode loading
+contract, while the separate refusal controls prove lexical enforcement.
+Proof: `/private/tmp/odylith-v52-release-loader-lexical-compatibility-20261010/report.md`
+(SHA-256 `6d900f8b9b961052a4560b74160612ebffaa3229c1319829b4a83172c8b9c5fd`).
+Canonical requirements synchronization refreshes eight forensic records without
+changing any component spec. Complete current-byte regression remains required.
+
+## Prospective coverage accounting review (2026-10-10)
+
+Independent review found a reachable defect in the first four-owner composition
+patch: v2 annotation domain and input-style fields were not checked against the
+loaded source cases, so one domain could supply all four supposed distinct stress
+cases. Bind those fields and enforce the declared four distinct domains drawn
+from Public40. Retain the first 362-pass focused result and its original source
+freeze. The final regression was stopped after 54.732 seconds, with five passes,
+no failures and unchanged source pins, to correct this defect before packaging.
+No native or release credit follows. The separate private execution recorder
+passes 30 model-free controls; actual package execution remains pending.
+Successor02 binds the v2 fields to loaded inputs and enforces four distinct
+existing Public40 domains. Seven controls reproduce the original defect; all
+369 checks in the complete focused cone pass on the seven-line correction.
+Independent review is clear and reruns the recorder's 30 controls against these
+final bytes. The source-loader supplement is also clear with its 96-pass proof.
+The stopped full run stays interrupted; a new complete regression is required.
+Review: `/private/tmp/odylith-v52-collector-contract-independent-review-20261010/report.md`
+(SHA-256 `a570bb790fe18271e1e3a632db94156cc35eef4841f3af601210da963c05e0d8`).
+
+## Release source-word preservation (2026-10-10)
+
+Preparing prospective stress sources exposed word loss in the release case
+loader: `Retain capacity. Capacity remains attributable.` became
+`Retain capacity. remains attributable.` The loader applied generated-prose
+deduplication to operator source documents. Meaningful repetition such as
+`that that reviewer` was also changed before framing, hashing and citation.
+Separate source whitespace normalization from generated-prose cleanup in this
+one loader owner; preserve the shared generated-text helper. The isolated
+three-control comparison reproduces all three losses and passes with the
+one-line correction. All 48 authorized Public40, prospective EDIT and genuine
+EDIT inputs retain identical loaded identities and prepared frames. The complete
+initial-source and release-corpus modules now pass 96 checks against unchanged
+corrected source; final regression proof remains required. Proof:
+`/private/tmp/odylith-v52-source-loader-preservation-proof-20261010/result.json`.
+Diagnosis:
+`/private/tmp/odylith-source-loader-normalization-diagnosis-20261010/report.md`
+(SHA-256 `178677768b0149bd055a7a6ad23c4a1536cb54175f607b53a15fa46bcbd4c39f`).
+
+## Preservation design review (2026-10-10)
+
+The first proposed correction was rejected before coding. Separate component and
+workstream sets would accept a swapped allocation with identical marginal sets;
+a changed/yes verdict did not identify the authorized replacement target; and
+complete context/request size limits were absent. Revision 02 carries exact
+component-to-workstream edges and verification flags, requires equality for all
+surviving actions, and preserves the authenticated prior typed system roster.
+Unsupported system rename, removal, replacement or retyping must refuse before
+candidate generation with a clear no-write message. Complete context and request
+caps are checked at their production call boundaries.
+
+Independent review clears this bounded design. Production controls now reject the
+actual unauthorized allocation move and preserve all five accepted systems when
+the candidate supplies an empty roster. A same-name internal/external control
+caught a quote-based identity error; exact source addresses now distinguish the
+systems and still reject retyping. Two release readers also reconstructed obsolete
+preservation context and now use the same authenticated prior bridge. Complete
+regression and installed proof remain pending.
+Independent patch review also found that one atom could be repeated across both
+typed system arrays and silently deduplicated into one preservation decision.
+The real context validator reproduced the defect. The successor checks globally
+unique atom IDs and the raw combined count before per-field validation; the
+original failing control and all earlier source freezes remain retained.
+Independent review clears successor03 with no remaining finding in its bounded
+17-file implementation and nine-file test scope; the final focused gate passes
+156 checks. Review SHA-256:
+`1f9d3d149ec3e0aa0e45f20ce73a29a5c37a0fe387f50af611deb4f8001c8121`.
+The unchanged-source full regression reports 4,062 passes and nine failures:
+eight refusal-transport variants assume no prior action dispositions, and one
+fresh-admission negative expects a later legacy-version diagnostic. These two
+test contracts have been adopted without weakening transport, seal or legacy guards.
+Both complete modules pass 75 checks and independent review is clear (SHA-256
+`316080961d17f3c3038078cb245c4770f56f4f819522cf248d68f9cf0abf52eb`).
+The original failed result is retained at
+`/private/tmp/odylith-v52-greenfield-regression-20261010/result.json`.
+All 118 successor03 browser checks pass against unchanged source, covering
+desktop/mobile and normal, empty, fallback and error states. This does not
+requalify the failed installed run or substitute for fresh native output.
+Initial nonperforming-system completeness
+and general roster mutation remain outside this correction. The original v51
+failure and genuine EDIT 0/4 result remain unchanged. Review:
+`/private/tmp/odylith-v52-prior-meaning-conservation-design-review-20261010/revision-02/report.md`
+(SHA-256 `45bfc8b38ae8f9a800063aec5d4cd2bb2cfe93baa0e967415bc017cacec80661`).
+
 ## Current installed EDIT failure (2026-10-09, v51)
 
 The unchanged case01 now seals both packages and publishes the edited package,

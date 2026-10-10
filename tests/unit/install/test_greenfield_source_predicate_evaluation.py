@@ -542,3 +542,80 @@ def test_actual_evidence_loader_refuses_malformed_material_custody(tmp_path):
         floors=EXACT_RELEASE_FLOORS, source_predicate_evidence=config)
     assert report['scoring_status'] == 'unscored' and report['sample_count'] == 0 and not report['passed']
     assert any('material custody' in issue and 'state_object' in issue for issue in report['issues'])
+
+
+@pytest.fixture
+def edited_source_declaration(tmp_path):
+    """Controlled custody fixture; this is not a prospective High4 source case."""
+    from dataclasses import replace
+    from greenfield_semantic_case_score import PUBLIC_EDIT_SOURCE_MODE, PUBLIC_EDIT_SOURCE_SPLIT
+    from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import prepare_model_authoring_evidence
+    case = replace(_case('edited-source', expectation='transaction_committed'), prompt='Review workspace. A reviewer opens a plan.',
+        lifecycle_correction='Also record a signed review note.', input_style='edited_confirmation')
+    ref = _save(tmp_path / 'edited-cases.json', {'cases': [{'id': case.case_id, 'name': case.name,
+        'prompt': case.prompt, 'lifecycle_correction': case.lifecycle_correction,
+        'input_style': 'edited_confirmation', 'provenance': {'source_family': 'controlled-review'},
+        'required_terms': ['reviewer'], 'leakage_terms': ['reviewer']}]})
+    case = load_case_file(Path(ref['path']))[0]
+    declaration = _declare(case, ref['sha256'])
+    declaration['version'] = PUBLIC_EDIT_SOURCE_MODE
+    declaration['public_split'] = PUBLIC_EDIT_SOURCE_SPLIT
+    row = declaration['cases'][0]
+    row['public_split'] = PUBLIC_EDIT_SOURCE_SPLIT
+    row['source_family'] = case.provenance.source_family
+    h0 = prepare_model_authoring_evidence(prompt=case.initial_prompt).evidence_source
+    h1 = case.model_evidence
+    row.update(initial_source_sha256=hashlib.sha256(h0.encode()).hexdigest(),
+        correction_sha256=hashlib.sha256(case.lifecycle_correction.encode()).hexdigest(),
+        operator_evidence_sha256=hashlib.sha256(h1.evidence_source.encode()).hexdigest(),
+        source_texts={'initial_source': h0, 'correction': h1.edit_evidence}, evidence_format=h1.source_format)
+    row['complexity_dimensions'].update(documents=2, evidence_bytes=len(h1.evidence_source.encode()))
+    row['complexity_band'] = greenfield_complexity_band(row['complexity_dimensions'])
+    quote = h1.edit_evidence
+    operator_start = h1.evidence_source.encode().index(quote.encode())
+    row['atoms'][0]['source'] = {'document': 'correction', 'start_byte': 0, 'end_byte': len(quote.encode()),
+        'quote': quote, 'quote_sha256': hashlib.sha256(quote.encode()).hexdigest(),
+        'operator_evidence_start_byte': operator_start, 'operator_evidence_end_byte': operator_start + len(quote.encode())}
+    return case, declaration, tmp_path / 'edited-declaration.json'
+
+
+def test_source_validator_has_one_owner_with_exact_old_import_compatibility(edited_source_declaration):
+    from greenfield_semantic_case_score import validate_source_predicate_predeclaration as canonical
+    case, declaration, path = edited_source_declaration
+    ref = _save(path, declaration)
+    expected = canonical(cases=(case,), path=path, expected_sha256=ref['sha256'])
+    assert expected[1] == ()
+    assert validate_source_predicate_predeclaration(cases=(case,), path=path, expected_sha256=ref['sha256']) == expected
+    assert canonical.__module__ == 'greenfield_semantic_case_score'
+    import greenfield_evaluation_contract as old_owner
+    assert not hasattr(old_owner, '_source_predicate_spans')
+
+
+@pytest.mark.parametrize('mutation', ['raw_correction', 'initial_frame', 'h0_as_h1', 'wrong_document',
+    'wrong_offset', 'missing_version', 'unknown_version', 'missing_correction', 'initial_prompt_changed', 'old_top_split', 'old_row_split',
+    'annotation_domain', 'annotation_style', 'case_domain', 'case_style'])
+def test_source_v2_refuses_changed_h1_correction_or_span(edited_source_declaration, mutation):
+    from dataclasses import replace
+    from greenfield_semantic_case_score import validate_source_predicate_predeclaration as canonical
+    case, declaration, path = edited_source_declaration
+    row = declaration['cases'][0]
+    if mutation == 'raw_correction': row['correction_sha256'] = 'a' * 64
+    elif mutation == 'initial_frame': row['initial_source_sha256'] = 'b' * 64
+    elif mutation == 'h0_as_h1': row['operator_evidence_sha256'] = row['initial_source_sha256']
+    elif mutation == 'wrong_document': row['atoms'][0]['source']['document'] = 'prompt'
+    elif mutation == 'wrong_offset': row['atoms'][0]['source']['operator_evidence_start_byte'] -= 1
+    elif mutation == 'missing_version': declaration.pop('version')
+    elif mutation == 'unknown_version': declaration['version'] += '.unknown'
+    elif mutation == 'missing_correction': case = replace(case, lifecycle_correction='')
+    elif mutation == 'initial_prompt_changed': case = replace(case, prompt=case.prompt + ' Another owner.')
+    elif mutation == 'old_top_split': declaration['public_split'] = 'disclosed-public-live-subset'
+    elif mutation == 'old_row_split': row['public_split'] = 'disclosed-public-live-subset'
+    elif mutation == 'annotation_domain': row['source_family'] = 'different-domain'
+    elif mutation == 'annotation_style': row['input_style'] = 'structured'
+    elif mutation == 'case_domain': case = replace(case, provenance=replace(case.provenance, source_family='different-domain'))
+    elif mutation == 'case_style': case = replace(case, input_style='structured')
+    ref = _save(path, declaration)
+    _, issues = canonical(cases=(case,), path=path, expected_sha256=ref['sha256'])
+    assert issues, mutation
+    if mutation in {'annotation_domain', 'annotation_style', 'case_domain', 'case_style'}:
+        assert any('EDIT domain/input style changed' in issue for issue in issues)

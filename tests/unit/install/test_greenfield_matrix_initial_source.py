@@ -21,7 +21,7 @@ if str(SCRIPTS_ROOT) not in sys.path:
 
 import greenfield_preconfirm_matrix as matrix
 import greenfield_matrix_journey as journey
-from greenfield_matrix_case_file import load_case_file
+from greenfield_matrix_case_file import canonical_case_text, load_case_file
 from greenfield_matrix_release_artifacts import RetainedEvidenceCase
 from greenfield_matrix_statistics import expected_case_evidence_format, expected_case_source_complexity
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase, case_evidence
@@ -37,6 +37,46 @@ def _case() -> GreenfieldMatrixCase:
         confirmed_intent_markdown="\nReviewed first path: record → inspect → retain the decision.\n",
         required_terms=("decision",),
     )
+
+
+@pytest.mark.parametrize("source", (
+    "Retain capacity. Capacity remains attributable.",
+    "Record that that reviewer approved the request.",
+    "  Café capacity. Capacity stays cited.\r\n\r\n  Preserve  two words.  ",
+))
+def test_loader_preserves_source_words_without_generated_prose_deduplication(tmp_path: Path, source: str) -> None:
+    expected = "\n".join(" ".join(line.split()) for line in source.strip().splitlines()).strip()
+    correction = "  Add capacity. Capacity needs a dated receipt.\r\n"
+    path = tmp_path / "source-words.json"
+    path.write_text(json.dumps([{
+        "name": "source words", "prompt": source,
+        "confirmed_intent_markdown": source, "lifecycle_correction": correction,
+    }]), encoding="utf-8")
+    case = load_case_file(path, enforce_lexical_controls=False)[0]
+    assert case.prompt == expected
+    assert case.confirmed_intent_markdown == expected
+    assert case.lifecycle_correction == correction
+    assert canonical_case_text(source) == expected
+    assert case.initial_prompt == expected + "\n\n# Operator edit evidence\n\n" + expected
+    assert case_evidence(case)["prompt_sha256"] == hashlib.sha256(expected.encode()).hexdigest()
+    assert case_evidence(case)["confirmed_intent_sha256"] == hashlib.sha256(expected.encode()).hexdigest()
+    assert case.model_evidence.edit_evidence == correction.strip()
+
+
+@pytest.mark.parametrize("field,absent_term", (
+    ("required_terms", "mission evidence evidence"),
+    ("leakage_terms", "mission evidence evidence review"),
+))
+def test_loader_refuses_ungrounded_repeated_word_controls(tmp_path: Path, field: str, absent_term: str) -> None:
+    row = {
+        "name": "mission evidence review", "prompt": "Create a mission evidence review workspace.",
+        "required_terms": ["mission evidence"], "leakage_terms": ["mission evidence review"],
+    }
+    row[field] = [absent_term]
+    source = tmp_path / "absent-control.json"
+    source.write_text(json.dumps([row]), encoding="utf-8")
+    with pytest.raises(RuntimeError, match=f"ungrounded {field}: {absent_term}"):
+        load_case_file(source)
 
 
 def test_initial_source_preserves_both_documents_and_truthful_source_format() -> None:
@@ -179,26 +219,30 @@ def _preservation_fixture():
     from tests.unit.runtime.test_greenfield_source_duty_ledger import _yes_decisions
     from tests.unit.runtime.greenfield_model_authoring_fixtures import synthetic_source_duty_receipt_for_ledger
     from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import preflight_greenfield_source_duty_ledger
-    from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import greenfield_edit_preservation_context, source_duty_entailment_task
+    from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import source_duty_entailment_task
     case = list(_edit_case())
     source, ledger, context, _, old_decisions = case
     initial = source.split("\n\n# Operator edit evidence\n\n")[0] + "\n"
     source = prepare_model_authoring_evidence(prompt=initial, edit_evidence=context["correction"]).evidence_source
-    context = greenfield_edit_preservation_context(transaction_hash=context["transaction_hash"],
-        prior_lifecycle=context["prior_lifecycle"], prior_identity=context["prior_identity"],
-        correction=context["correction"], evidence_text=source)
+    from tests.unit.runtime.greenfield_model_authoring_fixtures import edit_action_context_fixture, preserved_edit_decisions_fixture
+    prior_receipt = synthetic_source_duty_receipt_for_ledger(ledger, evidence_text=initial)
+    prior_design = {
+        "components": [{"key": "record-state", "supported_event_orders": [1, 2], "verification_event_orders": [1, 2]}],
+        "workstreams": [{"key": "record-delivery", "component_keys": ["record-state"], "verification_event_orders": [1, 2]}],
+    }
+    context = edit_action_context_fixture(prior_source=initial, prior_receipt=prior_receipt,
+        prior_lifecycle=context["prior_lifecycle"], design=prior_design,
+        transaction_hash=context["transaction_hash"], correction=context["correction"])
     preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=source)
     task = source_duty_entailment_task(preflight, evidence_text=source, edit_preservation=context)
     decisions = _yes_decisions(preflight, evidence_text=source)
     decisions.update(version=old_decisions["version"], verifier_task_sha256=task["verifier_task_sha256"],
         identity_preservation=deepcopy(old_decisions["identity_preservation"]),
-        edit_preservation=deepcopy(old_decisions["edit_preservation"]))
+        **preserved_edit_decisions_fixture(context))
     case = (source, ledger, context, task, decisions)
-    prior_receipt = synthetic_source_duty_receipt_for_ledger(ledger, evidence_text=initial)
-    previous = SimpleNamespace(transaction_hash=context["transaction_hash"],
-        proposal={"intent": {"prompt": initial, "authored_semantics": {"source_duty": {"ledger_receipt": prior_receipt}}},
-            "semantic_model": {"source_lifecycle": context["prior_lifecycle"]}},
-        quality_manifest={})
+    from tests.unit.runtime.greenfield_model_authoring_fixtures import prior_transaction_custody_fixture
+    previous = prior_transaction_custody_fixture(prior_source=initial, prior_receipt=prior_receipt,
+        context=context, design=prior_design)
     edited = SimpleNamespace(transaction_hash="b" * 64,
         proposal={"intent": {"prompt": source, "authored_semantics": {"source_duty": {"ledger_receipt": _admit(case)}}}})
     return initial, context["correction"], previous, edited, case
@@ -231,7 +275,7 @@ def test_additive_release_family_requires_verified_preservation_of_every_prior_d
             journey._require_preserved_duties(previous=previous, edited=edited, initial_source=initial, correction=correction)
     else:
         verified = journey._require_preserved_duties(previous=previous, edited=edited, initial_source=initial, correction=correction)
-        assert len(verified["decision_set"]["edit_preservation"]) == 4
+        assert len(verified["decision_set"]["edit_preservation"]) == 6
 
 
 @pytest.mark.parametrize("damage", [None, "initial_clarification", "initial_failure", "edited_clarification", "edited_failure", "same_hash", "mutated_prior", "terminal_failure", "terminal_mutated_prior", "terminal_mode_change", "prepare_only",

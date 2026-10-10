@@ -14,12 +14,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 906,
-    "mapped_workstream_evidence_count": 756,
+    "explicit_event_count": 908,
+    "mapped_workstream_evidence_count": 758,
     "recent_path_match_count": 0,
     "spec_history_event_count": 67,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 906
+    "timeline_event_count": 908
   },
   "name": "Release",
   "path_prefixes": [
@@ -48,6 +48,81 @@
   ],
   "spec_ref": "odylith/registry/source/components/release/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
+        "tests/fixtures/greenfield-release-corpus/source-annotations/high4-20261010/final-predeclaration.json"
+      ],
+      "confidence": "high",
+      "event_index": 1606,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-10-10T16:12:45-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 4,
+      "artifacts": [
+        "sha256:a2b7ef2f083849f9a5a0d5913f4fc77471e81d7c8d8988b007ca394d5c11a273",
+        "sha256:5ece4c0a32b0329ad2bff097cefaab1f6b705c6b3764fc5bcc9f4e1551764195",
+        "sha256:df0443819e21841fb46bdb60f8d05d3d511bf82b69cc2b785583cc7ceb1ca44c",
+        "sha256:79fd0cf4f52837611e828eff6cbccac0bb76a234300efd0a7b2b940522bff664"
+      ],
+      "confidence": "high",
+      "event_index": 1605,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
+      "ts_iso": "2026-10-10T15:13:18-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 4,
       "artifacts": [

@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-10-09
+Last updated: 2026-10-10
 
 
 ## Overview
@@ -8,36 +8,59 @@ Domain Intelligence turns project evidence into a reviewable governance package
 or one focused question when a material requirement is unresolved. It keeps source
 facts, proposed design and evidence custody distinct throughout preparation.
 
-The current correction uses host v58/format v25, canonical authoring v80 and
-authored semantics v19. The inventory and existing source-only verifier establish
-product identity, exact performers, declared workflow membership and whether a
-system duty is a discrete action or recurring safeguard. One complete source-event
-graph is stored; the declared workflow is derived from its verified source roles.
-Supporting execution prerequisites remain a separate view.
+Fresh preparation now uses host v59 with initial/EDIT source receipts v18/v19,
+decisions v11/v13 and EDIT preservation context v4. Candidate format v25,
+canonical authoring v80 and authored semantics v19 retain their existing shapes.
+The same inventory, source-only verifier and candidate stages establish product
+identity, exact performers, declared workflow membership and recurring safeguards.
+The Project page presents the declared first path separately from the proposed
+walkthrough and keeps evidence and machine metadata in supporting details.
 
-A whole-product performer requires an exact verified action mention and separately
-verified product identity. It cannot become another named subsystem or act through
-`/title`. Recurring safeguards retain their lifecycle, component custody and proof
-obligations without becoming one-time workflow steps. Preserved EDIT duties must
-retain their component/workstream allocation unless the correction authorizes a
-change. Current checks cover lifecycle bindings, but omit prior action allocations
-from the candidate input and admission boundary. The installed v51 run exposes
-that gap and an independently missing source-system roster.
+EDIT carries each accepted action's exact component-to-workstream allocations and
+both verification flags, plus the accepted typed system roster and exact source
+addresses. Every surviving action retains those allocations, including one marked
+changed with correction authorization. An authorized removal may remove its
+action. System renames, removals, replacements and type changes refuse before
+candidate generation; a fresh candidate cannot silently erase accepted systems.
+Distinct systems with the same name remain distinct through their source addresses.
 
-The bounded correction is implemented and independently reviewed. Its complete
-local gate covers 181 modules and seven generated browser nodes through retained
-unchanged proof and a complete rerun of five test modules that needed the fresh
-contract. The original run remains failed; no native or release credit is inferred.
+The complete prior context is limited to 131,072 canonical UTF-8 bytes. Complete
+verifier and candidate requests, including their schemas, are limited to 262,144
+bytes before their respective calls. Retained source framing and source locators
+are authenticated without searching for a replacement quote. Release readers use
+the same prior-transaction bridge after authenticating the retained transaction.
+No model stage, retry, repair, parser, fallback or new memory store is introduced.
 
-The v51 package builds and installs. Its first native EDIT seals and publishes,
-but independent review rejects three P1 defects: an unauthorized action allocation
-change, an empty source-system roster, and a Project page that labels the proposed
-walkthrough First Path. Lifecycle captions also confuse declared and proposed
-membership. CB-209/CB-303 preserve the actual failure. Cases 02–04 remain stopped;
-qualifying genuine EDIT remains 0/4. Full CI, installed fidelity, timing and release
-gates stay open. Earlier checkpoints retain their historical scope.
+The bounded design and successor03 implementation are independently clear.
+The complete regression reports 4,062 passes and nine obsolete test-contract
+failures in two modules; their complete adoption rerun passes all 75 checks and
+independent review finds no weakened custody or refusal guard. The final full gate
+follows the bounded release-harness implementation freeze. All 118
+desktop/mobile browser checks pass against unchanged source across normal, empty,
+fallback and error states. Fresh installed qualification remains pending.
+The final focused gate passes 156 checks. Focused controls
+reject the actual unauthorized ownership move and retain all five accepted systems
+when the candidate supplies an empty roster. Five historical transactions retain
+their exact hashes and projections. Historical host v58/receipt v16/v17 records
+remain passive readback only; fresh preparation cannot adopt their tuple.
+Independent patch review:
+`/private/tmp/odylith-v52-allocation-roster-preservation-independent-review-20261010/report.md`
+(SHA-256 `1f9d3d149ec3e0aa0e45f20ce73a29a5c37a0fe387f50af611deb4f8001c8121`).
 
-Current local proof is recorded in
+Initial extraction of every nonperforming system and general roster mutation
+remain known gaps. The original v51 run remains failed at genuine EDIT 0/4;
+cases02–04 remain unexecuted. Source and compiler controls grant no release credit.
+The reannotated unchanged Public40 is durably frozen but contains no high-complexity
+cases. Four separate prospective high journeys and their authenticated composition
+contract remain required; no such case has been authored, executed or credited.
+The bounded composition design is independently clear. It scores Public40 plus
+four new high EDIT journeys while authenticating genuine EDIT4 as a separate gate
+with no scored credit. All use one actual release package and observed execution
+custody; quality floors, confidence rules and protected holdout remain unchanged.
+
+### Historical v51 local source proof (2026-10-09)
+
+The previous local proof is recorded in
 `/private/tmp/odylith-v51-greenfield-composed-regression-20261009/result.json`.
 The source correction passes 519 focused checks and independent real-output
 readback. The complete run records 4,019 passes and 12 stale test-reader failures;
@@ -46,7 +69,7 @@ review accepts replacing those five modules' earlier evidence while retaining
 proof for 176 unchanged modules and seven generated nodes. All 951 other code/test
 pins are unchanged. This is a composite gate, not a clean monolithic rerun.
 
-### Current source and historical readback boundary (2026-10-09)
+### Historical v51 source and readback boundary (2026-10-09)
 
 Fresh source custody uses ledger v9, compact v7, preflight v8, initial/EDIT receipts
 v16/v17, decisions v11/v12 and EDIT preservation context v3. Candidate format v25,

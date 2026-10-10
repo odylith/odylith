@@ -945,3 +945,99 @@ def _nth_start(source: bytes, quote: bytes, occurrence: int) -> int:
             raise ValueError("authored fixture quote occurrence is not present")
         cursor = found + 1
     return found
+
+
+def edit_action_context_fixture(*, prior_source, prior_receipt, prior_lifecycle, design, correction,
+                                transaction_hash="a" * 64, prior_facts=None):
+    """Give small source-backed unit fixtures the complete fresh action baseline."""
+    import hashlib
+    from odylith.runtime.domain_intelligence.greenfield_authored_semantics import combined_prompt_evidence_segment
+    from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import project_greenfield_source_event_catalog, source_action_allocation_relations
+    from odylith.runtime.domain_intelligence.greenfield_model_source_citations import canonical_citation_from_host_selection, resolve_source_citation
+    from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import greenfield_edit_preservation_context
+    catalog = project_greenfield_source_event_catalog(prior_receipt, evidence_text=prior_source)
+    raw = prior_source.encode("utf-8")
+    actions = {section: [] for section in catalog["action_bindings"]}
+    for event in catalog["events"]:
+        section = event["binding_role"]
+        duty = next(row for row in prior_receipt["ledger"][section] if row["id"] == event["duty_id"])
+        quote, start = resolve_source_citation(raw, canonical_citation_from_host_selection(raw, duty["event_ref"]))
+        end = start + len(quote.encode("utf-8"))
+        actions[section].append({"duty": copy.deepcopy(duty),
+            "source_locator": {"relation_order": event["event_order"], "source_start_byte": start,
+                "source_end_byte": end, "text_sha256": hashlib.sha256(raw[start:end]).hexdigest()},
+            "allocation_relations": source_action_allocation_relations(design, event["event_order"])})
+    source, segment = combined_prompt_evidence_segment(prompt=prior_source, edit_evidence=correction)
+    from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import append_atomic_source_spans, build_atomic_fact_ledger
+    claims, facts = [], {}
+    for field in ("internal_systems", "external_systems"):
+        facts[field] = []
+        for index, citation in enumerate((prior_facts or {}).get(field, [])):
+            quote, start = resolve_source_citation(raw, canonical_citation_from_host_selection(raw, citation))
+            digest = hashlib.sha256(quote.encode("utf-8")).hexdigest()
+            facts[field].append(quote)
+            claims.append({"field": field, "category": "actions" if field == "internal_systems" else "dependencies",
+                "polarity": "affirmed", "source_start_byte": start, "source_end_byte": start + len(quote.encode("utf-8")),
+                "quote": quote, "quote_sha256": digest, "projection_path": f"/{field}/{index}",
+                "projection_start_byte": 0, "projection_end_byte": len(quote.encode("utf-8")),
+                "projection_value_sha256": digest, "relation_order": 0, "relation_role": ""})
+    spans = []
+    if claims:
+        append_atomic_source_spans(spans, authored_atomic_claims=claims)
+    atoms = build_atomic_fact_ledger(facts=facts, spans=spans, authored_atomic_claims=claims) if claims else []
+    systems = {field: [atom for atom in atoms if atom["projection_links"][0]["field"] == field] for field in facts}
+    return greenfield_edit_preservation_context(transaction_hash=transaction_hash,
+        prior_lifecycle=prior_lifecycle, prior_identity=prior_receipt["ledger"]["product_identity"],
+        correction=correction, evidence_text=source, prior_actions=actions,
+        prior_system_facts=systems, prior_source_segment=segment,
+        prior_authority_sha256=hashlib.sha256(raw).hexdigest(), prior_relation_set_sha256=hashlib.sha256(raw).hexdigest())
+
+
+def preserved_edit_decisions_fixture(context, *, current_ids=None):
+    """Use explicit same-section IDs; production still verifies all dispositions."""
+    decisions = {
+        f"{section}/{row['duty_id']}": {"verdict": "preserved", "current_duty_id": row["duty_id"],
+            "correction_authorization": "not_required"}
+        for section in ("state_fields", "off_path_transitions", "conditional_guards", "boundaries", "proof_duties")
+        for row in context["prior_lifecycle"][section]
+    }
+    for section, rows in context["prior_actions"].items():
+        for row in rows:
+            duty_id = row["duty"]["id"]
+            decisions[f"{section}/{duty_id}"] = {"verdict": "preserved",
+                "current_duty_id": (current_ids or {}).get(duty_id, duty_id), "correction_authorization": "not_required"}
+    return {"edit_preservation": decisions,
+            "system_preservation": {atom["atom_id"]: {"verdict": "preserved", "correction_authorization": "not_required"}
+                for rows in context["prior_system_facts"].values() for atom in rows}}
+
+
+def prior_transaction_custody_fixture(*, prior_source, prior_receipt, context, design):
+    """Complete the existing release-test transaction double's source custody.
+
+    Release tests isolate the sealed-transaction loader. This provides every
+    baseline field read by the real EDIT bridge, without mocking that bridge.
+    Full compiler authentication is proved separately by runtime tests.
+    """
+    from types import SimpleNamespace
+    import hashlib
+    relations = [
+        {"order": row["source_locator"]["relation_order"],
+         "source_start_byte": row["source_locator"]["source_start_byte"],
+         "source_end_byte": row["source_locator"]["source_end_byte"]}
+        for rows in context["prior_actions"].values() for row in rows
+    ]
+    binding = {
+        section: [{"duty_id": row["duty"]["id"], "event_order": row["source_locator"]["relation_order"]}
+                  for row in rows]
+        for section, rows in context["prior_actions"].items()
+    }
+    lifecycle = context["prior_lifecycle"]
+    return SimpleNamespace(transaction_hash=context["transaction_hash"],
+        proposal={"intent": {"prompt": prior_source, "internal_systems": [], "external_systems": [],
+            "authored_semantics": {"source_event_relations": relations, "provisional_design": design,
+                "source_duty": {"ledger_receipt": prior_receipt, "binding": binding, "lifecycle": lifecycle}}},
+            "semantic_model": {"source_lifecycle": lifecycle}},
+        intent_authority={"markdown_source_sha256": hashlib.sha256(prior_source.encode()).hexdigest(),
+            "atomic_facts": [], "authority_snapshot_sha256": context["prior_authority_sha256"],
+            "authored_relation_set_sha256": context["prior_relation_set_sha256"]},
+        quality_manifest={})

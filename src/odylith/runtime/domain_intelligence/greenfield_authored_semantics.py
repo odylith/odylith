@@ -73,10 +73,25 @@ MAX_COMPONENT_RESPONSIBILITY_RELATIONS = 32
 def combined_prompt_evidence_source(*, prompt: str, edit_evidence: str) -> str:
     """Return the exact, versioned byte frame presented to model authoring."""
 
-    rows = [GREENFIELD_PRECONFIRM_STAGING_MARKER, "", "# Operator prompt evidence", "", prompt.strip()]
+    return combined_prompt_evidence_segment(prompt=prompt, edit_evidence=edit_evidence)[0]
+
+
+def combined_prompt_evidence_segment(*, prompt: str, edit_evidence: str) -> tuple[str, dict[str, Any]]:
+    """Expose the known embedded UTF8 segment while constructing the existing frame."""
+    prefix = "\n".join([GREENFIELD_PRECONFIRM_STAGING_MARKER, "", "# Operator prompt evidence", "", ""])
+    retained = prompt.strip()
+    framed = prefix + retained
     if edit_evidence:
-        rows.extend(("", "# Operator edit evidence", "", edit_evidence.strip()))
-    return "\n".join(rows).rstrip() + "\n"
+        framed += "\n\n# Operator edit evidence\n\n" + edit_evidence.strip()
+    framed = framed.rstrip() + "\n"
+    return framed, {
+        "prior_source_sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
+        "byte_length": len(prompt.encode("utf-8")),
+        "embedded_start": len(prefix.encode("utf-8")),
+        "embedded_end": len((prefix + retained).encode("utf-8")),
+        "removed_prefix": prompt[:len(prompt) - len(prompt.lstrip())],
+        "removed_suffix": prompt[len(prompt.rstrip()):],
+    }
 
 
 def overlapping_first_path_event_orders(

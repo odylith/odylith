@@ -17,6 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_outcomes import (
 )
 from odylith.runtime.domain_intelligence.greenfield_model_source_citations import (
     canonical_citation_from_host_selection,
+    canonical_citation_from_source_span,
     resolve_source_citation,
 )
 from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
@@ -131,7 +132,8 @@ def project_greenfield_source_event_catalog(
 ) -> dict[str, Any]:
     """Freeze every verified action ID and exact performer before candidate authoring."""
     verified = verify_greenfield_source_duty_ledger_receipt(
-        receipt, evidence_text=evidence_text, allow_legacy_edit=_passive,
+        receipt, evidence_text=evidence_text, allow_legacy_edit=(_passive or receipt.get("version") in {
+            "odylith.greenfield.source-duty-ledger-receipt.v16", "odylith.greenfield.source-duty-ledger-receipt.v17"}),
     )
     evidence = evidence_text.encode("utf-8")
     facts: dict[str, Any] = {"human_actors": [], "internal_systems": [], "external_systems": [], "title": None}
@@ -204,10 +206,20 @@ def project_greenfield_source_event_catalog(
 
 def source_owned_greenfield_actor_facts(
     catalog: Mapping[str, Any], *, supplemental: Mapping[str, Any], evidence_text: str,
+    ledger_receipt: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Keep source performers first; supplemental facts cannot select an event actor."""
     facts = deepcopy(dict(supplemental))
     evidence = evidence_text.encode("utf-8")
+    context = ledger_receipt.get("edit_preservation") if ledger_receipt is not None else None
+    conserved = isinstance(context, Mapping) and context.get("version") == "odylith.greenfield.edit-lifecycle-preservation.v4"
+    if conserved:
+        from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import mapped_prior_source_span, UNSUPPORTED_SYSTEM_MUTATION
+        for field, atoms in context["prior_system_facts"].items():
+            prior_spans = {mapped_prior_source_span(context, atom["source_span_refs"][0], evidence_text=evidence_text) for atom in atoms}
+            for other in {"internal_systems", "external_systems"} - {field}:
+                if any(_source_span(evidence, citation) in prior_spans for citation in catalog["facts"][other]):
+                    raise GreenfieldSourceDutyBindingError(UNSUPPORTED_SYSTEM_MUTATION)
     for field, prefix in catalog["facts"].items():
         raw = supplemental.get(field)
         if field == "title":
@@ -218,14 +230,31 @@ def source_owned_greenfield_actor_facts(
         rows = _rows(raw, minimum=0, maximum=32, path=f"supplemental {field}")
         facts[field] = deepcopy(prefix)
         seen = {_source_span(evidence, row) for row in prefix}
+        prior = []
+        if conserved and field in {"internal_systems", "external_systems"}:
+            from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import mapped_prior_source_span, UNSUPPORTED_SYSTEM_MUTATION
+            for atom in context["prior_system_facts"][field]:
+                for link in atom["projection_links"]:
+                    if link["field"] == field and link["relation_order"] == 0:
+                        start, end = mapped_prior_source_span(context, atom["source_span_refs"][0], evidence_text=evidence_text)
+                        prior.append((link["path"], (start, end), canonical_citation_from_source_span(evidence, start=start, end=end)))
+            prior.sort(key=lambda row: int(row[0].rsplit("/", 1)[1]))
         for citation in rows:
             span = _source_span(evidence, citation)
+            if conserved and field in {"internal_systems", "external_systems"}:
+                if span not in seen and span not in {row[1] for row in prior}:
+                    raise GreenfieldSourceDutyBindingError(UNSUPPORTED_SYSTEM_MUTATION)
+                continue
             existing = [actor for actor in catalog["performers"]
                         if (actor["source_start_byte"], actor["source_end_byte"]) == span]
             if existing and not any(actor["field"] == field for actor in existing):
                 raise GreenfieldSourceDutyBindingError("supplemental actor has an incompatible source performer kind")
             if span not in seen:
                 facts[field].append(deepcopy(citation))
+                seen.add(span)
+        for _, span, citation in prior:
+            if span not in seen:
+                facts[field].append(citation)
                 seen.add(span)
         if len(facts[field]) > 32:
             raise GreenfieldSourceDutyBindingError("source and supplemental actors exceed the existing bound")
@@ -617,7 +646,7 @@ def validate_greenfield_source_duty_design_binding(
             "candidate design owner keys are duplicated"
         )
     if ledger_receipt is not None:
-        require_preserved_source_duty_owners(binding, ledger_receipt)
+        require_preserved_source_duty_owners(binding, ledger_receipt, provisional_design=provisional_design)
     _off_path_bindings(
         binding["off_path_transitions"],
         duties=ledger["off_path_transitions"],
@@ -645,10 +674,10 @@ def recurring_source_event_orders(ledger: Mapping[str, Any], binding: Mapping[st
     return tuple(row["event_order"] for row in binding["system_duties"] if row["duty_id"] in recurring)
 
 
-def require_preserved_source_duty_owners(binding: Mapping[str, Any], receipt: Mapping[str, Any]) -> None:
+def require_preserved_source_duty_owners(binding: Mapping[str, Any], receipt: Mapping[str, Any], *, provisional_design: Mapping[str, Any] | None = None) -> None:
     """Preserved EDIT duties retain their authenticated allocation keys exactly."""
     context = receipt.get("edit_preservation")
-    if not isinstance(context, Mapping) or context.get("version") != "odylith.greenfield.edit-lifecycle-preservation.v3":
+    if not isinstance(context, Mapping) or context.get("version") not in {"odylith.greenfield.edit-lifecycle-preservation.v3", "odylith.greenfield.edit-lifecycle-preservation.v4"}:
         return
     decisions = receipt["decision_set"]["edit_preservation"]
     for role in ("off_path_transitions", "conditional_guards", "boundaries", "proof_duties"):
@@ -660,6 +689,29 @@ def require_preserved_source_duty_owners(binding: Mapping[str, Any], receipt: Ma
                             if row["duty_id"] == decision["current_duty_id"]), None)
             if current is None or any(current[key] != prior[key] for key in ("component_key", "workstream_key")):
                 raise GreenfieldSourceDutyBindingError("preserved source duty must retain its prior component and workstream allocation")
+    if context["version"] == "odylith.greenfield.edit-lifecycle-preservation.v4":
+        if provisional_design is None:
+            raise GreenfieldSourceDutyBindingError("EDIT action allocation requires the complete current design")
+        for role in _ACTION_SECTIONS:
+            current = {row["duty_id"]: row["event_order"] for row in binding[role]}
+            for prior in context["prior_actions"][role]:
+                decision = decisions[f"{role}/{prior['duty']['id']}"]
+                if decision["verdict"] == "removed":
+                    continue
+                order = current.get(decision["current_duty_id"])
+                if order is None or source_action_allocation_relations(provisional_design, order) != prior["allocation_relations"]:
+                    raise GreenfieldSourceDutyBindingError("Surviving source actions must retain every prior component/workstream allocation relation; no project records were created.")
+
+
+def source_action_allocation_relations(design: Mapping[str, Any], event_order: int) -> list[dict[str, Any]]:
+    """Retain component support, workstream edges and both verification flags."""
+    return sorted([
+        {"component_key": component["key"], "workstream_key": workstream["key"],
+         "component_verifies": event_order in component["verification_event_orders"],
+         "workstream_verifies": event_order in workstream["verification_event_orders"]}
+        for component in design["components"] if event_order in component["supported_event_orders"]
+        for workstream in design["workstreams"] if component["key"] in workstream["component_keys"]
+    ], key=lambda row: (row["component_key"], row["workstream_key"], row["component_verifies"], row["workstream_verifies"]))
 
 
 __all__ = [

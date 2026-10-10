@@ -144,7 +144,12 @@ def _request(args, root: Path) -> tuple[str, str]:
             repo_root=root, transaction_hash=args.transaction_hash, completion_receipt=getattr(args,"completion_receipt",None)))
         if not correction.strip():
             raise ValueError("Add correction evidence for an EDIT preparation")
-        return str(previous.proposal.get("intent", {}).get("prompt") or ""), correction
+        from odylith.runtime.domain_intelligence.greenfield_proposals_cli import _edit_preservation
+        from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import prepare_model_authoring_evidence
+        prompt = str(previous.proposal.get("intent", {}).get("prompt") or "")
+        prepared = prepare_model_authoring_evidence(prompt=prompt, edit_evidence=correction)
+        _edit_preservation(previous, correction=prepared.edit_evidence, evidence_text=prepared.evidence_source)
+        return prompt, correction
     if correction.strip():
         raise ValueError("Correction evidence requires the old transaction hash")
     return str(args.prompt), ""

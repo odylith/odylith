@@ -18,11 +18,18 @@ from greenfield_relation_fidelity import canonical_evidence_sha256, observed_sem
 from greenfield_matrix_case_file import load_case_file
 from greenfield_matrix_release_artifacts import is_sha256, sha256_file, retained_evidence_manifest_issues, repo_artifact_path
 from greenfield_onboarding_review import validate_independent_reviewer
+from greenfield_matrix_statistics import expected_case_evidence_format
+from odylith.runtime.domain_intelligence.greenfield_authored_semantics import combined_prompt_evidence_source
+from odylith.runtime.domain_intelligence.greenfield_operating_envelope import greenfield_complexity_band
+from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import prepare_model_authoring_evidence
 
 NORMALIZED_SEMANTIC_DIGEST_VERSION = "odylith.greenfield.normalized-semantics.v1"
 _SCORED_ROLE = "scored"
 _REFERENCE_ROLE = "reference_only"
 PUBLIC_SOURCE_MODE = "odylith.greenfield.public-source-predicate-evaluation.v1"
+PUBLIC_EDIT_SOURCE_MODE = "odylith.greenfield.public-source-predicate-evaluation.v2"
+PUBLIC_EDIT_SOURCE_SPLIT = "prospective-synthetic-high-edit"
+PUBLIC_COMPOSITION_MODE = "odylith.greenfield.public-coverage-composition.v1"
 _ARTIFACT_REFS = {"predeclaration", "source_cases", "observed_bindings", "independent_audit", "output", "retained_manifest", "review_record"}
 
 def score_native_commit(
@@ -300,6 +307,162 @@ def string_rows(value: Any) -> tuple[str, ...]:
     return tuple(str(item) for item in value)
 
 
+def validate_source_predicate_predeclaration(
+    *, cases: Sequence[Any], path: Path, expected_sha256: str,
+) -> tuple[dict[str, Mapping[str, Any]], tuple[str, ...]]:
+    """Read frozen public expectations without any generated destination evidence.
+
+    The caller supplies the independently frozen file digest.  This validates the
+    original source census, rather than deriving expected rows from an output.
+    """
+    from greenfield_evaluation_contract import (
+        PUBLIC_SOURCE_SPLIT, ATOMIC_CATEGORIES, MATERIALITY_VALUES, EVALUATION_ROLES,
+        CUSTODY_VALUES, POLARITY_VALUES, _json_object, _require_file_hash,
+        _validate_expected_clarification, _validate_complexity, _string_sequence,
+    )
+    issues: list[str] = []
+    try:
+        value = _json_object(Path(path), label="public source predeclaration")
+        _require_file_hash(Path(path), expected=expected_sha256, issues=issues,
+                           label="public source predeclaration")
+    except (OSError, RuntimeError) as exc:
+        return {}, (str(exc),)
+    mode = value.get("version", PUBLIC_SOURCE_MODE)
+    edited = mode == PUBLIC_EDIT_SOURCE_MODE
+    public_split = PUBLIC_EDIT_SOURCE_SPLIT if edited else PUBLIC_SOURCE_SPLIT
+    if mode not in (PUBLIC_SOURCE_MODE, PUBLIC_EDIT_SOURCE_MODE):
+        issues.append("public source predeclaration has an unknown version")
+    header = {"version"} if edited else set()
+    if set(value) != header | {"artifact_kind", "public_split", "created_on", "sources", "case_count",
+                      "schema_boundary", "independence", "cases"}:
+        issues.append("public source predeclaration has unexpected fields")
+    if value.get("public_split") != public_split or value.get("artifact_kind") != (
+        "public source-only semantic predeclaration; not an evaluator annotation schema"
+    ):
+        issues.append("source predeclaration must retain its truthful public source-only label")
+    if mapping_value(value.get("schema_boundary")).get("compatible_api_annotations") is not False:
+        issues.append("source predeclaration must preserve its historical native schema boundary")
+    if not value.get("independence") or not isinstance(value.get("sources"), Mapping):
+        issues.append("source predeclaration lacks source-only provenance")
+    elif any(not is_sha256(digest) for digest in value["sources"].values()):
+        issues.append("source predeclaration has invalid source artifact hashes")
+    rows = value.get("cases")
+    if not is_sequence(rows) or type(value.get("case_count")) is not int or value.get("case_count") != len(rows):
+        return {}, tuple((*issues, "source predeclaration case count is invalid"))
+    cases_by_id = {str(case.case_id or case.name): case for case in cases}
+    annotations: dict[str, Mapping[str, Any]] = {}
+    fields = {"case_id", "public_split", "prompt_sha256", "confirmed_intent_sha256",
+              "operator_evidence_sha256", "source_family", "input_style", "evidence_format",
+              "expected_outcome", "expected_clarification", "source_texts", "atoms",
+              "first_path_relations", "context_relations", "component_responsibilities",
+              "obligations", "complexity_dimensions", "complexity_band", "complexity_counting_note"}
+    if edited:
+        fields |= {"initial_source_sha256", "correction_sha256"}
+    for raw in rows:
+        if not isinstance(raw, Mapping):
+            issues.append("source predeclaration case must be an object")
+            continue
+        case_id = str(raw.get("case_id") or "")
+        case = cases_by_id.get(case_id)
+        if not case or case_id in annotations:
+            issues.append(f"source predeclaration duplicate or unknown case `{case_id}`")
+            continue
+        annotations[case_id] = raw
+        if set(raw) != fields or raw.get("public_split") != public_split:
+            issues.append(f"source predeclaration `{case_id}` has invalid fields or split")
+        texts = {"prompt": case.prompt, "confirmed_intent_markdown": case.confirmed_intent_markdown}
+        combined = combined_prompt_evidence_source(prompt=case.prompt, edit_evidence=case.confirmed_intent_markdown)
+        if edited:
+            if raw.get("source_family") != case.provenance.source_family or raw.get("input_style") != case.input_style:
+                issues.append(f"source predeclaration `{case_id}` EDIT domain/input style changed")
+            initial = prepare_model_authoring_evidence(prompt=case.initial_prompt)
+            prepared = case.model_evidence
+            texts = {"initial_source": initial.evidence_source, "correction": prepared.edit_evidence}
+            combined = prepared.evidence_source
+            if (not case.lifecycle_correction or not prepared.edit_evidence
+                    or raw.get("initial_source_sha256") != hashlib.sha256(initial.evidence_source.encode("utf-8")).hexdigest()
+                    or raw.get("correction_sha256") != hashlib.sha256(case.lifecycle_correction.encode("utf-8")).hexdigest()):
+                issues.append(f"source predeclaration `{case_id}` EDIT correction/initial custody changed")
+        for key, text in (("prompt_sha256", case.prompt), ("operator_evidence_sha256", combined)):
+            if raw.get(key) != hashlib.sha256(text.encode("utf-8")).hexdigest():
+                issues.append(f"source predeclaration `{case_id}` has changed {key}")
+        confirmed_hash = hashlib.sha256(case.confirmed_intent_markdown.encode("utf-8")).hexdigest() if case.confirmed_intent_markdown else ""
+        if raw.get("source_texts") != texts or raw.get("confirmed_intent_sha256") != confirmed_hash:
+            issues.append(f"source predeclaration `{case_id}` source documents changed")
+        outcome = "clarify" if case.expectation == "clarification_required" else "commit"
+        if raw.get("expected_outcome") != outcome or raw.get("evidence_format") != expected_case_evidence_format(case):
+            issues.append(f"source predeclaration `{case_id}` outcome or format changed")
+        clarification = raw.get("expected_clarification")
+        _validate_expected_clarification(case_id=case_id, expected_outcome=outcome,
+            value={key: clarification.get(key) for key in ("field", "question")} if isinstance(clarification, Mapping) else clarification,
+            issues=issues)
+        _validate_complexity(case=case, case_id=case_id, value=raw.get("complexity_dimensions"), issues=issues)
+        if raw.get("complexity_band") != greenfield_complexity_band(mapping_value(raw.get("complexity_dimensions"))) or not raw.get("complexity_counting_note"):
+            issues.append(f"source predeclaration `{case_id}` source census is invalid")
+        ids: set[str] = set()
+        atoms = raw.get("atoms")
+        if not is_sequence(atoms) or not atoms:
+            issues.append(f"source predeclaration `{case_id}` lacks its source atom array")
+            atoms = ()
+        for atom in atoms:
+            if not isinstance(atom, Mapping) or set(atom) != {"id", "category", "predicate", "materiality", "evaluation_role", "expected_custody", "expected_polarity", "source"}:
+                issues.append(f"source predeclaration `{case_id}` atom is invalid")
+                continue
+            atom_id = atom.get("id")
+            if not isinstance(atom_id, str) or not atom_id or atom_id in ids:
+                issues.append(f"source predeclaration `{case_id}` duplicate or missing atom ID")
+            ids.add(str(atom_id))
+            for key, allowed in (("category", ATOMIC_CATEGORIES), ("materiality", MATERIALITY_VALUES),
+                                 ("evaluation_role", EVALUATION_ROLES), ("expected_custody", CUSTODY_VALUES), ("expected_polarity", POLARITY_VALUES)):
+                if atom.get(key) not in allowed:
+                    issues.append(f"source predeclaration `{case_id}` atom `{atom_id}` has invalid {key}")
+            if not isinstance(atom.get("predicate"), str) or not atom["predicate"].strip():
+                issues.append(f"source predeclaration `{case_id}` atom `{atom_id}` lacks its predicate")
+        relation_fields = {
+            "first_path_relations": {"order", "actor", "action", "target", "atom_id", "source", "actor_source", "action_source", "target_source", "binding_rule"},
+            "context_relations": {"atom_id", "kind", "scope", "source"},
+            "component_responsibilities": {"atom_id", "custody", "projection_binding", "responsibility", "source"},
+        }
+        for family, expected_fields in relation_fields.items():
+            relations = raw.get(family)
+            if not is_sequence(relations) or any(not isinstance(row, Mapping) or set(row) != expected_fields or row.get("atom_id") not in ids or not isinstance(row.get("source"), Mapping) for row in relations):
+                issues.append(f"source predeclaration `{case_id}` has invalid {family} identities")
+            elif family == "first_path_relations" and any(type(row.get("order")) is not int or row["order"] != index or not all(isinstance(row.get(key), str) and row[key] for key in ("actor", "action", "target")) for index, row in enumerate(relations, 1)):
+                issues.append(f"source predeclaration `{case_id}` source relations have invalid role identity/order")
+        _source_predicate_spans(raw, texts=texts, combined=combined, issues=issues)
+        if not _string_sequence(raw.get("obligations")):
+            issues.append(f"source predeclaration `{case_id}` lacks full source obligations")
+    if set(annotations) != set(cases_by_id) or len(cases_by_id) != len(cases):
+        issues.append("source predeclaration does not cover each source case exactly once")
+    return annotations, tuple(issues)
+
+
+def _source_predicate_spans(value: Any, *, texts: Mapping[str, str], combined: str, issues: list[str]) -> None:
+    if isinstance(value, Mapping):
+        if "document" in value:
+            try:
+                if set(value) != {"document", "start_byte", "end_byte", "quote", "quote_sha256", "operator_evidence_start_byte", "operator_evidence_end_byte"}:
+                    raise ValueError("unexpected source span fields")
+                spans = ((texts[value["document"]], "start_byte", "end_byte"),
+                         (combined, "operator_evidence_start_byte", "operator_evidence_end_byte"))
+                for text, start_key, end_key in spans:
+                    start, end = value[start_key], value[end_key]
+                    if type(start) is not int or type(end) is not int or not 0 <= start < end <= len(text.encode("utf-8")):
+                        raise ValueError("invalid source offsets")
+                    if text.encode("utf-8")[start:end].decode("utf-8") != value["quote"]:
+                        raise ValueError("source quote differs from exact source bytes")
+                if hashlib.sha256(value["quote"].encode("utf-8")).hexdigest() != value["quote_sha256"]:
+                    raise ValueError("source quote hash changed")
+            except (KeyError, TypeError, ValueError, UnicodeDecodeError) as exc:
+                issues.append(f"public source span invalid: {exc}")
+        else:
+            for nested in value.values():
+                _source_predicate_spans(nested, texts=texts, combined=combined, issues=issues)
+    elif is_sequence(value):
+        for nested in value:
+            _source_predicate_spans(nested, texts=texts, combined=combined, issues=issues)
+
+
 def load_source_predicate_evidence(
     *, configuration: Mapping[str, Any], cases: Sequence[Any], results: Sequence[Any],
 ) -> tuple[dict[str, Mapping[str, Any]], dict[str, Mapping[str, Any]], tuple[str, ...]]:
@@ -308,9 +471,9 @@ def load_source_predicate_evidence(
     Pinned digests must come from retained release evidence.  Eligibility and
     hashes authenticate that review evidence; they do not perform entailment.
     """
-    from greenfield_evaluation_contract import validate_source_predicate_predeclaration
     issues: list[str] = []
-    if set(configuration) != {"mode", *_ARTIFACT_REFS} or configuration.get("mode") != PUBLIC_SOURCE_MODE:
+    mode = configuration.get("mode")
+    if set(configuration) != {"mode", *_ARTIFACT_REFS} or mode not in (PUBLIC_SOURCE_MODE, PUBLIC_EDIT_SOURCE_MODE):
         return {}, {}, ("source-predicate evaluation requires its explicit public mode and exact evidence refs",)
     payloads: dict[str, Mapping[str, Any]] = {}
     paths: dict[str, Path] = {}
@@ -331,6 +494,8 @@ def load_source_predicate_evidence(
         annotations, source_issues = validate_source_predicate_predeclaration(
             cases=source_cases, path=paths["predeclaration"], expected_sha256=digests["predeclaration"])
         issues.extend(source_issues)
+        if payloads["predeclaration"].get("version", PUBLIC_SOURCE_MODE) != mode:
+            issues.append("source-predicate declaration and evidence mode versions differ")
         if digests["source_cases"] not in payloads["predeclaration"].get("sources", {}).values():
             issues.append("source case file is not a frozen predeclaration source")
         output_rows = payloads["output"].get("results")
@@ -345,15 +510,16 @@ def load_source_predicate_evidence(
         for case in cases:
             case_id = str(case.case_id)
             original = next((row for row in source_cases if row.case_id == case_id), None)
-            if original is None or (case.prompt, case.confirmed_intent_markdown) != (original.prompt, original.confirmed_intent_markdown):
+            if original is None or (case.prompt, case.confirmed_intent_markdown, case.lifecycle_correction) != (original.prompt, original.confirmed_intent_markdown, original.lifecycle_correction):
                 issues.append(f"case `{case_id}` differs from frozen source input")
             result = selected_results.get(case_id)
             if result is None or output_by_id.get(case_id) != result.to_dict():
                 issues.append(f"case `{case_id}` result differs from immutable actual output")
         binding, audit, record = (payloads[name] for name in ("observed_bindings", "independent_audit", "review_record"))
-        if set(binding) != {"version", "public_split", "source_predeclaration_sha256", "output_sha256", "binder_identity", "cases"} or binding.get("version") != PUBLIC_SOURCE_MODE + ".bindings.v1" or binding.get("public_split") != "disclosed-public-live-subset":
+        split = PUBLIC_EDIT_SOURCE_SPLIT if mode == PUBLIC_EDIT_SOURCE_MODE else "disclosed-public-live-subset"
+        if set(binding) != {"version", "public_split", "source_predeclaration_sha256", "output_sha256", "binder_identity", "cases"} or binding.get("version") != mode + ".bindings.v1" or binding.get("public_split") != split:
             issues.append("observed source binding has invalid fields, version, or public split")
-        if set(audit) != {"version", "source_predeclaration_sha256", "observed_bindings_sha256", "output_sha256", "retained_manifest_sha256", "review_record_sha256", "reviewer", "cases"} or audit.get("version") != PUBLIC_SOURCE_MODE + ".audit.v1":
+        if set(audit) != {"version", "source_predeclaration_sha256", "observed_bindings_sha256", "output_sha256", "retained_manifest_sha256", "review_record_sha256", "reviewer", "cases"} or audit.get("version") != mode + ".audit.v1":
             issues.append("independent semantic audit has invalid fields or version")
         for value, names in ((binding, ("predeclaration", "output")), (audit, ("predeclaration", "observed_bindings", "output", "retained_manifest", "review_record"))):
             for name in names:
@@ -366,7 +532,7 @@ def load_source_predicate_evidence(
         issues.extend(awaiting)
         if not binding.get("binder_identity") or binding.get("binder_identity") == mapping_value(reviewer).get("identity"):
             issues.append("semantic binder and reviewer must have separate identities")
-        expected_record = {"version": PUBLIC_SOURCE_MODE + ".review-record.v1",
+        expected_record = {"version": mode + ".review-record.v1",
             "source_predeclaration_sha256": digests["predeclaration"], "observed_bindings_sha256": digests["observed_bindings"],
             "output_sha256": digests["output"], "retained_manifest_sha256": digests["retained_manifest"],
             "reviewer_sha256": canonical_evidence_sha256(reviewer),

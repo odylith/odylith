@@ -540,13 +540,46 @@ def _edit_transaction_from_args(args: argparse.Namespace, *, repo_root: Path, co
 def _edit_preservation(previous, *, correction: str, evidence_text: str):
     if previous is None:
         return None
-    semantic = previous.proposal.get("semantic_model")
-    lifecycle = semantic.get("source_lifecycle") if isinstance(semantic, Mapping) else None
+    import hashlib
+    from odylith.runtime.domain_intelligence.greenfield_authored_semantics import combined_prompt_evidence_segment
+    from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import source_action_allocation_relations
+    intent, authority = previous.proposal["intent"], previous.intent_authority
+    raw = intent["prompt"].encode("utf-8")
+    if hashlib.sha256(raw).hexdigest() != authority["markdown_source_sha256"]:
+        raise ValueError("EDIT cannot recover the accepted reviewed-document source from this package. Start a new proposal with the complete source; no project records were created.")
+    semantics = intent["authored_semantics"]
+    duty = semantics["source_duty"]
+    relations = semantics.get("source_event_relations")
+    if not isinstance(relations, list):
+        raise ValueError("EDIT requires authenticated complete source-action custody; no project records were created.")
+    by_order = {row["order"]: row for row in relations}
+    actions = {}
+    for section in ("first_path_actions", "supporting_human_actions", "system_duties"):
+        orders = {row["duty_id"]: row["event_order"] for row in duty["binding"][section]}
+        actions[section] = []
+        for row in duty["ledger_receipt"]["ledger"][section]:
+            event = by_order[orders[row["id"]]]
+            start, end = event["source_start_byte"], event["source_end_byte"]
+            actions[section].append({"duty": row,
+                "source_locator": {"relation_order": event["order"], "source_start_byte": start,
+                    "source_end_byte": end, "text_sha256": hashlib.sha256(raw[start:end]).hexdigest()},
+                "allocation_relations": source_action_allocation_relations(semantics["provisional_design"], event["order"])})
+    systems = {field: [row for row in authority["atomic_facts"] if any(link["field"] == field for link in row["projection_links"])]
+               for field in ("internal_systems", "external_systems")}
+    for field, atoms in systems.items():
+        paths = {link["path"]: atom["normalized_value"] for atom in atoms for link in atom["projection_links"]
+                 if link["field"] == field and link["relation_order"] == 0}
+        if paths != {f"/{field}/{i}": value for i, value in enumerate(intent.get(field, []))}:
+            raise ValueError("EDIT requires complete accepted typed system custody; no project records were created.")
+    framed, segment = combined_prompt_evidence_segment(prompt=intent["prompt"], edit_evidence=correction)
+    if framed != evidence_text:
+        raise ValueError("EDIT source frame does not match its authenticated prior request")
     return greenfield_edit_preservation_context(
-        transaction_hash=previous.transaction_hash, prior_lifecycle=lifecycle,
-        prior_identity=(previous.proposal.get("intent", {}).get("authored_semantics", {}).get("source_duty", {}).get("ledger_receipt", {}).get("ledger", {}).get("product_identity")
-                        if isinstance(semantic, Mapping) else None),
-        correction=correction, evidence_text=evidence_text,
+        transaction_hash=previous.transaction_hash, prior_lifecycle=duty["lifecycle"],
+        prior_identity=duty["ledger_receipt"]["ledger"]["product_identity"],
+        correction=correction, evidence_text=evidence_text, prior_actions=actions, prior_system_facts=systems,
+        prior_source_segment=segment, prior_authority_sha256=authority["authority_snapshot_sha256"],
+        prior_relation_set_sha256=authority["authored_relation_set_sha256"],
     )
 
 

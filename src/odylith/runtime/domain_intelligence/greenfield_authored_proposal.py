@@ -66,6 +66,12 @@ _AUTHORED_PROJECTION_FIELDS = (
 )
 
 
+def _preserved_source_presentation(intent: Mapping[str, Any]) -> bool:
+    from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import uses_preserved_source_presentation
+    duty = intent[AUTHORED_SEMANTICS_KEY].get("source_duty")
+    return bool(duty) and uses_preserved_source_presentation(duty["ledger_receipt"], evidence_text=intent["prompt"])
+
+
 def build_authored_greenfield_proposal(
     *,
     observed_source: Mapping[str, Any],
@@ -166,6 +172,7 @@ def build_authored_greenfield_proposal(
         operational_constraints=operational_constraints,
         source_lifecycle=(confirmed_intent[AUTHORED_SEMANTICS_KEY]["source_duty"] or {}).get("lifecycle"),
         neutral_context=narrative,
+        preserved_source_presentation=_preserved_source_presentation(confirmed_intent),
     )
     intent = _intent_copy(confirmed_intent)
     intent.update(

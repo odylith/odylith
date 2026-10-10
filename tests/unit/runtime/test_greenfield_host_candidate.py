@@ -536,18 +536,20 @@ def test_bound_system_prerequisite_survives_admission_and_canonical_reload(
         )
         from odylith.runtime.domain_intelligence.greenfield_source_lifecycle import project_greenfield_source_lifecycle
 
-        prior_source, prior_candidate = _candidate()
+        prior_source = _source()
+        prior_response = _response(prior_source)
+        prior_response["result"]["provisional_design"]["first_run"]["event_orders"] = [1, 3]
+        prior_candidate = host_candidate_response(prior_response, evidence_text=prior_source)
         prior_receipt = synthetic_source_duty_receipt(prior_candidate, evidence_text=prior_source)
         prior_lifecycle = project_greenfield_source_lifecycle(
             ledger_receipt=prior_receipt,
             binding=prior_candidate["result"]["source_duty_binding"],
             candidate_result=prior_candidate["result"], evidence_text=prior_source,
         )
-        context = greenfield_edit_preservation_context(
-            transaction_hash="a" * 64, prior_lifecycle=prior_lifecycle,
-            prior_identity=prior_receipt["ledger"]["product_identity"],
-            correction=edit_evidence, evidence_text=prepared.evidence_source,
-        )
+        from tests.unit.runtime.greenfield_model_authoring_fixtures import edit_action_context_fixture, preserved_edit_decisions_fixture
+        context = edit_action_context_fixture(prior_source=prior_source, prior_receipt=prior_receipt,
+            prior_lifecycle=prior_lifecycle, design=prior_candidate["result"]["provisional_design"], correction=edit_evidence,
+            prior_facts=prior_candidate["result"]["facts"])
         preflight = preflight_greenfield_source_duty_ledger(
             receipt["ledger"], evidence_text=prepared.evidence_source,
         )
@@ -560,6 +562,7 @@ def test_bound_system_prerequisite_survives_admission_and_canonical_reload(
             verifier_task_sha256=task["verifier_task_sha256"], edit_preservation={},
             identity_preservation={"verdict": "preserved", "correction_authorization": "not_required"},
         )
+        decisions.update(preserved_edit_decisions_fixture(context))
         receipt = validate_greenfield_source_duty_ledger(
             receipt["ledger"], evidence_text=prepared.evidence_source,
             decision_set=decisions, edit_preservation=context,
@@ -585,8 +588,8 @@ def test_bound_system_prerequisite_survives_admission_and_canonical_reload(
     ]
     source_duty = materialized["authored_semantics"]["source_duty"]
     assert source_duty["ledger_receipt"] == original_receipt
-    assert source_duty["ledger_receipt"]["version"].endswith(".v17" if edit_evidence else ".v16")
-    assert source_duty["ledger_receipt"]["decision_set"]["version"].endswith(".v12" if edit_evidence else ".v11")
+    assert source_duty["ledger_receipt"]["version"].endswith(".v19" if edit_evidence else ".v18")
+    assert source_duty["ledger_receipt"]["decision_set"]["version"].endswith(".v13" if edit_evidence else ".v11")
     assert [row["event_order"] for row in source_duty["binding"]["first_path_actions"]] == [1, 2]
     assert [row["event_order"] for row in source_duty["binding"]["system_duties"]] == [3]
     reloaded = json.loads(json.dumps(materialized))
@@ -612,7 +615,7 @@ def test_fresh_candidate_requires_summary_in_schema_and_deterministic_admission(
     source, candidate = _candidate()
     contract = greenfield_host_candidate_contract(source)
     design_schema = contract["candidate_schema"]["properties"]["result"]["anyOf"][0]["properties"]["provisional_design"]
-    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v58"
+    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v59"
     assert contract["candidate_version"] == "odylith.greenfield.host-candidate-format.v25"
     assert "project_summary" in design_schema["required"]
     assert design_schema["properties"]["project_summary"]["maxLength"] == 600

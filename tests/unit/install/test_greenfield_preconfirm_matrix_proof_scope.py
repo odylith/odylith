@@ -492,23 +492,23 @@ def test_case_file_loader_preserves_confirmed_intent_markdown(tmp_path: Path) ->
     assert cases[0].confirmed_intent_markdown == confirmed.strip()
 
 
-def test_case_file_loader_canonicalizes_adjacent_duplicate_source_words(tmp_path: Path) -> None:
+def test_case_file_loader_preserves_adjacent_duplicate_source_words_and_controls(tmp_path: Path) -> None:
     module = _module()
     case_file = tmp_path / "cases.json"
     confirmed = "# Product Intent Confirmation\n\n## Proof boundary\nMission evidence evidence remains reviewable.\n"
+    prompt = "Create a greenfield proposal for mission evidence evidence review that preserves coverage cell and mission evidence evidence."
+    correction = "  Retain evidence evidence. Evidence stays cited.\r\n"
     case_file.write_text(
         json.dumps(
             {
                 "cases": [
                     {
                         "name": "mission evidence review",
-                        "prompt": (
-                            "Create a greenfield proposal for mission evidence evidence review that preserves "
-                            "coverage cell and mission evidence evidence."
-                        ),
-                        "required_terms": ["mission evidence evidence", "coverage cell"],
+                        "prompt": prompt,
+                        "required_terms": ["  mission   evidence evidence  ", "coverage cell"],
                         "leakage_terms": ["mission evidence evidence review"],
                         "confirmed_intent_markdown": confirmed,
+                        "lifecycle_correction": correction,
                     }
                 ]
             }
@@ -518,11 +518,11 @@ def test_case_file_loader_canonicalizes_adjacent_duplicate_source_words(tmp_path
 
     case = module.load_case_file(case_file)[0]
 
-    assert "mission evidence evidence" not in case.prompt.casefold()
-    assert case.required_terms == ("mission evidence", "coverage cell")
-    assert case.leakage_terms == ("mission evidence review",)
-    assert "Mission evidence remains reviewable." in case.confirmed_intent_markdown
-    assert "evidence evidence" not in case.confirmed_intent_markdown.casefold()
+    assert case.prompt == prompt
+    assert case.required_terms == ("mission evidence evidence", "coverage cell")
+    assert case.leakage_terms == ("mission evidence evidence review",)
+    assert case.confirmed_intent_markdown == confirmed.strip()
+    assert case.lifecycle_correction == correction
 
 
 def test_main_uses_external_case_files_instead_of_default_catalog(

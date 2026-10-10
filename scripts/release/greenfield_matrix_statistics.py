@@ -36,7 +36,7 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import lo
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import prepare_model_authoring_evidence
 from odylith.runtime.domain_intelligence.greenfield_pending_transaction_store import require_pending_transaction_released
 from odylith.runtime.domain_intelligence.greenfield_prewrite_commit_result import require_greenfield_commit_result_preview
-from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import greenfield_edit_preservation_context
+from odylith.runtime.domain_intelligence.greenfield_proposals_cli import _edit_preservation
 from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import verify_greenfield_source_duty_ledger_receipt
 from odylith.runtime.domain_intelligence.greenfield_whole_journey_budget import whole_journey_observation_issues
 
@@ -740,13 +740,8 @@ def _receipt_bound_edit_issues(*, case: Any, result: GreenfieldMatrixResult, man
         before = {token: {key: row[key] for key in ("sha256", "mode")} for token, row in initial["artifacts"].items()}
         if lifecycle.get("initial_artifacts_after_confirm") != before:
             raise ValueError("EDIT lacks exact final preservation readback of every initial artifact")
-        context = greenfield_edit_preservation_context(
-            transaction_hash=previous.transaction_hash,
-            prior_lifecycle=previous.proposal["semantic_model"]["source_lifecycle"],
-            prior_identity=previous.proposal["intent"]["authored_semantics"]["source_duty"][
-                "ledger_receipt"]["ledger"].get("product_identity"),
-            correction=prepared.edit_evidence, evidence_text=prepared.evidence_source,
-        )
+        context = _edit_preservation(previous, correction=prepared.edit_evidence,
+            evidence_text=prepared.evidence_source)
         duty = current.proposal["intent"]["authored_semantics"]["source_duty"]["ledger_receipt"]
         verified = verify_greenfield_source_duty_ledger_receipt(
             duty, evidence_text=prepared.evidence_source, edit_preservation=context, allow_legacy_edit=False,

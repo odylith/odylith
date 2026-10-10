@@ -124,6 +124,9 @@ def build_authored_component_authoring_inputs(
     intent, authority = proposal.get("intent"), proposal.get(PRODUCT_INTENT_AUTHORITY_KEY)
     if not isinstance(intent, Mapping) or not isinstance(authority, Mapping):
         raise ValueError("model-authored component projection is missing sealed Product Intent authority")
+    from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import uses_preserved_source_presentation
+    duty = intent["authored_semantics"].get("source_duty")
+    preserved_source_presentation = bool(duty) and uses_preserved_source_presentation(duty["ledger_receipt"], evidence_text=intent["prompt"])
     source_custody = authored_source_custody(intent=intent, authority=authority)
     risk_scope_authority = _VerifiedRiskScopeAuthority(
         provisional_design_from_intent(intent),
@@ -158,6 +161,7 @@ def build_authored_component_authoring_inputs(
             },
             "source_custody": source_custody,
             "risk_scope_authority": risk_scope_authority,
+            "preserved_source_presentation": preserved_source_presentation,
         }
         _provisional_component_contract(row)
         rows.append(row)
@@ -247,7 +251,8 @@ def build_authored_component_spec(row: Mapping[str, Any]) -> str:
     if contract["source_lifecycle_transitions"]:
         lines.extend([
             "## Source state lifecycle", "",
-            "These source-governed changes are outside the proposed first run.", "",
+            ("State changes governed by the source." if row.get("preserved_source_presentation", False)
+             else "These source-governed changes are outside the proposed first run."), "",
         ])
         for transition in contract["source_lifecycle_transitions"]:
             lines.extend([

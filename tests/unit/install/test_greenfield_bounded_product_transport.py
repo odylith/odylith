@@ -767,6 +767,7 @@ def test_proposal_refusal_preserves_bounded_detail_and_prior_seal(
     from odylith.runtime.domain_intelligence.greenfield_source_duty_view import compact_source_duty_view
     from tests.unit.install.test_greenfield_matrix_host_candidate import _flow
     from tests.unit.runtime.test_greenfield_source_duty_ledger import _yes_decisions
+    from tests.unit.runtime.greenfield_model_authoring_fixtures import preserved_edit_decisions_fixture
 
     candidate = {"version": "candidate", "result": {"status": "authored"}}
     flow, _host_run, installed_calls, host_calls, _paths, repo = _flow(
@@ -784,13 +785,14 @@ def test_proposal_refusal_preserves_bounded_detail_and_prior_seal(
     ledger = semantics["source_duty"]["ledger_receipt"]["ledger"]
     preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=source)
     task = source_duty_entailment_task(preflight, evidence_text=source, edit_preservation=context)
-    # This supplier fixture has no prior passive duties; EDIT custody still binds its seal.
-    assert task["decision_set_schema"]["properties"]["edit_preservation"]["required"] == []
+    assert task["decision_set_schema"]["properties"]["edit_preservation"]["required"] == [
+        f"first_path_actions/fixture-first-path-{order}" for order in range(1, 6)
+    ]
     decisions = _yes_decisions(preflight, evidence_text=source)
     decisions.update(version=EDIT_SOURCE_DUTY_DECISION_SET_VERSION,
                      verifier_task_sha256=task["verifier_task_sha256"],
                      identity_preservation={"verdict": "preserved", "correction_authorization": "not_required"},
-                     edit_preservation={})
+                     **preserved_edit_decisions_fixture(context))
     gate = {"decision": "admit", "required_fields": [], "question": "",
             "owner_quote": old_transaction.proposal["intent"]["human_actors"][0],
             "task_quote": semantics["source_event_relations"][0]["event_quote"],

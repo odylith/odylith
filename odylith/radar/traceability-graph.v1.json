@@ -9,7 +9,7 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "c145caf3f8a4995118ae601013721693054538c0b952da60631e4b22728db453",
+    "digest": "d09a500db43391c4ae6ffd07041b5a8ce97beae6988dead51bfecd52f30bc296",
     "file_count": 318,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
@@ -14592,6 +14592,7 @@
       "component_names": [
         "Verified source inventory",
         "Product identity, actor, and event compiler",
+        "Accepted EDIT baseline",
         "Candidate author",
         "Custody compiler",
         "Sealed confirmation boundary",
@@ -26471,5 +26472,5 @@
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-10-10 20:50:57Z"
+  "generated_utc": "2026-10-10 23:11:54Z"
 }

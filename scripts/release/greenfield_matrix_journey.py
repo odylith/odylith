@@ -27,7 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_model_profile_contract impor
     GREENFIELD_COMPLETION_RESERVE_SECONDS, STANDARD_PROFILE_ID, get_greenfield_model_profile,
     model_profile_id_for_repair_tier,
 )
-from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import greenfield_edit_preservation_context
+from odylith.runtime.domain_intelligence.greenfield_proposals_cli import _edit_preservation
 from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import verify_greenfield_source_duty_ledger_receipt
 from odylith.runtime.domain_intelligence.greenfield_whole_journey_budget import PROVISIONAL_WHOLE_JOURNEY_TIMEOUT_SECONDS
 
@@ -255,13 +255,11 @@ def _require_preserved_duties(
     *, previous: Any, edited: Any, initial_source: str, correction: str,
 ) -> Mapping[str, Any]:
     prepared = prepare_model_authoring_evidence(prompt=initial_source, edit_evidence=correction)
-    context = greenfield_edit_preservation_context(
-        transaction_hash=previous.transaction_hash,
-        prior_lifecycle=previous.proposal["semantic_model"]["source_lifecycle"],
-        prior_identity=previous.proposal["intent"]["authored_semantics"]["source_duty"][
-            "ledger_receipt"]["ledger"].get("product_identity"),
-        correction=prepared.edit_evidence, evidence_text=prepared.evidence_source,
-    )
+    try:
+        context = _edit_preservation(previous, correction=prepared.edit_evidence,
+            evidence_text=prepared.evidence_source)
+    except (KeyError, TypeError) as exc:
+        raise ValueError("lifecycle prior seal lacks complete source custody") from exc
     receipt = edited.proposal["intent"]["authored_semantics"]["source_duty"]["ledger_receipt"]
     verified = verify_greenfield_source_duty_ledger_receipt(
         receipt, evidence_text=prepared.evidence_source, edit_preservation=context, allow_legacy_edit=False,

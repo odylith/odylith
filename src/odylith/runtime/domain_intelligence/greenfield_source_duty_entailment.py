@@ -34,9 +34,15 @@ from odylith.runtime.domain_intelligence.greenfield_source_duty_view import (
 
 
 SOURCE_DUTY_DECISION_SET_VERSION = "odylith.greenfield.source-duty-decisions.v11"
-EDIT_SOURCE_DUTY_DECISION_SET_VERSION = "odylith.greenfield.source-duty-decisions.v12"
+EDIT_SOURCE_DUTY_DECISION_SET_VERSION = "odylith.greenfield.source-duty-decisions.v13"
 LEGACY_EDIT_SOURCE_DUTY_DECISION_SET_VERSION = "odylith.greenfield.source-duty-decisions.v5"
-EDIT_PRESERVATION_VERSION = "odylith.greenfield.edit-lifecycle-preservation.v3"
+EDIT_PRESERVATION_VERSION = "odylith.greenfield.edit-lifecycle-preservation.v4"
+MAX_EDIT_CONTEXT_BYTES = 128 * 1024
+MAX_AUTHORING_REQUEST_BYTES = 256 * 1024
+UNSUPPORTED_SYSTEM_MUTATION = (
+    "Odylith can preserve the accepted system roster during EDIT, but cannot apply system "
+    "renames, removals, replacements, or type changes yet. No project records were created."
+)
 _LIFECYCLE_SECTIONS = tuple(
     section for section, _ in _CLAIM_SECTIONS if section not in _ACTION_SECTIONS
 )
@@ -53,10 +59,148 @@ def _canonical_sha256(value: Mapping[str, Any]) -> str:
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
+def require_greenfield_request_bound(value: Any, *, maximum: int, label: str) -> int:
+    """Bound actual canonical UTF8 requests, including schema and escaped syntax."""
+    size = len(json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8"))
+    if size > maximum:
+        raise GreenfieldSourceDutyEntailmentError(f"{label} exceeds its {maximum}-byte bound; no project records were created.")
+    return size
+
+
+def prior_source_bytes(context: Mapping[str, Any], *, evidence_text: str) -> bytes:
+    """Reconstruct one opaque prior segment at its compiler-owned fixed address."""
+    from odylith.runtime.domain_intelligence.greenfield_authored_semantics import combined_prompt_evidence_segment
+    segment = context.get("prior_source_segment")
+    if not isinstance(segment, Mapping) or set(segment) != {
+        "prior_source_sha256", "byte_length", "embedded_start", "embedded_end", "removed_prefix", "removed_suffix",
+    }:
+        raise GreenfieldSourceDutyEntailmentError("EDIT prior source segment is malformed")
+    start, end, length = (segment[key] for key in ("embedded_start", "embedded_end", "byte_length"))
+    evidence = evidence_text.encode("utf-8")
+    if (any(type(v) is not int for v in (start, end, length))
+            or not 0 <= start < end <= len(evidence) or not 0 < length <= MAX_EVIDENCE_BYTES
+            or any(not isinstance(segment[key], str) for key in ("removed_prefix", "removed_suffix"))):
+        raise GreenfieldSourceDutyEntailmentError("EDIT prior source segment has invalid byte addresses")
+    raw = segment["removed_prefix"].encode("utf-8") + evidence[start:end] + segment["removed_suffix"].encode("utf-8")
+    if len(raw) != length or hashlib.sha256(raw).hexdigest() != segment["prior_source_sha256"]:
+        raise GreenfieldSourceDutyEntailmentError("EDIT prior source segment hash is invalid")
+    framed, expected = combined_prompt_evidence_segment(prompt=raw.decode("utf-8"), edit_evidence=context["correction"])
+    if expected != segment or framed != evidence_text:
+        raise GreenfieldSourceDutyEntailmentError("EDIT prior source frame is invalid")
+    return raw
+
+
+def mapped_prior_source_span(context: Mapping[str, Any], locator: Mapping[str, Any], *, evidence_text: str) -> tuple[int, int]:
+    """Rebase an authenticated source address; text matching never selects it."""
+    raw = prior_source_bytes(context, evidence_text=evidence_text)
+    segment = context["prior_source_segment"]
+    start, end = locator.get("source_start_byte"), locator.get("source_end_byte")
+    left, right = len(segment["removed_prefix"].encode("utf-8")), len(segment["removed_suffix"].encode("utf-8"))
+    if (type(start) is not int or type(end) is not int or not left <= start < end <= len(raw) - right
+            or hashlib.sha256(raw[start:end]).hexdigest() != locator.get("text_sha256")):
+        raise GreenfieldSourceDutyEntailmentError("EDIT sealed source locator is invalid")
+    mapped = (segment["embedded_start"] + start - left, segment["embedded_start"] + end - left)
+    if evidence_text.encode("utf-8")[mapped[0]:mapped[1]] != raw[start:end]:
+        raise GreenfieldSourceDutyEntailmentError("EDIT source locator lost exact byte custody")
+    return mapped
+
+
+def _validate_prior_allocations(context: Mapping[str, Any], *, evidence_text: str) -> None:
+    from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import preflight_greenfield_source_duty_ledger
+    from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import require_atomic_fact_ledger
+    raw = prior_source_bytes(context, evidence_text=evidence_text)
+    for key in ("prior_authority_sha256", "prior_relation_set_sha256"):
+        value = context[key]
+        if not isinstance(value, str) or len(value) != 64 or any(c not in "0123456789abcdef" for c in value):
+            raise GreenfieldSourceDutyEntailmentError("EDIT prior authority digest is invalid")
+    actions = context["prior_actions"]
+    if not isinstance(actions, Mapping) or set(actions) != set(_ACTION_SECTIONS):
+        raise GreenfieldSourceDutyEntailmentError("EDIT prior action baseline is incomplete")
+    duties = {}
+    orders, total = set(), 0
+    for section in _ACTION_SECTIONS:
+        rows = actions[section]
+        if not isinstance(rows, list):
+            raise GreenfieldSourceDutyEntailmentError("EDIT prior actions are malformed")
+        duties[section] = []
+        for row in rows:
+            if not isinstance(row, Mapping) or set(row) != {"duty", "source_locator", "allocation_relations"}:
+                raise GreenfieldSourceDutyEntailmentError("EDIT prior action custody is malformed")
+            locator = row["source_locator"]
+            if (not isinstance(locator, Mapping) or set(locator) != {"relation_order", "source_start_byte", "source_end_byte", "text_sha256"}
+                    or type(locator["relation_order"]) is not int or not 1 <= locator["relation_order"] <= 32
+                    or locator["relation_order"] in orders):
+                raise GreenfieldSourceDutyEntailmentError("EDIT prior action locator is malformed")
+            orders.add(locator["relation_order"])
+            mapped_prior_source_span(context, locator, evidence_text=evidence_text)
+            relations = row["allocation_relations"]
+            if not isinstance(relations, list) or not 1 <= len(relations) <= 25:
+                raise GreenfieldSourceDutyEntailmentError("EDIT prior allocation relations exceed their bound")
+            pairs = []
+            for relation in relations:
+                if (not isinstance(relation, Mapping) or set(relation) != {"component_key", "workstream_key", "component_verifies", "workstream_verifies"}
+                        or any(not isinstance(relation[k], str) or not 1 <= len(relation[k]) <= 80 for k in ("component_key", "workstream_key"))
+                        or any(type(relation[k]) is not bool for k in ("component_verifies", "workstream_verifies"))):
+                    raise GreenfieldSourceDutyEntailmentError("EDIT prior allocation relation is malformed")
+                pairs.append((relation["component_key"], relation["workstream_key"]))
+            if pairs != sorted(set(pairs)):
+                raise GreenfieldSourceDutyEntailmentError("EDIT prior allocation relations are not deterministic")
+            total += len(relations)
+            duties[section].append(row["duty"])
+    if total > 800:
+        raise GreenfieldSourceDutyEntailmentError("EDIT prior allocation relations exceed their bound")
+    prior_ledger = {"version": "odylith.greenfield.source-duty-ledger.v9", "status": "inventory", "question": "",
+                    "evidence_controls": [], "product_identity": context["prior_identity"],
+                    **{section: [] for section in _LIFECYCLE_SECTIONS}, **duties}
+    preflight_greenfield_source_duty_ledger(prior_ledger, evidence_text=raw.decode("utf-8"))
+    systems = context["prior_system_facts"]
+    if not isinstance(systems, Mapping) or set(systems) != {"internal_systems", "external_systems"}:
+        raise GreenfieldSourceDutyEntailmentError("EDIT prior typed system baseline is incomplete")
+    atoms, links = set(), 0
+    for field, rows in systems.items():
+        if not isinstance(rows, list) or len(atoms) + len(rows) > 512:
+            raise GreenfieldSourceDutyEntailmentError("EDIT prior system custody exceeds its bound")
+        paths = set()
+        if rows:
+            require_atomic_fact_ledger(rows)
+        for atom in rows:
+            if atom["atom_id"] in atoms:
+                raise GreenfieldSourceDutyEntailmentError("EDIT system atomic identities must be globally unique")
+            atoms.add(atom["atom_id"])
+            links += len(atom["projection_links"])
+            ref = atom["source_span_refs"][0]
+            a, b = mapped_prior_source_span(context, ref, evidence_text=evidence_text)
+            for link in atom["projection_links"]:
+                if link["relation_order"] > 32:
+                    raise GreenfieldSourceDutyEntailmentError("EDIT system relation exceeds its bound")
+                if link["field"] == field and link["relation_order"] == 0:
+                    if (atom["entailment_relationship"] != "exact_source_span" or atom["polarity"] != "affirmed"
+                            or evidence_text.encode("utf-8")[a:b].decode("utf-8") != atom["normalized_value"]):
+                        raise GreenfieldSourceDutyEntailmentError("EDIT system identity lacks exact typed source custody")
+                    if (link["projection_start_byte"] != 0 or link["projection_end_byte"] != len(atom["normalized_value"].encode("utf-8"))
+                            or link["value_sha256"] != hashlib.sha256(atom["normalized_value"].encode("utf-8")).hexdigest()
+                            or link["path"] in paths):
+                        raise GreenfieldSourceDutyEntailmentError("EDIT system projection custody is invalid")
+                    paths.add(link["path"])
+        if len(paths) > 32 or paths != {f"/{field}/{i}" for i in range(len(paths))}:
+            raise GreenfieldSourceDutyEntailmentError("EDIT typed system coverage is incomplete")
+        if any(not any(l["field"] == field and l["path"] in paths for l in atom["projection_links"]) for atom in rows):
+            raise GreenfieldSourceDutyEntailmentError("EDIT system primary projection is missing")
+    if len(atoms) > 512 or links > 512:
+        raise GreenfieldSourceDutyEntailmentError("EDIT prior system custody exceeds its bound")
+    for section in _LIFECYCLE_SECTIONS:
+        if len(context["prior_lifecycle"][section]) > (24 if section == "off_path_transitions" else 32):
+            raise GreenfieldSourceDutyEntailmentError("EDIT prior lifecycle exceeds its bound")
+    require_greenfield_request_bound(context, maximum=MAX_EDIT_CONTEXT_BYTES, label="EDIT prior context")
+
+
 def greenfield_edit_preservation_context(
     *, transaction_hash: str, prior_lifecycle: Mapping[str, Any],
     correction: str, evidence_text: str, prior_identity: Mapping[str, Any] | None = None,
-    _passive: bool = False, _passive_identity: bool = False,
+    _passive: bool = False, _passive_identity: bool = False, _passive_allocations: bool = False,
+    prior_actions: Mapping[str, Any] | None = None, prior_system_facts: Mapping[str, Any] | None = None,
+    prior_source_segment: Mapping[str, Any] | None = None, prior_authority_sha256: str = "",
+    prior_relation_set_sha256: str = "",
 ) -> dict[str, Any]:
     """Bind the prior verified seal as a checklist, never as current authority.
 
@@ -101,9 +245,10 @@ def greenfield_edit_preservation_context(
                     or len(duty_id) > 200 or duty_id in identities):
                 raise GreenfieldSourceDutyEntailmentError("EDIT prior duty identity is invalid")
             identities.add(duty_id)
-    return {
+    context = {
         "version": ("odylith.greenfield.edit-lifecycle-preservation.v1" if _passive else
-                    "odylith.greenfield.edit-lifecycle-preservation.v2" if _passive_identity else EDIT_PRESERVATION_VERSION),
+                    "odylith.greenfield.edit-lifecycle-preservation.v2" if _passive_identity else
+                    "odylith.greenfield.edit-lifecycle-preservation.v3" if _passive_allocations else EDIT_PRESERVATION_VERSION),
         **({"prior_identity": deepcopy(dict(prior_identity))} if not _passive else {}),
         "transaction_hash": transaction_hash,
         "prior_lifecycle": deepcopy(dict(prior_lifecycle)),
@@ -111,6 +256,12 @@ def greenfield_edit_preservation_context(
         "correction_sha256": hashlib.sha256(correction.encode("utf-8")).hexdigest(),
         "source_sha256": hashlib.sha256(evidence_text.encode("utf-8")).hexdigest(),
     }
+    if context["version"] == EDIT_PRESERVATION_VERSION:
+        context.update(prior_actions=deepcopy(prior_actions), prior_system_facts=deepcopy(prior_system_facts),
+                       prior_source_segment=deepcopy(prior_source_segment), prior_authority_sha256=prior_authority_sha256,
+                       prior_relation_set_sha256=prior_relation_set_sha256)
+        _validate_prior_allocations(context, evidence_text=evidence_text)
+    return context
 
 
 def _validate_edit_context(context: Mapping[str, Any], *, evidence_text: str, _passive: bool = False) -> None:
@@ -118,6 +269,8 @@ def _validate_edit_context(context: Mapping[str, Any], *, evidence_text: str, _p
         "version", "transaction_hash", "prior_lifecycle", "correction",
         "correction_sha256", "source_sha256",
         *(() if _passive else ("prior_identity",)),
+        *(("prior_actions", "prior_system_facts", "prior_source_segment", "prior_authority_sha256", "prior_relation_set_sha256")
+          if context.get("version") == EDIT_PRESERVATION_VERSION else ()),
     }:
         raise GreenfieldSourceDutyEntailmentError("EDIT preservation context is malformed")
     expected = greenfield_edit_preservation_context(
@@ -125,12 +278,19 @@ def _validate_edit_context(context: Mapping[str, Any], *, evidence_text: str, _p
         correction=context["correction"], evidence_text=evidence_text,
         prior_identity=context.get("prior_identity"), _passive=_passive,
         _passive_identity=context.get("version") == "odylith.greenfield.edit-lifecycle-preservation.v2",
+        _passive_allocations=context.get("version") == "odylith.greenfield.edit-lifecycle-preservation.v3",
+        **({key: context[key] for key in ("prior_actions", "prior_system_facts", "prior_source_segment", "prior_authority_sha256", "prior_relation_set_sha256")}
+           if context.get("version") == EDIT_PRESERVATION_VERSION else {}),
     )
     if dict(context) != expected:
         raise GreenfieldSourceDutyEntailmentError("EDIT preservation context hash is invalid")
 
 
 def _prior_duties(context: Mapping[str, Any]):
+    if context["version"] == EDIT_PRESERVATION_VERSION:
+        for section in _ACTION_SECTIONS:
+            for row in context["prior_actions"][section]:
+                yield section, f"{section}/{row['duty']['id']}", row
     for section in _LIFECYCLE_SECTIONS:
         for row in context["prior_lifecycle"][section]:
             yield section, f"{section}/{row['duty_id']}", row
@@ -143,10 +303,13 @@ def greenfield_edit_preservation_view(context: Mapping[str, Any]) -> dict[str, A
         "version": context["version"], "transaction_hash": context["transaction_hash"],
         **({"prior_identity": deepcopy(context["prior_identity"])} if "prior_identity" in context else {}),
         "correction": context["correction"], "correction_sha256": context["correction_sha256"],
+        **({key: deepcopy(context[key]) for key in ("prior_actions", "prior_system_facts", "prior_source_segment", "prior_authority_sha256", "prior_relation_set_sha256")}
+           if context["version"] == EDIT_PRESERVATION_VERSION else {}),
         "prior_lifecycle": {
             "version": lifecycle["version"], "lifecycle_sha256": lifecycle["lifecycle_sha256"],
             **{section: [{key: deepcopy(value) for key, value in row.items()
                          if context["version"] == EDIT_PRESERVATION_VERSION
+                         or context["version"] == "odylith.greenfield.edit-lifecycle-preservation.v3"
                          or key not in {"component_key", "workstream_key"}}
                         for row in lifecycle[section]] for section in _LIFECYCLE_SECTIONS},
         },
@@ -264,6 +427,7 @@ def greenfield_source_duty_decision_set_schema(
                  else "odylith.greenfield.source-duty-decisions.v10" if _passive_source_version == "odylith.greenfield.source-duty-ledger.v8"
                  else "odylith.greenfield.source-duty-decisions.v8" if _passive_source_version == "odylith.greenfield.source-duty-ledger.v7"
                  else "odylith.greenfield.source-duty-decisions.v6" if _passive_source_version
+                 else "odylith.greenfield.source-duty-decisions.v12" if edit_preservation.get("version") == "odylith.greenfield.edit-lifecycle-preservation.v3"
                  else EDIT_SOURCE_DUTY_DECISION_SET_VERSION) if edit_preservation is not None
                 else "odylith.greenfield.source-duty-decisions.v9" if _passive_source_version == "odylith.greenfield.source-duty-ledger.v8"
                 else "odylith.greenfield.source-duty-decisions.v7" if _passive_source_version == "odylith.greenfield.source-duty-ledger.v7"
@@ -322,6 +486,19 @@ def greenfield_source_duty_decision_set_schema(
             "edit_preservation": {"type": "object", "additionalProperties": False,
                                   "required": list(preservation), "properties": preservation},
         })
+        if edit_preservation["version"] == EDIT_PRESERVATION_VERSION:
+            systems = {atom["atom_id"]: {
+                "type": "object", "additionalProperties": False,
+                "required": ["verdict", "correction_authorization"],
+                "properties": {
+                    "verdict": {"type": "string", "enum": ["preserved", "changed", "removed", "missing", "uncertain"]},
+                    "correction_authorization": {"type": "string", "enum": ["yes", "no", "uncertain", "not_required"]},
+                },
+            } for rows in edit_preservation["prior_system_facts"].values() for atom in rows}
+            schema["required"].append("system_preservation")
+            schema["properties"]["system_preservation"] = {
+                "type": "object", "additionalProperties": False, "required": list(systems), "properties": systems,
+            }
         if _passive_legacy_edit:
             schema["required"].append("edit_correction_refs")
             schema["properties"]["edit_correction_refs"] = {
@@ -332,7 +509,7 @@ def greenfield_source_duty_decision_set_schema(
 def source_duty_entailment_task(
     preflight: Mapping[str, Any], *, evidence_text: str,
     edit_preservation: Mapping[str, Any] | None = None,
-    _passive_legacy_edit: bool = False,
+    _passive_legacy_edit: bool = False, _passive_receipt: bool = False,
 ) -> dict[str, Any]:
     """Package the bounded full authority source for one verifier pass."""
 
@@ -523,7 +700,22 @@ def source_duty_entailment_task(
                 "product identity, changed/yes only if the exact correction explicitly authorizes replacement; "
                 "missing or uncertain refuses."
             )
+    if edit_preservation is not None and edit_preservation["version"] == EDIT_PRESERVATION_VERSION:
+        task["edit_preservation_task"] += (
+            " The checklist also includes every prior action under its exact typed section and duty ID. "
+            "Map each surviving action independently; distinct prior actions cannot collapse into one carrier. "
+            "The deterministic compiler retains ALL prior action allocation relation tuples for preserved "
+            "AND changed actions. Correction authorization never authorizes moving an action to a candidate "
+            "target allocation. The preceding changed-owner rule applies only to lifecycle owner pairs. "
+            "Return system_preservation for every prior typed system atom: preserved/not_required only "
+            "when the current complete source retains that same system and type. Use changed, removed, "
+            "missing or uncertain otherwise; renames, removals, replacements and type changes are unsupported "
+            "by this preservation contract, even with yes authorization. Prior source is a checklist, not "
+            "new current source authority. Do not infer systems from component names."
+        )
     task["verifier_task_sha256"] = _canonical_sha256(task)
+    if not _passive_receipt:
+        require_greenfield_request_bound(task, maximum=MAX_AUTHORING_REQUEST_BYTES, label="Source verifier request")
     return task
 
 
@@ -636,6 +828,7 @@ def _validate_edit_preservation(
         seen_refs.add(pair)
     current = {claim["duty_id"]: claim for claim in claims}
     used_refs = set()
+    mapped_actions = set()
     correction_field = "correction_ref_indexes" if _passive_legacy_edit else "correction_authorization"
     for section, key, _ in prior:
         decision = table[key]
@@ -662,10 +855,23 @@ def _validate_edit_preservation(
         elif (carrier not in current or current[carrier]["section"] != section
                 or decision_set["decisions"][carrier]["verdict"] != "yes"):
             raise GreenfieldSourceDutyEntailmentError(f"EDIT preservation {key} has invalid typed carrier")
+        if context["version"] == EDIT_PRESERVATION_VERSION and section in _ACTION_SECTIONS and verdict != "removed":
+            if carrier in mapped_actions:
+                raise GreenfieldSourceDutyEntailmentError("EDIT prior actions cannot collapse to one current carrier")
+            mapped_actions.add(carrier)
         if _passive_legacy_edit:
             used_refs.update(authorization)
     if used_refs != set(range(len(refs))):
         raise GreenfieldSourceDutyEntailmentError("EDIT correction citation bank has unused references")
+    if context["version"] == EDIT_PRESERVATION_VERSION:
+        systems = decision_set.get("system_preservation")
+        expected = {atom["atom_id"] for rows in context["prior_system_facts"].values() for atom in rows}
+        if not isinstance(systems, Mapping) or set(systems) != expected:
+            raise GreenfieldSourceDutyEntailmentError(UNSUPPORTED_SYSTEM_MUTATION)
+        for decision in systems.values():
+            if (not isinstance(decision, Mapping) or set(decision) != {"verdict", "correction_authorization"}
+                    or decision["verdict"] != "preserved" or decision["correction_authorization"] != "not_required"):
+                raise GreenfieldSourceDutyEntailmentError(UNSUPPORTED_SYSTEM_MUTATION)
 
 
 def validate_source_duty_decision_set(
@@ -692,6 +898,8 @@ def validate_source_duty_decision_set(
         if edit_preservation is not None:
             fields.add("identity_preservation")
     if edit_preservation is not None:
+        if edit_preservation["version"] == EDIT_PRESERVATION_VERSION:
+            fields.add("system_preservation")
         fields.add("edit_preservation")
         if _passive_legacy_edit:
             fields.add("edit_correction_refs")
@@ -705,7 +913,8 @@ def validate_source_duty_decision_set(
              else "odylith.greenfield.source-duty-decisions.v10" if _passive_source_version == "odylith.greenfield.source-duty-ledger.v8"
                  else "odylith.greenfield.source-duty-decisions.v8" if _passive_source_version == "odylith.greenfield.source-duty-ledger.v7"
                  else "odylith.greenfield.source-duty-decisions.v6" if _passive_source_version
-             else EDIT_SOURCE_DUTY_DECISION_SET_VERSION)
+             else "odylith.greenfield.source-duty-decisions.v12" if edit_preservation.get("version") == "odylith.greenfield.edit-lifecycle-preservation.v3"
+                 else EDIT_SOURCE_DUTY_DECISION_SET_VERSION)
             if edit_preservation is not None else "odylith.greenfield.source-duty-decisions.v9"
             if _passive_source_version == "odylith.greenfield.source-duty-ledger.v8" else "odylith.greenfield.source-duty-decisions.v7"
             if _passive_source_version == "odylith.greenfield.source-duty-ledger.v7"

@@ -691,7 +691,7 @@ def _statistics_edit_fixture(tmp_path: Path, monkeypatch):
     from tests.unit.runtime.test_greenfield_source_duty_ledger import _yes_decisions
     from tests.unit.runtime.greenfield_model_authoring_fixtures import synthetic_source_duty_receipt_for_ledger
     from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import (
-        greenfield_edit_preservation_context, source_duty_entailment_task,
+        source_duty_entailment_task,
     )
     from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
         preflight_greenfield_source_duty_ledger, validate_greenfield_source_duty_ledger,
@@ -702,17 +702,22 @@ def _statistics_edit_fixture(tmp_path: Path, monkeypatch):
         lifecycle_correction=old_context["correction"], tags=("edited_confirmation",))
     source = case.model_evidence.evidence_source
     initial_source = statistics.prepare_model_authoring_evidence(prompt=case.initial_prompt).evidence_source
-    context = greenfield_edit_preservation_context(transaction_hash="a" * 64,
-        prior_lifecycle=old_context["prior_lifecycle"], prior_identity=old_context["prior_identity"],
-        correction=case.model_evidence.edit_evidence, evidence_text=source)
+    from tests.unit.runtime.greenfield_model_authoring_fixtures import edit_action_context_fixture, preserved_edit_decisions_fixture
+    prior_design = {
+        "components": [{"key": "record-state", "supported_event_orders": [1, 2], "verification_event_orders": [1, 2]}],
+        "workstreams": [{"key": "record-delivery", "component_keys": ["record-state"], "verification_event_orders": [1, 2]}],
+    }
+    initial_duty = synthetic_source_duty_receipt_for_ledger(ledger, evidence_text=initial_source)
+    context = edit_action_context_fixture(prior_source=initial_source, prior_receipt=initial_duty,
+        prior_lifecycle=old_context["prior_lifecycle"], design=prior_design,
+        correction=case.model_evidence.edit_evidence)
     preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=source)
     task = source_duty_entailment_task(preflight, evidence_text=source, edit_preservation=context)
     decisions = _yes_decisions(preflight, evidence_text=source)
     decisions.update(version=old_decisions["version"], verifier_task_sha256=task["verifier_task_sha256"],
         identity_preservation=deepcopy(old_decisions["identity_preservation"]),
-        edit_preservation=deepcopy(old_decisions["edit_preservation"]))
+        **preserved_edit_decisions_fixture(context))
     duty = validate_greenfield_source_duty_ledger(ledger, evidence_text=source, decision_set=decisions, edit_preservation=context)
-    initial_duty = synthetic_source_duty_receipt_for_ledger(ledger, evidence_text=initial_source)
     root = tmp_path / "retained-case"
     root.mkdir()
     transactions = {}
@@ -767,6 +772,9 @@ def _statistics_edit_fixture(tmp_path: Path, monkeypatch):
     envelope = greenfield_operating_envelope_receipt(facts=_facts_for_band(case, band="bounded"),
         source_format=case.model_evidence.source_format, source_size_bytes=len(source.encode()), source_document_count=2,
         model_authoring=_model_authoring_observations(STANDARD_PROFILE_ID))
+    from tests.unit.runtime.greenfield_model_authoring_fixtures import prior_transaction_custody_fixture
+    transactions["initial"] = prior_transaction_custody_fixture(prior_source=initial_source,
+        prior_receipt=initial_duty, context=context, design=prior_design)
     transactions["edited"].intent_authority = {"operating_envelope": envelope}
     preview = {"mode": "applied", "backlog": [], "components": [], "diagrams": [],
         "dashboard_refresh": {"status": "passed"}, "validation_gate": {"status": "passed"}}

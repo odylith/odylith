@@ -1,0 +1,54 @@
+{
+  "version": "odylith.synthetic-high-edit.source-adjudication-freeze.v1",
+  "status": "ACCEPT_all_four_source_only",
+  "qualification": "none_native_or_release",
+  "files": [
+    {
+      "path": "/private/tmp/odylith-new-high4-source-adjudication-20261010/independent-census-before-annotations.json",
+      "sha256": "88fe10307d89a41bb5ae45658064496d40aee8d50f26b79bff77d5814e1df3d8",
+      "bytes": 8857
+    },
+    {
+      "path": "/private/tmp/odylith-new-high4-source-adjudication-20261010/final-predeclaration.json",
+      "sha256": "c0c4800ab6094bc5f694e93d529dc507b78d14175b13d864642546fd2e817c3a",
+      "bytes": 817694
+    },
+    {
+      "path": "/private/tmp/odylith-new-high4-source-adjudication-20261010/adjudicated-census-capacity.json",
+      "sha256": "99caa7900360ae69e66787ca9a5f3b9c1977e65dfbf70c0fdc27882dc828cc7b",
+      "bytes": 343357
+    },
+    {
+      "path": "/private/tmp/odylith-new-high4-source-adjudication-20261010/annotation-changes.json",
+      "sha256": "0436e4c3d09f85cd685cbb0b1010290a6e2b191ecd905146513f2da42c0aa3e1",
+      "bytes": 2624
+    },
+    {
+      "path": "/private/tmp/odylith-new-high4-source-adjudication-20261010/validation.json",
+      "sha256": "afaaabb8e5e6858e4c69c6fac310e02f4152fbc8dbf74e25ce60a39469240b5d",
+      "bytes": 6511
+    },
+    {
+      "path": "/private/tmp/odylith-new-high4-source-adjudication-20261010/report.md",
+      "sha256": "2423c6140dc5120bd625a6cb693e3e10b4011f58c1035ce1b9f8a8afeee79f8a",
+      "bytes": 9124
+    }
+  ],
+  "source_inputs_unchanged": {
+    "/private/tmp/odylith-new-high4-source-design-20261010/sourcecases-draft.json": "5da8ec8a344d3097ad5a65a14e4f0af0756943a03d6a22e4ff8557e67694e485",
+    "/private/tmp/odylith-new-high4-source-design-20261010/canonical-source-frames.json": "3020f24efae67a669b72574a24ed4f4146b235449180e91854faae32633a7c4a",
+    "/private/tmp/odylith-new-high4-independent-source-annotation-a-20261010/source-predeclaration.json": "a69b5d154077b8a56c45198c1af3dcde4839287542aff2bfb8dac2dd463d9a0b",
+    "/private/tmp/odylith-new-high4-independent-source-annotation-a-20261010/census-capacity.json": "3ee499907f56a15de24dfd1f51287d0e2e8742d77d2c210fbb95717ead98b05b",
+    "/private/tmp/odylith-new-high4-independent-source-annotation-a-20261010/REPORT.md": "9c1bd2c9755c8920b8498184efc73244bb0a9b54580506e208ebb4b518bbd67b",
+    "/private/tmp/odylith-new-high4-independent-source-annotation-a-20261010/validation.json": "87bc6e9e906ef31a793266c1438e0c5a46caeca50ec7b85abb7cf1c7ca48555a",
+    "/private/tmp/odylith-new-high4-independent-source-annotation-a-20261010/freeze-manifest.json": "f38f50b19e4d82f4b42cf6063ee33bb9b5e0d55f44ae64495119a5194221e00f",
+    "/private/tmp/odylith-new-high4-independent-source-annotation-b-20261010/predeclaration-b.json": "632df5e71a22f720b5299a0f8f595d7ae95588da7b23f3195ca1f48a4bc5d635",
+    "/private/tmp/odylith-new-high4-independent-source-annotation-b-20261010/census-capacity-b.json": "5d338f253fff743cbb6ca2ffef41499ace3cb3a2a755ce718280bc2aff563db2",
+    "/private/tmp/odylith-new-high4-independent-source-annotation-b-20261010/validation-b.json": "4d291733cd45987fb6f7fed9229e0551c4150fa509a2174c2789f257b1ab117d",
+    "/private/tmp/odylith-new-high4-independent-source-annotation-b-20261010/pins-b.json": "ba1f90ff3a8c362ec2f3942976472ffa71534357cfd44c99fc1f1567abd09f8d",
+    "/private/tmp/odylith-new-high4-source-adjudication-20261010/independent-census-before-annotations.json": "88fe10307d89a41bb5ae45658064496d40aee8d50f26b79bff77d5814e1df3d8"
+  },
+  "repo_writes": 0,
+  "provider_native_build_calls": 0,
+  "terminal_no_more_writes": true
+}

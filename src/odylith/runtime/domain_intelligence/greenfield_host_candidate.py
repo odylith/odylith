@@ -59,8 +59,9 @@ from odylith.runtime.domain_intelligence.greenfield_authority_gate import (
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v7"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v58"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v59"
 PASSIVE_HOST_CANDIDATE_CONTRACT_VERSIONS = (
+    "odylith.greenfield.host-candidate-contract.v58",
     "odylith.greenfield.host-candidate-contract.v57",
     "odylith.greenfield.host-candidate-contract.v56",
     "odylith.greenfield.host-candidate-contract.v55",
@@ -363,7 +364,7 @@ def greenfield_host_candidate_authoring_request(
     duties = {row["id"]: row for section in (
         "first_path_actions", "supporting_human_actions", "system_duties",
     ) for row in inventory_rows[section]}
-    return {
+    authoring_request = {
         **{key: deepcopy(contract[key]) for key in retained_fields},
         "transport_version": HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION,
         "accepted_source_duty_inventory": inventory,
@@ -394,6 +395,10 @@ def greenfield_host_candidate_authoring_request(
             "controller retains the complete verified receipt. Do not reverify source duties."
         ),
     }
+    from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import require_greenfield_request_bound, MAX_AUTHORING_REQUEST_BYTES
+    require_greenfield_request_bound({"request": authoring_request, "response_schema": contract["candidate_schema"]},
+                                    maximum=MAX_AUTHORING_REQUEST_BYTES, label="Candidate request and response schema")
+    return authoring_request
 
 
 def load_greenfield_host_candidate_file(path: Path) -> dict[str, Any]:

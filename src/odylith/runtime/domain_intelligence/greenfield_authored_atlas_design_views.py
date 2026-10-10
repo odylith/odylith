@@ -34,7 +34,7 @@ def build_provisional_design_atlas_specs(
     non_goals: Sequence[str],
     source_precedence: Sequence[Mapping[str, Any]],
     proof_is_provisional: bool = False,
-    source_lifecycle: Mapping[str, Any] | None = None,
+    source_lifecycle: Mapping[str, Any] | None = None, preserved_source_presentation: bool = False,
 ) -> dict[str, dict[str, Any]]:
     """Return three deterministic proposed-design lenses from canonical rows."""
 
@@ -67,7 +67,8 @@ def build_provisional_design_atlas_specs(
         source_lifecycle=source_lifecycle,
     )
     source_fact_guide = (
-        "a cited state lifecycle; its off-path transitions do not become first-run actions."
+        ("a cited state lifecycle, separate from declared first-path membership."
+         if preserved_source_presentation else "a cited state lifecycle; its off-path transitions do not become first-run actions.")
         if source_lifecycle and source_lifecycle.get("off_path_transitions")
         else "an edge-free context inventory; no transition or causal topology is inferred."
     )

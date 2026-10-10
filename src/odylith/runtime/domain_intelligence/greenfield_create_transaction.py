@@ -384,7 +384,7 @@ def _require_host_candidate_authority_binding(
     if passive:
         initial_versions.update((PASSIVE_SOURCE_DUTY_LEDGER_RECEIPT_VERSION, version)
                                 for version in PASSIVE_HOST_CANDIDATE_CONTRACT_VERSIONS
-                                if version not in {"odylith.greenfield.host-candidate-contract.v55", "odylith.greenfield.host-candidate-contract.v56", "odylith.greenfield.host-candidate-contract.v57"})
+                                if version not in {"odylith.greenfield.host-candidate-contract.v58", "odylith.greenfield.host-candidate-contract.v55", "odylith.greenfield.host-candidate-contract.v56", "odylith.greenfield.host-candidate-contract.v57"})
         edit_versions.update((PASSIVE_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
                               f"odylith.greenfield.host-candidate-contract.v{version}")
                              for version in (51, 52, 53, 54))
@@ -396,6 +396,8 @@ def _require_host_candidate_authority_binding(
                            "odylith.greenfield.host-candidate-contract.v55"))
         initial_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v12", "odylith.greenfield.host-candidate-contract.v56"))
         edit_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v13", "odylith.greenfield.host-candidate-contract.v56"))
+        initial_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v16", "odylith.greenfield.host-candidate-contract.v58"))
+        edit_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v17", "odylith.greenfield.host-candidate-contract.v58"))
         initial_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v14", "odylith.greenfield.host-candidate-contract.v57"))
         edit_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v15", "odylith.greenfield.host-candidate-contract.v57"))
     if (
@@ -422,7 +424,7 @@ def _require_host_candidate_authority_binding(
             "ProductCreateTransaction host candidate source-duty hashes do not match its reviewed proposal"
         )
 
-    if host.get("contract_version") in {HOST_CANDIDATE_CONTRACT_VERSION, "odylith.greenfield.host-candidate-contract.v55", "odylith.greenfield.host-candidate-contract.v56", "odylith.greenfield.host-candidate-contract.v57"}:
+    if host.get("contract_version") in {HOST_CANDIDATE_CONTRACT_VERSION, "odylith.greenfield.host-candidate-contract.v58", "odylith.greenfield.host-candidate-contract.v55", "odylith.greenfield.host-candidate-contract.v56", "odylith.greenfield.host-candidate-contract.v57"}:
         from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
             validate_component_responsibility_relations, source_event_relations_from_intent,
         )

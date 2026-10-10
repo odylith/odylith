@@ -17,7 +17,6 @@ from greenfield_matrix_leakage import term_present
 from greenfield_preconfirm_matrix_cases import DEFAULT_CASE_EXPECTATION
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 from greenfield_preconfirm_matrix_cases import VALID_CASE_EXPECTATIONS
-from odylith.runtime.domain_intelligence.greenfield_text import dedupe_adjacent_words
 
 
 def load_case_file(
@@ -296,11 +295,7 @@ def _case_expectation(value: Any, *, index: int, name: str, source: Path) -> str
 def _string_tuple(value: Any) -> tuple[str, ...]:
     if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
         return ()
-    return tuple(dict.fromkeys(text for item in value if (text := _canonical_text(_optional_text(item)))))
-
-
-def _canonical_text(value: Any) -> str:
-    return dedupe_adjacent_words(_optional_text(value)).strip()
+    return tuple(dict.fromkeys(text for item in value if (text := _optional_text(item))))
 
 
 def canonical_case_text(value: Any) -> str:
@@ -313,7 +308,7 @@ def _canonical_block_text(value: Any) -> str:
     text = _optional_block_text(value)
     if not text:
         return ""
-    return "\n".join(dedupe_adjacent_words(line).strip() for line in text.splitlines()).strip()
+    return "\n".join(_optional_text(line) for line in text.splitlines()).strip()
 
 
 __all__ = [

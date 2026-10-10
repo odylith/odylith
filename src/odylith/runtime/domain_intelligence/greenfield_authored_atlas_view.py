@@ -65,7 +65,7 @@ def build_authored_atlas_diagrams(
     operational_constraints: Sequence[str] = (),
     proof_is_provisional: bool = False,
     source_lifecycle: Mapping[str, Any] | None = None,
-    neutral_context: bool = False,
+    neutral_context: bool = False, preserved_source_presentation: bool = False,
 ) -> list[dict[str, Any]]:
     """Project source facts and one separately authoritative provisional design."""
 
@@ -112,7 +112,7 @@ def build_authored_atlas_diagrams(
         proof_is_provisional=proof_is_provisional,
         non_goals=non_goals,
         source_precedence=source_precedence,
-        source_lifecycle=source_lifecycle,
+        source_lifecycle=source_lifecycle, preserved_source_presentation=preserved_source_presentation,
     )
     sequence_source, sequence_boxes = build_provisional_first_run_atlas_view(
         relations,

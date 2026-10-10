@@ -24,12 +24,14 @@ from greenfield_matrix_statistics import release_statistical_confidence_contract
 from greenfield_matrix_statistics import threshold_check
 from greenfield_matrix_statistics import wilson_interval
 from greenfield_matrix_types import GreenfieldMatrixResult
+from greenfield_matrix_case_file import load_case_file
 from greenfield_relation_fidelity import RELATION_FAMILIES
 
 
 from greenfield_semantic_case_score import (
     score_native_commit, mapping_rows, mapping_value, semantic_finding, empty_relation_counts, is_sequence,
     load_source_predicate_evidence, score_source_predicates, PUBLIC_SOURCE_MODE,
+    PUBLIC_EDIT_SOURCE_MODE, PUBLIC_COMPOSITION_MODE,
 )
 
 SEMANTIC_RELEASE_SCORE_VERSION = "odylith.greenfield.semantic-release-score.v7"
@@ -58,8 +60,10 @@ def evaluate_semantic_release(
     duplicate_case_ids = _duplicates(case_ids)
     duplicate_result_ids = _duplicates(result_ids)
     source_bindings: dict[str, Mapping[str, Any]] = {}
+    source_manifests: dict[str, Path] = {}
+    evaluation_mode = source_predicate_evidence.get("mode") if source_predicate_evidence else SEMANTIC_RELEASE_SCORE_VERSION
     if source_predicate_evidence is not None:
-        source_annotations, source_bindings, source_issues = load_source_predicate_evidence(
+        source_annotations, source_bindings, source_manifests, source_issues = _source_release_inputs(
             configuration=source_predicate_evidence, cases=cases, results=results)
         selected = {case_id: source_annotations[case_id] for case_id in case_ids if case_id in source_annotations}
         if annotations and dict(annotations) != selected:
@@ -69,7 +73,7 @@ def evaluate_semantic_release(
                 missing_case_ids=[], duplicate_case_ids=duplicate_case_ids,
                 duplicate_result_ids=duplicate_result_ids, annotations_match=False, floors=floors,
                 release_required_slices=release_required_slices)
-            report.update(version=PUBLIC_SOURCE_MODE, evaluation_mode=PUBLIC_SOURCE_MODE)
+            report.update(version=evaluation_mode, evaluation_mode=evaluation_mode)
             report["issues"] = list(source_issues)
             return report
         annotations = selected
@@ -123,7 +127,7 @@ def evaluate_semantic_release(
             result=result,
             metric_counts=metric_counts,
             source_binding=source_bindings.get(case_id),
-            retained_evidence_manifest=retained_evidence_manifest,
+            retained_evidence_manifest=source_manifests.get(case_id, retained_evidence_manifest),
         )
         case_outcomes.append(outcome)
         p0_findings.extend(outcome["p0_findings"])
@@ -280,7 +284,7 @@ def evaluate_semantic_release(
         for row in case_outcomes if str(row.get("normalized_semantic_digest") or "")
     }
     report = {
-        "version": PUBLIC_SOURCE_MODE if source_predicate_evidence is not None else SEMANTIC_RELEASE_SCORE_VERSION,
+        "version": evaluation_mode,
         "status": "passed" if not issues else "failed",
         "scoring_status": "scored",
         "passed": not issues,
@@ -333,7 +337,7 @@ def evaluate_semantic_release(
         ],
     }
     if source_predicate_evidence is not None:
-        report["evaluation_mode"] = PUBLIC_SOURCE_MODE
+        report["evaluation_mode"] = evaluation_mode
         report["scoring_units"] = {
             "atomic_semantic_fidelity": "one unique frozen scored commit source predicate ID",
             "relation_fidelity": "one unique frozen source relation identity",
@@ -342,6 +346,41 @@ def evaluate_semantic_release(
         }
         report["source_predicate_evidence"] = dict(source_predicate_evidence)
     return report
+
+
+def _source_release_inputs(
+    *, configuration: Mapping[str, Any], cases: Sequence[Any], results: Sequence[Any],
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Path], tuple[str, ...]]:
+    """Authenticate both unchanged families even when a nested profile selects a subset."""
+    if configuration.get("mode") != PUBLIC_COMPOSITION_MODE:
+        annotations, bindings, issues = load_source_predicate_evidence(
+            configuration=configuration, cases=cases, results=results)
+        return annotations, bindings, {}, issues
+    annotations, bindings, manifests, issues = {}, {}, {}, []
+    if set(configuration) != {"mode", "primary", "high"}:
+        return {}, {}, {}, ("composed source mode requires exact primary/high evidence",)
+    try:
+        all_ids: set[str] = set()
+        for name, mode, count in (("primary", PUBLIC_SOURCE_MODE, 40), ("high", PUBLIC_EDIT_SOURCE_MODE, 4)):
+            family = configuration[name]
+            source_cases = load_case_file(Path(family["source_cases"]["path"]))
+            ids = {case.case_id for case in source_cases}
+            if family.get("mode") != mode or len(source_cases) != count or ids & all_ids:
+                raise ValueError("composed source families have changed versions, membership or counts")
+            all_ids.update(ids)
+            selected_cases = [case for case in cases if _case_id(case) in ids]
+            selected_results = [result for result in results if _result_case_id(result) in ids]
+            found, mapped, family_issues = load_source_predicate_evidence(
+                configuration=family, cases=selected_cases, results=selected_results)
+            annotations.update(found)
+            bindings.update(mapped)
+            issues.extend(f"{name}: {issue}" for issue in family_issues)
+            manifests.update({case_id: Path(family["retained_manifest"]["path"]) for case_id in ids})
+        if any(_case_id(case) not in all_ids for case in cases):
+            issues.append("composed selection contains a case outside its frozen families")
+    except (OSError, RuntimeError, ValueError, TypeError, KeyError) as exc:
+        issues.append(f"composed source evidence is incomplete: {exc}")
+    return annotations, bindings, manifests, tuple(issues)
 
 
 def _incomplete_semantic_release_report(

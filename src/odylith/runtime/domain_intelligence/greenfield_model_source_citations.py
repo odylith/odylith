@@ -155,6 +155,20 @@ def canonical_citation_from_host_selection(
     return {"quote": quote, "occurrence": occurrence}
 
 
+def canonical_citation_from_source_span(evidence: bytes, *, start: int, end: int) -> dict[str, Any]:
+    """Encode an already authenticated fixed address in the existing citation format."""
+    if type(start) is not int or type(end) is not int or not 0 <= start < end <= len(evidence):
+        raise GreenfieldModelAuthoringError(_INVALID_CITATION)
+    quote = exact_quote(evidence[start:end].decode("utf-8"))
+    starts = _overlapping_match_starts(evidence, quote.encode("utf-8"))
+    if start not in starts:
+        raise GreenfieldModelAuthoringError(_INVALID_CITATION)
+    citation = {"quote": quote, "occurrence": starts.index(start) + 1}
+    if resolve_source_citation(evidence, citation) != (quote, start):
+        raise GreenfieldModelAuthoringError(_INVALID_CITATION)
+    return citation
+
+
 def _positive_occurrence(value: Any) -> int:
     return value if isinstance(value, int) and not isinstance(value, bool) and value >= 1 else 0
 
