@@ -1,0 +1,52 @@
+{
+  "status": "structural_pass",
+  "sha256": "34c85354ba7259c5c3e80b00de69f9dacc0007558327dcab0f0501c20924b219",
+  "case_count": 40,
+  "issues": [],
+  "semantic_adjudication": "independent source-only adjudication complete",
+  "expected_outcome_counts": {
+    "clarify": 18,
+    "commit": 22
+  },
+  "complexity_band_counts": {
+    "bounded": 32,
+    "moderate": 8
+  },
+  "published_structural_floors": {
+    "version": "odylith.greenfield.structural-floors.v4",
+    "atomic_semantic_fidelity": 1.0,
+    "relation_fidelity": 1.0,
+    "clarification_identity": 1.0,
+    "unnecessary_question_rate_ceiling": 0.0,
+    "overall_case_success": 1.0,
+    "worst_slice_success": 1.0,
+    "release_slice_minimum_samples": {
+      "complexity_band": {
+        "bounded": 4,
+        "moderate": 4,
+        "high": 4
+      },
+      "evidence_format": {
+        "operator_prompt": 4,
+        "operator_prompt_with_edit_evidence": 4
+      },
+      "model_profile": {
+        "greenfield-standard-host-candidate-astra-medium-v21": 4
+      }
+    },
+    "statistical_confidence": {
+      "version": "odylith.greenfield.statistical-confidence.v1",
+      "method": "wilson",
+      "confidence_level": 0.95,
+      "atomic_semantic_fidelity": 0.5,
+      "relation_fidelity": 0.5,
+      "clarification_identity": 0.5,
+      "unnecessary_question_rate_ceiling": 0.5,
+      "overall_case_success": 0.5,
+      "worst_slice_success": 0.5
+    }
+  },
+  "product_qualification": false,
+  "release_credit": false,
+  "protected_holdout_run_ledger_absent": true
+}

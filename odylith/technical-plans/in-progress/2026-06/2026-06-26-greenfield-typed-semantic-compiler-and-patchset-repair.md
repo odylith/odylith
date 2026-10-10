@@ -13,6 +13,16 @@ The tracked authority record is
 This resolves the pending annotation decision; it grants no old campaign credit
 and does not authorize a fresh native campaign before the existing gates pass.
 
+The prospective source-only adjudication is complete: 40 unchanged prompts,
+693 atoms, 94 explicit path relations, 22 commit and 18 clarify expectations.
+The final declaration is retained under the amendment directory as
+`final-predeclaration.json` (SHA-256
+`34c85354ba7259c5c3e80b00de69f9dacc0007558327dcab0f0501c20924b219`).
+Independent adjudication and the existing formal validator both pass. Honest
+complexity is 32 bounded, eight moderate and zero high; this set cannot meet the
+unchanged high-complexity minimum of four. Preserve that coverage gap and every
+quality floor. This is prospective evidence custody, not product qualification.
+
 Hosted CI 37954346463 now passes on e4f0d1a7. The grounded Project presenter and
 release readers are independently clear: the complete source/browser packs pass
 76 and 158 checks; retained actual H1 passes all eight desktop/mobile Project

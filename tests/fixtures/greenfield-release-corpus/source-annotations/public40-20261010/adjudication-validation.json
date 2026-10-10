@@ -1,0 +1,314 @@
+{
+  "version": "independent-public40-final-validation.v1",
+  "status": "pass",
+  "scope": "Isolated structural/custody validation using only supplied source-pack schema fields and source/annotation files. No repository implementation read or imported.",
+  "final_sha256": "34c85354ba7259c5c3e80b00de69f9dacc0007558327dcab0f0501c20924b219",
+  "case_count": 40,
+  "atom_count": 693,
+  "span_occurrences_checked": 1585,
+  "errors": [],
+  "cases": [
+    {
+      "case_id": "release-accessibility-004-topic",
+      "score": 0,
+      "issues": []
+    },
+    {
+      "case_id": "release-accessibility-005-source",
+      "score": 4,
+      "issues": []
+    },
+    {
+      "case_id": "release-accessibility-006-source",
+      "score": 0,
+      "issues": []
+    },
+    {
+      "case_id": "release-accessibility-007-source",
+      "score": 1,
+      "issues": []
+    },
+    {
+      "case_id": "release-agriculture-021-description",
+      "score": 1,
+      "issues": []
+    },
+    {
+      "case_id": "release-agriculture-024-topic",
+      "score": 0,
+      "issues": []
+    },
+    {
+      "case_id": "release-agriculture-037-source",
+      "score": 6,
+      "issues": []
+    },
+    {
+      "case_id": "release-agriculture-030-source",
+      "score": 0,
+      "issues": []
+    },
+    {
+      "case_id": "release-civic-tech-041-description",
+      "score": 1,
+      "issues": []
+    },
+    {
+      "case_id": "release-civic-tech-044-topic",
+      "score": 0,
+      "issues": []
+    },
+    {
+      "case_id": "release-civic-tech-045-source",
+      "score": 1,
+      "issues": []
+    },
+    {
+      "case_id": "release-civic-tech-057-source",
+      "score": 6,
+      "issues": []
+    },
+    {
+      "case_id": "release-climate-061-description",
+      "score": 1,
+      "issues": []
+    },
+    {
+      "case_id": "release-climate-064-topic",
+      "score": 0,
+      "issues": []
+    },
+    {
+      "case_id": "release-climate-073-source",
+      "score": 4,
+      "issues": []
+    },
+    {
+      "case_id": "release-climate-069-source",
+      "score": 1,
+      "issues": []
+    },
+    {
+      "case_id": "release-education-081-description",
+      "score": 1,
+      "issues": []
+    },
+    {
+      "case_id": "release-education-084-topic",
+      "score": 0,
+      "issues": []
+    },
+    {
+      "case_id": "release-education-085-source",
+      "score": 1,
+      "issues": []
+    },
+    {
+      "case_id": "release-education-086-source",
+      "score": 0,
+      "issues": []
+    },
+    {
+      "case_id": "release-healthcare-117-source",
+      "score": 6,
+      "issues": []
+    },
+    {
+      "case_id": "release-healthcare-104-topic",
+      "score": 0,
+      "issues": []
+    },
+    {
+      "case_id": "release-healthcare-108-source",
+      "score": 0,
+      "issues": []
+    },
+    {
+      "case_id": "release-healthcare-109-source",
+      "score": 1,
+      "issues": []
+    },
+    {
+      "case_id": "release-mobility-121-description",
+      "score": 1,
+      "issues": []
+    },
+    {
+      "case_id": "release-mobility-124-topic",
+      "score": 0,
+      "issues": []
+    },
+    {
+      "case_id": "release-mobility-125-source",
+      "score": 4,
+      "issues": []
+    },
+    {
+      "case_id": "release-mobility-126-source",
+      "score": 0,
+      "issues": []
+    },
+    {
+      "case_id": "release-open-data-142-topic",
+      "score": 0,
+      "issues": []
+    },
+    {
+      "case_id": "release-open-data-144-topic",
+      "score": 0,
+      "issues": []
+    },
+    {
+      "case_id": "release-open-data-157-source",
+      "score": 6,
+      "issues": []
+    },
+    {
+      "case_id": "release-open-data-150-source",
+      "score": 0,
+      "issues": []
+    },
+    {
+      "case_id": "release-research-161-description",
+      "score": 1,
+      "issues": []
+    },
+    {
+      "case_id": "release-research-163-description",
+      "score": 1,
+      "issues": []
+    },
+    {
+      "case_id": "release-research-170-source",
+      "score": 0,
+      "issues": []
+    },
+    {
+      "case_id": "release-research-171-source",
+      "score": 4,
+      "issues": []
+    },
+    {
+      "case_id": "release-security-182-topic",
+      "score": 0,
+      "issues": []
+    },
+    {
+      "case_id": "release-security-183-description",
+      "score": 1,
+      "issues": []
+    },
+    {
+      "case_id": "release-security-186-source",
+      "score": 0,
+      "issues": []
+    },
+    {
+      "case_id": "release-security-195-source",
+      "score": 1,
+      "issues": []
+    }
+  ],
+  "action_clause_bindings": [
+    {
+      "case_id": "release-healthcare-117-source",
+      "order": 2,
+      "action": "records",
+      "source_quote": "records cited public evidence",
+      "adjudication": "Literal verb starts the source action clause; wider quote retains target and is valid evidence."
+    },
+    {
+      "case_id": "release-healthcare-117-source",
+      "order": 3,
+      "action": "records",
+      "source_quote": "records a clinical evidence disposition",
+      "adjudication": "Literal verb starts the source action clause; wider quote retains target and is valid evidence."
+    },
+    {
+      "case_id": "release-healthcare-117-source",
+      "order": 4,
+      "action": "records",
+      "source_quote": "records a privacy disposition",
+      "adjudication": "Literal verb starts the source action clause; wider quote retains target and is valid evidence."
+    },
+    {
+      "case_id": "release-healthcare-117-source",
+      "order": 5,
+      "action": "verifies",
+      "source_quote": "verifies both reviews",
+      "adjudication": "Literal verb starts the source action clause; wider quote retains target and is valid evidence."
+    },
+    {
+      "case_id": "release-healthcare-117-source",
+      "order": 6,
+      "action": "publishes",
+      "source_quote": "publishes the approved evidence brief",
+      "adjudication": "Literal verb starts the source action clause; wider quote retains target and is valid evidence."
+    },
+    {
+      "case_id": "release-mobility-125-source",
+      "order": 3,
+      "action": "records",
+      "source_quote": "records the land-use assumptions",
+      "adjudication": "Literal verb starts the source action clause; wider quote retains target and is valid evidence."
+    },
+    {
+      "case_id": "release-mobility-125-source",
+      "order": 4,
+      "action": "records",
+      "source_quote": "records a scenario disposition",
+      "adjudication": "Literal verb starts the source action clause; wider quote retains target and is valid evidence."
+    },
+    {
+      "case_id": "release-open-data-157-source",
+      "order": 2,
+      "action": "states",
+      "source_quote": "states the purpose",
+      "adjudication": "Literal verb starts the source action clause; wider quote retains target and is valid evidence."
+    },
+    {
+      "case_id": "release-open-data-157-source",
+      "order": 6,
+      "action": "records",
+      "source_quote": "records a publication disposition",
+      "adjudication": "Literal verb starts the source action clause; wider quote retains target and is valid evidence."
+    },
+    {
+      "case_id": "release-open-data-157-source",
+      "order": 7,
+      "action": "verifies",
+      "source_quote": "verifies the evidence",
+      "adjudication": "Literal verb starts the source action clause; wider quote retains target and is valid evidence."
+    },
+    {
+      "case_id": "release-open-data-157-source",
+      "order": 8,
+      "action": "publishes",
+      "source_quote": "publishes the approved extract",
+      "adjudication": "Literal verb starts the source action clause; wider quote retains target and is valid evidence."
+    },
+    {
+      "case_id": "release-research-171-source",
+      "order": 3,
+      "action": "records",
+      "source_quote": "records the collection and retention plan",
+      "adjudication": "Literal verb starts the source action clause; wider quote retains target and is valid evidence."
+    },
+    {
+      "case_id": "release-research-171-source",
+      "order": 4,
+      "action": "records",
+      "source_quote": "records a readiness disposition",
+      "adjudication": "Literal verb starts the source action clause; wider quote retains target and is valid evidence."
+    },
+    {
+      "case_id": "release-research-171-source",
+      "order": 6,
+      "action": "records",
+      "source_quote": "records the launch status",
+      "adjudication": "Literal verb starts the source action clause; wider quote retains target and is valid evidence."
+    }
+  ],
+  "validator_correction": "An initial helper required action_source.quote to equal only the verb. The supplied schema does not require that, and14 B-half quotes include the explicit verb plus its target. Manual inspection confirmed all14 begin with the exact declared verb; the final check requires exact verb-prefix binding and full relation containment without altering valid source spans.",
+  "release_credit": false
+}
