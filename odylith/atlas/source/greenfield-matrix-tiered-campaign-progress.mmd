@@ -3,7 +3,7 @@ flowchart TB
     subgraph case_lane["Case variance lane"]
       direction TB
       external_cases["External case files<br/>domain vocabulary stays outside<br/>Odylith platform source"]
-      case_text_canonicalization["Case text canonicalization<br/>dedupe adjacent source words<br/>in prompts, required terms,<br/>leakage sentinels, and confirmations"]
+      case_text_canonicalization["Exact source text<br/>retain prompt, confirmation,<br/>required terms and leakage sentinels"]
       source_generator["Source-grounded case generator<br/>balances stressors, sources,<br/>tags, and density"]
       prior_results["Prior result payloads<br/>readable exact evidence with<br/>case id, slug, prompt hash,<br/>confirmed-intent hash"]
       content_identity["Content identity hierarchy<br/>case id, prompt hash,<br/>confirmed-intent hash first"]
@@ -27,6 +27,7 @@ flowchart TB
       volume["120-case discovery<br/>bounded workers, seeded installs"]
       deep_volume["240-case discovery<br/>deeper variance, controlled workers"]
       release_proof["Release proof<br/>Full install, browser and recovery proof;<br/>Luna clarification and unavailable-provider controls"]
+      public_diagnostics["Public diagnostic collection<br/>Explicit discovery option runs the existing controls;<br/>synthetic provenance and original outcomes remain visible"]
       dependency_injection["Shard runner dependencies<br/>explicit command, telemetry,<br/>cleanup functions; no global swaps"]
       shard_execution_owner["Shard execution owner<br/>process tailing, temp cleanup,<br/>matrix command custody"]
     end
@@ -68,6 +69,7 @@ flowchart TB
       cleanup_proof["Temp cleanup proof<br/>directories, files, symlinks<br/>must all be gone"]
       readiness_boundary["Readiness boundary<br/>discovery is not release proof"]
       public_audit["Detached public qualification<br/>Frozen source predicates, exact output hashes,<br/>independent coverage audit and measured bound decision"]
+      execution_custody["Original execution custody<br/>Scored timing-only exit 1 or successful genuine exit 0;<br/>complete families, phases and receipts required"]
       stop_fix_replay["Stop-fix-replay loop<br/>capture learning, repair platform,<br/>rerun failed subset, resume discovery"]
     end
 
@@ -80,6 +82,7 @@ flowchart TB
     volume --> shard_execution_owner
     deep_volume --> shard_execution_owner
     release_proof --> shard_execution_owner
+    public_diagnostics --> shard_execution_owner
     shard_execution_owner --> matrix_preflight
     matrix_preflight --> shard_jsonl
     matrix_preflight --> incremental_result
@@ -101,7 +104,9 @@ flowchart TB
     temp_default --> cleanup_proof
     release_proof --> release_policy
     release_policy --> release_stressors --> child_stressors --> release_preflight_status --> campaign_status --> readiness_boundary
-    release_proof --> public_audit --> readiness_boundary
+    release_proof --> execution_custody
+    public_diagnostics --> execution_custody
+    execution_custody --> public_audit --> readiness_boundary
     volume -. "discovery only" .-> readiness_boundary
     deep_volume -. "discovery only" .-> readiness_boundary
     failure_response --> readiness_boundary
@@ -113,9 +118,9 @@ flowchart TB
     classDef constraint fill:#FFF8E6,stroke:#F6D98B,color:#132033,stroke-width:1px;
     classDef invalid fill:#FFF1F0,stroke:#F7B4AE,color:#132033,stroke-width:1px;
     class external_cases,case_text_canonicalization,source_generator,prior_results,content_identity,weak_identity,stressor_tags,taxonomy_owner,required_term_gate,leakage_term_gate,tier_size_gate,shard_builder,variance_report,stressor_outcomes primary;
-    class campaign_orchestrator,case_file_preflight,failed_replay,regression,volume,deep_volume,release_proof,dependency_injection,shard_execution_owner execution;
+    class campaign_orchestrator,case_file_preflight,failed_replay,regression,volume,deep_volume,release_proof,public_diagnostics,dependency_injection,shard_execution_owner execution;
     class matrix_preflight,shard_jsonl,exception_result,process_failure,source_shard_replay,synthetic_payload,incremental_result,progress_jsonl,console_progress,running_snapshot,progress_snapshot,live_failed_identity,failure_origin,shard_backfill,tooling_payload,final_payload,failure_response,replay_materializer governance;
-    class cluster_gate,worker_profile,in_flight_stop,release_policy,release_stressors,child_stressors,release_preflight_status,campaign_status,shard_temp_scope,temp_default,cleanup_proof,readiness_boundary,public_audit,stop_fix_replay constraint;
+    class cluster_gate,worker_profile,in_flight_stop,release_policy,release_stressors,child_stressors,release_preflight_status,campaign_status,shard_temp_scope,temp_default,cleanup_proof,readiness_boundary,execution_custody,public_audit,stop_fix_replay constraint;
     style case_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#293D52
     style campaign_lane fill:#FBFDFF,stroke:#A7E9E3,stroke-width:1px,color:#293D52
     style telemetry_lane fill:#FBFDFF,stroke:#DDD6FE,stroke-width:1px,color:#293D52

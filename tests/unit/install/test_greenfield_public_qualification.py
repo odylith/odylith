@@ -535,6 +535,8 @@ def test_composition_refuses_duplicate_observation_credit(composition_sources, d
 @pytest.fixture
 def composition_execution(tmp_path, monkeypatch):
     """Actual file association with synthetic native grading; never qualification."""
+    tmp_path = tmp_path / 'execution-association'
+    tmp_path.mkdir()
     version = public.PUBLIC_COMPOSITION_MODE
     source_root = tmp_path / 'source-export'
     source_root.mkdir()
@@ -558,7 +560,10 @@ def composition_execution(tmp_path, monkeypatch):
     runner_ref = {'path': str(runner), 'sha256': sha256_file(runner)}
     native = source_root / 'driver'
     native.write_text('controlled executable; never executed\n')
-    activation = {'file_pins': {str(runner): runner_ref['sha256'], cases_ref['path']: cases_ref['sha256']}}
+    helper = source_root / 'execution_retention.py'
+    helper.write_text('# controlled retained execution helper; never executed\n')
+    activation = {'file_pins': {str(runner): runner_ref['sha256'], cases_ref['path']: cases_ref['sha256'],
+        str(helper): sha256_file(helper)}}
     custody = {name: _save(tmp_path / (name + '.json'), profile if name == 'profile' else activation if name == 'activation' else {'controlled': name})
         for name in public._RELEASE_CUSTODY_REFS}
     native_profile = _profile_evidence()
@@ -568,13 +573,15 @@ def composition_execution(tmp_path, monkeypatch):
     common.update(profile_id=native_profile['profile_id'], trusted_executable_sha256=native_request['executable_sha256'],
         **{key: native_request[key] for key in ('model', 'reasoning_effort', 'argv_shape_sha256')})
     observed = {**common, 'runtime_executable': str(native), 'runtime_executable_sha256': sha256_file(native), 'actual_import_pins': imports}
-    family = {'family_id': 'controlled-primary', 'source_cases': cases_ref, 'predeclaration': predecl}
+    family = {'family_id': 'controlled-primary', 'role': 'exclusion_and_separate_gate_only',
+        'source_cases': cases_ref, 'predeclaration': predecl}
     declaration = {'release_custody': custody}
     declaration_ref = _save(tmp_path / 'composition.json', declaration)
     row = _saved_result(case, profile=native_profile)
     row.evidence['case'].update(source_file=cases_ref['path'])
     command = 'Which final decision must the reviewer record?\n'
     row.evidence['model_profile']['stage_observation']['proposal_stdout_sha256'] = __import__('hashlib').sha256(command.encode()).hexdigest()
+    row = public.typed_saved_matrix_results([row.to_dict()])[0]
     root = prepare_retained_evidence_output_dir(output_dir=tmp_path / 'retained', temp_parent=tmp_path / 'repos')
     retained = begin_retained_case_evidence(evidence_root=root, case_id=case.case_id)
     record_retained_case_text(retained, 'commands/propose.stdout', command)
@@ -582,8 +589,9 @@ def composition_execution(tmp_path, monkeypatch):
     case_path = finalize_retained_case_evidence(case=retained, repo_root=tmp_path / 'empty', result_payload=row.to_dict())
     manifest = write_retained_evidence_manifest(root=root, expected_case_ids=(case.case_id,))
     manifest_ref = {'path': str(manifest), 'sha256': sha256_file(manifest)}
-    output_ref = _save(tmp_path / 'output.json', {'results': [row.to_dict()]})
-    argv = [str(native), '-B', str(runner)]
+    output_ref = _save(tmp_path / 'output.json', {'status': 'discovery-passed', 'results': [row.to_dict()]})
+    argv = [str(native), '-B', str(helper), str(tmp_path / 'binding-inputs.json'), '--',
+        imports['greenfield_preconfirm_matrix']['path'], '--case-file', cases_ref['path'], '--proof-tier', 'discovery']
     request = {'version': version + '.execution-request.v1', 'family_id': family['family_id'],
         'declaration_sha256': declaration_ref['sha256'], 'release_custody_sha256': digest(custody),
         'source_cases_sha256': cases_ref['sha256'], 'predeclaration_sha256': predecl['sha256'],
@@ -633,6 +641,197 @@ def test_execution_association_accepts_clarification_without_inventing_receipt(c
     assert value['calls'][0]['allow_unsealed_clarification'] is True
 
 
+def _scored_execution(composition_execution, saved_public, *, role):
+    value = composition_execution
+    arguments = value['arguments']
+    base = deepcopy(saved_public['base'])
+    base.setdefault('proof_scope', {})['public_diagnostics'] = 'source_only_discovery'
+    arguments['rows'] = public._saved_public_diagnostics(base)[0]
+    arguments['family']['role'] = role
+    arguments['output_ref'] = _save(Path(arguments['output_ref']['path']), base)
+    binding, result = value['binding'], value['result']
+    value['request']['argv'].append('--include-public-diagnostics')
+    binding['execution_request'] = _save(Path(binding['execution_request']['path']), value['request'])
+    result['request_sha256'] = binding['execution_request']['sha256']
+    value['dispatch']['composition']['argv_sha256'] = digest(value['request']['argv'])
+    arguments['dispatch_ref'] = _save(Path(arguments['dispatch_ref']['path']), value['dispatch'])
+    binding['dispatch_attestation_sha256'] = arguments['dispatch_ref']['sha256']
+    binding['output_sha256'] = result['output_sha256'] = arguments['output_ref']['sha256']
+    result['exit_code'] = 1
+    binding['execution_result'] = _save(Path(binding['execution_result']['path']), result)
+    arguments['ref'] = _save(Path(arguments['ref']['path']), binding)
+    return value
+
+
+@pytest.mark.parametrize('role', ['scored_primary', 'scored_high_edit'])
+def test_execution_authenticates_canonical_scored_rc1_before_independent_custody(composition_execution, saved_public, role):
+    value = _scored_execution(composition_execution, saved_public, role=role)
+    output_path = Path(value['arguments']['output_ref']['path'])
+    original_bytes = output_path.read_bytes()
+    assert json.loads(original_bytes)['status'] == 'failed'
+    assert value['result']['exit_code'] == 1
+    # The complete diagnostic has two rows; the independent one-case manifest
+    # must still refuse. No delivered commit receipt is invented by this test.
+    with pytest.raises(ValueError, match='composition retained custody'):
+        public._composition_execution(**value['arguments'])
+    assert output_path.read_bytes() == original_bytes
+    assert sha256_file(output_path) == value['arguments']['output_ref']['sha256']
+
+
+def test_primary_legacy_release_uses_exact_canonical_diagnostics(saved_public):
+    base = saved_public['base']
+    before = digest(base)
+    rows = public._composition_execution_rows(output=base, family={'role': 'scored_primary'}, exit_code=1,
+        matrix_argv=['matrix.py', '--proof-tier', 'release'])
+    assert rows == public.typed_saved_matrix_results(base['results'])
+    assert digest(base) == before
+
+
+def test_high_synthetic_family_refuses_legacy_release_route(saved_public):
+    with pytest.raises(ValueError, match='diagnostic invocation'):
+        public._composition_execution_rows(output=saved_public['base'], family={'role': 'scored_high_edit'},
+            exit_code=1, matrix_argv=['matrix.py', '--proof-tier', 'release'])
+
+
+@pytest.mark.parametrize('role', ['scored_primary', 'scored_high_edit'])
+def test_scored_discovery_requires_actual_flag_and_preserves_original_diagnostics(saved_public, role):
+    base = deepcopy(saved_public['base'])
+    base.setdefault('proof_scope', {})['public_diagnostics'] = 'source_only_discovery'
+    original = json.dumps(base, sort_keys=True).encode()
+    rows = public._composition_execution_rows(output=base, family={'role': role}, exit_code=1,
+        matrix_argv=['matrix.py', '--proof-tier', 'discovery', '--include-public-diagnostics'])
+    assert rows == public.typed_saved_matrix_results(base['results'])
+    assert json.dumps(base, sort_keys=True).encode() == original
+
+
+@pytest.mark.parametrize('defect', ['missing_flag', 'duplicate_flag', 'missing_marker', 'wrong_marker',
+    'release_flag', 'release_marker', 'unknown_tier', 'missing_tier', 'duplicate_tier', 'tier_without_value',
+    'equals_tier', 'equals_flag', 'malformed_argv', 'malformed_scope'])
+def test_scored_discovery_refuses_unbound_or_malformed_mode(saved_public, defect):
+    base = deepcopy(saved_public['base'])
+    base.setdefault('proof_scope', {})['public_diagnostics'] = 'source_only_discovery'
+    argv = ['matrix.py', '--proof-tier', 'discovery', '--include-public-diagnostics']
+    if defect == 'missing_flag': argv.pop()
+    elif defect == 'duplicate_flag': argv.append(argv[-1])
+    elif defect == 'missing_marker': base['proof_scope'].pop('public_diagnostics')
+    elif defect == 'wrong_marker': base['proof_scope']['public_diagnostics'] = 'claimed_release'
+    elif defect in {'release_flag', 'release_marker'}:
+        argv[2] = 'release'
+        if defect == 'release_flag': base['proof_scope'].pop('public_diagnostics')
+        else: argv.pop()
+    elif defect == 'unknown_tier': argv[2] = 'source_only'
+    elif defect == 'missing_tier': del argv[1:3]
+    elif defect == 'duplicate_tier': argv.extend(['--proof-tier', 'discovery'])
+    elif defect == 'tier_without_value': argv = ['matrix.py', '--include-public-diagnostics', '--proof-tier']
+    elif defect == 'equals_tier': argv[1:3] = ['--proof-tier=discovery']
+    elif defect == 'equals_flag': argv[-1] += '=false'
+    elif defect == 'malformed_argv': argv[0] = None
+    elif defect == 'malformed_scope': base['proof_scope'] = []
+    with pytest.raises(ValueError):
+        public._composition_execution_rows(output=base, family={'role': 'scored_high_edit'}, exit_code=1, matrix_argv=argv)
+
+
+@pytest.mark.parametrize('exit_code', [0, 2, True, False, 1.0, '1', None])
+def test_scored_outcome_classifier_refuses_wrong_or_malformed_code(saved_public, exit_code):
+    with pytest.raises(ValueError):
+        public._composition_execution_rows(output=saved_public['base'],
+            family={'role': 'scored_primary'}, exit_code=exit_code, matrix_argv=['matrix.py', '--proof-tier', 'release'])
+
+
+@pytest.mark.parametrize('defect', ['passed', 'missing_control', 'extra_issue', 'semantic_report',
+    'changed_scorecard', 'unavailable_provider', 'unrelated_browser_failure'])
+def test_scored_outcome_classifier_refuses_noncanonical_failure(saved_public, defect):
+    base = deepcopy(saved_public['base'])
+    if defect == 'passed': base['status'] = 'passed'
+    elif defect == 'missing_control': base['lower_capability_control_proof']['results'] = []
+    elif defect == 'extra_issue': base['model_profile_proof']['issues'].append('unrelated failure')
+    elif defect == 'semantic_report': base['semantic_release'] = {'status': 'passed', 'passed': True}
+    elif defect == 'changed_scorecard': base['onboarding_quality_scorecard']['status'] = 'passed'
+    elif defect == 'unavailable_provider': base['unavailable_provider_proof']['post_receipt_provider_invocations'] = 1
+    elif defect == 'unrelated_browser_failure':
+        base['browser_surface_proof']['status'] = 'failed'
+        base['onboarding_quality_scorecard'] = _scorecard(base, saved_public['results'], base['model_profile_proof'])
+    with pytest.raises(ValueError):
+        public._composition_execution_rows(output=base, family={'role': 'scored_primary'}, exit_code=1,
+            matrix_argv=['matrix.py', '--proof-tier', 'release'])
+
+
+@pytest.mark.parametrize('role', ['scored', '', None, ['scored_primary']])
+def test_outcome_classifier_refuses_unknown_family(saved_public, role):
+    with pytest.raises(ValueError, match='family role'):
+        public._composition_execution_rows(output=saved_public['base'], family={'role': role}, exit_code=1,
+            matrix_argv=['matrix.py', '--proof-tier', 'release'])
+
+
+@pytest.mark.parametrize('exit_code,status', [(1, 'discovery-passed'), (0, 'failed'), (False, 'discovery-passed'),
+    (0, 'passed'), (0, 'awaiting-independent-review')])
+def test_genuine_outcome_classifier_refuses_failed_or_malformed_outcome(composition_execution, exit_code, status):
+    output = {'status': status, 'results': [row.to_dict() for row in composition_execution['arguments']['rows']]}
+    with pytest.raises(ValueError):
+        public._composition_execution_rows(output=output,
+            family={'role': 'exclusion_and_separate_gate_only'}, exit_code=exit_code,
+            matrix_argv=['matrix.py', '--proof-tier', 'discovery'])
+
+
+@pytest.mark.parametrize('defect', [None, 'failed_row', 'failed_quality', 'release_tier', 'diagnostic_flag', 'marker'])
+def test_genuine_uses_actual_discovery_success_and_every_original_row(composition_execution, defect):
+    output = json.loads(Path(composition_execution['arguments']['output_ref']['path']).read_bytes())
+    argv = ['matrix.py', '--proof-tier', 'discovery']
+    if defect == 'failed_row': output['results'][0]['status'] = 'failed'
+    elif defect == 'failed_quality': output['results'][0]['quality']['passed'] = False
+    elif defect == 'release_tier': argv[-1] = 'release'
+    elif defect == 'diagnostic_flag': argv.append('--include-public-diagnostics')
+    elif defect == 'marker': output['proof_scope'] = {'public_diagnostics': 'source_only_discovery'}
+    arguments = dict(output=output, family={'role': 'exclusion_and_separate_gate_only'}, exit_code=0, matrix_argv=argv)
+    if defect is None:
+        assert public._composition_execution_rows(**arguments) == composition_execution['arguments']['rows']
+    else:
+        with pytest.raises(ValueError): public._composition_execution_rows(**arguments)
+
+
+@pytest.mark.parametrize('defect', ['interpreter', 'helper_bytes', 'unactivated_helper', 'bootstrap', 'missing_separator',
+    'duplicate_separator', 'entrypoint', 'case_file', 'duplicate_case_file', 'missing_case_file', 'case_file_without_value',
+    'missing_tier', 'duplicate_tier', 'release_status_mismatch', 'diagnostic_flag'])
+def test_execution_refuses_wrong_literal_invocation_even_with_rebound_dispatch(composition_execution, defect):
+    value = composition_execution
+    request, result, dispatch, binding = (deepcopy(value[key]) for key in ('request', 'result', 'dispatch', 'binding'))
+    argv = request['argv']
+    if defect == 'interpreter': argv[0] = argv[2]
+    elif defect == 'helper_bytes': Path(argv[2]).write_text('changed helper bytes')
+    elif defect == 'unactivated_helper': argv[2] = value['dispatch']['composition']['runner']['path'] + '.absent'
+    elif defect == 'bootstrap': argv[1:5] = ['-B', '-c', 'unparsed Python source']
+    elif defect == 'missing_separator': argv.pop(4)
+    elif defect == 'duplicate_separator': argv.append('--')
+    elif defect == 'entrypoint': argv[5] = argv[2]
+    elif defect == 'case_file': argv[7] = value['arguments']['family']['predeclaration']['path']
+    elif defect == 'duplicate_case_file': argv.extend(['--case-file', argv[7]])
+    elif defect == 'missing_case_file': del argv[6:8]
+    elif defect == 'case_file_without_value': argv = argv[:6] + ['--proof-tier', 'discovery', '--case-file']
+    elif defect == 'missing_tier': del argv[8:10]
+    elif defect == 'duplicate_tier': argv.extend(['--proof-tier', 'discovery'])
+    elif defect == 'release_status_mismatch': argv[9] = 'release'
+    elif defect == 'diagnostic_flag': argv.append('--include-public-diagnostics')
+    request['argv'] = argv
+    arguments = dict(value['arguments'])
+    binding['execution_request'] = _save(Path(binding['execution_request']['path']), request)
+    result['request_sha256'] = binding['execution_request']['sha256']
+    dispatch['composition']['argv_sha256'] = digest(argv)
+    arguments['dispatch_ref'] = _save(Path(arguments['dispatch_ref']['path']), dispatch)
+    binding['dispatch_attestation_sha256'] = arguments['dispatch_ref']['sha256']
+    binding['execution_result'] = _save(Path(binding['execution_result']['path']), result)
+    arguments['ref'] = _save(Path(arguments['ref']['path']), binding)
+    with pytest.raises((ValueError, OSError)):
+        public._composition_execution(**arguments)
+    assert value['calls'] == []
+
+
+def test_execution_refuses_phase_rows_different_from_authenticated_output(composition_execution):
+    arguments = dict(composition_execution['arguments'])
+    arguments['rows'] = (replace(arguments['rows'][0], proposal_seconds=999.0),)
+    with pytest.raises(ValueError, match='authenticated output rows'):
+        public._composition_execution(**arguments)
+
+
 @pytest.mark.parametrize('defect', ['before_after', 'wrong_package', 'driver_bytes', 'import_bytes', 'cwd', 'argv',
     'future_request_dispatch', 'static_preflight', 'request_hash', 'failed_result', 'phase_receipt', 'command_bytes', 'dropped_manifest', 'native_executable'])
 def test_execution_refuses_static_or_wrong_actual_custody(composition_execution, defect):
@@ -668,7 +867,7 @@ def test_execution_refuses_static_or_wrong_actual_custody(composition_execution,
     arguments['ref'] = _save(Path(arguments['ref']['path']), binding)
     with pytest.raises((ValueError, OSError)) as caught:
         public._composition_execution(**arguments)
-    if defect == 'native_executable': assert 'native call differs' in str(caught.value)
+    if defect == 'native_executable': assert 'authenticated output rows' in str(caught.value)
 
 
 def test_commit_phase_refuses_missing_actual_delivery(composition_execution):

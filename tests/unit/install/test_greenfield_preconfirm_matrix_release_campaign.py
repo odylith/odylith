@@ -526,3 +526,212 @@ def test_final_holdout_child_rechecks_sealed_distribution_provenance_before_clai
     assert holdout_run is not None
     assert holdout_run.implementation_revision == "a" * 40
     assert not ledger.exists()
+
+
+def _public_diagnostic_argv(tmp_path: Path) -> list[str]:
+    import sys
+    case_file = tmp_path / "cases.json"
+    _write(case_file, json.dumps({"cases": [{"case_id": "diagnostic-review", "name": "review workspace",
+        "prompt": "A reviewer records a review decision.", "required_terms": ["review"], "leakage_terms": ["review decision"],
+        "tags": ["model-profile:greenfield-standard-host-candidate-astra-medium-v21"]}]}))
+    control = REPO_ROOT / "tests/fixtures/greenfield-release-corpus/controls/greenfield-release-luna-clarification-control.v1.json"
+    host = [sys.executable, "exec", "--ephemeral", "--ignore-user-config", "--skip-git-repo-check",
+        "--sandbox", "read-only", "--model", "{model}", "--config", "model_reasoning_effort={reasoning_effort}",
+        "--output-schema", "{candidate_schema}", "-"]
+    return ["--dist-dir", str(tmp_path / "dist"), "--case-file", str(case_file),
+        "--proof-tier", "discovery", "--include-public-diagnostics", "--install-mode", "full",
+        "--include-browser-proof", "--include-commit-recovery-proof", "--stop-after-failures", "1",
+        "--lower-capability-control-file", str(control), "--temp-parent", str(tmp_path / "repos"),
+        "--evidence-output-dir", str(tmp_path / "evidence"), "--output-json", str(tmp_path / "results/matrix.json"),
+        *["--host-candidate-arg=" + token for token in host], "--json"]
+
+
+@pytest.mark.parametrize("stop", ["0", "1"])
+def test_public_diagnostics_main_accepts_only_explicit_discovery_collection(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, stop: str,
+) -> None:
+    import sys
+    module = _module()
+    argv = _public_diagnostic_argv(tmp_path)
+    argv[argv.index("--stop-after-failures") + 1] = stop
+    monkeypatch.setattr(module, "resolve_trusted_codex_executable", lambda: sys.executable)
+    captured = {}
+    lease = type("Lease", (), {"released": True, "temp_namespace": tmp_path / "work"})()
+    monkeypatch.setattr(module, "acquire_matrix_run_lease", lambda **_kwargs: lease)
+    monkeypatch.setattr(module, "_execute_matrix_campaign", lambda **kwargs: captured.update(kwargs) or 17)
+    assert module.main(argv) == 17
+    assert captured["args"].include_public_diagnostics is True
+    assert captured["campaign_config"].proof_tier == "discovery"
+    assert captured["campaign_config"].stop_after_failures == int(stop)
+    assert captured["corpus_provenance"]["claim_class"] == "synthetic-discovery"
+    assert len(captured["selected_cases"]) == 1
+    assert captured["lower_capability_control_case"].case_id == "public-v33-luna-control-accessibility-002-topic"
+
+
+@pytest.mark.parametrize(("flag", "value"), [
+    ("--proof-tier", "release"), ("--case-file", None), ("--install-mode", "seeded"),
+    ("--include-browser-proof", None), ("--include-commit-recovery-proof", None),
+    ("--evidence-output-dir", None), ("--output-json", None), ("--lower-capability-control-file", None),
+    ("--include-default-cases", ""), ("--release-parent-case-file", "unused.json"),
+    ("--release-audit-file", "unused.json"), ("--release-audit-repo-root", "unused"),
+    ("--sealed-release-input-root", "unused"), ("--semantic-annotations-file", "unused.json"),
+    ("--evaluation-split-manifest", "unused.json"), ("--final-holdout-run-ledger", "unused.json"),
+    ("--implementation-revision", "a" * 40), ("--distribution-provenance-file", "unused.json"),
+    ("--allow-skipped-browser-proof", ""), ("--allow-partial-stressor-coverage", ""),
+    ("--skip-commit-recovery-proof", ""), ("--stop-after-failures", "2"),
+    ("--stop-after-failures", "-1"), ("--stop-after-cluster-failures", "1"),
+    ("--host-command", "noncanonical"), ("--inside-evidence", ""), ("--inside-output", ""),
+    ("--existing-evidence", ""), ("--existing-output", ""), ("--same-control", ""),
+])
+def test_public_diagnostics_invalid_main_inputs_refuse_before_lease_or_provider(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, flag: str, value: str | None,
+) -> None:
+    import sys
+    module = _module()
+    argv = _public_diagnostic_argv(tmp_path)
+    monkeypatch.setattr(module, "resolve_trusted_codex_executable", lambda: sys.executable)
+    if flag == "--host-command":
+        argv[argv.index("--host-candidate-arg=--ephemeral")] = "--host-candidate-arg=--unknown-host-option"
+    elif flag in {"--inside-evidence", "--inside-output"}:
+        actual = "--evidence-output-dir" if flag == "--inside-evidence" else "--output-json"
+        argv[argv.index(actual) + 1] = str(tmp_path / "repos/forbidden")
+    elif flag in {"--existing-evidence", "--existing-output"}:
+        actual = "--evidence-output-dir" if flag == "--existing-evidence" else "--output-json"
+        path = Path(argv[argv.index(actual) + 1]); _write(path, "retained original")
+    elif flag == "--same-control":
+        argv[argv.index("--lower-capability-control-file") + 1] = argv[argv.index("--case-file") + 1]
+    elif flag in argv:
+        index = argv.index(flag)
+        if value is None:
+            del argv[index:index + (1 if flag.startswith("--include-") else 2)]
+        else:
+            argv[index + 1] = value
+    else:
+        argv.extend([flag, value] if value else [flag])
+    calls = []
+    def forbidden(**_kwargs):
+        calls.append("lease/provider")
+        raise AssertionError("invalid diagnostic input reached execution")
+    for name in ("acquire_matrix_run_lease", "run_matrix", "run_unavailable_provider_proof", "_execute_matrix_campaign"):
+        monkeypatch.setattr(module, name, forbidden)
+    with pytest.raises(RuntimeError, match="public diagnostics|canonical release argv|outside and disjoint"):
+        module.main(argv)
+    assert calls == []
+
+
+@pytest.mark.parametrize("failure", ["none", "browser_skipped", "partial_family", "legacy"])
+def test_public_diagnostics_reuses_existing_lanes_and_preserves_original_failed_bound(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str], failure: str,
+) -> None:
+    import sys
+    module = _module()
+    argv = _public_diagnostic_argv(tmp_path)
+    if failure == "legacy":
+        argv.remove("--include-public-diagnostics")
+    args = module._parse_args(argv)
+    monkeypatch.setattr(module, "resolve_trusted_codex_executable", lambda: sys.executable)
+    main_case = module.load_case_file(Path(args.case_file[0]))[0]
+    control_case = module._load_lower_capability_control_case(args.lower_capability_control_file, enforce_lexical_controls=True)
+    standard = module.model_profile_id_for_repair_tier("standard")
+    main_result = _passing_profile_result(module, standard, 20.0)
+    main_result = replace(main_result, evidence={**main_result.evidence,
+        "case": {**main_result.evidence["case"], "id": main_case.case_id}})
+    control_result = _passing_clarification_profile_result(module, module.LOWER_CAPABILITY_CONTROL_PROFILES[0], 20.0)
+    planned = (main_case,)
+    if failure == "partial_family":
+        planned = (main_case, replace(main_case, case_id="second-unexecuted"))
+        main_result = replace(main_result, status="failed", quality=replace(main_result.quality, passed=False),
+            failure_detail="controlled first-case failure")
+    calls, recovery, retained = [], [], []
+    def run_matrix(**kwargs):
+        calls.append(kwargs)
+        return (control_result,) if kwargs["cases"] == (control_case,) else (main_result,)
+    monkeypatch.setattr(module, "run_matrix", run_matrix)
+    monkeypatch.setattr(module, "run_unavailable_provider_proof", lambda **kwargs: calls.append({"unavailable": kwargs}) or {"status": "passed"})
+    monkeypatch.setattr(module, "run_installed_commit_recovery_proof", lambda **kwargs: recovery.append(kwargs) or
+        module.GreenfieldInstalledCommitRecoveryProof(status="passed", issues=(), recovery_case={"scope": "controlled-discovery"}))
+    monkeypatch.setattr(module, "browser_proof_summary", lambda *_args, **_kwargs: {"status": "skipped" if failure == "browser_skipped" else "passed"})
+    monkeypatch.setattr(module, "_platform_leakage_proof_summary", lambda *_args: {"status": "passed"})
+    monkeypatch.setattr(module, "temp_cleanup_proof", lambda *_args: {"status": "passed"})
+    monkeypatch.setattr(module, "evaluate_metamorphic_outputs", lambda **_kwargs: {"passed": True})
+    monkeypatch.setattr(module, "campaign_summary", lambda **_kwargs: {"outcome_statistics": {"status": "passed", "passed": True}})
+    def retained_result(_path, **kwargs):
+        retained.append(kwargs)
+        return {"status": "failed" if failure == "partial_family" else "passed", "issues": []}
+    monkeypatch.setattr(module, "retained_evidence_result", retained_result)
+    if failure == "browser_skipped":
+        # Isolate browser admission from the independently unqualified timing bound.
+        profile = module.model_profile_release_proof((main_result, control_result), require_complete=True)
+        monkeypatch.setattr(module, "model_profile_release_proof", lambda *_args, **_kwargs: {**profile, "status": "passed", "issues": []})
+    lease = type("Lease", (), {"temp_namespace": tmp_path / "work", "to_dict": lambda self: {}})()
+    config = module.MatrixCampaignConfig(proof_tier="discovery", stop_after_failures=1)
+    code = module._execute_matrix_campaign(args=args, selected_cases=planned, planned_cases=planned,
+        release_audits=(), campaign_config=config, corpus_provenance=module.discovery_corpus_summary(planned),
+        output_path=None, lease=lease, lower_capability_control_case=control_case)
+    payload = json.loads(capsys.readouterr().out)
+    if failure == "legacy":
+        assert code == 0 and payload["status"] == "discovery-passed"
+        assert "public_diagnostics" not in payload["proof_scope"]
+        assert len(calls) == 1 and retained[0]["required"] is False
+        assert payload["lower_capability_control_proof"]["status"] == "not_requested"
+        assert payload["unavailable_provider_proof"]["status"] == "not_requested"
+        return
+    assert code == 1 and payload["status"] == "failed"
+    assert payload["proof_scope"]["public_diagnostics"] == "source_only_discovery"
+    assert payload["corpus_provenance"]["claim_class"] == "synthetic-discovery"
+    assert retained[0]["required"] is True
+    assert retained[0]["expected_case_ids"] == tuple(case.case_id for case in planned)
+    assert payload["semantic_release"] == {"status": "not_requested", "passed": True}
+    if failure == "partial_family":
+        assert len(calls) == 1 and recovery == []
+        assert payload["retained_evidence"]["status"] == "failed"
+        assert payload["lower_capability_control_proof"]["status"] == "failed"
+        assert payload["unavailable_provider_proof"]["status"] == "not-run"
+        assert payload["commit_recovery_proof"]["status"] == "not-run"
+    else:
+        assert len(calls) == 3 and calls[1]["cases"] == (control_case,)
+        assert calls[1]["proof_tier"] == "discovery" and calls[1]["include_browser_proof"] is False
+        assert "unavailable" in calls[2]
+        assert recovery[0]["recovery_case"] is main_case
+        assert recovery[0]["require_release_binding"] is False and recovery[0]["release_audit_binding"] is None
+        assert payload["model_profile_proof"]["issues"] == ([] if failure == "browser_skipped" else ["release proof lacks a public-data-backed finite whole-journey bound"])
+        failed = [key for key, row in payload["onboarding_quality_scorecard"]["dimensions"].items() if row["status"] == "failed"]
+        assert set(failed) == ({"consumer_utility_and_comprehension", "confirmation_and_post_success_ux_clarity"} if failure == "browser_skipped" else {"preconfirm_tribunal_accuracy"})
+
+
+@pytest.mark.parametrize("shape", ["duplicate_mode", "duplicate_tier", "equals_tier",
+    "duplicate_file", "multiple_files", "equals_file", "mixed_tier", "mixed_file", "equals_mode"])
+def test_public_diagnostics_raw_argument_shape_refuses_before_execution(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, shape: str,
+) -> None:
+    import sys
+    module = _module()
+    argv = _public_diagnostic_argv(tmp_path)
+    if shape == "duplicate_mode":
+        argv.append("--include-public-diagnostics")
+    elif shape == "equals_mode":
+        argv[argv.index("--include-public-diagnostics")] = "--include-public-diagnostics=true"
+    else:
+        flag = "--proof-tier" if shape.endswith("tier") else "--case-file"
+        value = argv[argv.index(flag) + 1]
+        if shape.startswith("equals"):
+            index = argv.index(flag); argv[index:index + 2] = [flag + "=" + value]
+        elif shape.startswith("mixed"):
+            argv.append(flag + "=" + value)
+        else:
+            argv.extend([flag, str(tmp_path / "other-cases.json") if shape == "multiple_files" else value])
+    monkeypatch.setattr(module, "resolve_trusted_codex_executable", lambda: sys.executable)
+    calls = []
+    def forbidden(**_kwargs):
+        calls.append("execution")
+        raise AssertionError("noncanonical raw arguments reached execution")
+    for name in ("acquire_matrix_run_lease", "run_matrix", "run_unavailable_provider_proof", "_execute_matrix_campaign"):
+        monkeypatch.setattr(module, name, forbidden)
+    if shape == "equals_mode":
+        with pytest.raises(SystemExit) as error:
+            module.main(argv)
+        assert error.value.code == 2
+    else:
+        with pytest.raises(RuntimeError, match="exactly one separated"):
+            module.main(argv)
+    assert calls == []

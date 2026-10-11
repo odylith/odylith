@@ -1,5 +1,51 @@
 Status: In progress
 
+## Final source checkpoint and execution-retention correction (2026-10-10)
+
+The bounded harness correction passes 126 producer, 445 consumer and 91 private
+runner checks. Real subprocess controls cover the macOS interpreter prefix and
+wrong-directory import refusal; the exact prepared scored vectors request
+diagnostics and recovery. Retained old code reproduces the defects. These
+controls provide no native qualification. Finish independent patch review,
+settle governance, run the complete current-source regression and build one
+successor package. Rebind every actual command and activation pin to that
+package before a separate final dispatch review. Run genuine case01 first;
+only its independent source-first PASS can release the other three. Public40
+and synthetic High4 then supply fresh scored evidence. All floors, original
+failures and final holdout separation stay fixed.
+
+The complete current-byte regression passes 4,147 checks with zero failures,
+errors or skips; all monitored files remain unchanged. Checkpoint
+`b589a31dceea749efe231862910a36e10c7cdd79` is pushed. Its package build,
+clean install and 25-artifact distribution custody pass. Prior failed full runs
+remain failed. Native EDIT remains 0/4; the final holdout remains untouched.
+
+CB-347 records a newly reproduced producer/collector/consumer contradiction:
+scored release families must preserve the original exit-1 diagnostic awaiting
+independent timing qualification, while their collector and composition consumer
+accept only exit 0. Use the existing canonical diagnostic validator in those two
+owners to retain only that exact scored outcome, with its real exit code and
+original bytes. Also admit genuine EDIT's actual exit-0 `discovery-passed`
+batch only with every successful case and its original custody; the current
+private reader incorrectly expects a release-tier `passed` state. Preserve
+the stricter genuine EDIT success contract and all
+semantic, timing, custody and denominator checks. Confirm the supported disclosed
+input policy before dispatch; protected input is not a workaround. Require
+meaningful flow and rejection tests, independent bounded review, settled source
+and one successor package before any family runs. The passed checkpoint remains
+valid for its stated source and distribution scope.
+
+The valid audited Public40 route remains unchanged. High4 needs one explicit
+`--include-public-diagnostics` boolean on existing discovery so its synthetic
+provenance remains honest while the existing full install, browser, recovery,
+Luna, disabled-provider and complete-profile checks execute. Reject release audit,
+semantic and protected-input combinations before execution. The boolean grants
+no release readiness. Stop-after-one saves work after a failure; partial families
+cannot bind or qualify. This bounded safety correction touches the existing large
+matrix owner without adding a phase, tier or schema; broader decomposition stays
+outside the release correction. Prove the real status and complete-control flow,
+including first-case stop and every invalid preflight, before source freeze.
+
 ## Public evidence amendment and bounded correction (2026-10-10)
 
 Source preparation also reproduced a release-loader defect: generated-prose

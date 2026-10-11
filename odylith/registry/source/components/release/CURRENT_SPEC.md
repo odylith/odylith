@@ -1,7 +1,43 @@
 # Release
 Last updated: 2026-10-10
 
-## Current Greenfield release evidence (2026-10-09)
+## Greenfield composition and diagnostic execution (2026-10-10)
+
+The release evaluator scores the unchanged Public40 plus four prospectively
+annotated high-complexity synthetic EDIT cases. Genuine EDIT4 remains a separate
+authenticated gate with zero scored contribution. All three families must share
+one frozen package, native profile and activation, with original source, command,
+result, retained case, phase and receipt custody. Independent source review and
+all published semantic, confidence, slice and timing floors remain required.
+
+The explicit `--include-public-diagnostics` collection option on discovery
+requests the existing full install, browser, recovery, Luna and disabled-provider
+controls and complete profile diagnostics. It cannot claim audited external
+provenance or release readiness. Release-audit and protected-input routes keep
+their existing policies. A stopped or incomplete family cannot bind or score.
+
+The execution collector and composition evaluator authenticate original outcome
+states through one canonical owner. Scored families may retain exit 1 only when
+the unchanged diagnostic's sole failure is the missing independent public timing
+bound. Genuine EDIT requires exit 0, the actual `discovery-passed` state and
+every successful original case, followed by complete phase custody and independent
+four-case adjudication. No output or exit code is rewritten. Unrelated failures,
+changed diagnostics and incomplete retention refuse. CB-347 retains the original
+producer/consumer contradiction and the bounded correction's proof obligations.
+
+Checkpoint `b589a31dceea749efe231862910a36e10c7cdd79` passes 4,147 source checks,
+package build, clean install and distribution custody. The follow-on harness
+correction requires its own current-source proof and successor package before
+native dispatch. Genuine EDIT remains 0/4; final holdout remains untouched.
+
+The follow-on passes 126 producer, 445 consumer and 91 private runner controls.
+Independent review clears the bounded patch after reproducing and correcting
+the literal argument, wrong-directory import and macOS interpreter-prefix
+failures. Complete current-source regression, successor package custody and a
+separate review of the actual activation and dispatch remain required. Unit
+association controls do not establish full scored native custody.
+
+## Prior Greenfield release evidence (2026-10-09)
 
 EDIT evidence counts only when an initial seal produces a delivered completion
 receipt, one documented correction produces a distinct edited seal, and the final
@@ -1212,6 +1248,9 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-10-10 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/atlas/source/greenfield-matrix-tiered-campaign-progress.mmd`, `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
 - **2026-10-10 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/project_intelligence/authored_fact_presenter.py`, `tests/fixtures/greenfield-release-corpus/source-annotations/public40-20261010/evidence-amendment.v1.json`
@@ -1227,9 +1266,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-10-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `sha256:addb966f57829c8858b5d640b848f922c4323bf68adf071a6cbe4d7fccd463ee`, `sha256:228a52fe9195e3ad5e2d2f4b1612439a919fdb46cf18fa260e5b700de3829f79`, `tests/unit/install/test_local_release_smoke.py`
-- **2026-10-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
 <!-- registry-requirements:end -->
 
 ## Feature History

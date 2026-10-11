@@ -1,5 +1,102 @@
 - Bug ID: CB-347
 
+## Scored execution retention contradicts original diagnostics (2026-10-10)
+
+Checkpoint `b589a31dceea749efe231862910a36e10c7cdd79` passes the complete
+4,147-test regression with zero failures, errors or skips and unchanged source
+pins. Its package build, clean install and all 25 distribution artifact checks
+pass. These are source and distribution proofs; genuine EDIT remains 0/4 and
+the protected final holdout remains untouched.
+
+Pre-dispatch review finds a reachable release-harness contradiction. The release
+driver retains an original failed diagnostic and exits 1 when the only remaining
+issue is the independently measured public timing bound. The saved-public
+qualifier requires that exact original diagnostic, but the execution collector
+discards every nonzero result and the composition consumer requires exit 0.
+Thus an otherwise qualifying scored family cannot retain the execution evidence
+that its own consumer requires. Discovery mode changes the required diagnostics;
+no existing timing flag resolves this mismatch.
+
+Correct the existing collector and composition consumer only after confirming a
+valid disclosed-input invocation. For Primary40 and High4, authenticate the
+unchanged original diagnostic through the canonical saved-public owner, retain
+the actual exit 1, and reject every unrelated failure. Genuine EDIT continues to
+require exit 0 and successful original case outcomes. Its actual discovery
+invocation emits `discovery-passed`, whereas the private batch reader and
+remaining-three gate incorrectly demand `passed`. Authenticate the producer's
+real success state, every passed case and their original custody; never rewrite
+that discovery result as release proof. Independent timing and semantic
+qualification, all published floors and every original failed run remain intact.
+Prove the actual producer/collector/consumer flow and the rejection controls
+before freezing a successor package. The prior unit and collector clearances do
+not prove this missed flow. No native run is authorized by the existing package
+checks alone. Independent diagnosis:
+`/private/tmp/odylith-v52-release-binding-contradiction-independent-review-20261010/report.md`
+(SHA-256 `b60e88eda88aa21a0a497c3ed92022ad0201abcc8ec8e8ad23c348ae36615e54`).
+
+Independent policy review confirms the old audited route still accepts Public40:
+its 200-case parent and 40 approved audits pass unchanged. High4 honestly uses
+synthetic provenance and cannot enter that external-source audit route. Add the
+explicit `--include-public-diagnostics` boolean to the existing discovery path:
+require full install, browser, recovery, retained outputs, exact host arguments
+and the existing disclosed control; execute the existing Luna, disabled-provider
+and complete-profile checks. Keep discovery provenance and the original failed
+timing diagnostic. Reject audit, default-case, semantic and protected-input flags
+before product execution. Stop-after-one is allowed for cost containment; exact
+full membership and retention remain mandatory for any binding. Legacy release
+policy stays intact. Final bounded design review:
+`/private/tmp/odylith-v52-release-policy-adjudication-20261010/report.md`
+(SHA-256 `7374736f259b3209de4c9a4551844106c78bd92662f5ce2c4661b8a785f4c360`).
+The private runner calls the existing collector directly with literal matrix
+arguments. Its original OS command remains the single authenticated invocation;
+the outer runner and collector have separate activation pins. The later binding
+configuration is validated through the existing declaration and dispatch without
+creating a hash cycle. No request schema or product stage is added.
+
+The first producer patch passes 117 focused checks, but independent review finds
+a P2 preflight gap: duplicate flags, equals-form tier/case arguments and multiple
+case files reach execution before the downstream reader refuses them. The frozen
+intended invocation is safe and no false qualification follows. Reject those
+shapes in the existing early preflight and prove zero provider/lease work for
+each before the successor freezes. Preserve the first patch and its test result.
+
+The actual private CLI has a separate import-custody defect: it derives import
+roots from the working directory and imports its validator before checking that
+directory against the frozen driver. A wrong directory could execute a shadow
+validator before refusal. Derive the import roots from the literal canonical
+driver argument before importing validation code, and prove a malicious module
+in a wrong working directory never executes. Preserve the earlier 74-control
+result; it does not prove this boundary. The blocked Primary40 and High4 draft
+argument files also omit diagnostic collection and skip recovery. Correct those
+exact files and their actual runner locations before final package review; none
+of these drafts may be activated.
+
+A real subprocess review also reproduces a macOS interpreter-prefix refusal:
+Python records its framework launcher in `sys.orig_argv[0]` while
+`sys.executable` retains the active virtual environment. The earlier monkeypatch
+controls missed that difference. Record the activated interpreter from
+`sys.executable`, require the unchanged original argument tail, and prove the
+literal helper in a real virtual-environment subprocess. The existing observed
+interpreter checks remain mandatory; no request schema changes.
+
+The bounded corrections now pass 126 producer checks, 445 consumer checks and
+91 private runner controls. The last suite includes real virtual-environment
+subprocesses, exact prepared command vectors and a malicious wrong-directory
+module. Retained preimages reproduce the original failures. The scored positive
+isolates phase association; the complete consumer still rejects its undersized
+synthetic manifest, so this is not full native custody proof. Terminal handoffs:
+`/private/tmp/odylith-v52-public-diagnostic-collection-correction-20261010/successor01/handoff.json`,
+`/private/tmp/odylith-v52-scored-outcome-consumer-correction-20261010/handoff.json`
+and `/private/tmp/odylith-v52-scored-outcome-retention-correction-20261010/successor01/handoff.json`.
+Fresh complete regression, successor package and actual dispatch review remain
+required; original native failures and zero qualifying EDIT credit are unchanged.
+Independent final review clears the bounded patch and controls, with no remaining
+P0, P1 or P2 findings: 91 private, nine producer-shape and 189 consumer controls
+pass on the final bytes. Report:
+`/private/tmp/odylith-v52-execution-outcome-final-independent-review-20261010/report.md`
+(SHA-256 `d903bbabc3a81ee259147b6e99935c121d25c8afedd0578b8229013019d45ce0`).
+That clearance explicitly grants no package activation or qualification credit.
+
 ## Current native failure and Atlas checker mismatch (2026-10-09, v51)
 
 Frozen checkpoint e4f0d1a7c07619bc48dd04ed9de05938c7ae6cc5 builds and installs,

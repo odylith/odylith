@@ -215,6 +215,40 @@ def _saved_public_diagnostics(base: Mapping[str, Any]) -> tuple[tuple[Any, ...],
     return primary, controls
 
 
+def _composition_execution_rows(
+    *, output: Mapping[str, Any], family: Mapping[str, Any], exit_code: Any, matrix_argv: list[str],
+) -> tuple[GreenfieldMatrixResult, ...]:
+    """Authenticate the original outcome for its declared role and actual invocation."""
+    role = family.get("role")
+    if not isinstance(role, str) or role not in {"scored_primary", "scored_high_edit", "exclusion_and_separate_gate_only"}:
+        raise ValueError("composition execution has an unknown family role")
+    if (type(exit_code) is not int or not isinstance(matrix_argv, list) or not matrix_argv
+            or any(not isinstance(value, str) or not value for value in matrix_argv)
+            or matrix_argv.count("--proof-tier") != 1
+            or any(value.startswith(("--proof-tier=", "--include-public-diagnostics=")) for value in matrix_argv)
+            or matrix_argv.index("--proof-tier") + 1 >= len(matrix_argv)):
+        raise ValueError("composition execution lacks an exact exit code and proof-tier invocation")
+    tier = matrix_argv[matrix_argv.index("--proof-tier") + 1]
+    diagnostics = matrix_argv.count("--include-public-diagnostics")
+    scope = output.get("proof_scope", {})
+    if not isinstance(scope, Mapping):
+        raise ValueError("composition execution has malformed proof scope")
+    if role in {"scored_primary", "scored_high_edit"}:
+        diagnostic_discovery = (tier == "discovery" and diagnostics == 1
+            and scope.get("public_diagnostics") == "source_only_discovery")
+        legacy_release = role == "scored_primary" and tier == "release" and diagnostics == 0 and "public_diagnostics" not in scope
+        if exit_code != 1 or not (diagnostic_discovery or legacy_release):
+            raise ValueError("composition scored outcome differs from its diagnostic invocation")
+        return _saved_public_diagnostics(output)[0]
+    if (exit_code != 0 or tier != "discovery" or diagnostics != 0 or "public_diagnostics" in scope
+            or output.get("status") != "discovery-passed"):
+        raise ValueError("composition genuine outcome requires successful discovery")
+    rows = typed_saved_matrix_results(output.get("results"))
+    if any(row.status != "passed" or row.quality.passed is not True for row in rows):
+        raise ValueError("composition genuine discovery contains a failed case")
+    return rows
+
+
 def qualify_saved_public_evidence(
     *, base: Mapping[str, Any], base_result_path: Path, retained_manifest_path: Path,
     source_evidence: Mapping[str, Any], bound_evidence: Mapping[str, Any] | None,
@@ -522,7 +556,7 @@ def _composition_execution(
             or any(request.get(key) != binding[key] for key in ("family_id", "declaration_sha256", "source_cases_sha256", "predeclaration_sha256", "runner_sha256", "observed_before"))
             or request.get("release_custody_sha256") != canonical_evidence_sha256(declaration["release_custody"])
             or any(result.get(key) != binding[key] for key in ("family_id", "declaration_sha256", "output_sha256", "retained_manifest_sha256", "observed_after"))
-            or result.get("request_sha256") != binding["execution_request"]["sha256"] or result.get("exit_code") != 0
+            or result.get("request_sha256") != binding["execution_request"]["sha256"]
             or result.get("log_sha256") != binding["execution_log"]["sha256"]
             or result.get("case_phases_sha256") != canonical_evidence_sha256(binding["case_phases"])):
         raise ValueError("composition request/result is not its actual execution association")
@@ -563,6 +597,25 @@ def _composition_execution(
         raise ValueError("composition dispatch is not bound to this family/runner/argv/subset")
     _composition_file(association["runner"], label="actual runner")
     _composition_file(association["source_cases"], label="actual invoked source cases")
+    argv = request["argv"]
+    if (len(argv) < 10 or any(not isinstance(value, str) or not value for value in argv)
+            or Path(argv[0]).resolve() != Path(before["runtime_executable"])
+            or argv[1] != "-B" or argv[4] != "--" or argv.count("--") != 1):
+        raise ValueError("composition execution requires the actual literal helper invocation")
+    activation = read_public_evidence_reference(declaration["release_custody"]["activation"], label="activation")
+    _composition_file({"path": argv[2], "sha256": activation["file_pins"].get(argv[2])}, label="activated execution helper")
+    matrix_argv = argv[5:]
+    if (matrix_argv[0] != imports["greenfield_preconfirm_matrix"]["path"]
+            or matrix_argv.count("--case-file") != 1
+            or matrix_argv.index("--case-file") + 1 >= len(matrix_argv)
+            or matrix_argv[matrix_argv.index("--case-file") + 1] != association["source_cases"]["path"]
+            or any(value.startswith("--case-file=") for value in matrix_argv)):
+        raise ValueError("composition actual matrix entrypoint or case input differs from its dispatch")
+    output = read_public_evidence_reference(output_ref, label="actual matrix output")
+    authenticated = _composition_execution_rows(output=output, family=family,
+        exit_code=result["exit_code"], matrix_argv=matrix_argv)
+    if authenticated != tuple(rows):
+        raise ValueError("composition phase rows differ from authenticated output rows")
     issues = retained_evidence_manifest_issues(Path(manifest_ref["path"]), expected_case_ids=[row.evidence["case"]["id"] for row in rows])
     if issues:
         raise ValueError("composition retained custody: " + "; ".join(issues))
@@ -576,7 +629,6 @@ def _composition_execution(
         raise ValueError("composition actual source differs from its dispatch")
     if sha256_file(source_path) != binding["source_cases_sha256"]:
         raise ValueError("composition execution source file changed")
-    activation = read_public_evidence_reference(declaration["release_custody"]["activation"], label="activation")
     if (activation["file_pins"].get(str(source_path)) != binding["source_cases_sha256"]
             or activation["file_pins"].get(association["runner"]["path"]) != binding["runner_sha256"]):
         raise ValueError("composition invoked subset was not frozen before execution")

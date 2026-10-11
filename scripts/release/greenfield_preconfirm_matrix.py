@@ -2549,6 +2549,11 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         help="Separate high-volume discovery proof from release-grade proof in the persisted matrix payload.",
     )
     parser.add_argument(
+        "--include-public-diagnostics",
+        action="store_true",
+        help="Collect the existing operational controls on explicit discovery inputs; no release qualification is awarded.",
+    )
+    parser.add_argument(
         "--release-audit-file",
         default="",
         help="Hash-bound audit JSON required with --proof-tier release; ignored for discovery.",
@@ -2878,6 +2883,46 @@ def _load_planned_cases_and_control(
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
+    public_diagnostics = bool(getattr(args, "include_public_diagnostics", False))
+    if public_diagnostics:
+        violations = []
+        raw_argv = tuple(sys.argv[1:] if argv is None else argv)
+        for flag in ("--include-public-diagnostics", "--proof-tier", "--case-file"):
+            if raw_argv.count(flag) != 1 or any(value.startswith(flag + "=") for value in raw_argv):
+                violations.append("exactly one separated " + flag + " is required")
+        if args.proof_tier != "discovery":
+            violations.append("discovery tier is required")
+        if not args.case_file:
+            violations.append("explicit --case-file is required")
+        if args.install_mode != "full":
+            violations.append("full install mode is required")
+        if not args.include_browser_proof or not args.include_commit_recovery_proof:
+            violations.append("browser and installed commit recovery proof are required")
+        if not args.evidence_output_dir or not args.output_json:
+            violations.append("external evidence and output paths are required")
+        if not args.lower_capability_control_file:
+            violations.append("one separate lower-capability control file is required")
+        if args.stop_after_failures not in (0, 1) or args.stop_after_cluster_failures != 0:
+            violations.append("the failure threshold must be 0 or 1 and cluster stopping must be disabled")
+        requested_flags = {str(value).split("=", 1)[0] for value in raw_argv}
+        forbidden = requested_flags.intersection({
+            "--include-default-cases", "--release-parent-case-file", "--release-audit-file",
+            "--release-audit-repo-root", "--sealed-release-input-root", "--semantic-annotations-file",
+            "--evaluation-split-manifest", "--final-holdout-run-ledger", "--implementation-revision",
+            "--distribution-provenance-file", "--allow-skipped-browser-proof", "--skip-commit-recovery-proof",
+            "--allow-partial-stressor-coverage",
+        })
+        if forbidden:
+            violations.append("incompatible flags: " + ", ".join(sorted(forbidden)))
+        if violations:
+            raise RuntimeError("invalid public diagnostics collection: " + "; ".join(violations))
+        for destination in (args.evidence_output_dir, args.output_json):
+            path = validate_retained_evidence_output_dir(output_dir=Path(destination), temp_parent=Path(args.temp_parent))
+            if path.exists():
+                raise RuntimeError("public diagnostics output already exists; original evidence must be preserved")
+        if Path(args.lower_capability_control_file).resolve() in {Path(value).resolve() for value in args.case_file}:
+            raise RuntimeError("public diagnostics lower-capability control must be separate from the case files")
+        args.host_candidate_arg = list(_require_profile_argv_template(tuple(args.host_candidate_arg or ())))
     include_default_cases = bool(getattr(args, "include_default_cases", False))
     evidence_output_token = str(getattr(args, "evidence_output_dir", "") or "").strip()
     release_audit_repo_root = (
@@ -3180,6 +3225,7 @@ def _execute_matrix_campaign(
 ) -> int:
     """Run one fully isolated proof campaign under its output lease."""
 
+    public_diagnostics = bool(getattr(args, "include_public_diagnostics", False))
     temp_parent = lease.temp_namespace
     profiled_cases = assign_model_profiles(selected_cases or planned_cases)
     telemetry = MatrixTelemetryWriter(campaign_config.telemetry_jsonl)
@@ -3267,7 +3313,7 @@ def _execute_matrix_campaign(
             )
         lower_capability_control_results: tuple[GreenfieldMatrixResult, ...] = ()
         control_lane_required = (
-            campaign_config.proof_tier == "release"
+            (campaign_config.proof_tier == "release" or public_diagnostics)
             and hasattr(args, "lower_capability_control_file")
         )
         if control_lane_required and not primary_failure_reason:
@@ -3337,7 +3383,7 @@ def _execute_matrix_campaign(
             )
         else:
             commit_recovery = None
-        if campaign_config.proof_tier == "release" and primary_failure_reason:
+        if (campaign_config.proof_tier == "release" or public_diagnostics) and primary_failure_reason:
             unavailable_provider = {
                 "status": "not-run",
                 "issues": [
@@ -3345,7 +3391,7 @@ def _execute_matrix_campaign(
                     + primary_failure_reason
                 ],
             }
-        elif campaign_config.proof_tier == "release":
+        elif campaign_config.proof_tier == "release" or public_diagnostics:
             unavailable_provider = run_unavailable_provider_proof(
                 dist_dir=Path(args.dist_dir),
                 version=str(args.version),
@@ -3369,7 +3415,7 @@ def _execute_matrix_campaign(
         else:
             unavailable_provider = {"status": "not_requested", "issues": []}
     evidence_output_token = str(getattr(args, "evidence_output_dir", "") or "").strip()
-    retained_evidence_required = campaign_config.proof_tier == "release" and hasattr(args, "evidence_output_dir")
+    retained_evidence_required = (campaign_config.proof_tier == "release" or public_diagnostics) and hasattr(args, "evidence_output_dir")
     retained_manifest = (
         retained_evidence_manifest_path(Path(evidence_output_token))
         if evidence_output_token
@@ -3401,7 +3447,7 @@ def _execute_matrix_campaign(
             }
     profile_proof = model_profile_release_proof(
         (*results, *lower_capability_control_results),
-        require_complete=campaign_config.proof_tier == "release",
+        require_complete=campaign_config.proof_tier == "release" or public_diagnostics,
     )
     lower_capability_control_proof = {
         "status": (
@@ -3434,6 +3480,7 @@ def _execute_matrix_campaign(
     browser_passed = browser_status == "passed" or (
         browser_status == "skipped"
         and campaign_config.proof_tier == "discovery"
+        and not public_diagnostics
     )
     platform_leakage_passed = str(platform_leakage_proof.get("status") or "").strip() == "passed"
     cleanup_passed = str(cleanup_proof.get("status") or "").strip() == "passed"
@@ -3510,6 +3557,7 @@ def _execute_matrix_campaign(
             else "failed"
         ),
         "proof_scope": {
+            **({"public_diagnostics": "source_only_discovery"} if public_diagnostics else {}),
             "confirmation": "explicit_terminal_decision_and_same_hash_retry",
             "native_chat": "unqualified_read_only",
             "native_hook_visibility": "not_proven_by_this_matrix",
