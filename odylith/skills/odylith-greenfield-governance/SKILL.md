@@ -80,11 +80,11 @@ mechanism-level learning.
    The verifier supplies that semantic judgment without a duplicate quote/context
    locator. A compound carrier may support multiple prior
    duties, each judged independently. Missing or uncertain rows stop before the
-   candidate. Initial tasks/receipts stay v4/v7; fresh EDIT uses v6/v9 with prior seal and
-   correction custody. The checklist cannot replace current truth or override an
-   explicit correction. Exact historical v5/v8 remains passive sealed-readback
-   compatibility and cannot authorize fresh authoring or admission. Complete keys
-   and custody do not prove semantic accuracy.
+   candidate. Use the fresh compiler-emitted task and accepted receipt; EDIT binds
+   the prior seal and correction. The checklist cannot replace current truth or
+   override an explicit correction. Historical receipts remain available for
+   passive sealed readback and cannot authorize fresh authoring or admission.
+   Complete keys and custody do not prove semantic accuracy.
 5. `odylith greenfield create` with `--transaction-file`, `--transaction-hash`,
    and `--confirm` (plus `--completion-receipt` for bounded seals) remains a separate
    commit-only interface, not a fallback for

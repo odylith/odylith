@@ -60,6 +60,76 @@ supersedes:
 
 superseded_by: 
 
+## Current 0.1.15 compatibility assessment (2026-10-12)
+
+Completed against published v0.1.14 commit
+`fae446995e13e12409e50f944a336dbc846db90a`, candidate `2571d94a9` and the
+reviewed operator-guidance correction. The exact comparison covers 884
+overlapping consumer-surface paths. No additional consumer-data migration is
+identified. The existing managed upgrade, generated-view migration and explicit
+recovery owners cover the changes, subject to these adoption requirements.
+
+| Surface | Completed assessment marker |
+|---|---|
+| Guidance and skills | `migration-observer:0.1.15:guidance-and-skills:e2da5b90766c` |
+| Operator CLI | `migration-observer:0.1.15:operator-cli-contracts:0321429f5bb8` |
+| Public documentation | `migration-observer:0.1.15:public-docs-and-release-guidance:feb876894833` |
+| Browser surfaces | `migration-observer:0.1.15:browser-surfaces:d6a0c45367e1` |
+| Install-managed assets | `migration-observer:0.1.15:install-managed-assets:7089e920bf26` |
+
+**Guidance and skills (136 paths).** Normal authorized upgrade refreshes managed
+guidance and host assets. Existing chats may need reload and native hook trust
+review; configuration alone does not prove delivery. Codex and Claude share
+preparation and deterministic terminal decisions, with pinned Codex inference.
+Missing Codex returns an environment outcome without publishing. Fresh manual
+authoring uses compiler-emitted contracts and receipts; historical receipts
+remain passive readback evidence.
+
+**Operator CLI (79 paths).** Disabled legacy `greenfield apply`, missing bounded
+completion receipts and stale fresh-authoring receipts intentionally refuse.
+Existing valid governance needs no blanket conversion. Use preparation and its
+exact printed terminal choices. Preserve journals and the previous complete
+publication on failure, then follow the returned recovery command. Additive
+component-description updates preserve other inventory fields and the spec.
+Stricter future-write checks require grounded record corrections through their
+existing owners.
+
+**Public documentation (31 paths).** The operator guide's chat-confirmation and
+post-confirm refresh claims were corrected. The installed README, Greenfield
+and show-me skills and their three bundle copies no longer prescribe obsolete
+receipt numbers. Confirmation publishes reviewed sealed bytes without model,
+generation or projection work. Existing research bookmarks may need the new
+`docs/research/BENCHMARK_INTERPRETATION_CONTRACT.md` path. Current source remains
+authoritative over derived historical memory.
+
+**Browser surfaces (633 paths).** Most paths are maintainer records or generated
+views, excluded from consumer seed data. Reusable frontend changes use managed
+target-runtime rendering. The registered 0.1.15 Atlas migration changes generated
+views and derived traceability, preserving raw Mermaid and authored dossiers.
+Project disclosures, Registry unavailable-versus-empty evidence and Atlas capture
+readability need no new data migration. Unexplained managed-byte drift still
+requires explicit recovery before a new complete publication.
+
+**Install-managed assets (144 paths).** Bootstrap preserves existing consumer
+shell metadata and governance inventories; normal upgrade preserves brand assets.
+Effective host-settings owners retain divergent user configuration and merge
+managed hooks. Symlink and unsupported migration/downgrade refusals remain.
+Historical registered Casebook normalization is an explicit source-write
+exception. Failed target-runtime dashboard completion retains its predecessor;
+only the recorded, unchanged-anchor full refresh can complete that operation.
+
+The two independent source assessments are retained under
+`/private/tmp/odylith-v52-canonical-release-assembly-20261012/consumer-compatibility-three-families-2571d94a-20261012/`
+and `/private/tmp/odylith-v52-browser-assets-migration-assessment-20261012/`.
+The bounded documentation correction passes 42 unchanged tests, six guidance
+cases/eleven checks and the six-pair quick guidance hard/secondary/advisory gates.
+Current shell/Registry proof retains 77 passes; the frozen derived browser matrix
+retains 111 screenshots with zero issues. R5 and old hosted failures remain
+failed records. These assessments do not grant package, installed upgrade,
+native-host, public-family, timing or holdout qualification. The actual immutable
+successor package must still pass those release gates. Gate fixture inventories
+are not fresh executions of the fixtures.
+
 ## Problem
 Odylith can change dashboards, managed guidance, skills, install-managed assets, or host-facing surfaces in the product repo without explicitly assessing how already-installed consumer repositories will experience that change. That leaves migration needs to human memory after the code lands.
 

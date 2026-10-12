@@ -109,7 +109,7 @@ greenfield proposal lane before source-backed governance exists:
 # The preflight returns a decision_task and decision_set_schema. Make one bounded
 # source-only verifier pass over every material duty, then save its decision set outside the repository.
 ./.odylith/bin/odylith greenfield source-ledger-check --repo-root . --prompt "<project intent>" --ledger-file "<ledger-file>" --decision-file "<decision-file>" --format json
-# Save the accepted v6 receipt object outside the repository, then author one candidate.
+# Save the compiler-emitted accepted receipt outside the repository, then author one candidate.
 ./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<project intent>" --gate-file "<gate-file>" --candidate-file "<candidate-file>" --ledger-file "<receipt-file>"
 ```
 
@@ -124,7 +124,7 @@ check admits only that complete source-bound decision set. If `authority-check` 
 without a candidate or transaction. A denied, uncertain, or missing duty, or
 a nonaffirmative source-completeness verdict, stops before candidate authoring.
 Only after both authority and source duty
-admit does the host reason once over the candidate contract. The accepted v7 initial
+admit does the host reason once over the candidate contract. The accepted initial
 source-duty receipt binds the verified task and source roles; neither gate nor
 candidate may redefine them. `propose` then
 deterministically validates that untrusted candidate, compiles typed custody facts,
@@ -156,19 +156,21 @@ The verifier must give a disposition for every prior lifecycle duty. Preserved o
 changed duties need affirmative current carriers in the same typed section;
 changes and removals need exact correction evidence. Explicit compound carriers
 may support multiple prior duties, each judged separately. Missing or uncertain
-rows stop before the candidate. Initial tasks/receipts remain v4/v7; EDIT uses
-v5/v8 bound to the prior seal and correction. Prior rows are a comparison checklist,
-not current truth. Citation custody does not establish semantic accuracy.
+rows stop before the candidate. Use the fresh compiler-emitted task and accepted
+receipt; EDIT binds the prior seal and correction. Historical receipts permit
+passive sealed readback only. Prior rows are a comparison checklist, not current
+truth. Citation custody does not establish semantic accuracy.
 Clarification or a nonaffirmative duty stops before a new candidate or transaction.
 On admission, pass the correction, `--gate-file`, `--candidate-file`,
-and accepted v8 `--ledger-file` receipt to `decide EDIT`. It preserves
+and fresh accepted `--ledger-file` receipt to `decide EDIT`. It preserves
 the original tier and advisory 90/120/150 targets, retains the immutable old seal,
 and returns a new hash and preview. The standard proposal limit is 315 seconds
 with one shared 300-second gate/candidate model window. CONFIRM and REJECT use
 the shared bounded owner without compiler or model work.
 
 Explicit terminal operator invocation of `odylith greenfield create` with
-`--transaction-file`, `--transaction-hash`, and `--confirm` remains a separate
+`--transaction-file`, `--transaction-hash`, and `--confirm` (plus the delivered
+`--completion-receipt` for bounded seals) remains a separate
 supported interface. It verifies the compiler receipt, hash and repo preconditions,
 applies only sealed bytes under rollback guard, validates readback and reports
 success or a transaction/environment failure. It must not parse evidence, call a

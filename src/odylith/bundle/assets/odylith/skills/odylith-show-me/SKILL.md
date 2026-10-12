@@ -81,10 +81,12 @@ placeholder products in response to a show-me request.
    changes/removals require exact correction evidence, and missing/uncertain rows
    stop before the candidate. Current affirmative carriers must remain in the same
    typed section; an explicitly merged carrier may support several prior duties.
-   Pass the accepted v8 `--ledger-file` receipt to `decide EDIT`. Retain the immutable
+   Pass the fresh compiler-emitted accepted receipt through `--ledger-file` to
+   `decide EDIT`. Historical receipts permit passive readback only. Retain the immutable
    old seal and return a new hash and preview. The standard gate/candidate share
    300 seconds plus 15 for completion; 90/120/150 targets remain advisory. Explicit terminal operator `greenfield create` with `--transaction-file`,
-   `--transaction-hash`, and `--confirm` remains a separate deterministic interface:
+   `--transaction-hash`, and `--confirm` (plus the delivered `--completion-receipt`
+   for bounded seals) remains a separate deterministic interface:
    receipt/hash/precondition verification, sealed bytes under rollback guard and
    exact readback, with no model, generation or repair after confirmation.
    Do not invent a host confirmation path, expose proposal JSON, inspect source

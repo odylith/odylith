@@ -1,5 +1,30 @@
 - Bug ID: CB-304
 
+## Operator guidance correction (2026-10-12)
+
+The consumer migration review found current operator instructions presenting
+chat `CONFIRM` as publication authority and claiming post-confirm refresh. Three
+managed guidance owners also prescribed historical receipt versions for fresh
+authoring. The runtime already refuses missing bounded completion receipts and
+stale fresh-authoring receipts; weakening those checks would repeat this defect.
+
+The operator guide now directs users to preparation, review and the exact printed
+terminal choice with its delivered receipt. Confirmation publishes sealed bytes
+without model calls, artifact generation or projection rebuilding. The installed
+README and both Greenfield/show-me skills require fresh compiler-emitted contracts
+and accepted receipts, retaining historical receipts for passive readback only.
+Their three bundle copies were regenerated through the existing mirror owner.
+No runtime, schema, model, timing limit or confirmation interface changed.
+
+The unchanged three-module mirror/guidance/bundle selection passes all 42 tests.
+Guidance validation passes six cases and eleven checks; the six-pair quick
+guidance benchmark clears its hard, secondary and advisory checks with status
+`provisional_pass`. These are source-level guidance checks, not native host,
+installed package or semantic release qualification. Evidence:
+/private/tmp/odylith-v52-final-operator-guidance-correction-20261012/;
+/private/tmp/odylith-v52-canonical-release-assembly-20261012/consumer-compatibility-three-families-2571d94a-20261012/report.md
+(SHA-256 3d50202408732eda76b49264caeddb4665774255a9f6fbcf0ac7cf6c446b6136).
+
 - Installed Seed Baseline Correction (2026-09-17): The fresh bec6ad2a3 distribution passes its full local build with 1,448 inputs unchanged; clean installation takes 30.349 seconds and exactly matches all 671 expected Python files with no extras. One standard-90/model-75 proposal finishes in 67.460 seconds (49.904 author, 8.892 reviewer, two calls), seals 56 writes and passes the existing preflight. The external runner nevertheless marks preparation failed because it incorrectly requires no active publication in a fresh install. The installer already publishes the empty dashboard baseline: retained post-install and post-proposal governed fingerprints, including the entry file's mode, timestamp and hash, are identical. The baseline write-set identity differs from the proposed project, which has no create journal. Preserve the failed runner receipt and successful command as distinct evidence; independently adjudicate the retained seed against that existing baseline, without relabeling the failed runner or rerunning the model. This repeats the documented baseline prerequisite, not a product publication defect. No product code, schema, profile, deadline or gate change is justified. Evidence: /Users/freedom/.codex/odylith-shipping-seed.BpCa6g/; build: /Users/freedom/.codex/odylith-shipping-candidate.uiJb7w/.
 
 - Preserve Existing Proof Limits (2026-09-17): Final inventory catches an unreported ninth-file edit raising both managed-guidance byte ceilings from 11,600 to 11,800 to accommodate longer prose. Reject that acceptance change before commit. Restore both original assertions and remove 195 redundant characters from the guidance while retaining every safety and terminal-decision clause; generated consumer/product blocks are 11,591/11,549 bytes. The preceding 3,603-unit/81-browser passing run remains an accurate historical result, but does not qualify this corrected candidate. Independent review also restores the host-side rule to relay completion/navigation exactly once without reinterpretation, regeneration, projection rebuilding or model-authored success substitution, now pinned for live and bundled skills. Never widen a proof limit or omit a changed file from handoff to make a candidate pass. The next frozen gate must use the original budget. An initial shortening dropped two required phrases and failed two of ten focused controls; corrected wording passes all ten with the original assertions.

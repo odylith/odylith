@@ -1,8 +1,8 @@
 # Odylith Operator Instructions
 
-Everything you can say to a coding agent in an Odylith-enabled repo. The agent
-translates each instruction into Odylith CLI calls — you never need to know the
-CLI surface. Works identically on Codex and Claude Code.
+Use these requests to work with Odylith through a coding agent. Codex and Claude
+Code share the governance workflow; available actions depend on the host and
+installed runtime. Greenfield publication requires an explicit terminal decision.
 
 ---
 
@@ -29,18 +29,23 @@ Build governance records that give the agent durable context.
 
 ### Greenfield proposals
 
-Use these when the repo is new, thin, or the project exists mostly as intent.
-Odylith does not invent source evidence. It treats the operator request and any
-edits as evidence, compiles typed product intent and the complete governed
-package before confirmation, and presents one hash-bound decision. `CONFIRM <hash>`
-commits the reviewed bytes; `EDIT <hash> <corrections>` rebuilds them from new evidence;
-`REJECT <hash>` writes nothing.
+Describe the project and supply the evidence you have. Odylith prepares a
+reviewable governance package with a project summary, delivery work, component
+boundaries and architecture diagrams. It creates neither application code nor a
+deployed service. Material uncertainty produces one focused question.
 
 | Say this | What happens |
 |---|---|
-| **"Odylith, build an ecommerce site for me"** | The active host reads `odylith greenfield candidate-contract`, runs one separate constrained authority-gate pass, and calls `odylith greenfield authority-check --gate-file` with its temporary output. Clarification shows one question and stops without a candidate or transaction. On admission, the host writes one complete temporary candidate from the returned evidence and schema, then passes both files to `odylith greenfield propose --gate-file --candidate-file`. Deterministic admission compiles a confirmation-gated first-release package with typed intent, grounded Radar work, Registry boundaries, Atlas topology, assumptions, risks, proof obligations, a sealed write set, and clear hash-bound `CONFIRM` / `EDIT` / `REJECT` decisions. |
+| **"Odylith, help me plan an ecommerce site"** | Runs `odylith greenfield prepare --repo-root . --prompt "<your request>"` and returns a sealed preview or one material question. Codex and Claude orchestration share the pinned Codex inference route; a missing supported runtime returns an environment outcome without publishing. |
 | **"Help me govern a physics simulation project"** | Produces a science-aware proposal that distinguishes model, solver, data, experiment runner, visualization, reproducibility, and validation surfaces without inventing scientific claims. |
-| **`CONFIRM <transaction-hash>`** | Verifies the reviewed transaction hash and repo preconditions, commits its sealed bytes atomically, validates readback, refreshes the visible surfaces, and reports where to open the finished project. `odylith greenfield create --transaction-file .odylith/runtime/greenfield/pending/<hash>/product-create-transaction.v1.json --transaction-hash <hash> --confirm` |
+
+Review the preview, then use its exact printed terminal command and delivered
+completion receipt. `CONFIRM` publishes the reviewed bytes and verifies readback;
+`EDIT` prepares a new preview from your correction; `REJECT` publishes nothing.
+Chat approval cannot authorize publication. Confirmation does not call a model,
+regenerate artifacts or rebuild projections. See the
+[Greenfield runbook](runbooks/odylith-greenfield.md) for the terminal choices and
+recovery procedure.
 
 ### Workstreams (Radar)
 
