@@ -1,5 +1,37 @@
 Status: In progress
 
+## Current execution priority and release ordering (2026-10-12)
+
+Freeze feature expansion and prove the actual EDIT journey before additional
+release assembly work. The fresh b589 case01 diagnostic sealed a source-faithful
+initial package, then stopped before EDIT verification: the installed process
+and host ordered the same required action keys differently and computed different
+task hashes. The original run remains failed; no edited candidate or publication
+was produced. There was no evidenced context-size refusal.
+
+The source-owner correction makes action and system requirement enumeration
+deterministic, adding one runtime line. All 117 nearest tests pass, including
+cross-process seed and mapping-order controls; five distinct retained receipts
+still verify without changing their bytes. Independent review clears the bounded
+patch. Preserve strict equality, all duties, caps and the single-pass route.
+Known older receipts remain readable; hypothetical unreleased v19 seals with
+another unstable ordering have no universal compatibility guarantee.
+
+Settle governance, commit and push this correction, build one authentic successor
+package, then run case01 once against that package. Independently assess its
+actual initial and EDIT semantics and published screens. A passing journey
+releases the remaining qualification work; another fundamental failure requires
+a concrete go/no-go assessment, not another broad redesign. Genuine qualifying
+EDIT stays 0/4, and the protected holdout remains closed.
+
+The published v0.1.14 squash equals branch ancestor adfda981 as a whole tree;
+main's later CLAUDE removal is already present. The completed ancestry-only merge
+preserves source. CB-320 records the narrowly corrected historical identity guard.
+Canonical release assembly still lacks consumption of the independent public
+composition/timing evidence; resolve that seam only after the mechanism works.
+Do not execute a separate protected holdout before its actual once-only release
+owner. Final release must use the exact permitted squash-merge main commit.
+
 ## Final source checkpoint and execution-retention correction (2026-10-10)
 
 The bounded harness correction passes 126 producer, 445 consumer and 91 private

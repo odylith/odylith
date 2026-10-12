@@ -1,5 +1,36 @@
 - Bug ID: CB-347
 
+## Current compatibility witness failures (2026-10-12)
+
+The first fixture omitted predecessor publication assets; the next failed in
+added Bash tracing. A later canonical refresh passed all six surfaces and kept
+all 18 protected files, but detached Compass maintenance attempted provider
+calls and invalidated that witness. Preserve every failed attempt. The existing
+release-smoke background guard prevents detached maintenance while synchronous
+Compass and all other renderers stay active.
+
+With that guard, successor03 passes publication and served/protected custody,
+but the copied V42 browser oracle reports 36 passes, six failures and two unrun
+cells. Independent review attributes four failures to an intentionally expired
+upgrade notice and two to a machine ID deliberately hidden in collapsed Atlas
+metadata. Successor04 corrects those expectations and reports 40 passes, two
+Atlas failures and two unrun cells. Its remaining assertion inspects owner links
+before opening their metadata disclosure. These attempts remain failed.
+
+The final bounded oracle correction must keyboard-open the metadata and Linked
+records disclosures, prove exact visible owner links, titles, loaded image and
+payload-owned destinations, then prove they hide again on closing. Keep expired
+notice behavior, persistent version history, normal/empty/error states and the
+complete 44-cell desktop/mobile census. Do not expose machine details to make an
+old test pass. No current compatibility or release credit is established yet.
+
+The b589 native case01 diagnostic separately fails before EDIT verification due
+to nondeterministic task construction. Its initial package has correct typed
+roster, workflow and supporting safeguards, but no edited candidate or published
+screens exist. Keep that failure and the 0/4 qualifying EDIT count. Independent
+diagnosis: /private/tmp/odylith-v52-case01-mechanism-diagnostic-review-20261010/terminal-report.md.
+Canonical release composition/timing consumption remains an open B-142 seam.
+
 ## Scored execution retention contradicts original diagnostics (2026-10-10)
 
 Checkpoint `b589a31dceea749efe231862910a36e10c7cdd79` passes the complete

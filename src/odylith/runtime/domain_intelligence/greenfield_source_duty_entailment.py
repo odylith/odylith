@@ -288,7 +288,7 @@ def _validate_edit_context(context: Mapping[str, Any], *, evidence_text: str, _p
 
 def _prior_duties(context: Mapping[str, Any]):
     if context["version"] == EDIT_PRESERVATION_VERSION:
-        for section in _ACTION_SECTIONS:
+        for section in sorted(_ACTION_SECTIONS):
             for row in context["prior_actions"][section]:
                 yield section, f"{section}/{row['duty']['id']}", row
     for section in _LIFECYCLE_SECTIONS:
@@ -494,7 +494,8 @@ def greenfield_source_duty_decision_set_schema(
                     "verdict": {"type": "string", "enum": ["preserved", "changed", "removed", "missing", "uncertain"]},
                     "correction_authorization": {"type": "string", "enum": ["yes", "no", "uncertain", "not_required"]},
                 },
-            } for rows in edit_preservation["prior_system_facts"].values() for atom in rows}
+            } for field in ("internal_systems", "external_systems")
+              for atom in edit_preservation["prior_system_facts"][field]}
             schema["required"].append("system_preservation")
             schema["properties"]["system_preservation"] = {
                 "type": "object", "additionalProperties": False, "required": list(systems), "properties": systems,

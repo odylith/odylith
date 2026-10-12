@@ -972,7 +972,9 @@ governed subsystem.
   identities. Whenever the canonical maintainer name or email is used, the
   validator requires the exact canonical pair, apart from the explicitly
   enumerated immutable historical maintainer alias bounded to its trusted
-  ancestry cutoff. It inspects raw Git object identity so `.mailmap` cannot
+  ancestry cutoff. The trusted published history ends at main commit
+  `4a6c37a8633e1af50bb7898303edc23b41e65d74`; subsequent maintainer commits
+  require the canonical identity. It inspects raw Git object identity so `.mailmap` cannot
   disguise explicit assistant/model/coding-tool-branded author or committer
   signatures, and rejects structured or prose attribution to those tools.
   External contribution authorship must not be rewritten to satisfy the

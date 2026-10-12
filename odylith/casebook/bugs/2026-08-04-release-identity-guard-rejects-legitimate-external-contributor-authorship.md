@@ -1,5 +1,23 @@
 - Bug ID: CB-320
 
+## Published history integration refusal (2026-10-10)
+
+The push of `7752855fdfcd30a39a2cf59b02a089dab3ef875c` is refused by the
+history guard because published main commit
+`4a6c37a8633e1af50bb7898303edc23b41e65d74` retains the historical maintainer
+name. This immutable August commit was outside the old trusted cutoff at
+`fae446995e13e12409e50f944a336dbc846db90a`. Both newly authored commits use
+the canonical identity; the refusal appears only after incorporating published
+main ancestry. Rewriting the published commit would damage history.
+
+Advance the exact immutable ancestry cutoff to that already published main
+commit. Preserve the existing alias allowlist, raw-object inspection, assistant
+attribution rejection and canonical identity requirement for every new commit.
+All 43 identity tests pass, including bounded historical acceptance and rejection
+of a fresh legacy alias after the cutoff. This changes no runtime or customer
+data. The rejected push remains retained in the release integration evidence;
+successful current-history validation and a normal guarded push are still required.
+
 - Status: Open
 
 - Created: 2026-08-04

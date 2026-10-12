@@ -1,11 +1,12 @@
 # Bug Index
 
-Last updated (UTC): 2026-10-11
+Last updated (UTC): 2026-10-12
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-360 | 2026-10-12 | Greenfield edit preflight changes task hashes across python processes | P1 | domain-intelligence | Open | [2026-10-12-greenfield-edit-preflight-changes-task-hashes-across-python-processes.md](2026-10-12-greenfield-edit-preflight-changes-task-hashes-across-python-processes.md) |
 | CB-359 | 2026-10-05 | Compass cannot archive an unpublished append after rendering identity changes | P2 | compass | Open | [2026-10-05-compass-cannot-archive-an-unpublished-append-after-rendering-identity-changes.md](2026-10-05-compass-cannot-archive-an-unpublished-append-after-rendering-identity-changes.md) |
 | CB-358 | 2026-10-05 | Atlas upgrade rejects clusterless diagrams after correct rendering | P1 | odylith | Open | [2026-10-05-atlas-upgrade-rejects-clusterless-diagrams-after-correct-rendering.md](2026-10-05-atlas-upgrade-rejects-clusterless-diagrams-after-correct-rendering.md) |
 | CB-355 | 2026-10-04 | Historical judgment hints raise confidence without current evidence | P2 | odylith-context-engine | FixedPendingRelease | [2026-10-04-historical-judgment-hints-raise-confidence-without-current-evidence.md](2026-10-04-historical-judgment-hints-raise-confidence-without-current-evidence.md) |

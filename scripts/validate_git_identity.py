@@ -29,7 +29,8 @@ ALLOWED_LEGACY_MAINTAINER_IDENTITIES = frozenset(
         ("Freedom Preetham", EXPECTED_EMAIL),
     }
 )
-LEGACY_MAINTAINER_HISTORY_CUTOFF = "fae446995e13e12409e50f944a336dbc846db90a"
+# Preserve immutable published history; newly authored commits still require the canonical identity.
+LEGACY_MAINTAINER_HISTORY_CUTOFF = "4a6c37a8633e1af50bb7898303edc23b41e65d74"
 IDENT_PATTERN = re.compile(r"^(?P<name>.+) <(?P<email>[^>]+)> \d+ [+-]\d{4}$")
 STRONG_ASSISTANT_IDENTITY_PHRASES = (
     "ai agent",

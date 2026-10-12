@@ -103,6 +103,106 @@ def test_initial_request_keeps_the_existing_non_edit_decision_and_receipt_shape(
     ) == receipt
 
 
+def test_edit_task_is_identical_across_process_hash_seeds_and_context_key_order():
+    import os
+    import subprocess
+    import sys
+
+    prior_source, receipt, candidate, binding = _case("dossier")
+    ledger = deepcopy(receipt["ledger"])
+    ledger["first_path_actions"][1]["actor_ref"]["context"] = "A reviewer approves the dossier"
+    for section, duty_id, actor, action, target in (
+        ("first_path_actions", "A3", "steward", "records", "the dossier owner"),
+        ("first_path_actions", "A4", "reviewer", "checks", "the dossier evidence"),
+        ("first_path_actions", "A5", "reviewer", "publishes", "the dossier status"),
+        ("supporting_human_actions", "H1", "steward", "archives", "the dossier"),
+        ("system_duties", "D1", "the product", "preserves", "the dossier history"),
+    ):
+        statement = f"{actor} {action} {target}"
+        prior_source += f" {statement}."
+        actor_ref = (deepcopy(ledger["first_path_actions"][0 if actor == "steward" else 1]["actor_ref"])
+                     if actor != "the product" else {"quote": actor, "context": statement})
+        row = {"id": duty_id, "source_refs": [], "action": action, "target": target,
+               "event_ref": {"quote": statement, "context": statement}, "actor_ref": actor_ref,
+               "statement": statement, "role_refs": [{"quote": statement, "context": statement}]}
+        if section == "first_path_actions":
+            row.update(performer_role="human_actor", observable_result=statement)
+        elif section == "system_duties":
+            row.update(performer_role="product_wide", execution_kind="recurring_invariant")
+        ledger[section].append(row)
+    prior_source += " Internal system: Ledger archive. External system: Review feed."
+    receipt = synthetic_source_duty_receipt_for_ledger(ledger, evidence_text=prior_source)
+    binding.update(source_sha256=receipt["source_sha256"], ledger_sha256=receipt["ledger_sha256"])
+    order = 0
+    for section in ("first_path_actions", "supporting_human_actions", "system_duties"):
+        binding[section] = []
+        for row in ledger[section]:
+            order += 1
+            binding[section].append({"duty_id": row["id"], "event_order": order})
+    design = candidate["provisional_design"]
+    candidate["terminal"]["event_order"] = 5
+    design["first_run"]["event_orders"] = list(range(1, 6))
+    design["components"][0].update(supported_event_orders=list(range(1, 8)),
+                                   verification_event_orders=list(range(1, 8)))
+    design["workstreams"][0]["verification_event_orders"] = list(range(1, 8))
+    lifecycle = project_greenfield_source_lifecycle(ledger_receipt=receipt, binding=binding,
+        candidate_result=candidate, evidence_text=prior_source)
+    context = edit_action_context_fixture(prior_source=prior_source, prior_receipt=receipt,
+        prior_lifecycle=lifecycle, design=design, correction=ADDITIVE,
+        prior_facts={"internal_systems": [{"quote": "Ledger archive", "context": "Ledger archive"}],
+                     "external_systems": [{"quote": "Review feed", "context": "Review feed"}]})
+    source = prepare_model_authoring_evidence(prompt=prior_source, edit_evidence=ADDITIVE).evidence_source
+    preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=source)
+    payload = {"preflight": preflight, "evidence_text": source, "edit_preservation": context}
+    program = (
+        "import json,sys; "
+        "from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment "
+        "import source_duty_entailment_task; "
+        "print(json.dumps(source_duty_entailment_task(**json.load(sys.stdin)),"
+        "ensure_ascii=False,sort_keys=True,separators=(',',':')))"
+    )
+    outputs = []
+    for seed in ("0", "2", "5"):
+        for sort_context_keys in (False, True):
+            result = subprocess.run([sys.executable, "-B", "-c", program],
+                input=json.dumps(payload, sort_keys=sort_context_keys), capture_output=True,
+                text=True, check=True, env={**os.environ, "PYTHONHASHSEED": seed,
+                    "PYTHONDONTWRITEBYTECODE": "1", "PYTHONPATH": os.pathsep.join(sys.path)})
+            outputs.append(result.stdout)
+    assert len(set(outputs)) == 1
+    task = json.loads(outputs[0])
+    schema = task["decision_set_schema"]["properties"]
+    assert schema["edit_preservation"]["required"] == [
+        "first_path_actions/A1", "first_path_actions/A2", "first_path_actions/A3",
+        "first_path_actions/A4", "first_path_actions/A5", "supporting_human_actions/H1",
+        "system_duties/D1", "state_fields/F1", "state_fields/F2", "off_path_transitions/T1",
+    ]
+    assert set(schema["edit_preservation"]["required"]) == set(schema["edit_preservation"]["properties"])
+    assert schema["system_preservation"]["required"] == [
+        atom["atom_id"] for field in ("internal_systems", "external_systems")
+        for atom in context["prior_system_facts"][field]
+    ]
+    digest = task.pop("verifier_task_sha256")
+    assert digest == hashlib.sha256(json.dumps(task, ensure_ascii=False, sort_keys=True,
+                                               separators=(",", ":")).encode()).hexdigest()
+    decisions = _yes_decisions(preflight, evidence_text=source)
+    decisions.update(version=EDIT_SOURCE_DUTY_DECISION_SET_VERSION, verifier_task_sha256=digest,
+        identity_preservation={"verdict": "preserved", "correction_authorization": "not_required"},
+        **preserved_edit_decisions_fixture(context))
+    validate_greenfield_source_duty_ledger(ledger, evidence_text=source,
+        decision_set=decisions, edit_preservation=context)
+    for key in schema["edit_preservation"]["required"][:7]:
+        incomplete = deepcopy(decisions)
+        del incomplete["edit_preservation"][key]
+        with pytest.raises(GreenfieldSourceDutyLedgerError, match="EDIT preservation decisions are incomplete"):
+            validate_greenfield_source_duty_ledger(ledger, evidence_text=source,
+                decision_set=incomplete, edit_preservation=context)
+    decisions["verifier_task_sha256"] = "0" * 64
+    with pytest.raises(GreenfieldSourceDutyLedgerError, match="binding"):
+        validate_greenfield_source_duty_ledger(ledger, evidence_text=source,
+            decision_set=decisions, edit_preservation=context)
+
+
 def test_host_receipt_passive_approval_is_an_explicit_closed_version_pair(tmp_path):
     from odylith.runtime.domain_intelligence.greenfield_model_receipt_approval import greenfield_model_authoring_receipt_approved
     from tests.unit.runtime.test_greenfield_create_transaction import _transaction

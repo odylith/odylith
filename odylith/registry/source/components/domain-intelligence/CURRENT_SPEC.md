@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-10-10
+Last updated: 2026-10-12
 
 
 ## Overview
@@ -23,6 +23,14 @@ changed with correction authorization. An authorized removal may remove its
 action. System renames, removals, replacements and type changes refuse before
 candidate generation; a fresh candidate cannot silently erase accepted systems.
 Distinct systems with the same name remain distinct through their source addresses.
+
+EDIT task construction now enumerates action sections deterministically and
+visits internal and external system requirements in a fixed order. Independent
+Python processes reconstruct identical canonical tasks and digests; every prior
+duty and typed system remains required. Exact task equality and hash validation
+stay strict. The bounded correction passes 117 focused checks and five distinct
+retained receipt readbacks, with independent review. The original installed EDIT
+failure remains failed; a corrected installed journey is still required.
 
 The complete prior context is limited to 131,072 canonical UTF-8 bytes. Complete
 verifier and candidate requests, including their schemas, are limited to 262,144
@@ -2299,6 +2307,9 @@ semantic/design findings.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-10-12 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-10-12-greenfield-edit-preflight-changes-task-hashes-across-python-processes.md`, `scripts/validate_git_identity.py`, `src/odylith/runtime/domain_intelligence/greenfield_source_duty_entailment.py`, `tests/unit/runtime/test_greenfield_edit_lifecycle_preservation.py`
 - **2026-10-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 6 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/dashboard/CURRENT_SPEC.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, plus 2 more
@@ -2314,9 +2325,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-10-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_event_ordering.py`
-- **2026-10-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_host_source_phase.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
