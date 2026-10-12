@@ -179,6 +179,7 @@ def model_profile_release_proof(
     require_complete: bool,
     whole_journey_bound_evidence: Mapping[str, Any] | None = None,
     public_source_evidence: Mapping[str, Any] | None = None,
+    composed_public_evidence: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Require host/profile parity and zero post-receipt calls for every row."""
 
@@ -188,13 +189,28 @@ def model_profile_release_proof(
     coverage_issues: list[str] = []
     measured_bound = None
     bound_report: dict[str, Any] | None = None
+    family_report: dict[str, Any] | None = None
+    if composed_public_evidence is not None:
+        from greenfield_public_qualification import qualify_composed_public_evidence
+        composition = qualify_composed_public_evidence(evidence=composed_public_evidence)
+        if whole_journey_bound_evidence is not None or public_source_evidence is not None:
+            validation_issues.append("terminal composed evidence cannot replace or mix single-family evidence")
+        elif composition.get("status") != "passed" or composition.get("passed") is not True:
+            validation_issues.extend(composition.get("issues") or ("composed public evidence did not qualify",))
+        else:
+            reports = {name: composition["model_profile_proofs"][name]["measured_public_bound"]
+                for name in ("primary", "high")}
+            family_report = {"qualification_scope": "measured_retained_public_family_evidence_only",
+                "consumer_timing_custody": "unproved", "families": reports,
+                "terminal_observation_timing_scope": "existing_profile_and_whole_journey_operational_contract",
+                "evidence_refs": deepcopy(dict(composed_public_evidence))}
     if whole_journey_bound_evidence is not None or public_source_evidence is not None:
         from greenfield_public_qualification import validate_measured_public_bound
         measured_bound, bound_report, bound_issues = validate_measured_public_bound(
             results=results, source_evidence=public_source_evidence,
             bound_evidence=whole_journey_bound_evidence)
         validation_issues.extend(bound_issues)
-    if require_complete and measured_bound is None:
+    if require_complete and measured_bound is None and family_report is None:
         coverage_issues.append(
             "release proof lacks a public-data-backed finite whole-journey bound"
         )
@@ -332,7 +348,9 @@ def model_profile_release_proof(
         "coverage_status": "passed" if not coverage_issues else "incomplete",
         "required_complete_coverage": bool(require_complete),
         "whole_journey_release_bound_seconds": measured_bound,
-        "whole_journey_bound_status": "qualified_measured_public_evidence" if measured_bound is not None else "unqualified",
+        "whole_journey_bound_status": (
+            "authenticated_measured_public_families" if family_report is not None else
+            "qualified_measured_public_evidence" if measured_bound is not None else "unqualified"),
         "profiles": profiles,
         "lower_capability_scope": {
             "status": (
@@ -359,6 +377,8 @@ def model_profile_release_proof(
     }
     if bound_report is not None:
         proof["measured_public_bound"] = bound_report
+    if family_report is not None:
+        proof["measured_public_families"] = family_report
     return proof
 
 

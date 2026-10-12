@@ -145,7 +145,10 @@ require_current_release_branch() {
 }
 
 current_worktree_is_clean() {
-  git diff --quiet --ignore-submodules HEAD -- && git diff --quiet --ignore-submodules --cached --
+  local untracked
+  git diff --quiet --ignore-submodules HEAD -- && git diff --quiet --ignore-submodules --cached -- || return 1
+  untracked="$(git ls-files --others --exclude-standard)" || return 1
+  [[ -z "$untracked" ]]
 }
 
 require_clean_worktree() {
@@ -303,29 +306,14 @@ require_current_component_forensics() {
   fi
 }
 
-run_release_proof_steps() {
+prepare_release_proof_package() {
   local resolved_version="$1"
   local dist_dir="$2"
-  local matrix_gate_mode="${3:-discovery}"
   local tag="v${resolved_version}"
   require_version "$resolved_version"
-  [[ -n "$dist_dir" ]] || die "run_release_proof_steps requires dist_dir"
-  case "$matrix_gate_mode" in
-    discovery|terminal)
-      ;;
-    *)
-      die "run_release_proof_steps matrix mode must be discovery or terminal"
-      ;;
-  esac
-
-  local matrix_release_intent="${GREENFIELD_MATRIX_RELEASE_INTENT:-0}"
-  if [[ "$matrix_release_intent" != "0" && "$matrix_release_intent" != "1" ]]; then
-    die "GREENFIELD_MATRIX_RELEASE_INTENT must be 0 or 1"
-  fi
-  if [[ "$matrix_gate_mode" == "discovery" && "$matrix_release_intent" == "1" ]]; then
-    die "release candidate proof is non-disclosing; terminal Greenfield release proof belongs to release-preflight"
-  fi
-
+  [[ -n "$dist_dir" ]] || die "release package preparation requires dist_dir"
+  local package_logs="$(dirname "$dist_dir")/package-logs"
+  mkdir -p "$package_logs"
   "$odylith_python" "$odylith_host_repo_root/scripts/sync_version_truth.py" --repo-root . sync
   "$odylith_python" "$odylith_host_repo_root/scripts/sync_version_truth.py" --repo-root . release-check --expected-version "$resolved_version"
   "$odylith_host_repo_root/bin/validate"
@@ -333,8 +321,8 @@ run_release_proof_steps() {
   git diff --quiet --ignore-submodules --cached -- || die "release proof validation staged tracked files; commit them before release"
   require_current_component_forensics
   odylith_cli validate self-host-posture --repo-root . --mode release --expected-tag "$tag"
-  "$odylith_python" -m hatch build --target wheel "$dist_dir"
-  "$odylith_python" scripts/release/publish_release_assets.py --repo odylith/odylith --tag "$tag" --dist-dir "$dist_dir" --allow-local
+  "$odylith_python" -m hatch build --target wheel "$dist_dir" 2>&1 | tee "$package_logs/wheel.log"
+  "$odylith_python" scripts/release/publish_release_assets.py --repo odylith/odylith --tag "$tag" --dist-dir "$dist_dir" --allow-local 2>&1 | tee "$package_logs/assets.log"
   "$odylith_python" scripts/release/platform_domain_leakage_check.py --repo-root . --dist-dir "$dist_dir"
 
   ODYLITH_RELEASE_PREFLIGHT_DIST_DIR="$dist_dir" "$odylith_python" - <<'PY'
@@ -369,7 +357,25 @@ if bad:
 print(f"release preflight wheel ok: {wheel}")
 PY
 
-  "$odylith_python" scripts/release/local_release_smoke.py --version "$resolved_version" --dist-dir "$dist_dir"
+  "$odylith_python" scripts/release/local_release_smoke.py --version "$resolved_version" --dist-dir "$dist_dir" 2>&1 | tee "$package_logs/smoke.log"
+}
+
+run_release_proof_steps() {
+  local resolved_version="$1"
+  local dist_dir="$2"
+  local matrix_gate_mode="${3:-discovery}"
+  local matrix_release_intent="${GREENFIELD_MATRIX_RELEASE_INTENT:-0}"
+  case "$matrix_gate_mode" in
+    discovery)
+      [[ "$matrix_release_intent" == "0" ]] || die "release candidate proof is non-disclosing; terminal Greenfield release proof belongs to release-preflight"
+      prepare_release_proof_package "$resolved_version" "$dist_dir"
+      ;;
+    terminal)
+      [[ "$matrix_release_intent" == "1" ]] || die "terminal proof requires GREENFIELD_MATRIX_RELEASE_INTENT=1"
+      # The preflight owner authenticates and consumes the prepared package before this call.
+      ;;
+    *) die "run_release_proof_steps matrix mode must be discovery or terminal" ;;
+  esac
   local matrix_temp_parent matrix_case_file release_audit_file release_audit_repo_root
   local sealed_release_input_root semantic_annotations_file evaluation_split_manifest
   local final_holdout_run_ledger implementation_revision distribution_provenance_file
@@ -418,6 +424,7 @@ PY
   GREENFIELD_MATRIX_DISTRIBUTION_PROVENANCE_FILE="$distribution_provenance_file" \
   GREENFIELD_MATRIX_LOWER_CAPABILITY_CONTROL_FILE="$lower_capability_control_file" \
   GREENFIELD_MATRIX_EVIDENCE_OUTPUT_DIR="$evidence_output_dir" \
+  GREENFIELD_MATRIX_COMPOSED_PUBLIC_EVIDENCE="${GREENFIELD_MATRIX_COMPOSED_PUBLIC_EVIDENCE:-}" \
   GREENFIELD_MATRIX_OUTPUT_JSON="${GREENFIELD_MATRIX_OUTPUT_JSON:-$dist_dir/greenfield-preconfirm-matrix.v1.json}" \
   BROWSER_PROOF=1 \
   COMMIT_RECOVERY_PROOF=1 \

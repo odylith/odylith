@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import importlib.util
+import os
 import subprocess
 import sys
 from pathlib import Path
 
+import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SCRIPTS_ROOT = REPO_ROOT / "scripts"
@@ -90,3 +92,55 @@ def test_prepare_checkout_fails_when_head_does_not_match_remote_ref(tmp_path: Pa
         assert "HEAD to match origin/main" in str(exc)
     else:  # pragma: no cover
         raise AssertionError("expected prepare_checkout to fail when HEAD diverges from origin/main")
+
+
+def test_untracked_import_surface_forces_isolated_canonical_checkout(tmp_path: Path) -> None:
+    module = _module()
+    repo, _remote = _init_git_repo(tmp_path)
+    untracked = repo / "scripts/release/sitecustomize.py"
+    untracked.parent.mkdir(parents=True)
+    untracked.write_text("raise RuntimeError('must never run')\n")
+    assert module.worktree_is_clean(repo_root=repo) is False
+    mode, path = module.prepare_checkout(repo_root=repo, remote="origin", ref="main")
+    try:
+        assert mode == "isolated" and module.worktree_is_clean(repo_root=path)
+        assert not (path / "scripts/release/sitecustomize.py").exists()
+        assert untracked.read_text() == "raise RuntimeError('must never run')\n"
+    finally:
+        module.cleanup_checkout(repo_root=repo, path=path)
+
+
+def test_ignored_proof_root_does_not_force_a_new_checkout(tmp_path: Path) -> None:
+    module = _module()
+    repo, _remote = _init_git_repo(tmp_path)
+    with (repo / ".git/info/exclude").open("a") as stream:
+        stream.write("\n.odylith/\n")
+    proof = repo / ".odylith/locks/greenfield-release/fixture.json"
+    proof.parent.mkdir(parents=True)
+    proof.write_text("synthetic package proof\n")
+    assert module.worktree_is_clean(repo_root=repo)
+    assert module.prepare_checkout(repo_root=repo, remote="origin", ref="main") == ("current", repo.resolve())
+
+
+@pytest.mark.parametrize("state", ("clean", "ignored", "untracked", "git_error"))
+def test_shared_shell_clean_check_matches_canonical_source_custody(tmp_path: Path, state: str) -> None:
+    repo, _remote = _init_git_repo(tmp_path)
+    environment = {**os.environ, "ODYLITH_REPO_ROOT_OVERRIDE": str(repo)}
+    if state == "ignored":
+        with (repo / ".git/info/exclude").open("a") as stream:
+            stream.write("\n.odylith/\n")
+        proof = repo / ".odylith/proof.json"
+        proof.parent.mkdir()
+        proof.write_text("synthetic ignored proof")
+    elif state == "untracked":
+        (repo / "sitecustomize.py").write_text("raise RuntimeError('must never run')\n")
+    elif state == "git_error":
+        binaries = tmp_path / "binaries"
+        binaries.mkdir()
+        git = binaries / "git"
+        git.write_text('#!/bin/bash\n[[ "$1" != "ls-files" ]]\n')
+        git.chmod(0o755)
+        environment["PATH"] = str(binaries) + os.pathsep + environment["PATH"]
+    result = subprocess.run(["bash", "-c", 'source "$1"\ncurrent_worktree_is_clean', "test",
+        str(REPO_ROOT / "bin/_odylith.sh")], env=environment, text=True, capture_output=True)
+    assert result.returncode == (0 if state in {"clean", "ignored"} else 1), result.stderr

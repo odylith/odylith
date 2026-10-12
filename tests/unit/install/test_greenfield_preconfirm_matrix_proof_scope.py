@@ -241,6 +241,8 @@ def test_main_preserves_interrupt_through_claim_terminalization_and_finally(
     monkeypatch.setattr(module, "_require_sealed_release_input_root", lambda **_kwargs: None)
     monkeypatch.setattr(module, "_raise_for_invalid_campaign_policy", lambda **_kwargs: None)
     monkeypatch.setattr(module, "validate_retained_evidence_output_dir", lambda **_kwargs: None)
+    # This control isolates interruption after the nonprotected public prerequisite succeeds.
+    monkeypatch.setattr(module, "authenticate_terminal_release_inputs", lambda _args: None)
     monkeypatch.setattr(module, "_final_holdout_run_from_args", lambda *_args, **_kwargs: run)
     monkeypatch.setattr(module, "acquire_matrix_run_lease", lambda **_kwargs: lease)
     monkeypatch.setattr(
@@ -781,6 +783,8 @@ def test_release_preflight_and_protected_input_claim_order(
     monkeypatch.setattr(module, "_require_sealed_release_input_root", lambda **_kwargs: None)
     monkeypatch.setattr(module, "_raise_for_invalid_campaign_policy", lambda **_kwargs: None)
     monkeypatch.setattr(module, "validate_retained_evidence_output_dir", lambda **_kwargs: None)
+    # Public/package authentication has its own negative controls; preserve claim/load ordering here.
+    monkeypatch.setattr(module, "authenticate_terminal_release_inputs", lambda _args: None)
     monkeypatch.setattr(module, "browser_runtime_preflight_issues", lambda: ())
     if failure_mode == "malformed_argv":
         class HoldoutRun:

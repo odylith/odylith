@@ -60,6 +60,25 @@ supersedes:
 
 superseded_by: 
 
+## Fixed completion scope (2026-10-12)
+
+The corrected installed creation-to-EDIT diagnostic completes confirmation,
+publication, readback and browser checks; independent review passes 13 criteria
+with no source-fidelity defect. The prior 4,258-test regression, exact package
+custody and 44-cell compatibility witness pass. The final 17-file release
+assembly passes 688 tests and independent review. The nine-file presentation
+correction independently clears the known roster, Registry and native Atlas
+capture findings; its retained matrix has 111 screenshots and zero issues.
+These results do not qualify the public families or final holdout.
+
+Freeze this scope and run the final combined regression. Prepare one canonical
+package for Primary40, High4 and genuine EDIT4; authenticate original results
+and each family's timing decision, then execute the untouched protected holdout
+once and complete independent review and release checks. Add no new product
+features, semantic stage, approval framework or open-ended evaluation campaign.
+Preserve previous failures and every existing quality threshold. CB-360 owns
+the installed mechanism, CB-303 presentation and CB-347 release assembly.
+
 ## Current passive compatibility checkpoint (2026-10-05)
 
 V53 first-run closure is committed at `6d65bb271`; its 435 checks, v31 build

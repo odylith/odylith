@@ -995,7 +995,7 @@ def authored_contract_browser():
 
 @pytest.mark.parametrize("viewport", ["desktop", "mobile"])
 def test_atlas_native_reading_uses_real_keyboard_or_touch_pointer_pan(
-    authored_contract_browser, viewport: str,
+    authored_contract_browser, tmp_path: Path, viewport: str,
 ) -> None:
     from odylith.runtime.surfaces.atlas_viewer_viewport_runtime import VIEWPORT_RUNTIME_JS
 
@@ -1016,7 +1016,8 @@ def test_atlas_native_reading_uses_real_keyboard_or_touch_pointer_pan(
           <button id="zoomIn"></button><button id="zoomOut"></button>
           <button id="fit"></button><button id="reset"></button>
           <span id="zoomReadout"></span><span id="diagramId">D-004</span>
-          <div id="viewerStage" tabindex="0"><img id="viewerImage" alt="diagram"></div>
+          <div id="viewerStage" tabindex="0"><img id="viewerImage" alt="diagram"
+            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400'%3E%3Ctext x='30' y='40' font-size='24'%3EOperator submits the record.%3C/text%3E%3C/svg%3E"></div>
           <script>{VIEWPORT_RUNTIME_JS}
             const viewport = createAtlasViewport({{
               stageEl: document.querySelector('#viewerStage'),
@@ -1031,14 +1032,15 @@ def test_atlas_native_reading_uses_real_keyboard_or_touch_pointer_pan(
             viewport.imageLoaded();
           </script>""")
 
+        page.locator("#viewerImage").evaluate("image => image.decode()")
         issues = module.prove_atlas_native_reading(
             page=page, frame=page, expected_diagram="D-004", timeout_ms=5000,
-            screenshot_output_dir=None, coverage_cell=(viewport, "atlas", "normal"),
+            screenshot_output_dir=tmp_path, coverage_cell=(viewport, "atlas", "normal"),
         )
 
         assert issues == ()
-        if mobile:
-            assert "- 80px" in page.locator("#viewerImage").get_attribute("style")
+        assert page.locator("#zoomReadout").inner_text() == "Zoom 100%"
+        assert (tmp_path / f"{viewport}-atlas-normal-d-004-read-100.png").is_file()
     finally:
         context.close()
 
@@ -1075,6 +1077,7 @@ def _authored_contract_html(facts: dict) -> str:
     "extra_row_text", "changed_actor", "changed_kind", "changed_source", "missing_actor", "missing_kind",
     "missing_source", "missing_actor_marker", "missing_evidence", "reordered_evidence", "missing_details",
     "duplicate_details", "open_details", "non_native_details", "hidden_summary", "hidden_evidence", "blocked_keyboard",
+    "open_roster", "hidden_roster", "reordered_roster", "changed_roster", "blocked_roster",
 ])
 def test_authored_narrative_and_keyboard_evidence_reject_independent_dom_damage(
     authored_contract_browser, tmp_path: Path, width: int, height: int, damage: str,
@@ -1113,6 +1116,12 @@ def test_authored_narrative_and_keyboard_evidence_reject_independent_dom_damage(
           } else if (damage === 'hidden_summary') details.querySelector('summary').style.display = 'none';
           else if (damage === 'hidden_evidence') fields[0].style.display = 'none';
           else if (damage === 'blocked_keyboard') details.querySelector('summary').addEventListener('keydown', event => event.preventDefault());
+          const roster = root.querySelector('[data-authored-system-roster]');
+          if (damage === 'open_roster') roster.open = true;
+          else if (damage === 'hidden_roster') roster.querySelector('li').style.visibility = 'hidden';
+          else if (damage === 'reordered_roster') roster.prepend(roster.lastElementChild);
+          else if (damage === 'changed_roster') roster.querySelector('li').textContent = 'Unsupported system';
+          else if (damage === 'blocked_roster') roster.querySelector('summary').addEventListener('keydown', event => event.preventDefault());
         }""", damage)
         actual, interaction_issues = module.prove_authored_event_disclosure(root, timeout_ms=5000)
         issues = (*module.authored_structure_issues(actual, facts), *interaction_issues)
@@ -1137,7 +1146,8 @@ def test_authored_dom_oracle_preserves_publication_and_post_result_archiving(
     page = authored_contract_browser.new_page(viewport={"width": width, "height": height})
     try:
         page.set_content(_authored_contract_html(facts))
-        actual = page.locator("#authored").evaluate(module.AUTHORED_STRUCTURE_EXPRESSION)
+        actual, interaction = module.prove_authored_event_disclosure(page.locator("#authored"), timeout_ms=5000)
+        assert interaction == ()
         assert module.authored_structure_issues(actual, facts) == ()
         for surface in ("first_path",):
             assert [row["text"] for row in actual[surface]] == [
@@ -1159,7 +1169,9 @@ def test_authored_dom_oracle_detects_hidden_labels_and_source_order(
     try:
         page.set_content(document)
         root = page.locator("#authored")
-        assert module.authored_structure_issues(root.evaluate(module.AUTHORED_STRUCTURE_EXPRESSION), facts) == ()
+        actual, interaction = module.prove_authored_event_disclosure(root, timeout_ms=5000)
+        assert interaction == ()
+        assert module.authored_structure_issues(actual, facts) == ()
         for surface, parent_selector in (
             ("first_path", '[data-semantic-slot="first_path"]'),
         ):
@@ -1458,7 +1470,8 @@ def test_authored_dom_oracle_keeps_unassigned_participants_visible(
     try:
         page.set_content(document)
         root = page.locator("#authored")
-        actual = root.evaluate(module.AUTHORED_STRUCTURE_EXPRESSION)
+        actual, interaction = module.prove_authored_event_disclosure(root, timeout_ms=5000)
+        assert interaction == ()
         assert module.authored_structure_issues(actual, facts) == ()
         assert [row["actor"] for row in actual["actors"]] == ["Keeper", "Silent observer"]
         for damage in ("hidden", "removed", "renamed"):
@@ -1469,7 +1482,9 @@ def test_authored_dom_oracle_keeps_unassigned_participants_visible(
               else if (damage === "hidden") node.style.display = "none";
               else node.querySelector("h3").textContent = "Unsupported participant";
             }""", damage)
-            assert module.authored_structure_issues(root.evaluate(module.AUTHORED_STRUCTURE_EXPRESSION), facts) == (
+            actual, interaction = module.prove_authored_event_disclosure(root, timeout_ms=5000)
+            assert interaction == ()
+            assert module.authored_structure_issues(actual, facts) == (
                 "browser surface project participants do not preserve all source-stated human names",
             )
     finally:

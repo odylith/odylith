@@ -356,7 +356,8 @@ def test_registry_evidence_is_optional_and_retains_exact_history(
          "workstreams": [], "artifacts": []},
     ] if state == "normal" else []
     component = {"component_id": "consent-registry", "name": "Consent material registry", "what_it_is": purpose,
-                 "status": "planned", "qualification": "candidate", "category": "application"}
+                 "status": "planned", "qualification": "candidate", "category": "application",
+                 "timeline_count": 1 if state == "degraded" else len(events)}
     detail = {**component, "timeline": events, "forensic_coverage": {
         "mapped_workstream_evidence_count": 1 if events else 0,
         "spec_history_event_count": 1 if events else 0, "recent_path_match_count": 0,
@@ -387,6 +388,7 @@ def test_registry_evidence_is_optional_and_retains_exact_history(
         assert page.locator(".component-identity").get_by_text("Planned", exact=True).is_visible()
         warning = page.locator("#detail [role=status]")
         if state == "degraded":
+            assert page.locator("#detail").get_by_text("Events 1", exact=True).count() == 1
             assert warning.inner_text() == "Component detail unavailable. The available summary is shown."
             assert warning.is_visible()
             assert warning.evaluate("node => node.closest('details') === null")
@@ -396,7 +398,9 @@ def test_registry_evidence_is_optional_and_retains_exact_history(
         assert evidence.evaluate("node => node.tagName") == "DETAILS"
         assert evidence.get_attribute("open") is None
         assert evidence.locator(":scope > summary > span").first.text_content() == "Evidence"
-        assert evidence.locator("#timelineCount").text_content() == f"{len(events)} events"
+        assert evidence.locator("#timelineCount").text_content() == (
+            "Unavailable" if state == "degraded" else f"{len(events)} events"
+        )
         assert not page.locator("#timeline").is_visible()
         assert not page.locator(".forensic-health-card").is_visible()
         summary_control = evidence.locator(":scope > summary")
@@ -404,7 +408,7 @@ def test_registry_evidence_is_optional_and_retains_exact_history(
         summary_control.press("Enter")
         assert evidence.get_attribute("open") == ""
         assert page.locator("#timeline").is_visible()
-        expected_counts = ["2", "2", "1", "1", "0"] if events else ["0"] * 5
+        expected_counts = [] if state == "degraded" else ["2", "2", "1", "1", "0"] if events else ["0"] * 5
         assert page.locator(".forensic-stat-value").all_inner_texts() == expected_counts
         if events:
             assert page.locator(".forensic-latest .forensic-summary").text_content() == summary
@@ -422,6 +426,10 @@ def test_registry_evidence_is_optional_and_retains_exact_history(
             group_control.focus()
             group_control.press("Enter")
             assert page.locator(".forensic-group-row .forensic-summary").all_text_contents() == [summary, earlier_summary]
+        elif state == "degraded":
+            assert page.locator("#timeline").inner_text() == "Evidence detail is unavailable."
+            assert "0 events" not in evidence.inner_text().lower()
+            assert page.locator(".forensic-latest").count() == 0
         else:
             assert page.locator("#timeline").inner_text().count("No mapped forensic evidence is attached yet.") == 1
             assert page.locator(".forensic-latest").count() == 0

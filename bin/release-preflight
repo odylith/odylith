@@ -8,18 +8,48 @@ if [[ "${1:-}" == "--canonical-exec" ]]; then
   shift
 fi
 
+phase="${1:-}"
+case "$phase" in
+  --prepare|--complete) shift ;;
+  *) die "release preflight requires --prepare or --complete, followed by an optional version" ;;
+esac
 requested_version="${1:-${VERSION:-}}"
+[[ "$#" -le 1 ]] || die "unexpected release preflight arguments"
 if [[ -n "$requested_version" ]]; then
   require_version "$requested_version"
 fi
 
 if [[ "$canonical_exec" != "true" ]]; then
   if [[ -n "$requested_version" ]]; then
-    run_in_canonical_release_checkout "$odylith_host_repo_root/bin/release-preflight" --canonical-exec "$requested_version"
+    run_in_canonical_release_checkout "$odylith_host_repo_root/bin/release-preflight" --canonical-exec "$phase" "$requested_version"
   else
-    run_in_canonical_release_checkout "$odylith_host_repo_root/bin/release-preflight" --canonical-exec
+    run_in_canonical_release_checkout "$odylith_host_repo_root/bin/release-preflight" --canonical-exec "$phase"
   fi
   exit $?
+fi
+
+require_canonical_release_checkout
+allow_session_init=false
+[[ "$phase" != "--prepare" ]] || allow_session_init=true
+resolved_version="$(resolve_release_session_version "release-preflight" "$requested_version" "$allow_session_init" "true")"
+tag="v${resolved_version}"
+expected_sha="$(release_session_field head_sha)"
+preflight_root="$(greenfield_release_proof_root "$expected_sha")"
+dist_dir="$preflight_root/dist"
+package_args=(--proof-root "$preflight_root" --session "$odylith_release_session_file"
+  --repo-root "$odylith_repo_root" --implementation-revision "$expected_sha" --version "$resolved_version")
+if [[ "$phase" == "--prepare" ]]; then
+  if [[ -e "$preflight_root" || -L "$preflight_root" ]]; then
+    die "release proof directory already exists; preserve it and do not rebuild: $preflight_root"
+  fi
+  mkdir -p "$(dirname "$preflight_root")"
+  mkdir "$preflight_root"
+  mkdir "$dist_dir"
+  prepare_release_proof_package "$resolved_version" "$dist_dir"
+  "$odylith_python" "$odylith_repo_root/scripts/release/greenfield_release_qualification.py" \
+    --package-phase prepare "${package_args[@]}"
+  echo "release package prepared at $dist_dir; public qualification and terminal proof remain pending"
+  exit 0
 fi
 
 [[ "${GREENFIELD_MATRIX_RELEASE_INTENT:-0}" == "1" ]] || die "release preflight requires GREENFIELD_MATRIX_RELEASE_INTENT=1"
@@ -28,21 +58,13 @@ for required_input in \
   GREENFIELD_MATRIX_SEALED_RELEASE_INPUT_ROOT \
   GREENFIELD_MATRIX_SEMANTIC_ANNOTATIONS_FILE \
   GREENFIELD_MATRIX_EVALUATION_SPLIT_MANIFEST \
-  GREENFIELD_MATRIX_LOWER_CAPABILITY_CONTROL_FILE; do
+  GREENFIELD_MATRIX_LOWER_CAPABILITY_CONTROL_FILE \
+  GREENFIELD_MATRIX_COMPOSED_PUBLIC_EVIDENCE; do
   [[ -n "${!required_input:-}" ]] || die "release preflight requires $required_input"
 done
-require_canonical_release_checkout
-resolved_version="$(resolve_release_session_version "release-preflight" "$requested_version" "true" "true")"
-tag="v${resolved_version}"
-expected_sha="$(release_session_field head_sha)"
-preflight_root="$(greenfield_release_proof_root "$expected_sha")"
-if [[ -e "$preflight_root" ]]; then
-  die "release proof directory already exists; preserve it and do not rerun the one-shot proof: $preflight_root"
-fi
-mkdir -p "$(dirname "$preflight_root")"
-mkdir "$preflight_root"
-dist_dir="$preflight_root/dist"
-mkdir -p "$dist_dir"
+"$odylith_python" "$odylith_repo_root/scripts/release/greenfield_release_qualification.py" \
+  --package-phase claim "${package_args[@]}" \
+  --composed-public-evidence "$GREENFIELD_MATRIX_COMPOSED_PUBLIC_EVIDENCE"
 
 GREENFIELD_MATRIX_OUTPUT_JSON="$preflight_root/matrix-result.v1.json" \
 GREENFIELD_MATRIX_EVIDENCE_OUTPUT_DIR="$preflight_root/retained-evidence" \

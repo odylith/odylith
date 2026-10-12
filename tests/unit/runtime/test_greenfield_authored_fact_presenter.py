@@ -175,6 +175,9 @@ def test_authored_fact_presenter_lists_people_once_and_preserves_first_path() ->
     assert '<p data-proposed-first-run-label>Proposed first run:</p>' in story
     assert story.count('data-authored-fact-list="owned_capabilities"') == 1
     assert story.count("data-authored-boundary-group") == 4
+    assert '<details data-authored-system-roster><summary>Components and systems</summary>' in story
+    assert '<details data-authored-system-roster open' not in story
+    assert story.index('data-boundary-kind="non_goals"') > story.index('</details>', story.index('data-authored-system-roster'))
     assert 'data-authority-kind="provisional_design"' in story
     assert '<h3 data-provisional-design-label>Proposed capabilities</h3>' in story
     assert '<p data-provisional-design-label>' not in story

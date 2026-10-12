@@ -1,5 +1,24 @@
 - Bug ID: CB-303
 
+## Current presentation correction (2026-10-12)
+
+The installed creation-to-EDIT diagnostic passes independent source and
+presentation review. The original Accepted Focus wall, raw summary excerpt and
+generic component openings are absent. The final bounded correction puts typed
+component/system rosters behind a closed keyboard-accessible disclosure,
+distinguishes unavailable Registry detail from a genuine zero, and preserves
+Atlas native 100% reading geometry during capture. Stored meaning and authority
+remain unchanged; implementation steps were already closed by default.
+
+Independent review clears all nine frozen files with no P0/P1/P2 finding.
+The seven affected modules pass 271 tests; the final three browser modules pass
+191 tests, overlapping that scope. Five preimage controls fail as expected.
+The retained H1 browser matrix has 111 screenshots and zero issues; all 332
+original input files remain unchanged. This is source and browser evidence,
+not fresh packaged family or release qualification. Report:
+/private/tmp/odylith-v52-canonical-assembly-independent-review-20261012/human-presentation-capture-followup/report.md
+(SHA-256 896de1fedf06869fd703f6bf2de4347eacd86c3c55c8e2acd61f0be86e2e0606).
+
 ## Current installed Project path mismatch (2026-10-09, v51)
 
 The published Project page still shows six proposed actions under First Path on

@@ -97,6 +97,30 @@ def prove_authored_event_disclosure(root: Any, *, timeout_ms: int) -> tuple[Any,
         summary.press("Space", timeout=timeout_ms)
     if root.evaluate(AUTHORED_STRUCTURE_EXPRESSION) != initial:
         issues.append("browser surface project supporting evidence did not close intact by keyboard")
+    roster = root.locator('[data-authored-system-roster]')
+    if roster.count() != 1 or not roster.evaluate("""node =>
+        node.tagName === 'DETAILS' && !node.open &&
+        node.querySelector(':scope > summary')?.innerText === 'Components and systems' &&
+        [...node.querySelectorAll('[data-authored-fact-item]')].every(item => !item.checkVisibility())
+    """):
+        issues.append("browser surface project component and system roster is not initially closed")
+        return initial, tuple(issues)
+    roster_summary = roster.locator(':scope > summary')
+    roster_summary.focus(timeout=timeout_ms)
+    roster_summary.press("Enter", timeout=timeout_ms)
+    visible = roster.evaluate("""node => node.open &&
+        [...node.querySelectorAll('strong, [data-authored-fact-item]')].every(item => {
+          const style = getComputedStyle(item);
+          return item.getClientRects().length && style.visibility === 'visible' && Number(style.opacity) > 0;
+        })
+    """)
+    opened_groups = root.evaluate(AUTHORED_STRUCTURE_EXPRESSION)["boundary_groups"]
+    if not visible:
+        issues.append("browser surface project component and system roster is not visibly accessible by keyboard")
+    roster_summary.press("Space", timeout=timeout_ms)
+    if root.evaluate(AUTHORED_STRUCTURE_EXPRESSION) != initial:
+        issues.append("browser surface project component and system roster did not close intact by keyboard")
+    initial = {**initial, "boundary_groups": opened_groups}
     return initial, tuple(issues)
 
 _GENERATED_TEXT_SUFFIXES = frozenset({".css", ".html", ".js", ".json", ".md", ".mmd", ".txt"})

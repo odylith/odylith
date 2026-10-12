@@ -6,8 +6,10 @@ from pathlib import Path
 from typing import Any
 
 
-def capture_state_screenshot(*, page: Any, output_dir: Path, state_name: str) -> Path:
-    """Expand the active pane before Playwright captures the full document."""
+def capture_state_screenshot(
+    *, page: Any, output_dir: Path, state_name: str, expand_pane: bool = True,
+) -> Path:
+    """Capture the complete pane, or preserve an interactive viewport exactly."""
 
     token = str(state_name or "").strip().casefold()
     if not token or any(not (char.isalnum() or char == "-") for char in token):
@@ -25,6 +27,9 @@ def capture_state_screenshot(*, page: Any, output_dir: Path, state_name: str) ->
         if viewport_target.exists() or viewport_target.is_symlink():
             raise RuntimeError(f"browser viewport screenshot already exists: {token}")
         page.screenshot(path=str(viewport_target), full_page=False)
+    if not expand_pane:
+        page.screenshot(path=str(target), full_page=False)
+        return target
     extent = page.evaluate(
         """() => {
             const pane = document.querySelector(".pane:not([hidden])");

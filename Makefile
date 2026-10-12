@@ -76,8 +76,14 @@ greenfield-matrix-campaign:
 release-candidate:
 	@./bin/release-candidate "$(VERSION)"
 
-release-preflight:
-	@./bin/release-preflight "$(VERSION)"
+release-preflight: release-preflight-prepare
+
+.PHONY: release-preflight-prepare release-preflight-complete
+release-preflight-prepare:
+	@./bin/release-preflight --prepare "$(VERSION)"
+
+release-preflight-complete:
+	@./bin/release-preflight --complete "$(VERSION)"
 
 release-dispatch:
 	@./bin/release-dispatch "$(VERSION)"

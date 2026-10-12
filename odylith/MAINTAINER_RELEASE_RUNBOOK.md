@@ -1,12 +1,12 @@
 # Odylith Maintainer Release Runbook
 
-Last updated: 2026-04-08
+Last updated: 2026-10-12
 
 ## Purpose
 Use this runbook for the canonical Odylith release lane only.
 
 Use the generic
-[GTM and Release Checklist](/Users/freedom/code/odylith/odylith/maintainer/GTM_AND_RELEASE_CHECKLIST.md)
+[GTM and Release Checklist](maintainer/GTM_AND_RELEASE_CHECKLIST.md)
 as the reusable launch-readiness overlay for narrative, proof, asset, and
 announcement review. The runbook remains the canonical command order.
 
@@ -114,11 +114,30 @@ Run the targets in this order.
    stop the in-flight benchmark, capture the blocker in Casebook, and keep the
    release story explicit that benchmark proof is advisory for that version.
 
-4. `make release-preflight [VERSION=X.Y.Z]`
+4. `make release-preflight-prepare [VERSION=X.Y.Z]`
    Initialize or reuse the sticky release session, reserve the release tag,
    validate the canonical release contract, build the wheel plus split managed
    runtime assets, and prove the generated installer locally before dispatch.
-   This gate also fails closed when release-facing security docs such as
+   Preparation preserves one package under the fixed session proof directory;
+   it does not run the protected holdout or qualify the release. Use that exact
+   distribution for Primary40, High4 and genuine EDIT4. Preserve the original
+   outputs, independent source reviews and each public family's measured timing
+   decision. Authenticate them through the existing composed public evidence.
+
+   Then run `make release-preflight-complete [VERSION=X.Y.Z]` with
+   `GREENFIELD_MATRIX_RELEASE_INTENT=1`, the frozen case, sealed input,
+   annotations, split manifest and lower-capability control inputs, plus
+   `GREENFIELD_MATRIX_COMPOSED_PUBLIC_EVIDENCE` pointing to the original composed
+   evidence configuration. Completion verifies the prepared package and those
+   references before claiming one terminal attempt. It never rebuilds the
+   package or replays the protected holdout. Preserve a failed attempt.
+
+   Complete the independent semantic and UX review over the exact terminal
+   result and retained evidence with `make greenfield-onboarding-review
+   REVIEW=[review-package]`. Review and dispatch reauthenticate the same public
+   evidence and distribution; preparation alone cannot authorize publication.
+
+   These gates also fail closed when release-facing security docs such as
    `SECURITY.md` and the product plus bundled `SECURITY_POSTURE.md` files do
    not mention the candidate version.
    For v0.1.13 and later, release prep also requires those security-facing docs
@@ -225,8 +244,12 @@ Run the targets in this order.
   Build a local hosted-release asset directory for maintainer-only fresh
   install smoke testing. Serve that directory from localhost and install with
   the printed `ODYLITH_RELEASE_*` environment in a separate test repo.
-- `make release-preflight [VERSION=X.Y.Z]`
-  Session initializer and canonical preflight gate.
+- `make release-preflight-prepare [VERSION=X.Y.Z]`
+  Initialize the session and prepare its frozen package. `make release-preflight`
+  is an alias for this preparation phase.
+- `make release-preflight-complete [VERSION=X.Y.Z]`
+  Authenticate completed public qualification against the prepared package and
+  run its protected terminal proof once.
 - `make release-dispatch`
   Canonical GitHub release workflow dispatch using the active session only.
 - `make dogfood-activate`
@@ -262,7 +285,7 @@ Run the targets in this order.
   contract.
 
 ## Important Notes
-- `make release-preflight` is the only session initializer.
+- The preparation phase of `make release-preflight` is the only session initializer.
 - Local release wrappers may materialize an isolated clean checkout of the
   `origin/main` commit when the active maintainer workspace is dirty or
   off-main, but only if that workspace `HEAD` already matches `origin/main`.
@@ -270,10 +293,10 @@ Run the targets in this order.
   runtime bundles, context-engine pack assets, signed release manifest inputs,
   and a local hosted-style installer proof for
   `install -> version -> doctor -> sync`.
-- `make release-preflight` must also fail closed unless the built local dist
+- The completion phase must fail closed unless the built local dist
   passes the installed Greenfield pre-confirm compilation and commit-only
   release matrix. The matrix is part of shared release proof and must cover at
-  least ten high-variance standard cases. Model-profile contract v23 qualifies
+  least ten high-variance standard cases. Model-profile contract v25 qualifies
   only the pinned Astra-medium standard profile for successful consumer release
   claims. One separately identified Luna-medium host control must return the
   expected source-bound clarification without writes; it is excluded from corpus
@@ -283,13 +306,18 @@ Run the targets in this order.
   `codex exec` model and reasoning-effort argv; environment labels and wrappers
   are not release evidence.
   The 90-, 120-, and 150-second values remain advisory performance observations,
-  not admission gates. Declared profiles share a 165-second model window inside
-  the strict 180-second operational timeout, while commit-only publication keeps
-  its separate strict limit below 60 seconds. Default or `auto` is standard.
+  not admission gates. Standard shares a 300-second gate/candidate model window
+  and a 15-second completion reserve. Source inventory has 300 seconds,
+  source verification 120 seconds and deterministic checks 30 seconds inside
+  the nonreplenishing 660-second diagnostic parent. Its final delivery and
+  cleanup boundaries remain as defined by the current contract. Independently
+  measured public-family bounds remain separate; they do not prove consumer
+  timing. Commit-only publication retains its separate strict limit below
+  60 seconds. Default or `auto` is standard.
   Public `rescue` and `deep` success selection fails before provider execution;
   elapsed time or failure never promotes a standard request into another model
-  path. Do not relabel v22 receipts, old envelopes, or historical failures as
-  v23 proof, and do not add retries, repairs, fallbacks, or a model ladder.
+  path. Do not relabel old receipts, envelopes or historical failures as current
+  proof, and do not add retries, repairs, fallbacks or a model ladder.
 - The same matrix must run per-case headless generated browser state proof for
   Radar, Registry, Atlas, Compass, Casebook, and tooling-shell surfaces,
   including normal shell routes, invalid-query recovery, and Casebook

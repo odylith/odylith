@@ -1,17 +1,25 @@
-%% Reviewed 2026-08-03 for deterministic process-isolated full-suite validation and aggregate shard failure reporting.
+%% Reviewed 2026-10-12 for one prepared release package, public-family qualification, and a single terminal completion attempt.
 flowchart TD
     maintainer["Maintainer Workspace"]
     preview["release-version-preview / release-version-show"]
     devvalidate["dev-validate<br/>detached source-local lane<br/>fresh-process pytest shards"]
-    preflight["release-preflight"]
-    session[".odylith/locks/release-session.json"]
+    prepare["release-preflight --prepare<br/>seal one release package"]
+    session["Prepared release package<br/>version, commit, distribution<br/>and immutable public references"]
+    primary["Primary public family<br/>40 prompts"]
+    high_variance["High-variance public family<br/>4 prompts"]
+    genuine_edit["Genuine EDIT public family<br/>4 lifecycle cases"]
+    composition["Composed qualification gate<br/>authenticate one package<br/>and each family result"]
+    complete["release-preflight --complete<br/>one terminal attempt"]
+    holdout["Protected terminal holdout<br/>runs once after qualification"]
     dispatch["release-dispatch"]
     isolated["Isolated clean checkout<br/>detached at origin/main when needed"]
 
     subgraph local["Local Canonical Release Lane"]
-        preview --> preflight
-        preflight --> session
-        session --> dispatch
+        preview --> prepare --> session
+        session --> primary --> composition
+        session --> high_variance --> composition
+        session --> genuine_edit --> composition
+        composition --> complete --> holdout --> dispatch
     end
 
     subgraph dev["Maintainer Dev Lane"]
@@ -49,10 +57,10 @@ flowchart TD
     detached --> isolated
     isolated --> clean
 
-    origin --> preflight
-    actor --> preflight
-    clean --> preflight
-    sync --> preflight
+    origin --> prepare
+    actor --> prepare
+    clean --> prepare
+    sync --> prepare
 
     dispatch --> workflow
     session --> workflow

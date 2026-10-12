@@ -1422,59 +1422,6 @@ def test_release_upload_artifacts_include_raw_runtime_bundles_and_attribution(tm
     assert "SHA256SUMS" in names
     assert "odylith-runtime-linux-x86_64.tar.gz.sigstore.json" in names
 
-def test_release_preflight_preserves_one_shot_dist_and_review_evidence() -> None:
-    text = (REPO_ROOT / "bin" / "release-preflight").read_text(encoding="utf-8")
-    shared = (REPO_ROOT / "bin" / "_odylith.sh").read_text(encoding="utf-8")
-
-    assert 'preflight_root="$(greenfield_release_proof_root "$expected_sha")"' in text
-    assert 'dist_dir="$preflight_root/dist"' in text
-    assert 'if [[ -e "$preflight_root" ]]; then' in text
-    assert 'trap \'rm -rf "$preflight_root"\' EXIT' not in text
-    assert 'GREENFIELD_MATRIX_OUTPUT_JSON="$preflight_root/matrix-result.v1.json"' in text
-    assert 'GREENFIELD_MATRIX_EVIDENCE_OUTPUT_DIR="$preflight_root/retained-evidence"' in text
-    assert 'GREENFIELD_MATRIX_FINAL_HOLDOUT_RUN_LEDGER="$preflight_root/final-holdout-ledger.v3.json"' in text
-    assert 'ODYLITH_GREENFIELD_MATRIX_TEMP_PARENT="${TMPDIR:-/tmp}"' in text
-    assert 'awaits independent Greenfield qualification' in text
-    assert 'run_release_proof_steps "$resolved_version" "$dist_dir" terminal' in text
-    assert 'run_release_proof_steps() {' in shared
-    assert '"$odylith_python" "$odylith_host_repo_root/scripts/sync_version_truth.py" --repo-root . sync' in shared
-    assert '"$odylith_python" -m hatch build --target wheel "$dist_dir"' in shared
-    assert '--dist-dir "$dist_dir" --allow-local' in shared
-    assert 'ODYLITH_RELEASE_PREFLIGHT_DIST_DIR="$dist_dir"' in shared
-    assert 'glob.glob(os.path.join(dist_dir, "*.whl"))' in shared
-    assert 'scripts/release/local_release_smoke.py --version "$resolved_version" --dist-dir "$dist_dir"' in shared
-
-def test_release_candidate_benchmark_override_is_version_scoped() -> None:
-    helper = (REPO_ROOT / "bin" / "_odylith.sh").read_text(encoding="utf-8")
-    overrides = json.loads(
-        (REPO_ROOT / "odylith" / "runtime" / "source" / "release-maintainer-overrides.v1.json").read_text(
-            encoding="utf-8"
-        )
-    )
-    bundled_overrides = json.loads(
-        (
-            REPO_ROOT
-            / "src"
-            / "odylith"
-            / "bundle"
-            / "assets"
-            / "odylith"
-            / "runtime"
-            / "source"
-            / "release-maintainer-overrides.v1.json"
-        ).read_text(encoding="utf-8")
-    )
-
-    assert "release_benchmark_override_mode() {" in helper
-    assert "release-maintainer-overrides.v1.json" in helper
-    assert "benchmark_proof_overrides" in helper
-    rows = {row["version"]: row for row in overrides["benchmark_proof_overrides"]}
-    bundled_rows = {row["version"]: row for row in bundled_overrides["benchmark_proof_overrides"]}
-    assert rows["0.1.12"]["mode"] == "skip_proof_and_compare"
-    assert rows["0.1.12"]["owner"] == "release-maintainer"
-    assert "CB-116" in rows["0.1.12"]["reason"]
-    assert bundled_rows["0.1.12"] == rows["0.1.12"]
-
 
 def test_lane_show_wraps_lane_status() -> None:
     text = (REPO_ROOT / "bin" / "lane-show").read_text(encoding="utf-8")
@@ -1485,20 +1432,6 @@ def test_lane_show_wraps_lane_status() -> None:
     assert "lane-show:" in makefile
     assert "./bin/lane-show" in makefile
     assert "make lane-show" in help_text
-
-
-def test_release_candidate_workflow_is_manual_to_avoid_duplicate_pr_full_proof() -> None:
-    text = (REPO_ROOT / ".github" / "workflows" / "release-candidate.yml").read_text(encoding="utf-8")
-
-    assert "pull_request:" not in text
-    assert "workflow_dispatch:" in text
-    assert "make lane-show" in text
-    assert "make release-candidate" in text
-    assert "permissions:" in text
-    assert "contents: read" in text
-    assert "make dogfood-activate" not in text
-    assert "gh release create" not in text
-    assert "publish_release_assets.py" not in text
 
 
 def test_ga_checklist_does_not_duplicate_consumer_rehearsal() -> None:

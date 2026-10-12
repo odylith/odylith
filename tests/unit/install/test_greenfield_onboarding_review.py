@@ -136,21 +136,18 @@ def test_valid_review_finalizes_detached_lens_approvals_without_mutating_inputs(
         )
 
 
-def test_release_qualification_binds_review_to_terminal_holdout_and_revision(
+def test_release_qualification_requires_public_composition_even_after_legacy_terminal_review(
     evidence: dict[str, object], tmp_path: Path
 ) -> None:
     sidecar_path, ledger_path, provenance_path = _passing_release_qualification(evidence, tmp_path)
 
-    result = verify_release_qualification(
-        sidecar_path=sidecar_path,
-        final_holdout_ledger_path=ledger_path,
-        distribution_provenance_path=provenance_path,
-        implementation_revision=IMPLEMENTATION_REVISION,
-    )
-
-    assert result["status"] == "passed"
-    assert result["implementation_revision"] == IMPLEMENTATION_REVISION
-    assert result["matrix_result_sha256"] == sha256_file(evidence["base_path"])
+    with pytest.raises(RuntimeError, match="lacks its original qualified public composition"):
+        verify_release_qualification(
+            sidecar_path=sidecar_path,
+            final_holdout_ledger_path=ledger_path,
+            distribution_provenance_path=provenance_path,
+            implementation_revision=IMPLEMENTATION_REVISION,
+        )
 
 
 def test_release_qualification_rejects_stale_reviewed_evidence(

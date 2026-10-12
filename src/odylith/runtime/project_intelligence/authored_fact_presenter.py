@@ -302,7 +302,7 @@ def _structured_story_body(
             f'{rows}</ul></div>'
         )
     if semantic_slot == "product_boundary" and view.boundary_groups:
-        groups = "".join(
+        groups = [
             '<section data-authored-boundary-group '
             f'data-boundary-kind="{html.escape(group.key, quote=True)}">'
             f"<strong>{render_text(group.label)}:</strong>"
@@ -310,8 +310,14 @@ def _structured_story_body(
             + "".join(f"<li data-authored-fact-item>{render_text(item)}</li>" for item in group.items)
             + "</ul></section>"
             for group in view.boundary_groups
+        ]
+        roster = "".join(body for group, body in zip(view.boundary_groups, groups) if group.key != "non_goals")
+        scope = "".join(body for group, body in zip(view.boundary_groups, groups) if group.key == "non_goals")
+        detail = (
+            '<details data-authored-system-roster><summary>Components and systems</summary>'
+            f'{roster}</details>' if roster else ""
         )
-        return f'<div class="project-story-contract-body" data-authored-boundary>{groups}</div>'
+        return f'<div class="project-story-contract-body" data-authored-boundary>{detail}{scope}</div>'
     return ""
 
 

@@ -584,6 +584,11 @@ def runtime_js() -> str:
     }
 
     function renderTimeline(row) {
+      if (row && !Array.isArray(row.timeline)) {
+        timelineCountEl.textContent = "Unavailable";
+        timelineEl.innerHTML = '<p role="status">Evidence detail is unavailable.</p>';
+        return;
+      }
       const rawEvents = forensicEvidenceEvents(row);
       const events = forensicUniqueEvents(rawEvents);
       const forensicCoverage = row && typeof row.forensic_coverage === "object" ? row.forensic_coverage : {};

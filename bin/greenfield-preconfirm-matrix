@@ -59,6 +59,7 @@ final_holdout_run_ledger="${GREENFIELD_MATRIX_FINAL_HOLDOUT_RUN_LEDGER:-}"
 implementation_revision="${GREENFIELD_MATRIX_IMPLEMENTATION_REVISION:-}"
 distribution_provenance_file="${GREENFIELD_MATRIX_DISTRIBUTION_PROVENANCE_FILE:-}"
 lower_capability_control_file="${GREENFIELD_MATRIX_LOWER_CAPABILITY_CONTROL_FILE:-}"
+composed_public_evidence="${GREENFIELD_MATRIX_COMPOSED_PUBLIC_EVIDENCE:-}"
 release_intent="${GREENFIELD_MATRIX_RELEASE_INTENT:-0}"
 if [[ "$release_intent" != "0" && "$release_intent" != "1" ]]; then
   die "GREENFIELD_MATRIX_RELEASE_INTENT must be 0 or 1"
@@ -125,6 +126,9 @@ if [[ "$release_intent" == "1" ]]; then
     --lower-capability-control-file "$lower_capability_control_file"
     --evidence-output-dir "$evidence_output_dir"
   )
+  if [[ -n "$composed_public_evidence" ]]; then
+    extra_args+=(--composed-public-evidence "$composed_public_evidence")
+  fi
 elif [[ -n "$evidence_output_dir" ]]; then
   extra_args+=(--evidence-output-dir "$evidence_output_dir")
 fi

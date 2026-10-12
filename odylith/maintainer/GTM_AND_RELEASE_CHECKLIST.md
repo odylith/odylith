@@ -78,10 +78,18 @@ release.
 - [ ] `make release-version-show`
 - [ ] `odylith release list --repo-root .`
 - [ ] `odylith release show current --repo-root .`
-- [ ] Run `make release-preflight [VERSION=[version]]` with
-      `GREENFIELD_MATRIX_RELEASE_INTENT=1` and the frozen case, sealed input,
-      annotations, split manifest, and lower-capability control inputs. It
-      preserves one proof directory for the release session's commit.
+- [ ] Run `make release-preflight-prepare [VERSION=[version]]` to build and
+      preserve one package for the release session's commit. Preparation is
+      not release qualification.
+- [ ] Qualify Primary40, High4 and genuine EDIT4 against that exact package,
+      retaining original outputs, source reviews and separate measured timing
+      decisions in the composed public evidence.
+- [ ] Run `make release-preflight-complete [VERSION=[version]]` with
+      `GREENFIELD_MATRIX_RELEASE_INTENT=1`, the frozen case, sealed input,
+      annotations, split manifest and lower-capability control inputs, plus
+      `GREENFIELD_MATRIX_COMPOSED_PUBLIC_EVIDENCE` pointing to the original
+      composed evidence configuration. It verifies the prepared package and
+      claims one terminal holdout attempt without rebuilding or replaying.
 - [ ] Complete one independent strong semantic and UX review over the exact frozen
       Greenfield result and retained evidence, then run `make
       greenfield-onboarding-review REVIEW=[review-package]`.

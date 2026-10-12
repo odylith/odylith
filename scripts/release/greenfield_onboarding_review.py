@@ -79,6 +79,7 @@ def build_onboarding_review_sidecar(
     review_package: Mapping[str, Any] | None,
     public_source_evidence: Mapping[str, Any] | None = None,
     whole_journey_bound_evidence: Mapping[str, Any] | None = None,
+    composed_public_evidence_path: Path | None = None,
 ) -> dict[str, Any]:
     """Return a hash-bound final review sidecar without changing its inputs."""
 
@@ -88,6 +89,11 @@ def build_onboarding_review_sidecar(
     retained = _read_json_object(retained_path, label="retained evidence manifest")
     base_sha256 = sha256_file(base_path)
     retained_sha256 = sha256_file(retained_path)
+    from greenfield_release_qualification import authenticate_review_composition
+    composition = authenticate_review_composition(base=base, base_path=base_path,
+        evidence_path=composed_public_evidence_path)
+    if composition is not None and (public_source_evidence is not None or whole_journey_bound_evidence is not None):
+        raise RuntimeError("terminal review cannot replace composed evidence with single-family qualification")
 
     results = base.get("results")
     result_rows = results if isinstance(results, list) else []
@@ -185,6 +191,8 @@ def build_onboarding_review_sidecar(
     }
     if public_qualification is not None:
         sidecar["public_qualification"] = public_qualification
+    if composition is not None:
+        sidecar["composed_public_qualification"] = composition
     return sidecar
 
 
@@ -284,6 +292,7 @@ def finalize_onboarding_review(
     output_path: Path,
     public_source_evidence: Mapping[str, Any] | None = None,
     whole_journey_bound_evidence: Mapping[str, Any] | None = None,
+    composed_public_evidence_path: Path | None = None,
 ) -> dict[str, Any]:
     """Validate a saved review package and create one immutable sidecar."""
 
@@ -295,6 +304,8 @@ def finalize_onboarding_review(
         Path(retained_manifest_path).expanduser().resolve(),
         review_file,
     }
+    if composed_public_evidence_path is not None:
+        protected.add(composed_public_evidence_path.expanduser().resolve())
     for configuration in (public_source_evidence, whole_journey_bound_evidence):
         if isinstance(configuration, Mapping):
             protected.update(Path(ref["path"]).expanduser().resolve() for ref in configuration.values()
@@ -313,6 +324,7 @@ def finalize_onboarding_review(
         review_path=review_file,
         public_source_evidence=public_source_evidence,
         whole_journey_bound_evidence=whole_journey_bound_evidence,
+        composed_public_evidence_path=composed_public_evidence_path,
     )
     sidecar["review_package"] = {
         "path": str(review_file),
@@ -329,6 +341,7 @@ def validate_independent_review_bundle(
     review_path: Path,
     public_source_evidence: Mapping[str, Any] | None = None,
     whole_journey_bound_evidence: Mapping[str, Any] | None = None,
+    composed_public_evidence_path: Path | None = None,
 ) -> dict[str, Any]:
     """Validate a saved review package and return its detached sidecar payload."""
 
@@ -342,6 +355,7 @@ def validate_independent_review_bundle(
         review_package=package,
         public_source_evidence=public_source_evidence,
         whole_journey_bound_evidence=whole_journey_bound_evidence,
+        composed_public_evidence_path=composed_public_evidence_path,
     )
 
 
@@ -928,6 +942,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--public-source-evidence", type=Path)
     parser.add_argument("--whole-journey-bound-evidence", type=Path)
+    parser.add_argument("--composed-public-evidence", type=Path)
     return parser
 
 
@@ -942,6 +957,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.public_source_evidence is not None else None,
         whole_journey_bound_evidence=_read_json_object(args.whole_journey_bound_evidence, label="whole journey bound evidence")
         if args.whole_journey_bound_evidence is not None else None,
+        composed_public_evidence_path=args.composed_public_evidence,
     )
     print(json.dumps(sidecar, indent=2, sort_keys=True))
     return 0 if sidecar["status"] == "passed" else 1

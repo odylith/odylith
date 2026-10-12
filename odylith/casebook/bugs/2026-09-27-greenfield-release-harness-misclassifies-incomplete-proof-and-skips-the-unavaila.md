@@ -1,5 +1,60 @@
 - Bug ID: CB-347
 
+## Final integration findings (2026-10-12)
+
+The canonical component sync converged the release dossier. Its following
+selective refresh reported ambiguous impact and expanded into a tooling-shell
+render. This advanced the complete active publication and changed the local
+shell. Preserve the exact prior and current bytes; do not restore the old
+publication pointer and undo an observed governance successor. Both local
+dashboard paths stay outside the source commit. Use a surface-specific refresh
+for the remaining generated views. The readback-verified preservation archive
+is /Users/freedom/.codex/odylith-release-evidence/2026-10-12/v52/dashboard-publication-preservation.tar.gz
+(SHA-256 4ed3e1bef5a99c4f6120c6216b61df7aea3ad7f4fe006dad8e99baf95534cf4a).
+
+The complete 187-module successor retains 4,411 passes and one failure in 707.1
+seconds, with zero errors/skips and unchanged source/review pins. The sole
+failure is the release dossier convergence check: its derived FORENSICS record
+is stale after the authored spec update. Refresh it through the existing
+component-spec requirement sync and validate the unchanged convergence test.
+Do not change the quality gate or rerun models for this generated-record gap.
+
+Hosted b8 CI separately retains 10,817 passes, ten skips and one failure: the
+bundle index differs from the committed canonical dashboard by nine snapshot
+lines. Local protected publication resolves an untracked tooling shell and can
+hide that committed mismatch. Use the existing mirror owner with committed
+canonical input, preserve both local dashboard files, and verify the unchanged
+shell contracts against the staged source export. No renderer, profile, timing
+or workflow change is justified. Independent diagnosis:
+/private/tmp/odylith-v52-canonical-release-assembly-20261012/ci-pr34-run38309809404-20261012/report.md
+(SHA-256 d4a0c64f7d90431df70fe17d89a9c902a8d15241bd2a7bb7571645057ece985a).
+
+## Current compatibility and assembly checkpoint (2026-10-12)
+
+Successor07 passes all 44 required browser cells with unchanged source, consumer,
+protected files and served bytes. Its final correction replaces an obsolete
+carrier URL assertion with the exact active-generation URL owned by publication;
+123 other assertions remain unchanged and the explicit publication guard adds
+one. The main matrix runs once, followed by the unchanged two Project-degraded
+cells. All earlier failures remain retained. This is bounded development
+compatibility, not installed family or release qualification. Report:
+/private/tmp/odylith-v52-current-browser-compatibility-witness-successor07-20261010/report.md
+(SHA-256 87a3fe42ad3a27843e4a52cebde03f28767be068a22ecc5c067f1f80f0d0ff49).
+
+Canonical assembly now separates preparation from completion in the existing
+release owners. Primary40, High4 and genuine EDIT4 must authenticate the same
+prepared package and original composition at matrix, review and dispatch.
+Public timing decisions apply to their original public rows; distinct terminal
+rows retain their existing operational checks. No aggregate threshold or consumer
+timing claim is invented. Changed provenance bytes, nonignored untracked source,
+missing public evidence and a repeated terminal claim fail closed.
+
+All 688 affected tests pass. Independent review clears the frozen 17-file slice
+with no P0/P1/P2 finding. This is deterministic implementation proof; the real
+canonical package, public families and one terminal holdout remain pending.
+Report: /private/tmp/odylith-v52-canonical-assembly-independent-review-20261012/report.md
+(SHA-256 338c3fa2aad82467e5349c921c27619f2f63cb659076a28ae4157ccf309e7db3).
+
 ## Current compatibility witness failures (2026-10-12)
 
 The first fixture omitted predecessor publication assets; the next failed in

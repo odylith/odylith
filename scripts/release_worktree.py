@@ -43,7 +43,9 @@ def remote_ref_sha(*, repo_root: Path, remote: str, ref: str) -> str:
 def worktree_is_clean(*, repo_root: Path) -> bool:
     tracked = _run_git(repo_root=repo_root, args=["diff", "--quiet", "--ignore-submodules", "HEAD", "--"], check=False)
     staged = _run_git(repo_root=repo_root, args=["diff", "--quiet", "--ignore-submodules", "--cached", "--"], check=False)
-    return tracked.returncode == 0 and staged.returncode == 0
+    untracked = _run_git(repo_root=repo_root, args=["ls-files", "--others", "--exclude-standard"], check=False)
+    return (tracked.returncode == 0 and staged.returncode == 0
+        and untracked.returncode == 0 and not untracked.stdout.strip())
 
 
 def prepare_checkout(*, repo_root: Path, remote: str, ref: str) -> tuple[str, Path]:

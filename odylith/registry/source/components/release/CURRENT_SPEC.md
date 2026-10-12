@@ -1,5 +1,28 @@
 # Release
-Last updated: 2026-10-10
+Last updated: 2026-10-12
+
+## One-package qualification flow (2026-10-12)
+
+Canonical preflight separates preparation from completion. Preparation initializes
+the fixed session, builds and checks one distribution, and seals its source,
+artifact census and build logs. It grants no release qualification. The original
+Primary40, High4 and genuine EDIT4 results must bind to this same package through
+the existing composed evidence owner.
+
+Completion reauthenticates the prepared source, session, distribution and complete
+composition before exclusively claiming one terminal attempt. It never rebuilds
+the package. Each public family's original finite timing decision applies only
+to its exact public observations. Terminal rows retain their existing profile
+and whole-parent checks; no aggregate bound, extra terminal threshold or consumer
+timing claim is inferred. Independent onboarding review and dispatch
+reauthenticate the exact original composition reference and package again.
+Changed, missing, incomplete or mismatched evidence refuses. A failed terminal
+attempt is preserved rather than replayed. Source tests and independent review
+do not substitute for the actual pending family and protected-holdout gates.
+
+The supported maintainer commands are `make release-preflight-prepare` and
+`make release-preflight-complete`; `make release-preflight` aliases preparation.
+CB-347 and B-142 own this existing release integration slice.
 
 ## Greenfield composition and diagnostic execution (2026-10-10)
 

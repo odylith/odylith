@@ -73,6 +73,7 @@ from greenfield_model_profiles import profile_counts  # noqa: E402
 from greenfield_model_profiles import LOWER_CAPABILITY_CONTROL_PROFILES  # noqa: E402
 from greenfield_model_profiles import UNAVAILABLE_PROVIDER_PROFILE  # noqa: E402
 from greenfield_model_profile_proof import model_profile_release_proof  # noqa: E402
+from greenfield_release_qualification import authenticate_terminal_release_inputs, terminal_composed_evidence, terminal_public_evidence_reference  # noqa: E402
 from greenfield_model_profile_proof import authored_model_result_binding_issues  # noqa: E402
 from greenfield_model_profile_proof import sealed_model_profile_observation  # noqa: E402
 from greenfield_model_profile_proof import unavailable_provider_proof_issues  # noqa: E402
@@ -2476,6 +2477,8 @@ def _platform_leakage_proof_summary(results: Sequence[GreenfieldMatrixResult]) -
 
 def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run installed greenfield pre-confirm and commit-only release simulations.")
+    parser.add_argument("--composed-public-evidence", default="",
+        help="Exact qualified public families bound to the prepared terminal release package.")
     parser.add_argument("--dist-dir", required=True, help="Local release asset directory containing install.sh.")
     parser.add_argument("--version", default=_version_from_pyproject())
     parser.add_argument("--temp-parent", default=str(_default_temp_parent()))
@@ -3040,6 +3043,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 ),
                 temp_parent=Path(args.temp_parent),
             )
+    authenticate_terminal_release_inputs(args)
     final_holdout_run = _final_holdout_run_from_args(args, sealed_input_root=sealed_input_root)
     if final_holdout_run is not None:
         install_script = Path(args.dist_dir).expanduser().resolve() / "install.sh"
@@ -3448,6 +3452,7 @@ def _execute_matrix_campaign(
     profile_proof = model_profile_release_proof(
         (*results, *lower_capability_control_results),
         require_complete=campaign_config.proof_tier == "release" or public_diagnostics,
+        composed_public_evidence=terminal_composed_evidence(args),
     )
     lower_capability_control_proof = {
         "status": (
@@ -3605,6 +3610,9 @@ def _execute_matrix_campaign(
     }
     if commit_recovery is not None:
         payload["commit_recovery_proof"] = commit_recovery.to_dict()
+    public_ref = terminal_public_evidence_reference(args)
+    if public_ref is not None:
+        payload["composed_public_evidence"] = public_ref
     write_matrix_payload(output_path=output_path, payload=payload)
     if args.json_output:
         print(json.dumps(payload, indent=2, sort_keys=True))

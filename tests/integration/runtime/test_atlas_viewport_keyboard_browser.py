@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import base64
 from contextlib import contextmanager
+from pathlib import Path
+import sys
 
 import pytest
 
@@ -28,9 +30,18 @@ def _open_viewer(browser_context, width: int, state: str):  # noqa: ANN001
     base_url, context = browser_context
     with _new_page(context) as (page, observation):
         page.set_viewport_size({"width": width, "height": 1100 if width == 1440 else 932})
-        png = base64.b64decode(
-            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII="
-        )
+        png = base64.b64decode(page.evaluate("""() => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 2400; canvas.height = 1400;
+            const context = canvas.getContext('2d');
+            context.fillStyle = 'white'; context.fillRect(0, 0, 2400, 1400);
+            context.fillStyle = '#24465b'; context.font = '22px sans-serif';
+            context.fillText('Operator submits the record.', 40, 60);
+            context.fillText('Service validates the submission.', 1900, 60);
+            context.fillText('Rejected records retain their evidence.', 40, 1340);
+            context.fillText('Operator reviews the visible result.', 1900, 1340);
+            return canvas.toDataURL('image/png').split(',')[1];
+        }"""))
 
         def asset(route):  # noqa: ANN001
             is_png = route.request.url.endswith(".png")
@@ -170,4 +181,57 @@ def test_unavailable_diagram_does_not_offer_unusable_reading_controls(browser_co
         assert atlas.locator("#viewerStage").get_attribute("tabindex") == "-1"
         assert atlas.locator("#prevDiagram").is_disabled() == (state == "empty")
         assert atlas.locator("#nextDiagram").is_disabled() == (state == "empty")
+        _assert_clean_page(page, observation)
+
+
+@pytest.mark.parametrize("width", [1440, 430], ids=["desktop", "mobile"])
+@pytest.mark.parametrize("state", ["normal", "fallback"])
+def test_native_reading_capture_preserves_checked_iframe_and_visible_ink(
+    browser_context, tmp_path: Path, monkeypatch, width: int, state: str,
+) -> None:  # noqa: ANN001
+    sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts" / "release"))
+    import greenfield_browser_atlas_readability as reading
+
+    with _open_viewer(browser_context, width, state) as (page, atlas, observation):
+        captured = []
+        capture = reading.capture_state_screenshot
+
+        def retain(**kwargs):  # noqa: ANN003
+            before = _geometry(atlas)
+            pane = page.locator("#frame-atlas").bounding_box()
+            target = capture(**kwargs)
+            assert _geometry(atlas) == before
+            assert page.locator("#frame-atlas").bounding_box() == pane
+            assert before["scale"] == 1
+            captured.append((target, before, pane))
+            return target
+
+        monkeypatch.setattr(reading, "capture_state_screenshot", retain)
+        selected = atlas.locator("#diagramId").text_content()
+        issues = reading.prove_atlas_native_reading(
+            page=page, frame=atlas, expected_diagram=selected, timeout_ms=15000,
+            screenshot_output_dir=tmp_path,
+            coverage_cell=("desktop" if width == 1440 else "mobile", "atlas", state),
+        )
+        assert issues == ()
+        assert len(captured) == 1
+        target, geometry, pane = captured[0]
+        stage = geometry["stage"]
+        pixels = page.evaluate("""async ({png, crop}) => {
+            const image = new Image(); image.src = 'data:image/png;base64,' + png;
+            await image.decode();
+            const canvas = document.createElement('canvas');
+            canvas.width = crop.width; canvas.height = crop.height;
+            const context = canvas.getContext('2d');
+            context.drawImage(image, crop.x, crop.y, crop.width, crop.height, 0, 0, crop.width, crop.height);
+            const data = context.getImageData(0, 0, canvas.width, canvas.height).data;
+            let ink = 0;
+            for (let i = 0; i < data.length; i += 4) if (data[i] + data[i+1] + data[i+2] < 480) ink++;
+            return {width:image.width, height:image.height, ink};
+        }""", {"png": base64.b64encode(target.read_bytes()).decode(), "crop": {
+            "x": pane["x"] + stage["left"] + 12, "y": pane["y"] + stage["top"] + 12,
+            "width": stage["right"] - stage["left"] - 24, "height": stage["bottom"] - stage["top"] - 24,
+        }})
+        assert (pixels["width"], pixels["height"]) == (width, 1100 if width == 1440 else 932)
+        assert pixels["ink"] > 50
         _assert_clean_page(page, observation)

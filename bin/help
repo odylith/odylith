@@ -51,7 +51,8 @@ make greenfield-matrix-campaign [VERSION=X.Y.Z] [DIST=/tmp/odylith-local-release
 make release-candidate [VERSION=X.Y.Z]
   Run the shared non-publishing release-proof lane on the current clean checkout, including installed Greenfield transaction-matrix proof, and compare benchmarks against the last shipped release baseline.
 
-make release-preflight [VERSION=X.Y.Z]
+make release-preflight-prepare [VERSION=X.Y.Z]   # build and seal the package; release-preflight aliases this
+make release-preflight-complete [VERSION=X.Y.Z]  # consume qualified public evidence, then run terminal proof once
   Initialize or reuse the sticky release session, reserve the release tag, and run preflight checks.
 
 make release-dispatch

@@ -747,7 +747,8 @@ def test_main_persists_campaign_summary_for_discovery_runs(
         matrix_kwargs.update(kwargs)
         return (matrix_result,)
 
-    def fake_profile_proof(results, *, require_complete):
+    def fake_profile_proof(results, *, require_complete, composed_public_evidence):
+        assert composed_public_evidence is None
         profile_calls.append((results, require_complete))
         return {"status": profile_status, "issues": [] if profile_status == "passed" else ["unproven"]}
 

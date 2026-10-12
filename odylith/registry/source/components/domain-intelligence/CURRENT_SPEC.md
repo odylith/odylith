@@ -2307,6 +2307,9 @@ semantic/design findings.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-10-12 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142, B-145
+  - Evidence: `sha256:60b0b881d2ae0769eb7f8ec96c70fc86d99cf5986e31740a58ce90a4d98ec9f3`, `sha256:43a3deddb450707402606f76a6e83ee9a07d3afdfb0d99544f91b9b7be10e93e`, `src/odylith/runtime/domain_intelligence/greenfield_generation_state.py`
 - **2026-10-12 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-10-12-greenfield-edit-preflight-changes-task-hashes-across-python-processes.md`, `scripts/validate_git_identity.py`, `src/odylith/runtime/domain_intelligence/greenfield_source_duty_entailment.py`, `tests/unit/runtime/test_greenfield_edit_lifecycle_preservation.py`
@@ -2322,9 +2325,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-10-06 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142, B-145
   - Evidence: `odylith/atlas/source/odylith-managed-runtime-release-and-install-flow.mmd`, `src/odylith/install/upgrade_dashboard_recovery.py`, `src/odylith/runtime/domain_intelligence/greenfield_provisional_package.py`, `src/odylith/runtime/project_intelligence/authored_fact_presenter.py`
-- **2026-10-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_event_ordering.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

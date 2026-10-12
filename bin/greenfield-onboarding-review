@@ -19,8 +19,13 @@ if [[ "$(cd "$(dirname "$review_input")" && pwd -P)/$(basename "$review_input")"
   cp "$review_input" "$review_package"
 fi
 
+public_args=()
+if [[ -n "${GREENFIELD_MATRIX_COMPOSED_PUBLIC_EVIDENCE:-}" ]]; then
+  public_args+=(--composed-public-evidence "$GREENFIELD_MATRIX_COMPOSED_PUBLIC_EVIDENCE")
+fi
 "$odylith_python" "$odylith_repo_root/scripts/release/greenfield_onboarding_review.py" \
   --base-result "$base_result" \
   --retained-manifest "$retained_manifest" \
   --review "$review_package" \
-  --output "$output_sidecar"
+  --output "$output_sidecar" \
+  "${public_args[@]}"
