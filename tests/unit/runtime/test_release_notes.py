@@ -117,14 +117,18 @@ def test_v0_1_15_release_note_describes_sealed_confirmation_not_disabled_apply()
         for obsolete in ("Greenfield apply", "proposal apply", "Apply and authoring paths"):
             assert obsolete not in public_copy
         for command in (
-            "odylith greenfield candidate-contract",
-            "odylith greenfield propose",
-            "--candidate-file <path>",
-            "CONFIRM <hash>",
-            "EDIT <hash>",
-            "REJECT <hash>",
+            "odylith greenfield prepare",
+            "odylith greenfield decide",
+            "--transaction-hash",
+            "--completion-receipt",
+            "CONFIRM",
+            "EDIT",
+            "REJECT",
         ):
             assert command in public_copy
+        narrative = " ".join(public_copy.split())
+        assert "Public chat and hooks cannot authorize publication" in narrative
+        assert "Native Claude inference and confirmation remain unqualified" in narrative
         assert "After CONFIRM" in public_copy
         assert "does not call a model, generate artifacts, or repair prose" in public_copy
 

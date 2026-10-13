@@ -1,6 +1,37 @@
 Status: In progress
 
-## Current execution priority and release ordering (2026-10-12)
+## Current release frontier (2026-10-13)
+
+Feature work is frozen. Checkpoint `3be2011c7` is pushed; both hosted CI runs
+pass 10,890 tests with ten skips each. The complete benchmark `737ff669ce61f58b`
+finished all 82 cases, 328 observations and both cache profiles, but remains
+HOLD: write precision is 0.429 against the raw baseline's 0.500. Preserve that
+failure without regrading. Its seven failed On observations made no writes;
+outer validators lacked an exact report input or a referenced publication
+generation. The original browser exception bodies were not retained.
+
+CB-362 owns the prerequisite correction. In the existing authorized clean
+checkout, the unchanged graph and sync commands, eight publication checks,
+all 37 browser checks and eight replay controls pass. Both matched lanes receive
+the same frozen retained HOLD bytes through existing snapshot owners. This is
+setup validation, not new benchmark or release qualification. Do not change
+product code, floors, cases, validators, budgets, runtime identity exclusions or
+no-op scoring for this issue. Preserve the live root dashboard and recovery
+history; use the same clean checkout for the next full proof.
+
+Finish the reviewed release-note and two-diagram truth updates, commit and push
+one stable checkpoint, then run the complete proof and diagnostic profiles on
+that clean source. Only a passing full proof permits benchmark publication.
+Canonical release assembly is implemented and has bounded test/review evidence;
+it still requires actual execution. After final CI and compatibility gates,
+prepare one canonical package from the permitted squash-merge main commit and
+bind the public40, original High4 and genuine EDIT4 evidence to that package.
+Run genuine case01 first and independently assess it before the other three.
+Genuine qualifying EDIT remains 0/4. Keep the protected holdout closed until
+every public semantic, timing, artifact, transaction, host and clean-install
+gate passes. No further user decision or benchmark waiver is pending.
+
+## Previous execution priority and release ordering (2026-10-12)
 
 Freeze feature expansion and prove the actual EDIT journey before additional
 release assembly work. The fresh b589 case01 diagnostic sealed a source-faithful

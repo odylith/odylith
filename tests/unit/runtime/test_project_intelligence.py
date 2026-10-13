@@ -86,7 +86,8 @@ def test_project_intelligence_blank_install_starts_with_minimal_project_state(tm
     assert payload.get("answers", []) == []
     assert "Project not defined yet" in html
     assert "Start with the project" in html
-    assert "odylith greenfield propose --repo-root ." in html
+    assert "odylith greenfield prepare --repo-root ." in html
+    assert "odylith greenfield propose" not in html
     assert "Odylith, show me what you can do." in html
     assert "Product story" in html
     assert "Governance spine" in html

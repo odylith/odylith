@@ -59,12 +59,12 @@ def build_blank_project_payload(*, repo_root: Path, shell_payload: Mapping[str, 
         ),
         "blank_actions": [
             {
-                "title": "Draft a greenfield proposal",
+                "title": "Describe your project",
                 "body": (
-                    "Use this when the product does not exist yet. Odylith previews the project story, "
-                    "first path, components, diagrams, risks, and validation gates before writing records."
+                    "Describe what you want to build. Review the proposed plans, components, "
+                    "diagrams, and risks before saving."
                 ),
-                "command": 'odylith greenfield propose --repo-root . --prompt "<what you want to build>"',
+                "command": 'odylith greenfield prepare --repo-root . --prompt "your project description"',
             },
             {
                 "title": "Ground an existing repo",

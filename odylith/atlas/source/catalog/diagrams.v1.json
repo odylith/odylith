@@ -2259,7 +2259,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-10-12",
+      "last_reviewed_utc": "2026-10-13",
       "source_mmd": "odylith/atlas/source/odylith-managed-runtime-release-and-install-flow.mmd",
       "source_svg": "odylith/atlas/source/odylith-managed-runtime-release-and-install-flow.svg",
       "source_png": "odylith/atlas/source/odylith-managed-runtime-release-and-install-flow.png",
@@ -2356,7 +2356,7 @@
         "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-public-release-dogfood-activation-and-consumer-rehearsal.md": "da20bb2c778974ea69ef1474dbe41a4b42de3617d4ef1875a493543786b02175",
         "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md": "0e5ef38a01c8c55f2f219913c134b76561cf8f4bd0fad00e03ecb5ddc4d0ab55",
         "odylith/technical-plans/done/2026-03/2026-03-28-odylith-managed-runtime-bundles-and-supported-platform-contract.md": "1f23b5b159f92612c4dd52b7fe1e077d5842a9e6439b59b6c42c617111ccf45b",
-        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "81c27bad2aba5ece30e6aca0a211a8762a7b50eaadb253e1d69f78c7edcf6fb4",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "bea2f1ca67ae2642f7f7f84f6d180882932ff46aff012a8db0cd448413d7b18f",
         "odylith/casebook/bugs/2026-03-28-public-consumer-install-depends-on-machine-python.md": "892477de3906a35157275d8aaa2f9cfc259dd2efb76222fa7247461d011a1ea6",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "3d96d0fa40b3aeb56291188b5af2e6248354745618da2d2dc047defd6bf4f9b1",
         "odylith/registry/source/components/release/CURRENT_SPEC.md": "74bdb80411fabb7e6559c8fcac1d2f1690802b4a3133fee0128acc3aa3d38496",
@@ -2482,7 +2482,7 @@
         "src/odylith/runtime/evaluation/odylith_benchmark_runner.py": "79d23914e11c305b7b60ba039fe5eec0f074a15cad73f1fb56f01793177031bb",
         "src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py": "6653ee114343b43ea42d43c58bd32b32912543a822bf8df1ad786632d5026957",
         "src/odylith/runtime/evaluation/odylith_benchmark_execution_engine.py": "fd4c87a39eaca52ab261c10a41a0ac25915fcf61da072e7802305ecfba081209",
-        "src/odylith/runtime/evaluation/odylith_benchmark_isolation.py": "931b79df699328f6036a9501ad5b0d55c2c3c0eb3e0109b38ebf8766b7e72cf7",
+        "src/odylith/runtime/evaluation/odylith_benchmark_isolation.py": "50ac4aa1fe96d0cde4e76762d52a03b8ba084ba94460928ae432cf7816f6f9ab",
         "src/odylith/runtime/evaluation/odylith_benchmark_graphs.py": "5976fac870eae2238c40c3d0707ae61d8f3d6e8cc3e0d30f7905ccc0549677ae",
         "odylith/runtime/source/optimization-evaluation-corpus.v1.json": "9afaca08f9ab3671af432b3db0b0a4c00bdef76623dacb907e4d4ec1200ade77",
         "README.md": "3a44f19929ef67c73eedbc870e2206405cef6738b86b379228ba4b5a01bd5e3b",
@@ -3460,24 +3460,24 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-10-05",
+      "last_reviewed_utc": "2026-10-13",
       "source_mmd": "odylith/atlas/source/odylith-claude-guidance-runtime-heuristic-integration.mmd",
       "source_svg": "odylith/atlas/source/odylith-claude-guidance-runtime-heuristic-integration.svg",
       "source_png": "odylith/atlas/source/odylith-claude-guidance-runtime-heuristic-integration.png",
       "initial_view_fit_factor": 0.6,
-      "summary": "Shows how a shared is_guidance_file() classifier extended for B-083 makes CLAUDE.md first-class guidance across five runtime heuristics \u2014 workstream inference, dirty-overlap, benchmark isolation, consumer profile, and context routing \u2014 with explicit before and after outcome comparison.",
+      "summary": "Shows how CLAUDE.md is treated as guidance across runtime heuristics. Workstream inference, dirty-overlap, consumer profile, and context routing use the shared classifier; benchmark isolation gives both matched lanes the same clean-room rule by stripping auto-consumed AGENTS.md and CLAUDE.md before agent execution.",
       "components": [
         {
           "name": "Shared guidance classifier",
-          "description": "A single is_guidance_file() predicate returns true for both AGENTS.md and CLAUDE.md, providing a consistent source of truth for all downstream heuristics."
+          "description": "A single is_guidance_file() predicate returns true for both AGENTS.md and CLAUDE.md, providing a consistent source of truth for the runtime heuristics that consume it."
         },
         {
-          "name": "Five extended heuristics",
-          "description": "workstream_inference, dirty_overlap, benchmark_runner, consumer_profile, and tooling_context_routing all consume the classifier instead of hard-coding AGENTS.md path checks."
+          "name": "Runtime heuristics and clean-room policy",
+          "description": "workstream_inference, dirty_overlap, consumer_profile, and tooling_context_routing consume the classifier. Benchmark isolation separately strips auto-consumed AGENTS.md and CLAUDE.md from both matched lanes."
         },
         {
           "name": "Before and after outcome comparison",
-          "description": "Explicit before-B-083 and after-B-083 outcome nodes show what breaks when CLAUDE.md is treated as ordinary docs and what correct behavior looks like after the fix."
+          "description": "The comparison shows the failure when CLAUDE.md is treated as ordinary documentation and the current behavior: Claude-only roots are recognized while benchmark workspaces remove auto-consumed repository instructions equally in both lanes."
         }
       ],
       "change_watch_paths": [
@@ -3533,7 +3533,7 @@
         "src/odylith/runtime/common/dirty_overlap.py": "4f8ca4343cec40b63050641914e144e91336b0747772b565cf8d8dbed6446ea5",
         "src/odylith/runtime/governance/workstream_inference.py": "10f67c97d32fefb6b3c1d4fd01be7d4f6dfb52cbab21780fff5b7bda079ac4e0",
         "src/odylith/runtime/evaluation/odylith_benchmark_runner.py": "79d23914e11c305b7b60ba039fe5eec0f074a15cad73f1fb56f01793177031bb",
-        "src/odylith/runtime/evaluation/odylith_benchmark_isolation.py": "931b79df699328f6036a9501ad5b0d55c2c3c0eb3e0109b38ebf8766b7e72cf7",
+        "src/odylith/runtime/evaluation/odylith_benchmark_isolation.py": "50ac4aa1fe96d0cde4e76762d52a03b8ba084ba94460928ae432cf7816f6f9ab",
         "src/odylith/runtime/context_engine/odylith_context_engine.py": "c1358dcf50b21d81e5b6bd8a64879b5a6ea4cef4119acdf868e48d8e4309ed91",
         "tests/unit/runtime/test_workstream_inference.py": "83426ae92a27cc68dd5b6be2de9ff05823498a21ce782ae27c216f11fe100ace",
         "tests/unit/runtime/test_tooling_context_routing.py": "2437fe6137c7d6b72ccf29bc28e65337e65021b9589e51e4d9389e20d08cf6a8",
@@ -3541,7 +3541,7 @@
         "tests/unit/runtime/test_hygiene.py": "faf09816013b25b8fb302862767e097888e7b4ada0ef6384c4205742142f7540",
         "odylith/casebook/bugs/2026-04-09-host-contract-drift-leaks-codex-only-policy-into-claude-and-shared-runtime-surfaces.md": "12e0d9d1b31dca776cf53e16b4e151bd5fa0af5fa6a050015abcf7075aad903c"
       },
-      "render_source_fingerprint": "893b536074e1b0692613fa9d819fd808d229d7d68ead98cac687531a886185d3"
+      "render_source_fingerprint": "f884851f35b70e92bef7db59c89035140ce5277a9f9d65b413816bfbe7cb9cae"
     },
     {
       "diagram_id": "D-036",
