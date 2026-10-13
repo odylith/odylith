@@ -2,34 +2,54 @@ Status: In progress
 
 ## Current release frontier (2026-10-13)
 
-Feature work is frozen. Checkpoint `3be2011c7` is pushed; both hosted CI runs
-pass 10,890 tests with ten skips each. The complete benchmark `737ff669ce61f58b`
-finished all 82 cases, 328 observations and both cache profiles, but remains
-HOLD: write precision is 0.429 against the raw baseline's 0.500. Preserve that
-failure without regrading. Its seven failed On observations made no writes;
-outer validators lacked an exact report input or a referenced publication
-generation. The original browser exception bodies were not retained.
+Feature expansion is frozen. Checkpoint `11783fa0a` is pushed. Its exact clean
+committed tree passes 60 focused source and browser checks for the current
+Greenfield instructions, concise release notes and empty Project action.
+Independent bounded copy review is clear. Both hosted CI runs are still pending.
+D-024 and D-035 now describe the actual benchmark isolation policy; D-035 was
+explicitly rendered and its generated image inspected.
 
-CB-362 owns the prerequisite correction. In the existing authorized clean
-checkout, the unchanged graph and sync commands, eight publication checks,
-all 37 browser checks and eight replay controls pass. Both matched lanes receive
-the same frozen retained HOLD bytes through existing snapshot owners. This is
-setup validation, not new benchmark or release qualification. Do not change
-product code, floors, cases, validators, budgets, runtime identity exclusions or
-no-op scoring for this issue. Preserve the live root dashboard and recovery
-history; use the same clean checkout for the next full proof.
+Preserve full report `737ff669ce61f58b` as HOLD: its write precision is 0.429
+against the raw baseline's 0.500. All seven failed On observations made no
+writes and failed outer validators. CB-362 records the exact missing report
+input and dangling publication entry. The existing clean checkout resolves
+those prerequisites; unchanged graph/sync commands, eight publication tests,
+all 37 browser tests and eight replay controls pass. Both lanes receive the
+same retained report bytes through existing snapshot owners. This is setup
+proof, not release qualification.
 
-Finish the reviewed release-note and two-diagram truth updates, commit and push
-one stable checkpoint, then run the complete proof and diagnostic profiles on
-that clean source. Only a passing full proof permits benchmark publication.
-Canonical release assembly is implemented and has bounded test/review evidence;
-it still requires actual execution. After final CI and compatibility gates,
-prepare one canonical package from the permitted squash-merge main commit and
-bind the public40, original High4 and genuine EDIT4 evidence to that package.
-Run genuine case01 first and independently assess it before the other three.
-Genuine qualifying EDIT remains 0/4. Keep the protected holdout closed until
-every public semantic, timing, artifact, transaction, host and clean-install
-gate passes. No further user decision or benchmark waiver is pending.
+Fresh attempt `a77808fd966dfb62` failed without a final quality result. Its
+linked checkout is internal, but its Git common object store is external;
+forced local cloning attempted a cross-device hardlink. One exact owner
+reproduction confirms Git exit 128 and EXDEV. CB-363 owns the minimal correction:
+copy objects with Git's supported no-hardlinks option in the existing clone
+owner. The old regression fails as expected; 13 isolation tests, eight unchanged
+source-custody controls and one real cross-device checkout pass. Independent
+review is clear. Commit this bounded correction and run one fresh full proof
+on the corrected pushed checkpoint. Preserve the failed report and logs;
+traversed result slots do not establish successful native observations.
+
+Do not change corpus, cases, validators, scores, floors, budgets, no-op scoring
+or runtime identity exclusions. Keep startup, retrieval memory and all other
+engines active. The clean source-local runtime uses the verified toolchain and
+reports full local memory without copying ambient installation or project data.
+
+Publication validates exact branch, HEAD, dirty state and source posture for
+both selected reports. Run the publication owner while those identities match;
+a docs-only commit or identical-tree squash does not transfer benchmark
+eligibility. Keep any later current-main claim tied to actual proof at final H.
+Canonical prepare does not run benchmark compare and accepts source-only release
+posture; do not add an extra discovery package or activate an unpublished
+candidate to work around it.
+
+After final source/publication, compatibility and CI settlement, prepare one
+canonical package from the permitted squash-merge main commit. Bind public40,
+original High4 and genuine EDIT4 to its exact source and distribution. Run and
+independently assess genuine case01 before the other three. Genuine qualifying
+EDIT remains 0/4. Keep the protected holdout closed until all public semantic,
+timing, artifact, transaction, host and clean-install gates pass. Return to
+verified pinned dogfood after hosted release success through the existing
+runbook. No user decision or benchmark waiver is pending.
 
 ## Previous execution priority and release ordering (2026-10-12)
 

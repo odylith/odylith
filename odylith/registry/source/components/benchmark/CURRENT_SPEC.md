@@ -30,7 +30,7 @@
   same workstream anchor. A missing B-110 anchor is treated as benchmark
   corpus drift because it can create false `requires_widening` advisory noise
   even when required-path recall and validation are green.
-Last updated: 2026-10-04
+Last updated: 2026-10-13
 
 ## Greenfield source-predicate release qualification
 
@@ -546,6 +546,10 @@ generation.
   validation, they must be restored from a stash captured inside the scoped
   benchmark workspace snapshot, never from the ambient repo root. Restoring
   from repo root reintroduces unrelated dirty state and invalidates proof.
+- Disposable benchmark checkouts copy Git objects independently. A linked
+  source checkout's common object store and its temporary workspace may be on
+  different filesystems. The source revision, explicit snapshot overlay,
+  guidance stripping and scoped validator truth remain fixed.
 - The shared live-workspace snapshot may not materialize a partial dirty Python
   package. If a dirty selected Python file depends on dirty sibling modules in
   the same package, the snapshot must carry those same-package dirty siblings

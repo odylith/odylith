@@ -313,7 +313,7 @@ def temporary_workspace_checkout(
         workspace_root = (temp_root / "workspace").resolve()
         validator_truth_root = (temp_root / "validator-truth").resolve()
         subprocess.run(
-            ["git", "clone", "--quiet", "--local", "--no-checkout", str(root), str(workspace_root)],
+            ["git", "clone", "--quiet", "--local", "--no-hardlinks", "--no-checkout", str(root), str(workspace_root)],
             cwd=str(root),
             text=True,
             capture_output=True,

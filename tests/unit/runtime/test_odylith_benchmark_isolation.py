@@ -311,7 +311,7 @@ def test_provision_workspace_odylith_root_copies_context_engine_runtime_state(tm
     assert copied_json.read_text(encoding="utf-8") == state_json.read_text(encoding="utf-8")
 
 
-def test_temporary_workspace_checkout_hides_stripped_tracked_files_from_git_status(tmp_path: Path) -> None:
+def test_temporary_workspace_checkout_copies_git_objects_and_hides_stripped_tracked_files(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     repo_root.mkdir(parents=True, exist_ok=True)
     subprocess.run(["git", "init"], cwd=repo_root, text=True, capture_output=True, check=True)
@@ -322,6 +322,10 @@ def test_temporary_workspace_checkout_hides_stripped_tracked_files_from_git_stat
     _write(repo_root / "docs" / "benchmarks" / "README.md", "benchmark doc\n")
     subprocess.run(["git", "add", "README.md", "AGENTS.md", "docs/benchmarks/README.md"], cwd=repo_root, check=True)
     subprocess.run(["git", "commit", "-m", "base"], cwd=repo_root, text=True, capture_output=True, check=True)
+    source_head = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo_root, text=True, capture_output=True, check=True,
+    ).stdout.strip()
+    source_object = repo_root / ".git" / "objects" / source_head[:2] / source_head[2:]
 
     with isolation.temporary_workspace_checkout(
         repo_root,
@@ -332,6 +336,13 @@ def test_temporary_workspace_checkout_hides_stripped_tracked_files_from_git_stat
         assert not (workspace_root / "AGENTS.md").exists()
         assert not (workspace_root / "docs" / "benchmarks" / "README.md").exists()
         assert (workspace_root / "README.md").read_text(encoding="utf-8") == "repo\n"
+        workspace_head = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=workspace_root, text=True, capture_output=True, check=True,
+        ).stdout.strip()
+        workspace_object = workspace_root / ".git" / "objects" / source_head[:2] / source_head[2:]
+        assert workspace_head == source_head
+        assert workspace_object.read_bytes() == source_object.read_bytes()
+        assert not workspace_object.samefile(source_object)
         status = subprocess.run(
             ["git", "-C", str(workspace_root), "status", "--short"],
             text=True,
