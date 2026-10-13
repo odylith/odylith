@@ -23,12 +23,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 172,
-    "mapped_workstream_evidence_count": 171,
+    "explicit_event_count": 173,
+    "mapped_workstream_evidence_count": 172,
     "recent_path_match_count": 0,
     "spec_history_event_count": 15,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 172
+    "timeline_event_count": 173
   },
   "name": "Benchmark",
   "path_prefixes": [
@@ -41,6 +41,46 @@
   ],
   "spec_ref": "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 4,
+      "artifacts": [
+        "sha256:ee9382ede863e8697d6b12f7b66c84f2483ae482e67fa041939aa4db7240d915",
+        "odylith/casebook/bugs/2026-10-13-live-benchmark-instruction-discovery-scans-retained-runtime-generations.md",
+        "src/odylith/runtime/evaluation/odylith_benchmark_isolation.py",
+        "tests/unit/runtime/test_odylith_benchmark_isolation.py"
+      ],
+      "confidence": "high",
+      "event_index": 1617,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
+      "ts_iso": "2026-10-12T21:25:41-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 8,
       "artifacts": [
