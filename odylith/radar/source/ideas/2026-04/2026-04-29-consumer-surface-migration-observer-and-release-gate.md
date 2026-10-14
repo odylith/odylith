@@ -60,7 +60,24 @@ supersedes:
 
 superseded_by: 
 
-## Current 0.1.15 compatibility assessment (2026-10-13)
+## Current 0.1.15 evidence-update assessment (2026-10-14)
+
+The reviewed Casebook notes add the current CB-189 measurement and Claude's
+signed-out availability. They preserve record identities, lifecycle, severity,
+thresholds and native proof requirements. No runtime, stored-data schema or
+consumer-owned record changes. Normal managed refresh updates the rendered
+views; no additional consumer migration is identified.
+
+This completes the assessment for
+`migration-observer:0.1.15:browser-surfaces:df1343c8d189`, calculated from exact
+Git tree `369e48e702480ec67a038ede2a65a1e59da977a7` against published v0.1.14.
+The other four markers match the previous assessment below. Independent source
+and projection review is clear, all 30 component checks pass, and all 47 Atlas
+diagrams are fresh. The clean successor still requires its actual canonical
+migration gate and same-package upgrade proof. The Git-object calculation does
+not substitute for either execution.
+
+## Previous 0.1.15 compatibility assessment (2026-10-13)
 
 Assessed published v0.1.14 `fae446995e13e12409e50f944a336dbc846db90a`
 against clean checkpoints `1ea7665472b941aa69825d5da193f90e804add7c` and

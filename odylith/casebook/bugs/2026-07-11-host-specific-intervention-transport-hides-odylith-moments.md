@@ -1,5 +1,7 @@
 - Bug ID: CB-242
 
+- Current Claude Availability (2026-10-14): A fresh read-only check of Claude Code 2.1.202 returns authentication exit 1, `loggedIn: false` and `authMethod: none`. No native model turn, login, trust change or visibility confirmation was attempted. Actual Claude delivery remains unproved; the operator has been asked to sign in while independent release work continues. The filtered availability receipt is `/private/tmp/odylith-v52-canonical-preparation-20261012/claude-current-auth-availability.json`; raw authentication output is retained privately. This environment result does not establish a new transport defect or close the existing cross-host acceptance boundary.
+
 - Current-Session Native Activation Evidence (2026-09-24): The status reader no
   longer enters the managed publication boundary for a read-only inspection;
   only `--last-assistant-message` confirmation remains a governed writer. This

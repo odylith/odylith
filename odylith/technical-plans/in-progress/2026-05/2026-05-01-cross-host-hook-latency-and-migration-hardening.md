@@ -96,6 +96,29 @@ Related Bugs:
   diagnostic benchmark defaulted to warm cache and shell pipelines could leak
   BrokenPipe tracebacks.
 
+## Current completion evidence (2026-10-14)
+
+B-142 explicitly depends on this workstream. The checked Must-Ship items record
+implementation; they do not replace current release proof or justify moving
+B-141 out of the release. Finish both from the actual H/package-D evidence
+after the required engine, host, installed-upgrade, pinned and consumer gates.
+
+CB-189 still reproduces on source checkpoint 727a8f9f3. Report 2c1e58ce8263f9f7
+passes hard quality but remains HOLD at +79.677 ms median latency, +927 prompt
+tokens and +1,416 total payload tokens. Caller review finds compact real host
+prompts already exist; the quick check counts the machine packet and includes
+fixture diagnostics that alone exceed its total-token ceiling. Keep the P2
+Open/HOLD and its limits unchanged. This does not establish a separate release
+gate or a fully low-latency claim. Current absolute host budgets, full proof
+and last-shipped comparison remain required on the exact release source.
+
+CB-242's actual Claude visibility remains open. Claude Code 2.1.202 is signed
+out in a fresh read-only check; authentication is requested while other work
+continues. Do not substitute static readiness or manual output for native
+delivery. Reconcile CB-149 through its actual Fixed In release, v0.1.13,
+using the governed closeout owner after the required current proof exists.
+Daemon, SDK-harness, MCP and further kernel-splitting proposals stay deferred.
+
 ## Learnings
 - [x] CB-242's broad-runtime child leak reproduces with a controlled scheduling
       pause at cleanup entry. Separate command timeout and whole-hook alarm

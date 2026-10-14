@@ -1,5 +1,34 @@
 Status: In progress
 
+## Current release frontier (2026-10-14)
+
+Checkpoint 727a8f9f3 is pushed. The reviewed UX correction and all six explicit
+feedback groups have current source coverage; package-native proof remains
+open. All 47 Atlas diagrams are fresh, all 30 component records pass root
+check-only, and independent Git-object review preserves the clean f4 migration
+markers. Current-head hosted CI is still running. The authentic full v0.1.14
+measurement, report 4b3ecb8eb493c1fa, is advancing in the same relocated proof
+checkout on verified shipped source and runtime. Retain its actual result.
+
+The completion audit exposes B-141's existing dependency obligations. CB-189
+still fails the unchanged quick efficiency guardrails, although hard quality
+passes. Its machine-packet metric and fixture overhead do not measure the
+compact prompts already emitted by actual hosts. Keep this P2 Open/HOLD;
+do not add a framework or change acceptance to manufacture a numeric pass.
+The existing absolute host budgets, full proof and comparison still apply.
+CB-242 needs actual Claude delivery;
+the installed CLI is signed out, and the operator has been asked to sign in.
+Keep both workstreams open until their exact current obligations pass. Do not
+move B-141 forward merely to close this release. Feature expansion stays frozen.
+
+Final H and the one qualified package D remain immutable. After real hosted,
+pinned, consumer and GA success, record coherent workstream/plan/Casebook/Compass
+closure in a later governance commit and second PR on the same existing branch.
+Use the explicit release-0-1-15 selector after alias transfer; clear only the
+ignored H session, retaining its proof root and package. Do not restart release
+or benchmark qualification against that later governance-only commit. The
+protected final holdout remains closed and genuine qualifying EDIT remains 0/4.
+
 ## Current release frontier (2026-10-13)
 
 Feature expansion is frozen. Checkpoint `51c6a379f` is pushed with the

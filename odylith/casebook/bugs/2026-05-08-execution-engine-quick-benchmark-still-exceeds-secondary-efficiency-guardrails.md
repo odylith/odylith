@@ -1,5 +1,9 @@
 - Bug ID: CB-189
 
+- Current Measurement (2026-10-14): The unchanged quick execution-engine command at source checkpoint `727a8f9f3` returns report `2c1e58ce8263f9f7`: hard quality passes, but status remains HOLD and secondary guardrails fail. The nine cold-profile cases add 79.677 ms median latency, 927 prompt tokens and 1,416 total payload tokens; operator diagnostics account for 465 tokens and the runtime contract for 22. The +15 ms, +64 prompt-token and +96 total-token limits remain unchanged. This is a source-local diagnostic on the preserved dirty publication workspace, not clean-source or package qualification. The complete original report and stderr are retained under `/private/tmp/odylith-v52-canonical-preparation-20261012/727a8f9f3-execution-engine-quick-current.*`.
+
+- Measurement Interpretation (2026-10-14): Independent caller review finds that Codex, Claude, delegated tasks and the live benchmark already render compact prompts while retaining the full typed packet for runtime consumers. The quick diagnostic counts the serialized machine packet as prompt payload. Its fixture-added operator diagnostics alone have a 465-token median, above the unchanged 203-token total candidate ceiling. A production-only prompt change cannot clear that total gate with fixture and accounting unchanged. Keep this P2 Open/HOLD, retain every threshold and failure, and make no fully low-latency or token-optimal claim. B-141's absolute host budgets, unchanged full proof and comparison, and native visibility obligations still require current evidence. No new projection framework or acceptance change is adopted. Review: `/private/tmp/odylith-v52-canonical-preparation-20261012/cb189-host-prompt-projection-feasibility.md`.
+
 - Status: Open
 
 - Created: 2026-05-08
