@@ -60,7 +60,40 @@ supersedes:
 
 superseded_by: 
 
-## Current 0.1.15 compatibility assessment (2026-10-12)
+## Current 0.1.15 compatibility assessment (2026-10-13)
+
+Assessed published v0.1.14 `fae446995e13e12409e50f944a336dbc846db90a`
+against clean checkpoint `1ea7665472b941aa69825d5da193f90e804add7c`.
+The canonical gate emitted the following exact scope markers. This completes
+these compatibility assessments; rerun the gate on the final clean successor.
+
+| Surface | Assessed scope marker |
+|---|---|
+| Guidance and skills | `migration-observer:0.1.15:guidance-and-skills:e2da5b90766c` |
+| Operator CLI | `migration-observer:0.1.15:operator-cli-contracts:0321429f5bb8` |
+| Public documentation | `migration-observer:0.1.15:public-docs-and-release-guidance:9a1b6d2ef606` |
+| Browser surfaces | `migration-observer:0.1.15:browser-surfaces:677262b0deba` |
+| Install-managed assets | `migration-observer:0.1.15:install-managed-assets:3e687645eb30` |
+
+The Atlas, Registry and Compass changes present existing responsibilities,
+deliverables and state-specific messages more clearly. IDs, records, ownership,
+status and error distinctions stay intact. Existing target-runtime rendering and
+the registered Atlas generated-view migration cover adoption; no consumer data
+conversion or additional upgrade migration is identified.
+
+The release note and its equal bundle copy state publication requirements.
+The shipped index retains the committed generic shell. Normal managed-asset
+upgrade covers these files. The memory spec changes record current proof and
+unavailable historical witnesses; no memory schema or stored consumer data changes.
+
+Supporting source evidence comprises 78 final Atlas checks, 111 desktop/mobile
+captures with no automated issues, 60 memory controls and nine note checks.
+The clean checkpoint also passes all 30 component evidence checks and the exact
+Release dossier test previously failing in CI. These bounded witnesses do not
+prove populated same-package upgrade, native Greenfield behavior or release
+qualification; those gates remain open.
+
+## Previous 0.1.15 compatibility assessment (2026-10-12)
 
 Completed against published v0.1.14 commit
 `fae446995e13e12409e50f944a336dbc846db90a`, candidate `2571d94a9` and the

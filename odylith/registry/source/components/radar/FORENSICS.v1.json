@@ -38,12 +38,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 888,
-    "mapped_workstream_evidence_count": 828,
+    "explicit_event_count": 889,
+    "mapped_workstream_evidence_count": 829,
     "recent_path_match_count": 0,
     "spec_history_event_count": 17,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 888
+    "timeline_event_count": 889
   },
   "name": "Radar",
   "path_prefixes": [
@@ -53,6 +53,42 @@
   ],
   "spec_ref": "odylith/registry/source/components/radar/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-07-17-clean-head-component-forensics-fail-to-converge-after-sync-commit.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md"
+      ],
+      "confidence": "high",
+      "event_index": 1623,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
+      "ts_iso": "2026-10-13T19:39:24-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 2,
       "artifacts": [

@@ -5,7 +5,7 @@
   B-111 through B-117. The surface should show the umbrella, execution waves,
   release target `release-0-1-11`, and proof gates without turning Odylith Discipline
   into noisy task theater.
-Last updated: 2026-10-06
+Last updated: 2026-10-13
 
 
 ## Purpose
@@ -445,6 +445,9 @@ themselves.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-10-13 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-07-17-clean-head-component-forensics-fail-to-converge-after-sync-commit.md`, `odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md`
 - **2026-10-06 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142, B-145
   - Evidence: `src/odylith/runtime/governance/sync_workstream_artifacts.py`, `src/odylith/runtime/project_intelligence/builder.py`, `src/odylith/runtime/surfaces/registry_component_identity_ui.py`
@@ -459,9 +462,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md`, `src/odylith/runtime/domain_intelligence/greenfield_proposals.py`, `src/odylith/runtime/domain_intelligence/proposal_validation.py`
-- **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md`, `src/odylith/runtime/domain_intelligence/archetypes.py`, `src/odylith/runtime/domain_intelligence/proposal_planning.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
