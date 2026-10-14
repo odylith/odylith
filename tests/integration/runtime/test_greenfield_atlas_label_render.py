@@ -87,21 +87,21 @@ def test_capability_support_groups_render_complete_local_relationships(tmp_path:
     design = _provisional_design()
     boxes = {box["node_id"]: box for box in row["diagram_boxes"]}
     for index, component in enumerate(design["components"], 1):
-        actions = ", ".join(map(str, component["supported_event_orders"]))
         assert labels.count(
-            f"Proposed: {component['name']} Source actions: {actions} "
-            "Select for responsibility and check"
+            f"Proposed: {component['name']} {component['responsibility']}"
         ) == 1
         box = boxes[f"component{index}"]
         assert box["description"] == component["responsibility"]
         assert {"label": "Proposed boundary verification", "text": component["verification"]} in box["details"]
     for index, workstream in enumerate(design["workstreams"], 1):
-        assert labels.count(f"Proposed delivery {workstream['title']} Select for acceptance") == 1
+        assert labels.count(
+            f"Proposed delivery {workstream['title']} {workstream['deliverable']}"
+        ) == 1
         box = boxes[f"workstream{index}_acceptance"]
         assert box["description"] == workstream["deliverable"]
         assert {"label": "Proposed verification", "text": workstream["verification"]} in box["details"]
         assert {"label": "Participating components", "text": ", ".join(workstream["component_keys"])} in box["details"]
-    assert labels.count("Actions and performers Select for full actions and performers") == 1
+    assert labels.count("Actions and performers") == 1
     for order, event in enumerate((
         "Dock attendant Ivo enters a vessel tag",
         "the product records berth occupancy",

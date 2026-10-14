@@ -16,7 +16,7 @@
   ephemeral local execution paths such as `/tmp`, `/var/folders`,
   `/private/var`, and `/dev/fd`. Temporary intent files and shell descriptors
   are not durable learning anchors.
-Last updated: 2026-10-04
+Last updated: 2026-10-13
 
 
 ## Purpose
@@ -61,19 +61,22 @@ use and explainable usefulness result. It preserves current authority versus
 historical learning without deciding truth or ranking independently. Existing
 allowlists, secret suppression and compact packet budgets still apply; raw
 transcripts and temporary artifacts are not durable evidence anchors.
-B-133 H1/CB-355 owns the unreleased round-trip and non-regression proof. Metadata
-presence alone does not qualify retrieval accuracy or better later decisions.
-The settled focused suite proves real indexed/fallback metadata round trips and
-existing redaction/caps. Three retained authority/provenance/explainability
-records add 2902 bytes in the fixed measurement. This cost remains explicit;
-complete frozen packet and installed regression proof are required before a
-release-wide efficiency claim. The Context Engine spec and H1 plan retain the
-exact source/control handoff.
-Final independent actual-assembler proof retains 12 metadata rows from seven
-sources and two current actionable guidance rows within existing limits:
-22,473/24,000 bytes and 5,619/6,000 tokens. CB-356 aligns reported truncation
-limits with the actual estimator; matching metrics and enforced caps are
-separate from semantic truth. No allocation was increased.
+B-133 H1/CB-355 owns the round-trip contract; CB-356 owns the cap telemetry
+correction. The historical byte/token and before/after measurements remain
+recorded in source history. Their original primary witnesses are unavailable
+and are not fresh release evidence.
+
+Fresh source proof at clean checkpoint `51c6a379f` passes 60 existing checks
+with zero failures, errors or skips. It exercises actual compiler-to-snapshot
+and LanceDB/Tantivy indexed/fallback retrieval, authority and decay, useful
+failure recall, source-checked continuity, session-intent non-replay, final
+guidance actionability and existing packet caps. Independent source/evidence
+review inspected the actual log and JUnit. No memory source or test changed.
+These are bounded source controls; same-package installed/upgrade proof,
+complete current regression and full native benchmark qualification remain open.
+Metadata presence alone does not establish semantic accuracy or better later
+decisions. The actual aggregate assembler is exercised with enforced byte and
+token limits; no allocation or retention scope was increased.
 
 ### Execution-profile encoding
 - `execution_profile_mapping(...)`

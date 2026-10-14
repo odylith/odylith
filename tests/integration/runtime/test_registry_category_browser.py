@@ -431,7 +431,7 @@ def test_registry_evidence_is_optional_and_retains_exact_history(
             assert "0 events" not in evidence.inner_text().lower()
             assert page.locator(".forensic-latest").count() == 0
         else:
-            assert page.locator("#timeline").inner_text().count("No mapped forensic evidence is attached yet.") == 1
+            assert page.locator("#timeline").inner_text().count("No evidence is attached yet.") == 1
             assert page.locator(".forensic-latest").count() == 0
         assert any("/surfaces/registry/detail?component=consent-registry" in url for url in requests)
         screenshot = _failure_screenshot_path(f"registry-evidence-{width}-{state}")

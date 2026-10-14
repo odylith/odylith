@@ -363,7 +363,7 @@ def runtime_js() -> str:
 
     function forensicEvidenceHealthSummary(events, forensicCoverage) {
       const rows = Array.isArray(events) ? events : [];
-      if (!rows.length) return "No mapped forensic evidence is attached yet.";
+      if (!rows.length) return "No evidence is attached yet.";
       const material = forensicMaterialEvents(rows);
       const diagnosticCount = Math.max(0, rows.length - material.length);
       const channelCount = new Set(rows.map(forensicEvidenceChannel)).size;

@@ -184,7 +184,7 @@ def test_deferred_narrator_does_not_claim_work_is_underway(tmp_path: Path) -> No
     assert diagnostics["reason"] == "provider_deferred"
     assert diagnostics["title"] == "Summary unavailable"
     assert "being prepared" not in diagnostics["message"]
-    assert "No summary is available" in diagnostics["message"]
+    assert diagnostics["message"] == "This view shows recorded facts without a generated summary."
     digest = " ".join(diagnostics["fallback_digest"])
     assert "Next:" not in digest and "Watch:" not in digest
     assert "current priority lane" not in digest

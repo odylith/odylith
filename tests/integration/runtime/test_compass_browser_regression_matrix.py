@@ -9,6 +9,7 @@ import pytest
 
 from odylith.runtime.surfaces import compass_dashboard_runtime as compass_runtime
 from odylith.runtime.surfaces import compass_dashboard_base, compass_standup_brief_substrate, compass_transaction_runtime
+from odylith.runtime.surfaces import compass_standup_brief_status
 from tests.integration.runtime.compass_browser_regression_support import (
     clone_odylith_fixture,
     covered_workstream_ids,
@@ -65,7 +66,10 @@ def test_complete_compass_facts_wrap_without_losing_trailing_conditions(tmp_path
             "status": "unavailable", "generated_utc": payload["generated_utc"],
             "sections": [], "diagnostics": {
                 "reason": "provider_deferred" if state == "fallback" else "credits_exhausted",
-                "title": "Summary unavailable", "message": "Review the current information before continuing.",
+                "title": "Summary unavailable", "message": (
+                    compass_standup_brief_status.unavailable_brief_message("provider_deferred")
+                    if state == "fallback" else "Review the current information before continuing."
+                ),
                 "fallback_digest": [] if state == "empty" else ["Current: " + fact],
             },
         }
@@ -100,6 +104,10 @@ def test_complete_compass_facts_wrap_without_losing_trailing_conditions(tmp_path
                 paragraph = digest.locator(".brief-fallback-digest li").first
                 paragraph.wait_for(state="visible", timeout=15000)
                 assert paragraph.inner_text() == "Current: " + source
+                if state == "fallback":
+                    assert digest.get_by_text(
+                        "This view shows recorded facts without a generated summary.", exact=True,
+                    ).is_visible()
                 assert digest.locator("details.brief-diagnostics").get_attribute("open") is None
                 if state == "error":
                     details = digest.locator("details.brief-diagnostics")

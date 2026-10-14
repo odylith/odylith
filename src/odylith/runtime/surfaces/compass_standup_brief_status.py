@@ -14,7 +14,7 @@ def unavailable_brief_message(
     if token == "skipped_not_worth_calling":
         return "The recorded facts have not changed enough for a new summary."
     if token == "provider_deferred":
-        return "No summary is available for this view."
+        return "This view shows recorded facts without a generated summary."
     if token == "rate_limited":
         return "The summary service is busy. Try again later."
     if token == "credits_exhausted":

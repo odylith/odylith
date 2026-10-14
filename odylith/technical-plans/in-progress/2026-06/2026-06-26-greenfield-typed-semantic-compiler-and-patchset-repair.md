@@ -2,54 +2,75 @@ Status: In progress
 
 ## Current release frontier (2026-10-13)
 
-Feature expansion is frozen. Checkpoint `11783fa0a` is pushed. Its exact clean
-committed tree passes 60 focused source and browser checks for the current
-Greenfield instructions, concise release notes and empty Project action.
-Independent bounded copy review is clear. Both hosted CI runs are still pending.
-D-024 and D-035 now describe the actual benchmark isolation policy; D-035 was
-explicitly rendered and its generated image inspected.
+Feature expansion is frozen. Checkpoint `51c6a379f` is pushed with the
+one-option cross-device clone correction. The old inode regression fails
+as expected; all 21 isolation/source-custody controls and the actual
+cross-device owner control pass. Independent review is clear.
 
-Preserve full report `737ff669ce61f58b` as HOLD: its write precision is 0.429
-against the raw baseline's 0.500. All seven failed On observations made no
-writes and failed outer validators. CB-362 records the exact missing report
-input and dangling publication entry. The existing clean checkout resolves
-those prerequisites; unchanged graph/sync commands, eight publication tests,
-all 37 browser tests and eight replay controls pass. Both lanes receive the
-same retained report bytes through existing snapshot owners. This is setup
-proof, not release qualification.
+Both hosted 11783 runs fail the unchanged Release dossier convergence gate;
+push has one failure, 10,889 passes and ten skips. The same failure reproduces
+on clean 51c: stale `release/FORENSICS.v1.json`. CB-270 owns this occurrence.
+It is generated-evidence staleness under verified source-local posture. Stop
+full attempt `f1e495226c4d1a18` rather than spend a complete proof on a known
+red prerequisite; retain its incomplete exit-143 evidence without regrading.
+The obsolete 51c CI runs are cancelled. Original full report `737ff669ce61f58b`
+stays HOLD (write precision 0.429 versus 0.500); aborted `a77808fd966dfb62`
+stays failed. Diagnostics never replace live proof.
 
-Fresh attempt `a77808fd966dfb62` failed without a final quality result. Its
-linked checkout is internal, but its Git common object store is external;
-forced local cloning attempted a cross-device hardlink. One exact owner
-reproduction confirms Git exit 128 and EXDEV. CB-363 owns the minimal correction:
-copy objects with Git's supported no-hardlinks option in the existing clone
-owner. The old regression fails as expected; 13 isolation tests, eight unchanged
-source-custody controls and one real cross-device checkout pass. Independent
-review is clear. Commit this bounded correction and run one fresh full proof
-on the corrected pushed checkpoint. Preserve the failed report and logs;
-traversed result slots do not establish successful native observations.
+A fresh whole-feedback audit finds two remaining CB-303 P1s: D-005 nodes still
+show mechanical source/navigation copy, and empty Registry Evidence exposes
+forensic jargon. The bounded three-owner patch uses authored responsibilities
+and deliverables, keeps verification/provenance closed, distinguishes genuine
+zero from unavailable, and removes repeated deferred-summary copy. Final Atlas
+proof passes 78 tests; the 111-capture derived matrix and targeted native
+SVG/PNG/details/error captures are clear. Independent exact-patch review finds
+no actionable P0/P1/P2. Exact-package/native proof remains open; no new feature
+or semantic stage is justified.
 
-Do not change corpus, cases, validators, scores, floors, budgets, no-op scoring
-or runtime identity exclusions. Keep startup, retrieval memory and all other
-engines active. The clean source-local runtime uses the verified toolchain and
-reports full local memory without copying ambient installation or project data.
+Current memory proof passes 60 existing controls with zero skips, including
+real indexed/fallback retrieval, authority/decay and session continuity. The
+original H1 primary witnesses are unavailable; their historical numerical
+claims cannot substitute for fresh proof. Exact-package installed and upgrade
+proof remain open. Keep all engines active.
+
+The deep resume preserves all eight reviewed UX source/test hashes. The paused
+refresh had completed its source and render steps but was interrupted before
+publication. Its exact derived preimage is durably archived; the recovery owner
+restored only those unpublished outputs, preserving authored changes and the
+active dashboard. The fresh complete refresh passes, all 47 Atlas diagrams are
+fresh, and check-only passes for all 30 component evidence records. The timeless
+release-note correction passes nine existing checks. Clean committed evidence
+convergence and hosted CI at the corrected head remain required.
+
+The current comparison resolver has no full baseline for published v0.1.14
+`fae446995e13e12409e50f944a336dbc846db90a`; older versions cannot replace it.
+Measure that actual shipped source and verified pinned runtime in the same
+authorized proof checkout, relocated onto the common Git-object volume so the
+unmodified shipped clone owner can run. Keep its full 82-case warm/cold corpus,
+actual status and original report bytes. A completed HOLD baseline may supply
+the historical comparison; the new candidate must independently pass every
+current gate and regression threshold. The old waiver does not extend to this
+release. No report relabeling, corpus overlay or additional checkout is allowed.
+
+Finish exact B-140 compatibility assessments and Compass records, then run
+canonical all-component synchronization last. Commit the settled source and
+require unchanged check-only convergence on that exact clean checkout before
+the predecessor measurement or fresh candidate proof. Retain all failures and
+finish hosted CI. Do not change validators, scoring, floors, budgets or measured
+runtime identity.
 
 Publication validates exact branch, HEAD, dirty state and source posture for
-both selected reports. Run the publication owner while those identities match;
-a docs-only commit or identical-tree squash does not transfer benchmark
-eligibility. Keep any later current-main claim tied to actual proof at final H.
-Canonical prepare does not run benchmark compare and accepts source-only release
-posture; do not add an extra discovery package or activate an unpublished
-candidate to work around it.
-
-After final source/publication, compatibility and CI settlement, prepare one
-canonical package from the permitted squash-merge main commit. Bind public40,
-original High4 and genuine EDIT4 to its exact source and distribution. Run and
-independently assess genuine case01 before the other three. Genuine qualifying
-EDIT remains 0/4. Keep the protected holdout closed until all public semantic,
-timing, artifact, transaction, host and clean-install gates pass. Return to
-verified pinned dogfood after hosted release success through the existing
-runbook. No user decision or benchmark waiver is pending.
+both selected reports. Publish only while those identities match, retaining
+their measured source; docs-only commits and squashes do not transfer proof.
+Keep any final-main current-tree claim tied to actual proof at final H.
+Canonical prepare is source-only and creates one package after final source,
+publication, compatibility and CI settlement on permitted squash-merge main.
+Bind Primary40, original High4 and genuine EDIT4 to its exact H/tree/archive
+and distribution. Genuine case01 independent source-first PASS releases the
+other three; qualifying EDIT remains 0/4. Keep the protected holdout closed
+until all prerequisite semantic, timing, artifact, transaction, host, install
+and browser gates pass. Return to verified pinned dogfood after hosted success.
+No user decision or benchmark waiver is pending.
 
 ## Previous execution priority and release ordering (2026-10-12)
 

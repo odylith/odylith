@@ -1,5 +1,48 @@
 - Bug ID: CB-303
 
+## Final narrative correction (2026-10-13)
+
+A fresh audit against `51c6a379f` maps every supplied Project, risk, Registry,
+Atlas, Radar and Compass feedback item to source owners and retained captures.
+It identifies two remaining P1s. D-005 component nodes still show source-action
+numbers and navigation boilerplate instead of their authored responsibilities;
+the useful responsibility is only in the box list below. Opening a genuine
+zero-event Registry Evidence panel still says “No mapped forensic evidence is
+attached yet.” Both defects are visible in retained desktop and mobile captures.
+
+The bounded correction should render existing authored component responsibilities
+and workstream delivery meaning directly in D-005 nodes, retaining full source
+and verification records in closed Supporting details. Registry should say
+“No evidence is attached yet.” without collapsing unavailable detail into zero.
+The deferred Compass summary also repeats its unavailable heading in the body;
+use one short explanation of its recorded-status view while preserving typed
+status and actual provider failures. No new inference, summary generation,
+source fact, clipping, schema or model stage is warranted.
+
+The prior nine-file and 111-screen proofs remain valid only for their stated
+scope. Readable labels and zero automated capture issues did not establish
+responsibility narratives or complete feedback closure. Preserve those original
+results and screenshots. Require current source/browser proof across desktop
+and mobile normal, empty/fallback and degraded/error states, independent patch
+review, and later exact common-package/native rendering before closing these
+findings. The original benchmark was subsequently stopped at its independently reproduced
+stale Release evidence gate; it supplies no release credit.
+
+The final source correction now passes independent review with no actionable
+P0, P1 or P2 finding. D-005 shows complete authored responsibilities and
+deliverables; full acceptance stays unchanged in closed details and D-004.
+Its 100% reading graph is 20% shorter than the first full-acceptance refinement,
+with no character clipping. Registry genuine-zero and unavailable states stay
+distinct. Compass keeps its typed unavailable reason and actual provider errors.
+Final Atlas proof passes 78 tests. The current derived matrix has 111 captures
+and zero automated issues; targeted native SVG/PNG label, Supporting details,
+empty and error captures are also clear. Independent visual review inspected
+desktop/mobile native views and the longest labels. Earlier 138/78/109 counts
+and intermediate captures retain their original scopes; do not add them as
+unique current tests or regrade them. Exact common-package, installed migration,
+native journey and final release proof remain pending.
+
+
 ## Current presentation correction (2026-10-12)
 
 The installed creation-to-EDIT diagnostic passes independent source and

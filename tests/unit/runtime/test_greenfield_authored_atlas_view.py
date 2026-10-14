@@ -978,13 +978,12 @@ def test_capability_support_compact_map_preserves_complete_many_to_many_detail(
         )} in boxes["source_actions"]["details"]
     for index, component in enumerate(design["components"], 1):
         box = boxes[f"component{index}"]
-        actions = "Source actions: " + ", ".join(map(str, component["supported_event_orders"]))
         details = {row["label"]: row["text"] for row in box["details"]}
         assert details["Source actions"] == "\n\n".join(
             f"Source action {order} · human\n{authored_event_display_text(next(event for event in relations if event['order'] == order))}"
             for order in component["supported_event_orders"]
         )
-        assert mermaid_label(actions, width=32) in source
+        assert mermaid_label(component["responsibility"], width=32) in source
         assert box["description"] == component["responsibility"]
         assert details["Proposed boundary verification"] == component["verification"]
         assert details["Verification source actions"] == "\n\n".join(
@@ -996,6 +995,7 @@ def test_capability_support_compact_map_preserves_complete_many_to_many_detail(
         box = boxes[f"workstream{index}_acceptance"]
         details = {row["label"]: row["text"] for row in box["details"]}
         assert details["Proposed verification"] == workstream["verification"]
+        assert mermaid_label(workstream["deliverable"], width=32) in source
         assert box["description"] == workstream["deliverable"]
         assert details["Participating components"] == ", ".join(workstream["component_keys"])
     assert boxes["source_facts"]["description"] == ""
@@ -1011,7 +1011,7 @@ def test_capability_support_compact_map_preserves_complete_many_to_many_detail(
     assert (relations, design) == before
 
 
-def test_long_statements_change_sealed_detail_without_expanding_support_topology() -> None:
+def test_long_statements_remain_complete_in_nodes_and_details_without_changing_support_edges() -> None:
     baseline = _authored_diagrams()[-1]
     design = _provisional_design()
     long_statement = "Keep every retained record and its original safety boundary; " * 35 + "the final clause remains."
@@ -1022,7 +1022,10 @@ def test_long_statements_change_sealed_detail_without_expanding_support_topology
         workstream["deliverable"] = long_statement
         workstream["verification"] = long_statement
     support = _authored_diagrams(provisional_design=design)[-1]
-    assert support["mermaid_source"] == baseline["mermaid_source"]
+    assert mermaid_label(long_statement, width=32) in support["mermaid_source"]
+    assert [line for line in support["mermaid_source"].splitlines() if " .-> " in line] == [
+        line for line in baseline["mermaid_source"].splitlines() if " .-> " in line
+    ]
     details = {box["node_id"]: box for box in support["diagram_boxes"]}
     for node, verification_label in (("component1", "Proposed boundary verification"), ("workstream1_acceptance", "Proposed verification")):
         assert details[node]["description"] == long_statement

@@ -1,5 +1,30 @@
 - Bug ID: CB-270
 
+## Current generated Release evidence staleness (2026-10-13)
+
+Both hosted CI runs for `11783fa0a` fail the unchanged release-dossier
+convergence test. Push CI reports one failure, 10,889 passes and ten skips.
+The exact same test also fails on the clean frozen `51c6a379f` checkout:
+`release/FORENSICS.v1.json` is stale. Root's live version check confirms
+detached source-local/source-checkout posture, so this occurrence is not
+the historical pinned-runtime authoring mismatch described below.
+
+The final source and governance changes were not followed by canonical
+component-forensics settlement. A selective Registry render is insufficient
+for that obligation. Refresh the registered component evidence through
+`odylith governance sync-component-spec-requirements` after all source,
+authored-record, Compass and surface writers settle. Require unchanged
+check-only convergence on the resulting exact clean committed tree before
+another long proof or package assembly. Preserve the test and its gate.
+
+Full attempt `f1e495226c4d1a18` was stopped at the known-red checkpoint,
+not scored or regraded. SIGINT did not retire the parent; the verified owned
+process group was then terminated, returning 143. Original progress, logs
+and interruption receipts are retained. The source checkout stays clean.
+The obsolete 51c hosted runs were cancelled pending the corrected source.
+No model, score, corpus, floor, validator or budget change is warranted.
+
+
 - Status: Open
 
 - Created: 2026-07-17

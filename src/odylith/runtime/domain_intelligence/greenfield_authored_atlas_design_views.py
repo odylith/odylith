@@ -452,11 +452,9 @@ def _capability_support_view(
     }
     for index, component in enumerate(design["components"], 1):
         component_id = component_ids[component["key"]]
-        orders = ", ".join(str(order) for order in component["supported_event_orders"])
-        actions = f"Source actions: {orders}"
         lines.append(
             f'  {component_id}["Proposed: {mermaid_label(component["name"], width=32)}'
-            f'<br/>{mermaid_label(actions, width=32)}<br/>Select for responsibility and check"]'
+            f'<br/>{mermaid_label(component["responsibility"], width=32)}"]'
         )
         boxes.append(atlas_box(
             component_id, component["name"], "Proposed component support",
@@ -475,7 +473,7 @@ def _capability_support_view(
         acceptance_id = f"workstream{index}_acceptance"
         lines.append(
             f'  {acceptance_id}["Proposed delivery<br/>{mermaid_label(workstream["title"], width=32)}'
-            '<br/>Select for acceptance"]'
+            f'<br/>{mermaid_label(workstream["deliverable"], width=32)}"]'
         )
         boxes.append(atlas_box(
             acceptance_id, workstream["title"], "Proposed delivery acceptance",
@@ -494,7 +492,7 @@ def _capability_support_view(
         f"Action {event['order']}\n{authored_event_display_text(event)}"
         for event in sorted(relations, key=lambda row: row["order"])
     )
-    lines.append('  source_actions["Actions and performers<br/>Select for full actions and performers"]')
+    lines.append('  source_actions["Actions and performers"]')
     boxes.append(atlas_box(
         "source_actions", "Actions and performers", "Source-grounded context", "",
         details=[{"label": "Source actions", "text": actions},
@@ -509,8 +507,7 @@ def _capability_support_view(
             {"label": "Proof boundary", "text": proof_boundary},
         ])
     facts.extend({"label": f"Non-goal {index}", "text": value} for index, value in enumerate(non_goals, 1))
-    facts_reference = "state and scope" if proof_is_provisional else "state, scope and proof"
-    lines.append(f'  source_facts["State and scope<br/>Select for {facts_reference}"]')
+    lines.append('  source_facts["State and scope"]')
     boxes.append(atlas_box(
         "source_facts", "State and scope", "Source-grounded context", "", details=facts,
     ))
@@ -519,7 +516,7 @@ def _capability_support_view(
             lines=lines, boxes=boxes, lifecycle=source_lifecycle, component_ids=component_ids,
         )
     if proof_is_provisional:
-        lines.append('  proof["Proposed proof checkpoint<br/>Assumption — select for detail"]')
+        lines.append('  proof["Proposed proof checkpoint<br/>Assumption"]')
         boxes.append(atlas_box(
             "proof", "Proposed proof checkpoint", "Proposed proof checkpoint", proof_boundary,
             details=[{"label": "Authority", "text":
