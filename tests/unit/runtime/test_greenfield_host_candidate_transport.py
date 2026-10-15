@@ -47,7 +47,7 @@ def test_candidate_phase_preserves_every_material_row_and_control_losslessly(edi
         contract, source_duty_receipt=receipt, authority_admission=admission,
     )
     assert request["transport_version"] == HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION
-    assert HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION == "odylith.greenfield.host-candidate-authoring-transport.v5"
+    assert HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION == "odylith.greenfield.host-candidate-authoring-transport.v6"
     for key in ("version", "candidate_version", "canonical_version", "task",
                 "requirements", "request"):
         assert request[key] == contract[key]
@@ -224,7 +224,7 @@ def test_inventory_schema_qualification_still_refuses_before_dispatch(tmp_path, 
     assert installed == calls == proposals == []
 
 
-@pytest.mark.parametrize("outcome", ["inventory", "clarification", "invalid_citation", "roster", "roster_no", "roster_uncertain", "roster_missing", "old_inline"])
+@pytest.mark.parametrize("outcome", ["inventory", "clarification", "invalid_citation", "roster", "roster_no", "roster_uncertain", "roster_missing", "old_inline", "old_roster"])
 def test_native_inline_response_is_retained_then_checked_by_installed_cli(tmp_path, outcome) -> None:
     from contextlib import redirect_stdout
     import hashlib
@@ -261,13 +261,18 @@ def test_native_inline_response_is_retained_then_checked_by_installed_cli(tmp_pa
             "status": "clarification_required", "question": "Which action completes the first path?"}}
     elif outcome == "invalid_citation":
         wire["result"]["state_fields"][0]["source_refs"][0]["quote"] = "invented source"
+    elif outcome == "old_roster":
+        wire["version"] = "odylith.greenfield.source-duty-authoring.v2"
+        for rows in wire["result"]["nonperforming_participants"].values():
+            for ref in rows:
+                ref.pop("mention_ordinal")
     elif outcome == "old_inline":
         wire["version"] = "odylith.greenfield.source-duty-authoring.v1"
         wire["result"].pop("nonperforming_participants")
     raw = (json.dumps(wire, ensure_ascii=False, separators=(",", ":")) + "\n").encode("utf-8")
     contract = greenfield_host_candidate_contract(source)
     flow, _, _, _, proposals, _ = _flow(tmp_path, contract={"version": "unused"}, candidate={})
-    retained, host_calls, installed_calls = {}, [], []
+    retained, host_calls, installed_calls, installed_results = {}, [], [], []
     workspace = tmp_path / "inline-workspace"
     workspace.mkdir()
 
@@ -278,7 +283,7 @@ def test_native_inline_response_is_retained_then_checked_by_installed_cli(tmp_pa
         if schema_path.name == "source-ledger-schema.json":
             assert schema == contract["source_ledger"]["source_ledger_schema"]
             assert schema["properties"]["version"]["enum"] == [SOURCE_DUTY_AUTHORING_VERSION]
-            if outcome != "old_inline":
+            if outcome not in {"old_inline", "old_roster"}:
                 Draft202012Validator(schema).validate(wire)
             assert 0 < kwargs["timeout"] <= 300
             return subprocess.CompletedProcess(command, 0, stdout=raw.decode("utf-8"), stderr="")
@@ -305,6 +310,7 @@ def test_native_inline_response_is_retained_then_checked_by_installed_cli(tmp_pa
         with redirect_stdout(output):
             code = cli.main(args)
         payload = json.loads(output.getvalue())
+        installed_results.append({"returncode": code, "payload": payload})
         if inventory_outcome and "--decision-file" not in command:
             assert payload["preflight"] == expected_preflight
             assert payload["decision_task"]["source_duty_ledger"] == expected_compact
@@ -320,8 +326,8 @@ def test_native_inline_response_is_retained_then_checked_by_installed_cli(tmp_pa
     kwargs = dict(flow=flow, contract=contract, source=source, host_workspace=workspace,
         host_argv=flow.host_argv, deadline=WholeJourneyDeadline(time.monotonic(), time.monotonic),
         observation=observation, invoke_host=invoke_host, check_payload=_accepted_request()[3])
-    if outcome in {"invalid_citation", "old_inline", "roster_no", "roster_uncertain", "roster_missing"}:
-        with pytest.raises(host.HostCandidateFlowError, match=("advertised authoring schema" if outcome == "old_inline" else "decision check returned nonzero" if outcome.startswith("roster_") else "preflight returned nonzero")):
+    if outcome in {"invalid_citation", "old_inline", "old_roster", "roster_no", "roster_uncertain", "roster_missing"}:
+        with pytest.raises(host.HostCandidateFlowError, match=("advertised authoring schema" if outcome in {"old_inline", "old_roster"} else "decision check returned nonzero" if outcome.startswith("roster_") else "preflight returned nonzero")):
             run_source_duty_phase(**kwargs)
     else:
         result = run_source_duty_phase(**kwargs)
@@ -334,6 +340,20 @@ def test_native_inline_response_is_retained_then_checked_by_installed_cli(tmp_pa
     assert retained["raw"] == raw
     assert observation["source_ledger_output_sha256"] == hashlib.sha256(raw).hexdigest()
     assert len(host_calls) == (2 if inventory_outcome else 1)
-    assert len(installed_calls) == (2 if inventory_outcome else 0 if outcome == "old_inline" else 1)
+    assert len(installed_calls) == (2 if inventory_outcome else 0 if outcome in {"old_inline", "old_roster"} else 1)
     assert observation["candidate_host_invocations"] == observation["proposal_command_invocations"] == 0
     assert proposals == []
+    import os
+    if directory := os.environ.get("ODYLITH_MENTION_TEST_EVIDENCE_DIR"):
+        destination = Path(directory) / "native"
+        destination.mkdir(parents=True, exist_ok=True)
+        witness = {
+            "kind": "synthetic mocked native host; real in-process CLI admission; no model call",
+            "outcome": outcome, "source": source, "wire": wire, "raw_response": raw.decode("utf-8"),
+            "schema": contract["source_ledger"]["source_ledger_schema"],
+            "expected_preflight": expected_preflight, "expected_compact": expected_compact,
+            "installed_results": installed_results, "observation": observation,
+            "host_calls": host_calls, "installed_calls": installed_calls,
+            "retained": {key: value.decode("utf-8") for key, value in retained.items()},
+        }
+        (destination / f"{outcome}.json").write_text(json.dumps(witness, ensure_ascii=False, sort_keys=True, indent=2))

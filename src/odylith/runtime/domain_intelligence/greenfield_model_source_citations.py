@@ -98,22 +98,31 @@ def canonical_citation_from_host_selection(
     citation: Mapping[str, Any],
     *,
     state_object: bool = False,
+    mention_selection: bool = False,
 ) -> dict[str, Any]:
     """Project one host-selected quote into the legacy canonical address.
 
-    The host selects exact source text, never a numeric address. Context must
-    contain the quote at a unique source location, including for unique quotes.
-    It is locator-only and never enlarges the selected meaning.
+    Context must be an exact unique source excerpt. Ordinary citations require
+    one quote match inside it. Nonperformer mention selection requires an explicit
+    ordinal over overlapping matches, even for a sole match. Context locates the
+    selection and never enlarges its meaning.
     """
 
     if (
         not isinstance(citation, Mapping)
-        or set(citation) != {"quote", "context"}
+        or set(citation) != ({"quote", "context", "mention_ordinal"} if mention_selection else {"quote", "context"})
+        or (mention_selection and state_object)
     ):
         raise GreenfieldModelAuthoringError(_INVALID_CITATION)
     quote = exact_quote(citation.get("quote"))
     context = exact_quote(citation.get("context"))
     if not quote or not context:
+        raise GreenfieldModelAuthoringError(_INVALID_CITATION)
+    if mention_selection and (
+        type(citation["mention_ordinal"]) is not int
+        or not 1 <= citation["mention_ordinal"] <= MAX_AUTHORED_FIELD_VALUE_CHARS
+        or not quote.strip() or not context.strip()
+    ):
         raise GreenfieldModelAuthoringError(_INVALID_CITATION)
 
     quote_bytes = quote.encode("utf-8")
@@ -121,11 +130,16 @@ def canonical_citation_from_host_selection(
     context_bytes = context.encode("utf-8")
     context_starts = _overlapping_match_starts(evidence, context_bytes)
     quote_offsets = _overlapping_match_starts(context_bytes, quote_bytes)
-    if len(context_starts) != 1 or len(quote_offsets) != 1:
+    if len(context_starts) != 1 or (not mention_selection and len(quote_offsets) != 1):
         raise GreenfieldModelAuthoringError(_AMBIGUOUS_CONTEXT)
+    if mention_selection and citation["mention_ordinal"] > len(quote_offsets):
+        raise GreenfieldModelAuthoringError(_MISSING_OCCURRENCE)
 
     context_start = context_starts[0]
-    quote_start = context_start + quote_offsets[0]
+    # Fresh nonperformers select explicitly, even when only one match exists.
+    # Never enter the legacy sole-match normalization for a supplied ordinal.
+    offset = quote_offsets[citation["mention_ordinal"] - 1] if mention_selection else quote_offsets[0]
+    quote_start = context_start + offset
     if evidence[quote_start : quote_start + len(quote_bytes)] != quote_bytes:
         raise GreenfieldModelAuthoringError(_INVALID_CITATION)
 

@@ -60,8 +60,9 @@ from odylith.runtime.domain_intelligence.greenfield_authority_gate import (
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v7"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v61"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v62"
 PASSIVE_HOST_CANDIDATE_CONTRACT_VERSIONS = (
+    "odylith.greenfield.host-candidate-contract.v61",
     "odylith.greenfield.host-candidate-contract.v60",
     "odylith.greenfield.host-candidate-contract.v59",
     "odylith.greenfield.host-candidate-contract.v58",
@@ -77,7 +78,7 @@ PASSIVE_HOST_CANDIDATE_CONTRACT_VERSIONS = (
 )
 PREVIOUS_HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v50"
 LEGACY_HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v49"
-HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION = "odylith.greenfield.host-candidate-authoring-transport.v5"
+HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION = "odylith.greenfield.host-candidate-authoring-transport.v6"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
 
 
@@ -238,7 +239,10 @@ def greenfield_host_candidate_contract(
                 "Do not use a generic product pronoun, background library, incidental heading or authority. "
                 "Identity alone is not an action or performer. Inventory every material source-owned nonperforming "
                 "participant under nonperforming_participants, with all three typed arrays present even when empty. "
-                "Cite an exact useful short entity name and locating context, never an entire clause. Retain declared "
+                "Cite an exact useful short entity name and exact unique locating context, never an entire clause. "
+                "Every nonperformer citation requires an explicit positive one-based mention_ordinal, even 1 for a unique "
+                "name. Count overlapping exact quote matches within that context and choose the intended mention. "
+                "Never trim or normalize context, guess a first/last selection, or omit the ordinal. Retain declared "
                 "optional carrier, catalog and outside context without making it a performer, required workflow or "
                 "external authority. Exclude incidental, hypothetical, negated, reference-only or untrusted names. "
                 "Do not duplicate a performer or another participant, including at another occurrence. "

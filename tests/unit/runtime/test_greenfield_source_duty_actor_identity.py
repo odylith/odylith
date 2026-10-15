@@ -264,7 +264,7 @@ def test_atomic_actor_custody_preserves_six_fields_nine_safety_duties_and_both_w
 def test_contract_exposes_identity_custody_and_stable_source_actor_reuse():
     source, _, _ = five_actor_candidate()
     contract = greenfield_host_candidate_contract(source)
-    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v61"
+    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v62"
     task = contract["source_ledger"]["task"]
     assert "only ONE source-owned performer identity" in task
     assert "proper literal substring of statement" in task
@@ -351,7 +351,7 @@ def test_fresh_catalog_refuses_missing_or_conflicting_typed_source_authority(dam
 def test_supplemental_beneficiary_survives_without_renumbering_source_performers():
     source, candidate, expected = five_actor_candidate()
     source += " A research observer receives the approved insight."
-    candidate.nonperforming_participants["human_actors"] = [_citation("research observer")]
+    candidate.nonperforming_participants["human_actors"] = [{**_citation("research observer"), "mention_ordinal": 1}]
     receipt = synthetic_source_duty_receipt(candidate, evidence_text=source)
     candidate["result"]["source_duty_binding"].update(
         source_sha256=receipt["source_sha256"], ledger_sha256=receipt["ledger_sha256"],
@@ -417,7 +417,7 @@ def test_same_quote_at_another_actor_path_cannot_rebind_a_sealed_source_action()
     source, candidate, _ = five_actor_candidate()
     other_identity = "Additional observer identity: community facilitator."
     source += " " + other_identity
-    candidate.nonperforming_participants["human_actors"].append(_citation("community facilitator", other_identity))
+    candidate.nonperforming_participants["human_actors"].append({**_citation("community facilitator", other_identity), "mention_ordinal": 1})
     receipt = synthetic_source_duty_receipt(candidate, evidence_text=source)
     candidate["result"]["source_duty_binding"].update(
         source_sha256=receipt["source_sha256"], ledger_sha256=receipt["ledger_sha256"],

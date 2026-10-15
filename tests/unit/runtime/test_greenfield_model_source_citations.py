@@ -286,6 +286,56 @@ def test_state_citation_rejects_old_or_invalid_contract(citation: dict[str, obje
         resolve_source_citation(b"the state", citation, state_object=True)
 
 
+@pytest.mark.parametrize("ordinal", [None, 0, -1, True, False, 1.0, "1", 2, 2401])
+def test_explicit_mention_never_normalizes_invalid_or_sole_match_choices(ordinal):
+    with pytest.raises(GreenfieldModelAuthoringError):
+        canonical_citation_from_host_selection(b"Unique Relay remains optional.",
+            {"quote": "Relay", "context": "Unique Relay remains optional.", "mention_ordinal": ordinal},
+            mention_selection=True)
+    assert exact_occurrence_start(b"Relay", b"Relay", 99) == 0
+
+
+@pytest.mark.parametrize("evidence,quote,ordinal,start", [
+    ("🧭 α bananana", "ana", 1, len("🧭 α b".encode())),
+    ("🧭 α bananana", "ana", 3, len("🧭 α banan".encode())),
+    ("前猫猫猫後", "猫猫", 2, len("前猫".encode())),
+])
+def test_explicit_mention_counts_overlapping_utf8_byte_matches(evidence, quote, ordinal, start):
+    raw = evidence.encode()
+    selected = canonical_citation_from_host_selection(raw,
+        {"quote": quote, "context": evidence, "mention_ordinal": ordinal}, mention_selection=True)
+    assert resolve_source_citation(raw, selected) == (quote, start)
+    assert raw[start:start + len(quote.encode())] == quote.encode()
+
+
+def test_explicit_selection_requires_closed_shape_unique_context_and_exact_text():
+    for evidence, citation in [
+        (b"Relay", {"quote": "Relay", "context": "Relay"}),
+        (b"Relay Relay", {"quote": "Relay", "context": "Relay", "mention_ordinal": 1}),
+        (b"Relay", {"quote": "relay", "context": "Relay", "mention_ordinal": 1}),
+        (b"Relay", {"quote": "Relay", "context": " Relay", "mention_ordinal": 1}),
+        (b"Relay", {"quote": "Relay", "context": "Relay", "mention_ordinal": 1, "extra": 0}),
+    ]:
+        with pytest.raises(GreenfieldModelAuthoringError):
+            canonical_citation_from_host_selection(evidence, citation, mention_selection=True)
+    selected = {"quote": "Relay", "context": "Relay", "mention_ordinal": 1}
+    with pytest.raises(GreenfieldModelAuthoringError):
+        canonical_citation_from_host_selection(b"Relay", selected)
+    with pytest.raises(GreenfieldModelAuthoringError):
+        canonical_citation_from_host_selection(b"Relay", selected, state_object=True, mention_selection=True)
+
+
+def test_explicit_mention_retains_the_existing_context_field_limit():
+    context = "a" * MAX_AUTHORED_FIELD_VALUE_CHARS
+    selected = canonical_citation_from_host_selection(context.encode(),
+        {"quote": "a", "context": context, "mention_ordinal": MAX_AUTHORED_FIELD_VALUE_CHARS},
+        mention_selection=True)
+    assert selected == {"quote": "a", "occurrence": MAX_AUTHORED_FIELD_VALUE_CHARS}
+    with pytest.raises(GreenfieldModelAuthoringError):
+        canonical_citation_from_host_selection((context + "a").encode(),
+            {"quote": "a", "context": context + "a", "mention_ordinal": 1}, mention_selection=True)
+
+
 def test_state_citation_rejects_missing_or_impossible_anchor() -> None:
     with pytest.raises(GreenfieldModelAuthoringError):
         resolve_source_citation(

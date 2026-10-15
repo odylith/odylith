@@ -137,12 +137,12 @@ def canonical_greenfield_host_candidate(
         )
     evidence = evidence_text.encode("utf-8")
     catalog = project_greenfield_source_event_catalog(source_duty_receipt, evidence_text=evidence_text,
-        _passive=source_duty_receipt["version"] not in {"odylith.greenfield.source-duty-ledger-receipt.v20", "odylith.greenfield.source-duty-ledger-receipt.v21"})
+        _passive=source_duty_receipt["version"] not in {"odylith.greenfield.source-duty-ledger-receipt.v22", "odylith.greenfield.source-duty-ledger-receipt.v23"})
     facts = source_owned_greenfield_actor_facts(catalog, supplemental=facts, evidence_text=evidence_text, ledger_receipt=source_duty_receipt)
     canonical_facts = {
         field: ([deepcopy(citation) if set(citation) == {"quote", "occurrence"}
-                 else canonical_citation_from_host_selection(evidence, citation) for citation in value]
-                if field in {"internal_systems", "external_systems"} else
+                 else canonical_citation_from_host_selection(evidence, citation, mention_selection="mention_ordinal" in citation) for citation in value]
+                if field in {"human_actors", "internal_systems", "external_systems"} else
                 _canonical_fact_value(evidence, value, state_object=field == "state_object"))
         for field, value in facts.items()
         if field != "operational_constraints"

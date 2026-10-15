@@ -21,7 +21,7 @@ DUTY_SECTIONS = (
 )
 MAX_DERIVED_REFS = 5
 MAX_COMPACT_CITATIONS = 256
-SOURCE_DUTY_COMPACT_VERSION = "odylith.greenfield.source-duty-compact.v8"
+SOURCE_DUTY_COMPACT_VERSION = "odylith.greenfield.source-duty-compact.v9"
 PARTICIPANT_FIELDS = ("human_actors", "internal_systems", "external_systems")
 PARTICIPANT_JUDGMENTS = ("entity_name", "participant_type", "nonperformance", "identity_nonduplication")
 
@@ -54,15 +54,16 @@ def duty_references(section: str, row: Mapping[str, Any]) -> tuple[list, list]:
 
 def compact_source_duty_view(ledger: Mapping[str, Any]) -> dict[str, Any]:
     """Intern exact citations once; preserve every material field and row order."""
-    bank: list[dict[str, str]] = []
-    ids: dict[tuple[str, str], str] = {}
+    bank: list[dict[str, Any]] = []
+    ids: dict[tuple, str] = {}
 
-    def intern(citation: Mapping[str, str]) -> str:
-        pair = (citation["quote"], citation["context"])
+    def intern(citation: Mapping[str, Any]) -> str:
+        pair = (citation["quote"], citation["context"], *((citation["mention_ordinal"],) if "mention_ordinal" in citation else ()))
         if pair not in ids:
             citation_id = f"c{len(bank)}"
             ids[pair] = citation_id
-            bank.append({"id": citation_id, "q": pair[0], "c": pair[1]})
+            bank.append({"id": citation_id, "q": pair[0], "c": pair[1],
+                         **({"mention_ordinal": citation["mention_ordinal"]} if "mention_ordinal" in citation else {})})
         return ids[pair]
 
     view = deepcopy(dict(ledger))
@@ -70,7 +71,7 @@ def compact_source_duty_view(ledger: Mapping[str, Any]) -> dict[str, Any]:
         {"ref": intern(control), "handling": control["handling"]}
         for control in ledger["evidence_controls"]
     ]
-    if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10"} and ledger["product_identity"] is not None:
+    if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11"} and ledger["product_identity"] is not None:
         view["product_identity"]["source_ref"] = intern(ledger["product_identity"]["source_ref"])
     for section, _ in DUTY_SECTIONS:
         for row in view[section]:
@@ -79,7 +80,7 @@ def compact_source_duty_view(ledger: Mapping[str, Any]) -> dict[str, Any]:
                 row["event_ref"] = intern(row["event_ref"])
                 row["actor_ref"] = intern(row["actor_ref"])
                 row["role_refs"] = [intern(ref) for ref in row["role_refs"]]
-    if ledger["version"] == "odylith.greenfield.source-duty-ledger.v10":
+    if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11"}:
         view["nonperforming_participants"] = {
             field: [intern(ref) for ref in ledger["nonperforming_participants"][field]]
             for field in PARTICIPANT_FIELDS}
@@ -93,8 +94,10 @@ def compact_source_duty_view(ledger: Mapping[str, Any]) -> dict[str, Any]:
                        if ledger["version"] == "odylith.greenfield.source-duty-ledger.v8"
                        else "odylith.greenfield.source-duty-compact.v7"
                        if ledger["version"] == "odylith.greenfield.source-duty-ledger.v9"
+                       else "odylith.greenfield.source-duty-compact.v8"
+                       if ledger["version"] == "odylith.greenfield.source-duty-ledger.v10"
                        else SOURCE_DUTY_COMPACT_VERSION)
-    if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10"}:
+    if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11"}:
         version = view.pop("version")
         if view["status"] == "clarification_required":
             if view["product_identity"] is not None or view["evidence_controls"] or any(view[section] for section, _ in DUTY_SECTIONS) or any(view.get("nonperforming_participants", {}).values()):

@@ -1,5 +1,43 @@
 - Bug ID: CB-324
 
+## Strict mention selection: source frozen, qualification pending (2026-10-15)
+
+The bounded successor requires a model-selected, positive one-based occurrence
+for each fresh outside-participant citation. Exact quote and unique context
+remain required. The compiler checks strict integer type and actual overlapping
+UTF-8 byte matches; no default, first/last guess or response repair is allowed.
+The existing source-only verifier checks the selected entity and its role.
+Distinct selections retain distinct compact references and hashes.
+
+Fresh host62/source11 uses authoring3, preflight10, compact9, decisions16/17,
+receipts22/23 and transport6; candidate26 and canonical80/semantic19/atomic4/
+EDIT context4 keep their existing meanings. Source10/host61 and earlier passive
+tasks retain their exact bytes. The old20/21 compatibility witnesses are frozen
+test fixtures, not live receipts: the retained source61 trial never reached its
+verifier. Genuine retained receipt18 evidence remains separate.
+
+Fifteen production files are frozen. The complete affected selection passes
+705 checks in 74.93 seconds, with zero failures. Independent source review has
+no actionable P0/P1/P2; final native/cap/nonempty EDIT evidence review is clear.
+All predeclared deterministic evidence gaps are closed.
+The interrupted regression remains failed with exit138; the fresh whole run
+supplies the passing result. After the repository
+drive disconnected and was reconnected, all 21 source hashes and all 17 excluded
+local publication files matched; HEAD remains the pushed `2941aaeff`. Exact
+source and current owned changes are archived outside that drive with SHA-256
+`ca83cc8e22aa59e1749e387870d5182b9fd511219342783b621644375607a2e4`.
+No fresh model trial, package, seal, receipt or release credit is claimed.
+
+Final test-output SHA-256:
+`fad336a41053770aedca81f1c6a7d7a33c7f950af683c7c960773708f7359dcf`.
+Source-review SHA-256:
+`01a5dbe95d4f98f2c2e79097e0391bcdda953a99bb055eadd57d3c07ebe709cd`.
+Final independent evidence addendum SHA-256:
+`ffa2597d87805bfd9a5b0b3ea019493cfa719185b0ad564cbebe1a35ce9dae9a`.
+The final 25-path source/test inventory and actual maximum/plus-one witnesses
+remain in durable external evidence. No production module or stage was added;
+all source files remain below 1200 lines and tests below 1500.
+
 ## Current live result: repeated-name addressing still blocks delivery (2026-10-15)
 
 The one predeclared source-roster parent fails after 146.065 seconds, before

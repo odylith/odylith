@@ -134,11 +134,12 @@ def project_greenfield_source_event_catalog(
     verified = verify_greenfield_source_duty_ledger_receipt(
         receipt, evidence_text=evidence_text, allow_legacy_edit=(_passive or receipt.get("version") in {
             "odylith.greenfield.source-duty-ledger-receipt.v16", "odylith.greenfield.source-duty-ledger-receipt.v17",
-            "odylith.greenfield.source-duty-ledger-receipt.v18", "odylith.greenfield.source-duty-ledger-receipt.v19"}),
+            "odylith.greenfield.source-duty-ledger-receipt.v18", "odylith.greenfield.source-duty-ledger-receipt.v19",
+            "odylith.greenfield.source-duty-ledger-receipt.v20", "odylith.greenfield.source-duty-ledger-receipt.v21"}),
     )
     evidence = evidence_text.encode("utf-8")
     facts: dict[str, Any] = {"human_actors": [], "internal_systems": [], "external_systems": [], "title": None}
-    independent_identity = verified["ledger"]["version"] in {SOURCE_DUTY_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8"}
+    independent_identity = verified["ledger"]["version"] in {SOURCE_DUTY_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8"}
     if independent_identity:
         facts["title"] = deepcopy(verified["ledger"]["product_identity"]["source_ref"])
     identity_span = _source_span(evidence, facts["title"]) if independent_identity else None
@@ -214,7 +215,7 @@ def source_owned_greenfield_actor_facts(
     evidence = evidence_text.encode("utf-8")
     context = ledger_receipt.get("edit_preservation") if ledger_receipt is not None else None
     conserved = isinstance(context, Mapping) and context.get("version") == "odylith.greenfield.edit-lifecycle-preservation.v4"
-    if ledger_receipt is not None and ledger_receipt["ledger"]["version"] == SOURCE_DUTY_LEDGER_VERSION:
+    if ledger_receipt is not None and ledger_receipt["ledger"]["version"] in {SOURCE_DUTY_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v10"}:
         if set(catalog["facts"]) & set(supplemental):
             raise GreenfieldSourceDutyBindingError("candidate must not author source-owned participant facts")
         roster = ledger_receipt["ledger"]["nonperforming_participants"]
@@ -229,7 +230,7 @@ def source_owned_greenfield_actor_facts(
                                 mapped_prior_source_span(context, atom["source_span_refs"][0], evidence_text=evidence_text))
                                for atom in atoms for link in atom["projection_links"]
                                if link["field"] == field and link["relation_order"] == 0)
-                current = [(index, ref["quote"], _source_span(evidence, ref))
+                current = [(index, ref["quote"], _source_span(evidence, ref, mention_selection="mention_ordinal" in ref))
                            for index, ref in enumerate(facts[field])]
                 if current != prior:
                     raise GreenfieldSourceDutyBindingError(UNSUPPORTED_SYSTEM_MUTATION)
@@ -312,9 +313,9 @@ def _event_order(value: Any, event_count: int) -> int:
     return value
 
 
-def _source_span(evidence: bytes, citation: Any) -> tuple[int, int]:
+def _source_span(evidence: bytes, citation: Any, *, mention_selection: bool = False) -> tuple[int, int]:
     try:
-        canonical = canonical_citation_from_host_selection(evidence, citation)
+        canonical = canonical_citation_from_host_selection(evidence, citation, mention_selection=mention_selection)
         quote, start = resolve_source_citation(evidence, canonical)
     except GreenfieldModelAuthoringError as exc:
         raise GreenfieldSourceDutyBindingError(
@@ -532,7 +533,7 @@ def validate_greenfield_source_duty_binding(
         raise GreenfieldSourceDutyBindingError(
             "source duty receipt is invalid"
         ) from exc
-    fresh = receipt["ledger"]["version"] in {SOURCE_DUTY_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v9"}
+    fresh = receipt["ledger"]["version"] in {SOURCE_DUTY_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v9"}
     host = isinstance(binding, Mapping) and binding.get("version") == HOST_SOURCE_DUTY_BINDING_VERSION
     binding = _closed(binding, set(greenfield_source_duty_binding_schema(host=host)["required"]), "source duty binding")
     if binding["version"] != (HOST_SOURCE_DUTY_BINDING_VERSION if host else SOURCE_DUTY_BINDING_VERSION) or (host and not fresh):
@@ -688,7 +689,7 @@ def validate_greenfield_source_duty_design_binding(
 
 def recurring_source_event_orders(ledger: Mapping[str, Any], binding: Mapping[str, Any]) -> tuple[int, ...]:
     """Map source-owned recurrence to stable event identities, never infer it from text."""
-    if ledger["version"] not in {SOURCE_DUTY_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v9"}:
+    if ledger["version"] not in {SOURCE_DUTY_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v9"}:
         return ()
     recurring = {row["id"] for row in ledger["system_duties"]
                  if row["execution_kind"] == "recurring_invariant"}

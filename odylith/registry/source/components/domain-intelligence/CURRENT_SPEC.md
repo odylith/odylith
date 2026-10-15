@@ -8,13 +8,15 @@ Domain Intelligence turns project evidence into a reviewable governance package
 or one focused question when a material requirement is unresolved. It keeps source
 facts, proposed design and evidence custody distinct throughout preparation.
 
-Fresh preparation uses host v61, source authoring v2, ledger v10 and preflight
-v9. Initial/EDIT receipts v20/v21 use decisions v14/v15; compact view v8,
-candidate format v26 and transport v5 bind that stronger source contract.
+Fresh preparation uses host v62, source authoring v3, ledger v11 and preflight
+v10. Initial/EDIT receipts v22/v23 use decisions v16/v17; compact view v9,
+candidate format v26 and transport v6 bind that source contract.
 Canonical authoring v80, authored semantics v19 and EDIT context v4 keep their
-existing value and custody rules. Independent review and 625 affected checks pass. The one fresh live parent
-refuses an ambiguous roster citation before verification or candidate authoring;
-live package and installed release qualification remain open.
+existing value and custody rules. All 705 affected tests pass in 74.93 seconds.
+Independent source and final evidence reviews find no actionable P0/P1/P2.
+Native admission, maximum-size and nonempty EDIT witnesses pass; all predeclared
+deterministic evidence gaps are closed. No fresh live package or installed
+release qualification is claimed.
 
 Inventory supplies exact short-name citations for people and systems outside
 the workflow. The existing source-only verifier must affirm their type,
@@ -24,12 +26,20 @@ or retype those three participant lists. Other candidate facts remain authored
 under their existing contracts. Declared optional outside context stays outside
 the workflow and gains no external approval authority.
 
+Fresh outside-participant citations require an explicit, positive, one-based
+`mention_ordinal` inside the exact unique context, even for a single match.
+The compiler validates its integer type and actual range, resolves overlapping
+UTF-8 byte matches, and retains distinct selections in compact identities and
+hashes. It supplies no default occurrence. The existing verifier checks the
+selected mention's identity and role. Other source citations retain their rules.
+
 The compiler remains the sole owner of exact citation addresses and compact
-references. It refuses ambiguous quotes rather than choosing an occurrence.
+references. Missing or invalid selections refuse before verification.
 The three participant lists retain the combined bound of 32 entries per field.
 All eight source-duty sections, four model stages and existing runtime caps
-remain active. Historical host v59/v60 and their source v9/compact v7 receipts
-v18/v19 remain explicit passive readback; fresh preparation cannot use them.
+remain active. Historical host v61/source v10/compact v8/receipts v20/v21 and
+earlier v59/v60/source v9/compact v7/receipts v18/v19 retain their exact passive
+readback, without an invented ordinal; fresh preparation cannot use them.
 
 The prior inline inventory correction removes model-owned reference bookkeeping.
 Its retained first failure uses an undefined reference; the later valid-baseline
@@ -38,11 +48,12 @@ citation. Both remain failures. The new roster ownership closes that unverified
 post-verifier authoring boundary; source-stage citation errors can still refuse.
 No repair, retry, extra verifier, parser, fallback or reduced envelope is added.
 
-The latest live inventory has 85 citation uses: 84 pass, but one short name
+The retained source61 live inventory has 85 citation uses: 84 pass, but one short name
 occurs three times inside its exact context and supplies no chosen occurrence.
-This is a delivery failure on clear evidence. The selected next design requires
-an explicit, strictly validated mention choice in fresh roster citations. It is
-not implemented; no current receipt or failed output gains that future meaning.
+This is a delivery failure on clear evidence. Its source61 ownership change
+passes 625 affected tests and 38 independent probes, which did not establish
+live copy accuracy. The source62 selector makes that missing choice expressible;
+no earlier receipt or failed output gains its meaning or fresh qualification.
 
 EDIT carries each accepted action's exact component-to-workstream allocations and
 both verification flags, plus the accepted typed system roster and exact source
@@ -2331,6 +2342,9 @@ semantic/design findings.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-10-15 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_source_citations.py`
 - **2026-10-15 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_source_duty_authoring.py`
@@ -2346,9 +2360,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-10-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md`, `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, plus 1 more
-- **2026-10-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_source_duty_binding.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

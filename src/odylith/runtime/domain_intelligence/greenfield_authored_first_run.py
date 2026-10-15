@@ -79,7 +79,7 @@ def authored_first_path_text(intent: Mapping[str, Any]) -> str:
     """Keep the declared source path separate from the proposed execution closure."""
 
     source_duty = intent[AUTHORED_SEMANTICS_KEY]["source_duty"]
-    if source_duty and source_duty["ledger_receipt"]["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10"}:
+    if source_duty and source_duty["ledger_receipt"]["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11"}:
         return str(intent["first_path"])
     return authored_first_run_text(intent)
 
@@ -89,7 +89,7 @@ def authored_first_run_text(intent: Mapping[str, Any]) -> str:
 
     relations = authored_first_run_relations(intent)
     source_duty = intent[AUTHORED_SEMANTICS_KEY]["source_duty"]
-    if source_duty and source_duty["ledger_receipt"]["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10"}:
+    if source_duty and source_duty["ledger_receipt"]["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11"}:
         return " ".join(row["event_quote"] for row in relations)
     return "Proposed first run:\n" + "\n".join(
         f"Event {row['order']}\n{authored_event_display_text(row)}"

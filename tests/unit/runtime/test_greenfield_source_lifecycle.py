@@ -28,13 +28,13 @@ def _citation(quote: str, context: str | None = None) -> dict[str, str]:
     return {"quote": quote, "context": context or quote}
 
 
-def _case(noun: str) -> tuple[str, dict, dict, dict]:
+def _case(noun: str, *, source_version: str | None = None) -> tuple[str, dict, dict, dict]:
     evidence = (
         f"{noun} workspace. A steward opens the {noun}. A reviewer approves the {noun}. "
         f"Withdrawal closes {noun} access and erases the cached copy."
     )
     ledger = {
-        "version": SOURCE_DUTY_LEDGER_VERSION,
+        "version": source_version or SOURCE_DUTY_LEDGER_VERSION,
         "nonperforming_participants": {field: [] for field in ("human_actors", "internal_systems", "external_systems")},
         "product_identity": {"basis": "product_description", "source_ref": _citation(f"{noun} workspace")},
         "status": "inventory",

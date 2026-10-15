@@ -2,7 +2,7 @@
 
 Receipt version: `odylith.greenfield-operating-envelope.v6`
 
-Document revision: `18`
+Document revision: `19`
 
 Profile: `single-product-governance-onboarding`
 
@@ -40,7 +40,7 @@ complete sealed statements in selectable details and companion diagrams.
 Source performers, selected events, required upstream support and lifecycle
 effects remain intact. Withdrawal changes remain distinguishable in the visual.
 Static readability checks do not qualify Read selection or the browser matrix.
-Fresh v19 passes independent core civic semantics but fails three projection
+An earlier v19 trial passes independent core civic semantics but fails three projection
 quality findings; its retained evidence remains unchanged. Corrected-source
 characterizations require a new installed public proof before qualification.
 
@@ -96,34 +96,46 @@ proof.
 
 ### Inventory citation ownership
 
-Fresh host contract `odylith.greenfield.host-candidate-contract.v61` requests
-`odylith.greenfield.source-duty-authoring.v2`. Inventory supplies exact quotes
+Fresh host contract `odylith.greenfield.host-candidate-contract.v62` requests
+`odylith.greenfield.source-duty-authoring.v3`. Inventory supplies exact quotes
 and locator contexts for the eight duty sections and a typed roster of people
 and systems outside the workflow. The existing source-only verifier must affirm
 their classification, nonperformance, identity and completeness before the
 candidate runs. Optional outside context does not become a workflow step or
 external approval authority.
 
+Each fresh nonperformer citation also requires a positive, one-based
+`mention_ordinal`, including 1 for a unique mention. The model selects the
+occurrence inside its exact, unique source context. The compiler checks the
+integer type and actual range, rejecting booleans and missing or invalid
+selections. Exact overlapping UTF-8 byte matches determine the selected address;
+the compiler never supplies a default or rewrites the citation. The existing
+verifier judges that selected mention. Other duty and candidate citations keep
+their existing rules.
+
 The compiler alone assigns exact source addresses and compact references. It
 combines verified nonperformers with the fixed action performers; the fresh
 candidate cannot author those three participant lists. Other candidate facts
-retain their existing authoring contract. Invalid or ambiguous citations refuse
-without choosing an occurrence or repairing the response.
+retain their existing authoring contract. Distinct selected occurrences retain
+distinct compact identities and hashes. Invalid citations refuse without
+choosing an occurrence or repairing the response.
 
-Fresh ledger v10/preflight v9, compact view v8, initial/EDIT receipts v20/v21,
-decisions v14/v15 and candidate v26/transport v5 bind that source contract.
+Fresh ledger v11/preflight v10, compact view v9, initial/EDIT receipts v22/v23,
+decisions v16/v17 and candidate v26/transport v6 bind that source contract.
 Canonical authoring v80, authored semantics v19 and EDIT context v4 retain their
-existing meanings. Historical host v59/v60, source v9, compact v7 and receipts
-v18/v19 keep explicit passive readback under their original hashes and tasks;
+existing meanings. Historical host v61/source v10/compact v8/receipts v20/v21
+and earlier v59/v60/source v9/compact v7/receipts v18/v19 keep explicit passive
+readback under their original hashes and tasks, without an invented ordinal;
 they cannot satisfy the fresh native contract. Live semantic, latency and
 installed-package qualification remain required.
 
-The current source trial fails before the verifier: one of 85 citation uses
+The retained source61 trial fails before the verifier: one of 85 citation uses
 selects a name three times inside its unique context without selecting a
-mention. No package is delivered. The next bounded design would require an
-explicit mention selection for fresh roster citations, retaining strict exact
-addresses and the existing semantic verifier. That design is not implemented;
-this revision grants it no acceptance or release credit.
+mention. No package is delivered. The source62 selector addresses that missing
+internal selection; it does not establish model accuracy or useful delivery.
+Its 705 affected checks and independent source/evidence review pass. One
+unchanged-input trial is still required to establish useful delivery. Existing
+stage, size, cost and time limits remain.
 
 ### EDIT lifecycle verification
 
@@ -137,7 +149,7 @@ Missing or uncertain duties refuse before candidate authoring. Prior rows are a
 comparison checklist; current lifecycle and governance still come from the
 accepted current inventory. Explicit corrections take precedence over history.
 
-Initial/EDIT receipts v20/v21 use decisions v14/v15 and retain EDIT preservation
+Initial/EDIT receipts v22/v23 use decisions v16/v17 and retain EDIT preservation
 context v4. EDIT binds the prior transaction, its lifecycle, the complete source,
 correction, task and decisions. A global completeness yes or an initial receipt cannot
 authorize EDIT. Citation custody and complete keys do not prove a semantic

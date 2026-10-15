@@ -34,6 +34,11 @@ the candidate; proposed design cannot change them. Optional outside context
 remains outside the workflow. A missing or uncertain verification stops before
 candidate authoring.
 
+For those outside participants, fresh inventory also selects the one-based
+occurrence of the exact name inside its context. The compiler rejects a missing
+or invalid selection and the verifier checks the selected meaning. Do not add
+an occurrence to a failed response or choose one on the model's behalf.
+
 The standard gate/candidate window is shared 300 seconds plus 15 seconds of
 completion reserve. Inventory has a 300-second cap, verifier 120, and each ledger
 check 30. The entire supervised journey has a fixed 660-second diagnostic cap

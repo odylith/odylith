@@ -1,5 +1,31 @@
 Status: In progress
 
+## Strict mention selection: source frozen, qualification pending (2026-10-15)
+
+The successor keeps broad freeform input and requires an explicit occurrence
+inside each fresh outside-participant citation's exact unique context. The
+existing citation owner validates strict integer type, actual range and exact
+overlapping UTF-8 byte matches. The existing verifier judges the selected meaning;
+no new stage, source-choice catalog, default occurrence, repair or retry is added.
+
+The 15 production changes are frozen; all 705 affected checks pass in one
+74.93-second run. Source review is clear. Exact native, maximum/plus-one request
+and nonempty EDIT witnesses pass their focused checks and final independent
+review. All predeclared deterministic gaps are closed before the one
+predeclared unchanged-input parent; live model accuracy remains unproved.
+Keep source10/host61 history
+and all earlier failures intact. Fixture20/21 receipts prove passive compatibility,
+not a live journey. Canonical80, semantic19, atomic4 and EDIT context4 keep exact
+values, typed order, source addresses and prior action allocations.
+
+Checkpoint `2941aaeff` is pushed, with both fresh hosted suites running. Its
+canonical benchmark publication belongs to frozen `433f0e38a`; it does not
+qualify this successor. After the external drive returned, all 21 source hashes
+and 17 excluded local files matched; uncommitted source was archived outside the
+drive before further validation. Final H/B/D, the unchanged 44 scored cases,
+four separate genuine EDIT journeys, native hosts and protected-final/GA remain
+open. The protected final input remains closed.
+
 ## Current live result: repeated-name addressing still blocks delivery (2026-10-15)
 
 The one predeclared source-roster parent fails after 146.065 seconds, before

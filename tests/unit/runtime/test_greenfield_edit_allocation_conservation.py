@@ -376,6 +376,18 @@ def test_authenticated_context_max_and_plus_one_precede_provider_discovery(tmp_p
     repeated, repeated_source = _bounded_prior([2400] * 128, tmp_path)
     with pytest.raises(ValueError, match="131072-byte bound"):
         cli._edit_preservation(repeated, correction=context["correction"], evidence_text=repeated_source)
+    import os
+    from pathlib import Path
+    if directory := os.environ.get("ODYLITH_MENTION_TEST_EVIDENCE_DIR"):
+        destination = Path(directory) / "bounds"
+        destination.mkdir(parents=True, exist_ok=True)
+        with monkeypatch.context() as probe:
+            probe.setattr(entailment, "MAX_EDIT_CONTEXT_BYTES", 1024 * 1024)
+            plus_one = cli._edit_preservation(oversized, correction=context["correction"], evidence_text=source)
+        for label, value, size in (("maximum", context, 131072), ("plus-one-refused", plus_one, 131073)):
+            raw = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
+            assert len(raw) == size
+            (destination / f"edit-context.{label}.json").write_bytes(raw)
 
 
 def _request_with_citations(prior, source, context, lengths, *, candidate):
@@ -430,6 +442,19 @@ def test_complete_authenticated_request_max_and_plus_one_refuse_target_invocatio
     with pytest.raises(ValueError, match="262144-byte bound"):
         target()
     assert calls == []
+    import os
+    from pathlib import Path
+    if directory := os.environ.get("ODYLITH_MENTION_TEST_EVIDENCE_DIR"):
+        destination = Path(directory) / "bounds"
+        destination.mkdir(parents=True, exist_ok=True)
+        with monkeypatch.context() as probe:
+            probe.setattr(entailment, "MAX_AUTHORING_REQUEST_BYTES", 1024 * 1024)
+            plus_one = _request_with_citations(prior, source, context, lengths, candidate=candidate)
+        name = "candidate-request-plus-schema" if candidate else "verifier-task"
+        for label, value, size in (("maximum", measured, 262144), ("plus-one-refused", plus_one, 262145)):
+            raw = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
+            assert len(raw) == size
+            (destination / f"{name}.{label}.json").write_bytes(raw)
 
 
 def test_same_label_distinct_typed_addresses_survive_but_same_address_retyping_refuses():
@@ -481,8 +506,8 @@ def test_same_label_distinct_typed_addresses_survive_but_same_address_retyping_r
 
 
 @pytest.mark.parametrize("edit", [False, True], ids=["initial", "edit"])
-@pytest.mark.parametrize("generation", ["allocations3", "inline"], ids=["retained16_17", "retained18_19"])
-def test_fresh_host61_refuses_valid_legacy_receipts_before_candidate_or_seal(tmp_path, monkeypatch, edit, generation):
+@pytest.mark.parametrize("generation", ["allocations3", "inline", "roster"], ids=["retained16_17", "retained18_19", "retained20_21"])
+def test_fresh_host62_refuses_valid_legacy_receipts_before_candidate_or_seal(tmp_path, monkeypatch, edit, generation):
     from odylith.runtime.domain_intelligence import greenfield_host_candidate as host
     from odylith.runtime.domain_intelligence.greenfield_create_transaction import _require_host_candidate_authority_binding
     prior = _transaction(repo_root=tmp_path)
@@ -491,26 +516,31 @@ def test_fresh_host61_refuses_valid_legacy_receipts_before_candidate_or_seal(tmp
     context = None
     if edit:
         source, fresh, ledger, _, _ = _fresh(prior)
-        context = (fresh if generation == "inline" else entailment.greenfield_edit_preservation_context(transaction_hash=prior.transaction_hash,
+        context = (fresh if generation in {"inline", "roster"} else entailment.greenfield_edit_preservation_context(transaction_hash=prior.transaction_hash,
             prior_lifecycle=fresh["prior_lifecycle"], prior_identity=fresh["prior_identity"],
             correction=fresh["correction"], evidence_text=source, _passive_allocations=True))
     ledger = deepcopy(ledger)
-    ledger["version"] = "odylith.greenfield.source-duty-ledger.v9"
-    ledger.pop("nonperforming_participants")
+    ledger["version"] = "odylith.greenfield.source-duty-ledger.v10" if generation == "roster" else "odylith.greenfield.source-duty-ledger.v9"
+    if generation == "roster":
+        for rows in ledger["nonperforming_participants"].values():
+            for ref in rows:
+                ref.pop("mention_ordinal")
+    else:
+        ledger.pop("nonperforming_participants")
     preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=source, _passive_source_version=ledger["version"])
-    task = entailment.source_duty_entailment_task(preflight, evidence_text=source, edit_preservation=context, _passive_receipt=generation != "inline")
+    task = entailment.source_duty_entailment_task(preflight, evidence_text=source, edit_preservation=context, _passive_receipt=generation == "allocations3")
     decisions = _yes_decisions(preflight, evidence_text=source)
     decisions["verifier_task_sha256"] = task["verifier_task_sha256"]
     if edit:
-        decisions.update(version="odylith.greenfield.source-duty-decisions.v13" if generation == "inline" else "odylith.greenfield.source-duty-decisions.v12",
+        decisions.update(version=task["decision_set_schema"]["properties"]["version"]["enum"][0],
             identity_preservation={"verdict": "preserved", "correction_authorization": "not_required"},
-            **(preserved_edit_decisions_fixture(context) if generation == "inline" else {"edit_preservation": {}}))
+            **(preserved_edit_decisions_fixture(context) if generation in {"inline", "roster"} else {"edit_preservation": {}}))
     legacy = validate_greenfield_source_duty_ledger(ledger, evidence_text=source, decision_set=decisions,
-        edit_preservation=context, _passive_receipt=generation != "inline", _passive_source_version=ledger["version"])
-    assert legacy["version"].endswith((".v19" if edit else ".v18") if generation == "inline" else (".v17" if edit else ".v16"))
+        edit_preservation=context, _passive_receipt=generation == "allocations3", _passive_source_version=ledger["version"])
+    assert legacy["version"].endswith((".v21" if edit else ".v20") if generation == "roster" else (".v19" if edit else ".v18") if generation == "inline" else (".v17" if edit else ".v16"))
     assert verify_greenfield_source_duty_ledger_receipt(legacy, evidence_text=source) == legacy
     contract = host.greenfield_host_candidate_contract(source, edit_preservation=context)
-    assert contract["version"].endswith(".v61")
+    assert contract["version"].endswith(".v62")
     calls = []
     monkeypatch.setattr(host, "canonical_greenfield_host_candidate", lambda *a, **kw: calls.append("candidate/seal"))
     with pytest.raises(ValueError, match="receipt version"):
