@@ -2,7 +2,7 @@
 
 Receipt version: `odylith.greenfield-operating-envelope.v6`
 
-Document revision: `19`
+Document revision: `20`
 
 Profile: `single-product-governance-onboarding`
 
@@ -96,8 +96,8 @@ proof.
 
 ### Inventory citation ownership
 
-Fresh host contract `odylith.greenfield.host-candidate-contract.v62` requests
-`odylith.greenfield.source-duty-authoring.v3`. Inventory supplies exact quotes
+Fresh host contract `odylith.greenfield.host-candidate-contract.v63` requests
+`odylith.greenfield.source-duty-authoring.v4`. Inventory supplies exact quotes
 and locator contexts for the eight duty sections and a typed roster of people
 and systems outside the workflow. The existing source-only verifier must affirm
 their classification, nonperformance, identity and completeness before the
@@ -113,28 +113,45 @@ the compiler never supplies a default or rewrites the citation. The existing
 verifier judges that selected mention. Other duty and candidate citations keep
 their existing rules.
 
+The same inventory and verifier own source precedence, complete-run membership
+and order, exact result-fact and producer custody, and a separate proof witness.
+The compiler projects the accepted plan while preserving the declared path's
+roles. Required system consequences can join the complete run; unrelated,
+recovery and recurring duties do not automatically become run steps. Candidate
+authoring supplies design allocations and rationale without selecting the plan
+again. Result and proof may be different facts; all six existing result carriers
+retain their meanings. A reserved scalar requires explicit candidate abstention,
+with original native rules elsewhere and strict fact/assumption exclusivity.
+
 The compiler alone assigns exact source addresses and compact references. It
 combines verified nonperformers with the fixed action performers; the fresh
-candidate cannot author those three participant lists. Other candidate facts
-retain their existing authoring contract. Distinct selected occurrences retain
+candidate cannot author those three participant lists. Other candidate facts,
+apart from source-owned proof and result, retain their authoring contract.
+Distinct selected occurrences retain
 distinct compact identities and hashes. Invalid citations refuse without
 choosing an occurrence or repairing the response.
 
-Fresh ledger v11/preflight v10, compact view v9, initial/EDIT receipts v22/v23,
-decisions v16/v17 and candidate v26/transport v6 bind that source contract.
+Fresh ledger v12/preflight v11, compact view v10, initial/EDIT receipts v24/v25,
+decisions v18/v19 and candidate v27/transport v7 bind that source contract.
 Canonical authoring v80, authored semantics v19 and EDIT context v4 retain their
 existing meanings. Historical host v61/source v10/compact v8/receipts v20/v21
 and earlier v59/v60/source v9/compact v7/receipts v18/v19 keep explicit passive
 readback under their original hashes and tasks, without an invented ordinal;
 they cannot satisfy the fresh native contract. Live semantic, latency and
-installed-package qualification remain required.
+installed-package qualification remain required. Host62/source11/compact9 and
+receipts22/23 retain their original passive contracts without an invented plan;
+fresh host63 cannot borrow them.
 
 The retained source61 trial fails before the verifier: one of 85 citation uses
 selects a name three times inside its unique context without selecting a
 mention. No package is delivered. The source62 selector addresses that missing
 internal selection; it does not establish model accuracy or useful delivery.
-Its 705 affected checks and independent source/evidence review pass. One
-unchanged-input trial is still required to establish useful delivery. Existing
+Its 705 affected checks and independent source/evidence review pass. The one
+unchanged-input source62 trial completes all four stages in 319.997 seconds,
+then fails first-run admission: a required final system action is outside the
+compiler's human-path predecessor closure and permitted terminal set. No package
+or receipt is delivered. The source63 ownership correction is implemented under
+regression and independent review; no new live result is claimed. Existing
 stage, size, cost and time limits remain.
 
 ### EDIT lifecycle verification

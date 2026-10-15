@@ -51,8 +51,14 @@ def test_closed_inventory_and_question_are_disjoint_with_exact_passive_compact_r
         Draft202012Validator(schema).validate(outcome)
     clarification = decode_source_duty_inventory(_clarification())
     assert clarification["product_identity"] is None
+    assert clarification["nonperforming_participants"] == {
+        "human_actors": [], "internal_systems": [], "external_systems": [],
+    }
+    assert clarification["first_run"] == {"duty_ids": []}
+    assert clarification["source_precedence"] == []
+    assert clarification["terminal"] is None
     assert not any(value for key, value in clarification.items()
-                   if key not in {"version", "status", "question"})
+                   if key not in {"version", "status", "question", "nonperforming_participants", "first_run"})
     preflight = preflight_greenfield_source_duty_ledger(clarification, evidence_text=EVIDENCE)
     assert preflight["claims"] == []
     with pytest.raises(ValueError, match="clarification cannot request a verifier"):

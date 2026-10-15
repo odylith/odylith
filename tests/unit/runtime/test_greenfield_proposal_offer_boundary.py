@@ -96,6 +96,10 @@ def test_public_preview_offers_three_hash_bound_terminal_decisions(
             statement="A reviewer creates a reviewable plan", action="creates", target="a reviewable plan",
             performer_role="human_actor", observable_result="reviewable plan created",
         )],
+        declared_run_plan={"source_precedence": [], "first_run": {"duty_ids": ["reviewer-create"]},
+            "terminal": {"duty_id": "reviewer-create", "result_fact": {"field": "first_path", "duty_id": "reviewer-create"},
+                         "proof_boundary": {"quote": "a reviewable plan", "context": "A reviewer creates a reviewable plan."},
+                         "result_quote": "a reviewable plan", "result_occurrence": 1}},
     )
 
     assert greenfield_proposals_cli.main([

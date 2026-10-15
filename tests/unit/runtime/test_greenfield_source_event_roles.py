@@ -126,7 +126,6 @@ def _mixed_source_graph(count):
         })
     receipt = synthetic_source_duty_receipt_for_ledger(ledger, evidence_text=source)
     design = candidate["result"]["provisional_design"]
-    design["first_run"]["event_orders"] = [1, 2]
     for key in ("supported_event_orders", "verification_event_orders"):
         design["components"][0][key] = list(range(1, min(count, 32) + 1))
     design["workstreams"][0]["verification_event_orders"] = list(range(1, min(count, 32) + 1))
@@ -201,7 +200,6 @@ def test_recurring_history_safeguard_retains_all_projection_custody_without_beco
     ledger["proof_duties"] = [{"id": "retrievable-history", "source_refs": [citation],
         "dossier_or_artifact": "retrievable history", "must_show": proof}]
     design = candidate["result"]["provisional_design"]
-    design["first_run"]["event_orders"] = [1, 2]
     for key in ("supported_event_orders", "verification_event_orders"):
         design["components"][0][key].append(4)
     design["workstreams"][0]["verification_event_orders"].append(4)

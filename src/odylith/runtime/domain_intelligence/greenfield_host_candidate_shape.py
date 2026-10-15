@@ -24,7 +24,9 @@ from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
     validate_greenfield_source_duty_binding,
 )
 
-HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v26"
+from odylith.runtime.domain_intelligence.greenfield_source_run_plan import compile_source_run_candidate
+
+HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v27"
 HOST_SOURCE_DUTY_BINDING_FIELD = "source_duty_binding"
 
 
@@ -102,6 +104,15 @@ def greenfield_host_candidate_schema() -> dict[str, Any]:
     facts["properties"].pop("title")
     for field in ("human_actors", "internal_systems", "external_systems"):
         facts["properties"].pop(field)
+    facts["properties"]["product_story"] = {"anyOf": [facts["properties"]["product_story"], {"type": "null"}]}
+    for field in ("terminal", "source_precedence"):
+        authored["required"].remove(field)
+        authored["properties"].pop(field)
+    facts["required"].remove("proof_boundary")
+    facts["properties"].pop("proof_boundary")
+    run = authored["properties"]["provisional_design"]["properties"]["first_run"]
+    run["required"].remove("event_orders")
+    run["properties"].pop("event_orders")
     return schema
 
 
@@ -136,8 +147,9 @@ def canonical_greenfield_host_candidate(
             "Greenfield host candidate must not duplicate source-owned identity or first-path citation authority"
         )
     evidence = evidence_text.encode("utf-8")
+    compiled = compile_source_run_candidate(source_duty_receipt["ledger"], result, evidence_text=evidence_text)
     catalog = project_greenfield_source_event_catalog(source_duty_receipt, evidence_text=evidence_text,
-        _passive=source_duty_receipt["version"] not in {"odylith.greenfield.source-duty-ledger-receipt.v22", "odylith.greenfield.source-duty-ledger-receipt.v23"})
+        _passive=False)
     facts = source_owned_greenfield_actor_facts(catalog, supplemental=facts, evidence_text=evidence_text, ledger_receipt=source_duty_receipt)
     canonical_facts = {
         field: ([deepcopy(citation) if set(citation) == {"quote", "occurrence"}
@@ -147,20 +159,11 @@ def canonical_greenfield_host_candidate(
         for field, value in facts.items()
         if field != "operational_constraints"
     }
-    raw_constraints = facts.get("operational_constraints")
-    if not isinstance(raw_constraints, Sequence) or isinstance(
-        raw_constraints, (str, bytes, bytearray)
-    ):
-        raise TypeError("Greenfield host candidate operational constraints must be an array")
-    canonical_constraints: list[dict[str, Any]] = []
-    constraint_fields = {"quote", "context"}
-    for raw_constraint in raw_constraints:
-        if not isinstance(raw_constraint, Mapping) or set(raw_constraint) != constraint_fields:
-            raise ValueError("Greenfield host candidate operational constraint has invalid fields")
-        canonical_constraints.append(
-            canonical_citation_from_host_selection(evidence, raw_constraint)
-        )
-    canonical_facts["operational_constraints"] = canonical_constraints
+    canonical_facts["operational_constraints"] = compiled["facts"]["operational_constraints"]
+    canonical_facts["proof_boundary"] = compiled["facts"]["proof_boundary"]
+    result_field = source_duty_receipt["ledger"]["terminal"]["result_fact"]["field"]
+    if result_field in {"product_story", "opportunity", "product_view", "success_metrics"}:
+        canonical_facts[result_field] = compiled["facts"][result_field]
     canonical_events: list[dict[str, Any]] = []
     path_citations: list[Any] = []
     supporting_citations: list[Any] = []
@@ -192,19 +195,11 @@ def canonical_greenfield_host_candidate(
         canonical_events.append(event)
     canonical_facts["first_path"] = path_citations
     canonical_facts["supporting_events"] = supporting_citations
-    canonical_result = deepcopy(dict(result))
+    canonical_result = deepcopy(compiled)
     canonical_result.pop(HOST_SOURCE_DUTY_BINDING_FIELD)
     canonical_result["facts"] = canonical_facts
     canonical_result["events"] = canonical_events
     canonical_result["components"] = []  # Verified duties own the accepted responsibilities.
-    terminal = canonical_result.get("terminal")
-    if isinstance(terminal, dict) and isinstance(terminal.get("result_fact"), dict):
-        result_fact = terminal["result_fact"]
-        if result_fact.get("field") == "first_path":
-            source_row = result_fact.get("row")
-            if type(source_row) is not int or source_row not in first_path_orders:
-                raise ValueError("Greenfield terminal must cite a selected first-path fact")
-            result_fact["row"] = sum(order <= source_row for order in first_path_orders)
     candidate["result"] = canonical_result
     return candidate
 

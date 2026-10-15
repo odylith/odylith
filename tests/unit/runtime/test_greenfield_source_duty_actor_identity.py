@@ -95,6 +95,7 @@ def test_role_context_resolves_pronoun_and_inherited_verb_without_microspans():
             "source_refs": [], "action": "defines", "target": target,
             "statement": f"Dana defines {target}",
         })
+    ledger["terminal"]["proof_boundary"] = event
     preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=evidence)
     assert preflight["claims"][0]["actor_ref"] == preflight["claims"][1]["actor_ref"]
     receipt = validate_greenfield_source_duty_ledger(
@@ -264,7 +265,7 @@ def test_atomic_actor_custody_preserves_six_fields_nine_safety_duties_and_both_w
 def test_contract_exposes_identity_custody_and_stable_source_actor_reuse():
     source, _, _ = five_actor_candidate()
     contract = greenfield_host_candidate_contract(source)
-    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v62"
+    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v63"
     task = contract["source_ledger"]["task"]
     assert "only ONE source-owned performer identity" in task
     assert "proper literal substring of statement" in task
@@ -533,6 +534,8 @@ def test_source_verifier_can_refuse_generic_or_background_identity_without_candi
 def test_source_identity_claim_cannot_collide_with_a_duty_id_or_escape_its_hash():
     ledger = _ledger()
     ledger["first_path_actions"][0]["id"] = "product_identity"
+    ledger["first_run"]["duty_ids"] = ["product_identity"]
+    ledger["terminal"]["duty_id"] = ledger["terminal"]["result_fact"]["duty_id"] = "product_identity"
     preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=EVIDENCE)
     receipt = validate_greenfield_source_duty_ledger(ledger, evidence_text=EVIDENCE, decision_set=_yes_decisions(preflight))
     assert receipt["decision_set"]["product_identity"] == {"verdict": "yes"}

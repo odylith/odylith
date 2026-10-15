@@ -60,8 +60,9 @@ from odylith.runtime.domain_intelligence.greenfield_authority_gate import (
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v7"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v62"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v63"
 PASSIVE_HOST_CANDIDATE_CONTRACT_VERSIONS = (
+    "odylith.greenfield.host-candidate-contract.v62",
     "odylith.greenfield.host-candidate-contract.v61",
     "odylith.greenfield.host-candidate-contract.v60",
     "odylith.greenfield.host-candidate-contract.v59",
@@ -78,7 +79,7 @@ PASSIVE_HOST_CANDIDATE_CONTRACT_VERSIONS = (
 )
 PREVIOUS_HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v50"
 LEGACY_HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v49"
-HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION = "odylith.greenfield.host-candidate-authoring-transport.v6"
+HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION = "odylith.greenfield.host-candidate-authoring-transport.v7"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
 
 
@@ -127,20 +128,18 @@ def greenfield_host_candidate_contract(
                 "authority; this candidate may only bind its IDs, never redefine their meaning."
             ),
             (
-                "The frozen source_event_catalog owns every accepted action's event ID and actor address. "
-                "The proposed first_run must contain every bound first-path event and "
-                "exactly its transitive prerequisites from the cited source_precedence graph. "
-                "Keep the first-path events as an ordered subsequence in ledger order, and "
-                "place every prerequisite before its dependent event. Supporting human and "
-                "system prerequisites retain their source roles; exclude every unrelated "
-                "supporting or system duty. Recurring_invariant duties remain supported lifecycle safeguards and "
-                "cannot be selected as one-time first_run actions, even via a candidate precedence edge. "
-                "Every unchanged lifecycle duty must retain its prior exact component_key/workstream_key pair; "
-                "only changed duties with affirmative exact correction authorization may move. "
-                "Event IDs are storage identifiers, never temporal edges. "
-                "Do not emit events or action-duty remapping tables. Bind every passive off-path transition "
-                "and its effects to governed state fields and owned design components without "
-                "inventing an actor event."
+                "The frozen source_event_catalog and verified inventory own action IDs, source_precedence, "
+                "complete first-run membership/order and the exact proof-boundary result/producer. "
+                "Do not author source_precedence, terminal, facts.proof_boundary or first_run.event_orders. "
+                "When terminal.result_fact reserves product_story, opportunity or product_view, return "
+                "explicit null in that candidate slot; do not copy the reserved source fact or add a "
+                "competing assumption. Other fact slots keep their existing citation/null rules. "
+                "Keep first_run.rationale as explanatory proposed text only; it cannot change the accepted "
+                "source plan. Supporting/system duties keep their source roles; recurring invariants remain "
+                "safeguards. Every unchanged lifecycle duty retains its prior component/workstream pair; "
+                "surviving actions retain every prior allocation relation. Bind passive transitions and "
+                "effects to their exact governed fields and proposed design owners. Event IDs do not "
+                "express chronology."
             ),
             (
                 "Preserve every source-stated participant, action, visible result, product-governing "
@@ -165,7 +164,7 @@ def greenfield_host_candidate_contract(
             (
                 "The candidate must not author event IDs, citations, actors, actions, targets or "
                 "action binding tables. Reference only frozen source_event_catalog IDs in design, "
-                "first_run, terminal and cited source_precedence. Two actions "
+                "component support and workstream verification. Two actions "
                 "in one joined clause remain two atoms and may share the same complete event_ref, "
                 "while the accepted ledger statement carries distinct role-local meaning. "
                 "The compiler inserts all performing source identities before the independently verified "
@@ -178,8 +177,8 @@ def greenfield_host_candidate_contract(
             ),
             (
                 "Keep every accepted operational constraint in facts.operational_constraints and "
-                "supply the complete source_precedence relation between existing source-supported "
-                "events. Passive or unowned timing creates no edge. Bind every verified guard, "
+                "retain all constraints beyond the compiler-owned source-plan constraint prefix. "
+                "Do not duplicate or redefine source precedence. Bind every verified guard, "
                 "boundary and proof duty to its existing lifecycle component/workstream allocation. "
                 "Preserve its complete meaning and references independently of action responsibilities."
             ),
@@ -207,7 +206,7 @@ def greenfield_host_candidate_contract(
             ),
             (
                 "Use exactly one proof authority: when the source identifies both a visible result and "
-                "its producing event, cite facts.proof_boundary and supply terminal without a "
+                "its producing event, the accepted inventory and compiler supply proof_boundary and terminal without a "
                 "proof_boundary assumption. A proof_boundary assumption may describe a proposed "
                 "checkpoint but cannot make an authored candidate admission-ready."
             ),
@@ -308,6 +307,16 @@ def greenfield_host_candidate_contract(
                 "exactly and its transition governed_object must equal the field's state_object. "
                 "Several ordered effects may reference one parent field; preserve their distinct "
                 "change and observable_check values without renaming the parent field. "
+                "Own source_precedence, complete first_run.duty_ids and terminal in this inventory. "
+                "Keep declared first_path_actions and separate system_duties roles unchanged; required "
+                "discrete system consequences belong in the complete run. Cite every required ordering "
+                "relation by exact constraint_ref and existing action duty IDs. Include transitive "
+                "prerequisites, exclude unrelated/optional/recovery work and recurring invariants. "
+                "terminal.proof_boundary separately cites the existing proof scope. terminal.result_fact selects "
+                "an existing eligible typed source fact or declared first-path duty ID; never conflate proof and result. "
+                "result_quote and strict local result_occurrence bind its exact result and duty_id "
+                "identifies the producer. Required work may follow the result; never select a sink, "
+                "last event or maximum ID by convention. A material unresolved plan requires clarification. "
                 "Do not call a CLI, read or write files, or produce a "
                 "decision set or receipt. Inventory has status inventory, a source-cited product identity, "
                 "all material rows, and an empty question. If a material duty is unresolved, return only "

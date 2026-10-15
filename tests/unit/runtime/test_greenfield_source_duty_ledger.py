@@ -64,6 +64,10 @@ def _ledger() -> dict:
     }
     return {
         "version": SOURCE_DUTY_LEDGER_VERSION,
+        "source_precedence": [], "first_run": {"duty_ids": ["A1"]},
+        "terminal": {"duty_id": "A1", "proof_boundary": clause,
+                     "result_fact": {"field": "first_path", "duty_id": "A1"},
+                     "result_quote": "scope", "result_occurrence": 1},
         "nonperforming_participants": {field: [] for field in ("human_actors", "internal_systems", "external_systems")},
         "product_identity": {"basis": "explicit_name", "source_ref": _citation("Review workspace")},
         "status": "inventory",
@@ -86,7 +90,9 @@ def _ledger() -> dict:
 
 
 def _yes_decisions(preflight: dict, *, evidence_text: str = EVIDENCE) -> dict:
+    from tests.unit.runtime.greenfield_model_authoring_fixtures import affirmative_source_plan_fixture
     return {
+        **({"source_plan": affirmative_source_plan_fixture(preflight["ledger"])} if preflight["ledger"]["version"] == SOURCE_DUTY_LEDGER_VERSION else {}),
         "version": source_duty_entailment_task(preflight, evidence_text=evidence_text)["decision_set_schema"]["properties"]["version"]["enum"][0],
         **({"product_identity": {"verdict": "yes"}} if "product_identity" in preflight["ledger"] else {}),
         "verifier_task_sha256": source_duty_entailment_task(
@@ -123,6 +129,7 @@ def _external_actor_ledger() -> dict:
             "target": "a vessel tag",
         }
     )
+    ledger["terminal"].update(proof_boundary=first_event, result_quote="a vessel tag")
     system = ledger["system_duties"][0]
     system_event = _citation("the product records berth occupancy")
     actor = _citation("Berth map")
@@ -537,6 +544,7 @@ def test_canonical_actor_is_reused_across_distinct_action_occurrences() -> None:
             action=action, target="the record",
         )
     ledger["first_path_actions"][0]["observable_result"] = "record approved"
+    ledger["terminal"].update(proof_boundary=_citation("Reviewer Mara approves the record."), result_quote="the record")
     preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=evidence)
     first, supporting = preflight["claims"]
     assert first["event_ref"] != supporting["event_ref"]
@@ -578,6 +586,7 @@ def test_normalized_action_does_not_require_an_invented_verb_microcitation() -> 
             "statement": "A reviewer defines audience",
         }
     )
+    ledger["terminal"]["result_quote"] = "audience"
     preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=evidence)
     assert preflight["claims"][0]["action"] == "defines"
     validate_greenfield_source_duty_ledger(
@@ -698,6 +707,7 @@ def test_clarification_preflight_has_no_claims_and_cannot_admit() -> None:
     ledger["status"] = "clarification_required"
     ledger["product_identity"] = None
     ledger["question"] = "Who approves scope?"
+    ledger.update(first_run={"duty_ids": []}, terminal=None)
     for field, value in ledger.items():
         if isinstance(value, list):
             ledger[field] = []
@@ -967,6 +977,8 @@ def test_aggregate_thirty_three_action_duties_refuse_before_candidate_authoring(
 def test_exact_v5_receipt_task_and_hashes_remain_passive_and_refuse_fresh_use():
     ledger = _ledger()
     ledger["version"] = "odylith.greenfield.source-duty-ledger.v5"
+    for field in ("source_precedence", "first_run", "terminal"):
+        ledger.pop(field)
     ledger.pop("nonperforming_participants")
     ledger.pop("product_identity")
     evidence = EVIDENCE.removeprefix("Review workspace. ")

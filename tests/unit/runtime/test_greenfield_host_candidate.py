@@ -74,6 +74,7 @@ def _sha256(value: object) -> str:
 
 
 def _accepted_ledger(ledger: dict, *, evidence_text: str) -> dict:
+    from tests.unit.runtime.greenfield_model_authoring_fixtures import affirmative_source_plan_fixture
     preflight = preflight_greenfield_source_duty_ledger(
         ledger,
         evidence_text=evidence_text,
@@ -81,6 +82,7 @@ def _accepted_ledger(ledger: dict, *, evidence_text: str) -> dict:
     task = source_duty_entailment_task(preflight, evidence_text=evidence_text)
     decision_set = {
         "version": SOURCE_DUTY_DECISION_SET_VERSION,
+        "source_plan": affirmative_source_plan_fixture(ledger),
         "verifier_task_sha256": task["verifier_task_sha256"],
         "source_completeness": {"verdict": "yes", "omissions": []},
         "participant_decisions": {key: {field: "yes" for field in ("entity_name", "participant_type", "nonperformance", "identity_nonduplication")} for key in preflight["participant_claims"]},
@@ -120,9 +122,8 @@ def test_contract_requires_one_complete_host_candidate() -> None:
     assert contract["version"] == HOST_CANDIDATE_CONTRACT_VERSION
     assert contract["candidate_version"] == HOST_CANDIDATE_FORMAT_VERSION
     assert "components" not in authored["properties"]
-    assert {"source_precedence", "source_duty_binding"} <= set(
-        authored["required"]
-    )
+    assert "source_duty_binding" in authored["required"]
+    assert not {"source_precedence", "terminal"} & set(authored["properties"])
     assert "events" not in authored["properties"]
     assert not {"first_path_actions", "supporting_human_actions", "system_duties"} & set(
         authored["properties"]["source_duty_binding"]["properties"])
@@ -225,7 +226,8 @@ def test_source_binding_separates_first_path_from_supporting_event_custody(
 
 def test_passive_timing_does_not_invent_a_precedence_edge() -> None:
     source, candidate = _candidate()
-    candidate["result"]["source_precedence"] = []
+    candidate.source_run_plan["source_precedence"] = []
+    assert "source_precedence" not in candidate["result"]
 
     authored, _ = _admit(source, candidate)
 
@@ -528,8 +530,13 @@ def test_bound_system_prerequisite_survives_admission_and_canonical_reload(
         "before_event": 2, "after_event": 3, "constraint_index": 2,
     }]
     response["result"]["provisional_design"]["first_run"]["event_orders"] = [1, 3]
-    candidate = host_candidate_response(response, evidence_text=prepared.evidence_source)
-    # Declare source roles before the proposed walk includes its system prerequisite.
+    if not include_prerequisite:
+        with pytest.raises(ValueError, match="prerequisite"):
+            host_candidate_response(response, evidence_text=prepared.evidence_source)
+        return  # Source preflight refuses the omission before candidate dispatch.
+    candidate = host_candidate_response(response, evidence_text=prepared.evidence_source,
+        first_path_event_orders=(1, 3), source_run_event_orders=(1, 2, 3))
+    # The source plan retains the declared human path and its system prerequisite.
     receipt = synthetic_source_duty_receipt(candidate, evidence_text=prepared.evidence_source)
     if edit_evidence:
         from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import (
@@ -569,14 +576,6 @@ def test_bound_system_prerequisite_survives_admission_and_canonical_reload(
             decision_set=decisions, edit_preservation=context,
         )
     original_receipt = copy.deepcopy(receipt)
-    if not include_prerequisite:
-        with pytest.raises(GreenfieldSourceDutyBindingError, match="prerequisite"):
-            admit_greenfield_host_candidate(
-                candidate, evidence_text=prepared.evidence_source, source_duty_receipt=receipt,
-            )
-        assert receipt == original_receipt
-        return
-    candidate["result"]["provisional_design"]["first_run"]["event_orders"] = [1, 3, 2]
     materialized = materialize_host_authored_intent(
         prompt=source, repo_root=tmp_path, host_candidate=candidate,
         source_duty_receipt=receipt, prepared_evidence=prepared, edit_evidence=edit_evidence,
@@ -589,26 +588,25 @@ def test_bound_system_prerequisite_survives_admission_and_canonical_reload(
     ]
     source_duty = materialized["authored_semantics"]["source_duty"]
     assert source_duty["ledger_receipt"] == original_receipt
-    assert source_duty["ledger_receipt"]["version"].endswith(".v23" if edit_evidence else ".v22")
-    assert source_duty["ledger_receipt"]["decision_set"]["version"].endswith(".v17" if edit_evidence else ".v16")
+    assert source_duty["ledger_receipt"]["version"].endswith(".v25" if edit_evidence else ".v24")
+    assert source_duty["ledger_receipt"]["decision_set"]["version"].endswith(".v19" if edit_evidence else ".v18")
     assert [row["event_order"] for row in source_duty["binding"]["first_path_actions"]] == [1, 2]
     assert [row["event_order"] for row in source_duty["binding"]["system_duties"]] == [3]
     reloaded = json.loads(json.dumps(materialized))
     assert [row["order"] for row in first_path_relations_from_intent(reloaded)] == [1, 2]
     assert [row["order"] for row in authored_first_run_relations(reloaded)] == [1, 3, 2]
     reloaded["authored_semantics"]["source_precedence"] = []
-    with pytest.raises(ValueError, match="only their cited source prerequisites"):
+    with pytest.raises(ValueError, match="verified source plan"):
         first_path_relations_from_intent(reloaded)
 
 
 def test_candidate_task_aligns_bound_first_run_with_exact_prerequisite_closure():
     source, _ = _candidate()
     requirement = greenfield_host_candidate_contract(source)["requirements"][1]
-    assert "exactly its transitive prerequisites" in requirement
-    assert "ordered subsequence in ledger order" in requirement
-    assert "retain their source roles" in requirement
-    assert "exclude every unrelated" in requirement
-    assert "without supporting inventory or system duties" not in requirement
+    assert "verified inventory own" in requirement
+    assert "Do not author source_precedence, terminal" in requirement
+    assert "first_run.event_orders" in requirement
+    assert "explanatory proposed text only" in requirement
 
 
 
@@ -616,8 +614,8 @@ def test_fresh_candidate_requires_summary_in_schema_and_deterministic_admission(
     source, candidate = _candidate()
     contract = greenfield_host_candidate_contract(source)
     design_schema = contract["candidate_schema"]["properties"]["result"]["anyOf"][0]["properties"]["provisional_design"]
-    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v62"
-    assert contract["candidate_version"] == "odylith.greenfield.host-candidate-format.v26"
+    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v63"
+    assert contract["candidate_version"] == "odylith.greenfield.host-candidate-format.v27"
     assert "project_summary" in design_schema["required"]
     assert design_schema["properties"]["project_summary"]["maxLength"] == 600
     assert any("not an accepted source fact" in requirement for requirement in contract["requirements"])

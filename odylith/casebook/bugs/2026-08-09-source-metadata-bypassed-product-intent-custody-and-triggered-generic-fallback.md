@@ -1,5 +1,143 @@
 - Bug ID: CB-324
 
+## Latest implementation checkpoint (2026-10-15)
+
+The source63 correction passes 930 affected checks in 159.31 seconds, including
+all 87 driver checks. Another 58 hygiene, closed-question and rendered Atlas
+checks pass in 2.99 seconds. All 18 production hashes remain unchanged. The
+source review closes its two initial findings with 75 probes; the additional
+Atlas review closes its collision finding with eight probes. Final artifact
+review is clear, verifying all 18 production, 27 test and 23 witness hashes:
+`28e1eb3a700b17e3f2794bf1bf32a373ea585a350e2081f62bce709be27225b0`.
+Synthetic transaction, history, nonempty EDIT and serialized
+boundary witnesses do not qualify a live project or release. The next gate is
+one predeclared unchanged-request trial after review and checkpoint publication.
+The original failure below remains failed; all release gates remain open.
+
+## Current live failure: complete-path ownership disagrees (2026-10-15)
+
+The one predeclared source62 parent at pushed `c3de3667b` fails after
+319.997 seconds. Authority, inventory, source-only verification and candidate
+authoring all complete. The selected outside-participant citations pass. The
+source verifier reports no omission. Admission then rejects the first run:
+the candidate includes the required dossier-release system action after the
+human handoff, but the compiler permits only the seven declared path actions and
+their cited predecessors. The same contract also requires the selected terminal
+to be one of those path actions. No complete package, seal, completion receipt
+or publication is delivered. This remains a failed delivery on clear evidence.
+
+All 21 reviewed source hashes and the consumer's strict working/published
+baseline remain unchanged. Parent and guardian are retired. The 39 raw evidence
+members are archived and read back exactly with SHA-256
+`2c90abe370a3db5d2893ec8fab1a41042d5022bfa04d74c7e8e5d101cec47288`.
+The initialized consumer is preserved with its migration journal. The 705
+passing checks establish the selector implementation; they did not establish
+complete workflow admission or live delivery.
+
+Independent source-first diagnosis establishes one P1 ownership defect, with no
+accepted candidate or package PASS. Report SHA-256:
+`186d908f787e755d6c9f4de2b7847613152bca313416f6b4d8a6fd787d85d99a`.
+The chosen correction moves existing source precedence, complete-run membership
+and order, and exact result/producer custody into the existing inventory and
+source-only verifier. The compiler projects that accepted plan. The candidate
+keeps design allocations and explanation, without choosing the source plan again.
+Keep declared path and complete run distinct, and preserve human/system roles.
+No new independent terminal selector or model stage is needed. The accepted source63 implementation scope is
+16 existing production files and one cohesive source-run owner. Its predeclaration
+has SHA-256 `3317c7149dae3cbd94dfefa11de3dcdb749779fe20a80a73e8dd66cbccec81ce`.
+Fresh wire revisions change; canonical80, semantic19, atomic4 and EDIT context4
+retain their value and custody meanings. Implementation and proof are pending.
+
+Implementation audit exposes a P1 flaw in that predeclaration's fixed result
+mapping before fixture migration. An existing berth example has the separate
+proof witness “Verify the placement and retention receipt” and result “the berth
+map shows the placement” inside its third path fact. Moving the result into the
+proof fact would change accepted meanings. Stop that mapping; preserve the
+original fixture and every existing eligible terminal fact field. The amended
+design must move the existing exact result-fact choice upstream separately from
+the proof witness and deterministically map both into their existing canonical
+identities. No candidate reselection, fact coercion, narrower result envelope,
+new selector concept or semantic stage. Partial source remains unqualified;
+implementation awaits the bounded amendment and focused independent review.
+The earlier design clearance is retained as prior evidence, not a current pass.
+
+The bounded amendment is accepted after focused independent design review:
+SHA-256 `a714ad24d08de31059d178171429ef53abba33f7ecaef646769d65d1fbd3a849`.
+Keep all six existing terminal fact fields. A source-owned singleton requires
+explicit candidate abstention; unreserved fields retain their original native
+requiredness and nullability. Only success metrics use a list prefix; path
+facts retain their declared-duty row. The selected proof-boundary result must
+be the same exact proof fact; other result fields can keep a distinct proof.
+Existing fact/assumption exclusivity remains strict after source insertion.
+This clears the amended design only. Production and boundary proof remain open.
+
+Frozen implementation review catches one concrete atomic-path defect before
+live execution: the success-metric result carrier is checked at the scalar path
+instead of its indexed list path. That would refuse a valid transaction during
+passive atomic custody. Correct only that path in the source-run owner, retain
+the failed freeze, and add complete transaction readback for every result carrier.
+The passing admission/materialization controls did not cover that final boundary.
+
+The same review also reproduces an authoring-version dispatch regression:
+genuine retained authoring3 inventory is sent to the authoring2 passive schema.
+Receipt22's material-ledger check still passes, so receipt-only compatibility
+proof misses the broken raw inline history. Correct only that version dispatch
+and prove exact raw authoring readback as well as receipt/task reconstruction.
+Keep all failed source trials and original historical bytes unchanged.
+
+Both bounded fixes are refrozen in the 17-file successor manifest, SHA-256
+`52134f9d78b5aa1832303bb0a801ee04acb87874fc6b35263b60b0bdef9d098f`.
+Thirty-six focused checks pass, including all six full transaction readbacks
+and exact genuine inline3/material11/receipt22 history. Final combined regression,
+independent closure and native/size/EDIT evidence remain pending. No new live
+preparation or release result is claimed.
+
+The seven-human-action witness with a separate product-wide release reaches
+materialization, then fails Atlas context projection: the existing owner lookup
+has no product-wide performer entry. Keep that typed system role and release
+event. Extend this bounded integration to the existing Atlas view owner, mapping
+the validated product-wide kind to its existing product boundary node while
+retaining the exact actor quote and kind in details. Do not invent a component
+or turn the consequence into a human step. The earlier 17-file review closes
+its two findings with 75 independent checks; it does not qualify this newly
+exercised consumer or the complete journey.
+
+The additional Atlas review finds a duplicate action-group ID when two valid
+whole-product actor quotations share the same product boundary. Preserve both
+typed performer groups and their exact details; assign deterministic unique
+group IDs per owner, keeping the first existing ID. Do not merge aliases or
+change actor roles to hide the collision. Retain the failing v4 witness and
+prove the multiple-quotation case through Atlas validation and readback.
+
+The 18-file v5 successor retains the original failure and passes both the
+multiple-quotation Atlas case and seven-human-action/system-release full
+transaction readbacks. Manifest SHA-256:
+`51538307b43fce9b5e097d3cfb7ded49b81342a776f1bf9b028630a72d5db2bd`.
+Only the bounded Atlas owner differs from the reviewed 17-file v3 source.
+Independent collision closure and final combined evidence remain pending.
+
+Stop live attempts until that bounded ownership move passes proof and independent
+review. Deriving today's predecessor closure would discard the required release
+action. Do not repair this candidate, reclassify the release merely to evade the
+guard, weaken admission, add a model stage or change the request.
+All release gates remain open and protected final inputs remain closed.
+
+### Hosted test adoption still required
+
+Both hosted suites at `2941aaeff` fail the same 43 checks, with 11,236 passes
+and ten skips each. Thirty-nine failures come from five driver test modules
+returning passive compact views as fresh inventory-authoring output; the current
+strict provider schema correctly refuses that older transport. One question
+fixture retains a populated participant roster and correctly refuses mixed
+inventory. Three assertions still
+expect old Atlas wording, a falsey roster container instead of empty typed lists,
+and old benchmark graph paths. None of those eight files changed in `c3de3667b`.
+Adopt the current contracts in those tests without relaxing source admission or
+losing their intended later failure boundaries. The three presentation/history
+assertions now pass their exact local checks, including the rendered D-043 view.
+The 40 driver checks and full hosted validation remain open; earlier failures
+and the partial local assertion run remain retained.
+
 ## Strict mention selection: source frozen, qualification pending (2026-10-15)
 
 The bounded successor requires a model-selected, positive one-based occurrence

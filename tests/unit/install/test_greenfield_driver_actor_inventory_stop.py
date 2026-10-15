@@ -12,14 +12,15 @@ import pytest
 from odylith.runtime.domain_intelligence import greenfield_host_flow as host
 from odylith.runtime.domain_intelligence import greenfield_proposals_cli as cli
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import STANDARD_PROFILE_ID
-from odylith.runtime.domain_intelligence.greenfield_source_duty_view import compact_source_duty_view
+from tests.unit.runtime.greenfield_model_authoring_fixtures import source_duty_authoring_fixture
 from tests.unit.runtime.test_greenfield_source_duty_ledger import _material_duty_case
 
 
 @pytest.mark.parametrize("scope", ["whole_action", "workflow_paragraph"])
 def test_real_driver_and_fresh_cli_stop_actor_inventory_before_any_later_call(tmp_path, monkeypatch, scope):
     prompt, ledger = _material_duty_case()
-    first = ledger["first_path_actions"][0]
+    inventory = source_duty_authoring_fixture(ledger, evidence_text=prompt)
+    first = inventory["result"]["first_path_actions"][0]
     if scope == "whole_action":
         first["actor_ref"] = deepcopy(first["event_ref"])
         first["statement"] = first["actor_ref"]["quote"]
@@ -27,7 +28,6 @@ def test_real_driver_and_fresh_cli_stop_actor_inventory_before_any_later_call(tm
         paragraph = "A reviewer defines scope and audience. Human Actors: The reviewer checks a submission. Product Systems: A portal records the submission."
         first["actor_ref"] = {"quote": paragraph, "context": paragraph}
         first["role_refs"].append(deepcopy(first["actor_ref"]))
-    compact = compact_source_duty_view(ledger)
     gate = {"decision": "admit", "required_fields": [], "owner_quote": "reviewer",
             "task_quote": "defines scope", "result_quote": "scope", "question": ""}
     repo = tmp_path / "consumer"
@@ -50,7 +50,7 @@ def test_real_driver_and_fresh_cli_stop_actor_inventory_before_any_later_call(tm
         phase = Path(command[command.index("--output-schema") + 1]).name
         host_calls.append(phase)
         assert phase in {"authority-gate-schema.json", "source-ledger-schema.json"}
-        payload = gate if phase == "authority-gate-schema.json" else compact
+        payload = gate if phase == "authority-gate-schema.json" else inventory
         return subprocess.CompletedProcess(command, 0, stdout=json.dumps(payload), stderr="")
 
     def forbid_proposal(*args):
@@ -79,7 +79,7 @@ def test_real_driver_and_fresh_cli_stop_actor_inventory_before_any_later_call(tm
     assert [command[2] for command in installed_calls] == ["candidate-contract", "authority-check", "source-ledger-check"]
     assert all("--decision-file" not in command for command in installed_calls)
     assert json.loads(retained["gate"]) == gate
-    assert json.loads(retained["inventory"]) == compact
+    assert json.loads(retained["inventory"]) == inventory
     assert "actor identity" in json.dumps(json.loads(retained["preflight"]))
     stage = flow.observation_sink
     assert stage["status"] == "failed" and stage["stage"] == "source-ledger-preflight"

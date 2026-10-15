@@ -77,6 +77,10 @@ def _inline(ledger: dict | None = None) -> dict:
     result.pop("version")
     if ledger is None:
         result["nonperforming_participants"] = {field: [] for field in ("human_actors", "internal_systems", "external_systems")}
+        result.update(source_precedence=[], first_run={"duty_ids": ["A1"]},
+            terminal={"duty_id": "A1", "proof_boundary": deepcopy(result["first_path_actions"][0]["event_ref"]),
+                      "result_fact": {"field": "first_path", "duty_id": "A1"},
+                      "result_quote": "scope", "result_occurrence": 1})
     return {"version": SOURCE_DUTY_AUTHORING_VERSION, "result": result}
 
 

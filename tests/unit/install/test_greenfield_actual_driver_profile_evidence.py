@@ -23,10 +23,9 @@ from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import STANDARD_PROFILE_ID
 from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import source_duty_entailment_task
 from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import preflight_greenfield_source_duty_ledger
-from odylith.runtime.domain_intelligence.greenfield_source_duty_view import compact_source_duty_view
 from tests.unit.install.test_greenfield_matrix_host_candidate import _flow
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
-    host_candidate_response, synthetic_source_duty_receipt,
+    host_candidate_response, source_duty_authoring_fixture, synthetic_source_duty_receipt,
 )
 from tests.unit.runtime.test_greenfield_model_path_custody import _response, _source
 
@@ -40,8 +39,12 @@ def _driver_evidence(tmp_path, monkeypatch, *, outcome="authored"):
         for key, value in ledger.items():
             if isinstance(value, list):
                 ledger[key] = []
-        ledger.update(status="clarification_required", product_identity=None, question="Who owns the first task?")
-    compact = compact_source_duty_view(ledger)
+        ledger.update(
+            status="clarification_required", product_identity=None, question="Who owns the first task?",
+            nonperforming_participants={field: [] for field in ledger["nonperforming_participants"]},
+            source_precedence=[], first_run={"duty_ids": []}, terminal=None,
+        )
+    inventory = source_duty_authoring_fixture(ledger, evidence_text=source)
     contract = greenfield_host_candidate_contract(source)
     contract["authority_gate"] = greenfield_authority_gate_contract(
         prompt=source, edit_evidence="", evidence_source=source,
@@ -77,7 +80,7 @@ def _driver_evidence(tmp_path, monkeypatch, *, outcome="authored"):
 
     def host(command, **kwargs):
         name = command[command.index("--output-schema") + 1].split("/")[-1]
-        payload = {"authority-gate-schema.json": gate, "source-ledger-schema.json": compact,
+        payload = {"authority-gate-schema.json": gate, "source-ledger-schema.json": inventory,
                    "source-duty-decision-schema.json": source_receipt["decision_set"], "candidate-schema.json": raw}[name]
         return completed(command, payload)
 

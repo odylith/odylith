@@ -10,9 +10,9 @@ flowchart TB
       model_pass["Normalized source-duty ledger<br/>Identity, performers, actions and targets;<br/>people and systems outside the workflow keep their own types"]
       typed_graph["Closed source result<br/>Inventory with exact inline citations<br/>or one material question"]
       identity_check["Source identity and citation preflight<br/>Check exact quotes and explicit outside-participant mentions;<br/>compiler assigns references for later stages"]
-      source_custody["Source-only verifier and canonical ledger<br/>Verify duties, workflow membership and people outside the workflow;<br/>retain exact participant identity and every prior EDIT duty"]
+      source_custody["Source-only verifier and canonical ledger<br/>Verify duties, complete path, order, result and proof;<br/>retain exact participant identity and every prior EDIT duty"]
       private_diagnostics["Optional private diagnostic retention<br/>Exact inputs and returned streams before refusal or cleanup;<br/>same deadline and stable private parent;<br/>no admission authority"]
-      candidate_author["One candidate authoring pass<br/>Propose architecture and lifecycle allocations;<br/>verified source owns participant names, types and event IDs"]
+      candidate_author["One candidate authoring pass<br/>Propose architecture and lifecycle allocations;<br/>explain the accepted run without selecting it again"]
       ambiguity{"Material meaning complete?"}
       clarify["One focused clarification<br/>No transaction or governed write"]
       request --> prepare --> contract --> model_pass --> typed_graph --> identity_check
@@ -31,7 +31,7 @@ flowchart TB
     subgraph projection_lane["Deterministic package construction"]
       direction LR
       custody["Deterministic candidate admission<br/>Build one complete graph from verified duties;<br/>a verified whole-product action does not create a subsystem"]
-      source_views["Three views of the same source graph<br/>Declared workflow follows verified source membership;<br/>first run adds only cited discrete prerequisites;<br/>recurring safeguards retain guards and proof outside that run"]
+      source_views["Three views of the same source graph<br/>Declared workflow keeps its verified roles;<br/>complete run includes required prerequisites and system consequences;<br/>recurring safeguards retain guards and proof outside that run"]
       invalid_candidate["Unverified source duties or invalid candidate<br/>Stop with no further model, repair, retry,<br/>fallback, transaction, or governed write"]
       projections["Deterministic source and design projections<br/>Proportional Radar, owned Registry and distinct Atlas views<br/>Exact release membership and dependency-ready task"]
       staged_surfaces["Temporary-root surface rendering<br/>Shared read lock holds the validated baseline<br/>No detached narration queue or worker"]

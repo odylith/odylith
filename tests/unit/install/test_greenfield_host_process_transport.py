@@ -225,6 +225,7 @@ def test_real_terminal_lifecycle_failure_preserves_primary_result_and_stream_cus
 ):
     from odylith.runtime.domain_intelligence.greenfield_process import command_lifecycle_observer
     from tests.unit.install.test_greenfield_matrix_host_candidate import _fixture_host_ledger
+    from tests.unit.runtime.greenfield_model_authoring_fixtures import affirmative_source_plan_fixture
     from odylith.runtime.domain_intelligence.greenfield_source_duty_authoring import decode_source_duty_inventory
     from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import preflight_greenfield_source_duty_ledger
     from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import source_duty_entailment_task, SOURCE_DUTY_DECISION_SET_VERSION
@@ -243,6 +244,7 @@ def test_real_terminal_lifecycle_failure_preserves_primary_result_and_stream_cus
         "source-duty-decision-schema.json": {"version": SOURCE_DUTY_DECISION_SET_VERSION,
             "verifier_task_sha256": task["verifier_task_sha256"],
             "product_identity": {"verdict": "yes"},
+            "source_plan": affirmative_source_plan_fixture(expanded),
             "decisions": {"d1": {"verdict": "yes", "support_ref_indexes": [0], "role_ref_indexes": [0, 1]}},
             "source_completeness": {"verdict": "yes", "omissions": []}, "participant_decisions": {}},
         "candidate-schema.json": {"version": "candidate", "result": {"status": "authored"}},

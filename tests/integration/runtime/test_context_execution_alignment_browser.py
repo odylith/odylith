@@ -217,7 +217,7 @@ def test_atlas_context_execution_diagrams_render_assets_and_canonical_links(brow
         ),
         (
             "D-043",
-            ("source identity and performer custody preflight", "typed carriers and correction authorization retain custody", "no admission authority"),
+            ("source identity and citation preflight", "retain exact participant identity and every prior edit duty", "no admission authority"),
         ),
         (
             "D-024",

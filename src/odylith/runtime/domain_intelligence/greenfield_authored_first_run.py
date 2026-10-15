@@ -79,7 +79,7 @@ def authored_first_path_text(intent: Mapping[str, Any]) -> str:
     """Keep the declared source path separate from the proposed execution closure."""
 
     source_duty = intent[AUTHORED_SEMANTICS_KEY]["source_duty"]
-    if source_duty and source_duty["ledger_receipt"]["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11"}:
+    if source_duty and source_duty["ledger_receipt"]["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12"}:
         return str(intent["first_path"])
     return authored_first_run_text(intent)
 
@@ -89,7 +89,7 @@ def authored_first_run_text(intent: Mapping[str, Any]) -> str:
 
     relations = authored_first_run_relations(intent)
     source_duty = intent[AUTHORED_SEMANTICS_KEY]["source_duty"]
-    if source_duty and source_duty["ledger_receipt"]["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11"}:
+    if source_duty and source_duty["ledger_receipt"]["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12"}:
         return " ".join(row["event_quote"] for row in relations)
     return "Proposed first run:\n" + "\n".join(
         f"Event {row['order']}\n{authored_event_display_text(row)}"
@@ -104,7 +104,9 @@ def authored_checkpoint_text(intent: Mapping[str, Any]) -> str:
     Relation validation owns whether the targeted assumption is admissible.
     """
 
-    relations = first_path_relations_from_intent(intent)
+    duty = intent[AUTHORED_SEMANTICS_KEY].get("source_duty")
+    fresh = duty and duty["ledger_receipt"]["ledger"]["version"] == "odylith.greenfield.source-duty-ledger.v12"
+    relations = authored_first_run_relations(intent) if fresh else first_path_relations_from_intent(intent)
     result = authored_visible_result(relations)
     if result:
         return result

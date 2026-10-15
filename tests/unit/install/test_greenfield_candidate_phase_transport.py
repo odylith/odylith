@@ -21,6 +21,7 @@ from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
 from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import source_duty_entailment_task
 from odylith.runtime.domain_intelligence.greenfield_source_duty_view import compact_source_duty_view
 from tests.unit.install.test_greenfield_matrix_host_candidate import _flow
+from tests.unit.runtime.greenfield_model_authoring_fixtures import source_duty_authoring_fixture
 from tests.unit.runtime.test_greenfield_host_candidate_transport import _accepted_request
 
 
@@ -43,6 +44,7 @@ def test_four_phase_flow_keeps_complete_receipt_external_and_measures_request(
     preflight = preflight_greenfield_source_duty_ledger(receipt["ledger"], evidence_text=source)
     task = source_duty_entailment_task(preflight, evidence_text=source, edit_preservation=context)
     compact_ledger = compact_source_duty_view(receipt["ledger"])
+    inventory = source_duty_authoring_fixture(receipt["ledger"], evidence_text=source)
     profile = get_greenfield_model_profile(profile_id)
     argv = list(flow.host_argv)
     argv[argv.index("--model") + 1] = profile.model
@@ -54,7 +56,7 @@ def test_four_phase_flow_keeps_complete_receipt_external_and_measures_request(
             assert json.loads(Path(command[command.index("--gate-file") + 1]).read_text()) == admission["gate"]
             payload = admission
         elif "source-ledger-check" in command:
-            assert json.loads(Path(command[command.index("--ledger-file") + 1]).read_text()) == compact_ledger
+            assert json.loads(Path(command[command.index("--ledger-file") + 1]).read_text()) == inventory
             if "--decision-file" in command:
                 assert json.loads(Path(command[command.index("--decision-file") + 1]).read_text()) == receipt["decision_set"]
                 payload = {"mode": "source_duty_admitted", "receipt": receipt}
@@ -69,7 +71,7 @@ def test_four_phase_flow_keeps_complete_receipt_external_and_measures_request(
         host_run(command, **kwargs)
         path = Path(command[command.index("--output-schema") + 1])
         payload = {"authority-gate-schema.json": admission["gate"],
-                   "source-ledger-schema.json": compact_ledger,
+                   "source-ledger-schema.json": inventory,
                    "source-duty-decision-schema.json": receipt["decision_set"]}.get(path.name)
         if path.name == "candidate-schema.json":
             delivered_schema.append(path.read_bytes())

@@ -764,10 +764,9 @@ def test_proposal_refusal_preserves_bounded_detail_and_prior_seal(
     from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import EDIT_SOURCE_DUTY_DECISION_SET_VERSION, source_duty_entailment_task
     from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import preflight_greenfield_source_duty_ledger
     from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION
-    from odylith.runtime.domain_intelligence.greenfield_source_duty_view import compact_source_duty_view
     from tests.unit.install.test_greenfield_matrix_host_candidate import _flow
     from tests.unit.runtime.test_greenfield_source_duty_ledger import _yes_decisions
-    from tests.unit.runtime.greenfield_model_authoring_fixtures import preserved_edit_decisions_fixture
+    from tests.unit.runtime.greenfield_model_authoring_fixtures import preserved_edit_decisions_fixture, source_duty_authoring_fixture
 
     candidate = {"version": "candidate", "result": {"status": "authored"}}
     flow, _host_run, installed_calls, host_calls, _paths, repo = _flow(
@@ -783,6 +782,7 @@ def test_proposal_refusal_preserves_bounded_detail_and_prior_seal(
     )
     semantics = old_transaction.proposal["intent"]["authored_semantics"]
     ledger = semantics["source_duty"]["ledger_receipt"]["ledger"]
+    inventory = source_duty_authoring_fixture(ledger, evidence_text=source)
     preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=source)
     task = source_duty_entailment_task(preflight, evidence_text=source, edit_preservation=context)
     assert task["decision_set_schema"]["properties"]["edit_preservation"]["required"] == [
@@ -824,7 +824,7 @@ def test_proposal_refusal_preserves_bounded_detail_and_prior_seal(
         schema = Path(command[command.index("--output-schema") + 1])
         assert schema.is_file() and schema.parent == Path(kwargs["cwd"])
         result = {"authority-gate-schema.json": gate,
-                  "source-ledger-schema.json": compact_source_duty_view(ledger),
+                  "source-ledger-schema.json": inventory,
                   "source-duty-decision-schema.json": decisions,
                   "candidate-schema.json": candidate}[schema.name]
         return subprocess.CompletedProcess(command, 0, json.dumps(result), "")

@@ -8,22 +8,39 @@ Domain Intelligence turns project evidence into a reviewable governance package
 or one focused question when a material requirement is unresolved. It keeps source
 facts, proposed design and evidence custody distinct throughout preparation.
 
-Fresh preparation uses host v62, source authoring v3, ledger v11 and preflight
-v10. Initial/EDIT receipts v22/v23 use decisions v16/v17; compact view v9,
-candidate format v26 and transport v6 bind that source contract.
-Canonical authoring v80, authored semantics v19 and EDIT context v4 keep their
-existing value and custody rules. All 705 affected tests pass in 74.93 seconds.
-Independent source and final evidence reviews find no actionable P0/P1/P2.
-Native admission, maximum-size and nonempty EDIT witnesses pass; all predeclared
-deterministic evidence gaps are closed. No fresh live package or installed
-release qualification is claimed.
+Source inventory and the existing source-only verifier own the complete first
+run, its required order, actual result producer and separate proof witness.
+The compiler maps those accepted duties into one canonical plan. Candidate
+authoring allocates the design and explains the run without selecting it again.
+The declared path retains its own roles; required system consequences can belong
+to the complete run without becoming human actions. Recurring safeguards and
+unrelated optional branches remain outside one-time execution.
+
+The frozen source63 implementation passes 930 affected tests and 58 separate
+hygiene, closed-question and rendered Atlas checks. Independent source, Atlas
+and final artifact reviews are clear. These checks prove
+the bounded implementation, not a live generated project or release.
+Fresh host63/authoring4/ledger12/preflight11 uses initial/EDIT receipts24/25,
+decisions18/19, compact10, candidate27 and transport7. Canonical80, semantic19,
+atomic4 and EDIT context4 retain their existing meanings. No fresh live package
+or installed release qualification is claimed.
+
+The source62 live trial completes all four stages in 319.997 seconds, then fails
+first-run admission. Its candidate includes the source-required dossier-release
+system action; the compiler admits only the seven declared path actions and cited
+predecessors and restricts the terminal to that path. Complete-path and
+terminal ownership therefore disagree. No package or receipt is delivered.
+The selector's source proof remains valid; useful delivery remains failed.
+CB-324 retains this trial, the source63 design correction and review findings.
+The earlier 705-test selector pass does not qualify the successor source plan.
 
 Inventory supplies exact short-name citations for people and systems outside
 the workflow. The existing source-only verifier must affirm their type,
 nonperformance, identity and completeness. The compiler combines that roster
 with the action performers. The candidate cannot add, remove, rename, reorder
-or retype those three participant lists. Other candidate facts remain authored
-under their existing contracts. Declared optional outside context stays outside
+or retype those three participant lists. The compiler also owns the accepted
+proof and selected result fact. Other candidate facts retain their existing
+contracts. Declared optional outside context stays outside
 the workflow and gains no external approval authority.
 
 Fresh outside-participant citations require an explicit, positive, one-based
@@ -40,6 +57,16 @@ All eight source-duty sections, four model stages and existing runtime caps
 remain active. Historical host v61/source v10/compact v8/receipts v20/v21 and
 earlier v59/v60/source v9/compact v7/receipts v18/v19 retain their exact passive
 readback, without an invented ordinal; fresh preparation cannot use them.
+Host62/source11/compact9/receipts22/23 retain their original exact raw inventory,
+tasks and receipt contracts without an invented complete plan. Fresh host63
+cannot borrow them. Genuine receipt22 is source-only evidence from a failed
+trial; receipt23 compatibility fixtures are not a genuine EDIT journey.
+
+Result and proof remain independent facts. All six existing result carriers
+remain supported. A source-owned scalar requires explicit candidate abstention;
+other scalars retain their original native rules. Only the success-metric list
+uses a fixed result prefix. Exact source identity, field meanings, producer
+custody and fact/assumption exclusivity remain required at transaction readback.
 
 The prior inline inventory correction removes model-owned reference bookkeeping.
 Its retained first failure uses an undefined reference; the later valid-baseline

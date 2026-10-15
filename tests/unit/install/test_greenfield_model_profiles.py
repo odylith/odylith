@@ -91,6 +91,10 @@ def _source_receipt() -> dict[str, object]:
         )],
         "supporting_human_actions": [], "system_duties": [], "state_fields": [],
         "off_path_transitions": [], "conditional_guards": [], "boundaries": [], "proof_duties": [],
+        "source_precedence": [], "first_run": {"duty_ids": ["operator-record"]},
+        "terminal": {"duty_id": "operator-record", "result_fact": {"field": "first_path", "duty_id": "operator-record"},
+                     "proof_boundary": {"quote": "a test outcome", "context": "A test operator records a test outcome."},
+                     "result_quote": "a test outcome", "result_occurrence": 1},
     }
     return synthetic_source_duty_receipt_for_ledger(ledger, evidence_text=SOURCE)
 

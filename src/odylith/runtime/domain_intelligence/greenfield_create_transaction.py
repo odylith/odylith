@@ -384,7 +384,7 @@ def _require_host_candidate_authority_binding(
     if passive:
         initial_versions.update((PASSIVE_SOURCE_DUTY_LEDGER_RECEIPT_VERSION, version)
                                 for version in PASSIVE_HOST_CANDIDATE_CONTRACT_VERSIONS
-                                if version not in {"odylith.greenfield.host-candidate-contract.v61", "odylith.greenfield.host-candidate-contract.v60", "odylith.greenfield.host-candidate-contract.v59", "odylith.greenfield.host-candidate-contract.v58", "odylith.greenfield.host-candidate-contract.v55", "odylith.greenfield.host-candidate-contract.v56", "odylith.greenfield.host-candidate-contract.v57"})
+                                if version not in {"odylith.greenfield.host-candidate-contract.v62", "odylith.greenfield.host-candidate-contract.v61", "odylith.greenfield.host-candidate-contract.v60", "odylith.greenfield.host-candidate-contract.v59", "odylith.greenfield.host-candidate-contract.v58", "odylith.greenfield.host-candidate-contract.v55", "odylith.greenfield.host-candidate-contract.v56", "odylith.greenfield.host-candidate-contract.v57"})
         edit_versions.update((PASSIVE_EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
                               f"odylith.greenfield.host-candidate-contract.v{version}")
                              for version in (51, 52, 53, 54))
@@ -400,6 +400,8 @@ def _require_host_candidate_authority_binding(
         edit_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v17", "odylith.greenfield.host-candidate-contract.v58"))
         initial_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v14", "odylith.greenfield.host-candidate-contract.v57"))
         edit_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v15", "odylith.greenfield.host-candidate-contract.v57"))
+        initial_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v22", "odylith.greenfield.host-candidate-contract.v62"))
+        edit_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v23", "odylith.greenfield.host-candidate-contract.v62"))
         initial_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v20", "odylith.greenfield.host-candidate-contract.v61"))
         edit_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v21", "odylith.greenfield.host-candidate-contract.v61"))
         initial_versions.add(("odylith.greenfield.source-duty-ledger-receipt.v18", "odylith.greenfield.host-candidate-contract.v59"))
@@ -430,7 +432,7 @@ def _require_host_candidate_authority_binding(
             "ProductCreateTransaction host candidate source-duty hashes do not match its reviewed proposal"
         )
 
-    if host.get("contract_version") in {HOST_CANDIDATE_CONTRACT_VERSION, "odylith.greenfield.host-candidate-contract.v61", "odylith.greenfield.host-candidate-contract.v60", "odylith.greenfield.host-candidate-contract.v59", "odylith.greenfield.host-candidate-contract.v58", "odylith.greenfield.host-candidate-contract.v55", "odylith.greenfield.host-candidate-contract.v56", "odylith.greenfield.host-candidate-contract.v57"}:
+    if host.get("contract_version") in {HOST_CANDIDATE_CONTRACT_VERSION, "odylith.greenfield.host-candidate-contract.v62", "odylith.greenfield.host-candidate-contract.v61", "odylith.greenfield.host-candidate-contract.v60", "odylith.greenfield.host-candidate-contract.v59", "odylith.greenfield.host-candidate-contract.v58", "odylith.greenfield.host-candidate-contract.v55", "odylith.greenfield.host-candidate-contract.v56", "odylith.greenfield.host-candidate-contract.v57"}:
         from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
             validate_component_responsibility_relations, source_event_relations_from_intent,
         )
@@ -444,6 +446,9 @@ def _require_host_candidate_authority_binding(
         )
         catalog = project_greenfield_source_event_catalog(ledger_receipt, evidence_text=intent["prompt"],
                     _passive=host["contract_version"] != HOST_CANDIDATE_CONTRACT_VERSION)
+        if ledger_receipt["ledger"]["version"] == "odylith.greenfield.source-duty-ledger.v12":
+            from odylith.runtime.domain_intelligence.greenfield_source_run_plan import require_source_run_atomic_custody
+            require_source_run_atomic_custody(ledger_receipt["ledger"], evidence_text=intent["prompt"], atomic_facts=authority["atomic_facts"])
         owned = list(catalog["performers"])
         if catalog["independent_product_identity"]:
             from odylith.runtime.domain_intelligence.greenfield_model_source_citations import canonical_citation_from_host_selection, resolve_source_citation
@@ -451,7 +456,7 @@ def _require_host_candidate_authority_binding(
             quote, start = resolve_source_citation(source, canonical_citation_from_host_selection(source, catalog["facts"]["title"]))
             owned.append({"path": "/title", "quote": quote, "source_start_byte": start,
                           "source_end_byte": start + len(quote.encode("utf-8"))})
-        if ledger_receipt["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11"}:
+        if ledger_receipt["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12"}:
             participant_facts = source_owned_greenfield_actor_facts(catalog, supplemental={}, evidence_text=intent["prompt"], ledger_receipt=ledger_receipt)
             for field in ("human_actors", "internal_systems", "external_systems"):
                 if intent.get(field, []) != [ref["quote"] for ref in participant_facts[field]]:

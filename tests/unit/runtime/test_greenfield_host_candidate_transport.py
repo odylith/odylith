@@ -47,7 +47,7 @@ def test_candidate_phase_preserves_every_material_row_and_control_losslessly(edi
         contract, source_duty_receipt=receipt, authority_admission=admission,
     )
     assert request["transport_version"] == HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION
-    assert HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION == "odylith.greenfield.host-candidate-authoring-transport.v6"
+    assert HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION == "odylith.greenfield.host-candidate-authoring-transport.v7"
     for key in ("version", "candidate_version", "canonical_version", "task",
                 "requirements", "request"):
         assert request[key] == contract[key]
@@ -224,7 +224,7 @@ def test_inventory_schema_qualification_still_refuses_before_dispatch(tmp_path, 
     assert installed == calls == proposals == []
 
 
-@pytest.mark.parametrize("outcome", ["inventory", "clarification", "invalid_citation", "roster", "roster_no", "roster_uncertain", "roster_missing", "old_inline", "old_roster"])
+@pytest.mark.parametrize("outcome", ["inventory", "clarification", "invalid_citation", "roster", "roster_no", "roster_uncertain", "roster_missing", "old_inline", "old_roster", "plan", "plan_no", "plan_uncertain", "plan_missing"])
 def test_native_inline_response_is_retained_then_checked_by_installed_cli(tmp_path, outcome) -> None:
     from contextlib import redirect_stdout
     import hashlib
@@ -251,7 +251,11 @@ def test_native_inline_response_is_retained_then_checked_by_installed_cli(tmp_pa
     if outcome.startswith("roster"):
         from tests.unit.runtime.test_greenfield_source_participant_roster import roster_case
         prompt, ledger = roster_case()
-    inventory_outcome = outcome == "inventory" or outcome.startswith("roster")
+    if outcome.startswith("plan"):
+        from tests.unit.runtime.test_greenfield_source_run_plan import seven_action_system_result_case
+        prompt, _, _, receipt = seven_action_system_result_case()
+        ledger = receipt["ledger"]
+    inventory_outcome = outcome == "inventory" or outcome.startswith(("roster", "plan"))
     source = prepare_model_authoring_evidence(prompt=prompt, source_language="en").evidence_source
     expected_preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=source)
     expected_compact = compact_source_duty_view(ledger)
@@ -296,7 +300,11 @@ def test_native_inline_response_is_retained_then_checked_by_installed_cli(tmp_pa
             decisions["participant_decisions"]["/external_systems/0"]["nonperformance"] = outcome.removeprefix("roster_")
         elif outcome == "roster_missing":
             decisions["participant_decisions"].pop("/external_systems/0")
-        if outcome != "roster_missing":
+        if outcome in {"plan_no", "plan_uncertain"}:
+            decisions["source_plan"]["first_run"]["completeness"] = outcome.removeprefix("plan_")
+        elif outcome == "plan_missing":
+            del decisions["source_plan"]["terminal"]["producing_duty"]
+        if outcome not in {"roster_missing", "plan_missing"}:
             Draft202012Validator(schema).validate(decisions)
         return subprocess.CompletedProcess(command, 0, stdout=json.dumps(decisions), stderr="")
 
@@ -326,8 +334,8 @@ def test_native_inline_response_is_retained_then_checked_by_installed_cli(tmp_pa
     kwargs = dict(flow=flow, contract=contract, source=source, host_workspace=workspace,
         host_argv=flow.host_argv, deadline=WholeJourneyDeadline(time.monotonic(), time.monotonic),
         observation=observation, invoke_host=invoke_host, check_payload=_accepted_request()[3])
-    if outcome in {"invalid_citation", "old_inline", "old_roster", "roster_no", "roster_uncertain", "roster_missing"}:
-        with pytest.raises(host.HostCandidateFlowError, match=("advertised authoring schema" if outcome in {"old_inline", "old_roster"} else "decision check returned nonzero" if outcome.startswith("roster_") else "preflight returned nonzero")):
+    if outcome in {"invalid_citation", "old_inline", "old_roster", "roster_no", "roster_uncertain", "roster_missing", "plan_no", "plan_uncertain", "plan_missing"}:
+        with pytest.raises(host.HostCandidateFlowError, match=("advertised authoring schema" if outcome in {"old_inline", "old_roster"} else "decision check returned nonzero" if outcome.startswith(("roster_", "plan_")) else "preflight returned nonzero")):
             run_source_duty_phase(**kwargs)
     else:
         result = run_source_duty_phase(**kwargs)

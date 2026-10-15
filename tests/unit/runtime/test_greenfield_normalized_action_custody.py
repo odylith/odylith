@@ -293,12 +293,16 @@ def test_explicit_fixture_identity_is_isolated_from_equal_raw_candidate_json() -
     )]
     identities = [{"basis": "product_description", "source_ref": {"quote": quote, "context": quote}}
                   for quote in ("First workspace", "Second workspace")]
+    plan = {"source_precedence": [], "first_run": {"duty_ids": ["draft"]},
+            "terminal": {"duty_id": "draft", "result_fact": {"field": "first_path", "duty_id": "draft"},
+                         "proof_boundary": {"quote": "a draft", "context": "A reviewer creates a draft"},
+                         "result_quote": "a draft", "result_occurrence": 1}}
     receipts = [synthetic_source_duty_receipt(raw, evidence_text=source,
-                declared_actions=actions, declared_identity=identity) for identity in identities]
+                declared_actions=actions, declared_identity=identity, declared_run_plan=plan) for identity in identities]
     assert [receipt["ledger"]["product_identity"] for receipt in receipts] == identities
     assert receipts[0]["ledger_sha256"] != receipts[1]["ledger_sha256"]
     assert synthetic_source_duty_receipt(raw, evidence_text=source,
-        declared_actions=actions, declared_identity=identities[0]) == receipts[0]
+        declared_actions=actions, declared_identity=identities[0], declared_run_plan=plan) == receipts[0]
     with pytest.raises(ValueError, match="no declared product identity"):
         synthetic_source_duty_receipt(raw, evidence_text=source, declared_actions=actions)
     _, prepared, candidate, _ = _shared_clause_candidate()

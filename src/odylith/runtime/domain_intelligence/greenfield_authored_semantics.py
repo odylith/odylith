@@ -592,7 +592,7 @@ def _authored_relations_from_intent(
             raise GreenfieldAuthoredSemanticsError("Greenfield source-duty custody is malformed")
         receipt = source_duty.get("ledger_receipt")
         ledger = receipt.get("ledger") if isinstance(receipt, Mapping) else None
-        supported_ledgers = ({"odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11"}
+        supported_ledgers = ({"odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12"}
                              if semantics["version"] == AUTHORED_SEMANTICS_VERSION else
                              {"odylith.greenfield.source-duty-ledger.v5", "odylith.greenfield.source-duty-ledger.v6", "odylith.greenfield.source-duty-ledger.v7"})
         if not isinstance(ledger, Mapping) or ledger.get("version") not in supported_ledgers:
@@ -660,7 +660,12 @@ def _authored_relations_from_intent(
                 None,
             ),
         )
-        if selected_orders is not None:
+        if selected_orders is not None and source_duty["ledger_receipt"]["ledger"]["version"] == "odylith.greenfield.source-duty-ledger.v12":
+            from odylith.runtime.domain_intelligence.greenfield_source_run_plan import require_source_run_projection
+            require_source_run_projection(source_duty["ledger_receipt"]["ledger"], evidence_text=intent["prompt"],
+                facts=intent, source_precedence=source_precedence,
+                first_run=semantics["provisional_design"]["first_run"], relations=first_path_relations)
+        elif selected_orders is not None:
             validate_first_run(
                 semantics["provisional_design"]["first_run"],
                 event_orders=tuple(row["order"] for row in first_path_relations),

@@ -21,7 +21,7 @@ DUTY_SECTIONS = (
 )
 MAX_DERIVED_REFS = 5
 MAX_COMPACT_CITATIONS = 256
-SOURCE_DUTY_COMPACT_VERSION = "odylith.greenfield.source-duty-compact.v9"
+SOURCE_DUTY_COMPACT_VERSION = "odylith.greenfield.source-duty-compact.v10"
 PARTICIPANT_FIELDS = ("human_actors", "internal_systems", "external_systems")
 PARTICIPANT_JUDGMENTS = ("entity_name", "participant_type", "nonperformance", "identity_nonduplication")
 
@@ -71,7 +71,7 @@ def compact_source_duty_view(ledger: Mapping[str, Any]) -> dict[str, Any]:
         {"ref": intern(control), "handling": control["handling"]}
         for control in ledger["evidence_controls"]
     ]
-    if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11"} and ledger["product_identity"] is not None:
+    if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12"} and ledger["product_identity"] is not None:
         view["product_identity"]["source_ref"] = intern(ledger["product_identity"]["source_ref"])
     for section, _ in DUTY_SECTIONS:
         for row in view[section]:
@@ -80,10 +80,17 @@ def compact_source_duty_view(ledger: Mapping[str, Any]) -> dict[str, Any]:
                 row["event_ref"] = intern(row["event_ref"])
                 row["actor_ref"] = intern(row["actor_ref"])
                 row["role_refs"] = [intern(ref) for ref in row["role_refs"]]
-    if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11"}:
+    if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12"}:
         view["nonperforming_participants"] = {
             field: [intern(ref) for ref in ledger["nonperforming_participants"][field]]
             for field in PARTICIPANT_FIELDS}
+    if ledger["version"] == "odylith.greenfield.source-duty-ledger.v12":
+        for row in view["source_precedence"]:
+            row["constraint_ref"] = intern(row["constraint_ref"])
+        if view["terminal"] is not None:
+            view["terminal"]["proof_boundary"] = intern(view["terminal"]["proof_boundary"])
+            if view["terminal"]["result_fact"]["field"] != "first_path":
+                view["terminal"]["result_fact"]["source_ref"] = intern(view["terminal"]["result_fact"]["source_ref"])
     view["version"] = ("odylith.greenfield.source-duty-compact.v3"
                        if ledger["version"] == "odylith.greenfield.source-duty-ledger.v5"
                        else "odylith.greenfield.source-duty-compact.v4"
@@ -96,8 +103,10 @@ def compact_source_duty_view(ledger: Mapping[str, Any]) -> dict[str, Any]:
                        if ledger["version"] == "odylith.greenfield.source-duty-ledger.v9"
                        else "odylith.greenfield.source-duty-compact.v8"
                        if ledger["version"] == "odylith.greenfield.source-duty-ledger.v10"
+                       else "odylith.greenfield.source-duty-compact.v9"
+                       if ledger["version"] == "odylith.greenfield.source-duty-ledger.v11"
                        else SOURCE_DUTY_COMPACT_VERSION)
-    if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11"}:
+    if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12"}:
         version = view.pop("version")
         if view["status"] == "clarification_required":
             if view["product_identity"] is not None or view["evidence_controls"] or any(view[section] for section, _ in DUTY_SECTIONS) or any(view.get("nonperforming_participants", {}).values()):

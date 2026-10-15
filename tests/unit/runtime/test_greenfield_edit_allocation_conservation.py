@@ -150,6 +150,11 @@ def test_shifted_duty_ids_keep_allocations_and_two_prior_actions_cannot_share_a_
     source, context, ledger, _, _ = _fresh(prior)
     old_id = ledger["first_path_actions"][0]["id"]
     ledger["first_path_actions"][0]["id"] = "current-renumbered-action"
+    ledger["first_run"]["duty_ids"] = ["current-renumbered-action" if key == old_id else key for key in ledger["first_run"]["duty_ids"]]
+    if ledger["terminal"]["duty_id"] == old_id:
+        ledger["terminal"]["duty_id"] = "current-renumbered-action"
+    if ledger["terminal"]["result_fact"].get("duty_id") == old_id:
+        ledger["terminal"]["result_fact"]["duty_id"] = "current-renumbered-action"
     preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=source)
     task = entailment.source_duty_entailment_task(preflight, evidence_text=source, edit_preservation=context)
     decisions = _yes_decisions(preflight, evidence_text=source)
@@ -277,7 +282,7 @@ def _bounded_prior(lengths, root):
     human = deepcopy(receipt["ledger"]["first_path_actions"][0]["actor_ref"])
     human["context"] = receipt["ledger"]["first_path_actions"][0]["event_ref"]["quote"]
     extra = [f"{human['quote']} records receipt {index:02d}." for index in range(25, 33)]
-    prompt = old_prepared.prompt + " " + " ".join(extra) + " " + paragraph + " Additional bounded reference context: " + "y" * 2400
+    prompt = old_prepared.prompt + " " + " ".join(extra) + " " + paragraph + " Additional bounded reference context: " + "y" * 3600
     prepared = prepare_model_authoring_evidence(prompt=prompt)
     source = prepared.evidence_source
     ledger = deepcopy(receipt["ledger"])
@@ -302,8 +307,8 @@ def _bounded_prior(lengths, root):
             {"quote": "Bound reference paragraph", "context": paragraph[:lengths[4 * index + j]]}
             for j in range(4)
         ]
+    ledger["first_run"]["duty_ids"] = [row["id"] for row in ledger["first_path_actions"]]
     receipt = synthetic_source_duty_receipt_for_ledger(ledger, evidence_text=source)
-    candidate["result"]["provisional_design"]["first_run"]["event_orders"] = list(range(1, 25))
     candidate["result"]["source_duty_binding"].update(
         source_sha256=receipt["source_sha256"], ledger_sha256=receipt["ledger_sha256"])
     # The existing fixture generates host bindings from this frozen source catalog.
@@ -521,6 +526,8 @@ def test_fresh_host62_refuses_valid_legacy_receipts_before_candidate_or_seal(tmp
             correction=fresh["correction"], evidence_text=source, _passive_allocations=True))
     ledger = deepcopy(ledger)
     ledger["version"] = "odylith.greenfield.source-duty-ledger.v10" if generation == "roster" else "odylith.greenfield.source-duty-ledger.v9"
+    for field in ("source_precedence", "first_run", "terminal"):
+        ledger.pop(field)
     if generation == "roster":
         for rows in ledger["nonperforming_participants"].values():
             for ref in rows:
@@ -540,7 +547,7 @@ def test_fresh_host62_refuses_valid_legacy_receipts_before_candidate_or_seal(tmp
     assert legacy["version"].endswith((".v21" if edit else ".v20") if generation == "roster" else (".v19" if edit else ".v18") if generation == "inline" else (".v17" if edit else ".v16"))
     assert verify_greenfield_source_duty_ledger_receipt(legacy, evidence_text=source) == legacy
     contract = host.greenfield_host_candidate_contract(source, edit_preservation=context)
-    assert contract["version"].endswith(".v62")
+    assert contract["version"].endswith(".v63")
     calls = []
     monkeypatch.setattr(host, "canonical_greenfield_host_candidate", lambda *a, **kw: calls.append("candidate/seal"))
     with pytest.raises(ValueError, match="receipt version"):

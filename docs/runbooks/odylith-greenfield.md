@@ -34,6 +34,12 @@ the candidate; proposed design cannot change them. Optional outside context
 remains outside the workflow. A missing or uncertain verification stops before
 candidate authoring.
 
+Source verification also establishes the complete first run and its required
+result before design begins. The compiler carries that plan forward; candidate
+authoring assigns the design and explains it. The declared path keeps its
+original roles, while the complete run can include required system consequences.
+The visible result and its proof checkpoint can remain separate facts.
+
 For those outside participants, fresh inventory also selects the one-based
 occurrence of the exact name inside its context. The compiler rejects a missing
 or invalid selection and the verifier checks the selected meaning. Do not add

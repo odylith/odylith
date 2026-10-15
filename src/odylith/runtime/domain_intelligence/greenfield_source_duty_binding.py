@@ -27,6 +27,10 @@ from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
     verify_greenfield_source_duty_ledger_receipt,
 )
 
+from odylith.runtime.domain_intelligence.greenfield_source_run_plan import (
+    SOURCE_RUN_PLAN_LEDGER_VERSION, source_run_candidate_first_run,
+)
+
 SOURCE_DUTY_BINDING_VERSION = "odylith.greenfield.source-duty-binding.v3"
 HOST_SOURCE_DUTY_BINDING_VERSION = "odylith.greenfield.source-duty-binding.v4"
 _ACTION_SECTIONS = ("first_path_actions", "supporting_human_actions", "system_duties")
@@ -135,11 +139,12 @@ def project_greenfield_source_event_catalog(
         receipt, evidence_text=evidence_text, allow_legacy_edit=(_passive or receipt.get("version") in {
             "odylith.greenfield.source-duty-ledger-receipt.v16", "odylith.greenfield.source-duty-ledger-receipt.v17",
             "odylith.greenfield.source-duty-ledger-receipt.v18", "odylith.greenfield.source-duty-ledger-receipt.v19",
-            "odylith.greenfield.source-duty-ledger-receipt.v20", "odylith.greenfield.source-duty-ledger-receipt.v21"}),
+            "odylith.greenfield.source-duty-ledger-receipt.v20", "odylith.greenfield.source-duty-ledger-receipt.v21",
+            "odylith.greenfield.source-duty-ledger-receipt.v22", "odylith.greenfield.source-duty-ledger-receipt.v23"}),
     )
     evidence = evidence_text.encode("utf-8")
     facts: dict[str, Any] = {"human_actors": [], "internal_systems": [], "external_systems": [], "title": None}
-    independent_identity = verified["ledger"]["version"] in {SOURCE_DUTY_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8"}
+    independent_identity = verified["ledger"]["version"] in {SOURCE_DUTY_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8"}
     if independent_identity:
         facts["title"] = deepcopy(verified["ledger"]["product_identity"]["source_ref"])
     identity_span = _source_span(evidence, facts["title"]) if independent_identity else None
@@ -215,7 +220,7 @@ def source_owned_greenfield_actor_facts(
     evidence = evidence_text.encode("utf-8")
     context = ledger_receipt.get("edit_preservation") if ledger_receipt is not None else None
     conserved = isinstance(context, Mapping) and context.get("version") == "odylith.greenfield.edit-lifecycle-preservation.v4"
-    if ledger_receipt is not None and ledger_receipt["ledger"]["version"] in {SOURCE_DUTY_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v10"}:
+    if ledger_receipt is not None and ledger_receipt["ledger"]["version"] in {SOURCE_DUTY_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v10"}:
         if set(catalog["facts"]) & set(supplemental):
             raise GreenfieldSourceDutyBindingError("candidate must not author source-owned participant facts")
         roster = ledger_receipt["ledger"]["nonperforming_participants"]
@@ -533,7 +538,7 @@ def validate_greenfield_source_duty_binding(
         raise GreenfieldSourceDutyBindingError(
             "source duty receipt is invalid"
         ) from exc
-    fresh = receipt["ledger"]["version"] in {SOURCE_DUTY_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v9"}
+    fresh = receipt["ledger"]["version"] in {SOURCE_DUTY_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v9"}
     host = isinstance(binding, Mapping) and binding.get("version") == HOST_SOURCE_DUTY_BINDING_VERSION
     binding = _closed(binding, set(greenfield_source_duty_binding_schema(host=host)["required"]), "source duty binding")
     if binding["version"] != (HOST_SOURCE_DUTY_BINDING_VERSION if host else SOURCE_DUTY_BINDING_VERSION) or (host and not fresh):
@@ -553,6 +558,13 @@ def validate_greenfield_source_duty_binding(
         raise GreenfieldSourceDutyBindingError(
             "source duty binding requires an authored candidate"
         )
+    source_plan_owned = ledger["version"] == SOURCE_RUN_PLAN_LEDGER_VERSION
+    if source_plan_owned:
+        try:
+            candidate_result = deepcopy(dict(candidate_result))
+            candidate_result["provisional_design"]["first_run"] = source_run_candidate_first_run(ledger, candidate_result, evidence_text=evidence_text)
+        except ValueError as exc:
+            raise GreenfieldSourceDutyBindingError(str(exc)) from exc
     facts = candidate_result.get("facts")
     if not isinstance(facts, Mapping):
         raise GreenfieldSourceDutyBindingError("candidate source facts are missing")
@@ -600,31 +612,32 @@ def validate_greenfield_source_duty_binding(
         raise GreenfieldSourceDutyBindingError(
             "candidate events must be covered by exactly one source-duty role"
         )
-    try:
-        validate_first_run(
-            first_run,
-            event_orders=tuple(range(1, len(events) + 1)),
-            source_precedence=candidate_result.get("source_precedence", ()),
-            result_event_order=None,
-            first_path_event_orders=expected_run,
-            recurring_event_orders=recurring_source_event_orders(ledger, binding),
-        )
-    except ValueError as exc:
-        raise GreenfieldSourceDutyBindingError(
-            "candidate first run must preserve ledger workflow order and contain each "
-            "bound first-path event and its cited source prerequisites exactly once: "
-            f"{exc}"
-        ) from exc
-    terminal = candidate_result.get("terminal")
-    if terminal is not None:
-        if (
-            not isinstance(terminal, Mapping)
-            or type(terminal.get("event_order")) is not int
-            or terminal["event_order"] not in expected_run
-        ):
-            raise GreenfieldSourceDutyBindingError(
-                "candidate terminal is outside the first run"
+    if not source_plan_owned:
+        try:
+            validate_first_run(
+                first_run,
+                event_orders=tuple(range(1, len(events) + 1)),
+                source_precedence=candidate_result.get("source_precedence", ()),
+                result_event_order=None,
+                first_path_event_orders=expected_run,
+                recurring_event_orders=recurring_source_event_orders(ledger, binding),
             )
+        except ValueError as exc:
+            raise GreenfieldSourceDutyBindingError(
+                "candidate first run must preserve ledger workflow order and contain each "
+                "bound first-path event and its cited source prerequisites exactly once: "
+                f"{exc}"
+            ) from exc
+        terminal = candidate_result.get("terminal")
+        if terminal is not None:
+            if (
+                not isinstance(terminal, Mapping)
+                or type(terminal.get("event_order")) is not int
+                or terminal["event_order"] not in expected_run
+            ):
+                raise GreenfieldSourceDutyBindingError(
+                    "candidate terminal is outside the first run"
+                )
     validate_greenfield_source_duty_design_binding(
         binding, ledger=ledger, provisional_design=design, ledger_receipt=receipt,
     )
@@ -637,8 +650,8 @@ def validate_greenfield_source_duty_design_binding(
 ) -> None:
     """Validate passive duty identities and ownership against an accepted ledger.
 
-    Raw candidate admission separately owns actor citations, event coverage and
-    first-run selection. Exported lifecycle readback can reuse this design seam
+    Raw candidate admission separately checks actor citations, event coverage and
+    the source-owned run projection. Exported lifecycle readback can reuse this design seam
     without constructing those omitted candidate records.
     """
     binding = _closed(
@@ -689,7 +702,7 @@ def validate_greenfield_source_duty_design_binding(
 
 def recurring_source_event_orders(ledger: Mapping[str, Any], binding: Mapping[str, Any]) -> tuple[int, ...]:
     """Map source-owned recurrence to stable event identities, never infer it from text."""
-    if ledger["version"] not in {SOURCE_DUTY_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v9"}:
+    if ledger["version"] not in {SOURCE_DUTY_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v9"}:
         return ()
     recurring = {row["id"] for row in ledger["system_duties"]
                  if row["execution_kind"] == "recurring_invariant"}

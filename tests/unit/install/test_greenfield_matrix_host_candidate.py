@@ -27,6 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
 )
 from odylith.runtime.domain_intelligence.greenfield_source_duty_view import compact_source_duty_view
 from odylith.runtime.domain_intelligence.greenfield_host_candidate import greenfield_host_candidate_contract
+from tests.unit.runtime.greenfield_model_authoring_fixtures import affirmative_source_plan_fixture
 from odylith.runtime.domain_intelligence.greenfield_authority_gate import greenfield_authority_gate_contract
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
     STANDARD_PROFILE_ID,
@@ -53,6 +54,10 @@ def _fixture_host_ledger() -> dict:
              "context": "A reviewer creates a reviewable plan."}
     return {"version": SOURCE_DUTY_AUTHORING_VERSION, "result": {
         "status": "inventory", "question": "",
+        "source_precedence": [], "first_run": {"duty_ids": ["d1"]},
+        "terminal": {"duty_id": "d1", "proof_boundary": event,
+                     "result_fact": {"field": "first_path", "duty_id": "d1"},
+                     "result_quote": "a reviewable plan", "result_occurrence": 1},
         "nonperforming_participants": {field: [] for field in ("human_actors", "internal_systems", "external_systems")},
         "product_identity": {"basis": "product_description", "source_ref": {
             "quote": "Review-planning workspace.", "context": "Review-planning workspace."}},
@@ -109,6 +114,7 @@ def _flow(tmp_path: Path, *, candidate: object, contract: object, gate_decision:
         "source_completeness": {"verdict": "yes", "omissions": []},
         "participant_decisions": {},
         "product_identity": {"verdict": "yes"},
+        "source_plan": affirmative_source_plan_fixture(expanded),
     }
     ledger_receipt = validate_greenfield_source_duty_ledger(
         expanded, evidence_text=source, decision_set=decision_set,
@@ -331,7 +337,7 @@ def test_real_compiler_task_traverses_verifier_receipt_and_candidate(
     assert json.loads(host_calls[2][1]) == compiler_payload["decision_task"] == expected
     assert set(expected) == {
         "authority_source", "source_duty_ledger", "reference_index_order", "task",
-        "decision_set_schema", "verifier_task_sha256", "participant_claims",
+        "decision_set_schema", "verifier_task_sha256", "participant_claims", "source_plan_task",
     }
     assert "source_sha256" not in expected
     assert "ledger_sha256" not in expected

@@ -476,17 +476,20 @@ def _context_view(
                 )
             )
         lines.append("  end")
+    owner_action_counts: dict[str, int] = {}
     for identity, events in performer_events.items():
-        owner_id = owner_nodes.get(identity)
+        owner_id = "product" if identity[0] == "product_wide" else owner_nodes.get(identity)
         if owner_id is None:
             raise ValueError("authored Atlas performer is missing its typed context owner")
-        action_id = f"{owner_id}_actions"
+        group = owner_action_counts.get(owner_id, 0) + 1
+        owner_action_counts[owner_id] = group
+        action_id = f"{owner_id}_actions" + (str(group) if group > 1 else "")
         event_label = "<br/><br/>".join(
             "• " + _mermaid_label(event, width=42) for event in events
         )
         lines.append(f'  {action_id}["{event_label}"]')
         lines.append(f'  {owner_id} -->|"performs"| {action_id}')
-        if identity[0] != "product":
+        if identity[0] not in {"product", "product_wide"}:
             interaction = "product interaction" if neutral_labels else "first-path interaction"
             lines.append(
                 f'  {action_id} ---|"{interaction}"| product'

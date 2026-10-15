@@ -15,7 +15,7 @@ from odylith.runtime.domain_intelligence import greenfield_proposals_cli as cli
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import combined_prompt_evidence_source
 from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import STANDARD_PROFILE_ID
 from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import preflight_greenfield_source_duty_ledger
-from odylith.runtime.domain_intelligence.greenfield_source_duty_view import compact_source_duty_view
+from tests.unit.runtime.greenfield_model_authoring_fixtures import source_duty_authoring_fixture
 from tests.unit.install.test_greenfield_matrix_host_candidate import _flow
 from tests.unit.runtime.test_greenfield_source_duty_ledger import _material_duty_case
 
@@ -26,13 +26,14 @@ def test_actual_driver_real_cli_preflight_stops_invalid_exact_field_identity(tmp
     source = combined_prompt_evidence_source(prompt=prompt, edit_evidence="")
     # The same authentic inventory preflights before changing only its relationship.
     assert preflight_greenfield_source_duty_ledger(canonical, evidence_text=source)["claims"]
+    inventory = source_duty_authoring_fixture(canonical, evidence_text=source)
+    authored = inventory["result"]
     if mutation == "missing":
-        canonical["off_path_transitions"][0]["effects"][0]["field"] = "private absent access field"
+        authored["off_path_transitions"][0]["effects"][0]["field"] = "private absent access field"
     else:
-        duplicate = deepcopy(canonical["state_fields"][0])
+        duplicate = deepcopy(authored["state_fields"][0])
         duplicate["id"] = "F4"
-        canonical["state_fields"].append(duplicate)
-    compact = compact_source_duty_view(canonical)
+        authored["state_fields"].append(duplicate)
     gate = {"decision": "admit", "required_fields": [], "owner_quote": "reviewer",
             "task_quote": "defines scope", "result_quote": "scope", "question": ""}
     flow, _host_stub, _installed_stub, _host_stub_calls, proposals, repo = _flow(
@@ -55,7 +56,7 @@ def test_actual_driver_real_cli_preflight_stops_invalid_exact_field_identity(tmp
         name = Path(command[command.index("--output-schema") + 1]).name
         host_calls.append(name)
         assert name in {"authority-gate-schema.json", "source-ledger-schema.json"}, "no later model phase is authorized"
-        payload = gate if name == "authority-gate-schema.json" else compact
+        payload = gate if name == "authority-gate-schema.json" else inventory
         return subprocess.CompletedProcess(command, 0, stdout=json.dumps(payload), stderr="")
 
     def retain(name):
@@ -83,7 +84,7 @@ def test_actual_driver_real_cli_preflight_stops_invalid_exact_field_identity(tmp
     assert all("--decision-file" not in command for command in installed)
     assert proposals == []
     assert json.loads(retained["gate"]) == gate
-    assert json.loads(retained["inventory"]) == compact
+    assert json.loads(retained["inventory"]) == inventory
     preflight_error = json.loads(retained["preflight"])
     assert "state-field" in json.dumps(preflight_error)
     stage = flow.observation_sink

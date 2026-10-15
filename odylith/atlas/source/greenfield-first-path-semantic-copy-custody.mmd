@@ -15,9 +15,9 @@ flowchart TB
       candidate["Closed source result<br/>Inventory with exact inline citations<br/>or one material question"]
       identity_check["Source identity and citation preflight<br/>Check exact quotes and explicit outside-participant mentions;<br/>compiler assigns references for later stages"]
       prior_contract["Accepted EDIT baseline<br/>Exact source addresses, action allocation edges and verification flags;<br/>typed system roster retained under a bounded context"]
-      source_control["Source-only verifier<br/>Verifies complete duties, participant types and identity;<br/>outside participants perform no workflow action;<br/>prior EDIT actions keep their exact allocations"]
+      source_control["Source-only verifier<br/>Verifies duties, complete path, order, result and separate proof;<br/>outside participants perform no workflow action;<br/>prior EDIT actions keep their exact allocations"]
       catalog["One complete source-event graph<br/>Fixed performers and event IDs come from verified actions;<br/>verified outside participants remain outside the workflow"]
-      candidate_author["One candidate authoring pass<br/>Uses fixed events, participant facts and accepted EDIT custody;<br/>cannot replace the roster or reassign surviving prior actions"]
+      candidate_author["One candidate authoring pass<br/>Allocates design and explains the accepted run;<br/>cannot replace source facts, result or surviving prior owners"]
     end
 
     subgraph admission_lane["Deterministic admission"]
@@ -31,7 +31,7 @@ flowchart TB
 
     subgraph projection_lane["Deterministic governance projections"]
       direction TB
-      source_views["Derived workflow and proposed first run<br/>Workflow membership comes from verified source roles;<br/>first run may add cited discrete prerequisites"]
+      source_views["Declared workflow and complete first run<br/>Workflow keeps its verified roles;<br/>complete run retains required prerequisites and system consequences"]
       safeguards["Recurring safeguards<br/>Keep conditional guards, lifecycle custody and proof;<br/>remain outside the one-time run"]
       project["Project summary and declared first path<br/>Proposed implementation walkthrough stays separate;<br/>evidence and record metadata remain in supporting details"]
       radar["Proportional grounded Radar workstreams"]

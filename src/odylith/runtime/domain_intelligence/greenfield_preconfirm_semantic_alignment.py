@@ -43,17 +43,25 @@ def semantic_model_shape_issues(
         issues.append("FirstPathContract must include structured first-path events")
     elif not any(isinstance(row, Mapping) and row.get("visible_result") for row in events):
         try:
-            if not intent or not provisional_proof_assumption(intent.get("assumptions", [])):
+            source_duty = intent.get(AUTHORED_SEMANTICS_KEY, {}).get("source_duty") if intent else None
+            fresh = source_duty and source_duty["ledger_receipt"]["ledger"]["version"] == "odylith.greenfield.source-duty-ledger.v12"
+            if fresh:
+                run = authored_first_run_relations(intent)
+                expected = [(row["order"], bool(row["visible_result_quote"])) for row in run]
+                graph_events = mapping_rows(semantic.get("diagram_event_graph", {}).get("events"))
+                if [(row.get("source_event_order"), row.get("visible_result")) for row in graph_events] != expected:
+                    raise ValueError("Complete-run graph must retain its exact source-owned result producer")
+            elif not intent or not provisional_proof_assumption(intent.get("assumptions", [])):
                 raise ValueError("FirstPathContract must identify at least one visible result event")
             checkpoint = authored_checkpoint_text(intent)
             if (
                 first_path.get("authority_kind") != ("source_grounded" if semantic.get("schema_version") == "odylith.greenfield.semantic_model.v5" else "provisional_design")
                 or first_path.get("visible_result") != checkpoint
-                or any(
+                or (not fresh and any(
                     row.get("authority_kind") != "assumption" or row.get("required_evidence") != checkpoint
                     for row in mapping_rows(semantic.get("proof_obligations"))
                     if row.get("key") in {"first_path_contract", "release_boundary"}
-                )
+                ))
             ):
                 raise ValueError("FirstPathContract must retain its canonical proposed proof checkpoint")
         except ValueError as exc:

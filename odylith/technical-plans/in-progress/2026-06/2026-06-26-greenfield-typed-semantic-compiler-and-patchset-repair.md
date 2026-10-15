@@ -1,5 +1,135 @@
 Status: In progress
 
+## Current gate: verify the source-owned complete workflow live (2026-10-15)
+
+The frozen source63 correction passes all 930 affected tests in 159.31 seconds,
+including the five driver modules' 87 checks. The separate 58-check selection
+passes hygiene, exact closed-question behavior and the rendered D-043 wording
+in 2.99 seconds. All 18 production hashes remain exact. Source review closes
+the initial atomic-path and historical-dispatch findings with 75 probes; eight
+Atlas closure probes pass. Final artifact review is clear, with all 18 source,
+27 test and 23 witness hashes exact (report SHA-256
+`28e1eb3a700b17e3f2794bf1bf32a373ea585a350e2081f62bce709be27225b0`).
+After a pushed governed checkpoint, run one predeclared parent on the unchanged
+request. Synthetic sealed transactions and EDIT witnesses provide structural
+proof only. Current full hosted CI, live delivery and every release gate remain
+open. Keep the failures and intermediate freezes below as historical evidence.
+
+The unchanged-request source62 trial at pushed `c3de3667b` completes all four
+model stages in 319.997 seconds but fails first-run admission. The candidate
+includes the required dossier-release system action after the human handoff;
+the compiler's predecessor-only membership and declared-path terminal constraint
+exclude it. No package or receipt is delivered. The citation selector advances
+past its previous failure, but complete workflow delivery remains unproved.
+
+Raw evidence is preserved with archive SHA-256
+`2c90abe370a3db5d2893ec8fab1a41042d5022bfa04d74c7e8e5d101cec47288`.
+All 21 source hashes and the consumer baseline are unchanged; parent and guardian
+are retired. Preserve the initialized consumer and its migration journal.
+The 705 passing affected checks do not qualify this live journey.
+
+Independent source-first diagnosis establishes one P1 ownership defect (report
+SHA-256 `186d908f787e755d6c9f4de2b7847613152bca313416f6b4d8a6fd787d85d99a`).
+The selected correction moves existing source precedence, complete-run membership
+and order, and result/producer custody into the existing inventory/source-only
+verifier. The compiler maps accepted duty IDs and exact evidence into the existing
+canonical event and constraint identities. The candidate retains design allocations
+and explanation without independently selecting that source plan. The accepted
+predeclaration is SHA-256 `3317c7149dae3cbd94dfefa11de3dcdb749779fe20a80a73e8dd66cbccec81ce`: 16 existing
+production owners plus one cohesive source-run owner, and directly affected tests.
+Fresh authoring4/ledger12/preflight11/decisions18+19/receipts24+25/compact10/
+host63/candidate27/transport7 keep canonical80/semantic19/atomic4/context4 meanings.
+Implementation and proof are pending. Preserve the
+separate declared path, typed system consequences, prerequisites, recurring duties,
+result-before-later-required-work behavior and every passive tuple. Do not
+derive an incomplete predecessor closure, relabel this example to bypass a
+guard, patch the retained candidate or run another model attempt before bounded
+proof and independent review. Keep broad input, exact custody, four stages,
+all limits and release floors. Final H/B/D, scored44, genuine EDIT4, native hosts,
+protected-final and GA remain open. Protected final inputs remain closed.
+
+The fixed proof-boundary terminal mapping in the initial predeclaration is
+stopped: an existing accepted berth fixture keeps its proof witness separate
+from the visible result inside a first-path fact. Preserve both exact meanings.
+Amend the source-owned existing terminal reference to cover every currently
+eligible canonical80 fact field separately from proof, with deterministic exact
+identity projection. Audit prefix/index and joint-cap effects before resuming.
+No fixture mutation, field coercion or narrower result envelope may conceal this
+counterexample. Partial production is unqualified pending focused design review.
+
+The focused review clears amendment SHA-256
+`a714ad24d08de31059d178171429ef53abba33f7ecaef646769d65d1fbd3a849`,
+with unchanged production scope and tuple. Resume the general existing result-
+fact mapping with separate proof. Strict explicit-null abstention applies only
+to a source-owned singleton; unreserved slots retain original native rules.
+Preserve fact/assumption exclusivity after insertion and exact same-fact identity
+for a result in proof_boundary. Prove every existing eligible carrier without
+changing old fixture meanings. Design clearance supplies no implementation pass.
+
+Initial production freeze has 17 files; 31 focused source-plan checks and two
+nonempty EDIT controls pass. Independent review finds an indexed atomic-custody
+path error for success_metrics. Unfreeze only the source-run owner to correct
+that path, then refreeze and prove full transaction readback for all six carriers.
+Retain the initial freeze and preliminary fixture-adoption failures. The two
+hygiene modules pass all 56 checks in 1.14 seconds with all 17 initial source
+hashes unchanged. Complete affected regression and independent review remain open.
+
+Review also finds the passive authoring selector dispatching genuine authoring3
+inventory to its authoring2 schema. Coordinate a separate bounded correction in
+the authoring owner and retain the failing raw-history repro. Final compatibility
+proof must cover raw inline history plus material receipts and exact tasks;
+receipt-only readback is insufficient.
+
+The two approved fixes are refrozen in the 17-file successor manifest
+`52134f9d78b5aa1832303bb0a801ee04acb87874fc6b35263b60b0bdef9d098f`.
+All 36 focused checks pass, including six complete transaction readbacks,
+historical inline1/2/3 and exact genuine source62 history. Finish combined
+regression, independent closure and native/size/nonempty EDIT witnesses before
+the next unchanged-input live trial. Source is frozen; no live pass is claimed.
+
+Independent review closes the two initial defects on that freeze with 75 checks
+and exact 17-file custody. The seven-action/system-release integration then
+exposes an inherited Atlas context owner lookup that lacks product-wide actors.
+Extend ownership only to `greenfield_authored_atlas_view.py`: map the validated
+product-wide kind to its existing product boundary node and preserve quote/kind
+in action details. No new component or role coercion. Refreeze all 18 sources
+and review the additional consumer before claiming complete-package proof.
+
+The v4 Atlas review reproduces duplicate group IDs for two valid whole-product
+quotations. Keep the same product boundary and distinct original performer
+groups, with deterministic unique action-group IDs per owner. Unfreeze only
+the Atlas owner for that correction, retain v4, then refreeze and prove this
+case through the Atlas validator and full readback. No alias merge or role change.
+
+The 18-file v5 successor manifest is
+`51538307b43fce9b5e097d3cfb7ded49b81342a776f1bf9b028630a72d5db2bd`.
+Both the distinct-quotation and seven-human/system-result complete transaction
+readbacks pass; the other 17 sources retain their exact reviewed v3 hashes.
+Close independent review and the complete affected gate before live dispatch.
+
+The preceding `2941aaeff` push/PR suites each retain 43 failures, 11,236 passes
+and ten skips. Thirty-nine driver checks supply passive compact inventory as
+fresh provider output; one question fixture retains a populated participant
+roster. Adopt the current authoring and closed-question contracts in those five
+modules alongside the source ownership change. Preserve later guard assertions.
+The three separate Atlas wording, empty-roster and diagnostic-graph assertions
+now pass exact local checks, including the rendered D-043 view. Full current
+hosted validation remains open; no production admission relaxation is needed.
+
+The five driver modules now collect 87 checks with all original names,
+parameterization and 224 assertions preserved. They encode fresh authoring4;
+compact inventory remains passive readback. A preliminary run during shared
+fixture migration retains 31 setup failures at the matrix helper's old closed
+inventory branch, plus two passing actor-stop controls. Update that shared helper
+and include all five modules in the final frozen combined gate. Migration report
+SHA-256: `ff8ca9b5c7d62083ea1bc380c6ae71ef09152a51e415e3e2414eec1993b4e59e`.
+
+The oversized mixed hygiene test module is split by ownership: public/guidance
+checks remain in `test_hygiene.py` (1,218 lines); the 22 runtime structural
+checks move to `test_runtime_ownership_hygiene.py` (616 lines). All 56 tests and
+296 assertions match their pre-edit ASTs, and collection is unchanged. Run both
+modules after the production freeze; static preservation is not a dynamic pass.
+
 ## Strict mention selection: source frozen, qualification pending (2026-10-15)
 
 The successor keeps broad freeform input and requires an explicit occurrence

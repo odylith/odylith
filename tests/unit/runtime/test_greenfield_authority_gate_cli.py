@@ -28,6 +28,7 @@ from odylith.runtime.domain_intelligence.greenfield_source_duty_view import (
     duty_references,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    affirmative_source_plan_fixture,
     declared_source_action_fixture,
     write_synthetic_source_duty_receipt,
 )
@@ -80,6 +81,13 @@ def _declared_workspace_identity():
     }
 
 
+def _declared_coordinator_run_plan():
+    return {"source_precedence": [], "first_run": {"duty_ids": ["coordinator-1", "coordinator-2"]},
+            "terminal": {"duty_id": "coordinator-2", "result_fact": {"field": "first_path", "duty_id": "coordinator-2"},
+                         "proof_boundary": {"quote": "verifies a decision receipt", "context": "A coordinator opens an intake request and verifies a decision receipt."},
+                         "result_quote": "a decision receipt", "result_occurrence": 1}}
+
+
 def _yes_decisions(decision_task: dict[str, object]) -> dict[str, object]:
     ledger = decode_source_duty_inventory(decision_task["source_duty_ledger"])
     decisions = {}
@@ -97,6 +105,7 @@ def _yes_decisions(decision_task: dict[str, object]) -> dict[str, object]:
         "source_completeness": {"verdict": "yes", "omissions": []},
         "participant_decisions": {},
         "product_identity": {"verdict": "yes"},
+        "source_plan": affirmative_source_plan_fixture(ledger),
         "decisions": decisions,
     }
 
@@ -242,6 +251,7 @@ def test_admitted_gate_does_not_replace_the_host_candidate(
         evidence_text=combined_prompt_evidence_source(prompt=prompt, edit_evidence=""),
         declared_actions=_declared_coordinator_actions(),
         declared_identity=_declared_workspace_identity(),
+        declared_run_plan=_declared_coordinator_run_plan(),
     )
 
     rc = greenfield_proposals_cli.main(
@@ -308,6 +318,7 @@ def test_source_ledger_check_requires_source_only_decisions_before_receipt(
         evidence_text=combined_prompt_evidence_source(prompt=prompt, edit_evidence=""),
         declared_actions=_declared_coordinator_actions(),
         declared_identity=_declared_workspace_identity(),
+        declared_run_plan=_declared_coordinator_run_plan(),
     )
     raw_ledger = json.loads(ledger.read_text(encoding="utf-8"))["ledger"]
     ledger.write_text(json.dumps(_compact_ledger(raw_ledger)), encoding="utf-8")
@@ -506,6 +517,7 @@ def test_source_ledger_check_rejects_negative_decision_before_candidate(
         evidence_text=combined_prompt_evidence_source(prompt=prompt, edit_evidence=""),
         declared_actions=_declared_coordinator_actions(),
         declared_identity=_declared_workspace_identity(),
+        declared_run_plan=_declared_coordinator_run_plan(),
     )
     raw_ledger = json.loads(ledger.read_text(encoding="utf-8"))["ledger"]
     ledger.write_text(json.dumps(_compact_ledger(raw_ledger)), encoding="utf-8")
@@ -566,6 +578,7 @@ def test_propose_rejects_tampered_source_only_decision_receipt_before_candidate(
         evidence_text=combined_prompt_evidence_source(prompt=prompt, edit_evidence=""),
         declared_actions=_declared_coordinator_actions(),
         declared_identity=_declared_workspace_identity(),
+        declared_run_plan=_declared_coordinator_run_plan(),
     )
     receipt = json.loads(ledger_path.read_text(encoding="utf-8"))
     receipt[tamper_field] = tamper_value
@@ -613,6 +626,7 @@ def test_source_ledger_check_surfaces_one_material_question(
         "conditional_guards": [],
         "boundaries": [],
         "proof_duties": [],
+        "source_precedence": [], "first_run": {"duty_ids": []}, "terminal": None,
     }
     ledger_path = tmp_path.parent / f"{tmp_path.name}-source-ledger.json"
     ledger_path.write_text(json.dumps(_compact_ledger(ledger)), encoding="utf-8")

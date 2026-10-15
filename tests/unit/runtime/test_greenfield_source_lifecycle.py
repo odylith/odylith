@@ -89,6 +89,13 @@ def _case(noun: str, *, source_version: str | None = None) -> tuple[str, dict, d
         ],
         "conditional_guards": [], "boundaries": [], "proof_duties": [],
     }
+    if source_version and source_version not in {"odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11"}:
+        ledger.pop("nonperforming_participants")
+    if source_version is None:
+        ledger.update(source_precedence=[], first_run={"duty_ids": ["A1", "A2"]},
+                      terminal={"duty_id": "A2", "proof_boundary": _citation(f"reviewer approves the {noun}"),
+                                "result_fact": {"field": "first_path", "duty_id": "A2"},
+                                "result_quote": f"approves the {noun}", "result_occurrence": 1})
     receipt = synthetic_source_duty_receipt_for_ledger(
         ledger, evidence_text=evidence
     )
@@ -110,6 +117,9 @@ def _case(noun: str, *, source_version: str | None = None) -> tuple[str, dict, d
             ],
         },
     }
+    if source_version is None:
+        candidate.pop("terminal")
+        candidate["provisional_design"]["first_run"].pop("event_orders")
     binding = {
         "version": SOURCE_DUTY_BINDING_VERSION,
         "source_sha256": receipt["source_sha256"],

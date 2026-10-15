@@ -98,7 +98,7 @@ def test_exact_utf8_roster_order_and_equal_labels_keep_distinct_typed_addresses(
         addresses.append(start)
     assert addresses[0] != addresses[1]
     compact = compact_source_duty_view(ledger)
-    assert compact["version"].endswith(".v9")
+    assert compact["version"].endswith(".v10")
     assert decode_source_duty_inventory(compact, evidence_text=source) == ledger
     assert len(compact["result"]["citations"]) == len({(r["q"], r["c"], r.get("mention_ordinal")) for r in compact["result"]["citations"]})
 
@@ -220,6 +220,8 @@ def test_ledger9_receipt18_keeps_exact_task_and_no_injected_roster():
     ledger = _ledger()
     ledger.pop("nonperforming_participants")
     ledger["version"] = "odylith.greenfield.source-duty-ledger.v9"
+    for field in ("source_precedence", "first_run", "terminal"):
+        ledger.pop(field)
     preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=EVIDENCE,
         _passive_source_version=ledger["version"])
     receipt = validate_greenfield_source_duty_ledger(ledger, evidence_text=EVIDENCE,
@@ -423,6 +425,8 @@ def test_source10_fixture_receipts_keep_frozen_294_hashes_without_invented_ordin
     else:
         source, ledger = EVIDENCE, _ledger()
         ledger["version"] = "odylith.greenfield.source-duty-ledger.v10"
+        for field in ("source_precedence", "first_run", "terminal"):
+            ledger.pop(field)
         preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=source, _passive_source_version=ledger["version"])
         receipt = validate_greenfield_source_duty_ledger(ledger, evidence_text=source, decision_set=_yes_decisions(preflight), _passive_source_version=ledger["version"])
         expected = ("c6cc28d01e9f6d228200ae4ffd289504a204f87a5d45f627f4d5f8514d16f5a7",

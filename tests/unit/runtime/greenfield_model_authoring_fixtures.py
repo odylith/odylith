@@ -57,6 +57,7 @@ class _FixtureHostCandidate(dict):
     source_action_atoms: list[dict[str, Any]]
     product_identity: dict[str, Any]
     nonperforming_participants: dict[str, Any]
+    source_run_plan: dict[str, Any]
 
 
 def _fixture_actor_ref(facts: Mapping[str, Any], event: Mapping[str, Any]) -> dict[str, str]:
@@ -122,6 +123,7 @@ def synthetic_source_duty_receipt(
     host_candidate: Mapping[str, Any], *, evidence_text: str,
     declared_actions: Sequence[Mapping[str, Any]] | None = None,
     declared_identity: Mapping[str, Any] | None = None,
+    declared_run_plan: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Make a test-only exact-cited ledger; this does not prove semantic roles.
 
@@ -142,6 +144,10 @@ def synthetic_source_duty_receipt(
             "supporting_human_actions": [], "system_duties": [], "state_fields": [],
             "off_path_transitions": [], "conditional_guards": [], "boundaries": [], "proof_duties": [],
         }
+        plan = declared_run_plan if declared_run_plan is not None else getattr(host_candidate, "source_run_plan", None)
+        if plan is None:
+            raise ValueError("test host candidate has no declared source run plan")
+        ledger.update(copy.deepcopy(plan))
         return synthetic_source_duty_receipt_for_ledger(ledger, evidence_text=evidence_text)
     result = host_candidate.get("result")
     if not isinstance(result, Mapping):
@@ -180,7 +186,25 @@ def synthetic_source_duty_receipt(
                 row["observable_result"] = "fixture-declared result"
             rows.append(row)
         ledger[section] = rows
+    ledger.update(copy.deepcopy(host_candidate.source_run_plan))
     return synthetic_source_duty_receipt_for_ledger(ledger, evidence_text=evidence_text)
+
+
+def affirmative_source_plan_fixture(ledger):
+    """Synthetic verdicts for declared test plans; no live semantic qualification."""
+    from odylith.runtime.domain_intelligence.greenfield_source_run_plan import source_run_decisions_schema
+    return {name: {key: "yes" for key in schema["required"]}
+            for name, schema in source_run_decisions_schema(ledger)["properties"].items()}
+
+
+def source_duty_authoring_fixture(ledger, *, evidence_text):
+    """Serialize a valid current fixture through the advertised native wire."""
+    from odylith.runtime.domain_intelligence.greenfield_source_duty_authoring import SOURCE_DUTY_AUTHORING_VERSION
+    accepted = preflight_greenfield_source_duty_ledger(ledger, evidence_text=evidence_text)["ledger"]
+    result = ({key: accepted[key] for key in ("status", "question")}
+              if accepted["status"] == "clarification_required"
+              else {key: value for key, value in accepted.items() if key != "version"})
+    return {"version": SOURCE_DUTY_AUTHORING_VERSION, "result": result}
 
 
 def synthetic_source_duty_receipt_for_ledger(
@@ -189,7 +213,7 @@ def synthetic_source_duty_receipt_for_ledger(
     """Approve a fixture-only ledger; production must obtain an independent verdict."""
 
     passive_version = ledger["version"] if ledger["version"] in {
-        "odylith.greenfield.source-duty-ledger.v5", "odylith.greenfield.source-duty-ledger.v6", "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10"} else None
+        "odylith.greenfield.source-duty-ledger.v5", "odylith.greenfield.source-duty-ledger.v6", "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11"} else None
     preflight = preflight_greenfield_source_duty_ledger(
         ledger, evidence_text=evidence_text, _passive_source_version=passive_version,
     )
@@ -198,10 +222,11 @@ def synthetic_source_duty_receipt_for_ledger(
     )
     decision_set = {
         "version": decision_task["decision_set_schema"]["properties"]["version"]["enum"][0],
-        **({"product_identity": {"verdict": "yes"}} if passive_version in (None, "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10") else {}),
+        **({"product_identity": {"verdict": "yes"}} if passive_version in (None, "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11") else {}),
         "verifier_task_sha256": decision_task["verifier_task_sha256"],
         "source_completeness": {"verdict": "yes", "omissions": []},
         **({"participant_decisions": {key: {field: "yes" for field in ("entity_name", "participant_type", "nonperformance", "identity_nonduplication")} for key in preflight["participant_claims"]}} if "participant_claims" in preflight else {}),
+        **({"source_plan": affirmative_source_plan_fixture(ledger)} if passive_version is None else {}),
         "decisions": {
             claim["duty_id"]: {
                 "verdict": "yes",
@@ -310,6 +335,8 @@ def host_candidate_response(
     response: Mapping[str, Any],
     *,
     evidence_text: str,
+    first_path_event_orders: Sequence[int] | None = None,
+    source_run_event_orders: Sequence[int] | None = None,
 ) -> dict[str, Any]:
     """Project a canonical test response into the public host-candidate shape."""
 
@@ -346,7 +373,7 @@ def host_candidate_response(
                 value,
                 state_object=field == "state_object",
             )
-    first_orders = result["provisional_design"]["first_run"]["event_orders"]
+    first_orders = list(first_path_event_orders) if first_path_event_orders is not None else result["provisional_design"]["first_run"]["event_orders"]
     sections = {order: ("first_path_actions" if order in first_orders else
                 "supporting_human_actions" if event["actor_fact"]["field"] == "human_actors"
                 else "system_duties") for order, event in enumerate(events, 1)}
@@ -385,6 +412,31 @@ def host_candidate_response(
         if result["terminal"]["result_fact"]["field"] == "first_path":
             old_row = result["terminal"]["result_fact"]["row"]
             result["terminal"]["result_fact"]["row"] = remap.get(old_row, old_row)
+    by_order = {order: atom["duty_id"] for order, atom in enumerate(atoms, 1)}
+    terminal = result["terminal"]
+    if terminal is None or facts["proof_boundary"] is None:
+        raise ValueError("fresh native fixture requires a declared result and separate proof witness")
+    carrier = terminal["result_fact"]
+    field = carrier["field"]
+    if field == "first_path":
+        result_fact = {"field": field, "duty_id": by_order[carrier["row"]]}
+    else:
+        selected = facts[field]
+        result_fact = {"field": field, "source_ref": copy.deepcopy(selected[carrier["row"] - 1] if isinstance(selected, list) else selected)}
+    candidate.source_run_plan = {
+        "source_precedence": [{"before_duty_id": by_order[edge["before_event"]],
+                               "after_duty_id": by_order[edge["after_event"]],
+                               "constraint_ref": copy.deepcopy(facts["operational_constraints"][edge["constraint_index"] - 1])}
+                              for edge in result.pop("source_precedence")],
+        "first_run": {"duty_ids": [by_order[order] for order in ([remap[order] for order in source_run_event_orders] if source_run_event_orders is not None else design["first_run"]["event_orders"])]},
+        "terminal": {"duty_id": by_order[terminal["event_order"]],
+                     "proof_boundary": facts.pop("proof_boundary"), "result_fact": result_fact,
+                     "result_quote": terminal["result_quote"], "result_occurrence": terminal["result_occurrence"]},
+    }
+    if field in {"product_story", "opportunity", "product_view"}:
+        facts[field] = None
+    design["first_run"].pop("event_orders")
+    result.pop("terminal")
     result.pop("events")
     candidate.product_identity = {"basis": "explicit_name", "source_ref": facts.pop("title")}
     candidate.source_action_atoms = atoms
@@ -419,6 +471,7 @@ def write_synthetic_source_duty_receipt(
     evidence_text: str,
     declared_actions: Sequence[Mapping[str, Any]] | None = None,
     declared_identity: Mapping[str, Any] | None = None,
+    declared_run_plan: Mapping[str, Any] | None = None,
 ) -> Path:
     """Write test-only source custody for public CLI fixture calls."""
 
@@ -428,6 +481,7 @@ def write_synthetic_source_duty_receipt(
                 host_candidate, evidence_text=evidence_text,
                 declared_actions=declared_actions,
                 declared_identity=declared_identity,
+                declared_run_plan=declared_run_plan,
             )
         ),
         encoding="utf-8",
