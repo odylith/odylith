@@ -9,6 +9,7 @@ from typing import Any
 from typing import Mapping
 from typing import Sequence
 
+from odylith.runtime.evaluation import benchmark_metric_helpers
 from odylith.runtime.evaluation import odylith_benchmark_graphs
 from odylith.runtime.evaluation import odylith_benchmark_runner
 from odylith.runtime.evaluation import odylith_benchmark_tree_identity as tree_identity_runtime
@@ -32,7 +33,11 @@ def _load_report(path: Path) -> dict[str, Any]:
 
 
 def _summary(report: Mapping[str, Any]) -> dict[str, Any]:
-    return odylith_benchmark_runner.compact_report_summary(report)
+    summary = odylith_benchmark_runner.compact_report_summary(report)
+    summary.update(benchmark_metric_helpers.release_quality_summary_fields(
+        report, cache_profiles=odylith_benchmark_runner.DEFAULT_CACHE_PROFILES,
+    ))
+    return summary
 
 
 def _public_benchmark_name(*, diagnostic: bool) -> str:
@@ -436,7 +441,6 @@ def render_benchmark_tables_markdown(
                 f"> Comparison contract: `{str(live_summary.get('comparison_primary_claim', '')).strip()}`.",
                 f"> Fairness contract passed: `{bool(live_summary.get('fairness_contract_passed'))}`.",
                 f"> Full tracked-corpus coverage rate: `{float(live_summary.get('corpus_full_coverage_rate', 0.0) or 0.0):.3f}`.",
-                "> `benchmark_compare` remains release-warn until a shipped release baseline is recorded in `docs/benchmarks/release-baselines.v1.json`.",
             ],
         ),
     ]

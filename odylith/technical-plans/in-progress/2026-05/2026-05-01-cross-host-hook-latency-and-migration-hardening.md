@@ -98,6 +98,37 @@ Related Bugs:
 
 ## Current completion evidence (2026-10-15)
 
+Full candidate A `81889b62b36af1fc` at `a160260365` completes 82 scenarios,
+328 warm/cold observations and the existing supplementary measurements. Its
+result is provisional pass, with all hard quality, secondary and advisory
+checks clear. Nine original archive members have exact readback. Both hosted
+CI suites at this checkpoint pass 11,045 tests with ten skips.
+
+The original predecessor comparison failed under
+[CB-364](../../../casebook/bugs/2026-10-15-release-benchmark-comparison-confuses-raw-baseline-variance-with-product-regress.md). Odylith's
+critical recall is 0.979 in both releases, and all 82 per-case recall values
+are unchanged. It confused a smaller On-versus-raw advantage with product
+regression and could select an interrupted baseline receipt. The corrected
+processor selects the completed predecessor with the interrupted receipt
+present, preserves every original report and threshold, and returns a
+nonblocking warning for the predecessor's HOLD. Critical recall change is
+zero; validation success improves by 0.027. Independent review is clear and
+148 focused tests pass, including stored-score tampering rejection. The final
+comparison, publication and graph slice subsequently passes 169 checks. The
+canonical publication now binds its six absolute quality values to their
+versioned evidence record. A remains measurement proof of a160 only; final
+H/B must prove the corrected source before package and release qualification.
+
+Canonical regeneration of three corrected publication captions is blocked by
+CB-116: the legacy overlay identity hashes modification times and does not
+retain the bytes of 438 copied ignored descendants. That legacy run cannot
+be recertified after restoration. The two-file correction uses versioned
+content identity for future proof and keeps exact legacy matching without a
+reconciliation fallback. All 210 affected tests pass and independent review
+is clear. Freeze and push the corrected source checkpoint, then run fresh
+content-bound proof before regenerating the publication. Preserve original A
+and every failed attempt; do not bypass the canonical validator.
+
 The real Codex closeout at pushed checkpoint 37ef99829 retains its summary in
 the separate private history journal without changing governed bytes. Startup
 succeeds. A normal foreground command publishes exactly the retained 357 bytes
@@ -138,14 +169,15 @@ owner and reuses its secure I/O. The exact predecessor probe changes from three
 losses to three byte-identical retained events; 190 focused tests and 39
 guidance/mirror checks pass, with independent review clear. The original queued
 development event was normally published and exactly acknowledged before the
-switch. Current full-suite CI and installed/native qualification remain open;
-the 6,908-test full runtime result below belongs to checkpoint 4c72f13b6.
+switch. At a160260365, both full hosted suites pass 11,045 tests with ten skips.
+Installed/native qualification remains open; the 6,908-test full runtime result
+below belongs to checkpoint 4c72f13b6.
 
 Hosted full CI at that checkpoint records 11,029 passes, ten skips and one
 D-038 browser-description failure. The corrected catalog narrative preserves
 the proposition-ledger decision flow and explains private history publication;
-all six affected browser tests pass. Fresh full-suite CI for the current source
-remains required.
+all six affected browser tests pass. Both full suites at a160260365 also pass;
+the original failing checkpoint remains retained.
 
 The actual source-local Codex journey at 4c72f13b6 passes private Stop capture,
 healthy startup, normal foreground publication and exact acknowledgment. The

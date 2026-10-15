@@ -548,13 +548,10 @@ def render_quality_frontier_svg(report: Mapping[str, Any]) -> str:
         f'<text x="86" y="86" class="title">{_quality_frontier_heading(report)}</text>',
     ]
     _append_text_lines(body, x=86, y=subtitle_y, lines=subtitle_lines, class_name="subtitle", line_height=18)
-    body.append(f'<text x="86" y="{status_y}" class="small">Static chart: full recall range | all {total_count} published scenarios in frame</text>')
-    status_suffix = (
-        "| prompt-only control stays on the 0.00 recall rail by contract; paired packet time still separates scenarios"
-        if prompt_only_control
-        else "| all 60 points stay naturally visible on observed paired-time spread"
-    )
-    body.append(f'<text x="478" y="{status_y}" class="small" fill="{_GOOD}">{_esc(status_suffix)}</text>')
+    body.append(f'<text x="86" y="{status_y}" class="small">Static chart: full recall range | published scenarios: {total_count}</text>')
+    if prompt_only_control:
+        status_suffix = "| prompt-only control stays on the 0.00 recall rail by contract; paired packet time still separates scenarios"
+        body.append(f'<text x="478" y="{status_y}" class="small" fill="{_GOOD}">{_esc(status_suffix)}</text>')
 
     body.append(f'<rect x="{plot_x}" y="{plot_y}" width="{plot_w}" height="{plot_h}" rx="24" fill="#faf7ef" stroke="{_GRID}" stroke-width="1"/>')
 

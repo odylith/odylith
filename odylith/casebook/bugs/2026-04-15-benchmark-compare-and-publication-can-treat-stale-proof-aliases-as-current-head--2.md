@@ -70,3 +70,39 @@
 
 - Code References: - src/odylith/runtime/evaluation/benchmark_compare.py
 - src/odylith/runtime/evaluation/odylith_benchmark_publication.py
+
+## Metadata is not source identity (2026-10-15)
+
+After the first canonical A publication, restoring only its twelve generated
+outputs to the same clean a160 Git commit leaves the original report rejected.
+All non-overlay identity fields match; the overlay fingerprint changes from
+e9a80c8195627e2e46121a31598d890d5413709901ab3007e5fbe213d8b869e1
+to c672642371673b621f7be184faa940545d3acc31d632069841797fafb8c291ea.
+The existing owner uses cache signatures containing modification times rather
+than content. Original reports remain unchanged and the refusal is retained.
+Independent review recommends a benchmark-local, versioned content identity.
+A legacy reconciliation may accept only the same clean commit with every
+consumed overlay input proven tracked and byte/mode-identical. Directory
+prefixes cannot authorize ignored or untracked descendants. Missing, unsafe
+or unresolved inputs must refuse. Keep all other authority checks strict; no
+report edits, timestamp restoration, predicate bypass or source-proof waiver.
+A remains measurement evidence for a160, and final H/B remains required.
+
+The targeted a160 custody check finds 438 ignored descendants beneath the
+consumed src/odylith/runtime directory, chiefly Python bytecode. The historical
+metadata fingerprint does not retain their bytes, so clean Git alone cannot
+recertify this legacy overlay after restoration. Do not add an unused or
+permissive legacy reconciliation path. Preserve exact legacy validation and
+use a versioned content-and-mode fingerprint, including directory inventory
+and missing inputs, for future reports. The original A measurement and first
+publication remain preserved; current regenerated publication needs fresh
+content-bound proof. No quality threshold or semantic release floor changes.
+
+The two-file correction passes 41 identity tests and 210 affected benchmark
+tests. New reports store `content-v1:<sha256>` in the existing fingerprint
+field, which the runner already preserves. Content, modes, explicit absence
+and full directory inventory determine the hash; modification times and
+absolute checkout paths do not. Legacy reports retain their original exact
+metadata check. Unknown markers and unsafe or unreadable inputs refuse.
+Independent review is clear on the exact final bytes; its separate 41-test
+run also passes. Fresh current-source proof remains required.

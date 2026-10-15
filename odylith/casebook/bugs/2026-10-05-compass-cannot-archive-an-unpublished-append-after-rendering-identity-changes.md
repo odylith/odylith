@@ -82,3 +82,17 @@ generation and the continuation is retired. Source edits were preserved. The
 failed event is archived history, not a completed Compass decision. Evidence:
 `/private/tmp/odylith-v49-native-failure-learning-20261009/compass-recovery/final-readback.json`.
 Keep all runtime source stable during future guarded log/refresh completion.
+
+## Runtime changed during retained-history publication (2026-10-15)
+
+A CB-364 source correction overlapped foreground publication of the retained
+benchmark event dde1d138ae67488695f791541ad8fd8c. The runtime identity guard
+correctly stopped completion. Existing reviewed restoration restored 13
+non-stream files and then the exact 362-byte append. Canonical abandonment
+archives the original receipt 9d4845f890b5bc631b660093c16271b394c32a44381404c7586b3d5d44972bf2.
+With source and authored inputs frozen, explicit host-event publication admits
+the unchanged event under the current runtime and completes successfully. The
+stream contains that exact event once and no continuation remains. All 77
+changed paths were archived and read back before recovery; only the three
+authored bodies were reapplied, with generated views left to normal refresh.
+No recovery code, receipt identity or historical measurement was changed.

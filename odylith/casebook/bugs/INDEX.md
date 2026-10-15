@@ -6,6 +6,7 @@ Last updated (UTC): 2026-10-15
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-364 | 2026-10-15 | Release benchmark comparison confuses raw baseline variance with product regress | P1 | benchmark | Open | [2026-10-15-release-benchmark-comparison-confuses-raw-baseline-variance-with-product-regress.md](2026-10-15-release-benchmark-comparison-confuses-raw-baseline-variance-with-product-regress.md) |
 | CB-361 | 2026-10-13 | Live benchmark instruction discovery scans retained runtime generations | P2 | benchmark | Open | [2026-10-13-live-benchmark-instruction-discovery-scans-retained-runtime-generations.md](2026-10-13-live-benchmark-instruction-discovery-scans-retained-runtime-generations.md) |
 | CB-362 | 2026-10-13 | Benchmark validator replay omits required runtime inputs and carries dangling publication entry | P1 | benchmark | Open | [2026-10-13-benchmark-validator-replay-omits-required-runtime-inputs-and-carries-dangling-pu.md](2026-10-13-benchmark-validator-replay-omits-required-runtime-inputs-and-carries-dangling-pu.md) |
 | CB-363 | 2026-10-13 | Benchmark local clone fails from a linked source checkout across devices | P1 | benchmark | Open | [2026-10-13-benchmark-local-clone-fails-from-a-linked-source-checkout-across-devices.md](2026-10-13-benchmark-local-clone-fails-from-a-linked-source-checkout-across-devices.md) |

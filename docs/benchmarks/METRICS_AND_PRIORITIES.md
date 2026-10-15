@@ -67,6 +67,17 @@ The benchmark uses four layers:
   signals stay visible for diagnosis, but they are explanatory unless they
   show up as real outcome regressions.
 
+Cross-release quality checks measure changes in Odylith's conservative absolute
+quality scores using the existing regression thresholds. Each release also
+keeps its own Odylith-versus-raw hard gate. The report separately shows each
+release's relative advantage and how that advantage changed. An improved raw
+run alone does not establish a decline in Odylith quality.
+
+Release comparison requires completed baseline observations and authoritative
+absolute measurements. A completed HOLD remains eligible evidence; interrupted
+execution and missing measurements cannot authorize comparison. Latency and
+token comparisons keep their existing measurement basis.
+
 Current live-proof secondary guardrail:
 
 - `within_budget_rate >= 0.80` on packet-backed sampled slices

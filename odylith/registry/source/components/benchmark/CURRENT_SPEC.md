@@ -282,9 +282,18 @@ reviewer framing that explains how Odylith should be compared.
   local-memory-first on LanceDB plus Tantivy, with Vespa intentionally
   disabled unless a run explicitly reports otherwise
 - Product-repo release-baseline posture:
-  the current passing proof is detached `source-local` posture, and
-  `benchmark_compare` still reports `warn` until there is a last-shipped
-  published release baseline in `docs/benchmarks/release-baselines.v1.json`
+  comparison requires current-tree candidate proof and completed last-shipped
+  observations. A completed HOLD remains eligible; interrupted execution or
+  missing authoritative quality measurements cannot authorize comparison.
+  Cross-release quality checks use conservative absolute Odylith measurements
+  with the existing thresholds. Each release retains its own On-versus-raw
+  hard gate, and relative advantages remain separately labeled diagnostics.
+  Published summaries bind all six absolute quality measurements to their
+  versioned source and completion evidence. Legacy or changed measurements
+  fail closed. Existing latency and token comparisons retain their basis.
+  New overlay identities bind relative input paths, content, modes and full
+  directory inventory through `content-v1`; legacy reports keep exact legacy
+  matching. Unknown or unsafe inputs cannot authorize current-tree proof.
 - Active release exception:
   `v0.1.10` currently carries a tracked `skip_proof_and_compare` override
   because pinned-dogfood proof run `0047192366d8bf1c` wedged mid-corpus and
