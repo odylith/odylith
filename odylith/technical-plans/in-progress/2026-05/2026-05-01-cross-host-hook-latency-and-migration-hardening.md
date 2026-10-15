@@ -98,6 +98,18 @@ Related Bugs:
 
 ## Current completion evidence (2026-10-15)
 
+Both hosted suites at `433f0e38a` pass 11,209 tests and expose two
+generated-record gaps: missing CB-364 detail in the committed Casebook shard,
+and fourteen stale Registry forensics sidecars after a render-only selective
+sync. CB-305 and CB-270 retain the diagnoses. Finish the browser assertions
+and authored learning, publish the authored selective sync, then settle
+intended Compass logging before explicitly running the component-spec owner
+and check-only. Review the complete manifest-to-shard closure and all emitted
+sidecars before staging; verify check-only again after commit. The benchmark
+at this revision remains running with its source frozen. Preserve its
+identity and failed CI evidence; neither result establishes successor-source
+or release qualification.
+
 Full candidate A `81889b62b36af1fc` at `a160260365` completes 82 scenarios,
 328 warm/cold observations and the existing supplementary measurements. Its
 result is provisional pass, with all hard quality, secondary and advisory

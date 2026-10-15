@@ -35,12 +35,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 854,
-    "mapped_workstream_evidence_count": 794,
+    "explicit_event_count": 856,
+    "mapped_workstream_evidence_count": 796,
     "recent_path_match_count": 0,
     "spec_history_event_count": 8,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 854
+    "timeline_event_count": 856
   },
   "name": "Registry",
   "path_prefixes": [
@@ -50,6 +50,107 @@
   ],
   "spec_ref": "odylith/registry/source/components/registry/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "tests/integration/runtime/test_surface_browser_deep.py",
+        "tests/integration/runtime/test_surface_browser_ux_audit.py",
+        "tests/unit/runtime/test_validate_component_registry_contract.py"
+      ],
+      "confidence": "high",
+      "event_index": 1652,
+      "explicit_components": [
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-10-15T10:02:32-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-07-17-clean-head-component-forensics-fail-to-converge-after-sync-commit.md",
+        "odylith/casebook/bugs/2026-08-02-greenfield-current-view-readers-could-remain-pinned-to-stale-onboarding-state.md"
+      ],
+      "confidence": "high",
+      "event_index": 1651,
+      "explicit_components": [
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
+      "ts_iso": "2026-10-15T09:58:19-07:00",
+      "workstreams": [
+        "B-141"
+      ]
+    },
     {
       "artifact_count": 1,
       "artifacts": [

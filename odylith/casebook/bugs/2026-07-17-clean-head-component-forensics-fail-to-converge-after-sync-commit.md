@@ -1,5 +1,29 @@
 - Bug ID: CB-270
 
+## Repeated omitted-owner refresh in hosted CI (2026-10-15)
+
+Both hosted suites at `433f0e38a` pass 11,209 tests and fail the same two
+checks. The Release dossier check finds stale `FORENSICS.v1.json`.
+Deriving its expected payload from the committed inputs identifies exactly
+five missing durable Compass events: indices 1640, 1643, 1644, 1646 and 1647.
+The Release timeline should contain 941 events rather than 936. Fourteen
+component sidecars have only timeline and coverage differences; all 213
+selected source inputs match the committed revision.
+
+The final successful selective sync rendered Registry without invoking the
+component-forensics owner. This repeats the ordering error documented below;
+it is not Git workspace drift or a reason to weaken the convergence test.
+After all intended logging and authored changes finish, run the canonical
+component-spec synchronizer, require all-component check-only convergence,
+and verify it again after the successor commit. Include every emitted
+sidecar in the reviewed checkpoint. A successful render alone is insufficient.
+
+The separate Casebook artifact failure is tracked in CB-305. Preserve both
+failed hosted logs and the live benchmark's exact revision. This diagnosis
+does not qualify a successor revision or the release. Exact derivation and
+owner evidence are retained in
+`/Users/freedom/.codex/odylith-release-evidence/2026-10-14/v52/post-volume-recovery-20261015T0458Z/canonical-release-forensics-CI-diagnosis.md`.
+
 ## Current generated Release evidence staleness (2026-10-13)
 
 Both hosted CI runs for `11783fa0a` fail the unchanged release-dossier

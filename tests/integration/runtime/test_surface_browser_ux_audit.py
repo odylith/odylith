@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import json
 import re
 from urllib.parse import quote
 
 import pytest
 
+from odylith.runtime.surfaces import render_casebook_dashboard as casebook_renderer
 from tests.integration.runtime.surface_browser_test_support import (
     _assert_atlas_selection,
     _assert_casebook_selection,
@@ -132,18 +134,51 @@ def _casebook_agent_link_blocks(casebook) -> list[dict[str, object]]:  # noqa: A
     return casebook.locator("#detailPane").evaluate(
         """(node) => Array.from(node.querySelectorAll('.agent-band-block')).map((block) => ({
             title: String((block.querySelector('.agent-band-title') || {}).textContent || '').trim(),
-            hrefs: Array.from(new Set(
-              Array.from(block.querySelectorAll('a.ref-link'))
-                .map((link) => String(link.getAttribute('href') || '').trim())
-                .filter(Boolean)
-            )),
-            labels: Array.from(new Set(
-              Array.from(block.querySelectorAll('a.ref-link'))
-                .map((link) => String(link.textContent || '').trim())
-                .filter(Boolean)
-            )),
+            hrefs: Array.from(block.querySelectorAll('a.ref-link'))
+              .map((link) => String(link.getAttribute('href') || '').trim())
+              .filter(Boolean),
+            labels: Array.from(block.querySelectorAll('a.ref-link'))
+              .map((link) => String(link.textContent || '').trim())
+              .filter(Boolean),
           }))"""
     )
+
+
+def _assert_casebook_lessons_content(casebook) -> None:  # noqa: ANN001
+    section = casebook.locator("#detailPane .detail-section-agent")
+    heading = casebook.locator("#detailPane .section-heading", has_text="Lessons and evidence")
+    assert section.count() <= 1
+    if not section.count():
+        assert heading.count() == 0
+        return
+    assert heading.count() == 1
+    bodies = section.locator(".agent-band-block, .detail-disclosure-body")
+    assert bodies.count() > 0, "Lessons and evidence has a heading without content"
+    for body in bodies.all():
+        content = body.evaluate(
+            """node => {
+              const copy = node.cloneNode(true);
+              copy.querySelectorAll('.agent-band-title, .signal-label, .coverage-strip, .coverage-note')
+                .forEach(label => label.remove());
+              return String(copy.textContent || '').trim();
+            }"""
+        )
+        assert content, "Casebook lesson block or disclosure has no substantive body"
+
+
+def _assert_casebook_agent_links_distinct(blocks: list[dict[str, object]]) -> None:
+    seen_hrefs: dict[str, str] = {}
+    duplicates: list[tuple[str, str, str]] = []
+    for block in blocks:
+        title = str(block.get("title") or "").strip()
+        hrefs = [str(token).strip() for token in block.get("hrefs", []) if str(token).strip()]
+        assert len(hrefs) == len(set(hrefs)), f"duplicate hrefs inside Casebook block {title}: {hrefs}"
+        for href in hrefs:
+            if href in seen_hrefs:
+                duplicates.append((href, seen_hrefs[href], title))
+            else:
+                seen_hrefs[href] = title
+    assert duplicates == [], f"duplicate agent-band links across Casebook blocks: {duplicates}"
 
 
 def _select_registry_component_with_actions(registry) -> str:  # noqa: ANN001
@@ -547,26 +582,98 @@ def test_casebook_agent_band_links_stay_distinct_and_non_repetitive(browser_cont
             _assert_casebook_selection(page, str(row["bug"]))
             _wait_for_shell_query_param(page, tab="casebook", key="bug", value=str(row["bug"]))
             casebook.locator("#detailPane .detail-title", has_text=str(row["title"])).wait_for(timeout=15000)
-            blocks = [block for block in _casebook_agent_link_blocks(casebook) if block.get("title")]
+            page.wait_for_function(
+                """({ route, title }) => {
+                  const view = document.querySelector('#frame-casebook')?.contentWindow;
+                  const entry = (view?.__ODYLITH_CASEBOOK_DETAIL_SHARDS__ || {})[route];
+                  const selected = view?.document.querySelector('button.bug-row.active');
+                  const renderedTitle = view?.document.querySelector('#detailPane .detail-title');
+                  return Boolean(entry && typeof entry === 'object'
+                    && selected?.getAttribute('data-bug') === route
+                    && String(renderedTitle?.textContent || '').trim() === title
+                    && !view.document.querySelector('#detailPane [role=status]'));
+                }""",
+                arg={"route": str(row["bug"]), "title": str(row["title"])},
+                timeout=15000,
+            )
+            _assert_casebook_lessons_content(casebook)
+            blocks = _casebook_agent_link_blocks(casebook)
             if not blocks:
-                assert casebook.locator("#detailPane .section-heading", has_text="Lessons and evidence").count() == 0
                 continue
-            casebook.locator("#detailPane .section-heading", has_text="Lessons and evidence").wait_for(timeout=15000)
             inspected_blocks += 1
-
-            seen_hrefs: dict[str, str] = {}
-            duplicates: list[tuple[str, str, str]] = []
-            for block in blocks:
-                title = str(block.get("title") or "").strip()
-                hrefs = [str(token).strip() for token in block.get("hrefs", []) if str(token).strip()]
-                assert len(hrefs) == len(set(hrefs)), f"duplicate hrefs inside Casebook block {title}: {hrefs}"
-                for href in hrefs:
-                    if href in seen_hrefs:
-                        duplicates.append((href, seen_hrefs[href], title))
-                    else:
-                        seen_hrefs[href] = title
-            assert duplicates == [], f"duplicate agent-band links across Casebook blocks: {duplicates}"
+            _assert_casebook_agent_links_distinct(blocks)
 
         assert inspected_blocks >= 1, "expected at least one Casebook detail with agent-band blocks"
 
+        _assert_clean_page(page, observation)
+
+
+@pytest.mark.parametrize("content_state", ["links", "text", "gaps", "empty", "missing-detail"])
+def test_casebook_lessons_preserve_content_and_explain_missing_detail(browser_context, content_state: str) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    coverage = {
+        "captured_count": 1, "total_fields": 2,
+        "missing_fields": ["Regression Tests Added"], "required_missing_fields": [],
+    } if content_state in {"gaps", "missing-detail"} else {}
+    summary = {
+        "bug_id": "CB-999", "bug_route": "CB-999", "bug_key": "CB-999",
+        "title": "Preserve Casebook evidence", "summary": "The saved summary remains available.",
+        "status": "Open", "status_token": "open", "severity": "P2", "severity_token": "p2",
+        "date": "2026-10-15", "intelligence_coverage": coverage,
+    }
+    detail = {"title": "Loaded Casebook evidence"}
+    proof_href = "../../src/odylith/runtime/evaluation/benchmark_compare.py"
+    if content_state == "links":
+        detail["code_ref_links"] = [{"path": "benchmark_compare.py", "href": proof_href}]
+    elif content_state == "text":
+        detail["detail_sections"] = [{"field": "Lesson", "value": "Retain the original comparison evidence."}]
+    payload = {
+        "bugs": [summary], "counts": {"total_cases": 1},
+        "filters": {"severity_tokens": ["p2"], "status_tokens": ["open"]},
+        "detail_manifest": {"CB-999": "/casebook-audit-detail.v1.js"},
+    }
+    shard = {} if content_state == "missing-detail" else {"CB-999": detail}
+    with _new_page(context) as (page, observation):
+        page.route("**/odylith/casebook/casebook.html*", lambda route: route.fulfill(
+            status=200, content_type="text/html", body=casebook_renderer._render_html(payload=payload),
+        ))
+        page.route("**/casebook-audit-detail.v1.js", lambda route: route.fulfill(
+            status=200, content_type="application/javascript",
+            body="window.__ODYLITH_CASEBOOK_DETAIL_SHARDS__ = " + json.dumps(shard) + ";",
+        ))
+        response = page.goto(base_url + "/odylith/index.html?tab=casebook&bug=CB-999", wait_until="domcontentloaded")
+        assert response is not None and response.ok
+        casebook = page.frame_locator("#frame-casebook")
+        _assert_casebook_selection(page, "CB-999")
+        status = casebook.locator("#detailPane [role=status]")
+        if content_state == "missing-detail":
+            status.wait_for(timeout=15000)
+            assert status.inner_text() == "Bug detail unavailable. The available summary is shown."
+            assert casebook.locator("#detailPane .detail-summary").inner_text() == summary["summary"]
+        else:
+            casebook.locator("#detailPane .detail-title", has_text="Loaded Casebook evidence").wait_for(timeout=15000)
+            assert status.count() == 0
+        _assert_casebook_lessons_content(casebook)
+        section = casebook.locator("#detailPane .detail-section-agent")
+        assert section.count() == (0 if content_state == "empty" else 1)
+        if content_state == "text":
+            assert section.locator(".disclosure-title").inner_text() == "Additional Captured Detail"
+            assert "Retain the original comparison evidence." in section.locator(".detail-disclosure-body").text_content()
+        elif content_state in {"gaps", "missing-detail"}:
+            assert section.locator(".disclosure-title").inner_text() == "Capture Gaps"
+            assert "Regression Tests Added" in section.locator(".detail-disclosure-body").text_content()
+        blocks = _casebook_agent_link_blocks(casebook)
+        _assert_casebook_agent_links_distinct(blocks)
+        if content_state == "links":
+            assert [block["hrefs"] for block in blocks] == [[proof_href]]
+            block = section.locator(".agent-band-block")
+            block.locator("a.ref-link").evaluate("node => node.after(node.cloneNode(true))")
+            with pytest.raises(AssertionError, match="duplicate hrefs inside Casebook block"):
+                _assert_casebook_agent_links_distinct(_casebook_agent_link_blocks(casebook))
+            block.locator("a.ref-link").last.evaluate("node => node.remove()")
+            block.evaluate("node => node.after(node.cloneNode(true))")
+            with pytest.raises(AssertionError, match="duplicate agent-band links across Casebook blocks"):
+                _assert_casebook_agent_links_distinct(_casebook_agent_link_blocks(casebook))
+        else:
+            assert blocks == []
         _assert_clean_page(page, observation)

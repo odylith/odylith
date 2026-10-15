@@ -1129,6 +1129,20 @@ def test_casebook_first_bug_rows_load_details_without_dead_shards(browser_contex
             _wait_for_shell_query_param(page, tab="casebook", key="bug", value=bug_route)
             casebook.locator(f'button.bug-row.active[data-bug="{bug_route}"]').wait_for(timeout=15000)
             casebook.locator("#detailPane .detail-title", has_text=bug_title).wait_for(timeout=15000)
+            page.wait_for_function(
+                """({ route, title }) => {
+                  const view = document.querySelector('#frame-casebook')?.contentWindow;
+                  const entry = (view?.__ODYLITH_CASEBOOK_DETAIL_SHARDS__ || {})[route];
+                  const selected = view?.document.querySelector('button.bug-row.active');
+                  const renderedTitle = view?.document.querySelector('#detailPane .detail-title');
+                  return Boolean(entry && typeof entry === 'object'
+                    && selected?.getAttribute('data-bug') === route
+                    && String(renderedTitle?.textContent || '').trim() === title
+                    && !view.document.querySelector('#detailPane [role=status]'));
+                }""",
+                arg={"route": bug_route, "title": bug_title},
+                timeout=15000,
+            )
 
         _assert_clean_page(page, observation)
 
