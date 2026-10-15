@@ -9,13 +9,14 @@ from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
     greenfield_host_candidate_authoring_request,
     greenfield_host_candidate_contract,
 )
-from odylith.runtime.domain_intelligence.greenfield_source_duty_compact import (
-    expand_compact_source_duty_ledger,
+from odylith.runtime.domain_intelligence.greenfield_source_duty_authoring import (
+    decode_source_duty_inventory,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     synthetic_source_duty_receipt_for_ledger,
 )
 from tests.unit.runtime.test_greenfield_source_duty_ledger import _material_duty_case
+from tests.unit.runtime.test_greenfield_source_duty_compact import _inline
 
 
 def _accepted_request(*, edit=False):
@@ -46,7 +47,7 @@ def test_candidate_phase_preserves_every_material_row_and_control_losslessly(edi
         contract, source_duty_receipt=receipt, authority_admission=admission,
     )
     assert request["transport_version"] == HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION
-    assert HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION == "odylith.greenfield.host-candidate-authoring-transport.v4"
+    assert HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION == "odylith.greenfield.host-candidate-authoring-transport.v5"
     for key in ("version", "candidate_version", "canonical_version", "task",
                 "requirements", "request"):
         assert request[key] == contract[key]
@@ -54,7 +55,7 @@ def test_candidate_phase_preserves_every_material_row_and_control_losslessly(edi
     assert contract["candidate_schema"]["properties"]["result"]["anyOf"][0]["required"]
     assert "supplied candidate response JSON Schema" in request["task"]
     assert request["authority_admission"] == admission
-    assert expand_compact_source_duty_ledger(
+    assert decode_source_duty_inventory(
         request["accepted_source_duty_inventory"], evidence_text=source,
     ) == receipt["ledger"]
     for section in ("first_path_actions", "supporting_human_actions", "system_duties",
@@ -113,7 +114,7 @@ def test_candidate_transport_rejects_invalid_source_and_receipt_custody(tamper: 
 
 
 @pytest.mark.parametrize("edit", [False, True])
-@pytest.mark.parametrize("failure", ["timeout", "invalid_shape"])
+@pytest.mark.parametrize("failure", ["timeout", "invalid_shape", "historical_version"])
 def test_inventory_stdin_omits_only_schema_with_initial_and_edit_custody(
     tmp_path, edit, failure,
 ) -> None:
@@ -153,17 +154,14 @@ def test_inventory_stdin_omits_only_schema_with_initial_and_edit_custody(
             str(workspace / "source-ledger-schema.json")) for argument in flow.host_argv)
         assert Path(command[command.index("--output-schema") + 1]).read_bytes() == schema_bytes
         assert 0 < kwargs["timeout"] <= 300
-        malformed = {**compact_source_duty_view(ledger), "unknown_field": "refuse"}
+        malformed = (compact_source_duty_view(ledger) if failure == "historical_version"
+                     else {**_inline(ledger), "unknown_field": "refuse"})
         return subprocess.CompletedProcess(command, 124 if failure == "timeout" else 0,
             stdout="" if failure == "timeout" else json.dumps(malformed), stderr="")
 
     def invoke_installed(command, timeout):
         installed.append(command)
-        assert "source-ledger-check" in command and "--decision-file" not in command
-        raw = json.loads(Path(command[command.index("--ledger-file") + 1]).read_bytes())
-        with pytest.raises(ValueError, match="object fields are invalid"):
-            expand_compact_source_duty_ledger(raw, evidence_text=source)
-        return subprocess.CompletedProcess(command, 2, stdout="", stderr="invalid ledger shape")
+        pytest.fail("invalid native authoring output must stop before installed preflight")
 
     flow = host.HostCandidateFlow(**{**flow.__dict__, "prompt": source,
         "transaction_hash": context["transaction_hash"] if context is not None else "",
@@ -172,12 +170,12 @@ def test_inventory_stdin_omits_only_schema_with_initial_and_edit_custody(
     observation = {"source_duty_verifier_host_invocations": 0,
         "candidate_host_invocations": 0, "proposal_command_invocations": 0}
     with pytest.raises(host.HostCandidateFlowError, match=("command returned nonzero"
-            if failure == "timeout" else "preflight returned nonzero")):
+            if failure == "timeout" else "advertised authoring schema")):
         run_source_duty_phase(flow=flow, contract=contract, source=source,
             host_workspace=workspace, host_argv=flow.host_argv,
             deadline=WholeJourneyDeadline(time.monotonic(), time.monotonic),
             observation=observation, invoke_host=invoke_host, check_payload=admission)
-    assert len(calls) == 1 and len(installed) == (failure == "invalid_shape")
+    assert len(calls) == 1 and installed == []
     assert proposals == []
     assert all(observation[key] == 0 for key in (
         "source_duty_verifier_host_invocations", "candidate_host_invocations", "proposal_command_invocations"))
@@ -224,3 +222,118 @@ def test_inventory_schema_qualification_still_refuses_before_dispatch(tmp_path, 
             deadline=WholeJourneyDeadline(time.monotonic(), time.monotonic),
             observation={}, invoke_host=invoke_host, check_payload=admission)
     assert installed == calls == proposals == []
+
+
+@pytest.mark.parametrize("outcome", ["inventory", "clarification", "invalid_citation", "roster", "roster_no", "roster_uncertain", "roster_missing", "old_inline"])
+def test_native_inline_response_is_retained_then_checked_by_installed_cli(tmp_path, outcome) -> None:
+    from contextlib import redirect_stdout
+    import hashlib
+    from io import StringIO
+    import json
+    from pathlib import Path
+    import subprocess
+    import time
+
+    from jsonschema import Draft202012Validator
+    from odylith.runtime.domain_intelligence import greenfield_host_flow as host
+    from odylith.runtime.domain_intelligence import greenfield_proposals_cli as cli
+    from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import prepare_model_authoring_evidence
+    from odylith.runtime.domain_intelligence.greenfield_host_source_phase import run_source_duty_phase
+    from odylith.runtime.domain_intelligence.greenfield_source_duty_authoring import SOURCE_DUTY_AUTHORING_VERSION
+    from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import preflight_greenfield_source_duty_ledger
+    from odylith.runtime.domain_intelligence.greenfield_source_duty_view import compact_source_duty_view
+    from odylith.runtime.domain_intelligence.greenfield_whole_journey_budget import WholeJourneyDeadline
+    from tests.unit.install.test_greenfield_matrix_host_candidate import _flow
+    from tests.unit.runtime.test_greenfield_source_duty_compact import _complete_inline_case
+    from tests.unit.runtime.test_greenfield_source_duty_ledger import _yes_decisions
+
+    prompt, ledger = _complete_inline_case()
+    if outcome.startswith("roster"):
+        from tests.unit.runtime.test_greenfield_source_participant_roster import roster_case
+        prompt, ledger = roster_case()
+    inventory_outcome = outcome == "inventory" or outcome.startswith("roster")
+    source = prepare_model_authoring_evidence(prompt=prompt, source_language="en").evidence_source
+    expected_preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=source)
+    expected_compact = compact_source_duty_view(ledger)
+    wire = _inline(ledger)
+    if outcome == "clarification":
+        wire = {"version": SOURCE_DUTY_AUTHORING_VERSION, "result": {
+            "status": "clarification_required", "question": "Which action completes the first path?"}}
+    elif outcome == "invalid_citation":
+        wire["result"]["state_fields"][0]["source_refs"][0]["quote"] = "invented source"
+    elif outcome == "old_inline":
+        wire["version"] = "odylith.greenfield.source-duty-authoring.v1"
+        wire["result"].pop("nonperforming_participants")
+    raw = (json.dumps(wire, ensure_ascii=False, separators=(",", ":")) + "\n").encode("utf-8")
+    contract = greenfield_host_candidate_contract(source)
+    flow, _, _, _, proposals, _ = _flow(tmp_path, contract={"version": "unused"}, candidate={})
+    retained, host_calls, installed_calls = {}, [], []
+    workspace = tmp_path / "inline-workspace"
+    workspace.mkdir()
+
+    def invoke_host(command, **kwargs):
+        schema_path = Path(command[command.index("--output-schema") + 1])
+        schema = json.loads(schema_path.read_bytes())
+        host_calls.append(schema_path.name)
+        if schema_path.name == "source-ledger-schema.json":
+            assert schema == contract["source_ledger"]["source_ledger_schema"]
+            assert schema["properties"]["version"]["enum"] == [SOURCE_DUTY_AUTHORING_VERSION]
+            if outcome != "old_inline":
+                Draft202012Validator(schema).validate(wire)
+            assert 0 < kwargs["timeout"] <= 300
+            return subprocess.CompletedProcess(command, 0, stdout=raw.decode("utf-8"), stderr="")
+        assert schema_path.name == "source-duty-decision-schema.json" and inventory_outcome
+        assert 0 < kwargs["timeout"] <= 120
+        task = json.loads(kwargs["contract_text"])
+        assert task["source_duty_ledger"] == expected_compact
+        decisions = _yes_decisions(expected_preflight, evidence_text=source)
+        if outcome in {"roster_no", "roster_uncertain"}:
+            decisions["participant_decisions"]["/external_systems/0"]["nonperformance"] = outcome.removeprefix("roster_")
+        elif outcome == "roster_missing":
+            decisions["participant_decisions"].pop("/external_systems/0")
+        if outcome != "roster_missing":
+            Draft202012Validator(schema).validate(decisions)
+        return subprocess.CompletedProcess(command, 0, stdout=json.dumps(decisions), stderr="")
+
+    def invoke_installed(command, timeout):
+        installed_calls.append(list(command))
+        assert "source-ledger-check" in command and 0 < timeout <= 30
+        assert Path(command[command.index("--ledger-file") + 1]).read_bytes() == raw
+        args = list(command[command.index("source-ledger-check"):])
+        args[args.index("--repo-root") + 1] = str(flow.repo_root)
+        output = StringIO()
+        with redirect_stdout(output):
+            code = cli.main(args)
+        payload = json.loads(output.getvalue())
+        if inventory_outcome and "--decision-file" not in command:
+            assert payload["preflight"] == expected_preflight
+            assert payload["decision_task"]["source_duty_ledger"] == expected_compact
+        return subprocess.CompletedProcess(command, code, stdout=output.getvalue(), stderr="")
+
+    flow = host.HostCandidateFlow(**{**flow.__dict__, "prompt": prompt, "edit_evidence": "",
+        "invoke_installed": invoke_installed,
+        "retain_source_ledger_bytes": lambda value: retained.update(raw=value),
+        "retain_diagnostic_bytes": lambda name, value: retained.update({name: value})})
+    observation = {"source_sha256": hashlib.sha256(source.encode("utf-8")).hexdigest(),
+        "source_duty_verifier_host_invocations": 0, "candidate_host_invocations": 0,
+        "proposal_command_invocations": 0}
+    kwargs = dict(flow=flow, contract=contract, source=source, host_workspace=workspace,
+        host_argv=flow.host_argv, deadline=WholeJourneyDeadline(time.monotonic(), time.monotonic),
+        observation=observation, invoke_host=invoke_host, check_payload=_accepted_request()[3])
+    if outcome in {"invalid_citation", "old_inline", "roster_no", "roster_uncertain", "roster_missing"}:
+        with pytest.raises(host.HostCandidateFlowError, match=("advertised authoring schema" if outcome == "old_inline" else "decision check returned nonzero" if outcome.startswith("roster_") else "preflight returned nonzero")):
+            run_source_duty_phase(**kwargs)
+    else:
+        result = run_source_duty_phase(**kwargs)
+        if inventory_outcome:
+            assert result.receipt["ledger"] == ledger
+            assert compact_source_duty_view(result.receipt["ledger"]) == expected_compact
+        else:
+            assert result.receipt is None and result.decision_path is None
+            assert json.loads(result.clarification.stdout)["clarification"]["question"] == wire["result"]["question"]
+    assert retained["raw"] == raw
+    assert observation["source_ledger_output_sha256"] == hashlib.sha256(raw).hexdigest()
+    assert len(host_calls) == (2 if inventory_outcome else 1)
+    assert len(installed_calls) == (2 if inventory_outcome else 0 if outcome == "old_inline" else 1)
+    assert observation["candidate_host_invocations"] == observation["proposal_command_invocations"] == 0
+    assert proposals == []

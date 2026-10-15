@@ -2,7 +2,7 @@
 
 Receipt version: `odylith.greenfield-operating-envelope.v6`
 
-Document revision: `16`
+Document revision: `18`
 
 Profile: `single-product-governance-onboarding`
 
@@ -94,10 +94,40 @@ and admitted ledger. The sealed-byte `create` CLI remains a separate commit-only
 interface. Native automatic delivery and visible completion require their own
 proof.
 
+### Inventory citation ownership
+
+Fresh host contract `odylith.greenfield.host-candidate-contract.v61` requests
+`odylith.greenfield.source-duty-authoring.v2`. Inventory supplies exact quotes
+and locator contexts for the eight duty sections and a typed roster of people
+and systems outside the workflow. The existing source-only verifier must affirm
+their classification, nonperformance, identity and completeness before the
+candidate runs. Optional outside context does not become a workflow step or
+external approval authority.
+
+The compiler alone assigns exact source addresses and compact references. It
+combines verified nonperformers with the fixed action performers; the fresh
+candidate cannot author those three participant lists. Other candidate facts
+retain their existing authoring contract. Invalid or ambiguous citations refuse
+without choosing an occurrence or repairing the response.
+
+Fresh ledger v10/preflight v9, compact view v8, initial/EDIT receipts v20/v21,
+decisions v14/v15 and candidate v26/transport v5 bind that source contract.
+Canonical authoring v80, authored semantics v19 and EDIT context v4 retain their
+existing meanings. Historical host v59/v60, source v9, compact v7 and receipts
+v18/v19 keep explicit passive readback under their original hashes and tasks;
+they cannot satisfy the fresh native contract. Live semantic, latency and
+installed-package qualification remain required.
+
+The current source trial fails before the verifier: one of 85 citation uses
+selects a name three times inside its unique context without selecting a
+mention. No package is delivered. The next bounded design would require an
+explicit mention selection for fresh roster citations, retaining strict exact
+addresses and the existing semantic verifier. That design is not implemented;
+this revision grants it no acceptance or release credit.
+
 ### EDIT lifecycle verification
 
-Fresh host contract `odylith.greenfield.host-candidate-contract.v54` retains the existing
-source-only verifier a required disposition for every prior sealed state field,
+The existing source-only verifier requires a disposition for every prior sealed state field,
 transition, conditional guard, boundary and proof duty. A preserved or changed
 duty requires an affirmative current carrier in the same typed section. Changed
 or removed duties require affirmative authorization from the complete explicit
@@ -107,9 +137,9 @@ Missing or uncertain duties refuse before candidate authoring. Prior rows are a
 comparison checklist; current lifecycle and governance still come from the
 accepted current inventory. Explicit corrections take precedence over history.
 
-Initial verifier tasks and receipts retain versions v4/v7. Fresh EDIT uses v6/v9,
-binding the prior transaction, its lifecycle, the complete source, correction,
-task and decisions. A global completeness yes or an initial receipt cannot
+Initial/EDIT receipts v20/v21 use decisions v14/v15 and retain EDIT preservation
+context v4. EDIT binds the prior transaction, its lifecycle, the complete source,
+correction, task and decisions. A global completeness yes or an initial receipt cannot
 authorize EDIT. Citation custody and complete keys do not prove a semantic
 verdict correct; independent fresh source review remains required. Exact
 historical v5/v8 tasks and receipts retain passive validation only; they cannot

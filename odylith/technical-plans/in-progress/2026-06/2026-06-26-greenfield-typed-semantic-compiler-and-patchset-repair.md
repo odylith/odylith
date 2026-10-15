@@ -1,5 +1,155 @@
 Status: In progress
 
+## Current live result: repeated-name addressing still blocks delivery (2026-10-15)
+
+The one predeclared source-roster parent fails after 146.065 seconds, before
+verification or candidate authoring. Authority admits; inventory returns 31,417
+bytes in 134.891 seconds. The unchanged exact-citation owner refuses the first
+external roster row: `carrier` occurs three times inside its unique context.
+Independent audit checks all 85 citation uses: 84 pass and this one fails.
+The loan-catalog citation is valid. No package, seal, completion receipt or
+publication exists. This is a failed delivery on clear source evidence.
+
+The source-verified roster ownership remains structurally correct: 625 affected
+tests and 38 independent probes pass, with exact historical receipt readback.
+Those controls did not establish live copy/addressing accuracy. All 21 source
+hashes remain unchanged. The raw failure is archived/read back with SHA-256
+`3d4d119998dc167fe99c7ca1483da18c6153a8525a6dfae2e0628f90ef48a159`.
+Independent diagnosis SHA-256:
+`6cd0a97494e0611d5e29bc0013b6f3afbf54f066d53ab4c237c175339a419709`.
+
+Stop additional live attempts and machinery at this falsification boundary.
+The selected next bounded design is an explicit model-chosen mention ordinal
+inside each fresh nonperformer citation's exact context. Require the selection,
+validate its integer type and exact range, and keep the same source-only
+semantic verifier. No default first/last occurrence, context trimming, output
+repair, removed dependency, extra stage or structured user intake. A source-
+choice catalog is rejected as broader and unproved against current bounds.
+This selector is not implemented or qualified; the current v61/v10 bytes and
+all earlier failures retain their original contracts. Keep broad freeform
+input, exact canonical addresses, EDIT custody and all limits. No new model
+trial follows without a versioned implementation, bounded proof and review.
+
+The separate full platform benchmark A at frozen `433f0e38a` now completes all
+82 scenarios, 328 observations and 36 supplemental samples with provisional
+pass. Its canonical comparison selects the completed actual14 report with the
+interrupted receipt retained; only the predecessor HOLD warning remains.
+Matching diagnostic remains HOLD. Canonical publication and 21 graph checks
+pass. This earlier source proof does not qualify the current Greenfield source,
+final H/B, package D, public/EDIT, native hosts, protected final or GA.
+
+## Verified source-roster implementation; live result pending (2026-10-15)
+
+The source-verified roster ownership change is implemented and frozen. One final
+combined affected run passes all 625 tests in 79.55 seconds. The new focused
+roster owner passes 43 checks; independent review runs 38 additional probes,
+finds no actionable P0/P1/P2 and verifies all 21 source hashes unchanged. Two
+retained receipt18 artifacts reconstruct exactly. Fresh host61 refuses old
+receipts at authoring and admission; the three participant lists are no longer
+candidate-authored. Other candidate facts retain their existing contract.
+
+The normal installer initializes a fresh development consumer in 46.456 seconds.
+The unchanged source15 baseline validator passes before any new model call.
+This uses verified14 payloads with an explicit source15 development invoker;
+it is not installed15 or packageD qualification. The next decisive evidence is
+one canonical parent on the unchanged request and source-first checklist, with
+no output repair or retry. A correct refusal will remain a failed delivery.
+
+Validation report SHA-256:
+`12b402a2c70fe44bc9dd201a514d6f123daa2411ef10e02eb0c05940737e0001`.
+Independent review SHA-256:
+`dacdfbcee7004e8ad84c271b1755b7c4b8d9f3e60225b5538b4190c2822f3b52`.
+All previous failed journeys remain unchanged. Formal public/EDIT, finalH/D,
+native hosts, protected-final and GA qualification remain open.
+
+## Chosen ownership correction: verify the supplemental roster before design (2026-10-15)
+
+The independent design is accepted for one bounded implementation. Inventory
+will author exact short-name citations for supplemental human actors, internal
+systems and external systems. The existing source-only verifier will judge
+classification, nonperformance, identity, nonduplication and completeness.
+The compiler will compose those verified facts with source-owned performers;
+the fresh candidate will no longer author any of the three participant lists.
+
+Keep declared optional context systems without turning them into performers,
+required workflow steps or external authority. Keep exact citation uniqueness,
+canonical80 values and addresses, EDIT context4 system custody, all eight duty
+sections, all four model stages and current limits. Old protocol tuples remain
+explicit passive history. This closes repeated unverified source-fact authoring
+after verification; inventory citation errors can still refuse correctly.
+
+The source-first design and predeclaration are retained under the durable
+source-installer-once-preview evidence directory. Design SHA-256:
+`ab9215d3c1aca4a011d36446f18457ab4909e3779d76e9c5823be4a5f6a4825d`.
+Predeclaration SHA-256:
+`9a36db9e95970d9d7becca8a5bfe07c61d2c185c0a386036e56c49630cdd69db`.
+Implement, falsify ownership/custody/history/EDIT boundaries, then independently
+review before at most one new unscored canonical parent on unchanged evidence.
+No retained failure is repaired, no formal release floor is waived, and the
+protected final input remains closed. The preceding inline-citation checkpoint
+passes the complete governance check on 2026-10-15 before this new source edit.
+
+## Current source preview blocker (2026-10-15)
+
+The latest valid-baseline parent reaches compiler admission and refuses
+`bound event source citation is invalid`. All four host stages and source-duty
+preflight/receipt checks complete under unchanged code and caps. Preserve the
+309.496-second failed run and trace the exact bound citation before another
+model call. The earlier raw-output semantic positive belongs to its separate
+uninitialized-fixture run; no admitted package or installed qualification exists.
+CB-324 retains the latest failure, archived bytes and diagnosis ownership.
+Diagnosis confirms a correct refusal of the raw candidate's supplemental
+`the carrier` citation: its selected context contains the phrase twice.
+Accepted source duties and event addresses remain valid. The existing verified
+bank has supporting clauses but no separate entity-name values; current facts
+use quote/context as their value. Obtain one bounded ownership design before
+changing that contract. Preserve short meaningful values, exact custody,
+source-wide verification, EDIT identities, all four stages and existing caps.
+Both hosted CI runs for committed checkpoint `2475b320f` now pass; the full
+benchmark remains separately bound to frozen `433f0e38a`.
+
+At pushed checkpoint `2475b320f`, a new unscored museum dispatch request passes
+authority but stops before semantic verification or candidate authoring: its
+inventory references a citation token it never defines. CB-324 retains the
+complete first failure and independent source-first review. The consumer has
+no files and no package; the successful refusal is not successful project
+creation. Full benchmark A at frozen `433f0e38a` and fresh CI at `2475b320f`
+continue independently.
+
+Trace the producer/decoder ownership and prior failed full-citation attempts,
+then predeclare one bounded current-versus-alternative comparison on unchanged
+public evidence. Keep source custody and unknown-reference refusal; remove
+unnecessary model bookkeeping rather than adding repair, retries, parsers or
+another stage. A source trial cannot qualify package D, the frozen public or
+EDIT cases, timing, native hosts or the protected final holdout. Feature scope
+and release floors stay fixed. Settle the owning code and authored learning
+before another guarded governance refresh.
+
+Bounded alternative: remove model-authored citation aliases from the single
+inventory response and reuse the existing inline material-ledger citations.
+Keep compiler-owned compact verifier/candidate transport. A stricter token
+syntax still allows references to absent bank entries. The prediction is that
+the fresh authoring shape eliminates that bookkeeping class while preserving
+all eight duty sections, exact citations and semantic guards. First prove the
+real producer-to-preflight boundary and historical invalid-reference refusal,
+then run one separate parent on the exact unchanged museum request and its
+frozen independent checklist. Earlier inline context/actor failures and
+expanded-input timeouts remain explicit falsifiers; the existing caps and
+release floors apply. This experiment is not H/D qualification.
+
+The replacement is implemented in seven existing source owners, including a
+real module rename. All 428 affected cases pass across bounded runs; independent
+code review is clear. The one live alternative completes inventory, source-only
+verification and candidate authoring. Independent raw-output review finds no
+P0/P1 source-fidelity defect against the frozen checklist. Delivery fails before
+candidate admission because the empty test directory has no immutable baseline.
+Retain this failed 299.617-second run and the original alias failure. Verify a
+normally initialized fixture with the existing strict baseline owner before
+another model call. No sealed/rendered/installed success, receipt, release credit
+or cap change follows from this intermediate evidence. Finish canonical catalog,
+authored-record and Registry integration with source edits frozen during each
+guarded operation.
+
 ## Current release frontier (2026-10-14)
 
 Checkpoint 727a8f9f3 is pushed. The reviewed UX correction and all six explicit

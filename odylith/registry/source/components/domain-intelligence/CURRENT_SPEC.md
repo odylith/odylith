@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-10-12
+Last updated: 2026-10-15
 
 
 ## Overview
@@ -8,13 +8,41 @@ Domain Intelligence turns project evidence into a reviewable governance package
 or one focused question when a material requirement is unresolved. It keeps source
 facts, proposed design and evidence custody distinct throughout preparation.
 
-Fresh preparation now uses host v59 with initial/EDIT source receipts v18/v19,
-decisions v11/v13 and EDIT preservation context v4. Candidate format v25,
-canonical authoring v80 and authored semantics v19 retain their existing shapes.
-The same inventory, source-only verifier and candidate stages establish product
-identity, exact performers, declared workflow membership and recurring safeguards.
-The Project page presents the declared first path separately from the proposed
-walkthrough and keeps evidence and machine metadata in supporting details.
+Fresh preparation uses host v61, source authoring v2, ledger v10 and preflight
+v9. Initial/EDIT receipts v20/v21 use decisions v14/v15; compact view v8,
+candidate format v26 and transport v5 bind that stronger source contract.
+Canonical authoring v80, authored semantics v19 and EDIT context v4 keep their
+existing value and custody rules. Independent review and 625 affected checks pass. The one fresh live parent
+refuses an ambiguous roster citation before verification or candidate authoring;
+live package and installed release qualification remain open.
+
+Inventory supplies exact short-name citations for people and systems outside
+the workflow. The existing source-only verifier must affirm their type,
+nonperformance, identity and completeness. The compiler combines that roster
+with the action performers. The candidate cannot add, remove, rename, reorder
+or retype those three participant lists. Other candidate facts remain authored
+under their existing contracts. Declared optional outside context stays outside
+the workflow and gains no external approval authority.
+
+The compiler remains the sole owner of exact citation addresses and compact
+references. It refuses ambiguous quotes rather than choosing an occurrence.
+The three participant lists retain the combined bound of 32 entries per field.
+All eight source-duty sections, four model stages and existing runtime caps
+remain active. Historical host v59/v60 and their source v9/compact v7 receipts
+v18/v19 remain explicit passive readback; fresh preparation cannot use them.
+
+The prior inline inventory correction removes model-owned reference bookkeeping.
+Its retained first failure uses an undefined reference; the later valid-baseline
+journey reaches admission but refuses an ambiguous candidate-authored carrier
+citation. Both remain failures. The new roster ownership closes that unverified
+post-verifier authoring boundary; source-stage citation errors can still refuse.
+No repair, retry, extra verifier, parser, fallback or reduced envelope is added.
+
+The latest live inventory has 85 citation uses: 84 pass, but one short name
+occurs three times inside its exact context and supplies no chosen occurrence.
+This is a delivery failure on clear evidence. The selected next design requires
+an explicit, strictly validated mention choice in fresh roster citations. It is
+not implemented; no current receipt or failed output gains that future meaning.
 
 EDIT carries each accepted action's exact component-to-workstream allocations and
 both verification flags, plus the accepted typed system roster and exact source
@@ -55,16 +83,12 @@ Independent patch review:
 `/private/tmp/odylith-v52-allocation-roster-preservation-independent-review-20261010/report.md`
 (SHA-256 `1f9d3d149ec3e0aa0e45f20ce73a29a5c37a0fe387f50af611deb4f8001c8121`).
 
-Initial extraction of every nonperforming system and general roster mutation
-remain known gaps. The original v51 run remains failed at genuine EDIT 0/4;
-cases02–04 remain unexecuted. Source and compiler controls grant no release credit.
-The reannotated unchanged Public40 is durably frozen but contains no high-complexity
-cases. Four separate prospective high journeys and their authenticated composition
-contract remain required; no such case has been authored, executed or credited.
-The bounded composition design is independently clear. It scores Public40 plus
-four new high EDIT journeys while authenticating genuine EDIT4 as a separate gate
-with no scored credit. All use one actual release package and observed execution
-custody; quality floors, confidence rules and protected holdout remain unchanged.
+Fresh nonperformer extraction now has a source-verification owner, but its live
+package outcome is unqualified. General roster mutation remains unsupported.
+The release matrix retains the unchanged Public40 and original High4. Four
+genuine EDIT journeys are separate and unscored; qualifying EDIT remains 0/4.
+All qualification must use final main H and one actual package D. The protected
+final input stays closed until every prerequisite passes.
 
 ### Historical v51 local source proof (2026-10-09)
 
@@ -2307,6 +2331,9 @@ semantic/design findings.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-10-15 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/domain_intelligence/greenfield_source_duty_authoring.py`
 - **2026-10-12 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142, B-145
   - Evidence: `sha256:60b0b881d2ae0769eb7f8ec96c70fc86d99cf5986e31740a58ce90a4d98ec9f3`, `sha256:43a3deddb450707402606f76a6e83ee9a07d3afdfb0d99544f91b9b7be10e93e`, `src/odylith/runtime/domain_intelligence/greenfield_generation_state.py`
@@ -2322,9 +2349,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-10-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_source_duty_binding.py`
-- **2026-10-06 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
-  - Scope: B-142, B-145
-  - Evidence: `odylith/atlas/source/odylith-managed-runtime-release-and-install-flow.mmd`, `src/odylith/install/upgrade_dashboard_recovery.py`, `src/odylith/runtime/domain_intelligence/greenfield_provisional_package.py`, `src/odylith/runtime/project_intelligence/authored_fact_presenter.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

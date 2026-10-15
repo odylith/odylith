@@ -301,168 +301,120 @@ The example below shows case `CB-009` inside the Casebook shell.
 
 ## Benchmarks
 
-In chess, the first move does not decide the entire game. But it shapes the
-position. It defines the risk. It opens some lines and quietly closes others.
-Working with coding agents feels the same: the opening matters.
+### v0.1.15 Candidate Benchmark Report
 
-**Odylith treats grounding as that opening move. In the v0.1.11 Grounding
-Benchmark, Odylith spends a median `+834` prompt-bundle input tokens and
-`+23 ms` packet time before the live agent run. That upfront cost is measured
-against substantially better grounding signals: required-path recall `+0.326`,
-validation-success proxy `+0.689`, and expectation-success proxy `+0.951`.
-In the matching Live Benchmark, that produces significant downstream savings:
-median total model tokens `-209,404` and median time to valid outcome
-`-1m 28s`, while live required-path recall, validation success, and expectation
-success also improve.**
+The current live benchmark covers **82 scenarios** on Codex, with 164 matched
+pairs across warm and cold caches. Its conservative published view clears the
+hard quality gates and secondary guardrails. Required-path recall is **99.2%**,
+critical recall **97.9%**, and validation success **98.6%**. These results qualify
+the measured candidate, not the production release.
 
-### v0.1.11 Current Benchmark Report
+Both sides use the same live Codex CLI model selection and reasoning contract,
+with an isolated temporary host home and stripped auto-loaded repository
+guidance. The run used detached `source-local` at `433f0e38a`, medium reasoning,
+and the host's default model selector. It does not establish native Claude or
+installed-package qualification.
 
-Odylith publishes two benchmark views and keeps their claims separate:
+`odylith_off` is the raw host CLI lane, called `raw_agent_baseline` inside the
+report. The separate repository-scan scaffold is a secondary control. Timing
+measures benchmark time to a valid outcome; token counts measure full-session
+spend. Validator-backed closure can avoid unnecessary changes and a host model
+call, so the savings reflect Odylith's operating policy as a whole.
 
-- `Grounding Benchmark`: measures how well Odylith builds the right grounded
-  context before the live agent run
-- `Live Benchmark`: measures whether Odylith's report-visible operating policy makes
-  the same host reach a more validated, better-grounded, and less needlessly
-  mutating outcome than the raw host lane
+### Grounding Diagnostic
 
-In README framing, `odylith_off` means Codex or Claude Code running without
-Odylith.
+The diagnostic isolates packet and prompt construction. Report
+[b75f850362a680d2](docs/benchmarks/GROUNDING_BENCHMARK_SNAPSHOT.md), generated
+`2026-10-15T19:31:51Z`, is on **HOLD**: surface drift and packet latency, prompt,
+and payload costs exceed its existing thresholds. Its quality proxies improve,
+but this report remains an internal tuning result.
 
-Current v0.1.11 public proof posture is local-first on the Odylith Memory
-Substrate. These first public eval runs are the baseline for the benchmark
-program. The current full live proof was executed on Codex, while bounded
-Codex and Claude smokes provide host-agnostic coverage and the benchmark
-contract remains host-neutral. Odylith wins by grounding and operationalizing
-shared repo truth better through report-visible evidence and an explicit
-comparison contract.
-
-### Grounding Benchmark
-
-> [!NOTE]
-> The Grounding Benchmark is the mechanism-evidence view. It isolates packet
-> and prompt construction quality before any live host session begins.
-
-The Grounding Benchmark answers:
-
-- "Does Odylith build a better grounded packet/prompt than `odylith_off`?"
-- "What is the prep-time and prompt-size cost of Odylith's retrieval/memory layer?"
-- "Does Odylith improve required-path coverage before the model starts working?"
-
-Current grounding report:
-[9dcae95d5bb62c75](docs/benchmarks/GROUNDING_BENCHMARK_SNAPSHOT.md),
-generated `2026-04-25T11:20:25Z`, status `provisional_pass`.
-
-| Signal | Current grounding delta versus `odylith_off` |
+| Signal | Diagnostic delta versus the raw prompt bundle |
 | --- | ---: |
-| Required-path recall | `+0.326` |
-| Required-path precision | `+0.049` |
-| Validation-success proxy | `+0.689` |
-| Critical required-path recall | `+0.278` |
-| Critical validation-success proxy | `+0.613` |
-| Expectation-success proxy | `+0.951` |
-| Median prompt-bundle input tokens | `+834` |
-| Median packet time | `+23 ms` |
+| Required-path recall | `+0.316` |
+| Required-path precision | `+0.047` |
+| Validation-success proxy | `+0.648` |
+| Critical required-path recall | `+0.256` |
+| Critical validation-success proxy | `+0.548` |
+| Expectation-success proxy | `+0.823` |
+| Median prompt-bundle input tokens | `+871` |
+| Median total prompt-bundle payload tokens | `+1,124` |
+| Median packet time | `+59 ms` |
 
-#### Current Grounding Graphs
+#### Diagnostic Graphs
 
 <p align="center">
   <img
-    src="docs/benchmarks/grounding/odylith-benchmark-family-heatmap.svg"
-    alt="Odylith grounding benchmark family heatmap"
+    src="docs/benchmarks/diagnostic/odylith-benchmark-family-heatmap.svg"
+    alt="Odylith diagnostic benchmark family heatmap"
     width="100%"
   />
 </p>
 <p align="center">
   <img
-    src="docs/benchmarks/grounding/odylith-benchmark-quality-frontier.svg"
-    alt="Odylith grounding benchmark quality frontier"
+    src="docs/benchmarks/diagnostic/odylith-benchmark-quality-frontier.svg"
+    alt="Odylith diagnostic benchmark quality frontier"
     width="100%"
   />
 </p>
 <p align="center">
   <img
-    src="docs/benchmarks/grounding/odylith-benchmark-frontier.svg"
-    alt="Odylith grounding benchmark frontier"
+    src="docs/benchmarks/diagnostic/odylith-benchmark-frontier.svg"
+    alt="Odylith diagnostic benchmark frontier"
     width="100%"
   />
 </p>
 <p align="center">
   <img
-    src="docs/benchmarks/grounding/odylith-benchmark-operating-posture.svg"
-    alt="Odylith grounding benchmark operating posture"
+    src="docs/benchmarks/diagnostic/odylith-benchmark-operating-posture.svg"
+    alt="Odylith diagnostic benchmark operating posture"
     width="100%"
   />
 </p>
 
 ### Live Benchmark
 
-> [!TIP]
-> The Live Benchmark is the operating-policy product-claim lane. It measures the
-> same host under the report-visible Odylith policy: grounding, execution posture,
-> validator evidence, write admission, validation, and recovery behavior. This is a
-> strong operating-policy benchmark around the same host.
+Report [ea0fbd0916ee9690](docs/benchmarks/LIVE_BENCHMARK_SNAPSHOT.md), generated
+`2026-10-15T15:08:18Z`, has status **provisional pass**. All 82 scenarios are
+included; each published pair uses the conservative warm/cold view.
 
-The Live Benchmark answers:
-
-- "Does Odylith's report-visible operating policy make the same host reach a more
-  validated, better-grounded, and less needlessly mutating outcome?"
-- "What is the full matched-pair time to valid outcome?"
-- "Does Odylith improve required-path coverage, validation, and expectation success on the live run?"
-
-Current live proof report:
-[44f2a3d83d2c9975](docs/benchmarks/LIVE_BENCHMARK_SNAPSHOT.md),
-generated `2026-04-25T11:19:38Z`, status `provisional_pass`.
-
-| Signal | Current live proof delta versus `odylith_off` |
+| Signal | Live delta versus the raw host CLI |
 | --- | ---: |
-| Required-path recall | `+0.258` |
-| Required-path precision | `+0.421` |
-| Hallucinated-surface rate | `-0.397` |
-| Validation success | `+0.081` |
-| Critical required-path recall | `+0.206` |
-| Critical validation success | `+0.097` |
-| Expectation success | `+0.688` |
-| Write-surface precision | `+0.011` |
-| Unnecessary widening | `-0.011` |
-| Median live-session input tokens | `-206,626` |
-| Median total model tokens | `-209,404` |
-| Median time to valid outcome | `-1m 28s` |
+| Required-path recall | `+0.227` |
+| Required-path precision | `+0.502` |
+| Hallucinated-surface rate | `-0.502` |
+| Validation success | `+0.013` |
+| Critical required-path recall | `+0.205` |
+| Critical validation success | `0.000` |
+| Expectation success | `+0.652` |
+| Write-surface precision | `+0.286` |
+| Unnecessary widening | `0.000` |
+| Median live-session input tokens | `-245,206` |
+| Median total model tokens | `-246,380` |
+| Median time to valid outcome | `-48s` |
 
-Interpretation constraint:
+Fairness, corpus coverage, warm/cold consistency, and the tighter-budget
+secondary guardrail clear. The destructive-scope family remains an attention
+area. Supplementary repeat probes report quality consistency of 66.7% and
+unstable latency; those diagnostics remain visible alongside the main gates.
 
-- `68 / 82` current `odylith_on` rows use focused non-mutating closure.
-- `37 / 41` current write-labeled `odylith_on` rows stop that way.
-- `4 / 82` current `odylith_on` rows record file changes.
+The corrected comparison selects the completed v0.1.14 report and retains its
+HOLD warning. Odylith's recall is unchanged between releases; validation success
+increases by 0.027. Two scenarios add four supporting paths relative to that
+release, so this is not an identical-input causal comparison. The original
+failed comparison is retained, and final-commit proof remains required.
 
-That focused-closure result is valid write-admission evidence: Odylith can
-prove closure and suppress unnecessary mutation when focused validators already
-pass.
+The measured memory posture is local LanceDB and Tantivy retrieval, with remote
+retrieval disabled. On strictly bounded cases, first-pass reads stay within the
+approved anchors; validator-only tests and generated artifacts become read
+candidates only when a concrete contradiction warrants them.
 
-Publication status:
-
-- hard-gate blockers: none
-- fairness contract passed: `True`
-- corpus seriousness floor passed: `True`
-- tracked-corpus coverage: `82 / 82` scenarios
-- full matched pairs: `164` across `warm` and `cold`
-- conservative published comparison: `82` same-scenario pairs
-- warm/cold robustness consistency: `True`
-
-Read the timing and token wins as benchmark wall-clock and full-session spend,
-not solo-user interactive latency. Validator-backed non-mutating closure
-evidence is part of the measured benchmark contract and remains visible in the
-machine-readable reports.
-
-Full current artifacts:
-[Live Snapshot](docs/benchmarks/LIVE_BENCHMARK_SNAPSHOT.md),
-[Grounding Benchmark Snapshot](docs/benchmarks/GROUNDING_BENCHMARK_SNAPSHOT.md),
-[Benchmark Tables](docs/benchmarks/BENCHMARK_TABLES.md), and
-[How To Read Odylith's Benchmark Proof](docs/benchmarks/README.md).
-For the public validity contract behind the benchmark claim, read the
-[Benchmark Interpretation Contract](docs/research/BENCHMARK_INTERPRETATION_CONTRACT.md).
-The versioned GitHub artifact bundle, including the compressed raw source
-truth, is stored under
-[docs/benchmarks/v0.1.11](docs/benchmarks/v0.1.11/README.md).
+See the [Live Snapshot](docs/benchmarks/LIVE_BENCHMARK_SNAPSHOT.md),
+[Diagnostic Snapshot](docs/benchmarks/GROUNDING_BENCHMARK_SNAPSHOT.md),
+[Benchmark Tables](docs/benchmarks/BENCHMARK_TABLES.md),
+[Benchmark Guide](docs/benchmarks/README.md), and
+[Interpretation Contract](docs/research/BENCHMARK_INTERPRETATION_CONTRACT.md).
+The [v0.1.11 artifact bundle](docs/benchmarks/v0.1.11/README.md) remains historical.
 
 #### Current Live Graphs
 
@@ -497,9 +449,8 @@ truth, is stored under
 
 ### v0.1.10 Benchmark Archive
 
-The previous README-backed benchmark bundle is retained under
-[docs/benchmarks/v0.1.10](docs/benchmarks/v0.1.10/README.md) instead of being
-mixed into the current v0.1.11 claim.
+The [v0.1.10 benchmark bundle](docs/benchmarks/v0.1.10/README.md) remains
+available as historical evidence.
 
 - archived live proof snapshot: report `2d8444952aef28d2`, generated
   `2026-04-24T00:57:09Z`, status `hold`

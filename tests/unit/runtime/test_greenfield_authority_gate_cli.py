@@ -19,8 +19,8 @@ from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
 from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import (
     SOURCE_DUTY_DECISION_SET_VERSION,
 )
-from odylith.runtime.domain_intelligence.greenfield_source_duty_compact import (
-    expand_compact_source_duty_ledger,
+from odylith.runtime.domain_intelligence.greenfield_source_duty_authoring import (
+    decode_source_duty_inventory,
 )
 from odylith.runtime.domain_intelligence.greenfield_source_duty_view import (
     DUTY_SECTIONS,
@@ -81,7 +81,7 @@ def _declared_workspace_identity():
 
 
 def _yes_decisions(decision_task: dict[str, object]) -> dict[str, object]:
-    ledger = expand_compact_source_duty_ledger(decision_task["source_duty_ledger"])
+    ledger = decode_source_duty_inventory(decision_task["source_duty_ledger"])
     decisions = {}
     for section, _ in DUTY_SECTIONS:
         for row in ledger[section]:
@@ -95,6 +95,7 @@ def _yes_decisions(decision_task: dict[str, object]) -> dict[str, object]:
         "version": SOURCE_DUTY_DECISION_SET_VERSION,
         "verifier_task_sha256": decision_task["verifier_task_sha256"],
         "source_completeness": {"verdict": "yes", "omissions": []},
+        "participant_decisions": {},
         "product_identity": {"verdict": "yes"},
         "decisions": decisions,
     }
@@ -330,7 +331,7 @@ def test_source_ledger_check_requires_source_only_decisions_before_receipt(
     preflight = payload["preflight"]
     assert preflight["ledger"] == raw_ledger
     assert (
-        expand_compact_source_duty_ledger(
+        decode_source_duty_inventory(
             payload["decision_task"]["source_duty_ledger"]
         )
         == preflight["ledger"]
@@ -599,6 +600,7 @@ def test_source_ledger_check_surfaces_one_material_question(
     prompt = "Source code simulates crop growth."
     ledger = {
         "version": SOURCE_DUTY_LEDGER_VERSION,
+        "nonperforming_participants": {field: [] for field in ("human_actors", "internal_systems", "external_systems")},
         "status": "clarification_required",
         "question": "Who uses this product and what result should they see?",
         "evidence_controls": [],
@@ -662,7 +664,7 @@ def test_source_ledger_check_rejects_malformed_inventory(
     assert rc == 2
     payload = json.loads(capsys.readouterr().out)
     assert payload["mode"] == "error"
-    assert "object fields are invalid" in payload["error"]
+    assert "source duty authoring version is invalid" in payload["error"]
     assert not tmp_path.exists() or not list(tmp_path.iterdir())
 
 

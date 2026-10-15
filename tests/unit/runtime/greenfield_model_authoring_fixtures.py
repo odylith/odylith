@@ -56,6 +56,7 @@ class _FixtureHostCandidate(dict):
 
     source_action_atoms: list[dict[str, Any]]
     product_identity: dict[str, Any]
+    nonperforming_participants: dict[str, Any]
 
 
 def _fixture_actor_ref(facts: Mapping[str, Any], event: Mapping[str, Any]) -> dict[str, str]:
@@ -135,6 +136,7 @@ def synthetic_source_duty_receipt(
     if declared_actions is not None:
         ledger = {
             "version": SOURCE_DUTY_LEDGER_VERSION, "status": "inventory", "question": "",
+            "nonperforming_participants": copy.deepcopy(getattr(host_candidate, "nonperforming_participants", {field: [] for field in ("human_actors", "internal_systems", "external_systems")})),
             "evidence_controls": [], "product_identity": copy.deepcopy(identity),
             "first_path_actions": copy.deepcopy(list(declared_actions)),
             "supporting_human_actions": [], "system_duties": [], "state_fields": [],
@@ -156,6 +158,7 @@ def synthetic_source_duty_receipt(
         raise ValueError("synthetic source duties require a known fixture result")
     ledger = {
         "version": SOURCE_DUTY_LEDGER_VERSION, "status": "inventory", "question": "",
+            "nonperforming_participants": copy.deepcopy(getattr(host_candidate, "nonperforming_participants", {field: [] for field in ("human_actors", "internal_systems", "external_systems")})),
         "evidence_controls": [], "product_identity": copy.deepcopy(identity),
         "state_fields": [], "off_path_transitions": [],
         "conditional_guards": [], "boundaries": [], "proof_duties": [],
@@ -186,7 +189,7 @@ def synthetic_source_duty_receipt_for_ledger(
     """Approve a fixture-only ledger; production must obtain an independent verdict."""
 
     passive_version = ledger["version"] if ledger["version"] in {
-        "odylith.greenfield.source-duty-ledger.v5", "odylith.greenfield.source-duty-ledger.v6", "odylith.greenfield.source-duty-ledger.v7"} else None
+        "odylith.greenfield.source-duty-ledger.v5", "odylith.greenfield.source-duty-ledger.v6", "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9"} else None
     preflight = preflight_greenfield_source_duty_ledger(
         ledger, evidence_text=evidence_text, _passive_source_version=passive_version,
     )
@@ -195,9 +198,10 @@ def synthetic_source_duty_receipt_for_ledger(
     )
     decision_set = {
         "version": decision_task["decision_set_schema"]["properties"]["version"]["enum"][0],
-        **({"product_identity": {"verdict": "yes"}} if passive_version in (None, "odylith.greenfield.source-duty-ledger.v7") else {}),
+        **({"product_identity": {"verdict": "yes"}} if passive_version in (None, "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9") else {}),
         "verifier_task_sha256": decision_task["verifier_task_sha256"],
         "source_completeness": {"verdict": "yes", "omissions": []},
+        **({"participant_decisions": {key: {field: "yes" for field in ("entity_name", "participant_type", "nonperformance", "identity_nonduplication")} for key in preflight["participant_claims"]}} if "participant_claims" in preflight else {}),
         "decisions": {
             claim["duty_id"]: {
                 "verdict": "yes",
@@ -384,6 +388,9 @@ def host_candidate_response(
     result.pop("events")
     candidate.product_identity = {"basis": "explicit_name", "source_ref": facts.pop("title")}
     candidate.source_action_atoms = atoms
+    performer_refs = [atom["actor_ref"] for atom in atoms]
+    candidate.nonperforming_participants = {field: [ref for ref in facts.pop(field) if ref not in performer_refs]
+                                          for field in ("human_actors", "internal_systems", "external_systems")}
     result[HOST_SOURCE_DUTY_BINDING_FIELD] = _fixture_source_duty_binding(candidate, evidence_text=evidence_text)
     return candidate
 
@@ -969,6 +976,9 @@ def edit_action_context_fixture(*, prior_source, prior_receipt, prior_lifecycle,
             "allocation_relations": source_action_allocation_relations(design, event["event_order"])})
     source, segment = combined_prompt_evidence_segment(prompt=prior_source, edit_evidence=correction)
     from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import append_atomic_source_spans, build_atomic_fact_ledger
+    if prior_receipt["ledger"]["version"] == SOURCE_DUTY_LEDGER_VERSION:
+        from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import source_owned_greenfield_actor_facts
+        prior_facts = source_owned_greenfield_actor_facts(catalog, supplemental={}, evidence_text=prior_source, ledger_receipt=prior_receipt)
     claims, facts = [], {}
     for field in ("internal_systems", "external_systems"):
         facts[field] = []

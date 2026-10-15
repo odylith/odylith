@@ -191,13 +191,13 @@ def test_unsupported_roster_mutation_is_a_truthful_no_write_outcome(tmp_path, mo
     assert {str(p.relative_to(tmp_path)): p.read_bytes() for p in tmp_path.rglob("*") if p.is_file()} == before
 
 
-def test_candidate_empty_system_arrays_retain_exact_accepted_typed_roster(tmp_path):
+def test_compiler_owned_system_arrays_retain_exact_accepted_typed_roster(tmp_path):
     prior = _transaction(repo_root=tmp_path)
     source, context, *_ = fresh = _fresh(prior)
     receipt = _receipt(fresh)
     catalog = project_greenfield_source_event_catalog(receipt, evidence_text=source)
     facts = source_owned_greenfield_actor_facts(catalog,
-        supplemental={"human_actors": [], "internal_systems": [], "external_systems": []},
+        supplemental={},
         evidence_text=source, ledger_receipt=receipt)
     prior_names = prior.proposal["intent"]["internal_systems"]
     assert set(prior_names) <= {row["quote"] for row in facts["internal_systems"]}
@@ -274,11 +274,10 @@ def _bounded_prior(lengths, root):
 
     _, old_prepared, candidate, receipt = _mixed_source_graph(32)
     paragraph = "Bound reference paragraph: " + "x" * 2374
-    human = deepcopy(candidate["result"]["facts"]["human_actors"][0])
+    human = deepcopy(receipt["ledger"]["first_path_actions"][0]["actor_ref"])
     human["context"] = receipt["ledger"]["first_path_actions"][0]["event_ref"]["quote"]
-    candidate["result"]["facts"]["human_actors"][0] = human
     extra = [f"{human['quote']} records receipt {index:02d}." for index in range(25, 33)]
-    prompt = old_prepared.prompt + " " + " ".join(extra) + " " + paragraph
+    prompt = old_prepared.prompt + " " + " ".join(extra) + " " + paragraph + " Additional bounded reference context: " + "y" * 2400
     prepared = prepare_model_authoring_evidence(prompt=prompt)
     source = prepared.evidence_source
     ledger = deepcopy(receipt["ledger"])
@@ -468,7 +467,7 @@ def test_same_label_distinct_typed_addresses_survive_but_same_address_retyping_r
         return validate_greenfield_source_duty_ledger(ledger, evidence_text=source, decision_set=decisions, edit_preservation=context)
     receipt = accepted()
     catalog = project_greenfield_source_event_catalog(receipt, evidence_text=source)
-    facts = source_owned_greenfield_actor_facts(catalog, supplemental={"human_actors": [], "internal_systems": [], "external_systems": []},
+    facts = source_owned_greenfield_actor_facts(catalog, supplemental={},
                                               evidence_text=source, ledger_receipt=receipt)
     assert facts["internal_systems"] == [{"quote": "Link", "context": "Internal Link receives the dossier."}]
     assert facts["external_systems"] == [{"quote": "Link", "context": "External Link receives the dossier."}]
@@ -476,13 +475,14 @@ def test_same_label_distinct_typed_addresses_survive_but_same_address_retyping_r
     receipt = accepted()
     catalog = project_greenfield_source_event_catalog(receipt, evidence_text=source)
     with pytest.raises(ValueError) as error:
-        source_owned_greenfield_actor_facts(catalog, supplemental={"human_actors": [], "internal_systems": [], "external_systems": []},
+        source_owned_greenfield_actor_facts(catalog, supplemental={},
                                           evidence_text=source, ledger_receipt=receipt)
     assert str(error.value) == entailment.UNSUPPORTED_SYSTEM_MUTATION
 
 
-@pytest.mark.parametrize("edit", [False, True], ids=["retained16", "retained17"])
-def test_fresh_host59_refuses_valid_legacy_receipts_before_candidate_or_seal(tmp_path, monkeypatch, edit):
+@pytest.mark.parametrize("edit", [False, True], ids=["initial", "edit"])
+@pytest.mark.parametrize("generation", ["allocations3", "inline"], ids=["retained16_17", "retained18_19"])
+def test_fresh_host61_refuses_valid_legacy_receipts_before_candidate_or_seal(tmp_path, monkeypatch, edit, generation):
     from odylith.runtime.domain_intelligence import greenfield_host_candidate as host
     from odylith.runtime.domain_intelligence.greenfield_create_transaction import _require_host_candidate_authority_binding
     prior = _transaction(repo_root=tmp_path)
@@ -491,22 +491,26 @@ def test_fresh_host59_refuses_valid_legacy_receipts_before_candidate_or_seal(tmp
     context = None
     if edit:
         source, fresh, ledger, _, _ = _fresh(prior)
-        context = entailment.greenfield_edit_preservation_context(transaction_hash=prior.transaction_hash,
+        context = (fresh if generation == "inline" else entailment.greenfield_edit_preservation_context(transaction_hash=prior.transaction_hash,
             prior_lifecycle=fresh["prior_lifecycle"], prior_identity=fresh["prior_identity"],
-            correction=fresh["correction"], evidence_text=source, _passive_allocations=True)
-    preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=source)
-    task = entailment.source_duty_entailment_task(preflight, evidence_text=source, edit_preservation=context, _passive_receipt=True)
+            correction=fresh["correction"], evidence_text=source, _passive_allocations=True))
+    ledger = deepcopy(ledger)
+    ledger["version"] = "odylith.greenfield.source-duty-ledger.v9"
+    ledger.pop("nonperforming_participants")
+    preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=source, _passive_source_version=ledger["version"])
+    task = entailment.source_duty_entailment_task(preflight, evidence_text=source, edit_preservation=context, _passive_receipt=generation != "inline")
     decisions = _yes_decisions(preflight, evidence_text=source)
     decisions["verifier_task_sha256"] = task["verifier_task_sha256"]
     if edit:
-        decisions.update(version="odylith.greenfield.source-duty-decisions.v12", edit_preservation={},
-            identity_preservation={"verdict": "preserved", "correction_authorization": "not_required"})
+        decisions.update(version="odylith.greenfield.source-duty-decisions.v13" if generation == "inline" else "odylith.greenfield.source-duty-decisions.v12",
+            identity_preservation={"verdict": "preserved", "correction_authorization": "not_required"},
+            **(preserved_edit_decisions_fixture(context) if generation == "inline" else {"edit_preservation": {}}))
     legacy = validate_greenfield_source_duty_ledger(ledger, evidence_text=source, decision_set=decisions,
-        edit_preservation=context, _passive_receipt=True)
-    assert legacy["version"].endswith(".v17" if edit else ".v16")
+        edit_preservation=context, _passive_receipt=generation != "inline", _passive_source_version=ledger["version"])
+    assert legacy["version"].endswith((".v19" if edit else ".v18") if generation == "inline" else (".v17" if edit else ".v16"))
     assert verify_greenfield_source_duty_ledger_receipt(legacy, evidence_text=source) == legacy
     contract = host.greenfield_host_candidate_contract(source, edit_preservation=context)
-    assert contract["version"].endswith(".v59")
+    assert contract["version"].endswith(".v61")
     calls = []
     monkeypatch.setattr(host, "canonical_greenfield_host_candidate", lambda *a, **kw: calls.append("candidate/seal"))
     with pytest.raises(ValueError, match="receipt version"):

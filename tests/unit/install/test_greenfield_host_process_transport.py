@@ -225,26 +225,26 @@ def test_real_terminal_lifecycle_failure_preserves_primary_result_and_stream_cus
 ):
     from odylith.runtime.domain_intelligence.greenfield_process import command_lifecycle_observer
     from tests.unit.install.test_greenfield_matrix_host_candidate import _fixture_host_ledger
-    from odylith.runtime.domain_intelligence.greenfield_source_duty_compact import expand_compact_source_duty_ledger
+    from odylith.runtime.domain_intelligence.greenfield_source_duty_authoring import decode_source_duty_inventory
     from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import preflight_greenfield_source_duty_ledger
     from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import source_duty_entailment_task, SOURCE_DUTY_DECISION_SET_VERSION
     flow, _host_stub, installed, _hosts, proposals, repo = _flow(
         tmp_path, contract={}, candidate={},
     )
-    compact = _fixture_host_ledger()
-    expanded = expand_compact_source_duty_ledger(compact, evidence_text=flow.prompt)
+    inventory = _fixture_host_ledger()
+    expanded = decode_source_duty_inventory(inventory, evidence_text=flow.prompt)
     preflight = preflight_greenfield_source_duty_ledger(expanded, evidence_text=flow.prompt)
     task = source_duty_entailment_task(preflight, evidence_text=flow.prompt)
     payloads = {
         "authority-gate-schema.json": {"decision": "admit", "required_fields": [],
             "owner_quote": "reviewer", "task_quote": "creates a reviewable plan",
             "result_quote": "a reviewable plan", "question": ""},
-        "source-ledger-schema.json": compact,
+        "source-ledger-schema.json": inventory,
         "source-duty-decision-schema.json": {"version": SOURCE_DUTY_DECISION_SET_VERSION,
             "verifier_task_sha256": task["verifier_task_sha256"],
             "product_identity": {"verdict": "yes"},
             "decisions": {"d1": {"verdict": "yes", "support_ref_indexes": [0], "role_ref_indexes": [0, 1]}},
-            "source_completeness": {"verdict": "yes", "omissions": []}},
+            "source_completeness": {"verdict": "yes", "omissions": []}, "participant_decisions": {}},
         "candidate-schema.json": {"version": "candidate", "result": {"status": "authored"}},
     }
     target = {"authority-gate": "authority-gate-schema.json", "source-ledger": "source-ledger-schema.json",

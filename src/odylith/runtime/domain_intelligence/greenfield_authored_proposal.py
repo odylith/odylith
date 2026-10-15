@@ -91,7 +91,7 @@ def build_authored_greenfield_proposal(
     title = _required_text(confirmed_intent, "title")
     product_slug = slugify(title) or "greenfield-project"
     source_duty = confirmed_intent[AUTHORED_SEMANTICS_KEY]["source_duty"]
-    narrative = bool(source_duty and source_duty["ledger_receipt"]["ledger"]["version"] == "odylith.greenfield.source-duty-ledger.v9")
+    narrative = bool(source_duty and source_duty["ledger_receipt"]["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10"})
     walkthrough = authored_first_run_text(confirmed_intent)
     first_path = str(confirmed_intent["first_path"]) if narrative else walkthrough
     first_run_relations = authored_first_run_relations(confirmed_intent)

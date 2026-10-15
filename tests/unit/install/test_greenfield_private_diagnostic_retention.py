@@ -18,7 +18,7 @@ from odylith.runtime.domain_intelligence.greenfield_authority_gate import greenf
 from odylith.runtime.domain_intelligence.greenfield_process import (
     CommandLifecycleObserverError, GroupTimeoutCompletedProcess,
 )
-from odylith.runtime.domain_intelligence.greenfield_source_duty_compact import expand_compact_source_duty_ledger
+from odylith.runtime.domain_intelligence.greenfield_source_duty_authoring import decode_source_duty_inventory
 from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import preflight_greenfield_source_duty_ledger
 from tests.unit.install.test_greenfield_matrix_host_candidate import _FIXTURE_HOST_SOURCE, _flow
 
@@ -54,7 +54,7 @@ def _prepare_fixture(tmp_path, monkeypatch, *, diagnostic=True, failure=None, cl
                 ledger = json.loads(Path(command[command.index("--ledger-file") + 1]).read_bytes())
                 with pytest.raises(ValueError) as refused:
                     preflight_greenfield_source_duty_ledger(
-                        expand_compact_source_duty_ledger(ledger, evidence_text=source), evidence_text=source)
+                        decode_source_duty_inventory(ledger, evidence_text=source), evidence_text=source)
                 result = subprocess.CompletedProcess(command, 2, json.dumps({"mode": "error", "error": str(refused.value)}), "")
             else:
                 result = flow.invoke_installed(command, kwargs["timeout"])

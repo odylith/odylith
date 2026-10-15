@@ -35,6 +35,7 @@ def _case(noun: str) -> tuple[str, dict, dict, dict]:
     )
     ledger = {
         "version": SOURCE_DUTY_LEDGER_VERSION,
+        "nonperforming_participants": {field: [] for field in ("human_actors", "internal_systems", "external_systems")},
         "product_identity": {"basis": "product_description", "source_ref": _citation(f"{noun} workspace")},
         "status": "inventory",
         "question": "",

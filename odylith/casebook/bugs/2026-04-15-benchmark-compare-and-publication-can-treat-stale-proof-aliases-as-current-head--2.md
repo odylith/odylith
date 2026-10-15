@@ -1,5 +1,32 @@
 - Bug ID: CB-116
 
+## Fresh content-bound A proof and publication (2026-10-15)
+
+Frozen source `433f0e38a02372ea46e7b890ba6e3884e1462dfb` completes full report
+`ea0fbd0916ee9690`: 82 scenarios, 328 warm/cold observations and 36 original
+supplemental samples, with provisional pass and all hard/secondary gates clear.
+Before any processing writes, 24 original evidence members are archived and
+read back (SHA-256 `beb64f04e3fd8f21ae183be516219e18ccd003aedf91469b67991eabf8ec2c90`).
+
+Canonical comparison runs before publication, selects completed actual14
+`a9e009b5d75cc51b`, preserves interrupted `4b3ecb8eb493c1fa` unchanged and
+returns nonblocking warn solely for predecessor HOLD. Both the full proof and
+matching diagnostic `b75f850362a680d2` pass strict content-v1 identity before
+the canonical writer generates twelve outputs. Diagnostic HOLD stays visible.
+Its publication archive SHA-256 is
+`fcceea78e529dc0f4772ee0c1e6017706218c3d4e12f3939922cf131558ef01e`.
+All twelve files transfer byte-exactly; README uses those same measurements.
+The existing project test toolchain imports frozen proof source and passes
+all 21 graph checks; the managed proof runtime's missing pytest attempt is
+retained as a no-test tooling outcome. No dependency is installed.
+
+This closes the fresh-A publication boundary for that measured revision only.
+The current source-roster changes, final main H/B, package D and release gates
+remain unqualified. No timestamp restoration, ignored-input deletion, old-report
+reconciliation, waiver or source relabeling occurred. CB-116 stays open until
+normal release closeout.
+
+
 - Type: Product
 
 

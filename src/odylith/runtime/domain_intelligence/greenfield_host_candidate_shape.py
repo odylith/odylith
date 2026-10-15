@@ -24,7 +24,7 @@ from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
     validate_greenfield_source_duty_binding,
 )
 
-HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v25"
+HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v26"
 HOST_SOURCE_DUTY_BINDING_FIELD = "source_duty_binding"
 
 
@@ -57,7 +57,7 @@ def _context_citation_schema(*, description: str = "") -> dict[str, Any]:
 
 
 def greenfield_host_candidate_schema() -> dict[str, Any]:
-    """Return the closed host shape with supplemental facts and design references."""
+    """Return the closed host design shape after source-owned facts are verified."""
 
     schema = greenfield_authoring_schema(source_event_graph=True)
     schema["properties"]["version"]["enum"] = [HOST_CANDIDATE_FORMAT_VERSION]
@@ -93,7 +93,7 @@ def greenfield_host_candidate_schema() -> dict[str, Any]:
         "and proof independently of the compiler-derived action responsibilities."
     )
     facts["required"] = [
-        field for field in facts["required"] if field not in {"first_path", "supporting_events", "title"}
+        field for field in facts["required"] if field not in {"first_path", "supporting_events", "title", "human_actors", "internal_systems", "external_systems"}
     ]
     facts["properties"].pop("first_path")
     facts["properties"].pop("supporting_events")
@@ -101,10 +101,7 @@ def greenfield_host_candidate_schema() -> dict[str, Any]:
     authored["properties"].pop("events")
     facts["properties"].pop("title")
     for field in ("human_actors", "internal_systems", "external_systems"):
-        facts["properties"][field]["description"] = (
-            "Supplemental source-supported nonperforming participants or dependencies. "
-            "The source event catalog supplies performing identities and their fixed addresses."
-        )
+        facts["properties"].pop(field)
     return schema
 
 
@@ -134,13 +131,13 @@ def canonical_greenfield_host_candidate(
     if not isinstance(design, Mapping) or "project_summary" not in design:
         raise ValueError("Greenfield host candidate requires an authored project summary")
     facts = result.get("facts")
-    if not isinstance(facts, Mapping) or {"first_path", "supporting_events", "title"} & set(facts):
+    if not isinstance(facts, Mapping) or set(facts) != set(authored_schema["properties"]["facts"]["required"]):
         raise ValueError(
             "Greenfield host candidate must not duplicate source-owned identity or first-path citation authority"
         )
     evidence = evidence_text.encode("utf-8")
     catalog = project_greenfield_source_event_catalog(source_duty_receipt, evidence_text=evidence_text,
-        _passive=source_duty_receipt["version"] not in {"odylith.greenfield.source-duty-ledger-receipt.v18", "odylith.greenfield.source-duty-ledger-receipt.v19"})
+        _passive=source_duty_receipt["version"] not in {"odylith.greenfield.source-duty-ledger-receipt.v20", "odylith.greenfield.source-duty-ledger-receipt.v21"})
     facts = source_owned_greenfield_actor_facts(catalog, supplemental=facts, evidence_text=evidence_text, ledger_receipt=source_duty_receipt)
     canonical_facts = {
         field: ([deepcopy(citation) if set(citation) == {"quote", "occurrence"}

@@ -66,8 +66,8 @@ from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment impor
     greenfield_edit_preservation_context,
     source_duty_entailment_task,
 )
-from odylith.runtime.domain_intelligence.greenfield_source_duty_compact import (
-    expand_compact_source_duty_ledger,
+from odylith.runtime.domain_intelligence.greenfield_source_duty_authoring import (
+    decode_source_duty_inventory,
 )
 
 _PUBLIC_INTENT_AUTHORITY_SUMMARY_VERSION = "odylith.product-intent-authority-summary.v1"
@@ -854,7 +854,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             path = Path(str(args.ledger_file)).expanduser()
             if not path.is_absolute():
                 path = repo_root / path
-            ledger = expand_compact_source_duty_ledger(
+            ledger = decode_source_duty_inventory(
                 load_greenfield_source_duty_file(path), evidence_text=prepared.evidence_source,
             )
             preflight = preflight_greenfield_source_duty_ledger(

@@ -83,6 +83,7 @@ def _accepted_ledger(ledger: dict, *, evidence_text: str) -> dict:
         "version": SOURCE_DUTY_DECISION_SET_VERSION,
         "verifier_task_sha256": task["verifier_task_sha256"],
         "source_completeness": {"verdict": "yes", "omissions": []},
+        "participant_decisions": {key: {field: "yes" for field in ("entity_name", "participant_type", "nonperformance", "identity_nonduplication")} for key in preflight["participant_claims"]},
         "product_identity": {"verdict": "yes"},
         "decisions": {
             claim["duty_id"]: {
@@ -128,7 +129,7 @@ def test_contract_requires_one_complete_host_candidate() -> None:
     assert "source_ledger_schema" in contract["source_ledger"]
     assert "Do not call a CLI, read or write files" in contract["source_ledger"]["task"]
     assert (
-        "c must be a contiguous source excerpt containing q"
+        "context must be a contiguous source excerpt containing quote"
         in contract["source_ledger"]["task"]
     )
     assert (
@@ -588,8 +589,8 @@ def test_bound_system_prerequisite_survives_admission_and_canonical_reload(
     ]
     source_duty = materialized["authored_semantics"]["source_duty"]
     assert source_duty["ledger_receipt"] == original_receipt
-    assert source_duty["ledger_receipt"]["version"].endswith(".v19" if edit_evidence else ".v18")
-    assert source_duty["ledger_receipt"]["decision_set"]["version"].endswith(".v13" if edit_evidence else ".v11")
+    assert source_duty["ledger_receipt"]["version"].endswith(".v21" if edit_evidence else ".v20")
+    assert source_duty["ledger_receipt"]["decision_set"]["version"].endswith(".v15" if edit_evidence else ".v14")
     assert [row["event_order"] for row in source_duty["binding"]["first_path_actions"]] == [1, 2]
     assert [row["event_order"] for row in source_duty["binding"]["system_duties"]] == [3]
     reloaded = json.loads(json.dumps(materialized))
@@ -615,8 +616,8 @@ def test_fresh_candidate_requires_summary_in_schema_and_deterministic_admission(
     source, candidate = _candidate()
     contract = greenfield_host_candidate_contract(source)
     design_schema = contract["candidate_schema"]["properties"]["result"]["anyOf"][0]["properties"]["provisional_design"]
-    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v59"
-    assert contract["candidate_version"] == "odylith.greenfield.host-candidate-format.v25"
+    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v61"
+    assert contract["candidate_version"] == "odylith.greenfield.host-candidate-format.v26"
     assert "project_summary" in design_schema["required"]
     assert design_schema["properties"]["project_summary"]["maxLength"] == 600
     assert any("not an accepted source fact" in requirement for requirement in contract["requirements"])

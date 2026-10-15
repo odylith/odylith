@@ -1,4 +1,4 @@
-%% Reviewed 2026-04-17 for v0.1.11 after Context Engine, Execution Engine, visible-intervention, memory, Tribunal, and full-product assistance proof were aligned under accuracy-first benchmark gates.
+%% Reviewed 2026-10-15: strict publication identity and completed-predecessor absolute quality comparison.
 flowchart LR
     subgraph Truth["1. Benchmark source truth"]
         Corpus["Benchmark corpus<br/>canonical scenarios + architecture_scenarios<br/>odylith/runtime/source/optimization-evaluation-corpus.v1.json"]
@@ -38,18 +38,20 @@ flowchart LR
         PromptAudit["Prompt and corpus anomaly audit<br/>browser + install + release weak-family repair loop"]
         WeakFamilies["Pass-recovery weak-family loop<br/>component_governance + compass_brief_freshness<br/>consumer_profile + daemon_security + cross_file_feature"]
         ProofPublished["Published proof view<br/>same-profile same-scenario worst-case across warm + cold<br/>published_summary + family_deltas + robustness_summary"]
-        DiagnosticPublished["Diagnostic mechanism snapshot<br/>packet/prompt-only report view"]
+        DiagnosticPublished["Diagnostic mechanism snapshot<br/>packet-only latency, prompt and payload gates"]
         AccuracyMetrics["Accuracy gates first<br/>snapshot presence + admissibility + mode<br/>truthful next move + closure + validation<br/>false-admit / false-deny + re-anchor + delegation guard"]
-        CostMetrics["Efficiency gates second<br/>packet build time + snapshot time<br/>prompt/runtime tokens + total payload tokens"]
+        CostMetrics["Live-proof budget guardrail<br/>within-budget rate at least 0.80;<br/>time and full-session tokens remain diagnostics"]
         LatestProof["latest-proof.v1.json / latest.v1.json"]
         LatestDiagnostic["latest-diagnostic.v1.json"]
+        CurrentIdentity["Publication source identity<br/>Exact paths, bytes, modes and consumed descendants;<br/>historical reports retain exact legacy identity"]
         Graphs["Canonical graph renderer<br/>docs/benchmarks/proof/*.svg + diagnostic/*.svg"]
     end
 
     subgraph Release["4. Maintainer proof and public claim"]
         README["README benchmark snapshot"]
         ReleaseGuidance["Maintainer benchmark release guidance"]
-        FirstReleaseBaseline["First shipped release baseline<br/>docs/benchmarks/release-baselines.v1.json<br/>benchmark_compare warns until recorded"]
+        FirstReleaseBaseline["Authentic completed predecessor proof<br/>Completed HOLD stays eligible;<br/>interrupted reports remain excluded"]
+        ReleaseComparison["Cross-release quality comparison<br/>Conservative absolute Odylith-on quality;<br/>relative advantages remain diagnostic"]
         ReleaseGate["Release-ready benchmark proof<br/>full-product assistance vs raw-agent comparison"]
     end
 
@@ -106,10 +108,13 @@ flowchart LR
     Breakdown --> ProofPublished
     ProofPublished --> LatestProof
     DiagnosticPublished --> LatestDiagnostic
-    LatestProof --> Graphs
-    LatestDiagnostic --> Graphs
-    LatestProof --> README
+    LatestProof --> ReleaseComparison
+    FirstReleaseBaseline --> ReleaseComparison
+    ReleaseComparison --> CurrentIdentity
+    LatestDiagnostic --> CurrentIdentity
+    CurrentIdentity --> Graphs
+    CurrentIdentity --> README
     Graphs --> README
     LatestProof --> ReleaseGuidance
     ReleaseGuidance --> FirstReleaseBaseline
-    FirstReleaseBaseline --> ReleaseGate
+    ReleaseComparison --> ReleaseGate

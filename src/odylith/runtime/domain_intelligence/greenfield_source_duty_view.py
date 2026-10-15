@@ -21,7 +21,16 @@ DUTY_SECTIONS = (
 )
 MAX_DERIVED_REFS = 5
 MAX_COMPACT_CITATIONS = 256
-SOURCE_DUTY_COMPACT_VERSION = "odylith.greenfield.source-duty-compact.v7"
+SOURCE_DUTY_COMPACT_VERSION = "odylith.greenfield.source-duty-compact.v8"
+PARTICIPANT_FIELDS = ("human_actors", "internal_systems", "external_systems")
+PARTICIPANT_JUDGMENTS = ("entity_name", "participant_type", "nonperformance", "identity_nonduplication")
+
+
+def source_participant_claims(ledger: Mapping[str, Any]) -> dict[str, Any]:
+    """Separate compiler-owned roster addresses from authored duty identities."""
+    return {f"/{field}/{index}": {"typed_role": field, "source_ref": deepcopy(ref)}
+            for field in PARTICIPANT_FIELDS
+            for index, ref in enumerate(ledger["nonperforming_participants"][field])}
 
 
 def duty_references(section: str, row: Mapping[str, Any]) -> tuple[list, list]:
@@ -61,7 +70,7 @@ def compact_source_duty_view(ledger: Mapping[str, Any]) -> dict[str, Any]:
         {"ref": intern(control), "handling": control["handling"]}
         for control in ledger["evidence_controls"]
     ]
-    if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9"} and ledger["product_identity"] is not None:
+    if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10"} and ledger["product_identity"] is not None:
         view["product_identity"]["source_ref"] = intern(ledger["product_identity"]["source_ref"])
     for section, _ in DUTY_SECTIONS:
         for row in view[section]:
@@ -70,6 +79,10 @@ def compact_source_duty_view(ledger: Mapping[str, Any]) -> dict[str, Any]:
                 row["event_ref"] = intern(row["event_ref"])
                 row["actor_ref"] = intern(row["actor_ref"])
                 row["role_refs"] = [intern(ref) for ref in row["role_refs"]]
+    if ledger["version"] == "odylith.greenfield.source-duty-ledger.v10":
+        view["nonperforming_participants"] = {
+            field: [intern(ref) for ref in ledger["nonperforming_participants"][field]]
+            for field in PARTICIPANT_FIELDS}
     view["version"] = ("odylith.greenfield.source-duty-compact.v3"
                        if ledger["version"] == "odylith.greenfield.source-duty-ledger.v5"
                        else "odylith.greenfield.source-duty-compact.v4"
@@ -78,11 +91,13 @@ def compact_source_duty_view(ledger: Mapping[str, Any]) -> dict[str, Any]:
                        if ledger["version"] == "odylith.greenfield.source-duty-ledger.v7"
                        else "odylith.greenfield.source-duty-compact.v6"
                        if ledger["version"] == "odylith.greenfield.source-duty-ledger.v8"
+                       else "odylith.greenfield.source-duty-compact.v7"
+                       if ledger["version"] == "odylith.greenfield.source-duty-ledger.v9"
                        else SOURCE_DUTY_COMPACT_VERSION)
-    if ledger["version"] == "odylith.greenfield.source-duty-ledger.v9":
+    if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10"}:
         version = view.pop("version")
         if view["status"] == "clarification_required":
-            if view["product_identity"] is not None or view["evidence_controls"] or any(view[section] for section, _ in DUTY_SECTIONS):
+            if view["product_identity"] is not None or view["evidence_controls"] or any(view[section] for section, _ in DUTY_SECTIONS) or any(view.get("nonperforming_participants", {}).values()):
                 raise ValueError("clarification must carry no inventory")
             return {"version": version, "result": {key: view[key] for key in ("status", "question")}}
         return {"version": version, "result": {"citations": bank, **view}}

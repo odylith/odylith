@@ -42,10 +42,11 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_invariants import (
 from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
     HOST_SOURCE_DUTY_BINDING_VERSION,
     project_greenfield_source_event_catalog,
+    source_owned_greenfield_actor_facts,
     validate_greenfield_source_duty_binding,
 )
-from odylith.runtime.domain_intelligence.greenfield_source_duty_compact import (
-    greenfield_compact_source_duty_ledger_schema,
+from odylith.runtime.domain_intelligence.greenfield_source_duty_authoring import (
+    greenfield_source_duty_authoring_schema,
 )
 from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
     verify_greenfield_source_duty_ledger_receipt,
@@ -59,8 +60,10 @@ from odylith.runtime.domain_intelligence.greenfield_authority_gate import (
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v7"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v59"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v61"
 PASSIVE_HOST_CANDIDATE_CONTRACT_VERSIONS = (
+    "odylith.greenfield.host-candidate-contract.v60",
+    "odylith.greenfield.host-candidate-contract.v59",
     "odylith.greenfield.host-candidate-contract.v58",
     "odylith.greenfield.host-candidate-contract.v57",
     "odylith.greenfield.host-candidate-contract.v56",
@@ -74,7 +77,7 @@ PASSIVE_HOST_CANDIDATE_CONTRACT_VERSIONS = (
 )
 PREVIOUS_HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v50"
 LEGACY_HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v49"
-HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION = "odylith.greenfield.host-candidate-authoring-transport.v4"
+HOST_CANDIDATE_AUTHORING_TRANSPORT_VERSION = "odylith.greenfield.host-candidate-authoring-transport.v5"
 MAX_HOST_CANDIDATE_BYTES = 512 * 1024
 
 
@@ -83,7 +86,7 @@ def greenfield_host_candidate_contract(
 ) -> dict[str, Any]:
     """Return the public host reasoning contract for one exact evidence source."""
 
-    source_ledger_schema = greenfield_compact_source_duty_ledger_schema()
+    source_ledger_schema = greenfield_source_duty_authoring_schema()
     system_roles = ", ".join(source_ledger_schema["properties"]["result"]["anyOf"][0]
                              ["properties"]["system_duties"]["items"]["properties"]["performer_role"]["enum"])
     return {
@@ -164,8 +167,8 @@ def greenfield_host_candidate_contract(
                 "first_run, terminal and cited source_precedence. Two actions "
                 "in one joined clause remain two atoms and may share the same complete event_ref, "
                 "while the accepted ledger statement carries distinct role-local meaning. "
-                "The catalog inserts all performing source identities before supplemental facts. "
-                "Keep source-supported nonperforming beneficiaries and dependencies in the facts arrays. "
+                "The compiler inserts all performing source identities before the independently verified "
+                "nonperforming participant roster. Do not author participant fact arrays. "
                 "Product identity is independently verified in the source ledger and inserted by the compiler; "
                 "do not emit facts.title or select a title as an actor. "
                 "Never narrow a cited event to an inherited fragment. Odylith derives each "
@@ -233,7 +236,12 @@ def greenfield_host_candidate_contract(
                 "product_identity, using one exact source_ref and basis explicit_name or product_description. "
                 "A useful source-cited descriptive identity is required when the description has no formal name. "
                 "Do not use a generic product pronoun, background library, incidental heading or authority. "
-                "Identity alone is not an action or performer. Named internal components belong to internal_systems. "
+                "Identity alone is not an action or performer. Inventory every material source-owned nonperforming "
+                "participant under nonperforming_participants, with all three typed arrays present even when empty. "
+                "Cite an exact useful short entity name and locating context, never an entire clause. Retain declared "
+                "optional carrier, catalog and outside context without making it a performer, required workflow or "
+                "external authority. Exclude incidental, hypothetical, negated, reference-only or untrusted names. "
+                "Do not duplicate a performer or another participant, including at another occurrence. "
                 "Use product_wide for an exact actor_ref mention affirmatively denoting the requested product "
                 "as a whole, independently of product_identity. A pronoun or generic product noun may name "
                 "that performer when the complete source establishes whole-product scope. Named subsystems "
@@ -260,15 +268,12 @@ def greenfield_host_candidate_contract(
                 "section without duplicating an action atom, inventing a performer, or promoting "
                 "reference-only context into product authority. "
                 "Return exactly one compact JSON value with version and a closed result matching "
-                "source_ledger_schema, with no optional whitespace outside strings. Put each "
-                "inventory source citation once in result.citations with a short stable id, q as the "
-                "exact source quote, and c as an exact source context containing q; reuse that "
-                "id in every row field that cites the same quote and context. The compiler "
-                "checks every bank citation against the complete source and removes unused "
-                "valid bank storage without changing any material duty. "
-                "Set c to q when q occurs once; for a repeated q, extend c with nearby "
-                "verbatim source text until the excerpt occurs once. c must be a contiguous "
-                "source excerpt containing q, never a heading "
+                "source_ledger_schema, with no optional whitespace outside strings. At every "
+                "material use site, cite the exact inline quote and context required by the "
+                "material-ledger schema. The compiler owns downstream citation interning. "
+                "Set context to quote when quote occurs once; for a repeated quote, extend context with nearby "
+                "verbatim source text until the excerpt occurs once. context must be a contiguous "
+                "source excerpt containing quote, never a heading "
                 "label or a description of its location. Each action row owns one normalized "
                 "statement, action, and target, plus exact event_ref, actor_ref, and role_refs. "
                 "action is nonblank and must be an exact substring of statement; target is "
@@ -288,7 +293,7 @@ def greenfield_host_candidate_contract(
                 "supporting its typed duty role. actor_ref already owns the exact source "
                 "identity occurrence; the compiler includes it first among role references. "
                 "source_refs contains only extra support; the compiler derives the event "
-                "support. Do not repeat event_ref or actor_ref as aliases. Distinct actions may "
+                "support. Do not repeat event_ref or actor_ref in extra source_refs. Distinct actions may "
                 "share an event, but do not duplicate an atom under another section or "
                 "redundant statement. first_path_actions carries performer_role and observable_result. "
                 f"system_duties carries performer_role from the schema: {system_roles}; "
@@ -303,7 +308,7 @@ def greenfield_host_candidate_contract(
                 "decision set or receipt. Inventory has status inventory, a source-cited product identity, "
                 "all material rows, and an empty question. If a material duty is unresolved, return only "
                 "version and result with status clarification_required and one question; that branch "
-                "contains no identity, citation bank, controls or duty rows. The external controller performs structural "
+                "contains no identity, citations, controls or duty rows. The external controller performs structural "
                 "preflight, obtains one source-only verifier decision set covering every claim "
                 "and source-wide completeness, and checks the accepted receipt before candidate "
                 "authoring. Do not author a candidate."
@@ -378,6 +383,8 @@ def greenfield_host_candidate_authoring_request(
                 "event_order", "binding_role", "duty_id", "actor_fact",
             )} for event in catalog["events"]],
         },
+        "source_owned_participant_facts": source_owned_greenfield_actor_facts(
+            catalog, supplemental={}, evidence_text=source, ledger_receipt=receipt),
         "source_duty_custody": {
             key: receipt[key] for key in (
                 "version", "source_sha256", "ledger_sha256", "verifier_task_sha256",
@@ -389,7 +396,9 @@ def greenfield_host_candidate_authoring_request(
             "accepted_source_duty_inventory is the lossless accepted ledger with citations "
             "interned by ID. Resolve each citation ID through result.citations: q is its exact quote "
             "and c its exact source context. source_event_catalog freezes every performer "
-            "and event before candidate authoring; performer actor_ref IDs address this same "
+            "and event before candidate authoring; source_owned_participant_facts fixes the complete typed "
+            "roster with performer prefixes followed by verified nonperformers. Do not author human_actors, "
+            "internal_systems or external_systems in candidate facts. Performer actor_ref IDs address this same "
             "citation bank. Do not redefine its identities or event IDs. Preserve all duty IDs, row order, roles, and evidence "
             "controls; bind source_duty_binding hashes from source_duty_custody. The external "
             "controller retains the complete verified receipt. Do not reverify source duties."

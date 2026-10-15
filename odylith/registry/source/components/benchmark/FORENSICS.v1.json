@@ -23,12 +23,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 196,
-    "mapped_workstream_evidence_count": 188,
+    "explicit_event_count": 197,
+    "mapped_workstream_evidence_count": 189,
     "recent_path_match_count": 0,
     "spec_history_event_count": 15,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 196
+    "timeline_event_count": 197
   },
   "name": "Benchmark",
   "path_prefixes": [
@@ -70,6 +70,43 @@
       "summary": "Implementation evidence linked this component to governed work.",
       "ts_iso": "2026-10-15T13:00:33.985054+00:00",
       "workstreams": []
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-04-15-benchmark-compare-and-publication-can-treat-stale-proof-aliases-as-current-head--2.md"
+      ],
+      "confidence": "high",
+      "event_index": 1656,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-10-15T12:52:23-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifact_count": 0,

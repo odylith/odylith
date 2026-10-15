@@ -1,5 +1,214 @@
 - Bug ID: CB-324
 
+## Current live result: repeated-name addressing still blocks delivery (2026-10-15)
+
+The one predeclared source-roster parent fails after 146.065 seconds, before
+verification or candidate authoring. Authority admits; inventory returns 31,417
+bytes in 134.891 seconds. The unchanged exact-citation owner refuses the first
+external roster row: `carrier` occurs three times inside its unique context.
+Independent audit checks all 85 citation uses: 84 pass and this one fails.
+The loan-catalog citation is valid. No package, seal, completion receipt or
+publication exists. This is a failed delivery on clear source evidence.
+
+The source-verified roster ownership remains structurally correct: 625 affected
+tests and 38 independent probes pass, with exact historical receipt readback.
+Those controls did not establish live copy/addressing accuracy. All 21 source
+hashes remain unchanged. The raw failure is archived/read back with SHA-256
+`3d4d119998dc167fe99c7ca1483da18c6153a8525a6dfae2e0628f90ef48a159`.
+Independent diagnosis SHA-256:
+`6cd0a97494e0611d5e29bc0013b6f3afbf54f066d53ab4c237c175339a419709`.
+
+Stop additional live attempts and machinery at this falsification boundary.
+The selected next bounded design is an explicit model-chosen mention ordinal
+inside each fresh nonperformer citation's exact context. Require the selection,
+validate its integer type and exact range, and keep the same source-only
+semantic verifier. No default first/last occurrence, context trimming, output
+repair, removed dependency, extra stage or structured user intake. A source-
+choice catalog is rejected as broader and unproved against current bounds.
+This selector is not implemented or qualified; the current v61/v10 bytes and
+all earlier failures retain their original contracts. Keep broad freeform
+input, exact canonical addresses, EDIT custody and all limits. No new model
+trial follows without a versioned implementation, bounded proof and review.
+
+The separate full platform benchmark A at frozen `433f0e38a` now completes all
+82 scenarios, 328 observations and 36 supplemental samples with provisional
+pass. Its canonical comparison selects the completed actual14 report with the
+interrupted receipt retained; only the predecessor HOLD warning remains.
+Matching diagnostic remains HOLD. Canonical publication and 21 graph checks
+pass. This earlier source proof does not qualify the current Greenfield source,
+final H/B, package D, public/EDIT, native hosts, protected final or GA.
+
+## Verified source-roster implementation; live result pending (2026-10-15)
+
+The source-verified roster ownership change is implemented and frozen. One final
+combined affected run passes all 625 tests in 79.55 seconds. The new focused
+roster owner passes 43 checks; independent review runs 38 additional probes,
+finds no actionable P0/P1/P2 and verifies all 21 source hashes unchanged. Two
+retained receipt18 artifacts reconstruct exactly. Fresh host61 refuses old
+receipts at authoring and admission; the three participant lists are no longer
+candidate-authored. Other candidate facts retain their existing contract.
+
+The normal installer initializes a fresh development consumer in 46.456 seconds.
+The unchanged source15 baseline validator passes before any new model call.
+This uses verified14 payloads with an explicit source15 development invoker;
+it is not installed15 or packageD qualification. The next decisive evidence is
+one canonical parent on the unchanged request and source-first checklist, with
+no output repair or retry. A correct refusal will remain a failed delivery.
+
+Validation report SHA-256:
+`12b402a2c70fe44bc9dd201a514d6f123daa2411ef10e02eb0c05940737e0001`.
+Independent review SHA-256:
+`dacdfbcee7004e8ad84c271b1755b7c4b8d9f3e60225b5538b4190c2822f3b52`.
+All previous failed journeys remain unchanged. Formal public/EDIT, finalH/D,
+native hosts, protected-final and GA qualification remain open.
+
+## Chosen ownership correction: verify the supplemental roster before design (2026-10-15)
+
+The independent design is accepted for one bounded implementation. Inventory
+will author exact short-name citations for supplemental human actors, internal
+systems and external systems. The existing source-only verifier will judge
+classification, nonperformance, identity, nonduplication and completeness.
+The compiler will compose those verified facts with source-owned performers;
+the fresh candidate will no longer author any of the three participant lists.
+
+Keep declared optional context systems without turning them into performers,
+required workflow steps or external authority. Keep exact citation uniqueness,
+canonical80 values and addresses, EDIT context4 system custody, all eight duty
+sections, all four model stages and current limits. Old protocol tuples remain
+explicit passive history. This closes repeated unverified source-fact authoring
+after verification; inventory citation errors can still refuse correctly.
+
+The source-first design and predeclaration are retained under the durable
+source-installer-once-preview evidence directory. Design SHA-256:
+`ab9215d3c1aca4a011d36446f18457ab4909e3779d76e9c5823be4a5f6a4825d`.
+Predeclaration SHA-256:
+`9a36db9e95970d9d7becca8a5bfe07c61d2c185c0a386036e56c49630cdd69db`.
+Implement, falsify ownership/custody/history/EDIT boundaries, then independently
+review before at most one new unscored canonical parent on unchanged evidence.
+No retained failure is repaired, no formal release floor is waived, and the
+protected final input remains closed. The preceding inline-citation checkpoint
+passes the complete governance check on 2026-10-15 before this new source edit.
+
+## Current admission blocker: bound event citation (2026-10-15)
+
+A new source-only fixture passes the unchanged source15 working-generation
+validator before dispatch. Its one canonical parent uses the same request and
+seven reviewed implementation hashes. Authority, inline inventory, source-only
+verification and candidate authoring complete; citation preflight and receipt
+checks pass with source completeness yes. Proposal now reaches the real compiler
+and refuses `bound event source citation is invalid`. The process returns exit 2
+after 309.496 seconds; the parent measures 308.186 seconds within its diagnostic
+cap. Inventory takes 145.992 seconds and verification 36.109 seconds. There is
+no admitted package, seal, publication or completion receipt.
+
+Independent diagnosis identifies the raw candidate's second supplemental
+external-system fact. It selects `the carrier` in one exact, unique sentence,
+but that phrase occurs twice inside the sentence. The existing exact citation
+owner correctly refuses; no accepted ledger duty or compiler-generated event
+address is corrupt. The generic event-binding error wraps a supplemental fact
+locator failure. Preserve the refusal and both possible source addresses; do
+not select an occurrence on the model's behalf.
+
+The verified compiler bank has complete carrier and loan-catalog clause support,
+but not the short entity-name selections. Supplemental facts currently contain
+only quote/context, so selecting a whole clause would change the fact value.
+A bank-only transport substitution has not proved value preservation. Resolve
+that ownership boundary before implementation or another model call; no prompt
+reminder, guessed span, clause-as-name substitution or weakened uniqueness.
+
+The earlier independent raw-output positive below
+belongs to a different run and cannot qualify this candidate. No further model
+run, output repair, citation guessing, guard relaxation or model-stage change is
+authorized by this failure. The development fixture uses the source15 invoker
+with a verified14 payload and explicitly recorded pin15/active14 divergence; it
+is not coherent installed15 or packageD proof. All previous failed fixtures and
+zero-model dispatch refusals remain retained.
+
+The exact raw failure is archived and read back as
+`valid-baseline-citation-failure-custody.tar.gz` under the durable trial directory,
+SHA-256 `550e867e73d76769383b439eabd7d9792bbe040c7c26d3d4fda725dcc004d2c8`.
+Exact diagnosis SHA-256:
+`5db7c69834d90c1d78859a7f557940604c706af2b16c6d011245e07e8a3841be`.
+Bounded bank-feasibility assessment SHA-256:
+`83b0dbb8a5ca26b6adf6918642e495bf82219e3f49b97dc64ed4d7f6936a5b2b`.
+The public release cases and protected final input remain unopened.
+
+## Inline citation ownership clears source stages; fixture blocks delivery (2026-10-15)
+
+The bounded replacement uses host contract v60 and source-duty authoring v1.
+The existing ledger owns exact inline citation validation; the compiler owns
+the unchanged compact verifier/candidate view. The real owner is renamed to
+`greenfield_source_duty_authoring.py`, with no facade or extra module. Historical
+compact v6/v7 and v59 receipt readback retain explicit version checks. All 428
+affected cases pass across bounded runs, including both corrected historical
+test expectations. Independent code review finds no actionable P0/P1/P2.
+
+One predeclared fresh parent uses the unchanged museum request. All four
+`gpt-6-astra` medium calls complete: the 32,326-byte inventory passes exact
+citation preflight in 119.432 seconds, source verification completes in 20.714
+seconds, and the candidate returns 24,468 bytes. Independent source-first
+comparison finds no material omission, invention, performer or lifecycle defect
+in the retained raw inventory/design. The original dangling-reference failure
+remains unchanged; no output is repaired or promoted into a passing package.
+
+Delivery still fails: the operator supplied an empty, uninstalled test directory,
+so proposal refuses `Greenfield has no active immutable generation` before
+candidate admission. The process returns exit 2 after 299.617 seconds; the parent
+measures 298.350 seconds within its diagnostic cap. No package, rendered surface,
+transaction, publication or authentic completion receipt exists. The next fixture
+must pass the existing working-versus-published baseline validator before any
+new model call. Mixed source/shipped installer and refresh attempts are retained
+as invalid fixture evidence, not release or migration proof.
+
+Evidence is under the same durable development-trial directory below. The
+raw comparison archive is `inline-comparison-failure-custody.tar.gz`, SHA-256
+`21bec177ee874406587f53dc47648bdcce394a89092f9f7d8220bc3a8d1d613d`.
+Independent code review SHA-256:
+`1269f5523153093b729118d9260fe09081ec053c61536f73fd0d8619b254a8f3`.
+Independent raw-outcome review SHA-256:
+`4f5115dd5ce0ee2fe5cb3ea3a37780daa06a463a1b09c0d68e0f2e339d8a2c28`.
+Formal installed, browser, transaction and release qualification remain open.
+
+## Fresh source preview fails citation bookkeeping (2026-10-15)
+
+One new public development request at `2475b320f` describes a museum dispatch
+workspace: 3,839 bytes, four human performers, one dossier and one primary
+path. An independent source-first checklist, frozen before output inspection,
+finds no material ambiguity. This is separate from the frozen release cases
+and carries no package, installed, timing or release credit.
+
+The unchanged canonical parent makes two observed `gpt-6-astra` medium calls.
+Authority admits the request. Inventory returns 20,759 bytes in 111.325
+seconds, then structural preflight refuses an undefined citation reference.
+The dossier status field contains `c15 author's`; the bank defines `c15`,
+but never the longer token. Exact lookup correctly refuses. Verifier,
+candidate and proposal counts are zero; the consumer directory remains empty.
+The measured journey is 122.717 seconds within the unchanged 660-second cap;
+the observing process returns exit 2 after 124.001 seconds. No package or
+completion receipt exists, so no semantic package PASS is possible.
+
+That inventory authoring contract gives the model both citation-bank
+IDs and their references as unconstrained strings. Diagnose that ownership
+boundary before changing production behavior. The earlier unused-bank
+normalization below expressly retained unknown-reference refusal. It does not
+authorize trimming, guessing, silently substituting `c15`, repairing this
+output, retrying it as a positive, or weakening exact source checks.
+
+Compare the current mechanism with at most one bounded alternative at a time
+on unchanged public evidence. Favor eliminating unnecessary alias bookkeeping
+in existing owners; preserve literal source custody, source-wide semantic
+verification, four stages, all guards and the fixed deadline. Read the earlier
+full-citation latency failures before reusing that representation. No domain
+vocabulary patch, source parser, extra reviewer, repair cascade or model ladder.
+The original full benchmark and fresh hosted CI remain separate live proofs.
+
+The exact first failure is archived and read back at
+`/Users/freedom/.codex/odylith-release-evidence/2026-10-14/v52/post-volume-recovery-20261015T0458Z/unscored-source-smoke-exhibit-dispatch-20261015/first-failure-custody.tar.gz`,
+SHA-256 `fb71c113fc05d065d9061326abddcdbd92f6120f5777a2fa894ce7ea8dcc2cfb`.
+The independent first-outcome review has SHA-256
+`399c00045657a1dcf3aa202fe8ff9b085752b3e93d6d84d5bfd12746ae22f6af`.
+Protected final inputs and frozen public release cases were not accessed.
+
 ## Fresh v19 preserves core semantics; three quality defects remain (2026-10-03)
 
 The settled Q1 lane passes all 8,119 runtime/install/Greenfield integration

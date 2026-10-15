@@ -37,9 +37,6 @@ from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment impor
     SOURCE_DUTY_DECISION_SET_VERSION,
     source_duty_entailment_task,
 )
-from odylith.runtime.domain_intelligence.greenfield_source_duty_compact import (
-    expand_compact_source_duty_ledger,
-)
 from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
     SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
     preflight_greenfield_source_duty_ledger,

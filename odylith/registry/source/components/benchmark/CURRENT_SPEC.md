@@ -30,7 +30,27 @@
   same workstream anchor. A missing B-110 anchor is treated as benchmark
   corpus drift because it can create false `requires_widening` advisory noise
   even when required-path recall and validation are green.
-Last updated: 2026-10-13
+Last updated: 2026-10-15
+
+## Current frozen candidate benchmark evidence
+
+Full source-local report `ea0fbd0916ee9690` at `433f0e38a` completes 82 scenarios,
+328 warm/cold observations and 36 supplemental samples with provisional pass.
+Conservative required-path recall is 0.992, critical recall 0.979 and validation
+success 0.986. Quality, fairness and budget gates pass. Supplementary repeat
+quality consistency is 0.667 and latency remains unstable; these diagnostics
+stay visible. The matching packet diagnostic `b75f850362a680d2` remains HOLD.
+
+Canonical comparison selects the completed actual v0.1.14 report while retaining
+the interrupted report; its sole warning is predecessor HOLD. Recall is unchanged
+and validation increases by 0.027. Two changed scenarios add supporting paths,
+so this is not an identical-input causal claim. All original reports are retained.
+
+Both reports pass strict content-v1 identity before canonical publication. Twelve
+generated files transfer byte-exactly, README uses the same measurements, and
+21 graph checks pass using the project test toolchain importing frozen source.
+This proves that measured revision only. Later Greenfield source, final main
+H/B, installed package, native hosts and GA remain unqualified; CB-116 stays open.
 
 ## Greenfield source-predicate release qualification
 

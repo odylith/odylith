@@ -11,13 +11,13 @@ flowchart TB
       direction TB
       gate["Independent authority gate<br/>Does the requested product name an owner,<br/>usable task and observable result?"]
       gate_check{"Source-bound witness<br/>or material gap?"}
-      host["Source-duty inventory<br/>Records product identity, performers, actions and targets;<br/>marks declared workflow membership and recurring safeguards"]
-      candidate["Closed source result<br/>Typed inventory or one material question;<br/>inventory keeps every duty and exact source reference"]
-      identity_check["Source identity and performer custody preflight<br/>Resolve the product identity separately from actors;<br/>retain exact performer quotes in normalized statements"]
+      host["Source-duty inventory<br/>Records identity, actions and workflow membership;<br/>also records typed people and systems outside the workflow"]
+      candidate["Closed source result<br/>Inventory with exact inline citations<br/>or one material question"]
+      identity_check["Source identity and citation preflight<br/>Check exact quotes and participant names;<br/>compiler assigns references for later stages"]
       prior_contract["Accepted EDIT baseline<br/>Exact source addresses, action allocation edges and verification flags;<br/>typed system roster retained under a bounded context"]
-      source_control["Source-only verifier<br/>Affirms identity, complete duties, workflow roles and recurrence;<br/>every surviving EDIT action keeps its exact allocation edges"]
-      catalog["One complete source-event graph<br/>Fixed performers and event IDs come from verified actions;<br/>a whole-product performer does not create another subsystem"]
-      candidate_author["One candidate authoring pass<br/>Authors design using fixed events and accepted EDIT custody;<br/>cannot erase accepted systems or reassign surviving prior actions"]
+      source_control["Source-only verifier<br/>Verifies complete duties, participant types and identity;<br/>outside participants perform no workflow action;<br/>prior EDIT actions keep their exact allocations"]
+      catalog["One complete source-event graph<br/>Fixed performers and event IDs come from verified actions;<br/>verified outside participants remain outside the workflow"]
+      candidate_author["One candidate authoring pass<br/>Uses fixed events, participant facts and accepted EDIT custody;<br/>cannot replace the roster or reassign surviving prior actions"]
     end
 
     subgraph admission_lane["Deterministic admission"]

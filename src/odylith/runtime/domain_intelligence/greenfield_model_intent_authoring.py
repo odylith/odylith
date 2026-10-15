@@ -288,6 +288,14 @@ def validate_greenfield_authoring_response(
             accepted_source_duty_binding,
             evidence_text=evidence_text, events=result.get("events"),
         )
+        if accepted_source_duties is not None and accepted_source_duties["ledger"]["version"] == "odylith.greenfield.source-duty-ledger.v10":
+            from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import project_greenfield_source_event_catalog, source_owned_greenfield_actor_facts
+            catalog = project_greenfield_source_event_catalog(accepted_source_duties, evidence_text=evidence_text)
+            owned = source_owned_greenfield_actor_facts(catalog, supplemental={}, evidence_text=evidence_text, ledger_receipt=accepted_source_duties)
+            for field in ("human_actors", "internal_systems", "external_systems"):
+                expected = [canonical_citation_from_host_selection(evidence_text.encode("utf-8"), ref) for ref in owned[field]]
+                if result.get("facts", {}).get(field) != expected:
+                    raise GreenfieldModelAuthoringError("Greenfield canonical participants differ from the verified source roster")
         if accepted_source_duties is not None:
             if result.get("components") != []:
                 raise GreenfieldModelAuthoringError("Verified duties own component responsibility authority")
@@ -330,9 +338,9 @@ def validate_greenfield_authoring_response(
             allow_exact_dual_role_constraints=allow_exact_dual_role_constraints,
             first_path_event_orders=first_path_event_orders,
             source_owned_actor_facts=(accepted_source_duties is not None
-                and accepted_source_duties["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9"}),
+                and accepted_source_duties["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10"}),
             source_event_graph=(accepted_source_duties is not None
-                and accepted_source_duties["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9"}),
+                and accepted_source_duties["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10"}),
         )
         authored_component_relation_facts(
             title=str(intent.get("title") or ""),
@@ -510,15 +518,15 @@ def _accepted_source_actions(
     ledger = verified["ledger"]
     by_order: dict[int, dict[str, Any]] = {}
     path_orders: set[int] = set()
-    if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v6", "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9"}:
+    if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v6", "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10"}:
         from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
             project_greenfield_source_event_catalog,
         )
         catalog = project_greenfield_source_event_catalog(verified, evidence_text=evidence_text,
-                    _passive=ledger["version"] != "odylith.greenfield.source-duty-ledger.v9")
+                    _passive=ledger["version"] not in {"odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10"})
         if any(binding.get(section) != rows for section, rows in catalog["action_bindings"].items()):
             raise GreenfieldModelAuthoringError("Greenfield source action binding differs from its frozen catalog")
-        if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9"} and (
+        if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10"} and (
             [event.get("actor_fact") for event in events]
             != [event["actor_fact"] for event in catalog["events"]]
         ):

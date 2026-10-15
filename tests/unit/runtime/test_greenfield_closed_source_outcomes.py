@@ -15,41 +15,41 @@ from odylith.runtime.domain_intelligence.greenfield_host_candidate import greenf
 from odylith.runtime.domain_intelligence.greenfield_host_candidate_materialization import materialize_host_authored_intent
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import prepare_model_authoring_evidence, render_product_intent_preview
 from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import project_greenfield_source_event_catalog
-from odylith.runtime.domain_intelligence.greenfield_source_duty_compact import SOURCE_DUTY_COMPACT_VERSION, expand_compact_source_duty_ledger, greenfield_compact_source_duty_ledger_schema
+from odylith.runtime.domain_intelligence.greenfield_source_duty_authoring import SOURCE_DUTY_AUTHORING_VERSION, decode_source_duty_inventory, greenfield_source_duty_authoring_schema, _historical_compact_schema
 from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import source_duty_entailment_task
 from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import GreenfieldSourceDutyLedgerError, preflight_greenfield_source_duty_ledger, validate_greenfield_source_duty_ledger
 from odylith.runtime.domain_intelligence.proposal_memory import build_project_brief_source_markdown
 from tests.unit.install.test_greenfield_matrix_host_candidate import _flow
 from tests.unit.runtime.greenfield_model_authoring_fixtures import host_candidate_response, synthetic_source_duty_receipt
 from tests.unit.runtime.test_greenfield_model_path_custody import _source, _response
-from tests.unit.runtime.test_greenfield_source_duty_compact import _compact
+from tests.unit.runtime.test_greenfield_source_duty_compact import _compact, _inline
 from tests.unit.runtime.test_greenfield_source_duty_ledger import _ledger, _yes_decisions, EVIDENCE
 
 
 def _clarification():
-    return {"version": SOURCE_DUTY_COMPACT_VERSION,
+    return {"version": SOURCE_DUTY_AUTHORING_VERSION,
             "result": {"status": "clarification_required", "question": "Which system owns the history safeguard?"}}
 
 
 @pytest.mark.parametrize("field", ["product_identity", "citations", "evidence_controls", "first_path_actions", "system_duties"])
 def test_actual_provider_schema_and_compiler_refuse_mixed_clarification(field):
-    schema = greenfield_compact_source_duty_ledger_schema()
+    schema = greenfield_source_duty_authoring_schema()
     Draft202012Validator.check_schema(schema)
     mixed = _clarification()
-    mixed["result"][field] = _compact()["result"][field]
+    mixed["result"][field] = [] if field == "citations" else _inline()["result"][field]
     before = deepcopy(mixed)
     with pytest.raises(ValidationError):
         Draft202012Validator(schema).validate(mixed)
     with pytest.raises(GreenfieldSourceDutyLedgerError, match="closed result branch"):
-        expand_compact_source_duty_ledger(mixed)
+        decode_source_duty_inventory(mixed)
     assert mixed == before
 
 
 def test_closed_inventory_and_question_are_disjoint_with_exact_passive_compact_readback():
-    schema = greenfield_compact_source_duty_ledger_schema()
-    for outcome in (_compact(), _clarification()):
+    schema = greenfield_source_duty_authoring_schema()
+    for outcome in (_inline(), _clarification()):
         Draft202012Validator(schema).validate(outcome)
-    clarification = expand_compact_source_duty_ledger(_clarification())
+    clarification = decode_source_duty_inventory(_clarification())
     assert clarification["product_identity"] is None
     assert not any(value for key, value in clarification.items()
                    if key not in {"version", "status", "question"})
@@ -63,10 +63,10 @@ def test_closed_inventory_and_question_are_disjoint_with_exact_passive_compact_r
         with pytest.raises(ValidationError):
             Draft202012Validator(schema).validate(bad)
     passive = {"version": "odylith.greenfield.source-duty-compact.v6", **_compact()["result"]}
-    Draft202012Validator(greenfield_compact_source_duty_ledger_schema(_passive=True)).validate(passive)
-    assert expand_compact_source_duty_ledger(passive, _passive=True)["version"].endswith(".v8")
+    Draft202012Validator(_historical_compact_schema(_passive=True)).validate(passive)
+    assert decode_source_duty_inventory(passive, _passive=True)["version"].endswith(".v8")
     with pytest.raises(GreenfieldSourceDutyLedgerError):
-        expand_compact_source_duty_ledger(passive)
+        decode_source_duty_inventory(passive)
 
 
 def test_source_question_reaches_operator_without_verifier_candidate_or_repo_writes(tmp_path, monkeypatch):
@@ -85,7 +85,7 @@ def test_source_question_reaches_operator_without_verifier_candidate_or_repo_wri
         if "source-ledger-check" in command:
             assert "--decision-file" not in command
             raw = json.loads(Path(command[command.index("--ledger-file") + 1]).read_text())
-            ledger = expand_compact_source_duty_ledger(raw, evidence_text=flow.prompt)
+            ledger = decode_source_duty_inventory(raw, evidence_text=flow.prompt)
             preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=flow.prompt)
             assert preflight["claims"] == []
             return subprocess.CompletedProcess(command, 0, stdout=json.dumps({"mode": "clarification_required", "clarification": {"question": ledger["question"]}}), stderr="")
@@ -108,10 +108,10 @@ def test_passive_mixed_clarification_still_reaches_strict_preflight_refusal():
     for key, value in passive.items():
         if isinstance(value, list) and key != "citations":
             passive[key] = []
-    schema = greenfield_compact_source_duty_ledger_schema(_passive=True)
+    schema = _historical_compact_schema(_passive=True)
     Draft202012Validator(schema).validate(passive)
     source = "First Complete Path: A reviewer defines scope. Status records approval. Reference notes."
-    ledger = expand_compact_source_duty_ledger(passive, evidence_text=source, _passive=True)
+    ledger = decode_source_duty_inventory(passive, evidence_text=source, _passive=True)
     with pytest.raises(GreenfieldSourceDutyLedgerError, match="clarification must carry no inventory"):
         preflight_greenfield_source_duty_ledger(ledger, evidence_text=source,
             _passive_source_version="odylith.greenfield.source-duty-ledger.v8")

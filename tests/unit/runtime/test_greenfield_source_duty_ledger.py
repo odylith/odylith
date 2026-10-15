@@ -64,6 +64,7 @@ def _ledger() -> dict:
     }
     return {
         "version": SOURCE_DUTY_LEDGER_VERSION,
+        "nonperforming_participants": {field: [] for field in ("human_actors", "internal_systems", "external_systems")},
         "product_identity": {"basis": "explicit_name", "source_ref": _citation("Review workspace")},
         "status": "inventory",
         "question": "",
@@ -100,6 +101,7 @@ def _yes_decisions(preflight: dict, *, evidence_text: str = EVIDENCE) -> dict:
             for claim in preflight["claims"]
         },
         "source_completeness": {"verdict": "yes", "omissions": []},
+        **({"participant_decisions": {key: {field: "yes" for field in ("entity_name", "participant_type", "nonperformance", "identity_nonduplication")} for key in preflight["participant_claims"]}} if "participant_claims" in preflight else {}),
     }
 
 
@@ -825,14 +827,14 @@ def test_key_order_does_not_change_workflow_or_receipt_custody() -> None:
 
 
 def test_verifier_view_is_lossless_and_owns_one_copy_of_material_rows() -> None:
-    from odylith.runtime.domain_intelligence.greenfield_source_duty_compact import (
-        expand_compact_source_duty_ledger,
+    from odylith.runtime.domain_intelligence.greenfield_source_duty_authoring import (
+        decode_source_duty_inventory,
     )
 
     evidence, ledger = _material_duty_case()
     preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=evidence)
     task = source_duty_entailment_task(preflight, evidence_text=evidence)
-    assert expand_compact_source_duty_ledger(task["source_duty_ledger"]) == ledger
+    assert decode_source_duty_inventory(task["source_duty_ledger"]) == ledger
     assert "claims" not in task and "evidence_controls" not in task
     assert "claim_sha256" not in json.dumps(task)
     assert task["authority_source"] == evidence
@@ -965,6 +967,7 @@ def test_aggregate_thirty_three_action_duties_refuse_before_candidate_authoring(
 def test_exact_v5_receipt_task_and_hashes_remain_passive_and_refuse_fresh_use():
     ledger = _ledger()
     ledger["version"] = "odylith.greenfield.source-duty-ledger.v5"
+    ledger.pop("nonperforming_participants")
     ledger.pop("product_identity")
     evidence = EVIDENCE.removeprefix("Review workspace. ")
     del ledger["system_duties"][0]["performer_role"]

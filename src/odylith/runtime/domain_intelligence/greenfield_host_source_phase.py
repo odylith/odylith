@@ -14,7 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_host_flow import (
     _retain_host_output, _text_stream, _sha256_text, _is_within, _stream_excerpt,
     SOURCE_DUTY_DECISION_SET_VERSION,
     SOURCE_DUTY_LEDGER_RECEIPT_VERSION, preflight_greenfield_source_duty_ledger,
-    expand_compact_source_duty_ledger, source_duty_entailment_task,
+    source_duty_entailment_task,
 )
 from odylith.runtime.domain_intelligence.greenfield_host_transport import (
     qualify_host_candidate_argv, _resolved_host_argv,
@@ -23,7 +23,10 @@ from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment impor
     EDIT_SOURCE_DUTY_DECISION_SET_VERSION, greenfield_edit_preservation_view,
 )
 from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
-    EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION,
+    EDIT_SOURCE_DUTY_LEDGER_RECEIPT_VERSION, _validate_shape,
+)
+from odylith.runtime.domain_intelligence.greenfield_source_duty_authoring import (
+    decode_source_duty_inventory, greenfield_source_duty_authoring_schema,
 )
 
 @dataclass(frozen=True)
@@ -120,6 +123,11 @@ def run_source_duty_phase(*, flow, contract, source, host_workspace, host_argv,
         if not observation["source_ledger_temp_outside_repo"]:
             _fail("host-native source ledger path is inside the consumer repo",
                   observation=observation, stage="source-ledger-file")
+        try:
+            _validate_shape(host_ledger, greenfield_source_duty_authoring_schema(), "source ledger")
+        except ValueError as exc:
+            _fail("host-native source ledger violates the advertised authoring schema",
+                  observation=observation, stage="source-ledger", detail=str(exc))
         observation["stage"] = "source-ledger-preflight"
         preflight_timeout = deadline.request_timeout(PROVISIONAL_SOURCE_CHECK_TIMEOUT_SECONDS)
         observation["source_ledger_check_command_invocations"] = 1
@@ -158,7 +166,7 @@ def run_source_duty_phase(*, flow, contract, source, host_workspace, host_argv,
         # Share the compiler's custody owners: the task's hashes live in the
         # preflight and schema, rather than duplicated top-level task fields.
         expected_preflight = preflight_greenfield_source_duty_ledger(
-            expand_compact_source_duty_ledger(host_ledger, evidence_text=source),
+            decode_source_duty_inventory(host_ledger, evidence_text=source),
             evidence_text=source,
         )
         expected_task = source_duty_entailment_task(

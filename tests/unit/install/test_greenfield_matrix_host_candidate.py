@@ -19,7 +19,7 @@ from odylith.runtime.domain_intelligence import greenfield_host_transport as tra
 from scripts.release import greenfield_model_profiles as profile_module
 from scripts.release import greenfield_preconfirm_matrix as matrix_module
 from greenfield_matrix_release_artifacts import RetainedEvidenceCase
-from odylith.runtime.domain_intelligence.greenfield_source_duty_compact import expand_compact_source_duty_ledger
+from odylith.runtime.domain_intelligence.greenfield_source_duty_authoring import SOURCE_DUTY_AUTHORING_VERSION, decode_source_duty_inventory
 from odylith.runtime.domain_intelligence.greenfield_source_duty_entailment import source_duty_entailment_task
 from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
     SOURCE_DUTY_LEDGER_VERSION, preflight_greenfield_source_duty_ledger,
@@ -51,8 +51,9 @@ def _completed(argv: list[str], *, stdout: str = "", stderr: str = "", returncod
 def _fixture_host_ledger() -> dict:
     event = {"quote": "A reviewer creates a reviewable plan.",
              "context": "A reviewer creates a reviewable plan."}
-    return compact_source_duty_view({
-        "version": SOURCE_DUTY_LEDGER_VERSION, "status": "inventory", "question": "",
+    return {"version": SOURCE_DUTY_AUTHORING_VERSION, "result": {
+        "status": "inventory", "question": "",
+        "nonperforming_participants": {field: [] for field in ("human_actors", "internal_systems", "external_systems")},
         "product_identity": {"basis": "product_description", "source_ref": {
             "quote": "Review-planning workspace.", "context": "Review-planning workspace."}},
         "evidence_controls": [{"quote": "Notes are background only.",
@@ -68,7 +69,7 @@ def _fixture_host_ledger() -> dict:
         }],
         "supporting_human_actions": [], "system_duties": [], "state_fields": [],
         "off_path_transitions": [], "conditional_guards": [], "boundaries": [], "proof_duties": [],
-    })
+    }}
 
 
 def _flow(tmp_path: Path, *, candidate: object, contract: object, gate_decision: str = "admit"):
@@ -97,7 +98,7 @@ def _flow(tmp_path: Path, *, candidate: object, contract: object, gate_decision:
         "question": "What first path?" if gate_decision == "clarify" else "",
     }
     ledger = _fixture_host_ledger()
-    expanded = expand_compact_source_duty_ledger(ledger, evidence_text=source)
+    expanded = decode_source_duty_inventory(ledger, evidence_text=source)
     preflight = preflight_greenfield_source_duty_ledger(expanded, evidence_text=source)
     decision_task = source_duty_entailment_task(preflight, evidence_text=source)
     decision_set = {
@@ -106,6 +107,7 @@ def _flow(tmp_path: Path, *, candidate: object, contract: object, gate_decision:
         "decisions": {"d1": {"verdict": "yes",
                        "support_ref_indexes": [0], "role_ref_indexes": [0, 1]}},
         "source_completeness": {"verdict": "yes", "omissions": []},
+        "participant_decisions": {},
         "product_identity": {"verdict": "yes"},
     }
     ledger_receipt = validate_greenfield_source_duty_ledger(
@@ -248,7 +250,8 @@ def test_host_candidate_happy_path_is_one_shot_and_cleans_candidate_file(
     ]
     assert "{candidate_schema}" not in host_calls[3][0]
     assert "authority_gate" not in json.loads(host_calls[3][1])
-    assert json.loads(host_calls[3][1])["accepted_source_duty_inventory"] == _fixture_host_ledger()
+    assert json.loads(host_calls[3][1])["accepted_source_duty_inventory"] == compact_source_duty_view(
+        decode_source_duty_inventory(_fixture_host_ledger(), evidence_text=_FIXTURE_HOST_SOURCE))
     assert len(proposal_paths) == 1
     assert not proposal_paths[0].exists()
     assert not any(path == repo or repo in path.parents for path in proposal_paths)
@@ -328,7 +331,7 @@ def test_real_compiler_task_traverses_verifier_receipt_and_candidate(
     assert json.loads(host_calls[2][1]) == compiler_payload["decision_task"] == expected
     assert set(expected) == {
         "authority_source", "source_duty_ledger", "reference_index_order", "task",
-        "decision_set_schema", "verifier_task_sha256",
+        "decision_set_schema", "verifier_task_sha256", "participant_claims",
     }
     assert "source_sha256" not in expected
     assert "ledger_sha256" not in expected
@@ -1421,7 +1424,7 @@ def test_checker_refusal_retains_exact_reason_and_untrusted_omission_without_new
         decision = json.loads(Path(command[command.index("--decision-file") + 1]).read_bytes())
         with pytest.raises(ValueError) as refused:
             validate_greenfield_source_duty_ledger(
-                expand_compact_source_duty_ledger(ledger, evidence_text=flow.prompt),
+                decode_source_duty_inventory(ledger, evidence_text=flow.prompt),
                 evidence_text=flow.prompt, decision_set=decision,
             )
         checker_output.append(json.dumps({"mode": "error", "error": str(refused.value)}))

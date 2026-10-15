@@ -24,6 +24,16 @@ Claude orchestration hosts share this route; inference remains the pinned direct
 Codex Astra-medium profile. Missing Codex is an explicit no-write environment
 outcome, never a reason to silently change profiles.
 
+The inventory supplies exact source quotes with each fact. The compiler checks
+them and creates the citation references consumed by later stages. An invalid
+quote or context stops preparation; inspect retained evidence instead of editing
+the returned inventory or substituting a citation.
+Inventory and source verification also own the names and types of people and
+systems outside the workflow. The compiler supplies those participant facts to
+the candidate; proposed design cannot change them. Optional outside context
+remains outside the workflow. A missing or uncertain verification stops before
+candidate authoring.
+
 The standard gate/candidate window is shared 300 seconds plus 15 seconds of
 completion reserve. Inventory has a 300-second cap, verifier 120, and each ledger
 check 30. The entire supervised journey has a fixed 660-second diagnostic cap
