@@ -92,7 +92,7 @@ def _ledger() -> dict:
 def _yes_decisions(preflight: dict, *, evidence_text: str = EVIDENCE) -> dict:
     from tests.unit.runtime.greenfield_model_authoring_fixtures import affirmative_source_plan_fixture
     return {
-        **({"source_plan": affirmative_source_plan_fixture(preflight["ledger"])} if preflight["ledger"]["version"] == SOURCE_DUTY_LEDGER_VERSION else {}),
+        **({"source_plan": affirmative_source_plan_fixture(preflight["ledger"])} if preflight["ledger"]["version"] in {SOURCE_DUTY_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v12"} else {}),
         "version": source_duty_entailment_task(preflight, evidence_text=evidence_text)["decision_set_schema"]["properties"]["version"]["enum"][0],
         **({"product_identity": {"verdict": "yes"}} if "product_identity" in preflight["ledger"] else {}),
         "verifier_task_sha256": source_duty_entailment_task(
@@ -692,13 +692,13 @@ def test_reference_only_source_cannot_be_promoted_to_action_event() -> None:
             "target": "the template",
         }
     )
-    with pytest.raises(GreenfieldSourceDutyLedgerError, match="reference-only"):
+    with pytest.raises(GreenfieldSourceDutyLedgerError, match="conflicts with ledger.evidence_controls"):
         preflight_greenfield_source_duty_ledger(ledger, evidence_text=EVIDENCE)
     ledger = _ledger()
     row = ledger["system_duties"][0]
     row["actor_ref"] = _citation("notes")
     row["statement"] = "notes records the submission"
-    with pytest.raises(GreenfieldSourceDutyLedgerError, match="reference-only"):
+    with pytest.raises(GreenfieldSourceDutyLedgerError, match="conflicts with ledger.evidence_controls"):
         preflight_greenfield_source_duty_ledger(ledger, evidence_text=EVIDENCE)
 
 

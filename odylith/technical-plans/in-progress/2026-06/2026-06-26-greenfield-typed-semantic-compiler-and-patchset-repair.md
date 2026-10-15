@@ -1,6 +1,65 @@
 Status: In progress
 
-## Current gate: verify the source-owned complete workflow live (2026-10-15)
+## Current gate: resolve contradictory source-context ownership (2026-10-15)
+
+The one source63 parent at pushed `290fc9a1e` fails source preflight after
+159.862 seconds, before verifier or candidate. The contract requires retaining
+the optional loan catalog as a nonperformer, but rejects its unique name inside
+the same sentence classified as supporting reference context. Independent
+review identifies this P1 ownership contradiction and a separate P1 inventory
+misclassification of the complete first-path requirement as an authoring
+instruction. The overlap error also lacks field paths and spans. Diagnosis:
+`7809e6ba08bc4eeed634bc9221baf62001b136835e79341113c49151f514e737`.
+
+Preserve the failed inventory, consumer and canonical migration journal. All
+25 source pins and the strict baseline remain unchanged; both supervising
+processes are retired. Raw archive:
+`b0fb4e7f2826a7761a0ed6523ce1b8ce2047e4db702e1411b0d169691190943a`.
+Resolve the existing context/participant contract, preserve all passive tasks
+and receipts, and prove nonpromotion to actions, path, dependencies or authority
+before a versioned successor and independent review. No repair, retry, source
+change or release credit follows from this failure. Protected final stays closed.
+
+Approve the bounded sixteen-owner correction in design
+`3126861f277bdafd9032b7867b4abfc3403b2b164884935f0f6644e1f281cf05`
+and persisted-readback amendment
+`52a72b26ff8701ccbd733e88e6c1373fec70ac157cabb373b0ebf64e62aca915`.
+One existing ledger policy governs exact participant-only context use and all
+forbidden product uses at source, canonical and persisted readback boundaries.
+Reuse current participant judgments and source completeness; no new model stage,
+response field or parser. Fresh authoring5/source13/preflight12/decisions20+21/
+receipts26+27/compact11/host64 keeps candidate27/transport7 and canonical meanings.
+Preserve exact source12 tasks/receipts24+25 and all older history. The pre-edit
+manifest is `acf3b572da78db086fec9448b9af98771b987990895e1fee22bcf4487a6fe180`.
+Implementation, frozen affected proof and independent review precede a separate
+single-live authorization; this approval grants no trial or release credit.
+
+The sixteen production owners are frozen at second manifest
+`bccb71c7822b8fdd352ecc714aab886d78bd69a67a6b4d59475b4de3c084d097`.
+A source12 EDIT characterization exposes and closes one prior-plan dispatch
+predicate after the initial focused freeze; the other fifteen owners and nine
+watched sources stay exact. Independent source review passes 204 checks and
+separate delta review is clear. Exact historical task/receipt replay remains
+separate from fresh host authority and from synthetic EDIT evidence.
+
+The final 29-module gate passes 1,044 tests in 202.96 seconds. Retain the initial
+3-failure/1,041-pass run and its three test-only corrections: current compact
+version, explicit passive-context refusal, and AST-based regex-import detection.
+Another 70 hygiene, exact-question and desktop/mobile Atlas normal, fallback,
+error and empty checks pass. D-045 is reduced to twelve nodes and rendered with
+47 fresh/zero stale diagrams. All source/test hashes remain exact; maximum
+source/test sizes are 1,190/1,467 lines. Native, seven full-rehash negatives,
+nonempty synthetic EDIT, history and actual size-boundary evidence are archived
+under validation manifest
+`a4ae6358b05376703e769602191122757641245aba53f3ebcc51958ddae0ac88`.
+Final artifact review is clear:
+`a1f9e61ed35de4f33aeafa66fd936f0f06941dd412bf0b977903cbd0d8797f94`.
+All 21 immutable witness, 90 final evidence and 55 source/watch/test pins match.
+Settle governed truth, push this exact checkpoint and authorize one separate
+unchanged-request preview. No live or release credit follows from synthetic
+checks; protected final stays closed.
+
+### Reviewed source63 implementation, live delivery still unproved
 
 The frozen source63 correction passes all 930 affected tests in 159.31 seconds,
 including the five driver modules' 87 checks. The separate 58-check selection
@@ -10,8 +69,8 @@ the initial atomic-path and historical-dispatch findings with 75 probes; eight
 Atlas closure probes pass. Final artifact review is clear, with all 18 source,
 27 test and 23 witness hashes exact (report SHA-256
 `28e1eb3a700b17e3f2794bf1bf32a373ea585a350e2081f62bce709be27225b0`).
-After a pushed governed checkpoint, run one predeclared parent on the unchanged
-request. Synthetic sealed transactions and EDIT witnesses provide structural
+The pushed governed checkpoint's one unchanged-request parent fails as recorded
+above. Synthetic sealed transactions and EDIT witnesses provide structural
 proof only. Current full hosted CI, live delivery and every release gate remain
 open. Keep the failures and intermediate freezes below as historical evidence.
 

@@ -282,7 +282,7 @@ def _bounded_prior(lengths, root):
     human = deepcopy(receipt["ledger"]["first_path_actions"][0]["actor_ref"])
     human["context"] = receipt["ledger"]["first_path_actions"][0]["event_ref"]["quote"]
     extra = [f"{human['quote']} records receipt {index:02d}." for index in range(25, 33)]
-    prompt = old_prepared.prompt + " " + " ".join(extra) + " " + paragraph + " Additional bounded reference context: " + "y" * 3600
+    prompt = old_prepared.prompt + " " + " ".join(extra) + " " + paragraph + " Additional bounded reference context: " + "y" * 4000
     prepared = prepare_model_authoring_evidence(prompt=prompt)
     source = prepared.evidence_source
     ledger = deepcopy(receipt["ledger"])
@@ -547,7 +547,7 @@ def test_fresh_host62_refuses_valid_legacy_receipts_before_candidate_or_seal(tmp
     assert legacy["version"].endswith((".v21" if edit else ".v20") if generation == "roster" else (".v19" if edit else ".v18") if generation == "inline" else (".v17" if edit else ".v16"))
     assert verify_greenfield_source_duty_ledger_receipt(legacy, evidence_text=source) == legacy
     contract = host.greenfield_host_candidate_contract(source, edit_preservation=context)
-    assert contract["version"].endswith(".v63")
+    assert contract["version"].endswith(".v64")
     calls = []
     monkeypatch.setattr(host, "canonical_greenfield_host_candidate", lambda *a, **kw: calls.append("candidate/seal"))
     with pytest.raises(ValueError, match="receipt version"):

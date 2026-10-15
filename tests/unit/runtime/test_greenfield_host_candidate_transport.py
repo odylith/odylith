@@ -224,7 +224,7 @@ def test_inventory_schema_qualification_still_refuses_before_dispatch(tmp_path, 
     assert installed == calls == proposals == []
 
 
-@pytest.mark.parametrize("outcome", ["inventory", "clarification", "invalid_citation", "roster", "roster_no", "roster_uncertain", "roster_missing", "old_inline", "old_roster", "plan", "plan_no", "plan_uncertain", "plan_missing"])
+@pytest.mark.parametrize("outcome", ["inventory", "clarification", "invalid_citation", "roster", "roster_no", "roster_uncertain", "roster_missing", "old_inline", "old_roster", "plan", "plan_no", "plan_uncertain", "plan_missing", "context", "context_no", "context_uncertain", "context_missing", "old_plan"])
 def test_native_inline_response_is_retained_then_checked_by_installed_cli(tmp_path, outcome) -> None:
     from contextlib import redirect_stdout
     import hashlib
@@ -255,7 +255,11 @@ def test_native_inline_response_is_retained_then_checked_by_installed_cli(tmp_pa
         from tests.unit.runtime.test_greenfield_source_run_plan import seven_action_system_result_case
         prompt, _, _, receipt = seven_action_system_result_case()
         ledger = receipt["ledger"]
-    inventory_outcome = outcome == "inventory" or outcome.startswith(("roster", "plan"))
+    if outcome.startswith("context"):
+        from tests.unit.runtime.test_greenfield_source_context_authority import context_case
+        prompt, _, _, receipt = context_case()
+        ledger = receipt["ledger"]
+    inventory_outcome = outcome == "inventory" or outcome.startswith(("roster", "plan", "context"))
     source = prepare_model_authoring_evidence(prompt=prompt, source_language="en").evidence_source
     expected_preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=source)
     expected_compact = compact_source_duty_view(ledger)
@@ -270,6 +274,8 @@ def test_native_inline_response_is_retained_then_checked_by_installed_cli(tmp_pa
         for rows in wire["result"]["nonperforming_participants"].values():
             for ref in rows:
                 ref.pop("mention_ordinal")
+    elif outcome == "old_plan":
+        wire["version"] = "odylith.greenfield.source-duty-authoring.v4"
     elif outcome == "old_inline":
         wire["version"] = "odylith.greenfield.source-duty-authoring.v1"
         wire["result"].pop("nonperforming_participants")
@@ -287,7 +293,7 @@ def test_native_inline_response_is_retained_then_checked_by_installed_cli(tmp_pa
         if schema_path.name == "source-ledger-schema.json":
             assert schema == contract["source_ledger"]["source_ledger_schema"]
             assert schema["properties"]["version"]["enum"] == [SOURCE_DUTY_AUTHORING_VERSION]
-            if outcome not in {"old_inline", "old_roster"}:
+            if outcome not in {"old_inline", "old_roster", "old_plan"}:
                 Draft202012Validator(schema).validate(wire)
             assert 0 < kwargs["timeout"] <= 300
             return subprocess.CompletedProcess(command, 0, stdout=raw.decode("utf-8"), stderr="")
@@ -300,11 +306,15 @@ def test_native_inline_response_is_retained_then_checked_by_installed_cli(tmp_pa
             decisions["participant_decisions"]["/external_systems/0"]["nonperformance"] = outcome.removeprefix("roster_")
         elif outcome == "roster_missing":
             decisions["participant_decisions"].pop("/external_systems/0")
+        if outcome in {"context_no", "context_uncertain"}:
+            decisions["participant_decisions"]["/external_systems/0"]["entity_name"] = outcome.removeprefix("context_")
+        elif outcome == "context_missing":
+            del decisions["participant_decisions"]["/external_systems/0"]["entity_name"]
         if outcome in {"plan_no", "plan_uncertain"}:
             decisions["source_plan"]["first_run"]["completeness"] = outcome.removeprefix("plan_")
         elif outcome == "plan_missing":
             del decisions["source_plan"]["terminal"]["producing_duty"]
-        if outcome not in {"roster_missing", "plan_missing"}:
+        if outcome not in {"roster_missing", "plan_missing", "context_missing"}:
             Draft202012Validator(schema).validate(decisions)
         return subprocess.CompletedProcess(command, 0, stdout=json.dumps(decisions), stderr="")
 
@@ -334,8 +344,8 @@ def test_native_inline_response_is_retained_then_checked_by_installed_cli(tmp_pa
     kwargs = dict(flow=flow, contract=contract, source=source, host_workspace=workspace,
         host_argv=flow.host_argv, deadline=WholeJourneyDeadline(time.monotonic(), time.monotonic),
         observation=observation, invoke_host=invoke_host, check_payload=_accepted_request()[3])
-    if outcome in {"invalid_citation", "old_inline", "old_roster", "roster_no", "roster_uncertain", "roster_missing", "plan_no", "plan_uncertain", "plan_missing"}:
-        with pytest.raises(host.HostCandidateFlowError, match=("advertised authoring schema" if outcome in {"old_inline", "old_roster"} else "decision check returned nonzero" if outcome.startswith(("roster_", "plan_")) else "preflight returned nonzero")):
+    if outcome in {"invalid_citation", "old_inline", "old_roster", "roster_no", "roster_uncertain", "roster_missing", "plan_no", "plan_uncertain", "plan_missing", "context_no", "context_uncertain", "context_missing", "old_plan"}:
+        with pytest.raises(host.HostCandidateFlowError, match=("advertised authoring schema" if outcome in {"old_inline", "old_roster", "old_plan"} else "decision check returned nonzero" if outcome.startswith(("roster_", "plan_", "context_")) else "preflight returned nonzero")):
             run_source_duty_phase(**kwargs)
     else:
         result = run_source_duty_phase(**kwargs)
@@ -348,7 +358,7 @@ def test_native_inline_response_is_retained_then_checked_by_installed_cli(tmp_pa
     assert retained["raw"] == raw
     assert observation["source_ledger_output_sha256"] == hashlib.sha256(raw).hexdigest()
     assert len(host_calls) == (2 if inventory_outcome else 1)
-    assert len(installed_calls) == (2 if inventory_outcome else 0 if outcome in {"old_inline", "old_roster"} else 1)
+    assert len(installed_calls) == (2 if inventory_outcome else 0 if outcome in {"old_inline", "old_roster", "old_plan"} else 1)
     assert observation["candidate_host_invocations"] == observation["proposal_command_invocations"] == 0
     assert proposals == []
     import os

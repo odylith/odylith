@@ -33,7 +33,7 @@ from odylith.runtime.domain_intelligence.greenfield_source_duty_view import (
 )
 
 _ACTION_CITATION_FIELDS = ("event_ref", "actor_ref")
-SOURCE_DUTY_AUTHORING_VERSION = "odylith.greenfield.source-duty-authoring.v4"
+SOURCE_DUTY_AUTHORING_VERSION = "odylith.greenfield.source-duty-authoring.v5"
 
 
 def _citation_id_schema() -> dict[str, Any]:
@@ -58,7 +58,7 @@ def _historical_compact_schema(*, _passive: bool = False, _roster: bool = False,
     properties["version"] = {
         "type": "string",
         "maxLength": MAX_AUTHORED_FIELD_VALUE_CHARS,
-        "enum": [("odylith.greenfield.source-duty-compact.v8" if _source_version == ROSTER_SOURCE_DUTY_LEDGER_VERSION else "odylith.greenfield.source-duty-compact.v9" if _source_version == SELECTED_SOURCE_DUTY_LEDGER_VERSION else SOURCE_DUTY_COMPACT_VERSION) if _roster else "odylith.greenfield.source-duty-compact.v6" if _passive else "odylith.greenfield.source-duty-compact.v7"],
+        "enum": [("odylith.greenfield.source-duty-compact.v8" if _source_version == ROSTER_SOURCE_DUTY_LEDGER_VERSION else "odylith.greenfield.source-duty-compact.v9" if _source_version == SELECTED_SOURCE_DUTY_LEDGER_VERSION else "odylith.greenfield.source-duty-compact.v10" if _source_version == "odylith.greenfield.source-duty-ledger.v12" else SOURCE_DUTY_COMPACT_VERSION) if _roster else "odylith.greenfield.source-duty-compact.v6" if _passive else "odylith.greenfield.source-duty-compact.v7"],
     }
     properties["citations"] = {
         "type": "array",
@@ -71,7 +71,7 @@ def _historical_compact_schema(*, _passive: bool = False, _roster: bool = False,
             }
         ),
     }
-    if _roster and _source_version in (None, SELECTED_SOURCE_DUTY_LEDGER_VERSION):
+    if _roster and _source_version in (None, SELECTED_SOURCE_DUTY_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v12"):
         ordinary = properties["citations"]["items"]
         selected = deepcopy(ordinary)
         selected["required"].append("mention_ordinal")
@@ -105,7 +105,7 @@ def _historical_compact_schema(*, _passive: bool = False, _roster: bool = False,
     if _roster:
         for field in PARTICIPANT_FIELDS:
             properties["nonperforming_participants"]["properties"][field]["items"] = _citation_id_schema()
-    if _roster and _source_version is None:
+    if _roster and _source_version in (None, "odylith.greenfield.source-duty-ledger.v12"):
         properties["source_precedence"]["items"]["properties"]["constraint_ref"] = _citation_id_schema()
         terminal = properties["terminal"]["anyOf"][0]["properties"]
         terminal["proof_boundary"] = _citation_id_schema()
@@ -228,7 +228,7 @@ def _expand_historical_compact_inventory(
             field: [resolve(ref, f"nonperforming_participants.{field}[{index}]")
                     for index, ref in enumerate(value["nonperforming_participants"][field])]
             for field in PARTICIPANT_FIELDS}
-    if _roster and _source_version is None:
+    if _roster and _source_version in (None, "odylith.greenfield.source-duty-ledger.v12"):
         for row in expanded["source_precedence"]:
             row["constraint_ref"] = resolve(row["constraint_ref"], "source_precedence.constraint_ref")
         if expanded["terminal"] is not None:
@@ -241,7 +241,7 @@ def _expand_historical_compact_inventory(
         raise GreenfieldSourceDutyLedgerError(
             "compact citations must all be referenced"
         )
-    if _roster and _source_version in (None, SELECTED_SOURCE_DUTY_LEDGER_VERSION):
+    if _roster and _source_version in (None, SELECTED_SOURCE_DUTY_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v12"):
         _validate_shape(expanded, greenfield_source_duty_ledger_schema(_passive_source_version=_source_version), "ledger")
     resolve_greenfield_transition_state_fields(expanded)
     return expanded
@@ -249,18 +249,18 @@ def _expand_historical_compact_inventory(
 
 def greenfield_source_duty_authoring_schema(*, _passive: bool = False, _passive_source_version: str | None = None) -> dict[str, Any]:
     """Use the material ledger's inline citation schema in one closed authoring envelope."""
-    if _passive_source_version not in (None, ROSTER_SOURCE_DUTY_LEDGER_VERSION, SELECTED_SOURCE_DUTY_LEDGER_VERSION):
+    if _passive_source_version not in (None, ROSTER_SOURCE_DUTY_LEDGER_VERSION, SELECTED_SOURCE_DUTY_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v12"):
         raise GreenfieldSourceDutyLedgerError("passive authoring source version is invalid")
     properties = deepcopy(greenfield_source_duty_ledger_schema(
         _passive_source_version=INLINE_SOURCE_DUTY_LEDGER_VERSION if _passive else _passive_source_version)["properties"])
     version = properties.pop("version")
-    version["enum"] = ["odylith.greenfield.source-duty-authoring.v1" if _passive else "odylith.greenfield.source-duty-authoring.v2" if _passive_source_version == ROSTER_SOURCE_DUTY_LEDGER_VERSION else "odylith.greenfield.source-duty-authoring.v3" if _passive_source_version == SELECTED_SOURCE_DUTY_LEDGER_VERSION else SOURCE_DUTY_AUTHORING_VERSION]
+    version["enum"] = ["odylith.greenfield.source-duty-authoring.v1" if _passive else "odylith.greenfield.source-duty-authoring.v2" if _passive_source_version == ROSTER_SOURCE_DUTY_LEDGER_VERSION else "odylith.greenfield.source-duty-authoring.v3" if _passive_source_version == SELECTED_SOURCE_DUTY_LEDGER_VERSION else "odylith.greenfield.source-duty-authoring.v4" if _passive_source_version == "odylith.greenfield.source-duty-ledger.v12" else SOURCE_DUTY_AUTHORING_VERSION]
     question = deepcopy(properties["question"])
     question["minLength"] = 1
     properties["status"]["enum"] = ["inventory"]
     properties["question"]["enum"] = [""]
     properties["product_identity"] = properties["product_identity"]["anyOf"][0]
-    if _passive_source_version is None and not _passive:
+    if _passive_source_version in (None, "odylith.greenfield.source-duty-ledger.v12") and not _passive:
         properties["terminal"] = properties["terminal"]["anyOf"][0]
     return _closed_object({
         "version": version,
@@ -278,8 +278,8 @@ def _clarification_ledger(question: str, *, version: str = SOURCE_DUTY_LEDGER_VE
     return {
         "version": version,
         **({"nonperforming_participants": {field: [] for field in ("human_actors", "internal_systems", "external_systems")}}
-           if version in {SOURCE_DUTY_LEDGER_VERSION, ROSTER_SOURCE_DUTY_LEDGER_VERSION, SELECTED_SOURCE_DUTY_LEDGER_VERSION} else {}),
-        **({"source_precedence": [], "first_run": {"duty_ids": []}, "terminal": None} if version == SOURCE_DUTY_LEDGER_VERSION else {}),
+           if version in {SOURCE_DUTY_LEDGER_VERSION, ROSTER_SOURCE_DUTY_LEDGER_VERSION, SELECTED_SOURCE_DUTY_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v12"} else {}),
+        **({"source_precedence": [], "first_run": {"duty_ids": []}, "terminal": None} if version in {SOURCE_DUTY_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v12"} else {}),
         "status": "clarification_required", "question": question,
         "product_identity": None, "evidence_controls": [],
         **{section: [] for section, _ in DUTY_SECTIONS},
@@ -291,9 +291,9 @@ def decode_source_duty_inventory(
 ) -> dict[str, Any]:
     """Decode one explicit wire version, leaving citation semantics with the ledger owner."""
     version = value.get("version") if isinstance(value, Mapping) else None
-    if version in {SOURCE_DUTY_AUTHORING_VERSION, "odylith.greenfield.source-duty-authoring.v1", "odylith.greenfield.source-duty-authoring.v2", "odylith.greenfield.source-duty-authoring.v3"} and not _passive:
+    if version in {SOURCE_DUTY_AUTHORING_VERSION, "odylith.greenfield.source-duty-authoring.v1", "odylith.greenfield.source-duty-authoring.v2", "odylith.greenfield.source-duty-authoring.v3", "odylith.greenfield.source-duty-authoring.v4"} and not _passive:
         historical_inline = version == "odylith.greenfield.source-duty-authoring.v1"
-        passive_version = INLINE_SOURCE_DUTY_LEDGER_VERSION if historical_inline else ROSTER_SOURCE_DUTY_LEDGER_VERSION if version == "odylith.greenfield.source-duty-authoring.v2" else SELECTED_SOURCE_DUTY_LEDGER_VERSION if version == "odylith.greenfield.source-duty-authoring.v3" else None
+        passive_version = INLINE_SOURCE_DUTY_LEDGER_VERSION if historical_inline else ROSTER_SOURCE_DUTY_LEDGER_VERSION if version == "odylith.greenfield.source-duty-authoring.v2" else SELECTED_SOURCE_DUTY_LEDGER_VERSION if version == "odylith.greenfield.source-duty-authoring.v3" else "odylith.greenfield.source-duty-ledger.v12" if version == "odylith.greenfield.source-duty-authoring.v4" else None
         source_version = passive_version or SOURCE_DUTY_LEDGER_VERSION
         _validate_shape(value, greenfield_source_duty_authoring_schema(_passive=historical_inline, _passive_source_version=passive_version if not historical_inline else None), "ledger")
         result = value["result"]
@@ -309,6 +309,8 @@ def decode_source_duty_inventory(
         return ledger
     if version == SOURCE_DUTY_COMPACT_VERSION and not _passive:
         return _expand_historical_compact_inventory(value, evidence_text=evidence_text, _roster=True)
+    if version == "odylith.greenfield.source-duty-compact.v10" and not _passive:
+        return _expand_historical_compact_inventory(value, evidence_text=evidence_text, _roster=True, _source_version="odylith.greenfield.source-duty-ledger.v12")
     if version == "odylith.greenfield.source-duty-compact.v9" and not _passive:
         return _expand_historical_compact_inventory(value, evidence_text=evidence_text, _roster=True, _source_version=SELECTED_SOURCE_DUTY_LEDGER_VERSION)
     if version == "odylith.greenfield.source-duty-compact.v8" and not _passive:

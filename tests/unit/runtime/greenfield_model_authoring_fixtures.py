@@ -213,7 +213,7 @@ def synthetic_source_duty_receipt_for_ledger(
     """Approve a fixture-only ledger; production must obtain an independent verdict."""
 
     passive_version = ledger["version"] if ledger["version"] in {
-        "odylith.greenfield.source-duty-ledger.v5", "odylith.greenfield.source-duty-ledger.v6", "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11"} else None
+        "odylith.greenfield.source-duty-ledger.v5", "odylith.greenfield.source-duty-ledger.v6", "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12"} else None
     preflight = preflight_greenfield_source_duty_ledger(
         ledger, evidence_text=evidence_text, _passive_source_version=passive_version,
     )
@@ -222,11 +222,11 @@ def synthetic_source_duty_receipt_for_ledger(
     )
     decision_set = {
         "version": decision_task["decision_set_schema"]["properties"]["version"]["enum"][0],
-        **({"product_identity": {"verdict": "yes"}} if passive_version in (None, "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11") else {}),
+        **({"product_identity": {"verdict": "yes"}} if passive_version in (None, "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12") else {}),
         "verifier_task_sha256": decision_task["verifier_task_sha256"],
         "source_completeness": {"verdict": "yes", "omissions": []},
         **({"participant_decisions": {key: {field: "yes" for field in ("entity_name", "participant_type", "nonperformance", "identity_nonduplication")} for key in preflight["participant_claims"]}} if "participant_claims" in preflight else {}),
-        **({"source_plan": affirmative_source_plan_fixture(ledger)} if passive_version is None else {}),
+        **({"source_plan": affirmative_source_plan_fixture(ledger)} if passive_version in (None, "odylith.greenfield.source-duty-ledger.v12") else {}),
         "decisions": {
             claim["duty_id"]: {
                 "verdict": "yes",

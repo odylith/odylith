@@ -34,6 +34,13 @@ the candidate; proposed design cannot change them. Optional outside context
 remains outside the workflow. A missing or uncertain verification stops before
 candidate authoring.
 
+Supporting context can name an explicitly associated person or system without
+giving it a workflow action or approval authority. Instructions about handling
+evidence or writing the proposal cannot establish product facts. Requirements
+about the product's workflow, checks and proof remain product evidence, including
+requirements written as instructions. Preparation and saved-project readback
+apply the same distinction; a conflicting classification stops the proposal.
+
 Source verification also establishes the complete first run and its required
 result before design begins. The compiler carries that plan forward; candidate
 authoring assigns the design and explains it. The declared path keeps its

@@ -1,6 +1,91 @@
 - Bug ID: CB-324
 
-## Latest implementation checkpoint (2026-10-15)
+## Current live failure: optional context conflicts with participant custody (2026-10-15)
+
+The single source63 parent at pushed `290fc9a1e` fails source preflight after
+159.862 seconds. Authority and inventory complete; verification, candidate,
+proposal and completion receipt do not run. The optional loan catalog's exact
+name at bytes [3095,3116) lies within its reference-context sentence at
+[3091,3245). The contract requires retaining this catalog as a nonperformer,
+then rejects every participant overlapping reference context. Independent
+diagnosis establishes that P1 contradiction. A separate P1 authoring error
+labels the complete first-path constraint as an authoring instruction while
+also citing it for precedence. The generic overlap error omits both paths and
+spans. Diagnosis SHA-256:
+`7809e6ba08bc4eeed634bc9221baf62001b136835e79341113c49151f514e737`.
+
+All 25 source pins and the strict working/published baseline remain exact;
+parent and guardian are retired. Thirty-two raw members are archived and read
+back with SHA-256
+`b0fb4e7f2826a7761a0ed6523ce1b8ce2047e4db702e1411b0d169691190943a`.
+Preserve the consumer and its canonical migration journal. A separate journal
+inventory corrects an initial filename-only glob that missed that journal;
+its read-back archive is
+`0f8c53c7631e451bc0d32d6dd0ce45bf7f10560d69408b6f1583bd0ee8a3f805`.
+
+Resolve context and participant ownership before another trial. Optional
+context may describe a typed nonperformer without creating an action,
+required path, dependency or authority. Product workflow constraints must not
+be classified as evidence-handling instructions. Preserve exact source and
+all failures; do not repair or resubmit this raw inventory. The complete-run
+implementation below has not reached live verification or candidate admission.
+
+The bounded successor uses one existing ledger-owned control policy for source,
+canonical and persisted fact validation. Reference context may support only the
+exact verified nonperformer field/index/span; instructions support no participant
+or product claim. Product uses remain forbidden, including a competing link on
+an otherwise permitted participant atom. Independent design review identifies
+the persisted-readback obligation; the accepted amendment closes it within the
+sixteen listed existing owners. Design SHA-256:
+`3126861f277bdafd9032b7867b4abfc3403b2b164884935f0f6644e1f281cf05`;
+amendment `52a72b26ff8701ccbd733e88e6c1373fec70ac157cabb373b0ebf64e62aca915`.
+Exact source12 task/receipt24+25 preimages are frozen before implementation.
+The initial host64/source13 implementation was frozen in sixteen existing owners.
+The 48 focused context/readback checks pass in 5.51 seconds, including four
+fully compiled and rehashed forbidden product-fact specimens and the exact
+contextual participant companion. All nine other watched source pins remain
+unchanged. Freeze SHA-256:
+`2da378d73240c72b08e9e7d619333ece78edd686c60a182457db7ec87656fb02`.
+Pure readers reproduce both exact source12 tasks/receipts24+25 and their
+available transactions. The initial missing decision18 validator branch failure
+is retained. The final verification below supersedes this focused proof; no
+source64 live trial is authorized by focused implementation proof alone.
+
+### Current source64 verification
+
+The second freeze corrects one historical dispatch predicate: both source12 and
+source13 own a complete source plan. The refusal is independently reproduced
+under the first freeze and closes under the second; the other fifteen owners
+and nine watched source files remain exact. Freeze SHA-256:
+`bccb71c7822b8fdd352ecc714aab886d78bd69a67a6b4d59475b4de3c084d097`.
+Independent source review passes 204 checks; the separate binding delta review
+is clear. Exact source12 raw tasks and receipts remain readable without granting
+fresh host64 authority.
+
+The final 29-module gate passes all 1,044 tests in 202.96 seconds. Its first
+3-failure/1,041-pass result is retained. The corrections update the compact
+version assertion, keep the earlier blanket-context refusal on passive source12,
+and check actual regex imports with AST rather than matching a helper name.
+No production or shared-fixture change follows that first combined run.
+Another 70 checks pass hygiene, the exact closed question, actual D-043, and
+Atlas normal, fallback, error and empty states at desktop and two mobile sizes.
+The D-045 diagram is reduced from forty nodes to twelve and its actual rendering
+is visually checked. All watched sources and the shared fixture remain exact.
+
+Native in-process CLI witnesses, seven fully rehashed forbidden fact bindings,
+allowed participant companions, actual size-limit/max-plus-one requests,
+nonempty synthetic EDIT preservation and alternate-mention refusal are retained.
+These are development proof, not genuine EDIT, live delivery or release proof.
+Validation manifest SHA-256:
+`a4ae6358b05376703e769602191122757641245aba53f3ebcc51958ddae0ac88`;
+read-back archive `5aa2a929a2e6d6de10a7f606e6cc6a3329f434a4e67a2eece5222e2d2020f2f5`.
+Final independent artifact review is clear, with all 21 immutable witness,
+90 final evidence and 55 source/watch/test pins exact. Report SHA-256:
+`a1f9e61ed35de4f33aeafa66fd936f0f06941dd412bf0b977903cbd0d8797f94`.
+Preserve the original source63 failure. One separately declared unchanged-request
+trial follows this reviewed checkpoint and push; no release gate is waived.
+
+## Reviewed implementation checkpoint (2026-10-15)
 
 The source63 correction passes 930 affected checks in 159.31 seconds, including
 all 87 driver checks. Another 58 hygiene, closed-question and rendered Atlas
@@ -10,11 +95,11 @@ Atlas review closes its collision finding with eight probes. Final artifact
 review is clear, verifying all 18 production, 27 test and 23 witness hashes:
 `28e1eb3a700b17e3f2794bf1bf32a373ea585a350e2081f62bce709be27225b0`.
 Synthetic transaction, history, nonempty EDIT and serialized
-boundary witnesses do not qualify a live project or release. The next gate is
-one predeclared unchanged-request trial after review and checkpoint publication.
+boundary witnesses do not qualify a live project or release. The one following
+unchanged-request trial fails source preflight as recorded above.
 The original failure below remains failed; all release gates remain open.
 
-## Current live failure: complete-path ownership disagrees (2026-10-15)
+## Prior live failure: complete-path ownership disagrees (2026-10-15)
 
 The one predeclared source62 parent at pushed `c3de3667b` fails after
 319.997 seconds. Authority, inventory, source-only verification and candidate

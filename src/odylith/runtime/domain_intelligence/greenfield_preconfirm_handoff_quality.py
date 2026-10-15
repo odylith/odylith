@@ -100,7 +100,7 @@ def _authored_project_dashboard_contract_issues(
         "product_story": intent.get("product_story"),
         "first_path": intent.get("first_path"),
         "proof_boundary": str(intent.get("proof_boundary") or ""),
-        "visible_result": (authored_checkpoint_text(intent) if (intent.get(AUTHORED_SEMANTICS_KEY, {}).get("source_duty") or {}).get("ledger_receipt", {}).get("ledger", {}).get("version") == "odylith.greenfield.source-duty-ledger.v12" else authored_visible_result(relations)),
+        "visible_result": (authored_checkpoint_text(intent) if (intent.get(AUTHORED_SEMANTICS_KEY, {}).get("source_duty") or {}).get("ledger_receipt", {}).get("ledger", {}).get("version") in {"odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"} else authored_visible_result(relations)),
     }
     for key, expected in expected_scalars.items():
         if facts.get(key) != expected:

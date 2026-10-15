@@ -98,7 +98,7 @@ def test_exact_utf8_roster_order_and_equal_labels_keep_distinct_typed_addresses(
         addresses.append(start)
     assert addresses[0] != addresses[1]
     compact = compact_source_duty_view(ledger)
-    assert compact["version"].endswith(".v10")
+    assert compact["version"].endswith(".v11")
     assert decode_source_duty_inventory(compact, evidence_text=source) == ledger
     assert len(compact["result"]["citations"]) == len({(r["q"], r["c"], r.get("mention_ordinal")) for r in compact["result"]["citations"]})
 
@@ -161,7 +161,12 @@ def test_roster_table_and_source_completeness_refuse_closed_protocol_drift(mutat
 def test_source_preflight_refuses_invalid_nonperformer_custody(damage):
     source, ledger = roster_case()
     roster = ledger["nonperforming_participants"]
+    passive_version = None
     if damage == "reference_only":
+        # Preserve the historical blanket exclusion. Fresh source13 permits
+        # typed participant-only context, exercised by context authority tests.
+        passive_version = "odylith.greenfield.source-duty-ledger.v12"
+        ledger["version"] = passive_version
         roster["human_actors"] = [_participant("Reference notes", "Reference notes govern the template")]
     elif damage == "duplicate":
         roster["external_systems"] *= 2
@@ -172,7 +177,7 @@ def test_source_preflight_refuses_invalid_nonperformer_custody(damage):
     else:
         roster["external_systems"] = [_participant("Archive" if damage == "ambiguous" else "invented")]
     with pytest.raises(ValueError):
-        preflight_greenfield_source_duty_ledger(ledger, evidence_text=source)
+        preflight_greenfield_source_duty_ledger(ledger, evidence_text=source, _passive_source_version=passive_version)
 
 
 def test_complete_roster_data_and_order_are_bound_to_both_receipt_and_task():

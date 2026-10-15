@@ -16,14 +16,37 @@ The declared path retains its own roles; required system consequences can belong
 to the complete run without becoming human actions. Recurring safeguards and
 unrelated optional branches remain outside one-time execution.
 
-The frozen source63 implementation passes 930 affected tests and 58 separate
+The source64 correction permits supporting context to identify an exactly
+verified nonperformer without granting product authority. Presentation instructions
+cannot establish product facts. One existing source-control policy governs
+preparation and saved transaction readback. Both current and prior complete-plan
+formats retain their proper dispatch. Independent source and compatibility
+reviews are clear; 1,044 affected tests and 70 hygiene/browser checks pass.
+Final independent artifact review is also clear. These checks prove the bounded
+implementation; no source64 live proof is claimed.
+
+The current contract uses host64/authoring5/source13/preflight12, initial/EDIT
+receipts26/27, decisions20/21 and compact11. Candidate27/transport7,
+canonical80/semantic19/atomic4/context4 and all stage and request caps remain
+unchanged. Source12 retains its exact earlier tasks, receipts24/25 and host63
+pairing for passive readback; those receipts cannot authorize fresh host64.
+
+The preceding frozen source63 checkpoint passes 930 affected tests and 58 separate
 hygiene, closed-question and rendered Atlas checks. Independent source, Atlas
 and final artifact reviews are clear. These checks prove
 the bounded implementation, not a live generated project or release.
-Fresh host63/authoring4/ledger12/preflight11 uses initial/EDIT receipts24/25,
+That host63/authoring4/ledger12/preflight11 checkpoint uses initial/EDIT receipts24/25,
 decisions18/19, compact10, candidate27 and transport7. Canonical80, semantic19,
 atomic4 and EDIT context4 retain their existing meanings. No fresh live package
 or installed release qualification is claimed.
+
+The source63 live trial at `290fc9a1e` fails after 159.862 seconds, before
+verification or candidate generation. Its optional catalog is correctly kept
+outside the workflow, but a blanket reference-context overlap rule conflicts
+with the requirement to retain that nonperformer. The inventory also incorrectly
+labels a product path constraint as an authoring instruction. CB-324 retains
+both findings and the failed output. The reviewed implementation has no live
+complete-project pass; context ownership requires a bounded correction.
 
 The source62 live trial completes all four stages in 319.997 seconds, then fails
 first-run admission. Its candidate includes the source-required dossier-release
@@ -2369,6 +2392,9 @@ semantic/design findings.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-10-15 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd`, `odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`
 - **2026-10-15 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-09-source-metadata-bypassed-product-intent-custody-and-triggered-generic-fallback.md`, `src/odylith/runtime/domain_intelligence/greenfield_model_source_citations.py`
@@ -2384,9 +2410,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-10-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 6 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/dashboard/CURRENT_SPEC.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, plus 2 more
-- **2026-10-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md`, `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, plus 1 more
 <!-- registry-requirements:end -->
 
 ## Feature History

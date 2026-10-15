@@ -588,8 +588,8 @@ def test_bound_system_prerequisite_survives_admission_and_canonical_reload(
     ]
     source_duty = materialized["authored_semantics"]["source_duty"]
     assert source_duty["ledger_receipt"] == original_receipt
-    assert source_duty["ledger_receipt"]["version"].endswith(".v25" if edit_evidence else ".v24")
-    assert source_duty["ledger_receipt"]["decision_set"]["version"].endswith(".v19" if edit_evidence else ".v18")
+    assert source_duty["ledger_receipt"]["version"].endswith(".v27" if edit_evidence else ".v26")
+    assert source_duty["ledger_receipt"]["decision_set"]["version"].endswith(".v21" if edit_evidence else ".v20")
     assert [row["event_order"] for row in source_duty["binding"]["first_path_actions"]] == [1, 2]
     assert [row["event_order"] for row in source_duty["binding"]["system_duties"]] == [3]
     reloaded = json.loads(json.dumps(materialized))
@@ -614,7 +614,7 @@ def test_fresh_candidate_requires_summary_in_schema_and_deterministic_admission(
     source, candidate = _candidate()
     contract = greenfield_host_candidate_contract(source)
     design_schema = contract["candidate_schema"]["properties"]["result"]["anyOf"][0]["properties"]["provisional_design"]
-    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v63"
+    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v64"
     assert contract["candidate_version"] == "odylith.greenfield.host-candidate-format.v27"
     assert "project_summary" in design_schema["required"]
     assert design_schema["properties"]["project_summary"]["maxLength"] == 600

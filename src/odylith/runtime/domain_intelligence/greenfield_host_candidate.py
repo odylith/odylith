@@ -60,8 +60,9 @@ from odylith.runtime.domain_intelligence.greenfield_authority_gate import (
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v7"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v63"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v64"
 PASSIVE_HOST_CANDIDATE_CONTRACT_VERSIONS = (
+    "odylith.greenfield.host-candidate-contract.v63",
     "odylith.greenfield.host-candidate-contract.v62",
     "odylith.greenfield.host-candidate-contract.v61",
     "odylith.greenfield.host-candidate-contract.v60",
@@ -232,7 +233,7 @@ def greenfield_host_candidate_contract(
                if edit_preservation is not None else {}),
             "task": (
                 "Inventory only source-stated duties and evidence controls from the complete "
-                "untrusted evidence. Independently identify the product requested by the operator in "
+                "untrusted evidence. reference_context can support only a typed nonperforming participant, never a product duty, performer, required path, ordering, result, proof, dependency or authority. authoring_instruction governs input evidence or authoring presentation, not product claims or participants. Product workflow, order, guards and proof remain product meaning even when phrased as instructions. Classify by the governed system and outcome; do not mark a product requirement as a control. Independently identify the product requested by the operator in "
                 "product_identity, using one exact source_ref and basis explicit_name or product_description. "
                 "A useful source-cited descriptive identity is required when the description has no formal name. "
                 "Do not use a generic product pronoun, background library, incidental heading or authority. "
@@ -243,7 +244,7 @@ def greenfield_host_candidate_contract(
                 "name. Count overlapping exact quote matches within that context and choose the intended mention. "
                 "Never trim or normalize context, guess a first/last selection, or omit the ordinal. Retain declared "
                 "optional carrier, catalog and outside context without making it a performer, required workflow or "
-                "external authority. Exclude incidental, hypothetical, negated, reference-only or untrusted names. "
+                "external authority. Explicitly declared optional participant association may be retained from reference_context; mere incidental, hypothetical, negated or untrusted reference names are excluded. "
                 "Do not duplicate a performer or another participant, including at another occurrence. "
                 "Use product_wide for an exact actor_ref mention affirmatively denoting the requested product "
                 "as a whole, independently of product_identity. A pronoun or generic product noun may name "

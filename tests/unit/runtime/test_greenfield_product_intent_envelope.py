@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import copy
 import hashlib
 import inspect
@@ -425,7 +426,10 @@ def test_envelope_module_has_no_legacy_parser_or_regex_authority() -> None:
         "greenfield_text",
     )
     assert all(name not in source for name in forbidden_imports)
-    assert "import re" not in source
+    imports = {alias.name for node in ast.walk(ast.parse(source))
+               if isinstance(node, ast.Import) for alias in node.names}
+    imports.update(node.module for node in ast.walk(ast.parse(source)) if isinstance(node, ast.ImportFrom))
+    assert not any(module == "re" or module.startswith("re.") for module in imports if module)
     for removed in (
         "is_legacy_product_intent_envelope",
         "product_facts_from_legacy_envelope",

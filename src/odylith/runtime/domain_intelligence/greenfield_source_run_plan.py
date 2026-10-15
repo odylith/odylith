@@ -23,7 +23,8 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     MAX_AUTHORED_FIELD_VALUE_CHARS, MAX_AUTHORED_LIST_ITEMS,
 )
 
-SOURCE_RUN_PLAN_LEDGER_VERSION = "odylith.greenfield.source-duty-ledger.v12"
+SOURCE_RUN_PLAN_LEDGER_VERSION = "odylith.greenfield.source-duty-ledger.v13"
+PREVIOUS_SOURCE_RUN_PLAN_LEDGER_VERSION = "odylith.greenfield.source-duty-ledger.v12"
 _ACTION_SECTIONS = ("first_path_actions", "supporting_human_actions", "system_duties")
 _RUN_JUDGMENTS = ("membership", "order", "completeness")
 _RESULT_JUDGMENTS = ("proof_boundary", "result_fact", "producing_duty", "result_custody")
@@ -119,7 +120,7 @@ def _canonical_ref(evidence: bytes, value: Any) -> tuple[dict[str, Any], tuple[i
 
 def project_source_run_plan(ledger: Mapping[str, Any], *, evidence_text: str) -> dict[str, Any]:
     """Validate exact source choices and map duty IDs to existing canonical IDs."""
-    if ledger.get("version") != SOURCE_RUN_PLAN_LEDGER_VERSION:
+    if ledger.get("version") not in {SOURCE_RUN_PLAN_LEDGER_VERSION, PREVIOUS_SOURCE_RUN_PLAN_LEDGER_VERSION}:
         raise ValueError("source run projection requires its exact ledger version")
     if ledger["status"] == "clarification_required":
         if ledger["source_precedence"] or ledger["first_run"] != {"duty_ids": []} or ledger["terminal"] is not None:
@@ -211,7 +212,7 @@ def project_source_run_plan(ledger: Mapping[str, Any], *, evidence_text: str) ->
     reference_spans = [_canonical_ref(evidence, control)[1] for control in (
         {"quote": row["quote"], "context": row["context"]} for row in ledger["evidence_controls"]
         if row["handling"] == "reference_context")]
-    if any(start < right and left < end for _, _, _, (start, end) in spans
+    if ledger["version"] == PREVIOUS_SOURCE_RUN_PLAN_LEDGER_VERSION and any(start < right and left < end for _, _, _, (start, end) in spans
            for left, right in reference_spans):
         raise ValueError("source plan overlaps reference-only context")
     return {"source_precedence": edges, "event_orders": run_orders,

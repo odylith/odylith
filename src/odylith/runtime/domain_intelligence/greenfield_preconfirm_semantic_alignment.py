@@ -44,7 +44,7 @@ def semantic_model_shape_issues(
     elif not any(isinstance(row, Mapping) and row.get("visible_result") for row in events):
         try:
             source_duty = intent.get(AUTHORED_SEMANTICS_KEY, {}).get("source_duty") if intent else None
-            fresh = source_duty and source_duty["ledger_receipt"]["ledger"]["version"] == "odylith.greenfield.source-duty-ledger.v12"
+            fresh = source_duty and source_duty["ledger_receipt"]["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"}
             if fresh:
                 run = authored_first_run_relations(intent)
                 expected = [(row["order"], bool(row["visible_result_quote"])) for row in run]

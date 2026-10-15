@@ -2,7 +2,7 @@
 
 Receipt version: `odylith.greenfield-operating-envelope.v6`
 
-Document revision: `20`
+Document revision: `21`
 
 Profile: `single-product-governance-onboarding`
 
@@ -96,13 +96,25 @@ proof.
 
 ### Inventory citation ownership
 
-Fresh host contract `odylith.greenfield.host-candidate-contract.v63` requests
-`odylith.greenfield.source-duty-authoring.v4`. Inventory supplies exact quotes
+Fresh host contract `odylith.greenfield.host-candidate-contract.v64` requests
+`odylith.greenfield.source-duty-authoring.v5`. Inventory supplies exact quotes
 and locator contexts for the eight duty sections and a typed roster of people
 and systems outside the workflow. The existing source-only verifier must affirm
 their classification, nonperformance, identity and completeness before the
 candidate runs. Optional outside context does not become a workflow step or
 external approval authority.
+
+Supporting reference context may establish an explicitly declared nonperforming
+participant. The existing verifier must confirm that association, type and
+nonperformance; an incidental example or recognizable name is insufficient.
+Only the exact compiler-owned participant field, index and selected source span
+receives that permission. Reference context cannot establish product identity,
+actions, order, a required workflow dependency, result, proof or authority.
+Evidence-handling and presentation instructions establish no participant or
+product fact. Requirements about what the product must do remain product evidence
+even when written as instructions. The same existing authority rule applies to
+source checks, canonical facts and persisted transaction readback. One permitted
+participant link cannot authorize another product claim on the same fact atom.
 
 Each fresh nonperformer citation also requires a positive, one-based
 `mention_ordinal`, including 1 for a unique mention. The model selects the
@@ -131,8 +143,8 @@ Distinct selected occurrences retain
 distinct compact identities and hashes. Invalid citations refuse without
 choosing an occurrence or repairing the response.
 
-Fresh ledger v12/preflight v11, compact view v10, initial/EDIT receipts v24/v25,
-decisions v18/v19 and candidate v27/transport v7 bind that source contract.
+Fresh ledger v13/preflight v12, compact view v11, initial/EDIT receipts v26/v27,
+decisions v20/v21 and candidate v27/transport v7 bind that source contract.
 Canonical authoring v80, authored semantics v19 and EDIT context v4 retain their
 existing meanings. Historical host v61/source v10/compact v8/receipts v20/v21
 and earlier v59/v60/source v9/compact v7/receipts v18/v19 keep explicit passive
@@ -140,7 +152,9 @@ readback under their original hashes and tasks, without an invented ordinal;
 they cannot satisfy the fresh native contract. Live semantic, latency and
 installed-package qualification remain required. Host62/source11/compact9 and
 receipts22/23 retain their original passive contracts without an invented plan;
-fresh host63 cannot borrow them.
+host63/source12/authoring4/compact10 and receipts24/25 retain their exact complete
+plan, tasks and earlier context rules. Fresh host64 cannot borrow those receipts
+or reinterpret historical context authority.
 
 The retained source61 trial fails before the verifier: one of 85 citation uses
 selects a name three times inside its unique context without selecting a
@@ -150,9 +164,16 @@ Its 705 affected checks and independent source/evidence review pass. The one
 unchanged-input source62 trial completes all four stages in 319.997 seconds,
 then fails first-run admission: a required final system action is outside the
 compiler's human-path predecessor closure and permitted terminal set. No package
-or receipt is delivered. The source63 ownership correction is implemented under
-regression and independent review; no new live result is claimed. Existing
-stage, size, cost and time limits remain.
+or receipt is delivered. The source63 correction passes 930 affected tests and
+58 separate checks with clear independent development-evidence review. Its one
+unchanged-request live trial nevertheless fails source preflight after 159.862
+seconds: optional catalog retention conflicts with a blanket context exclusion.
+The raw inventory also misclassifies a product path constraint as an authoring
+instruction. No verifier, candidate, package or completion receipt exists.
+The source64 correction above is frozen, with 1,044 affected tests and 70
+hygiene/browser checks passing. Independent source, compatibility and final
+artifact reviews are clear. No live qualification is claimed.
+Existing stage, size, cost and time limits remain.
 
 ### EDIT lifecycle verification
 
@@ -166,7 +187,7 @@ Missing or uncertain duties refuse before candidate authoring. Prior rows are a
 comparison checklist; current lifecycle and governance still come from the
 accepted current inventory. Explicit corrections take precedence over history.
 
-Initial/EDIT receipts v22/v23 use decisions v16/v17 and retain EDIT preservation
+Fresh initial/EDIT receipts v26/v27 use decisions v20/v21 and retain EDIT preservation
 context v4. EDIT binds the prior transaction, its lifecycle, the complete source,
 correction, task and decisions. A global completeness yes or an initial receipt cannot
 authorize EDIT. Citation custody and complete keys do not prove a semantic
