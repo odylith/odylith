@@ -72,6 +72,13 @@ the four emitted assessments:
 - `migration-observer:0.1.15:browser-surfaces:ad0387c703fd`
 - `migration-observer:0.1.15:install-managed-assets:88ce57acf133`
 
+The clean successor `b69e729200ddc0cbe47ae319705d96c2b7f7dc86` adds the
+completed proof notes, normal timeline events and derived evidence views. Its
+38 frozen source/test files remain unchanged. These evidence updates preserve
+schemas, lifecycle and consumer data; they complete the successor's updated
+browser assessment, `migration-observer:0.1.15:browser-surfaces:e0ca4f65dfda`.
+Its other four surface markers remain covered, with no ungated lifecycle path.
+
 The incremental change retains native Stop history in a separate private
 `compass-events.v1.jsonl` journal. Existing foreground Compass commands publish
 and acknowledge it only after exact readback. This separation prevents the
