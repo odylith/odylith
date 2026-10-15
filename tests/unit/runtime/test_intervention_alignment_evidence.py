@@ -43,6 +43,16 @@ def test_alignment_evidence_tolerates_malformed_count_fields() -> None:
     )["visible_event_count"] == 2
 
 
+def test_pending_session_memory_is_material_without_becoming_governance_truth() -> None:
+    for memory in ({"pending_summary_count": 1}, {"pending_memory_error": "Retained history could not be read."}):
+        observation = _observation(memory_summary=memory)
+        classes = alignment_evidence.runtime_evidence_classes(observation)
+        assert "session_memory" in classes
+        assert alignment_evidence.governance_facts_from_alignment(
+            observation=observation, evidence_classes=classes,
+        ) == []
+
+
 def test_legacy_packet_anchors_feed_refs_without_current_context_packet() -> None:
     observation = _observation(
         packet_summary={

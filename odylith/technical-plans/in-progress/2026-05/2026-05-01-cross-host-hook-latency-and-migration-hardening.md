@@ -98,6 +98,62 @@ Related Bugs:
 
 ## Current completion evidence (2026-10-14)
 
+The final frozen source runtime suite passes all 6,908 tests with no failures,
+errors or skips; all 37 source/test hashes remain unchanged. Independent review
+of the published-memory correction finds no actionable issue. All 47 Atlas
+diagrams are fresh and the 30-component Registry forensics check reports no
+drift. Public source and annotation hashes are preserved, including genuine
+EDIT inputs restored from durable evidence. Source validation now permits the
+next stable checkpoint; installed-package, native-host and release proof remain
+open. The protected final holdout remains closed.
+
+A post-publication memory check finds a concrete retrieval gap: the existing
+Context Engine stream resolver doubles the product-directory prefix and misses
+successfully published summaries. The correction resolves from the repository
+root and shares the existing bounded publication selector through the common
+agent runtime owner. Five characterization cases fail before and pass after;
+all 87 owned controls pass without skips. Published and acknowledged Codex and
+Claude summaries remain retrievable through canonical projection and matching
+anchor context, with retained source, session and transaction identity. Failed
+working appends stay hidden. Missing authority metadata remains reference-only;
+explicit UNKNOWN annotations throughout compact delivery remain unproved. This
+is source proof; final runtime and installed-package qualification remain open.
+No additional store or permanent pending-summary overlay is introduced.
+
+The current source addresses the Stop lifetime failure by retaining complete session-bound
+Stop events in the existing private host ledger. Session and judgment memory
+can read those historical, unverified claims before publication. Successful
+non-hook Compass log/sync commands publish at most four retained events through
+the normal continuation and immutable-generation owners, then acknowledge
+exact readback. Later maintenance failure preserves the original writer's
+success; successful sync retires only covered preexisting dirty-path records.
+Unrelated manual receipts block normal writers. Explicit completion can finish
+the original first append from an unchanged prepared receipt, without repeating
+an existing append. The old Stop settler and its unused grounding cache are
+removed; SessionStart grounding remains active. The Stop-only review and 214
+custody controls pass within their earlier scope. The full runtime run finishes
+with 6,853 passes and two failures: a missing required Claude guidance phrase
+and stale generated Release forensics. Current corrections require fresh proof.
+
+Actual PostToolUse then exposes the shared intervention writer appending nine
+unpublished ambient events. The protected shared writer now requires admitted
+repository-lock ownership; other callers retain exact private events. External
+readers must select the published stream and merge pending intervention events,
+so a failed working append cannot become visible canonical history. Claude's
+separate SubagentStop writer requires the same rule. Preserve the nine original
+events and their exact failure evidence during reviewed restoration. Shared
+writer review, final runtime/install settlement, native same-package proof and
+the remaining release gates are open.
+
+Native Codex Stop at pushed checkpoint 3a600b08c exposes a current integration
+failure under CB-305. Its 14-second lifetime can expire after a canonical
+Compass append and before successor publication. Existing exact restoration
+and abandonment restore startup while preserving the original receipt/event
+and published history. Correct the existing lifetime ownership, retain session
+identity, and prove the interrupted path before native release qualification.
+Do not raise the deadline, bypass publication, disable memory or add a second
+recovery mechanism. The authentic v0.1.14 benchmark remains a separate live run.
+
 B-142 explicitly depends on this workstream. The checked Must-Ship items record
 implementation; they do not replace current release proof or justify moving
 B-141 out of the release. Finish both from the actual H/package-D evidence
@@ -223,14 +279,17 @@ Daemon, SDK-harness, MCP and further kernel-splitting proposals stay deferred.
       both Codex and Claude because they own the serial startup/context rule.
 
 ## Must-Ship
+
+- [ ] Prevent routine native Stop logging from leaving an admitted Compass append unfinished when its hook budget expires; preserve the same event/session custody, normal publication owner, memory behavior and bounded hook lifetime. Prove exact interruption, completion, no duplicate append and healthy subsequent startup through the native launcher-shaped route (CB-305).
 - [x] Add shared prompt route locks so help/show/capabilities prompts bypass
       heavy context work without changing the user-visible command contract.
 - [x] Add `odylith claude prompt-bundle` so show/help route locks, prompt
       context, and teaser output run through one host path.
 - [x] Render Claude settings with one prompt-submit bundle hook, host-native
       Bash guard filters, and async PostToolUse checkpoints where supported.
-- [x] Keep Codex PostToolUse on a cheap dirty-event recorder and settle
-      governed refresh work during Stop or the next grounding cycle.
+- [x] Keep Codex PostToolUse on a cheap dirty-event recorder; successful
+      foreground sync retires covered records. Native Stop only retains
+      session memory and delivery-confirmation evidence.
 - [x] Keep Codex PostToolUse chat-visible for earned live intervention beats:
       Observation/Proposal payloads render in the hook response while the
       durable dirty-event record owns later governance settlement.

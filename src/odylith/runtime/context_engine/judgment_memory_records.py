@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import datetime as dt
 import hashlib
+import json
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common import derivation_provenance
 from odylith.runtime.context_engine import memory_record_policy as policy
+from odylith.runtime.surfaces import host_dirty_checkpoint
 
 _SOURCE_CACHE: dict[str, tuple[dict[str, Any], dict[str, Any], str]] = {}
 
@@ -15,6 +18,50 @@ _SOURCE_CACHE: dict[str, tuple[dict[str, Any], dict[str, Any], str]] = {}
 def projection_provenance(runtime_state: Mapping[str, Any]) -> dict[str, Any]:
     compiler = runtime_state.get("odylith_compiler", {})
     return derivation_provenance.extract_provenance(compiler if isinstance(compiler, Mapping) else {})
+
+
+def pending_session_claims(
+    *, root: Path, session_id: str | None = None, provenance: Mapping[str, Any] | None = None,
+) -> tuple[list[dict[str, Any]], str]:
+    """Read bounded session learning without promoting or reconfirming its claims."""
+    try:
+        records = host_dirty_checkpoint.read_compass_events(repo_root=root)
+        ordered = []
+        for index, row in enumerate(records):
+            if session_id is not None and row["session_id"] != session_id:
+                continue
+            if not row["event"]["summary"].strip():
+                continue
+            stamp = dt.datetime.fromisoformat(row["event"]["ts_iso"].replace("Z", "+00:00"))
+            if stamp.tzinfo is None:
+                stamp = stamp.replace(tzinfo=dt.timezone.utc)
+            ordered.append((stamp, index, row))
+    except (host_dirty_checkpoint.HostDirtyCheckpointError, OSError, ValueError, KeyError, TypeError):
+        return [], "Pending session summaries could not be read from the deferred Compass queue; their claims remain unverified."
+    source_ref = host_dirty_checkpoint.DIRTY_EVENTS_RELATIVE.as_posix()
+    items = []
+    for _, _, row in sorted(ordered, key=lambda entry: entry[:2], reverse=True)[:4]:
+        event = row["event"]
+        evidence_utc = event["ts_iso"]
+        item = {
+            "id": row["id"], "session_id": row["session_id"],
+            "host_family": row["host_family"], "recorded_utc": row["recorded_utc"],
+            "summary": event["summary"], "ts_iso": evidence_utc,
+            "source_path": source_ref, "source_kind": "runtime_observation",
+            "trust": "unverified", "authority": "unknown",
+            "checkpoint_event": dict(row),
+        }
+        item["memory_record"] = policy.record(
+            role="historical_learning", validity="unknown",
+            source_ref=f"{source_ref}#{row['id']}",
+            source_fingerprint=hashlib.sha256(json.dumps(
+                row, sort_keys=True, separators=(",", ":"), ensure_ascii=True,
+            ).encode("utf-8")).hexdigest(),
+            evidence_utc=evidence_utc, observed_utc=row["recorded_utc"],
+            provenance=provenance,
+        )
+        items.append(item)
+    return items, ""
 
 
 def _source_evidence(*, store: Any, root: Path, path: Path) -> tuple[dict[str, Any], str]:

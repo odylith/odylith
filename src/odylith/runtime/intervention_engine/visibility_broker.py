@@ -659,6 +659,7 @@ def confirm_assistant_chat_delivery(
     last_assistant_message: str,
     render_surface: str,
     limit: int = 120,
+    defer: bool = False,
 ) -> list[dict[str, Any]]:
     message = _normalize_block_string(last_assistant_message)
     normalized_session = _normalize_string(session_id)
@@ -721,6 +722,7 @@ def confirm_assistant_chat_delivery(
                 delivery_channel="assistant_chat_transcript",
                 delivery_status="assistant_chat_confirmed",
                 render_surface=render_surface,
+                defer=defer,
                 metadata={
                     **(dict(row.get("metadata")) if isinstance(row.get("metadata"), Mapping) else {}),
                     "chat_confirmation_key": confirmation_key,

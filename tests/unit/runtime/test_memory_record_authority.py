@@ -22,6 +22,7 @@ from odylith.runtime.memory import odylith_memory_backend as backend
 from odylith.runtime.memory import odylith_projection_bundle as bundle
 from odylith.runtime.memory import odylith_projection_snapshot as snapshot
 from odylith.runtime.memory import tooling_memory_contracts as contracts
+from odylith.runtime.surfaces import host_dirty_checkpoint
 
 NOW = dt.datetime(2026, 10, 4, 12, tzinfo=dt.timezone.utc)
 FRESH = "2026-10-04T11:00:00Z"
@@ -62,6 +63,148 @@ def write_hint(root: Path, row: dict, state: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps({"starter_slice": row}))
     store.write_runtime_state(repo_root=root, payload=state)
+
+
+def queue_session_claim(root: Path, *, number: int = 1, stamp=FRESH, summary="The source review remains pending.") -> dict:
+    event_id = f"{number:032x}"
+    row = {
+        "version": 1, "id": event_id, "source": "compass_event",
+        "session_id": "session-exact", "host_family": "codex",
+        "recorded_utc": "2026-10-04T11:01:00Z",
+        "event": {"kind": "statement", "summary": summary, "ts_iso": stamp,
+                  "transaction_id": "host-event-" + event_id,
+                  "session_id": "session-exact", "host_family": "codex",
+                  "author": "freedom-research", "source": "odylith.codex.stop",
+                  "workstreams": ["B-142"], "artifacts": ["src/service.py"]},
+    }
+    path = host_dirty_checkpoint.event_store_path(root)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(row) + "\n")
+    return row
+
+
+def session_snapshot(root: Path, monkeypatch, *, previous=None, observed="2026-10-04T12:00:00Z", generation=0) -> dict:
+    from odylith.runtime.evaluation import odylith_benchmark_runner
+
+    monkeypatch.setattr(odylith_benchmark_runner, "load_latest_runtime_benchmark_report", lambda **_: {})
+    return store._build_judgment_memory_snapshot(
+        repo_root=root, projection_updated_utc=observed,
+        backlog_projection={}, plan_projection={}, bug_projection=[], diagram_projection=[],
+        runtime_state={"odylith_compiler": {"provenance": provenance(root, generation=generation)}},
+        optimization={}, evaluation={}, benchmark_report={}, recent_bootstrap_packets=[],
+        active_sessions=[], repo_dirty_paths=[], welcome_state={}, previous_snapshot=previous or {},
+        retrieval_state="cold",
+    )
+
+
+def session_claims(value: dict) -> list[dict]:
+    return [item for area in value["areas"] for item in area["items"] if item["kind"] == "session_claim"]
+
+
+def test_pending_session_summaries_retain_complete_newest_claims_without_promotion(tmp_path, monkeypatch):
+    complete = "The retained source review found one unresolved boundary. " * 20 + "The canonical proof is still pending."
+    rows = [queue_session_claim(tmp_path, number=n, summary=complete + f" Record {n}.") for n in range(1, 7)]
+    path = host_dirty_checkpoint.event_store_path(tmp_path)
+    before = path.read_bytes()
+
+    value = session_snapshot(tmp_path, monkeypatch)
+    retained = session_claims(value)
+    assert [item["id"] for item in retained] == [row["id"] for row in reversed(rows[-4:])]
+    for item, row in zip(retained, reversed(rows[-4:])):
+        assert item["summary"] == row["event"]["summary"]
+        assert item["checkpoint_event"] == row
+        assert item["session_id"] == row["session_id"] and item["host_family"] == row["host_family"]
+        assert item["recorded_utc"] == row["event"]["ts_iso"]
+        memory = item["memory_record"]
+        assert memory["source_ref"].endswith("#" + row["id"])
+        assert memory["evidence_utc"] == row["event"]["ts_iso"]
+        assert memory["observed_utc"] == row["recorded_utc"] and not memory["confirmed_utc"]
+        assert memory["role"] == "historical_learning" and memory["validity"] == "unknown"
+        assert item["trust"] == "unverified" and item["source_kind"] == "runtime_observation"
+        assert item["memory_usefulness"]["use"] == "historical_learning"
+        assert item["memory_usefulness"]["current_authority"] is False
+    assert path.read_bytes() == before
+    assert not (tmp_path / "odylith/compass/runtime/agent-stream.v1.jsonl").exists()
+
+
+def test_refreshed_current_truth_outscores_pending_session_claim(tmp_path, monkeypatch):
+    queue_session_claim(tmp_path, summary="The old session claimed no review was required.")
+    claim = session_claims(session_snapshot(tmp_path, monkeypatch))[0]
+    source_ref = "odylith/registry/source/components/service/CURRENT_SPEC.md"
+    source = tmp_path / source_ref
+    source.parent.mkdir(parents=True)
+    source.write_text("updated: 2026-10-03\n# Service\nOld contract.\n")
+    old = judgment.source_record(store=store, root=tmp_path, source_ref=source_ref,
+                                role="current_truth", observed_utc=FRESH, provenance=provenance(tmp_path))
+    source.write_text("updated: 2026-10-04\n# Service\nA completed review is required.\n")
+    current = judgment.source_record(store=store, root=tmp_path, source_ref=source_ref,
+                                    role="current_truth", observed_utc=FRESH, provenance=provenance(tmp_path))
+    assert current["source_fingerprint"] != old["source_fingerprint"]
+    ranked = policy.rank_records([
+        {**claim, "score": 10000}, {"kind": "current_contract", "score": 1, "memory_record": current},
+    ], expected_provenance=provenance(tmp_path), now=NOW)
+    assert ranked[0]["kind"] == "current_contract"
+    assert ranked[0]["memory_usefulness"]["current_authority"] is True
+    assert ranked[1]["memory_record"]["validity"] == "unknown"
+    assert ranked[1]["memory_usefulness"]["current_authority"] is False
+
+
+def test_judgment_and_session_views_share_pending_claim_source_proof(tmp_path, monkeypatch):
+    from odylith.runtime.intervention_engine import stream_state
+
+    row = queue_session_claim(tmp_path)
+    global_claim = session_claims(session_snapshot(tmp_path, monkeypatch))[0]
+    session_claim = stream_state.session_memory_snapshot(
+        repo_root=tmp_path, session_id=row["session_id"],
+    )["pending_summaries"][0]
+    assert global_claim["id"] == session_claim["id"] == row["id"]
+    assert global_claim["summary"] == session_claim["summary"] == row["event"]["summary"]
+    assert global_claim["recorded_utc"] == session_claim["ts_iso"] == row["event"]["ts_iso"]
+    for field in ("source_ref", "source_fingerprint", "evidence_utc", "observed_utc", "confirmed_utc", "role", "validity"):
+        assert global_claim["memory_record"][field] == session_claim["memory_record"][field]
+    assert global_claim["checkpoint_event"]["recorded_utc"] == session_claim["recorded_utc"] == row["recorded_utc"]
+    assert global_claim["memory_record"]["provenance"] == provenance(tmp_path)
+    assert session_claim["memory_record"]["provenance"] == {}
+    assert policy.assess(global_claim["memory_record"])["current_authority"] is False
+    assert policy.assess(session_claim["memory_record"])["current_authority"] is False
+
+
+def test_pending_session_reads_do_not_refresh_age_or_resurrect_removed_claims(tmp_path, monkeypatch):
+    row = queue_session_claim(tmp_path, stamp="2020-01-01T00:00:00Z")
+    first = session_snapshot(tmp_path, monkeypatch)
+    later = session_snapshot(tmp_path, monkeypatch, previous=first, observed="2026-10-07T12:00:00Z", generation=1)
+    before, after = session_claims(first)[0], session_claims(later)[0]
+    for field in ("source_fingerprint", "evidence_utc", "observed_utc", "confirmed_utc"):
+        assert after["memory_record"][field] == before["memory_record"][field]
+    assert after["checkpoint_event"] == row
+    assert after["freshness"]["bucket"] == "cold"
+    assert after["memory_usefulness"]["freshness"] == "cold"
+    assert after["memory_usefulness"]["current_authority"] is False
+
+    host_dirty_checkpoint.event_store_path(tmp_path).write_text("")
+    rebuilt = session_snapshot(tmp_path, monkeypatch, previous=later)
+    assert session_claims(rebuilt) == []
+
+
+@pytest.mark.parametrize("corruption", ["invalid_json", "invalid_envelope", "invalid_timestamp"])
+def test_malformed_pending_session_queue_surfaces_gap_without_claims(tmp_path, monkeypatch, corruption):
+    row = queue_session_claim(tmp_path)
+    previous = session_snapshot(tmp_path, monkeypatch)
+    path = host_dirty_checkpoint.event_store_path(tmp_path)
+    if corruption == "invalid_json":
+        path.write_text(path.read_text() + "{unfinished\n")
+    else:
+        row["event"]["ts_iso"] = "not-a-timestamp" if corruption == "invalid_timestamp" else FRESH
+        if corruption == "invalid_envelope":
+            row["session_id"] = "different-session"
+        path.write_text(json.dumps(row) + "\n")
+    before = path.read_bytes()
+    value = session_snapshot(tmp_path, monkeypatch, previous=previous)
+    assert session_claims(value) == []
+    assert any("Pending session summaries could not be read" in gap and "unverified" in gap for gap in value["gaps"])
+    assert value["gap_count"] == len(value["gaps"])
+    assert path.read_bytes() == before
 
 
 @pytest.mark.parametrize("validity", ["superseded", "refuted", "rejected", "unknown"])

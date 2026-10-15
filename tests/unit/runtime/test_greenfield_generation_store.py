@@ -74,6 +74,41 @@ def test_generation_materializes_only_sealed_after_image_and_pins_pointer(tmp_pa
     assert (pinned.generation_root / "generation-manifest.v1.json").read_text() == manifest_text
 
 
+def test_read_locator_validates_selected_manifest_without_scanning_surfaces(tmp_path, monkeypatch):
+    repo, write_set = _write_set(tmp_path)
+    generation = greenfield_generation_store.materialize_immutable_greenfield_generation(
+        repo_root=repo, write_set=write_set,
+        manifest_text=greenfield_generation_store.compile_greenfield_generation_manifest(write_set),
+    )
+    _publish(repo, generation, write_set)
+
+    def forbidden_scan(*args, **kwargs):
+        pytest.fail("read selection must not walk unrelated managed surfaces")
+
+    monkeypatch.setattr(greenfield_repository_write_set, "greenfield_managed_fingerprints", forbidden_scan)
+    assert greenfield_generation_store.active_greenfield_generation_repository(repo) == generation.repository_root
+    manifest = generation.generation_root / "generation-manifest.v1.json"
+    manifest.write_bytes(manifest.read_bytes() + b" ")
+    with pytest.raises(RuntimeError, match="canonical"):
+        greenfield_generation_store.active_greenfield_generation_repository(repo)
+
+
+def test_read_locator_rejects_manifest_rebound_to_different_sealed_bytes(tmp_path):
+    repo, write_set = _write_set(tmp_path)
+    generation = greenfield_generation_store.materialize_immutable_greenfield_generation(
+        repo_root=repo, write_set=write_set,
+        manifest_text=greenfield_generation_store.compile_greenfield_generation_manifest(write_set),
+    )
+    _publish(repo, generation, write_set)
+    manifest = dict(generation.manifest)
+    manifest["byte_count"] += 1
+    (generation.generation_root / "generation-manifest.v1.json").write_bytes(
+        greenfield_generation_store._canonical_manifest_bytes(manifest)
+    )
+    with pytest.raises(RuntimeError, match="manifest binding"):
+        greenfield_generation_store.active_greenfield_generation_repository(repo)
+
+
 def test_generation_pointer_compare_and_switch_rejects_stale_precondition(tmp_path: Path) -> None:
     repo, write_set = _write_set(tmp_path)
     manifest_text = greenfield_generation_store.compile_greenfield_generation_manifest(write_set)

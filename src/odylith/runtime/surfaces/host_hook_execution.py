@@ -45,11 +45,18 @@ _ACTIVE_DEADLINE: ContextVar[_Deadline | None] = ContextVar("hook_deadline", def
 _TERMINATION_GRACE_SECONDS = 0.2
 _REAP_TIMEOUT_SECONDS = 0.5
 _FOREGROUND_GROUP_ENV = "ODYLITH_HOOK_OWNS_FOREGROUND_GROUP"
+_HOOK_COMMAND_ENV = "ODYLITH_HOST_HOOK_COMMAND"
 
 
 def in_hook_owned_foreground_group() -> bool:
     """Identify inherited foreground lifetime ownership, never runtime trust."""
     return os.name == "posix" and os.environ.get(_FOREGROUND_GROUP_ENV) == "1"
+
+
+def in_host_hook_command() -> bool:
+    """Identify hook descendants even when only their command timeout is active."""
+    return (_ACTIVE_DEADLINE.get() is not None or in_hook_owned_foreground_group()
+            or os.environ.get(_HOOK_COMMAND_ENV) == "1")
 
 
 @contextmanager
@@ -134,6 +141,7 @@ def run_hook_command(
     if deadline is not None:
         timeout = min(timeout, deadline.remaining())
     env = os.environ.copy()
+    env[_HOOK_COMMAND_ENV] = "1"
     env.pop(_FOREGROUND_GROUP_ENV, None)
     if deadline is not None:
         env[_FOREGROUND_GROUP_ENV] = "1"

@@ -155,14 +155,10 @@ def test_exact_controlled_stop_command_finishes_inside_native_timeout(tmp_path: 
         )
         elapsed = time.monotonic() - started
         assert process.returncode == 0, stderr
-        assert 14 <= elapsed < 20
-        payload = json.loads(stdout)
-        assert "queued" in payload["systemMessage"]
-        assert "decision" not in payload
+        assert elapsed < 20
+        assert stdout == ""
         assert [row["id"] for row in host_dirty_checkpoint.read_dirty_events(repo_root=tmp_path)] == [event_id]
-        processes = _fixture_processes(tmp_path)
-        assert len({row["pgid"] for row in processes}) == 1
-        _assert_stopped(processes)
+        assert not any((tmp_path / name).exists() for name in ("sync.json", "renderer.json", "grandchild.json"))
         print(f"Controlled exact hook command: {command!r}; elapsed={elapsed:.3f}s; returncode=0")
     finally:
         if process.poll() is None:

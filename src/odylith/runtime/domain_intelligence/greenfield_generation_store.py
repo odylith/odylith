@@ -144,12 +144,50 @@ def pin_active_greenfield_generation(repo_root: Path) -> PinnedGreenfieldGenerat
     return pinned
 
 
+def active_greenfield_generation_repository(repo_root: Path) -> Path:
+    """Locate selected immutable reader bytes without revalidating other surfaces.
+
+    The publication and sealed manifest bind the address. This read locator
+    grants no write or release authority; those callers retain full pinning.
+    """
+    root = Path(repo_root).expanduser().resolve()
+    state = greenfield_generation_state.read_active_publication(root)
+    if state is None:
+        raise RuntimeError("Greenfield has no active immutable generation")
+    generation = _load_generation_manifest(repo_root=root, write_set_hash=state["write_set_hash"])
+    if generation.manifest_sha256 != state["generation_manifest_sha256"]:
+        raise RuntimeError("Greenfield active generation manifest binding is invalid")
+    return generation.repository_root
+
+
 def pin_greenfield_generation(
     *,
     repo_root: Path,
     write_set_hash: str,
     expected_write_set: object | None = None,
 ) -> PinnedGreenfieldGeneration:
+    generation = _load_generation_manifest(repo_root=repo_root, write_set_hash=write_set_hash)
+    repository, manifest = generation.repository_root, generation.manifest
+    if expected_write_set is None and greenfield_repository_write_set.greenfield_managed_fingerprints(repository) != manifest["after_fingerprints"]:
+        raise RuntimeError("Greenfield immutable generation bytes differ from the sealed manifest")
+    if expected_write_set is not None:
+        write_set = greenfield_repository_write_set.require_compiled_greenfield_repository_write_set(
+            expected_write_set
+        )
+        if str(write_set["write_set_hash"]) != str(manifest["write_set_hash"]):
+            raise RuntimeError("Greenfield immutable generation does not match the sealed transaction")
+        require_sealed_greenfield_generation_manifest(
+            _canonical_manifest_bytes(manifest).decode("utf-8"),
+            write_set=write_set,
+        )
+        greenfield_repository_write_set.require_greenfield_repository_after_state(
+            repo_root=repository,
+            write_set=write_set,
+        )
+    return generation
+
+
+def _load_generation_manifest(*, repo_root: Path, write_set_hash: str) -> PinnedGreenfieldGeneration:
     root = Path(repo_root).expanduser().resolve()
     identity = _require_digest(write_set_hash, label="write-set hash")
     target = generation_root(root, identity)
@@ -168,19 +206,6 @@ def pin_greenfield_generation(
         raise RuntimeError("Greenfield immutable generation manifest bytes are not canonical")
     manifest = dict(payload)
     _require_generation_manifest(manifest, write_set_hash=identity)
-    if expected_write_set is None and greenfield_repository_write_set.greenfield_managed_fingerprints(repository) != manifest["after_fingerprints"]:
-        raise RuntimeError("Greenfield immutable generation bytes differ from the sealed manifest")
-    if expected_write_set is not None:
-        write_set = greenfield_repository_write_set.require_compiled_greenfield_repository_write_set(
-            expected_write_set
-        )
-        if str(write_set["write_set_hash"]) != str(manifest["write_set_hash"]):
-            raise RuntimeError("Greenfield immutable generation does not match the sealed transaction")
-        require_sealed_greenfield_generation_manifest(raw.decode("utf-8"), write_set=write_set)
-        greenfield_repository_write_set.require_greenfield_repository_after_state(
-            repo_root=repository,
-            write_set=write_set,
-        )
     return PinnedGreenfieldGeneration(
         write_set_hash=str(manifest["write_set_hash"]),
         generation_root=target,
@@ -271,6 +296,7 @@ def _require_digest(value: Any, *, label: str) -> str:
 
 
 __all__ = [
+    "active_greenfield_generation_repository",
     "GREENFIELD_GENERATION_MANIFEST_VERSION",
     "GreenfieldWorkingGenerationDriftError",
     "PinnedGreenfieldGeneration",

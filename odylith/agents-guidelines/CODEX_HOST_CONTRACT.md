@@ -181,32 +181,28 @@
   governed source-of-truth set, records a tiny dirty event under
   `.odylith/runtime/host-hooks/`, and returns silently. It must not run
   `odylith start`, `odylith sync`, or conversation rendering on the tool-call
-  critical path. Stop-time settlement drains those dirty events, then runs
-  `./.odylith/bin/odylith sync --impact-mode selective <paths>` only when an
-  exact governed target was recorded. Scoped `AGENTS.md` and `CLAUDE.md`
-  companions inside governed subtrees are ignored.
+  critical path. Stop leaves those dirty-path records untouched and never
+  dispatches `odylith sync`. Scoped `AGENTS.md` and `CLAUDE.md` companions
+  inside governed subtrees are ignored.
 - The command-scoped inference must stay exact under dirty worktrees and
   shell edge cases: rename and move operations preserve the old governed path
   when truth leaves a governed subtree, shell control operators and
   redirection tails cannot widen the target set, and explicit inline
   `python -c` / `node -e` file-write one-liners may refresh only when the
   hook can recover an exact governed path literal from the current command.
-- The checkpoint never blocks the tool call. Sync failures happen during
-  Stop-time settlement, keep pending dirty events in place, exit the hook path
-  with code 0, and emit a fail-soft `systemMessage` describing the failure so
-  the operator can recover manually.
+- The checkpoint never blocks the tool call. Stop does not turn a retained
+  checkpoint into a refresh attempt or a refresh receipt.
 - This is **checkpoint parity** with Claude's direct-edit and Bash checkpoint
   lanes for hookable Bash edits. Native desktop write payloads remain
   supported by the parser and `visible-intervention` fallback command, but
   they are not automatic hook coverage until Codex exposes those tools to
   `PostToolUse`.
-- Codex prompt-context and stop-summary lanes feed
-  the same shared conversation-observation core in
+- Codex prompt-context feeds the shared conversation-observation core in
   `src/odylith/runtime/intervention_engine/`. Prompt submit may emit one
   earned teaser plus one shared `Odylith Assist:` visibility line for
-  non-passthrough prompts; stop-summary may replay an already-earned ambient
-  block, Observation, or Proposal. Governed writes stay inside one
-  confirmation-gated `Odylith Proposal`.
+  non-passthrough prompts. Stop-summary does not render or replay an Ambient
+  Highlight, Observation, Proposal, or Assist. Governed writes stay inside
+  one confirmation-gated `Odylith Proposal`.
 - When prompt submit earns a teaser, Codex should carry that sentence in the
   hook `systemMessage` and also place an assistant-render fallback in
   `hookSpecificOutput.additionalContext`. When no teaser is earned for a
@@ -242,20 +238,43 @@
   `odylith/technical-plans/source/` directory.
 - Post-bash checkpoint is a dirty-event recorder, not a live intervention
   carrier and not a refresh receipt lane. Successful dirty-event recording
-  stays silent. If deferred refresh fails or is skipped, Stop may emit only
-  the compact failure-level status, optionally after an already-earned visible
-  block.
-- Stop-summary is a logging and replay lane, not a fresh visible-intervention
-  author. It confirms what the assistant already showed, logs meaningful
-  summaries to Compass, and may replay a pending Ambient Highlight,
-  Observation, or Proposal that was already earned by prompt or Bash
-  checkpoint hooks. It must not manufacture a new Observation, Proposal,
-  Assist, Risks, History, Insight, continuation reason, transcript-proof copy,
-  or governance ID from the stop summary itself.
-- A replayed Stop beat may append the matching one-line Assist when that Assist
-  belongs to the same pending live moment. Low-signal stops, already visible
-  closeouts, validation summaries without a pending live beat, and explicit
-  uninstall/status turns stay silent in hook output.
+  stays silent. Stop does not drain the record or report deferred refresh
+  state.
+- Stop-summary is a silent, private memory producer. It filters meaningful
+  assistant summaries and records them, plus any matching assistant-chat
+  delivery confirmations, in
+  `.odylith/runtime/host-hooks/dirty-events.v1.jsonl`. Each retained Compass
+  event keeps its exact host and session identity and a stable
+  `host-event-<ID>` transaction identity. Stop does not write canonical
+  Compass files, run `odylith sync`, settle a continuation, or render or replay
+  a visible intervention. Successful capture stays silent; bounded storage or
+  budget failure may emit only a compact save warning. Codex keeps a 14-second
+  owned budget inside the native hook's 20-second outer timeout.
+- With an active immutable publication, native hooks and read-only intervention
+  callers retain exact events in this private ledger. Only an admitted managed
+  writer holding the repository lock may append directly to the canonical stream.
+  Shared event readers include pending intervention events, invalidate their
+  caches when either store changes, and deduplicate exact published identities.
+- Retained events are available to session and judgment memory. Their semantic
+  validity remains `UNKNOWN` after publication; publication proves byte custody.
+  After a successful ordinary, non-hook `odylith compass log` or `odylith
+  sync`, foreground maintenance promotes at most four retained events through
+  the normal CLI mutation continuation, verifies their immutable published
+  bytes, and only then acknowledges them. Remaining events stay queued without
+  data loss. If this later memory maintenance fails, the authored command
+  remains successful and reports the history as separately pending. A
+  successful sync also retires only the dirty-path records whose governed
+  paths were covered by that sync. No background service publishes or settles
+  this memory.
+- `odylith compass log --complete` finishes the original admitted append and
+  publication. When the receipt is still prepared and its preimage is
+  unchanged, completion performs the first append; it never repeats an append
+  already present. Automatic recovery resumes only a pending receipt for the
+  exact event that is still queued. An unrelated manual receipt blocks the
+  normal writer until explicit completion. The narrow publication route accepts
+  `odylith compass log --repo-root . --host-event ID` and
+  `odylith compass log --repo-root . --host-event=ID`; no other arguments may
+  accompany the repository and retained event identity.
 - `./.odylith/bin/odylith codex visible-intervention --repo-root .` is the
   manual low-latency escape hatch for Codex Desktop or any Codex build that
   keeps hook output hidden. It prints the exact Markdown the assistant should

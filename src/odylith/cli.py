@@ -4123,6 +4123,9 @@ def _dispatch_main(argv: list[str] | None = None, *, repository_lock_fd: int | N
 
 
 def main(argv: list[str] | None = None) -> int:
+    from odylith.runtime.common import compass_host_events
+    from odylith.runtime.surfaces import host_dirty_checkpoint
+
     tokens = [str(token) for token in (argv or sys.argv[1:])]
     if tokens[:2] == ["governance", "restore-published-files"]:
         from odylith.runtime.governance import restore_published_files
@@ -4135,6 +4138,35 @@ def main(argv: list[str] | None = None) -> int:
     repo_root, _forwarded = _extract_repo_root(tokens[1:] if tokens else ())
     admission_tokens = tokens
     try:
+        if (tokens[:2] == ["compass", "log"]
+                and any(t == "--host-event" or t.startswith("--host-event=") for t in tokens)):
+            from odylith.runtime.surfaces import host_hook_execution
+
+            if host_hook_execution.in_host_hook_command():
+                print("Host memory publication requires a foreground governance command.", file=sys.stderr)
+                return 2
+        settle_host_memory = compass_host_events.is_foreground_publication(tokens)
+        dirty_records = []
+        synced_paths = []
+        if settle_host_memory:
+            if tokens[:2] == ["compass", "log"]:
+                from odylith.runtime.common import log_compass_timeline_event
+
+                log_compass_timeline_event._parse_args(tokens[2:])
+            else:
+                sync_args = build_parser().parse_args(tokens)
+                from odylith.runtime.governance import sync_workstream_artifacts
+
+                synced_paths = sync_workstream_artifacts._effective_changed_paths(
+                    repo_root=Path(repo_root), changed_paths=sync_args.changed_paths, force=sync_args.force,
+                )
+                dirty_records = host_dirty_checkpoint.read_dirty_events(repo_root=Path(repo_root))
+            blocked = _guard_product_repo_main_branch(repo_root=repo_root)
+            if blocked:
+                return blocked
+            resumed = compass_host_events.resume_pending(repo_root=Path(repo_root), dispatch=main)
+            if resumed:
+                return resumed
         if tokens[:1] == ["doctor"]:
             args = build_parser().parse_args(tokens)
             repo_root = args.repo_root
@@ -4153,16 +4185,30 @@ def main(argv: list[str] | None = None) -> int:
                 except (OSError, RuntimeError, ValueError) as exc:
                     print(f"Odylith baseline recovery refused: {exc}", file=sys.stderr)
                     return 1
-        return greenfield_managed_mutation_boundary.run_with_greenfield_managed_mutation_boundary(
+        result = greenfield_managed_mutation_boundary.run_with_greenfield_managed_mutation_boundary(
             repo_root=Path(repo_root),
             command_tokens=admission_tokens,
             operation=lambda descriptor: _dispatch_main(tokens, repository_lock_fd=descriptor),
         )
+        if (result == 0 and tokens[:2] == ["compass", "log"]
+                and any(t == "--host-event" or t.startswith("--host-event=") for t in tokens)):
+            from odylith.runtime.common import log_compass_timeline_event
+
+            event_args = log_compass_timeline_event._parse_args(tokens[2:])
+            compass_host_events.acknowledge_retained(
+                repo_root=Path(repo_root), event_id=event_args.host_event,
+            )
+        if result == 0 and settle_host_memory:
+            compass_host_events.finish_foreground(
+                repo_root=Path(repo_root), dispatch=main, dirty_records=dirty_records, synced_paths=synced_paths,
+            )
+        return result
     except greenfield_managed_mutation_boundary.GreenfieldManagedMutationBusyError as exc:
         print(str(exc), file=sys.stderr)
         return 75
     except (upgrade_dashboard_recovery.UpgradeDashboardRecoveryError,
-            greenfield_generation_store.GreenfieldWorkingGenerationDriftError) as exc:
+            greenfield_generation_store.GreenfieldWorkingGenerationDriftError,
+            host_dirty_checkpoint.HostDirtyCheckpointError) as exc:
         print(str(exc), file=sys.stderr)
         return 1
 

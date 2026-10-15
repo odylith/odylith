@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
+from contextvars import ContextVar
 from pathlib import Path
 
 from odylith.install import upgrade_dashboard_recovery
@@ -13,6 +14,14 @@ from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_repository_lock
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from odylith.runtime.governance import restore_published_files
+
+_CANONICAL_EVENT_WRITER: ContextVar[set[Path] | None] = ContextVar("canonical_event_writer", default=None)
+
+
+def canonical_event_writer_admitted(repo_root: Path) -> bool:
+    """Permit direct event writes only during the admitted operation's lifetime."""
+    admitted = _CANONICAL_EVENT_WRITER.get()
+    return admitted is not None and Path(repo_root).resolve() in admitted
 
 
 _READ_ONLY_COMMANDS = frozenset(
@@ -102,6 +111,17 @@ def run_with_greenfield_managed_mutation_boundary(
     root = Path(repo_root).expanduser().resolve()
     if not command_may_mutate_greenfield_managed_paths(command_tokens):
         return operation(None)
+
+    def admitted_operation(descriptor: int) -> int:
+        admitted = {root}
+        token = _CANONICAL_EVENT_WRITER.set(admitted)
+        try:
+            return operation(descriptor)
+        finally:
+            # Copied asynchronous contexts share the emptied admission set;
+            # they cannot retain authority after the foreground writer exits.
+            admitted.clear()
+            _CANONICAL_EVENT_WRITER.reset(token)
     complete_log = False
     abandon_log = False
     requested_root = ""
@@ -132,7 +152,7 @@ def run_with_greenfield_managed_mutation_boundary(
                 pinned = greenfield_generation_store.require_greenfield_working_generation(root)
                 active = greenfield_generation_state.active_generation_identity(root)
                 before = greenfield_repository_write_set.greenfield_managed_fingerprints(root)
-                result = operation(descriptor)
+                result = admitted_operation(descriptor)
                 if (greenfield_generation_state.active_generation_identity(root) != active
                         or greenfield_repository_write_set.greenfield_managed_fingerprints(root) != before
                         or pinned.manifest["after_fingerprints"] != before):
@@ -180,7 +200,7 @@ def run_with_greenfield_managed_mutation_boundary(
                     )
                     pinned = admitted_authored.pinned
             active = greenfield_generation_state.active_generation_identity(root)
-            result = operation(descriptor)
+            result = admitted_operation(descriptor)
             if admitted_authored is not None:
                 admitted_authored.require_unchanged_intent(root)
             if admitted_upgrade is not None:

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from contextvars import copy_context
 from pathlib import Path
 import signal
 import shutil
@@ -151,6 +152,53 @@ def _run(
         command_tokens=command_tokens,
         operation=lambda _descriptor: operation(),
     )
+
+
+def test_canonical_event_admission_ends_with_locked_writer(tmp_path: Path) -> None:
+    repo, _generation = _active_repository(tmp_path)
+    admitted = greenfield_managed_mutation_boundary.canonical_event_writer_admitted
+    contexts = []
+    assert not admitted(repo)
+
+    def operation():
+        assert admitted(repo)
+        assert not admitted(tmp_path / "other")
+        with pytest.raises(greenfield_repository_lock.GreenfieldRepositoryBusyError):
+            with greenfield_repository_lock.greenfield_repository_lock(repo):
+                pytest.fail("canonical event authority requires the existing repository lock")
+        contexts.append(copy_context())
+        return 0
+
+    assert _run(repo, operation) == 0
+    assert not admitted(repo)
+    assert not contexts[0].run(admitted, repo)
+
+
+def test_read_only_operation_cannot_acquire_canonical_event_authority(tmp_path: Path) -> None:
+    repo, generation = _active_repository(tmp_path)
+
+    def operation():
+        assert not greenfield_managed_mutation_boundary.canonical_event_writer_admitted(repo)
+        return 0
+
+    assert _run(repo, operation, command_tokens=("context",)) == 0
+    assert greenfield_generation_store.pin_active_greenfield_generation(repo).write_set_hash == generation.write_set_hash
+
+
+def test_canonical_event_admission_is_removed_after_failure(tmp_path: Path) -> None:
+    repo, _generation = _active_repository(tmp_path)
+    contexts = []
+
+    def operation():
+        assert greenfield_managed_mutation_boundary.canonical_event_writer_admitted(repo)
+        contexts.append(copy_context())
+        raise RuntimeError("failed writer")
+
+    with pytest.raises(RuntimeError, match="failed writer"):
+        _run(repo, operation)
+    admitted = greenfield_managed_mutation_boundary.canonical_event_writer_admitted
+    assert not admitted(repo)
+    assert not contexts[0].run(admitted, repo)
 
 
 @pytest.mark.parametrize(

@@ -202,15 +202,46 @@
   directory before compaction so the next post-compact turn resumes with
   fresh project memory.
 - `SubagentStop` event capture runs through
-  `./.odylith/bin/odylith claude subagent-stop --repo-root .`, which appends
-  a structured event to `odylith/compass/runtime/agent-stream.v1.jsonl` so
-  Compass can stitch routed delegation evidence into the timeline.
-- `Stop` summary capture runs through
+  `./.odylith/bin/odylith claude subagent-stop --repo-root .`. With an active
+  publication, completion metadata is retained in the same private host ledger
+  until foreground publication. Session and subagent identities remain exact,
+  including lifecycle records with no meaningful summary. A capture failure
+  reports that the event was not saved without blocking the subagent's exit.
+- Claude Stop is memory/logging only. Summary capture runs through
   `./.odylith/bin/odylith claude stop-summary --repo-root .`, which filters
-  trivial or question-shaped stop messages, logs a Compass
-  `implementation` event when the message looks like a real action summary,
-  and stays silent in the Claude transcript. Stop is a memory/logging lane,
-  not a visible intervention recovery lane.
+  trivial or question-shaped stop messages and retains an `implementation`
+  event when the message looks like a real action summary. It also retains any
+  matching assistant-chat delivery confirmation. Both use the exact Claude
+  session and a stable `host-event-<ID>` transaction identity in
+  `.odylith/runtime/host-hooks/dirty-events.v1.jsonl`. Stop stays silent after
+  successful capture and does not write canonical Compass files, run
+  `odylith sync`, settle a continuation, or render or replay a visible
+  intervention.
+- With an active immutable publication, native hooks and read-only intervention
+  callers retain exact events in this private ledger. Only an admitted managed
+  writer holding the repository lock may append directly to the canonical stream.
+  Shared event readers include pending intervention events, invalidate their
+  caches when either store changes, and deduplicate exact published identities.
+- Retained events are available to session and judgment memory. Their semantic
+  validity remains `UNKNOWN` after publication; publication proves byte custody.
+  After a successful ordinary, non-hook `odylith compass log` or `odylith
+  sync`, foreground maintenance promotes at most four retained events through
+  the normal CLI mutation continuation, verifies their immutable published
+  bytes, and only then acknowledges them. Remaining events stay queued without
+  data loss. If this later memory maintenance fails, the authored command
+  remains successful and reports the history as separately pending. A
+  successful sync also retires only the dirty-path records whose governed
+  paths were covered by that sync. No background service publishes or settles
+  this memory.
+- `odylith compass log --complete` finishes the original admitted append and
+  publication. When the receipt is still prepared and its preimage is
+  unchanged, completion performs the first append; it never repeats an append
+  already present. Automatic recovery resumes only a pending receipt for the
+  exact event that is still queued. An unrelated manual receipt blocks the
+  normal writer until explicit completion. The narrow publication route accepts
+  `odylith compass log --repo-root . --host-event ID` and
+  `odylith compass log --repo-root . --host-event=ID`; no other arguments may
+  accompany the repository and retained event identity.
 - Claude `UserPromptSubmit` owns live user-facing teaser output. Direct-edit
   `PostToolUse` and Bash `PostToolUse` are governed-refresh lanes: they may
   run sync/checkpoint work, stay silent on success, and emit only a compact
@@ -267,7 +298,8 @@
   inform ordinary assistant prose or the manual `visible-intervention` CLI
   fallback, but Stop hook output must not print Risks, History, Insight,
   Observation, Proposal, Assist, product-repo IDs, or transcript-proof state.
-  Dedupe and continuity checks remain internal ledger concerns only.
+  It must not render a fresh beat or replay an earlier one. Dedupe and
+  continuity checks remain internal ledger concerns only.
 - `./.odylith/bin/odylith claude visible-intervention --repo-root .` is the
   manual low-latency escape hatch for Claude Code sessions that keep hook
   output hidden. It prints the exact Markdown the assistant should show; do
@@ -395,8 +427,9 @@
   Codex has no equivalent today, so Claude project subagents inherit
   Odylith grounding through the documented `hookSpecificOutput` shape and
   emit structured stop events into `agent-stream.v1.jsonl`.
-- The `Stop` hook lets Odylith capture meaningful end-of-turn assistant
-  summaries into Compass without polling or post-hoc inference.
+- The `Stop` hook lets Odylith retain meaningful end-of-turn assistant
+  summaries for later foreground Compass publication without polling or
+  post-hoc inference.
 - `PostToolUse` matchers on `Write|Edit|MultiEdit` give Odylith a precise
   direct-edit trigger, while the paired `Bash` post-bash checkpoint gives
   Claude parity for shell edits without hiding the live beat until Stop.

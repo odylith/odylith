@@ -7,9 +7,11 @@ import json
 from pathlib import Path
 from typing import Any
 from typing import Mapping
+from typing import Sequence
 
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.intervention_engine import visibility_contract
+from odylith.runtime.surfaces import host_dirty_checkpoint
 
 
 _INTERVENTION_EVENT_KINDS: frozenset[str] = frozenset(
@@ -31,8 +33,9 @@ _PROPOSAL_EVENT_KINDS: frozenset[str] = frozenset(
     }
 )
 _EVENT_STREAM_CACHE: dict[tuple[str, int, int], list[dict[str, Any]]] = {}
-_SESSION_MEMORY_CACHE: dict[tuple[tuple[str, int, int], str, int], dict[str, Any]] = {}
-_PENDING_PROPOSAL_CACHE: dict[tuple[tuple[str, int, int], int], dict[str, Any]] = {}
+_EventCacheSignature = tuple[tuple[str, int, int], tuple[str, int, int, int]]
+_SESSION_MEMORY_CACHE: dict[tuple[_EventCacheSignature, str, int], dict[str, Any]] = {}
+_PENDING_PROPOSAL_CACHE: dict[tuple[_EventCacheSignature, int], dict[str, Any]] = {}
 _STREAM_PATH_CACHE: dict[tuple[str, str], Path] = {}
 
 
@@ -84,9 +87,17 @@ def _agent_stream_path(*, repo_root: Path, value: Any = "") -> Path:
     return path
 
 
-def _stream_cache_signature(*, repo_root: Path) -> tuple[str, int, int]:
-    """Fingerprint the current event stream file for cache invalidation."""
-    stream_path = _agent_stream_path(repo_root=repo_root)
+def _read_stream_path(*, repo_root: Path) -> Path:
+    """Read protected events from the publication outside an admitted writer."""
+    return agent_runtime_contract.published_agent_stream_path(
+        repo_root=repo_root, stream_path=_agent_stream_path(repo_root=repo_root),
+    )
+
+
+def _stream_cache_signature(*, repo_root: Path, stream_path: Path | None = None) -> tuple[str, int, int]:
+    """Fingerprint the selected event stream view for cache invalidation."""
+    if stream_path is None:
+        stream_path = _read_stream_path(repo_root=repo_root)
     if not stream_path.is_file():
         return (stream_path.as_posix(), -1, -1)
     try:
@@ -96,9 +107,17 @@ def _stream_cache_signature(*, repo_root: Path) -> tuple[str, int, int]:
         return (stream_path.as_posix(), -1, -1)
 
 
-def event_cache_signature(*, repo_root: Path) -> tuple[str, int, int]:
-    """Expose the current event stream cache signature to other runtime helpers."""
-    return _stream_cache_signature(repo_root=repo_root)
+def event_cache_signature(*, repo_root: Path) -> _EventCacheSignature:
+    """Invalidate live event views when canonical or pending storage changes."""
+    path = host_dirty_checkpoint.event_store_path(repo_root)
+    try:
+        metadata = path.lstat()
+        pending = (path.as_posix(), metadata.st_mtime_ns, metadata.st_size, metadata.st_ino)
+    except OSError:
+        pending = (path.as_posix(), -1, -1, -1)
+    # Observe the inbox before selecting a publication; acknowledgment follows publication.
+    canonical = _stream_cache_signature(repo_root=repo_root)
+    return canonical, pending
 
 
 def _clear_event_caches() -> None:
@@ -158,6 +177,7 @@ def append_intervention_event(
     render_surface: str = "",
     delivery_latency_ms: float | None = None,
     metadata: Mapping[str, Any] | None = None,
+    defer: bool = False,
 ) -> dict[str, Any]:
     """Append one normalized intervention event to the session event stream."""
     normalized_kind = _normalize_string(kind).lower()
@@ -196,6 +216,18 @@ def append_intervention_event(
         payload["delivery_latency_ms"] = round(max(0.0, float(delivery_latency_ms)), 3)
     payload = {key: value for key, value in payload.items() if value not in ("", [], {})}
     stream_path = _agent_stream_path(repo_root=repo_root)
+    protected_stream = (Path(repo_root).expanduser().resolve() / agent_runtime_contract.AGENT_STREAM_PATH).resolve()
+    if not defer and stream_path.resolve() == protected_stream:
+        from odylith.runtime.domain_intelligence import greenfield_generation_state
+        from odylith.runtime.domain_intelligence import greenfield_managed_mutation_boundary
+
+        defer = (
+            greenfield_generation_state.read_active_publication(repo_root) is not None
+            and not greenfield_managed_mutation_boundary.canonical_event_writer_admitted(repo_root)
+        )
+    if defer:
+        host_dirty_checkpoint.record_compass_event(repo_root=repo_root, event=payload)
+        return payload
     stream_path.parent.mkdir(parents=True, exist_ok=True)
     with stream_path.open("a", encoding="utf-8") as handle:
         handle.write(json.dumps(payload, sort_keys=True) + "\n")
@@ -208,40 +240,59 @@ def load_recent_intervention_events(
     repo_root: Path,
     limit: int = 200,
     session_id: str = "",
+    include_pending: bool = True,
 ) -> list[dict[str, Any]]:
     """Load recent normalized intervention events, optionally scoped to one session."""
-    stream_path = _agent_stream_path(repo_root=repo_root)
-    if not stream_path.is_file():
-        return []
-    cache_key = _stream_cache_signature(repo_root=repo_root)
+    # An acknowledged event is already published. Read the inbox before pinning
+    # canonical bytes so a concurrent publish-and-ack cannot hide it from both views.
+    pending = host_dirty_checkpoint.read_compass_events(repo_root=repo_root) if include_pending else []
+    stream_path = _read_stream_path(repo_root=repo_root)
+    cache_key = _stream_cache_signature(repo_root=repo_root, stream_path=stream_path)
     cached = _EVENT_STREAM_CACHE.get(cache_key)
     if cached is None:
         rows: list[dict[str, Any]] = []
-        try:
-            with stream_path.open(encoding="utf-8") as handle:
-                for raw_line in handle:
-                    line = str(raw_line or "").strip()
-                    if not line:
-                        continue
-                    try:
-                        payload = json.loads(line)
-                    except json.JSONDecodeError:
-                        continue
-                    if not isinstance(payload, Mapping):
-                        continue
-                    kind = _event_kind(payload)
-                    if kind not in _INTERVENTION_EVENT_KINDS:
-                        continue
-                    rows.append(dict(payload))
-        except OSError:
-            return []
+        if stream_path.is_file():
+            try:
+                with stream_path.open(encoding="utf-8") as handle:
+                    for raw_line in handle:
+                        line = str(raw_line or "").strip()
+                        if not line:
+                            continue
+                        try:
+                            payload = json.loads(line)
+                        except json.JSONDecodeError:
+                            continue
+                        if not isinstance(payload, Mapping):
+                            continue
+                        kind = _event_kind(payload)
+                        if kind not in _INTERVENTION_EVENT_KINDS:
+                            continue
+                        rows.append(dict(payload))
+            except OSError:
+                rows = []
         _EVENT_STREAM_CACHE.clear()
         _EVENT_STREAM_CACHE[cache_key] = rows
         cached = rows
+    live = [dict(row) for row in cached]
+    if include_pending:
+        identities = {str(row["transaction_id"]): row for row in live if row.get("transaction_id")}
+        for record in pending:
+            event = record["event"]
+            if _event_kind(event) not in _INTERVENTION_EVENT_KINDS:
+                continue
+            identity = event["transaction_id"]
+            if identity in identities:
+                if identities[identity] != event:
+                    raise host_dirty_checkpoint.HostDirtyCheckpointError(
+                        "Pending intervention differs from its canonical transaction identity."
+                    )
+                continue
+            identities[identity] = event
+            live.append(dict(event))
     wanted_session = _normalize_string(session_id)
     rows = [
         dict(payload)
-        for payload in cached
+        for payload in live
         if not wanted_session or _normalize_string(payload.get("session_id")) == wanted_session
     ]
     return rows[-max(1, int(limit)) :]
@@ -254,15 +305,35 @@ def session_memory_snapshot(
     limit: int = 80,
 ) -> dict[str, Any]:
     """Summarize recent intervention-memory state for one host session."""
+    def with_pending_summaries(base: Mapping[str, Any]) -> dict[str, Any]:
+        from odylith.runtime.context_engine import judgment_memory_records
+
+        payload = dict(base)
+        claims, error = judgment_memory_records.pending_session_claims(
+            root=repo_root, session_id=_normalize_string(session_id),
+        )
+        payload["pending_summaries"] = [
+            {**claim["checkpoint_event"], **{key: claim[key] for key in (
+                "summary", "ts_iso", "trust", "authority", "memory_record",
+            )}}
+            for claim in claims
+        ]
+        payload["pending_summary_count"] = len(claims)
+        payload["pending_memory_error"] = error or str(base.get("pending_memory_error", ""))
+        return payload
+
     cache_key = (event_cache_signature(repo_root=repo_root), _normalize_string(session_id), max(1, int(limit)))
     cached = _SESSION_MEMORY_CACHE.get(cache_key)
     if cached is not None:
-        return dict(cached)
-    events = load_recent_intervention_events(
-        repo_root=repo_root,
-        limit=limit,
-        session_id=session_id,
-    )
+        return with_pending_summaries(cached)
+    pending_event_error = ""
+    try:
+        events = load_recent_intervention_events(repo_root=repo_root, limit=limit, session_id=session_id)
+    except host_dirty_checkpoint.HostDirtyCheckpointError:
+        pending_event_error = "Pending intervention memory could not be read; its claims remain unverified."
+        events = load_recent_intervention_events(
+            repo_root=repo_root, limit=limit, session_id=session_id, include_pending=False,
+        )
     recent_signatures: list[str] = []
     recent_teaser_signatures: list[str] = []
     recent_card_signatures: list[str] = []
@@ -293,8 +364,10 @@ def session_memory_snapshot(
         "recent_card_signatures": recent_card_signatures[:8],
         "recent_moment_kinds": recent_moment_kinds[:12],
     }
+    if pending_event_error:
+        payload["pending_memory_error"] = pending_event_error
     _SESSION_MEMORY_CACHE[cache_key] = payload
-    return dict(payload)
+    return with_pending_summaries(payload)
 
 
 def pending_proposal_state(*, repo_root: Path, limit: int = 400) -> dict[str, Any]:

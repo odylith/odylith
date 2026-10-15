@@ -1,16 +1,9 @@
-"""Claude Code SubagentStop hook: append a Compass agent-stream event.
+"""Claude Code SubagentStop hook: retain delegated-work completion evidence.
 
-When a Claude Task-tool subagent finishes, the ``SubagentStop`` hook
-fires with the subagent's transcript metadata. This baked module mirrors
-the legacy ``.claude/hooks/log-subagent-stop.py`` script. It builds a
-canonical agent-stream event (subagent id, type, stop reason, summary,
-extracted workstreams) and appends it to
-``odylith/compass/runtime/agent-stream.v1.jsonl`` so the Compass
-timeline accumulates evidence about delegated work.
-
-The hook never blocks the subagent's exit. All failures degrade to a
-no-op return so a missing snapshot, missing runtime directory, or
-unparseable payload never breaks the Task-tool dispatch.
+With an active immutable publication, the hook saves its exact event in the
+host journal for ordinary foreground Compass publication. Legacy repositories
+keep their direct stream append. A refused capture emits compact status
+without blocking the subagent's exit; successful capture stays quiet.
 """
 
 from __future__ import annotations
@@ -32,6 +25,7 @@ def build_event(*, payload: dict) -> dict:
     return {
         "ts_iso": claude_host_shared.utc_now_iso(),
         "kind": "subagent_stop",
+        "host_family": "claude",
         "source": "claude_hook",
         "hook_event_name": str(payload.get("hook_event_name", "")).strip() or "SubagentStop",
         "cwd": str(payload.get("cwd", "")).strip(),
@@ -52,7 +46,7 @@ def build_event(*, payload: dict) -> dict:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="odylith claude subagent-stop",
-        description="Append a Compass agent-stream event for a Claude SubagentStop hook payload.",
+        description="Save a Compass event for a Claude SubagentStop hook payload.",
     )
     parser.add_argument("--repo-root", default=".", help="Repository root for the Compass agent stream.")
     parser.add_argument(
@@ -65,7 +59,10 @@ def main(argv: list[str] | None = None) -> int:
     raw = args.payload if args.payload else None
     payload = claude_host_shared.load_payload(raw)
     event = build_event(payload=payload)
-    claude_host_shared.append_agent_stream_event(project_dir=repo_root, event=event)
+    try:
+        claude_host_shared.append_agent_stream_event(project_dir=repo_root, event=event)
+    except (RuntimeError, ValueError):
+        print("Odylith could not save this subagent's completion event.", file=sys.stderr)
     return 0
 
 

@@ -287,7 +287,7 @@ def test_unrecordable_render_stays_closed(active, monkeypatch, terminal):
 
 
 @pytest.mark.parametrize("append_state", ["absent", "partial", "complete", "complete_with_unrecorded_render"])
-def test_prepared_phase_recovers_only_exact_complete_append(active, monkeypatch, append_state):
+def test_prepared_phase_completes_only_exact_unstarted_or_complete_append(active, monkeypatch, append_state):
     repo, _ = active
     with leases.greenfield_repository_lock(repo) as descriptor:
         continuation.prepare_append(repo_root=repo, event=EVENT, repository_lock_fd=descriptor)
@@ -297,7 +297,7 @@ def test_prepared_phase_recovers_only_exact_complete_append(active, monkeypatch,
         if append_state == "complete_with_unrecorded_render":
             _write(repo / "odylith/compass/runtime/current.v1.json", b"unrecorded\n")
     monkeypatch.setattr(continuation.owned_surface_refresh, "refresh_owned_surfaces", lambda **kwargs: _success(repo, **kwargs))
-    if append_state == "complete":
+    if append_state in {"absent", "complete"}:
         assert _run(repo, complete=True) == 0
         assert (repo / continuation.STREAM_PATH).read_bytes() == EVENT
     else:

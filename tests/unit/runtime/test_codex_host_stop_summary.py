@@ -5,8 +5,8 @@ import json
 from pathlib import Path
 
 from odylith.runtime.intervention_engine import surface_runtime
-from odylith.runtime.surfaces import codex_host_post_bash_checkpoint
 from odylith.runtime.surfaces import codex_host_stop_summary
+from odylith.runtime.surfaces import host_dirty_checkpoint
 
 
 _CLI_HELP_OUTPUT = """usage: odylith [-h] {start,context,query,sync,codex} ...
@@ -22,35 +22,44 @@ options:
 """
 
 
-def test_log_codex_stop_summary_logs_meaningful_updates(monkeypatch) -> None:
-    seen: list[tuple[str, str, list[str] | None]] = []
+def test_stop_retains_complete_meaningful_sentence_with_actual_session(monkeypatch, tmp_path: Path) -> None:
+    summary = ("Implemented complete source custody and retained every final verification clause "
+               "across the governed runtime boundary with explicit durable session identity; "
+               "the original authority and recovery evidence remain intact for B-088.")
+    assert len(summary) > 180
+    session = "codex-actual-native-session"
+    confirmations = []
+    monkeypatch.setattr(codex_host_stop_summary.codex_host_shared, "load_payload",
+                        lambda: {"session_id": session, "last_assistant_message": summary + " More details follow."})
+    monkeypatch.setattr(codex_host_stop_summary.host_surface_runtime, "confirm_assistant_chat_delivery",
+                        lambda **kwargs: confirmations.append(kwargs))
+    monkeypatch.setattr(codex_host_stop_summary.codex_host_shared, "run_odylith",
+                        lambda **kwargs: (_ for _ in ()).throw(AssertionError("Stop must not dispatch canonical commands")))
 
-    def _fake_run_compass_log(*, project_dir: str, summary: str, workstreams: list[str] | None = None) -> bool:
-        seen.append((project_dir, summary, workstreams))
-        return True
+    assert codex_host_stop_summary.main(["--repo-root", str(tmp_path)]) == 0
+    rows = host_dirty_checkpoint.read_compass_events(repo_root=tmp_path)
+    assert len(rows) == 1
+    event = rows[0]["event"]
+    assert event["summary"] == summary
+    assert event["session_id"] == rows[0]["session_id"] == session
+    assert event["host_family"] == "codex"
+    assert event["author"] == event["source"] == "assistant"
+    assert event["kind"] == "implementation"
+    assert event["workstreams"] == ["B-088"]
+    assert event["ts_iso"]
+    assert event["transaction_id"] == "host-event-" + rows[0]["id"]
+    assert host_dirty_checkpoint.read_compass_events(repo_root=tmp_path) == rows
+    assert confirmations[0]["defer"] is True and confirmations[0]["session_id"] == session
+    assert not (tmp_path / "odylith").exists()
 
-    monkeypatch.setattr(codex_host_stop_summary.codex_host_shared, "run_compass_log", _fake_run_compass_log)
 
-    logged = codex_host_stop_summary.log_codex_stop_summary(
-        ".",
-        message="Implemented the Codex host dispatcher and validated the focused B-088 runtime tests.",
-    )
-
-    assert logged is True
-    assert seen
-    assert seen[0][0] == "."
-    assert "B-088" in seen[0][1]
-    assert seen[0][2] == ["B-088"]
-
-
-def test_log_codex_stop_summary_ignores_non_meaningful_messages(monkeypatch) -> None:
-    monkeypatch.setattr(
-        codex_host_stop_summary.codex_host_shared,
-        "run_compass_log",
-        lambda **_: (_ for _ in ()).throw(AssertionError("should not log")),
-    )
-
-    assert codex_host_stop_summary.log_codex_stop_summary(".", message="Would you like a follow-up?") is False
+def test_stop_ignores_non_meaningful_messages(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(codex_host_stop_summary.codex_host_shared, "load_payload",
+                        lambda: {"session_id": "quiet-session", "last_assistant_message": "Would you like a follow-up?"})
+    monkeypatch.setattr(host_dirty_checkpoint, "capture_stop_summary",
+                        lambda **_: (_ for _ in ()).throw(AssertionError("should not capture")))
+    assert codex_host_stop_summary.main(["--repo-root", str(tmp_path)]) == 0
+    assert host_dirty_checkpoint.read_compass_events(repo_root=tmp_path) == []
 
 
 def test_stop_intervention_bundle_uses_recent_prompt_excerpt_not_intervention_summary(
@@ -333,66 +342,32 @@ def test_main_stays_silent_without_pending_stop_replay(
     assert buffer.getvalue() == ""
 
 
-def test_main_reports_governance_refresh_status_without_forcing_chat_continuation(
-    monkeypatch,
-    tmp_path: Path,
-) -> None:
-    monkeypatch.setattr(
-        codex_host_stop_summary.codex_host_shared,
-        "load_payload",
-        lambda: {"last_assistant_message": "Completed the requested change.", "session_id": "stop-status"},
+def test_main_retains_dirty_checkpoints_without_synchronous_settlement(monkeypatch, tmp_path: Path, capsys) -> None:
+    event_id = host_dirty_checkpoint.record_dirty_event(
+        repo_root=tmp_path, host_family="codex", session_id="stop-status", source="test",
+        governed_paths=["odylith/casebook/bugs/example.md"],
     )
-    monkeypatch.setattr(
-        codex_host_post_bash_checkpoint,
-        "settle_deferred_checkpoint_events",
-        lambda **kwargs: {"systemMessage": "Odylith governance refresh failed after editing foo.md."},
-    )
-    monkeypatch.setattr(codex_host_stop_summary, "_stop_intervention_bundle", lambda **kwargs: {})
-    buffer = io.StringIO()
-    monkeypatch.setattr("sys.stdout", buffer)
-
-    exit_code = codex_host_stop_summary.main(["--repo-root", str(tmp_path)])
-
-    assert exit_code == 0
-    payload = json.loads(buffer.getvalue())
-    assert payload["systemMessage"] == "Odylith governance refresh failed after editing foo.md."
-    assert "decision" not in payload
+    monkeypatch.setattr(codex_host_stop_summary.codex_host_shared, "load_payload",
+                        lambda: {"last_assistant_message": "Completed the requested change.", "session_id": "stop-status"})
+    monkeypatch.setattr(codex_host_stop_summary.codex_host_shared, "run_odylith",
+                        lambda **kwargs: (_ for _ in ()).throw(AssertionError("Stop must not dispatch canonical work")))
+    assert codex_host_stop_summary.main(["--repo-root", str(tmp_path)]) == 0
+    assert [row["id"] for row in host_dirty_checkpoint.read_dirty_events(repo_root=tmp_path)] == [event_id]
+    assert capsys.readouterr().out == ""
 
 
-def test_main_does_not_mask_governance_failure_with_stop_assist(
-    monkeypatch,
-    tmp_path: Path,
-) -> None:
-    monkeypatch.setattr(
-        codex_host_stop_summary.codex_host_shared,
-        "load_payload",
-        lambda: {"last_assistant_message": "Completed the requested change.", "session_id": "stop-failure"},
-    )
-    monkeypatch.setattr(
-        codex_host_post_bash_checkpoint,
-        "settle_deferred_checkpoint_events",
-        lambda **kwargs: {"systemMessage": "Odylith governance refresh failed after editing foo.md."},
-    )
-    monkeypatch.setattr(
-        codex_host_stop_summary,
-        "_stop_intervention_bundle",
-        lambda **kwargs: {
-            "intervention_bundle": {},
-            "closeout_bundle": {
-                "markdown_text": "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract.",
-                "plain_text": "Odylith Assist: B-096 stayed tied to the refreshed intervention contract.",
-            },
-        },
-    )
-    buffer = io.StringIO()
-    monkeypatch.setattr("sys.stdout", buffer)
-
-    exit_code = codex_host_stop_summary.main(["--repo-root", str(tmp_path)])
-
-    assert exit_code == 0
-    payload = json.loads(buffer.getvalue())
-    assert payload["systemMessage"] == "Odylith governance refresh failed after editing foo.md."
-    assert "decision" not in payload
+def test_main_reports_summary_capture_failure_without_claiming_saved_memory(monkeypatch, tmp_path: Path, capsys) -> None:
+    monkeypatch.setattr(codex_host_stop_summary.codex_host_shared, "load_payload", lambda: {
+        "last_assistant_message": "Implemented the Stop summary capture failure regression and validated the focused tests.",
+        "session_id": "stop-failure",
+    })
+    monkeypatch.setattr(host_dirty_checkpoint, "capture_stop_summary", lambda **kwargs: (
+        _ for _ in ()).throw(host_dirty_checkpoint.HostDirtyCheckpointError("fsync refused")))
+    monkeypatch.setattr(codex_host_stop_summary.host_surface_runtime, "confirm_assistant_chat_delivery", lambda **kwargs: [])
+    assert codex_host_stop_summary.main(["--repo-root", str(tmp_path)]) == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload == {"systemMessage": "Odylith could not save this turn's summary."}
+    assert host_dirty_checkpoint.read_compass_events(repo_root=tmp_path) == []
 
 
 def test_main_keeps_pending_chat_blocks_out_of_stop_output(
@@ -423,8 +398,8 @@ def test_main_keeps_pending_chat_blocks_out_of_stop_output(
         },
     )
     monkeypatch.setattr(
-        codex_host_stop_summary.codex_host_shared,
-        "run_compass_log",
+        host_dirty_checkpoint,
+        "capture_stop_summary",
         lambda **kwargs: True,
     )
     monkeypatch.setattr(
@@ -515,3 +490,16 @@ def test_main_does_not_block_stop_when_odylith_closeout_is_already_visible(
 
     assert exit_code == 0
     assert buffer.getvalue() == ""
+
+
+def test_confirmation_refusal_preserves_the_saved_summary(monkeypatch, tmp_path: Path, capsys) -> None:
+    monkeypatch.setattr(codex_host_stop_summary.codex_host_shared, "load_payload", lambda: {
+        "session_id": "confirmation-refused", "last_assistant_message": 'Implemented the deferred confirmation boundary and validated the durable session retention tests.',
+    })
+    monkeypatch.setattr(codex_host_stop_summary.host_surface_runtime, "confirm_assistant_chat_delivery", lambda **kwargs: (
+        _ for _ in ()).throw(host_dirty_checkpoint.HostDirtyCheckpointError("confirmation journal refused")))
+    assert codex_host_stop_summary.main(["--repo-root", str(tmp_path)]) == 0
+    assert json.loads(capsys.readouterr().out) == {"systemMessage": "Odylith could not save chat-delivery confirmation."}
+    rows = host_dirty_checkpoint.read_compass_events(repo_root=tmp_path)
+    assert len(rows) == 1 and rows[0]["event"]["summary"] == 'Implemented the deferred confirmation boundary and validated the durable session retention tests.'
+    assert rows[0]["event"]["session_id"] == "confirmation-refused"

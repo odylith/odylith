@@ -1,21 +1,15 @@
-"""Claude Code Stop hook: meaningful stop-summary Compass log.
+"""Durably capture meaningful Claude turns without canonical hook writes.
 
-When a Claude Code turn ends, the ``Stop`` hook fires with the
-assistant's last message. This baked module mirrors the legacy
-``.claude/hooks/log-stop-summary.py`` script. It filters out trivial,
-question-shaped, or offer-shaped stop messages and only logs a Compass
-``implementation`` event when the message looks like a real action
-summary (action verb present, length above the noise floor, no
-``Would you like ...`` opening).
-
-The hook never blocks the turn-ending event. All failures degrade to
-a no-op return so a missing launcher, missing snapshot, or unparseable
-payload never breaks Claude Code's stop dispatch.
+The shared filter selects a complete meaningful sentence. Stop journals it with
+its native session identity before deferred chat-delivery confirmation. Ordinary
+foreground Compass updates own canonical append and publication. A journal
+refusal emits a compact status without claiming the event was saved.
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 from typing import Any
@@ -25,6 +19,7 @@ from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.intervention_engine import surface_runtime as intervention_surface_runtime
 from odylith.runtime.surfaces import claude_host_shared
 from odylith.runtime.surfaces import host_intervention_support
+from odylith.runtime.surfaces import host_dirty_checkpoint
 
 
 def _stop_intervention_bundle(
@@ -90,9 +85,9 @@ def render_stop_summary(
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="odylith claude stop-summary",
-        description="Log meaningful Claude stop summaries to Compass.",
+        description="Save meaningful Claude summaries for the next Compass update.",
     )
-    parser.add_argument("--repo-root", default=".", help="Repository root for Compass log dispatch.")
+    parser.add_argument("--repo-root", default=".", help="Repository root for durable summary capture.")
     parser.add_argument(
         "--payload",
         default="",
@@ -108,21 +103,31 @@ def main(argv: list[str] | None = None) -> int:
     message = str(payload.get("last_assistant_message", ""))
     if host_intervention_support.suppress_prompt_live_narration(assistant_summary=message):
         return 0
-    host_surface_runtime.confirm_assistant_chat_delivery(
-        repo_root=repo_root,
-        host_family="claude",
-        session_id=session_id,
-        last_assistant_message=message,
-        render_surface="claude_stop",
-    )
     summary = claude_host_shared.meaningful_stop_summary(message)
-    workstreams = claude_host_shared.extract_workstreams(summary)
-    if summary:
-        claude_host_shared.run_compass_log(
-            project_dir=repo_root,
+    try:
+        saved = not summary or host_dirty_checkpoint.capture_stop_summary(
+            repo_root=repo_root,
+            host_family="claude",
+            session_id=session_id,
             summary=summary,
-            workstreams=workstreams,
+            workstreams=claude_host_shared.extract_workstreams(summary),
         )
+    except host_dirty_checkpoint.HostDirtyCheckpointError:
+        saved = False
+    status = "" if saved else "Odylith could not save this turn's summary."
+    try:
+        host_surface_runtime.confirm_assistant_chat_delivery(
+            repo_root=repo_root,
+            host_family="claude",
+            session_id=session_id,
+            last_assistant_message=message,
+            render_surface="claude_stop",
+            defer=True,
+        )
+    except host_dirty_checkpoint.HostDirtyCheckpointError:
+        status = status or "Odylith could not save chat-delivery confirmation."
+    if status:
+        sys.stdout.write(json.dumps(host_surface_runtime.stop_payload(system_message=status)))
     return 0
 
 

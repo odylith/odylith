@@ -591,6 +591,14 @@ class CompassLogContinuation:
         fsync_directory(path.parent)
 
 
+def pending_event(*, repo_root: Path) -> dict[str, Any] | None:
+    """Read the exact admitted event without authorizing its completion."""
+    root = Path(repo_root).resolve()
+    if not _safe_path(root, RECEIPT_PATH).exists():
+        return None
+    return json.loads(_load(root)["event"])
+
+
 def prepare_append(*, repo_root: Path, event: bytes, repository_lock_fd: int) -> CompassLogContinuation:
     root = Path(repo_root).resolve()
     _require_lease(root, repository_lock_fd)
@@ -660,6 +668,10 @@ def require_completion(*, repo_root: Path, repository_lock_fd: int | None) -> Co
     if receipt["phase"] == "sealed" and publication.active_generation_identity(root) == receipt["successor"]:
         continuation.retire()
         return continuation
+    if receipt["phase"] == "prepared" and _file_state(_safe_path(root, STREAM_PATH)) == receipt["before_stream"]:
+        # The receipt is durable before the first append. Complete that exact
+        # admitted event when interruption left its entire preimage unchanged.
+        append_prepared(continuation)
     continuation.require_anchors()
     if receipt["phase"] == "prepared":
         # A fully fsynced append may precede the appended-phase receipt write.

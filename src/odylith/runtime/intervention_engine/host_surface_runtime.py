@@ -303,6 +303,7 @@ def confirm_assistant_chat_delivery(
     session_id: str,
     last_assistant_message: str,
     render_surface: str,
+    defer: bool = False,
 ) -> list[dict[str, Any]]:
     return visibility_broker.confirm_assistant_chat_delivery(
         repo_root=repo_root,
@@ -310,6 +311,7 @@ def confirm_assistant_chat_delivery(
         session_id=session_id,
         last_assistant_message=last_assistant_message,
         render_surface=render_surface,
+        defer=defer,
     )
 
 

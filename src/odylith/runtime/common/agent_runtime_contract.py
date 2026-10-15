@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 import re
+import stat
 from typing import Any
 from typing import Mapping
 
@@ -181,6 +182,36 @@ def resolve_agent_stream_path(*, repo_root: Path, value: Any = "") -> Path:
         if candidate.exists():
             return candidate
     return (root / AGENT_STREAM_PATH).resolve()
+
+
+def published_agent_stream_path(*, repo_root: Path, stream_path: Path) -> Path:
+    """Select protected published events outside an admitted canonical writer."""
+    protected_stream = (Path(repo_root).expanduser().resolve() / AGENT_STREAM_PATH).resolve()
+    if stream_path.resolve() != protected_stream:
+        return stream_path
+    from odylith.runtime.domain_intelligence import greenfield_generation_state
+    from odylith.runtime.domain_intelligence import greenfield_generation_store
+    from odylith.runtime.domain_intelligence import greenfield_managed_mutation_boundary
+
+    if (not greenfield_managed_mutation_boundary.canonical_event_writer_admitted(repo_root)
+            and greenfield_generation_state.read_active_publication(repo_root) is not None):
+        repository = greenfield_generation_store.active_greenfield_generation_repository(repo_root)
+        selected = repository / AGENT_STREAM_PATH
+        current = repository
+        for part in Path(AGENT_STREAM_PATH).parts:
+            current /= part
+            try:
+                metadata = current.lstat()
+            except FileNotFoundError:
+                return selected
+            if (stat.S_ISLNK(metadata.st_mode)
+                    or (current != selected and not stat.S_ISDIR(metadata.st_mode))
+                    or (current == selected and (
+                        not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1
+                    ))):
+                raise RuntimeError("Greenfield selected intervention stream path is unsafe")
+        return selected
+    return stream_path
 
 
 def is_agent_hot_path_profile(value: Any) -> bool:

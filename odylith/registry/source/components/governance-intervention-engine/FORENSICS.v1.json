@@ -13,12 +13,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 898,
-    "mapped_workstream_evidence_count": 845,
+    "explicit_event_count": 900,
+    "mapped_workstream_evidence_count": 847,
     "recent_path_match_count": 0,
-    "spec_history_event_count": 31,
+    "spec_history_event_count": 33,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 898
+    "timeline_event_count": 900
   },
   "name": "Governance Intervention Engine",
   "path_prefixes": [
@@ -43,6 +43,115 @@
   ],
   "spec_ref": "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 5,
+      "artifacts": [
+        "sha256:48934abd652f36d13e2c23d651f502e1ebf6c3c60087122db8fde5716af14289",
+        "sha256:b54fc44abfced334609d235c03a32955dc09c1e824ce34c2429db399a8484ffe",
+        "sha256:04586438809299457866758b2b505853b0dd5b08c3996b0e324f611dcac6042f",
+        "sha256:c321627e65afe2133392b9231233761e6b07b554e31f810bfb631db234d970ca",
+        "sha256:0a42ec824d1b1754c6d6b1ea71b35674cab09ad29e86a6276b8c4da772d3fa57"
+      ],
+      "confidence": "high",
+      "event_index": 1626,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
+      "ts_iso": "2026-10-14T22:35:51-07:00",
+      "workstreams": [
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-08-02-greenfield-current-view-readers-could-remain-pinned-to-stale-onboarding-state.md",
+        "odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md"
+      ],
+      "confidence": "high",
+      "event_index": 1625,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
+      "ts_iso": "2026-10-14T15:57:08-07:00",
+      "workstreams": [
+        "B-141",
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 4,
       "artifacts": [

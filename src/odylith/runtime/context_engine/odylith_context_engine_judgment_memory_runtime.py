@@ -34,6 +34,21 @@ def build_judgment_memory_snapshot(
 ) -> dict[str, Any]:
     root = Path(repo_root).resolve()
     previous = dict(previous_snapshot) if isinstance(previous_snapshot, Mapping) else {}
+    provenance = judgment_memory_records.projection_provenance(runtime_state)
+    pending_claims, session_claim_gap = judgment_memory_records.pending_session_claims(
+        root=root, provenance=provenance,
+    )
+    session_claims = []
+    for claim in pending_claims:
+        item = context_engine_store._judgment_memory_item(
+            kind="session_claim", summary=claim["summary"], recorded_utc=claim["ts_iso"],
+            source_path=claim["source_path"], source_kind=claim["source_kind"],
+            surfaces=("sessions", "compass"),
+        )
+        item.update({key: claim[key] for key in (
+            "id", "session_id", "host_family", "trust", "checkpoint_event", "memory_record",
+        )})
+        session_claims.append(item)
     backlog_rows = [
         dict(row)
         for bucket in ("active", "execution", "finished", "parked")
@@ -221,7 +236,7 @@ def build_judgment_memory_snapshot(
             if workspace_items
             else "No stable workspace or actor identity has been retained yet."
         ),
-        items=workspace_items[:3],
+        items=workspace_items[:3] + session_claims,
         provenance=[
             context_engine_store._provenance_item(
                 label="Git identity",
@@ -236,7 +251,11 @@ def build_judgment_memory_snapshot(
                 updated_utc=str(daemon_usage.get("last_request_utc", "")).strip() if isinstance(daemon_usage, Mapping) else "",
                 trust="derived_runtime",
             ),
-        ],
+        ] + ([context_engine_store._provenance_item(
+            label="Pending session summaries", source_kind="runtime_observation",
+            path=session_claims[0]["source_path"],
+            updated_utc=session_claims[0]["recorded_utc"], trust="unverified",
+        )] if session_claims else []),
     )
 
     outcome_items: list[dict[str, Any]] = []
@@ -604,7 +623,6 @@ def build_judgment_memory_snapshot(
         contradiction_area,
         freshness_area,
     ]
-    provenance = judgment_memory_records.projection_provenance(runtime_state)
     for area in areas:
         for item in area.get("items", []):
             memory = item["memory_record"]
@@ -660,7 +678,7 @@ def build_judgment_memory_snapshot(
     areas.append(provenance_area)
 
     counts: dict[str, int] = {}
-    gaps: list[str] = []
+    gaps: list[str] = [session_claim_gap] if session_claim_gap else []
     for area in areas:
         state = str(area.get("state", "")).strip() or "unknown"
         counts[state] = counts.get(state, 0) + 1

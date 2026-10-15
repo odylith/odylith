@@ -17,6 +17,7 @@ import json
 from pathlib import Path
 import re
 import sys
+import uuid
 from typing import Any
 from typing import Mapping
 from typing import Sequence
@@ -50,13 +51,19 @@ _SOFT_REGISTRY_DIAGNOSTIC_PREFIXES: tuple[str, ...] = (
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     tokens = list(sys.argv[1:] if argv is None else argv)
     recovery_requested = "--complete" in tokens or "--abandon-restored" in tokens
+    host_event_requested = any(token == "--host-event" or token.startswith("--host-event=") for token in tokens)
+    if host_event_requested:
+        tokens = [part for token in tokens for part in (
+            token.split("=", 1) if token.startswith(("--host-event=", "--repo-root=")) else [token]
+        )]
     parser = argparse.ArgumentParser(
         prog="odylith compass log",
         description="Append a Compass timeline stream event for host-aware audit visibility.",
         allow_abbrev=False,
     )
     parser.add_argument("--repo-root", default=".", help="Repository root.")
-    parser.add_argument("--complete", action="store_true", help="Complete an admitted canonical log's failed refresh without appending again; only --repo-root may accompany this option.")
+    parser.add_argument("--complete", action="store_true", help="Finish the exact admitted append and publication without repeating an existing append; only --repo-root may accompany this option.")
+    parser.add_argument("--host-event", default="", metavar="ID", help="Publish one retained host-memory event; only --repo-root may accompany this option.")
     parser.add_argument(
         "--abandon-restored", metavar="RESTORATION_REVIEW_HASH",
         help="Retire one prepared, unpublished append after its exact reviewed stream restoration.",
@@ -70,8 +77,8 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default=agent_runtime_contract.AGENT_STREAM_PATH,
         help="Output JSONL stream path (local runtime artifact).",
     )
-    parser.add_argument("--kind", required=not recovery_requested, choices=_KIND_CHOICES, help="Event kind.")
-    parser.add_argument("--summary", required=not recovery_requested, help="Crisp event summary sentence.")
+    parser.add_argument("--kind", required=not (recovery_requested or host_event_requested), choices=_KIND_CHOICES, help="Event kind.")
+    parser.add_argument("--summary", required=not (recovery_requested or host_event_requested), help="Crisp event summary sentence.")
     parser.add_argument(
         "--workstream",
         action="append",
@@ -157,7 +164,20 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--runner-fingerprint", default="", help="Optional deployment-truth runner fingerprint.")
     parser.add_argument("--last-live-failing-commit", default="", help="Optional deployment-truth last live failing commit.")
     args = parser.parse_args(tokens)
-    if args.complete:
+    if host_event_requested:
+        try:
+            if uuid.UUID(args.host_event).hex != args.host_event:
+                raise ValueError("noncanonical identity")
+            remaining = list(tokens)
+            for flag in ("--host-event", "--repo-root"):
+                if flag in remaining:
+                    index = remaining.index(flag)
+                    del remaining[index:index + 2]
+            if remaining:
+                raise ValueError("additional arguments")
+        except (ValueError, AttributeError):
+            parser.error("--host-event requires one retained event ID and only an optional --repo-root")
+    elif args.complete:
         try:
             compass_log_continuation.completion_repo_argument(tokens)
         except ValueError as exc:
@@ -440,6 +460,15 @@ def append_event(
 ) -> dict[str, object]:
     """Validate once, then append; only an admitted canonical log earns continuation."""
     payload = prepare_event(repo_root=repo_root, **event_fields)
+    return append_payload(
+        repo_root=repo_root, stream_path=stream_path, payload=payload, repository_lock_fd=repository_lock_fd,
+    )
+
+
+def append_payload(
+    *, repo_root: Path, stream_path: Path, payload: dict[str, Any], repository_lock_fd: int | None,
+) -> dict[str, object]:
+    """Append already retained event bytes under the same continuation owner."""
     event = (json.dumps(payload, sort_keys=True) + "\n").encode("utf-8")
     if (repository_lock_fd is not None
             and stream_path == repo_root / compass_log_continuation.STREAM_PATH
@@ -490,41 +519,67 @@ def main(argv: Sequence[str] | None = None, *, repository_lock_fd: int | None = 
         else _resolve(repo_root, manifest_token)
     )
     try:
-        payload = append_event(
-            repo_root=repo_root,
-            stream_path=stream_path,
-            repository_lock_fd=repository_lock_fd,
-            kind=str(args.kind),
-            summary=str(args.summary),
-            workstream_values=list(args.workstream),
-            artifact_values=list(args.artifact),
-            component_values=list(args.component),
-            author=str(args.author),
-            source=str(args.source),
-            manifest_path=manifest_path,
-            catalog_path=_resolve(repo_root, str(args.catalog)),
-            ideas_root=_resolve(repo_root, str(args.ideas_root)),
-            session_id=str(args.session_id),
-            transaction_id=str(args.transaction_id),
-            transaction_seq=args.transaction_seq,
-            context=str(args.context),
-            headline_hint=str(args.headline_hint),
-            transaction_boundary=str(args.transaction_boundary),
-            ts_iso=str(args.ts_iso),
-            proof_lane=str(args.proof_lane),
-            proof_fingerprint=str(args.proof_fingerprint),
-            proof_phase=str(args.proof_phase),
-            evidence_tier=str(args.evidence_tier),
-            proof_status=str(args.proof_status),
-            work_category=str(args.work_category),
-            deployment_truth={
-                "local_head": str(args.local_head),
-                "pushed_head": str(args.pushed_head),
-                "published_source_commit": str(args.published_source_commit),
-                "runner_fingerprint": str(args.runner_fingerprint),
-                "last_live_failing_commit": str(args.last_live_failing_commit),
-            },
-        )
+        if args.host_event:
+            from odylith.runtime.common import compass_host_events
+            from odylith.runtime.surfaces import host_hook_execution
+
+            if host_hook_execution.in_host_hook_command():
+                raise ValueError("Host memory publication requires a foreground governance command.")
+            retained = compass_host_events.retained_event(repo_root=repo_root, event_id=args.host_event)
+            if retained is None:
+                if (greenfield_generation_state.read_active_publication(repo_root) is not None
+                        and compass_host_events.published_event_bytes(
+                            repo_root=repo_root, transaction_id="host-event-" + args.host_event,
+                        ) is not None):
+                    print("Retained host-memory event is already published and acknowledged.")
+                    return 0
+                raise ValueError("The retained host-memory event is unavailable; no event was appended.")
+            if compass_host_events.event_is_published(repo_root=repo_root, event=retained):
+                if greenfield_generation_state.read_active_publication(repo_root) is not None:
+                    print("Retained host-memory event is already published.")
+                    return 0
+                payload = retained
+            else:
+                payload = append_payload(
+                    repo_root=repo_root, stream_path=stream_path, payload=retained,
+                    repository_lock_fd=repository_lock_fd,
+                )
+        else:
+            payload = append_event(
+                repo_root=repo_root,
+                stream_path=stream_path,
+                repository_lock_fd=repository_lock_fd,
+                kind=str(args.kind),
+                summary=str(args.summary),
+                workstream_values=list(args.workstream),
+                artifact_values=list(args.artifact),
+                component_values=list(args.component),
+                author=str(args.author),
+                source=str(args.source),
+                manifest_path=manifest_path,
+                catalog_path=_resolve(repo_root, str(args.catalog)),
+                ideas_root=_resolve(repo_root, str(args.ideas_root)),
+                session_id=str(args.session_id),
+                transaction_id=str(args.transaction_id),
+                transaction_seq=args.transaction_seq,
+                context=str(args.context),
+                headline_hint=str(args.headline_hint),
+                transaction_boundary=str(args.transaction_boundary),
+                ts_iso=str(args.ts_iso),
+                proof_lane=str(args.proof_lane),
+                proof_fingerprint=str(args.proof_fingerprint),
+                proof_phase=str(args.proof_phase),
+                evidence_tier=str(args.evidence_tier),
+                proof_status=str(args.proof_status),
+                work_category=str(args.work_category),
+                deployment_truth={
+                    "local_head": str(args.local_head),
+                    "pushed_head": str(args.pushed_head),
+                    "published_source_commit": str(args.published_source_commit),
+                    "runner_fingerprint": str(args.runner_fingerprint),
+                    "last_live_failing_commit": str(args.last_live_failing_commit),
+                },
+            )
     except ValueError as exc:
         print("compass timeline stream append FAILED")
         print(f"- {exc}")

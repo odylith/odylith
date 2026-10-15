@@ -217,7 +217,9 @@ def _atlas_catalog_path(*, repo_root: Path) -> Path:
     return _product_root(repo_root=repo_root) / "atlas" / "source" / "catalog" / "diagrams.v1.json"
 
 def _compass_stream_path(*, repo_root: Path) -> Path:
-    return agent_runtime_contract.resolve_agent_stream_path(repo_root=_product_root(repo_root=repo_root))
+    return agent_runtime_contract.published_agent_stream_path(
+        repo_root=repo_root, stream_path=agent_runtime_contract.resolve_agent_stream_path(repo_root=repo_root),
+    )
 
 def _traceability_graph_path(*, repo_root: Path) -> Path:
     return _product_root(repo_root=repo_root) / "radar" / "traceability-graph.v1.json"

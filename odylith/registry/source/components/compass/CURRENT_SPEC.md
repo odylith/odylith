@@ -6,7 +6,7 @@
   and release-gate posture, but should suppress weak Odylith Discipline noise.
 - Compass entries should preserve workstream ids B-110 through B-117 and the
   benchmark gates that feed future session priors.
-Last updated: 2026-09-17
+Last updated: 2026-10-14
 
 
 ## Purpose
@@ -60,7 +60,57 @@ publications at desktop/mobile sizes over file and HTTP, including retained-brie
 readability and unchanged predecessors. This does not establish recovery of the
 preserved real failure, installed behavior, full governance UX or chat delivery.
 
-### Append-once log completion
+### Protected stream memory and append-once publication
+When an active immutable publication exists, bounded native hooks and read-only
+event callers without an admitted managed governance writer holding the
+repository lock queue their exact events in
+`.odylith/runtime/host-hooks/dirty-events.v1.jsonl` under stable
+`host-event-<ID>` transactions. This rule includes Stop, PostToolUse and Claude
+SubagentStop. Subagent lifecycle records retain their metadata even when no
+meaningful summary exists. Only an
+admitted normal governance writer that owns the repository lock retains the
+canonical append and continuation path.
+
+Codex and Claude Stop remain private memory producers. A meaningful assistant
+summary and any matching delivery-confirmation observation retain their exact
+host and session identity. Stop does not run sync, settle a continuation,
+publish a generation, or render or replay a visible intervention.
+
+A successful ordinary, non-hook `odylith compass log` or `odylith sync` may
+publish at most four retained events per maintenance pass through the normal
+repository mutation continuation. It acknowledges an event only after its
+immutable published bytes are read back. Remaining events stay queued. A later
+memory-maintenance failure does not turn the authored command into a failure;
+the history is reported separately as pending. Successful sync also retires
+only dirty-path records covered by that sync. No background service performs
+this publication or settlement.
+
+Publication proves event-byte custody. Automatically captured assistant
+summaries and delivery-confirmation observations remain historical observations
+with `UNKNOWN` semantic validity after publication; publication does not make
+their assertions current verified truth. Retained observations may support
+session and judgment memory while they are pending, but their historical
+authority remains unknown.
+
+Shared intervention loaders snapshot the private inbox before selecting the
+immutable published stream, then merge eligible pending intervention events.
+Publication precedes acknowledgment, so a concurrent publication cannot make
+an event disappear between those reads. Failed unpublished working appends
+remain invisible outside an admitted writer. Read selection checks the sealed
+manifest and selected path without scanning unrelated surfaces; full writer
+and release validation retain their existing byte checks. The cache key changes when either the stream or pending
+store changes, and exact transaction identities dedupe matching events. A
+pending event that differs from an existing canonical transaction refuses.
+Pending inclusion keeps intervention and memory engines available; it does not
+promote the pending record to canonical truth.
+
+After acknowledgment removes a private summary, canonical Context Engine
+projection and matching anchor context read its published event through the
+same bounded selector. Repository-root resolution must not duplicate the
+product-directory prefix. Retained assistant source, session and transaction
+identity support historical context; absent authority metadata remains
+reference-only.
+
 For a canonical `compass log` inside an active managed generation, the admitted
 repository writer prepares exact continuation custody before appending and
 fsyncing the event. Event preparation belongs to the log owner; refresh and
@@ -69,10 +119,18 @@ unactivated writes retain their previous semantics without this receipt.
 
 `odylith compass log --repo-root . --complete` accepts no append payload or
 receipt path. It verifies the original repository, executing runtime, published
-base, exact stream prefix/event/mode, managed authored inputs and recorded working
-bytes. Only a complete prepared append or an exact recorded terminal phase can
-continue; unknown interruptions, foreign requests and changed inputs refuse.
-Completion never appends again or rolls back an observed successor.
+base, exact stream prefix/event/mode, managed authored inputs and recorded
+working bytes. When the receipt is still prepared and the preimage is unchanged,
+completion performs the original first append; it never repeats an append already
+present. Automatic recovery resumes only the exact pending event that is still
+queued. An unrelated manual receipt blocks the normal writer and requires
+explicit completion. Unknown interruptions, foreign requests and changed inputs
+refuse, and an observed successor is never rolled back.
+
+The narrow retained-event publication route accepts either
+`odylith compass log --repo-root . --host-event ID` or
+`odylith compass log --repo-root . --host-event=ID`, with no other arguments
+besides the repository and retained event identity.
 
 An exact unpublished append in the `prepared`, `appended` or `rendering` phase, with no
 successor, may instead be retired with
@@ -131,6 +189,11 @@ its copy changes invalidate an already-running maintenance worker.
 
 ### Compass owns
 - The local host/Odylith timeline stream.
+- Foreground publication of retained host events, including bounded selection,
+  append-once continuation, immutable-byte readback, acknowledgement, and
+  separately pending maintenance status.
+- Protected-stream routing and merged canonical-plus-pending reads with cache
+  invalidation and exact transaction deduplication.
 - Durable execution memory for governance-learning decisions, proof
   checkpoints, failed mechanism classes, validation results, release posture,
   and stable checkpoints.
@@ -286,6 +349,8 @@ its copy changes invalidate an already-running maintenance worker.
 
 ## Runtime Contract
 ### Runtime inputs
+- `.odylith/runtime/host-hooks/dirty-events.v1.jsonl` as private pending host
+  memory, never canonical Compass truth before foreground publication
 - `odylith/compass/runtime/agent-stream.v1.jsonl`
 - `odylith/compass/runtime/codex-stream.v1.jsonl` as a legacy-compatible input
 - `odylith/radar/source/INDEX.md`
@@ -313,6 +378,22 @@ workstream list from traceability before the operator trusts the page.
 - `odylith/compass/runtime/history/embedded.v1.js`
 
 ### Owning modules
+- `src/odylith/runtime/surfaces/host_dirty_checkpoint.py`
+  Private host-hook dirty-event retention and bounded pending-record custody.
+- `src/odylith/runtime/common/compass_host_events.py`
+  Retained host-event selection, publication handoff, readback acknowledgement,
+  and pending-status reporting.
+- `src/odylith/runtime/common/agent_runtime_contract.py`
+  Shared bounded published-stream selection for intervention and Context Engine readers.
+- `src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py`
+  Repository-root stream resolution for canonical historical-event projection.
+- `src/odylith/runtime/common/compass_log_continuation.py`
+  Exact append and publication continuation receipts, recovery, and retirement.
+- `src/odylith/runtime/common/log_compass_timeline_event.py`
+  Canonical Compass event append owner and retained host-event publication route.
+- `src/odylith/runtime/intervention_engine/stream_state.py`
+  Protected intervention-event routing plus merged canonical and pending reads,
+  cache invalidation, and exact transaction deduplication.
 - `src/odylith/runtime/surfaces/compass_refresh_runtime.py`
   Shared Compass refresh engine, request-state lifecycle, wait/status contract,
   runtime-mode resolution, and failure recording.
@@ -343,7 +424,8 @@ Compass is exposed through the top-level CLI:
   hot state instead of paying fresh process/import costs for unchanged
   fingerprints.
 - `odylith compass log`
-  Append one timeline event.
+  Append one timeline event, complete an admitted append, or publish one exact
+  retained host event through the bounded foreground route.
 - `odylith compass update`
   Capture update statements into timeline and standup inputs.
 - `odylith compass restore-history`
@@ -831,6 +913,8 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-10-14: Extended the protected Compass stream rule to every bounded native hook and read-only event caller without an admitted managed writer under an active immutable publication. Pending intervention events remain available through cache-aware, transaction-deduped merged reads without becoming canonical truth. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141); Bug: `CB-305`)
+- 2026-10-14: Bound native Stop to private retained memory and moved canonical publication to foreground non-hook writers with bounded acknowledgement, append-once continuation, and explicit `UNKNOWN` semantic validity for automatically captured historical observations. Linked Compass to D-032 and D-038. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141); Bug: `CB-305`)
 - 2026-10-06: Fallback-fact proof passes 70 checks: recorded action/risk/checklist facts remain visible, unsupported Next/Watch prose is omitted. Installed and release proof remain open. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
 - 2026-09-08: Aligned batch provider-failure diagnostics with foreground local-fact fallback, preserving explicitly unavailable global/scoped states without another provider call. Recorded background-worker settlement as a distinct proof requirement. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
 - 2026-09-07: Added explicit temporary refresh-root lifetime ownership to narration enqueue and spawn. Nested scopes and parallel surface threads preserve the guard; durable roots retain normal warming. Three pre-fix controls fail; the settled source passes 4311 runtime tests, 1101 install tests, native synthetic success/malformed/timeout controls and 34 staged-browser checks. Cold narration is explicitly unavailable, not fabricated or handed to CONFIRM. This is source-local lifecycle proof, not real-model quality or SLA qualification. (Plan: [B-142](../../../odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`)
