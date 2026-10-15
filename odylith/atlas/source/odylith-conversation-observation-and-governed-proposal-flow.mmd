@@ -61,7 +61,7 @@ flowchart LR
     Chatter --> ManualVisible["Manual visible-intervention CLI<br/>explicit stop_summary rendering<br/>plain Markdown escape hatch"]
     AssistantFallback --> Chat["Chat-visible UX<br/>Observation / Proposal / Assist actually shown"]
     ManualVisible --> Chat
-    NativeStop --> HostQueue["Existing private host ledger<br/>fsync the original event and session identity"]
+    NativeStop --> HostQueue["Private history journal<br/>separate from edit checkpoints<br/>fsync the original event and session identity"]
     Events --> EventAdmission{"Admitted canonical writer<br/>holding the repository lock?"}
     EventAdmission -->|Yes| Stream
     EventAdmission -->|No active publication| Stream

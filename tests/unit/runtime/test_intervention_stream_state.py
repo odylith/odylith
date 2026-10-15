@@ -118,7 +118,7 @@ def test_session_memory_overlays_new_and_removed_pending_summary_on_warm_base(tm
     assert stream_state.session_memory_snapshot(repo_root=tmp_path, session_id="")["pending_summaries"] == []
 
     # Simulate the queue after governed promotion; a cached base must not resurrect it.
-    host_dirty_checkpoint.event_store_path(tmp_path).write_text("")
+    host_dirty_checkpoint.compass_event_store_path(tmp_path).write_text("")
     cleared = stream_state.session_memory_snapshot(repo_root=tmp_path, session_id="session-a")
     assert cleared["pending_summaries"] == [] and cleared["pending_summary_count"] == 0
     assert not cleared["pending_memory_error"]
@@ -129,7 +129,7 @@ def test_session_memory_bounds_rows_after_session_filter_without_clipping_summar
     own = [_pending_summary(tmp_path, summary=complete + f" Item {n}.") for n in range(6)]
     for n in range(5):
         _pending_summary(tmp_path, session="session-b", stamp="2026-10-15T00:00:00Z", summary=f"Other-session claim {n}.")
-    path = host_dirty_checkpoint.event_store_path(tmp_path)
+    path = host_dirty_checkpoint.compass_event_store_path(tmp_path)
     before = path.read_bytes()
     value = stream_state.session_memory_snapshot(repo_root=tmp_path, session_id="session-a")
     assert value["pending_summary_count"] == 4
@@ -164,7 +164,7 @@ def test_session_memory_corrupt_pending_queue_is_explicit_and_not_cached(tmp_pat
     row = _pending_summary(tmp_path)
     before = stream_state.session_memory_snapshot(repo_root=tmp_path, session_id="session-a")
     assert before["pending_summary_count"] == 1
-    path = host_dirty_checkpoint.event_store_path(tmp_path)
+    path = host_dirty_checkpoint.compass_event_store_path(tmp_path)
     retained = path.read_bytes()
     if corruption == "invalid_json":
         path.write_text("{unfinished\n")
@@ -420,9 +420,23 @@ def test_pending_snapshot_precedes_publication_pick_and_survives_publish_ack(tmp
     assert selected == [expected.repository_root / agent_runtime_contract.AGENT_STREAM_PATH]
 
 
+def test_event_cache_signature_follows_compass_journal_independently_of_dirty_checkpoints(tmp_path):
+    before = stream_state.event_cache_signature(repo_root=tmp_path)
+    dirty = host_dirty_checkpoint.record_dirty_event(
+        repo_root=tmp_path, host_family="codex", source="checkpoint",
+    )
+    assert stream_state.event_cache_signature(repo_root=tmp_path) == before
+    _pending_summary(tmp_path)
+    pending = stream_state.event_cache_signature(repo_root=tmp_path)
+    assert pending != before
+    assert pending[1][0] == host_dirty_checkpoint.compass_event_store_path(tmp_path).as_posix()
+    assert host_dirty_checkpoint.clear_dirty_events(repo_root=tmp_path, event_ids=[dirty]) is True
+    assert stream_state.event_cache_signature(repo_root=tmp_path) == pending
+
+
 def test_event_cache_signature_observes_inbox_before_canonical_selection(tmp_path, monkeypatch):
     repo, _ = _active_repository(tmp_path)
-    ledger = host_dirty_checkpoint.event_store_path(repo)
+    ledger = host_dirty_checkpoint.compass_event_store_path(repo)
     original_lstat = Path.lstat
     original_pick = stream_state._read_stream_path
     order = []
@@ -534,7 +548,7 @@ def test_atomic_pending_replacement_invalidates_same_size_and_timestamp_cache(tm
         session_id="replace-session", host_family="codex", defer=True,
     )
     first = stream_state.session_memory_snapshot(repo_root=tmp_path, session_id="replace-session")
-    path = host_dirty_checkpoint.event_store_path(tmp_path)
+    path = host_dirty_checkpoint.compass_event_store_path(tmp_path)
     before = stream_state.event_cache_signature(repo_root=tmp_path)
     metadata = path.stat()
     replacement = path.with_name("replacement.jsonl")
@@ -554,7 +568,7 @@ def test_corrupt_pending_intervention_keeps_canonical_memory_and_reports_gap(tmp
         session_id="gap-session", host_family="codex", semantic_signature=["canonical-history"],
     )
     _pending_summary(tmp_path, session="gap-session")
-    path = host_dirty_checkpoint.event_store_path(tmp_path)
+    path = host_dirty_checkpoint.compass_event_store_path(tmp_path)
     path.write_text("{corrupt\n")
     with pytest.raises(host_dirty_checkpoint.HostDirtyCheckpointError):
         stream_state.load_recent_intervention_events(repo_root=tmp_path)

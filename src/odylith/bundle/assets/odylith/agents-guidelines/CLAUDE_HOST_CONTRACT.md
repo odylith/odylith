@@ -213,7 +213,9 @@
   event when the message looks like a real action summary. It also retains any
   matching assistant-chat delivery confirmation. Both use the exact Claude
   session and a stable `host-event-<ID>` transaction identity in
-  `.odylith/runtime/host-hooks/dirty-events.v1.jsonl`. Stop stays silent after
+  `.odylith/runtime/host-hooks/compass-events.v1.jsonl`. This journal is separate
+  from disposable dirty-path checkpoints, so an older runtime clearing those
+  checkpoints cannot delete pending history. Stop stays silent after
   successful capture and does not write canonical Compass files, run
   `odylith sync`, settle a continuation, or render or replay a visible
   intervention.

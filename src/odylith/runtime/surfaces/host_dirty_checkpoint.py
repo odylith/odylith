@@ -1,4 +1,4 @@
-"""One durable ledger for deferred host paths and canonical Compass events."""
+"""Durable host checkpoints and Compass events with separate replacement ownership."""
 
 from __future__ import annotations
 
@@ -14,10 +14,10 @@ from typing import Any, Iterable, Iterator, Mapping
 
 
 DIRTY_EVENTS_RELATIVE = Path(".odylith/runtime/host-hooks/dirty-events.v1.jsonl")
+COMPASS_EVENTS_RELATIVE = DIRTY_EVENTS_RELATIVE.with_name("compass-events.v1.jsonl")
 COMPASS_EVENT_SOURCE = "compass_event"
 MAX_COMPASS_EVENT_BYTES = 1024 * 1024
 MAX_LEDGER_BYTES = 16 * 1024 * 1024
-_LOCK_NAME = "dirty-events.v1.lock"
 _LOG_EVENT_KINDS = frozenset({"decision", "implementation", "statement", "update"})
 
 
@@ -31,8 +31,16 @@ def event_store_path(repo_root: Path | str) -> Path:
     return Path(repo_root).expanduser().resolve() / DIRTY_EVENTS_RELATIVE
 
 
+def compass_event_store_path(repo_root: Path | str) -> Path:
+    """Return the private Compass journal, outside old checkpoint replacement."""
+
+    return event_store_path(repo_root).with_name(COMPASS_EVENTS_RELATIVE.name)
+
+
 @contextmanager
-def _locked_store(repo_root: Path | str, *, create: bool = False) -> Iterator[int | None]:
+def _locked_store(
+    repo_root: Path | str, *, create: bool = False, name: str = DIRTY_EVENTS_RELATIVE.name,
+) -> Iterator[int | None]:
     descriptors: list[int] = []
     try:
         root = Path(repo_root).expanduser().resolve()
@@ -55,10 +63,11 @@ def _locked_store(repo_root: Path | str, *, create: bool = False) -> Iterator[in
                 return
             descriptors.append(child)
             directory = child
-        lock = _open_regular(directory, _LOCK_NAME, os.O_RDWR | os.O_CREAT)
+        lock_name = Path(name).with_suffix(".lock").name
+        lock = _open_regular(directory, lock_name, os.O_RDWR | os.O_CREAT)
         descriptors.append(lock)
         fcntl.flock(lock, fcntl.LOCK_EX)
-        current = os.stat(_LOCK_NAME, dir_fd=directory, follow_symlinks=False)
+        current = os.stat(lock_name, dir_fd=directory, follow_symlinks=False)
         owned = os.fstat(lock)
         if (current.st_dev, current.st_ino) != (owned.st_dev, owned.st_ino):
             raise HostDirtyCheckpointError("Host ledger lock changed during admission")
@@ -79,9 +88,9 @@ def _open_regular(directory: int, name: str, flags: int, *, mode: int = 0o600) -
     return descriptor
 
 
-def _read_bytes(directory: int) -> bytes:
+def _read_bytes(directory: int, *, name: str = DIRTY_EVENTS_RELATIVE.name) -> bytes:
     try:
-        descriptor = _open_regular(directory, DIRTY_EVENTS_RELATIVE.name, os.O_RDONLY)
+        descriptor = _open_regular(directory, name, os.O_RDONLY)
     except FileNotFoundError:
         return b""
     with os.fdopen(descriptor, "rb") as handle:
@@ -100,18 +109,20 @@ def _json_bytes(value: Any) -> bytes:
         raise HostDirtyCheckpointError("Host event must contain JSON values") from exc
 
 
-def _append_record(repo_root: Path | str, record: Mapping[str, Any]) -> None:
+def _append_record(
+    repo_root: Path | str, record: Mapping[str, Any], *, name: str = DIRTY_EVENTS_RELATIVE.name,
+) -> None:
     data = _json_bytes(record) + b"\n"
-    with _locked_store(repo_root, create=True) as directory:
+    with _locked_store(repo_root, create=True, name=name) as directory:
         assert directory is not None
-        previous = _read_bytes(directory)
+        previous = _read_bytes(directory, name=name)
         if _is_compass_row(record):
             if any(row["id"] == record["id"] for row in _compass_rows(previous)):
                 raise HostDirtyCheckpointError("Pending Compass identity already exists; ledger retained")
         separator = b"\n" if previous and not previous.endswith(b"\n") else b""
         if len(previous) + len(separator) + len(data) > MAX_LEDGER_BYTES:
             raise HostDirtyCheckpointError("Host ledger would exceed its write bound; ledger retained")
-        descriptor = _open_regular(directory, DIRTY_EVENTS_RELATIVE.name, os.O_WRONLY | os.O_CREAT | os.O_APPEND)
+        descriptor = _open_regular(directory, name, os.O_WRONLY | os.O_CREAT | os.O_APPEND)
         with os.fdopen(descriptor, "ab") as handle:
             os.fchmod(handle.fileno(), 0o600)
             handle.write(separator)
@@ -121,11 +132,11 @@ def _append_record(repo_root: Path | str, record: Mapping[str, Any]) -> None:
         os.fsync(directory)
 
 
-def _rewrite(directory: int, data: bytes) -> None:
-    metadata = os.stat(DIRTY_EVENTS_RELATIVE.name, dir_fd=directory, follow_symlinks=False)
+def _rewrite(directory: int, data: bytes, *, name: str = DIRTY_EVENTS_RELATIVE.name) -> None:
+    metadata = os.stat(name, dir_fd=directory, follow_symlinks=False)
     if not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1:
         raise HostDirtyCheckpointError("Host ledger changed before acknowledgement")
-    temporary = f".dirty-events-{uuid.uuid4().hex}.tmp"
+    temporary = f".{name}-{uuid.uuid4().hex}.tmp"
     descriptor = _open_regular(directory, temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL)
     try:
         with os.fdopen(descriptor, "wb") as handle:
@@ -133,7 +144,7 @@ def _rewrite(directory: int, data: bytes) -> None:
             handle.write(data)
             handle.flush()
             os.fsync(handle.fileno())
-        os.replace(temporary, DIRTY_EVENTS_RELATIVE.name, src_dir_fd=directory, dst_dir_fd=directory)
+        os.replace(temporary, name, src_dir_fd=directory, dst_dir_fd=directory)
         os.fsync(directory)
     finally:
         try:
@@ -316,7 +327,7 @@ def record_compass_event(*, repo_root: Path | str, event: Mapping[str, Any]) -> 
         "session_id": payload.get("session_id", ""), "event": payload,
     }
     _require_compass_row(row)
-    _append_record(repo_root, row)
+    _append_record(repo_root, row, name=COMPASS_EVENTS_RELATIVE.name)
     return event_id
 
 
@@ -344,8 +355,6 @@ def _compass_rows(data: bytes) -> list[dict[str, Any]]:
         if not line.strip():
             continue
         row = _parse_line(line)
-        if row is not None and _is_dirty_row(row):
-            continue
         if row is None:
             raise HostDirtyCheckpointError(f"Malformed host ledger row {line_number}; ledger retained")
         _require_compass_row(row)
@@ -359,18 +368,18 @@ def _compass_rows(data: bytes) -> list[dict[str, Any]]:
 def read_compass_events(*, repo_root: Path | str) -> list[dict[str, Any]]:
     """Read exact pending events, refusing corruption instead of losing memory."""
 
-    with _locked_store(repo_root) as directory:
-        return _compass_rows(_read_bytes(directory)) if directory is not None else []
+    with _locked_store(repo_root, name=COMPASS_EVENTS_RELATIVE.name) as directory:
+        return _compass_rows(_read_bytes(directory, name=COMPASS_EVENTS_RELATIVE.name)) if directory is not None else []
 
 
 def acknowledge_compass_event(*, repo_root: Path | str, event_id: str, event: Mapping[str, Any]) -> bool:
     """Remove only the unchanged event whose canonical publication completed."""
 
     expected = _json_bytes(dict(event))
-    with _locked_store(repo_root) as directory:
+    with _locked_store(repo_root, name=COMPASS_EVENTS_RELATIVE.name) as directory:
         if directory is None:
             return False
-        data = _read_bytes(directory)
+        data = _read_bytes(directory, name=COMPASS_EVENTS_RELATIVE.name)
         rows = _compass_rows(data)
         matched = next((row for row in rows if row["id"] == event_id), None)
         if matched is None or _json_bytes(matched["event"]) != expected:
@@ -378,7 +387,7 @@ def acknowledge_compass_event(*, repo_root: Path | str, event_id: str, event: Ma
         retained = [line for line in data.splitlines(keepends=True)
                     if (row := _parse_line(line)) is None
                     or not _is_compass_row(row) or row.get("id") != event_id]
-        _rewrite(directory, b"".join(retained))
+        _rewrite(directory, b"".join(retained), name=COMPASS_EVENTS_RELATIVE.name)
         return True
 
 

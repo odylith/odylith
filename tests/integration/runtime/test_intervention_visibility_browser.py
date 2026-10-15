@@ -369,7 +369,9 @@ def test_d038_atlas_visibility_broker_flow_renders_in_shell(browser_context) -> 
         assert "conflict graph" in visible_summary.lower()
         assert "subset optimizer" in visible_summary.lower()
         assert "bootstrap adjudication report" in visible_summary.lower()
-        assert "odylith risks, history, insight, observation, proposal, or assist" in visible_summary.lower()
+        assert "visibility broker" in visible_summary.lower()
+        assert "private" in visible_summary.lower()
+        assert "foreground publication" in visible_summary.lower()
         assert "governance-intervention-engine" in visible_components
         assert "execution-engine" in visible_components
         assert "governance-intervention-engine" in registry_links

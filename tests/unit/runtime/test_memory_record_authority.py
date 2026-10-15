@@ -77,7 +77,7 @@ def queue_session_claim(root: Path, *, number: int = 1, stamp=FRESH, summary="Th
                   "author": "freedom-research", "source": "odylith.codex.stop",
                   "workstreams": ["B-142"], "artifacts": ["src/service.py"]},
     }
-    path = host_dirty_checkpoint.event_store_path(root)
+    path = host_dirty_checkpoint.compass_event_store_path(root)
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", encoding="utf-8") as handle:
         handle.write(json.dumps(row) + "\n")
@@ -105,7 +105,7 @@ def session_claims(value: dict) -> list[dict]:
 def test_pending_session_summaries_retain_complete_newest_claims_without_promotion(tmp_path, monkeypatch):
     complete = "The retained source review found one unresolved boundary. " * 20 + "The canonical proof is still pending."
     rows = [queue_session_claim(tmp_path, number=n, summary=complete + f" Record {n}.") for n in range(1, 7)]
-    path = host_dirty_checkpoint.event_store_path(tmp_path)
+    path = host_dirty_checkpoint.compass_event_store_path(tmp_path)
     before = path.read_bytes()
 
     value = session_snapshot(tmp_path, monkeypatch)
@@ -117,7 +117,7 @@ def test_pending_session_summaries_retain_complete_newest_claims_without_promoti
         assert item["session_id"] == row["session_id"] and item["host_family"] == row["host_family"]
         assert item["recorded_utc"] == row["event"]["ts_iso"]
         memory = item["memory_record"]
-        assert memory["source_ref"].endswith("#" + row["id"])
+        assert memory["source_ref"] == host_dirty_checkpoint.COMPASS_EVENTS_RELATIVE.as_posix() + "#" + row["id"]
         assert memory["evidence_utc"] == row["event"]["ts_iso"]
         assert memory["observed_utc"] == row["recorded_utc"] and not memory["confirmed_utc"]
         assert memory["role"] == "historical_learning" and memory["validity"] == "unknown"
@@ -164,6 +164,7 @@ def test_judgment_and_session_views_share_pending_claim_source_proof(tmp_path, m
     for field in ("source_ref", "source_fingerprint", "evidence_utc", "observed_utc", "confirmed_utc", "role", "validity"):
         assert global_claim["memory_record"][field] == session_claim["memory_record"][field]
     assert global_claim["checkpoint_event"]["recorded_utc"] == session_claim["recorded_utc"] == row["recorded_utc"]
+    assert global_claim["source_path"] == host_dirty_checkpoint.COMPASS_EVENTS_RELATIVE.as_posix()
     assert global_claim["memory_record"]["provenance"] == provenance(tmp_path)
     assert session_claim["memory_record"]["provenance"] == {}
     assert policy.assess(global_claim["memory_record"])["current_authority"] is False
@@ -182,7 +183,7 @@ def test_pending_session_reads_do_not_refresh_age_or_resurrect_removed_claims(tm
     assert after["memory_usefulness"]["freshness"] == "cold"
     assert after["memory_usefulness"]["current_authority"] is False
 
-    host_dirty_checkpoint.event_store_path(tmp_path).write_text("")
+    host_dirty_checkpoint.compass_event_store_path(tmp_path).write_text("")
     rebuilt = session_snapshot(tmp_path, monkeypatch, previous=later)
     assert session_claims(rebuilt) == []
 
@@ -191,7 +192,7 @@ def test_pending_session_reads_do_not_refresh_age_or_resurrect_removed_claims(tm
 def test_malformed_pending_session_queue_surfaces_gap_without_claims(tmp_path, monkeypatch, corruption):
     row = queue_session_claim(tmp_path)
     previous = session_snapshot(tmp_path, monkeypatch)
-    path = host_dirty_checkpoint.event_store_path(tmp_path)
+    path = host_dirty_checkpoint.compass_event_store_path(tmp_path)
     if corruption == "invalid_json":
         path.write_text(path.read_text() + "{unfinished\n")
     else:

@@ -68,14 +68,14 @@ flowchart TB
     Refuse["Refuse unknown interruption or changed custody<br/>do not duplicate an append or adopt drift"]
     Restore["Prepared and never published only<br/>review exact canonical-stream restoration"]
     Abandon["Verify original receipt and restored working state<br/>durably archive event custody and receipt<br/>retire without append, refresh or publication"]
-    HostQueue["Existing private host ledger<br/>exact native Stop, intervention and subagent events<br/>no unadmitted canonical append"]
+    HostQueue["Private history journal<br/>separate from edit checkpoints<br/>exact native Stop, intervention and subagent events<br/>no unadmitted canonical append"]
     Foreground["Non-hook compass log or sync<br/>check a pending receipt before the normal writer<br/>publish queued history after writer success"]
     QueueMatch{"Pending receipt belongs to<br/>the exact queued event?"}
     QueueBlocked["Unrelated receipt blocks the normal writer<br/>explicit --complete is required"]
     QueueLog["Publish up to four queued events<br/>canonical compass log --host-event"]
     Readback["Read back exact event bytes<br/>from the immutable published stream"]
     Acknowledge["Acknowledge only the same unchanged queued event"]
-    Retain["Failure and remaining events<br/>stay pending in the private ledger"]
+    Retain["Failure and remaining events<br/>stay pending in the private journal"]
   end
 
   subgraph Guardrails["8. Product Guardrails"]

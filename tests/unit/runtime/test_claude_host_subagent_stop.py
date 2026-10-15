@@ -181,7 +181,7 @@ def test_native_subagent_stop_refuses_broken_publication_without_append_fallback
     host_dirty_checkpoint.record_compass_event(
         repo_root=repo, event=claude_host_subagent_stop.build_event(payload=payload),
     )
-    ledger = host_dirty_checkpoint.event_store_path(repo)
+    ledger = host_dirty_checkpoint.compass_event_store_path(repo)
     pending_before = ledger.read_bytes()
     entry = repo / "odylith/index.html"
     if damage == "corrupt-envelope":

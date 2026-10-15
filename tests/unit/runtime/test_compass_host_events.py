@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 import sqlite3
 
@@ -75,6 +76,22 @@ def test_retained_event_publishes_exact_bytes_and_retry_is_inert(active):
     assert cli.main(["compass", "log", "--repo-root", str(repo), "--host-event", record["id"]]) == 0
     assert publication.active_generation_identity(repo)["write_set_hash"] == selected.write_set_hash
     assert (repo / continuation.STREAM_PATH).read_bytes() == expected
+
+
+def test_memory_survives_stale_dirty_replacement_and_still_publishes_exactly(active):
+    repo = active
+    inbox.record_dirty_event(repo_root=repo, host_family="codex", source="checkpoint")
+    dirty_path = inbox.event_store_path(repo)
+    # An older hook has read its snapshot before the new summary is retained.
+    snapshot = dirty_path.read_bytes()
+    record = _retain(repo)
+    replacement = dirty_path.with_name("old-hook-stale.tmp")
+    replacement.write_bytes(snapshot)
+    os.replace(replacement, dirty_path)
+    assert _publish(repo) == 0
+    assert events.event_is_published(repo_root=repo, event=record["event"])
+    assert inbox.read_compass_events(repo_root=repo) == []
+    assert dirty_path.read_bytes() == snapshot
 
 
 @pytest.mark.parametrize("host", ["codex", "claude"])
@@ -384,7 +401,7 @@ def test_saved_authored_log_stays_successful_when_later_memory_upkeep_fails(acti
     if failed_upkeep == "return_code":
         monkeypatch.setattr(events, "publish_pending", lambda **kwargs: 1)
     else:
-        with inbox.event_store_path(repo).open("ab") as handle:
+        with inbox.compass_event_store_path(repo).open("ab") as handle:
             handle.write(b"not-json\n")
     assert cli.main([
         "compass", "log", "--repo-root", str(repo), "--kind", "statement", "--summary", "One completed authored statement.",
@@ -393,7 +410,7 @@ def test_saved_authored_log_stays_successful_when_later_memory_upkeep_fails(acti
     stream = (generations.require_greenfield_working_generation(repo).repository_root / continuation.STREAM_PATH).read_bytes()
     assert stream.count(b"One completed authored statement.") == 1
     assert not (repo / continuation.RECEIPT_PATH).exists()
-    assert record["id"].encode() in inbox.event_store_path(repo).read_bytes()
+    assert record["id"].encode() in inbox.compass_event_store_path(repo).read_bytes()
 
 
 @pytest.mark.parametrize("equals", [False, True])

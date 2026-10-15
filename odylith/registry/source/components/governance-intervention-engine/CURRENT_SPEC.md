@@ -48,11 +48,14 @@ configured or trusted hooks still require separate visible-delivery evidence.
 When an active immutable publication exists, every bounded native hook or
 read-only intervention-event caller without an admitted managed governance
 writer holding the repository lock queues its exact event in
-`.odylith/runtime/host-hooks/dirty-events.v1.jsonl` under a stable
+`.odylith/runtime/host-hooks/compass-events.v1.jsonl` under a stable
 `host-event-<ID>` transaction. This shared rule covers Stop, PostToolUse, and
 other protected-stream callers; none may escape into a direct canonical append.
 An admitted normal governance writer that owns the repository lock retains the
 canonical append and continuation path.
+
+This journal has separate replacement ownership from dirty-path checkpoints.
+An older runtime clearing its checkpoint file must preserve pending history.
 
 Codex and Claude Stop remain silent private-memory producers. They may retain a
 meaningful assistant summary and a matching delivery-confirmation observation,

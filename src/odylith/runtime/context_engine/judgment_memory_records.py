@@ -38,7 +38,7 @@ def pending_session_claims(
             ordered.append((stamp, index, row))
     except (host_dirty_checkpoint.HostDirtyCheckpointError, OSError, ValueError, KeyError, TypeError):
         return [], "Pending session summaries could not be read from the deferred Compass queue; their claims remain unverified."
-    source_ref = host_dirty_checkpoint.DIRTY_EVENTS_RELATIVE.as_posix()
+    source_ref = host_dirty_checkpoint.COMPASS_EVENTS_RELATIVE.as_posix()
     items = []
     for _, _, row in sorted(ordered, key=lambda entry: entry[:2], reverse=True)[:4]:
         event = row["event"]

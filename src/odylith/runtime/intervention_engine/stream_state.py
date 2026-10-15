@@ -109,7 +109,7 @@ def _stream_cache_signature(*, repo_root: Path, stream_path: Path | None = None)
 
 def event_cache_signature(*, repo_root: Path) -> _EventCacheSignature:
     """Invalidate live event views when canonical or pending storage changes."""
-    path = host_dirty_checkpoint.event_store_path(repo_root)
+    path = host_dirty_checkpoint.compass_event_store_path(repo_root)
     try:
         metadata = path.lstat()
         pending = (path.as_posix(), metadata.st_mtime_ns, metadata.st_size, metadata.st_ino)

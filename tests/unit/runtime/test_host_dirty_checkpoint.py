@@ -50,6 +50,34 @@ def test_canonical_event_is_retained_without_semantic_rewriting(tmp_path):
     assert ledger.read_compass_events(repo_root=tmp_path) == [row]
 
 
+@pytest.mark.parametrize("capture_after_snapshot", [False, True], ids=["normal-old-clear", "stale-old-replacement"])
+def test_old_dirty_file_atomic_replacement_cannot_erase_compass_memory(tmp_path, capture_after_snapshot):
+    dirty_id = ledger.record_dirty_event(
+        repo_root=tmp_path, host_family="codex", session_id="native-session",
+        source="checkpoint", governed_paths=["odylith/registry/source/retained.md"],
+    )
+    dirty_path = ledger.event_store_path(tmp_path)
+    snapshot = dirty_path.read_bytes()
+    _, row = _record(tmp_path)
+    if not capture_after_snapshot:
+        snapshot = dirty_path.read_bytes()
+
+    # The predecessor replaces an unlocked snapshot of its own dirty file.
+    selected = [json.loads(line) for line in snapshot.splitlines()]
+    selected_ids = {entry["id"] for entry in selected if entry["host_family"] == "codex"}
+    replacement = dirty_path.with_name("old-clear-replacement.tmp")
+    with replacement.open("wb") as handle:
+        handle.write(b"".join(line + b"\n" for line in snapshot.splitlines()
+                              if json.loads(line)["id"] not in selected_ids))
+        handle.flush()
+        os.fsync(handle.fileno())
+    os.replace(replacement, dirty_path)
+
+    assert dirty_id in selected_ids and ledger.read_dirty_events(repo_root=tmp_path) == []
+    assert ledger.read_compass_events(repo_root=tmp_path) == [row]
+    assert ledger.compass_event_store_path(tmp_path).read_bytes() == ledger._json_bytes(row) + b"\n"
+
+
 def test_stop_capture_retains_actual_session_and_full_summary(tmp_path):
     summary = "Implemented a complete statement. " + "Useful retained evidence. " * 20
     assert ledger.capture_stop_summary(
@@ -89,7 +117,7 @@ def test_success_is_after_exact_event_file_and_directory_fsync(tmp_path, monkeyp
     def sync(descriptor):
         metadata = os.fstat(descriptor)
         if stat.S_ISREG(metadata.st_mode):
-            row = json.loads(ledger.event_store_path(tmp_path).read_bytes())
+            row = json.loads(ledger.compass_event_store_path(tmp_path).read_bytes())
             assert row["event"]["transaction_id"] == "host-event-" + row["id"]
             observed.append("event")
         else:
@@ -132,6 +160,7 @@ def test_dirty_clear_preserves_compass_and_malformed_bytes_and_tightens_privacy(
     )
     event_id, row = _record(tmp_path)
     path = ledger.event_store_path(tmp_path)
+    compass_before = ledger.compass_event_store_path(tmp_path).read_bytes()
     malformed = b'{"unfinished":\xff\n\n'
     path.write_bytes(path.read_bytes() + malformed)
     path.chmod(0o640)
@@ -152,11 +181,11 @@ def test_dirty_clear_preserves_compass_and_malformed_bytes_and_tightens_privacy(
         repo_root=tmp_path, host_family="codex", session_id="session",
     )] == [dirty_id]
     assert ledger.clear_dirty_events(repo_root=tmp_path, event_ids=[dirty_id, event_id]) is True
-    assert path.read_bytes() == ledger._json_bytes(row) + b"\n" + malformed
+    assert path.read_bytes() == malformed
+    assert ledger.compass_event_store_path(tmp_path).read_bytes() == compass_before
     assert stat.S_IMODE(path.stat().st_mode) == 0o600
     assert changes == ["file", "replace", "directory"]
-    with pytest.raises(ledger.HostDirtyCheckpointError, match="Malformed"):
-        ledger.read_compass_events(repo_root=tmp_path)
+    assert ledger.read_compass_events(repo_root=tmp_path) == [row]
 
 
 @pytest.mark.parametrize("malformed", [
@@ -166,18 +195,19 @@ def test_dirty_clear_preserves_compass_and_malformed_bytes_and_tightens_privacy(
 def test_strict_reader_refuses_malformed_rows_without_legacy_cleanup_erasing_them(tmp_path, malformed):
     dirty = ledger.record_dirty_event(repo_root=tmp_path, host_family="codex", source="test")
     _, row = _record(tmp_path)
-    path = ledger.event_store_path(tmp_path)
+    path = ledger.compass_event_store_path(tmp_path)
     path.write_bytes(path.read_bytes() + malformed)
     with pytest.raises(ledger.HostDirtyCheckpointError):
         ledger.read_compass_events(repo_root=tmp_path)
     assert ledger.clear_dirty_events(repo_root=tmp_path, event_ids=[dirty, "missing", "unknown-schema"]) is True
     assert path.read_bytes() == ledger._json_bytes(row) + b"\n" + malformed
+    assert ledger.event_store_path(tmp_path).read_bytes() == b""
 
 
 def test_acknowledgement_compares_exact_payload_and_cannot_remove_same_id_replacement(tmp_path):
     event_id, row = _record(tmp_path, details={"value": 1})
     replacement = {**row, "event": {**row["event"], "details": {"value": True}}}
-    path = ledger.event_store_path(tmp_path)
+    path = ledger.compass_event_store_path(tmp_path)
     path.write_bytes(ledger._json_bytes(replacement) + b"\n")
     assert ledger.acknowledge_compass_event(repo_root=tmp_path, event_id=event_id, event=row["event"]) is False
     assert ledger.read_compass_events(repo_root=tmp_path) == [replacement]
@@ -188,7 +218,7 @@ def test_acknowledgement_compares_exact_payload_and_cannot_remove_same_id_replac
 
 def test_duplicate_compass_id_is_retained_and_not_acknowledged(tmp_path):
     event_id, row = _record(tmp_path)
-    path = ledger.event_store_path(tmp_path)
+    path = ledger.compass_event_store_path(tmp_path)
     data = path.read_bytes() * 2
     path.write_bytes(data)
     with pytest.raises(ledger.HostDirtyCheckpointError, match="Duplicate"):
@@ -200,7 +230,7 @@ def test_duplicate_compass_id_is_retained_and_not_acknowledged(tmp_path):
 
 def test_new_compass_write_refuses_corrupt_ledger_without_mutation(tmp_path):
     _record(tmp_path)
-    path = ledger.event_store_path(tmp_path)
+    path = ledger.compass_event_store_path(tmp_path)
     corrupted = path.read_bytes() + b"unfinished"
     path.write_bytes(corrupted)
     with pytest.raises(ledger.HostDirtyCheckpointError, match="Malformed"):
@@ -217,16 +247,18 @@ def test_duplicate_generated_identity_cannot_append_a_second_record(tmp_path, mo
     assert ledger.read_compass_events(repo_root=tmp_path) == [first]
 
 
-@pytest.mark.parametrize("part", [".odylith", "runtime", "host-hooks", "ledger", "lock"])
+@pytest.mark.parametrize("part", [
+    ".odylith", "runtime", "host-hooks", "dirty-ledger", "dirty-lock", "compass-ledger", "compass-lock",
+])
 def test_symlink_owner_paths_are_refused_without_touching_external_target(tmp_path, part):
     external = tmp_path / "external"
     external.mkdir()
     target = external / "untouched"
     target.write_bytes(b"preserve\n")
-    path = ledger.event_store_path(tmp_path)
-    if part in {"ledger", "lock"}:
+    path = ledger.compass_event_store_path(tmp_path) if part.startswith("compass-") else ledger.event_store_path(tmp_path)
+    if part.endswith(("-ledger", "-lock")):
         path.parent.mkdir(parents=True)
-        link = path if part == "ledger" else path.parent / ledger._LOCK_NAME
+        link = path if part.endswith("-ledger") else path.with_suffix(".lock")
         link.symlink_to(target)
     else:
         parents = list(ledger.DIRTY_EVENTS_RELATIVE.parts[:-1])
@@ -234,14 +266,64 @@ def test_symlink_owner_paths_are_refused_without_touching_external_target(tmp_pa
         link.parent.mkdir(parents=True, exist_ok=True)
         link.symlink_to(external, target_is_directory=True)
     before = {p.name: p.read_bytes() for p in external.iterdir()}
-    with pytest.raises(ledger.HostDirtyCheckpointError):
-        ledger.record_compass_event(repo_root=tmp_path, event=_event())
-    with pytest.raises(ledger.HostDirtyCheckpointError):
-        ledger.read_compass_events(repo_root=tmp_path)
-    assert ledger.record_dirty_event(repo_root=tmp_path, host_family="codex", source="test") == ""
-    assert ledger.read_dirty_events(repo_root=tmp_path) == []
-    assert ledger.clear_dirty_events(repo_root=tmp_path, event_ids=["any"]) is False
+    if part.startswith("dirty-"):
+        _, row = _record(tmp_path)
+        assert ledger.read_compass_events(repo_root=tmp_path) == [row]
+    else:
+        with pytest.raises(ledger.HostDirtyCheckpointError):
+            ledger.record_compass_event(repo_root=tmp_path, event=_event())
+        with pytest.raises(ledger.HostDirtyCheckpointError):
+            ledger.read_compass_events(repo_root=tmp_path)
+    dirty_id = ledger.record_dirty_event(repo_root=tmp_path, host_family="codex", source="test")
+    if part.startswith("compass-"):
+        assert dirty_id and [row["id"] for row in ledger.read_dirty_events(repo_root=tmp_path)] == [dirty_id]
+        assert ledger.clear_dirty_events(repo_root=tmp_path, event_ids=[dirty_id]) is True
+    else:
+        assert dirty_id == "" and ledger.read_dirty_events(repo_root=tmp_path) == []
+        assert ledger.clear_dirty_events(repo_root=tmp_path, event_ids=["any"]) is False
     assert {p.name: p.read_bytes() for p in external.iterdir()} == before
+
+
+@pytest.mark.parametrize("target_kind", ["journal", "lock"])
+@pytest.mark.parametrize("unsafe", ["symlink", "hardlink", "directory", "fifo"])
+def test_compass_journal_objects_refuse_unsafe_replacements_without_affecting_dirty_rows(tmp_path, target_kind, unsafe):
+    event_id, row = _record(tmp_path)
+    path = ledger.compass_event_store_path(tmp_path)
+    target = path if target_kind == "journal" else path.with_suffix(".lock")
+    external = tmp_path / "preserved-owner"
+    external.write_bytes(b"independent bytes\n")
+    target.unlink()
+    if unsafe == "symlink":
+        target.symlink_to(external)
+    elif unsafe == "hardlink":
+        os.link(external, target)
+    elif unsafe == "directory":
+        target.mkdir()
+    else:
+        os.mkfifo(target)
+    for operation in (
+        lambda: ledger.read_compass_events(repo_root=tmp_path),
+        lambda: ledger.record_compass_event(repo_root=tmp_path, event=_event()),
+        lambda: ledger.acknowledge_compass_event(repo_root=tmp_path, event_id=event_id, event=row["event"]),
+    ):
+        with pytest.raises(ledger.HostDirtyCheckpointError):
+            operation()
+    dirty_id = ledger.record_dirty_event(repo_root=tmp_path, host_family="codex", source="checkpoint")
+    assert dirty_id and [entry["id"] for entry in ledger.read_dirty_events(repo_root=tmp_path)] == [dirty_id]
+    assert ledger.clear_dirty_events(repo_root=tmp_path, event_ids=[dirty_id]) is True
+    assert external.read_bytes() == b"independent bytes\n"
+
+
+def test_corrupt_dirty_file_does_not_block_compass_capture_or_exact_ack(tmp_path):
+    dirty = ledger.record_dirty_event(repo_root=tmp_path, host_family="codex", source="checkpoint")
+    dirty_path = ledger.event_store_path(tmp_path)
+    dirty_bytes = dirty_path.read_bytes() + b"unfinished dirty checkpoint\n"
+    dirty_path.write_bytes(dirty_bytes)
+    event_id, row = _record(tmp_path)
+    assert ledger.acknowledge_compass_event(repo_root=tmp_path, event_id=event_id, event=row["event"]) is True
+    assert ledger.read_compass_events(repo_root=tmp_path) == []
+    assert dirty_path.read_bytes() == dirty_bytes
+    assert [entry["id"] for entry in ledger.read_dirty_events(repo_root=tmp_path)] == [dirty]
 
 
 def test_append_waits_for_acknowledgement_and_neither_event_is_lost(tmp_path, monkeypatch):
@@ -249,10 +331,10 @@ def test_append_waits_for_acknowledgement_and_neither_event_is_lost(tmp_path, mo
     inside_rewrite, release, append_attempted = threading.Event(), threading.Event(), threading.Event()
     real_rewrite, real_lock = ledger._rewrite, ledger.fcntl.flock
 
-    def rewrite(directory, data):
+    def rewrite(directory, data, **kwargs):
         inside_rewrite.set()
         assert release.wait(5), "acknowledgement was not released"
-        real_rewrite(directory, data)
+        real_rewrite(directory, data, **kwargs)
 
     def lock(descriptor, mode):
         if threading.current_thread().name.endswith("_1"):
@@ -294,7 +376,7 @@ def test_owner_lock_serializes_a_separate_process(tmp_path):
     )
     process = None
     try:
-        with ledger._locked_store(tmp_path):
+        with ledger._locked_store(tmp_path, name=ledger.COMPASS_EVENTS_RELATIVE.name):
             process = subprocess.Popen([sys.executable, "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             until = time.monotonic() + 5
             while not attempted.exists() and time.monotonic() < until:
@@ -312,7 +394,10 @@ def test_owner_lock_serializes_a_separate_process(tmp_path):
 
 def test_append_tightens_existing_ledger_before_durable_success(tmp_path, monkeypatch):
     dirty_id = ledger.record_dirty_event(repo_root=tmp_path, host_family="codex", source="checkpoint")
-    path = ledger.event_store_path(tmp_path)
+    dirty_path = ledger.event_store_path(tmp_path)
+    dirty_before = dirty_path.read_bytes()
+    _record(tmp_path)
+    path = ledger.compass_event_store_path(tmp_path)
     previous = path.read_bytes()
     path.chmod(0o644)
     real_fsync = os.fsync
@@ -329,6 +414,7 @@ def test_append_tightens_existing_ledger_before_durable_success(tmp_path, monkey
     assert seen_private == [0o600]
     assert path.read_bytes().startswith(previous)
     assert [row["id"] for row in ledger.read_dirty_events(repo_root=tmp_path)] == [dirty_id]
+    assert dirty_path.read_bytes() == dirty_before
     assert stat.S_IMODE(path.stat().st_mode) == 0o600
 
 
@@ -344,11 +430,11 @@ def test_append_tightens_existing_ledger_before_durable_success(tmp_path, monkey
 def test_invalid_canonical_fields_are_refused_on_write_and_read_without_loss(tmp_path, field, value):
     with pytest.raises(ledger.HostDirtyCheckpointError):
         ledger.record_compass_event(repo_root=tmp_path, event=_event(**{field: value}))
-    assert not ledger.event_store_path(tmp_path).exists()
+    assert not ledger.compass_event_store_path(tmp_path).exists()
     _, row = _record(tmp_path)
     row["event"][field] = value
     data = ledger._json_bytes(row) + b"\n"
-    path = ledger.event_store_path(tmp_path)
+    path = ledger.compass_event_store_path(tmp_path)
     path.write_bytes(data)
     with pytest.raises(ledger.HostDirtyCheckpointError):
         ledger.read_compass_events(repo_root=tmp_path)
@@ -359,7 +445,7 @@ def test_invalid_canonical_fields_are_refused_on_write_and_read_without_loss(tmp
 def test_malformed_persistence_timestamp_is_retained_and_reported(tmp_path, recorded_utc):
     _, row = _record(tmp_path)
     row["recorded_utc"] = recorded_utc
-    path = ledger.event_store_path(tmp_path)
+    path = ledger.compass_event_store_path(tmp_path)
     data = ledger._json_bytes(row) + b"\n"
     path.write_bytes(data)
     with pytest.raises(ledger.HostDirtyCheckpointError):
@@ -403,7 +489,7 @@ def test_event_size_boundary_refuses_overflow_without_clipping_or_mutation(tmp_p
     ledger.record_compass_event(repo_root=tmp_path, event=event)
     row = ledger.read_compass_events(repo_root=tmp_path)[0]
     assert row["event"] == event
-    path = ledger.event_store_path(tmp_path)
+    path = ledger.compass_event_store_path(tmp_path)
     original = path.read_bytes()
     event["summary"] += "x"
     with pytest.raises(ledger.HostDirtyCheckpointError, match="size bound"):
@@ -420,7 +506,7 @@ def test_event_size_boundary_refuses_overflow_without_clipping_or_mutation(tmp_p
 def test_oversized_ledger_is_refused_explicitly_and_retained(tmp_path):
     assert ledger.MAX_LEDGER_BYTES == 16 * 1024 * 1024
     event_id, row = _record(tmp_path)
-    path = ledger.event_store_path(tmp_path)
+    path = ledger.compass_event_store_path(tmp_path)
     with path.open("r+b") as handle:
         handle.truncate(ledger.MAX_LEDGER_BYTES + 1)
     original = hashlib.sha256(path.read_bytes()).hexdigest()
@@ -436,7 +522,7 @@ def test_oversized_ledger_is_refused_explicitly_and_retained(tmp_path):
 
 def test_append_cannot_cross_ledger_bound_or_lose_existing_event(tmp_path, monkeypatch):
     _, row = _record(tmp_path)
-    path = ledger.event_store_path(tmp_path)
+    path = ledger.compass_event_store_path(tmp_path)
     original = path.read_bytes()
     monkeypatch.setattr(ledger, "MAX_LEDGER_BYTES", len(original) + 1)
     with pytest.raises(ledger.HostDirtyCheckpointError, match="write bound"):

@@ -243,7 +243,9 @@
 - Stop-summary is a silent, private memory producer. It filters meaningful
   assistant summaries and records them, plus any matching assistant-chat
   delivery confirmations, in
-  `.odylith/runtime/host-hooks/dirty-events.v1.jsonl`. Each retained Compass
+  `.odylith/runtime/host-hooks/compass-events.v1.jsonl`. This journal is separate
+  from disposable dirty-path checkpoints, so an older runtime clearing those
+  checkpoints cannot delete pending history. Each retained Compass
   event keeps its exact host and session identity and a stable
   `host-event-<ID>` transaction identity. Stop does not write canonical
   Compass files, run `odylith sync`, settle a continuation, or render or replay

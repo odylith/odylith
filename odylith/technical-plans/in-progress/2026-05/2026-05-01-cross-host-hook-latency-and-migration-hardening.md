@@ -98,6 +98,31 @@ Related Bugs:
 
 ## Current completion evidence (2026-10-14)
 
+Compatibility review exposed loss during rollback to v0.1.14: its untyped
+checkpoint reader could delete new queued memory, and an unlocked replacement
+could erase an in-flight append. JSON framing alone was insufficient. The
+correction separates history from dirty-path checkpoints in the existing file
+owner and reuses its secure I/O. The exact predecessor probe changes from three
+losses to three byte-identical retained events; 190 focused tests and 39
+guidance/mirror checks pass, with independent review clear. The original queued
+development event was normally published and exactly acknowledged before the
+switch. Current full-suite CI and installed/native qualification remain open;
+the 6,908-test full runtime result below belongs to checkpoint 4c72f13b6.
+
+Hosted full CI at that checkpoint records 11,029 passes, ten skips and one
+D-038 browser-description failure. The corrected catalog narrative preserves
+the proposition-ledger decision flow and explains private history publication;
+all six affected browser tests pass. Fresh full-suite CI for the current source
+remains required.
+
+The actual source-local Codex journey at 4c72f13b6 passes private Stop capture,
+healthy startup, normal foreground publication and exact acknowledgment. The
+real compiled store preserves the native event's source, session and transaction
+identity, and B-141 context retrieves the separately linked current proof event.
+Independent review is clear. Unanchored history stays out of unrelated context;
+missing authority metadata remains reference-only. Installed-package and Claude
+native qualification remain open.
+
 The final frozen source runtime suite passes all 6,908 tests with no failures,
 errors or skips; all 37 source/test hashes remain unchanged. Independent review
 of the published-memory correction finds no actionable issue. All 47 Atlas
@@ -117,7 +142,7 @@ Claude summaries remain retrievable through canonical projection and matching
 anchor context, with retained source, session and transaction identity. Failed
 working appends stay hidden. Missing authority metadata remains reference-only;
 explicit UNKNOWN annotations throughout compact delivery remain unproved. This
-is source proof; final runtime and installed-package qualification remain open.
+is source proof; installed-package and release qualification remain open.
 No additional store or permanent pending-summary overlay is introduced.
 
 The current source addresses the Stop lifetime failure by retaining complete session-bound
@@ -133,7 +158,8 @@ an existing append. The old Stop settler and its unused grounding cache are
 removed; SessionStart grounding remains active. The Stop-only review and 214
 custody controls pass within their earlier scope. The full runtime run finishes
 with 6,853 passes and two failures: a missing required Claude guidance phrase
-and stale generated Release forensics. Current corrections require fresh proof.
+and stale generated Release forensics. The later frozen run reported above
+passes after those corrections.
 
 Actual PostToolUse then exposes the shared intervention writer appending nine
 unpublished ambient events. The protected shared writer now requires admitted
@@ -142,15 +168,16 @@ readers must select the published stream and merge pending intervention events,
 so a failed working append cannot become visible canonical history. Claude's
 separate SubagentStop writer requires the same rule. Preserve the nine original
 events and their exact failure evidence during reviewed restoration. Shared
-writer review, final runtime/install settlement, native same-package proof and
-the remaining release gates are open.
+writer review and frozen source runtime proof pass as reported above. Installed
+same-package native proof and the remaining release gates are open.
 
 Native Codex Stop at pushed checkpoint 3a600b08c exposes a current integration
 failure under CB-305. Its 14-second lifetime can expire after a canonical
 Compass append and before successor publication. Existing exact restoration
 and abandonment restore startup while preserving the original receipt/event
-and published history. Correct the existing lifetime ownership, retain session
-identity, and prove the interrupted path before native release qualification.
+and published history. The source correction and actual Codex journey above
+address the lifetime ownership and session identity failure. Installed native
+release qualification remains pending.
 Do not raise the deadline, bypass publication, disable memory or add a second
 recovery mechanism. The authentic v0.1.14 benchmark remains a separate live run.
 

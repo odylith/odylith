@@ -64,12 +64,16 @@ preserved real failure, installed behavior, full governance UX or chat delivery.
 When an active immutable publication exists, bounded native hooks and read-only
 event callers without an admitted managed governance writer holding the
 repository lock queue their exact events in
-`.odylith/runtime/host-hooks/dirty-events.v1.jsonl` under stable
+`.odylith/runtime/host-hooks/compass-events.v1.jsonl` under stable
 `host-event-<ID>` transactions. This rule includes Stop, PostToolUse and Claude
 SubagentStop. Subagent lifecycle records retain their metadata even when no
 meaningful summary exists. Only an
 admitted normal governance writer that owns the repository lock retains the
 canonical append and continuation path.
+
+Dirty-path checkpoints keep their existing `dirty-events.v1.jsonl` file.
+Separate file replacement prevents an older runtime's checkpoint clear from
+deleting unpublished session history, including a concurrent arrival.
 
 Codex and Claude Stop remain private memory producers. A meaningful assistant
 summary and any matching delivery-confirmation observation retain their exact
@@ -349,7 +353,7 @@ its copy changes invalidate an already-running maintenance worker.
 
 ## Runtime Contract
 ### Runtime inputs
-- `.odylith/runtime/host-hooks/dirty-events.v1.jsonl` as private pending host
+- `.odylith/runtime/host-hooks/compass-events.v1.jsonl` as private pending host
   memory, never canonical Compass truth before foreground publication
 - `odylith/compass/runtime/agent-stream.v1.jsonl`
 - `odylith/compass/runtime/codex-stream.v1.jsonl` as a legacy-compatible input
