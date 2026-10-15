@@ -60,7 +60,45 @@ supersedes:
 
 superseded_by: 
 
-## Current 0.1.15 evidence-update assessment (2026-10-14)
+## Current 0.1.15 compatibility assessment (2026-10-15)
+
+The clean migration gate compares published v0.1.14
+`fae446995e13e12409e50f944a336dbc846db90a` with candidate
+`37ef99829ed2cf3f99a984480909e5506a64acc7`. Independent review completes
+the four emitted assessments:
+
+- `migration-observer:0.1.15:guidance-and-skills:738da446279f`
+- `migration-observer:0.1.15:operator-cli-contracts:1f374c873fd3`
+- `migration-observer:0.1.15:browser-surfaces:ad0387c703fd`
+- `migration-observer:0.1.15:install-managed-assets:88ce57acf133`
+
+The incremental change retains native Stop history in a separate private
+`compass-events.v1.jsonl` journal. Existing foreground Compass commands publish
+and acknowledge it only after exact readback. This separation prevents the
+demonstrated rollback loss: v0.1.14 replaces its dirty-checkpoint file without
+reading or replacing the history journal. The unchanged predecessor probe
+changes from three losses to three byte-identical retained events. No converter
+or dual reader is needed: v0.1.14 never shipped the mixed journal, and the sole
+development row was published and acknowledged before the switch. Canonical
+event bytes, source/session/transaction identities and governed record formats
+remain unchanged.
+
+Managed guidance and the six changed bundle files match their source owners.
+The CLI adds bounded retained-event publication and rejects unrelated recovery
+receipts. Dashboard changes update topology and generated views. Existing
+managed upgrade and generated-view refresh cover adoption while preserving
+consumer-authored data and host settings. Validation includes 190 focused
+controls, 39 guidance/mirror checks, six affected browser checks, actual Codex
+publication of exactly 357 bytes, and full hosted CI with 11,045 passes and ten
+skips. No additional consumer-data migration is identified.
+
+Exact scope and evidence:
+`/Users/freedom/.codex/odylith-release-evidence/2026-10-14/v52/post-volume-recovery-20261015T0458Z/current37-clean-consumer-compatibility-assessment.md`.
+Rerun the canonical gate on the clean successor. Installed-package upgrade and
+rollback, native Claude, public qualification and final release gates remain
+open.
+
+## Previous 0.1.15 evidence-update assessment (2026-10-14)
 
 The reviewed Casebook notes add the current CB-189 measurement and Claude's
 signed-out availability. They preserve record identities, lifecycle, severity,

@@ -96,7 +96,39 @@ Related Bugs:
   diagnostic benchmark defaulted to warm cache and shell pipelines could leak
   BrokenPipe tracebacks.
 
-## Current completion evidence (2026-10-14)
+## Current completion evidence (2026-10-15)
+
+The real Codex closeout at pushed checkpoint 37ef99829 retains its summary in
+the separate private history journal without changing governed bytes. Startup
+succeeds. A normal foreground command publishes exactly the retained 357 bytes
+once and acknowledges the event only after complete immutable readback. Both
+queues are empty afterward, and all 38 frozen source/test files remain
+unchanged. Exact evidence is retained in
+`/Users/freedom/.codex/odylith-release-evidence/2026-10-14/v52/post-volume-recovery-20261015T0458Z/source37-native-exact-publication-and-ack.json`.
+This closes the actual source-local Codex journal check. Both full hosted CI
+runs for this checkpoint pass 11,045 tests, with ten skips. Installed-package,
+native Claude and release qualification remain open.
+
+The authentic v0.1.14 full proof completes all 328 main observations and its
+existing supplementary sampling. Its terminal result is HOLD: write-surface
+precision falls below the raw baseline. Original stdout, history, latest report
+and seed are retained with exact archive readback before reusing the same
+checkout. This is the predecessor result, not current-candidate qualification.
+Evidence is retained in
+`/Users/freedom/.codex/odylith-release-evidence/2026-10-14/v52/post-volume-recovery-20261015T0458Z/actual14-completed-archive-readback.json`.
+
+Keep candidate A/B unsharded. The existing shard merge omits singleton timing
+and adoption samples, changes On/raw scheduling, and has no demonstrated native
+concurrency isolation in the shared checkout. No new experiment or gate follows.
+
+The benchmark pairing audit preserves that authentic v0.1.14 proof.
+Both releases use 82 scenarios and matched On/raw host contracts. The current
+corpus adds four supporting paths to two existing cases, affecting their context
+and path-precision allowances while retaining prompts, required/write paths,
+validators and thresholds. Publish cross-release deltas with that input-change
+disclosure; causal product claims require the matched within-release pair.
+Exact hashes, affected cases and existing A/diagnostic commands are retained in
+`/Users/freedom/.codex/odylith-release-evidence/2026-10-14/v52/post-volume-recovery-20261015T0458Z/release-benchmark-pairing-37ef99829.md`.
 
 Compatibility review exposed loss during rollback to v0.1.14: its untyped
 checkpoint reader could delete new queued memory, and an unlocked replacement
