@@ -1,6 +1,54 @@
 Status: In progress
 
-## Current gate: align canonical package custody (2026-10-15)
+## Current gate: preserve the qualified package through hosting (2026-10-16)
+
+The corrected source builds and signs one canonical draft, acquires and seals
+its complete signed assets, then qualifies and promotes those exact hosted
+asset IDs with complete revalidation and readback. Prepared custody and public
+composition use version 3. Real hosted logs remain outside the package. This
+replaces the earlier three-local-build-phase mechanism without changing the
+semantic stages, timing bounds or quality floors. Protected review stays local.
+
+The frozen twelve-module gate passes 787 tests with zero failures, errors or
+skips and all twenty owned plus eight watch pins unchanged. Independent review
+passes seven real-shell/caller controls and clears the corrected source,
+retaining its original three P1 findings. The shared source validator still
+runs full validation before canonical acquisition; advisory discovery retains
+its single local producer. Hosted log pipelines propagate producer failure.
+The separate test-only Atlas readiness correction passes the complete fifteen-
+test UX module and independent review, preserving original assertions and the
+authentic failed CI result. CB-347 retains all evidence and boundaries.
+
+Finish current governance, push the combined checkpoint and require its complete
+CI before canonical H, full B and one signed D. Actual hosted, installed,
+native/public and protected-final gates remain open. No local mock or source
+test grants release credit. Independent custody review SHA-256:
+7bb128313379df5b618bf43eaacd5cf05b3709dd55a65467ebac9f1048667b56.
+
+## Release benchmark order correction (2026-10-16)
+
+The preflight documentation deadline conflicts with exact measured-tree identity:
+publishing charts changes that tree, and committing them changes the release
+commit. Independent static review clears a bounded instruction correction, with
+no executable, benchmark-floor or identity exception. Freeze final source after
+current CI, pass full proof and actual last-shipped comparison, then prepare one
+package. Keep source/main/session/tag/package fixed through all commit-bound
+qualification, dispatch, hosted, consumer and GA commands.
+
+Next require separate full pinned-dogfood proof and canonical comparison on the
+clean release commit. Retain the actual selected baseline; after publication it
+may be a new-version report and cannot replace the earlier predecessor check.
+Obtain its matching diagnostic and canonically render the final pinned snapshot
+and README while identity matches. Retain/read back all thirteen files and merge
+their reviewed metadata-only PR before planning closeout. Archive/clear the
+completed session last; do not resolve the old session against the new metadata
+commit. GA target success alone does not close the goal. No extra preflight
+benchmark solely for chart timing, publication restore phase or source relabel
+is needed. CB-347 retains the finding and prior failed/historical proof.
+Independent design review SHA-256:
+82b1af36f2f0e72ec4bf800e2421d96426eb9b26a756703dd5225f659dcf2d46.
+
+## Historical local package custody checkpoint (2026-10-15)
 
 The pushed c9fd4874 checkpoint passes 295 affected tests, seven governance
 checks and its complete hosted CI. A code-only integration audit then found

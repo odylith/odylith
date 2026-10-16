@@ -1,11 +1,18 @@
 from __future__ import annotations
 
 from pathlib import Path
+import os
+import subprocess
+
+import pytest
 
 from odylith import __version__ as PACKAGE_VERSION
 from odylith.install.manager import version_status
 from odylith.install.state import write_install_state, write_version_pin
 from odylith.runtime.governance import validate_self_host_posture
+
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
 def _next_patch_version(version: str) -> str:
@@ -40,45 +47,7 @@ def _seed_product_repo(
     )
     (repo_root / "odylith" / "radar" / "source" / "INDEX.md").write_text("# Backlog Index\n", encoding="utf-8")
     (repo_root / ".github" / "workflows" / "release.yml").write_text(
-        workflow_body
-        or (
-            "name: release\n"
-            "on:\n"
-            "  workflow_dispatch:\n"
-            "    inputs:\n"
-            "      tag:\n"
-            "        required: true\n"
-            "        type: string\n"
-            "      expected_sha:\n"
-            "        required: true\n"
-            "        type: string\n"
-            "jobs:\n"
-            "  build:\n"
-            "    env:\n"
-            "      ODYLITH_RELEASE_REPO: odylith/odylith\n"
-            "      ODYLITH_RELEASE_ACTOR: freedom-research\n"
-            "      ODYLITH_RELEASE_REF: refs/heads/main\n"
-            "    steps:\n"
-            "      - run: |\n"
-            "          if [[ \"${GITHUB_REPOSITORY}\" != \"${ODYLITH_RELEASE_REPO}\" ]]; then\n"
-            "            exit 2\n"
-            "          fi\n"
-            "          if [[ \"${GITHUB_ACTOR}\" != \"${ODYLITH_RELEASE_ACTOR}\" ]]; then\n"
-            "            exit 2\n"
-            "          fi\n"
-            "          if [[ \"${GITHUB_REF}\" != \"${ODYLITH_RELEASE_REF}\" ]]; then\n"
-            "            exit 2\n"
-            "          fi\n"
-            "      - run: |\n"
-            "          tag_sha=\"$(git rev-parse \"${{ inputs.tag }}^{commit}\")\"\n"
-            "          if [[ \"${GITHUB_SHA}\" != \"${{ inputs.expected_sha }}\" ]]; then\n"
-            "            exit 2\n"
-            "          fi\n"
-            "          if [[ \"${tag_sha}\" != \"${{ inputs.expected_sha }}\" ]]; then\n"
-            "            exit 2\n"
-            "          fi\n"
-            "      - run: PYTHONPATH=src python -m odylith.cli validate self-host-posture --repo-root . --mode release --expected-tag \"${{ inputs.tag }}\"\n"
-        ),
+        workflow_body or (REPO_ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8"),
         encoding="utf-8",
     )
     write_version_pin(repo_root=repo_root, version=pin_version)
@@ -222,33 +191,8 @@ def test_release_contract_fails_when_release_workflow_drops_commit_guard(tmp_pat
     repo_root.mkdir()
     _seed_product_repo(
         repo_root,
-        workflow_body=(
-            "name: release\n"
-            "on:\n"
-            "  workflow_dispatch:\n"
-            "    inputs:\n"
-            "      tag:\n"
-            "        required: true\n"
-            "        type: string\n"
-            "jobs:\n"
-            "  build:\n"
-            "    env:\n"
-            "      ODYLITH_RELEASE_REPO: odylith/odylith\n"
-            "      ODYLITH_RELEASE_ACTOR: freedom-research\n"
-            "      ODYLITH_RELEASE_REF: refs/heads/main\n"
-            "    steps:\n"
-            "      - run: |\n"
-            "          if [[ \"${GITHUB_REPOSITORY}\" != \"${ODYLITH_RELEASE_REPO}\" ]]; then\n"
-            "            exit 2\n"
-            "          fi\n"
-            "          if [[ \"${GITHUB_ACTOR}\" != \"${ODYLITH_RELEASE_ACTOR}\" ]]; then\n"
-            "            exit 2\n"
-            "          fi\n"
-            "          if [[ \"${GITHUB_REF}\" != \"${ODYLITH_RELEASE_REF}\" ]]; then\n"
-            "            exit 2\n"
-            "          fi\n"
-            "      - run: PYTHONPATH=src python -m odylith.cli validate self-host-posture --repo-root . --mode release --expected-tag \"${{ inputs.tag }}\"\n"
-        ),
+        workflow_body=(REPO_ROOT / ".github/workflows/release.yml").read_text().replace(
+            '          [[ "$GITHUB_SHA" == "$RELEASE_EXPECTED_SHA" ]]', ''),
     )
 
     errors = validate_self_host_posture.validate_release_contract(
@@ -257,3 +201,48 @@ def test_release_contract_fails_when_release_workflow_drops_commit_guard(tmp_pat
     )
 
     assert any("must bind the requested tag to the maintainer session commit" in item for item in errors)
+
+
+@pytest.mark.parametrize('guard', [
+    '[[ "$GITHUB_REPOSITORY" == "$ODYLITH_RELEASE_REPO" ]]',
+    '[[ "$GITHUB_ACTOR" == "$ODYLITH_RELEASE_ACTOR" ]]',
+    '[[ "$GITHUB_REF" == "$ODYLITH_RELEASE_REF" ]]',
+    '[[ "$GITHUB_SHA" == "$RELEASE_EXPECTED_SHA" ]]',
+    '[[ "$(git rev-parse "${RELEASE_TAG}^{commit}")" == "$RELEASE_EXPECTED_SHA" ]]',
+    '[[ "$(git rev-parse HEAD)" == "$RELEASE_EXPECTED_SHA" ]]',
+    '[[ -z "$(git status --porcelain)" ]]',
+    '[[ "$RELEASE_EXPECTED_SHA" =~ ^[0-9a-f]{40}$ ]]',
+    r'[[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]',
+    '[[ "$RELEASE_OPERATION" == candidate || "$RELEASE_OPERATION" == promote ]]',
+])
+def test_release_posture_rejects_commented_out_real_guard(tmp_path, guard):
+    text = (REPO_ROOT / '.github/workflows/release.yml').read_text()
+    assert guard in text
+    _seed_product_repo(tmp_path, workflow_body=text.replace(guard, '# ' + guard))
+    errors = validate_self_host_posture.validate_release_contract(repo_root=tmp_path,
+        expected_tag=f'v{PACKAGE_VERSION}')
+    assert any('canonical release authority' in item or 'must bind the requested tag' in item for item in errors)
+
+
+@pytest.mark.parametrize('field,value', [
+    ('GITHUB_REPOSITORY', 'untrusted/repo'), ('GITHUB_ACTOR', 'someone-else'),
+    ('GITHUB_REF', 'refs/heads/other'), ('GITHUB_SHA', 'b' * 40),
+    ('RELEASE_TAG', 'v0.1.15; touch injected'), ('RELEASE_EXPECTED_SHA', 'HEAD'),
+    ('RELEASE_OPERATION', 'rebuild'), (None, None),
+])
+def test_actual_workflow_authorization_shell_fails_before_later_actions(field, value, tmp_path):
+    workflow = (REPO_ROOT / '.github/workflows/release.yml').read_text()
+    block = workflow.split('        run: |\n', 1)[1].split('      - uses:', 1)[0]
+    script = '\n'.join(line.removeprefix('          ') for line in block.splitlines())
+    marker = tmp_path / 'authorized'
+    environment = dict(os.environ, GITHUB_REPOSITORY='odylith/odylith', GITHUB_ACTOR='freedom-research',
+        GITHUB_REF='refs/heads/main', GITHUB_SHA='a' * 40, ODYLITH_RELEASE_REPO='odylith/odylith',
+        ODYLITH_RELEASE_ACTOR='freedom-research', ODYLITH_RELEASE_REF='refs/heads/main',
+        RELEASE_EXPECTED_SHA='a' * 40, RELEASE_TAG='v0.1.15', RELEASE_OPERATION='candidate', MARKER=str(marker))
+    if field:
+        environment[field] = value
+    result = subprocess.run(['bash', '-e', '-o', 'pipefail', '-c', script + '\ntouch "$MARKER"'],
+        env=environment, cwd=tmp_path, capture_output=True, text=True)
+    assert result.returncode == (0 if field is None else 2)
+    assert marker.exists() is (field is None)
+    assert not (tmp_path / 'injected').exists()

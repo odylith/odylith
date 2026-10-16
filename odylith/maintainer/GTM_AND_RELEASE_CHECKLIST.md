@@ -64,6 +64,11 @@ release.
 
 ## Proof And Benchmark Integrity
 - [ ] Run `./.odylith/bin/odylith benchmark --repo-root . --profile proof`.
+- [ ] Before preparation, freeze the canonical commit and pass its comparison
+      against the actual last shipped release; retain that baseline and report.
+- [ ] After the commit-bound hosted/consumer/GA commands, pass the separate full
+      pinned-dogfood benchmark and canonical comparison on the clean release
+      commit. Preserve its actual selected baseline and matching diagnostic.
 - [ ] Regenerate benchmark graphs from the same `latest.v1.json` report.
 - [ ] Refresh the published README benchmark snapshot from that same report.
 - [ ] Review wins and regressions against the last shipped release, not just
@@ -78,9 +83,12 @@ release.
 - [ ] `make release-version-show`
 - [ ] `odylith release list --repo-root .`
 - [ ] `odylith release show current --repo-root .`
-- [ ] Run `make release-preflight-prepare [VERSION=[version]]` to build and
-      preserve one package for the release session's commit. Preparation is
-      not release qualification.
+- [ ] Run `make release-preflight-prepare [VERSION=[version]]` to reserve the
+      canonical session/tag. Follow its candidate-build dependency once, retain
+      the successful real workflow run and resume with
+      `GREENFIELD_RELEASE_BUILD_RUN_ID=[run_id]`. Acquire and authenticate the
+      complete signed draft before sealing one package. Preparation is not
+      release qualification.
 - [ ] Qualify Primary40, High4 and genuine EDIT4 against that exact package,
       retaining original outputs, source reviews and separate measured timing
       decisions in the composed public evidence.
@@ -102,15 +110,24 @@ release.
 - [ ] Run `make release-dispatch`. It reads the active session's fixed proof
       directory and fails closed if the review, one-shot ledger, provenance,
       or underlying evidence is missing, stale, or belongs to another commit.
+- [ ] Promotion rechecks the exact draft release/run/asset census and production
+      signatures, builds/signs/replaces nothing, and reads back the same complete
+      hosted package. Local protected review remains local; remote trust does not
+      imply GitHub repeated that semantic review.
 - [ ] Wait for the canonical GitHub release workflow to finish cleanly.
 - [ ] `make dogfood-activate`
 - [ ] `./.odylith/bin/odylith validate self-host-posture --repo-root . --mode local-runtime`
 - [ ] `make ga-gate PREVIOUS_VERSION=[previous_version]` (includes the
       post-publish consumer rehearsal; do not run it separately for the same
       release artifact)
+- [ ] Complete pinned benchmark proof and canonically render its final snapshot,
+      SVGs and README while source/runtime identity matches. Retain and read back
+      all thirteen files. Merge the reviewed metadata-only publication PR after
+      every commit-bound release command finishes; preserve the measured commit,
+      tag and package. GA target success alone does not complete release proof.
 - [ ] Advance repo-local release aliases and carry-forward work so `current`
       and `next` no longer point at the shipped terminal record.
-- [ ] `make release-session-clear`
+- [ ] Archive the completed session, then `make release-session-clear`.
 
 ## GTM Package
 - [ ] GitHub release copy is finalized and proof-linked.

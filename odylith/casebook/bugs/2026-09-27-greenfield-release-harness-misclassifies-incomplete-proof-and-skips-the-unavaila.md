@@ -1,5 +1,125 @@
 - Bug ID: CB-347
 
+## Atlas route check captures a provisional filter (2026-10-16)
+
+At f3bf8aaaa16bbf9aef0e706b0f9915f525bab301, PR CI passes 11,577 tests
+with ten skips, but the parallel push fails one Registry-to-Atlas browser
+check with 11,576 passes and ten skips. Preserve both outcomes; the PR pass
+does not clear the failed push. The failure reaches the final workstream URL
+wait after the exact diagram, selected row, title and rendered image pass.
+
+Atlas deliberately removes a conflicting workstream filter while preserving
+the selected diagram. The test accepts the provisional requested URL, captures
+its filter before the child reports readiness, then waits for that obsolete
+value after canonicalization. Bind the test's URL capture to the existing
+ready or degraded outcome and exact diagram route. Preserve every strict
+selection and image assertion, the current timeouts and the supported filter
+normalization. Require a controlled loading-to-canonical-route regression and
+a compatible-filter control, followed by fresh complete CI. Product routing
+and an actual browser failure have not been established by this source audit.
+
+Read-only diagnosis SHA-256:
+1cf7230240fed8fc2956f416653306c950502aca2ee4ed50ee3da5181677d44e.
+Failed push log SHA-256:
+70c79431179da70bf4f622ebfc95cc6845ef5631ea03b2d4139955e39bc91a42.
+Passing PR log SHA-256:
+93360eff806c826a0b66db5d68dfbaf525ace73ed50d695d6c972f42b72349de.
+
+The controlled old-helper browser witness reproduces that exact final wait
+after the original selection and image checks pass. The one-file correction
+passes the complete fifteen-test UX audit in 45.15 seconds; a separately scoped
+Registry roundtrip and shell-navigation group passes 25 tests. These counts
+overlap. All eight original test bodies and 69 assertions remain unchanged,
+with five assertions added. Product routing and shared support remain unchanged.
+Independent source review clears the patch (SHA-256
+dbcfdd871bbb0f059ba71414cd20116774e71c883c0439c97298631563d8e465).
+The failed push remains failed; fresh complete successor CI is required.
+
+## Hosted publication rebuilds the qualified package (2026-10-16)
+
+The local dispatch command authenticates the prepared package and independent
+review, but sends GitHub only its tag and commit. The hosted workflow then runs
+Hatch and the asset producer again, signs the regenerated files and uploads
+with replacement enabled. Those are not the exact bytes qualified locally.
+The prepared receipt also seals placeholder signature files, so signing them
+after qualification cannot preserve the complete package identity. Hosted
+provenance currently omits the clean source-tree evidence that the new package
+reader requires. This is an open release-blocking handoff defect.
+
+Independent design review selects one strict package: build and sign once in
+the canonical workflow, retrieve and authenticate its complete draft asset set,
+then seal and qualify those exact bytes. Final publication must reverify the
+same complete hosted set and promote it without building, signing or replacing
+assets. A draft is mutable, so release, asset and workflow identities plus all
+hashes must be checked again. Keep protected review bodies local; do not claim
+GitHub independently reviewed evidence it never receives. Update the current
+release contract before fresh implementation proof and final source freeze.
+No payload/signature scope split, threshold waiver or successful hosted proof
+is claimed. Independent design SHA-256:
+06c15d1f60ffc9253ef1437108d97fabe79415aa4722f24757b8fd2ef98b0e20.
+
+Independent review of the first implementation freeze finds three additional
+blocking gaps. The supported advisory release-candidate caller still reaches
+the now release-only acquisition helper with an existing temporary dist and
+without a session or build-run ID. Preserve its one local advisory producer
+under the existing shell owner, separate from canonical signed acquisition.
+The canonical preparation path must also retain its full source validation;
+factor that existing responsibility once and test both callers, including
+validation failure before acquisition or seal. Version validation checks the
+frozen source and must not repair it.
+
+The hosted build, asset and smoke commands also pipe output through tee under
+an unspecified shell. An independent harmless reproduction runs the exact
+smoke command with a fake producer returning 17: bash with errexit alone
+returns zero, while explicit pipefail returns 17. The false success could
+allow staging despite a failed installed smoke check. Use an explicit Bash
+shell with pipefail and behavioral failure controls; retain the original
+freeze and passing unit evidence as incomplete. Reproduction SHA-256:
+b927087b9663825379e721a5ca6c0f67f26d71de5405b373ecf92a34b7a4b89a.
+The successor requires its own frozen review and coherent proof.
+
+The corrected successor passes 787 direct-consumer checks in 110.82 seconds,
+with zero failures, errors or skips and all twenty owned plus eight watch pins
+unchanged. Independent review passes seven real-shell/caller controls and
+clears the frozen patch. Advisory discovery retains its local producer; the
+canonical path retains full source validation before signed acquisition; every
+hosted log pipeline propagates producer failure. The original passing freeze
+and three P1 findings remain retained. No actual hosted build, signed acquisition,
+promotion, public family or protected final has run. Complete current CI and
+actual H/B/D qualification remain required.
+Coherent result SHA-256:
+21f124aad43ea4dfd9cccd674dc5fb034ef61dbec69dd94e549b4ba1fb57c9eb.
+Final independent review SHA-256:
+7bb128313379df5b618bf43eaacd5cf05b3709dd55a65467ebac9f1048667b56.
+
+## Benchmark publication changes the measured source (2026-10-16)
+
+The maintainer instructions require refreshed benchmark documentation before
+package preparation. Publishing those files changes the measured clean tree;
+committing them changes its commit. The current-tree benchmark reader and
+canonical package/session guards correctly refuse a different source identity.
+Repeating a full benchmark solely to place its own publication inside that
+commit creates an unnecessary release-order cycle.
+
+Static audit finds no executable preparation, dispatch or GA requirement that
+the refreshed charts be inside the package. Correct the documented sequence
+without weakening benchmark, identity or package checks. Full frozen-source
+proof and last-shipped comparison remain required before preparation; separate
+pinned-dogfood proof and reviewed publication remain required before closeout.
+Independent static review clears the simplified sequence: finish every
+commit-bound release command, then run pinned proof/comparison and its matching
+diagnostic on the clean release commit. Canonically render and retain/read back
+the final thirteen publication files, merge their reviewed metadata-only PR,
+then close planning and archive/clear the session. No publication restore phase
+or extra preflight run solely for charts is needed. Post-publication comparison
+retains its actual baseline; it cannot replace the original predecessor check.
+The new metadata commit gains no benchmark or package credit. Actual CI, proof,
+package and release gates remain pending. No new benchmark, package, public
+family or final holdout has run. Independent design review SHA-256:
+82b1af36f2f0e72ec4bf800e2421d96426eb9b26a756703dd5225f659dcf2d46.
+Audit SHA-256:
+e453d9b19ee34f96505dd3e04547012952cc61bd56fb182e7ba5480cac3c479b.
+
 ## Canonical package handoff gap (2026-10-15)
 
 Normal release preparation seals the current package, but public qualification

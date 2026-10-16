@@ -34,11 +34,11 @@ distribution_provenance="$proof_root/build-provenance.v1.json"
 require_file "$review_sidecar"
 require_file "$holdout_ledger"
 require_file "$distribution_provenance"
-"$odylith_python" "$odylith_repo_root/scripts/release/greenfield_release_qualification.py" \
+promotion="$("$odylith_python" "$odylith_repo_root/scripts/release/greenfield_release_qualification.py" \
   --sidecar "$review_sidecar" \
   --final-holdout-ledger "$holdout_ledger" \
   --distribution-provenance "$distribution_provenance" \
-  --implementation-revision "$expected_sha"
+  --implementation-revision "$expected_sha" --promotion-binding)"
 
-gh workflow run release.yml --repo "$odylith_release_repo" --ref "$odylith_release_ref" -f tag="$tag" -f expected_sha="$expected_sha"
+gh workflow run release.yml --repo "$odylith_release_repo" --ref "$odylith_release_ref" -f operation=promote -f tag="$tag" -f expected_sha="$expected_sha" -f promotion="$promotion"
 echo "dispatched canonical release workflow for $tag on repo $odylith_release_repo ref $odylith_release_ref sha $expected_sha"

@@ -5,7 +5,7 @@
   benchmark proof, and release-gate indicators may surface when useful, but
   passing checks should stay quiet and no dashboard claim should imply shipped
   behavior before pinned dogfood and benchmark proof exist.
-Last updated: 2026-10-15
+Last updated: 2026-10-16
 
 
 ## Purpose
@@ -609,6 +609,9 @@ artifacts to that header.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-10-16 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 6 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `sha256:674e4dcf1279090b822ef14c228da2a688306fb096338d331c896c5034c7610b`, `sha256:f6f6644081399f8233ed84590606a8894096990f2fe98cebafc6ffdd34fd570e`, `sha256:0d8006c91a5f4a229a1c9734a745efc1544e418aa22e2ca40ea3b8d315a6ae11`, `sha256:e09e99afa961b3674632a6d6594cf6aa534cbc7f784af22e98200bb0a6d35fe1`, plus 2 more
 - **2026-10-15 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `sha256:1f89d08a54d74152e22e7841f2c5f838aa1c042d2ece651da1e4579a71542118`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `tests/unit/install/test_greenfield_release_assembly.py`
@@ -624,9 +627,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-10-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `tests/unit/install/test_local_release_smoke.py`
-- **2026-10-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_source_duty_binding.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

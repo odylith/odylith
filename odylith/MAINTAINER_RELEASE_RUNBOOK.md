@@ -1,6 +1,6 @@
 # Odylith Maintainer Release Runbook
 
-Last updated: 2026-10-12
+Last updated: 2026-10-16
 
 ## Purpose
 Use this runbook for the canonical Odylith release lane only.
@@ -91,12 +91,14 @@ Run the targets in this order.
      `name` empty to inherit the authored release-note title or set that exact
      same title explicitly
 
-3. Refresh the public benchmark snapshot.
-   Run `./.odylith/bin/odylith benchmark --repo-root . --profile proof`, regenerate
-   `docs/benchmarks/*.svg` from
-   `.odylith/runtime/odylith-benchmarks/latest.v1.json`, and update the
-   repo-root `README.md` benchmark section from that same report before the
-   release lane continues. The default `quick` lane is not release proof. This
+3. Freeze the canonical release commit and pass its benchmark gate.
+   Run `./.odylith/bin/odylith benchmark --repo-root . --profile proof` and
+   `./.odylith/bin/odylith benchmark compare --repo-root . --baseline last-shipped --json`.
+   Retain the original reports, actual predecessor baseline and comparison.
+   Keep the measured commit, main, session, tag and package fixed through all
+   commit-bound release commands. Publish benchmark documentation at step 11;
+   committing it here would change the source that the benchmark measured.
+   The default `quick` lane is not release proof. This
    must stay on the warm-plus-cold `proof` host lane for the live
    `odylith_on` versus `odylith_off` pair. The current published proof host is
    Codex, and the README must publish the
@@ -115,11 +117,25 @@ Run the targets in this order.
    release story explicit that benchmark proof is advisory for that version.
 
 4. `make release-preflight-prepare [VERSION=X.Y.Z]`
-   Initialize or reuse the sticky release session, reserve the release tag,
-   validate the canonical release contract, build the wheel plus split managed
-   runtime assets, and prove the generated installer locally before dispatch.
-   Preparation preserves one package under the fixed session proof directory;
-   it does not run the protected holdout or qualify the release. Use that exact
+   Initialize or reuse the sticky release session and reserve the release tag.
+   Without `GREENFIELD_RELEASE_BUILD_RUN_ID`, preparation returns the explicit
+   candidate-build dependency before allocating a package proof directory. Run
+   the printed ordinary GitHub command once, using that exact tag and commit:
+
+   ```bash
+   gh workflow run release.yml --repo odylith/odylith --ref main -f operation=candidate -f tag=vX.Y.Z -f expected_sha=H
+   ```
+
+   Retain the actual successful workflow run ID, then resume with
+   `make release-preflight-prepare VERSION=X.Y.Z GREENFIELD_RELEASE_BUILD_RUN_ID=RUN_ID`.
+   The canonical workflow builds and signs one draft candidate. Local preparation
+   runs full source validation on the clean reserved commit, then acquires its
+   complete final asset set, verifies production signatures and
+   source/package identity, retains actual build evidence and proves its
+   installer. It seals hosted-candidate custody in the version 3 prepared receipt;
+   it does not rebuild, replace signatures, run the protected holdout or qualify
+   the release. A draft is mutable: retain exact release, workflow-run/attempt and
+   asset identities with every digest. Use that exact
    distribution for Primary40, High4 and genuine EDIT4. Preserve the original
    outputs, independent source reviews and each public family's measured timing
    decision. Authenticate them through the existing composed public evidence.
@@ -168,8 +184,14 @@ Run the targets in this order.
    `head_sha`, before dispatch.
 
 6. `make release-dispatch`
-   Reuse the existing session and dispatch the canonical GitHub release
-   workflow with the reserved `tag` and `expected_sha`.
+   Reauthenticate the original local qualification and reuse the existing session
+   to dispatch promotion of that exact candidate. The closed promotion binding
+   includes its commit, tag, release/run/asset identities, full package census and
+   prepared/local-qualification digests. The canonical maintainer authorizes the
+   local review result; GitHub independently rechecks the hosted bytes and trust,
+   without receiving protected review bodies or claiming to rerun their review.
+   Promotion builds, signs and replaces nothing. Publish the same draft identity
+   and require complete readback equality before hosted release credit.
 
 7. Wait for the GitHub release workflow to finish successfully.
 
@@ -200,7 +222,27 @@ Run the targets in this order.
 
 10. `make ga-gate [PREVIOUS_VERSION=X.Y.Z]`
     Re-run the post-publish dog-food and consumer proof lane for the candidate
-    version.
+    version. Target success is provisional until the mandatory pinned benchmark
+    and reviewed publication below pass.
+
+11. Complete pinned benchmark proof and publish its results.
+    While still on the clean release commit with its published pinned runtime
+    active, run the full `--profile proof` benchmark and canonical comparison.
+    This is the separate shipped-runtime obligation; the source-local report
+    from step 3 cannot replace it. Retain the actual comparison baseline:
+    `last-shipped` now resolves against published release metadata and may select
+    a report for the new version. Preserve the original predecessor comparison.
+    Run the matching `--profile diagnostic` report in that same tree and posture,
+    then follow [Release Benchmarks](maintainer/agents-guidelines/RELEASE_BENCHMARKS.md)
+    to canonically generate the twelve publication files and update README.
+    Archive and read back all thirteen files with the original reports, logs,
+    comparisons, hashes and measured source/runtime identity. Review and merge
+    the metadata-only publication PR after all commit-bound release commands
+    have finished. Label the measured release commit explicitly; the new
+    documentation commit is not a benchmarked or packaged revision. Do not
+    rebuild the released package or change its tag/session identity.
+
+12. Close release planning only after proof and publication are complete.
 
     Before closing the lane, advance repo-local release planning truth for the
     shipped line: move unfinished workstreams forward, keep the active
@@ -211,7 +253,9 @@ Run the targets in this order.
     implicit GA, and finished work from that release may remain visible in
     Compass as completed release history until you perform the explicit close.
 
-11. `make release-session-clear`
+13. `make release-session-clear`
+    Archive the completed session first. After the metadata commit, do not run
+    session show/resolve or other commit-bound targets against the old session.
     Clear the local sticky session after the lane is complete or intentionally
     abandoned.
 
@@ -245,8 +289,9 @@ Run the targets in this order.
   install smoke testing. Serve that directory from localhost and install with
   the printed `ODYLITH_RELEASE_*` environment in a separate test repo.
 - `make release-preflight-prepare [VERSION=X.Y.Z]`
-  Initialize the session and prepare its frozen package. `make release-preflight`
-  is an alias for this preparation phase.
+  Initialize the session/tag and report the candidate-build dependency, or acquire
+  the final signed candidate when `GREENFIELD_RELEASE_BUILD_RUN_ID=RUN_ID` is
+  supplied. `make release-preflight` aliases this preparation phase.
 - `make release-preflight-complete [VERSION=X.Y.Z]`
   Authenticate completed public qualification against the prepared package and
   run its protected terminal proof once.
@@ -289,9 +334,10 @@ Run the targets in this order.
 - Local release wrappers may materialize an isolated clean checkout of the
   `origin/main` commit when the active maintainer workspace is dirty or
   off-main, but only if that workspace `HEAD` already matches `origin/main`.
-- `make release-preflight` must fail closed unless it can build the wheel, base
-  runtime bundles, context-engine pack assets, signed release manifest inputs,
-  and a local hosted-style installer proof for
+- `make release-preflight` must fail closed unless it acquires the single
+  canonical build's wheel, base runtime bundles, context-engine pack assets and
+  production-signed manifest/provenance, verifies every final signature and
+  complete source/asset census, and supplies a local hosted-style installer proof for
   `install -> version -> doctor -> sync`.
 - The completion phase must fail closed unless the built local dist
   passes the installed Greenfield pre-confirm compilation and commit-only
@@ -331,7 +377,9 @@ Run the targets in this order.
 - The canonical wheel build path is `hatch build`; do not switch the
   maintainer lane back to ad hoc `python -m build` or direct `pip` wheel
   publication flows.
-- `make release-dispatch` fails closed if there is no active session.
+- `make release-dispatch` fails closed without an active session, original
+  authenticated qualification or matching hosted candidate. Promotion may not
+  rebuild, regenerate, re-sign, clobber or substitute its assets.
 - The session is bound to one commit. If `HEAD` changes, clear the session and
   start the lane again.
 - If `VERSION` is unset, preflight auto-tags the next stable patch version from
@@ -397,9 +445,10 @@ Run the targets in this order.
   current and fail closed on unknown, commercial/proprietary, or otherwise
   disallowed licenses in the runtime closure or bundled managed-runtime
   suppliers.
-- The canonical maintainer lane must also keep the repo-root `README.md`
-  benchmark snapshot and `docs/benchmarks/*.svg` current from the latest
-  published proof-host benchmark report before release.
+- The canonical maintainer lane must complete the frozen-source benchmark and
+  predecessor comparison before preparation, then the separate pinned benchmark
+  and merged README/SVG publication before release closeout. Keep the original
+  source and package fixed until all commit-bound commands have finished.
 - The README benchmark snapshot must publish the conservative current proof-host
   view from
   `latest.v1.json`; do not publish `primary_comparison` or a warm-only report

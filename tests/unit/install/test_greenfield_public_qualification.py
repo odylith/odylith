@@ -990,7 +990,7 @@ def test_nested_profile_source_selection_keeps_both_families_and_exact_manifest_
 
 def test_current_composition_custody_has_one_canonical_receipt_owner():
     import greenfield_release_qualification as assembly
-    assert public.PUBLIC_COMPOSITION_MODE == "odylith.greenfield.public-coverage-composition.v2"
+    assert public.PUBLIC_COMPOSITION_MODE == "odylith.greenfield.public-coverage-composition.v3"
     assert public._RELEASE_CUSTODY_REFS == {"checkpoint", "prepared_package", "activation", "profile"}
     assert "prepared_package_sha256" in public._OBSERVATION_FIELDS
     assert "distribution_custody_sha256" not in public._OBSERVATION_FIELDS

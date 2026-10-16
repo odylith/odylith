@@ -91,7 +91,20 @@ Do not use this skill in consumer repos.
    record the override in `odylith/runtime/source/release-maintainer-overrides.v1.json`,
    and update Casebook plus the bound release workstream and plan before
    continuing the release lane.
-5. Refresh the benchmark snapshot docs, tracked latest-summary JSON, and the
+   For a release, freeze the canonical commit first and pass
+   `./.odylith/bin/odylith benchmark compare --repo-root . --baseline last-shipped --json`
+   before package preparation. Retain the original comparison and actual
+   predecessor baseline; all quality and budget gates remain blocking.
+5. For release-bound publication, finish the runbook's qualification, dispatch,
+   hosted, consumer and GA commands on the unchanged release commit. Then run
+   the separate mandatory full pinned-dogfood proof and canonical comparison on
+   that clean commit, followed by its matching diagnostic in the same runtime
+   posture. Retain the actual selected baseline: post-publication `last-shipped`
+   may select the new version, so it cannot be relabelled as the earlier
+   predecessor comparison. GA target success alone is not completed release proof.
+   Use this pinned report for the final public snapshot. Source-local evidence
+   remains separately labelled and does not replace shipped-runtime proof.
+6. Refresh the benchmark snapshot docs, tracked latest-summary JSON, and the
    README-linked `proof/` and `diagnostic/` SVGs from that same selected
    report set:
    `PYTHONPATH=src python -m odylith.runtime.evaluation.odylith_benchmark_publication --repo-root .`
@@ -107,7 +120,7 @@ Do not use this skill in consumer repos.
    The lower-level graph renderer remains available for explicit graph-only or
    single-report refreshes:
    `PYTHONPATH=src python -m odylith.runtime.evaluation.odylith_benchmark_graphs --repo-root . --out-dir docs/benchmarks --profiles proof diagnostic`
-6. Update the repo-root `README.md` benchmark snapshot from that same report.
+7. Update the repo-root `README.md` benchmark snapshot from that same report.
    Make the README explicit that the current published snapshot is Codex-host-scoped and conservative
    across the published cache profiles, that `odylith_off` is the raw host
    CLI lane, that `raw_agent_baseline` is only the internal report alias, and
@@ -133,21 +146,29 @@ Do not use this skill in consumer repos.
    follow the detailed wording contract in
    [Odylith Chatter](../../registry/source/components/odylith-chatter/CURRENT_SPEC.md)
    instead of expanding the benchmark lane's own prompt tax.
-7. Keep the README graph order and tone unchanged unless the product is intentionally adding benchmark-marketing cuts from the same report:
+8. Keep the README graph order and tone unchanged unless the product is intentionally adding benchmark-marketing cuts from the same report:
    - family heatmap
    - quality frontier
    - frontier
    - operating posture
-8. Keep the README graph block in this exact order:
+9. Keep the README graph block in this exact order:
    - `odylith-benchmark-family-heatmap.svg`
    - `odylith-benchmark-quality-frontier.svg`
    - `odylith-benchmark-frontier.svg`
    - `odylith-benchmark-operating-posture.svg`
-9. If the benchmark slice surfaced a named failure mode, stale diagram, or thin
+10. If the benchmark slice surfaced a named failure mode, stale diagram, or thin
    component boundary, update Casebook, Atlas, Registry, and Compass in the
    same change.
-10. Run:
+11. Run:
    `PYTHONPATH=src pytest -q tests/unit/runtime/test_odylith_benchmark_graphs.py`
+12. Retain the reports, commands, comparisons, measured source/runtime identity
+    and a readback-verified hash inventory of all twelve generated publication
+    files and authored README. For a release, merge their reviewed metadata-only
+    PR only after every command requiring the original commit has finished.
+    Preserve the release tag and package; never claim the publication commit
+    was benchmarked. Complete planning closeout and archive/clear the session
+    afterward, as ordered in the release runbook. An unmerged PR does not
+    complete publication.
 
 ## Non-Negotiables
 - The README benchmark section must stay explicit about the current proof host.

@@ -12,6 +12,8 @@ from pathlib import Path
 
 from odylith.install.managed_runtime import managed_runtime_platform_by_slug, supported_managed_runtime_feature_packs
 
+from tests.unit.install.test_hosted_release_custody import hosted_transport, canonical_package
+
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
@@ -1382,45 +1384,15 @@ def test_extract_wheel_into_site_packages_preserves_extra_metadata(tmp_path: Pat
     assert (site_packages / attribution_path).read_text(encoding="utf-8") == "# attribution\n"
 
 
-def test_release_upload_artifacts_include_raw_runtime_bundles_and_attribution(tmp_path: Path) -> None:
-    module = _load_module()
-    wheel = tmp_path / "odylith-1.2.3-py3-none-any.whl"
-    install_sh = tmp_path / "install.sh"
-    release_manifest = tmp_path / "release-manifest.json"
-    provenance = tmp_path / "build-provenance.v1.json"
-    sbom = tmp_path / "odylith.sbom.spdx.json"
-    sha256sums = tmp_path / "SHA256SUMS"
-    attribution = tmp_path / "THIRD_PARTY_ATTRIBUTION.md"
-    runtime_bundle = tmp_path / "odylith-runtime-linux-x86_64.tar.gz"
-    signature_bundle = tmp_path / "odylith-runtime-linux-x86_64.tar.gz.sigstore.json"
-
-    artifacts = module._release_upload_artifacts(  # noqa: SLF001
-        wheel=wheel,
-        install_sh=install_sh,
-        release_manifest=release_manifest,
-        provenance=provenance,
-        sbom=sbom,
-        sha256sums=sha256sums,
-        third_party_attribution=attribution,
-        feature_packs=[],
-        runtime_bundles=[
-            (
-                next(
-                    item
-                    for item in module.supported_managed_runtime_platforms()
-                    if item.slug == "linux-x86_64"
-                ),
-                runtime_bundle,
-            )
-        ],
-        signature_bundles=[signature_bundle],
-    )
-
-    names = [path.name for path in artifacts]
+def test_release_upload_artifacts_include_raw_runtime_bundles_and_attribution(hosted_transport) -> None:
+    value = hosted_transport
+    names = [row['name'] for row in value['state']['assets'].values()]
     assert "THIRD_PARTY_ATTRIBUTION.md" in names
     assert "odylith-runtime-linux-x86_64.tar.gz" in names
     assert "SHA256SUMS" in names
     assert "odylith-runtime-linux-x86_64.tar.gz.sigstore.json" in names
+    assert set(names) == {path.name for path in value['dist'].iterdir()}
+    assert all(row['bytes'] == (value['dist'] / row['name']).read_bytes() for row in value['state']['assets'].values())
 
 
 def test_lane_show_wraps_lane_status() -> None:

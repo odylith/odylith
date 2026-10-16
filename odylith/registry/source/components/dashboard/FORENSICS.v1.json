@@ -39,12 +39,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 319,
-    "mapped_workstream_evidence_count": 221,
+    "explicit_event_count": 320,
+    "mapped_workstream_evidence_count": 222,
     "recent_path_match_count": 0,
     "spec_history_event_count": 38,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 319
+    "timeline_event_count": 320
   },
   "name": "Dashboard",
   "path_prefixes": [
@@ -60,6 +60,48 @@
   ],
   "spec_ref": "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 6,
+      "artifacts": [
+        "sha256:674e4dcf1279090b822ef14c228da2a688306fb096338d331c896c5034c7610b",
+        "sha256:f6f6644081399f8233ed84590606a8894096990f2fe98cebafc6ffdd34fd570e",
+        "sha256:0d8006c91a5f4a229a1c9734a745efc1544e418aa22e2ca40ea3b8d315a6ae11",
+        "sha256:e09e99afa961b3674632a6d6594cf6aa534cbc7f784af22e98200bb0a6d35fe1",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "tests/integration/runtime/test_surface_browser_ux_audit.py"
+      ],
+      "confidence": "high",
+      "event_index": 1683,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 6 verifiable artifact references.",
+      "ts_iso": "2026-10-16T02:30:31-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 4,
       "artifacts": [

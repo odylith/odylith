@@ -77,6 +77,10 @@ Odylith does not claim full protection against:
 - Manifest, wheel, provenance, SBOM, and managed-runtime assets must verify
   against the expected Sigstore signer identity and OIDC issuer.
 - Manifest SHA-256s and provenance digests are checked before activation.
+- Release qualification must use the final signed package. Publication must
+  recheck and preserve its complete asset set, including signatures, without
+  rebuilding or replacing it. Signing proves content identity; semantic and
+  independent review remain separate requirements.
 - Runtime archives are validated for path safety before extraction.
 - GitHub Actions in the release, release-candidate, and test workflows are
   pinned to immutable SHAs, run on a pinned runner image, and use a pinned

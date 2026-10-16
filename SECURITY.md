@@ -26,6 +26,10 @@ and the bundled security posture docs:
 
 - Consumer installs stay on the pinned, verified managed runtime. Detached
   `source-local` remains maintainer-only and release-ineligible.
+- Release qualification must use the final signed package. Publication must
+  preserve that complete package, including signatures, and reject changed or
+  substituted assets. Signing authenticates content; it does not itself prove
+  semantic quality or independent review.
 - Product Governed Harness decisions stay general purpose. The Turn Gate may
   classify, prove early exit, construct execution capsules, gate tools, and
   block unsupported completion claims, but those policies must be product

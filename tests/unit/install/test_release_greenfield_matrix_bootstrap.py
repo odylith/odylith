@@ -684,7 +684,9 @@ def test_release_candidate_is_pr_safe_non_publishing_current_checkout_lane() -> 
     assert 'benchmark compare --repo-root . --baseline last-shipped' in text
     assert 'scripts/release/greenfield_preconfirm_matrix.py \\' not in shared
     assert '"$odylith_repo_root/bin/greenfield-preconfirm-matrix" "$resolved_version" "$dist_dir"' in shared
-    assert "scripts/release/platform_domain_leakage_check.py" in shared
+    workflow = (REPO_ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
+    assert "scripts/release/platform_domain_leakage_check.py" in workflow
+    assert "scripts/release/hosted_release_custody.py" in shared
     assert 'sync-component-spec-requirements --repo-root "$odylith_repo_root" --check-only' in shared
     assert "Registry component forensics are stale for the checked-out source" in shared
     assert 'ensure_playwright_chromium' in shared

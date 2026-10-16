@@ -98,19 +98,30 @@ def _assert_shell_target_from_href(page, href: str) -> None:  # noqa: ANN001
         _wait_for_shell_tab(page, "atlas")
         atlas = page.frame_locator("#frame-atlas")
         atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
-        if workstream:
+        if workstream or diagram_id:
             page.wait_for_function(
-                """(workstream) => {
+                """({ workstream, diagram }) => {
                     try {
                       const url = new URL(window.location.href);
                       if (url.searchParams.get("tab") !== "atlas") return false;
+                      if (diagram) {
+                        const frame = document.querySelector("#frame-atlas");
+                        if (!["ready", "degraded"].includes(frame?.dataset.navigationOutcome)) return false;
+                        if (url.searchParams.get("diagram") !== diagram) return false;
+                        const doc = frame.contentDocument;
+                        if (doc?.querySelector("#diagramId")?.textContent.trim() !== diagram) return false;
+                        const filter = doc.querySelector("#workstreamFilter");
+                        if (!filter) return false;
+                        const renderedWorkstream = filter.value === "all" ? "" : filter.value;
+                        if ((url.searchParams.get("workstream") || "") !== renderedWorkstream) return false;
+                      }
                       if (!url.searchParams.has("workstream")) return true;
                       return url.searchParams.get("workstream") === workstream;
                     } catch (_error) {
                       return false;
                     }
                 }""",
-                arg=workstream,
+                arg={"workstream": workstream, "diagram": diagram_id},
                 timeout=15000,
             )
         if diagram_id:
@@ -128,6 +139,75 @@ def _assert_shell_target_from_href(page, href: str) -> None:  # noqa: ANN001
         return
     _wait_for_shell_tab(page, "casebook")
     page.frame_locator("#frame-casebook").locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
+
+
+@pytest.mark.parametrize("normalize_filter", [True, False], ids=["normalized", "compatible"])
+def test_atlas_action_oracle_waits_for_exact_diagram_handoff(browser_context, normalize_filter: bool) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    href = base_url + "/odylith/index.html?tab=atlas&workstream=B-999&diagram=D-998"
+    child_url = base_url + "/oracle-atlas.html"
+    parent_html = """<!doctype html><button id="tab-atlas" aria-selected="true">Atlas</button>
+      <iframe id="frame-atlas" data-navigation-outcome="ready" src="/oracle-atlas.html"></iframe>
+      <script>
+        window.probe = {events: ['previous-ready'], queued: false};
+        window.completeHandoff = () => {
+          if (probe.queued) return;
+          probe.queued = true;
+          queueMicrotask(() => {
+            const frame = document.querySelector('#frame-atlas');
+            frame.dataset.navigationOutcome = 'loading';
+            probe.events.push('loading');
+            frame.contentWindow.applyTarget();
+            queueMicrotask(() => {
+              const url = new URL(location.href);
+              if (__NORMALIZE__) url.searchParams.delete('workstream');
+              history.replaceState(null, '', url.pathname + url.search);
+              frame.dataset.navigationOutcome = __NORMALIZE__ ? 'degraded' : 'ready';
+              probe.events.push(frame.dataset.navigationOutcome);
+            });
+          });
+        };
+      </script>""".replace("__NORMALIZE__", json.dumps(normalize_filter))
+    child_html = """<!doctype html><h1>Atlas</h1>
+      <span id="diagramId">D-997</span><h2 id="diagramTitle">Previous diagram</h2>
+      <select id="workstreamFilter"><option value="all">All Workstreams</option>
+        <option value="B-999" selected>B-999</option></select>
+      <div class="diagram-item active"><button data-diagram="D-997">
+        <span class="diagram-name">Previous diagram</span></button></div>
+      <img id="viewerImage" alt="Diagram" width="120" height="80"
+        src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='80'%3E%3C/svg%3E">
+      <script>
+        const identity = document.querySelector('#diagramId');
+        const text = identity.firstChild;
+        const content = Object.getOwnPropertyDescriptor(Node.prototype, 'textContent');
+        let diagram = 'D-997';
+        // Force the old-document read before delivery of the new rendered snapshot.
+        const readIdentity = () => { parent.completeHandoff(); return diagram; };
+        Object.defineProperty(identity, 'textContent', {get: readIdentity});
+        Object.defineProperty(text, 'nodeValue', {get: readIdentity});
+        window.applyTarget = () => {
+          diagram = 'D-998';
+          content.set.call(identity, diagram);
+          document.querySelector('#diagramTitle').textContent = 'Oracle handoff diagram';
+          document.querySelector('button').dataset.diagram = diagram;
+          document.querySelector('.diagram-name').textContent = 'Oracle handoff diagram';
+          document.querySelector('#workstreamFilter').value = __NORMALIZE__ ? 'all' : 'B-999';
+        };
+      </script>""".replace("__NORMALIZE__", json.dumps(normalize_filter))
+    with _new_page(context) as (page, observation):
+        page.route(href, lambda route: route.fulfill(status=200, content_type="text/html", body=parent_html))
+        page.route(child_url, lambda route: route.fulfill(status=200, content_type="text/html", body=child_html))
+        response = page.goto(href, wait_until="domcontentloaded")
+        assert response is not None and response.ok
+        _assert_shell_target_from_href(page, href)
+        terminal = "degraded" if normalize_filter else "ready"
+        assert page.evaluate("probe.events") == ["previous-ready", "loading", terminal]
+        assert _extract_query_param(page.url, "diagram") == "D-998"
+        assert _extract_query_param(page.url, "workstream") == ("" if normalize_filter else "B-999")
+        assert page.frame_locator("#frame-atlas").locator("#workstreamFilter").input_value() == (
+            "all" if normalize_filter else "B-999"
+        )
+        _assert_clean_page(page, observation)
 
 
 def _casebook_agent_link_blocks(casebook) -> list[dict[str, object]]:  # noqa: ANN001

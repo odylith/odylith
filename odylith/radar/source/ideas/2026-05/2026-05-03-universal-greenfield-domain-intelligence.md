@@ -60,6 +60,33 @@ supersedes:
 
 superseded_by: 
 
+## Current release handoff gate (2026-10-16)
+
+The corrected source builds/signs one canonical draft, acquires and qualifies
+its complete signed package, then revalidates and promotes those exact hosted
+assets. It passes 787 direct-consumer tests and independent review. The separate
+Atlas readiness test correction passes its complete fifteen-test UX audit and
+independent review, preserving the original failed push and strict assertions.
+CB-347 retains the initial three release-review defects and their corrections.
+Finish governance and push the combined checkpoint, then require complete CI
+before canonical source, full benchmark and one actual signed package. Real
+hosted, installed, native/public and final qualification remain open. Existing
+quality floors remain fixed; local proof cannot substitute for those gates.
+
+## Release ordering correction (2026-10-16)
+
+CB-347 identifies a documentation-order cycle: committing benchmark charts
+changes the source measured by the required current-tree proof. Keep full
+frozen-source proof and the actual shipped-predecessor comparison before one
+package. Complete commit-bound qualification/hosted/consumer/GA commands, then
+require the distinct full pinned proof and canonical comparison. Publish its
+canonically generated snapshot and README in the reviewed metadata-only PR
+before planning closeout. Preserve each report's source, runtime and actual
+baseline; the publication commit receives no benchmark or package credit.
+Independent static review clears this sequence. Current CI, actual benchmark,
+package, native/public/final and shipped proof remain open. No feature, semantic
+stage, quality floor, corpus, model or identity guard changes.
+
 ## Fixed completion scope (2026-10-12)
 
 The corrected installed creation-to-EDIT diagnostic completes confirmation,

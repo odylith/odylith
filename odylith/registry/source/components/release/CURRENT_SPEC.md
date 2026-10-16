@@ -1,7 +1,68 @@
 # Release
-Last updated: 2026-10-15
+Last updated: 2026-10-16
 
-## Canonical package custody (2026-10-15)
+## Required hosted package custody (2026-10-16)
+
+CB-347 records the earlier hosted rebuild and sealed-signature replacement
+defect. The corrected source implements the independently reviewed
+version 3 contract, which requires one canonical build and real signing before the
+complete package is sealed. The existing workflow's candidate operation stages
+a draft; normal preparation acquires it using the actual successful
+`GREENFIELD_RELEASE_BUILD_RUN_ID`, verifies every production signature and
+complete source/asset census, and retains actual build and local install proof.
+Missing build identity yields a dependency outcome after session/tag reservation
+and before proof-directory allocation. No prepared success is implied.
+Canonical preparation retains full source validation before acquisition and
+sealing. The existing advisory discovery command retains its single local
+producer, without a release session or hosted run; it cannot qualify canonical
+release custody. Both paths share the existing source-validation responsibility.
+Explicit Bash pipeline failure handling preserves hosted build and smoke errors.
+
+The closed hosted-candidate binding retains commit/tag, release identity,
+build run/attempt and exact safe asset identities, sizes and hashes. Prepared
+receipt and public composition advance to version 3 together. Qualification
+continues to use the original public, terminal and independent-review owners on
+that exact complete signed package. Local signature bypass or placeholders
+cannot supply this trust proof.
+
+After local qualification, dispatch authorizes a closed exact-candidate
+promotion tuple. The remote workflow revalidates all hosted bytes, signatures,
+source and build association, promotes the same release identity and verifies
+complete readback. It cannot build, regenerate, re-sign, clobber or substitute
+assets. A draft is mutable; stored success flags do not replace revalidation.
+The remote authority is an authenticated canonical maintainer's local-review
+statement plus independent byte/trust verification, not reconstruction of
+unavailable protected evidence. Protected review bodies remain local.
+
+The frozen source passes all 787 direct-consumer tests with no failures, errors
+or skips; all twenty owned and eight unchanged watch pins remain exact.
+Independent review passes seven real-shell/caller controls and clears the
+corrected source, retaining the initial three P1 findings and their reproductions
+(review SHA-256 7bb128313379df5b618bf43eaacd5cf05b3709dd55a65467ebac9f1048667b56).
+This is not release qualification. Current CI, canonical source/benchmark/package
+binding, real hosted signing/acquisition/promotion and the original final gates
+remain pending. The earlier local v2 checkpoint below remains historical.
+
+## Benchmark and publication order (2026-10-16)
+
+Full proof and current-tree comparison against the actual shipped predecessor
+block package preparation. Keep the measured canonical commit, main, session,
+tag and one package fixed through qualification, dispatch and hosted/consumer/GA
+commands. Then require separate full pinned-dogfood proof and canonical
+comparison on that clean release commit. Preserve the actual selected baseline;
+after publication it may be a report for the new version rather than the earlier
+predecessor. Both comparisons retain their original meaning and custody.
+
+After these gates, the matching diagnostic and canonical publication writer
+produce the final pinned snapshot while source/runtime identity still matches.
+Retain and read back the twelve generated files and authored README, then merge
+their reviewed metadata-only PR. Its new commit does not change the measured
+release commit, tag or package and gains no benchmark or build credit. GA target
+success alone is provisional: planning closeout follows pinned proof and merged
+publication. Archive the completed session before clearing it. CB-347/B-142 own
+this order correction; quality, budget and source-identity guards are unchanged.
+
+## Historical local package custody checkpoint (2026-10-15)
 
 Canonical preflight separates preparation from completion. Preparation initializes
 the fixed session and builds and checks one distribution. The version 2 prepared
@@ -1292,6 +1353,15 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-10-16 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 6 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `sha256:674e4dcf1279090b822ef14c228da2a688306fb096338d331c896c5034c7610b`, `sha256:f6f6644081399f8233ed84590606a8894096990f2fe98cebafc6ffdd34fd570e`, `sha256:0d8006c91a5f4a229a1c9734a745efc1544e418aa22e2ca40ea3b8d315a6ae11`, `sha256:e09e99afa961b3674632a6d6594cf6aa534cbc7f784af22e98200bb0a6d35fe1`, plus 2 more
+- **2026-10-16 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `sha256:23c36a80ee1555af0e65d4d66fef901f12f07c22a4668eb0748cda5ae4c8e899`, `odylith/MAINTAINER_RELEASE_RUNBOOK.md`, `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`
+- **2026-10-16 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `sha256:218ed3d91728764ec05fee73b809e3e7b11275d235568071aa202ff208ca7ecc`, `odylith/MAINTAINER_RELEASE_RUNBOOK.md`, `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`
 - **2026-10-15 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `sha256:1f89d08a54d74152e22e7841f2c5f838aa1c042d2ece651da1e4579a71542118`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `tests/unit/install/test_greenfield_release_assembly.py`
@@ -1301,15 +1371,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-10-10 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, `src/odylith/runtime/project_intelligence/authored_fact_presenter.py`, `tests/fixtures/greenfield-release-corpus/source-annotations/public40-20261010/evidence-amendment.v1.json`
-- **2026-10-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 6 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/registry/source/components/dashboard/CURRENT_SPEC.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`, plus 2 more
-- **2026-10-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `tests/unit/install/test_local_release_smoke.py`
-- **2026-10-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_source_duty_binding.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

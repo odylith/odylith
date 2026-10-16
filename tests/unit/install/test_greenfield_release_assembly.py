@@ -38,8 +38,11 @@ def save(path, payload):
 
 
 @pytest.fixture
-def canonical_package(tmp_path):
+def canonical_package(tmp_path, monkeypatch):
     """Real Git/package bytes; no corpus, build, provider or custody mock."""
+    import hosted_release_custody as hosted
+    # External crypto is a synthetic boundary here; package/census/receipt readers are real.
+    monkeypatch.setattr(hosted, 'verify_sigstore_asset', lambda **kwargs: None)
     repo = tmp_path / "source"
     repo.mkdir()
     files = {"src/odylith/__init__.py": "__version__ = '0.1.15'\n",
@@ -85,7 +88,9 @@ def canonical_package(tmp_path):
     (dist / "odylith.sbom.spdx.json").write_text("{}\n")
     (dist / "THIRD_PARTY_ATTRIBUTION.md").write_text("Synthetic attribution\n")
     save(dist / "build-provenance.v1.json", {"version": "odylith-release-provenance.v1",
-        "source_tree": {"head": revision, "dirty": False}, "workflow": {"sha": revision},
+        "repo": "odylith/odylith", "actor": "freedom-research", "tag": "v0.1.15", "release_version": "0.1.15",
+        "source_tree": {"head": revision, "dirty": False},
+        "workflow": {"sha": revision, "path": ".github/workflows/release.yml", "ref": "refs/heads/main", "run_id": "123", "run_attempt": "1"},
         "artifacts": {"wheel": {"name": wheel_path.name, "sha256": sha256_file(wheel_path)},
                       "runtime_bundles": runtime_assets, "feature_packs": feature_assets}})
     save(dist / "release-manifest.json", {"assets": {
@@ -94,18 +99,33 @@ def canonical_package(tmp_path):
         sha256_file(path) + "  " + path.name + "\n" for path in sorted(dist.iterdir())))
     for path in list(dist.iterdir()):
         if path.name != "SHA256SUMS":
-            (dist / (path.name + ".sigstore.json")).write_text("{}\n")
+            (dist / (path.name + ".sigstore.json")).write_text('{"synthetic_signature_fixture": true}\n')
     (root / "package-logs").mkdir()
-    for phase in ("wheel", "assets", "smoke"):
-        (root / "package-logs" / (phase + ".log")).write_text("synthetic phase completed\n")
+    (root / "package-logs/local-smoke.log").write_text("synthetic local smoke completed\n")
+    with zipfile.ZipFile(root / 'package-logs/hosted-workflow.zip', 'w') as archive:
+        archive.writestr('release/1_Build.txt', 'synthetic actual workflow log fixture\n')
+    save(root / 'package-logs/hosted-steps.json', {'total_count': 1, 'jobs': [{'run_id': 123, 'run_attempt': 1,
+        'status': 'completed', 'conclusion': 'success', 'steps': [{'name': name, 'status': 'completed', 'conclusion': 'success'} for name in hosted.BUILD_STEPS.values()]}]})
+    next_id = 100
+    def asset(path):
+        nonlocal next_id
+        next_id += 1
+        return {"name": path.name, "id": next_id, "size": path.stat().st_size, "sha256": sha256_file(path)}
+    candidate = {"version": hosted.LOCAL_VERSION, "repository": "odylith/odylith", "tag": "v0.1.15",
+        "implementation_revision": revision, "source_tree": git("rev-parse", "HEAD^{tree}"),
+        "release_id": 99, "build_run_id": 123, "build_run_attempt": 1,
+        "distribution_assets": [asset(path) for path in sorted(dist.iterdir())],
+        "workflow_evidence": {"archive_sha256": sha256_file(root / 'package-logs/hosted-workflow.zip'),
+            "steps_sha256": sha256_file(root / 'package-logs/hosted-steps.json')}}
+    save(root / 'hosted-acquisition.v1.json', candidate)
     kwargs = dict(proof_root=root, session_path=session, repo_root=repo,
                   implementation_revision=revision, version="0.1.15")
     return dict(root=root, dist=dist, repo=repo, revision=revision, git=git, kwargs=kwargs)
 
 
 def _canonical_custody_refs(value):
-    package_ref = {"path": str(value["root"] / "prepared-package.v2.json"),
-                   "sha256": sha256_file(value["root"] / "prepared-package.v2.json")}
+    package_ref = {"path": str(value["root"] / "prepared-package.v3.json"),
+                   "sha256": sha256_file(value["root"] / "prepared-package.v3.json")}
     checkpoint = save(value["root"] / "checkpoint.json", {"status": "passed",
         "head": value["revision"], "tree": value["receipt"]["source_tree"], "current_source_pins_unchanged": True})
     executable = Path(sys.executable).resolve()
@@ -123,8 +143,8 @@ def _canonical_custody_refs(value):
 def test_normal_prepare_receipt_reaches_actual_composition_custody(canonical_package):
     value = canonical_package
     receipt = assembly.prepare_release_package(**value["kwargs"])
-    package_ref = {"path": str(value["root"] / "prepared-package.v2.json"),
-                   "sha256": sha256_file(value["root"] / "prepared-package.v2.json")}
+    package_ref = {"path": str(value["root"] / "prepared-package.v3.json"),
+                   "sha256": sha256_file(value["root"] / "prepared-package.v3.json")}
     value["receipt"] = receipt
     custody = _canonical_custody_refs(value)
     common = public._composition_release_custody(custody)
@@ -174,7 +194,7 @@ def test_prepared_package_refuses_changed_source_session_or_any_distribution_byt
     elif mutation == "head": value["git"]("commit", "--allow-empty", "-m", "Different head")
     elif mutation == "untracked": (value["repo"] / "untracked.py").write_text("unexpected")
     elif mutation == "session": save(value["session"], {"head_sha": REVISION, "version": "0.1.16"})
-    else: (value["root"] / "package-logs/smoke.log").write_text("changed")
+    else: (value["root"] / "package-logs/local-smoke.log").write_text("changed")
     if mutation in {"head", "untracked"}:
         with pytest.raises(RuntimeError, match="clean canonical"):
             assembly.prepare_release_package(**value["kwargs"])
@@ -258,7 +278,7 @@ def test_terminal_revalidation_refuses_changed_package_or_claim(prepared, monkey
         copy = prepared["root"] / "build-provenance.v1.json"
         save(copy, {**json.loads(copy.read_bytes()), "same_revision_other_package": True})
     else:
-        save(prepared["root"] / "prepared-package.v2.json", {**prepared["receipt"], "status": "passed"})
+        save(prepared["root"] / "prepared-package.v3.json", {**prepared["receipt"], "status": "passed"})
     expected = {"artifact": "checksum", "claim": "terminal attempt", "public_ref": "terminal attempt",
                 "receipt": "terminal claim", "provenance_copy": "terminal distribution"}[defect]
     with pytest.raises(RuntimeError, match=expected):
@@ -449,7 +469,7 @@ def test_dispatch_rebuilds_sidecar_with_same_original_composition(onboarding_evi
 def test_make_preflight_defaults_to_prepare_and_exposes_explicit_terminal_target():
     makefile = (REPO_ROOT / "Makefile").read_text()
     assert "release-preflight: release-preflight-prepare" in makefile
-    assert '@./bin/release-preflight --prepare "$(VERSION)"' in makefile
+    assert 'GREENFIELD_RELEASE_BUILD_RUN_ID="$(GREENFIELD_RELEASE_BUILD_RUN_ID)" ./bin/release-preflight --prepare "$(VERSION)"' in makefile
     assert '@./bin/release-preflight --complete "$(VERSION)"' in makefile
 
 
@@ -517,6 +537,8 @@ def test_preflight_prepare_cannot_dispatch_matrix_and_complete_cannot_rebuild(tm
 odylith_repo_root="$FIXTURE_ROOT"
 odylith_host_repo_root="$FIXTURE_ROOT"
 odylith_python="$FAKE_PYTHON"
+odylith_release_repo="odylith/odylith"
+odylith_release_ref="main"
 odylith_release_session_file="$FIXTURE_ROOT/session.json"
 die() { echo "$*" >&2; exit 1; }
 require_version() { :; }
@@ -529,10 +551,20 @@ run_release_proof_steps() { echo matrix >> "$EVENTS"; }
 '''
     (binary / "_odylith.sh").write_text(helper)
     environment = {**os.environ, "FIXTURE_ROOT": str(tmp_path), "FAKE_PYTHON": str(python),
-        "PROOF_ROOT": str(proof), "EVENTS": str(events)}
+        "PROOF_ROOT": str(proof), "EVENTS": str(events), "GREENFIELD_RELEASE_BUILD_RUN_ID": "123"}
     def run(phase):
         return subprocess.run(["bash", str(binary / "release-preflight"), "--canonical-exec", phase, "0.1.15"],
             env=environment, text=True, capture_output=True)
+    environment.pop("GREENFIELD_RELEASE_BUILD_RUN_ID")
+    result = run("--prepare")
+    assert result.returncode == 2
+    assert "gh workflow run release.yml --repo odylith/odylith --ref main -f operation=candidate -f tag=v0.1.15 -f expected_sha=" + REVISION in result.stderr
+    assert not proof.exists() and not events.exists()
+    environment["GREENFIELD_RELEASE_BUILD_RUN_ID"] = "123;exit 0"
+    result = run("--prepare")
+    assert result.returncode != 0 and "invalid hosted build run ID" in result.stderr
+    assert not proof.exists() and not events.exists()
+    environment["GREENFIELD_RELEASE_BUILD_RUN_ID"] = "123"
     result = run("--prepare")
     assert result.returncode == 0, result.stderr
     assert "release package prepared" in result.stdout and "remain pending" in result.stdout
@@ -569,12 +601,13 @@ def test_release_preflight_preserves_one_shot_dist_and_review_evidence() -> None
     assert '--package-phase claim "${package_args[@]}"' in text
     assert 'GREENFIELD_MATRIX_COMPOSED_PUBLIC_EVIDENCE' in text
     assert 'run_release_proof_steps() {' in shared
-    assert '"$odylith_python" "$odylith_host_repo_root/scripts/sync_version_truth.py" --repo-root . sync' in shared
-    assert '"$odylith_python" -m hatch build --target wheel "$dist_dir"' in shared
-    assert '--dist-dir "$dist_dir" --allow-local' in shared
-    assert 'ODYLITH_RELEASE_PREFLIGHT_DIST_DIR="$dist_dir"' in shared
-    assert 'glob.glob(os.path.join(dist_dir, "*.whl"))' in shared
-    assert 'scripts/release/local_release_smoke.py --version "$resolved_version" --dist-dir "$dist_dir"' in shared
+    assert 'hosted_release_custody.py" acquire' in shared
+    assert '--build-run-id "$GREENFIELD_RELEASE_BUILD_RUN_ID"' in shared
+    assert 'ODYLITH_RELEASE_REQUIRE_SIGSTORE_VERIFY=1' in shared
+    preparation = shared.split('prepare_release_proof_package() {')[1].split('run_release_proof_steps() {')[0]
+    assert 'hatch build' not in preparation
+    assert 'publish_release_assets.py' not in preparation
+    assert 'local_release_smoke.py' in preparation
 
 
 def test_release_candidate_benchmark_override_is_version_scoped() -> None:
@@ -713,7 +746,7 @@ def test_actual_prepare_refuses_inner_relation_defects_without_a_success_receipt
         _refresh_fixture_assets(value)
     with pytest.raises((RuntimeError, ValueError)):
         assembly.prepare_release_package(**value["kwargs"])
-    assert not (value["root"] / "prepared-package.v2.json").exists()
+    assert not (value["root"] / "prepared-package.v3.json").exists()
 
 
 @pytest.mark.parametrize("defect", ("bytes", "missing", "extra", "duplicate", "alias", "unsafe", "link"))
@@ -735,7 +768,7 @@ def test_verifier_rejects_archive_relations_even_when_outer_digest_is_rebound(pr
             archive.addfile(row, io.BytesIO(b""))
     receipt = value["receipt"]
     receipt["source_archive"]["sha256"] = sha256_file(path)
-    save(value["root"] / "prepared-package.v2.json", receipt)
+    save(value["root"] / "prepared-package.v3.json", receipt)
     before = _custody_bytes(value["root"], value["repo"])
     with pytest.raises((RuntimeError, ValueError)):
         assembly.verify_prepared_release_package(**value["kwargs"])
@@ -766,7 +799,7 @@ def test_current_receipt_and_export_refusals_are_read_only(prepared, tmp_path, d
     elif defect == "wrong_tree": receipt["source_tree"] = "b" * 40
     elif defect == "bindings_duplicate": receipt["wheel_source_bindings"].append(receipt["wheel_source_bindings"][0])
     elif defect == "extra_field": receipt["unexpected"] = True
-    receipt_path = value["root"] / "prepared-package.v2.json"
+    receipt_path = value["root"] / "prepared-package.v3.json"
     save(receipt_path, receipt)
     if defect == "duplicate_key":
         receipt_path.write_text(receipt_path.read_text().rstrip()[:-1] + ',"status":"prepared"}')
@@ -854,32 +887,32 @@ def test_real_custody_reader_refuses_rebound_invalid_current_records(prepared, t
     assert _custody_bytes(value["root"], value["repo"]) == before
 
 
-@pytest.mark.parametrize("failed_phase", ("wheel", "assets", "smoke", None))
+@pytest.mark.parametrize("failed_phase", ("validate", "acquire", "smoke", None))
 def test_actual_prepare_shell_never_reaches_seal_after_a_failed_phase(tmp_path, failed_phase):
     source = tmp_path / "source"
-    (source / "bin").mkdir(parents=True)
-    validate = source / "bin/validate"
-    validate.write_text("#!/bin/sh\nexit 0\n"); validate.chmod(0o755)
+    source.mkdir()
     events = tmp_path / "events"
     fake = tmp_path / "phase-python"
     fake.write_text(f"#!{sys.executable}\nimport os, pathlib, sys\n"
         "args = sys.argv[1:]\n"
-        "phase = 'wheel' if args[:3] == ['-m','hatch','build'] else 'assets' if any(x.endswith('publish_release_assets.py') for x in args) else 'smoke' if any(x.endswith('local_release_smoke.py') for x in args) else None\n"
+        "phase = 'acquire' if any(x.endswith('hosted_release_custody.py') for x in args) else 'smoke' if any(x.endswith('local_release_smoke.py') for x in args) else None\n"
         "if phase:\n"
         " with pathlib.Path(os.environ['EVENTS']).open('a') as stream: stream.write(phase + '\\n')\n"
-        " if os.environ.get('FAILED_PHASE') == phase: raise SystemExit(23)\n")
+        " if os.environ.get('FAILED_PHASE') == phase: raise SystemExit(23)\n"
+        " if phase == 'acquire':\n"
+        "  root = pathlib.Path(args[args.index('--proof-root') + 1]); (root / 'package-logs').mkdir(); (root / 'dist').mkdir()\n")
     fake.chmod(0o755)
-    fake_git = tmp_path / "git"
-    fake_git.write_text("#!/bin/sh\nexit 0\n"); fake_git.chmod(0o755)
     dist = tmp_path / "package/dist"
-    dist.mkdir(parents=True)
-    script = 'source "$1"\nrequire_current_component_forensics() { :; }\nodylith_cli() { :; }\nprepare_release_proof_package 0.1.15 "$2"\nprintf "seal\\n" >> "$EVENTS"\n'
+    dist.parent.mkdir()
+    script = ('source "$1"\nvalidate_release_proof_source() { printf "validate\\n" >> "$EVENTS"; '
+        '[[ "$FAILED_PHASE" != validate ]] || return 23; }\n'
+        'prepare_release_proof_package 0.1.15 "$2"\nprintf "seal\\n" >> "$EVENTS"\n')
     environment = {**os.environ, "ODYLITH_REPO_ROOT_OVERRIDE": str(source), "ODYLITH_HOST_REPO_ROOT": str(source),
-        "ODYLITH_PYTHON": str(fake), "EVENTS": str(events), "FAILED_PHASE": failed_phase or "", "PATH": str(tmp_path) + os.pathsep + os.environ["PATH"]}
+        "ODYLITH_PYTHON": str(fake), "EVENTS": str(events), "FAILED_PHASE": failed_phase or "", "GREENFIELD_RELEASE_BUILD_RUN_ID": "123"}
     result = subprocess.run(["bash", "-c", script, "test", str(REPO_ROOT / "bin/_odylith.sh"), str(dist)],
         env=environment, text=True, capture_output=True)
-    observed = events.read_text().splitlines()
-    expected = ["wheel", "assets", "smoke"]
+    observed = events.read_text().splitlines() if events.exists() else []
+    expected = ["validate", "acquire", "smoke"]
     if failed_phase:
         assert result.returncode != 0
         assert observed == expected[:expected.index(failed_phase) + 1]
@@ -887,6 +920,68 @@ def test_actual_prepare_shell_never_reaches_seal_after_a_failed_phase(tmp_path, 
     else:
         assert result.returncode == 0, result.stderr
         assert observed == expected + ["seal"]
+
+
+@pytest.mark.parametrize('mode', ['discovery', 'canonical'])
+@pytest.mark.parametrize('validation_fails', [False, True])
+def test_real_discovery_and_canonical_callers_keep_full_validation_ownership(canonical_package, mode, validation_fails):
+    value = canonical_package
+    repo = value['repo']
+    binary = repo / 'bin'
+    binary.mkdir()
+    for name in ('_odylith.sh', 'release-candidate'):
+        (binary / name).write_bytes((REPO_ROOT / 'bin' / name).read_bytes())
+        (binary / name).chmod(0o755)
+    (binary / 'validate').write_text('#!/bin/sh\nprintf "validate\\n" >> "$EVENTS"\n'
+        'if [ "$VALIDATION_FAILS" = 1 ]; then exit 23; fi\n')
+    (binary / 'validate').chmod(0o755)
+    (binary / 'greenfield-preconfirm-matrix').write_text('#!/bin/sh\nprintf "matrix\\n" >> "$EVENTS"\n')
+    (binary / 'greenfield-preconfirm-matrix').chmod(0o755)
+    value['git']('add', 'bin')
+    value['git']('commit', '-m', 'Synthetic direct release callers')
+    parent = value['root'].parent.parent.parent
+    events = parent / ('events-' + mode)
+    python = parent / 'fake-release-python'
+    python.write_text(f'#!{sys.executable}\n'
+        'import os, pathlib, shutil, sys\nargs = sys.argv[1:]\n'
+        'if args[0] == "-": os.execv(sys.executable, [sys.executable, *args])\n'
+        'if args[0] == "-m" and args[1] == "hatch":\n'
+        ' phase = "wheel"; target = pathlib.Path(args[-1]); shutil.copyfile(os.environ["MINI_WHEEL"], target / pathlib.Path(os.environ["MINI_WHEEL"]).name)\n'
+        'elif args[0] == "-m" and args[1] == "odylith.cli":\n'
+        ' phase = "forensics" if "governance" in args else "benchmark" if "benchmark" in args else "self-host"\n'
+        'elif args[0].endswith("sync_version_truth.py"): phase = "version"\n'
+        'elif args[0].endswith("publish_release_assets.py"): phase = "assets"; assert "--allow-local" in args and "--candidate" not in args\n'
+        'elif args[0].endswith("platform_domain_leakage_check.py"): phase = "leakage"\n'
+        'elif args[0].endswith("local_release_smoke.py"): phase = "smoke"\n'
+        'elif args[0].endswith("hosted_release_custody.py"):\n'
+        ' phase = "acquire"; root = pathlib.Path(args[args.index("--proof-root") + 1]); (root / "dist").mkdir(); (root / "package-logs").mkdir()\n'
+        'else: raise AssertionError(args)\n'
+        'with pathlib.Path(os.environ["EVENTS"]).open("a") as stream: stream.write(phase + "\\n")\n')
+    python.chmod(0o755)
+    environment = dict(os.environ, ODYLITH_REPO_ROOT_OVERRIDE=str(repo), ODYLITH_HOST_REPO_ROOT=str(repo),
+        ODYLITH_PYTHON=str(python), EVENTS=str(events), VALIDATION_FAILS='1' if validation_fails else '0',
+        MINI_WHEEL=str(next(value['dist'].glob('*.whl'))), GREENFIELD_MATRIX_RELEASE_INTENT='0', TMPDIR=str(parent))
+    environment.pop('GREENFIELD_RELEASE_BUILD_RUN_ID', None)
+    environment.pop('ODYLITH_RELEASE_SESSION_FILE', None)
+    if mode == 'discovery':
+        argv = ['bash', str(binary / 'release-candidate'), '0.1.15']
+    else:
+        root = parent / 'canonical-acquisition'
+        root.mkdir()
+        environment['GREENFIELD_RELEASE_BUILD_RUN_ID'] = '123'
+        environment['SYNTHETIC_HEAD'] = value['git']('rev-parse', 'HEAD')
+        script = 'source "$1"\nrelease_session_field() { printf "%s\\n" "$SYNTHETIC_HEAD"; }\nprepare_release_proof_package 0.1.15 "$2"\nprintf "seal\\n" >> "$EVENTS"\n'
+        argv = ['bash', '-c', script, 'test', str(binary / '_odylith.sh'), str(root / 'dist')]
+    result = subprocess.run(argv, env=environment, cwd=repo, capture_output=True, text=True)
+    observed = events.read_text().splitlines()
+    if validation_fails:
+        assert result.returncode == 23, result.stderr
+        assert observed == ['version', 'version', 'validate']
+    else:
+        assert result.returncode == 0, result.stderr
+        assert observed[:5] == ['version', 'version', 'validate', 'forensics', 'self-host']
+        assert observed[5:] == (['wheel', 'assets', 'leakage', 'smoke', 'matrix', 'benchmark']
+            if mode == 'discovery' else ['acquire', 'smoke', 'seal'])
 
 
 @pytest.mark.parametrize("name", ("../escape/", "/absolute/", "unowned/", "odylith//alias/"))
@@ -901,7 +996,7 @@ def test_prepare_refuses_unsafe_or_unowned_zip_directories(canonical_package, na
     _refresh_fixture_assets(value)
     with pytest.raises(RuntimeError, match="wheel"):
         assembly.prepare_release_package(**value["kwargs"])
-    assert not (value["root"] / "prepared-package.v2.json").exists()
+    assert not (value["root"] / "prepared-package.v3.json").exists()
 
 
 def test_linked_prepare_survives_build_cleanup_and_a_new_linked_caller(canonical_package, tmp_path):
@@ -947,7 +1042,7 @@ def test_actual_build_source_guards_prevent_a_successful_seal(canonical_package,
         monkeypatch.setattr(assembly, '_exclusive_write_json', changed)
     with pytest.raises(RuntimeError, match='clean canonical'):
         assembly.prepare_release_package(**value['kwargs'])
-    assert not (value['root'] / 'prepared-package.v2.json').exists()
+    assert not (value['root'] / 'prepared-package.v3.json').exists()
     if mutation in {'head', 'untracked'}:
         assert not (value['root'] / 'source.tar.gz').exists()
 
@@ -961,7 +1056,7 @@ def test_unrelated_same_H_clone_cannot_replace_sealed_common_store(prepared, tmp
     if change == 'caller': kwargs['repo_root'] = clone
     else:
         value['receipt']['source_repository'] = str(clone)
-        save(value['root'] / 'prepared-package.v2.json', value['receipt'])
+        save(value['root'] / 'prepared-package.v3.json', value['receipt'])
     before = _custody_bytes(value['root'], value['repo'], clone)
     with pytest.raises(RuntimeError, match='anchor/common store'):
         assembly.verify_prepared_release_package(**kwargs)
@@ -1005,7 +1100,7 @@ def test_legacy_receipt_is_preserved_and_never_reissued(canonical_package):
     before = legacy.read_bytes()
     with pytest.raises(FileExistsError): assembly.prepare_release_package(**value['kwargs'])
     assert legacy.read_bytes() == before
-    assert not (value['root'] / 'prepared-package.v2.json').exists()
+    assert not (value['root'] / 'prepared-package.v3.json').exists()
 
 
 def test_verifier_requires_caller_repository_root_not_a_subdirectory(prepared):

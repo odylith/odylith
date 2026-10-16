@@ -39,12 +39,17 @@ dist_dir="$preflight_root/dist"
 package_args=(--proof-root "$preflight_root" --session "$odylith_release_session_file"
   --repo-root "$odylith_repo_root" --implementation-revision "$expected_sha" --version "$resolved_version")
 if [[ "$phase" == "--prepare" ]]; then
+  if [[ -z "${GREENFIELD_RELEASE_BUILD_RUN_ID:-}" ]]; then
+    echo "signed hosted candidate required; no package was prepared" >&2
+    echo "gh workflow run release.yml --repo $odylith_release_repo --ref $odylith_release_ref -f operation=candidate -f tag=$tag -f expected_sha=$expected_sha" >&2
+    exit 2
+  fi
+  [[ "$GREENFIELD_RELEASE_BUILD_RUN_ID" =~ ^[1-9][0-9]*$ ]] || die "invalid hosted build run ID"
   if [[ -e "$preflight_root" || -L "$preflight_root" ]]; then
     die "release proof directory already exists; preserve it and do not rebuild: $preflight_root"
   fi
   mkdir -p "$(dirname "$preflight_root")"
   mkdir "$preflight_root"
-  mkdir "$dist_dir"
   prepare_release_proof_package "$resolved_version" "$dist_dir"
   "$odylith_python" "$odylith_repo_root/scripts/release/greenfield_release_qualification.py" \
     --package-phase prepare "${package_args[@]}"

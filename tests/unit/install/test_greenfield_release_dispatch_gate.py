@@ -4,10 +4,15 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import json
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 REVISION = "a" * 40
+PROMOTION = {"version": "odylith.hosted-release-promotion.v1", "implementation_revision": REVISION,
+    "tag": "v0.1.15", "release_id": 99, "build_run_id": 123, "build_run_attempt": 1,
+    "distribution_assets": [{"name": "install.sh", "id": 100, "size": 12, "sha256": "b" * 64}],
+    "prepared_package_sha256": "c" * 64, "qualification_sha256": "d" * 64}
 
 
 def _dispatch(tmp_path: Path, *, qualifier_exit: int, omit_sidecar: bool = False) -> tuple[subprocess.CompletedProcess[str], list[str], list[str]]:
@@ -43,7 +48,7 @@ require_file() { [[ -f "$1" ]] || { printf 'missing: %s\\n' "$1" >&2; exit 1; };
         (proof_root / name).write_text("{}\n", encoding="utf-8")
     fake_python = tmp_path / "fake-python"
     fake_python.write_text(
-        "#!/usr/bin/env bash\nprintf '%s\\n' \"$*\" >> \"$FAKE_PYTHON_LOG\"\nexit \"$FAKE_QUALIFICATION_EXIT\"\n",
+        "#!/usr/bin/env bash\nprintf '%s\\n' \"$*\" >> \"$FAKE_PYTHON_LOG\"\nprintf '%s\\n' \"$FAKE_PROMOTION\"\nexit \"$FAKE_QUALIFICATION_EXIT\"\n",
         encoding="utf-8",
     )
     fake_python.chmod(0o755)
@@ -65,6 +70,7 @@ require_file() { [[ -f "$1" ]] || { printf 'missing: %s\\n' "$1" >&2; exit 1; };
         "FAKE_PYTHON_LOG": str(python_log),
         "FAKE_QUALIFICATION_EXIT": str(qualifier_exit),
         "FAKE_GH_LOG": str(gh_log),
+        "FAKE_PROMOTION": json.dumps(PROMOTION, separators=(",", ":")),
         "GREENFIELD_ONBOARDING_REVIEW_SIDECAR": str(tmp_path / "untrusted-override.json"),
     }
     result = subprocess.run(
@@ -98,9 +104,11 @@ def test_release_dispatch_uses_canonical_proof_then_calls_gh_once(tmp_path: Path
 
     assert accepted.returncode == 0
     assert len(verifier_calls) == 1
+    assert "--promotion-binding" in verifier_calls[0]
     assert "/proof/" + REVISION + "/onboarding-review-sidecar.v2.json" in verifier_calls[0]
     assert len(gh_calls) == 1
     assert gh_calls[0] == (
         "workflow run release.yml --repo odylith/odylith --ref main "
-        "-f tag=v0.1.15 -f expected_sha=" + REVISION
+        "-f operation=promote -f tag=v0.1.15 -f expected_sha=" + REVISION + " -f promotion="
+        + json.dumps(PROMOTION, separators=(",", ":"))
     )

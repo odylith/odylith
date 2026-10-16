@@ -80,7 +80,7 @@ release-preflight: release-preflight-prepare
 
 .PHONY: release-preflight-prepare release-preflight-complete
 release-preflight-prepare:
-	@./bin/release-preflight --prepare "$(VERSION)"
+	@GREENFIELD_RELEASE_BUILD_RUN_ID="$(GREENFIELD_RELEASE_BUILD_RUN_ID)" ./bin/release-preflight --prepare "$(VERSION)"
 
 release-preflight-complete:
 	@./bin/release-preflight --complete "$(VERSION)"

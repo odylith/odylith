@@ -306,7 +306,19 @@ require_current_component_forensics() {
   fi
 }
 
-prepare_release_proof_package() {
+validate_release_proof_source() {
+  local resolved_version="$1"
+  local tag="v${resolved_version}"
+  "$odylith_python" "$odylith_host_repo_root/scripts/sync_version_truth.py" --repo-root . check
+  "$odylith_python" "$odylith_host_repo_root/scripts/sync_version_truth.py" --repo-root . release-check --expected-version "$resolved_version"
+  "$odylith_host_repo_root/bin/validate"
+  git diff --quiet --ignore-submodules HEAD -- || die "release proof validation mutated tracked files; commit them before release"
+  git diff --quiet --ignore-submodules --cached -- || die "release proof validation staged tracked files; commit them before release"
+  require_current_component_forensics
+  odylith_cli validate self-host-posture --repo-root . --mode release --expected-tag "$tag"
+}
+
+prepare_discovery_proof_package() {
   local resolved_version="$1"
   local dist_dir="$2"
   local tag="v${resolved_version}"
@@ -314,13 +326,7 @@ prepare_release_proof_package() {
   [[ -n "$dist_dir" ]] || die "release package preparation requires dist_dir"
   local package_logs="$(dirname "$dist_dir")/package-logs"
   mkdir -p "$package_logs"
-  "$odylith_python" "$odylith_host_repo_root/scripts/sync_version_truth.py" --repo-root . sync
-  "$odylith_python" "$odylith_host_repo_root/scripts/sync_version_truth.py" --repo-root . release-check --expected-version "$resolved_version"
-  "$odylith_host_repo_root/bin/validate"
-  git diff --quiet --ignore-submodules HEAD -- || die "release proof validation mutated tracked files; commit them before release"
-  git diff --quiet --ignore-submodules --cached -- || die "release proof validation staged tracked files; commit them before release"
-  require_current_component_forensics
-  odylith_cli validate self-host-posture --repo-root . --mode release --expected-tag "$tag"
+  validate_release_proof_source "$resolved_version"
   "$odylith_python" -m hatch build --target wheel "$dist_dir" 2>&1 | tee "$package_logs/wheel.log"
   "$odylith_python" scripts/release/publish_release_assets.py --repo odylith/odylith --tag "$tag" --dist-dir "$dist_dir" --allow-local 2>&1 | tee "$package_logs/assets.log"
   "$odylith_python" scripts/release/platform_domain_leakage_check.py --repo-root . --dist-dir "$dist_dir"
@@ -360,6 +366,19 @@ PY
   "$odylith_python" scripts/release/local_release_smoke.py --version "$resolved_version" --dist-dir "$dist_dir" 2>&1 | tee "$package_logs/smoke.log"
 }
 
+prepare_release_proof_package() {
+  local resolved_version="$1"
+  local dist_dir="$2"
+  require_version "$resolved_version"
+  [[ "${GREENFIELD_RELEASE_BUILD_RUN_ID:-}" =~ ^[1-9][0-9]*$ ]] || die "exact hosted candidate build run ID is required"
+  validate_release_proof_source "$resolved_version"
+  "$odylith_python" "$odylith_repo_root/scripts/release/hosted_release_custody.py" acquire \
+    --tag "v${resolved_version}" --revision "$(release_session_field head_sha)" \
+    --build-run-id "$GREENFIELD_RELEASE_BUILD_RUN_ID" --proof-root "$(dirname "$dist_dir")"
+  ODYLITH_RELEASE_REQUIRE_SIGSTORE_VERIFY=1 "$odylith_python" "$odylith_repo_root/scripts/release/local_release_smoke.py" \
+    --version "$resolved_version" --dist-dir "$dist_dir" 2>&1 | tee "$(dirname "$dist_dir")/package-logs/local-smoke.log"
+}
+
 run_release_proof_steps() {
   local resolved_version="$1"
   local dist_dir="$2"
@@ -368,7 +387,7 @@ run_release_proof_steps() {
   case "$matrix_gate_mode" in
     discovery)
       [[ "$matrix_release_intent" == "0" ]] || die "release candidate proof is non-disclosing; terminal Greenfield release proof belongs to release-preflight"
-      prepare_release_proof_package "$resolved_version" "$dist_dir"
+      prepare_discovery_proof_package "$resolved_version" "$dist_dir"
       ;;
     terminal)
       [[ "$matrix_release_intent" == "1" ]] || die "terminal proof requires GREENFIELD_MATRIX_RELEASE_INTENT=1"

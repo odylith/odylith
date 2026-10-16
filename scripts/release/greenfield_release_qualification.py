@@ -9,13 +9,11 @@ import hashlib
 import json
 import os
 import tarfile
-import tomllib
-import zipfile
 from pathlib import Path, PurePosixPath
 import subprocess
 from typing import Any
 
-from greenfield_distribution_provenance import verify_distribution_provenance
+from greenfield_distribution_provenance import verify_distribution_provenance, _package_bindings, _json_object
 from greenfield_final_holdout_guard import (
     FINAL_HOLDOUT_RUN_LEDGER_VERSION,
     read_final_holdout_run,
@@ -34,11 +32,11 @@ from greenfield_onboarding_review import (
 )
 
 
-PREPARED_PACKAGE_VERSION = "odylith.greenfield.prepared-release-package.v2"
+PREPARED_PACKAGE_VERSION = "odylith.greenfield.prepared-release-package.v3"
 RELEASE_CUSTODY_REFS = frozenset(("checkpoint", "prepared_package", "activation", "profile"))
 PREPARED_PACKAGE_FIELDS = frozenset(("version", "status", "implementation_revision", "source_tree", "source_repository",
     "release_version", "proof_root", "distribution_root", "session", "source_archive", "source_export", "artifact_sha256",
-    "distribution_provenance", "build_logs", "wheel_source_bindings", "checksum_observations", "manifest_observations"))
+    "distribution_provenance", "build_logs", "hosted_candidate", "wheel_source_bindings", "checksum_observations", "manifest_observations"))
 
 
 def _source_git(repo: Path, *args: str, input_data: bytes | None = None) -> bytes:
@@ -171,79 +169,6 @@ def _source_custody(root: Path, repo: Path, revision: str, *, extract: bool = Fa
     return tree, {"path": str(archive_path), "sha256": sha256_file(archive_path)}, {"path": str(export), "files": files}
 
 
-def _package_bindings(dist: Path, artifacts: Mapping[str, str], export: Mapping[str, Any], wheel_name: str, version: str) -> dict[str, Any]:
-    from odylith.install.managed_runtime import supported_managed_runtime_platforms, supported_managed_runtime_feature_packs
-    source = Path(export["path"])
-    config = tomllib.loads((source / "pyproject.toml").read_text())
-    if config.get("tool", {}).get("hatch", {}).get("build", {}).get("targets", {}).get("wheel", {}).get("packages") != ["src/odylith"]:
-        raise RuntimeError("release package root differs from the declared Hatch contract")
-    expected = {name.removeprefix("src/"): digest for name, digest in export["files"].items() if name.startswith("src/odylith/")}
-    if not expected:
-        raise RuntimeError("release package has no committed source owners")
-    metadata = "odylith-" + version + ".dist-info/"
-    metadata_names = {metadata + name for name in ("METADATA", "WHEEL", "RECORD", "entry_points.txt", "top_level.txt",
-        "licenses/LICENSE", "licenses/NOTICE", "licenses/THIRD_PARTY_ATTRIBUTION.md", "extra_metadata/THIRD_PARTY_ATTRIBUTION.md")}
-    try:
-        with zipfile.ZipFile(dist / wheel_name) as wheel:
-            names = wheel.namelist()
-            canonical_names = [name.rstrip("/") for name in names]
-            if (len(canonical_names) != len(set(canonical_names))
-                    or any(PurePosixPath(name).is_absolute() or ".." in PurePosixPath(name).parts
-                           or name not in {PurePosixPath(name).as_posix(), PurePosixPath(name).as_posix() + "/"} for name in names)
-                    or any((info.external_attr >> 16) & 0o170000 not in ({0, 0o040000} if info.is_dir() else {0, 0o100000}) for info in wheel.infolist())):
-                raise RuntimeError("wheel contains duplicate or noncanonical members")
-            regular = {info.filename for info in wheel.infolist() if not info.is_dir()}
-            directories = {info.filename.rstrip("/") for info in wheel.infolist() if info.is_dir()}
-            parents = {str(parent) for name in regular for parent in PurePosixPath(name).parents if str(parent) != "."}
-            if (not directories <= parents or {name for name in regular if name.startswith("odylith/")} != set(expected)
-                    or regular - set(expected) - metadata_names
-                    or not {metadata + name for name in ("METADATA", "WHEEL", "RECORD")} <= regular):
-                raise RuntimeError("wheel differs from complete package/metadata owner census")
-            for name, digest in expected.items():
-                with wheel.open(name) as stream:
-                    if hashlib.file_digest(stream, "sha256").hexdigest() != digest:
-                        raise RuntimeError("wheel source bytes differ from immutable Git source")
-    except zipfile.BadZipFile as error:
-        raise RuntimeError("release wheel is not a valid ZIP") from error
-    provenance = _json_object(dist / "build-provenance.v1.json", label="distribution provenance")["artifacts"]
-    platforms = supported_managed_runtime_platforms()
-    runtimes = {platform.slug: platform.asset_name for platform in platforms}
-    packs = {pack.pack_id: {platform.slug: pack.asset_name(platform) for platform in platforms}
-             for pack in supported_managed_runtime_feature_packs()}
-    if set(provenance) != {"wheel", "runtime_bundles", "feature_packs"} or set(provenance["runtime_bundles"]) != set(runtimes) or set(provenance["feature_packs"]) != set(packs):
-        raise RuntimeError("release provenance has incomplete publisher asset families")
-    declared = [(provenance["wheel"], wheel_name)]
-    declared.extend((provenance["runtime_bundles"][key], name) for key, name in runtimes.items())
-    for key, assets in packs.items():
-        if set(provenance["feature_packs"][key]) != set(assets):
-            raise RuntimeError("release provenance has incomplete feature-pack assets")
-        declared.extend((provenance["feature_packs"][key][platform], name) for platform, name in assets.items())
-    payload_names = {"install.sh", "release-manifest.json", "build-provenance.v1.json", "SHA256SUMS", "odylith.sbom.spdx.json", "THIRD_PARTY_ATTRIBUTION.md"}
-    for row, name in declared:
-        if (not isinstance(row, Mapping) or set(row) != {"name", "sha256"} or row["name"] != name
-                or name in payload_names or artifacts.get(name) != row["sha256"]):
-            raise RuntimeError("release provenance asset identity or bytes differ")
-        payload_names.add(name)
-    checksums = {}
-    for line in (dist / "SHA256SUMS").read_text().splitlines():
-        parts = line.split("  ")
-        if len(parts) != 2 or not is_sha256(parts[0]) or Path(parts[1]).name != parts[1] or parts[1] in checksums:
-            raise RuntimeError("release checksums contain malformed or repeated members")
-        checksums[parts[1]] = parts[0]
-    signatures = {name for name in artifacts if name.endswith(".sigstore.json")}
-    payload = set(artifacts) - signatures
-    if (payload != payload_names or set(checksums) != payload - {"SHA256SUMS"}
-            or signatures != {name + ".sigstore.json" for name in checksums}
-            or any(artifacts.get(name) != digest for name, digest in checksums.items())):
-        raise RuntimeError("release checksum/signature census or bytes differ")
-    manifest = _json_object(dist / "release-manifest.json", label="release manifest")
-    assets = manifest.get("assets")
-    if (not isinstance(assets, Mapping) or set(assets) != set(checksums) - {"release-manifest.json"}
-            or any(not isinstance(row, Mapping) or set(row) != {"sha256"} or row["sha256"] != artifacts[name] for name, row in assets.items())):
-        raise RuntimeError("release manifest census or bytes differ")
-    return {"wheel_source_bindings": [{"source_path": "src/" + name, "wheel_path": name, "sha256": digest}
-            for name, digest in sorted(expected.items())], "checksum_observations": checksums,
-            "manifest_observations": {name: row["sha256"] for name, row in assets.items()}}
 
 
 def _package_snapshot(*, proof_root: Path, session_path: Path, repo_root: Path,
@@ -268,16 +193,20 @@ def _package_snapshot(*, proof_root: Path, session_path: Path, repo_root: Path,
     if (not isinstance(wheel_name, str) or Path(wheel_name).name != wheel_name or not wheel_name.endswith(".whl")
             or not is_sha256(wheel.get("sha256")) or artifacts.get(wheel_name) != wheel["sha256"]):
         raise RuntimeError("prepared package wheel differs from distribution provenance")
+    from hosted_release_custody import verify_local_candidate
+    hosted = verify_local_candidate(proof_root=root, revision=revision, version=version, source=export)
+    if hosted["source_tree"] != tree:
+        raise RuntimeError("hosted candidate source tree differs from immutable H")
     logs = {}
-    for phase in ("wheel", "assets", "smoke"):
-        log = _safe_file_without_symlinks(root / "package-logs" / (phase + ".log"), label="package phase log")
+    for phase in ("hosted-workflow.zip", "hosted-steps.json", "local-smoke.log"):
+        log = _safe_file_without_symlinks(root / "package-logs" / phase, label="package phase log")
         logs[phase] = {"path": str(log), "sha256": sha256_file(log)}
     return {"version": PREPARED_PACKAGE_VERSION, "status": "prepared",
         "implementation_revision": revision, "source_tree": tree, "source_repository": str(repo),
         "release_version": version, "proof_root": str(root), "distribution_root": str(dist),
         "session": {"path": str(session_path.expanduser().resolve()), "head_sha": revision, "version": version},
         "source_archive": archive, "source_export": export, "artifact_sha256": artifacts,
-        "distribution_provenance": provenance, "build_logs": logs,
+        "distribution_provenance": provenance, "build_logs": logs, "hosted_candidate": hosted,
         **_package_bindings(dist, artifacts, export, wheel_name, version)}
 
 
@@ -292,14 +221,14 @@ def prepare_release_package(**kwargs: Any) -> dict[str, Any]:
             or session.get("head_sha") != kwargs["implementation_revision"] or session.get("version") != kwargs["version"]):
         raise RuntimeError("release capture requires its clean canonical source/session/root")
     _require_build_source(repo, kwargs["implementation_revision"])
-    if any((root / name).exists() or (root / name).is_symlink() for name in ("prepared-package.v1.json", "prepared-package.v2.json", "source.tar.gz", "source-export")):
+    if any((root / name).exists() or (root / name).is_symlink() for name in ("prepared-package.v1.json", "prepared-package.v2.json", "prepared-package.v3.json", "source.tar.gz", "source-export")):
         raise FileExistsError("release source capture or prepared receipt already exists")
     anchor = _primary_repository(repo)
     _source_git(repo, "archive", "--format=tar.gz", "--prefix=source-export/", "--output=" + str(root / "source.tar.gz"), kwargs["implementation_revision"])
     _source_custody(root, anchor, kwargs["implementation_revision"], extract=True)
     snapshot = _package_snapshot(**{**kwargs, "repo_root": anchor})
     _require_build_source(repo, kwargs["implementation_revision"])
-    receipt_path = root / "prepared-package.v2.json"
+    receipt_path = root / "prepared-package.v3.json"
     _exclusive_write_json(receipt_path, snapshot)
     try:
         _require_build_source(repo, kwargs["implementation_revision"])
@@ -311,7 +240,7 @@ def prepare_release_package(**kwargs: Any) -> dict[str, Any]:
 
 def verify_prepared_release_package(**kwargs: Any) -> dict[str, Any]:
     """Recompute sealed immutable-H custody; caller worktree state is not authority."""
-    path = _safe_file_without_symlinks(Path(kwargs["proof_root"]) / "prepared-package.v2.json", label="prepared package")
+    path = _safe_file_without_symlinks(Path(kwargs["proof_root"]) / "prepared-package.v3.json", label="prepared package")
     receipt = _json_object(path, label="prepared package")
     if (set(receipt) != PREPARED_PACKAGE_FIELDS or receipt.get("version") != PREPARED_PACKAGE_VERSION
             or receipt.get("status") != "prepared" or not isinstance(receipt.get("source_repository"), str)):
@@ -355,7 +284,7 @@ def _composition_release_custody(refs: Mapping[str, Any]) -> dict[str, Any]:
     checkpoint, activation, profile = (data[name] for name in ("checkpoint", "activation", "profile"))
     if (checkpoint.get("status") != "passed" or checkpoint.get("head") != head or checkpoint.get("tree") != tree
             or checkpoint.get("current_source_pins_unchanged") is not True
-            or paths["prepared_package"] != Path(snapshot["proof_root"]) / "prepared-package.v2.json"
+            or paths["prepared_package"] != Path(snapshot["proof_root"]) / "prepared-package.v3.json"
             or activation.get("status") != "activated_after_package_pass"
             or activation.get("implementation_revision") != head or profile.get("implementation_revision") != head
             or activation.get("prepared_package") != refs["prepared_package"]
@@ -391,7 +320,7 @@ def claim_terminal_release(*, composed_public_evidence_path: Path, **kwargs: Any
     if public["qualification"]["same_release_observations"].get("tree") != snapshot["source_tree"]:
         raise RuntimeError("composed public source tree differs from the prepared package")
     result = {"version": PREPARED_PACKAGE_VERSION + ".terminal-attempt.v1", "status": "claimed",
-        "prepared_package_sha256": sha256_file(root / "prepared-package.v2.json"),
+        "prepared_package_sha256": sha256_file(root / "prepared-package.v3.json"),
         "composed_public_evidence": public["evidence_ref"]}
     _exclusive_write_json(root / "terminal-attempt.v1.json", result)
     return result
@@ -429,7 +358,7 @@ def verify_terminal_release_claim(*, proof_root: Path, implementation_revision: 
                                   distribution_provenance_path: Path) -> None:
     """Recheck the consumed package identity without reserving or replaying a journey."""
     root = proof_root.expanduser().resolve()
-    receipt_path = _safe_file_without_symlinks(root / "prepared-package.v2.json", label="prepared package")
+    receipt_path = _safe_file_without_symlinks(root / "prepared-package.v3.json", label="prepared package")
     receipt = _json_object(receipt_path, label="prepared package")
     dist = distribution_root.expanduser().resolve()
     if (receipt.get("version") != PREPARED_PACKAGE_VERSION or receipt.get("status") != "prepared"
@@ -494,7 +423,7 @@ def authenticate_review_composition(*, base: Mapping[str, Any], base_path: Path,
     if evidence_path is not None and evidence_path.expanduser().resolve() != path:
         raise RuntimeError("review public composition differs from original terminal input")
     root = base_path.expanduser().resolve().parent
-    receipt = _json_object(_safe_file_without_symlinks(root / "prepared-package.v2.json", label="prepared package"), label="prepared package")
+    receipt = _json_object(_safe_file_without_symlinks(root / "prepared-package.v3.json", label="prepared package"), label="prepared package")
     public = authenticate_composed_release_evidence(path=path,
         implementation_revision=receipt["implementation_revision"], distribution_root=root / "dist")
     if public["qualification"]["same_release_observations"].get("tree") != receipt.get("source_tree"):
@@ -707,21 +636,6 @@ def _bound_file(
     return path, expected_sha256
 
 
-def _json_object(path: Path, *, label: str) -> dict[str, Any]:
-    def unique(pairs):
-        result = {}
-        for key, value in pairs:
-            if key in result:
-                raise RuntimeError(f"{label} contains duplicate JSON keys")
-            result[key] = value
-        return result
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=unique)
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
-        raise RuntimeError(f"{label} is unreadable") from exc
-    if not isinstance(payload, Mapping):
-        raise RuntimeError(f"{label} must be an object")
-    return dict(payload)
 
 
 def _mapping(value: Any) -> Mapping[str, Any]:
@@ -734,6 +648,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--final-holdout-ledger", type=Path)
     parser.add_argument("--distribution-provenance", type=Path)
     parser.add_argument("--implementation-revision", required=True)
+    parser.add_argument("--promotion-binding", action="store_true")
     parser.add_argument("--package-phase", choices=("prepare", "claim"))
     parser.add_argument("--proof-root", type=Path)
     parser.add_argument("--session", type=Path)
@@ -766,6 +681,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         distribution_provenance_path=args.distribution_provenance,
         implementation_revision=args.implementation_revision,
     )
+    if args.promotion_binding:
+        from hosted_release_custody import promotion_binding
+        root = args.distribution_provenance.parent
+        path = root / "prepared-package.v3.json"
+        receipt = _json_object(path, label="prepared package")
+        prepared = verify_prepared_release_package(proof_root=root, session_path=Path(receipt["session"]["path"]),
+            repo_root=Path(receipt["source_repository"]), implementation_revision=args.implementation_revision,
+            version=receipt["release_version"])
+        result = promotion_binding(prepared=prepared, prepared_sha256=sha256_file(path), qualification=result)
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0
 

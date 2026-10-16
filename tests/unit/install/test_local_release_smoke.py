@@ -53,6 +53,19 @@ def test_local_release_env_forces_deterministic_reasoning(monkeypatch) -> None: 
     assert env["ODYLITH_VERSION"] == "0.1.6"
 
 
+@pytest.mark.parametrize('skip', ['', '0', '1', 'true'])
+def test_signed_candidate_smoke_cannot_inherit_signature_bypass(monkeypatch, skip):
+    module = _module()
+    monkeypatch.setenv('ODYLITH_RELEASE_REQUIRE_SIGSTORE_VERIFY', '1')
+    monkeypatch.setenv('ODYLITH_RELEASE_SKIP_SIGSTORE_VERIFY', skip)
+    if skip not in ('', '0'):
+        with pytest.raises(RuntimeError, match='cannot bypass'):
+            module._local_release_env(base_url='http://127.0.0.1:8123', version='0.1.15')
+    else:
+        environment = module._local_release_env(base_url='http://127.0.0.1:8123', version='0.1.15')
+        assert 'ODYLITH_RELEASE_SKIP_SIGSTORE_VERIFY' not in environment
+
+
 def test_force_deterministic_reasoning_env_overrides_exported_provider() -> None:
     module = _module()
 

@@ -56,11 +56,9 @@ DEFAULT_REPO_SCHEMA_VERSION = 1
 MANIFEST_SCHEMA_VERSION = "odylith-release-manifest.v1"
 PROVENANCE_SCHEMA_VERSION = "odylith-release-provenance.v1"
 SBOM_LICENSE = "MIT"
-AUTHORITATIVE_RELEASE_REPO = "odylith/odylith"
-AUTHORITATIVE_RELEASE_ACTOR = "freedom-research"
-WORKFLOW_PATH = ".github/workflows/release.yml"
-WORKFLOW_REF = "refs/heads/main"
-OIDC_ISSUER = "https://token.actions.githubusercontent.com"
+from hosted_release_custody import (AUTHORITATIVE_RELEASE_REPO, AUTHORITATIVE_RELEASE_ACTOR,
+    WORKFLOW_PATH, WORKFLOW_REF, OIDC_ISSUER, _repo_signer_identity,
+    _identity, _require_canonical_release_context, _sign_asset, _write_placeholder_sigstore_bundle)
 RELEASE_DOWNLOAD_TIMEOUT_SECONDS = 90
 RELEASE_DOWNLOAD_CHUNK_SIZE = 1024 * 1024
 
@@ -102,15 +100,13 @@ def _local_git_sha(*, allow_local: bool) -> str:
 
 
 def _local_source_tree(*, allow_local: bool) -> dict[str, Any]:
-    if not allow_local:
-        return {}
     status_output = _git_output(("status", "--porcelain"))
     status_lines = tuple(
         line
         for line in status_output.splitlines()
         if line.strip()
     )
-    head = _local_git_sha(allow_local=True)
+    head = _git_output(("rev-parse", "HEAD"))
     branch = _git_output(("branch", "--show-current"))
     return {
         "branch": branch,
@@ -118,34 +114,6 @@ def _local_source_tree(*, allow_local: bool) -> dict[str, Any]:
         "dirty_file_count": len(status_lines),
         "head": head,
     }
-
-
-def _repo_signer_identity(repo: str) -> str:
-    return f"https://github.com/{repo}/{WORKFLOW_PATH}@{WORKFLOW_REF}"
-
-
-def _require_canonical_release_context(*, repo: str) -> None:
-    if repo != AUTHORITATIVE_RELEASE_REPO:
-        raise ValueError(
-            f"release assets may only be published for the canonical repo `{AUTHORITATIVE_RELEASE_REPO}`, got `{repo}`"
-        )
-    if os.getenv("GITHUB_ACTIONS", "").strip().lower() != "true":
-        raise ValueError("release asset publishing is only allowed from the canonical GitHub Actions workflow")
-    github_repo = str(os.getenv("GITHUB_REPOSITORY") or "").strip()
-    if github_repo != AUTHORITATIVE_RELEASE_REPO:
-        raise ValueError(
-            f"release asset publishing requires GITHUB_REPOSITORY={AUTHORITATIVE_RELEASE_REPO}, got `{github_repo or '<empty>'}`"
-        )
-    github_actor = str(os.getenv("GITHUB_ACTOR") or "").strip()
-    if github_actor != AUTHORITATIVE_RELEASE_ACTOR:
-        raise ValueError(
-            f"release asset publishing requires GITHUB_ACTOR={AUTHORITATIVE_RELEASE_ACTOR}, got `{github_actor or '<empty>'}`"
-        )
-    github_ref = str(os.getenv("GITHUB_REF") or "").strip()
-    if github_ref != WORKFLOW_REF:
-        raise ValueError(
-            f"release asset publishing requires GITHUB_REF={WORKFLOW_REF}, got `{github_ref or '<empty>'}`"
-        )
 
 
 def _target_python_site_packages(*, runtime_root: Path) -> Path:
@@ -1269,62 +1237,12 @@ def _write_sbom(*, output_path: Path, tag: str, repo: str, wheel: Path) -> None:
     output_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
-def _sign_asset(path: Path) -> Path:
-    bundle_path = path.with_name(f"{path.name}.sigstore.json")
-    _run(
-        [
-            sys.executable,
-            "-m",
-            "sigstore",
-            "sign",
-            "--bundle",
-            str(bundle_path),
-            "--overwrite",
-            str(path),
-        ]
-    )
-    return bundle_path
-
-
-def _write_placeholder_sigstore_bundle(path: Path) -> Path:
-    bundle_path = path.with_name(f"{path.name}.sigstore.json")
-    bundle_path.write_text("{}\n", encoding="utf-8")
-    return bundle_path
-
-
-def _release_upload_artifacts(
-    *,
-    wheel: Path,
-    install_sh: Path,
-    release_manifest: Path,
-    provenance: Path,
-    sbom: Path,
-    sha256sums: Path,
-    third_party_attribution: Path,
-    feature_packs: list[tuple[ManagedRuntimeFeaturePack, ManagedRuntimePlatform, Path]],
-    runtime_bundles: list[tuple[ManagedRuntimePlatform, Path]],
-    signature_bundles: list[Path],
-) -> list[Path]:
-    return [
-        wheel,
-        install_sh,
-        release_manifest,
-        provenance,
-        sbom,
-        sha256sums,
-        third_party_attribution,
-        *(path for _, _, path in feature_packs),
-        *(path for _, path in runtime_bundles),
-        *signature_bundles,
-    ]
-
-
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Publish Odylith GitHub release assets.")
     parser.add_argument("--repo", default="odylith/odylith", help="GitHub repo.")
     parser.add_argument("--tag", required=True, help="Release tag, for example v0.1.0.")
     parser.add_argument("--dist-dir", default="dist", help="Directory containing built wheels.")
-    parser.add_argument("--upload", action="store_true", help="Sign and upload the generated assets to GitHub Releases.")
+    parser.add_argument("--candidate", action="store_true", help="Build and sign once in the canonical candidate workflow; staging follows smoke.")
     parser.add_argument(
         "--allow-local",
         action="store_true",
@@ -1335,22 +1253,30 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    if args.upload:
+    if args.candidate:
+        if args.allow_local:
+            raise ValueError("canonical candidate cannot use local placeholder mode")
         _require_canonical_release_context(repo=str(args.repo))
+        _identity(args.tag, os.environ.get("GITHUB_SHA"))
     elif not args.allow_local:
-        raise ValueError("local asset generation requires --allow-local; canonical upload requires --upload")
+        raise ValueError("local asset generation requires --allow-local; canonical signing requires --candidate")
     dist_dir = Path(args.dist_dir).expanduser().resolve()
     odylith_wheels = sorted(dist_dir.glob("odylith-*.whl"))
     if len(odylith_wheels) != 1:
         raise ValueError("expected exactly one odylith wheel in dist/")
 
     wheel = odylith_wheels[0]
+    if args.candidate and list(dist_dir.iterdir()) != [wheel]:
+        raise RuntimeError("candidate assets require a fresh one-wheel destination")
     install_sh = dist_dir / "install.sh"
     sha256sums = dist_dir / "SHA256SUMS"
     release_manifest = dist_dir / "release-manifest.json"
     provenance = dist_dir / "build-provenance.v1.json"
     sbom = dist_dir / "odylith.sbom.spdx.json"
     third_party_attribution = dist_dir / "THIRD_PARTY_ATTRIBUTION.md"
+    source_before = _local_source_tree(allow_local=bool(args.allow_local))
+    if args.candidate and (source_before["dirty"] or source_before["head"] != os.environ.get("GITHUB_SHA")):
+        raise RuntimeError("canonical candidate build source is not clean H")
     feature_packs = _build_managed_runtime_feature_packs(dist_dir=dist_dir)
     runtime_bundles = _build_managed_runtime_bundles(wheel=wheel, dist_dir=dist_dir)
     third_party_attribution.write_text(
@@ -1412,38 +1338,14 @@ def main(argv: list[str] | None = None) -> int:
         *(path for _, _, path in feature_packs),
         *(path for _, path in runtime_bundles),
     ]
-    bundles = [_sign_asset(path) for path in assets_to_publish] if args.upload else [
-        _write_placeholder_sigstore_bundle(path) for path in assets_to_publish
-    ]
+    if args.candidate and _local_source_tree(allow_local=False) != source_before:
+        raise RuntimeError("candidate source changed before signing")
+    for path in assets_to_publish:
+        if args.candidate:
+            _sign_asset(path)
+        else:
+            _write_placeholder_sigstore_bundle(path)
 
-    if not args.upload:
-        return 0
-
-    upload_args = [
-        "gh",
-        "release",
-        "upload",
-        args.tag,
-        *(
-            str(path)
-            for path in _release_upload_artifacts(
-                wheel=wheel,
-                install_sh=install_sh,
-                release_manifest=release_manifest,
-                provenance=provenance,
-                sbom=sbom,
-                sha256sums=sha256sums,
-                third_party_attribution=third_party_attribution,
-                feature_packs=feature_packs,
-                runtime_bundles=runtime_bundles,
-                signature_bundles=bundles,
-            )
-        ),
-        "--repo",
-        args.repo,
-        "--clobber",
-    ]
-    _run(upload_args)
     return 0
 
 

@@ -30,9 +30,27 @@
   same workstream anchor. A missing B-110 anchor is treated as benchmark
   corpus drift because it can create false `requires_widening` advisory noise
   even when required-path recall and validation are green.
-Last updated: 2026-10-15
+Last updated: 2026-10-16
 
-## Current frozen candidate benchmark evidence
+## Release benchmark order (2026-10-16)
+
+Before package preparation, full proof on the frozen release commit and its
+current-tree comparison against the actual shipped predecessor remain blocking.
+After commit-bound release/hosted/consumer/GA commands finish, separate full
+pinned-dogfood proof and canonical comparison remain mandatory. Keep the actual
+selected baseline explicit; the post-publication comparison may select the new
+version and is not the earlier predecessor comparison.
+
+The final public snapshot uses that pinned report and a matching diagnostic,
+canonically rendered while the clean measured tree/runtime posture matches.
+Retain and read back all twelve generated files plus authored README before
+their reviewed metadata-only PR. Merge publication before release planning
+closeout; its new commit gains no benchmark or package credit. Source-local
+evidence, diagnostic advisories and prior failures remain separately visible.
+No quality, budget, corpus, model or identity rule changes. See the
+[release runbook](../../../../MAINTAINER_RELEASE_RUNBOOK.md).
+
+## Historical source433 benchmark evidence
 
 Full source-local report `ea0fbd0916ee9690` at `433f0e38a` completes 82 scenarios,
 328 warm/cold observations and 36 supplemental samples with provisional pass.

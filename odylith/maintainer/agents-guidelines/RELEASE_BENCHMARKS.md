@@ -11,9 +11,20 @@ rules live in [CODING_STANDARDS.md](./CODING_STANDARDS.md). This document owns
 the release-proof metrics, publication flow, and benchmark narrative.
 
 ## Core Rule
-- Every Odylith release candidate must refresh the Codex benchmark report,
-  regenerate the benchmark SVGs, and update the repo-root `README.md`
-  benchmark snapshot before `make release-preflight`.
+- Before `make release-preflight-prepare`, freeze the canonical release commit,
+  run the full Codex proof benchmark there, and pass the current-tree comparison
+  against the actual last shipped release. Retain the original reports and
+  selected baseline. Benchmark proof remains blocking.
+- Keep that commit, main, session, tag and package unchanged through qualification,
+  dispatch, hosted installation, consumer rehearsal and GA commands. Then run
+  the separate full pinned-dogfood proof and canonical comparison on the clean
+  release commit. GA command success alone does not complete release proof.
+- After those checks pass, publish the pinned report's snapshot, SVGs and README
+  in a reviewed metadata-only PR. Render with its matching diagnostic while the
+  measured tree and pinned posture still match; retain and read back every
+  publication file before committing. Merge publication before planning closeout
+  and session cleanup. Its new commit was neither benchmarked nor packaged;
+  the measured release commit, tag and package retain their original identity.
 - The published benchmark snapshot must come from
   `./.odylith/bin/odylith benchmark --repo-root . --profile proof`, not from
   the default quick lane, a warm-only rerun, or any other hand-picked report.
@@ -173,7 +184,23 @@ The benchmark itself must also stay representative:
    `PYTHONPATH=src python3 -m odylith.runtime.evaluation.odylith_benchmark_shard_merge --repo-root . <report-id>...`
    so `latest.v1.json` still comes from one complete proof artifact rather than
    a partial shard snapshot.
-2. Refresh the benchmark snapshot docs, tracked summary, and README-linked
+   Before package preparation, run
+   `./.odylith/bin/odylith benchmark compare --repo-root . --baseline last-shipped --json`
+   and retain the actual selected predecessor and comparison. Preserve every
+   hard quality gate and the live-proof budget guardrail. A diagnostic advisory
+   cannot replace or waive either gate.
+2. Follow the [release runbook](../../MAINTAINER_RELEASE_RUNBOOK.md) through
+   qualification, hosted publication, dogfood activation, consumer and GA commands
+   without advancing the release commit. On that clean commit with the shipped
+   pinned runtime active, run the mandatory full proof and canonical comparison
+   again. Keep these distinct from the earlier source-local reports. Retain the
+   actual selected comparison baseline: after publication, `last-shipped` may
+   select a report for the newly published version. That is not the earlier
+   predecessor comparison and must not be described as one.
+   Obtain the matching `--profile diagnostic` report in the same tree and
+   runtime posture. A failed proof keeps closeout blocked; diagnostic efficiency
+   findings remain visible under the existing advisory rules.
+3. Refresh the benchmark snapshot docs, tracked summary, and README-linked
    `proof/` and `diagnostic/` SVG assets from that same selected report set:
    `PYTHONPATH=src python -m odylith.runtime.evaluation.odylith_benchmark_publication --repo-root .`
    This refreshes:
@@ -186,7 +213,7 @@ The benchmark itself must also stay representative:
    The lower-level graph renderer remains available for explicit graph-only or
    single-report refreshes:
    `PYTHONPATH=src python -m odylith.runtime.evaluation.odylith_benchmark_graphs --repo-root . --out-dir docs/benchmarks --profiles proof diagnostic`
-3. Update the repo-root `README.md` benchmark snapshot from that same
+4. Update the repo-root `README.md` benchmark snapshot from that same
    `latest.v1.json` report.
    README numbers and wording must describe the conservative published view,
    not the easiest single-profile snapshot. The public table should center on
@@ -195,9 +222,15 @@ The benchmark itself must also stay representative:
    If the report came from detached `source-local`, say that explicitly and
    keep the first-release baseline warning visible until
    `docs/benchmarks/release-baselines.v1.json` records a shipped proof.
-4. Keep the README benchmark section explicitly Codex-labeled.
-5. Validate the graph contract with:
+5. Keep the README benchmark section explicitly Codex-labeled.
+6. Validate the graph contract with:
    `PYTHONPATH=src pytest -q tests/unit/runtime/test_odylith_benchmark_graphs.py`
+   Retain the original reports, command logs, comparison, measured commit and
+   runtime posture, plus a readback-verified hash inventory of the twelve
+   generated publication files and authored README. Review and merge only these
+   publication changes and their governed closeout records after every command
+   requiring the original release commit has finished. Never rewrite report
+   identity or rebuild the released package for the publication commit.
 
 ## Publication Contract
 - `latest.v1.json` is only release-safe when the selected Codex cache profiles
