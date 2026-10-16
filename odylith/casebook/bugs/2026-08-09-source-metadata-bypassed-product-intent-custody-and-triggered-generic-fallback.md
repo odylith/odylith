@@ -2495,3 +2495,30 @@ negative cases remain. The original failures and positive test body are retained
 No further semantic preview or feature is required before current CI and
 canonical H/B/D preparation. The exact-D populated migration assessment remains
 a later mandatory gate, with B-145 still in implementation.
+
+### Hosted CI fixture compatibility (2026-10-15)
+
+Hosted run 38846101931 retains 109 failures and 11,377 passes at the earlier
+source checkpoint. After the existing fixes, a focused reproduction identified
+eight remaining failures across four test owners. Caller corrections supply the
+required repository root, forward the project name, and attach the normal
+artifact bindings before compiling the standalone transaction fixture. The
+browser control now distinguishes accepted catalog order from physical source
+order without requiring obsolete event identifiers.
+
+The proof-assumption fixture previously changed source bytes after obtaining
+current custody. It now constructs exact source and citations before sealing an
+explicitly synthetic passive compatibility case. This is not fresh authoring or
+retained native history. Current source14 still refuses substituting an assumption
+for its verified proof; source-stated proof and all malformed and tamper controls
+remain covered. One obsolete browser expectation changes, with an explicit
+physical-order assertion added; the proof test's scope change is intentional.
+
+The complete thirteen-module regression passes 295 tests in 149.12 seconds;
+all 48 source, shared-fixture and test pins remain unchanged during execution.
+Independent review is clear, SHA-256
+8fe545fdf88e3f4d33a71c155b5c6ae440ea9fdbaf532538a08cf4a0e4922436.
+Evidence is retained under source65-brief-heading-correction/ci-maintenance-result.json
+in the external release evidence. No product source or admission rule changes.
+Original CI and source65 governance failures remain failed. Full current CI,
+canonical H/B/D and installed release qualification remain open.

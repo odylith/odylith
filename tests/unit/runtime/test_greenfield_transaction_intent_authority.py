@@ -30,6 +30,7 @@ from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
     atomic_fact_ledger_hash,
 )
 from odylith.runtime.domain_intelligence.greenfield_authored_proposal import build_authored_greenfield_proposal
+from odylith.runtime.domain_intelligence.project_intelligence_binding import attach_project_intelligence_bindings
 from tests.unit.runtime.greenfield_proposal_fixtures import compiled_greenfield_package_fixture
 from tests.unit.runtime.greenfield_authored_proposal_fixtures import canonical_model_authored_intent_fixture
 from tests.unit.runtime.greenfield_authored_proposal_fixtures import _canonical_model_authored_greenfield_fixture
@@ -126,6 +127,7 @@ def test_serialized_authored_transaction_contains_only_sealed_component_relation
         observed_source={"source_posture": "operator prompt evidence"},
         release_selector="0.0.1", confirmed_intent=intent,
     )
+    proposal = attach_project_intelligence_bindings(proposal)
     proposal[PRODUCT_INTENT_AUTHORITY_KEY] = authority
     package = compiled_greenfield_package_fixture(proposal, repo_root=tmp_path)
     quality_manifest = _approved_quality_manifest(authority, proposal)

@@ -1,4 +1,4 @@
-"""Sealed custody for a provisional proof choice that is not a source fact."""
+"""Passive proof-assumption custody and strict current source-proof authority."""
 
 from __future__ import annotations
 
@@ -19,6 +19,11 @@ from odylith.runtime.domain_intelligence.greenfield_host_candidate import (
 )
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
+    GreenfieldModelAuthoredIntent,
+    validate_greenfield_authoring_response,
+)
+from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import (
+    STANDARD_PROFILE_ID,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     build_product_intent_envelope,
@@ -27,6 +32,10 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 )
 from odylith.runtime.domain_intelligence.greenfield_source_lifecycle import (
     project_greenfield_source_lifecycle,
+)
+from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
+    project_greenfield_source_event_catalog,
+    validate_greenfield_source_duty_binding,
 )
 from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
     PRODUCT_INTENT_AUTHORITY_VERSION,
@@ -37,10 +46,16 @@ from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_author
     require_sealed_product_intent_authority_bytes,
 )
 from tests.unit.runtime.test_greenfield_product_intent_envelope import (
+    _INTENT,
+    _RELATIONS,
     _authored_inputs,
-    _authored_result,
 )
-from tests.unit.runtime.test_greenfield_host_candidate import _accepted_ledger
+from tests.unit.runtime.greenfield_model_authoring_fixtures import (
+    _unique_context_citation,
+    authored_response,
+    structural_design_fixture,
+    synthetic_source_duty_receipt_for_ledger,
+)
 
 
 _PROVISIONAL_PROOF = {
@@ -69,85 +84,117 @@ def _model_authoring() -> dict[str, Any]:
     }
 
 
-def _provisional_inputs() -> tuple[str, dict[str, Any], list[dict[str, Any]], list[dict[str, Any]]]:
-    original_source, authored, intent = _authored_inputs()
-    source_proof = str(intent["proof_boundary"])
-    assert len(source_proof.encode("utf-8")) == len(_NON_PROOF_SOURCE.encode("utf-8"))
-    source = original_source.replace(source_proof, _NON_PROOF_SOURCE, 1)
+def _passive_provisional_inputs() -> tuple[str, dict[str, Any], list[dict[str, Any]], list[dict[str, Any]]]:
+    """Construct synthetic ledger8/design6 compatibility custody, never fresh proof.
 
-    old_duty = intent[AUTHORED_SEMANTICS_KEY]["source_duty"]
-    ledger = copy.deepcopy(old_duty["ledger_receipt"]["ledger"])
-    for section in ("first_path_actions", "supporting_human_actions", "system_duties"):
-        for row in ledger[section]:
-            for field in ("event_ref", "actor_ref"):
-                citation = row[field]
-                if citation is None or citation["context"] in source:
-                    continue
-                old_context = citation["context"].encode("utf-8")
-                offset = original_source.encode("utf-8").find(old_context)
-                assert offset >= 0
-                citation["context"] = source.encode("utf-8")[
-                    offset:offset + len(old_context)
-                ].decode("utf-8")
-    ledger_receipt = _accepted_ledger(ledger, evidence_text=source)
-    binding = copy.deepcopy(old_duty["binding"])
-    binding["source_sha256"] = ledger_receipt["source_sha256"]
-    binding["ledger_sha256"] = ledger_receipt["ledger_sha256"]
-    _authored, candidate = _authored_result(original_source)
+    These are declared historical contract versions, not retained model output.
+    Source bytes are final before every citation, verifier fixture and seal.
+    """
+    intent = copy.deepcopy(_INTENT)
+    intent.update(
+        proof_boundary="", assumptions=[copy.deepcopy(_PROVISIONAL_PROOF)],
+        component_responsibilities=[],
+    )
+    relations = [{**row, "visible_result_quote": ""} for row in _RELATIONS]
+    source = ". ".join(
+        str(row)
+        for field, value in intent.items()
+        if field not in {"assumptions", "ambiguities"}
+        for row in (value if isinstance(value, list) else [value])
+        if str(row)
+    ) + ". " + _NON_PROOF_SOURCE + "."
+
+    def cite(quote: str) -> dict[str, str]:
+        return _unique_context_citation(source, {"quote": quote, "occurrence": 1})
+
+    ledger = {
+        "version": "odylith.greenfield.source-duty-ledger.v8",
+        "status": "inventory", "question": "", "evidence_controls": [],
+        "product_identity": {"basis": "explicit_name", "source_ref": cite(intent["title"])},
+        "first_path_actions": [
+            {
+                "id": f"A{order}", "source_refs": [],
+                "performer_role": "human_actor" if row["actor_kind"] == "human" else "internal_system",
+                "statement": row["event_quote"], "event_ref": cite(row["event_quote"]),
+                "actor_ref": cite(row["actor_fact_quote"]),
+                "role_refs": [cite(row["actor_fact_quote"]), cite(row["event_quote"])],
+                "action": row["action_verb_quote"], "target": row["target_quote"],
+                "observable_result": "The declared source action is observable.",
+            }
+            for order, row in enumerate(relations, start=1)
+        ],
+        **{field: [] for field in (
+            "supporting_human_actions", "system_duties", "state_fields",
+            "off_path_transitions", "conditional_guards", "boundaries", "proof_duties",
+        )},
+    }
+    ledger_receipt = synthetic_source_duty_receipt_for_ledger(ledger, evidence_text=source)
+    catalog = project_greenfield_source_event_catalog(ledger_receipt, evidence_text=source, _passive=True)
+    binding = {
+        "version": "odylith.greenfield.source-duty-binding.v3",
+        "source_sha256": ledger_receipt["source_sha256"],
+        "ledger_sha256": ledger_receipt["ledger_sha256"],
+        **catalog["action_bindings"],
+        **{field: [] for field in ("off_path_transitions", "conditional_guards", "boundaries", "proof_duties")},
+    }
+    response = authored_response(
+        intent, evidence_text=source, first_path_relations=_RELATIONS,
+        provisional_design=structural_design_fixture(
+            (1, 2, 3), version="odylith.greenfield.provisional-design.v6",
+        ),
+    )
+    response["result"]["terminal"] = None
+    response["result"]["components"] = []
+    binding_candidate = {
+        **response["result"],
+        "facts": {
+            field: [cite(ref["quote"]) for ref in response["result"]["facts"][field]]
+            for field in ("human_actors", "internal_systems", "external_systems")
+        },
+        "events": [{"actor_fact": row["actor_fact"]} for row in response["result"]["events"]],
+    }
+    binding = validate_greenfield_source_duty_binding(
+        binding, ledger_receipt=ledger_receipt, candidate_result=binding_candidate, evidence_text=source,
+    )
+    authored = validate_greenfield_authoring_response(
+        response, evidence_text=source, elapsed_seconds=1.0,
+        provider={"provider": "synthetic_passive_fixture"}, profile_id=STANDARD_PROFILE_ID,
+        effective_timeout_seconds=10.0, semantic_model_call_count=0,
+        allow_zero_semantic_calls=True, first_path_event_orders=(1, 2, 3),
+        accepted_source_duties=ledger_receipt, accepted_source_duty_binding=binding,
+    )
+    assert isinstance(authored, GreenfieldModelAuthoredIntent)
     source_duty = {
         "ledger_receipt": ledger_receipt,
         "binding": binding,
         "lifecycle": project_greenfield_source_lifecycle(
             ledger_receipt=ledger_receipt,
             binding=binding,
-            candidate_result=candidate["result"],
+            candidate_result=binding_candidate,
             evidence_text=source,
         ),
     }
-
-    provisional = copy.deepcopy(intent)
-    provisional["proof_boundary"] = ""
-    provisional["assumptions"] = [copy.deepcopy(_PROVISIONAL_PROOF)]
-    relations = [
-        {**row, "visible_result_quote": ""}
-        for row in authored.source_event_relations
-    ]
-    responsibilities = [
-        {**row, "decision_set_sha256": ledger_receipt["decision_set_sha256"]}
-        for row in authored.component_responsibility_relations
-    ]
-    provisional[AUTHORED_SEMANTICS_KEY] = authored_semantics_mapping(
-        relations,
-        responsibilities,
+    provisional = {**authored.intent, AUTHORED_SEMANTICS_KEY: authored_semantics_mapping(
+        authored.source_event_relations,
+        authored.component_responsibility_relations,
         first_path_context_relations=authored.first_path_context_relations,
         provisional_design=authored.provisional_design,
         source_duty=source_duty,
-    )
-    spans = [
-        copy.deepcopy(row)
-        for row in authored.source_spans
-        if row["section_key"] != "proof_boundary"
-    ]
-    for span in spans:
-        if span.get("entailment_relationship") == "verified_source_action":
-            span["decision_set_sha256"] = ledger_receipt["decision_set_sha256"]
-    claims = [
-        copy.deepcopy(row)
-        for row in authored.atomic_claims
-        if row["field"] != "proof_boundary"
-    ]
-    return source, provisional, spans, claims
+    )}
+    assert ledger_receipt["version"] == "odylith.greenfield.source-duty-ledger-receipt.v14"
+    assert provisional[AUTHORED_SEMANTICS_KEY]["version"] == "odylith.greenfield.authored-semantics.v19"
+    assert authored.provisional_design["version"] == "odylith.greenfield.provisional-design.v6"
+    return source, provisional, list(authored.source_spans), list(authored.atomic_claims)
 
 
 def _build_provisional_envelope() -> dict[str, Any]:
-    source, intent, spans, claims = _provisional_inputs()
+    source, intent, spans, claims = _passive_provisional_inputs()
     return build_product_intent_envelope(
         intent,
         source_text=source,
         source_path="evidence.txt",
-        source_format="operator_prompt",
+        source_format="in_memory_confirmed_intent",
         canonical_candidate_sha256="a" * 64,
-        model_authoring=_model_authoring(),
         authored_source_spans=spans,
         authored_atomic_claims=claims,
         authored_source_sha256=hashlib.sha256(source.encode("utf-8")).hexdigest(),
@@ -180,7 +227,8 @@ def _rebind_authority_hashes(authority: dict[str, Any]) -> None:
     )
 
 
-def test_provisional_proof_is_sealed_as_assumption_without_source_authority() -> None:
+def test_passive_provisional_proof_is_sealed_as_assumption_without_source_authority() -> None:
+    """Synthetic source8/design6 retains proof-assumption authority, not fresh admission."""
     envelope = _build_provisional_envelope()
 
     assert envelope["schema_version"] == PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION
@@ -242,8 +290,33 @@ def test_source_stated_proof_retains_strict_source_custody() -> None:
     assert "assumption" not in custody
 
 
+def test_current_source14_rejects_proof_assumption_substitution() -> None:
+    source, authored, intent = _authored_inputs()
+    proposed = copy.deepcopy(intent)
+    proposed["proof_boundary"] = ""
+    proposed["assumptions"] = [copy.deepcopy(_PROVISIONAL_PROOF)]
+    semantics = proposed[AUTHORED_SEMANTICS_KEY]
+    assert semantics["source_duty"]["ledger_receipt"]["ledger"]["version"] == (
+        "odylith.greenfield.source-duty-ledger.v14"
+    )
+    semantics["source_event_relations"] = [
+        {**row, "visible_result_quote": ""} for row in authored.source_event_relations
+    ]
+    before = copy.deepcopy(proposed)
+
+    with pytest.raises(ValueError, match="canonical complete run differs from its verified source plan"):
+        build_product_intent_envelope(
+            proposed, source_text=source, source_path="evidence.txt",
+            source_format="operator_prompt", canonical_candidate_sha256="a" * 64,
+            model_authoring=_model_authoring(), authored_source_spans=authored.source_spans,
+            authored_atomic_claims=authored.atomic_claims,
+            authored_source_sha256=authored.source_sha256,
+        )
+    assert proposed == before
+
+
 def test_provisional_proof_missing_competing_malformed_or_fact_overlap_fails() -> None:
-    source, intent, spans, claims = _provisional_inputs()
+    source, intent, spans, claims = _passive_provisional_inputs()
 
     missing = copy.deepcopy(intent)
     missing["assumptions"] = []
@@ -252,9 +325,8 @@ def test_provisional_proof_missing_competing_malformed_or_fact_overlap_fails() -
             missing,
             source_text=source,
             source_path="evidence.txt",
-            source_format="operator_prompt",
+            source_format="in_memory_confirmed_intent",
             canonical_candidate_sha256="a" * 64,
-            model_authoring=_model_authoring(),
             authored_source_spans=spans,
             authored_atomic_claims=claims,
             authored_source_sha256=hashlib.sha256(source.encode("utf-8")).hexdigest(),
@@ -271,9 +343,8 @@ def test_provisional_proof_missing_competing_malformed_or_fact_overlap_fails() -
                 invalid,
                 source_text=source,
                 source_path="evidence.txt",
-                source_format="operator_prompt",
+                source_format="in_memory_confirmed_intent",
                 canonical_candidate_sha256="a" * 64,
-                model_authoring=_model_authoring(),
                 authored_source_spans=spans,
                 authored_atomic_claims=claims,
                 authored_source_sha256=hashlib.sha256(source.encode("utf-8")).hexdigest(),

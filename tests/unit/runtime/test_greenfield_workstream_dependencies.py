@@ -37,8 +37,12 @@ def _proposal(
 
         def reordered_design(
             event_orders: Any, *, first_run_event_orders: Any = None,
+            project_name: str = "Structural test project",
         ) -> dict[str, Any]:
-            design = original_design(event_orders, first_run_event_orders=first_run_event_orders)
+            design = original_design(
+                event_orders, first_run_event_orders=first_run_event_orders,
+                project_name=project_name,
+            )
             design["workstreams"] = list(reversed(design["workstreams"]))
             return design
 

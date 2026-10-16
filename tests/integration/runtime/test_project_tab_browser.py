@@ -657,7 +657,7 @@ def test_project_handoff_scope_is_visible_and_copyable_at_both_widths(tmp_path: 
 
 
 def test_project_tab_result_first_source_renders_declared_order_at_both_widths(tmp_path: Path) -> None:
-    proposal = _result_first_proposal()
+    proposal = _result_first_proposal(root=tmp_path)
     payload = preview_project_dashboard_payload(
         root=tmp_path, proposal=proposal, accepted_project_preview=_accepted_preview(proposal=proposal, root=tmp_path),
         source_launch_context=_source_launch_context(proposal=proposal, root=tmp_path),
@@ -669,7 +669,11 @@ def test_project_tab_result_first_source_renders_declared_order_at_both_widths(t
     }
     proposed_orders = facts["provisional_design"]["first_run"]["event_orders"]
     declared_orders = list(relations)
-    assert proposed_orders == [2, 1]
+    physical_source_orders = [
+        row["order"] for row in sorted(relations.values(), key=lambda row: row["source_start_byte"])
+    ]
+    assert proposed_orders == [1, 2]
+    assert physical_source_orders == [2, 1]
     assert declared_orders == [1, 2]
     expected_actors = [relations[order]["actor_fact_quote"] for order in declared_orders]
     expected_events = [relations[order]["event_quote"] for order in declared_orders]
@@ -802,7 +806,7 @@ def test_project_tab_blank_and_degraded_states_wrap_at_desktop_and_mobile_widths
 
 
 def test_project_summary_and_structured_risks_are_readable_at_both_widths(tmp_path: Path) -> None:
-    proposal = _result_first_proposal()
+    proposal = _result_first_proposal(root=tmp_path)
     design = proposal["intent"]["authored_semantics"]["provisional_design"]
     summary = "A receipt workspace helps reviewers preserve evidence through a complete custody path."
     design["project_summary"] = summary
