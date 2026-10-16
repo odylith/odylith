@@ -29,7 +29,7 @@ _REFERENCE_ROLE = "reference_only"
 PUBLIC_SOURCE_MODE = "odylith.greenfield.public-source-predicate-evaluation.v1"
 PUBLIC_EDIT_SOURCE_MODE = "odylith.greenfield.public-source-predicate-evaluation.v2"
 PUBLIC_EDIT_SOURCE_SPLIT = "prospective-synthetic-high-edit"
-PUBLIC_COMPOSITION_MODE = "odylith.greenfield.public-coverage-composition.v1"
+PUBLIC_COMPOSITION_MODE = "odylith.greenfield.public-coverage-composition.v2"
 _ARTIFACT_REFS = {"predeclaration", "source_cases", "observed_bindings", "independent_audit", "output", "retained_manifest", "review_record"}
 
 def score_native_commit(

@@ -1,11 +1,14 @@
 """Release assembly contracts; all packages and grades here are synthetic fixtures."""
 
 from copy import deepcopy
+import io
 import json
+import tarfile
 import os
 from pathlib import Path
 import subprocess
 import sys
+import zipfile
 from types import SimpleNamespace
 
 import pytest
@@ -35,31 +38,117 @@ def save(path, payload):
 
 
 @pytest.fixture
-def prepared(tmp_path, monkeypatch):
+def canonical_package(tmp_path):
+    """Real Git/package bytes; no corpus, build, provider or custody mock."""
+    repo = tmp_path / "source"
+    repo.mkdir()
+    files = {"src/odylith/__init__.py": "__version__ = '0.1.15'\n",
+             "src/odylith/bundle/assets/example.txt": "sealed asset\n",
+             "scripts/release/example.py": "# frozen driver\n",
+             "pyproject.toml": '[tool.hatch.build.targets.wheel]\npackages = ["src/odylith"]\n'}
+    for name, text in files.items():
+        path = repo / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text)
+    def git(*args):
+        return subprocess.check_output(["git", "-C", str(repo), "-c", "core.hooksPath=/dev/null", "-c", "user.name=freedom-research", "-c", "user.email=maintainer@odylith.ai", *args], text=True).strip()
+    git("init", "--initial-branch=main")
+    git("add", ".")
+    git("-c", "user.name=freedom-research", "-c", "user.email=maintainer@odylith.ai", "commit", "-m", "Synthetic custody tree")
+    revision = git("rev-parse", "HEAD")
     session = tmp_path / "locks/release-session.json"
-    save(session, {"head_sha": REVISION, "version": "0.1.15"})
-    root = session.parent / "greenfield-release" / REVISION
+    save(session, {"head_sha": revision, "version": "0.1.15"})
+    root = session.parent / "greenfield-release" / revision
     dist = root / "dist"
     dist.mkdir(parents=True)
-    for name in ("install.sh", "fixture.whl", "SHA256SUMS"):
-        (dist / name).write_text(name + " synthetic bytes")
-    wheel = {"name": "fixture.whl", "sha256": sha256_file(dist / "fixture.whl")}
+    wheel_path = dist / "odylith-0.1.15-py3-none-any.whl"
+    with zipfile.ZipFile(wheel_path, "w") as wheel:
+        for name in files:
+            if name.startswith("src/odylith/"):
+                wheel.write(repo / name, name.removeprefix("src/"))
+        for name, text in {"METADATA": "Metadata-Version: 2.4\nName: odylith\nVersion: 0.1.15\n",
+                           "WHEEL": "Wheel-Version: 1.0\nRoot-Is-Purelib: true\nTag: py3-none-any\n",
+                           "RECORD": ""}.items():
+            wheel.writestr("odylith-0.1.15.dist-info/" + name, text)
+    (dist / "install.sh").write_text("#!/bin/sh\nexit 0\n")
+    from odylith.install.managed_runtime import supported_managed_runtime_platforms, supported_managed_runtime_feature_packs
+    runtime_assets, feature_assets = {}, {}
+    for platform in supported_managed_runtime_platforms():
+        (dist / platform.asset_name).write_bytes(b"synthetic runtime asset, never installed")
+        runtime_assets[platform.slug] = {"name": platform.asset_name, "sha256": sha256_file(dist / platform.asset_name)}
+    for pack in supported_managed_runtime_feature_packs():
+        feature_assets[pack.pack_id] = {}
+        for platform in supported_managed_runtime_platforms():
+            name = pack.asset_name(platform)
+            (dist / name).write_bytes(b"synthetic feature asset, never installed")
+            feature_assets[pack.pack_id][platform.slug] = {"name": name, "sha256": sha256_file(dist / name)}
+    (dist / "odylith.sbom.spdx.json").write_text("{}\n")
+    (dist / "THIRD_PARTY_ATTRIBUTION.md").write_text("Synthetic attribution\n")
     save(dist / "build-provenance.v1.json", {"version": "odylith-release-provenance.v1",
-        "source_tree": {"head": REVISION, "dirty": False}, "workflow": {"sha": REVISION},
-        "artifacts": {"wheel": wheel}})
-    save(dist / "release-manifest.json", {"assets": {"fixture.whl": {"sha256": wheel["sha256"]}}})
+        "source_tree": {"head": revision, "dirty": False}, "workflow": {"sha": revision},
+        "artifacts": {"wheel": {"name": wheel_path.name, "sha256": sha256_file(wheel_path)},
+                      "runtime_bundles": runtime_assets, "feature_packs": feature_assets}})
+    save(dist / "release-manifest.json", {"assets": {
+        path.name: {"sha256": sha256_file(path)} for path in dist.iterdir()}})
+    (dist / "SHA256SUMS").write_text("".join(
+        sha256_file(path) + "  " + path.name + "\n" for path in sorted(dist.iterdir())))
+    for path in list(dist.iterdir()):
+        if path.name != "SHA256SUMS":
+            (dist / (path.name + ".sigstore.json")).write_text("{}\n")
     (root / "package-logs").mkdir()
     for phase in ("wheel", "assets", "smoke"):
-        (root / "package-logs" / (phase + ".log")).write_text("synthetic successful phase\n")
-    # The actual shell canonical check owns main/origin/auth; isolate package byte custody here.
-    git_state = {"HEAD": REVISION, "HEAD^{tree}": "b" * 40, "--exclude-standard": ""}
-    monkeypatch.setattr(assembly.subprocess, "check_output", lambda argv, **_: git_state[argv[-1]])
-    monkeypatch.setattr(assembly.subprocess, "run", lambda *_, **__: None)
-    kwargs = dict(proof_root=root, session_path=session, repo_root=tmp_path,
-        implementation_revision=REVISION, version="0.1.15")
-    receipt = assembly.prepare_release_package(**kwargs)
-    (root / "build-provenance.v1.json").write_bytes((dist / "build-provenance.v1.json").read_bytes())
-    return dict(root=root, dist=dist, session=session, kwargs=kwargs, receipt=receipt, git_state=git_state)
+        (root / "package-logs" / (phase + ".log")).write_text("synthetic phase completed\n")
+    kwargs = dict(proof_root=root, session_path=session, repo_root=repo,
+                  implementation_revision=revision, version="0.1.15")
+    return dict(root=root, dist=dist, repo=repo, revision=revision, git=git, kwargs=kwargs)
+
+
+def _canonical_custody_refs(value):
+    package_ref = {"path": str(value["root"] / "prepared-package.v2.json"),
+                   "sha256": sha256_file(value["root"] / "prepared-package.v2.json")}
+    checkpoint = save(value["root"] / "checkpoint.json", {"status": "passed",
+        "head": value["revision"], "tree": value["receipt"]["source_tree"], "current_source_pins_unchanged": True})
+    executable = Path(sys.executable).resolve()
+    profile = {"implementation_revision": value["revision"], "trusted_executable": str(executable),
+               "executable_sha256": sha256_file(executable), "profile_id": "synthetic-no-model",
+               "model": "synthetic", "reasoning_effort": "none", "argv_shape_sha256": "a" * 64}
+    profile_ref = save(value["root"] / "profile.json", profile)
+    activation = save(value["root"] / "activation.json", {"status": "activated_after_package_pass",
+        "implementation_revision": value["revision"], "prepared_package": package_ref,
+        "source_export": str(value["root"] / "source-export"), "distribution": str(value["dist"]),
+        "profile": profile, "file_pins": {str(executable): sha256_file(executable)}})
+    return {"checkpoint": checkpoint, "prepared_package": package_ref, "activation": activation, "profile": profile_ref}
+
+
+def test_normal_prepare_receipt_reaches_actual_composition_custody(canonical_package):
+    value = canonical_package
+    receipt = assembly.prepare_release_package(**value["kwargs"])
+    package_ref = {"path": str(value["root"] / "prepared-package.v2.json"),
+                   "sha256": sha256_file(value["root"] / "prepared-package.v2.json")}
+    value["receipt"] = receipt
+    custody = _canonical_custody_refs(value)
+    common = public._composition_release_custody(custody)
+    assert common["commit"] == value["revision"]
+    assert common["prepared_package_sha256"] == package_ref["sha256"]
+    assert assembly.verify_prepared_release_package(**value["kwargs"]) == receipt
+    # Terminal package revalidation consumes the exact same normal receipt without
+    # calling or mocking the independent semantic qualifier.
+    evidence_ref = save(value["root"] / "public-refs.json", {"scope": "synthetic package-binding test only"})
+    save(value["root"] / "terminal-attempt.v1.json", {
+        "version": assembly.PREPARED_PACKAGE_VERSION + ".terminal-attempt.v1", "status": "claimed",
+        "prepared_package_sha256": package_ref["sha256"], "composed_public_evidence": evidence_ref})
+    (value["root"] / "build-provenance.v1.json").write_bytes((value["dist"] / "build-provenance.v1.json").read_bytes())
+    assembly.verify_terminal_release_claim(proof_root=value["root"], implementation_revision=value["revision"],
+        distribution_root=value["dist"], evidence_ref=evidence_ref,
+        distribution_provenance_path=value["root"] / "build-provenance.v1.json")
+
+
+@pytest.fixture
+def prepared(canonical_package):
+    value = canonical_package
+    receipt = assembly.prepare_release_package(**value["kwargs"])
+    (value["root"] / "build-provenance.v1.json").write_bytes((value["dist"] / "build-provenance.v1.json").read_bytes())
+    return {**value, "session": value["kwargs"]["session_path"], "receipt": receipt}
 
 
 def test_package_prepare_is_not_release_or_holdout_proof(prepared):
@@ -82,26 +171,30 @@ def test_prepared_package_refuses_changed_source_session_or_any_distribution_byt
         path = value["dist"] / "install.sh"
         target = value["root"] / "outside-install.sh"
         target.write_bytes(path.read_bytes()); path.unlink(); path.symlink_to(target)
-    elif mutation == "head": value["git_state"]["HEAD"] = "c" * 40
-    elif mutation == "untracked": value["git_state"]["--exclude-standard"] = "scripts/release/sitecustomize.py"
+    elif mutation == "head": value["git"]("commit", "--allow-empty", "-m", "Different head")
+    elif mutation == "untracked": (value["repo"] / "untracked.py").write_text("unexpected")
     elif mutation == "session": save(value["session"], {"head_sha": REVISION, "version": "0.1.16"})
     else: (value["root"] / "package-logs/smoke.log").write_text("changed")
-    with pytest.raises((RuntimeError, FileNotFoundError)):
-        assembly.verify_prepared_release_package(**value["kwargs"])
+    if mutation in {"head", "untracked"}:
+        with pytest.raises(RuntimeError, match="clean canonical"):
+            assembly.prepare_release_package(**value["kwargs"])
+        assert assembly.verify_prepared_release_package(**value["kwargs"]) == value["receipt"]
+    else:
+        with pytest.raises((RuntimeError, FileNotFoundError)):
+            assembly.verify_prepared_release_package(**value["kwargs"])
 
 
 def public_fixture(prepared, monkeypatch):
     dist, root = prepared["dist"], prepared["root"]
-    declaration = save(root / "composition-declaration.json", {"release_custody": {
-        "build_provenance": {"path": str(dist / "build-provenance.v1.json"),
-            "sha256": sha256_file(dist / "build-provenance.v1.json")}}})
+    custody = _canonical_custody_refs(prepared)
+    declaration = save(root / "composition-declaration.json", {"release_custody": custody})
     path = root / "composition-evidence.json"
     evidence = {"version": public.PUBLIC_COMPOSITION_MODE, "declaration": declaration,
         "primary": {}, "high": {}, "genuine_edit": {}}
     save(path, evidence)
     calls = []
     report = {"status": "passed", "passed": True, "evidence_refs": evidence,
-        "same_release_observations": {"commit": REVISION, "tree": "b" * 40, "distribution_root": str(dist)}}
+        "same_release_observations": public._composition_release_custody(custody)}
     def qualify(*, evidence):
         calls.append(deepcopy(evidence))
         return deepcopy(report)
@@ -119,7 +212,7 @@ def test_terminal_claim_reuses_exact_package_and_cannot_reenter(prepared, monkey
     assert not (prepared["root"] / "matrix-result.v1.json").exists()
     with pytest.raises(FileExistsError):
         assembly.claim_terminal_release(composed_public_evidence_path=path, **prepared["kwargs"])
-    assembly.verify_terminal_release_claim(proof_root=prepared["root"], implementation_revision=REVISION,
+    assembly.verify_terminal_release_claim(proof_root=prepared["root"], implementation_revision=prepared["revision"],
         distribution_root=prepared["dist"], evidence_ref=claim["composed_public_evidence"],
         distribution_provenance_path=prepared["root"] / "build-provenance.v1.json")
 
@@ -131,10 +224,10 @@ def test_bad_public_custody_never_claims_terminal_attempt(prepared, monkeypatch,
     elif defect == "revision": report["same_release_observations"]["commit"] = "b" * 40
     elif defect == "tree": report["same_release_observations"]["tree"] = "c" * 40
     elif defect == "distribution": report["same_release_observations"]["distribution_root"] += "-other"
-    elif defect == "untracked": prepared["git_state"]["--exclude-standard"] = "scripts/release/sitecustomize.py"
+    elif defect == "untracked": (prepared["repo"] / "untracked.py").write_text("unexpected")
     elif defect == "provenance":
         declaration = json.loads(Path(evidence["declaration"]["path"]).read_bytes())
-        declaration["release_custody"]["build_provenance"]["sha256"] = "0" * 64
+        declaration["release_custody"]["prepared_package"]["sha256"] = "0" * 64
         evidence["declaration"] = save(Path(evidence["declaration"]["path"]), declaration)
         save(path, evidence)
     else: (prepared["root"] / "final-holdout-ledger.v3.json").write_text("synthetic consumed marker")
@@ -146,7 +239,7 @@ def test_bad_public_custody_never_claims_terminal_attempt(prepared, monkeypatch,
 def test_public_authentication_uses_original_validator_and_original_refs(prepared, monkeypatch):
     path, evidence, calls, _ = public_fixture(prepared, monkeypatch)
     result = assembly.authenticate_composed_release_evidence(path=path,
-        implementation_revision=REVISION, distribution_root=prepared["dist"])
+        implementation_revision=prepared["revision"], distribution_root=prepared["dist"])
     assert calls == [evidence]
     assert result["evidence_ref"] == {"path": str(path), "sha256": sha256_file(path)}
     assert result["qualification"]["evidence_refs"] == evidence
@@ -165,9 +258,11 @@ def test_terminal_revalidation_refuses_changed_package_or_claim(prepared, monkey
         copy = prepared["root"] / "build-provenance.v1.json"
         save(copy, {**json.loads(copy.read_bytes()), "same_revision_other_package": True})
     else:
-        save(prepared["root"] / "prepared-package.v1.json", {**prepared["receipt"], "status": "passed"})
-    with pytest.raises(RuntimeError):
-        assembly.verify_terminal_release_claim(proof_root=prepared["root"], implementation_revision=REVISION,
+        save(prepared["root"] / "prepared-package.v2.json", {**prepared["receipt"], "status": "passed"})
+    expected = {"artifact": "checksum", "claim": "terminal attempt", "public_ref": "terminal attempt",
+                "receipt": "terminal claim", "provenance_copy": "terminal distribution"}[defect]
+    with pytest.raises(RuntimeError, match=expected):
+        assembly.verify_terminal_release_claim(proof_root=prepared["root"], implementation_revision=prepared["revision"],
             distribution_root=prepared["dist"], evidence_ref=claim["composed_public_evidence"],
             distribution_provenance_path=prepared["root"] / "build-provenance.v1.json")
 
@@ -193,7 +288,7 @@ def test_actual_terminal_entry_refuses_unbound_public_or_provenance_before_prote
         "--campaign-phase", "gate", "--evidence-output-dir", str(prepared["root"] / "retained-evidence"),
         "--sealed-release-input-root", str(prepared["root"] / "synthetic-sealed-inputs"),
         "--output-json", str(prepared["root"] / "matrix-result.v1.json"),
-        "--implementation-revision", REVISION, "--distribution-provenance-file", str(provenance),
+        "--implementation-revision", prepared["revision"], "--distribution-provenance-file", str(provenance),
         "--final-holdout-run-ledger", str(prepared["root"] / "final-holdout-ledger.v3.json")]
     if defect != "missing_public": argv.extend(["--composed-public-evidence", str(path)])
     monkeypatch.setattr(matrix, "_require_profile_argv_template", lambda _argv: ("synthetic-unused",))
@@ -526,3 +621,395 @@ def test_release_candidate_workflow_is_manual_to_avoid_duplicate_pr_full_proof()
     assert "make dogfood-activate" not in text
     assert "gh release create" not in text
     assert "publish_release_assets.py" not in text
+
+
+def _custody_bytes(*roots):
+    return {(str(root), path.relative_to(root).as_posix()):
+            ("link", os.readlink(path)) if path.is_symlink() else
+            ("file", sha256_file(path), path.stat().st_mode) if path.is_file() else ("directory",)
+            for root in roots for path in root.rglob("*")}
+
+
+def _refresh_fixture_assets(value):
+    dist = value["dist"]
+    payload = [path for path in sorted(dist.iterdir()) if not path.name.endswith(".sigstore.json")
+               and path.name not in {"SHA256SUMS", "release-manifest.json"}]
+    save(dist / "release-manifest.json", {"assets": {path.name: {"sha256": sha256_file(path)} for path in payload}})
+    payload.append(dist / "release-manifest.json")
+    (dist / "SHA256SUMS").write_text("".join(sha256_file(path) + "  " + path.name + "\n" for path in payload))
+    for path in payload:
+        (dist / (path.name + ".sigstore.json")).write_text("{}\n")
+
+
+@pytest.mark.parametrize("defect", ("wheel_bytes", "wheel_missing", "wheel_extra", "wheel_duplicate", "wheel_alias",
+    "wheel_link", "wheel_metadata_python", "invalid_zip", "checksum_missing", "checksum_extra", "checksum_duplicate",
+    "checksum_hash", "checksum_self", "manifest_missing", "manifest_extra", "manifest_duplicate", "manifest_hash",
+    "sidecar_missing", "sidecar_extra", "sidecar_nested", "sidecar_as_payload", "coordinated_extra", "provenance_family"))
+def test_actual_prepare_refuses_inner_relation_defects_without_a_success_receipt(canonical_package, defect):
+    value, dist = canonical_package, canonical_package["dist"]
+    wheel_path = next(dist.glob("*.whl"))
+    if defect.startswith("wheel_"):
+        with zipfile.ZipFile(wheel_path) as archive:
+            rows = [(row, archive.read(row)) for row in archive.infolist()]
+        name = "odylith/__init__.py"
+        with zipfile.ZipFile(wheel_path, "w") as archive:
+            for row, content in rows:
+                if row.filename == name and defect == "wheel_missing": continue
+                archive.writestr(row, b"changed source" if row.filename == name and defect == "wheel_bytes" else content)
+            if defect in {"wheel_extra", "wheel_duplicate", "wheel_metadata_python", "wheel_alias", "wheel_link"}:
+                added = name if defect == "wheel_duplicate" else "odylith/new.py" if defect in {"wheel_extra", "wheel_link"} else                     "odylith-0.1.15.dist-info/evil.py" if defect == "wheel_metadata_python" else "odylith/../odylith/alias.py"
+                info = zipfile.ZipInfo(added)
+                if defect == "wheel_link": info.external_attr = 0o120777 << 16
+                if defect == "wheel_duplicate":
+                    with pytest.warns(UserWarning, match="Duplicate name"):
+                        archive.writestr(info, b"unexpected")
+                else:
+                    archive.writestr(info, b"unexpected")
+        provenance = json.loads((dist / "build-provenance.v1.json").read_text())
+        provenance["artifacts"]["wheel"]["sha256"] = sha256_file(wheel_path)
+        save(dist / "build-provenance.v1.json", provenance)
+        _refresh_fixture_assets(value)
+    elif defect == "invalid_zip":
+        wheel_path.write_text("not a ZIP")
+        provenance = json.loads((dist / "build-provenance.v1.json").read_text())
+        provenance["artifacts"]["wheel"]["sha256"] = sha256_file(wheel_path)
+        save(dist / "build-provenance.v1.json", provenance)
+        _refresh_fixture_assets(value)
+    elif defect.startswith("checksum_"):
+        path = dist / "SHA256SUMS"
+        rows = path.read_text().splitlines()
+        if defect == "checksum_missing": rows.pop()
+        elif defect == "checksum_extra": rows.append("a" * 64 + "  unknown.txt")
+        elif defect == "checksum_duplicate": rows.append(rows[0])
+        elif defect == "checksum_hash": rows[0] = "a" * 64 + rows[0][64:]
+        else: rows.append(sha256_file(path) + "  SHA256SUMS")
+        path.write_text("\n".join(rows) + "\n")
+    elif defect.startswith("manifest_"):
+        path = dist / "release-manifest.json"
+        manifest = json.loads(path.read_text())
+        key = next(iter(manifest["assets"]))
+        if defect == "manifest_missing": manifest["assets"].pop(key)
+        elif defect == "manifest_extra": manifest["assets"]["unknown.txt"] = {"sha256": "a" * 64}
+        elif defect == "manifest_hash": manifest["assets"][key]["sha256"] = "a" * 64
+        if defect == "manifest_duplicate":
+            path.write_text('{"assets":{},"assets":' + json.dumps(manifest["assets"]) + '}')
+        else: save(path, manifest)
+        checksum_path = dist / "SHA256SUMS"
+        checksum_path.write_text("\n".join(sha256_file(path) + "  release-manifest.json" if row.endswith("  release-manifest.json") else row
+            for row in checksum_path.read_text().splitlines()) + "\n")
+    elif defect == "sidecar_missing": (dist / "install.sh.sigstore.json").unlink()
+    elif defect == "sidecar_extra": (dist / "unknown.sigstore.json").write_text("{}")
+    elif defect == "sidecar_nested": (dist / "install.sh.sigstore.json.sigstore.json").write_text("{}")
+    elif defect == "sidecar_as_payload":
+        with (dist / "SHA256SUMS").open("a") as stream:
+            stream.write(sha256_file(dist / "install.sh.sigstore.json") + "  install.sh.sigstore.json\n")
+    elif defect == "coordinated_extra":
+        (dist / "unknown.py").write_text("arbitrary new owner")
+        _refresh_fixture_assets(value)
+    else:
+        provenance = json.loads((dist / "build-provenance.v1.json").read_text())
+        provenance["artifacts"]["runtime_bundles"].pop(next(iter(provenance["artifacts"]["runtime_bundles"])))
+        save(dist / "build-provenance.v1.json", provenance)
+        _refresh_fixture_assets(value)
+    with pytest.raises((RuntimeError, ValueError)):
+        assembly.prepare_release_package(**value["kwargs"])
+    assert not (value["root"] / "prepared-package.v2.json").exists()
+
+
+@pytest.mark.parametrize("defect", ("bytes", "missing", "extra", "duplicate", "alias", "unsafe", "link"))
+def test_verifier_rejects_archive_relations_even_when_outer_digest_is_rebound(prepared, defect):
+    value, path = prepared, prepared["root"] / "source.tar.gz"
+    with tarfile.open(path, "r:gz") as archive:
+        rows = [(row, archive.extractfile(row).read() if row.isfile() else None) for row in archive]
+    target = "source-export/src/odylith/__init__.py"
+    with tarfile.open(path, "w:gz") as archive:
+        for row, content in rows:
+            if row.name == target and defect == "missing": continue
+            if row.name == target and defect == "bytes": content = b"changed immutable source"
+            if content is not None: row.size = len(content)
+            archive.addfile(row, io.BytesIO(content) if content is not None else None)
+        if defect not in {"bytes", "missing"}:
+            name = target if defect == "duplicate" else "source-export//alias.py" if defect == "alias" else                 "../escape" if defect == "unsafe" else "source-export/extra.py"
+            row = tarfile.TarInfo(name)
+            if defect == "link": row.type, row.linkname = tarfile.SYMTYPE, "src/odylith/__init__.py"
+            archive.addfile(row, io.BytesIO(b""))
+    receipt = value["receipt"]
+    receipt["source_archive"]["sha256"] = sha256_file(path)
+    save(value["root"] / "prepared-package.v2.json", receipt)
+    before = _custody_bytes(value["root"], value["repo"])
+    with pytest.raises((RuntimeError, ValueError)):
+        assembly.verify_prepared_release_package(**value["kwargs"])
+    assert _custody_bytes(value["root"], value["repo"]) == before
+
+
+@pytest.mark.parametrize("defect", ("export_bytes", "export_missing", "export_extra", "export_directory", "export_link",
+    "sidecar_bytes", "anchor_missing", "anchor_relative", "anchor_symlink", "anchor_alternate", "old_version", "extra_field", "duplicate_key", "wrong_tree", "bindings_duplicate"))
+def test_current_receipt_and_export_refusals_are_read_only(prepared, tmp_path, defect):
+    value, receipt = prepared, prepared["receipt"]
+    export = Path(receipt["source_export"]["path"])
+    path = export / "src/odylith/__init__.py"
+    if defect == "export_bytes": path.write_text("changed")
+    elif defect == "export_missing": path.unlink()
+    elif defect == "export_extra": (export / "extra.py").write_text("extra")
+    elif defect == "export_directory": (export / "extra-directory").mkdir()
+    elif defect == "export_link":
+        path.unlink(); path.symlink_to(value["repo"] / "src/odylith/__init__.py")
+    elif defect == "sidecar_bytes": (value["dist"] / "install.sh.sigstore.json").write_text("changed")
+    elif defect == "anchor_missing": receipt.pop("source_repository")
+    elif defect == "anchor_relative": receipt["source_repository"] = "."
+    elif defect == "anchor_symlink":
+        link = tmp_path / "repo-link"; link.symlink_to(value["repo"], target_is_directory=True)
+        receipt["source_repository"] = str(link)
+    elif defect == "anchor_alternate":
+        alternate = tmp_path / "other-source"; alternate.mkdir(); receipt["source_repository"] = str(alternate)
+    elif defect == "old_version": receipt["version"] = "odylith.greenfield.prepared-release-package.v1"
+    elif defect == "wrong_tree": receipt["source_tree"] = "b" * 40
+    elif defect == "bindings_duplicate": receipt["wheel_source_bindings"].append(receipt["wheel_source_bindings"][0])
+    elif defect == "extra_field": receipt["unexpected"] = True
+    receipt_path = value["root"] / "prepared-package.v2.json"
+    save(receipt_path, receipt)
+    if defect == "duplicate_key":
+        receipt_path.write_text(receipt_path.read_text().rstrip()[:-1] + ',"status":"prepared"}')
+    before = _custody_bytes(value["root"], value["repo"])
+    with pytest.raises(RuntimeError):
+        assembly.verify_prepared_release_package(**value["kwargs"])
+    assert _custody_bytes(value["root"], value["repo"]) == before
+
+
+def test_source_verification_ignores_git_redirects_and_replacements_and_never_recaptures(prepared, monkeypatch, tmp_path):
+    value = prepared
+    original = (value["repo"] / "src/odylith/__init__.py").read_text()
+    (value["repo"] / "src/odylith/__init__.py").write_text("replacement source")
+    value["git"]("add", "."); value["git"]("commit", "-m", "Replacement tree")
+    other = value["git"]("rev-parse", "HEAD")
+    value["git"]("reset", "--hard", value["revision"])
+    value["git"]("replace", value["revision"], other)
+    monkeypatch.setenv("GIT_DIR", str(tmp_path / "wrong-git"))
+    monkeypatch.setenv("GIT_WORK_TREE", str(tmp_path))
+    monkeypatch.setenv("GIT_OBJECT_DIRECTORY", str(tmp_path / "wrong-objects"))
+    monkeypatch.setenv("GIT_CONFIG_COUNT", "1")
+    monkeypatch.setenv("GIT_CONFIG_KEY_0", "core.worktree")
+    monkeypatch.setenv("GIT_CONFIG_VALUE_0", str(tmp_path))
+    calls = []
+    check_output = assembly.subprocess.check_output
+    def observe(argv, **kwargs):
+        calls.append(argv)
+        assert kwargs["env"]["GIT_NO_LAZY_FETCH"] == "1"
+        assert kwargs["env"]["GIT_OPTIONAL_LOCKS"] == "0"
+        return check_output(argv, **kwargs)
+    monkeypatch.setattr(assembly.subprocess, "check_output", observe)
+    from odylith.install import archive_safety
+    monkeypatch.setattr(archive_safety, "extract_validated_archive", lambda **_: pytest.fail("verifier extracted source"))
+    before = _custody_bytes(value["root"], value["repo"])
+    assert assembly.verify_prepared_release_package(**value["kwargs"]) == value["receipt"]
+    assert not any("archive" in call for call in calls)
+    assert len(calls) <= 20  # constant plumbing, not a process per file
+    assert (Path(value["receipt"]["source_export"]["path"]) / "src/odylith/__init__.py").read_text() == original
+    assert _custody_bytes(value["root"], value["repo"]) == before
+
+
+@pytest.mark.parametrize("defect", ("missing_anchor", "relative_anchor", "malformed_anchor", "symlink_anchor", "other_repository",
+    "missing_object", "wrong_tree", "old_version", "extra_receipt_field", "wrong_receipt_hash", "old_custody_refs",
+    "activation_receipt", "activation_head", "activation_export", "activation_dist", "activation_profile", "profile_head", "checkpoint_tree"))
+def test_real_custody_reader_refuses_rebound_invalid_current_records(prepared, tmp_path, defect):
+    value = prepared
+    refs = _canonical_custody_refs(value)
+    key = "prepared_package"
+    if defect == "missing_anchor": value["receipt"].pop("source_repository")
+    elif defect == "relative_anchor": value["receipt"]["source_repository"] = "."
+    elif defect == "malformed_anchor": value["receipt"]["source_repository"] = []
+    elif defect == "symlink_anchor":
+        link = tmp_path / "anchor-link"; link.symlink_to(value["repo"], target_is_directory=True)
+        value["receipt"]["source_repository"] = str(link)
+    elif defect == "other_repository":
+        other = tmp_path / "other-repository"; other.mkdir(); value["receipt"]["source_repository"] = str(other)
+    elif defect == "missing_object":
+        (value["repo"] / ".git/objects" / value["revision"][:2] / value["revision"][2:]).unlink()
+    elif defect == "wrong_tree": value["receipt"]["source_tree"] = "b" * 40
+    elif defect == "old_version": value["receipt"]["version"] = "odylith.greenfield.prepared-release-package.v1"
+    elif defect == "extra_receipt_field": value["receipt"]["unexpected"] = True
+    elif defect == "wrong_receipt_hash": refs["prepared_package"]["sha256"] = "a" * 64
+    elif defect == "old_custody_refs": refs["build"] = refs["prepared_package"]
+    elif defect.startswith("activation_"):
+        key = "activation"
+        data = json.loads(Path(refs[key]["path"]).read_text())
+        field = {"receipt": "prepared_package", "head": "implementation_revision", "export": "source_export",
+                 "dist": "distribution", "profile": "profile"}[defect.removeprefix("activation_")]
+        data[field] = {} if field in {"prepared_package", "profile"} else "wrong"
+        refs[key] = save(Path(refs[key]["path"]), data)
+    elif defect == "profile_head":
+        key = "profile"; data = json.loads(Path(refs[key]["path"]).read_text()); data["implementation_revision"] = "b" * 40
+        refs[key] = save(Path(refs[key]["path"]), data)
+    else:
+        key = "checkpoint"; data = json.loads(Path(refs[key]["path"]).read_text()); data["tree"] = "b" * 40
+        refs[key] = save(Path(refs[key]["path"]), data)
+    if defect in {"missing_anchor", "relative_anchor", "malformed_anchor", "symlink_anchor", "other_repository", "wrong_tree", "old_version", "extra_receipt_field"}:
+        refs[key] = save(Path(refs[key]["path"]), value["receipt"])
+        activation = json.loads(Path(refs["activation"]["path"]).read_text())
+        activation["prepared_package"] = refs[key]
+        refs["activation"] = save(Path(refs["activation"]["path"]), activation)
+    before = _custody_bytes(value["root"], value["repo"])
+    with pytest.raises((RuntimeError, ValueError)):
+        public._composition_release_custody(refs)
+    assert _custody_bytes(value["root"], value["repo"]) == before
+
+
+@pytest.mark.parametrize("failed_phase", ("wheel", "assets", "smoke", None))
+def test_actual_prepare_shell_never_reaches_seal_after_a_failed_phase(tmp_path, failed_phase):
+    source = tmp_path / "source"
+    (source / "bin").mkdir(parents=True)
+    validate = source / "bin/validate"
+    validate.write_text("#!/bin/sh\nexit 0\n"); validate.chmod(0o755)
+    events = tmp_path / "events"
+    fake = tmp_path / "phase-python"
+    fake.write_text(f"#!{sys.executable}\nimport os, pathlib, sys\n"
+        "args = sys.argv[1:]\n"
+        "phase = 'wheel' if args[:3] == ['-m','hatch','build'] else 'assets' if any(x.endswith('publish_release_assets.py') for x in args) else 'smoke' if any(x.endswith('local_release_smoke.py') for x in args) else None\n"
+        "if phase:\n"
+        " with pathlib.Path(os.environ['EVENTS']).open('a') as stream: stream.write(phase + '\\n')\n"
+        " if os.environ.get('FAILED_PHASE') == phase: raise SystemExit(23)\n")
+    fake.chmod(0o755)
+    fake_git = tmp_path / "git"
+    fake_git.write_text("#!/bin/sh\nexit 0\n"); fake_git.chmod(0o755)
+    dist = tmp_path / "package/dist"
+    dist.mkdir(parents=True)
+    script = 'source "$1"\nrequire_current_component_forensics() { :; }\nodylith_cli() { :; }\nprepare_release_proof_package 0.1.15 "$2"\nprintf "seal\\n" >> "$EVENTS"\n'
+    environment = {**os.environ, "ODYLITH_REPO_ROOT_OVERRIDE": str(source), "ODYLITH_HOST_REPO_ROOT": str(source),
+        "ODYLITH_PYTHON": str(fake), "EVENTS": str(events), "FAILED_PHASE": failed_phase or "", "PATH": str(tmp_path) + os.pathsep + os.environ["PATH"]}
+    result = subprocess.run(["bash", "-c", script, "test", str(REPO_ROOT / "bin/_odylith.sh"), str(dist)],
+        env=environment, text=True, capture_output=True)
+    observed = events.read_text().splitlines()
+    expected = ["wheel", "assets", "smoke"]
+    if failed_phase:
+        assert result.returncode != 0
+        assert observed == expected[:expected.index(failed_phase) + 1]
+        assert "seal" not in observed
+    else:
+        assert result.returncode == 0, result.stderr
+        assert observed == expected + ["seal"]
+
+
+@pytest.mark.parametrize("name", ("../escape/", "/absolute/", "unowned/", "odylith//alias/"))
+def test_prepare_refuses_unsafe_or_unowned_zip_directories(canonical_package, name):
+    value, dist = canonical_package, canonical_package["dist"]
+    wheel_path = next(dist.glob("*.whl"))
+    with zipfile.ZipFile(wheel_path, "a") as wheel:
+        wheel.writestr(name, b"")
+    provenance = json.loads((dist / "build-provenance.v1.json").read_text())
+    provenance["artifacts"]["wheel"]["sha256"] = sha256_file(wheel_path)
+    save(dist / "build-provenance.v1.json", provenance)
+    _refresh_fixture_assets(value)
+    with pytest.raises(RuntimeError, match="wheel"):
+        assembly.prepare_release_package(**value["kwargs"])
+    assert not (value["root"] / "prepared-package.v2.json").exists()
+
+
+def test_linked_prepare_survives_build_cleanup_and_a_new_linked_caller(canonical_package, tmp_path):
+    value = canonical_package
+    build = tmp_path / 'build-checkout'
+    value['git']('worktree', 'add', '--detach', str(build), value['revision'])
+    kwargs = {**value['kwargs'], 'repo_root': build}
+    receipt = assembly.prepare_release_package(**kwargs)
+    value['git']('worktree', 'remove', str(build))
+    next_build = tmp_path / 'next-checkout'
+    value['git']('worktree', 'add', '--detach', str(next_build), value['revision'])
+    assert assembly.verify_prepared_release_package(**{**kwargs, 'repo_root': next_build}) == receipt
+    assert receipt['source_repository'] == str(value['repo'])
+
+
+def test_immutable_H_verification_ignores_unrelated_primary_branch_and_working_changes(prepared):
+    value = prepared
+    value['git']('commit', '--allow-empty', '-m', 'Later unrelated branch state')
+    (value['repo'] / 'unrelated.txt').write_text('Uncommitted user change')
+    before = _custody_bytes(value['root'], value['repo'])
+    assert assembly.verify_prepared_release_package(**value['kwargs']) == value['receipt']
+    assert _custody_bytes(value['root'], value['repo']) == before
+
+
+@pytest.mark.parametrize('mutation', ('head', 'untracked', 'during_capture', 'after_seal'))
+def test_actual_build_source_guards_prevent_a_successful_seal(canonical_package, monkeypatch, mutation):
+    value = canonical_package
+    def dirty(): (value['repo'] / 'unexpected.txt').write_text('uncommitted build change')
+    if mutation == 'head': value['git']('commit', '--allow-empty', '-m', 'Different build head')
+    elif mutation == 'untracked': dirty()
+    elif mutation == 'during_capture':
+        original = assembly._source_custody
+        def changed(*args, **kwargs):
+            result = original(*args, **kwargs)
+            if kwargs.get('extract'): dirty()
+            return result
+        monkeypatch.setattr(assembly, '_source_custody', changed)
+    else:
+        original = assembly._exclusive_write_json
+        def changed(path, snapshot):
+            original(path, snapshot)
+            dirty()
+        monkeypatch.setattr(assembly, '_exclusive_write_json', changed)
+    with pytest.raises(RuntimeError, match='clean canonical'):
+        assembly.prepare_release_package(**value['kwargs'])
+    assert not (value['root'] / 'prepared-package.v2.json').exists()
+    if mutation in {'head', 'untracked'}:
+        assert not (value['root'] / 'source.tar.gz').exists()
+
+
+@pytest.mark.parametrize('change', ('caller', 'receipt'))
+def test_unrelated_same_H_clone_cannot_replace_sealed_common_store(prepared, tmp_path, change):
+    value = prepared
+    clone = tmp_path / 'unrelated-clone'
+    value['git']('clone', '--no-hardlinks', str(value['repo']), str(clone))
+    kwargs = dict(value['kwargs'])
+    if change == 'caller': kwargs['repo_root'] = clone
+    else:
+        value['receipt']['source_repository'] = str(clone)
+        save(value['root'] / 'prepared-package.v2.json', value['receipt'])
+    before = _custody_bytes(value['root'], value['repo'], clone)
+    with pytest.raises(RuntimeError, match='anchor/common store'):
+        assembly.verify_prepared_release_package(**kwargs)
+    assert _custody_bytes(value['root'], value['repo'], clone) == before
+
+
+@pytest.mark.parametrize('defect', ('duplicate_primary', 'missing_primary', 'symlink_primary', 'wrong_primary', 'symlink_git_dir', 'missing_blob'))
+def test_persistent_anchor_metadata_and_objects_fail_closed(prepared, monkeypatch, tmp_path, defect):
+    value = prepared
+    original = assembly._source_git
+    if defect == 'missing_blob':
+        identity = value['git']('rev-parse', value['revision'] + ':src/odylith/__init__.py')
+        (value['repo'] / '.git/objects' / identity[:2] / identity[2:]).unlink()
+    else:
+        link = tmp_path / 'root-link'
+        link.symlink_to(value['repo'], target_is_directory=True)
+        git_link = tmp_path / 'git-link'
+        git_link.symlink_to(value['repo'] / '.git', target_is_directory=True)
+        wrong = tmp_path / 'not-a-repository'
+        wrong.mkdir()
+        def changed(repo, *args, **kwargs):
+            if args == ('worktree', 'list', '--porcelain', '-z'):
+                selected = str(value['repo']) if defect == 'duplicate_primary' else str(tmp_path / 'absent') if defect == 'missing_primary' else str(link) if defect == 'symlink_primary' else str(wrong) if defect == 'wrong_primary' else None
+                if selected:
+                    row = ('worktree ' + selected).encode() + b'\0'
+                    return row * 2 if defect == 'duplicate_primary' else row
+            if args == ('rev-parse', '--path-format=absolute', '--git-dir') and defect == 'symlink_git_dir':
+                return str(git_link).encode()
+            return original(repo, *args, **kwargs)
+        monkeypatch.setattr(assembly, '_source_git', changed)
+    before = _custody_bytes(value['root'], value['repo'])
+    with pytest.raises(RuntimeError):
+        assembly.verify_prepared_release_package(**value['kwargs'])
+    assert _custody_bytes(value['root'], value['repo']) == before
+
+
+def test_legacy_receipt_is_preserved_and_never_reissued(canonical_package):
+    value = canonical_package
+    legacy = value['root'] / 'prepared-package.v1.json'
+    legacy.write_text('{"version":"odylith.greenfield.prepared-release-package.v1","status":"prepared"}')
+    before = legacy.read_bytes()
+    with pytest.raises(FileExistsError): assembly.prepare_release_package(**value['kwargs'])
+    assert legacy.read_bytes() == before
+    assert not (value['root'] / 'prepared-package.v2.json').exists()
+
+
+def test_verifier_requires_caller_repository_root_not_a_subdirectory(prepared):
+    before = _custody_bytes(prepared['root'], prepared['repo'])
+    with pytest.raises(RuntimeError, match='toplevel'):
+        assembly.verify_prepared_release_package(**{**prepared['kwargs'], 'repo_root': prepared['repo'] / 'src'})
+    assert _custody_bytes(prepared['root'], prepared['repo']) == before

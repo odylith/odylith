@@ -45,12 +45,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 1173,
-    "mapped_workstream_evidence_count": 873,
+    "explicit_event_count": 1175,
+    "mapped_workstream_evidence_count": 875,
     "recent_path_match_count": 0,
     "spec_history_event_count": 34,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 1173
+    "timeline_event_count": 1175
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -132,6 +132,85 @@
       "summary": "Component evidence linked this component to governed work. 1 verifiable artifact reference.",
       "ts_iso": "2026-10-16T00:56:53Z",
       "workstreams": []
+    },
+    {
+      "artifact_count": 4,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-04-09-shared-surface-contract-drift-reopens-workstream-button-and-release-layout-regressions.md",
+        "odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md",
+        "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-style-base.v1.css",
+        "tests/integration/runtime/test_compass_browser_regression_matrix.py"
+      ],
+      "confidence": "high",
+      "event_index": 1676,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
+      "ts_iso": "2026-10-16T00:11:58-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "sha256:1f89d08a54d74152e22e7841f2c5f838aa1c042d2ece651da1e4579a71542118",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "tests/unit/install/test_greenfield_release_assembly.py"
+      ],
+      "confidence": "high",
+      "event_index": 1675,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-10-15T23:21:26-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifact_count": 3,

@@ -29,6 +29,10 @@ from tests.integration.runtime.surface_browser_test_support import (
     _browser,
     _failure_screenshot_path,
 )
+from tests.integration.runtime.test_surface_browser_layout_audit import (
+    _synthetic_workstream_button_style,
+    _workstream_button_style,
+)
 
 
 @pytest.mark.parametrize("width", [1440, 390], ids=["desktop", "mobile"])
@@ -86,16 +90,47 @@ def test_complete_compass_facts_wrap_without_losing_trailing_conditions(tmp_path
                     "plan": {"next_tasks": [source]}})
         payload["current_workstreams"] = [row]
         payload["workstream_catalog"] = [row]
+    else:
+        payload["current_workstreams"] = []
+        payload["workstream_catalog"] = []
     write_runtime_payload(fixture_root, payload)
-    if state == "ready":
-        _write_source_truth_snapshot(fixture_root, active_ids=[], current_ids=["B-991"],
-                                     generated_utc=str(payload["generated_utc"]))
+    _write_source_truth_snapshot(
+        fixture_root, active_ids=[], current_ids=["B-991"] if state == "ready" else [],
+        generated_utc=str(payload["generated_utc"]),
+    )
+    if state != "ready":
+        source_truth_path = runtime_paths(fixture_root)[2]
+        source_truth = json.loads(source_truth_path.read_text(encoding="utf-8"))
+        # Window-specific source rows are independent of the unscoped current list.
+        source_truth.update(current_workstreams_by_window={"24h": [], "48h": []}, workstream_catalog=[])
+        source_truth_path.write_text(json.dumps(source_truth, indent=2) + "\n", encoding="utf-8")
 
     for _pw, browser in _browser():
         with open_compass_page(fixture_root, browser) as (page, compass, observation):
             page.set_viewport_size({"width": width, "height": 1100})
             digest = compass.locator("#digest-list")
             digest.wait_for(state="visible", timeout=15000)
+            fallback_style = _synthetic_workstream_button_style(compass, "body", "ws-id-btn")
+            workstream_styles = [fallback_style]
+            if state == "ready":
+                selector = 'tr.ws-summary-row.ws-row-meta[data-ws-id="B-991"]'
+                workstream_styles.append(_workstream_button_style(compass, selector + " a.ws-id-btn"))
+                assert compass.locator(selector + " a.ws-id-btn").count() == 1
+                passive_style = _workstream_button_style(compass, selector + " span.chip:not(.chip-link)")
+                passive_padding = "2px" if width == 390 else "10px"
+                assert passive_style["paddingRight"] == passive_padding
+                assert passive_style["paddingLeft"] == passive_padding
+            else:
+                wait_for_current_workstreams_or_empty(compass)
+                assert compass.locator("tr.ws-summary-row").count() == 0
+                assert compass.locator("#current-workstreams .empty").is_visible()
+            for style in workstream_styles:
+                assert style["fontSize"] == "12px"
+                assert style["fontWeight"] == "500"
+                assert style["paddingTop"] == "1px"
+                assert style["paddingRight"] == "8px"
+                assert style["paddingBottom"] == "1px"
+                assert style["paddingLeft"] == "8px"
             if state == "ready":
                 paragraph = digest.locator(".brief-bullet-copy").first
                 paragraph.wait_for(state="visible", timeout=15000)
@@ -181,6 +216,9 @@ def test_complete_compass_facts_wrap_without_losing_trailing_conditions(tmp_path
             if screenshot is not None:
                 screenshot.parent.mkdir(parents=True, exist_ok=True)
                 page.screenshot(path=str(screenshot), full_page=True)
+                if state == "ready":
+                    table_screenshot = _failure_screenshot_path(f"compass-workstream-table-{width}")
+                    compass.locator("#current-workstreams .ws-table-wrap").screenshot(path=str(table_screenshot))
             _assert_clean_page(page, observation)
 
 

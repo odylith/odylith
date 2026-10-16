@@ -986,3 +986,12 @@ def test_nested_profile_source_selection_keeps_both_families_and_exact_manifest_
     assert manifests[selected[0].case_id] == Path(configuration['high']['retained_manifest']['path'])
     configuration['high']['mode'] = PUBLIC_SOURCE_MODE
     assert score._source_release_inputs(configuration=configuration, cases=selected, results=())[-1]
+
+
+def test_current_composition_custody_has_one_canonical_receipt_owner():
+    import greenfield_release_qualification as assembly
+    assert public.PUBLIC_COMPOSITION_MODE == "odylith.greenfield.public-coverage-composition.v2"
+    assert public._RELEASE_CUSTODY_REFS == {"checkpoint", "prepared_package", "activation", "profile"}
+    assert "prepared_package_sha256" in public._OBSERVATION_FIELDS
+    assert "distribution_custody_sha256" not in public._OBSERVATION_FIELDS
+    assert public._composition_release_custody is assembly._composition_release_custody

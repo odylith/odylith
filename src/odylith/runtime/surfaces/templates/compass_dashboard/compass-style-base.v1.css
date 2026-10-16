@@ -758,20 +758,24 @@ h1 {
         min-width: 0;
         white-space: normal;
       }
-      .ws-table th[class*="ws-col-"], .ws-table td[class*="ws-col-"] {
-        padding-left: 1px;
-        padding-right: 1px;
+      .ws-table td[class*="ws-col-"] {
+        padding-left: 0;
+        padding-right: 0;
       }
       .ws-table th[class*="ws-col-"] {
+        padding-left: 1px;
+        padding-right: 1px;
         letter-spacing: 0;
         text-transform: none;
       }
       .ws-table .chip, .ws-table .ws-id-btn {
         max-width: 100%;
-        padding-left: 2px;
-        padding-right: 2px;
         white-space: normal;
         overflow-wrap: normal;
+      }
+      .ws-table .chip:not(.chip-link) {
+        padding-left: 2px;
+        padding-right: 2px;
       }
       .ws-table .ws-id-btn {
         white-space: nowrap;

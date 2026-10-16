@@ -1,5 +1,72 @@
 - Bug ID: CB-347
 
+## Canonical package handoff gap (2026-10-15)
+
+Normal release preparation seals the current package, but public qualification
+requires different receipts from the older custom build route. The normal
+producer has no source archive/export or complete source-to-wheel and checksum
+comparisons for that reader. Rebinding historical paths cannot close this gap.
+The existing assembly tests use a text wheel and mock public qualification, so
+their passing results do not prove this producer-to-consumer handoff.
+
+Correct the existing release qualification owners. Canonical preparation must
+capture the committed source and verify it against the one built package;
+public qualification must independently verify that same prepared receipt.
+Use explicit current v2 contracts, preserve the honest `prepared` status, and
+retain historical receipts and failures unchanged. Verification must not build,
+export, extract, repair or rewrite evidence. The normal three build phases and
+their pinned logs remain the preparation boundary.
+
+Independent design review clears this bounded correction, with exact member
+sets, duplicate/unsafe-path refusal and actual byte comparisons required.
+The publisher adds one signature sidecar per checksum member after writing
+checksums; those files belong in the complete artifact census. Local placeholder
+sidecars prove byte custody only. Design review SHA-256:
+fa5368494da81229005bee3b70422815807377a96939ab96507317928e760407.
+Publisher correction SHA-256:
+4903f036d5ea0f55f25a93c8aa70d5049c2197f45e6bd071dd21cea3725eace7.
+Implementation must prove an unmocked handoff using a real temporary Git tree
+and valid miniature wheel, plus source, archive, package and binding tamper
+controls. No actual release package or public/native qualification is claimed.
+Full CI at c9fd4874 passes; canonical H/B/D remains unbound. That checkpoint
+predates this correction, so the successor still requires its own full CI.
+
+Implementation review also found that normal preparation deletes its isolated
+build checkout on return. Sealing that temporary path as the Git anchor would
+make the receipt unusable. Seal the safe primary repository root from the same
+Git object store instead. Preparation still requires the actual build checkout
+to be clean at the expected commit before and after capture. Later verification
+uses immutable Git objects and the sealed anchor; the primary workspace's
+branch and uncommitted files are not source authority. Require a temporary-fixture
+test that removes the build checkout before verification, plus redirected-store
+refusals.
+
+The frozen correction passes all 463 checks across the four direct release
+consumer modules in 71.505 seconds, with all eleven source and test pins
+unchanged. The original unmocked handoff failure, removed-checkout failure and
+unsafe ZIP-directory failures remain retained. The positive path now reaches
+actual preparation, composition custody and terminal package authentication;
+tamper controls reach the intended checks. Both release owners are below the
+800-line soft limit, and the score change is the composition version literal
+only. Independent focused review passes 25 checks and clears the frozen patch
+with no remaining actionable P0/P1 or material P2 finding. The successor's full
+hosted CI remains required before canonical H/B/D. This is
+source proof, not installed, public, native or final release qualification.
+Result SHA-256:
+519b0f28bebd3181ac0132beaccd08544290ff950390384bc873bdee45b05f32.
+Persistent-anchor design addendum SHA-256:
+a11181f11db6893b98cba133073918681029743112b266e717a11583d82c81bf.
+Final implementation review SHA-256:
+616f705b587dde100899524b6ef45c82a4d43e8cbee41d05a1988d2e0534ae13.
+
+The same successor includes the compact Compass regression documented in
+CB-080. Its April closure remains historical; the current recurrence is an open
+B-142 release gate. The four-file source, mirror and browser-fixture correction
+passes all 17 affected checks and independent review, retaining every original
+assertion and the earlier failed revision. Require the successor's full CI and
+installed release proof before closing this gate. Review SHA-256:
+3fcb5d0be8b38e2722b6962d70ca2018bc9e53d1248fcabeffd15cbd5d94402c.
+
 ## Final integration findings (2026-10-12)
 
 The canonical component sync converged the release dossier. Its following

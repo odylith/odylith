@@ -1,6 +1,65 @@
 Status: In progress
 
-## Current gate: finish validation and canonical release preparation (2026-10-15)
+## Current gate: align canonical package custody (2026-10-15)
+
+The pushed c9fd4874 checkpoint passes 295 affected tests, seven governance
+checks and its complete hosted CI. A code-only integration audit then found
+that normal package preparation and public qualification use incompatible
+receipt contracts. Existing mocked assembly tests did not exercise that handoff.
+CB-347 records the defect and the independently cleared bounded design.
+
+Use the existing release qualification owners to capture committed source,
+archive/export, wheel and complete checksum evidence from the one canonical
+package. Public qualification must consume and recompute that same current v2
+receipt; move package custody out of its oversized public-family owner. Preserve
+the three normal build phases, `prepared` status, historical evidence and all
+refusal checks. No Greenfield generation, semantic stage, quality floor, timing
+cap, model or runtime behavior changes are in scope.
+
+Require a real tiny-Git/valid-wheel producer-to-consumer test without mocking
+the custody reader, complete tamper/no-write controls, focused regression,
+structural inventory and independent implementation review. Verification never
+builds or exports. The immutable Git anchor must survive normal temporary build
+checkout cleanup: seal the safe primary root from the same Git object store,
+keep clean-build guards during preparation, and prove later verification after
+that temporary checkout is removed. Fresh current CI precedes canonical H,
+full B and one D.
+Then finish exact-D installation/migration, host and public qualification,
+including 44 scored cases and four separate genuine EDIT cases. The protected
+final remains closed. Design review SHA-256:
+fa5368494da81229005bee3b70422815807377a96939ab96507317928e760407.
+The separate publisher census correction is retained at SHA-256
+4903f036d5ea0f55f25a93c8aa70d5049c2197f45e6bd071dd21cea3725eace7.
+
+The frozen four-module gate passes all 463 tests in 71.505 seconds with eleven
+unchanged pins. Independent focused review passes 25 controls, including the
+real producer-to-terminal handoff, removed build checkout, changed primary
+workspace, redirected source store, inner relation tampering and failed build
+phases. Both release owners remain below 800 lines. The original failures stay
+failed. Final independent review clears the exact frozen patch, with no remaining
+actionable P0/P1 or material P2 finding (SHA-256
+616f705b587dde100899524b6ef45c82a4d43e8cbee41d05a1988d2e0534ae13).
+Finish governance and the successor checkpoint; then require that checkpoint's
+complete CI before establishing H/B/D.
+
+The older b67 full CI now retains nine failures and 11,477 passes. Eight match
+the compatibility cases corrected at c9fd. The additional compact-button failure
+reproduces a mobile Compass table selector overriding the shared padding; the
+local generic audit can miss it by choosing synthetic fallback links. Existing
+CB-080 retains the recurrence evidence and prior closure; active CB-347 and
+this plan own the current release gate. The bounded four-file correction now passes all 17 affected
+browser, mirror and shell checks. Real populated table links and deliberate
+empty fallback controls are covered at both widths in the existing eight-cell
+Compass state matrix. All 91 original assertions remain, with 11 added. The
+initial seven failures remain retained; the final mobile gutter correction and
+test-local empty-state isolation resolve their measured causes. Root and the
+independent reviewer inspected both final screenshots. Final independent review
+is scoped CLEAR (SHA-256
+3fcb5d0be8b38e2722b6962d70ca2018bc9e53d1248fcabeffd15cbd5d94402c).
+The independently cleared five-file custody correction remains frozen. Finish
+the combined checkpoint and its full hosted CI before canonical release proof.
+
+## Prior gate: source65 correction and CI (2026-10-15)
 
 The one source65 preview at pushed `a225a2fed` completes in 364.670 seconds,
 with four model stages and no calls after candidate receipt. Independent review
@@ -29,7 +88,7 @@ verdict remains FAIL. Finish the same-contract fixture corrections and current C
 to canonical H. Reuse the existing preserved proof checkout for full B and one
 immutable D. The three migration assessments remain open for exact-D installed
 upgrade/browser proof; normal preparation does not require their final markers.
-continue the fixed44, separate genuine EDIT4 and remaining release gates there.
+Continue the fixed 44 scored cases, separate genuine EDIT4 and remaining release gates there.
 Do not add another development mechanism or reopen the protected final gate.
 
 

@@ -1,13 +1,32 @@
 # Release
-Last updated: 2026-10-12
+Last updated: 2026-10-15
 
-## One-package qualification flow (2026-10-12)
+## Canonical package custody (2026-10-15)
 
 Canonical preflight separates preparation from completion. Preparation initializes
-the fixed session, builds and checks one distribution, and seals its source,
-artifact census and build logs. It grants no release qualification. The original
-Primary40, High4 and genuine EDIT4 results must bind to this same package through
-the existing composed evidence owner.
+the fixed session and builds and checks one distribution. The version 2 prepared
+receipt binds that package to the committed source, its archive and complete
+export, the wheel contents, every distribution artifact, checksums, manifest,
+provenance and the three build logs. The safe primary repository root from the
+same Git object store is the explicit source anchor, so verification survives
+temporary build checkout cleanup. Preparation requires the actual build checkout
+to remain clean at the expected commit. Later checks read the original Git
+objects; the primary workspace's current branch and files are not source truth.
+Preparation grants no release qualification.
+
+The existing release assembly owner authenticates package custody for public
+qualification and completion. It compares actual bytes and complete membership;
+stored success flags cannot replace those checks. Verification never builds,
+exports, extracts, repairs or rewrites evidence. Duplicate or unsafe members,
+missing or extra artifacts, changed bindings and redirected Git state refuse.
+Local signature placeholders establish custody of their bytes only; release
+signature trust remains a later gate.
+
+Version 2 public composition binds the checkpoint, prepared receipt, activation
+and profile. The original Public40, High4 and separate genuine EDIT4 results must
+authenticate this same package through the existing composed evidence owner.
+Historical receipts and failed attempts retain their original bytes and
+verdicts; they cannot authorize a fresh version 2 run.
 
 Completion reauthenticates the prepared source, session, distribution and complete
 composition before exclusively claiming one terminal attempt. It never rebuilds
@@ -1273,6 +1292,9 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-10-15 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `sha256:1f89d08a54d74152e22e7841f2c5f838aa1c042d2ece651da1e4579a71542118`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `tests/unit/install/test_greenfield_release_assembly.py`
 - **2026-10-10 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/atlas/source/greenfield-matrix-tiered-campaign-progress.mmd`, `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
@@ -1288,9 +1310,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-10-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-09-27-greenfield-release-harness-misclassifies-incomplete-proof-and-skips-the-unavaila.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_source_duty_binding.py`
-- **2026-10-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `sha256:addb966f57829c8858b5d640b848f922c4323bf68adf071a6cbe4d7fccd463ee`, `sha256:228a52fe9195e3ad5e2d2f4b1612439a919fdb46cf18fa260e5b700de3829f79`, `tests/unit/install/test_local_release_smoke.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

@@ -27,6 +27,7 @@ from greenfield_semantic_case_score import (
     validate_source_predicate_predeclaration, PUBLIC_EDIT_SOURCE_MODE, PUBLIC_EDIT_SOURCE_SPLIT, PUBLIC_COMPOSITION_MODE,
 )
 from greenfield_semantic_release_score import evaluate_semantic_release
+from greenfield_release_qualification import RELEASE_CUSTODY_REFS as _RELEASE_CUSTODY_REFS, _composition_release_custody, _json_object
 from odylith.runtime.domain_intelligence.greenfield_whole_journey_budget import (
     PROVISIONAL_WHOLE_JOURNEY_TIMEOUT_SECONDS, WHOLE_JOURNEY_ELAPSED_SCOPE,
     whole_journey_observation_issues,
@@ -45,7 +46,7 @@ def read_public_evidence_reference(ref: Mapping[str, Any], *, label: str) -> dic
     path = Path(ref["path"]).expanduser().resolve()
     if sha256_file(path) != ref["sha256"]:
         raise ValueError(f"{label} bytes changed")
-    value = json.loads(path.read_text(encoding="utf-8"))
+    value = _json_object(path, label=label)
     if not isinstance(value, Mapping):
         raise ValueError(f"{label} must be an object")
     return dict(value)
@@ -293,12 +294,10 @@ def qualify_saved_public_evidence(
     return report
 
 
-_RELEASE_CUSTODY_REFS = frozenset(("checkpoint", "source_export", "source_archive", "build",
-    "distribution_custody", "release_manifest", "build_provenance", "activation", "profile"))
 _FAMILY_FIELDS = frozenset(("family_id", "role", "case_count", "ordered_case_ids_sha256",
     "source_cases", "predeclaration", "input_identities"))
 _OBSERVATION_FIELDS = frozenset(("commit", "tree", "archive_sha256", "wheel_sha256",
-    "release_manifest_sha256", "distribution_custody_sha256", "activation_sha256",
+    "release_manifest_sha256", "prepared_package_sha256", "activation_sha256",
     "source_export_root", "distribution_root", "runtime_executable", "runtime_executable_sha256",
     "trusted_executable", "trusted_executable_sha256", "profile_id", "model", "reasoning_effort",
     "argv_shape_sha256", "actual_import_pins"))
@@ -315,82 +314,6 @@ def _composition_file(ref: Mapping[str, Any], *, label: str) -> Path:
     if sha256_file(path) != ref["sha256"]:
         raise ValueError(f"{label} bytes changed")
     return path
-
-
-def _composition_release_custody(refs: Mapping[str, Any]) -> dict[str, Any]:
-    """Reconcile existing frozen/build/custody/activation witnesses with observed file bytes."""
-    if not isinstance(refs, Mapping) or set(refs) != _RELEASE_CUSTODY_REFS:
-        raise ValueError("composition lacks its closed current release custody")
-    paths = {name: _composition_file(ref, label=name) for name, ref in refs.items()}
-    data = {name: read_public_evidence_reference(ref, label=name)
-        for name, ref in refs.items() if name != "source_archive"}
-    checkpoint, export, build, custody, manifest, provenance, activation, profile = (
-        data[name] for name in ("checkpoint", "source_export", "build", "distribution_custody",
-            "release_manifest", "build_provenance", "activation", "profile"))
-    head, tree = export["head"], export["tree"]
-    if (not isinstance(head, str) or len(head) != 40 or not isinstance(tree, str) or len(tree) != 40
-            or checkpoint.get("status") != "passed" or checkpoint.get("head") != head
-            or checkpoint.get("tree") != tree or checkpoint.get("current_source_pins_unchanged") is not True
-            or export.get("status") != "source_export_prepared" or export.get("source_status_porcelain") != ""
-            or export.get("archive_sha256") != refs["source_archive"]["sha256"]):
-        raise ValueError("composition checkpoint/tree/archive/export identity differs")
-    if (build.get("status") != "passed" or build.get("head") != head
-            or build.get("source_head_after") != head or build.get("source_status_after") != ""
-            or [row.get("phase") for row in build.get("phases", ())] != ["wheel", "assets", "smoke"]
-            or any(row.get("returncode") != 0 for row in build["phases"])):
-        raise ValueError("composition lacks its exact passed package build")
-    for row in build["phases"]:
-        _composition_file({"path": row["log"], "sha256": row["log_sha256"]}, label="build log")
-    if (custody.get("status") != "passed" or custody.get("head") != head
-            or custody.get("provenance_commit_verified") is not True
-            or any(custody.get(key) != [] for key in ("frozen_archive_source_mismatches",
-                "wheel_source_mismatches", "wheel_unexpected_owners"))
-            or not custody.get("source_pins") or not custody.get("artifact_hashes")):
-        raise ValueError("composition package/source custody did not pass")
-    distribution = paths["release_manifest"].parent
-    if paths["build_provenance"].parent != distribution:
-        raise ValueError("composition manifest and provenance belong to different distributions")
-    for name, digest in custody["artifact_hashes"].items():
-        if Path(name).name != name:
-            raise ValueError("composition distribution artifact path is unsafe")
-        _composition_file({"path": str(distribution / name), "sha256": digest}, label="distribution artifact")
-    if custody.get("artifact_count") != len(custody["artifact_hashes"]):
-        raise ValueError("composition distribution artifact census changed")
-    for name, count, rows in (("checksums", "checksum_count", custody.get("checksums")),
-            ("manifest assets", "manifest_asset_count", custody.get("manifest_asset_checks"))):
-        if not isinstance(rows, list) or not rows or custody.get(count) != len(rows) or any(row.get("matches") is not True for row in rows):
-            raise ValueError(f"composition {name} custody is incomplete")
-    if (any(custody["artifact_hashes"].get(name) != row["sha256"] for name, row in manifest["assets"].items())
-            or provenance["source_tree"].get("head") != head or provenance["source_tree"].get("dirty") is not False
-            or provenance["workflow"].get("sha") != head
-            or activation.get("status") != "activated_after_package_pass"
-            or activation.get("implementation_revision") != head or profile.get("implementation_revision") != head
-            or activation.get("source_export") != export["source_export"]
-            or Path(activation["distribution"]).resolve() != distribution.resolve()
-            or Path(activation["package_result"]).resolve() != paths["build"].resolve()
-            or activation.get("profile") != profile):
-        raise ValueError("composition build/manifest/activation/profile custody differs")
-    if not activation.get("file_pins"):
-        raise ValueError("composition activation has no frozen file pins")
-    for name, digest in activation["file_pins"].items():
-        _composition_file({"path": name, "sha256": digest}, label="activation pin")
-    source = Path(export["source_export"]).resolve()
-    for name, digest in custody["source_pins"].items():
-        if Path(name).is_absolute() or ".." in Path(name).parts:
-            raise ValueError("composition source owner path is unsafe")
-        _composition_file({"path": str(source / "src" / name), "sha256": digest}, label="frozen source owner")
-    wheel = provenance["artifacts"]["wheel"]
-    if custody["artifact_hashes"].get(wheel["name"]) != wheel["sha256"]:
-        raise ValueError("composition wheel identity differs")
-    _composition_file({"path": profile["trusted_executable"], "sha256": profile["executable_sha256"]}, label="trusted native executable")
-    return {"commit": head, "tree": tree, "archive_sha256": refs["source_archive"]["sha256"],
-        "wheel_sha256": wheel["sha256"], "release_manifest_sha256": refs["release_manifest"]["sha256"],
-        "distribution_custody_sha256": refs["distribution_custody"]["sha256"],
-        "activation_sha256": refs["activation"]["sha256"], "source_export_root": str(source),
-        "distribution_root": str(distribution.resolve()), "trusted_executable": profile["trusted_executable"],
-        "trusted_executable_sha256": profile["executable_sha256"], "profile_id": profile["profile_id"],
-        "model": profile["model"], "reasoning_effort": profile["reasoning_effort"],
-        "argv_shape_sha256": profile["argv_shape_sha256"]}
 
 
 def _composition_input_identities(cases: Sequence[Any]) -> list[dict[str, Any]]:
