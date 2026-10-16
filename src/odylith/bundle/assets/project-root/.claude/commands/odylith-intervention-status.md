@@ -1,6 +1,6 @@
 ---
 description: Show whether Odylith Observations, Proposals, Ambient beats, and Assist are active in this Claude chat.
-argument-hint: [--session-id SESSION] [--json]
+argument-hint: "[--session-id SESSION] [--json]"
 ---
 
 Show the low-latency Odylith intervention status for this Claude project.

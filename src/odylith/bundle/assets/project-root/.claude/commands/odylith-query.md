@@ -1,6 +1,6 @@
 ---
 description: Search the local Odylith projection store after concrete anchors already exist.
-argument-hint: "<terms>" (e.g. "execution profile ladder claude")
+argument-hint: '<terms> (e.g. "execution profile ladder claude")'
 ---
 
 Search the local Odylith projection store after you already have concrete anchors.
