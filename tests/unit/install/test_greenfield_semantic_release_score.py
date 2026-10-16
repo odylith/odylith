@@ -956,6 +956,7 @@ def _commit_result(
                         ],
                         source_precedence=semantics["source_precedence"],
                         provisional_design=semantics["provisional_design"],
+                        semantics_version=semantics["version"],
                     ),
                 },
             },
@@ -999,7 +1000,7 @@ def _authored_semantics(
             "visible_result_quote": visible_result,
         }
     ]
-    provisional_design = structural_design_fixture((1,))
+    provisional_design = structural_design_fixture((1,), version="odylith.greenfield.provisional-design.v6")
     return {
         "version": AUTHORED_SEMANTICS_VERSION,
         "source_event_relations": relations,
@@ -1282,7 +1283,7 @@ def _rich_relation_bundle(
             }
         )
     provisional_design = structural_design_fixture(
-        tuple(row["order"] for row in semantic_events)
+        tuple(row["order"] for row in semantic_events), version="odylith.greenfield.provisional-design.v6"
     )
     semantics = {
         "version": AUTHORED_SEMANTICS_VERSION,
@@ -1340,6 +1341,7 @@ def _refresh_relation_hash(result: GreenfieldMatrixResult) -> None:
         first_path_context_relations=semantics["first_path_context_relations"],
         source_precedence=semantics["source_precedence"],
         provisional_design=semantics["provisional_design"],
+        semantics_version=semantics["version"],
     )
 
 
@@ -1397,7 +1399,7 @@ def _repeated_relation_evidence() -> tuple[GreenfieldMatrixCase, dict[str, objec
                 "visible_result_sha256": _sha(visible) if visible else "",
             }
         )
-    provisional_design = structural_design_fixture((1, 2))
+    provisional_design = structural_design_fixture((1, 2), version="odylith.greenfield.provisional-design.v6")
     semantics = {
         "version": AUTHORED_SEMANTICS_VERSION,
         "source_event_relations": semantic_events,
@@ -1423,6 +1425,7 @@ def _repeated_relation_evidence() -> tuple[GreenfieldMatrixCase, dict[str, objec
             first_path_context_relations=[],
             source_precedence=semantics["source_precedence"],
             provisional_design=provisional_design,
+            semantics_version=semantics["version"],
         ),
     }
     snapshot["product_facts_sha256"] = product_facts_hash(snapshot["facts"])

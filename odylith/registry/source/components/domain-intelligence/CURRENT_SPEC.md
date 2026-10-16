@@ -16,16 +16,54 @@ The declared path retains its own roles; required system consequences can belong
 to the complete run without becoming human actions. Recurring safeguards and
 unrelated optional branches remain outside one-time execution.
 
+Source inventory and verification also own the project-wide customer. A workflow
+performer does not replace an explicitly served team. Safe absence remains an
+explicit customer assumption; candidate authoring cannot select this source fact.
+One proposed design name drives human headings, paths and artifact bindings while
+the original source identity retains exact custody. Explicit source names bind
+exactly. A proposed name may change during pre-confirmation EDIT without changing
+the existing lifecycle, action, system or source-identity conservation rules.
+
+Fresh Atlas first-run views use direct action narratives and unlabeled required
+arrows. Every before/after/constraint triple remains in folded Supporting details,
+including distinct constraints sharing one visual arrow. Historical projections
+retain their exact previous names and diagrams.
+
+The current development contract uses host65/authoring6/source14/preflight13,
+initial/EDIT receipts28/29, decisions22/23, compact12, candidate28 and design7.
+Transport7/canonical80/semantic19/atomic4/context4 and all stage/request caps stay
+unchanged. Presentation validates supported design shapes without receiving source
+authority; canonical, hash and transaction boundaries require the exact source,
+receipt and design pairing. Independent source review is clear at frozen v4;
+the final v7 compatibility and validation-order deltas are independently clear. Structural validation
+now precedes the unchanged source-plan equality check inside the existing typed
+refusal boundary. Forty-one browser cases and 56 hygiene checks pass at v4;
+the separate 33-module v6 gate passes 1,069 tests and final v7 evaluator coverage
+passes 239. Historical semantic18/19 with design6 and no ledger retain explicit
+reader/hash support; current design7, canonical, mapping and default hash calls
+still require authenticated custody. Hash payloads stay unchanged. Exact historical
+readback and current package-byte comparisons pass; independent development-artifact
+review is clear. Live source65 acceptance and release qualification remain open.
+Receipt26 reconstructs its
+original complete package exactly, including known old projection defects.
+No successor live, genuine EDIT, installed release or timing proof is claimed.
+
+### Historical development evidence
+
 The source64 correction permits supporting context to identify an exactly
 verified nonperformer without granting product authority. Presentation instructions
 cannot establish product facts. One existing source-control policy governs
 preparation and saved transaction readback. Both current and prior complete-plan
 formats retain their proper dispatch. Independent source and compatibility
 reviews are clear; 1,044 affected tests and 70 hygiene/browser checks pass.
-Final independent artifact review is also clear. These checks prove the bounded
-implementation; no source64 live proof is claimed.
+Final independent development-artifact review is also clear. The subsequent live
+preview completes all four stages in 325.758 seconds and passes independent core
+source-fidelity review. Projection quality remains failed: Radar repeats a single
+registrar customer despite the explicit museum team, the display name is a
+purpose sentence, and Atlas exposes trace labels. CB-324 retains these findings;
+no release, genuine EDIT or timing qualification follows from this preview.
 
-The current contract uses host64/authoring5/source13/preflight12, initial/EDIT
+The preceding contract uses host64/authoring5/source13/preflight12, initial/EDIT
 receipts26/27, decisions20/21 and compact11. Candidate27/transport7,
 canonical80/semantic19/atomic4/context4 and all stage and request caps remain
 unchanged. Source12 retains its exact earlier tasks, receipts24/25 and host63
@@ -56,6 +94,8 @@ terminal ownership therefore disagree. No package or receipt is delivered.
 The selector's source proof remains valid; useful delivery remains failed.
 CB-324 retains this trial, the source63 design correction and review findings.
 The earlier 705-test selector pass does not qualify the successor source plan.
+
+### Source verification and projection
 
 Inventory supplies exact short-name citations for people and systems outside
 the workflow. The existing source-only verifier must affirm their type,

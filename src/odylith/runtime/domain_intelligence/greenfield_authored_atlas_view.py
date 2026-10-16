@@ -30,7 +30,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_first_run import (
     authored_event_display_text,
 )
 from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
-    PROVISIONAL_DESIGN_AUTHORITY_KIND,
+    PROVISIONAL_DESIGN_AUTHORITY_KIND, project_presentation_name,
 )
 
 AUTHORED_ATLAS_AUTHORITY_KEY = "authored_atlas_view_authority"
@@ -71,6 +71,7 @@ def build_authored_atlas_diagrams(
 
     selected_roles = _selected_diagram_roles(diagram_roles)
     title = required_atlas_string(title, "project title")
+    display_name = project_presentation_name(source_title=title, design=provisional_design)
     product_story = required_atlas_string(product_story, "source product story")
     state_object = required_atlas_string(state_object, "state object")
     visible_result = required_atlas_string(visible_result, "visible result")
@@ -101,7 +102,7 @@ def build_authored_atlas_diagrams(
         externals=external_systems,
         components=components,
         relations=first_run_relations,
-        neutral_labels=neutral_context,
+        neutral_labels=neutral_context, display_name=display_name,
     )
     design_specs = build_provisional_design_atlas_specs(
         provisional_design=provisional_design,
@@ -127,7 +128,7 @@ def build_authored_atlas_diagrams(
         "context": {
             "title": "System Context View",
             "summary": (
-                f"Who does the work in {title}."
+                f"Who does the work in {display_name}."
             ),
             "read_guide": (
                 "People are named participants, not necessarily product users. "
@@ -404,7 +405,7 @@ def _context_view(
     externals: Sequence[str],
     components: Sequence[Mapping[str, Any]],
     relations: Sequence[Mapping[str, Any]],
-    neutral_labels: bool = False,
+    neutral_labels: bool = False, display_name: str | None = None,
 ) -> tuple[str, list[dict[str, str]]]:
     performer_events: dict[tuple[str, str], list[str]] = {}
     for relation in relations:
@@ -447,7 +448,7 @@ def _context_view(
     product_lines, product_boxes, component_targets = _product_boundary_projection(
         title=title,
         product_story=product_story,
-        components=components,
+        components=components, display_name=display_name,
     )
     lines.extend(product_lines)
     boxes.extend(product_boxes)
@@ -522,14 +523,16 @@ def _product_boundary_projection(
     title: str,
     product_story: str,
     components: Sequence[Mapping[str, Any]],
+    display_name: str | None = None,
 ) -> tuple[list[str], list[dict[str, str]], tuple[str, ...]]:
+    display_name = title if display_name is None else display_name
     if not components:
         return (
-            [f'  product["{_mermaid_label(title)}"]'],
+            [f'  product["{_mermaid_label(display_name)}"]'],
             [
                 _box(
                     "product",
-                    title,
+                    display_name,
                     "Accepted evidence excerpt",
                     "",
                     details=[{"label": "Accepted evidence excerpt", "text": product_story}],
@@ -549,14 +552,14 @@ def _product_boundary_projection(
         len(rows) == 1 and " ".join(rows[0][0].split()).casefold() == title_key
     )
     lines = [
-        f'  product["{_mermaid_label(title)}"]'
+        f'  product["{_mermaid_label(display_name)}"]'
         if sole_title_product
-        else f'  subgraph product["{_mermaid_label(title)}"]'
+        else f'  subgraph product["{_mermaid_label(display_name)}"]'
     ]
     boxes = [
         _box(
             "product",
-            title,
+            display_name,
             "Product boundary",
             rows[0][1] if sole_title_product else "",
         )

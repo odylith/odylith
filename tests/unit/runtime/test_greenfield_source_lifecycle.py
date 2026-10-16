@@ -35,6 +35,7 @@ def _case(noun: str, *, source_version: str | None = None) -> tuple[str, dict, d
     )
     ledger = {
         "version": source_version or SOURCE_DUTY_LEDGER_VERSION,
+        **({"customer": None} if source_version is None else {}),
         "nonperforming_participants": {field: [] for field in ("human_actors", "internal_systems", "external_systems")},
         "product_identity": {"basis": "product_description", "source_ref": _citation(f"{noun} workspace")},
         "status": "inventory",
@@ -89,9 +90,9 @@ def _case(noun: str, *, source_version: str | None = None) -> tuple[str, dict, d
         ],
         "conditional_guards": [], "boundaries": [], "proof_duties": [],
     }
-    if source_version and source_version not in {"odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12"}:
+    if source_version and source_version not in {"odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"}:
         ledger.pop("nonperforming_participants")
-    if source_version in (None, "odylith.greenfield.source-duty-ledger.v12"):
+    if source_version in (None, "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"):
         ledger.update(source_precedence=[], first_run={"duty_ids": ["A1", "A2"]},
                       terminal={"duty_id": "A2", "proof_boundary": _citation(f"reviewer approves the {noun}"),
                                 "result_fact": {"field": "first_path", "duty_id": "A2"},
@@ -117,7 +118,7 @@ def _case(noun: str, *, source_version: str | None = None) -> tuple[str, dict, d
             ],
         },
     }
-    if source_version in (None, "odylith.greenfield.source-duty-ledger.v12"):
+    if source_version in (None, "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"):
         candidate.pop("terminal")
         candidate["provisional_design"]["first_run"].pop("event_orders")
     binding = {

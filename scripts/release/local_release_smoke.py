@@ -67,8 +67,8 @@ def _has_current_host_candidate_schema(candidate_schema: object) -> bool:
         authored = properties["result"]["anyOf"][0]
         authored_properties = authored["properties"]
         authored_fields = {
-            "status", "facts", "terminal", "assumptions", "ambiguities", "consistency",
-            "provisional_design", "source_precedence", "source_duty_binding",
+            "status", "facts", "assumptions", "ambiguities", "consistency",
+            "provisional_design", "source_duty_binding",
         }
         if (authored.get("type") != "object" or authored.get("additionalProperties") is not False
                 or set(authored.get("required") or ()) != authored_fields
@@ -77,6 +77,11 @@ def _has_current_host_candidate_schema(candidate_schema: object) -> bool:
         facts = authored_properties["facts"]
         constraint = facts["properties"]["operational_constraints"]["items"]
         design = authored_properties["provisional_design"]
+        first_run = design["properties"]["first_run"]
+        fact_fields = {
+            "product_story", "state_object", "problem", "opportunity", "product_view",
+            "success_metrics", "evidence_requirements", "operational_constraints", "non_goals",
+        }
         binding = authored_properties["source_duty_binding"]
         binding_fields = {
             "version", "source_sha256", "ledger_sha256", "off_path_transitions",
@@ -105,9 +110,15 @@ def _has_current_host_candidate_schema(candidate_schema: object) -> bool:
             isinstance(constraint, dict)
             and facts.get("type") == "object"
             and facts.get("additionalProperties") is False
-            and not {"title", "first_path", "supporting_events"} & (
-                set(facts.get("properties") or {}) | set(facts.get("required") or ())
-            )
+            and set(facts.get("properties") or {}) == fact_fields
+            and set(facts.get("required") or ()) == fact_fields
+            and first_run.get("type") == "object"
+            and first_run.get("additionalProperties") is False
+            and set(first_run.get("properties") or {}) == {"rationale"}
+            and set(first_run.get("required") or ()) == {"rationale"}
+            and first_run["properties"]["rationale"].get("type") == "string"
+            and first_run["properties"]["rationale"].get("minLength") == 1
+            and first_run["properties"]["rationale"].get("maxLength") == 1000
             and isinstance(design["properties"]["components"], dict)
             and "project_summary" in design.get("required", ())
             and design["properties"]["project_summary"].get("type") == "string"

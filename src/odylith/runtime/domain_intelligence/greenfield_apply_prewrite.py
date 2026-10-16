@@ -489,6 +489,9 @@ def ensure_release_target(
 
     intent = proposal.get("intent", {}) if isinstance(proposal.get("intent"), Mapping) else {}
     title = str(intent.get("title", "Greenfield Project")).strip() or "Greenfield Project"
+    if proposal.get("projection_origin") == "model_authored_typed_intent":
+        from odylith.runtime.domain_intelligence.greenfield_provisional_design import provisional_design_from_intent, project_presentation_name
+        title = project_presentation_name(source_title=title, design=provisional_design_from_intent(intent))
     release_plan = proposal.get("release_plan", {}) if isinstance(proposal.get("release_plan"), Mapping) else {}
     version, tag = greenfield_programs.semver_release_metadata(selector=selector, release_plan=release_plan)
     registry_path = release_planning_contract.releases_registry_path(repo_root=repo_root)

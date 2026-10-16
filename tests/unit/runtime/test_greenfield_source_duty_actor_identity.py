@@ -265,7 +265,7 @@ def test_atomic_actor_custody_preserves_six_fields_nine_safety_duties_and_both_w
 def test_contract_exposes_identity_custody_and_stable_source_actor_reuse():
     source, _, _ = five_actor_candidate()
     contract = greenfield_host_candidate_contract(source)
-    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v64"
+    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v65"
     task = contract["source_ledger"]["task"]
     assert "only ONE source-owned performer identity" in task
     assert "proper literal substring of statement" in task
@@ -504,6 +504,8 @@ def test_source_identity_is_independent_of_product_performing_an_event(basis, ph
     source, candidate = _candidate()
     source = f"Build a {phrase}. " + source
     candidate.product_identity = {"basis": basis, "source_ref": _citation(phrase)}
+    if basis == "explicit_name":
+        candidate["result"]["provisional_design"]["project_name"] = phrase
     receipt = synthetic_source_duty_receipt(candidate, evidence_text=source)
     candidate["result"]["source_duty_binding"].update(
         source_sha256=receipt["source_sha256"], ledger_sha256=receipt["ledger_sha256"])

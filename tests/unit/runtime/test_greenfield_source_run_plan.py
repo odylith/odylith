@@ -55,6 +55,8 @@ def _transaction_for_intent(intent, root):
     from tests.unit.runtime.test_greenfield_create_transaction import _package, _seal_test_package
     from tests.unit.runtime.greenfield_authored_proposal_fixtures import approved_authored_quality_manifest_fixture
     proposal = build_authored_greenfield_proposal(observed_source={}, release_selector="0.0.1", confirmed_intent=intent)
+    from odylith.runtime.domain_intelligence.project_intelligence_binding import attach_project_intelligence_bindings
+    proposal = attach_project_intelligence_bindings(proposal)
     authority = intent[PRODUCT_INTENT_AUTHORITY_KEY]
     proposal[PRODUCT_INTENT_AUTHORITY_KEY] = authority
     package = _seal_test_package(_package(proposal, repo_root=root), repo_root=root)

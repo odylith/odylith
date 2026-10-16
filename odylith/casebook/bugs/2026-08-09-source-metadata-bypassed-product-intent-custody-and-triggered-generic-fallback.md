@@ -1,6 +1,134 @@
 - Bug ID: CB-324
 
-## Current live failure: optional context conflicts with participant custody (2026-10-15)
+## Current source64 outcome: workflow passes, governance projection fails (2026-10-15)
+
+The single unchanged-request preview at pushed `bd7ffa84ab` completes all four
+model stages and one proposal in 325.758 seconds (324.82 seconds in the parent).
+It delivers a sealed transaction and completion receipt, with zero post-receipt
+provider calls. Independent review passes the core source contract: four-role
+workflow, complete run, lifecycle, atomic revision checks, result, refusal proof
+and nonperforming catalog/carrier boundaries. The reviewer does not clear the
+high-quality governance projection.
+
+P1: the candidate selects `registrar` as the project customer instead of the
+explicit museum team. The compiler copies that selection into all five Radar
+workstreams, including packing, conservator and coordinator work. The current
+customer contract permits a direct user or primary beneficiary, so an exact actor
+quote passes without preserving the wider beneficiary. P2: a source purpose
+sentence becomes the project title, slug and path prefix. P2: the first-run Atlas
+labels expose `Source action N` and `source constraint N` in the main diagram.
+The project summary, distinct component responsibilities, concrete risks and
+collapsed supporting evidence otherwise meet the reviewed text bar.
+
+Independent outcome review SHA-256:
+`b1c68686c4012036851e943f61c007803a2bb2b6c852167e9333a092834f49b9`.
+The untouched transaction is
+`dcc98ab3c2e07b71ae950e1c132ac0082f5a24adde963fb3de71f46edde60457`,
+with 56 planned writes. Sixty raw members are archived and read back exactly:
+`991066bca42c1e16c2b001cc58b5e7ca00f606d08961873da0d1fdfa4027ebe6`.
+All 25 source pins and the strict baseline remain unchanged; parent and guardian
+are retired. The canonical migration journal is retained. An initial archive
+checker compared two name orderings; its corrected set/size/hash check passes
+without rewriting the archive or raw output. No confirmation, create, EDIT or
+publication occurred. Timing remains diagnostic and unqualified.
+
+Investigate source-owned project-customer selection separately from event actor
+ownership, and a concise provisional display name separately from exact source
+identity. Use existing verified action narratives for Atlas; retain trace IDs in
+supporting details. Do not replace values in the retained output, infer a
+customer from the first actor, shorten names with a parser, or add a model stage.
+Bounded design and historical readback proof precede implementation and any
+separate successor trial. Protected final remains closed; genuine EDIT stays 0/4.
+
+The bounded successor design is independently clear
+(`6287957d93561c269b21561ed8e584042bfbc4e45bac166e8f06a8499ca7a147`).
+It moves project customer to the existing source inventory/verifier and removes
+candidate customer selection; one proposed design name drives human labels while
+source identity keeps exact custody. Fresh Atlas uses direct action narratives
+and unlabeled order arrows, with trace triples in details. Twenty-six existing
+owners include the actual fact presenter: presentation validates structure,
+canonical boundaries validate the authenticated source/design pair. Pre-edit
+custody and genuine26 readback precede implementation; no new stage or module.
+The added existing artifact-binding owner closes a name consumer exposed by the
+real unnamed compiler fixture. Source/shared-fixture freeze v1 is
+`20f26f7674868db2a5d42234a445e0df1f534ddba1b0a3527d6e434268da8354`.
+Sixteen focused controls and exact genuine26 full readback pass; broader proof
+and the separate live successor remain pending.
+
+Independent review of v1 finds P2: the Atlas renderer keys required precedence
+only by before/after endpoints. Two supported constraints with the same endpoints
+lose the first trace triple in Supporting details. The pure renderer reproducer
+is `84584846865ffd3988d53d6182ff9d21f6fda759ec5b90a708f4ef54cd475827`.
+Correct only the fresh renderer: retain every exact constraint triple while
+deduplicating visual arrows. Preserve the old design6 branch byte-exact. The
+existing initial regression must retire before the one-file unfreeze, then a
+new source freeze, targeted delta review and final affected/browser proof follow.
+
+The focused source review also finds two typed-refusal gaps in the new design
+selector: unhashable version values escape as TypeError, and a missing required
+name on an explicitly named source escapes as KeyError. Existing string/text
+validation closes both without a fallback or new authority. All three findings
+are closed at full source freeze v4
+`8e4c59f1b05c6d258ae78c30a1bc0ce0654682c80e11e034e159c3cbc00f5e45`.
+Independent source review is clear
+(`890d7e857f05650e8c196ebc9370e5c7818bd6e4945ec9c7e1d2e52f8916cfa5`).
+The initial35-module regression retains163 failures/990 passes/15 errors. Its
+largest fixture family is corrected without changing original assertions:
+111 profile/driver checks pass. Historical presentation fixtures need explicit
+supported passive custody. Forty-one distinct browser cases and 56 hygiene checks
+pass across retained v4 runs, preserving all 413 original browser assertions.
+Eight desktop/mobile screenshots were visually reviewed; the synthetic fixtures
+prove presentation behavior, not domain narrative quality.
+
+The remaining ordering negatives expose a real typed-refusal defect: source-run
+comparison precedes canonical structural validation, leaking KeyError for a
+missing first run and ValueError for a missing terminal order. Move the unchanged
+comparison after design validation inside the existing typed exception boundary;
+retain every original negative assertion. No source authority, format, cap or
+stage changes. Source freeze v5 is
+`b161e6f36067175d58c03b5863c9216048b383cbe8ee0fc034ccd71770d73e4c`;
+independent static delta review is clear
+(`4cc1f50fa479a9cf80ae01102a2df102eab3061e89de374e5454ea215c21afee`).
+The other 32 source/watch files and shared fixture remain exact v4. Final affected
+tests, measured positive projection equality and native Mermaid artifact review
+remain required before checkpoint and the separate live successor.
+
+CI dependency review identifies a distinct historical-reader regression: the
+new unconditional source/design pair guard rejects previously supported passive
+semantic18/design6 exact-source evidence with no source-duty ledger. Fresh
+semantic19/canonical input without a ledger must remain refused. Independent
+preimage adjudication
+`c0ee044b9884c808de2dc7533d8cb95989b17b18aff28a8b48a36706623f2443`
+confirms the historical contract and the smallest correction: reader/hash callers
+pass their explicit semantic version to the shared pair owner, which accepts
+only that exact historical no-ledger tuple. Structural validation and hash payloads
+remain unchanged. Historical synthetic evaluator fixtures must use their actual
+passive version and exact source spans; they cannot masquerade as current output
+or gain invented receipts. No genuine no-ledger artifact is claimed by this test.
+Root approval is
+`947b54f2b2db65669d40d249ef5519b57cc0042b9297e0facefced170aff2727`.
+
+The complete preimage review also confirms semantic19/design6/no-ledger readback
+was supported before this change. Preserve both stored semantic18 and19 tuples;
+do not rewrite historical19 evidence as18. The existing hash version argument now
+distinguishes explicit historical selection from its strict omitted/default path;
+its resolved payload is unchanged. Current design7, canonical and mapping paths
+still require authenticated custody. Final source freeze v7 is
+`7a31a28d478c1784f28898a226ec51916d4bb5c58f732f56e03e1575c68c2f10`;
+independent static delta review is clear
+(`72e3d56461da6ded26a430692ad2739584cb7c4bde04660b79514ead38074f9e`).
+The 33-module v6 gate passes 1,069 tests, with the separately retained 111 profile
+checks. Final v7 evaluator coverage passes all 239 cases across eight modules,
+closing all 24 expanded fixture failures without changing assertions or thresholds.
+The release checker separately passes 96 controls and terminal custody passes
+three. Eight final v7 controls pass. Historical18/19 hashes and readback match
+bd7 exactly; current named/unnamed package bytes are unchanged across every freeze.
+Independent development-artifact review is scoped CLEAR with no actionable P0/P1
+(`cdf4d39849b430b6ac417f1822237eb30d3d199a3af59fc99ee2b8fbf6f48e97`).
+This supports checkpoint and one separately predeclared preview; source65 live,
+hosted CI, canonical H/B/D and release qualification remain open.
+
+## Prior source63 failure: optional context conflicts with participant custody (2026-10-15)
 
 The single source63 parent at pushed `290fc9a1e` fails source preflight after
 159.862 seconds. Authority and inventory complete; verification, candidate,

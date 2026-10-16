@@ -26,7 +26,7 @@ from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
 
 from odylith.runtime.domain_intelligence.greenfield_source_run_plan import compile_source_run_candidate
 
-HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v27"
+HOST_CANDIDATE_FORMAT_VERSION = "odylith.greenfield.host-candidate-format.v28"
 HOST_SOURCE_DUTY_BINDING_FIELD = "source_duty_binding"
 
 
@@ -58,11 +58,16 @@ def _context_citation_schema(*, description: str = "") -> dict[str, Any]:
     return schema
 
 
-def greenfield_host_candidate_schema() -> dict[str, Any]:
+def greenfield_host_candidate_schema(*, source_version: str | None = None) -> dict[str, Any]:
     """Return the closed host design shape after source-owned facts are verified."""
 
-    schema = greenfield_authoring_schema(source_event_graph=True)
-    schema["properties"]["version"]["enum"] = [HOST_CANDIDATE_FORMAT_VERSION]
+    historical = source_version in {"odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"}
+    if source_version not in {None, "odylith.greenfield.source-duty-ledger.v14"} and not historical:
+        raise ValueError("Greenfield host candidate source version is unsupported")
+    schema = greenfield_authoring_schema(source_event_graph=True, design_version=(
+        "odylith.greenfield.provisional-design.v6" if historical else "odylith.greenfield.provisional-design.v7"))
+    schema["properties"]["version"]["enum"] = [
+        "odylith.greenfield.host-candidate-format.v27" if historical else HOST_CANDIDATE_FORMAT_VERSION]
     authored = schema["properties"]["result"]["anyOf"][0]
     authored["properties"]["provisional_design"]["required"].append("project_summary")
     authored["required"].remove("components")
@@ -102,6 +107,9 @@ def greenfield_host_candidate_schema() -> dict[str, Any]:
     authored["required"].remove("events")
     authored["properties"].pop("events")
     facts["properties"].pop("title")
+    if not historical:
+        facts["required"].remove("customer")
+        facts["properties"].pop("customer")
     for field in ("human_actors", "internal_systems", "external_systems"):
         facts["properties"].pop(field)
     facts["properties"]["product_story"] = {"anyOf": [facts["properties"]["product_story"], {"type": "null"}]}
@@ -125,7 +133,9 @@ def canonical_greenfield_host_candidate(
     """Project unique host contexts into the unchanged canonical validator shape."""
 
     candidate = deepcopy(dict(response))
-    if candidate.get("version") != HOST_CANDIDATE_FORMAT_VERSION:
+    source_version = source_duty_receipt["ledger"]["version"]
+    schema = greenfield_host_candidate_schema(source_version=source_version)
+    if candidate.get("version") != schema["properties"]["version"]["enum"][0]:
         raise ValueError("Greenfield host candidate format version is invalid")
     result = candidate.get("result")
     if not isinstance(result, Mapping):
@@ -133,7 +143,7 @@ def canonical_greenfield_host_candidate(
     candidate["version"] = GREENFIELD_INTENT_AUTHORING_VERSION
     if result.get("status") == "clarification_required":
         return candidate
-    authored_schema = greenfield_host_candidate_schema()["properties"]["result"][
+    authored_schema = schema["properties"]["result"][
         "anyOf"
     ][0]
     if set(result) != set(authored_schema["required"]):

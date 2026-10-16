@@ -316,6 +316,8 @@ def _bounded_prior(lengths, root):
         host_candidate=candidate, source_duty_receipt=receipt, prepared_evidence=prepared)
     proposal = build_authored_greenfield_proposal(observed_source={},
         release_selector="0.0.1", confirmed_intent=intent)
+    from odylith.runtime.domain_intelligence.project_intelligence_binding import attach_project_intelligence_bindings
+    proposal = attach_project_intelligence_bindings(proposal)
     authority = intent[PRODUCT_INTENT_AUTHORITY_KEY]
     proposal[PRODUCT_INTENT_AUTHORITY_KEY] = authority
     package = _seal_test_package(_package(proposal, repo_root=root), repo_root=root)
@@ -526,6 +528,7 @@ def test_fresh_host62_refuses_valid_legacy_receipts_before_candidate_or_seal(tmp
             correction=fresh["correction"], evidence_text=source, _passive_allocations=True))
     ledger = deepcopy(ledger)
     ledger["version"] = "odylith.greenfield.source-duty-ledger.v10" if generation == "roster" else "odylith.greenfield.source-duty-ledger.v9"
+    ledger.pop("customer")
     for field in ("source_precedence", "first_run", "terminal"):
         ledger.pop(field)
     if generation == "roster":
@@ -547,7 +550,7 @@ def test_fresh_host62_refuses_valid_legacy_receipts_before_candidate_or_seal(tmp
     assert legacy["version"].endswith((".v21" if edit else ".v20") if generation == "roster" else (".v19" if edit else ".v18") if generation == "inline" else (".v17" if edit else ".v16"))
     assert verify_greenfield_source_duty_ledger_receipt(legacy, evidence_text=source) == legacy
     contract = host.greenfield_host_candidate_contract(source, edit_preservation=context)
-    assert contract["version"].endswith(".v64")
+    assert contract["version"].endswith(".v65")
     calls = []
     monkeypatch.setattr(host, "canonical_greenfield_host_candidate", lambda *a, **kw: calls.append("candidate/seal"))
     with pytest.raises(ValueError, match="receipt version"):

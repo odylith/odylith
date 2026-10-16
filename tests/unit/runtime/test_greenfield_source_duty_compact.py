@@ -76,6 +76,7 @@ def _inline(ledger: dict | None = None) -> dict:
     result = deepcopy(decode_source_duty_inventory(_compact()) if ledger is None else ledger)
     result.pop("version")
     if ledger is None:
+        result["customer"] = None
         result["nonperforming_participants"] = {field: [] for field in ("human_actors", "internal_systems", "external_systems")}
         result.update(source_precedence=[], first_run={"duty_ids": ["A1"]},
             terminal={"duty_id": "A1", "proof_boundary": deepcopy(result["first_path_actions"][0]["event_ref"]),

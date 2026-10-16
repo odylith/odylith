@@ -238,6 +238,9 @@ def test_run_reports_timeout_with_command_and_cwd(monkeypatch, tmp_path: Path) -
         "open_authored_result",
         "unknown_authored_field",
         "open_facts",
+        "unknown_fact",
+        "missing_fact",
+        "optional_fact",
         "custody_leak",
         "duplicate_component_authority",
         "missing_proposed_components",
@@ -270,6 +273,21 @@ def test_run_reports_timeout_with_command_and_cwd(monkeypatch, tmp_path: Path) -
         "optional_title",
         "reauthored_first_path",
         "reauthored_supporting_events",
+        "reauthored_customer",
+        "reauthored_human_actors",
+        "reauthored_internal_systems",
+        "reauthored_external_systems",
+        "reauthored_proof_boundary",
+        "reauthored_terminal",
+        "reauthored_source_precedence",
+        "reauthored_first_run_membership",
+        "open_first_run",
+        "unknown_first_run_field",
+        "missing_first_run_rationale",
+        "optional_first_run_rationale",
+        "non_string_first_run_rationale",
+        "empty_first_run_rationale",
+        "unbounded_first_run_rationale",
         "attempt",
         "subprocess",
         "missing_audit",
@@ -320,6 +338,7 @@ def test_greenfield_install_smoke_requires_read_only_candidate_contract(
         authored = schema["properties"]["result"]["anyOf"][0]
         facts = authored["properties"]["facts"]
         constraint_schema = facts["properties"]["operational_constraints"]["items"]
+        first_run = authored["properties"]["provisional_design"]["properties"]["first_run"]
         binding = authored["properties"]["source_duty_binding"]
         if defect == "wrong_version":
             payload["version"] = "odylith.greenfield.host-candidate-contract.v33"
@@ -339,6 +358,12 @@ def test_greenfield_install_smoke_requires_read_only_candidate_contract(
             authored["properties"]["unexpected"] = {"type": "string"}
         elif defect == "open_facts":
             facts["additionalProperties"] = True
+        elif defect == "unknown_fact":
+            facts["properties"]["unexpected"] = constraint_schema
+        elif defect == "missing_fact":
+            facts["properties"].pop("problem")
+        elif defect == "optional_fact":
+            facts["required"].remove("problem")
         elif defect == "custody_leak":
             constraint_schema["properties"]["constraint_custody"] = {"type": "object"}
         elif defect == "duplicate_component_authority":
@@ -418,6 +443,34 @@ def test_greenfield_install_smoke_requires_read_only_candidate_contract(
             field = "first_path" if defect == "reauthored_first_path" else "supporting_events"
             facts["properties"][field] = {"type": "array", "items": constraint_schema}
             facts["required"].append(field)
+        elif defect in {
+            "reauthored_customer", "reauthored_human_actors", "reauthored_internal_systems",
+            "reauthored_external_systems", "reauthored_proof_boundary",
+        }:
+            field = defect.removeprefix("reauthored_")
+            facts["properties"][field] = constraint_schema
+            facts["required"].append(field)
+        elif defect in {"reauthored_terminal", "reauthored_source_precedence"}:
+            field = defect.removeprefix("reauthored_")
+            authored["properties"][field] = {"type": "object"}
+            authored["required"].append(field)
+        elif defect == "reauthored_first_run_membership":
+            first_run["properties"]["event_orders"] = {"type": "array"}
+            first_run["required"].append("event_orders")
+        elif defect == "open_first_run":
+            first_run["additionalProperties"] = True
+        elif defect == "unknown_first_run_field":
+            first_run["properties"]["unexpected"] = {"type": "string"}
+        elif defect == "missing_first_run_rationale":
+            first_run["properties"].pop("rationale")
+        elif defect == "optional_first_run_rationale":
+            first_run["required"].remove("rationale")
+        elif defect == "non_string_first_run_rationale":
+            first_run["properties"]["rationale"]["type"] = "object"
+        elif defect == "empty_first_run_rationale":
+            first_run["properties"]["rationale"]["minLength"] = 0
+        elif defect == "unbounded_first_run_rationale":
+            first_run["properties"]["rationale"].pop("maxLength")
         stdout = "not-json" if defect == "invalid_json" else json.dumps(payload)
         return SimpleNamespace(
             returncode=2 if defect == "nonzero" else 0,
@@ -461,6 +514,11 @@ def test_release_smoke_pins_the_real_current_candidate_contract() -> None:
     assert "without another semantic call" in contract["task"]
     facts = contract["candidate_schema"]["properties"]["result"]["anyOf"][0]["properties"]["facts"]
     assert "title" not in facts["properties"] and "title" not in facts["required"]
+    authored = contract["candidate_schema"]["properties"]["result"]["anyOf"][0]
+    assert {"terminal", "source_precedence"}.isdisjoint(authored["properties"])
+    assert {"customer", "human_actors", "internal_systems", "external_systems", "proof_boundary"}.isdisjoint(facts["properties"])
+    first_run = authored["properties"]["provisional_design"]["properties"]["first_run"]
+    assert set(first_run["properties"]) == set(first_run["required"]) == {"rationale"}
     assert module._has_current_host_candidate_schema(contract["candidate_schema"])
 
 

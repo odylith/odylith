@@ -120,7 +120,7 @@ def _canonical_ref(evidence: bytes, value: Any) -> tuple[dict[str, Any], tuple[i
 
 def project_source_run_plan(ledger: Mapping[str, Any], *, evidence_text: str) -> dict[str, Any]:
     """Validate exact source choices and map duty IDs to existing canonical IDs."""
-    if ledger.get("version") not in {SOURCE_RUN_PLAN_LEDGER_VERSION, PREVIOUS_SOURCE_RUN_PLAN_LEDGER_VERSION}:
+    if ledger.get("version") not in {SOURCE_RUN_PLAN_LEDGER_VERSION, PREVIOUS_SOURCE_RUN_PLAN_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v14"}:
         raise ValueError("source run projection requires its exact ledger version")
     if ledger["status"] == "clarification_required":
         if ledger["source_precedence"] or ledger["first_run"] != {"duty_ids": []} or ledger["terminal"] is not None:

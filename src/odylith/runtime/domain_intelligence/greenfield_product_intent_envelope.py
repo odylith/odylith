@@ -284,7 +284,7 @@ def build_product_intent_envelope(
         authored_relations, source_duty=source_duty, source_text=str(source_text or "")
     )
     receipt = source_duty["ledger_receipt"]
-    if receipt["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"}:
+    if receipt["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13", "odylith.greenfield.source-duty-ledger.v14"}:
         identity = receipt["ledger"]["product_identity"]["source_ref"]
         canonical = canonical_citation_from_host_selection(source_bytes, identity)
         quote, start = resolve_source_citation(source_bytes, canonical)
@@ -305,7 +305,7 @@ def build_product_intent_envelope(
         facts=facts,
         normalized_duties=normalized_duties,
     )
-    if receipt["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"}:
+    if receipt["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13", "odylith.greenfield.source-duty-ledger.v14"}:
         from odylith.runtime.domain_intelligence.greenfield_source_run_plan import require_source_run_fact_custody
         require_source_run_fact_custody(receipt["ledger"], evidence_text=source_text, source_spans=spans)
     _verify_authored_atomic_claim_source(
@@ -400,9 +400,9 @@ def _verified_normalized_action_duties(
     ledger = verified["ledger"]
     by_order: dict[int, Mapping[str, Any]] = {}
     path_orders: set[int] = set()
-    if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v6", "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"}:
+    if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v6", "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13", "odylith.greenfield.source-duty-ledger.v14"}:
         catalog = project_greenfield_source_event_catalog(verified, evidence_text=source_text,
-                    _passive=ledger["version"] not in {"odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"})
+                    _passive=ledger["version"] not in {"odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13", "odylith.greenfield.source-duty-ledger.v14"})
         if any(binding[section] != rows for section, rows in catalog["action_bindings"].items()):
             raise ValueError("model-authored Product Intent action binding differs from its frozen source catalog")
         by_order = catalog["actions"]

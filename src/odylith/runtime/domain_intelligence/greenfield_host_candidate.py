@@ -60,8 +60,9 @@ from odylith.runtime.domain_intelligence.greenfield_authority_gate import (
 )
 
 HOST_CANDIDATE_RECEIPT_VERSION = "odylith.greenfield.host-candidate.v7"
-HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v64"
+HOST_CANDIDATE_CONTRACT_VERSION = "odylith.greenfield.host-candidate-contract.v65"
 PASSIVE_HOST_CANDIDATE_CONTRACT_VERSIONS = (
+    "odylith.greenfield.host-candidate-contract.v64",
     "odylith.greenfield.host-candidate-contract.v63",
     "odylith.greenfield.host-candidate-contract.v62",
     "odylith.greenfield.host-candidate-contract.v61",
@@ -237,7 +238,7 @@ def greenfield_host_candidate_contract(
                 "product_identity, using one exact source_ref and basis explicit_name or product_description. "
                 "A useful source-cited descriptive identity is required when the description has no formal name. "
                 "Do not use a generic product pronoun, background library, incidental heading or authority. "
-                "Identity alone is not an action or performer. Inventory every material source-owned nonperforming "
+                "Identity alone is not an action or performer. Independently select the project audience or primary beneficiary in customer using an exact quote/context citation, or explicit null when safely absent. An individual workflow actor cannot replace an explicit team or audience. Neither reference_context nor authoring_instruction supports a customer claim. Inventory every material source-owned nonperforming "
                 "participant under nonperforming_participants, with all three typed arrays present even when empty. "
                 "Cite an exact useful short entity name and exact unique locating context, never an entire clause. "
                 "Every nonperformer citation requires an explicit positive one-based mention_ordinal, even 1 for a unique "
@@ -410,7 +411,7 @@ def greenfield_host_candidate_authoring_request(
             "accepted_source_duty_inventory is the lossless accepted ledger with citations "
             "interned by ID. Resolve each citation ID through result.citations: q is its exact quote "
             "and c its exact source context. source_event_catalog freezes every performer "
-            "and event before candidate authoring; source_owned_participant_facts fixes the complete typed "
+            "and event before candidate authoring; source_owned_participant_facts fixes the verified project customer and complete typed "
             "roster with performer prefixes followed by verified nonperformers. Do not author human_actors, "
             "internal_systems or external_systems in candidate facts. Performer actor_ref IDs address this same "
             "citation bank. Do not redefine its identities or event IDs. Preserve all duty IDs, row order, roles, and evidence "

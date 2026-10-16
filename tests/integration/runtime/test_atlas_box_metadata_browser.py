@@ -525,3 +525,71 @@ def test_default_diagram_prioritizes_complete_narrative_and_keeps_exact_metadata
         assert disclosure.get_attribute("open") is None and atlas.locator("#diagramId").is_hidden()
         assert atlas.locator("#diagramSummary").text_content() == narrative
         _assert_clean_page(page, observation)
+
+
+@pytest.mark.parametrize("width", [1440, 430, 390], ids=["desktop", "mobile", "narrow-mobile"])
+@pytest.mark.parametrize("state", ["normal", "fallback", "error"])
+def test_design7_compiled_first_run_keeps_narrative_and_folded_trace(
+    tmp_path, browser_context, width: int, state: str,
+) -> None:  # noqa: ANN001
+    from tests.unit.runtime.greenfield_model_authoring_fixtures import fresh_project_projection_fixture
+
+    case = fresh_project_projection_fixture(tmp_path / "projection", named=False)
+    expected = case["expected"]
+    first_run = case["first_run_atlas"]
+    compiled = next(row for row in case["prewrite"].package.atlas_catalog_rows
+                    if row["slug"] == first_run["slug"])
+    assert compiled["diagram_boxes"] == first_run["diagram_boxes"]
+    relations = case["intent"]["authored_semantics"]["source_event_relations"]
+    assert case["intent"]["authored_semantics"]["source_precedence"] == expected["source_precedence"]
+    assert expected["source_precedence"]
+    event_boxes = {box["node_id"]: box for box in compiled["diagram_boxes"] if box["node_id"].startswith("event")}
+    assert list(event_boxes) == [f"event{order}" for order in expected["event_orders"]]
+    traces = {
+        f"event{edge['after_event']}": {
+            "label": "Source prerequisite",
+            "text": (f"before_event={edge['before_event']}; after_event={edge['after_event']}; "
+                     f"constraint_index={edge['constraint_index']}"),
+        } for edge in expected["source_precedence"]
+    }
+    before = json.dumps({"compiled": compiled, "source": first_run["mermaid_source"]}, sort_keys=True)
+    display = {**compiled, "source_svg_href": "/metadata-preview.svg", "source_png_href": "/metadata-preview.png"}
+    with _open_metadata(browser_context, width, state, related=display) as (page, atlas, observation):
+        rows = atlas.locator(".diagram-box-row")
+        assert rows.count() == len(compiled["diagram_boxes"])
+        assert atlas.locator("body").evaluate(
+            "(_body, slug) => allDiagrams.find(row => row.slug === slug).diagram_boxes", compiled["slug"],
+        ) == compiled["diagram_boxes"]
+        assert "before_event=" not in atlas.locator("#diagramBoxList").inner_text()
+        for relation in relations:
+            node_id = f"event{relation['order']}"
+            if node_id not in event_boxes:
+                continue
+            index = next(index for index, box in enumerate(compiled["diagram_boxes"]) if box["node_id"] == node_id)
+            row = rows.nth(index)
+            title = row.locator(".diagram-box-name strong")
+            title.scroll_into_view_if_needed()
+            assert title.text_content() == f"{relation['action_verb_quote']} {relation['target_quote']}"
+            assert not _text_bounds(title)["clipped"]
+            assert row.locator(".diagram-box-description").text_content() == relation["event_quote"]
+            assert event_boxes[node_id]["role"] == f"{relation['actor_kind']} event"
+            disclosure = row.locator("details.diagram-box-details")
+            assert disclosure.get_attribute("open") is None and disclosure.locator("dd").first.is_hidden()
+            disclosure.locator("summary").focus()
+            disclosure.locator("summary").press("Enter")
+            supplied = [{"label": "Role", "text": event_boxes[node_id]["role"]}, *event_boxes[node_id]["details"]]
+            assert disclosure.locator("dt").all_text_contents() == [item["label"] for item in supplied]
+            assert disclosure.locator("dd").all_text_contents() == [item["text"] for item in supplied]
+            if node_id in traces:
+                assert traces[node_id] in event_boxes[node_id]["details"]
+                for value in disclosure.locator("dd").all():
+                    value.scroll_into_view_if_needed()
+                    assert not _text_bounds(value)["clipped"]
+                _capture(page, f"design7-atlas-trace-{width}-{state}", {"node": node_id, "trace": traces[node_id]})
+            disclosure.locator("summary").focus()
+            disclosure.locator("summary").press("Space")
+            assert disclosure.get_attribute("open") is None
+        assert not atlas.locator("body").evaluate("body => body.scrollWidth > innerWidth+1")
+        assert json.dumps({"compiled": compiled, "source": first_run["mermaid_source"]}, sort_keys=True) == before
+        _capture(page, f"design7-atlas-first-run-{width}-{state}", {"events": list(event_boxes), "traces": traces})
+        _assert_clean_page(page, observation)

@@ -19,8 +19,9 @@ from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import authored_relation_set_sha256
 from odylith.runtime.domain_intelligence.greenfield_host_candidate_materialization import materialize_host_authored_intent
 from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import prepare_model_authoring_evidence
-from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import validate_greenfield_authoring_response
-from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import STANDARD_PROFILE_ID
+from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import _intent_from_typed_source_spans
+from odylith.runtime.domain_intelligence.greenfield_model_direct_evidence_graph import derive_model_relations, model_component_responsibility_rows
+from odylith.runtime.domain_intelligence.greenfield_model_atomic_projection import derive_model_atomic_claims
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import authored_semantics_mapping
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     product_facts_hash,
@@ -55,6 +56,7 @@ def _normalized_snapshot(tmp_path):
          "id": f"support-{index}", "statement": f"A reviewer defines {target}", "target": target}
         for index, target in enumerate(targets, 1)
     ]
+    ledger["first_run"]["duty_ids"] = [human["id"], product["id"]]
     ledger["state_fields"] = [{
         "id": "access-field", "state_object": "scope and audience", "field": "access",
         "meaning": "access availability",
@@ -72,12 +74,11 @@ def _normalized_snapshot(tmp_path):
     prepared = prepare_model_authoring_evidence(prompt=source)
     receipt = synthetic_source_duty_receipt_for_ledger(ledger, evidence_text=prepared.evidence_source)
     result = candidate["result"]
-    result["terminal"]["event_order"] = 2
-    result["terminal"]["result_fact"]["row"] = 2
     result["provisional_design"] = {
-        **structural_design_fixture(range(1, 9), first_run_event_orders=[1, 2]),
+        **structural_design_fixture(range(1, 9), first_run_event_orders=[1, 2], project_name="Review Desk"),
         "project_summary": result["provisional_design"]["project_summary"],
     }
+    result["provisional_design"]["first_run"].pop("event_orders")
     binding = result["source_duty_binding"]
     binding["source_sha256"] = receipt["source_sha256"]
     binding["ledger_sha256"] = receipt["ledger_sha256"]
@@ -279,34 +280,40 @@ def _current_snapshot(tmp_path):
 
 
 def _exact_source_evaluator_snapshot():
-    """Exercise exact-source evaluator data without admitting it through the current compiler."""
+    """Synthetic historical19/design6 data, never a current admission or retained artifact."""
     source = _source()
     prepared = prepare_model_authoring_evidence(prompt=source)
-    result = validate_greenfield_authoring_response(
-        authored_response(_INTENT, evidence_text=prepared.evidence_source,
-                          first_path_relations=_RELATIONS, component_responsibility_owners=["Berth map"]),
-        evidence_text=prepared.evidence_source, elapsed_seconds=1,
-        provider={"kind": "fixture"}, profile_id=STANDARD_PROFILE_ID,
-        effective_timeout_seconds=315, semantic_model_call_count=1,
-    )
-    semantics = authored_semantics_mapping(
-        result.source_event_relations, result.component_responsibility_relations,
-        first_path_context_relations=result.first_path_context_relations,
-        provisional_design=result.provisional_design, source_duty=None,
-    )
-    facts = product_facts_payload(result.intent)
+    # Reuse declared citation data and exact-span owners, not current admission.
+    raw = authored_response(_INTENT, evidence_text=prepared.evidence_source,
+        first_path_relations=_RELATIONS, component_responsibility_owners=["Berth map"],
+        provisional_design=structural_design_fixture((1, 2, 3), version="odylith.greenfield.provisional-design.v6"))["result"]
+    intent, _spans, selected = _intent_from_typed_source_spans(raw["facts"],
+        component_rows=model_component_responsibility_rows(raw["components"]), evidence_text=prepared.evidence_source,
+        assumptions=raw["assumptions"], ambiguities=raw["ambiguities"], normalized_actions={})
+    relations = derive_model_relations(events=raw["events"], terminal=raw["terminal"], components=raw["components"],
+        selected_facts=selected, first_path=intent["first_path"], evidence_text=prepared.evidence_source)
+    claims = derive_model_atomic_claims(intent=intent, selected_facts=selected,
+        first_path_relations=relations.source_event_relations, terminal_result_fact=relations.terminal_result_fact)
+    semantics = {
+        "version": "odylith.greenfield.authored-semantics.v19",
+        "source_event_relations": [dict(row) for row in relations.source_event_relations],
+        "first_path_context_relations": [dict(row) for row in relations.first_path_context_relations],
+        "component_responsibility_relations": [dict(row) for row in relations.component_responsibility_relations],
+        "source_precedence": [], "source_duty": None, "provisional_design": raw["provisional_design"],
+    }
+    facts = product_facts_payload(intent)
     spans = []
-    append_atomic_source_spans(spans, authored_atomic_claims=result.atomic_claims)
-    atoms = build_atomic_fact_ledger(facts=facts, spans=spans, authored_atomic_claims=result.atomic_claims)
+    append_atomic_source_spans(spans, authored_atomic_claims=claims)
+    atoms = build_atomic_fact_ledger(facts=facts, spans=spans, authored_atomic_claims=claims)
     snapshot = {
         "facts": facts, "authored_semantics": semantics,
         "atomic_facts": atoms, "atomic_custody_sha256": atomic_fact_ledger_hash(atoms),
         "product_facts_sha256": product_facts_hash(facts),
         "authored_relation_set_sha256": authored_relation_set_sha256(
-            result.source_event_relations, result.component_responsibility_relations,
-            first_path_context_relations=result.first_path_context_relations,
+            relations.source_event_relations, relations.component_responsibility_relations,
+            first_path_context_relations=relations.first_path_context_relations,
             source_precedence=semantics["source_precedence"], source_duty=None,
-            provisional_design=result.provisional_design,
+            provisional_design=semantics["provisional_design"], semantics_version=semantics["version"],
         ),
     }
     return SimpleNamespace(prompt=source, confirmed_intent_markdown=""), snapshot

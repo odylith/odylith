@@ -95,7 +95,7 @@ def _shared_clause_candidate() -> tuple[str, object, dict, dict]:
     result["events"].insert(1, second_event)
     result["terminal"]["event_order"] = 3
     result["terminal"]["result_fact"]["row"] = 3
-    result["provisional_design"] = structural_design_fixture([1, 2, 3])
+    result["provisional_design"] = structural_design_fixture([1, 2, 3], project_name="Review Desk")
     candidate = host_candidate_response(response, evidence_text=evidence)
     ledger = copy.deepcopy(synthetic_source_duty_receipt(candidate, evidence_text=evidence)["ledger"])
     ledger["first_path_actions"][0]["statement"] = "A reviewer defines scope"

@@ -26,7 +26,7 @@ from tests.unit.runtime.test_greenfield_authored_project_dashboard import (
     PROPOSED_FIRST_RUN,
     _accepted_preview,
     _completion_package,
-    _proposal,
+    _proposal, _bind_passive_fixture,
     _source_launch_context,
 )
 
@@ -46,6 +46,7 @@ def _provisional_proof_proposal() -> dict[str, object]:
     ]
     for relation in intent["authored_semantics"]["source_event_relations"]:
         relation["visible_result_quote"] = ""
+    _bind_passive_fixture(intent)
     return build_authored_greenfield_proposal(
         observed_source={"source_posture": "operator prompt evidence"},
         release_selector="0.0.1",

@@ -25,7 +25,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_relation_validation
     require_first_path_actor_binding,
     validate_first_path_relations,
 )
-from odylith.runtime.domain_intelligence.greenfield_provisional_design import validate_provisional_design
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import validate_provisional_design, require_source_design_pair
 from odylith.runtime.domain_intelligence.greenfield_event_ordering import (
     validate_first_run, validate_source_precedence,
 )
@@ -592,7 +592,7 @@ def _authored_relations_from_intent(
             raise GreenfieldAuthoredSemanticsError("Greenfield source-duty custody is malformed")
         receipt = source_duty.get("ledger_receipt")
         ledger = receipt.get("ledger") if isinstance(receipt, Mapping) else None
-        supported_ledgers = ({"odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"}
+        supported_ledgers = ({"odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13", "odylith.greenfield.source-duty-ledger.v14"}
                              if semantics["version"] == AUTHORED_SEMANTICS_VERSION else
                              {"odylith.greenfield.source-duty-ledger.v5", "odylith.greenfield.source-duty-ledger.v6", "odylith.greenfield.source-duty-ledger.v7"})
         if not isinstance(ledger, Mapping) or ledger.get("version") not in supported_ledgers:
@@ -647,6 +647,10 @@ def _authored_relations_from_intent(
             event_orders=tuple(row["order"] for row in first_path_relations),
             operational_constraints=intent_text_rows(intent.get("operational_constraints")),
         )
+        require_source_design_pair(
+            semantics["provisional_design"], source_duty=source_duty,
+            semantics_version=semantics["version"],
+        )
         validate_provisional_design(
             semantics["provisional_design"],
             event_orders=tuple(row["order"] for row in first_path_relations),
@@ -660,7 +664,7 @@ def _authored_relations_from_intent(
                 None,
             ),
         )
-        if selected_orders is not None and source_duty["ledger_receipt"]["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"}:
+        if selected_orders is not None and source_duty["ledger_receipt"]["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13", "odylith.greenfield.source-duty-ledger.v14"}:
             from odylith.runtime.domain_intelligence.greenfield_source_run_plan import require_source_run_projection
             require_source_run_projection(source_duty["ledger_receipt"]["ledger"], evidence_text=intent["prompt"],
                 facts=intent, source_precedence=source_precedence,

@@ -16,7 +16,8 @@ from odylith.runtime.domain_intelligence.greenfield_event_ordering import (
     validate_first_run,
 )
 
-PROVISIONAL_DESIGN_VERSION = "odylith.greenfield.provisional-design.v6"
+PROVISIONAL_DESIGN_VERSION = "odylith.greenfield.provisional-design.v7"
+PASSIVE_PROVISIONAL_DESIGN_VERSION = "odylith.greenfield.provisional-design.v6"
 PROVISIONAL_DESIGN_AUTHORITY_KIND = "provisional_design"
 _TEXT = {"type": "string", "minLength": 1, "maxLength": 4000}
 _KEY = {"type": "string", "minLength": 1, "maxLength": 80, "pattern": "^[a-z][a-z0-9-]*$"}
@@ -153,11 +154,12 @@ PROVISIONAL_DESIGN_SCHEMA = {
     "additionalProperties": False,
     "required": [
         "version", "authority_kind", "components", "workstreams", "exchanges", "first_run",
-        "risk_posture",
+        "risk_posture", "project_name",
     ],
     "properties": {
         "version": {"type": "string", "const": PROVISIONAL_DESIGN_VERSION},
         "authority_kind": {"type": "string", "const": PROVISIONAL_DESIGN_AUTHORITY_KIND},
+        "project_name": {**_TEXT, "description": "A concise proposed project name. Retain an explicit verified source name exactly; for an unnamed description propose a readable noun phrase. This name is provisional design, not a source fact."},
         "project_summary": {
             **_TEXT, "maxLength": 600,
             "description": (
@@ -176,6 +178,50 @@ PROVISIONAL_DESIGN_SCHEMA = {
 }
 
 
+def provisional_design_schema(version: str = PROVISIONAL_DESIGN_VERSION) -> dict[str, Any]:
+    """Select an exact supported presentation shape; this grants no source authority."""
+    if not isinstance(version, str) or version not in {PROVISIONAL_DESIGN_VERSION, PASSIVE_PROVISIONAL_DESIGN_VERSION}:
+        raise ValueError("Greenfield provisional design has an unsupported authority contract")
+    schema = deepcopy(PROVISIONAL_DESIGN_SCHEMA)
+    schema["properties"]["version"]["const"] = version
+    if version == PASSIVE_PROVISIONAL_DESIGN_VERSION:
+        schema["required"].remove("project_name")
+        schema["properties"].pop("project_name")
+    return schema
+
+
+def require_source_design_pair(
+    design: Mapping[str, Any], *, source_duty: Mapping[str, Any] | None,
+    semantics_version: str | None = None,
+) -> None:
+    """Bind design revision and explicit-name use at authoritative product boundaries."""
+    if (source_duty is None and semantics_version in (
+            "odylith.greenfield.authored-semantics.v18", "odylith.greenfield.authored-semantics.v19")
+            and isinstance(design, Mapping) and design.get("version") == PASSIVE_PROVISIONAL_DESIGN_VERSION):
+        return
+    receipt = source_duty.get("ledger_receipt") if isinstance(source_duty, Mapping) else None
+    ledger = receipt.get("ledger") if isinstance(receipt, Mapping) else None
+    source_version = ledger.get("version") if isinstance(ledger, Mapping) else None
+    if not isinstance(source_version, str) or source_version not in {f"odylith.greenfield.source-duty-ledger.v{i}" for i in range(5, 15)}:
+        raise ValueError("Greenfield design requires authenticated source custody")
+    fresh = source_version == "odylith.greenfield.source-duty-ledger.v14"
+    if not isinstance(design, Mapping) or design.get("version") != (PROVISIONAL_DESIGN_VERSION if fresh else PASSIVE_PROVISIONAL_DESIGN_VERSION):
+        raise ValueError("Greenfield source/design version pair is invalid")
+    if fresh:
+        _require_text(design.get("project_name"), maximum=4000)
+    if fresh and ledger["product_identity"]["basis"] == "explicit_name" and design["project_name"] != ledger["product_identity"]["source_ref"]["quote"]:
+        raise ValueError("Proposed project name differs from the explicit verified source name")
+
+
+def project_presentation_name(*, source_title: str, design: Mapping[str, Any]) -> str:
+    """Read the version-owned name after shape validation; never claim source meaning."""
+    version = design.get("version")
+    provisional_design_schema(version)
+    name = design.get("project_name") if version == PROVISIONAL_DESIGN_VERSION else source_title
+    _require_text(name, maximum=4000)
+    return name
+
+
 def validate_provisional_design(
     value: Any, *, event_orders: Sequence[int],
     source_precedence: Sequence[Mapping[str, int]] = (), result_event_order: int | None = None,
@@ -184,12 +230,13 @@ def validate_provisional_design(
 
     if (
         not isinstance(value, Mapping)
-        or not set(PROVISIONAL_DESIGN_SCHEMA["required"]).issubset(value)
-        or not set(value).issubset(PROVISIONAL_DESIGN_SCHEMA["properties"])
-        or value.get("version") != PROVISIONAL_DESIGN_VERSION
+        or not set(provisional_design_schema(value.get("version"))["required"]).issubset(value)
+        or not set(value).issubset(provisional_design_schema(value.get("version"))["properties"])
         or value.get("authority_kind") != PROVISIONAL_DESIGN_AUTHORITY_KIND
     ):
         raise ValueError("Greenfield provisional design has an unsupported authority contract")
+    if value["version"] == PROVISIONAL_DESIGN_VERSION:
+        _require_text(value["project_name"], maximum=4000)
     if "project_summary" in value:
         _require_text(value["project_summary"], maximum=600)
     if (
@@ -403,6 +450,7 @@ def provisional_design_from_intent(intent: Mapping[str, Any]) -> dict[str, Any]:
 
     relations = source_event_relations_from_intent(intent)
     semantics = intent.get(AUTHORED_SEMANTICS_KEY) if isinstance(intent, Mapping) else None
+    require_source_design_pair(semantics.get("provisional_design"), source_duty=semantics.get("source_duty"))
     return validate_provisional_design(
         semantics.get("provisional_design") if isinstance(semantics, Mapping) else None,
         event_orders=tuple(row["order"] for row in relations),
@@ -478,7 +526,8 @@ def _require_unique_identities(rows: Sequence[Mapping[str, Any]], *, display_fie
 __all__ = [
     "PROVISIONAL_DESIGN_AUTHORITY_KIND",
     "PROVISIONAL_DESIGN_SCHEMA",
-    "PROVISIONAL_DESIGN_VERSION",
+    "PROVISIONAL_DESIGN_VERSION", "PASSIVE_PROVISIONAL_DESIGN_VERSION",
+    "provisional_design_schema", "require_source_design_pair", "project_presentation_name",
     "derive_risk_scope",
     "provisional_design_from_intent",
     "validate_provisional_design",

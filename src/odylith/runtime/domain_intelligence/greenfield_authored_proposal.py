@@ -31,7 +31,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     first_path_relations_from_intent, source_event_relations_from_intent,
 )
 from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
-    provisional_design_from_intent,
+    provisional_design_from_intent, project_presentation_name,
 )
 from odylith.runtime.domain_intelligence.greenfield_provisional_package import (
     build_provisional_backlog,
@@ -89,9 +89,11 @@ def build_authored_greenfield_proposal(
     first_path_context_relations = first_path_context_relations_from_intent(confirmed_intent)
     release = str(release_selector or "").strip() or greenfield_programs.DEFAULT_GREENFIELD_RELEASE_SELECTOR
     title = _required_text(confirmed_intent, "title")
-    product_slug = slugify(title) or "greenfield-project"
+    provisional_design = provisional_design_from_intent(confirmed_intent)
+    display_name = project_presentation_name(source_title=title, design=provisional_design)
+    product_slug = slugify(display_name) or "greenfield-project"
     source_duty = confirmed_intent[AUTHORED_SEMANTICS_KEY]["source_duty"]
-    narrative = bool(source_duty and source_duty["ledger_receipt"]["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"})
+    narrative = bool(source_duty and source_duty["ledger_receipt"]["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13", "odylith.greenfield.source-duty-ledger.v14"})
     walkthrough = authored_first_run_text(confirmed_intent)
     first_path = str(confirmed_intent["first_path"]) if narrative else walkthrough
     first_run_relations = authored_first_run_relations(confirmed_intent)
@@ -107,7 +109,6 @@ def build_authored_greenfield_proposal(
     operational_constraints = _strings(confirmed_intent.get("operational_constraints"))
     evidence_requirements = _strings(confirmed_intent.get("evidence_requirements"))
     success_metrics = _strings(confirmed_intent.get("success_metrics"))
-    provisional_design = provisional_design_from_intent(confirmed_intent)
     risk_posture = copy.deepcopy(provisional_design["risk_posture"])
     visible_result = authored_checkpoint_text(confirmed_intent)
     source_components = _source_components(
@@ -220,7 +221,7 @@ def build_authored_greenfield_proposal(
         },
         "validation_strategy": validation_strategy,
         "project_brief": _project_brief(
-            title=title,
+            title=display_name,
             product_story=product_story,
             problem=decision_copy(confirmed_intent, "problem"),
             product_view=decision_copy(confirmed_intent, "product_view"),
@@ -239,7 +240,7 @@ def build_authored_greenfield_proposal(
             walkthrough=walkthrough if narrative else None,
         ),
         "project_intelligence": _project_intelligence(
-            title=title,
+            title=display_name,
             product_story=product_story,
             problem=_text(confirmed_intent.get("problem")),
             customer=_text(confirmed_intent.get("customer")),
@@ -258,7 +259,7 @@ def build_authored_greenfield_proposal(
             assumptions=assumptions,
         ),
         "release_plan": _release_plan(
-            title=title,
+            title=display_name,
             product_slug=product_slug,
             release=release,
             proof_boundary=proof_boundary,

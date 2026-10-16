@@ -86,7 +86,7 @@ def _accepted_ledger(ledger: dict, *, evidence_text: str) -> dict:
         "verifier_task_sha256": task["verifier_task_sha256"],
         "source_completeness": {"verdict": "yes", "omissions": []},
         "participant_decisions": {key: {field: "yes" for field in ("entity_name", "participant_type", "nonperformance", "identity_nonduplication")} for key in preflight["participant_claims"]},
-        "product_identity": {"verdict": "yes"},
+        "product_identity": {"verdict": "yes"}, "customer": {"verdict": "yes"},
         "decisions": {
             claim["duty_id"]: {
                 "verdict": "yes",
@@ -425,27 +425,28 @@ def test_partial_component_constraint_overlap_is_rejected() -> None:
 
 
 def test_exact_component_constraint_dual_role_is_retained() -> None:
-    source = _source()
-    candidate = _response(source)
-    constraint = candidate["result"]["facts"]["operational_constraints"][0]
-    candidate["result"]["components"][0]["responsibilities"][0] = {
-        "quote": constraint["quote"],
-        "occurrence": 1,
-    }
-
-    authored = validate_greenfield_authoring_response(
-        candidate, evidence_text=source, elapsed_seconds=0.0, provider={},
-        profile_id=STANDARD_PROFILE_ID, effective_timeout_seconds=300.0, semantic_model_call_count=1,
-        allow_exact_dual_role_constraints=True,
-    )
-
-    exact = [
-        row
-        for row in authored.component_responsibility_relations
-        if row["responsibility_quote"] == constraint["quote"]
-    ]
+    clause = "Berth map retains source notes for seven years"
+    source = _source() + " " + clause + "."
+    response = _response(source)
+    response["result"]["facts"]["operational_constraints"] = [{"quote": clause, "occurrence": 1}]
+    candidate = host_candidate_response(response, evidence_text=source)
+    ledger = copy.deepcopy(synthetic_source_duty_receipt(candidate, evidence_text=source)["ledger"])
+    ref = {"quote": clause, "context": clause}
+    actor = copy.deepcopy(ledger["first_path_actions"][1]["actor_ref"])
+    ledger["system_duties"].append({"id": "retention-invariant", "execution_kind": "recurring_invariant",
+        "performer_role": "internal_system", "source_refs": [], "statement": clause,
+        "event_ref": ref, "actor_ref": actor, "role_refs": [ref, actor], "action": "retains", "target": "source notes for seven years"})
+    receipt = _accepted_ledger(ledger, evidence_text=source)
+    candidate["result"]["source_duty_binding"].update(ledger_sha256=receipt["ledger_sha256"], source_sha256=receipt["source_sha256"])
+    design = candidate["result"]["provisional_design"]
+    design["components"][0]["supported_event_orders"].append(4)
+    design["components"][0]["verification_event_orders"].append(4)
+    design["workstreams"][0]["verification_event_orders"].append(4)
+    authored, _ = admit_greenfield_host_candidate(candidate, evidence_text=source, source_duty_receipt=receipt)
+    exact = [row for row in authored.component_responsibility_relations if row["responsibility_quote"] == clause]
     assert len(exact) == 1
     assert exact[0]["owner_system_quote"] == "Berth map"
+
 
 
 def test_multisource_receipt_preserves_exact_combined_evidence_and_citations(
@@ -588,8 +589,8 @@ def test_bound_system_prerequisite_survives_admission_and_canonical_reload(
     ]
     source_duty = materialized["authored_semantics"]["source_duty"]
     assert source_duty["ledger_receipt"] == original_receipt
-    assert source_duty["ledger_receipt"]["version"].endswith(".v27" if edit_evidence else ".v26")
-    assert source_duty["ledger_receipt"]["decision_set"]["version"].endswith(".v21" if edit_evidence else ".v20")
+    assert source_duty["ledger_receipt"]["version"].endswith(".v29" if edit_evidence else ".v28")
+    assert source_duty["ledger_receipt"]["decision_set"]["version"].endswith(".v23" if edit_evidence else ".v22")
     assert [row["event_order"] for row in source_duty["binding"]["first_path_actions"]] == [1, 2]
     assert [row["event_order"] for row in source_duty["binding"]["system_duties"]] == [3]
     reloaded = json.loads(json.dumps(materialized))
@@ -614,8 +615,8 @@ def test_fresh_candidate_requires_summary_in_schema_and_deterministic_admission(
     source, candidate = _candidate()
     contract = greenfield_host_candidate_contract(source)
     design_schema = contract["candidate_schema"]["properties"]["result"]["anyOf"][0]["properties"]["provisional_design"]
-    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v64"
-    assert contract["candidate_version"] == "odylith.greenfield.host-candidate-format.v27"
+    assert contract["version"] == "odylith.greenfield.host-candidate-contract.v65"
+    assert contract["candidate_version"] == "odylith.greenfield.host-candidate-format.v28"
     assert "project_summary" in design_schema["required"]
     assert design_schema["properties"]["project_summary"]["maxLength"] == 600
     assert any("not an accepted source fact" in requirement for requirement in contract["requirements"])

@@ -1,6 +1,135 @@
 Status: In progress
 
-## Current gate: resolve contradictory source-context ownership (2026-10-15)
+## Current gate: correct customer and human presentation ownership (2026-10-15)
+
+The one pushed-source64 preview at `bd7ffa84ab` completes in 325.758 seconds and
+delivers a sealed proposal with four model stages, one proposal and zero
+post-receipt provider calls. Independent source-first review passes the complete
+workflow/lifecycle/proof/authority contract, but does not clear projection quality:
+all five Radar workstreams use one registrar customer despite the explicit museum
+team; a purpose sentence becomes the title and path prefix; Atlas exposes machine
+trace labels. Review SHA-256:
+`b1c68686c4012036851e943f61c007803a2bb2b6c852167e9333a092834f49b9`.
+
+Preserve the unchanged transaction and completion receipt, 60-member raw archive
+`991066bca42c1e16c2b001cc58b5e7ca00f606d08961873da0d1fdfa4027ebe6`,
+consumer and canonical journal. All 25 source pins and the strict baseline remain
+exact, and both supervising processes are retired. There is no confirmation,
+create, EDIT, publication or release credit; timing remains diagnostic.
+
+Implement the reviewed correction in existing owners: independently verified
+project-customer source meaning; a concise provisional display name that does not
+change the exact source identity; and direct first-run action narratives with
+trace metadata in details. Preserve broad free-form evidence, roles, all eight
+duty sections, complete-run/proof ownership, unchanged stage/cap counts and exact
+historical transaction readback. Do not add a reviewer/repair/retry stage or repair
+this retained candidate. One implementation leaf owns the source and direct
+tests; a separate leaf owns three disjoint browser tests. Root owns governance.
+H/B/D, fixed44, genuine EDIT4, native/UX qualification and GA remain open;
+protected final stays closed. Existing historical private drivers must be bound
+prospectively to canonical D; their old absolute paths must not be executed.
+
+### Reviewed correction scope
+
+Adopt the single customer/name/Atlas design
+`5f8ca22848381b1054d4dec4be012ce547baf1dbf8aaf8f0e7a002cd0c54fb29`,
+Atlas handoff `e403062e2a3382e74cd255a8b59062bfe3f47d173b58ae2d47f2abaffd2c4094`,
+and presenter amendment
+`ee543327cdec3b2adf924129cdf443e944c4337f3855f3b40e8e05835fc1f40f`.
+Independent design review is clear:
+`6287957d93561c269b21561ed8e584042bfbc4e45bac166e8f06a8499ca7a147`.
+The twenty-six existing source owners separate source customer, accepted source
+identity and proposed display name. The existing provisional-design owner keeps
+structural human presentation validation distinct from mandatory authenticated
+source/receipt/design pair validation. No new module, stage, cap or trust carrier.
+
+The proposed fresh tuple is authoring6/source14/preflight13/decisions22+23/
+receipts28+29/compact12/host65/candidate28/design7. Transport7, canonical80,
+semantic19, atomic4 and context4 retain their meanings. Exact source13 context and
+complete-run policy and genuine26 task/receipt/candidate/canonical/transaction/
+after-images remain passive truth; old projection defects are not retroactively
+reclassified as fresh validity. Required tests include fully rehashed customer
+and cross-pair substitutions, named/unnamed identity, actual presenter/browser,
+nonempty EDIT, historical reconstruction and unchanged request boundaries.
+
+A proposed name remains mutable design before confirmation; an explicit accepted
+source name still binds exactly. Do not invent prior name/customer authority or
+post-confirmation rename support. Preserve all existing stronger lifecycle,
+source-identity, action-allocation and typed-system guards. Pre-edit custody and
+genuine26 baseline replay pass: manifest
+`5924cf06b8a387db917b69bc8a09794c7f81b9dca7bff5eef74d0a0364953915`.
+The real unnamed compiled fixture identifies one omitted existing caller:
+`project_intelligence_binding.py` still copies the source description into
+artifact display-name metadata. Its captured preimage is
+`9042c62e6fc8986ffc73d88bf0e2c8c0580cea4485a330d12191cbb2002befbd`;
+bounded owner26 approval is
+`17c1e3a833b2a2902dfad829e5fbd25598a447f59d193eb2eb904c614446e0b5`.
+Use the same paired name resolver and fresh binding consistency checks; keep
+historical and non-authored projections exact. Source and shared fixtures remain
+unfrozen during implementation. Frozen affected proof and independent review
+precede any separate successor trial; no trial is authorized here. Its independent
+source-first checklist is frozen at
+`d5bacf74be6362bc59e00430a6ed585bc598df230e5e2154dd7ac2655720c7aa`.
+
+Source/shared fixture v1 freezes at
+`20f26f7674868db2a5d42234a445e0df1f534ddba1b0a3527d6e434268da8354`;
+the16 focused controls and genuine26 full exact replay pass. Independent review
+finds a P2 trace loss when distinct constraints share the same before/after pair.
+Retain the reproduced failure and initial regression. After its test process
+retires, change only the fresh Atlas renderer to keep every trace triple and one
+visual arrow per endpoint pair; preserve historical6 exactly. Root approval is
+`02ed2b439edf672ac66171de220ab35a71aa149326c54c3c82c84433cdfba000`.
+Replacement source freeze and delta review precede the final affected/browser
+gate. No live successor is authorized by these development checks.
+
+Full source freeze v4 is
+`8e4c59f1b05c6d258ae78c30a1bc0ce0654682c80e11e034e159c3cbc00f5e45`.
+Independent source review clears the trace correction and two typed design-refusal
+gaps; source review report is
+`890d7e857f05650e8c196ebc9370e5c7818bd6e4945ec9c7e1d2e52f8916cfa5`.
+The initial35-module regression is a retained failure (163 failed/990 passed/
+15 errors), not a gate pass. A disjoint two-module nullable-customer fixture
+migration preserves every original assertion and passes111 profile/driver checks.
+The remaining historical presentation/proof fixtures use explicitly synthetic
+supported passive8/design6 custody to preserve their old presentation obligations;
+fresh14 proof remains separate. Browser evidence now has 41 distinct passing cases
+plus 56 hygiene checks across retained v4 runs; all 413 original assertions remain
+and eight desktop/mobile screenshots were reviewed. This is not one successful
+97-case invocation or domain quality qualification.
+
+Canonical ordering negatives expose source-plan comparison running before
+structural validation. Root approved moving the unchanged comparison into the
+existing final ValueError translation after design validation, preserving both
+original typed-refusal assertions. Source freeze v5 is
+`b161e6f36067175d58c03b5863c9216048b383cbe8ee0fc034ccd71770d73e4c`;
+independent delta review
+`4cc1f50fa479a9cf80ae01102a2df102eab3061e89de374e5454ea215c21afee`
+finds no check loss, version change or side effect. The other 32 source/watch
+files and shared fixture are exact v4. Finish the remaining affected modules,
+native/cap/nonempty synthetic EDIT/history controls, measured positive projection
+equality and native Mermaid review before final artifact review and checkpoint.
+Keep the existing 111 profile/driver checks separately attributed; hosted CI is
+still required. No live successor is authorized by these development checks.
+
+Final source freeze v7 is
+`7a31a28d478c1784f28898a226ec51916d4bb5c58f732f56e03e1575c68c2f10`.
+Independent delta review is clear
+(`72e3d56461da6ded26a430692ad2739584cb7c4bde04660b79514ead38074f9e`).
+Restore the actual historical reader/hash contract for explicit semantic18 or19
+with design6 and no ledger, preserving exact-source checks and original graph
+keys. Keep current design7, canonical, mapping and omitted hash-version paths
+strict. The hash payload stays unchanged. The final v6 33-module gate passes
+1,069 tests; final v7 evaluator coverage passes all 239 cases in eight modules.
+The separate release checker passes 96 controls, terminal custody passes three,
+and the retained 111 profile/driver plus 41 browser/56 hygiene checks stay
+separately attributed. Eight final v7 controls and exact historical/current byte
+read-across pass. Independent artifact review is scoped CLEAR with no actionable
+P0/P1 (`cdf4d39849b430b6ac417f1822237eb30d3d199a3af59fc99ee2b8fbf6f48e97`).
+Settle governance, then checkpoint/push. Only then
+predeclare one unchanged-request source65 preview. Canonical H, full benchmark B,
+immutable D and fixed release qualification remain later gates.
+
+## Prior gate: resolve contradictory source-context ownership (2026-10-15)
 
 The one source63 parent at pushed `290fc9a1e` fails source preflight after
 159.862 seconds, before verifier or candidate. The contract requires retaining

@@ -104,7 +104,7 @@ def _yes_decisions(decision_task: dict[str, object]) -> dict[str, object]:
         "verifier_task_sha256": decision_task["verifier_task_sha256"],
         "source_completeness": {"verdict": "yes", "omissions": []},
         "participant_decisions": {},
-        "product_identity": {"verdict": "yes"},
+        "product_identity": {"verdict": "yes"}, "customer": {"verdict": "yes"},
         "source_plan": affirmative_source_plan_fixture(ledger),
         "decisions": decisions,
     }
@@ -617,7 +617,7 @@ def test_source_ledger_check_surfaces_one_material_question(
         "status": "clarification_required",
         "question": "Who uses this product and what result should they see?",
         "evidence_controls": [],
-        "product_identity": None,
+        "product_identity": None, "customer": None,
         "first_path_actions": [],
         "supporting_human_actions": [],
         "system_duties": [],

@@ -217,6 +217,7 @@ def build_provisional_first_run_atlas_view(
     lines = ["flowchart TD"]
     boxes: list[dict[str, Any]] = []
     performers: dict[tuple[str, str], str] = {}
+    fresh = design["version"] == "odylith.greenfield.provisional-design.v7"
     orders = design["first_run"]["event_orders"]
     selected = set(orders)
     for relation in relations:
@@ -234,13 +235,12 @@ def build_provisional_first_run_atlas_view(
             if relation.get("action_verb_quote") and relation.get("target_quote")
             else event_quote
         )
-        lines.append(
-            f'  event{index}["Source action {index}<br/>{mermaid_label(action_reference)}"]'
-        )
+        label = action_reference if fresh else f"Source action {index}<br/>{mermaid_label(action_reference)}"
+        lines.append(f'  event{index}["{mermaid_label(label) if fresh else label}"]')
         boxes.append(
             atlas_box(
                 f"event{index}",
-                f"Action {index}",
+                action_reference if fresh else f"Action {index}",
                 f"{actor_kind} event",
                 event_quote,
                 details=[{"label": "Source event", "text": event_display}],
@@ -282,8 +282,19 @@ def build_provisional_first_run_atlas_view(
         for row in source_precedence
         if row["before_event"] in selected and row["after_event"] in selected
     }
+    if fresh:
+        for row in source_precedence:
+            before, after, constraint_index = row["before_event"], row["after_event"], row["constraint_index"]
+            if before in selected and after in selected:
+                next(box for box in boxes if box["node_id"] == f"event{after}")["details"].append({
+                    "label": "Source prerequisite",
+                    "text": f"before_event={before}; after_event={after}; constraint_index={constraint_index}",
+                })
     for (before, after), constraint_index in required.items():
-        lines.append(f'  event{before} -->|"source constraint {constraint_index}"| event{after}')
+        if fresh:
+            lines.append(f"  event{before} --> event{after}")
+        else:
+            lines.append(f'  event{before} -->|"source constraint {constraint_index}"| event{after}')
     for before, after in zip(orders, orders[1:]):
         if (before, after) not in required:
             lines.append(f'  event{before} -.-> event{after}')

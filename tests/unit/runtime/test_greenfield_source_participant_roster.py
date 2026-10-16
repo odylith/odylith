@@ -98,7 +98,7 @@ def test_exact_utf8_roster_order_and_equal_labels_keep_distinct_typed_addresses(
         addresses.append(start)
     assert addresses[0] != addresses[1]
     compact = compact_source_duty_view(ledger)
-    assert compact["version"].endswith(".v11")
+    assert compact["version"].endswith(".v12")
     assert decode_source_duty_inventory(compact, evidence_text=source) == ledger
     assert len(compact["result"]["citations"]) == len({(r["q"], r["c"], r.get("mention_ordinal")) for r in compact["result"]["citations"]})
 
@@ -167,6 +167,7 @@ def test_source_preflight_refuses_invalid_nonperformer_custody(damage):
         # typed participant-only context, exercised by context authority tests.
         passive_version = "odylith.greenfield.source-duty-ledger.v12"
         ledger["version"] = passive_version
+        ledger.pop("customer")
         roster["human_actors"] = [_participant("Reference notes", "Reference notes govern the template")]
     elif damage == "duplicate":
         roster["external_systems"] *= 2
@@ -225,6 +226,7 @@ def test_ledger9_receipt18_keeps_exact_task_and_no_injected_roster():
     ledger = _ledger()
     ledger.pop("nonperforming_participants")
     ledger["version"] = "odylith.greenfield.source-duty-ledger.v9"
+    ledger.pop("customer")
     for field in ("source_precedence", "first_run", "terminal"):
         ledger.pop(field)
     preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=EVIDENCE,
@@ -430,6 +432,7 @@ def test_source10_fixture_receipts_keep_frozen_294_hashes_without_invented_ordin
     else:
         source, ledger = EVIDENCE, _ledger()
         ledger["version"] = "odylith.greenfield.source-duty-ledger.v10"
+        ledger.pop("customer")
         for field in ("source_precedence", "first_run", "terminal"):
             ledger.pop(field)
         preflight = preflight_greenfield_source_duty_ledger(ledger, evidence_text=source, _passive_source_version=ledger["version"])
@@ -465,6 +468,8 @@ def _nonempty_system_prior(repo_root):
     intent = materialize_host_authored_intent(prompt=prompt, repo_root=repo_root, host_candidate=candidate,
         source_duty_receipt=receipt, prepared_evidence=prepared)
     proposal = build_authored_greenfield_proposal(observed_source={}, release_selector="0.0.1", confirmed_intent=intent)
+    from odylith.runtime.domain_intelligence.project_intelligence_binding import attach_project_intelligence_bindings
+    proposal = attach_project_intelligence_bindings(proposal)
     authority = intent[PRODUCT_INTENT_AUTHORITY_KEY]
     proposal[PRODUCT_INTENT_AUTHORITY_KEY] = authority
     package = _seal_test_package(_package(proposal, repo_root=repo_root), repo_root=repo_root)

@@ -225,7 +225,7 @@ def _authored_input():
         "operational_constraints": [citation(constraints[0]), citation(constraints[0]), citation(constraints[1])],
     })
     design = {
-        "version": PROVISIONAL_DESIGN_VERSION, "authority_kind": "provisional_design",
+        "version": PROVISIONAL_DESIGN_VERSION, "authority_kind": "provisional_design", "project_name": "Agora",
         "components": [
             {"key": f"boundary-{index}", "name": f"Boundary {index}", "responsibility": "Review requests.",
              "supported_event_orders": [min(index, 3)], "verification": "Inspect reviewed requests.",
@@ -333,21 +333,36 @@ def test_terminal_reference_cannot_default_to_last_event(event_order):
         )
 
 
+
+def _verified_ordering_input():
+    from tests.unit.runtime.greenfield_model_authoring_fixtures import host_candidate_response, synthetic_source_duty_receipt
+    from odylith.runtime.domain_intelligence.greenfield_host_candidate_shape import canonical_greenfield_host_candidate
+    from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import validate_greenfield_source_duty_binding
+    source, response = _authored_input()
+    candidate = host_candidate_response(response, evidence_text=source,
+        source_run_event_orders=(3, 2, 1))
+    receipt = synthetic_source_duty_receipt(candidate, evidence_text=source)
+    binding = validate_greenfield_source_duty_binding(candidate["result"]["source_duty_binding"],
+        ledger_receipt=receipt, candidate_result=candidate["result"], evidence_text=source)
+    canonical = canonical_greenfield_host_candidate(candidate, evidence_text=source, source_duty_receipt=receipt)
+    return source, canonical, receipt, binding
+
+
 def test_authoring_boundary_retains_precedence_and_proposed_first_run():
     from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
         validate_greenfield_authoring_response,
     )
     from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import STANDARD_PROFILE_ID
 
-    source, response = _authored_input()
+    source, response, receipt, binding = _verified_ordering_input()
     authored = validate_greenfield_authoring_response(
         response, evidence_text=source, elapsed_seconds=1, provider={},
         profile_id=STANDARD_PROFILE_ID, effective_timeout_seconds=55,
-        semantic_model_call_count=2,
+        semantic_model_call_count=2, accepted_source_duties=receipt, accepted_source_duty_binding=binding,
     )
     assert authored.source_precedence == tuple(response["result"]["source_precedence"])
-    assert authored.provisional_design["first_run"] == _walk()
-    assert authored.source_event_relations[0]["visible_result_quote"] == "liste prête"
+    assert authored.provisional_design["first_run"] == {**_walk(), "event_orders": [1, 2, 3]}
+    assert authored.source_event_relations[2]["visible_result_quote"] == "liste prête"
 
 
 @pytest.mark.parametrize("missing", ["source_precedence", "terminal_event", "first_run"])
@@ -358,7 +373,7 @@ def test_authoring_requires_order_authority_instead_of_migrating_old_response(mi
     )
     from odylith.runtime.domain_intelligence.greenfield_model_profile_contract import STANDARD_PROFILE_ID
 
-    source, response = _authored_input()
+    source, response, receipt, binding = _verified_ordering_input()
     if missing == "terminal_event":
         response["result"]["terminal"].pop("event_order")
     elif missing == "first_run":
@@ -369,7 +384,7 @@ def test_authoring_requires_order_authority_instead_of_migrating_old_response(mi
         validate_greenfield_authoring_response(
             response, evidence_text=source, elapsed_seconds=1, provider={},
             profile_id=STANDARD_PROFILE_ID, effective_timeout_seconds=55,
-            semantic_model_call_count=2,
+            semantic_model_call_count=2, accepted_source_duties=receipt, accepted_source_duty_binding=binding,
         )
 
 

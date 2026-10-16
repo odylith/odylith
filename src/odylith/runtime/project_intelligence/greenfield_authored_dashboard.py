@@ -31,7 +31,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_assumptions import 
     decision_copy,
 )
 from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
-    derive_risk_scope, provisional_design_from_intent,
+    derive_risk_scope, provisional_design_from_intent, project_presentation_name,
 )
 from odylith.runtime.domain_intelligence.greenfield_source_lifecycle import verified_source_design_duties
 from odylith.runtime.project_intelligence.product_story_contract import (
@@ -60,8 +60,9 @@ def build_authored_greenfield_payload(
             "Greenfield dashboard requires validated model-authored first-path relations"
         )
 
-    title = _required_text(intent, "title")
+    source_title = _required_text(intent, "title")
     provisional_design = provisional_design_from_intent(intent)
+    title = project_presentation_name(source_title=source_title, design=provisional_design)
     product_story = _required_text(intent, "product_story")
     accepted_evidence_excerpt = f"Accepted evidence excerpt: “{product_story}”"
     first_path = authored_first_path_text(intent)
@@ -113,7 +114,7 @@ def build_authored_greenfield_payload(
         accepted=accepted,
     )
     source_launch = _source_launch(
-        title=title,
+        title=title, source_title=source_title,
         first_path=first_path,
         proof_boundary=proof_boundary,
         visible_result=visible_result,
@@ -254,7 +255,7 @@ def build_authored_greenfield_payload(
             "topology_profile": "proposal-first",
         },
         "claim_evidence": _claim_evidence(
-            title=title,
+            title=source_title,
             product_story=product_story,
             first_path=first_run,
             visible_result=visible_result,
@@ -296,7 +297,7 @@ def build_authored_greenfield_payload(
             or "odylith/runtime/source/accepted-project.v1.json"
         },
         "authored_facts": {
-            "title": title,
+            "title": source_title,
             "product_story": product_story,
             "first_path": _required_text(intent, "first_path"),
             "proof_boundary": source_proof_boundary,
@@ -599,7 +600,7 @@ def _claim_evidence(
 
 def _source_launch(
     *,
-    title: str,
+    title: str, source_title: str,
     first_path: str,
     proof_boundary: str,
     visible_result: str,
@@ -697,7 +698,7 @@ def _source_launch(
         row["prompt"] = f"{selected_copy}\n\n{row['prompt']}\n\n{scope_copy}"
         row["contract"] = build_project_handoff_step_contract(
             step_id=str(row["step_id"]),
-            project_title=title,
+            project_title=source_title,
             accepted_first_path=first_path,
             first_release_workstream_refs=workstream_refs,
             implementation_target=target,

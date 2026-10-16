@@ -8,8 +8,8 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     authored_semantics_mapping,
     first_path_relations_from_intent,
 )
-from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
-    GreenfieldModelAuthoringError,
+from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
+    GreenfieldSourceDutyLedgerError,
 )
 from tests.unit.runtime.greenfield_model_authoring_fixtures import (
     admit_complete_host_candidate,
@@ -23,7 +23,9 @@ from tests.unit.runtime.test_greenfield_model_path_custody import (
 )
 
 
-def _terminal_intent(*, product_story: str = "", proof_boundary: str) -> dict[str, object]:
+def _terminal_intent(
+    *, product_story: str = "Pickup Relay coordinates donation batches", proof_boundary: str,
+) -> dict[str, object]:
     return {
         **_TEXT_FIELDS,
         **_LIST_FIELDS,
@@ -161,8 +163,8 @@ def test_terminal_result_rejects_a_selected_non_output_fact() -> None:
     intent["problem"] = f"Today {result_quote} from coordinators"
 
     with pytest.raises(
-        GreenfieldModelAuthoringError,
-        match="terminal result outside its selected facts",
+        GreenfieldSourceDutyLedgerError,
+        match="ledger.terminal: no closed result branch matches",
     ):
         _author_terminal_intent(
             intent,

@@ -37,6 +37,7 @@ from odylith.runtime.domain_intelligence.greenfield_handoff_contract import (
     render_project_handoff_scope,
     render_selected_workstream_scope,
 )
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import provisional_design_from_intent, project_presentation_name
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_traceability import first_executable_workstream
 from odylith.runtime.domain_intelligence.greenfield_scalar_values import (
@@ -100,7 +101,7 @@ def _authored_project_dashboard_contract_issues(
         "product_story": intent.get("product_story"),
         "first_path": intent.get("first_path"),
         "proof_boundary": str(intent.get("proof_boundary") or ""),
-        "visible_result": (authored_checkpoint_text(intent) if (intent.get(AUTHORED_SEMANTICS_KEY, {}).get("source_duty") or {}).get("ledger_receipt", {}).get("ledger", {}).get("version") in {"odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"} else authored_visible_result(relations)),
+        "visible_result": (authored_checkpoint_text(intent) if (intent.get(AUTHORED_SEMANTICS_KEY, {}).get("source_duty") or {}).get("ledger_receipt", {}).get("ledger", {}).get("version") in {"odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13", "odylith.greenfield.source-duty-ledger.v14"} else authored_visible_result(relations)),
     }
     for key, expected in expected_scalars.items():
         if facts.get(key) != expected:
@@ -148,6 +149,9 @@ def _authored_project_dashboard_contract_issues(
         if isinstance(project_dashboard_preview.get("product_story"), Mapping)
         else {}
     )
+    display_name = project_presentation_name(source_title=intent["title"], design=provisional_design_from_intent(intent))
+    if project_dashboard_preview.get("title") != display_name or story.get("headline") != display_name:
+        issues.append("model-authored Project dashboard drifted from the proposed project name")
     cards = {
         str(row.get("semantic_slot") or ""): str(row.get("body") or "")
         for row in mapping_rows(story.get("release_contract"))

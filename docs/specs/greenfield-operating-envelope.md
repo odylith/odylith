@@ -2,7 +2,7 @@
 
 Receipt version: `odylith.greenfield-operating-envelope.v6`
 
-Document revision: `21`
+Document revision: `22`
 
 Profile: `single-product-governance-onboarding`
 
@@ -20,6 +20,14 @@ that exact sealed narrative and keeps the complete source excerpt in expandable
 evidence. Historical packages without this field remain readable without an
 invented summary. Main views show meaningful status, responsibilities, risks
 and next actions; technical identifiers and audit evidence remain in details.
+
+Fresh proposed design also supplies one readable project name. Human labels,
+slugs, paths and artifact bindings use that same name; exact source identity
+remains in accepted facts and evidence. An explicit verified source name binds
+exactly. Structural presentation checks grant no source authority; authoritative
+admission and readback require the matching source, receipt and design revisions.
+Atlas shows direct action narratives and keeps every required constraint triple
+in expandable details, including multiple constraints sharing one visual arrow.
 
 Project shows accepted scope boundaries from the verified source-duty record as
 known facts, retaining their exact rule and source citations. Candidate advisory
@@ -137,14 +145,18 @@ with original native rules elsewhere and strict fact/assumption exclusivity.
 
 The compiler alone assigns exact source addresses and compact references. It
 combines verified nonperformers with the fixed action performers; the fresh
-candidate cannot author those three participant lists. Other candidate facts,
-apart from source-owned proof and result, retain their authoring contract.
+candidate cannot author those three participant lists. The inventory and verifier
+also own the project-wide customer. A workflow actor cannot replace an explicitly
+served team; safe absence remains null with the required customer assumption.
+Other candidate facts, apart from source-owned customer, proof and result, retain
+their authoring contract.
 Distinct selected occurrences retain
 distinct compact identities and hashes. Invalid citations refuse without
 choosing an occurrence or repairing the response.
 
-Fresh ledger v13/preflight v12, compact view v11, initial/EDIT receipts v26/v27,
-decisions v20/v21 and candidate v27/transport v7 bind that source contract.
+Fresh host65/authoring6/ledger v14/preflight v13, compact view v12, initial/EDIT
+receipts v28/v29, decisions v22/v23 and candidate v28/design7/transport v7 bind
+that source contract.
 Canonical authoring v80, authored semantics v19 and EDIT context v4 retain their
 existing meanings. Historical host v61/source v10/compact v8/receipts v20/v21
 and earlier v59/v60/source v9/compact v7/receipts v18/v19 keep explicit passive
@@ -153,8 +165,10 @@ they cannot satisfy the fresh native contract. Live semantic, latency and
 installed-package qualification remain required. Host62/source11/compact9 and
 receipts22/23 retain their original passive contracts without an invented plan;
 host63/source12/authoring4/compact10 and receipts24/25 retain their exact complete
-plan, tasks and earlier context rules. Fresh host64 cannot borrow those receipts
-or reinterpret historical context authority.
+plan, tasks and earlier context rules. Host64/source13/authoring5/compact11 and
+receipts26/27 retain their exact context/complete-plan contracts, tasks, design6
+names and sealed projections. Fresh host65 cannot borrow earlier receipts or
+reinterpret historical context authority.
 
 The retained source61 trial fails before the verifier: one of 85 citation uses
 selects a name three times inside its unique context without selecting a
@@ -171,9 +185,25 @@ seconds: optional catalog retention conflicts with a blanket context exclusion.
 The raw inventory also misclassifies a product path constraint as an authoring
 instruction. No verifier, candidate, package or completion receipt exists.
 The source64 correction above is frozen, with 1,044 affected tests and 70
-hygiene/browser checks passing. Independent source, compatibility and final
-artifact reviews are clear. No live qualification is claimed.
-Existing stage, size, cost and time limits remain.
+hygiene/browser checks passing. Independent source, compatibility and development
+artifact reviews are clear. Its subsequent live preview completes in 325.758
+seconds and passes core source fidelity, but fails governance projection quality:
+customer classification, a sentence used as a project name, and Atlas trace labels
+need correction. This is no release or timing qualification. Existing stage,
+size, cost and time limits remain.
+
+The source65 customer/name/Atlas correction is source-reviewed at frozen v4;
+the final v7 compatibility and validation-order deltas are independently clear. Exact genuine26
+readback, 111 profile/driver tests, 41 browser cases and 56 hygiene checks pass.
+The browser evidence remains attributed to v4. The 33-module v6 gate passes 1,069
+tests; final v7 evaluator coverage passes 239 and the separate release checker
+passes 96. Native Mermaid artifacts have been visually reviewed. Explicit
+historical semantic18/19 with design6 and no ledger preserve exact-source readback;
+current design7, canonical, mapping and default hash calls remain strict. Exact
+historical readback and current package-byte comparisons pass, with clear independent
+development-artifact review. A separately predeclared live successor and installed
+qualification remain pending. Development fixtures and source review grant no
+release credit.
 
 ### EDIT lifecycle verification
 
@@ -187,13 +217,19 @@ Missing or uncertain duties refuse before candidate authoring. Prior rows are a
 comparison checklist; current lifecycle and governance still come from the
 accepted current inventory. Explicit corrections take precedence over history.
 
-Fresh initial/EDIT receipts v26/v27 use decisions v20/v21 and retain EDIT preservation
+Fresh initial/EDIT receipts v28/v29 use decisions v22/v23 and retain EDIT preservation
 context v4. EDIT binds the prior transaction, its lifecycle, the complete source,
 correction, task and decisions. A global completeness yes or an initial receipt cannot
 authorize EDIT. Citation custody and complete keys do not prove a semantic
 verdict correct; independent fresh source review remains required. Exact
 historical v5/v8 tasks and receipts retain passive validation only; they cannot
 authorize fresh candidate authoring or admission.
+
+A proposed display name remains design during pre-confirmation EDIT. Explicit
+source identity changes still require the existing correction authority. Current
+customer is reverified from complete current evidence; prior customer or proposed
+name choices do not become new accepted facts. All stronger lifecycle, allocation
+and typed-system preservation duties remain; no context revision is added.
 
 For manual EDIT source checks, pass the prior `--transaction-hash`, the exact
 retained source as `--prompt`, and the separate correction as `--edit` or

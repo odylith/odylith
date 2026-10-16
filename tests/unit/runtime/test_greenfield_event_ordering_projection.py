@@ -84,7 +84,7 @@ def _result_first_response(*, include_precedence=True, archive_after_result=Fals
     )
     source = ". ".join(str(row) for value in intent.values()
                        for row in (value if isinstance(value, list) else [value]) if row)
-    design = structural_design_fixture((1, 2, 3),
+    design = structural_design_fixture((1, 2, 3), project_name="Receipt Desk",
         first_run_event_orders=(2, 1, 3) if archive_after_result else (2, 3, 1))
     design["first_run"]["rationale"] = (
         "Record the draft, publish its receipt, then archive it as the source requires."
@@ -153,10 +153,9 @@ def test_post_result_action_survives_authoring_custody_and_all_projections(tmp_p
     ]
     assert [row["visible_result"] for row in run] == [False, True, False]
     atlas = proposal["diagrams"][1]["mermaid_source"]
-    assert (
-        f'event{compiler_orders[0]} -->|"source constraint 2"| '
-        f'event{compiler_orders[2]}'
-    ) in atlas
+    assert f'event{compiler_orders[0]} --> event{compiler_orders[2]}' in atlas
+    assert {"label": "Source prerequisite", "text": f"before_event={compiler_orders[0]}; after_event={compiler_orders[2]}; constraint_index=2"} in next(
+        box for box in proposal["diagrams"][1]["diagram_boxes"] if box["node_id"] == f"event{compiler_orders[2]}")["details"]
     assert 'event3 -.-> event1' not in atlas
     for owner, contract in (("components", "component_contract"), ("backlog", "provisional_workstream_contract")):
         supported = [event["event_quote"] for row in proposal[owner] for event in row[contract]["supporting_events"]]
@@ -242,7 +241,7 @@ def test_citation_identity_survives_compiler_id_remap_and_sealed_custody(ordered
 
     changed = deepcopy(candidate)
     changed["authored_semantics"]["source_precedence"] = []
-    with pytest.raises(ValueError, match="do not match sealed"):
+    with pytest.raises(ValueError, match="canonical complete run differs from its verified source plan"):
         require_relation_authority_parity(changed, candidate[PRODUCT_INTENT_AUTHORITY_KEY])
 
 
@@ -272,11 +271,11 @@ def test_supporting_prerequisite_interleaves_first_path_across_all_projections(t
     }]
     # Build the immutable source ledger before selecting the complete proposed walk.
     response["result"]["provisional_design"]["first_run"]["event_orders"] = [1, 3]
-    host_candidate = host_candidate_response(response, evidence_text=prepared.evidence_source)
+    host_candidate = host_candidate_response(response, evidence_text=prepared.evidence_source,
+        first_path_event_orders=(1, 3), source_run_event_orders=(1, 2, 3))
     receipt = synthetic_source_duty_receipt(
         host_candidate, evidence_text=prepared.evidence_source,
     )
-    host_candidate["result"]["provisional_design"]["first_run"]["event_orders"] = [1, 3, 2]
     candidate = materialize_host_authored_intent(
         prompt=source,
         repo_root=tmp_path,
@@ -307,7 +306,7 @@ def test_supporting_prerequisite_interleaves_first_path_across_all_projections(t
     assert [row["event_order"] for row in source_duty["binding"]["first_path_actions"]] == [1, 2]
     assert [row["event_order"] for row in source_duty["binding"]["system_duties"]] == [3]
     assert candidate["authored_semantics"]["source_precedence"] == [
-        {"before_event": 3, "after_event": 2, "constraint_index": 2},
+        {"before_event": 3, "after_event": 2, "constraint_index": 1},
     ]
     assert [row["order"] for row in proposed_relations if row["order"] in {1, 2}] == [1, 2]
 
@@ -334,7 +333,9 @@ def test_supporting_prerequisite_interleaves_first_path_across_all_projections(t
     sequence = next(
         row for row in proposal["diagrams"] if row["slug"].endswith("first-run")
     )
-    assert 'event3 -->|"source constraint 2"| event2' in sequence["mermaid_source"]
+    assert 'event3 --> event2' in sequence["mermaid_source"]
+    assert {"label": "Source prerequisite", "text": "before_event=3; after_event=2; constraint_index=1"} in next(
+        box for box in sequence["diagram_boxes"] if box["node_id"] == "event2")["details"]
     assert "event1 -.-> event3" in sequence["mermaid_source"]
     assert candidate["first_path"] in render_product_intent_preview(candidate)
     assert candidate["first_path"] in candidate_intent_stage_paths(tmp_path).markdown.read_text()
@@ -391,11 +392,13 @@ def test_atlas_proposes_order_but_registry_and_radar_keep_source_support_ids(ord
     sequence = next(row for row in proposal["diagrams"] if row["slug"] == "receipt-desk-first-run")
     assert sequence["authority_kind"] == "provisional_design"
     mermaid = sequence["mermaid_source"]
-    assert 'event1 -->|"source constraint 1"| event2' in mermaid
+    assert "event1 --> event2" in mermaid
+    assert {"label": "Source prerequisite", "text": "before_event=1; after_event=2; constraint_index=1"} in next(
+        box for box in proposal["diagrams"][1]["diagram_boxes"] if box["node_id"] == "event2")["details"]
     assert 'event2 -.-> event3' in mermaid
     assert 'event1 -.-> event2' not in mermaid
     assert "event3 --> event1" not in mermaid
-    assert "event1 --> event2" not in mermaid
+    assert 'event1 -->|"source constraint' not in mermaid
     assert "source order" not in sequence["summary"].casefold()
     assert "dotted arrows show additional proposed next steps" in sequence["read_guide"]
     boxes = {box["node_id"]: box for box in sequence["diagram_boxes"]}

@@ -142,9 +142,9 @@ def _proposal() -> dict[str, object]:
         "operational_constraints": ["Preserve APIv7 casing"],
         "evidence_requirements": ["Replay the two exact event quotes"],
         "success_metrics": ["One Ω-Receipt is visible"],
-        "authored_semantics": authored_semantics_mapping(
-            relations,
-            provisional_design=structural_design_fixture((1, 2)),
+        "authored_semantics": dict(
+            source_event_relations=relations, component_responsibility_relations=[], source_precedence=[],
+            provisional_design=structural_design_fixture((1, 2), version="odylith.greenfield.provisional-design.v6"),
             first_path_context_relations=(
                 {
                     "context_kind": "state_object",
@@ -175,10 +175,79 @@ def _proposal() -> dict[str, object]:
             ),
         ),
     }
+    _bind_passive_fixture(intent)
     return build_authored_greenfield_proposal(
         observed_source={"source_posture": "operator prompt evidence"},
         release_selector="0.0.1", confirmed_intent=intent,
     )
+
+
+def _bind_passive_fixture(intent):
+    """Authenticate synthetic passive8/design6 presentation declarations.
+
+    This is unit-fixture custody, never authentic retained history. The real
+    catalog supplies IDs; documentation position never decides execution order.
+    """
+    from tests.unit.runtime.greenfield_model_authoring_fixtures import synthetic_source_duty_receipt_for_ledger
+    from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import project_greenfield_source_event_catalog, validate_greenfield_source_duty_binding
+    declared = intent["authored_semantics"]
+    relations = list(declared["source_event_relations"])
+    design = deepcopy(declared["provisional_design"])
+    contexts = deepcopy(declared["first_path_context_relations"])
+    source = intent["first_path"] + " " + " ".join(row["fact_quote"] for row in contexts if row["first_path_event_order"] == 0)
+    source += " " + " ".join(str(value) for field, raw in intent.items() if field not in {"authored_semantics", "prompt", "first_path"}
+                              for value in (raw if isinstance(raw, list) else [raw]))
+    participants = {field: {quote: {"quote": quote, "context": f"Declared {field}: {quote}."} for quote in intent.get(field, [])}
+                    for field in ("human_actors", "internal_systems", "external_systems")}
+    source += " " + " ".join(ref["context"] for refs in participants.values() for ref in refs.values())
+    cite = lambda quote: {"quote": quote, "context": quote}
+    ledger = {"version": "odylith.greenfield.source-duty-ledger.v8", "status": "inventory", "question": "",
+        "product_identity": {"basis": "explicit_name", "source_ref": cite(intent["title"])}, "evidence_controls": [],
+        "first_path_actions": [], "supporting_human_actions": [], "system_duties": [], "state_fields": [],
+        "off_path_transitions": [], "conditional_guards": [], "boundaries": [], "proof_duties": []}
+    by_order = {row["order"]: row for row in relations}
+    for order in design["first_run"]["event_orders"]:
+        row = by_order[order]
+        field = "human_actors" if row["actor_kind"] == "human" else "external_systems" if row["actor_kind"] == "external_system" else "internal_systems"
+        actor = participants[field][row["actor_fact_quote"]]
+        ledger["first_path_actions"].append({"id": f"declared-action-{order}", "source_refs": [],
+            "performer_role": {"human_actors": "human_actor", "internal_systems": "internal_system", "external_systems": "external_system"}[field],
+            "observable_result": row["visible_result_quote"] or "Declared action is observable.",
+            "statement": row["event_quote"] if row["actor_fact_quote"] in row["event_quote"] else f"{row['actor_fact_quote']}: {row['event_quote']}",
+            "event_ref": cite(row["event_quote"]), "actor_ref": actor, "role_refs": [actor, cite(row["event_quote"])],
+            "action": row["action_verb_quote"], "target": row["target_quote"]})
+    receipt = synthetic_source_duty_receipt_for_ledger(ledger, evidence_text=source)
+    catalog = project_greenfield_source_event_catalog(receipt, evidence_text=source, _passive=True)
+    # Passive8 keeps candidate source IDs independent from the declared walk.
+    # Its real binder checks each duty-to-event pair; catalog order is not a
+    # license to rewrite source quotes, including a pronoun's exact event text.
+    by_duty = {int(event["duty_id"].rsplit("-", 1)[1]): event for event in catalog["events"]}
+    reordered = deepcopy(relations)
+    for row in reordered:
+        event = by_duty[row["order"]]
+        row["actor_fact_path"] = event["actor_fact_path"]
+        if row["actor_kind"] == "product": row["owner_system_path"] = event["actor_fact_path"]
+    for field in ("human_actors", "internal_systems", "external_systems"):
+        prefix = catalog["facts"][field]
+        refs = [*prefix, *(ref for quote, ref in participants[field].items() if quote not in {row["quote"] for row in prefix})]
+        intent[field] = [row["quote"] for row in refs]
+    precedence = deepcopy(declared.get("source_precedence", []))
+    components = deepcopy(declared.get("component_responsibility_relations", []))
+    intent["prompt"] = source
+    binding = {"version": "odylith.greenfield.source-duty-binding.v3", "source_sha256": receipt["source_sha256"],
+        "ledger_sha256": receipt["ledger_sha256"],
+        "first_path_actions": [{"duty_id": duty["id"], "event_order": int(duty["id"].rsplit("-", 1)[1])} for duty in ledger["first_path_actions"]],
+        "supporting_human_actions": [], "system_duties": [],
+        "off_path_transitions": [], "conditional_guards": [], "boundaries": [], "proof_duties": []}
+    candidate = {"status": "authored", "facts": {field: list(refs.values()) for field, refs in participants.items()},
+                 "events": [{"actor_fact": by_duty[row["order"]]["actor_fact"]} for row in reordered],
+                 "provisional_design": design, "source_precedence": precedence,
+                 "terminal": next(({"event_order": r["order"]} for r in reordered if r["visible_result_quote"]), None)}
+    binding = validate_greenfield_source_duty_binding(binding, ledger_receipt=receipt, candidate_result=candidate, evidence_text=source)
+    source_duty = {"ledger_receipt": receipt, "binding": binding,
+        "lifecycle": project_greenfield_source_lifecycle(ledger_receipt=receipt, binding=binding, candidate_result=candidate, evidence_text=source)}
+    intent["authored_semantics"] = authored_semantics_mapping(reordered, components,
+        first_path_context_relations=contexts, source_precedence=precedence, provisional_design=design, source_duty=source_duty)
 
 
 def _accepted_preview(*, proposal: dict[str, object], root: Path) -> dict[str, object]:
@@ -227,7 +296,7 @@ def _handoff_scope_proposal(*, constraints: tuple[str, ...], non_goals: tuple[st
     return proposal
 
 
-def _result_first_proposal(*, include_actor_review: bool = False) -> dict[str, object]:
+def _result_first_proposal(*, root: Path, include_actor_review: bool = False) -> dict[str, object]:
     """Project projection control with source inventory deliberately nonchronological."""
 
     proposal = _proposal()
@@ -255,7 +324,7 @@ def _result_first_proposal(*, include_actor_review: bool = False) -> dict[str, o
     intent["first_path"] = " ".join(row["event_quote"] for row in relations)
     semantics["source_event_relations"] = relations
     if include_actor_review:
-        semantics["provisional_design"] = structural_design_fixture((1, 2, 3))
+        semantics["provisional_design"] = structural_design_fixture((1, 2, 3), version="odylith.greenfield.provisional-design.v6")
     semantics["provisional_design"]["first_run"] = {
         "event_orders": [2, 3, 1] if include_actor_review else [2, 1],
         "rationale": "Prepare the packet and produce its receipt before the final result review.",
@@ -273,6 +342,7 @@ def _result_first_proposal(*, include_actor_review: bool = False) -> dict[str, o
         context["source_start_byte"] = independent_start
         context["source_end_byte"] = independent_start + len(context["fact_quote"].encode("utf-8"))
         independent_start = context["source_end_byte"] + 1
+    intent = _native_presentation_intent(intent, root=root)
     return build_authored_greenfield_proposal(
         observed_source={"source_posture": "operator prompt evidence"},
         release_selector="0.0.1",
@@ -280,7 +350,7 @@ def _result_first_proposal(*, include_actor_review: bool = False) -> dict[str, o
     )
 
 
-def _pronoun_proposal() -> dict[str, object]:
+def _pronoun_proposal(*, root: Path) -> dict[str, object]:
     proposal = _proposal()
     intent = deepcopy(proposal["intent"])
     first_event = "She QuOrates one Æther packet."
@@ -332,14 +402,33 @@ def _pronoun_proposal() -> dict[str, object]:
         }
     )
     intent["first_path"] = first_path
-    intent["authored_semantics"] = authored_semantics_mapping(
-        relations,
-        intent["authored_semantics"]["component_responsibility_relations"],
+    intent["authored_semantics"] = dict(
+        source_event_relations=relations,
+        component_responsibility_relations=intent["authored_semantics"]["component_responsibility_relations"], source_precedence=[],
         first_path_context_relations=contexts,
         provisional_design=intent["authored_semantics"]["provisional_design"],
     )
+    intent = _native_presentation_intent(intent, root=root)
     proposal["intent"] = intent
     return proposal
+
+
+def _native_presentation_intent(intent, *, root):
+    """Current source14 custody; physical document order never selects event IDs."""
+    from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import _SOURCE_FACT_FIELDS
+    semantics = intent["authored_semantics"]
+    design = deepcopy(semantics["provisional_design"])
+    design.update(version="odylith.greenfield.provisional-design.v7", project_name=intent["title"])
+    source = intent["first_path"] + " " + " ".join(str(item)
+        for field, value in intent.items() if field not in {"authored_semantics", "prompt", "first_path"}
+        for item in (value if isinstance(value, list) else [value]))
+    source_facts = {key: value for key, value in intent.items()
+                    if key in {*_SOURCE_FACT_FIELDS, "assumptions", "ambiguities", "component_responsibilities"}}
+    response = authored_response(source_facts, evidence_text=source,
+        first_path_relations=semantics["source_event_relations"],
+        provisional_design=design, source_precedence=semantics["source_precedence"])
+    return materialize_complete_host_candidate(prompt=source, repo_root=root,
+        host_candidate=host_candidate_response(response, evidence_text=source))
 
 
 def _completion_package(
@@ -617,7 +706,9 @@ def test_receipt_bound_scope_is_known_without_promoting_advisory_strings(tmp_pat
         {"applies_to": "product_view", "statement": "Provide role-specific review views."},
     ]
     intent.update(ambiguities=[advisory], assumptions=decisions, opportunity="", product_view="")
-    evidence, receipt, candidate, binding = _source_duty_case("record")
+    # Explicit synthetic passive8 custody retains this historical presentation
+    # contract without borrowing the fresh source-plan or audience policy.
+    evidence, receipt, candidate, binding = _source_duty_case("record", source_version="odylith.greenfield.source-duty-ledger.v8")
     evidence = FIRST_PATH + " APIv7 Archive Preserve APIv7 casing " + evidence + " " + scope + " " + intent["title"]
     intent["prompt"] = evidence
     ledger = deepcopy(receipt["ledger"])
@@ -638,6 +729,13 @@ def test_receipt_bound_scope_is_known_without_promoting_advisory_strings(tmp_pat
         "id": "B1", "kind": "scope", "rule": scope,
         "source_refs": [{"quote": scope, "context": scope}],
     }]
+    candidate["facts"] = {
+        "human_actors": [ledger["first_path_actions"][0]["actor_ref"]],
+        "internal_systems": [ledger["first_path_actions"][1]["actor_ref"]],
+        "external_systems": [],
+    }
+    candidate["events"] = [{"actor_fact": {"field": field, "row": 1}}
+                           for field in ("human_actors", "internal_systems")]
     receipt = synthetic_source_duty_receipt_for_ledger(ledger, evidence_text=evidence)
     design = intent["authored_semantics"]["provisional_design"]
     design["project_summary"] = "The review workspace keeps review records and source-governed interface requirements together."
@@ -696,16 +794,20 @@ def test_uncited_ambiguity_is_not_known_when_source_duties_are_absent(tmp_path: 
 def test_authored_dashboard_separates_proposed_walkthrough_from_result_first_source(
     tmp_path: Path,
 ) -> None:
-    proposal = _result_first_proposal()
+    proposal = _result_first_proposal(root=tmp_path)
     source_intent = deepcopy(proposal["intent"])
     payload = preview_project_dashboard_payload(
         root=tmp_path, proposal=proposal, accepted_project_preview=_accepted_preview(proposal=proposal, root=tmp_path),
         source_launch_context=_source_launch_context(proposal=proposal, root=tmp_path),
     )
     proposed_run = authored_first_run_text(proposal["intent"])
-    assert proposed_run.index("Event 2") < proposed_run.index("Event 1")
+    relations = source_intent["authored_semantics"]["source_event_relations"]
+    physical = sorted(relations, key=lambda row: row["source_start_byte"])
+    assert physical[0]["visible_result_quote"] == "Ω-Receipt"
+    assert relations[-1]["visible_result_quote"] == "Ω-Receipt"
+    assert proposed_run.index("QuOrates") < proposed_run.index("vitrifies")
 
-    assert payload["focus"] == proposed_run
+    assert payload["focus"] == source_intent["first_path"]
     assert payload["scenario_details"][0] == ("Proposed first run", proposed_run)
     assert payload["desired"] == "Ω-Receipt"
     assert payload["authored_facts"]["first_path"] == source_intent["first_path"]
@@ -713,9 +815,9 @@ def test_authored_dashboard_separates_proposed_walkthrough_from_result_first_sou
     assert payload["authored_facts"]["source_precedence"] == source_intent["authored_semantics"]["source_precedence"]
     assert [row["order"] for row in payload["authored_facts"]["first_path_relations"]] == [1, 2]
     cards = {row["semantic_slot"]: row["body"] for row in payload["product_story"]["release_contract"]}
-    assert cards["first_path"] == proposed_run
+    assert cards["first_path"] == source_intent["first_path"]
     for prompt in payload["host_handoff_prompts"]:
-        assert prompt["contract"]["fact_bindings"]["accepted_first_path"] == proposed_run
+        assert prompt["contract"]["fact_bindings"]["accepted_first_path"] == source_intent["first_path"]
     assert proposal["intent"] == source_intent
 
 
@@ -796,7 +898,7 @@ def test_authored_dashboard_preserves_archive_after_the_published_result(tmp_pat
 def test_authored_dashboard_preconfirm_rejects_order_authority_drift(
     tmp_path: Path, mutation: str,
 ) -> None:
-    proposal = _result_first_proposal()
+    proposal = _result_first_proposal(root=tmp_path)
     payload = preview_project_dashboard_payload(
         root=tmp_path, proposal=proposal, accepted_project_preview=_accepted_preview(proposal=proposal, root=tmp_path),
         source_launch_context=_source_launch_context(proposal=proposal, root=tmp_path),
@@ -812,7 +914,8 @@ def test_authored_dashboard_preconfirm_rejects_order_authority_drift(
         card = next(
             row for row in payload["product_story"]["release_contract"] if row["semantic_slot"] == "first_path"
         )
-        card["body"] = proposal["intent"]["first_path"]
+        card["body"] = " ".join(row["event_quote"] for row in sorted(
+            proposal["intent"]["authored_semantics"]["source_event_relations"], key=lambda row: row["source_start_byte"]))
         expected_issue = "model-authored Project dashboard drifted from typed first_path"
     assert expected_issue in project_dashboard_preview_issues(package, payload, model_authored=True)
 
@@ -820,7 +923,7 @@ def test_authored_dashboard_preconfirm_rejects_order_authority_drift(
 def test_authored_dashboard_same_actor_cards_follow_proposed_order_and_preconfirm_parity(
     tmp_path: Path,
 ) -> None:
-    proposal = _result_first_proposal(include_actor_review=True)
+    proposal = _result_first_proposal(root=tmp_path, include_actor_review=True)
     payload = preview_project_dashboard_payload(
         root=tmp_path, proposal=proposal, accepted_project_preview=_accepted_preview(proposal=proposal, root=tmp_path),
         source_launch_context=_source_launch_context(proposal=proposal, root=tmp_path),
@@ -831,7 +934,7 @@ def test_authored_dashboard_same_actor_cards_follow_proposed_order_and_preconfir
     package = _completion_package(proposal=proposal, dashboard=payload, root=tmp_path)
     assert project_dashboard_preview_issues(package, payload, model_authored=True) == []
     source_actor_order = "\n".join(
-        row["event_quote"] for row in payload["authored_facts"]["first_path_relations"]
+        row["event_quote"] for row in sorted(payload["authored_facts"]["first_path_relations"], key=lambda row: row["source_start_byte"])
         if row["actor_kind"] == "human"
     )
     assert source_actor_order != expected
@@ -951,7 +1054,7 @@ def test_authored_dashboard_labels_provisional_problem_without_repeating_it(
 def test_authored_dashboard_uses_canonical_actor_fact_for_aliased_events(
     tmp_path: Path,
 ) -> None:
-    proposal = _pronoun_proposal()
+    proposal = _pronoun_proposal(root=tmp_path)
     payload = preview_project_dashboard_payload(
         root=tmp_path,
         proposal=proposal,
@@ -959,11 +1062,11 @@ def test_authored_dashboard_uses_canonical_actor_fact_for_aliased_events(
         source_launch_context=_source_launch_context(proposal=proposal, root=tmp_path),
     )
 
-    assert payload["actors"][0] == (
-        "Human actor",
-        "Registry Custodian",
-        "She QuOrates one Æther packet.",
-    )
+    relation = proposal["intent"]["authored_semantics"]["source_event_relations"][0]
+    raw = proposal["intent"]["prompt"].encode("utf-8")
+    assert raw[relation["source_start_byte"]:relation["source_end_byte"]].decode("utf-8") == "She QuOrates one Æther packet."
+    assert payload["actors"][0] == ("Human actor", "Registry Custodian", relation["event_quote"])
+    assert relation["event_quote"] == "Registry Custodian: She QuOrates one Æther packet."
     package = _completion_package(proposal=proposal, dashboard=payload, root=tmp_path)
     assert project_dashboard_preview_issues(
         package,

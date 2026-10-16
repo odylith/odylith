@@ -40,7 +40,7 @@ def _driver_evidence(tmp_path, monkeypatch, *, outcome="authored"):
             if isinstance(value, list):
                 ledger[key] = []
         ledger.update(
-            status="clarification_required", product_identity=None, question="Who owns the first task?",
+            status="clarification_required", product_identity=None, customer=None, question="Who owns the first task?",
             nonperforming_participants={field: [] for field in ledger["nonperforming_participants"]},
             source_precedence=[], first_run={"duty_ids": []}, terminal=None,
         )

@@ -53,7 +53,7 @@ def _fixture_host_ledger() -> dict:
     event = {"quote": "A reviewer creates a reviewable plan.",
              "context": "A reviewer creates a reviewable plan."}
     return {"version": SOURCE_DUTY_AUTHORING_VERSION, "result": {
-        "status": "inventory", "question": "",
+        "status": "inventory", "question": "", "customer": None,
         "source_precedence": [], "first_run": {"duty_ids": ["d1"]},
         "terminal": {"duty_id": "d1", "proof_boundary": event,
                      "result_fact": {"field": "first_path", "duty_id": "d1"},
@@ -113,7 +113,7 @@ def _flow(tmp_path: Path, *, candidate: object, contract: object, gate_decision:
                        "support_ref_indexes": [0], "role_ref_indexes": [0, 1]}},
         "source_completeness": {"verdict": "yes", "omissions": []},
         "participant_decisions": {},
-        "product_identity": {"verdict": "yes"},
+        "product_identity": {"verdict": "yes"}, "customer": {"verdict": "yes"},
         "source_plan": affirmative_source_plan_fixture(expanded),
     }
     ledger_receipt = validate_greenfield_source_duty_ledger(

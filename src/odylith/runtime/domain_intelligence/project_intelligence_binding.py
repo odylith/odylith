@@ -7,6 +7,7 @@ from collections.abc import Mapping
 from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import provisional_design_from_intent, project_presentation_name
 from odylith.runtime.common.value_coercion import mapping_copy
 from odylith.runtime.common.value_coercion import normalize_string as clean_text
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
@@ -96,6 +97,17 @@ def project_intelligence_binding_issues(proposal: Mapping[str, Any]) -> list[str
         if expected_schema and clean_text(derivation.get("root_schema_version")) != expected_schema:
             issues.append("proposal artifact_derivation.root_schema_version must match its semantic authority")
 
+    if expected_root == AUTHORED_SEMANTICS_ROOT and provisional_design_from_intent(intent)["version"] == "odylith.greenfield.provisional-design.v7":
+        expected = _base_binding(project_intelligence=project_intelligence, intent=intent,
+            source=expected_root, schema_version=expected_schema, evidence_boundary="")
+        bindings = [derivation, mapping_copy(proposal.get("release_plan")).get(PROJECT_INTELLIGENCE_BINDING_KEY)]
+        bindings.extend(row.get(PROJECT_INTELLIGENCE_BINDING_KEY) for field in ("backlog", "components", "diagrams")
+                        for row in proposal.get(field, ()) if isinstance(row, Mapping))
+        if intent.get("project_slug") != expected["project_slug"] or any(
+            isinstance(binding, Mapping) and any(binding.get(key) != expected[key] for key in ("project_title", "project_slug"))
+            for binding in bindings):
+            issues.append("fresh authored artifact project name or slug differs from its paired provisional design")
+
     _check_mapping_binding(
         proposal.get("release_plan"),
         owner="release_plan",
@@ -174,13 +186,16 @@ def _base_binding(
     schema_version: str,
     evidence_boundary: str,
 ) -> dict[str, str]:
-    return {
-        "source": source,
-        "schema_version": schema_version,
-        "project_title": clean_text(intent.get("title")) or clean_text(project_intelligence.get("project_name")),
-        "project_slug": clean_text(intent.get("project_slug")),
-        "evidence_boundary": evidence_boundary,
-    }
+    title = clean_text(intent.get("title")) or clean_text(project_intelligence.get("project_name"))
+    project_slug = clean_text(intent.get("project_slug"))
+    if source == AUTHORED_SEMANTICS_ROOT:
+        design = provisional_design_from_intent(intent)
+        title = project_presentation_name(source_title=title, design=design)
+        if design["version"] == "odylith.greenfield.provisional-design.v7":
+            project_slug = slugify(title) or "greenfield-project"
+    return {"source": source, "schema_version": schema_version,
+            "project_title": title, "project_slug": project_slug,
+            "evidence_boundary": evidence_boundary}
 
 
 def _place_derivation_after_project_intelligence(proposal: dict[str, Any]) -> dict[str, Any]:

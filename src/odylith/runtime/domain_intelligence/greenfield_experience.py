@@ -6,6 +6,8 @@ and prerequisite validity belong to traceability, not presentation order.
 
 from __future__ import annotations
 
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import provisional_design_from_intent, project_presentation_name
+
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.domain_intelligence.greenfield_authored_first_run import authored_first_path_text, authored_first_run_text
@@ -125,6 +127,7 @@ def build_next_steps(
     )
     design = selected.row["provisional_workstream_contract"]["provisional_workstream"]
     intent = proposal["intent"]
+    display_name = project_presentation_name(source_title=intent["title"], design=provisional_design_from_intent(intent))
     brief = proposal.get("project_brief")
     project_brief = brief if isinstance(brief, Mapping) else {}
     first_path = authored_first_path_text(intent)
@@ -151,14 +154,14 @@ def build_next_steps(
         operational_constraints=row_text_tuple(intent, "operational_constraints"),
     )
     return {
-        "project_title": intent["title"],
+        "project_title": display_name,
         "first_release_workstream_ids": list(first_release_workstreams),
         "start_workstream_id": selected.idea_id,
         "start_workstream_title": selected.title,
         "implementation_target": target,
         "release_selector": release_selector,
         "project_review_prompt": (
-            f"Review {intent['title']} in the Project dashboard, including its release workstreams, "
+            f"Review {display_name} in the Project dashboard, including its release workstreams, "
             "proposed design, constraints, exclusions, and proof requirements. "
             f"After readiness decisions are recorded, plan {selected.idea_id} {selected.title}."
         ),

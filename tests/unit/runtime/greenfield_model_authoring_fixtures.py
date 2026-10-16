@@ -56,6 +56,7 @@ class _FixtureHostCandidate(dict):
 
     source_action_atoms: list[dict[str, Any]]
     product_identity: dict[str, Any]
+    project_customer: dict[str, Any] | None
     nonperforming_participants: dict[str, Any]
     source_run_plan: dict[str, Any]
 
@@ -140,6 +141,7 @@ def synthetic_source_duty_receipt(
             "version": SOURCE_DUTY_LEDGER_VERSION, "status": "inventory", "question": "",
             "nonperforming_participants": copy.deepcopy(getattr(host_candidate, "nonperforming_participants", {field: [] for field in ("human_actors", "internal_systems", "external_systems")})),
             "evidence_controls": [], "product_identity": copy.deepcopy(identity),
+            "customer": copy.deepcopy(getattr(host_candidate, "project_customer", None)),
             "first_path_actions": copy.deepcopy(list(declared_actions)),
             "supporting_human_actions": [], "system_duties": [], "state_fields": [],
             "off_path_transitions": [], "conditional_guards": [], "boundaries": [], "proof_duties": [],
@@ -166,6 +168,7 @@ def synthetic_source_duty_receipt(
         "version": SOURCE_DUTY_LEDGER_VERSION, "status": "inventory", "question": "",
             "nonperforming_participants": copy.deepcopy(getattr(host_candidate, "nonperforming_participants", {field: [] for field in ("human_actors", "internal_systems", "external_systems")})),
         "evidence_controls": [], "product_identity": copy.deepcopy(identity),
+            "customer": copy.deepcopy(getattr(host_candidate, "project_customer", None)),
         "state_fields": [], "off_path_transitions": [],
         "conditional_guards": [], "boundaries": [], "proof_duties": [],
     }
@@ -213,7 +216,7 @@ def synthetic_source_duty_receipt_for_ledger(
     """Approve a fixture-only ledger; production must obtain an independent verdict."""
 
     passive_version = ledger["version"] if ledger["version"] in {
-        "odylith.greenfield.source-duty-ledger.v5", "odylith.greenfield.source-duty-ledger.v6", "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12"} else None
+        "odylith.greenfield.source-duty-ledger.v5", "odylith.greenfield.source-duty-ledger.v6", "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"} else None
     preflight = preflight_greenfield_source_duty_ledger(
         ledger, evidence_text=evidence_text, _passive_source_version=passive_version,
     )
@@ -222,11 +225,12 @@ def synthetic_source_duty_receipt_for_ledger(
     )
     decision_set = {
         "version": decision_task["decision_set_schema"]["properties"]["version"]["enum"][0],
-        **({"product_identity": {"verdict": "yes"}} if passive_version in (None, "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12") else {}),
+        **({"product_identity": {"verdict": "yes"}} if passive_version in (None, "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13") else {}),
+        **({"customer": {"verdict": "yes"}} if passive_version is None else {}),
         "verifier_task_sha256": decision_task["verifier_task_sha256"],
         "source_completeness": {"verdict": "yes", "omissions": []},
         **({"participant_decisions": {key: {field: "yes" for field in ("entity_name", "participant_type", "nonperformance", "identity_nonduplication")} for key in preflight["participant_claims"]}} if "participant_claims" in preflight else {}),
-        **({"source_plan": affirmative_source_plan_fixture(ledger)} if passive_version in (None, "odylith.greenfield.source-duty-ledger.v12") else {}),
+        **({"source_plan": affirmative_source_plan_fixture(ledger)} if passive_version in (None, "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13") else {}),
         "decisions": {
             claim["duty_id"]: {
                 "verdict": "yes",
@@ -439,6 +443,7 @@ def host_candidate_response(
     result.pop("terminal")
     result.pop("events")
     candidate.product_identity = {"basis": "explicit_name", "source_ref": facts.pop("title")}
+    candidate.project_customer = facts.pop("customer")
     candidate.source_action_atoms = atoms
     performer_refs = [atom["actor_ref"] for atom in atoms]
     candidate.nonperforming_participants = {field: [{**ref, "mention_ordinal": 1} for ref in facts.pop(field) if ref not in performer_refs]
@@ -615,6 +620,7 @@ def authored_response(
             else structural_design_fixture(
                 range(1, len(relation_rows) + 1),
                 first_run_event_orders=range(1, len(path_relations) + 1),
+                project_name=str(intent["title"]),
             ),
         },
     }
@@ -622,6 +628,7 @@ def authored_response(
 
 def structural_design_fixture(
     event_orders: Sequence[int], *, first_run_event_orders: Sequence[int] | None = None,
+    project_name: str = "Structural test project", version: str = "odylith.greenfield.provisional-design.v7",
 ) -> dict[str, Any]:
     """Synthetic design for custody/wiring tests, never product-quality evidence."""
 
@@ -642,7 +649,8 @@ def structural_design_fixture(
         for index in range(1, 5)
     ]
     return {
-        "version": "odylith.greenfield.provisional-design.v6",
+        "version": version,
+        **({"project_name": project_name} if version.endswith(".v7") else {}),
         "authority_kind": "provisional_design",
         "first_run": {
             "event_orders": list(first_run_event_orders) if first_run_event_orders is not None else orders,
@@ -1105,3 +1113,49 @@ def prior_transaction_custody_fixture(*, prior_source, prior_receipt, context, d
             "atomic_facts": [], "authority_snapshot_sha256": context["prior_authority_sha256"],
             "authored_relation_set_sha256": context["prior_relation_set_sha256"]},
         quality_manifest={})
+
+
+def fresh_project_projection_fixture(repo_root: Path, *, named: bool) -> dict[str, Any]:
+    """Real fresh compiler/render path; all semantic verdicts are synthetic fixtures."""
+    from odylith.runtime.domain_intelligence.greenfield_proposals import build_greenfield_proposal, _backlog_apply_args
+    from odylith.runtime.domain_intelligence.greenfield_apply_prewrite import build_prewrite_completion_package
+    from odylith.runtime.domain_intelligence.greenfield_model_intent_materialization import prepare_model_authoring_evidence
+    from tests.unit.runtime.test_greenfield_model_path_custody import _TEXT_FIELDS, _LIST_FIELDS, _response
+    from tests.unit.runtime.test_greenfield_create_transaction import _seed_empty_governance_repo
+    _seed_empty_governance_repo(repo_root)
+    title = "Harbor Desk" if named else "The workspace coordinates berth evidence for dock teams"
+    prompt = ". ".join([title, *[v for k, v in _TEXT_FIELDS.items() if k != "title"],
+                         *[item for rows in _LIST_FIELDS.values() for item in rows]]) + "."
+    order_constraint = "Record berth occupancy before showing the placement"
+    prompt += " " + order_constraint + "."
+    if not named:
+        prompt = prompt.replace(_TEXT_FIELDS["product_view"], "The workspace gives dock attendants a berth workflow")
+    prepared = prepare_model_authoring_evidence(prompt=prompt)
+    response = _response(prepared.evidence_source)
+    if not named:
+        response["result"]["facts"]["product_view"] = {"quote": "The workspace gives dock attendants a berth workflow", "occurrence": 1}
+    response["result"]["facts"]["operational_constraints"].insert(0, {"quote": order_constraint, "occurrence": 1})
+    response["result"]["source_precedence"] = [{"before_event": 2, "after_event": 3, "constraint_index": 1}]
+    response["result"]["facts"]["title"] = {"quote": title, "occurrence": 1}
+    response["result"]["provisional_design"]["project_name"] = "Harbor Desk" if named else "Berth Evidence Workspace"
+    candidate = host_candidate_response(response, evidence_text=prepared.evidence_source)
+    candidate.product_identity["basis"] = "explicit_name" if named else "product_description"
+    receipt = synthetic_source_duty_receipt(candidate, evidence_text=prepared.evidence_source)
+    candidate["result"][HOST_SOURCE_DUTY_BINDING_FIELD].update(
+        source_sha256=receipt["source_sha256"], ledger_sha256=receipt["ledger_sha256"])
+    intent = materialize_host_authored_intent(prompt=prompt, repo_root=repo_root,
+        host_candidate=candidate, source_duty_receipt=receipt, prepared_evidence=prepared)
+    proposal = build_greenfield_proposal(repo_root=repo_root, prompt=prompt, release_selector="0.0.1",
+        confirmed_intent=intent, require_completion_ready=False)
+    prewrite = build_prewrite_completion_package(root=repo_root, proposal=proposal, release_selector="0.0.1",
+        backlog_args=_backlog_apply_args(proposal, release_selector="0.0.1"),
+        validation_gate={"status": "passed", "issues": []}, release_assignment_note="Synthetic browser/unit fixture.")
+    first_run = next(row for row in proposal["diagrams"] if row["slug"].endswith("-first-run"))
+    return {"kind": "synthetic source14/design7 compiled fixture; no live qualification",
+            "prompt": prompt, "source": prepared.evidence_source, "candidate": candidate, "receipt": receipt,
+            "intent": intent, "proposal": proposal, "prewrite": prewrite,
+            "project_payload": prewrite.package.project_dashboard_preview,
+            "radar_markdown": dict(prewrite.backlog_result["idea_files"]), "first_run_atlas": first_run,
+            "expected": {"source_title": title, "project_name": response["result"]["provisional_design"]["project_name"],
+                "customer": "Dock attendants", "first_performer": "Dock attendant Ivo",
+                "event_orders": [1, 2, 3], "source_precedence": [{"before_event": 2, "after_event": 3, "constraint_index": 1}], "named": named}}

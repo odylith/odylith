@@ -72,7 +72,7 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     MAX_AUTHORED_LIST_ITEMS,
 )
 from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
-    PROVISIONAL_DESIGN_SCHEMA,
+    PROVISIONAL_DESIGN_SCHEMA, provisional_design_schema, require_source_design_pair,
     validate_provisional_design,
 )
 from odylith.runtime.domain_intelligence.greenfield_source_duty_ledger import (
@@ -284,17 +284,12 @@ def validate_greenfield_authoring_response(
             "Greenfield authoring omitted the ambiguity raised by conflicting evidence; no records were created."
         )
     try:
-        if accepted_source_duties is not None and accepted_source_duties["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"}:
-            from odylith.runtime.domain_intelligence.greenfield_source_run_plan import require_source_run_projection
-            require_source_run_projection(accepted_source_duties["ledger"], evidence_text=evidence_text,
-                facts=result["facts"], source_precedence=result["source_precedence"],
-                first_run=result["provisional_design"]["first_run"], terminal=result["terminal"], canonical_facts=True)
         normalized_actions = _accepted_source_actions(
             accepted_source_duties,
             accepted_source_duty_binding,
             evidence_text=evidence_text, events=result.get("events"),
         )
-        if accepted_source_duties is not None and accepted_source_duties["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"}:
+        if accepted_source_duties is not None and accepted_source_duties["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13", "odylith.greenfield.source-duty-ledger.v14"}:
             from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import project_greenfield_source_event_catalog, source_owned_greenfield_actor_facts
             catalog = project_greenfield_source_event_catalog(accepted_source_duties, evidence_text=evidence_text)
             owned = source_owned_greenfield_actor_facts(catalog, supplemental={}, evidence_text=evidence_text, ledger_receipt=accepted_source_duties)
@@ -302,6 +297,11 @@ def validate_greenfield_authoring_response(
                 expected = [canonical_citation_from_host_selection(evidence_text.encode("utf-8"), ref, mention_selection="mention_ordinal" in ref) for ref in owned[field]]
                 if result.get("facts", {}).get(field) != expected:
                     raise GreenfieldModelAuthoringError("Greenfield canonical participants differ from the verified source roster")
+            if accepted_source_duties["ledger"]["version"] == "odylith.greenfield.source-duty-ledger.v14":
+                expected_customer = (canonical_citation_from_host_selection(evidence_text.encode("utf-8"), owned["customer"])
+                                     if owned["customer"] is not None else None)
+                if result.get("facts", {}).get("customer") != expected_customer:
+                    raise GreenfieldModelAuthoringError("Greenfield canonical customer differs from the verified project customer")
         if accepted_source_duties is not None:
             if result.get("components") != []:
                 raise GreenfieldModelAuthoringError("Verified duties own component responsibility authority")
@@ -325,7 +325,7 @@ def validate_greenfield_authoring_response(
             ambiguities=result.get("ambiguities"),
             normalized_actions=normalized_actions,
         )
-        if accepted_source_duties is not None and accepted_source_duties["ledger"]["version"] == "odylith.greenfield.source-duty-ledger.v13":
+        if accepted_source_duties is not None and accepted_source_duties["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v13", "odylith.greenfield.source-duty-ledger.v14"}:
             require_source_evidence_authority(accepted_source_duties["ledger"], evidence_text=evidence_text,
                 uses=[(fact["projection_path"], fact["source_start_byte"], fact["source_end_byte"]) for fact in selected_facts],
                 participant_offsets={field: len(catalog["facts"][field]) for field in ("human_actors", "internal_systems", "external_systems")})
@@ -348,9 +348,9 @@ def validate_greenfield_authoring_response(
             allow_exact_dual_role_constraints=allow_exact_dual_role_constraints,
             first_path_event_orders=first_path_event_orders,
             source_owned_actor_facts=(accepted_source_duties is not None
-                and accepted_source_duties["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"}),
+                and accepted_source_duties["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13", "odylith.greenfield.source-duty-ledger.v14"}),
             source_event_graph=(accepted_source_duties is not None
-                and accepted_source_duties["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"}),
+                and accepted_source_duties["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13", "odylith.greenfield.source-duty-ledger.v14"}),
         )
         authored_component_relation_facts(
             title=str(intent.get("title") or ""),
@@ -378,6 +378,7 @@ def validate_greenfield_authoring_response(
             result.get("source_precedence"), event_orders=event_orders,
             operational_constraints=intent["operational_constraints"],
         )
+        require_source_design_pair(result.get("provisional_design"), source_duty={"ledger_receipt": accepted_source_duties})
         provisional_design = validate_provisional_design(
             result.get("provisional_design"),
             event_orders=event_orders, source_precedence=source_precedence,
@@ -390,6 +391,11 @@ def validate_greenfield_authoring_response(
                 None,
             ),
         )
+        if accepted_source_duties is not None and accepted_source_duties["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13", "odylith.greenfield.source-duty-ledger.v14"}:
+            from odylith.runtime.domain_intelligence.greenfield_source_run_plan import require_source_run_projection
+            require_source_run_projection(accepted_source_duties["ledger"], evidence_text=evidence_text,
+                facts=result["facts"], source_precedence=result["source_precedence"],
+                first_run=result["provisional_design"]["first_run"], terminal=result["terminal"], canonical_facts=True)
     except ValueError as exc:
         raise GreenfieldModelAuthoringError(f"{exc}; no records were created.") from exc
     return GreenfieldModelAuthoredIntent(
@@ -528,15 +534,15 @@ def _accepted_source_actions(
     ledger = verified["ledger"]
     by_order: dict[int, dict[str, Any]] = {}
     path_orders: set[int] = set()
-    if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v6", "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"}:
+    if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v6", "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13", "odylith.greenfield.source-duty-ledger.v14"}:
         from odylith.runtime.domain_intelligence.greenfield_source_duty_binding import (
             project_greenfield_source_event_catalog,
         )
         catalog = project_greenfield_source_event_catalog(verified, evidence_text=evidence_text,
-                    _passive=ledger["version"] not in {"odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"})
+                    _passive=ledger["version"] not in {"odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13", "odylith.greenfield.source-duty-ledger.v14"})
         if any(binding.get(section) != rows for section, rows in catalog["action_bindings"].items()):
             raise GreenfieldModelAuthoringError("Greenfield source action binding differs from its frozen catalog")
-        if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"} and (
+        if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13", "odylith.greenfield.source-duty-ledger.v14"} and (
             [event.get("actor_fact") for event in events]
             != [event["actor_fact"] for event in catalog["events"]]
         ):
@@ -1032,10 +1038,11 @@ _AUTHORING_SCHEMA: dict[str, Any] = {
 }
 
 
-def greenfield_authoring_schema(*, source_event_graph: bool = False) -> dict[str, Any]:
+def greenfield_authoring_schema(*, source_event_graph: bool = False, design_version: str = "odylith.greenfield.provisional-design.v7") -> dict[str, Any]:
     """Return an isolated copy of the complete canonical response schema."""
 
     schema = deepcopy(_AUTHORING_SCHEMA)
+    schema["properties"]["result"]["anyOf"][0]["properties"]["provisional_design"] = provisional_design_schema(design_version)
     if source_event_graph:
         events = schema["properties"]["result"]["anyOf"][0]["properties"]["events"]
         events["maxItems"] = MAX_SOURCE_EVENT_RELATIONS

@@ -9,7 +9,7 @@ from typing import Any
 from odylith.runtime.domain_intelligence.greenfield_authored_relation_validation import (
     FIRST_PATH_RELATION_FIELDS, GreenfieldAuthoredSemanticsError,
 )
-from odylith.runtime.domain_intelligence.greenfield_provisional_design import validate_provisional_design
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import validate_provisional_design, require_source_design_pair
 
 AUTHORED_SEMANTICS_VERSION = "odylith.greenfield.authored-semantics.v19"
 PASSIVE_AUTHORED_SEMANTICS_VERSION = "odylith.greenfield.authored-semantics.v18"
@@ -81,6 +81,7 @@ def authored_semantics_mapping(
 ) -> dict[str, Any]:
     """Serialize source relations and tagged design without replacing source facts."""
 
+    require_source_design_pair(provisional_design, source_duty=source_duty)
     return {
         "version": AUTHORED_SEMANTICS_VERSION,
         "source_event_relations": [dict(row) for row in relations],
@@ -108,7 +109,7 @@ def authored_relation_set_sha256(
     source_precedence: Sequence[Mapping[str, Any]] = (),
     provisional_design: Mapping[str, Any] | None = None,
     source_duty: Mapping[str, Any] | None = None,
-    semantics_version: str = AUTHORED_SEMANTICS_VERSION,
+    semantics_version: str | None = None,
 ) -> str:
     """Bind source relations and provisional design in one semantic custody hash."""
 
@@ -148,15 +149,20 @@ def authored_relation_set_sha256(
         or set(source_duty) != {"ledger_receipt", "binding", "lifecycle"}
     ):
         raise GreenfieldAuthoredSemanticsError("Greenfield source-duty custody is malformed")
+    if first_path_payload:
+        require_source_design_pair(
+            provisional_design, source_duty=source_duty, semantics_version=semantics_version,
+        )
     design_payload = validate_provisional_design(
         provisional_design, event_orders=tuple(row["order"] for row in first_path_payload),
         source_precedence=precedence_payload,
         result_event_order=next((row["order"] for row in first_path_payload if row["visible_result_quote"]), None),
     ) if first_path_payload else None
+    resolved_version = AUTHORED_SEMANTICS_VERSION if semantics_version is None else semantics_version
     canonical = json.dumps(
         {
-            "version": semantics_version,
-            source_event_relation_key(semantics_version): first_path_payload,
+            "version": resolved_version,
+            source_event_relation_key(resolved_version): first_path_payload,
             "first_path_context_relations": context_payload,
             "component_responsibility_relations": component_payload,
             "source_precedence": precedence_payload,

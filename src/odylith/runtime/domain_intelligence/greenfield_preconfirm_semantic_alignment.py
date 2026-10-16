@@ -15,7 +15,7 @@ from odylith.runtime.domain_intelligence.greenfield_authored_semantics import AU
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_scalar_values import nested_text_values
 from odylith.runtime.domain_intelligence.greenfield_provisional_package import build_provisional_components
-from odylith.runtime.domain_intelligence.greenfield_provisional_design import provisional_design_from_intent
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import provisional_design_from_intent, project_presentation_name
 from odylith.runtime.analysis_engine.types import slugify
 
 
@@ -44,7 +44,7 @@ def semantic_model_shape_issues(
     elif not any(isinstance(row, Mapping) and row.get("visible_result") for row in events):
         try:
             source_duty = intent.get(AUTHORED_SEMANTICS_KEY, {}).get("source_duty") if intent else None
-            fresh = source_duty and source_duty["ledger_receipt"]["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"}
+            fresh = source_duty and source_duty["ledger_receipt"]["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13", "odylith.greenfield.source-duty-ledger.v14"}
             if fresh:
                 run = authored_first_run_relations(intent)
                 expected = [(row["order"], bool(row["visible_result_quote"])) for row in run]
@@ -98,7 +98,7 @@ def semantic_component_alignment_issues(proposal: Mapping[str, Any], semantic: M
     try:
         design = provisional_design_from_intent(intent)
         expected_components = build_provisional_components(
-            intent=intent, product_slug=slugify(str(intent.get("title") or "")) or "greenfield-project",
+            intent=intent, product_slug=slugify(project_presentation_name(source_title=str(intent.get("title") or ""), design=design)) or "greenfield-project",
         )
     except ValueError as exc:
         return [str(exc)]

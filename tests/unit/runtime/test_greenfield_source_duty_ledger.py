@@ -64,6 +64,7 @@ def _ledger() -> dict:
     }
     return {
         "version": SOURCE_DUTY_LEDGER_VERSION,
+        "customer": None,
         "source_precedence": [], "first_run": {"duty_ids": ["A1"]},
         "terminal": {"duty_id": "A1", "proof_boundary": clause,
                      "result_fact": {"field": "first_path", "duty_id": "A1"},
@@ -92,9 +93,10 @@ def _ledger() -> dict:
 def _yes_decisions(preflight: dict, *, evidence_text: str = EVIDENCE) -> dict:
     from tests.unit.runtime.greenfield_model_authoring_fixtures import affirmative_source_plan_fixture
     return {
-        **({"source_plan": affirmative_source_plan_fixture(preflight["ledger"])} if preflight["ledger"]["version"] in {SOURCE_DUTY_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v12"} else {}),
+        **({"source_plan": affirmative_source_plan_fixture(preflight["ledger"])} if preflight["ledger"]["version"] in {SOURCE_DUTY_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"} else {}),
         "version": source_duty_entailment_task(preflight, evidence_text=evidence_text)["decision_set_schema"]["properties"]["version"]["enum"][0],
         **({"product_identity": {"verdict": "yes"}} if "product_identity" in preflight["ledger"] else {}),
+        **({"customer": {"verdict": "yes"}} if preflight["ledger"]["version"] == SOURCE_DUTY_LEDGER_VERSION else {}),
         "verifier_task_sha256": source_duty_entailment_task(
             preflight, evidence_text=evidence_text
         )["verifier_task_sha256"],
@@ -981,6 +983,7 @@ def test_exact_v5_receipt_task_and_hashes_remain_passive_and_refuse_fresh_use():
         ledger.pop(field)
     ledger.pop("nonperforming_participants")
     ledger.pop("product_identity")
+    ledger.pop("customer")
     evidence = EVIDENCE.removeprefix("Review workspace. ")
     del ledger["system_duties"][0]["performer_role"]
     del ledger["system_duties"][0]["execution_kind"]

@@ -80,6 +80,7 @@ def _source_receipt() -> dict[str, object]:
     # Candidate clarification follows an admitted inventory; its record variant remains ambiguous.
     ledger = {
         "version": SOURCE_DUTY_LEDGER_VERSION, "status": "inventory", "question": "",
+        "customer": None,
         "nonperforming_participants": {field: [] for field in ("human_actors", "internal_systems", "external_systems")},
         "product_identity": {"basis": "product_description", "source_ref": {
             "quote": "Test outcome journal", "context": "Test outcome journal."}},

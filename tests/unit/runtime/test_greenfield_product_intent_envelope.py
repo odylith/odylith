@@ -263,15 +263,48 @@ def test_envelope_construction_rejects_relation_free_input() -> None:
 
 def test_envelope_construction_refuses_missing_source_custody_explicitly() -> None:
     source, result, intent = _authored_inputs()
-    intent[AUTHORED_SEMANTICS_KEY] = authored_semantics_mapping(
-        result.source_event_relations,
-        result.component_responsibility_relations,
-        first_path_context_relations=result.first_path_context_relations,
-        provisional_design=result.provisional_design,
-        source_duty=None,
-    )
+    intent[AUTHORED_SEMANTICS_KEY]["source_duty"] = None
     with pytest.raises(ValueError, match="requires verified source-duty custody"):
         _build_envelope(source=source, result=result, intent=intent)
+
+
+@pytest.mark.parametrize("semantic_version,expected_hash", [
+    ("odylith.greenfield.authored-semantics.v18", "4e7fc9339e598aa1a41297378d739a3fbd16b9d1c6cdd2ec67ebe3b801476590"),
+    ("odylith.greenfield.authored-semantics.v19", "e2030d257b89bdba62b9aa4b27904e20f89c6eae42b6eac67aa78d771cb749b2"),
+])
+def test_exact_passive_design6_without_ledger_retains_reader_and_hash_only(semantic_version, expected_hash) -> None:
+    from tests.unit.runtime.test_greenfield_authored_project_dashboard import _proposal
+    from odylith.runtime.domain_intelligence.greenfield_provisional_design import require_source_design_pair
+
+    # Synthetic presentation input, independently replayed through the actual
+    # bd7 owner preimages. It is not a retained live receipt or fresh authority.
+    intent = copy.deepcopy(_proposal()["intent"])
+    semantics = intent[AUTHORED_SEMANTICS_KEY]
+    semantics["version"] = semantic_version
+    rows = semantics.pop("source_event_relations")
+    relation_key = "first_path_relations" if semantic_version.endswith(".v18") else "source_event_relations"
+    semantics.update({relation_key: rows, "source_duty": None})
+    arguments = dict(first_path_context_relations=semantics["first_path_context_relations"],
+        source_precedence=semantics["source_precedence"], provisional_design=semantics["provisional_design"],
+        source_duty=None)
+    assert first_path_relations_from_intent(intent) == tuple(rows)
+    assert authored_relation_set_sha256(rows, semantics["component_responsibility_relations"],
+        **arguments, semantics_version=semantics["version"]) == expected_hash
+    with pytest.raises(ValueError, match="requires authenticated source custody"):
+        authored_relation_set_sha256(rows, **arguments)
+    with pytest.raises(ValueError, match="requires authenticated source custody"):
+        authored_semantics_mapping(rows, **arguments)
+    for selected_version in (None, "odylith.greenfield.authored-semantics.v20"):
+        with pytest.raises(ValueError, match="requires authenticated source custody"):
+            authored_relation_set_sha256(rows, **arguments, semantics_version=selected_version)
+    current = copy.deepcopy(intent)
+    current[AUTHORED_SEMANTICS_KEY]["provisional_design"].update(
+        version="odylith.greenfield.provisional-design.v7", project_name=intent["title"])
+    with pytest.raises(ValueError, match="requires authenticated source custody"):
+        first_path_relations_from_intent(current)
+    for source_duty in (None, {}):
+        with pytest.raises(ValueError, match="requires authenticated source custody"):
+            require_source_design_pair(semantics["provisional_design"], source_duty=source_duty)
 
 
 def test_envelope_rejects_source_digest_or_span_rebinding() -> None:

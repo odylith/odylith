@@ -226,6 +226,7 @@ def test_exact_source12_initial24_task_and_receipt_remain_frozen():
     _, source, _, receipt = seven_action_system_result_case()
     ledger = deepcopy(receipt["ledger"])
     ledger["version"] = "odylith.greenfield.source-duty-ledger.v12"
+    ledger.pop("customer")
     old = synthetic_source_duty_receipt_for_ledger(ledger, evidence_text=source)
     assert old["version"].endswith(".v24")
     assert old["ledger_sha256"] == "a0f72780ae0ec45efbeb86841ea308915243f17a27afa4860c273f48fb52af78"
@@ -240,6 +241,7 @@ def test_exact_old_context_rule_is_not_silently_upgraded():
     _, prepared, _, receipt = context_case()
     ledger = deepcopy(receipt["ledger"])
     ledger["version"] = "odylith.greenfield.source-duty-ledger.v12"
+    ledger.pop("customer")
     with pytest.raises(ValueError, match="participant overlaps reference-only context"):
         ledger_owner.preflight_greenfield_source_duty_ledger(ledger, evidence_text=prepared.evidence_source,
             _passive_source_version=ledger["version"])

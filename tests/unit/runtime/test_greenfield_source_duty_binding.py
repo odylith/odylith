@@ -679,13 +679,16 @@ def test_complete_host_admission_rejects_first_run_only_reordering() -> None:
     from tests.unit.runtime.greenfield_model_authoring_fixtures import (
         synthetic_source_duty_receipt,
     )
+    from odylith.runtime.domain_intelligence.greenfield_source_run_plan import project_source_run_plan
 
     source, candidate = _candidate()
     receipt = synthetic_source_duty_receipt(candidate, evidence_text=source)
     original_receipt = deepcopy(receipt)
-    first_run = candidate["result"]["provisional_design"]["first_run"]["event_orders"]
+    admit_greenfield_host_candidate(candidate, evidence_text=source, source_duty_receipt=receipt)
+    first_run = project_source_run_plan(receipt["ledger"], evidence_text=source)["event_orders"]
     first_run[0], first_run[1] = first_run[1], first_run[0]
-    with pytest.raises(GreenfieldSourceDutyBindingError, match="ledger workflow order"):
+    candidate["result"]["provisional_design"]["first_run"]["event_orders"] = first_run
+    with pytest.raises(GreenfieldSourceDutyBindingError, match="must not author the source-owned complete run"):
         admit_greenfield_host_candidate(
             candidate, evidence_text=source, source_duty_receipt=receipt
         )

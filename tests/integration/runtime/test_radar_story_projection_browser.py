@@ -109,6 +109,91 @@ def test_markdown_story_is_formatted_and_faithful_in_preview_and_detail(
 
 @pytest.mark.parametrize("width", [1440, 430], ids=["desktop", "mobile"])
 @pytest.mark.parametrize("state", ["normal", "runtime-fallback"])
+def test_design7_generated_workstreams_keep_one_current_project_customer(
+    tmp_path: Path, browser_context, width: int, state: str,
+) -> None:
+    from odylith.runtime.surfaces import render_backlog_ui_payload_runtime as payload_runtime
+    from tests.unit.runtime.greenfield_model_authoring_fixtures import fresh_project_projection_fixture
+
+    repo = tmp_path / "projection"
+    case = fresh_project_projection_fixture(repo, named=False)
+    expected = case["expected"]
+    markdown = case["radar_markdown"]
+    before = json.dumps({"proposal": case["proposal"], "markdown": markdown}, sort_keys=True)
+    for path, content in markdown.items():
+        idea_path = Path(path)
+        assert idea_path.resolve().is_relative_to(repo.resolve())
+        idea_path.parent.mkdir(parents=True, exist_ok=True)
+        idea_path.write_text(content, encoding="utf-8")
+    entries, errors = [], []
+    expected_workstreams = {row["title"]: row for row in case["proposal"]["backlog"]}
+    for index, item in enumerate(case["prewrite"].backlog_result["created"], 1):
+        entry = payload_runtime._build_entry(
+            repo_root=repo, output_path=repo / "odylith/radar/radar.html", section="active",
+            payload={
+                "idea_id": item["idea_id"], "rank": str(index), "title": item["title"],
+                "priority": "", "ordering_score": "", "commercial_value": "", "product_impact": "",
+                "market_value": "", "sizing": "", "complexity": "", "status": "queued",
+                "link": f"[spec]({item['idea_path']})",
+            },
+            rationale_map={}, errors=errors,
+        )
+        assert entry is not None and not errors
+        assert entry["customer"] == expected_workstreams[entry["title"]]["customer"] == expected["customer"]
+        assert entry["problem"] == expected_workstreams[entry["title"]]["problem"]
+        entries.append(entry)
+    assert len(entries) == len(expected_workstreams) > 1
+    assert expected["customer"] != expected["first_performer"]
+    payload = {"entries": entries}
+    fallback_requests = []
+    base_url, context = browser_context
+    with _new_page(context) as (page, observation):
+        page.set_viewport_size({"width": width, "height": 1100 if width == 1440 else 932})
+        if state == "runtime-fallback":
+            payload["data_source"] = {"preferred_backend": "runtime", "runtime_base_url": base_url + "/fresh-customer-runtime/"}
+
+            def unavailable_runtime(route):  # noqa: ANN001
+                fallback_requests.append(route.request.url)
+                route.fulfill(status=200, content_type="application/json", body="invalid JSON")
+
+            page.route("**/fresh-customer-runtime/**", unavailable_runtime)
+        page.route("**/radar-fresh-customer.html*", lambda route: route.fulfill(
+            status=200, content_type="text/html", body=html_runtime._render_html(payload=payload),
+        ))
+        page.goto(base_url + "/radar-fresh-customer.html", wait_until="networkidle")
+        for entry in entries:
+            _click_visible_radar_row(page.locator(f'button[data-idea-id="{entry["idea_id"]}"]'))
+            detail = page.locator("#detail")
+            detail.locator(".detail-title").filter(has_text=entry["title"]).wait_for()
+            customer = detail.locator("section.block").filter(
+                has=page.get_by_role("heading", name="Customer", exact=True),
+            )
+            customer.scroll_into_view_if_needed()
+            assert customer.is_visible()
+            assert customer.locator("p").inner_text() == expected["customer"]
+            assert expected["first_performer"] not in customer.inner_text()
+            assert customer.locator("a, img, script, input").count() == 0
+            assert customer.evaluate("node => node.scrollWidth <= node.clientWidth+1")
+            assert entry["problem"] in detail.locator(".block-problem").inner_text()
+            assert page.locator(f'button[data-idea-id="{entry["idea_id"]}"].active').count() == 1
+            support = detail.locator("details.detail-disclosure")
+            assert support.count() >= 1
+            assert support.evaluate_all("nodes => nodes.every(node => !node.open)")
+            screenshot = _failure_screenshot_path(f"design7-radar-customer-{entry['idea_id']}-{width}-{state}")
+            if screenshot:
+                screenshot.parent.mkdir(parents=True, exist_ok=True)
+                page.screenshot(path=str(screenshot), full_page=True)
+        if state == "runtime-fallback":
+            assert any("surfaces/backlog/list" in url for url in fallback_requests)
+            assert any("surfaces/backlog/detail" in url for url in fallback_requests)
+        assert page.locator("body").evaluate("node => node.scrollWidth <= node.clientWidth+1")
+        assert json.dumps({"proposal": case["proposal"], "markdown": markdown}, sort_keys=True) == before
+        assert all(Path(path).read_text(encoding="utf-8") == content for path, content in markdown.items())
+        _assert_clean_page(page, observation)
+
+
+@pytest.mark.parametrize("width", [1440, 430], ids=["desktop", "mobile"])
+@pytest.mark.parametrize("state", ["normal", "runtime-fallback"])
 def test_plain_story_fallback_survives_list_delivery(
     tmp_path: Path, browser_context, width: int, state: str,
 ) -> None:

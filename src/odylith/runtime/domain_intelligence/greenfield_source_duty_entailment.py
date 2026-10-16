@@ -40,8 +40,8 @@ from odylith.runtime.domain_intelligence.greenfield_source_run_plan import (
 )
 
 
-SOURCE_DUTY_DECISION_SET_VERSION = "odylith.greenfield.source-duty-decisions.v20"
-EDIT_SOURCE_DUTY_DECISION_SET_VERSION = "odylith.greenfield.source-duty-decisions.v21"
+SOURCE_DUTY_DECISION_SET_VERSION = "odylith.greenfield.source-duty-decisions.v22"
+EDIT_SOURCE_DUTY_DECISION_SET_VERSION = "odylith.greenfield.source-duty-decisions.v23"
 LEGACY_EDIT_SOURCE_DUTY_DECISION_SET_VERSION = "odylith.greenfield.source-duty-decisions.v5"
 EDIT_PRESERVATION_VERSION = "odylith.greenfield.edit-lifecycle-preservation.v4"
 MAX_EDIT_CONTEXT_BYTES = 128 * 1024
@@ -350,7 +350,7 @@ def source_duty_claims(
                             if section == "first_path_actions" else
                             ("human_actor" if section == "supporting_human_actions"
                              else row["performer_role"])
-                            if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v6", "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"}
+                            if ledger["version"] in {"odylith.greenfield.source-duty-ledger.v6", "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13", "odylith.greenfield.source-duty-ledger.v14"}
                             else ""
                         ),
                         "statement": row["statement"],
@@ -442,6 +442,7 @@ def greenfield_source_duty_decision_set_schema(
                  else "odylith.greenfield.source-duty-decisions.v15" if _passive_source_version == "odylith.greenfield.source-duty-ledger.v10"
                  else "odylith.greenfield.source-duty-decisions.v17" if _passive_source_version == "odylith.greenfield.source-duty-ledger.v11"
                  else "odylith.greenfield.source-duty-decisions.v19" if _passive_source_version == "odylith.greenfield.source-duty-ledger.v12"
+                 else "odylith.greenfield.source-duty-decisions.v21" if _passive_source_version == "odylith.greenfield.source-duty-ledger.v13"
                  else "odylith.greenfield.source-duty-decisions.v6" if _passive_source_version
                  else "odylith.greenfield.source-duty-decisions.v12" if edit_preservation.get("version") == "odylith.greenfield.edit-lifecycle-preservation.v3"
                  else EDIT_SOURCE_DUTY_DECISION_SET_VERSION) if edit_preservation is not None
@@ -451,6 +452,7 @@ def greenfield_source_duty_decision_set_schema(
                 else "odylith.greenfield.source-duty-decisions.v14" if _passive_source_version == "odylith.greenfield.source-duty-ledger.v10"
                 else "odylith.greenfield.source-duty-decisions.v16" if _passive_source_version == "odylith.greenfield.source-duty-ledger.v11"
                 else "odylith.greenfield.source-duty-decisions.v18" if _passive_source_version == "odylith.greenfield.source-duty-ledger.v12"
+                else "odylith.greenfield.source-duty-decisions.v20" if _passive_source_version == "odylith.greenfield.source-duty-ledger.v13"
                 else "odylith.greenfield.source-duty-decisions.v4" if _passive_source_version
                 else SOURCE_DUTY_DECISION_SET_VERSION]},
             "verifier_task_sha256": digest,
@@ -478,7 +480,11 @@ def greenfield_source_duty_decision_set_schema(
                           judgment: {"type": "string", "enum": ["yes", "no", "uncertain"]}
                           for judgment in PARTICIPANT_JUDGMENTS}}
                 for key in participant_claims}}
-    if _passive_source_version in (None, "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12"):
+    if _passive_source_version is None:
+        schema["required"].append("customer")
+        schema["properties"]["customer"] = {"type": "object", "additionalProperties": False,
+            "required": ["verdict"], "properties": {"verdict": {"type": "string", "enum": ["yes", "no", "uncertain"]}}}
+    if _passive_source_version in (None, "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"):
         schema["required"].append("product_identity")
         schema["properties"]["product_identity"] = {
             "type": "object", "additionalProperties": False, "required": ["verdict"],
@@ -560,14 +566,14 @@ def source_duty_entailment_task(
         raise GreenfieldSourceDutyEntailmentError(
             "source duty authority source hash is invalid"
         )
-    if preflight["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"} and preflight["ledger"]["status"] != "inventory":
+    if preflight["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13", "odylith.greenfield.source-duty-ledger.v14"} and preflight["ledger"]["status"] != "inventory":
         raise GreenfieldSourceDutyEntailmentError("source clarification cannot request a verifier")
 
     if edit_preservation is not None:
         _validate_edit_context(edit_preservation, evidence_text=evidence_text,
-                               _passive=preflight["ledger"]["version"] not in {"odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"})
+                               _passive=preflight["ledger"]["version"] not in {"odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13", "odylith.greenfield.source-duty-ledger.v14"})
     view = compact_source_duty_view(preflight["ledger"])
-    inventory = view["result"] if preflight["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"} else view
+    inventory = view["result"] if preflight["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13", "odylith.greenfield.source-duty-ledger.v14"} else view
     if len(inventory["citations"]) > MAX_COMPACT_CITATIONS:
         raise GreenfieldSourceDutyEntailmentError(
             "source duty verifier citation bank exceeds its bound"
@@ -627,9 +633,9 @@ def source_duty_entailment_task(
             preflight["claims"], edit_preservation=edit_preservation,
             _passive_legacy_edit=_passive_legacy_edit,
             _passive_source_version=(preflight["ledger"]["version"]
-                if preflight["ledger"]["version"] != SOURCE_RUN_PLAN_LEDGER_VERSION else None),
+                if preflight["ledger"]["version"] != "odylith.greenfield.source-duty-ledger.v14" else None),
             participant_claims=preflight.get("participant_claims"),
-            source_plan=preflight["ledger"] if preflight["ledger"]["version"] in {SOURCE_RUN_PLAN_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v12"} else None,
+            source_plan=preflight["ledger"] if preflight["ledger"]["version"] in {SOURCE_RUN_PLAN_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v14"} else None,
         ),
     }
     if edit_preservation is not None:
@@ -708,7 +714,7 @@ def source_duty_entailment_task(
                 "Historical titles, a shifted performer role, or general preservation language cannot "
                 "authorize a rename. Missing, uncertain, removed or unsupported replacement refuses."
             )
-    if preflight["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"}:
+    if preflight["ledger"]["version"] in {"odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13", "odylith.greenfield.source-duty-ledger.v14"}:
         task["task"] += (
             " Independently verify product_identity.source_ref as the requested product's explicit name "
             "or useful descriptive identity, never a background repository, system, generic 'product' noun or incidental label. "
@@ -775,9 +781,9 @@ def source_duty_entailment_task(
             "or silently select another mention. The ordinal locates only; all four participant judgments "
             "and source-wide completeness remain independent semantic obligations."
         )
-    if preflight["ledger"]["version"] in {SOURCE_RUN_PLAN_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v12"}:
+    if preflight["ledger"]["version"] in {SOURCE_RUN_PLAN_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v14"}:
         task["source_plan_task"] = SOURCE_RUN_VERIFIER_TASK
-    if preflight["ledger"]["version"] == SOURCE_RUN_PLAN_LEDGER_VERSION:
+    if preflight["ledger"]["version"] in {SOURCE_RUN_PLAN_LEDGER_VERSION, "odylith.greenfield.source-duty-ledger.v14"}:
         task["task"] += (
             " For entity_name=yes, affirm a material source-declared participant association, not a mere "
             "incidental reference, example, hypothetical or untrusted name. Explicit optional carrier, "
@@ -789,6 +795,16 @@ def source_duty_entailment_task(
             "its actual governed system and outcome; use no or uncertain for unresolved classification "
             "or membership. The preceding reference-only exclusion concerns incidental names, not an "
             "explicitly declared optional participant association."
+        )
+    if preflight["ledger"]["version"] == "odylith.greenfield.source-duty-ledger.v14":
+        task["task"] += (
+            " Independently judge customer as the source-stated project user or primary beneficiary. "
+            "An explicit project audience/team cannot be replaced by one workflow actor merely because "
+            "that actor works first. customer=null is affirmative only when the full current source, "
+            "including correction precedence, states no unambiguous project customer and the gap may "
+            "remain a proposed assumption. A customer claim creates no performer, system or authority. "
+            "Reference/instruction-only mentions cannot support it. Return customer.verdict=yes only "
+            "for that exact meaning or justified absence; missing/no/uncertain refuses."
         )
     task["verifier_task_sha256"] = _canonical_sha256(task)
     if not _passive_receipt:
@@ -972,7 +988,7 @@ def validate_source_duty_decision_set(
         "decisions",
         "source_completeness",
     }
-    if _passive_source_version in (None, "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12"):
+    if _passive_source_version in (None, "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"):
         fields.add("product_identity")
         if edit_preservation is not None:
             fields.add("identity_preservation")
@@ -982,6 +998,8 @@ def validate_source_duty_decision_set(
         fields.add("edit_preservation")
         if _passive_legacy_edit:
             fields.add("edit_correction_refs")
+    if _passive_source_version is None:
+        fields.add("customer")
     if source_plan is not None:
         fields.add("source_plan")
     if participant_claims is not None:
@@ -999,6 +1017,7 @@ def validate_source_duty_decision_set(
                  else "odylith.greenfield.source-duty-decisions.v15" if _passive_source_version == "odylith.greenfield.source-duty-ledger.v10"
                  else "odylith.greenfield.source-duty-decisions.v17" if _passive_source_version == "odylith.greenfield.source-duty-ledger.v11"
                  else "odylith.greenfield.source-duty-decisions.v19" if _passive_source_version == "odylith.greenfield.source-duty-ledger.v12"
+                 else "odylith.greenfield.source-duty-decisions.v21" if _passive_source_version == "odylith.greenfield.source-duty-ledger.v13"
                  else "odylith.greenfield.source-duty-decisions.v6" if _passive_source_version
              else "odylith.greenfield.source-duty-decisions.v12" if edit_preservation.get("version") == "odylith.greenfield.edit-lifecycle-preservation.v3"
                  else EDIT_SOURCE_DUTY_DECISION_SET_VERSION)
@@ -1009,6 +1028,7 @@ def validate_source_duty_decision_set(
             else "odylith.greenfield.source-duty-decisions.v14" if _passive_source_version == "odylith.greenfield.source-duty-ledger.v10"
             else "odylith.greenfield.source-duty-decisions.v16" if _passive_source_version == "odylith.greenfield.source-duty-ledger.v11"
             else "odylith.greenfield.source-duty-decisions.v18" if _passive_source_version == "odylith.greenfield.source-duty-ledger.v12"
+            else "odylith.greenfield.source-duty-decisions.v20" if _passive_source_version == "odylith.greenfield.source-duty-ledger.v13"
             else "odylith.greenfield.source-duty-decisions.v4"
             if _passive_source_version else SOURCE_DUTY_DECISION_SET_VERSION)
         or decision_set["verifier_task_sha256"] != verifier_task_sha256
@@ -1017,10 +1037,11 @@ def validate_source_duty_decision_set(
         raise GreenfieldSourceDutyEntailmentError(
             "source duty decision binding is invalid"
         )
-    if _passive_source_version in (None, "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12"):
-        identity = decision_set["product_identity"]
-        if not isinstance(identity, Mapping) or set(identity) != {"verdict"} or identity["verdict"] != "yes":
-            raise GreenfieldSourceDutyEntailmentError("product identity decision is not affirmative")
+    if _passive_source_version in (None, "odylith.greenfield.source-duty-ledger.v7", "odylith.greenfield.source-duty-ledger.v8", "odylith.greenfield.source-duty-ledger.v9", "odylith.greenfield.source-duty-ledger.v10", "odylith.greenfield.source-duty-ledger.v11", "odylith.greenfield.source-duty-ledger.v12", "odylith.greenfield.source-duty-ledger.v13"):
+        for field in (("product_identity", "customer") if _passive_source_version is None else ("product_identity",)):
+            identity = decision_set[field]
+            if not isinstance(identity, Mapping) or set(identity) != {"verdict"} or identity["verdict"] != "yes":
+                raise GreenfieldSourceDutyEntailmentError(f"{field} decision is not affirmative")
         if edit_preservation is not None:
             identity_edit = decision_set["identity_preservation"]
             if (not isinstance(identity_edit, Mapping)

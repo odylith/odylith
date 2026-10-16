@@ -169,9 +169,9 @@ def test_declared_path_and_execution_closure_have_separate_narrative_and_exact_e
         "quote": "the product records berth occupancy before the berth map shows the placement", "occurrence": 1})
     response["result"]["source_precedence"] = [{"before_event": 2, "after_event": 3, "constraint_index": 2}]
     response["result"]["provisional_design"]["first_run"]["event_orders"] = [1, 3]
-    candidate = host_candidate_response(response, evidence_text=prepared.evidence_source)
+    candidate = host_candidate_response(response, evidence_text=prepared.evidence_source,
+        first_path_event_orders=(1, 3), source_run_event_orders=(1, 2, 3))
     receipt = synthetic_source_duty_receipt(candidate, evidence_text=prepared.evidence_source)
-    candidate["result"]["provisional_design"]["first_run"]["event_orders"] = [1, 3, 2]
     summary = "Berth map helps dock attendants record vessel placement and see current occupancy."
     candidate["result"]["provisional_design"]["project_summary"] = summary
     intent = materialize_host_authored_intent(prompt=source, repo_root=tmp_path, host_candidate=candidate,
@@ -201,7 +201,7 @@ def test_declared_path_and_execution_closure_have_separate_narrative_and_exact_e
     assert "first-path interaction" not in context["mermaid_source"] and "product interaction" in context["mermaid_source"]
     assert "First-path actions" not in json.dumps(context["diagram_boxes"])
     assert sequence["slug"].endswith("-first-run")
-    assert "Source action 3" in sequence["mermaid_source"]
+    assert 'event3["records berth occupancy"]' in sequence["mermaid_source"]
     assert proposal["semantic_model"]["provisional_design"]["first_run"]["event_orders"] == [1, 3, 2]
     assert [row["source_event_order"] for row in proposal["semantic_model"]["first_path_contract"]["events"]] == [1, 2]
     assert intent == before and intent["authored_semantics"]["source_duty"]["ledger_receipt"] == receipt

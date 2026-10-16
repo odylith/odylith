@@ -489,6 +489,95 @@ def _run_greenfield_project_tab_browser_check(tmp_path: Path, monkeypatch, *, co
                 context.close()
 
 
+@pytest.mark.parametrize("width", [1440, 430], ids=["desktop", "mobile"])
+@pytest.mark.parametrize("degraded", [False, True], ids=["normal", "degraded"])
+@pytest.mark.parametrize("named", [True, False], ids=["named", "unnamed"])
+def test_design7_project_name_preserves_actual_authored_fact_view(
+    tmp_path: Path, width: int, degraded: bool, named: bool,
+) -> None:
+    from copy import deepcopy
+
+    from odylith.runtime.project_intelligence.authored_fact_presenter import authored_fact_view
+    from tests.unit.runtime.greenfield_model_authoring_fixtures import fresh_project_projection_fixture
+
+    case = fresh_project_projection_fixture(tmp_path / "projection", named=named)
+    expected = case["expected"]
+    payload = deepcopy(case["project_payload"])
+    facts = payload["authored_facts"]
+    assert facts["provisional_design"]["version"] == "odylith.greenfield.provisional-design.v7"
+    assert payload["title"] == expected["project_name"]
+    assert facts["title"] == case["intent"]["title"] == expected["source_title"]
+    assert case["intent"]["customer"] == expected["customer"]
+    assert (expected["project_name"] == expected["source_title"]) is named
+    view = authored_fact_view(payload)
+    assert view is not None
+    assert [event.order for event in view.events] == expected["event_orders"]
+    assert view.declared_events is not None
+    declared = facts["first_path_relations"]
+    assert [event.order for event in view.declared_events] == [row["order"] for row in declared]
+    unavailable = "The latest project evidence could not be loaded; the verified source remains available."
+    payload["degraded_state"] = [unavailable] if degraded else []
+    before = json.dumps(payload, sort_keys=True)
+    _write_project_page(tmp_path / "index.html", payload)
+    assert json.dumps(payload, sort_keys=True) == before
+
+    with _static_server(root=tmp_path) as base_url:
+        for _pw, browser in _browser():
+            with browser.new_context(viewport={"width": width, "height": 1100 if width == 1440 else 932}) as context:
+                with _new_page(context) as (page, observation):
+                    response = page.goto(base_url + "/index.html", wait_until="domcontentloaded")
+                    assert response is not None and response.ok
+                    hero = page.locator(".project-hero")
+                    assert hero.locator("h1").inner_text() == expected["project_name"]
+                    assert hero.locator(".project-intro").inner_text() == facts["provisional_design"]["project_summary"]
+                    assert hero.locator(".project-hero-rail, .project-chips").count() == 0
+                    assert "The Project view could not be loaded." not in page.locator(".project-surface").inner_text()
+                    assert page.locator("#payload").evaluate("node => JSON.parse(node.textContent).authored_facts") == facts
+                    card = page.locator('[data-semantic-slot="first_path"]')
+                    items = card.locator('[data-authored-fact-list="first_path"] [data-authored-fact-item]')
+                    assert items.evaluate_all("nodes => nodes.map(node => Number(node.dataset.eventOrder))") == [
+                        row["order"] for row in declared
+                    ]
+                    assert items.locator(":scope > [data-authored-event-quote]").all_text_contents() == [
+                        row["event_quote"] for row in declared
+                    ]
+                    evidence = card.locator("details[data-authored-event-details]")
+                    assert evidence.get_attribute("open") is None
+                    assert evidence.locator("dd").first.is_hidden()
+                    evidence.locator("summary").focus()
+                    evidence.locator("summary").press("Enter")
+                    assert evidence.locator("[data-authored-event-actor-value]").all_text_contents() == [
+                        row["actor_fact_quote"] for row in declared
+                    ]
+                    assert evidence.locator("[data-authored-event-evidence]").count() == len(declared)
+                    evidence.locator("summary").focus()
+                    evidence.locator("summary").press("Space")
+                    assert evidence.get_attribute("open") is None
+                    assert any(row["claim"] == "Project identity" and row["value"] == expected["source_title"]
+                               for row in payload["claim_evidence"])
+                    source_evidence = page.locator("details.project-evidence-excerpt").filter(
+                        has=page.get_by_text("Source evidence", exact=True))
+                    assert source_evidence.get_attribute("open") is None
+                    assert source_evidence.locator("p").is_hidden()
+                    source_evidence.locator("summary").focus()
+                    source_evidence.locator("summary").press("Enter")
+                    assert source_evidence.locator("p").is_visible()
+                    assert source_evidence.locator("p").text_content() == (
+                        f'Accepted evidence excerpt: “{facts["product_story"]}”')
+                    source_evidence.locator("summary").focus()
+                    source_evidence.locator("summary").press("Space")
+                    assert source_evidence.get_attribute("open") is None
+                    if degraded:
+                        assert unavailable in page.locator(".project-surface").inner_text()
+                    _assert_project_sections_do_not_overflow(page, [".project-hero", ".project-product-story", ".project-trust"])
+                    assert not _clipped_project_text(page)
+                    screenshot = _failure_screenshot_path(f"design7-project-{width}-{named}-{degraded}")
+                    if screenshot:
+                        screenshot.parent.mkdir(parents=True, exist_ok=True)
+                        page.screenshot(path=str(screenshot), full_page=True)
+                    _assert_clean_page(page, observation)
+
+
 def test_project_tab_renders_accepted_greenfield_story_without_broken_layout(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _run_greenfield_project_tab_browser_check(tmp_path, monkeypatch, compact=False)
 
