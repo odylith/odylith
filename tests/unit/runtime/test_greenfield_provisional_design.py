@@ -38,6 +38,7 @@ from tests.unit.runtime.greenfield_model_authoring_fixtures import (
 def _design(*, event_orders: tuple[int, ...] = (1, 2), count: int = 4) -> dict[str, Any]:
     return {
         "version": PROVISIONAL_DESIGN_VERSION,
+        "project_name": "Desk",
         "authority_kind": PROVISIONAL_DESIGN_AUTHORITY_KIND,
         "first_run": {
             "event_orders": list(event_orders),
@@ -695,6 +696,7 @@ def test_summary_enters_existing_design_hash_and_never_source_fact_or_atom_autho
         semantics["source_event_relations"], semantics["component_responsibility_relations"],
         first_path_context_relations=semantics["first_path_context_relations"],
         source_precedence=semantics["source_precedence"], provisional_design=design,
+        source_duty=semantics["source_duty"],
     )
     assert changed_hash != authority[AUTHORED_RELATION_SET_SHA256_KEY]
     with pytest.raises((ValueError, GreenfieldAuthoredSemanticsError)):

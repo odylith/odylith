@@ -43,10 +43,23 @@ passes 239. Historical semantic18/19 with design6 and no ledger retain explicit
 reader/hash support; current design7, canonical, mapping and default hash calls
 still require authenticated custody. Hash payloads stay unchanged. Exact historical
 readback and current package-byte comparisons pass; independent development-artifact
-review is clear. Live source65 acceptance and release qualification remain open.
-Receipt26 reconstructs its
-original complete package exactly, including known old projection defects.
-No successor live, genuine EDIT, installed release or timing proof is claimed.
+review is clear. The one source65 preview completes in 364.670 seconds and passes
+independent core fidelity review; its original governance verdict remains FAIL
+for one persisted brief-heading mismatch. The existing deterministic renderer
+now uses the same versioned display-name resolver after carrier validation.
+Old-renderer replay matches the sealed brief exactly; the corrected render changes
+only its heading and leaves that transaction untouched. Forty-four focused checks
+and independent correction review pass, including explicit historical design6
+memory. No semantic, provider, schema, stage, cap or commit boundary changes.
+Actual prepared output passes ten desktop/mobile inner-surface browser cases;
+all eleven Atlas prerequisite triples remain keyboard-accessible in folded
+details. Receipt26 reconstructs its original complete package exactly, including
+known old projection defects. The final two-owner correction passes all 216 tests across eight modules with
+unchanged execution pins and clear independent shared-reader review. Its
+explicit historical getter support does not admit current no-custody input.
+One old unsupported positive expectation is strengthened to fresh refusal; all
+original negative cases remain. Current CI, canonical H/B/D, fixed qualification,
+genuine EDIT, installed release and timing proof remain open.
 
 ### Historical development evidence
 

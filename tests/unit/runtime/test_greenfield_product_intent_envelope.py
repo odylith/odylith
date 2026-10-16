@@ -274,7 +274,7 @@ def test_envelope_construction_refuses_missing_source_custody_explicitly() -> No
 ])
 def test_exact_passive_design6_without_ledger_retains_reader_and_hash_only(semantic_version, expected_hash) -> None:
     from tests.unit.runtime.test_greenfield_authored_project_dashboard import _proposal
-    from odylith.runtime.domain_intelligence.greenfield_provisional_design import require_source_design_pair
+    from odylith.runtime.domain_intelligence.greenfield_provisional_design import require_source_design_pair, provisional_design_from_intent
 
     # Synthetic presentation input, independently replayed through the actual
     # bd7 owner preimages. It is not a retained live receipt or fresh authority.
@@ -288,6 +288,7 @@ def test_exact_passive_design6_without_ledger_retains_reader_and_hash_only(seman
         source_precedence=semantics["source_precedence"], provisional_design=semantics["provisional_design"],
         source_duty=None)
     assert first_path_relations_from_intent(intent) == tuple(rows)
+    assert provisional_design_from_intent(intent) == semantics["provisional_design"]
     assert authored_relation_set_sha256(rows, semantics["component_responsibility_relations"],
         **arguments, semantics_version=semantics["version"]) == expected_hash
     with pytest.raises(ValueError, match="requires authenticated source custody"):
@@ -302,6 +303,8 @@ def test_exact_passive_design6_without_ledger_retains_reader_and_hash_only(seman
         version="odylith.greenfield.provisional-design.v7", project_name=intent["title"])
     with pytest.raises(ValueError, match="requires authenticated source custody"):
         first_path_relations_from_intent(current)
+    with pytest.raises(ValueError, match="requires authenticated source custody"):
+        provisional_design_from_intent(current)
     for source_duty in (None, {}):
         with pytest.raises(ValueError, match="requires authenticated source custody"):
             require_source_design_pair(semantics["provisional_design"], source_duty=source_duty)

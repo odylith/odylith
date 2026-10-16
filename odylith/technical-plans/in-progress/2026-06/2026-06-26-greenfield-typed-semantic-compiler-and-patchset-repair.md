@@ -1,6 +1,55 @@
 Status: In progress
 
-## Current gate: correct customer and human presentation ownership (2026-10-15)
+## Current gate: finish validation and canonical release preparation (2026-10-15)
+
+The one source65 preview at pushed `a225a2fed` completes in 364.670 seconds,
+with four model stages and no calls after candidate receipt. Independent review
+passes core source fidelity and all corrected customer/Atlas projections, but
+fails the saved Project Brief heading: it still uses the original source
+sentence. Keep this original P2 failure, transaction and raw custody unchanged;
+there is no second source65 semantic attempt or repaired seal.
+
+The existing brief renderer now selects its heading through the shared,
+versioned presentation-name resolver after validating the authored carrier.
+The isolated old renderer reproduces the sealed brief exactly. The corrected
+renderer changes only the heading; all other lines and the original transaction
+remain exact. Forty-four focused checks pass, including the named/unnamed
+prewrite paths and historical memory readback. The historical fixture migration
+retains all five tests and eighteen assertions; independent correction review
+is scoped PASS (`101b73a7274fa54613f5ef97844c2dc32d5159513854ea49b3c433a3b9073f7a`).
+An intermediate historical refusal was caught and corrected before checkpoint.
+No semantic/provider/schema version, stage, cap or commit behavior changes.
+
+Actual sealed-output browser inspection passes ten desktop/mobile cases across
+Project, Radar, Registry, Atlas and Compass, with no script errors or horizontal
+overflow. All twenty Atlas disclosures per viewport begin folded, open and close
+by keyboard, and expose every one of the eleven exact prerequisite triples.
+This remains scoped development evidence; source65's original governance
+verdict remains FAIL. Finish the same-contract fixture corrections and current CI, then squash PR34
+to canonical H. Reuse the existing preserved proof checkout for full B and one
+immutable D. The three migration assessments remain open for exact-D installed
+upgrade/browser proof; normal preparation does not require their final markers.
+continue the fixed44, separate genuine EDIT4 and remaining release gates there.
+Do not add another development mechanism or reopen the protected final gate.
+
+
+### Final deterministic correction proof (2026-10-15)
+
+The final eight-module gate passes all 216 tests in 34.21 seconds, with every
+source/shared/test pin unchanged during execution. The two existing source
+owners correct the brief heading and forward the validated semantic version to
+the shared design-pair reader. Explicit historical 18/19 design6 remains readable;
+current design7 without custody still refuses. Independent shared-helper review
+is PASS (78dbfec2367502af4a145dbc1d7e13d60d45faa77d622bf938ff4337f19db513).
+Four remaining fixture modules pass 157 controls:135 original assertions remain
+AST exact; six unsupported positive-output assertions are explicitly replaced
+by four fresh-refusal/input-integrity checks. All original schema checks and
+negative cases remain. The original failures and positive test body are retained.
+No further semantic preview or feature is required before current CI and
+canonical H/B/D preparation. The exact-D populated migration assessment remains
+a later mandatory gate, with B-145 still in implementation.
+
+## Historical source64 customer and human presentation correction (2026-10-15)
 
 The one pushed-source64 preview at `bd7ffa84ab` completes in 325.758 seconds and
 delivers a sealed proposal with four model stages, one proposal and zero

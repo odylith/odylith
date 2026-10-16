@@ -7,10 +7,6 @@ from typing import Any
 
 import pytest
 
-from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
-    authored_semantics_mapping,
-    first_path_relations_from_intent,
-)
 from odylith.runtime.domain_intelligence.greenfield_model_intent_authoring import (
     GREENFIELD_INTENT_AUTHORING_VERSION,
     GreenfieldModelAuthoredIntent,
@@ -109,13 +105,6 @@ def _validate(response: dict[str, Any]) -> GreenfieldModelAuthoredIntent:
     return authored
 
 
-def provisional_proof_authored() -> tuple[str, GreenfieldModelAuthoredIntent]:
-    """Return the canonical validated form of the disclosed provisional fixture."""
-
-    source, response = provisional_proof_response()
-    return source, _validate(response)
-
-
 def test_schema_and_validator_keep_provisional_proof_out_of_source_truth() -> None:
     schema = greenfield_authoring_schema()
     authored_schema = schema["properties"]["result"]["anyOf"][0]
@@ -130,28 +119,16 @@ def test_schema_and_validator_keep_provisional_proof_out_of_source_truth() -> No
         "null",
     }
 
-    source_text, authored = provisional_proof_authored()
+    source_text, response = provisional_proof_response()
+    before = deepcopy(response)
 
     assert _PROOF_ASSUMPTION["statement"] not in source_text
-    assert authored.intent["proof_boundary"] == ""
-    assert _PROOF_ASSUMPTION in authored.intent["assumptions"]
-    assert all(not row["visible_result_quote"] for row in authored.source_event_relations)
-    assert all(row["field"] != "proof_boundary" for row in authored.atomic_claims)
-    assert all(row["relation_role"] != "visible_result_quote" for row in authored.atomic_claims)
-
-    sealed = {
-        **authored.intent,
-        "authored_semantics": authored_semantics_mapping(
-            authored.source_event_relations,
-            authored.component_responsibility_relations,
-            first_path_context_relations=authored.first_path_context_relations,
-            source_precedence=authored.source_precedence,
-            provisional_design=authored.provisional_design,
-        ),
-    }
-    assert all(
-        not row["visible_result_quote"] for row in first_path_relations_from_intent(sealed)
-    )
+    assert response["result"]["facts"]["proof_boundary"] is None
+    assert response["result"]["terminal"] is None
+    assert _PROOF_ASSUMPTION in response["result"]["assumptions"]
+    with pytest.raises(GreenfieldModelAuthoringError, match="requires authenticated source custody"):
+        _validate(response)
+    assert response == before
 
 
 @pytest.mark.parametrize(

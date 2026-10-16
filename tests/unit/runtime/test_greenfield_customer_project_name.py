@@ -108,6 +108,7 @@ def test_actual_named_and_unnamed_compiler_presenter_radar_atlas_paths(tmp_path,
     assert all(row["customer"] == expected["customer"] for row in proposal["backlog"])
     assert all("## Customer\n" in text and expected["customer"] in text.split("## Customer\n", 1)[1].split("\n##", 1)[0] for text in case["radar_markdown"].values())
     assert payload["title"] == payload["product_story"]["headline"] == expected["project_name"]
+    assert case["prewrite"].package.project_brief_record_text.splitlines()[0] == f"# {expected['project_name']} Project Brief"
     assert payload["authored_facts"]["title"] == expected["source_title"]
     assert proposal["semantic_model"]["domain_ontology"]["product_title"] == expected["source_title"]
     assert proposal["artifact_derivation"]["project_title"] == expected["project_name"]

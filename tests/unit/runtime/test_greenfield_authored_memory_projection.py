@@ -12,7 +12,6 @@ from odylith.runtime.domain_intelligence import proposal_memory
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
     GreenfieldAuthoredSemanticsError,
-    authored_semantics_mapping,
 )
 from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
     PRODUCT_INTENT_AUTHORITY_KEY,
@@ -96,9 +95,14 @@ def _proposal() -> dict[str, object]:
             "evidence_requirements": ["  Keep **APIv7** evidence byte-exact.  "],
             "operational_constraints": ["Preserve café casing"],
             "non_goals": ["Do not infer batch migration"],
-            "authored_semantics": authored_semantics_mapping(
-                relations,
-                first_path_context_relations=(
+            # This exact-memory fixture exercises retained semantics19/design6.
+            "authored_semantics": dict(
+                version="odylith.greenfield.authored-semantics.v19",
+                source_event_relations=list(relations),
+                component_responsibility_relations=[],
+                source_precedence=[],
+                source_duty=None,
+                first_path_context_relations=[
                     {
                         "context_kind": "operational_constraint",
                         "fact_path": "/operational_constraints/0",
@@ -108,8 +112,10 @@ def _proposal() -> dict[str, object]:
                         + len("Preserve café casing".encode("utf-8")),
                         "first_path_event_order": 0,
                     },
+                ],
+                provisional_design=structural_design_fixture(
+                    (1, 2), version="odylith.greenfield.provisional-design.v6"
                 ),
-                provisional_design=structural_design_fixture((1, 2)),
             ),
         },
         "observed_source": {"source_posture": "operator prompt"},

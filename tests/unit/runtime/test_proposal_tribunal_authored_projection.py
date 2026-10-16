@@ -13,7 +13,6 @@ from odylith.runtime.domain_intelligence.greenfield_authored_proposal import (
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
     AUTHORED_PROJECTION_ORIGIN,
     AUTHORED_SEMANTICS_KEY,
-    authored_semantics_mapping,
 )
 from odylith.runtime.domain_intelligence.project_intelligence_binding import (
     attach_project_intelligence_bindings,
@@ -61,9 +60,10 @@ def _authored_proposal() -> dict[str, object]:
         "assumptions": [],
         "ambiguities": [],
         "non_goals": [],
-        AUTHORED_SEMANTICS_KEY: authored_semantics_mapping(
-            (relation,),
-            (
+        AUTHORED_SEMANTICS_KEY: dict(
+            version="odylith.greenfield.authored-semantics.v19",
+            source_event_relations=[relation],
+            component_responsibility_relations=(
                 {
                     "responsibility_path": "/component_responsibilities/0",
                     "responsibility_quote": "Record berth occupancy.",
@@ -83,7 +83,8 @@ def _authored_proposal() -> dict[str, object]:
                     "first_path_event_order": 1,
                 },
             ),
-            provisional_design=structural_design_fixture((1,)),
+            source_precedence=[], source_duty=None,
+            provisional_design=structural_design_fixture((1,), version="odylith.greenfield.provisional-design.v6"),
         ),
     }
     return attach_project_intelligence_bindings(

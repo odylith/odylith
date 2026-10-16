@@ -452,12 +452,13 @@ def _typed_semantic_snapshot(
             "first_path_event_order": 1,
         }
     ]
-    provisional_design = structural_design_fixture((1,))
+    provisional_design = structural_design_fixture((1,), version="odylith.greenfield.provisional-design.v6")
     semantics = {
         "version": AUTHORED_SEMANTICS_VERSION,
-        "first_path_relations": relations,
+        "source_event_relations": relations,
         "first_path_context_relations": contexts,
         "component_responsibility_relations": [],
+        "source_precedence": [], "source_duty": None,
         "provisional_design": provisional_design,
     }
     atoms = _atomic_facts(
@@ -477,6 +478,7 @@ def _typed_semantic_snapshot(
             (),
             first_path_context_relations=contexts,
             provisional_design=provisional_design,
+            semantics_version=semantics["version"],
         ),
     }
 

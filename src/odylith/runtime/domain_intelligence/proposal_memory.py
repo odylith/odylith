@@ -18,11 +18,15 @@ from odylith.runtime.domain_intelligence.greenfield_authored_memory import (
     render_authored_project_brief_lines,
 )
 from odylith.runtime.domain_intelligence.greenfield_authored_semantics import (
+    AUTHORED_SEMANTICS_KEY,
     GreenfieldAuthoredSemanticsError,
     authored_projection_relations,
 )
 from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
     PRODUCT_INTENT_AUTHORITY_KEY,
+)
+from odylith.runtime.domain_intelligence.greenfield_provisional_design import (
+    project_presentation_name,
 )
 
 ACCEPTED_PROJECT_SOURCE_PATH = "odylith/runtime/source/accepted-project.v1.json"
@@ -229,7 +233,10 @@ def build_project_brief_source_markdown(
     """Build the durable human-readable project brief artifact."""
 
     _require_authored_relations(proposal)
-    title = _authored_title(proposal)
+    title = project_presentation_name(
+        source_title=_authored_title(proposal),
+        design=_intent(proposal)[AUTHORED_SEMANTICS_KEY]["provisional_design"],
+    )
     brief = (
         proposal.get("project_brief")
         if isinstance(proposal.get("project_brief"), Mapping)

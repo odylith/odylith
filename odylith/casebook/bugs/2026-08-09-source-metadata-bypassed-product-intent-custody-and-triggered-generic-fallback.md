@@ -2418,3 +2418,80 @@ clarification; a source-sufficient but incorrect candidate remains denied. No
 candidate revision, retry, repair, fallback, or additional model call is
 permitted. CB-329 owns the separate raw-response retention and release-evaluator
 classification defects exposed by the same case.
+
+## Source65 development outcome (2026-10-15)
+
+The unchanged museum dispatch request completed one source65 preview in 364.670
+seconds with four model stages, no calls after candidate receipt, and unchanged
+source files. Independent source-first review passed core fidelity and found no
+P0/P1. Governance utility still failed its frozen naming criterion: the saved
+Project Brief heading used the exact source sentence instead of the proposed
+Museum Dispatch Workspace name. All five Radar customers and the reviewed
+Project, Registry and Atlas content otherwise passed semantic inspection.
+
+This preview remains a failed naming check. Its sealed transaction and raw
+archive are preserved; it will not be repaired or rerun under source65. The
+remaining correction belongs to the existing durable brief renderer, which
+still reads the source identity directly. Route its heading through the shared
+versioned presentation-name resolver, retaining historical design6 bytes and
+source authority fields. Prove the named and unnamed prewrite paths and exact
+legacy memory readback without another semantic attempt.
+
+Evidence: source65-first-actual-independent-review.md SHA-256
+6db4feed17fb004fe215d31766dc6af5f27ab557e5d6132c8bc00fe81980ab9a;
+raw custody archive SHA-256
+76936004e6bb3ba20ae6d07cb1d11f0f5e0c6450453560410eb1405e4ebbfcb7.
+Release qualification, H/B/D, the fixed scored campaign, genuine EDIT and the
+protected final gate remain open.
+
+### Deterministic heading correction
+
+The existing renderer now uses the shared presentation-name selector after the
+authored carrier has passed its complete versioned validation. Historical
+design6 still selects the exact source title; design7 selects the proposed name.
+An intermediate redundant validation call refused a supported passive carrier;
+the focused test and independent reviewer caught it before checkpoint, and the
+renderer now reads the already validated design without changing any admission
+rule. All 44 focused tests pass. The five historical memory tests retain all
+eighteen original assertions and pass against both the old and corrected owner.
+Independent correction review is PASS, SHA-256
+101b73a7274fa54613f5ef97844c2dc32d5159513854ea49b3c433a3b9073f7a.
+
+An isolated replay of the actual brief matches the old sealed bytes exactly;
+the new render changes only the heading. No transaction is repaired or accepted.
+Ten actual desktop/mobile inner-surface browser cases pass; all eleven exact
+Atlas prerequisite triples are keyboard-accessible in initially folded details.
+Keep this development evidence separate from current CI and H/B/D qualification.
+
+### Remaining shared historical-reader caller
+
+A bounded AST inventory found four additional old fixture owners. Their unchanged
+baseline has 96 failures and 61 passes. Fixture-only corrections make 128 pass and
+expose one real shared-reader omission: provisional_design_from_intent validates
+the complete semantic carrier, then checks its design pair a second time without
+forwarding that carrier's explicit semantic version. This rejects the supported
+semantic19/design6/no-ledger combination in the Tribunal builder. Forward the
+already validated version to the same existing pair guard; do not broaden the
+current design7 or source-custody rules.
+
+One former positive test also expects fresh authoring without accepted source
+duties. That expectation conflicts with the current authenticated source-plan
+contract. Retain its source and original failed result, and strengthen fresh
+coverage to require refusal. Historical passive reading remains separately
+proved rather than being relabeled current authoring.
+
+### Final deterministic correction proof (2026-10-15)
+
+The final eight-module gate passes all 216 tests in 34.21 seconds, with every
+source/shared/test pin unchanged during execution. The two existing source
+owners correct the brief heading and forward the validated semantic version to
+the shared design-pair reader. Explicit historical 18/19 design6 remains readable;
+current design7 without custody still refuses. Independent shared-helper review
+is PASS (78dbfec2367502af4a145dbc1d7e13d60d45faa77d622bf938ff4337f19db513).
+Four remaining fixture modules pass 157 controls:135 original assertions remain
+AST exact; six unsupported positive-output assertions are explicitly replaced
+by four fresh-refusal/input-integrity checks. All original schema checks and
+negative cases remain. The original failures and positive test body are retained.
+No further semantic preview or feature is required before current CI and
+canonical H/B/D preparation. The exact-D populated migration assessment remains
+a later mandatory gate, with B-145 still in implementation.

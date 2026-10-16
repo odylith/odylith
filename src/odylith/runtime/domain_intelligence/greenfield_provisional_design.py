@@ -203,7 +203,7 @@ def require_source_design_pair(
     ledger = receipt.get("ledger") if isinstance(receipt, Mapping) else None
     source_version = ledger.get("version") if isinstance(ledger, Mapping) else None
     if not isinstance(source_version, str) or source_version not in {f"odylith.greenfield.source-duty-ledger.v{i}" for i in range(5, 15)}:
-        raise ValueError("Greenfield design requires authenticated source custody")
+        raise ValueError("Greenfield provisional design requires authenticated source custody")
     fresh = source_version == "odylith.greenfield.source-duty-ledger.v14"
     if not isinstance(design, Mapping) or design.get("version") != (PROVISIONAL_DESIGN_VERSION if fresh else PASSIVE_PROVISIONAL_DESIGN_VERSION):
         raise ValueError("Greenfield source/design version pair is invalid")
@@ -450,7 +450,7 @@ def provisional_design_from_intent(intent: Mapping[str, Any]) -> dict[str, Any]:
 
     relations = source_event_relations_from_intent(intent)
     semantics = intent.get(AUTHORED_SEMANTICS_KEY) if isinstance(intent, Mapping) else None
-    require_source_design_pair(semantics.get("provisional_design"), source_duty=semantics.get("source_duty"))
+    require_source_design_pair(semantics.get("provisional_design"), source_duty=semantics.get("source_duty"), semantics_version=semantics.get("version"))
     return validate_provisional_design(
         semantics.get("provisional_design") if isinstance(semantics, Mapping) else None,
         event_orders=tuple(row["order"] for row in relations),

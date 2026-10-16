@@ -2,7 +2,7 @@
 
 Receipt version: `odylith.greenfield-operating-envelope.v6`
 
-Document revision: `22`
+Document revision: `23`
 
 Profile: `single-product-governance-onboarding`
 
@@ -201,9 +201,21 @@ passes 96. Native Mermaid artifacts have been visually reviewed. Explicit
 historical semantic18/19 with design6 and no ledger preserve exact-source readback;
 current design7, canonical, mapping and default hash calls remain strict. Exact
 historical readback and current package-byte comparisons pass, with clear independent
-development-artifact review. A separately predeclared live successor and installed
-qualification remain pending. Development fixtures and source review grant no
-release credit.
+development-artifact review. The one actual source65 preview subsequently completes
+in 364.670 seconds and passes independent core fidelity review. Its original
+governance verdict remains FAIL because the persisted brief heading uses the
+source sentence. That seal stays unchanged. The bounded deterministic renderer
+correction uses the shared presentation-name resolver after complete carrier
+validation; all non-heading brief lines remain exact. Forty-four focused tests,
+historical memory compatibility and independent correction review pass. Ten
+actual desktop/mobile inner-surface browser cases pass, including keyboard access
+to every exact Atlas prerequisite triple. No second source65 model attempt or
+contract-version change is needed for this view correction. The final eight-module
+216-test gate passes after the shared getter forwards its already validated
+semantic version; explicit historical 18/19 design6 still reads and current
+no-custody design7 still refuses. Independent delta review is clear. Current CI
+and exact canonical H/B/D qualification remain pending. Development evidence grants no
+installed-release, broad semantic, timing or GA credit.
 
 ### EDIT lifecycle verification
 
